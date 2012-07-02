@@ -18,7 +18,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
@@ -39,18 +38,15 @@ import java.util.Set;
 public class DscLikelihood implements SensorModelRule {
 
   private DestinationSignCodeService _destinationSignCodeService;
-  private RunService _runService;
 
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
     _destinationSignCodeService = destinationSignCodeService;
   }
-  
+
   @Autowired
-  public void setRunService(
-      RunService runService) {
-    _runService = runService;
+  public void setRunService(RunService runService) {
   }
 
   public static enum DSC_STATE {
@@ -69,7 +65,7 @@ public class DscLikelihood implements SensorModelRule {
         result.addResultAsAnd("in-progress o.o.s. dsc", 0.0);
         return result;
       case DSC_NOT_VALID:
-        result.addResultAsAnd("non-valid dsc", 0.95/3d);
+        result.addResultAsAnd("non-valid dsc", 0.95 / 3d);
         return result;
       case DSC_OOS_NOT_IP:
         result.addResultAsAnd("not-in-progress o.o.s. dsc", 0.95 / 3d);
@@ -99,11 +95,10 @@ public class DscLikelihood implements SensorModelRule {
     final JourneyState js = state.getJourneyState();
     EVehiclePhase phase = js.getPhase();
     final BlockStateObservation blockStateObs = state.getBlockStateObservation();
-    
+
     /*
-     * TODO clean up this hack
-     * We are really in-progress, but because of the out-of-service
-     * headsign, we can't report it as in-progress
+     * TODO clean up this hack We are really in-progress, but because of the
+     * out-of-service headsign, we can't report it as in-progress
      */
     if (context.getObservation().hasOutOfServiceDsc()
         && EVehiclePhase.DEADHEAD_DURING == phase

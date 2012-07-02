@@ -42,11 +42,8 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 
 import gov.sandia.cognition.math.LogMath;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
@@ -55,8 +52,6 @@ import com.google.common.collect.Sets;
 import org.apache.commons.math.util.FastMath;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -93,7 +88,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
   public void setSensorModelLibrary(SensorModelSupportLibrary sensorModelLibrary) {
     _sensorModelLibrary = sensorModelLibrary;
   }
-  
+
   @Autowired
   public void setBlocksFromObservationService(
       BlocksFromObservationService blocksFromObservationService) {
@@ -170,10 +165,10 @@ public class MotionModelImpl implements MotionModel<Observation> {
           && obs.hasValidDsc()) {
 
         /*
-         * We have no good run information, but a valid DSC, so we will allow 
-         * a run transition when there are snapped states and it's not in progress.
-         * This way we're less likely to get deadheads with in-service signs 
-         * floating along routes.
+         * We have no good run information, but a valid DSC, so we will allow a
+         * run transition when there are snapped states and it's not in
+         * progress. This way we're less likely to get deadheads with in-service
+         * signs floating along routes.
          */
         if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()) {
           return true;
@@ -215,7 +210,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     return false;
   }
-  
 
   @Override
   public Multiset<Particle> move(Multiset<Particle> particles,
@@ -263,15 +257,16 @@ public class MotionModelImpl implements MotionModel<Observation> {
       transitions.add(newParentBlockStateObs);
 
       /*
-       *  We make a subtle distinction here, by allowing the previous state to remain as a transition
-       *  but unaltered.  This helps in cases of deadhead->in-progress transitions, since, later on,
-       *  the block state we create in the following will be treated differently, signaled by way of 
-       *  pointer equality.
+       * We make a subtle distinction here, by allowing the previous state to
+       * remain as a transition but unaltered. This helps in cases of
+       * deadhead->in-progress transitions, since, later on, the block state we
+       * create in the following will be treated differently, signaled by way of
+       * pointer equality.
        */
-      
+
       final double vehicleHasNotMovedProb = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
           motionState, obs);
-      
+
       for (int i = 0; i < parent.getCount(); ++i) {
         final Particle sampledParticle = sampleTransitionParticle(parent,
             newParentBlockStateObs, obs, vehicleHasNotMovedProb, transitions);
@@ -283,10 +278,11 @@ public class MotionModelImpl implements MotionModel<Observation> {
     /*
      * Normalize
      */
-     for (Entry<Particle> p : results.entrySet()) {
-       p.getElement().setLogNormedWeight(p.getElement().getLogWeight()
-           + FastMath.log(p.getCount()) - normOffset);
-     }
+    for (final Entry<Particle> p : results.entrySet()) {
+      p.getElement().setLogNormedWeight(
+          p.getElement().getLogWeight() + FastMath.log(p.getCount())
+              - normOffset);
+    }
 
     return results;
   }
@@ -313,25 +309,24 @@ public class MotionModelImpl implements MotionModel<Observation> {
       final boolean vehicleNotMoved = inMotionSample < vehicleHasNotMovedProb;
       final MotionState motionState = updateMotionState(parentState, obs,
           vehicleNotMoved);
-      
+
       final Map.Entry<BlockSampleType, BlockStateObservation> newEdge;
       JourneyState journeyState;
       /*
-       * We have to allow for a driver to start a trip late, so
-       * we check to see if during the transition it was snapped or not.
-       * If not, then we assume it may still be not in service
+       * We have to allow for a driver to start a trip late, so we check to see
+       * if during the transition it was snapped or not. If not, then we assume
+       * it may still be not in service
        */
-      newEdge = sampleEdgeFromProposal(
-        newParentBlockStateObs, proposalEdge, obs,
-        parentState.getJourneyState().getPhase(), vehicleNotMoved);
+      newEdge = sampleEdgeFromProposal(newParentBlockStateObs, proposalEdge,
+          obs, parentState.getJourneyState().getPhase(), vehicleNotMoved);
       journeyState = _journeyStateTransitionModel.getJourneyState(
           newEdge.getValue(), parentState, obs, vehicleNotMoved);
-      
+
       final boolean isLayoverStopped = JourneyStateTransitionModel.isLayoverStopped(
           vehicleNotMoved, obs, parentState);
-      journeyState = adjustInProgressTransition(parentState, newEdge, 
+      journeyState = adjustInProgressTransition(parentState, newEdge,
           journeyState, isLayoverStopped);
-      
+
       final VehicleState newState = new VehicleState(motionState,
           newEdge.getValue(), journeyState, null, obs);
       final Context context = new Context(parentState, newState, obs);
@@ -339,7 +334,8 @@ public class MotionModelImpl implements MotionModel<Observation> {
       /*
        * Edge movement
        */
-      transProb.addResultAsAnd(edgeLikelihood.likelihood(_sensorModelLibrary, context));
+      transProb.addResultAsAnd(edgeLikelihood.likelihood(_sensorModelLibrary,
+          context));
 
       /*
        * Gps
@@ -379,14 +375,16 @@ public class MotionModelImpl implements MotionModel<Observation> {
       /*
        * Vehicle movement prob.
        */
-      SensorModelResult movementResult = new SensorModelResult("movement");
+      final SensorModelResult movementResult = new SensorModelResult("movement");
       if (vehicleNotMoved) {
-        movementResult.addResultAsAnd(new SensorModelResult("not-moved", vehicleHasNotMovedProb));
+        movementResult.addResultAsAnd(new SensorModelResult("not-moved",
+            vehicleHasNotMovedProb));
       } else {
-        movementResult.addResultAsAnd(new SensorModelResult("moved", 1d-vehicleHasNotMovedProb));
+        movementResult.addResultAsAnd(new SensorModelResult("moved",
+            1d - vehicleHasNotMovedProb));
       }
       transProb.addResultAsAnd(movementResult);
-      
+
       transProb.addLogResultAsAnd(newEdge.getKey().name(), 0);
 
       final Particle newParticle = new Particle(timestamp, parent.getElement(),
@@ -428,25 +426,25 @@ public class MotionModelImpl implements MotionModel<Observation> {
       transProb.addResultAsAnd(new SensorModelResult("not-moved",
           vehicleNotMoved ? vehicleHasNotMovedProb
               : 1d - vehicleHasNotMovedProb));
-      newParticle = new Particle(timestamp, parent.getElement(),
-          0.0, nullState);
+      newParticle = new Particle(timestamp, parent.getElement(), 0.0, nullState);
       newParticle.setResult(transProb);
       newParticle.setLogWeight(parent.getElement().getLogWeight()
           + newParticle.getResult().getLogProbability());
 
     }
-    
+
     if (ParticleFilter.getDebugEnabled())
       newParticle.setTransitions(debugTransitions);
-    
-    return newParticle; 
+
+    return newParticle;
   }
 
   /**
-   * The strict schedule-time based journey state assignment doesn't
-   * work for late/early transitions to in-progess, since in-progress 
-   * states that are produced will be judged harshly if they're not
-   * exactly on the geometry.  This method works around that. 
+   * The strict schedule-time based journey state assignment doesn't work for
+   * late/early transitions to in-progess, since in-progress states that are
+   * produced will be judged harshly if they're not exactly on the geometry.
+   * This method works around that.
+   * 
    * @param parentState
    * @param newEdge
    * @param journeyState
@@ -455,19 +453,23 @@ public class MotionModelImpl implements MotionModel<Observation> {
   private JourneyState adjustInProgressTransition(VehicleState parentState,
       java.util.Map.Entry<BlockSampleType, BlockStateObservation> newEdge,
       JourneyState journeyState, boolean isLayoverStopped) {
-    
-    if (!parentState.getJourneyState().getPhase().equals(EVehiclePhase.IN_PROGRESS)
+
+    if ((!parentState.getJourneyState().getPhase().equals(
+        EVehiclePhase.IN_PROGRESS)
+        && !parentState.getJourneyState().getPhase().equals(
+        EVehiclePhase.DEADHEAD_AFTER))
         && journeyState.getPhase().equals(EVehiclePhase.IN_PROGRESS)
         && !newEdge.getValue().isSnapped()) {
-      final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(
-          parentState.getJourneyState().getPhase());
+      final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase());
       if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
           && !isLayoverStopped) {
-        return wasPrevStateDuring ? JourneyState.deadheadDuring(journeyState.isDetour())
+        return wasPrevStateDuring
+            ? JourneyState.deadheadDuring(journeyState.isDetour())
             : JourneyState.deadheadBefore(null);
       } else if (!EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
           && isLayoverStopped) {
-        return wasPrevStateDuring ? JourneyState.layoverDuring(journeyState.isDetour())
+        return wasPrevStateDuring
+            ? JourneyState.layoverDuring(journeyState.isDetour())
             : JourneyState.layoverBefore();
       } else {
         return parentState.getJourneyState();

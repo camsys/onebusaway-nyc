@@ -15,51 +15,47 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
-import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RunLikelihood implements SensorModelRule {
 
   public static enum RUN_INFO_STATE {
-    NO_RUN_INFO,
-    RUN_INFO_NO_RUN,
-    FORMAL_RUN_MATCH,
-    NO_FORMAL_FUZZY_MATCH,
-    NO_FORMAL_NO_FUZZY_MATCH,
+    NO_RUN_INFO, RUN_INFO_NO_RUN, FORMAL_RUN_MATCH, NO_FORMAL_FUZZY_MATCH, NO_FORMAL_NO_FUZZY_MATCH,
   };
-  
+
   private final double matchProportion = 0.99;
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
-    
+
     final SensorModelResult result = new SensorModelResult("pRun");
-    RUN_INFO_STATE state = getRunInfoState(context);
-    
+    final RUN_INFO_STATE state = getRunInfoState(context);
+
     switch (state) {
       case NO_RUN_INFO:
-        result.addResultAsAnd("no run info", matchProportion/2d);
+        result.addResultAsAnd("no run info", matchProportion / 2d);
         return result;
       case FORMAL_RUN_MATCH:
-        result.addResultAsAnd("formal run match", matchProportion/2d);
+        result.addResultAsAnd("formal run match", matchProportion / 2d);
         return result;
       case NO_FORMAL_FUZZY_MATCH:
-        result.addResultAsAnd("non-formal fuzzy match", 0.75 * (1d - matchProportion));
+        result.addResultAsAnd("non-formal fuzzy match",
+            0.75 * (1d - matchProportion));
         return result;
       case RUN_INFO_NO_RUN:
-        result.addResultAsAnd("run-info, no run", 1d/8d * (1d - matchProportion));
+        result.addResultAsAnd("run-info, no run",
+            1d / 8d * (1d - matchProportion));
         return result;
       case NO_FORMAL_NO_FUZZY_MATCH:
-        result.addResultAsAnd("no matches", 1d/8d * (1d - matchProportion));
+        result.addResultAsAnd("no matches", 1d / 8d * (1d - matchProportion));
         return result;
       default:
         return null;
@@ -74,7 +70,7 @@ public class RunLikelihood implements SensorModelRule {
     if (StringUtils.isEmpty(obs.getOpAssignedRunId())
         && obs.getFuzzyMatchDistance() == null)
       return RUN_INFO_STATE.NO_RUN_INFO;
-    
+
     if (blockState != null) {
       if (blockState.isRunFormal()) {
         return RUN_INFO_STATE.FORMAL_RUN_MATCH;
@@ -84,7 +80,7 @@ public class RunLikelihood implements SensorModelRule {
         } else {
           return RUN_INFO_STATE.NO_FORMAL_NO_FUZZY_MATCH;
         }
-      } 
+      }
     } else {
       return RUN_INFO_STATE.RUN_INFO_NO_RUN;
     }

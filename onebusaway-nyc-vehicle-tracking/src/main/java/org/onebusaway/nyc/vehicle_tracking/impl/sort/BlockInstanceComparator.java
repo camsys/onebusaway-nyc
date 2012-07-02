@@ -19,11 +19,10 @@ public final class BlockInstanceComparator implements Comparator<BlockInstance> 
     if (o1 == o2)
       return 0;
 
-    return ComparisonChain.start()
-        .compare(o1.getBlock().getBlock().getId(), o2.getBlock().getBlock().getId())
-        .compare(o1.getBlock().getServiceIds(), o2.getBlock().getServiceIds())
-        .compare( o1.getServiceDate(), o2.getServiceDate())
-        .result();
+    return ComparisonChain.start().compare(o1.getBlock().getBlock().getId(),
+        o2.getBlock().getBlock().getId()).compare(
+        o1.getBlock().getServiceIds(), o2.getBlock().getServiceIds()).compare(
+        o1.getServiceDate(), o2.getServiceDate()).result();
   }
 
 }

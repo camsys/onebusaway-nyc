@@ -28,6 +28,6 @@ public class Trace_3649_20101125T121801_IntegrationTest extends AbstractTraceRun
     super("3649-2010-11-25T12-18-01.csv.gz");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
     setLoops(2);
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.85);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.75);
   }
 }

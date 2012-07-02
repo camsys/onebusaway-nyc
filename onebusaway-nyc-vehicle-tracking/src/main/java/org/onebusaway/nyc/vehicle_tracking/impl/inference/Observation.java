@@ -58,8 +58,9 @@ public class Observation implements Comparable<Observation> {
 
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
-      boolean outOfService, boolean hasValidDsc, Observation previousObservation,
-      Set<AgencyAndId> dscImpliedRoutes, RunResults runResults) {
+      boolean outOfService, boolean hasValidDsc,
+      Observation previousObservation, Set<AgencyAndId> dscImpliedRoutes,
+      RunResults runResults) {
     _timestamp = timestamp;
     _record = record;
     _point = ProjectedPointFactory.forward(record.getLatitude(),
@@ -67,17 +68,17 @@ public class Observation implements Comparable<Observation> {
     _lastValidDestinationSignCode = lastValidDestinationSignCode;
     _dscImpliedRouteCollections = dscImpliedRoutes;
     _runResults = runResults;
-    _impliedRouteCollections = Sets.newHashSet(Iterables.concat(dscImpliedRoutes, 
-         runResults.getRouteIds()));
+    _impliedRouteCollections = Sets.newHashSet(Iterables.concat(
+        dscImpliedRoutes, runResults.getRouteIds()));
     this.atBase = atBase;
     this.atTerminal = atTerminal;
     this.outOfService = outOfService;
     this._hasValidDsc = hasValidDsc;
-    
+
     if (previousObservation == null) {
       this._timeDelta = null;
     } else {
-      this._timeDelta = (timestamp - previousObservation.getTime())/1000d;
+      this._timeDelta = (timestamp - previousObservation.getTime()) / 1000d;
     }
 
     _previousObservation = previousObservation;
@@ -131,17 +132,14 @@ public class Observation implements Comparable<Observation> {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper("Observation")
-        .add("atBase", atBase)
-        .add("atTerminal", atTerminal)
-        .addValue(_record.toString())
-        .toString();
+    return Objects.toStringHelper("Observation").add("atBase", atBase).add(
+        "atTerminal", atTerminal).addValue(_record.toString()).toString();
   }
 
   public Set<AgencyAndId> getDscImpliedRouteCollections() {
     return _dscImpliedRouteCollections;
   }
-  
+
   public Set<AgencyAndId> getImpliedRouteCollections() {
     return _impliedRouteCollections;
   }
@@ -276,6 +274,7 @@ public class Observation implements Comparable<Observation> {
 
   /**
    * Time since last observation in seconds.
+   * 
    * @return
    */
   public Double getTimeDelta() {

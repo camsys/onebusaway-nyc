@@ -19,7 +19,7 @@ import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 
 public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
-  implements PartitionedInputQueueListener, ServletContextAware {
+    implements PartitionedInputQueueListener, ServletContextAware {
 
   private String[] _depotPartitionKeys = null;
 
@@ -27,10 +27,11 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
 
   private VehicleAssignmentService _vehicleAssignmentService;
 
+  @Override
   public String getQueueDisplayName() {
-      return "PartitionedInputQueueListenerTask";
+    return "PartitionedInputQueueListenerTask";
   }
-  
+
   @Autowired
   public void setVehicleAssignmentService(
       VehicleAssignmentService vehicleAssignmentService) {
@@ -47,7 +48,7 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   public void setServletContext(ServletContext servletContext) {
     // check for depot partition keys in the servlet context
     if (servletContext != null) {
-      String key = servletContext.getInitParameter("depot.partition.key");
+      final String key = servletContext.getInitParameter("depot.partition.key");
       _log.info("servlet context provied depot.partition.key=" + key);
       if (key != null) {
         setDepotPartitionKey(key);
@@ -114,7 +115,7 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   @PostConstruct
   public void setup() {
     // test is depotPartitionKeys is overridden in context
-    //XXXX
+    // XXXX
     super.setup();
   }
 

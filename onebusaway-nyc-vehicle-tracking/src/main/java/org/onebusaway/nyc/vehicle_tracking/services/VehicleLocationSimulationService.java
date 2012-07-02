@@ -34,7 +34,6 @@ public interface VehicleLocationSimulationService {
   public VehicleLocationDetails getSimulationDetails(int taskId,
       int historyOffset);
 
-
   public List<NycTestInferredLocationRecord> getSimulationRecords(int taskId);
 
   public List<NycTestInferredLocationRecord> getResultRecords(int taskId);

@@ -26,12 +26,13 @@ public final class JourneyState {
 
   private final boolean isDetour;
 
-  private JourneyState(EVehiclePhase phase, boolean isDetour, JourneyStartState data) {
+  private JourneyState(EVehiclePhase phase, boolean isDetour,
+      JourneyStartState data) {
     this.phase = phase;
     this.data = data;
     this.isDetour = isDetour;
   }
-  
+
   private JourneyState(EVehiclePhase phase, JourneyStartState data) {
     this.phase = phase;
     this.data = data;
