@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.sms.actions;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -269,8 +270,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     		message += "+layover@term.";
     	} else if(progressStatus != null && progressStatus.getValue().contains("layover")) {
     	   	if(journey.getOriginAimedDepartureTime() != null) {
-        		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
-    			message += "@term, sched. depart. " + formatter.format(journey.getOriginAimedDepartureTime());
+        		DateFormat formatter = new SimpleDateFormat("h:mm");
+        		message += "@term. sched. dep. " + formatter.format(journey.getOriginAimedDepartureTime());
         	} else {
         		message += "@term.";
         	}
