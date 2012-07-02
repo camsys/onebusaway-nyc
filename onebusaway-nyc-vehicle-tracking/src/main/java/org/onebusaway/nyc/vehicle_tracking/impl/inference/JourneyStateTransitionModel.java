@@ -40,18 +40,26 @@ public class JourneyStateTransitionModel {
   }
 
   private VehicleStateLibrary _vehicleStateLibrary;
+  private BlocksFromObservationService _blocksFromObservationService;
 
   @Autowired
   public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
     _vehicleStateLibrary = vehicleStateLibrary;
   }
   
-  public static boolean isDetour(Boolean currentStateIsSnapped,
-      VehicleState parentState) {
+  @Autowired
+  public void setBlocksFromObservationService(
+      BlocksFromObservationService blocksFromObservationService) {
+    _blocksFromObservationService = blocksFromObservationService;
+  }
+  
+  public static boolean isDetour(boolean currentStateIsSnapped,
+      boolean hasSnappedStates, VehicleState parentState) {
     
     if (parentState == null
         || parentState.getBlockStateObservation() == null
-        || currentStateIsSnapped != Boolean.FALSE)
+        || currentStateIsSnapped != Boolean.FALSE
+        || hasSnappedStates)
       return false;
     
     /*
@@ -76,11 +84,18 @@ public class JourneyStateTransitionModel {
    * @param vehicleNotMoved
    * @param timeDelta
    */
-  public static boolean isLayoverStopped(boolean vehicleNotMoved, Double timeDelta) {
-    if (timeDelta == null || !vehicleNotMoved)
+  public static boolean isLayoverStopped(boolean vehicleNotMoved,
+      Observation obs, VehicleState parentState) {
+
+    
+    if (parentState == null
+        || !vehicleNotMoved)
       return false;
     
-    if (timeDelta > LAYOVER_WAIT_TIME)
+    final long secondsNotInMotion = (obs.getTime() 
+        - parentState.getMotionState().getLastInMotionTime())/1000;
+      
+    if (secondsNotInMotion >= LAYOVER_WAIT_TIME)
       return true;
     
     return false;
@@ -96,7 +111,9 @@ public class JourneyStateTransitionModel {
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       return JourneyState.atBase();
     
-    final boolean isLayoverStopped = isLayoverStopped(vehicleNotMoved, obs.getTimeDelta());
+    final boolean isLayoverStopped = isLayoverStopped(vehicleNotMoved, obs, 
+        parentState);
+    final boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
       
     if (blockState != null) {
       final double distanceAlong = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock();
@@ -113,19 +130,20 @@ public class JourneyStateTransitionModel {
         /*
          * In the middle of a block.
          */
+        final boolean isDetour = isDetour(blockState.isSnapped(), 
+            hasSnappedStates, parentState);
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
-          return JourneyState.layoverDuring();
+          return JourneyState.layoverDuring(isDetour);
         } else {
           if (blockState.isOnTrip()) {
-            final boolean isDetour = isDetour(blockState.isSnapped(), parentState);
             if (isDetour)
-              return JourneyState.detour();
+              return JourneyState.deadheadDuring(true);
             else if (obs.hasOutOfServiceDsc())
-              return JourneyState.deadheadDuring(null);
+              return JourneyState.deadheadDuring(isDetour);
             else
               return JourneyState.inProgress();
           } else {
-            return JourneyState.deadheadDuring(null);
+            return JourneyState.deadheadDuring(false);
           }
         }
       }

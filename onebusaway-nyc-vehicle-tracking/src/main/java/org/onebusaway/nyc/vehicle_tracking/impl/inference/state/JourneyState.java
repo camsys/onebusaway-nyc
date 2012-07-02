@@ -68,17 +68,12 @@ public final class JourneyState {
     return new JourneyState(EVehiclePhase.IN_PROGRESS, null);
   }
 
-  public static JourneyState layoverDuring() {
-    return new JourneyState(EVehiclePhase.LAYOVER_DURING, null);
+  public static JourneyState layoverDuring(boolean isDetour) {
+    return new JourneyState(EVehiclePhase.LAYOVER_DURING, isDetour, null);
   }
 
-  public static JourneyState deadheadDuring(CoordinatePoint journeyStart) {
-    final JourneyStartState jss = new JourneyStartState(journeyStart);
-    return new JourneyState(EVehiclePhase.DEADHEAD_DURING, jss);
-  }
-  
-  public static JourneyState detour() {
-    return new JourneyState(EVehiclePhase.DEADHEAD_DURING, true, null);
+  public static JourneyState deadheadDuring(boolean isDetour) {
+    return new JourneyState(EVehiclePhase.DEADHEAD_DURING, isDetour, null);
   }
 
   public static JourneyState deadheadAfter() {

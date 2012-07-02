@@ -328,7 +328,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
           newEdge.getValue(), parentState, obs, vehicleNotMoved);
       
       final boolean isLayoverStopped = JourneyStateTransitionModel.isLayoverStopped(
-          vehicleNotMoved, obs.getTimeDelta());
+          vehicleNotMoved, obs, parentState);
       journeyState = adjustInProgressTransition(parentState, newEdge, 
           journeyState, isLayoverStopped);
       
@@ -463,11 +463,11 @@ public class MotionModelImpl implements MotionModel<Observation> {
           parentState.getJourneyState().getPhase());
       if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
           && !isLayoverStopped) {
-        return wasPrevStateDuring ? JourneyState.deadheadDuring(null)
+        return wasPrevStateDuring ? JourneyState.deadheadDuring(journeyState.isDetour())
             : JourneyState.deadheadBefore(null);
       } else if (!EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
           && isLayoverStopped) {
-        return wasPrevStateDuring ? JourneyState.layoverDuring()
+        return wasPrevStateDuring ? JourneyState.layoverDuring(journeyState.isDetour())
             : JourneyState.layoverBefore();
       } else {
         return parentState.getJourneyState();
