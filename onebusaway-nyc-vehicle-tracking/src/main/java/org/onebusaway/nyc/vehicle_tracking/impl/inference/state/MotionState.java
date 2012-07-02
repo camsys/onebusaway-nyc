@@ -27,7 +27,8 @@ public final class MotionState implements Comparable<MotionState> {
 
   private final boolean vehicleHasNotMoved;
 
-  public MotionState(long lastInMotionTime, CoordinatePoint lastInMotionLocation, boolean vehicleHasNotMoved) {
+  public MotionState(long lastInMotionTime,
+      CoordinatePoint lastInMotionLocation, boolean vehicleHasNotMoved) {
     this.lastInMotionTime = lastInMotionTime;
     this.lastInMotionLocation = lastInMotionLocation;
     this.vehicleHasNotMoved = vehicleHasNotMoved;
@@ -55,12 +56,12 @@ public final class MotionState implements Comparable<MotionState> {
   }
 
   private int _hash = 0;
-  
+
   @Override
   public int hashCode() {
     if (_hash != 0)
       return _hash;
-      
+
     final int prime = 31;
     int result = 1;
     result = prime
@@ -84,7 +85,7 @@ public final class MotionState implements Comparable<MotionState> {
     if (!(obj instanceof MotionState)) {
       return false;
     }
-    MotionState other = (MotionState) obj;
+    final MotionState other = (MotionState) obj;
     if (lastInMotionLocation == null) {
       if (other.lastInMotionLocation != null) {
         return false;

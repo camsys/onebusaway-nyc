@@ -30,5 +30,9 @@ public class RouteAtStop implements Serializable {
   public List<RouteDirection> getDirections() {
     return directions;
   }  
+  
+  public RouteBean getRoute() {
+    return this.route;
+  }
 
 }

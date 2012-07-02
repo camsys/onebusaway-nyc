@@ -23,9 +23,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
-import org.springframework.stereotype.Component;
-
-//@Component
+// @Component
 public class PriorRule implements SensorModelRule {
 
   @Override

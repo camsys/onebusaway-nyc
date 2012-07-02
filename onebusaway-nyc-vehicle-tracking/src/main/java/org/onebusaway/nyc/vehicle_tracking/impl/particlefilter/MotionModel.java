@@ -15,15 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-
-import gov.sandia.cognition.statistics.distribution.DefaultDataDistribution;
-
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Multiset.Entry;
-
-import java.util.Collection;
 
 /**
  * Particle motion model interface for defining the strategy for moving
@@ -35,7 +27,6 @@ import java.util.Collection;
  */
 public interface MotionModel<OBS> {
 
-
   /**
    * This version of move will utilize the passed cache to avoid recalculating
    * results. Especially useful for multiple null block-states.
@@ -44,11 +35,11 @@ public interface MotionModel<OBS> {
    * @param timestamp
    * @param timeElapsed
    * @param obs
-   * @param previouslyResampled 
+   * @param previouslyResampled
    * @param results
    * @param cache
-   * @return 
+   * @return
    */
-  Multiset<Particle> move(Multiset<Particle> particles, double timestamp, double timeElapsed,
-      OBS obs, boolean previouslyResampled);
+  Multiset<Particle> move(Multiset<Particle> particles, double timestamp,
+      double timeElapsed, OBS obs, boolean previouslyResampled);
 }

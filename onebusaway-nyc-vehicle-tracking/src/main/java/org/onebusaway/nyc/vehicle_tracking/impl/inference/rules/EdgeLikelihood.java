@@ -16,39 +16,33 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
-import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 
-import com.google.common.collect.Iterables;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import gov.sandia.cognition.statistics.distribution.MultivariateGaussian;
 import gov.sandia.cognition.statistics.distribution.UnivariateGaussian;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class EdgeLikelihood implements SensorModelRule {
 
-//  final public static UnivariateGaussian inProgressEdgeMovementDist = new UnivariateGaussian(
-//      0d, 70d * 70d);
-  
-//  final public static UnivariateGaussian deadDuringEdgeMovementDist = new UnivariateGaussian(
-//      0d, 150d * 150d);
-  
-//  final public static UnivariateGaussian noEdgeMovementDist = new UnivariateGaussian(
-//      0d, 250d * 250d);
+  // final public static UnivariateGaussian inProgressEdgeMovementDist = new
+  // UnivariateGaussian(
+  // 0d, 70d * 70d);
+
+  // final public static UnivariateGaussian deadDuringEdgeMovementDist = new
+  // UnivariateGaussian(
+  // 0d, 150d * 150d);
+
+  // final public static UnivariateGaussian noEdgeMovementDist = new
+  // UnivariateGaussian(
+  // 0d, 250d * 250d);
   private static final double _avgVelocity = 13.4112;
   private static final double _avgTripVelocity = 6.4112;
 
@@ -58,12 +52,12 @@ public class EdgeLikelihood implements SensorModelRule {
 
   // final public static double startBlockStdDev = 50.0/1;
 
-//  private BlockStateService _blockStateService;
-//  
-//  @Autowired
-//  public void setBlockStateService(BlockStateService blockStateService) {
-//    _blockStateService = blockStateService;
-//  }
+  // private BlockStateService _blockStateService;
+  //
+  // @Autowired
+  // public void setBlockStateService(BlockStateService blockStateService) {
+  // _blockStateService = blockStateService;
+  // }
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
@@ -73,16 +67,14 @@ public class EdgeLikelihood implements SensorModelRule {
     final VehicleState parentState = context.getParentState();
     final Observation obs = context.getObservation();
     EVehiclePhase phase = state.getJourneyState().getPhase();
-    final BlockState blockState = state.getBlockState();
-    
+    final BlockStateObservation blockStateObs = state.getBlockStateObservation();
+
     /*
-     * TODO clean up this hack
-     * We are really in-progress, but because of the out-of-service
-     * headsign, we can't report it as in-progress
+     * TODO clean up this hack We are really in-progress, but because of the
+     * out-of-service headsign, we can't report it as in-progress
      */
-    if (obs.hasOutOfServiceDsc()
-        && EVehiclePhase.DEADHEAD_DURING == phase
-        && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
+    if (obs.hasOutOfServiceDsc() && EVehiclePhase.DEADHEAD_DURING == phase
+        && (blockStateObs != null && blockStateObs.isOnTrip()))
       phase = EVehiclePhase.IN_PROGRESS;
 
     final SensorModelResult result = new SensorModelResult("pEdge", 1.0);
@@ -101,14 +93,13 @@ public class EdgeLikelihood implements SensorModelRule {
       return result;
     }
 
-    if (blockState == null) {
+    if (blockStateObs == null) {
 
       final double pDistAlong = computeNoEdgeMovementLogProb(state, obs);
 
       result.addLogResultAsAnd("pNotInProgress(no-edge)", pDistAlong);
       return result;
     }
-    
 
     /*
      * Edge Movement
@@ -121,30 +112,32 @@ public class EdgeLikelihood implements SensorModelRule {
     final boolean hasMoved = state.getMotionState().hasVehicleNotMoved();
     final double pDistAlong;
     if (!previouslyInactive && !newRun) {
-      
+
       if (parentState.getBlockStateObservation().isSnapped()
           && state.getBlockStateObservation().isSnapped()) {
-          pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(), 
-              parentState.getBlockState(), hasMoved);
-          result.addLogResultAsAnd("snapped states", pDistAlong);
-        
+        pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(),
+            parentState.getBlockState(), hasMoved);
+        result.addLogResultAsAnd("snapped states", pDistAlong);
+
       } else {
 
         /*
-         * This could be a transition from being on a trip geom to off, and vice versa.
+         * This could be a transition from being on a trip geom to off, and vice
+         * versa.
          */
         if (EVehiclePhase.IN_PROGRESS != phase) {
           pDistAlong = computeNoEdgeMovementLogProb(state, obs);
           result.addLogResultAsAnd("not-in-progress", pDistAlong);
-        } else if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()){
-          BlockState previousTripState = parentState.getBlockState(); //library.getPreviousStateOnSameBlock(state); 
+        } else if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()) {
+          final BlockState previousTripState = parentState.getBlockState(); // library.getPreviousStateOnSameBlock(state);
           if (previousTripState != null)
-            pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(), previousTripState, hasMoved); 
+            pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(),
+                previousTripState, hasMoved);
           else
             pDistAlong = computeEdgeEntranceMovementLogProb(state, obs);
           result.addLogResultAsAnd("just-in-progress", pDistAlong);
         } else {
-          pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(), 
+          pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(),
               parentState.getBlockState(), hasMoved);
           result.addLogResultAsAnd("in-progress", pDistAlong);
         }
@@ -153,9 +146,11 @@ public class EdgeLikelihood implements SensorModelRule {
     } else {
 
       if (EVehiclePhase.IN_PROGRESS == phase) {
-        BlockState previousTripState = parentState.getBlockState(); //library.getPreviousStateOnSameBlock(state); 
+        final BlockState previousTripState = library.getPreviousStateOnSameBlock(state,
+            state.getBlockState().getBlockLocation().getDistanceAlongBlock());
         if (previousTripState != null)
-          pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(), previousTripState, hasMoved); 
+          pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(),
+              previousTripState, hasMoved);
         else
           pDistAlong = computeEdgeEntranceMovementLogProb(state, obs);
       } else {
@@ -169,19 +164,24 @@ public class EdgeLikelihood implements SensorModelRule {
     return result;
   }
 
-  static private final double computeEdgeEntranceMovementLogProb(VehicleState state, Observation obs) {
+  static private final double computeEdgeEntranceMovementLogProb(
+      VehicleState state, Observation obs) {
     final double obsDelta = SphericalGeometryLibrary.distance(
         obs.getLocation(), obs.getPreviousObservation().getLocation());
     final double obsToTripDelta = SphericalGeometryLibrary.distance(
-        state.getBlockState().getBlockLocation().getLocation(), obs.getPreviousObservation().getLocation());
+        state.getBlockState().getBlockLocation().getLocation(),
+        obs.getPreviousObservation().getLocation());
     final double x = obsToTripDelta - obsDelta;
     final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
-    return UnivariateGaussian.PDF.logEvaluate(x, 0d, Math.pow(obsTimeDelta,4)/4d);
-//    return inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(x);
+    return UnivariateGaussian.PDF.logEvaluate(x, 0d,
+        Math.pow(obsTimeDelta, 4) / 4d);
+    // return
+    // inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(x);
   }
-  
-  static private final double computeNoEdgeMovementLogProb(VehicleState state, Observation obs) {
-    
+
+  static private final double computeNoEdgeMovementLogProb(VehicleState state,
+      Observation obs) {
+
     final Observation prevObs = obs.getPreviousObservation();
     final double obsDistDelta = SphericalGeometryLibrary.distance(
         obs.getLocation(), obs.getPreviousObservation().getLocation());
@@ -190,28 +190,28 @@ public class EdgeLikelihood implements SensorModelRule {
     if (prevObs != null) {
       final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
       final Observation prevPrevObs = prevObs.getPreviousObservation();
-      
+
       /*
-       * Trying to get away with not using a real tracking filter 
-       * FIXME really lame. use a Kalman filter.
+       * Trying to get away with not using a real tracking filter FIXME really
+       * lame. use a Kalman filter.
        */
       if (prevPrevObs != null) {
         final double prevObsDistDelta = SphericalGeometryLibrary.distance(
             prevPrevObs.getLocation(), prevObs.getLocation());
         final double prevObsTimeDelta = (prevObs.getTime() - prevPrevObs.getTime()) / 1000d;
-        final double velocityEstimate = prevObsDistDelta/prevObsTimeDelta; 
-        expAvgDist = state.getMotionState().hasVehicleNotMoved()?
-            0.0 : velocityEstimate * obsTimeDelta;
+        final double velocityEstimate = prevObsDistDelta / prevObsTimeDelta;
+        expAvgDist = state.getMotionState().hasVehicleNotMoved() ? 0.0
+            : velocityEstimate * obsTimeDelta;
       } else {
-        expAvgDist = state.getMotionState().hasVehicleNotMoved()?
-            0.0 : _avgVelocity * obsTimeDelta;
+        expAvgDist = state.getMotionState().hasVehicleNotMoved() ? 0.0
+            : _avgVelocity * obsTimeDelta;
       }
-      
-//      pDistAlong = noEdgeMovementDist.getProbabilityFunction().logEvaluate(
-//          obsDistDelta - expAvgDist);
-      pDistAlong = UnivariateGaussian.PDF.logEvaluate(obsDistDelta, expAvgDist, 
-          Math.pow(obsTimeDelta,4)/4d);
-      
+
+      // pDistAlong = noEdgeMovementDist.getProbabilityFunction().logEvaluate(
+      // obsDistDelta - expAvgDist);
+      pDistAlong = UnivariateGaussian.PDF.logEvaluate(obsDistDelta, expAvgDist,
+          Math.pow(obsTimeDelta, 4) / 4d);
+
     } else {
       /*
        * No movement
@@ -219,25 +219,24 @@ public class EdgeLikelihood implements SensorModelRule {
       pDistAlong = 1d;
     }
 
-    
     return pDistAlong;
   }
 
   static public final double getAvgVelocityBetweenStops(BlockState blockState) {
-    BlockStopTimeEntry nextStop = blockState.getBlockLocation().getNextStop();
+    final BlockStopTimeEntry nextStop = blockState.getBlockLocation().getNextStop();
     if (nextStop != null && nextStop.getBlockSequence() - 1 > 0) {
-      BlockStopTimeEntry prevStop = blockState.getBlockInstance().getBlock().getStopTimes().get(
+      final BlockStopTimeEntry prevStop = blockState.getBlockInstance().getBlock().getStopTimes().get(
           nextStop.getBlockSequence() - 1);
-      final double avgVelocity = (nextStop.getDistanceAlongBlock() - prevStop.getDistanceAlongBlock())/
-          (nextStop.getStopTime().getArrivalTime() - prevStop.getStopTime().getDepartureTime());
+      final double avgVelocity = (nextStop.getDistanceAlongBlock() - prevStop.getDistanceAlongBlock())
+          / (nextStop.getStopTime().getArrivalTime() - prevStop.getStopTime().getDepartureTime());
       return avgVelocity;
     } else {
       return _avgTripVelocity;
     }
-    
+
   }
-  
-  private static final double computeEdgeMovementLogProb(Observation obs, 
+
+  private static final double computeEdgeMovementLogProb(Observation obs,
       BlockState blockState, BlockState parentBlockState, boolean hasMoved) {
 
     final double currentDab = blockState.getBlockLocation().getDistanceAlongBlock();
@@ -253,14 +252,15 @@ public class EdgeLikelihood implements SensorModelRule {
     } else {
       expAvgDist = 0.0;
     }
-    
-//    final double obsDelta = SphericalGeometryLibrary.distance(
-//        obs.getLocation(), obs.getPreviousObservation().getLocation());
-//    final double x = dabDelta - obsDelta;
+
+    // final double obsDelta = SphericalGeometryLibrary.distance(
+    // obs.getLocation(), obs.getPreviousObservation().getLocation());
+    // final double x = dabDelta - obsDelta;
     final double x = dabDelta - expAvgDist;
-//    final double pMove = inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(x);
-    final double pMove = UnivariateGaussian.PDF.logEvaluate(x, 0d, Math.pow(obsTimeDelta,4)/4d);
- 
+    // final double pMove =
+    // inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(x);
+    final double pMove = UnivariateGaussian.PDF.logEvaluate(x, 0d,
+        Math.pow(obsTimeDelta, 4) / 4d);
 
     return pMove;
   }

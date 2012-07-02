@@ -21,11 +21,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.sort.BlockInstanceComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.ScheduledBlockLocationComparator;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.impl.blocks.FrequencyComparator;
-import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -78,21 +73,19 @@ public final class BlockState implements Comparable<BlockState> {
 
   @Override
   public String toString() {
-    AgencyAndId tripId = blockLocation.getActiveTrip() != null ?
-        blockLocation.getActiveTrip().getTrip().getId() : null;;
-    Boolean runTripMatches = (tripId != null && runTrip != null) ? tripId.equals(runTrip.getTripEntry().getId())
-            : null;
-    int mins = blockLocation.getScheduledTime()/60;
-    return Objects.toStringHelper("BlockState")
-        .add("blockId", blockInstance.getBlock().getBlock().getId())
-        .add("scheduledTime", Integer.toString(mins/60) 
-            + ":" + Integer.toString(mins % 60) 
-            + " (" + Integer.toString(blockLocation.getScheduledTime()) + ")")
-        .add("distanceAlongBlock", blockLocation.getDistanceAlongBlock())
-        .add("tripId", tripId)
-        .add("dsc", destinationSignCode)
-        .add("runTripMatchesActiveTrip", runTripMatches)
-        .toString();
+    final AgencyAndId tripId = blockLocation.getActiveTrip() != null
+        ? blockLocation.getActiveTrip().getTrip().getId() : null;;
+    final Boolean runTripMatches = (tripId != null && runTrip != null)
+        ? tripId.equals(runTrip.getTripEntry().getId()) : null;
+    final int mins = blockLocation.getScheduledTime() / 60;
+    return Objects.toStringHelper("BlockState").add("blockId",
+        blockInstance.getBlock().getBlock().getId()).add(
+        "scheduledTime",
+        Integer.toString(mins / 60) + ":" + Integer.toString(mins % 60) + " ("
+            + Integer.toString(blockLocation.getScheduledTime()) + ")").add(
+        "distanceAlongBlock", blockLocation.getDistanceAlongBlock()).add(
+        "tripId", tripId).add("dsc", destinationSignCode).add(
+        "runTripMatchesActiveTrip", runTripMatches).toString();
   }
 
   public String getRunId() {

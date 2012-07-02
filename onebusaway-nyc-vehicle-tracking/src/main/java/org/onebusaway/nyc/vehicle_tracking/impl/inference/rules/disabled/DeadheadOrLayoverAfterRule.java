@@ -27,7 +27,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
-//@Component
+// @Component
 public class DeadheadOrLayoverAfterRule implements SensorModelRule {
 
   @Override

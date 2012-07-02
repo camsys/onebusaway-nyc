@@ -16,9 +16,12 @@ import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RoutesBean;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.StopGroupBean;
+import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -49,7 +52,7 @@ public class SearchServiceImpl implements SearchService {
 	private static final int MAX_ROUTES = 10;
 
 	// when querying for stops from a lat/lng, use this distance in meters
-	private static final double DISTANCE_TO_STOPS = 600;
+	private static final int DISTANCE_TO_STOPS = 600;
 	
 	// The max number of closest stops to display
 	private static final int MAX_STOPS = 10;
@@ -99,7 +102,8 @@ public class SearchServiceImpl implements SearchService {
 	@Override
 	public SearchResultCollection findStopsNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory,
 			Set<String> routeIdFilter) {
-		CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, DISTANCE_TO_STOPS);
+	  
+	  CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, DISTANCE_TO_STOPS);
 
 		SearchQueryBean queryBean = new SearchQueryBean();
 		queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
@@ -108,16 +112,91 @@ public class SearchServiceImpl implements SearchService {
 
 		StopsBean stops = _nycTransitDataService.getStops(queryBean);
 
-		SearchResultCollection results = new SearchResultCollection();
-		results.addRouteIdFilters(routeIdFilter);
+		List<SearchResult> stopResults = new ArrayList<SearchResult>();
+		Map<SearchResult, StopBean> stopBeanBySearchResult = new HashMap<SearchResult, StopBean>();
 
 		for (StopBean stop : stops.getStops()) {
 			SearchResult result = resultFactory.getStopResult(stop, routeIdFilter);
 			result.setDistanceToQueryLocation(SphericalGeometryLibrary.distanceFaster(stop.getLat(), stop.getLon(), latitude, longitude));
-			results.addMatch(result);
+			stopResults.add(result);
+			stopBeanBySearchResult.put(result, stop);
 		}
 		
-		Collections.sort(results.getMatches(), new SearchResultDistanceComparator());
+		Collections.sort(stopResults, new SearchResultDistanceComparator());
+		
+		SearchResultCollection results = new SearchResultCollection();
+    results.addRouteIdFilters(routeIdFilter);
+    
+		// Keep track of which routes are already in our search results by direction
+    Map<String, List<RouteBean>> routesByDirectionAlreadyInResults = new HashMap<String, List<RouteBean>>();
+    
+    // Cache stops by route so we don't need to call the transit data service repeatedly for the same route
+    Map<String, StopsForRouteBean> stopsForRouteLookup = new HashMap<String, StopsForRouteBean>();
+		
+    // Iterate through each stop and see if it adds additional routes for a direction to our final results.
+    for (SearchResult stopResult : stopResults) {
+		  
+      // Get the stop bean that is actually inside this search result. We kept track of it earlier.
+      StopBean stopBeanForSearchResult = stopBeanBySearchResult.get(stopResult);
+      
+      // Record of routes by direction id for this stop
+      Map<String, List<RouteBean>> routesByDirection = new HashMap<String, List<RouteBean>>();
+      
+		  for (RouteBean route : stopBeanForSearchResult.getRoutes()) {
+		    // route is a route serving the current stopBeanForSearchResult
+		    
+		    // Query for all stops on this route
+		    StopsForRouteBean stopsForRoute = stopsForRouteLookup.get(route.getId());
+		    if (stopsForRoute == null) {
+		      stopsForRoute = _nycTransitDataService.getStopsForRoute(route.getId());
+		      stopsForRouteLookup.put(route.getId(), stopsForRoute);
+		    }
+		    
+		    // Get the groups of stops on this route. The id of each group corresponds to a GTFS direction id for this route.
+		    for (StopGroupingBean stopGrouping : stopsForRoute.getStopGroupings()) {
+		      for (StopGroupBean stopGroup : stopGrouping.getStopGroups()) {
+		        
+		        String directionId = stopGroup.getId();
+		        
+		        // Check if the current stop is served in this direction. If so, record it.
+		        if (stopGroup.getStopIds().contains(stopBeanForSearchResult.getId())) {
+		          if (!routesByDirection.containsKey(directionId)) {
+		            routesByDirection.put(directionId, new ArrayList<RouteBean>());
+		          }
+		          routesByDirection.get(directionId).add(route);
+		        }
+		      }
+		    }
+		  }
+		  
+		  // Iterate over routes binned by direction for this stop and compare to routes by direction already in our search results
+		  boolean shouldAddStopToResults = false;
+		  for (Map.Entry<String, List<RouteBean>> entry : routesByDirection.entrySet()) {
+		    String directionId = entry.getKey();
+		    List<RouteBean> routesForThisDirection = entry.getValue();
+		    
+		    if (!routesByDirectionAlreadyInResults.containsKey(directionId)) {
+		      routesByDirectionAlreadyInResults.put(directionId, new ArrayList<RouteBean>());
+		    }
+		    
+		    @SuppressWarnings("unchecked")
+	      List<RouteBean> additionalRoutes = ListUtils.subtract(routesForThisDirection, routesByDirectionAlreadyInResults.get(directionId));
+	      if (additionalRoutes.size() > 0) {
+	        // This stop is contributing new routes in this direction, so add these additional
+	        // stops to our record of stops by direction already in search results and toggle
+	        // flag that tells to to add the stop to the search results.
+	        routesByDirectionAlreadyInResults.get(directionId).addAll(additionalRoutes);
+	        // We use this flag because we want to add new routes to our record potentially for each
+	        // direction id, but we only want to add the stop to the search results once. It happens below.
+	        shouldAddStopToResults = true;
+	      }
+		  }
+		  if (shouldAddStopToResults) {
+		    // Add the stop to our search results
+        results.addMatch(stopResult);
+		  }
+		}
+		
 		if (results.getMatches().size() > MAX_STOPS) {
 			results.getMatches().subList(MAX_STOPS, results.getMatches().size()).clear();
 		}

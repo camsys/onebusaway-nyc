@@ -97,7 +97,8 @@ public class VehicleStateLibrary {
     return isAtPotentialLayoverSpot(state.getBlockState(), obs);
   }
 
-  public static boolean isAtPotentialLayoverSpot(BlockState blockState, Observation obs) {
+  public static boolean isAtPotentialLayoverSpot(BlockState blockState,
+      Observation obs) {
 
     /**
      * If there is no block assigned to this vehicle state, then we allow a
@@ -119,13 +120,13 @@ public class VehicleStateLibrary {
     if (blockLocation == null)
       return false;
 
-    BlockStopTimeEntry layoverSpot = getPotentialLayoverSpot(blockLocation);
+    final BlockStopTimeEntry layoverSpot = getPotentialLayoverSpot(blockLocation);
     if (layoverSpot == null)
       return false;
-    
+
     final double dist = SphericalGeometryLibrary.distance(obs.getLocation(),
         layoverSpot.getStopTime().getStop().getStopLocation());
-    return  dist <= _layoverStopDistance;
+    return dist <= _layoverStopDistance;
   }
 
   /**

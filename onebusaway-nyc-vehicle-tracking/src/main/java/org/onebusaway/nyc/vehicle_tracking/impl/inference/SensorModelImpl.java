@@ -25,7 +25,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,11 +44,10 @@ public class SensorModelImpl implements SensorModel<Observation> {
   private SensorModelSupportLibrary _sensorModelLibrary;
 
   @PostConstruct
-  @Refreshable(dependsOn = {
-      RefreshableResources.NARRATIVE_DATA})
-  public void setup()  {
+  @Refreshable(dependsOn = {RefreshableResources.NARRATIVE_DATA})
+  public void setup() {
   }
-  
+
   @Autowired
   public void setSensorModelLibrary(SensorModelSupportLibrary sensorModelLibrary) {
     _sensorModelLibrary = sensorModelLibrary;
