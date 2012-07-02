@@ -15,13 +15,13 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
+import org.onebusaway.collections.Min;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateTransitionModel;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ScheduleDeviationLibrary;
@@ -62,7 +62,7 @@ public class SensorModelSupportLibrary {
   private BlockStateTransitionModel _blockStateTransitionModel;
 
   private ScheduleDeviationLibrary _scheduleDeviationLibrary;
-  
+
   private BlockStateService _blockStateService;
 
   /****
@@ -124,8 +124,7 @@ public class SensorModelSupportLibrary {
   }
 
   @Autowired
-  public void setBlocksStateService(
-      BlockStateService blocksStateService) {
+  public void setBlocksStateService(BlockStateService blocksStateService) {
     _blockStateService = blocksStateService;
   }
 
@@ -273,36 +272,37 @@ public class SensorModelSupportLibrary {
       MotionState motionState, Observation obs) {
 
     final NycRawLocationRecord prevRecord = obs.getPreviousRecord();
-    
+
     if (prevRecord == null)
       return 0.5;
-    
+
     final double d = SphericalGeometryLibrary.distance(
-        prevRecord.getLatitude(), prevRecord.getLongitude(), 
+        prevRecord.getLatitude(), prevRecord.getLongitude(),
         obs.getLocation().getLat(), obs.getLocation().getLon());
-    
+
     /*
-     * Although the gps std. dev is reasonable for having not moved, we
-     * also have dead-reckoning, which is much more accurate in this
-     * regard, so we shrink the gps std. dev.
+     * Although the gps std. dev is reasonable for having not moved, we also
+     * have dead-reckoning, which is much more accurate in this regard, so we
+     * shrink the gps std. dev.
      */
-    return 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev/4, d);
-    
-//    final Observation prevObs = obs.getPreviousObservation();
-//    if (prevObs == null)
-//      return 0.5;
-//    //
-//    final long currentTime = obs.getTime();
-//    final long lastInMotionTime = motionState.getLastInMotionTime();
-//    final int secondsSinceLastMotion = (int) ((currentTime - lastInMotionTime) / 1000);
-//
-//    if (120 <= secondsSinceLastMotion) {
-//      return 1.0;
-//    } else if (60 <= secondsSinceLastMotion) {
-//      return 0.9;
-//    } else {
-//      return 0.0;
-//    }
+    return 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev / 4, d);
+
+    // final Observation prevObs = obs.getPreviousObservation();
+    // if (prevObs == null)
+    // return 0.5;
+    // //
+    // final long currentTime = obs.getTime();
+    // final long lastInMotionTime = motionState.getLastInMotionTime();
+    // final int secondsSinceLastMotion = (int) ((currentTime -
+    // lastInMotionTime) / 1000);
+    //
+    // if (120 <= secondsSinceLastMotion) {
+    // return 1.0;
+    // } else if (60 <= secondsSinceLastMotion) {
+    // return 0.9;
+    // } else {
+    // return 0.0;
+    // }
   }
 
   /*****
@@ -900,13 +900,21 @@ public class SensorModelSupportLibrary {
     return 1.0 - p;
   }
 
-  public BlockState getPreviousStateOnSameBlock(VehicleState state) {
-    Observation prevObs = state.getObservation().getPreviousObservation();
+  public BlockState getPreviousStateOnSameBlock(VehicleState state, double dabReference) {
+    final Observation prevObs = state.getObservation().getPreviousObservation();
     try {
-      BestBlockStates prevState = _blockStateService.getBestBlockLocations(prevObs, state.getBlockState().getBlockInstance(),
+      final BestBlockStates prevState = _blockStateService.getBestBlockLocations(
+          prevObs, state.getBlockState().getBlockInstance(),
           Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-      return Iterables.getFirst(prevState.getAllStates(), null);
-    } catch (MissingShapePointsException e) {
+      
+      Min<BlockState> minstate = new Min<BlockState>();
+      for (BlockState blockState : prevState.getAllStates()) {
+        final double thisDabDiff = Math.abs(dabReference 
+            - blockState.getBlockLocation().getDistanceAlongBlock());
+        minstate.add(thisDabDiff, blockState);
+      }
+      return minstate.getMinElement();
+    } catch (final MissingShapePointsException e) {
       e.printStackTrace();
     }
     return null;

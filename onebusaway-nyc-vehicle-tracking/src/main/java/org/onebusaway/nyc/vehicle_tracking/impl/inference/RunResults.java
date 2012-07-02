@@ -5,6 +5,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import com.google.common.base.Strings;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
+
 import java.util.Set;
 
 public class RunResults implements Comparable<RunResults> {
@@ -16,8 +17,8 @@ public class RunResults implements Comparable<RunResults> {
 
   private int _hash = 0;
 
-  public RunResults(String assignedRunId, Set<String> fuzzyMatches, Integer bestFuzzyDist, 
-      Set<AgencyAndId> routeIds) {
+  public RunResults(String assignedRunId, Set<String> fuzzyMatches,
+      Integer bestFuzzyDist, Set<AgencyAndId> routeIds) {
     this.assignedRunId = assignedRunId;
     this.fuzzyMatches = fuzzyMatches;
     this.bestFuzzyDist = bestFuzzyDist;
@@ -25,11 +26,9 @@ public class RunResults implements Comparable<RunResults> {
   }
 
   public boolean hasRunResults() {
-    return !(Strings.isNullOrEmpty(assignedRunId)
-        && fuzzyMatches.isEmpty()
-        && bestFuzzyDist == null); 
+    return !(Strings.isNullOrEmpty(assignedRunId) && fuzzyMatches.isEmpty() && bestFuzzyDist == null);
   }
-  
+
   public String getAssignedRunId() {
     return assignedRunId;
   }
@@ -47,8 +46,9 @@ public class RunResults implements Comparable<RunResults> {
     if (this == o2)
       return 0;
 
-    int res = new CompareToBuilder().append(assignedRunId, o2.assignedRunId).append(
-        fuzzyMatches, o2.fuzzyMatches).append(bestFuzzyDist, o2.bestFuzzyDist).toComparison();
+    final int res = new CompareToBuilder().append(assignedRunId,
+        o2.assignedRunId).append(fuzzyMatches, o2.fuzzyMatches).append(
+        bestFuzzyDist, o2.bestFuzzyDist).toComparison();
 
     return res;
   }
@@ -81,7 +81,7 @@ public class RunResults implements Comparable<RunResults> {
     if (!(obj instanceof RunResults)) {
       return false;
     }
-    RunResults other = (RunResults) obj;
+    final RunResults other = (RunResults) obj;
     if (assignedRunId == null) {
       if (other.assignedRunId != null) {
         return false;

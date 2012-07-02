@@ -32,12 +32,12 @@ public class CategoricalDistTest {
   public void testSampleA() {
 
     final CategoricalDist<String> cdf = new CategoricalDist<String>();
-    cdf.logPut(FastMath.log(0.3*1e-5), "c");
+    cdf.logPut(FastMath.log(0.3 * 1e-5), "c");
     cdf.logPut(FastMath.log(0.3), "c");
     cdf.logPut(FastMath.log(0.2), "c");
     cdf.logPut(FastMath.log(0.01), "a");
     cdf.logPut(FastMath.log(0.001), "a");
-    cdf.logPut(FastMath.log(0.2*1e-7), "b");
+    cdf.logPut(FastMath.log(0.2 * 1e-7), "b");
 
     final Counter<String> counter = new Counter<String>();
     final int iterations = 1000;
@@ -45,46 +45,50 @@ public class CategoricalDistTest {
     for (int i = 0; i < iterations; i++)
       counter.increment(cdf.sample());
 
-    final double a = counter.getCount("a") / (double)iterations;
-    final double b = counter.getCount("b") / (double)iterations;
-    final double c = counter.getCount("c") / (double)iterations;
+    final double a = counter.getCount("a") / (double) iterations;
+    final double b = counter.getCount("b") / (double) iterations;
+    final double c = counter.getCount("c") / (double) iterations;
 
     final double cummulativeProb = cdf.getCummulativeProb();
     assertEquals(a, cdf.density("a") / cummulativeProb, .05);
     assertEquals(b, cdf.density("b") / cummulativeProb, .05);
     assertEquals(c, cdf.density("c") / cummulativeProb, .05);
-    
+
     cdf.logPut(FastMath.log(0.001), "d");
-    
-    Multiset<String> res = cdf.sample(iterations);
-    assertEquals(res.count("a") / (double) iterations, cdf.density("a") / cummulativeProb, .05);
-    assertEquals(res.count("b") / (double) iterations, cdf.density("b") / cummulativeProb, .05);
-    assertEquals(res.count("c") / (double) iterations, cdf.density("c") / cummulativeProb, .05);
-    assertEquals(res.count("d") / (double) iterations, cdf.density("d") / cummulativeProb, .05);
-    
-    Multiset<Particle> testSet = HashMultiset.create();
-    Particle p1 = new Particle(0, null, cdf.density("a"));
+
+    final Multiset<String> res = cdf.sample(iterations);
+    assertEquals(res.count("a") / (double) iterations, cdf.density("a")
+        / cummulativeProb, .05);
+    assertEquals(res.count("b") / (double) iterations, cdf.density("b")
+        / cummulativeProb, .05);
+    assertEquals(res.count("c") / (double) iterations, cdf.density("c")
+        / cummulativeProb, .05);
+    assertEquals(res.count("d") / (double) iterations, cdf.density("d")
+        / cummulativeProb, .05);
+
+    final Multiset<Particle> testSet = HashMultiset.create();
+    final Particle p1 = new Particle(0, null, cdf.density("a"));
     testSet.add(p1);
-    Particle p2 = new Particle(0, null, cdf.density("b"));
+    final Particle p2 = new Particle(0, null, cdf.density("b"));
     testSet.add(p2);
-    Particle p3 = new Particle(0, null, cdf.density("c"));
+    final Particle p3 = new Particle(0, null, cdf.density("c"));
     testSet.add(p3);
-    Particle p4 = new Particle(0, null, cdf.density("d"));
+    final Particle p4 = new Particle(0, null, cdf.density("d"));
     testSet.add(p4);
-    Multiset<Particle> resSet = ParticleFilter.lowVarianceSampler(testSet, iterations);
+    final Multiset<Particle> resSet = ParticleFilter.lowVarianceSampler(
+        testSet, iterations);
     final Counter<Particle> counter2 = new Counter<Particle>();
-    for (Particle p : resSet)
+    for (final Particle p : resSet)
       counter2.increment(p);
-    final double a2 = counter2.getCount(p1) / (double)iterations;
-    final double b2 = counter2.getCount(p2) / (double)iterations;
-    final double c2 = counter2.getCount(p3) / (double)iterations;
-    final double d2 = counter2.getCount(p4) / (double)iterations;
+    final double a2 = counter2.getCount(p1) / (double) iterations;
+    final double b2 = counter2.getCount(p2) / (double) iterations;
+    final double c2 = counter2.getCount(p3) / (double) iterations;
+    final double d2 = counter2.getCount(p4) / (double) iterations;
     assertEquals(a2, cdf.density("a") / cummulativeProb, .05);
     assertEquals(b2, cdf.density("b") / cummulativeProb, .05);
     assertEquals(c2, cdf.density("c") / cummulativeProb, .05);
     assertEquals(d2, cdf.density("d") / cummulativeProb, .05);
-    
-    
+
   }
 
   /*

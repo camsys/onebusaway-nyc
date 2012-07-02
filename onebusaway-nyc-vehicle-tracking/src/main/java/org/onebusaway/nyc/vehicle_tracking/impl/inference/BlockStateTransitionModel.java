@@ -16,23 +16,16 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
-
-import com.google.common.collect.Sets;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.slf4j.Logger;
@@ -57,7 +50,6 @@ public class BlockStateTransitionModel {
 
   private ObservationCache _observationCache;
 
-  
   /****
    * Parameters
    ****/
@@ -112,6 +104,7 @@ public class BlockStateTransitionModel {
 
     }
   }
+
   /**
    * Given a potential distance to travel in physical / street-network space, a
    * fudge factor that determines how far ahead we will look along the block of
@@ -119,17 +112,14 @@ public class BlockStateTransitionModel {
    */
   private double _blockDistanceTravelScale = 1.5;
 
-  private BlockStateService _blockStateService;
-
   /****
    * Setters
    ****/
 
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
-    _blockStateService = blockStateService;
   }
-  
+
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
@@ -149,90 +139,6 @@ public class BlockStateTransitionModel {
 
   public void setBlockDistanceTravelScale(double blockDistanceTravelScale) {
     _blockDistanceTravelScale = blockDistanceTravelScale;
-  }
-
-  /****
-   * Block State Methods
-   ****/
-
-
-  private boolean isTransitionAllowed(VehicleState parentState,
-      Observation obs, BlockStateObservation state, JourneyState journeyState) {
-
-    EVehiclePhase phase = journeyState.getPhase();
-    
-    /*
-     * Must be at a layover location to be in layover and
-     * have served some part of block when not before.
-     */
-    boolean hasServedAnyPart = state != null ? 
-        state.getBlockState().getBlockLocation().getDistanceAlongBlock() > 0.0 : false;
-    if (EVehiclePhase.isLayover(phase)) {
-      if (EVehiclePhase.LAYOVER_BEFORE == phase && hasServedAnyPart) {
-        return false;
-      }
-      if (state == null) { 
-        if (!obs.isAtTerminal())
-          return false;
-      } else if (!state.isAtPotentialLayoverSpot()) {
-        return false;
-      }
-    }
-    
-    /*
-     * Null parent states not considered from here on.
-     * Allowed transitions should only permit reasonable
-     * prior transitions.
-     */
-    if (parentState == null)
-      return true;
-    
-    /*
-     * Have to serve some part of a block and be in a layover spot
-     * to have any *-during state
-     */
-    boolean hasServedSomePart = state != null ? 
-        SensorModelSupportLibrary.hasServedSomePartOfBlock(state.getBlockState()) : false;
-    if (EVehiclePhase.DEADHEAD_DURING == phase 
-        || EVehiclePhase.LAYOVER_DURING == phase) {
-      if (state == null
-          || !hasServedSomePart
-          || (EVehiclePhase.LAYOVER_DURING == phase 
-            && !state.isAtPotentialLayoverSpot())) {
-        return false;
-      }
-    }
-    
-    JourneyState parentJourneyState = parentState.getJourneyState();
-    EVehiclePhase parentPhase = parentJourneyState.getPhase();
-    
-    /**
-     * Transition During to Before => check things like: out of service or at base
-     */
-    if(!(EVehiclePhase.isActiveDuringBlock(parentPhase)
-        && EVehiclePhase.isActiveBeforeBlock(phase)))
-      return true;
-
-    if (EVehiclePhase.AT_BASE == phase)
-      return true;
-    
-    BlockState blockState = state != null ? state.getBlockState() : null;
-    if (!(blockState != null
-        && (blockState.getBlockLocation().getNextStop() == null 
-          || SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(blockState) > 0.9)))
-      return false;
-
-    /**
-     * Added this hack to allow no block transitions after finishing one.
-     */
-    BlockState parentBlockState = parentState.getBlockState() != null
-        ? parentState.getBlockState() : null;
-    if (!(parentBlockState != null
-        && (parentBlockState.getBlockLocation().getNextStop() == null 
-          || SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9)))
-      return false;
-
-    return true;
   }
 
   public Set<BlockStateObservation> getClosestBlockStates(
@@ -269,42 +175,46 @@ public class BlockStateTransitionModel {
 
     final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
 
-    if (parentBlockState == null && (!obs.hasOutOfServiceDsc() && obs.hasValidDsc()))
+    if (parentBlockState == null
+        && (!obs.hasOutOfServiceDsc() && obs.hasValidDsc()))
       return true;
 
     if (parentBlockState != null) {
       if (parentBlockState.getRunReported() == null
           && parentBlockState.getOpAssigned() == null) {
         /*
-         * We have no run information, so we will allow a run transition
-         * when we hit deadhead-after.
+         * We have no run information, so we will allow a run transition when we
+         * hit deadhead-after.
          */
         if (parentState.getJourneyState().getPhase() == EVehiclePhase.DEADHEAD_AFTER) {
           return true;
         }
-        
-//        final Observation prevObs = obs.getPreviousObservation();
-//        /**
-//         * Have we just transitioned out of a terminal?
-//         */
-//        if (prevObs != null) {
-//          /**
-//           * If we were assigned a block, then use the block's terminals, otherwise,
-//           * all terminals.
-//           */
-//          if (parentBlockState != null) {
-//            final boolean wasAtBlockTerminal = VehicleStateLibrary.isAtPotentialTerminal(
-//                prevObs.getRecord(),
-//                parentBlockState.getBlockState().getBlockInstance());
-//            final boolean isAtBlockTerminal = VehicleStateLibrary.isAtPotentialTerminal(
-//                obs.getRecord(),
-//                parentBlockState.getBlockState().getBlockInstance());
-//    
-//            if (wasAtBlockTerminal && !isAtBlockTerminal) {
-//              return true;
-//            }
-//          }
-//        }
+
+        // final Observation prevObs = obs.getPreviousObservation();
+        // /**
+        // * Have we just transitioned out of a terminal?
+        // */
+        // if (prevObs != null) {
+        // /**
+        // * If we were assigned a block, then use the block's terminals,
+        // otherwise,
+        // * all terminals.
+        // */
+        // if (parentBlockState != null) {
+        // final boolean wasAtBlockTerminal =
+        // VehicleStateLibrary.isAtPotentialTerminal(
+        // prevObs.getRecord(),
+        // parentBlockState.getBlockState().getBlockInstance());
+        // final boolean isAtBlockTerminal =
+        // VehicleStateLibrary.isAtPotentialTerminal(
+        // obs.getRecord(),
+        // parentBlockState.getBlockState().getBlockInstance());
+        //
+        // if (wasAtBlockTerminal && !isAtBlockTerminal) {
+        // return true;
+        // }
+        // }
+        // }
       }
     }
 
@@ -364,7 +274,7 @@ public class BlockStateTransitionModel {
           blockLocation.getLocation(), obs.getLocation());
 
       if (d > 400) {
-        boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+        final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
             blockState, obs);
         final BlockStateObservation blockStateObservation = new BlockStateObservation(
             blockState, obs, isAtPotentialLayoverSpot, true);

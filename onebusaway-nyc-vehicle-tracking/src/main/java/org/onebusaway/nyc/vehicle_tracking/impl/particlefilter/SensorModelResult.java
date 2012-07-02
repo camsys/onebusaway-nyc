@@ -27,7 +27,7 @@ public class SensorModelResult {
   private String name;
 
   private double logProbability = 0.0;
-  
+
   private double probability = 1.0;
 
   private List<SensorModelResult> results;
@@ -54,10 +54,9 @@ public class SensorModelResult {
   }
 
   /**
-   * Returns, and lazily computes, the non-log probability.
-   * <br>
-   * XXX Note that this "compute-on-demand" approach
-   * is not thread-safe.
+   * Returns, and lazily computes, the non-log probability. <br>
+   * XXX Note that this "compute-on-demand" approach is not thread-safe.
+   * 
    * @return non-log probability
    */
   public double getProbability() {
@@ -96,11 +95,11 @@ public class SensorModelResult {
   }
 
   public SensorModelResult addLogResultAsAnd(String name, double logProbability) {
-    SensorModelResult newResult = new SensorModelResult(name);
+    final SensorModelResult newResult = new SensorModelResult(name);
     newResult.setLogProbability(logProbability);
     return addResultAsAnd(newResult);
   }
-  
+
   public SensorModelResult addResultAsAnd(String name, double probability) {
     return addResultAsAnd(new SensorModelResult(name, probability));
   }
@@ -122,10 +121,10 @@ public class SensorModelResult {
 
   @Override
   public String toString() {
-    Objects.ToStringHelper toStringHelper = Objects.toStringHelper("SensorModelResult");
+    final Objects.ToStringHelper toStringHelper = Objects.toStringHelper("SensorModelResult");
     toStringHelper.add(name, getProbability());
     if (results != null) {
-      for (SensorModelResult res : results) {
+      for (final SensorModelResult res : results) {
         toStringHelper.addValue("\n\t" + res.toString());
       }
     }

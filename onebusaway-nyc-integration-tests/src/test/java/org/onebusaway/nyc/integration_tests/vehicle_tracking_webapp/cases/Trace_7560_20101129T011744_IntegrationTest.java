@@ -36,5 +36,7 @@ public class Trace_7560_20101129T011744_IntegrationTest extends AbstractTraceRun
      * less authoritative (in VehicleStateLibrary).
      */
     setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.92);
+    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.92);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.92);
   }
 }
