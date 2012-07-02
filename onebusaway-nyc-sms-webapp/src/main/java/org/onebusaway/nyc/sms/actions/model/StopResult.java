@@ -21,11 +21,14 @@ public class StopResult implements SearchResult, Serializable {
 
 	private List<RouteAtStop> routesAvailable;
 	
+	private boolean matchesRouteIdFilter;
+	
 	private Double distanceToQueryLocation = null;
 
-	public StopResult(StopBean stop, List<RouteAtStop> routesAvailable) {
+	public StopResult(StopBean stop, List<RouteAtStop> routesAvailable, boolean matchesRouteIdFilter) {
 		this.stop = stop;
 		this.routesAvailable = routesAvailable;
+		this.matchesRouteIdFilter = matchesRouteIdFilter;
 	}
 
 	public String getIdWithoutAgency() {
@@ -38,6 +41,14 @@ public class StopResult implements SearchResult, Serializable {
 
 	public List<RouteAtStop> getRoutesAvailable() {
 		return routesAvailable;
+	}
+	
+	public boolean matchesRouteIdFilter() {
+	  return matchesRouteIdFilter;
+	}
+	
+	public StopBean getStop() {
+	  return stop;
 	}
 
 	@Override

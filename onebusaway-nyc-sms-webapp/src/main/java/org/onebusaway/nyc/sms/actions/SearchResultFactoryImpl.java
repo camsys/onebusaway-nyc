@@ -110,10 +110,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
   @Override
   public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
+    boolean matchesRouteIdFilter = false;
     
     for(RouteBean routeBean : stopBean.getRoutes()) {
-      if(routeIdFilter != null && !routeIdFilter.isEmpty() && !routeIdFilter.contains(routeBean.getId())) {
-        continue;
+      if((routeIdFilter == null || routeIdFilter.isEmpty()) || routeIdFilter != null && routeIdFilter.contains(routeBean.getId())) {
+        matchesRouteIdFilter = true;
       }
     
       StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
@@ -156,7 +157,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
       routesAtStop.add(routeAtStop);
     }
 
-    return new StopResult(stopBean, routesAtStop);
+    return new StopResult(stopBean, routesAtStop, matchesRouteIdFilter);
   }
 
   @Override
@@ -206,7 +207,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     SiriDistanceExtension distanceExtension = wrapper.getDistances();    
     
     String message = "";    
-    String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mi.", "mi.", "");
+    String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mile", "miles", "");
 
     // at terminal label only appears in stop results
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
