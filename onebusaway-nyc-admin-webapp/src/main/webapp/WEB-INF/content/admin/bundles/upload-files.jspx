@@ -30,15 +30,15 @@
 			</div>
 			<div id="s3_details">
 				<label class="adminLabel">Use S3 Bucket : </label>
-				<label id="s3_location"></label>
+				<label id="s3_location"><!-- For IE --><s:property value="" /></label>
 			</div>
 			<div id="gtfs_details">
 				<label class="adminLabel">Upload gtfs files to : </label>
-				<label id="gtfs_location"></label>
+				<label id="gtfs_location"><!-- For IE --><s:property value="" /></label>
 			</div>
 			<div id="stif_details">
 				<label class="adminLabel">Upload stif files to : </label>
-				<label id="stif_location"></label>
+				<label id="stif_location"><!-- For IE --><s:property value="" /></label>
 			</div>
 			<div class="submitForm">
 				<fieldset>
