@@ -192,7 +192,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     final BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(
         obs, parentBlockState.getBlockInstance(), distAlongSample);
-    return orientationCheck(parentBlockState, distState, obs);
+    return orientationCheck(parentBlockStateObs, distState, obs);
   }
 
   @Override
@@ -238,7 +238,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
        */
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
           obs, blockInstance, (int)newSchedTime);
-      if (!JourneyStateTransitionModel.isLocationOnATrip(schedState.getBlockState())) {
+      if (!schedState.isOnTrip()) {
         return null;
       }
     }
@@ -277,40 +277,41 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
           obs, parentBlockState.getBlockInstance(), newSchedTime);
     }
 
-    return orientationCheck(parentBlockState, schedState, obs);
+    return orientationCheck(parentBlockStateObs, schedState, obs);
   }
   
   /**
    * Quick and dirty check for the direction of the trip.
-   * @param blockState
+   * @param blockStateObs
    * @param observation
    * @return
    */
-  private BlockStateObservation orientationCheck(BlockState parentBlockState, 
-      BlockStateObservation blockState, Observation observation) {
+  private BlockStateObservation orientationCheck(BlockStateObservation parentBlockStateObs, 
+      BlockStateObservation blockStateObs, Observation observation) {
     Double obsOrientation = null;
     Double distMoved = null;
     if (observation.getPreviousRecord() != null
-        && JourneyStateTransitionModel.isLocationOnATrip(blockState.getBlockState())) {
+        && blockStateObs.isOnTrip()) {
       NycRawLocationRecord prevRecord = observation.getPreviousRecord();
       obsOrientation = SphericalGeometryLibrary.getOrientation(prevRecord.getLatitude(),
           prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
       distMoved = SphericalGeometryLibrary.distanceFaster(prevRecord.getLatitude(),
           prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
-      double orientDiff = Math.abs(obsOrientation - blockState.getBlockState().getBlockLocation().getOrientation());
-      if (orientDiff >= 95 && orientDiff <= 265 
+      double orientDiff = Math.abs(obsOrientation - blockStateObs.getBlockState().getBlockLocation().getOrientation());
+      if (orientDiff >= 140d && orientDiff <= 225d
           && distMoved >= BlockStateService.getOppositeDirMoveCutoff()) {
         /*
          * If we weren't previously on a trip, but were going
          * the wrong direction, then truncate this sample up to
          * the start of the trip. 
          */
-        if(parentBlockState != null
-            && !JourneyStateTransitionModel.isLocationOnATrip(parentBlockState)) {
-          final double adjustedDistAlong = blockState.getBlockState().getBlockLocation()
+        if(parentBlockStateObs != null
+            && !parentBlockStateObs.isOnTrip()) {
+          BlockState parentBlockState = parentBlockStateObs.getBlockState();
+          final double adjustedDistAlong = blockStateObs.getBlockState().getBlockLocation()
               .getActiveTrip().getDistanceAlongBlock();
           if (adjustedDistAlong > parentBlockState.getBlockLocation().getDistanceAlongBlock()
-              && adjustedDistAlong < blockState.getBlockState().getBlockLocation().getDistanceAlongBlock()) {
+              && adjustedDistAlong < blockStateObs.getBlockState().getBlockLocation().getDistanceAlongBlock()) {
             BlockStateObservation adjustedState = _blocksFromObservationService.getBlockStateObservationFromDist(
                 observation, parentBlockState.getBlockInstance(), adjustedDistAlong);
             return adjustedState;
@@ -322,7 +323,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       }
     }
     
-    return blockState;
+    return blockStateObs;
     
   }
 

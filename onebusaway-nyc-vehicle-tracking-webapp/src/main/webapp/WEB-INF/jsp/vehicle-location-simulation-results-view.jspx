@@ -100,6 +100,7 @@ Location Simulation Console</a></p>
                     <c:set var="bgcolor2" value="#ff6347"/>
                 </c:if>
 	              <td align='center' bgcolor='${bgcolor2}'><c:out value="${fn:replace(record.inferredPhase, '_', ' ')}"/></td>
+	              <td align='center' bgcolor='${bgcolor2}'><c:out value="${record.inferredStatus}"/></td>
                 <fmt:formatNumber var="actualDab" value="${record.actualDistanceAlongBlock}" maxFractionDigits="1" />
                 <fmt:formatNumber var="infDab" value="${record.inferredDistanceAlongBlock}" maxFractionDigits="1" />
                 <td align='center'><c:out value="${actualDab}" /></td>

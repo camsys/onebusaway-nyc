@@ -79,7 +79,7 @@ public class GpsLikelihood implements SensorModelRule {
      */
     if (obs.hasOutOfServiceDsc()
         && EVehiclePhase.DEADHEAD_DURING == phase
-        && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
+        && (blockState != null && state.getBlockStateObservation().isOnTrip()))
       phase = EVehiclePhase.IN_PROGRESS;
     
     SensorModelResult result = new SensorModelResult("pGps", 1.0);

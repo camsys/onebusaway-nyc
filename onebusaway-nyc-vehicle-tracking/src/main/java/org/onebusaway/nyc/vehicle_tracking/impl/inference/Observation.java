@@ -73,6 +73,12 @@ public class Observation implements Comparable<Observation> {
     this.atTerminal = atTerminal;
     this.outOfService = outOfService;
     this._hasValidDsc = hasValidDsc;
+    
+    if (previousObservation == null) {
+      this._timeDelta = null;
+    } else {
+      this._timeDelta = (timestamp - previousObservation.getTime())/1000d;
+    }
 
     _previousObservation = previousObservation;
   }
@@ -181,6 +187,8 @@ public class Observation implements Comparable<Observation> {
 
   private int _hash = 0;
 
+  private final Double _timeDelta;
+
   @Override
   public int hashCode() {
 
@@ -264,6 +272,14 @@ public class Observation implements Comparable<Observation> {
 
   public Set<AgencyAndId> getRunImpliedRouteCollections() {
     return _runResults.getRouteIds();
+  }
+
+  /**
+   * Time since last observation in seconds.
+   * @return
+   */
+  public Double getTimeDelta() {
+    return _timeDelta;
   }
 
 }

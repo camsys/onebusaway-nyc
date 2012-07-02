@@ -206,7 +206,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
           sampledBlockState = null;
         }
         final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
-            sampledBlockState, obs, vehicleNotMoved);
+            sampledBlockState, null, obs, vehicleNotMoved);
   
         final VehicleState state = vehicleState(motionState, sampledBlockState,
             journeyState, obs);
@@ -237,7 +237,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         final boolean vehicleNotMoved = inMotionSample < 0.5;
         final MotionState motionState = _motionModel.updateMotionState(obs, vehicleNotMoved);
         final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
-            null, obs, vehicleNotMoved);
+            null, null, obs, vehicleNotMoved);
         final VehicleState nullState = new VehicleState(motionState, null,
             journeyState, null, obs);
         final Context context = new Context(null, nullState, obs);

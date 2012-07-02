@@ -21,6 +21,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
@@ -97,7 +98,7 @@ public class DscLikelihood implements SensorModelRule {
 
     final JourneyState js = state.getJourneyState();
     EVehiclePhase phase = js.getPhase();
-    final BlockState blockState = state.getBlockState();
+    final BlockStateObservation blockStateObs = state.getBlockStateObservation();
     
     /*
      * TODO clean up this hack
@@ -106,7 +107,7 @@ public class DscLikelihood implements SensorModelRule {
      */
     if (context.getObservation().hasOutOfServiceDsc()
         && EVehiclePhase.DEADHEAD_DURING == phase
-        && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
+        && (blockStateObs != null && blockStateObs.isOnTrip()))
       phase = EVehiclePhase.IN_PROGRESS;
 
     final String observedDsc = obs.getLastValidDestinationSignCode();

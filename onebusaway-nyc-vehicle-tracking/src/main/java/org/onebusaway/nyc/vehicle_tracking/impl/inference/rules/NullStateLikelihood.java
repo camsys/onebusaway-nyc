@@ -26,6 +26,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -84,7 +85,7 @@ public class NullStateLikelihood implements SensorModelRule {
   public static NullStates getNullState(Context context) {
     final VehicleState state = context.getState();
 //    final Observation obs = context.getObservation();
-    final BlockState blockState = state.getBlockState();
+    final BlockStateObservation blockStateObs = state.getBlockStateObservation();
     EVehiclePhase phase = state.getJourneyState().getPhase();
     
     /*
@@ -94,10 +95,10 @@ public class NullStateLikelihood implements SensorModelRule {
      */
     if (context.getObservation().hasOutOfServiceDsc()
         && EVehiclePhase.DEADHEAD_DURING == phase
-        && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
+        && (blockStateObs != null && blockStateObs.isOnTrip()))
       phase = EVehiclePhase.IN_PROGRESS;
     
-    if (blockState == null) {
+    if (blockStateObs == null) {
       return NullStates.NULL_STATE;
     } else {
       

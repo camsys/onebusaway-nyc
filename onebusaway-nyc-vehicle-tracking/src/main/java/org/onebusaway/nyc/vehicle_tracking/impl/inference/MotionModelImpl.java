@@ -325,10 +325,12 @@ public class MotionModelImpl implements MotionModel<Observation> {
         newParentBlockStateObs, proposalEdge, obs,
         parentState.getJourneyState().getPhase(), vehicleNotMoved);
       journeyState = _journeyStateTransitionModel.getJourneyState(
-          newEdge.getValue(), obs, vehicleNotMoved);
+          newEdge.getValue(), parentState, obs, vehicleNotMoved);
       
+      final boolean isLayoverStopped = JourneyStateTransitionModel.isLayoverStopped(
+          vehicleNotMoved, obs.getTimeDelta());
       journeyState = adjustInProgressTransition(parentState, newEdge, 
-          journeyState, vehicleNotMoved);
+          journeyState, isLayoverStopped);
       
       final VehicleState newState = new VehicleState(motionState,
           newEdge.getValue(), journeyState, null, obs);
@@ -411,7 +413,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       final MotionState motionState = updateMotionState(parentState, obs,
           vehicleNotMoved);
       final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
-          null, obs, vehicleNotMoved);
+          null, null, obs, vehicleNotMoved);
       final VehicleState nullState = new VehicleState(motionState, null,
           journeyState, null, obs);
       final Context context = new Context(parentState, nullState, obs);
@@ -452,7 +454,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
    */
   private JourneyState adjustInProgressTransition(VehicleState parentState,
       java.util.Map.Entry<BlockSampleType, BlockStateObservation> newEdge,
-      JourneyState journeyState, boolean hasNotMoved) {
+      JourneyState journeyState, boolean isLayoverStopped) {
     
     if (!parentState.getJourneyState().getPhase().equals(EVehiclePhase.IN_PROGRESS)
         && journeyState.getPhase().equals(EVehiclePhase.IN_PROGRESS)
@@ -460,11 +462,11 @@ public class MotionModelImpl implements MotionModel<Observation> {
       final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(
           parentState.getJourneyState().getPhase());
       if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-          && !hasNotMoved) {
+          && !isLayoverStopped) {
         return wasPrevStateDuring ? JourneyState.deadheadDuring(null)
             : JourneyState.deadheadBefore(null);
       } else if (!EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-          && hasNotMoved) {
+          && isLayoverStopped) {
         return wasPrevStateDuring ? JourneyState.layoverDuring()
             : JourneyState.layoverBefore();
       } else {

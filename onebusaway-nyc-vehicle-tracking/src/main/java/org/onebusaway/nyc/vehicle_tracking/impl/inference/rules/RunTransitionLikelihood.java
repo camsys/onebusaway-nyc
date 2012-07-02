@@ -55,9 +55,10 @@ public class RunTransitionLikelihood implements SensorModelRule {
   
   public static enum RUN_TRANSITION_STATE {
     RUN_CHANGE_INFO_DIFF,
-    RUN_CHANGE_FROM_OOS,
+    RUN_CHANGE_FROM_OOS_TO_OSS,
     RUN_CHANGE_FROM_IS,
-    RUN_NOT_CHANGED
+    RUN_NOT_CHANGED, 
+    RUN_CHANGE_FROM_OOS_TO_IN
   }
 
   @Override
@@ -71,8 +72,11 @@ public class RunTransitionLikelihood implements SensorModelRule {
       case RUN_CHANGE_INFO_DIFF:
         result.addResultAsAnd("changed reported run or operator id", 0.98*(1d/3d));
         return result;
-      case RUN_CHANGE_FROM_OOS:
-        result.addResultAsAnd("change from o.o.s.", 0.98*(1d/3d));
+      case RUN_CHANGE_FROM_OOS_TO_OSS:
+        result.addResultAsAnd("change from o.o.s. to o.o.s", 0.98*(1d/3d)*(1d/4d));
+        return result;
+      case RUN_CHANGE_FROM_OOS_TO_IN:
+        result.addResultAsAnd("change from o.o.s. to i.s.", 0.98*(1d/3d)*(3d/4d));
         return result;
       case RUN_CHANGE_FROM_IS:
         result.addResultAsAnd("change not from o.o.s.", 0.02);
@@ -90,7 +94,7 @@ public class RunTransitionLikelihood implements SensorModelRule {
     final VehicleState parentState = context.getParentState();
     final Observation obs = context.getObservation();
     final Observation prevObs = obs.getPreviousObservation();
-    final BlockState blockState = state.getBlockState();
+    final BlockStateObservation blockStateObs = state.getBlockStateObservation();
 
     if (parentState != null
         && prevObs != null
@@ -110,15 +114,17 @@ public class RunTransitionLikelihood implements SensorModelRule {
          */
         if (context.getObservation().hasOutOfServiceDsc()
             && EVehiclePhase.DEADHEAD_DURING == parentPhase
-            && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
+            && (blockStateObs != null && blockStateObs.isOnTrip()))
           parentPhase = EVehiclePhase.IN_PROGRESS;
         
         if (EVehiclePhase.isLayover(parentPhase)
             || EVehiclePhase.DEADHEAD_AFTER == parentPhase
             || EVehiclePhase.DEADHEAD_BEFORE == parentPhase
             || EVehiclePhase.DEADHEAD_DURING == parentPhase) {
-          
-          return RUN_TRANSITION_STATE.RUN_CHANGE_FROM_OOS;
+          if (state.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS)
+            return RUN_TRANSITION_STATE.RUN_CHANGE_FROM_OOS_TO_IN;
+          else
+            return RUN_TRANSITION_STATE.RUN_CHANGE_FROM_OOS_TO_OSS;
         } else {
           return RUN_TRANSITION_STATE.RUN_CHANGE_FROM_IS;
         }

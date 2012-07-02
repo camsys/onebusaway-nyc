@@ -724,6 +724,9 @@ public class VehicleInferenceInstance {
         int secondsSinceLastMotion = (int) ((particle.getTimestamp() - motionState.getLastInMotionTime()) / 1000);
         if (secondsSinceLastMotion > _configurationService.getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
+      } else {
+        if (state.getJourneyState().isDetour())
+          statusFields.add("detour");
       }
 
       record.setInferredDsc(blockState.getBlockState().getDestinationSignCode());

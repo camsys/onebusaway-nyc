@@ -73,7 +73,7 @@ public class EdgeLikelihood implements SensorModelRule {
     final VehicleState parentState = context.getParentState();
     final Observation obs = context.getObservation();
     EVehiclePhase phase = state.getJourneyState().getPhase();
-    final BlockState blockState = state.getBlockState();
+    final BlockStateObservation blockStateObs = state.getBlockStateObservation();
     
     /*
      * TODO clean up this hack
@@ -82,7 +82,7 @@ public class EdgeLikelihood implements SensorModelRule {
      */
     if (obs.hasOutOfServiceDsc()
         && EVehiclePhase.DEADHEAD_DURING == phase
-        && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
+        && (blockStateObs != null && blockStateObs.isOnTrip()))
       phase = EVehiclePhase.IN_PROGRESS;
 
     final SensorModelResult result = new SensorModelResult("pEdge", 1.0);
@@ -101,7 +101,7 @@ public class EdgeLikelihood implements SensorModelRule {
       return result;
     }
 
-    if (blockState == null) {
+    if (blockStateObs == null) {
 
       final double pDistAlong = computeNoEdgeMovementLogProb(state, obs);
 

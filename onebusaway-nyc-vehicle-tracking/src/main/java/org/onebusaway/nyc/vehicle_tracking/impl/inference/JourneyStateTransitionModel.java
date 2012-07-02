@@ -18,6 +18,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +28,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class JourneyStateTransitionModel {
 
-  private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
+  /*
+   * Time that the vehicle needs to be not moving in order
+   * to be a layover.
+   */
+  private static final double LAYOVER_WAIT_TIME = 240d;
 
   @Autowired
   public void setBlockStateTransitionModel(
@@ -39,18 +45,64 @@ public class JourneyStateTransitionModel {
   public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
     _vehicleStateLibrary = vehicleStateLibrary;
   }
+  
+  public static boolean isDetour(Boolean currentStateIsSnapped,
+      VehicleState parentState) {
+    
+    if (parentState == null
+        || parentState.getBlockStateObservation() == null
+        || currentStateIsSnapped != Boolean.FALSE)
+      return false;
+    
+    /*
+     * If it was previously snapped, in-service and 
+     * in the middle of a block (true if this was called)
+     * and the current state is not snapped, or it was in
+     * detour and it's still not snapped, then it's a detour.
+     */
+    if (parentState.getJourneyState().isDetour()
+        || (parentState.getBlockStateObservation().isSnapped() 
+            && parentState.getBlockStateObservation().isOnTrip()
+            && parentState.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS)
+        ) {
+      return true;
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Determine the conditions necessary to say it's stopped at a layover.
+   * @param vehicleNotMoved
+   * @param timeDelta
+   */
+  public static boolean isLayoverStopped(boolean vehicleNotMoved, Double timeDelta) {
+    if (timeDelta == null || !vehicleNotMoved)
+      return false;
+    
+    if (timeDelta > LAYOVER_WAIT_TIME)
+      return true;
+    
+    return false;
+  }
 
   /*
    * A deterministic journey state logic.<br>
    */
   public JourneyState getJourneyState(BlockStateObservation blockState,
+      VehicleState parentState, 
       Observation obs, boolean vehicleNotMoved) {
+    
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       return JourneyState.atBase();
+    
+    final boolean isLayoverStopped = isLayoverStopped(vehicleNotMoved, obs.getTimeDelta());
+      
     if (blockState != null) {
       final double distanceAlong = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock();
       if (distanceAlong <= 0.0) {
-        if (vehicleNotMoved && blockState.isAtPotentialLayoverSpot()) {
+        if (isLayoverStopped 
+            && blockState.isAtPotentialLayoverSpot()) {
           return JourneyState.layoverBefore();
         } else {
           return JourneyState.deadheadBefore(null);
@@ -61,12 +113,14 @@ public class JourneyStateTransitionModel {
         /*
          * In the middle of a block.
          */
-        if (vehicleNotMoved && blockState.isAtPotentialLayoverSpot()) {
+        if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
           return JourneyState.layoverDuring();
         } else {
-          final boolean isOnTrip = isLocationOnATrip(blockState.getBlockState());
-          if (isOnTrip) {
-            if (obs.hasOutOfServiceDsc())
+          if (blockState.isOnTrip()) {
+            final boolean isDetour = isDetour(blockState.isSnapped(), parentState);
+            if (isDetour)
+              return JourneyState.detour();
+            else if (obs.hasOutOfServiceDsc())
               return JourneyState.deadheadDuring(null);
             else
               return JourneyState.inProgress();
@@ -76,7 +130,7 @@ public class JourneyStateTransitionModel {
         }
       }
     } else {
-      if (vehicleNotMoved && obs.isAtTerminal())
+      if (isLayoverStopped && obs.isAtTerminal())
         return JourneyState.layoverBefore();
       else
         return JourneyState.deadheadBefore(null);
