@@ -235,11 +235,13 @@ public final class SiriSupport {
 		}
 		
 		// monitored call
-		fillMonitoredCall(monitoredVehicleJourney, blockInstance, currentVehicleTripStatus, monitoredCallStopBean, 
+		if(!presentationService.isOnDetour(currentVehicleTripStatus))
+			fillMonitoredCall(monitoredVehicleJourney, blockInstance, currentVehicleTripStatus, monitoredCallStopBean, 
 				presentationService, nycTransitDataService, stopIdToPredictionRecordMap);
 
 		// onward calls
-		fillOnwardCalls(monitoredVehicleJourney, blockInstance, framedJourneyTripDetails, onwardCallsMode,
+		if(!presentationService.isOnDetour(currentVehicleTripStatus))
+			fillOnwardCalls(monitoredVehicleJourney, blockInstance, framedJourneyTripDetails, onwardCallsMode,
 				presentationService, nycTransitDataService, stopIdToPredictionRecordMap, maximumOnwardCalls);
 
 		// situations

@@ -727,19 +727,17 @@ public class VehicleInferenceInstance {
       }
 
       if (EVehiclePhase.IN_PROGRESS.equals(phase)) {
-        final double d = SphericalGeometryLibrary.distance(location,
-            blockLocation.getLocation());
-        if (d > (double) _configurationService.getConfigurationValueAsInteger(
-            "display.offRouteDistance", 200))
-          statusFields.add("deviated");
-
         final int secondsSinceLastMotion = (int) ((particle.getTimestamp() - motionState.getLastInMotionTime()) / 1000);
-        if (secondsSinceLastMotion > _configurationService.getConfigurationValueAsInteger(
-            "display.stalledTimeout", 900))
+        if (secondsSinceLastMotion > 
+        	_configurationService.getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
       } else {
-        if (state.getJourneyState().isDetour())
-          statusFields.add("detour");
+    	// vehicles on detour should be in_progress with status=deviated 
+    	if (state.getJourneyState().isDetour()) {
+    	  // remap this journey state to IN_PROGRESS to confirm to previous pilot project semantics.
+          record.setInferredPhase(EVehiclePhase.IN_PROGRESS.name());
+          statusFields.add("deviated");
+        }
       }
 
       record.setInferredDsc(blockState.getBlockState().getDestinationSignCode());
