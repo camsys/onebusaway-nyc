@@ -5,210 +5,237 @@ import java.util.Collections;
 import java.util.List;
 
 public class BundleBuildResponse {
-  private List<String> _gtfsList = Collections.synchronizedList(new ArrayList<String>());
-  private List<String> _stifZipList = Collections.synchronizedList(new ArrayList<String>());
-  private List<String> _statusList = Collections.synchronizedList(new ArrayList<String>());
-  private List<String> _outputFileList = Collections.synchronizedList(new ArrayList<String>());
-  private Exception _exception = null;
-  private boolean _isComplete = false;
-  private String _bundleRootDirectory;
-  private String _bundleInputDirectory;
-  private String _bundleOutputDirectory;
-  private String _bundleDataDirectory;
-  private String _bundleTarFilename;
-  private String _remoteInputDirectory;
-  private String _remoteOutputDirectory;
-  private String _versionString;
-  private String _tmpDirectory;
-  private String _bundleBuildName;
+	private List<String> _gtfsList = Collections.synchronizedList(new ArrayList<String>());
+	private List<String> _stifZipList = Collections.synchronizedList(new ArrayList<String>());
+	private List<String> _statusList = Collections.synchronizedList(new ArrayList<String>());
+	private List<String> _outputFileList = Collections.synchronizedList(new ArrayList<String>());
+	private Exception _exception = null;
+	private boolean _isComplete = false;
+	private String _bundleRootDirectory;
+	private String _bundleInputDirectory;
+	private String _bundleOutputDirectory;
+	private String _bundleDataDirectory;
+	private String _bundleTarFilename;
+	private String _remoteInputDirectory;
+	private String _remoteOutputDirectory;
+	private String _versionString;
+	private String _tmpDirectory;
+	private String _bundleBuildName;
+	private String bundleStartDate;
+	private String bundleEndDate;
 
-  private String _id = null;
-  private String bundleResultLink;
 
-  // no arg constructor for serialization
-  public BundleBuildResponse() {
-    
-  }
-  public BundleBuildResponse(String id) {
-    _id = id;
-  }
+	private String _id = null;
+	private String bundleResultLink;
 
-  public String toString() {
-    return "BundleBuildResponse{[" + _id + "], bundleResultLink=" + bundleResultLink
-        + ", statusList=" + _statusList 
-        + ", complete=" + _isComplete + "}"; 
-  }
+	// no arg constructor for serialization
+	public BundleBuildResponse() {
 
-  public String getId() {
-    return _id;
-  }
+	}
+	public BundleBuildResponse(String id) {
+		_id = id;
+	}
 
-  public void setId(String id) {
-    _id = id;
-  }
+	public String toString() {
+		return "BundleBuildResponse{[" + _id + "], bundleResultLink=" + bundleResultLink
+				+ ", statusList=" + _statusList 
+				+ ", complete=" + _isComplete + "}"; 
+	}
 
-  public void addGtfsFile(String file) {
-    _gtfsList.add(file);
-  }
+	public String getId() {
+		return _id;
+	}
 
-  public List<String> getGtfsList() {
-    return new ArrayList<String>(_gtfsList);
-  }
+	public void setId(String id) {
+		_id = id;
+	}
 
-  // for JSON serialization only
-  public void setGtfsList(List<String> gtfsList) {
-    _gtfsList = gtfsList;
-  }
-  
-  public void addStifZipFile(String file) {
-    _stifZipList.add(file);
-  }
+	public void addGtfsFile(String file) {
+		_gtfsList.add(file);
+	}
 
-  public List<String> getStifZipList() {
-    return new ArrayList<String>(_stifZipList);
-  }
+	public List<String> getGtfsList() {
+		return new ArrayList<String>(_gtfsList);
+	}
 
-  // for JSON serializaton only
-  public void setStifZipList(List<String> stifZipList) {
-    _stifZipList = stifZipList;
-  }
-  
-  public void addStatusMessage(String msg) {
-    _statusList.add(msg);
-  }
+	// for JSON serialization only
+	public void setGtfsList(List<String> gtfsList) {
+		_gtfsList = gtfsList;
+	}
 
-  public List<String> getStatusList() {
-    return new ArrayList<String>(_statusList);
-  }
+	public void addStifZipFile(String file) {
+		_stifZipList.add(file);
+	}
 
-  // for JSON serialization only
-  public void setStatusList(List<String> statusList) {
-    _statusList = statusList;
-  }
-  
-  public void addOutputFile(String name) {
-    _outputFileList.add(name);
-  }
-  
-  public List<String> getOutputFileList() {
-    return new ArrayList<String>(_outputFileList);
-  }
+	public List<String> getStifZipList() {
+		return new ArrayList<String>(_stifZipList);
+	}
 
-  public void setOutputFileList(List<String> outputFileList) {
-    _outputFileList = outputFileList;
-  }
-  
-  public void addException(Exception e) {
-    _exception = e;
-  }
-  
-  public void setException(Exception e) {
-    _exception = e;
-  }
+	// for JSON serializaton only
+	public void setStifZipList(List<String> stifZipList) {
+		_stifZipList = stifZipList;
+	}
 
-  public Exception getException() {
-    return _exception;
-  }
+	public void addStatusMessage(String msg) {
+		_statusList.add(msg);
+	}
 
-  public void setComplete(boolean complete) {
-    _isComplete = complete;
-  }
+	public List<String> getStatusList() {
+		return new ArrayList<String>(_statusList);
+	}
 
-  public boolean isComplete() {
-    return _isComplete;
-  }
+	// for JSON serialization only
+	public void setStatusList(List<String> statusList) {
+		_statusList = statusList;
+	}
 
-  public void setBundleOutputDirectory(String bundleDir) {
-    _bundleOutputDirectory = bundleDir;
-  }
+	public void addOutputFile(String name) {
+		_outputFileList.add(name);
+	}
 
-  public String getBundleOutputDirectory() {
-    return _bundleOutputDirectory;
-  }
+	public List<String> getOutputFileList() {
+		return new ArrayList<String>(_outputFileList);
+	}
 
-  public void setVersionString(String versionString) {
-    _versionString = versionString;
-  }
+	public void setOutputFileList(List<String> outputFileList) {
+		_outputFileList = outputFileList;
+	}
 
-  public String getVersionString() {
-    return _versionString;
-  }
+	public void addException(Exception e) {
+		_exception = e;
+	}
 
-  public String getBundleDataDirectory() {
-    return _bundleDataDirectory;
-  }
-  public void setBundleDataDirectory(String directoryPath) {
-    _bundleDataDirectory = directoryPath;
-  }
+	public void setException(Exception e) {
+		_exception = e;
+	}
 
-  public String getBundleInputDirectory() {
-    return _bundleInputDirectory;
-  }
-  public void setBundleInputDirectory(String directoryPath) {
-    _bundleInputDirectory = directoryPath;
-    
-  }
+	public Exception getException() {
+		return _exception;
+	}
 
-  public String getBundleTarFilename() {
-    return _bundleTarFilename;
-  }
-  
-  public void setBundleTarFilename(String filename) {
-    _bundleTarFilename = filename;
-  }
+	public void setComplete(boolean complete) {
+		_isComplete = complete;
+	}
 
-  public String getBundleRootDirectory() {
-    return _bundleRootDirectory;
-  }
-  
-  public void setBundleRootDirectory(String directoryPath) {
-    _bundleRootDirectory = directoryPath;
-  }
+	public boolean isComplete() {
+		return _isComplete;
+	}
 
-  public String getTmpDirectory() {
-    return _tmpDirectory;
-  }
-  
-  public void setTmpDirectory(String tmpDirectory) {
-    _tmpDirectory = tmpDirectory;
-  }
+	public void setBundleOutputDirectory(String bundleDir) {
+		_bundleOutputDirectory = bundleDir;
+	}
 
-  public String getRemoteInputDirectory() {
-    return _remoteInputDirectory;
-  }
-  
-  public void setRemoteInputDirectory(String directoryPath) {
-    _remoteInputDirectory = directoryPath;
-  }
+	public String getBundleOutputDirectory() {
+		return _bundleOutputDirectory;
+	}
 
-  public String getRemoteOutputDirectory() {
-    return _remoteOutputDirectory;
-  }
+	public void setVersionString(String versionString) {
+		_versionString = versionString;
+	}
 
-   public void setRemoteOutputDirectory(String directoryPath) {
-    _remoteOutputDirectory = directoryPath;
-  }
+	public String getVersionString() {
+		return _versionString;
+	}
+
+	public String getBundleDataDirectory() {
+		return _bundleDataDirectory;
+	}
+	public void setBundleDataDirectory(String directoryPath) {
+		_bundleDataDirectory = directoryPath;
+	}
+
+	public String getBundleInputDirectory() {
+		return _bundleInputDirectory;
+	}
+	public void setBundleInputDirectory(String directoryPath) {
+		_bundleInputDirectory = directoryPath;
+
+	}
+
+	public String getBundleTarFilename() {
+		return _bundleTarFilename;
+	}
+
+	public void setBundleTarFilename(String filename) {
+		_bundleTarFilename = filename;
+	}
+
+	public String getBundleRootDirectory() {
+		return _bundleRootDirectory;
+	}
+
+	public void setBundleRootDirectory(String directoryPath) {
+		_bundleRootDirectory = directoryPath;
+	}
+
+	public String getTmpDirectory() {
+		return _tmpDirectory;
+	}
+
+	public void setTmpDirectory(String tmpDirectory) {
+		_tmpDirectory = tmpDirectory;
+	}
+
+	public String getRemoteInputDirectory() {
+		return _remoteInputDirectory;
+	}
+
+	public void setRemoteInputDirectory(String directoryPath) {
+		_remoteInputDirectory = directoryPath;
+	}
+
+	public String getRemoteOutputDirectory() {
+		return _remoteOutputDirectory;
+	}
+
+	public void setRemoteOutputDirectory(String directoryPath) {
+		_remoteOutputDirectory = directoryPath;
+	}
 
 	/**
 	 * @return the bundleResultLink
 	 */
-	public String getBundleResultLink() {
+	 public String getBundleResultLink() {
 		return bundleResultLink;
 	}
-	
+
 	/**
 	 * @param bundleResultLink the bundleResultLink to set
 	 */
-	public void setBundleResultLink(String bundleResultLink) {
-		this.bundleResultLink = bundleResultLink;
-	}
+	 public void setBundleResultLink(String bundleResultLink) {
+		 this.bundleResultLink = bundleResultLink;
+	 }
 
-	public String getBundleBuildName() {
-	  return _bundleBuildName;
-	}
-	
-  public void setBundleBuildName(String bundleName) {
-    this._bundleBuildName = bundleName;
-  }
+	 public String getBundleBuildName() {
+		 return _bundleBuildName;
+	 }
+
+	 public void setBundleBuildName(String bundleName) {
+		 this._bundleBuildName = bundleName;
+	 }
+	 /**
+	  * @return the bundleStartDate
+	  */
+	 public String getBundleStartDate() {
+		 return bundleStartDate;
+	 }
+	 /**
+	  * @param bundleStartDate the bundleStartDate to set
+	  */
+	 public void setBundleStartDate(String bundleStartDate) {
+		 this.bundleStartDate = bundleStartDate;
+	 }
+	 /**
+	  * @return the bundleEndDate
+	  */
+	 public String getBundleEndDate() {
+		 return bundleEndDate;
+	 }
+	 /**
+	  * @param bundleEndDate the bundleEndDate to set
+	  */
+	 public void setBundleEndDate(String bundleEndDate) {
+		 this.bundleEndDate = bundleEndDate;
+	 }
 
 }

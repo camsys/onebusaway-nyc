@@ -17,35 +17,12 @@
 /*var OBA = window.OBA || {};
 
 OBA.Bundles = function() {
+
+var timeout = null;
+
+function startup(){
 	
-	function toggleAdvancedOptionsContents() {
-		jQuery("#createDirectory #advancedOptions #expand").bind({
-			'click' : function () {
-				var $image = jQuery("#createDirectory #advancedOptions #expand");
-				var $imageSource = $image.attr("src");
-				if($imageSource.indexOf("right-3") != -1) {
-					//Change the img to down arrow
-					$image.attr("src", "../../css/img/arrow-down-3.png");
-				} else {
-					//Change the img to right arrow
-					$image.attr("src", "../../css/img/arrow-right-3.png");
-				}
-				//Toggle advanced options box
-				jQuery("#advancedOptionsContents").toggle();
-			}	});
-	} 
-
-	return {
-		initialize : function () {
-			toggleAdvancedOptionsContents();
-		}
-	};
-};
-
-jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
-
-
-jQuery(document).ready(function() {
+	
 	//Initialize tabs
 	jQuery("#tabs").tabs();
 	
@@ -140,6 +117,134 @@ jQuery(document).ready(function() {
 	//Handle build button click event
 	jQuery("#buildBundle_buildButton").click(onBuildClick);
 	
+}
+
+
+
+	return {
+		initialize : function () {
+			startup();
+		}
+	};
+};
+
+jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
+
+var timeout = null;
+
+jQuery(document).ready(function() {
+	
+	
+	//Initialize tabs
+	jQuery("#tabs").tabs();
+	
+	//Initialize date pickers
+	jQuery("#startDatePicker").datepicker(
+			{ 
+				dateFormat: "yy-mm-dd",
+				altField: "#startDate",
+				onSelect: function(selectedDate) {
+					jQuery("#endDatePicker").datepicker("option", "minDate", selectedDate);
+				}
+			});
+	jQuery("#endDatePicker").datepicker(
+			{ 
+				dateFormat: "yy-mm-dd",
+				altField: "#endDate",
+				onSelect: function(selectedDate) {
+					jQuery("#startDatePicker").datepicker("option", "maxDate", selectedDate);
+				}
+			});
+	
+	// check if we were called with a hash -- re-enter from email link
+	if (window.location.hash) {
+		var hash = window.location.hash;
+		hash = hash.split('?')[0];
+		// TODO this doesn't work when fromEmail query string is present 
+		// alert("hash=" + hash);
+		$(hash).click();
+	}
+	var qs = parseQuerystring();
+	if (qs["fromEmail"] == "true") {
+		//alert("called from email!");
+		jQuery("#prevalidate_id").text(qs["id"]);
+		jQuery("#buildBundle_id").text(qs["id"]);
+		jQuery("#buildBundle_bundleName").val(qs["name"]);
+		jQuery("#buildBox #bundleStartDateHolder #startDatePicker").val(qs["startDate"]);
+		jQuery("#buildBox #bundleEndDateHolder #endDatePicker").val(qs["endDate"]);
+		//hide the result link when reentering from email
+		jQuery("#buildBundle_resultLink").hide();
+		// just in case set the tab
+		var $tabs = jQuery("#tabs");
+		$tabs.tabs('select', 3);
+		updateBuildStatus();
+	}
+	// politely set our hash as tabs are changed
+	jQuery("#tabs").bind("tabsshow", function(event, ui) {
+		window.location.hash = ui.tab.hash;
+	});
+	
+	jQuery("#currentDirectories").selectable({ 
+		stop: function() {
+			var names = $.map($('.ui-selected strong, this'), function(element, i) {  
+				  return $(element).text();  
+				}); 
+			if (names.length > 0) {
+				var $element = jQuery("#manage-bundles_directoryName");
+				// only return the first selection, as multiple selections are possible
+				$element.attr("value", names[0]);
+				jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
+				jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
+				jQuery("#createDirectoryMessage").text("Click Select button to load your directory")
+								.css("font-weight", "bold").css("color", "red");
+				//Enable select button
+				enableSelectButton();
+			}
+		}
+	});
+
+	jQuery("#create_continue").click(onCreateContinueClick);
+	
+	jQuery("#prevalidate_continue").click(onPrevalidateContinueClick);
+	
+	jQuery("#upload_continue").click(onUploadContinueClick);
+	
+	// hookup ajax call to select
+	jQuery("#directoryButton").click(onSelectClick);
+	
+	//toggle advanced option contents
+	jQuery("#createDirectory #advancedOptions #expand").bind({
+			'click' : toggleAdvancedOptions	});
+	
+	//toggle validation progress list
+	jQuery("#prevalidateInputs #prevalidate_progress #expand").bind({
+			'click' : toggleValidationResultList});
+	
+	//toggle bundle build progress list
+	jQuery("#buildBundle #buildBundle_progress #expand").bind({
+			'click' : toggleBuildBundleResultList});
+	
+	//handle create and select radio buttons
+	jQuery("input[name='options']").change(directoryOptionChanged);
+	
+	//Handle validate button click event
+	jQuery("#prevalidateInputs #validateBox #validateButton").click(onValidateClick);
+	
+	//Handle build button click event
+	jQuery("#buildBundle_buildButton").click(onBuildClick);
+	
+	//Enable or disable create/select button when user enters/removes directory name
+	jQuery("#manage-bundles_directoryName").live("input", function() {
+		var text = jQuery("#manage-bundles_directoryName").val();
+		if(text.length > 0) {
+			enableSelectButton();
+		} else {
+			disableSelectButton();
+			jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
+			disableContinueButton(jQuery("#create_continue"));
+		}
+	});
+	
 });
 
 function onCreateContinueClick() {
@@ -160,6 +265,7 @@ function onPrevalidateContinueClick() {
 function onSelectClick() {
 	var bundleDir = jQuery("#manage-bundles_directoryName").val();
 	var actionName = "selectDirectory";
+	
 	if (jQuery("#create").is(":checked")) {
 		actionName = "createDirectory";
 	}
@@ -186,12 +292,13 @@ function onSelectClick() {
 					jQuery("#uploadFiles #s3_details #s3_location").text(status.bucketName);
 					jQuery("#uploadFiles #gtfs_details #gtfs_location").text(bundleDir + "/" + status.gtfsPath + " directory");
 					jQuery("#uploadFiles #stif_details #stif_location").text(bundleDir + "/" + status.stifPath + " directory");
+					enableContinueButton(jQuery("#upload_continue"));
 				} else {
 					alert("null status");
 				}
 			},
 			error: function(request) {
-				alert("onSelectClick error=" + request.statustext);
+				alert("There was an error processing your request. Please try again.");
 			}
 		});
 }
@@ -199,6 +306,21 @@ function onSelectClick() {
 function enableContinueButton(continueButton) {
 	jQuery(continueButton).removeAttr("disabled")
 		.removeClass("submit_disabled").addClass("submit_enabled");	
+}
+
+function disableContinueButton(continueButton) {
+	jQuery(continueButton).attr("disabled", "disabled")
+		.removeClass("submit_enabled").addClass("submit_disabled");	
+}
+
+function enableSelectButton() {
+	jQuery("#createDirectory #createDirectoryContents #directoryButton").removeAttr("disabled")
+	.css("color", "#666");
+}
+
+function disableSelectButton() {
+	jQuery("#createDirectory #createDirectoryContents #directoryButton").attr("disabled", "disabled")
+	.css("color", "#999");
 }
 
 function toggleAdvancedOptions() {
@@ -238,6 +360,8 @@ function directoryOptionChanged() {
 	//Clear the results regardless of the selection
 	jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
 	jQuery("#manage-bundles_directoryName").val("");
+	jQuery("#createDirectory #createDirectoryContents #directoryButton").attr("disabled", "disabled")
+		.css("color", "#999");
 	
 	if(jQuery("#create").is(":checked")) {
 		//Change the button text and hide select directory list
@@ -299,7 +423,7 @@ function onValidateClick() {
 				}
 		},
 		error: function(request) {
-			alert(request.statustext);
+			alert("There was an error processing your request. Please try again.");
 		}
 	});
 }
@@ -342,7 +466,8 @@ function updateValidateStatus() {
 
 		},
 		error: function(request) {
-			alert(request.statustext);
+			clearTimeout(timeout);
+			timeout = setTimeout(updateValidateStatus, 10000);
 		}
 	});
 }
@@ -376,7 +501,10 @@ function updateValidateList(id) {
 				enableContinueButton(continueButton);
 		},
 		error: function(request) {
-			alert(request.statustext);
+			clearTimeout(timeout);
+			timeout = setTimeout(function() {
+				updateValidateList(id);
+			}, 10000);
 		}
 	});	
 }
@@ -392,27 +520,29 @@ function onBuildClick() {
 		return;
 	}
 	buildBundle(bundleName, startDate, endDate);
-    bundleUrl();
-
 }
 
 function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
 	var valid = true;
+	var errors = "";
 	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
-		alert("missing bundle directory");
+		errors += "missing bundle directory" + "\n";
 		valid = false;
 	}
 	if (bundleName == undefined || bundleName == null || bundleName == "") {
-		alert("missing bundle build name");
+		errors += "missing bundle build name" + "\n";
 		valid = false;
 	}
 	if (startDate == undefined || startDate == null || startDate == "") {
-		alert("missing bundle start date");
+		errors += "missing bundle start date" + "\n";
 		valid = false;
 	}
 	if (endDate == undefined || endDate == null || endDate == "") {
-		alert("missing bundle end date");
+		errors += "missing bundle end date" + "\n";
 		valid = false;
+	}
+	if(errors.length > 0) {
+		alert(errors);
 	}
 	return valid;
 }
@@ -436,7 +566,8 @@ function bundleUrl() {
 						.css("color", "green");
 		},
 		error: function(request) {
-			alert(request.statustext);
+			clearTimeout(timeout);
+			timeout = setTimeout(bundleUrl, 10000);
 		}
 	});
 	var url = jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink").text();
@@ -455,16 +586,22 @@ function buildBundle(bundleName, startDate, endDate){
 		success: function(response) {
 				var bundleResponse = eval(response);
 				if (bundleResponse != undefined) {
-					jQuery("#buildBundle_resultList").html("calling...");
-					jQuery("#buildBundle_id").text(bundleResponse.id);
-					window.setTimeout(updateBuildStatus, 1000);
+					//display exception message if there is any
+					if(bundleResponse.exception !=null) {
+						alert(bundleResponse.exception.message);
+					} else {
+						jQuery("#buildBundle_resultList").html("calling...");
+						jQuery("#buildBundle_id").text(bundleResponse.id);
+						window.setTimeout(updateBuildStatus, 1000);
+						bundleUrl();
+					}
 				} else {
 					jQuery("#buildBundle_id").text(error);
 					jQuery("#buildBundle_resultList").html("error");
 				}
 		},
 		error: function(request) {
-			alert(request.statustext);
+			alert("There was an error processing your request. Please try again");
 		}
 	});
 }
@@ -508,7 +645,8 @@ function updateBuildStatus() {
 				}
 		},
 		error: function(request) {
-			alert(request.statustext);
+			clearTimeout(timeout);
+			timeout = setTimeout(updateBuildStatus, 10000);
 		}
 	});
 }
@@ -573,7 +711,10 @@ function updateBuildList(id) {
 				enableContinueButton(continueButton);
 		},
 		error: function(request) {
-			alert(request.statustext);
+			clearTimeout(timeout);
+			timeout = setTimeout(function() {
+				updateBuildList(id);
+			}, 10000);
 		}
 	});	
 }

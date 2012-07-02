@@ -17,6 +17,9 @@ import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
 import org.onebusaway.transit_data_federation.bundle.model.TaskDefinition;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 
+import org.apache.log4j.Layout;
+import org.apache.log4j.SimpleLayout;
+import org.apache.log4j.WriterAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +27,11 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -152,6 +154,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           + "stif");
     }
     
+    // stage baseLocations
+    InputStream baseLocationsStream = this.getClass().getResourceAsStream("/BaseLocations.txt");
+    new FileUtils().copy(baseLocationsStream, dataPath + File.separator + "BaseLocations.txt");
+    
     // clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
     try {
       File stifDir = new File(request.getTmpDirectory() + File.separator + "stif");
@@ -224,7 +230,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       logFile = new PrintStream(new FileOutputStream(new File(logFilename)));
       // swap standard out for logging
       System.setOut(logFile);
-
+      configureLogging(System.out);
+      
       FederatedTransitDataBundleCreator creator = new FederatedTransitDataBundleCreator();
 
       Map<String, BeanDefinition> beans = new HashMap<String, BeanDefinition>();
@@ -308,7 +315,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         }
       }
       // restore standard out
+      deconfigureLogging(System.out);
       System.setOut(stdOut);
+      
       if (logFile != null) {
         logFile.close();
       }
@@ -316,6 +325,36 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
   
+  /**
+   * tear down the logger for the bundle building activity. 
+   */
+  private void deconfigureLogging(OutputStream os) {
+    _log.info("deconfiguring logging");
+    try {
+      os.flush();
+      os.close();
+    } catch (Exception any) {
+      _log.error("deconfigure logging failed:", any);
+    }
+
+    org.apache.log4j.Logger logger = org.apache.log4j.Logger.getRootLogger();
+    logger.removeAppender("bundlebuilder.out");
+  }
+
+  /**
+   * setup a logger just for the bundle building activity. 
+   */
+  private void configureLogging(OutputStream os) {
+    Layout layout = new SimpleLayout();
+    WriterAppender wa = new WriterAppender(layout, os);
+    wa.setName("bundlebuilder.out");
+    // introducing log4j dependency here
+    org.apache.log4j.Logger logger = org.apache.log4j.Logger.getRootLogger();
+    logger.addAppender(wa);
+    _log.info("configuring logging");
+
+  }
+
   /**
    * arrange files for tar'ing into bundle format
    */
@@ -347,11 +386,18 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         fs.copyFiles(input, new File(inputsPath + File.separator + input.getName()));
       }
     }
-    
+
     // outputs
     String outputsPath = request.getTmpDirectory() + File.separator + OUTPUT_DIR;
     File outputsDestDir = new File(outputsPath);
     outputsDestDir.mkdir();
+
+    // copy log file to outputs
+    File outputPath = new File(response.getBundleDataDirectory());
+    String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
+    fs.copyFiles(new File(logFilename), new File(response.getBundleOutputDirectory() + File.separator + "bundleBuilder.out.txt"));
+
+    // copy the rest of the bundle content to outputs directory
     File outputsDir = new File(response.getBundleOutputDirectory());
     File[] outputFiles = outputsDir.listFiles();
     if (outputFiles != null) {
@@ -360,6 +406,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         fs.copyFiles(output, new File(outputsPath + File.separator + output.getName()));
       }
     }
+    
   }
 
   private StringBuffer listToFile(List<String> notInServiceDSCList) {
@@ -395,6 +442,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setRemoteOutputDirectory(versionString + File.separator + OUTPUT_DIR);
     _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
         response.getBundleTarFilename());
+
     /* TODO implement delete 
      * for now we rely on cloud restart to delete volume for us, but that is lazy 
      */

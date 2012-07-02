@@ -368,22 +368,31 @@ small {
 	margin: 0;
 	padding: .3em;
 	padding-left: 20px;
+	line-height: 1.3em;
 }
 
-.arrivalsOnRoute li,.arrivalsAtStop li {
+.arrivalsOnRoute li {
 	margin-left: 10px;
 	padding-left: 16px;
 	background-image: url('img/bullet_bus.png');
 	background-repeat: no-repeat;
-	background-position: center left;
-}
-
-.arrivalsOnRoute,.arrivalsOnRoute li {
+	background-position: left center;
+	white-space: nowrap;
 	display: inline;
 }
 
-.arrivalsOnRoute li {
-	white-space: nowrap;
+.arrivalsOnRoute {
+	display: inline;
+	zoom: 1;  /* hasLayout fix for IE */
+}
+
+.arrivalsAtStop li {
+	margin-left: 10px;
+	padding-left: 16px;
+	background-image: url('img/bullet_bus.png');
+	background-repeat: no-repeat;
+	background-position: left top;
+	zoom: 1;   /* hasLayout fix for IE */
 }
 
 .routeList a {

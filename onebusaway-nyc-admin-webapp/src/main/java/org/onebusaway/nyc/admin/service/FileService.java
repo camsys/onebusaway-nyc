@@ -35,4 +35,10 @@ public interface FileService {
    */
   String createOutputFilesZip(String directoryName);
   
+  /**
+   * Validates that given file name does not contain characters which could lead to directory 
+   * traversal attack.
+   * @param fileName the given file name
+   */
+  void validateFileName(String fileName);
 }

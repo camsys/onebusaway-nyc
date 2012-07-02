@@ -122,3 +122,9 @@ html, body {
 	color: white;
 }
 
+#topbar #branding a img,
+#topbar #branding a {
+	border: none;
+	text-decoration: none;
+}
+

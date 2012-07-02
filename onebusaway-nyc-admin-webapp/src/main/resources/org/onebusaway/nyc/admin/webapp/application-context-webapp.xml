@@ -33,6 +33,7 @@
     
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
     <context:component-scan base-package="org.onebusaway.nyc.admin.service.bundle.api" />
+    <context:component-scan base-package="org.onebusaway.nyc.admin.service.api" />
     
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
 
@@ -41,13 +42,19 @@
       <property name="password" value="admin"/>
       <property name="admin" value="true"/>
     </bean>
+    
+    <bean id="createOperator" class="org.onebusaway.users.impl.CreateUserAction">
+      <property name="username" value="operator"/>
+      <property name="password" value="operator"/>
+    </bean>
  
     <sec:http>
-        <sec:intercept-url pattern="/admin/**" access="ROLE_ADMINISTRATOR" />
+        <sec:intercept-url pattern="/admin/**" access="ROLE_USER" />
         <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1" />
         <sec:remember-me />
         <sec:logout invalidate-session="false" logout-url="/logout.action" />
     </sec:http>
+    
  
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">

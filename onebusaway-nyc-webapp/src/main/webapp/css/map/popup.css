@@ -97,7 +97,7 @@
 }
 
 .popup ul li.route {
-	whitespace: no-wrap;
+	white-space: no-wrap;
 	color: #000099;
 	font-weight: bold;
 	padding: 2px 0 2px 0;
@@ -112,7 +112,7 @@
 }
 
 .popup ul li.arrival {
-	whitespace: no-wrap;
+	white-space: no-wrap;
 	height: 16px;
 	font-weight: bold;
 	padding-left: 19px;
@@ -121,8 +121,12 @@
 	background-repeat: no-repeat;
 }
 
+.popup ul li.arrival .not_bold {
+	font-weight: normal;
+}
+
 .popup ul li.nextStop {
-	whitespace: no-wrap;
+	white-space: no-wrap;
 	color: #000099;
 	height: 16px;
 	font-weight: bold;
@@ -214,7 +218,11 @@
 }
 
 #bustime .popup a.alert-link {
-	color: rgb(210,0,0);
+	color: rgb(225,0,0);
+	background: url("img/alert_icon.png");
+	background-position: 0 100%;
+	background-repeat: no-repeat;
+	padding-left: 21px;
 }
 
 #bustime .popup a:HOVER.alert-link {

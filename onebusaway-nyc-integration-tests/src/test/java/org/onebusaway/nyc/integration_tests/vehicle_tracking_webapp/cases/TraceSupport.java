@@ -81,7 +81,7 @@ public class TraceSupport {
   private String url(String path) {
 
     String port = System.getProperty(
-        "org.onebusaway.transit_data_federation_webapp.port", "9905");
+        "org.onebusaway.transit_data_federation_webapp.port", "8080");
 
     return "http://localhost:" + port
         + "/onebusaway-nyc-vehicle-tracking-webapp" + path;
