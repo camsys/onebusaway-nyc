@@ -232,8 +232,8 @@ jQuery(function() {
 	jQuery("#buildBundle_buildButton").click(onBuildClick);
 	
 	//Enable or disable create/select button when user enters/removes directory name
-	//Using delegate() here as live() does not work in IE
-	jQuery("#createDirectory").delegate("#directoryName","input", function() {
+	//Using bind() with propertychange event as live() does not work in IE for unknown reasons
+	jQuery("#createDirectoryContents #directoryName").bind("input propertychange", function() {
 		var text = jQuery("#createDirectory #directoryName").val();
 		if(text.length > 0) {
 			enableSelectButton();
@@ -267,13 +267,13 @@ function onSelectClick() {
 	if (jQuery("#create").is(":checked")) {
 		actionName = "createDirectory";
 	}
-		jQuery.ajax({
+	jQuery.ajax({
 			url: "manage-bundles!" + actionName + ".action?ts=" +new Date().getTime(),
-			type: "POST",
-			data: {"directoryName":  bundleDir},
+			type: "GET",
+			data: {"directoryName" : bundleDir},
 			async: false,
 			success: function(response) {
-				var status = eval(response);
+				var status = response;
 				if (status != undefined) {
 					jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
 					if(status.selected == true) {
@@ -297,10 +297,10 @@ function onSelectClick() {
 			},
 			error: function(request) {
 				alert("There was an error processing your request. Please try again.");
-				alert(request.statusText);
 			}
 		});
 }
+
 
 function enableContinueButton(continueButton) {
 	jQuery(continueButton).removeAttr("disabled")
@@ -407,11 +407,11 @@ function onValidateClick() {
 	jQuery("#prevalidateInputs #validateBox #validateButton").attr("disabled", "disabled");
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
 	jQuery.ajax({
-		url: "../../api/validate/" + bundleDirectory + "/" + bundleName + "/create",
+		url: "../../api/validate/" + bundleDirectory + "/" + bundleName + "/create?ts=" +new Date().getTime(),
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var bundleResponse = eval(response);
+				var bundleResponse = response;
 				if (bundleResponse != undefined) {
 					jQuery("#prevalidate_id").text(bundleResponse.id);
 					//jQuery("#prevalidate_resultList").text("calling...");
@@ -430,12 +430,12 @@ function onValidateClick() {
 function updateValidateStatus() {
 	var id = jQuery("#prevalidate_id").text();
 	jQuery.ajax({
-		url: "../../api/validate/" + id + "/list",
+		url: "../../api/validate/" + id + "/list?ts=" +new Date().getTime(),
 		type: "GET",
 		async: false,
 		success: function(response) {
 				var txt = "<ul>";
-				var bundleResponse = eval(response);
+				var bundleResponse = response;
 				if (bundleResponse == null) {
 					jQuery("#prevalidate_validationProgress").text("Complete.");
 					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").attr("src","../../css/img/dialog-accept-2.png");
@@ -475,13 +475,13 @@ function updateValidateStatus() {
 function updateValidateList(id) {
 	jQuery.ajax({
 		url: "manage-bundles!fileList.action?ts=" +new Date().getTime(),
-		type: "POST",
+		type: "GET",
 		data: {"id": id},
 		async: false,
 		success: function(response) {
 				var txt = "<ul>";
 				
-				var list = eval(response);
+				var list = response;
 				if (list != null) {
 					var size = list.length;
 					if (size > 0) {
@@ -552,11 +552,11 @@ function bundleUrl() {
 	jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
 	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
 	jQuery.ajax({
-		url: "../../api/build/" + id + "/url",
+		url: "../../api/build/" + id + "/url?ts=" +new Date().getTime(),
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var bundleResponse = eval(response);
+				var bundleResponse = response;
 				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
 						.text(bundleResponse.bundleResultLink)
 						.css("padding-left", "5px")
@@ -579,11 +579,11 @@ function buildBundle(bundleName, startDate, endDate){
 	var email = jQuery("#buildBundle_email").val();
 	if (email == "") { email = "null"; }
 	jQuery.ajax({
-		url: "../../api/build/" + bundleDirectory + "/" + bundleName + "/" + email + "/" + startDate + "/" + endDate + "/create",
+		url: "../../api/build/" + bundleDirectory + "/" + bundleName + "/" + email + "/" + startDate + "/" + endDate + "/create?ts=" +new Date().getTime(),
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var bundleResponse = eval(response);
+				var bundleResponse = response;
 				if (bundleResponse != undefined) {
 					//display exception message if there is any
 					if(bundleResponse.exception !=null) {
@@ -608,12 +608,12 @@ function buildBundle(bundleName, startDate, endDate){
 function updateBuildStatus() {
 	id = jQuery("#buildBundle_id").text();
 	jQuery.ajax({
-		url: "../../api/build/" + id + "/list",
+		url: "../../api/build/" + id + "/list?ts=" +new Date().getTime(),
 		type: "GET",
 		async: false,
 		success: function(response) {
 				var txt = "<ul>";
-				var bundleResponse = eval(response);
+				var bundleResponse = response;
 				if (bundleResponse == null) {
 					jQuery("#buildBundle_buildProgress").text("Bundle Complete!");
 					jQuery("#buildBundle #buildBox #building #buildProgress").attr("src","../../css/img/dialog-accept-2.png");
@@ -655,7 +655,7 @@ function updateBuildList(id) {
 	var summaryList = null;
 		jQuery.ajax({
 		url: "manage-bundles!downloadOutputFile.action?ts=" +new Date().getTime(),
-		type: "POST",
+		type: "GET",
 		data: {"id": id,
 			   "downloadFilename": "summary.csv"},
 		async: false,
@@ -676,13 +676,13 @@ function updateBuildList(id) {
 		}
 	jQuery.ajax({
 		url: "manage-bundles!buildList.action?ts=" +new Date().getTime(),
-		type: "POST",
+		type: "GET",
 		data: {"id": id},
 		async: false,
 		success: function(response) {
 				var txt = "<ul>";
 				
-				var list = eval(response);
+				var list = response;
 				if (list != null) {
 					var size = list.length;
 					if (size > 0) {
