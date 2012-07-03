@@ -87,7 +87,7 @@
         <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-webapp){0,1}/css/.*$</condition>
         <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-webapp){0,1}/js/.*$</condition>
         <condition type="request-uri" operator="notequal">^.*\.action$</condition>
-        <from>^(.*)$</from>
+        <from>^(.*?)(?:\;jsessionid=[^\?#]*)$</from>
         <to last="true">$1.action</to>
     </rule>
     <rule>
@@ -97,10 +97,9 @@
         <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-webapp){0,1}/css/.*$</condition>
         <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-webapp){0,1}/js/.*$</condition>
         <condition type="request-uri" operator="notequal">^.*\.action\?(.*)$</condition>
-        <from>^(.*)\?(.*)$</from>
-        <to last="true">$1.action?$2</to>
-    </rule> 
-    
+        <from>^(.*?)(?:\;jsessionid=[^\?#]*)?(\?[^#]*)?(#.*)?$</from>
+        <to last="true">$1.action$2$3</to>
+    </rule>
     <!-- 
     	Outbound Rules
      -->

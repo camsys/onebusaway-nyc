@@ -42,6 +42,10 @@
 					<s:url var="url" action="api-key"/>
 					<s:a href="%{url}">Create API key</s:a>
 				</li>
+				<li>
+					<s:url var="url" action="api-keys"/>
+					<s:a href="%{url}">Create API key (Legacy)</s:a>
+				</li>
 				<s:if test="adminUser">
 					<li>
 						<s:url var="url" action="manage-bundles" namespace="/admin/bundles"/>
