@@ -28,9 +28,10 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
-//@Component
+// @Component
 public class TransitionRule implements SensorModelRule {
 
   private VehicleStateLibrary _vehicleStateLibrary;
@@ -44,27 +45,27 @@ public class TransitionRule implements SensorModelRule {
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
 
-    VehicleState parentState = context.getParentState();
-    VehicleState state = context.getState();
-    Observation obs = context.getObservation();
+    final VehicleState parentState = context.getParentState();
+    final VehicleState state = context.getState();
+    final Observation obs = context.getObservation();
 
-    Observation prevObs = obs.getPreviousObservation();
+    final Observation prevObs = obs.getPreviousObservation();
 
     if (parentState == null || prevObs == null)
       return new SensorModelResult("pTransition (n/a)");
 
-    JourneyState parentJourneyState = parentState.getJourneyState();
-    JourneyState journeyState = state.getJourneyState();
+    final JourneyState parentJourneyState = parentState.getJourneyState();
+    final JourneyState journeyState = state.getJourneyState();
 
-    EVehiclePhase parentPhase = parentJourneyState.getPhase();
-    EVehiclePhase phase = journeyState.getPhase();
+    final EVehiclePhase parentPhase = parentJourneyState.getPhase();
+    final EVehiclePhase phase = journeyState.getPhase();
 
-    SensorModelResult result = new SensorModelResult("pTransition");
+    final SensorModelResult result = new SensorModelResult("pTransition");
 
     /**
      * Transition During to Before => out of service or at base
      */
-    boolean transitionDuringToBefore = EVehiclePhase.isActiveDuringBlock(parentPhase)
+    final boolean transitionDuringToBefore = EVehiclePhase.isActiveDuringBlock(parentPhase)
         && EVehiclePhase.isActiveBeforeBlock(phase);
 
     boolean wasOffRoute = false;
@@ -73,27 +74,26 @@ public class TransitionRule implements SensorModelRule {
           parentState.getBlockState());
 
     boolean endOfBlock = false;
-    BlockState blockState = state.getBlockState();
+    final BlockState blockState = state.getBlockState();
     if (blockState != null
-        && (blockState.getBlockLocation().getNextStop() == null 
-          || SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(blockState) > 0.9))
+        && (blockState.getBlockLocation().getNextStop() == null || SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(blockState) > 0.9))
       endOfBlock = true;
 
     /**
      * Added this hack to allow no block transitions after finishing one.
      */
     boolean wasAtEndOfBlock = false;
-    BlockState parentBlockState = parentState.getBlockState() != null
+    final BlockState parentBlockState = parentState.getBlockState() != null
         ? parentState.getBlockState() : null;
     if (parentBlockState != null
         && blockState == null
-        && (parentBlockState.getBlockLocation().getNextStop() == null 
-          || SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9))
+        && (parentBlockState.getBlockLocation().getNextStop() == null || SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9))
       wasAtEndOfBlock = true;
 
-    double pTransitionFromDuringToBefore = implies(p(transitionDuringToBefore),
-        p(obs.isAtBase() || obs.hasOutOfServiceDsc() || wasOffRoute || endOfBlock
-            || wasAtEndOfBlock));
+    final double pTransitionFromDuringToBefore = implies(
+        p(transitionDuringToBefore),
+        p(obs.isAtBase() || obs.hasOutOfServiceDsc() || wasOffRoute
+            || endOfBlock || wasAtEndOfBlock));
 
     result.addResultAsAnd(
         "Transition During to Before => out of service OR at base OR was off route OR just finished block",

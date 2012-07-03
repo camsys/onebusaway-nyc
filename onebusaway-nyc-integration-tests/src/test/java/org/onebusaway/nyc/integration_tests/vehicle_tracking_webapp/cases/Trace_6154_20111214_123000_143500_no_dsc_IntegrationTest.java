@@ -26,7 +26,6 @@ public class Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest extends Ab
   public Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest() throws Exception {
     super("6154_20111214_123000_143500_no-dsc.csv.gz");
     setBundle("si", "2011-12-07T00:00:00EDT");
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.90);
     
     /*- TODO 
      * This is due to records 182-184, which can be sampled as in-progress.
@@ -34,6 +33,7 @@ public class Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest extends Ab
      * (goes from 12 min to 23 min sched. dev. when inferring in-progress),
      * but that will potentially harm other things.
      */
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0d);
     setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0d);
     setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_DURING, 0.68);
     setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.90);

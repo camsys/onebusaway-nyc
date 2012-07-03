@@ -132,9 +132,7 @@ jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
 
 var timeout = null;
 
-jQuery(document).ready(function() {
-	
-	
+jQuery(function() {
 	//Initialize tabs
 	jQuery("#tabs").tabs();
 	
@@ -190,7 +188,7 @@ jQuery(document).ready(function() {
 				  return $(element).text();  
 				}); 
 			if (names.length > 0) {
-				var $element = jQuery("#manage-bundles_directoryName");
+				var $element = jQuery("#createDirectory #directoryName");
 				// only return the first selection, as multiple selections are possible
 				$element.attr("value", names[0]);
 				jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
@@ -234,8 +232,9 @@ jQuery(document).ready(function() {
 	jQuery("#buildBundle_buildButton").click(onBuildClick);
 	
 	//Enable or disable create/select button when user enters/removes directory name
-	jQuery("#manage-bundles_directoryName").live("input", function() {
-		var text = jQuery("#manage-bundles_directoryName").val();
+	//Using delegate() here as live() does not work in IE
+	jQuery("#createDirectory").delegate("#directoryName","input", function() {
+		var text = jQuery("#createDirectory #directoryName").val();
 		if(text.length > 0) {
 			enableSelectButton();
 		} else {
@@ -244,7 +243,6 @@ jQuery(document).ready(function() {
 			disableContinueButton(jQuery("#create_continue"));
 		}
 	});
-	
 });
 
 function onCreateContinueClick() {
@@ -263,14 +261,14 @@ function onPrevalidateContinueClick() {
 }
 
 function onSelectClick() {
-	var bundleDir = jQuery("#manage-bundles_directoryName").val();
+	var bundleDir = jQuery("#createDirectory #directoryName").val();
 	var actionName = "selectDirectory";
 	
 	if (jQuery("#create").is(":checked")) {
 		actionName = "createDirectory";
 	}
 		jQuery.ajax({
-			url: "manage-bundles!" + actionName + ".action",
+			url: "manage-bundles!" + actionName + ".action?ts=" +new Date().getTime(),
 			type: "POST",
 			data: {"directoryName":  bundleDir},
 			async: false,
@@ -289,9 +287,9 @@ function onSelectClick() {
 					var bundleDir = status.directoryName;
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
 					jQuery("#buildBundle_bundleDirectory").text(bundleDir);
-					jQuery("#uploadFiles #s3_details #s3_location").text(status.bucketName);
-					jQuery("#uploadFiles #gtfs_details #gtfs_location").text(bundleDir + "/" + status.gtfsPath + " directory");
-					jQuery("#uploadFiles #stif_details #stif_location").text(bundleDir + "/" + status.stifPath + " directory");
+					jQuery("#s3_location").text(status.bucketName);
+					jQuery("#gtfs_location").text(bundleDir + "/" + status.gtfsPath + " directory");
+					jQuery("#stif_location").text(bundleDir + "/" + status.stifPath + " directory");
 					enableContinueButton(jQuery("#upload_continue"));
 				} else {
 					alert("null status");
@@ -299,6 +297,7 @@ function onSelectClick() {
 			},
 			error: function(request) {
 				alert("There was an error processing your request. Please try again.");
+				alert(request.statusText);
 			}
 		});
 }
@@ -359,7 +358,7 @@ function changeImageSrc($image) {
 function directoryOptionChanged() {
 	//Clear the results regardless of the selection
 	jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
-	jQuery("#manage-bundles_directoryName").val("");
+	jQuery("#createDirectory #directoryName").val("");
 	jQuery("#createDirectory #createDirectoryContents #directoryButton").attr("disabled", "disabled")
 		.css("color", "#999");
 	
@@ -475,7 +474,7 @@ function updateValidateStatus() {
 // populate list of files that were result of validation
 function updateValidateList(id) {
 	jQuery.ajax({
-		url: "manage-bundles!fileList.action",
+		url: "manage-bundles!fileList.action?ts=" +new Date().getTime(),
 		type: "POST",
 		data: {"id": id},
 		async: false,
@@ -510,7 +509,7 @@ function updateValidateList(id) {
 }
 
 function onBuildClick() {
-	var bundleDir = jQuery("#manage-bundles_directoryName").val();
+	var bundleDir = jQuery("#createDirectory #directoryName").val();
 	var bundleName = jQuery("#buildBundle_bundleName").val();
 	var startDate = jQuery("#startDate").val();
 	var endDate = jQuery("#endDate").val();
@@ -655,7 +654,7 @@ function updateBuildStatus() {
 function updateBuildList(id) {
 	var summaryList = null;
 		jQuery.ajax({
-		url: "manage-bundles!downloadOutputFile.action",
+		url: "manage-bundles!downloadOutputFile.action?ts=" +new Date().getTime(),
 		type: "POST",
 		data: {"id": id,
 			   "downloadFilename": "summary.csv"},
@@ -676,7 +675,7 @@ function updateBuildList(id) {
 			fileCountMap[dataField[0]] = dataField[2];
 		}
 	jQuery.ajax({
-		url: "manage-bundles!buildList.action",
+		url: "manage-bundles!buildList.action?ts=" +new Date().getTime(),
 		type: "POST",
 		data: {"id": id},
 		async: false,
@@ -732,4 +731,6 @@ function updateBuildList(id) {
     });
     return nvpair;
   }
+  
+
 

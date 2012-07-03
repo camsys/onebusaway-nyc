@@ -88,10 +88,8 @@ public final class VehicleState implements Comparable<VehicleState> {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper("VehicleState")
-        .add("journeyState", journeyState)
-        .addValue(blockStateObservation)
-        .toString();
+    return Objects.toStringHelper("VehicleState").add("journeyState",
+        journeyState).addValue(blockStateObservation).toString();
   }
 
   /**

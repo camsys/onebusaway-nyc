@@ -52,7 +52,7 @@ import java.util.TreeSet;
 public class ParticleFilter<OBS> {
 
   private static Logger _log = LoggerFactory.getLogger(ParticleFilter.class);
-  
+
   public class SensorModelParticleResult {
     public Particle _particle;
     public SensorModelResult _result;

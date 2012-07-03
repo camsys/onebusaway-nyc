@@ -38,7 +38,6 @@ import org.apache.commons.math.util.FastMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import umontreal.iro.lecuyer.rng.MRG32k3a;
 import umontreal.iro.lecuyer.rng.RandomStream;
@@ -119,7 +118,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   static private Random localRandom = new Random();
-  
+
   synchronized public static void setSeed(long seed) {
     if (!ParticleFilter.getReproducibilityEnabled()) {
       threadLocalRng = new LocalRandom(seed);
@@ -128,11 +127,11 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     }
     localRandom.setSeed(seed);
   }
-  
+
   public static Random getLocalRng() {
     return localRandom;
   }
-  
+
   public static ThreadLocal<RandomStream> getThreadLocalRng() {
     return threadLocalRng;
   }
@@ -145,7 +144,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   public void setSensorModelLibrary(SensorModelSupportLibrary sensorModelLibrary) {
     _sensorModelLibrary = sensorModelLibrary;
   }
-  
+
   @Autowired
   public void setBlocksFromObservationService(
       BlocksFromObservationService blocksFromObservationService) {
@@ -183,13 +182,14 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     double normOffset = Double.NEGATIVE_INFINITY;
     for (int i = 0; i < _initialNumberOfParticles; ++i) {
       final CategoricalDist<Particle> transitionProb = new CategoricalDist<Particle>();
- 
+
       for (final BlockStateObservation blockState : potentialBlocks) {
         final SensorModelResult transProb = new SensorModelResult("transition");
         final double inMotionSample = threadLocalRng.get().nextDouble();
         final boolean vehicleNotMoved = inMotionSample < 0.5;
-        final MotionState motionState = _motionModel.updateMotionState(obs, vehicleNotMoved);
-  
+        final MotionState motionState = _motionModel.updateMotionState(obs,
+            vehicleNotMoved);
+
         BlockStateObservation sampledBlockState;
         if (blockState != null) {
           /*
@@ -206,21 +206,29 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
           sampledBlockState = null;
         }
         final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
-            sampledBlockState, obs, vehicleNotMoved);
-  
+            sampledBlockState, null, obs, vehicleNotMoved);
+
         final VehicleState state = vehicleState(motionState, sampledBlockState,
             journeyState, obs);
         final Context context = new Context(null, state, obs);
-        
-        transProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(_sensorModelLibrary, context));
-        transProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(null, context));
-        transProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(null, context));
-        transProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(null, context));
-        transProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(null, context));
-        transProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(null, context));
-        transProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(null, context));
-        transProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(null, context));
-        
+
+        transProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(
+            _sensorModelLibrary, context));
+        transProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(
+            null, context));
+        transProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(
+            null, context));
+        transProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(null,
+            context));
+        transProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(null,
+            context));
+        transProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(
+            null, context));
+        transProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(
+            null, context));
+        transProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(
+            null, context));
+
         final Particle newParticle = new Particle(timestamp, null, 0.0, state);
         newParticle.setResult(transProb);
 
@@ -235,39 +243,50 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       } else {
         final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();
         final boolean vehicleNotMoved = inMotionSample < 0.5;
-        final MotionState motionState = _motionModel.updateMotionState(obs, vehicleNotMoved);
+        final MotionState motionState = _motionModel.updateMotionState(obs,
+            vehicleNotMoved);
         final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
-            null, obs, vehicleNotMoved);
+            null, null, obs, vehicleNotMoved);
         final VehicleState nullState = new VehicleState(motionState, null,
             journeyState, null, obs);
         final Context context = new Context(null, nullState, obs);
-        final SensorModelResult priorProb = new SensorModelResult("prior creation");
-        priorProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(null, context));
-        priorProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(null, context));
-        priorProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(null, context));
-        priorProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(null, context));
-        priorProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(null, context));
-        priorProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(null, context));
-        priorProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(null, context));
-        priorProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(null, context));
-        
+        final SensorModelResult priorProb = new SensorModelResult(
+            "prior creation");
+        priorProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(
+            null, context));
+        priorProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(
+            null, context));
+        priorProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(
+            null, context));
+        priorProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(null,
+            context));
+        priorProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(null,
+            context));
+        priorProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(
+            null, context));
+        priorProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(
+            null, context));
+        priorProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(
+            null, context));
+
         newSample = new Particle(timestamp, null, 0.0, nullState);
         newSample.setResult(priorProb);
         particles.add(newSample);
         newSample.setLogWeight(newSample.getResult().getLogProbability());
       }
-      
+
       normOffset = LogMath.add(newSample.getLogWeight(), normOffset);
     }
 
     /*
      * Normalize
      */
-    for (Entry<Particle> p : particles.entrySet()) {
-      p.getElement().setLogNormedWeight(p.getElement().getLogWeight()
-          + FastMath.log(p.getCount()) - normOffset);
+    for (final Entry<Particle> p : particles.entrySet()) {
+      p.getElement().setLogNormedWeight(
+          p.getElement().getLogWeight() + FastMath.log(p.getCount())
+              - normOffset);
     }
-     
+
     return particles;
   }
 
@@ -275,15 +294,14 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       BlockStateObservation blockState, JourneyState journeyState,
       Observation obs) {
 
-    List<JourneyPhaseSummary> summaries = null;
-//    if (ParticleFilter.getDebugEnabled()) {
-//      summaries = _journeyStatePhaseLibrary.extendSummaries(null, blockState,
-//          journeyState, obs);
-//    }
+    final List<JourneyPhaseSummary> summaries = null;
+    // if (ParticleFilter.getDebugEnabled()) {
+    // summaries = _journeyStatePhaseLibrary.extendSummaries(null, blockState,
+    // journeyState, obs);
+    // }
 
     return new VehicleState(motionState, blockState, journeyState, summaries,
         obs);
   }
-
 
 }

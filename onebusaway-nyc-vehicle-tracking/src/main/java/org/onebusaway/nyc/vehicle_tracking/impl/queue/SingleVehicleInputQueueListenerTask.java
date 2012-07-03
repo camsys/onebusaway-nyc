@@ -26,8 +26,9 @@ public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
     _vehicleLocationService = vehicleLocationService;
   }
 
+  @Override
   public String getQueueDisplayName() {
-      return "SingleVehicleInputQueueListenerTask";
+    return "SingleVehicleInputQueueListenerTask";
   }
 
   @Override

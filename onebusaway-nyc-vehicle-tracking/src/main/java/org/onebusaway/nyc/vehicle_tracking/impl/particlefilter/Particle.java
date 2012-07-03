@@ -17,10 +17,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 
@@ -69,7 +67,8 @@ public class Particle implements Serializable, Comparable<Particle> {
     this(timestamp, parent, logWeight, null);
   }
 
-  public Particle(double timestamp, Particle parent, double logWeight, Object data) {
+  public Particle(double timestamp, Particle parent, double logWeight,
+      Object data) {
     _timestamp = timestamp;
     _parent = parent;
     _logWeight = logWeight;
@@ -111,7 +110,7 @@ public class Particle implements Serializable, Comparable<Particle> {
   public void setWeight(double weight) {
     _logWeight = FastMath.log(weight);
   }
-  
+
   public void setLogWeight(double logWeight) {
     _logWeight = logWeight;
   }
@@ -160,12 +159,9 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper("Particle")
-        .add("time", _timestamp)
-        .add("weight", _logWeight)
-        .add("data", _data)
-        .add("parentState", _parent != null ? _parent.getData() : null)
-        .toString();
+    return Objects.toStringHelper("Particle").add("time", _timestamp).add(
+        "weight", _logWeight).add("data", _data).add("parentState",
+        _parent != null ? _parent.getData() : null).toString();
   }
 
   private static class ParticleDataOrdering extends Ordering<Object> {
@@ -196,9 +192,9 @@ public class Particle implements Serializable, Comparable<Particle> {
     }
 
     final int particleComp = ComparisonChain.start().compare(t.getTimestamp(),
-        o.getTimestamp(), Ordering.natural().reverse()).compare(t.getLogWeight(),
-        o.getLogWeight(), Ordering.natural().reverse()).compare(t.getData(),
-        o.getData(), _particleDataOrdering.nullsLast()).result();
+        o.getTimestamp(), Ordering.natural().reverse()).compare(
+        t.getLogWeight(), o.getLogWeight(), Ordering.natural().reverse()).compare(
+        t.getData(), o.getData(), _particleDataOrdering.nullsLast()).result();
     return particleComp;
   }
 
@@ -315,7 +311,7 @@ public class Particle implements Serializable, Comparable<Particle> {
       this._result = transResult;
     }
   }
-  
+
   public SensorModelResult getTransResult() {
     return this._transResult;
   }
@@ -331,15 +327,15 @@ public class Particle implements Serializable, Comparable<Particle> {
   public void setTransitions(Multiset<Particle> transitions) {
     _transitions = transitions;
   }
-  
-//  static public class logWeightGetter implements Function<Particle, Double> {
-//    @Override
-//    public Double apply(Particle input) {
-//      return input.getLogWeight();
-//    }
-//  }
-  
-//  
+
+  // static public class logWeightGetter implements Function<Particle, Double> {
+  // @Override
+  // public Double apply(Particle input) {
+  // return input.getLogWeight();
+  // }
+  // }
+
+  //
 
   public void setLogNormedWeight(double d) {
     _logNormedWeight = d;
@@ -350,4 +346,3 @@ public class Particle implements Serializable, Comparable<Particle> {
   }
 
 }
-

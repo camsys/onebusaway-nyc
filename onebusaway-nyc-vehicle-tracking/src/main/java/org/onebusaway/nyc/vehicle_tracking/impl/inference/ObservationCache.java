@@ -44,8 +44,8 @@ public class ObservationCache {
       new CacheLoader<AgencyAndId, LoadingCache<Observation, ObservationContents>>() {
 
         @Override
-        public LoadingCache<Observation, ObservationContents> load(AgencyAndId key)
-            throws Exception {
+        public LoadingCache<Observation, ObservationContents> load(
+            AgencyAndId key) throws Exception {
           return CacheBuilder.newBuilder().concurrencyLevel(1).weakKeys().maximumSize(
               2).build(new CacheLoader<Observation, ObservationContents>() {
 

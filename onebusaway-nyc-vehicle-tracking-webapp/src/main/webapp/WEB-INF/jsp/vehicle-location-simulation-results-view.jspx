@@ -46,12 +46,14 @@ Location Simulation Console</a></p>
             <td>Vehicle Id</td>
             <td>Reported Run</td>
             <td>DSC</td>
+            <td>Inf. DSC</td>
             <td>Actual Trip</td>
             <td>Inf. Trip</td>
             <td>Actual Sched. Time</td>
             <td>Inf. Sched. Time</td>
             <td>Actual Phase</td>
             <td>Inf. Phase</td>
+            <td>Inf. Status</td>
             <td>Actual DAB</td>
             <td>Inf. DAB</td>
         </tr>
@@ -59,7 +61,7 @@ Location Simulation Console</a></p>
     <tbody>
         <c:forEach var="record" items="${records}">
             <tr>
-		            <td align='center'><a href="vehicle-location-simulation!task-details.do?taskId=${taskId}&amp;recordNumber=${record.recordNumber}">
+		            <td align='center' bgcolor='#cdc9c9'><a href="vehicle-location-simulation!task-details.do?taskId=${taskId}&amp;recordNumber=${record.recordNumber}">
 		            <c:out value="${record.recordNumber}" />
 		            </a></td>
                 <td align='center'>
@@ -68,9 +70,10 @@ Location Simulation Console</a></p>
 	              <td align='center' bgcolor='#cdc9c9'><c:out value="${fn:replace(record.vehicleId, '_', ' ')}"/></td>
                 <td align='center'><c:out value="${record.reportedRunId}" /></td>
                 <td align='center' bgcolor='#cdc9c9'><c:out value="${record.dsc}" /></td>
+                <td align='center'><c:out value="${record.inferredDsc}" /></td>
                 
-                <td align='center'><c:out value="${record.actualTripId}" /></td>
-                <c:set var="bgcolor1" value="#cdc9c9"/>
+                <td align='center' bgcolor='#cdc9c9'><c:out value="${record.actualTripId}" /></td>
+                <c:set var="bgcolor1" value=""/>
                 <c:if test="${record.actualTripId != record.inferredTripId}">
                     <c:set var="bgcolor1" value="#ff6347"/>
                 </c:if>
@@ -84,7 +87,7 @@ Location Simulation Console</a></p>
 	                <fmt:formatNumber var="actualSchedHoursDisp" value="${fn:substringBefore(actualSchedHours, '.')}" pattern="#0" maxFractionDigits="0" />
 	                <c:set var="actualSchedTimeFormat" value="${actualSchedHoursDisp}:${actualSchedMinsDisp}"/>
                 </c:if>
-                <td align='center'><c:out value="${actualSchedTimeFormat}" /></td>
+                <td align='center' bgcolor='#cdc9c9'><c:out value="${actualSchedTimeFormat}" /></td>
                 <c:set var="infSchedTimeFormat" value="NA"/>
                 <c:if test="${record.inferredScheduleTime > 0}">
                   <c:set var="infSchedMins" value="${record.inferredScheduleTime/60.0}"/>
@@ -93,17 +96,18 @@ Location Simulation Console</a></p>
 	                <fmt:formatNumber var="infSchedHoursDisp" value="${fn:substringBefore(infSchedHours, '.')}" pattern="#0" maxFractionDigits="0" />
 	                <c:set var="infSchedTimeFormat" value="${infSchedHoursDisp}:${infSchedMinsDisp}"/>
                 </c:if>
-                <td align='center' bgcolor='#cdc9c9'><c:out value="${infSchedTimeFormat}" /></td>
-	              <td align='center'><c:out value="${fn:replace(record.actualPhase, '_', ' ')}"/></td>
-                <c:set var="bgcolor2" value="#cdc9c9"/>
+                <td align='center'><c:out value="${infSchedTimeFormat}" /></td>
+	              <td align='center' bgcolor='#cdc9c9'><c:out value="${fn:replace(record.actualPhase, '_', ' ')}"/></td>
+                <c:set var="bgcolor2" value=""/>
                 <c:if test="${record.actualPhase != record.inferredPhase}">
                     <c:set var="bgcolor2" value="#ff6347"/>
                 </c:if>
 	              <td align='center' bgcolor='${bgcolor2}'><c:out value="${fn:replace(record.inferredPhase, '_', ' ')}"/></td>
+	              <td align='center' bgcolor='#cdc9c9'><c:out value="${record.inferredStatus}"/></td>
                 <fmt:formatNumber var="actualDab" value="${record.actualDistanceAlongBlock}" maxFractionDigits="1" />
                 <fmt:formatNumber var="infDab" value="${record.inferredDistanceAlongBlock}" maxFractionDigits="1" />
                 <td align='center'><c:out value="${actualDab}" /></td>
-                <td align='center' bgcolor='${bgcolor2}'><c:out value="${infDab}" /></td>
+                <td align='center' bgcolor='#cdc9c9'><c:out value="${infDab}" /></td>
             </tr>
         </c:forEach>
     </tbody>

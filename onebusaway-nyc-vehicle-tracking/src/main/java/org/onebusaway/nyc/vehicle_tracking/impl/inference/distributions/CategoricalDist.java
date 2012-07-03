@@ -23,7 +23,6 @@ import gov.sandia.cognition.math.LogMath;
 import gov.sandia.cognition.math.matrix.Vector;
 import gov.sandia.cognition.math.matrix.VectorEntry;
 import gov.sandia.cognition.math.matrix.VectorFactory;
-import gov.sandia.cognition.math.matrix.mtj.DenseVectorFactoryMTJ;
 import gov.sandia.cognition.statistics.distribution.MultinomialDistribution;
 
 import com.google.common.base.Preconditions;
@@ -34,7 +33,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 
 import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,9 +43,9 @@ import java.util.Random;
 public class CategoricalDist<T extends Comparable<T>> {
 
   private static final boolean _sort = true;
-  
+
   /*
-   * equals log(p1 + p2 + ...) 
+   * equals log(p1 + p2 + ...)
    */
   private double _logCumulativeProb = Double.NEGATIVE_INFINITY;
 
@@ -121,6 +119,7 @@ public class CategoricalDist<T extends Comparable<T>> {
 
   /**
    * Adds a LOG value to the distribution.
+   * 
    * @param logProb
    * @param object
    */
@@ -132,7 +131,7 @@ public class CategoricalDist<T extends Comparable<T>> {
       return;
 
     _logCumulativeProb = LogMath.add(_logCumulativeProb, logProb);
-    double lastVal = _entriesToLogProbs.putIfAbsent(object, logProb);
+    final double lastVal = _entriesToLogProbs.putIfAbsent(object, logProb);
     if (_entriesToLogProbs.getNoEntryValue() != lastVal)
       _entriesToLogProbs.put(object, LogMath.add(lastVal, logProb));
 
@@ -158,39 +157,40 @@ public class CategoricalDist<T extends Comparable<T>> {
     if (_emd == null) {
       initializeDistribution();
     }
-    
 
     _emd.setNumTrials(1);
     final Vector sampleRes = _emd.sample(threadLocalRng.get());
-    final int newIdx = Iterables.indexOf(sampleRes, new Predicate<VectorEntry> () {
-      @Override
-      public boolean apply(VectorEntry input) {
-        return Double.compare(input.getValue(), 0.0) >= 1;
-      }
-    });
-    
-//    final double u = threadLocalRng.get().nextDouble();
-//    final int newIdx = (int) emd.inverseF(u);
+    final int newIdx = Iterables.indexOf(sampleRes,
+        new Predicate<VectorEntry>() {
+          @Override
+          public boolean apply(VectorEntry input) {
+            return Double.compare(input.getValue(), 0.0) >= 1;
+          }
+        });
 
-    return (T)_entries[_objIdx.get(newIdx)];
+    // final double u = threadLocalRng.get().nextDouble();
+    // final int newIdx = (int) emd.inverseF(u);
+
+    return (T) _entries[_objIdx.get(newIdx)];
   }
 
   private void initializeDistribution() {
-    double[] entriesToProbs = _entriesToLogProbs.values();
+    final double[] entriesToProbs = _entriesToLogProbs.values();
     double[] probVector = new double[entriesToProbs.length];
     for (int i = 0; i < probVector.length; ++i) {
       probVector[i] = FastMath.exp(entriesToProbs[i] - _logCumulativeProb);
     }
     _entries = _entriesToLogProbs.keys();
     for (int i = 0; i < _entries.length; ++i) {
-     _objIdx.add(i); 
+      _objIdx.add(i);
     }
     if (_sort) {
       probVector = handleSort(probVector);
     }
-    _emd = new MultinomialDistribution(VectorFactory.getDefault().copyArray(probVector), 1);
+    _emd = new MultinomialDistribution(VectorFactory.getDefault().copyArray(
+        probVector), 1);
   }
-  
+
   /**
    * Sorts _objIdx and returns the reordered probabilities vector.
    * 
@@ -205,11 +205,12 @@ public class CategoricalDist<T extends Comparable<T>> {
       @SuppressWarnings("unchecked")
       @Override
       public int compare(Integer arg0, Integer arg1) {
-        T p0 = (T)mapKeys[arg0];
-        T p1 = (T)mapKeys[arg1];
-        int probComp = Double.compare(_entriesToLogProbs.get(p0), _entriesToLogProbs.get(p1));
-        if(probComp == 0)
-          probComp = p0.compareTo(p1); 
+        final T p0 = (T) mapKeys[arg0];
+        final T p1 = (T) mapKeys[arg1];
+        int probComp = Double.compare(_entriesToLogProbs.get(p0),
+            _entriesToLogProbs.get(p1));
+        if (probComp == 0)
+          probComp = p0.compareTo(p1);
         return probComp;
       }
     });
@@ -222,7 +223,7 @@ public class CategoricalDist<T extends Comparable<T>> {
 
   @SuppressWarnings("unchecked")
   public Multiset<T> sample(int samples) {
-    
+
     Preconditions.checkArgument(samples > 0);
     Preconditions.checkState(!_entriesToLogProbs.isEmpty(),
         "No entries in the CDF");
@@ -231,20 +232,21 @@ public class CategoricalDist<T extends Comparable<T>> {
 
     final Multiset<T> sampled = HashMultiset.create(samples);
     if (_entriesToLogProbs.size() == 1) {
-      sampled.add(Iterables.getOnlyElement(_entriesToLogProbs.keySet()), samples);
+      sampled.add(Iterables.getOnlyElement(_entriesToLogProbs.keySet()),
+          samples);
     } else {
 
       if (_emd == null) {
         initializeDistribution();
       }
-      
+
       _emd.setNumTrials(samples);
       final Vector sampleRes = _emd.sample(threadLocalRng.get());
-      
+
       int i = 0;
-      for (VectorEntry ventry : sampleRes) {
+      for (final VectorEntry ventry : sampleRes) {
         if (ventry.getValue() > 0.0)
-          sampled.add((T)_entries[_objIdx.get(i)], (int)ventry.getValue());
+          sampled.add((T) _entries[_objIdx.get(i)], (int) ventry.getValue());
         i++;
       }
     }
@@ -261,7 +263,8 @@ public class CategoricalDist<T extends Comparable<T>> {
   }
 
   public boolean canSample() {
-    return !_entriesToLogProbs.isEmpty() && !Double.isInfinite(_logCumulativeProb);
+    return !_entriesToLogProbs.isEmpty()
+        && !Double.isInfinite(_logCumulativeProb);
   }
 
   public int size() {
@@ -272,7 +275,7 @@ public class CategoricalDist<T extends Comparable<T>> {
   public String toString() {
     return _entriesToLogProbs.toString();
   }
-  
+
   public double getCummulativeProb() {
     return FastMath.exp(_logCumulativeProb);
   }
@@ -280,7 +283,7 @@ public class CategoricalDist<T extends Comparable<T>> {
   public double logDensity(T thisState) {
     return _entriesToLogProbs.get(thisState);
   }
-  
+
   public double density(T thisState) {
     return FastMath.exp(_entriesToLogProbs.get(thisState));
   }

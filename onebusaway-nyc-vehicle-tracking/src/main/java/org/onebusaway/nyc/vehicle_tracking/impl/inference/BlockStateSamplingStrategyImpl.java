@@ -19,8 +19,6 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.EdgeLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.GpsLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
@@ -31,7 +29,6 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 
 import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
-import gov.sandia.cognition.statistics.distribution.UnivariateGaussian;
 
 import com.google.common.collect.Iterables;
 
@@ -41,7 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import umontreal.iro.lecuyer.randvar.FoldedNormalGen;
-import umontreal.iro.lecuyer.randvar.NormalGen;
 
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
@@ -101,30 +97,29 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   /*
-  @Override
-  public BlockStateObservation sampleGpsObservationState(
-      BlockStateObservation parentBlockStateObs, Observation obs) {
-
-    double distAlongSample;
-    final BlockState parentBlockState = parentBlockStateObs.getBlockState();
-    final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
-    distAlongSample = NormalGen.nextDouble(
-        ParticleFactoryImpl.getThreadLocalRng().get(), parentDistAlong,
-        GpsLikelihood.gpsStdDev / 2);
-
-    if (distAlongSample > parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance()) {
-//      distAlongSample = parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance();
-      return null;
-    } else if (distAlongSample < 0.0) {
-      distAlongSample = 0.0;
-    }
-
-    final BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(
-        obs, parentBlockState.getBlockInstance(), distAlongSample);
-    return orientationCheck(parentBlockState, distState, obs);
-
-  }
-  */
+   * @Override public BlockStateObservation sampleGpsObservationState(
+   * BlockStateObservation parentBlockStateObs, Observation obs) {
+   * 
+   * double distAlongSample; final BlockState parentBlockState =
+   * parentBlockStateObs.getBlockState(); final double parentDistAlong =
+   * parentBlockState.getBlockLocation().getDistanceAlongBlock();
+   * distAlongSample = NormalGen.nextDouble(
+   * ParticleFactoryImpl.getThreadLocalRng().get(), parentDistAlong,
+   * GpsLikelihood.gpsStdDev / 2);
+   * 
+   * if (distAlongSample >
+   * parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance()) {
+   * // distAlongSample =
+   * parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance();
+   * return null; } else if (distAlongSample < 0.0) { distAlongSample = 0.0; }
+   * 
+   * final BlockStateObservation distState =
+   * _blocksFromObservationService.getBlockStateObservationFromDist( obs,
+   * parentBlockState.getBlockInstance(), distAlongSample); return
+   * orientationCheck(parentBlockState, distState, obs);
+   * 
+   * }
+   */
 
   @Override
   public BlockStateObservation sampleTransitionDistanceState(
@@ -133,38 +128,38 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     double distAlongSample;
     final BlockState parentBlockState = parentBlockStateObs.getBlockState();
     final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
-    
+
     if (!vehicleNotMoved) {
-      
+
       if (EVehiclePhase.DEADHEAD_DURING == phase) {
         /*
          * We use the observed distance moved in the direction of the next stop.
          */
-        BlockStopTimeEntry nextStop = parentBlockStateObs.getBlockState().getBlockLocation().getNextStop();
-        
-        if (nextStop == null || nextStop.getDistanceAlongBlock() <= parentDistAlong) {
+        final BlockStopTimeEntry nextStop = parentBlockStateObs.getBlockState().getBlockLocation().getNextStop();
+
+        if (nextStop == null
+            || nextStop.getDistanceAlongBlock() <= parentDistAlong) {
           distAlongSample = 0d;
         } else {
-        
+
           final double prevDistToNextStop = SphericalGeometryLibrary.distance(
-              obs.getPreviousObservation().getLocation(), nextStop.getStopTime().getStop().getStopLocation());
+              obs.getPreviousObservation().getLocation(),
+              nextStop.getStopTime().getStop().getStopLocation());
           final double currentDistToNextStop = SphericalGeometryLibrary.distance(
-              obs.getLocation(), nextStop.getStopTime().getStop().getStopLocation());
-        
+              obs.getLocation(),
+              nextStop.getStopTime().getStop().getStopLocation());
+
           double distAlongPrior = prevDistToNextStop - currentDistToNextStop;
-          
+
           if (distAlongPrior <= 0d)
             distAlongPrior = 0d;
-//          
-//          distAlongSample = EdgeLikelihood.deadDuringEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
+          //
+          // distAlongSample =
+          // EdgeLikelihood.deadDuringEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
           distAlongSample = distAlongPrior;
         }
-      } else if (
-          EVehiclePhase.DEADHEAD_AFTER == phase
-          || ((EVehiclePhase.DEADHEAD_BEFORE == phase
-              || EVehiclePhase.LAYOVER_BEFORE == phase)
-              && parentBlockStateObs.getScheduleDeviation() == 0d)
-          ){
+      } else if (EVehiclePhase.DEADHEAD_AFTER == phase
+          || ((EVehiclePhase.DEADHEAD_BEFORE == phase || EVehiclePhase.LAYOVER_BEFORE == phase) && parentBlockStateObs.getScheduleDeviation() == 0d)) {
         /*
          * Only start moving if it's supposed to be
          */
@@ -172,15 +167,19 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       } else {
         final double distAlongPrior = SphericalGeometryLibrary.distance(
             obs.getPreviousObservation().getLocation(), obs.getLocation());
-//        final double distAlongErrorSample = EdgeLikelihood.inProgressEdgeMovementDist.sample(
-//            ParticleFactoryImpl.getLocalRng());
+        // final double distAlongErrorSample =
+        // EdgeLikelihood.inProgressEdgeMovementDist.sample(
+        // ParticleFactoryImpl.getLocalRng());
         final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
-        final double distAlongErrorSample = ParticleFactoryImpl.getLocalRng().nextGaussian() 
-            * Math.pow(obsTimeDelta,2)/2d;
-        distAlongSample = distAlongPrior + (distAlongErrorSample > 0 ? distAlongErrorSample : 0d);
+        
+        final double distAlongErrorSample = ParticleFactoryImpl.getLocalRng().nextGaussian()
+            * 0.5d * Math.pow(obsTimeDelta, 2) / 2d;
+        distAlongSample = distAlongPrior
+            + distAlongErrorSample;
       }
-      
+
       distAlongSample += parentDistAlong;
+      
     } else {
       return new BlockStateObservation(parentBlockStateObs, obs);
     }
@@ -192,7 +191,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     final BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(
         obs, parentBlockState.getBlockInstance(), distAlongSample);
-    return orientationCheck(parentBlockState, distState, obs);
+    return orientationCheck(parentBlockStateObs, distState, obs);
   }
 
   @Override
@@ -209,12 +208,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     final double currentTime = (obs.getTime() - blockInstance.getServiceDate()) / 1000;
 
     /*
-     * TODO
-     * Note that we're using the non-run-matching prior distribution.
+     * TODO Note that we're using the non-run-matching prior distribution.
      */
     final StudentTDistribution schedDist = ScheduleLikelihood.getSchedDevNonRunDist();
-    final double newSchedTime = currentTime + 60d * schedDist.sample(
-        ParticleFactoryImpl.getLocalRng());
+    final double newSchedTime = currentTime + 60d
+        * schedDist.sample(ParticleFactoryImpl.getLocalRng());
 
     final int startSchedTime = Iterables.getFirst(
         blockInstance.getBlock().getStopTimes(), null).getStopTime().getArrivalTime();
@@ -226,19 +224,20 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
           obs, blockInstance, 0.0);
     } else if (endSchedTime < newSchedTime) {
-//      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
-//          obs, blockInstance, blockInstance.getBlock().getTotalBlockDistance());
+      // schedState =
+      // _blocksFromObservationService.getBlockStateObservationFromDist(
+      // obs, blockInstance, blockInstance.getBlock().getTotalBlockDistance());
       return null;
     } else {
       /**
-       * Important note about prior distribution sampling:
-       * to reduce/remove confusion caused by deadhead states
-       * having no pre-defined trajectory, we simply don't allow
-       * prior sampling of deadhead states for certain situations. 
+       * Important note about prior distribution sampling: to reduce/remove
+       * confusion caused by deadhead states having no pre-defined trajectory,
+       * we simply don't allow prior sampling of deadhead states for certain
+       * situations.
        */
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
-          obs, blockInstance, (int)newSchedTime);
-      if (!JourneyStateTransitionModel.isLocationOnATrip(schedState.getBlockState())) {
+          obs, blockInstance, (int) newSchedTime);
+      if (!schedState.isOnTrip()) {
         return null;
       }
     }
@@ -252,8 +251,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     final BlockState parentBlockState = parentBlockStateObs.getBlockState();
 
     final StudentTDistribution schedDist = ScheduleLikelihood.getSchedDistForBlockState(parentBlockStateObs);
-    final double newSchedDev = schedDist.sample(
-        ParticleFactoryImpl.getLocalRng());
+    final double newSchedDev = schedDist.sample(ParticleFactoryImpl.getLocalRng());
 
     final int currentTime = (int) (obs.getTime() - parentBlockState.getBlockInstance().getServiceDate()) / 1000;
     final int newSchedTime = currentTime - (int) (newSchedDev * 60.0);
@@ -267,63 +265,69 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
           obs, parentBlockState.getBlockInstance(), 0.0);
     } else if (endSchedTime < newSchedTime) {
-//      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
-//          obs,
-//          parentBlockState.getBlockInstance(),
-//          parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance());
+      // schedState =
+      // _blocksFromObservationService.getBlockStateObservationFromDist(
+      // obs,
+      // parentBlockState.getBlockInstance(),
+      // parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance());
       return null;
     } else {
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
           obs, parentBlockState.getBlockInstance(), newSchedTime);
     }
 
-    return orientationCheck(parentBlockState, schedState, obs);
+    return orientationCheck(parentBlockStateObs, schedState, obs);
   }
-  
+
   /**
    * Quick and dirty check for the direction of the trip.
-   * @param blockState
+   * 
+   * @param blockStateObs
    * @param observation
    * @return
    */
-  private BlockStateObservation orientationCheck(BlockState parentBlockState, 
-      BlockStateObservation blockState, Observation observation) {
+  private BlockStateObservation orientationCheck(
+      BlockStateObservation parentBlockStateObs,
+      BlockStateObservation blockStateObs, Observation observation) {
     Double obsOrientation = null;
     Double distMoved = null;
-    if (observation.getPreviousRecord() != null
-        && JourneyStateTransitionModel.isLocationOnATrip(blockState.getBlockState())) {
-      NycRawLocationRecord prevRecord = observation.getPreviousRecord();
-      obsOrientation = SphericalGeometryLibrary.getOrientation(prevRecord.getLatitude(),
-          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
-      distMoved = SphericalGeometryLibrary.distanceFaster(prevRecord.getLatitude(),
-          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
-      double orientDiff = Math.abs(obsOrientation - blockState.getBlockState().getBlockLocation().getOrientation());
-      if (orientDiff >= 95 && orientDiff <= 265 
+    if (observation.getPreviousRecord() != null && blockStateObs.isOnTrip()) {
+      final NycRawLocationRecord prevRecord = observation.getPreviousRecord();
+      obsOrientation = SphericalGeometryLibrary.getOrientation(
+          prevRecord.getLatitude(), prevRecord.getLongitude(),
+          observation.getLocation().getLat(),
+          observation.getLocation().getLon());
+      distMoved = SphericalGeometryLibrary.distanceFaster(
+          prevRecord.getLatitude(), prevRecord.getLongitude(),
+          observation.getLocation().getLat(),
+          observation.getLocation().getLon());
+      final double orientDiff = Math.abs(obsOrientation
+          - blockStateObs.getBlockState().getBlockLocation().getOrientation());
+      if (orientDiff >= 140d && orientDiff <= 225d
           && distMoved >= BlockStateService.getOppositeDirMoveCutoff()) {
         /*
-         * If we weren't previously on a trip, but were going
-         * the wrong direction, then truncate this sample up to
-         * the start of the trip. 
+         * If we weren't previously on a trip, but were going the wrong
+         * direction, then truncate this sample up to the start of the trip.
          */
-        if(parentBlockState != null
-            && !JourneyStateTransitionModel.isLocationOnATrip(parentBlockState)) {
-          final double adjustedDistAlong = blockState.getBlockState().getBlockLocation()
-              .getActiveTrip().getDistanceAlongBlock();
+        if (parentBlockStateObs != null && !parentBlockStateObs.isOnTrip()) {
+          final BlockState parentBlockState = parentBlockStateObs.getBlockState();
+          final double adjustedDistAlong = blockStateObs.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock();
           if (adjustedDistAlong > parentBlockState.getBlockLocation().getDistanceAlongBlock()
-              && adjustedDistAlong < blockState.getBlockState().getBlockLocation().getDistanceAlongBlock()) {
-            BlockStateObservation adjustedState = _blocksFromObservationService.getBlockStateObservationFromDist(
-                observation, parentBlockState.getBlockInstance(), adjustedDistAlong);
+              && adjustedDistAlong < blockStateObs.getBlockState().getBlockLocation().getDistanceAlongBlock()) {
+            final BlockStateObservation adjustedState = _blocksFromObservationService.getBlockStateObservationFromDist(
+                observation, parentBlockState.getBlockInstance(),
+                adjustedDistAlong);
             return adjustedState;
-          } 
+          }
           return null;
         } else {
           return null;
         }
       }
     }
-    
-    return blockState;
-    
+
+    return blockStateObs;
+
   }
 
 }
