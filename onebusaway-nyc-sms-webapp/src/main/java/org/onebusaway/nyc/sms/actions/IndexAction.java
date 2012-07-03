@@ -51,7 +51,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
 
 public class IndexAction extends SessionedIndexAction implements InitializingBean {
   
@@ -165,9 +164,18 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
             _searchResults.getRouteIdFilter().clear();
             _searchResults.addRouteIdFilters(justToGetAFilter.getRouteIdFilter());
             
+            // Filter the stop results down to the provided route for only up to one stop in each direction
+            filterStopSearchResultsToRouteFilterAndDirection();
+            
+            // If there is only one stop after filtering, choose it for the user and don't display the direction disambiguation screen
+            if (_searchResults.getMatches().size() == 1) {
+              commandString = "1";
+              continue;
+            }
+            
             _response = directionDisambiguationResponse();
             
-          } else if(_searchResults.getMatches().size() > 1 && StringUtils.isNumeric(commandString)) {
+          } else if(StringUtils.isNumeric(commandString)) {
             
             StopResult selectedStop = (StopResult)_searchResults.getMatches().get(Integer.parseInt(commandString) - 1);
             _searchResults.getMatches().clear();
@@ -542,22 +550,7 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
   
   private String directionDisambiguationResponse() throws Exception {
     
-    CollectionUtils.filter(_searchResults.getMatches(), new Predicate() {
-      
-      private Set<String> directionsInResults = new HashSet<String>();
-      
-      @Override
-      public boolean evaluate(Object arg0) {
-        StopResult stopResult = (StopResult)arg0;
-        for (RouteAtStop routeAtStop : stopResult.getRoutesAvailable()) {
-          if (_searchResults.getRouteIdFilter().contains(routeAtStop.getRoute().getId()) && !directionsInResults.contains(routeAtStop.getDirections().get(0).getDestination())) {
-            directionsInResults.add(routeAtStop.getDirections().get(0).getDestination());
-            return true;
-          }
-        }
-        return false;
-      }
-    });
+    filterStopSearchResultsToRouteFilterAndDirection();
     
     AgencyAndId id = AgencyAndIdLibrary.convertFromString((String)_searchResults.getRouteIdFilter().toArray()[0]);
     
@@ -917,6 +910,26 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
       }
     }
     return routes;
+  }
+  
+  private void filterStopSearchResultsToRouteFilterAndDirection() {
+    
+    CollectionUtils.filter(_searchResults.getMatches(), new Predicate() {
+      
+      private Set<String> directionsInResults = new HashSet<String>();
+      
+      @Override
+      public boolean evaluate(Object arg0) {
+        StopResult stopResult = (StopResult)arg0;
+        for (RouteAtStop routeAtStop : stopResult.getRoutesAvailable()) {
+          if (_searchResults.getRouteIdFilter().contains(routeAtStop.getRoute().getId()) && !directionsInResults.contains(routeAtStop.getDirections().get(0).getDestination())) {
+            directionsInResults.add(routeAtStop.getDirections().get(0).getDestination());
+            return true;
+          }
+        }
+        return false;
+      }
+    });
   }
   
   /**
