@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 
 public class IndexAction extends SessionedIndexAction implements InitializingBean {
   
@@ -198,7 +199,15 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
             if (aStopServingRouteInFilter != null && _searchResults.getRouteIdFilter() != null && _searchResults.getRouteIdFilter().size() > 0) {
               _response = directionDisambiguationResponse();
               
-              // Either there is no route id filter or none of our search results match the filter, so present
+              // If there is only one route served by the stops in our search results, set the command
+              // string as if the user had chosen this route. We are skipping asking them to do that.
+            } else if (getRoutesInSearchResults().size() == 1) {
+              
+              commandString = getRoutesInSearchResults().first();
+              continue;
+              
+              // There is more than one route served by the stops in our results and 
+              // either there is no route id filter or none of our search results match the filter, so present
               // the multiple stop response
             } else {
               _response = multipleStopResponse();
@@ -550,7 +559,16 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
       }
     });
     
-    String header = "Pick a direction:\n\n";
+    AgencyAndId id = AgencyAndIdLibrary.convertFromString((String)_searchResults.getRouteIdFilter().toArray()[0]);
+    
+    String a = null;
+    if (id.getId().toUpperCase().matches("^(A|E|I|O|U).*$")) {
+      a = "an";
+    } else {
+      a = "a";
+    }
+    
+    String header = "Pick " + a + " " + id.getId() + " direction:\n\n";
     
     List<String> choices = new ArrayList<String>();
     List<String> choiceNumbers = new ArrayList<String>();
@@ -633,7 +651,7 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
     String header = "Stop " + stopResult.getIdWithoutAgency() + "\n\n";
 
     String footer = "\nSend:\n";
-    footer += "Send R for refresh\n";
+    footer += "R for refresh\n";
     if (_searchResults.getRouteIdFilter().isEmpty()) {
       footer += stopResult.getIdWithoutAgency() + "+ROUTE for bus info\n";
     }
