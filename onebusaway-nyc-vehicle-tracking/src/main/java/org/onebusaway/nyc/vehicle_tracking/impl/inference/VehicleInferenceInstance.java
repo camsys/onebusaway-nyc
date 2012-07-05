@@ -732,10 +732,7 @@ public class VehicleInferenceInstance {
         	_configurationService.getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
       } else {
-    	// vehicles on detour should be in_progress with status=deviated 
     	if (state.getJourneyState().isDetour()) {
-    	  // remap this journey state to IN_PROGRESS to confirm to previous pilot project semantics.
-          record.setInferredPhase(EVehiclePhase.IN_PROGRESS.name());
           statusFields.add("deviated");
         }
       }
