@@ -90,8 +90,8 @@
 .submitForm {
 	overflow: none;
 	height: 80px; 
-	padding-right: 120px;
 	padding-left:20px;
+	padding-right: 20px;
 	margin-bottom: 30px;
 }
 
@@ -202,25 +202,28 @@
 }
 
 #createDirectory #selectExistingContents #currentDirectories {
-    display:table;
-    border-collapse:collapse;
     margin-top: 7px;
+    overflow: auto;
+    max-height: 100px;
 }
 
 #currentDirectories #listItem {
-	 display: table-row;
 	 cursor: pointer;
+	 display: table-row;
 }
 
 #currentDirectories .listData {
-	 display: table-cell;
 	 width: 200px;
 	 font-size: 12px;
+	 display: table-cell;
 }
 
-#createDirectory #createDirectoryContents .directoryName {
+#createDirectory #createDirectoryContents #directoryName {
 	width: 420px;
-	margin-right: 50px;
+}
+
+#createDirectory #createDirectoryContents #directoryButton {
+	margin-left: 60px;
 }
 
 #createDirectory #createDirectoryContents #createDirectoryResult {

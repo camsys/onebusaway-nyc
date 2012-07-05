@@ -34,7 +34,8 @@
 					Directory</label>
 			</div>
 			<div id="createDirectoryContents">
-				<input type="text" id="directoryName" class="directoryName" />
+				<input type="text" id="directoryName"/>
+				<label class="required">*</label>
 				<input type="button" id="directoryButton" value="Create"
 					class="inlineFormButton" disabled="disabled"/>
 				<div id="createDirectoryResult">
@@ -49,7 +50,7 @@
 					from below:</label>
 				<div id="currentDirectories">
 					<s:iterator value="%{existingDirectories}" status="directoryStatus">
-						<div id="listItem">
+						 <div id="listItem">
 							<div class="listData">
 								<strong><s:property value="name" /></strong>
 							</div>
@@ -59,7 +60,7 @@
 							<div class="listData">
 								<s:property value="creationTimestamp" />
 							</div>
-						</div>
+						</div> 
 					</s:iterator>
 				</div>
 			</div>
