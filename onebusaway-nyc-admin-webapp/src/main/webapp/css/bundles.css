@@ -93,6 +93,7 @@
 	padding-left:20px;
 	padding-right: 20px;
 	margin-bottom: 30px;
+	margin-top: 20px;
 }
 
 .submit_enabled {
@@ -158,7 +159,6 @@
 	height: 30px;
 	display: inline;
 	background-image:url('img/Button_background.png');
-	color: #999;
 }
 
 .directoryLabels {
@@ -249,20 +249,11 @@
 	display: none;
 }
 
-#createDirectory #advancedOptionsContents #production {
-	vertical-align: middle;
-	
-}
 
-#createDirectory #advancedOptionsContents #production #productionLabel {
-	margin-left: 50px;
-	margin-right: 20px;
-}
-
-#createDirectory #advancedOptionsContents #production .productionCheck {
-	padding-top: 20px;
+#advancedOptionsContents #production #productionCheck {
 	margin-top: 10px;
-	dispaly: inline;
+	margin-left: 50px;
+	margin-right: 10px;
 }
 
 #createDirectory #advancedOptionsContents #commentLabel {
@@ -273,21 +264,23 @@
 
 #createDirectory #advancedOptionsContents #commentBox {
 	padding-left: 50px;
-	
 }
 
-#createDirectory #advancedOptionsContents #commentBox .comments {
+#commentBox #comments {
 	width: 400px;
 	margin-right: 50px;
 	height: 50px;
+	float: left;
+	margin-top: 7px;
+	color: "#999";
 }
 
 #commentBox #create_comments {
 	border: 1px transparent;
 	width: 120px;
 	height: 40px;
-	display: inline;
 	background-image:url('img/Button_background.png');
+	margin-top: 20px;
 }
 
 #uploadFiles {
