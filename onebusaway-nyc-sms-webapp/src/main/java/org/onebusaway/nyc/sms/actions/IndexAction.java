@@ -645,7 +645,7 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
 
     String footer = "\nSend:\n";
     footer += "R for refresh\n";
-    if (_searchResults.getRouteIdFilter().isEmpty()) {
+    if (_searchResults.getRouteIdFilter().isEmpty() && stopResult.getStop().getRoutes().size() > 1) {
       footer += stopResult.getIdWithoutAgency() + "+ROUTE for bus info\n";
     }
 

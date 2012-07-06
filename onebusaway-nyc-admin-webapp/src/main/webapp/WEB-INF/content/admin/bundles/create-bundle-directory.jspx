@@ -34,7 +34,8 @@
 					Directory</label>
 			</div>
 			<div id="createDirectoryContents">
-				<input type="text" id="directoryName" class="directoryName" />
+				<input type="text" id="directoryName"/>
+				<label class="required">*</label>
 				<input type="button" id="directoryButton" value="Create"
 					class="inlineFormButton" disabled="disabled"/>
 				<div id="createDirectoryResult">
@@ -49,7 +50,7 @@
 					from below:</label>
 				<div id="currentDirectories">
 					<s:iterator value="%{existingDirectories}" status="directoryStatus">
-						<div id="listItem">
+						 <div id="listItem">
 							<div class="listData">
 								<strong><s:property value="name" /></strong>
 							</div>
@@ -59,7 +60,7 @@
 							<div class="listData">
 								<s:property value="creationTimestamp" />
 							</div>
-						</div>
+						</div> 
 					</s:iterator>
 				</div>
 			</div>
@@ -70,13 +71,12 @@
 			</div>
 			<div id="advancedOptionsContents">
 				<div id="production">
-					<label id="productionLabel" class="adminLabel">Production
-						Target</label>
-					<s:checkbox cssClass="productionCheck" name="productionTarget"></s:checkbox>
+					<input type="checkbox" id="productionCheck" value="productionTarget"/> 
+					<label for="productionTarget" class="adminLabel">Production Target?</label>
 				</div>
 				<label id="commentLabel">Comments:</label>
 				<div id="commentBox">
-					<s:textarea name="comments" cssClass="comments"></s:textarea>
+					<textarea id="comments" rows="5" cols="20" wrap="virtual">This is a production bound bundle</textarea>
 					<input type="button" value="Add Comment" id="create_comments" />
 				</div>
 			</div>
