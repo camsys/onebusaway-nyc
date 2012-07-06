@@ -90,9 +90,10 @@
 .submitForm {
 	overflow: none;
 	height: 80px; 
-	padding-right: 120px;
 	padding-left:20px;
+	padding-right: 20px;
 	margin-bottom: 30px;
+	margin-top: 20px;
 }
 
 .submit_enabled {
@@ -158,7 +159,6 @@
 	height: 30px;
 	display: inline;
 	background-image:url('img/Button_background.png');
-	color: #999;
 }
 
 .directoryLabels {
@@ -202,25 +202,28 @@
 }
 
 #createDirectory #selectExistingContents #currentDirectories {
-    display:table;
-    border-collapse:collapse;
     margin-top: 7px;
+    overflow: auto;
+    max-height: 100px;
 }
 
 #currentDirectories #listItem {
-	 display: table-row;
 	 cursor: pointer;
+	 display: table-row;
 }
 
 #currentDirectories .listData {
-	 display: table-cell;
 	 width: 200px;
 	 font-size: 12px;
+	 display: table-cell;
 }
 
-#createDirectory #createDirectoryContents .directoryName {
+#createDirectory #createDirectoryContents #directoryName {
 	width: 420px;
-	margin-right: 50px;
+}
+
+#createDirectory #createDirectoryContents #directoryButton {
+	margin-left: 60px;
 }
 
 #createDirectory #createDirectoryContents #createDirectoryResult {
@@ -246,20 +249,11 @@
 	display: none;
 }
 
-#createDirectory #advancedOptionsContents #production {
-	vertical-align: middle;
-	
-}
 
-#createDirectory #advancedOptionsContents #production #productionLabel {
-	margin-left: 50px;
-	margin-right: 20px;
-}
-
-#createDirectory #advancedOptionsContents #production .productionCheck {
-	padding-top: 20px;
+#advancedOptionsContents #production #productionCheck {
 	margin-top: 10px;
-	dispaly: inline;
+	margin-left: 50px;
+	margin-right: 10px;
 }
 
 #createDirectory #advancedOptionsContents #commentLabel {
@@ -270,21 +264,23 @@
 
 #createDirectory #advancedOptionsContents #commentBox {
 	padding-left: 50px;
-	
 }
 
-#createDirectory #advancedOptionsContents #commentBox .comments {
+#commentBox #comments {
 	width: 400px;
 	margin-right: 50px;
 	height: 50px;
+	float: left;
+	margin-top: 7px;
+	color: "#999";
 }
 
 #commentBox #create_comments {
 	border: 1px transparent;
 	width: 120px;
 	height: 40px;
-	display: inline;
 	background-image:url('img/Button_background.png');
+	margin-top: 20px;
 }
 
 #uploadFiles {
