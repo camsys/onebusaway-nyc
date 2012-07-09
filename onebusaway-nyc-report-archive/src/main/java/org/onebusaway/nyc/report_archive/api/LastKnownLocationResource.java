@@ -2,18 +2,22 @@ package org.onebusaway.nyc.report_archive.api;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.onebusaway.nyc.report_archive.api.json.JsonTool;
 import org.onebusaway.nyc.report_archive.api.json.LastKnownRecordMessage;
-import org.onebusaway.nyc.report_archive.api.json.LastKnownRecordsMessage;
+import org.onebusaway.nyc.report_archive.impl.CcAndInferredLocationFilter;
 import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 import org.slf4j.Logger;
@@ -51,10 +55,10 @@ public class LastKnownLocationResource {
 		String outputJson;
 		
 		try {
-			CcAndInferredLocationRecord record = getLastKnownRecordForVehicleFromDao(vehicleId);
+			List<CcAndInferredLocationRecord> records = getLastKnownRecordForVehicleFromDao(vehicleId);
 			
 			LastKnownRecordMessage message = new LastKnownRecordMessage();
-			message.setRecord(record);
+			message.setRecords(records);
 			message.setStatus("OK");
 			
 			outputJson = getObjectAsJsonString(message);
@@ -71,12 +75,19 @@ public class LastKnownLocationResource {
 	@Path("/list")
 	@GET
 	@Produces("application/json")
-	public Response getAllLastLocationRecords() {
+	public Response getAllLastLocationRecords(@QueryParam(value="depot-id") final String depotId,
+			@QueryParam(value="inferred-route-id") final String inferredRouteId,
+			@QueryParam(value="inferred-phase") final String inferredPhase,
+			@QueryParam(value="bbox") final String boundingBox) {
 
 		_log.info("Starting getAllLastLocationRecords");
-		List<CcAndInferredLocationRecord> lastKnownRecords = getLastKnownRecordsFromDao();
 		
-		LastKnownRecordsMessage message = new LastKnownRecordsMessage();
+		Map<CcAndInferredLocationFilter, String> filter = addFilterParameters(depotId, 
+				inferredRouteId, inferredPhase, boundingBox);
+		
+		List<CcAndInferredLocationRecord> lastKnownRecords = getLastKnownRecordsFromDao(filter);
+		
+		LastKnownRecordMessage message = new LastKnownRecordMessage();
 		message.setRecords(lastKnownRecords);
 		message.setStatus("OK");
 
@@ -93,21 +104,38 @@ public class LastKnownLocationResource {
 		return response;
 	}
 	
-	private List<CcAndInferredLocationRecord> getLastKnownRecordsFromDao() {
+	private Map<CcAndInferredLocationFilter, String> addFilterParameters(String depotId, String inferredRouteId,
+			String inferredPhase, String boundingBox) {
+		
+		Map<CcAndInferredLocationFilter, String> filter = 
+				new HashMap<CcAndInferredLocationFilter, String>();
+		
+		filter.put(CcAndInferredLocationFilter.DEPOT_ID, depotId);
+		filter.put(CcAndInferredLocationFilter.INFERRED_ROUTEID, inferredRouteId);
+		filter.put(CcAndInferredLocationFilter.INFERRED_PHASE, inferredPhase);
+		filter.put(CcAndInferredLocationFilter.BOUNDING_BOX, boundingBox);
+		
+		return filter;
+	}
+
+	private List<CcAndInferredLocationRecord> getLastKnownRecordsFromDao(Map<CcAndInferredLocationFilter, String> filter) {
 		_log.info("Fetching all last known vehicle location records from dao.");
-		List<CcAndInferredLocationRecord> lastKnownRecords = _locationDao
-				.getAllLastKnownRecords();
+		
+		List<CcAndInferredLocationRecord> lastKnownRecords = _locationDao.getAllLastKnownRecords(filter);
 
 		return lastKnownRecords;
 	}
 
 
-	private CcAndInferredLocationRecord getLastKnownRecordForVehicleFromDao(
+	private List<CcAndInferredLocationRecord> getLastKnownRecordForVehicleFromDao(
 			Integer vehicleId) throws Exception {
 		_log.info("Fetching last known record for vehicle " + String.valueOf(vehicleId));
 		CcAndInferredLocationRecord record = _locationDao.getLastKnownRecordForVehicle(vehicleId);
 		
-		return record;
+		List<CcAndInferredLocationRecord> records = new ArrayList<CcAndInferredLocationRecord>();
+		records.add(record);
+		
+		return records;
 	}
 	
 	private String getObjectAsJsonString(Object object) throws IOException {
