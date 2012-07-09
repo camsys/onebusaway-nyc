@@ -166,7 +166,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       _response = generateSiriResponse(activities, null, error);
 
-      // *** CASE 2: by route, using vehicle id and direction id, if provided
+      // *** CASE 2: by route, using direction id, if provided
     } else if (routeId != null && routeId.hasValues()) {
       
       gaLabel = routeId.toString();
