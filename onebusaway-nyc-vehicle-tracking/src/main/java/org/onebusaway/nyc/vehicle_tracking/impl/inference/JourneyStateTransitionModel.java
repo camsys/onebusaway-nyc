@@ -104,6 +104,7 @@ public class JourneyStateTransitionModel {
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       return JourneyState.atBase();
 
+    final BlockStateObservation parentStateObservation = parentState == null ? null : parentState.getBlockStateObservation(); 
     final boolean isLayoverStopped = isLayoverStopped(vehicleNotMoved, obs,
         parentState);
     final boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
@@ -117,7 +118,7 @@ public class JourneyStateTransitionModel {
           return JourneyState.deadheadBefore(null);
         }
       } else if (distanceAlong >= blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()
-          && !MotionModelImpl.hasRunChanged(parentState.getBlockStateObservation(),
+          && !MotionModelImpl.hasRunChanged(parentStateObservation,
               blockState)) {
         return JourneyState.deadheadAfter();
       } else {
