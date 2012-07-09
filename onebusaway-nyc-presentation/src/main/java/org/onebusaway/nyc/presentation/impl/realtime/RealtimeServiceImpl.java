@@ -184,15 +184,15 @@ public class RealtimeServiceImpl implements RealtimeService {
     List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
     for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId)) {
-      TripStatusBean statusBean = adBean.getTripStatus();
-      if(!_presentationService.include(statusBean) || !_presentationService.include(adBean, statusBean))
-        continue;
-
+      TripStatusBean _statusBean = adBean.getTripStatus();      
+      if(_statusBean == null)
+    	  continue;
+      
       TripDetailsQueryBean query = new TripDetailsQueryBean();
       query.setServiceDate(adBean.getServiceDate());
       query.setTripId(adBean.getTrip().getId());
       query.setTime(getTime());
-      query.setVehicleId(statusBean.getVehicleId());
+      query.setVehicleId(_statusBean.getVehicleId());
 
       TripDetailsInclusionBean inclusion = new TripDetailsInclusionBean();
       inclusion.setIncludeTripStatus(true);
@@ -200,6 +200,10 @@ public class RealtimeServiceImpl implements RealtimeService {
       query.setInclusion(inclusion);
 
       TripDetailsBean tripDetailsForADTrip = _nycTransitDataService.getSingleTripDetails(query);      
+      TripStatusBean statusBean = tripDetailsForADTrip.getStatus();      
+
+      if(!_presentationService.include(statusBean) || !_presentationService.include(adBean, statusBean))
+          continue;
 
       MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
       stopVisit.setRecordedAtTime(new Date(statusBean.getLastUpdateTime()));

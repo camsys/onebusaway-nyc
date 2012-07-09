@@ -28,6 +28,9 @@ public final class BlockStateObservation implements
 
   private final boolean _isSnapped;
 
+  /*
+   * Schedule deviation in minutes
+   */
   private final double _scheduleDeviation;
 
   private final Observation _obs;
@@ -77,6 +80,14 @@ public final class BlockStateObservation implements
 
   }
 
+  /**
+   * Computes the schedule deviation in minutes.
+   * Note: for states that haven't started, or that have ended, the value returned is zero.
+   * 
+   * @param obs
+   * @param blockState
+   * @return
+   */
   public static double computeScheduleDeviation(Observation obs,
       BlockState blockState) {
 

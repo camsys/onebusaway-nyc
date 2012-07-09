@@ -204,6 +204,7 @@
                  <siri.service.config>empty.xml</siri.service.config>
                  <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
                  <bundle.mode.standalone>true</bundle.mode.standalone>
+<!--                  <bundle.mode.standalone>false</bundle.mode.standalone> -->
                  <depot.partition.key></depot.partition.key>
                  <log4j.appender>stdout</log4j.appender>
           </properties>
