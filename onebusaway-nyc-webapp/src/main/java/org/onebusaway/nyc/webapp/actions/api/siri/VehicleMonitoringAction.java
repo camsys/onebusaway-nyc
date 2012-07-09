@@ -149,9 +149,25 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     }
     
     String gaLabel = null;
+    
+    // *** CASE 1: single vehicle, ignore any other filters
+    if (vehicleId != null && vehicleId.hasValues()) {
+      
+      gaLabel = vehicleId.toString();
+      
+      List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
+      
+      VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
+          vehicleId.toString(), maximumOnwardCalls);
 
-    // *** CASE 1: by route
-    if (routeId != null && routeId.hasValues()) {
+      if (activity != null) {
+        activities.add(activity);
+      }
+      
+      _response = generateSiriResponse(activities, null, error);
+
+      // *** CASE 2: by route, using vehicle id and direction id, if provided
+    } else if (routeId != null && routeId.hasValues()) {
       
       gaLabel = routeId.toString();
       
@@ -177,23 +193,6 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
       _response = generateSiriResponse(activities, routeId, error);
       
-      // *** CASE 2: single vehicle--no route specified (that's the case above)
-    } else if ((vehicleId != null && vehicleId.hasValues())
-        && (routeId == null || !routeId.hasValues())) {
-      
-      gaLabel = vehicleId.toString();
-      
-      List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-      
-      VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-          vehicleId.toString(), maximumOnwardCalls);
-
-      if (activity != null) {
-        activities.add(activity);
-      }
-      
-      _response = generateSiriResponse(activities, null, error);
-
       // *** CASE 3: all vehicles
     } else {
       
