@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl;
+import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.utility.DateLibrary;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Date;
+import java.util.List;
 
 @Controller
 public class BundleManagementController {
@@ -77,13 +79,26 @@ public class BundleManagementController {
   }
 
   @RequestMapping("/bundles!change.do")
-  public ModelAndView change(@RequestParam String bundleId, @RequestParam(required=false) String time) throws Exception {
+  public ModelAndView change(@RequestParam String bundleId, @RequestParam(required=false) String time, @RequestParam(required=false) boolean automaticallySetDate) throws Exception {
     if(time != null && !StringUtils.isEmpty(time)) {
       _bundleManager.setTime(DateLibrary.getIso8601StringAsTime(time));
     } else {
-      _bundleManager.setTime(new Date());
+  	  _bundleManager.setTime(new Date());
     }
 
+    // if ignore time == true, we set the date to what it needs to be to have the bundle
+    // change succeed
+    if(automaticallySetDate == true) {
+    	List<BundleItem> bundles = _bundleManager.getAllKnownBundles();
+    	for(BundleItem bundle : bundles) {
+    		if(bundle.getId().equals(bundleId)) {
+    			Date targetDate = bundle.getServiceDateFrom().getAsDate();
+    			_bundleManager.setTime(targetDate);
+    			break;
+    		}
+    	}
+    }
+      
     _bundleManager.changeBundle(bundleId);
     
     return new ModelAndView("redirect:/bundles.do");

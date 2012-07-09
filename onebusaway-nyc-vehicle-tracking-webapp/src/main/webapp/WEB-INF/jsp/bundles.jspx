@@ -48,7 +48,7 @@ table.data td {
 
 			<td>
 				<form action="bundles!reassign.do" method="POST">
-					<input type="submit" value="Recalculate Best Bundle"/>
+					<input type="submit" value="Recalculate Best Bundle (given current date)"/>
 				</form>
 			</td>
 
@@ -59,7 +59,8 @@ table.data td {
 							<option value="${vp.id}"><c:out value="${vp.id}" />: <c:out value="${vp.name}" /></option>
 						</c:forEach>		
 					</select>
-					<input type="submit" value="Change Bundle"/>
+					<input type="submit" value="Change Bundle (does NOT consider current date!)"/>
+					<input type="hidden" name="automaticallySetDate" value="true"/>
 				</form>
 			</td>
 		</tr>
