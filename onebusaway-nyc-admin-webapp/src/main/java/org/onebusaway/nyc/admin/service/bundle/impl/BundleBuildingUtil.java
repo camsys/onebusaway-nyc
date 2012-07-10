@@ -79,7 +79,7 @@ public class BundleBuildingUtil {
       writer.print(output);
     } catch (Exception any){
       _log.error(any.toString(), any);
-      response.addException(any);
+      response.setException(any);
     } finally {
       writer.close();
     }

@@ -131,6 +131,10 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 			if (password != null) {
 				setS3Password(password);
 			}
+			String bucketName = servletContext.getInitParameter("s3.bundle.bucketName");
+			if (bucketName != null) {
+			  setBucketName(bucketName);
+			}
 		}
 	}
 

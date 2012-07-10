@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.admin.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,7 +10,7 @@ public class BundleBuildResponse {
 	private List<String> _stifZipList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _statusList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _outputFileList = Collections.synchronizedList(new ArrayList<String>());
-	private Exception _exception = null;
+	private SerializableException _exception = null;
 	private boolean _isComplete = false;
 	private String _bundleRootDirectory;
 	private String _bundleInputDirectory;
@@ -39,7 +40,8 @@ public class BundleBuildResponse {
 	public String toString() {
 		return "BundleBuildResponse{[" + _id + "], bundleResultLink=" + bundleResultLink
 				+ ", statusList=" + _statusList 
-				+ ", complete=" + _isComplete + "}"; 
+				+ ", complete=" + _isComplete
+				+ ", exception=" + _exception + "}"; 
 	}
 
 	public String getId() {
@@ -101,16 +103,23 @@ public class BundleBuildResponse {
 		_outputFileList = outputFileList;
 	}
 
-	public void addException(Exception e) {
-		_exception = e;
-	}
-
+	/**
+	 * This method is additive, it chains exceptions if called multiple times.
+	 */
 	public void setException(Exception e) {
-		_exception = e;
+	  if (e == null) {
+	    _exception = null;
+	    return;
+	  }
+	  if (_exception== null) {
+	  _exception = new SerializableException(e.getMessage(), e);
+	  } else {
+	    _exception = new SerializableException(e, _exception);
+	  }
 	}
 
 	public Exception getException() {
-		return _exception;
+	  return _exception;
 	}
 
 	public void setComplete(boolean complete) {
@@ -238,4 +247,46 @@ public class BundleBuildResponse {
 		 this.bundleEndDate = bundleEndDate;
 	 }
 
+	 
+	 private static class SerializableException extends Exception implements Serializable {
+	   private String _msg = "";
+	   private String _rootCause = "";
+	   
+	     public SerializableException(String msg, Exception rootCause) {
+	       _msg = rootCause.getClass().getName() + ":" + msg;
+	       int count = 0;
+	       for (StackTraceElement ste:rootCause.getStackTrace()) {
+	         _rootCause += ste.toString() + "\n";
+	         count++;
+	         if (count > 1) break;
+	       }
+	     }
+	     
+ 	     public SerializableException(Exception newException, Exception rootCause) {
+	       _msg = newException.getClass().getName() + ":"  + newException.getMessage() 
+	           + ";  " + rootCause.getClass().getName() + ":" + rootCause.getMessage();
+	       
+	       int count = 0;
+	       for (StackTraceElement ste:newException.getStackTrace()) {
+	         _rootCause += ste.toString() + "\n";
+	         count++;
+	         if (count > 1) break;
+	       }
+	       _rootCause += "  Caused by:\n\n";
+	       count++;
+	       for (StackTraceElement ste:rootCause.getStackTrace()) {
+	         _rootCause += ste.toString() + "\n";
+	         if (count > 1) break;
+	       }
+	     }
+ 	     
+ 	     public String getMessage() {
+ 	       return toString();
+ 	     }
+ 	     
+ 	     public String toString() {
+ 	       return  _msg + "\n  Caused by:\n\n" + _rootCause; 
+ 	     }
+
+	 }
 }
