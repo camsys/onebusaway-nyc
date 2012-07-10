@@ -50,16 +50,4 @@ public class GeocodeResult implements SearchResult {
 	public List<SearchResult> getNearbyRoutes() {
 		return nearbyRoutes;
 	}
-
-	@Override
-	public void setDistanceToQueryLocation(Double distance) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Double getDistanceToQueryLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

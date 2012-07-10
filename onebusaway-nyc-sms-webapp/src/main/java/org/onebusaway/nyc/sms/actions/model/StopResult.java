@@ -22,8 +22,6 @@ public class StopResult implements SearchResult, Serializable {
 	private List<RouteAtStop> routesAvailable;
 	
 	private boolean matchesRouteIdFilter;
-	
-	private Double distanceToQueryLocation = null;
 
 	public StopResult(StopBean stop, List<RouteAtStop> routesAvailable, boolean matchesRouteIdFilter) {
 		this.stop = stop;
@@ -50,15 +48,4 @@ public class StopResult implements SearchResult, Serializable {
 	public StopBean getStop() {
 	  return stop;
 	}
-
-	@Override
-  public void setDistanceToQueryLocation(Double distance) {
-    this.distanceToQueryLocation = distance;
-  }
-
-  @Override
-  public Double getDistanceToQueryLocation() {
-    return this.distanceToQueryLocation;
-  }
-
 }

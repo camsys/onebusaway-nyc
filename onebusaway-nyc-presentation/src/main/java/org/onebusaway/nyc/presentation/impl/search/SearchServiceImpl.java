@@ -198,7 +198,6 @@ public class SearchServiceImpl implements SearchService {
     
 		for (StopBean stop : stopsForResults) {
 			SearchResult result = resultFactory.getStopResult(stop, routeIdFilter);
-			result.setDistanceToQueryLocation(SphericalGeometryLibrary.distanceFaster(stop.getLat(), stop.getLon(), latitude, longitude));
 			results.addMatch(result);
 		}
 
@@ -233,32 +232,20 @@ public class SearchServiceImpl implements SearchService {
 		queryBean.setMaxCount(100);
 
 		RoutesBean routes = _nycTransitDataService.getRoutes(queryBean);
+		
+		Collections.sort(routes.getRoutes(), new RouteDistanceFromPointComparator(latitude, longitude));
 
 		SearchResultCollection results = new SearchResultCollection();
 
 		for (RouteBean route : routes.getRoutes()) {
 			
-			StopsForRouteBean stopsBean = _nycTransitDataService.getStopsForRoute(route.getId());
-			
-			Double minDistanceToRoute = null;
-			for (StopBean stop : stopsBean.getStops()) {
-				Double distance = SphericalGeometryLibrary.distanceFaster(stop.getLat(), stop.getLon(), latitude, longitude);
-				if (minDistanceToRoute == null) {
-					minDistanceToRoute = distance;
-					continue;
-				}
-				if (distance < minDistanceToRoute) minDistanceToRoute = distance;
-			}
-			
 			SearchResult result = resultFactory.getRouteResult(route);
-			result.setDistanceToQueryLocation(minDistanceToRoute);
 			
 			results.addMatch(result);
-		}
-		
-		Collections.sort(results.getMatches(), new SearchResultDistanceComparator());
-		if (results.getMatches().size() > MAX_ROUTES) {
-			results.getMatches().subList(MAX_ROUTES, results.getMatches().size()).clear();
+			
+			if (results.getMatches().size() > MAX_ROUTES) {
+			  break;
+			}
 		}
 
 		return results;
@@ -444,24 +431,6 @@ public class SearchServiceImpl implements SearchService {
     }
     return matches;
 	}
-
-	private class SearchResultDistanceComparator implements Comparator<SearchResult> {
-
-		@Override
-		public int compare(SearchResult o1, SearchResult o2) {
-			
-			if (o1.getDistanceToQueryLocation() == null && o2.getDistanceToQueryLocation() != null) {
-				return +1;
-			} else if (o1.getDistanceToQueryLocation() != null && o2.getDistanceToQueryLocation() == null) {
-				return -1;
-			} else if (o1.getDistanceToQueryLocation() > o2.getDistanceToQueryLocation()) {
-				return +1;
-			} else if (o1.getDistanceToQueryLocation() < o2.getDistanceToQueryLocation()) {
-				return -1;
-			}
-			return 0;
-		}
-	}
 	
 	private class StopDistanceFromPointComparator implements Comparator<StopBean> {
 
@@ -486,6 +455,49 @@ public class SearchServiceImpl implements SearchService {
 	    } else {
 	      return 0;
 	    }
+    }
+  }
+	
+	private class RouteDistanceFromPointComparator implements Comparator<RouteBean> {
+
+    private double lat;
+    private double lon;
+    
+    public RouteDistanceFromPointComparator(double lat, double lon) {
+      this.lat = lat;
+      this.lon = lon;
+    }
+    
+    @Override
+    public int compare(RouteBean o1, RouteBean o2) {
+      
+      Double d1 = getDistanceToNearestStopOnRoute(o1);
+      Double d2 = getDistanceToNearestStopOnRoute(o2);
+      
+      if (d1 < d2) {
+        return -1;
+      } else if (d1 > d2) {
+        return +1;
+      } else {
+        return 0;
+      }
+    }
+    
+    private Double getDistanceToNearestStopOnRoute(RouteBean route) {
+      
+      StopsForRouteBean stopsBean = _nycTransitDataService.getStopsForRoute(route.getId());
+      
+      Double minDistanceToRoute = null;
+      for (StopBean stop : stopsBean.getStops()) {
+        Double distance = SphericalGeometryLibrary.distanceFaster(stop.getLat(), stop.getLon(), lat, lon);
+        if (minDistanceToRoute == null) {
+          minDistanceToRoute = distance;
+          continue;
+        }
+        if (distance < minDistanceToRoute) minDistanceToRoute = distance;
+      }
+      
+      return minDistanceToRoute;
     }
   }
 }
