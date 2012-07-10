@@ -24,19 +24,25 @@
 	border-bottom: 5px solid #<c:out value="${color}" />;
 }
 .stopsOnRouteColor<c:out value="${color}" /> li.middle {
-	background-image: url('../img/stop-on-route/stop_on_route_middle_<c:out value="${color}"/>.png');
-	background-position: center left;
+	background-image: url('../img/stop-on-route/stop_on_route_mobile_middle.png');
+	background-color: <c:out value="${color}"/>;
+	background-position: left top;
 	background-repeat: no-repeat;
 }
 .stopsOnRouteColor<c:out value="${color}" /> li.start {
-	background-image: url('../img/stop-on-route/stop_on_route_start_<c:out value="${color}"/>.png');
-	background-position: center left;
+	background-image: url('../img/stop-on-route/stop_on_route_mobile_start.png');
+	background-color: <c:out value="${color}"/>;
+	background-position: left top;
 	background-repeat: no-repeat;
 }
 .stopsOnRouteColor<c:out value="${color}" /> li.end {
-	background-image: url('../img/stop-on-route/stop_on_route_end_<c:out value="${color}"/>.png');
-	background-position: center left;
+	background-image: url('../img/stop-on-route/stop_on_route_mobile_end.png');
+	background-color: <c:out value="${color}"/>;
+	background-position: left top;
 	background-repeat: no-repeat;
+}
+.arrivalsOnRoute {
+	background-color: #FFFFFF;
 }
 </c:forEach>
 

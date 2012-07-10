@@ -211,6 +211,7 @@
 	font-weight: bold;
 	position: relative;
 	cursor: pointer;
+	outline: 0;
 }
 
 #content #matches ul li.legendItem .destination p span {
@@ -251,8 +252,7 @@
 #content #matches ul li.legendItem p.destination ul.stops li {
 	background-repeat: no-repeat;
 	background-position: left center;
-	padding: 3px;
-	padding-left: 20px;
+	padding: 3px 3px 5px 20px;
 }
 
 /* default--this is overrideen  by javascript */
