@@ -129,11 +129,6 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     } catch (Exception e) {
       routeId = new AgencyAndId(agencyId, _request.getParameter("LineRef"));
     }
-    
-    Exception error = null;
-    if(routeId != null && routeId.hasValues() && this._nycTransitDataService.getRouteForId(routeId.toString()) == null) {
-      error = new Exception("No such route: " + routeId.toString());
-    }
 
     String detailLevel = _request.getParameter("VehicleMonitoringDetailLevel");
 
@@ -164,10 +159,18 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         activities.add(activity);
       }
       
-      _response = generateSiriResponse(activities, null, error);
+      // No vehicle id validation, so we pass null for error
+      _response = generateSiriResponse(activities, null, null);
 
-      // *** CASE 2: by route, using vehicle id and direction id, if provided
+      // *** CASE 2: by route, using direction id, if provided
     } else if (routeId != null && routeId.hasValues()) {
+      
+      // Check if the provided route id is valid. Pass an error to
+      // generateSiriResponse if it is not.
+      Exception error = null;
+      if(routeId != null && routeId.hasValues() && this._nycTransitDataService.getRouteForId(routeId.toString()) == null) {
+        error = new Exception("No such route: " + routeId.toString());
+      }
       
       gaLabel = routeId.toString();
       
@@ -212,7 +215,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         }
       }
       
-      _response = generateSiriResponse(activities, null, error);
+      // There is no input (route id) to validate, so pass null error
+      _response = generateSiriResponse(activities, null, null);
     }
     
     if(_googleAnalytics != null && _request.getParameter("key") != null && !_request.getParameter("key").isEmpty()) {
