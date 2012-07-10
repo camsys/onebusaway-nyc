@@ -22,7 +22,7 @@ public class ImporterVehiclePulloutData implements PulloutData {
 		List<VehiclePullInOutInfo> busPullOutInfo = new ArrayList<VehiclePullInOutInfo>();
 		
 		for(VehiclePullInOutInfo currentPullOut : pulloutData) {
-			if(currentPullOut.getPullOutInfo().getVehicle().getVehicleId() == busNumber.longValue()) {
+			if(new Long(currentPullOut.getPullOutInfo().getVehicle().getVehicleId()).equals(busNumber)) {
 				busPullOutInfo.add(currentPullOut);
 			}
 		}
