@@ -20,17 +20,4 @@ public class RouteInRegionResult implements SearchResult {
 	public String getShortName() {
 		return route.getShortName();
 	}
-
-	@Override
-	public void setDistanceToQueryLocation(Double distance) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Double getDistanceToQueryLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

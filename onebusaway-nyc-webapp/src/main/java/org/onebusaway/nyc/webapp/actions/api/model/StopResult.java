@@ -16,8 +16,6 @@ public class StopResult implements SearchResult {
 	private StopBean stop;
 
 	private List<RouteAtStop> routesAvailable;
-	
-	private Double distanceToQueryLocation = null;
 
 	public StopResult(StopBean stop, List<RouteAtStop> routesAvailable) {
 		this.stop = stop;
@@ -51,15 +49,4 @@ public class StopResult implements SearchResult {
 	public List<RouteAtStop> getRoutesAvailable() {
 		return routesAvailable;
 	}
-
-	@Override
-	public void setDistanceToQueryLocation(Double distance) {
-		this.distanceToQueryLocation = distance;
-	}
-
-	@Override
-	public Double getDistanceToQueryLocation() {
-		return this.distanceToQueryLocation;
-	}
-
 }
