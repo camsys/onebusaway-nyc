@@ -393,6 +393,7 @@ small {
 	background-repeat: no-repeat;
 	background-position: left top;
 	zoom: 1;   /* hasLayout fix for IE */
+	line-height: 1.2em;
 }
 
 .routeList a {

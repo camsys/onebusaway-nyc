@@ -41,16 +41,4 @@ public class GeocodeResult implements SearchResult {
 	public CoordinateBounds getBounds() {
 		return result.getBounds();
 	}
-
-	@Override
-	public void setDistanceToQueryLocation(Double distance) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Double getDistanceToQueryLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

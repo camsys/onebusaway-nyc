@@ -8,11 +8,16 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleSearchService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data_federation.impl.RefreshableResources;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,26 +25,38 @@ import org.springframework.stereotype.Component;
 public class BundleSearchServiceImpl implements BundleSearchService {
 
 	@Autowired
-	private NycTransitDataService _transitDataService;
+	private NycTransitDataService _transitDataService = null;
 	
-	private Map<String,List<String>> suggestions = new HashMap<String, List<String>>();
+	private Map<String,List<String>> suggestions;
 	
 	@PostConstruct
+	@Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
 	public void init() {
-		Map<String, List<CoordinateBounds>> agencies = this._transitDataService.getAgencyIdsWithCoverageArea();
-		for (String agency : agencies.keySet()) {
-			ListBean<RouteBean> routes = this._transitDataService.getRoutesForAgencyId(agency);
-			for (RouteBean route : routes.getList()) {
-				String shortName = route.getShortName();
-				generateInputsForString(shortName, "\\s+");
-			}
-			
-			ListBean<String> stopIds = this._transitDataService.getStopIdsForAgencyId(agency);
-			for (String stopId : stopIds.getList()) {
-				stopId = stopId.replace("MTA NYCT_", "");
-				generateInputsForString(stopId, null);
-			}
-		}
+	  
+	  Runnable initThread = new Runnable() {
+      
+      @Override
+      public void run() {
+        suggestions = new HashMap<String, List<String>>();
+        
+        Map<String, List<CoordinateBounds>> agencies = _transitDataService.getAgencyIdsWithCoverageArea();
+        for (String agency : agencies.keySet()) {
+          ListBean<RouteBean> routes = _transitDataService.getRoutesForAgencyId(agency);
+          for (RouteBean route : routes.getList()) {
+            String shortName = route.getShortName();
+            generateInputsForString(shortName, "\\s+");
+          }
+          
+          ListBean<String> stopIds = _transitDataService.getStopIdsForAgencyId(agency);
+          for (String stopId : stopIds.getList()) {
+            AgencyAndId agencyAndId = AgencyAndIdLibrary.convertFromString(stopId);
+            generateInputsForString(agencyAndId.getId(), null);
+          }
+        }
+      }
+    };
+	  
+	  new Thread(initThread).start();
 	}
 	
 	private void generateInputsForString(String string, String splitRegex) {

@@ -92,7 +92,7 @@ public class VehiclePipoResource {
 	@Path("/{busNumber}/list")
 	@GET
 	@Produces("application/json")
-	public String getCurrentlyActivePulloutsForBus(@PathParam("busNumber") String busNumber) {
+	public String getActivePulloutsForBus(@PathParam("busNumber") String busNumber) {
 		String method = "getCurrentlyActivePulloutsForBus";
 		String output = null;
 		
@@ -107,7 +107,7 @@ public class VehiclePipoResource {
 		if(pulloutsByBus.isEmpty()) {
 			output = "No pullouts found for bus : " +busId;
 		} else {
-			List<VehiclePullInOutInfo> currentActivePulloutByBus = getCurrentActivePullOutsByBus(pulloutsByBus);
+			List<VehiclePullInOutInfo> currentActivePulloutByBus = vehiclePullInOutService.getActivePullOuts(pulloutsByBus);
 			
 			VehiclePipoMessage message  = new VehiclePipoMessage();
 			message.setPullouts(buildOutputData(currentActivePulloutByBus));
@@ -183,28 +183,7 @@ public class VehiclePipoResource {
 		return output;
 	}
 	
-	private List<VehiclePullInOutInfo> getCurrentActivePullOutsByBus(List<VehiclePullInOutInfo> pulloutsByBus) {
-		List<VehiclePullInOutInfo> currentActivePulloutsByBus = new ArrayList<VehiclePullInOutInfo>();
-
-		//Get active pullouts once we have all pullouts for a bus
-		List<VehiclePullInOutInfo> activePulloutsByBus = vehiclePullInOutService.getActivePullOuts(pulloutsByBus);
-
-		VehiclePullInOutInfo currentActivePulloutByBus = null;
-
-		//Return pull out with latest pull out time if we have more than one active pull outs.
-		if(activePulloutsByBus.size() > 1) {
-			currentActivePulloutByBus = vehiclePullInOutService.getMostRecentActivePullout(activePulloutsByBus);
-			currentActivePulloutsByBus.add(currentActivePulloutByBus);
-		} else {
-			if(!activePulloutsByBus.isEmpty()) {
-				//this means there is only one pull out record present in the list.
-				currentActivePulloutByBus = activePulloutsByBus.get(0);
-				currentActivePulloutsByBus.add(currentActivePulloutByBus);
-			}
-		}
-		
-		return currentActivePulloutsByBus;
-	}
+	
 
 	private String serializeOutput(VehiclePipoMessage message, String method) {
 		String outputJson;

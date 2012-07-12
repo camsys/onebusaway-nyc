@@ -19,8 +19,6 @@ public class RouteResult implements SearchResult {
 	private List<RouteDirection> directions;
 
 	private Set<String> serviceAlerts;
-	
-	private Double distanceToQueryLocation = null;
 
 	public RouteResult(RouteBean route, List<RouteDirection> directions, Set<String> serviceAlerts) {
 		this.route = route;
@@ -59,15 +57,4 @@ public class RouteResult implements SearchResult {
 	public List<RouteDirection> getDirections() {
 		return directions;
 	}
-
-	@Override
-	public void setDistanceToQueryLocation(Double distance) {
-		this.distanceToQueryLocation = distance;
-	}
-
-	@Override
-	public Double getDistanceToQueryLocation() {
-		return this.distanceToQueryLocation;
-	}
-
 }
