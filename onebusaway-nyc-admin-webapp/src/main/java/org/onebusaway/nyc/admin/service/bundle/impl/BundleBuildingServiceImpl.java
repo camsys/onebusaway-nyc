@@ -134,6 +134,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
     String dataPath = request.getTmpDirectory() + File.separator + request.getBundleName()
         + File.separator + DATA_DIR;
+    
+    // create STIF dir as well
+    String stifPath = request.getTmpDirectory() + File.separator + "stif";
+    File stifDir = new File(stifPath);
+    _log.info("creating stif directory=" + stifPath);
+    stifDir.mkdirs();
+    
     File dataDir = new File(dataPath);
     response.setBundleDataDirectory(dataPath);
     dataDir.mkdirs();
@@ -161,7 +168,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     
     // clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
     try {
-      File stifDir = new File(request.getTmpDirectory() + File.separator + "stif");
       File[] stifDirectories = stifDir.listFiles();
       if (stifDirectories != null) {
         
