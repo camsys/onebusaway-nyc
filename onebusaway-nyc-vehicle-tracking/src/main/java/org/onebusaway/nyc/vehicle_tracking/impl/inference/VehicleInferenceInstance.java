@@ -734,9 +734,12 @@ public class VehicleInferenceInstance {
       } else {
     	// vehicles on detour should be in_progress with status=deviated 
     	if (state.getJourneyState().isDetour()) {
-    	  // remap this journey state to IN_PROGRESS to confirm to previous pilot project semantics.
-          record.setInferredPhase(EVehiclePhase.IN_PROGRESS.name());
-          statusFields.add("deviated");
+  		  // remap this journey state/phase to IN_PROGRESS to conform to 
+    	  // previous pilot project semantics.
+    	  if (EVehiclePhase.DEADHEAD_DURING.equals(phase)) {
+    		  record.setInferredPhase(EVehiclePhase.IN_PROGRESS.name());
+    		  statusFields.add("deviated");
+    	  }
         }
       }
 
