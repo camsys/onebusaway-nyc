@@ -557,12 +557,21 @@ function bundleUrl() {
 		async: false,
 		success: function(response) {
 				var bundleResponse = response;
-				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
-						.text(bundleResponse.bundleResultLink)
-						.css("padding-left", "5px")
-						.css("font-size", "12px")
-						.addClass("adminLabel")
-						.css("color", "green");
+				if(bundleResponse.exception !=null) {
+					jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
+							.text("(exception)")
+							.css("padding-left", "5px")
+							.css("font-size", "12px")
+							.addClass("adminLabel")
+							.css("color", "red");
+				} else {
+					jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
+							.text(bundleResponse.bundleResultLink)
+							.css("padding-left", "5px")
+							.css("font-size", "12px")
+							.addClass("adminLabel")
+							.css("color", "green");
+				}
 		},
 		error: function(request) {
 			clearTimeout(timeout);
