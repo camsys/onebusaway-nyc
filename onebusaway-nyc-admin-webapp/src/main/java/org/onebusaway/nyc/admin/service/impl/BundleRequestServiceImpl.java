@@ -59,7 +59,12 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   
   public String getInstanceId() {
     if (_instanceId == null)
-      return configurationService.getConfigurationValueAsString("admin.instanceId", null);
+      try {
+        return configurationService.getConfigurationValueAsString("admin.instanceId", null);
+      } catch (RemoteConnectFailureException e) {
+        _log.error("issue looking up instanceId:", e);
+        return null;
+      }
     return _instanceId;
   }
   
@@ -378,7 +383,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         if (_response == null || _response.getId() == null) {
           _log.error("null response; assuming no response from server");
           _response = new BundleBuildResponse(_request.getId());
-          _response.addException(new RuntimeException("no response from server"));
+          _response.setException(new RuntimeException("no response from server"));
           _buildMap.put(_request.getId(), _response);
         }
 
@@ -386,7 +391,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         _response.addStatusMessage("complete");
       } catch (Exception any) {
         _log.error(any.toString(), any);
-        _response.addException(any);
+        _response.setException(any);
       } finally {
         try {
           _response.setComplete(true);

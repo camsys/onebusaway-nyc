@@ -111,94 +111,94 @@ public class SearchServiceImpl implements SearchService {
 		queryBean.setMaxCount(100);
 
 		StopsBean stops = _nycTransitDataService.getStops(queryBean);
-
-		List<SearchResult> stopResults = new ArrayList<SearchResult>();
-		Map<SearchResult, StopBean> stopBeanBySearchResult = new HashMap<SearchResult, StopBean>();
-
-		for (StopBean stop : stops.getStops()) {
-			SearchResult result = resultFactory.getStopResult(stop, routeIdFilter);
-			result.setDistanceToQueryLocation(SphericalGeometryLibrary.distanceFaster(stop.getLat(), stop.getLon(), latitude, longitude));
-			stopResults.add(result);
-			stopBeanBySearchResult.put(result, stop);
-		}
 		
-		Collections.sort(stopResults, new SearchResultDistanceComparator());
+		Collections.sort(stops.getStops(), new StopDistanceFromPointComparator(latitude, longitude));
 		
-		SearchResultCollection results = new SearchResultCollection();
-    results.addRouteIdFilters(routeIdFilter);
-    
+		// A list of stops that will go in our search results
+		List<StopBean> stopsForResults = new ArrayList<StopBean>();
+		
 		// Keep track of which routes are already in our search results by direction
     Map<String, List<RouteBean>> routesByDirectionAlreadyInResults = new HashMap<String, List<RouteBean>>();
     
     // Cache stops by route so we don't need to call the transit data service repeatedly for the same route
     Map<String, StopsForRouteBean> stopsForRouteLookup = new HashMap<String, StopsForRouteBean>();
-		
+    
     // Iterate through each stop and see if it adds additional routes for a direction to our final results.
-    for (SearchResult stopResult : stopResults) {
-		  
+    for (StopBean stopBean : stops.getStops()) {
+      
       // Get the stop bean that is actually inside this search result. We kept track of it earlier.
-      StopBean stopBeanForSearchResult = stopBeanBySearchResult.get(stopResult);
+      //StopBean stopBean = stopBeanBySearchResult.get(stopResult);
       
       // Record of routes by direction id for this stop
       Map<String, List<RouteBean>> routesByDirection = new HashMap<String, List<RouteBean>>();
       
-		  for (RouteBean route : stopBeanForSearchResult.getRoutes()) {
-		    // route is a route serving the current stopBeanForSearchResult
-		    
-		    // Query for all stops on this route
-		    StopsForRouteBean stopsForRoute = stopsForRouteLookup.get(route.getId());
-		    if (stopsForRoute == null) {
-		      stopsForRoute = _nycTransitDataService.getStopsForRoute(route.getId());
-		      stopsForRouteLookup.put(route.getId(), stopsForRoute);
-		    }
-		    
-		    // Get the groups of stops on this route. The id of each group corresponds to a GTFS direction id for this route.
-		    for (StopGroupingBean stopGrouping : stopsForRoute.getStopGroupings()) {
-		      for (StopGroupBean stopGroup : stopGrouping.getStopGroups()) {
-		        
-		        String directionId = stopGroup.getId();
-		        
-		        // Check if the current stop is served in this direction. If so, record it.
-		        if (stopGroup.getStopIds().contains(stopBeanForSearchResult.getId())) {
-		          if (!routesByDirection.containsKey(directionId)) {
-		            routesByDirection.put(directionId, new ArrayList<RouteBean>());
-		          }
-		          routesByDirection.get(directionId).add(route);
-		        }
-		      }
-		    }
-		  }
-		  
-		  // Iterate over routes binned by direction for this stop and compare to routes by direction already in our search results
-		  boolean shouldAddStopToResults = false;
-		  for (Map.Entry<String, List<RouteBean>> entry : routesByDirection.entrySet()) {
-		    String directionId = entry.getKey();
-		    List<RouteBean> routesForThisDirection = entry.getValue();
-		    
-		    if (!routesByDirectionAlreadyInResults.containsKey(directionId)) {
-		      routesByDirectionAlreadyInResults.put(directionId, new ArrayList<RouteBean>());
-		    }
-		    
-		    @SuppressWarnings("unchecked")
-	      List<RouteBean> additionalRoutes = ListUtils.subtract(routesForThisDirection, routesByDirectionAlreadyInResults.get(directionId));
-	      if (additionalRoutes.size() > 0) {
-	        // This stop is contributing new routes in this direction, so add these additional
-	        // stops to our record of stops by direction already in search results and toggle
-	        // flag that tells to to add the stop to the search results.
-	        routesByDirectionAlreadyInResults.get(directionId).addAll(additionalRoutes);
-	        // We use this flag because we want to add new routes to our record potentially for each
-	        // direction id, but we only want to add the stop to the search results once. It happens below.
-	        shouldAddStopToResults = true;
-	      }
-		  }
-		  if (shouldAddStopToResults) {
-		    // Add the stop to our search results
-        results.addMatch(stopResult);
-		  }
-		}
-		
-		if (results.getMatches().size() > MAX_STOPS) {
-			results.getMatches().subList(MAX_STOPS, results.getMatches().size()).clear();
+      for (RouteBean route : stopBean.getRoutes()) {
+        // route is a route serving the current stopBeanForSearchResult
+        
+        // Query for all stops on this route
+        StopsForRouteBean stopsForRoute = stopsForRouteLookup.get(route.getId());
+        if (stopsForRoute == null) {
+          stopsForRoute = _nycTransitDataService.getStopsForRoute(route.getId());
+          stopsForRouteLookup.put(route.getId(), stopsForRoute);
+        }
+        
+        // Get the groups of stops on this route. The id of each group corresponds to a GTFS direction id for this route.
+        for (StopGroupingBean stopGrouping : stopsForRoute.getStopGroupings()) {
+          for (StopGroupBean stopGroup : stopGrouping.getStopGroups()) {
+            
+            String directionId = stopGroup.getId();
+            
+            // Check if the current stop is served in this direction. If so, record it.
+            if (stopGroup.getStopIds().contains(stopBean.getId())) {
+              if (!routesByDirection.containsKey(directionId)) {
+                routesByDirection.put(directionId, new ArrayList<RouteBean>());
+              }
+              routesByDirection.get(directionId).add(route);
+            }
+          }
+        }
+      }
+      
+      // Iterate over routes binned by direction for this stop and compare to routes by direction already in our search results
+      boolean shouldAddStopToResults = false;
+      for (Map.Entry<String, List<RouteBean>> entry : routesByDirection.entrySet()) {
+        String directionId = entry.getKey();
+        List<RouteBean> routesForThisDirection = entry.getValue();
+        
+        if (!routesByDirectionAlreadyInResults.containsKey(directionId)) {
+          routesByDirectionAlreadyInResults.put(directionId, new ArrayList<RouteBean>());
+        }
+        
+        @SuppressWarnings("unchecked")
+        List<RouteBean> additionalRoutes = ListUtils.subtract(routesForThisDirection, routesByDirectionAlreadyInResults.get(directionId));
+        if (additionalRoutes.size() > 0) {
+          // This stop is contributing new routes in this direction, so add these additional
+          // stops to our record of stops by direction already in search results and toggle
+          // flag that tells to to add the stop to the search results.
+          routesByDirectionAlreadyInResults.get(directionId).addAll(additionalRoutes);
+          // We use this flag because we want to add new routes to our record potentially for each
+          // direction id, but we only want to add the stop to the search results once. It happens below.
+          shouldAddStopToResults = true;
+        }
+      }
+      if (shouldAddStopToResults) {
+        // Add the stop to our search results
+        stopsForResults.add(stopBean);
+      }
+      // Break out of iterating through stops if we've reached our max
+      if (stopsForResults.size() >= MAX_STOPS) {
+        break;
+      }
+    }
+
+		// Create our search results object, iterate through our stops, create stop
+    // results from each of those stops, and add them to the search results.
+    SearchResultCollection results = new SearchResultCollection();
+    results.addRouteIdFilters(routeIdFilter);
+    
+		for (StopBean stop : stopsForResults) {
+			SearchResult result = resultFactory.getStopResult(stop, routeIdFilter);
+			results.addMatch(result);
 		}
 
 		return results;
@@ -232,32 +232,20 @@ public class SearchServiceImpl implements SearchService {
 		queryBean.setMaxCount(100);
 
 		RoutesBean routes = _nycTransitDataService.getRoutes(queryBean);
+		
+		Collections.sort(routes.getRoutes(), new RouteDistanceFromPointComparator(latitude, longitude));
 
 		SearchResultCollection results = new SearchResultCollection();
 
 		for (RouteBean route : routes.getRoutes()) {
 			
-			StopsForRouteBean stopsBean = _nycTransitDataService.getStopsForRoute(route.getId());
-			
-			Double minDistanceToRoute = null;
-			for (StopBean stop : stopsBean.getStops()) {
-				Double distance = SphericalGeometryLibrary.distanceFaster(stop.getLat(), stop.getLon(), latitude, longitude);
-				if (minDistanceToRoute == null) {
-					minDistanceToRoute = distance;
-					continue;
-				}
-				if (distance < minDistanceToRoute) minDistanceToRoute = distance;
-			}
-			
 			SearchResult result = resultFactory.getRouteResult(route);
-			result.setDistanceToQueryLocation(minDistanceToRoute);
 			
 			results.addMatch(result);
-		}
-		
-		Collections.sort(results.getMatches(), new SearchResultDistanceComparator());
-		if (results.getMatches().size() > MAX_ROUTES) {
-			results.getMatches().subList(MAX_ROUTES, results.getMatches().size()).clear();
+			
+			if (results.getMatches().size() > MAX_ROUTES) {
+			  break;
+			}
 		}
 
 		return results;
@@ -443,22 +431,73 @@ public class SearchServiceImpl implements SearchService {
     }
     return matches;
 	}
+	
+	private class StopDistanceFromPointComparator implements Comparator<StopBean> {
 
-	private class SearchResultDistanceComparator implements Comparator<SearchResult> {
+	  private double lat;
+	  private double lon;
+    
+	  public StopDistanceFromPointComparator(double lat, double lon) {
+      this.lat = lat;
+      this.lon = lon;
+    }
+	  
+	  @Override
+    public int compare(StopBean o1, StopBean o2) {
+	    
+	    double d1 = SphericalGeometryLibrary.distanceFaster(this.lat, this.lon, o1.getLat(), o1.getLon());
+	    double d2 = SphericalGeometryLibrary.distanceFaster(this.lat, this.lon, o2.getLat(), o2.getLon());
+	    
+	    if (d1 < d2) {
+	      return -1;
+	    } else if (d1 > d2) {
+	      return +1;
+	    } else {
+	      return 0;
+	    }
+    }
+  }
+	
+	private class RouteDistanceFromPointComparator implements Comparator<RouteBean> {
 
-		@Override
-		public int compare(SearchResult o1, SearchResult o2) {
-			
-			if (o1.getDistanceToQueryLocation() == null && o2.getDistanceToQueryLocation() != null) {
-				return +1;
-			} else if (o1.getDistanceToQueryLocation() != null && o2.getDistanceToQueryLocation() == null) {
-				return -1;
-			} else if (o1.getDistanceToQueryLocation() > o2.getDistanceToQueryLocation()) {
-				return +1;
-			} else if (o1.getDistanceToQueryLocation() < o2.getDistanceToQueryLocation()) {
-				return -1;
-			}
-			return 0;
-		}
-	}
+    private double lat;
+    private double lon;
+    
+    public RouteDistanceFromPointComparator(double lat, double lon) {
+      this.lat = lat;
+      this.lon = lon;
+    }
+    
+    @Override
+    public int compare(RouteBean o1, RouteBean o2) {
+      
+      Double d1 = getDistanceToNearestStopOnRoute(o1);
+      Double d2 = getDistanceToNearestStopOnRoute(o2);
+      
+      if (d1 < d2) {
+        return -1;
+      } else if (d1 > d2) {
+        return +1;
+      } else {
+        return 0;
+      }
+    }
+    
+    private Double getDistanceToNearestStopOnRoute(RouteBean route) {
+      
+      StopsForRouteBean stopsBean = _nycTransitDataService.getStopsForRoute(route.getId());
+      
+      Double minDistanceToRoute = null;
+      for (StopBean stop : stopsBean.getStops()) {
+        Double distance = SphericalGeometryLibrary.distanceFaster(stop.getLat(), stop.getLon(), lat, lon);
+        if (minDistanceToRoute == null) {
+          minDistanceToRoute = distance;
+          continue;
+        }
+        if (distance < minDistanceToRoute) minDistanceToRoute = distance;
+      }
+      
+      return minDistanceToRoute;
+    }
+  }
 }

@@ -109,7 +109,14 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
         if(_searchResults.getMatches().size() == 1 && _searchResults.getResultType().equals("RouteResult")) {
           RouteResult route = (RouteResult)_searchResults.getMatches().get(0);
 
-          if(commandString != null && commandString.equals("C")) {
+          // If we get a route back, but there is no direction information in it,
+          // this is a route in the bundle with no trips/stops/etc.
+          // Show no results.
+          if (route.getDirections() != null && route.getDirections().size() == 0) {
+            _response = errorResponse("No results.");
+            break;
+            
+          } else if (commandString != null && commandString.equals("C")) {
             // find a unique set of service alerts for the route found
             Set<String> alerts = new HashSet<String>();
             for(RouteDirection direction : route.getDirections()) {
@@ -131,8 +138,8 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
 
             _searchResults = newResults;
             continue;
-          
-          // route schedule status
+            
+            // route schedule status
           } else {
             _response = routeResponse(route);
             break;

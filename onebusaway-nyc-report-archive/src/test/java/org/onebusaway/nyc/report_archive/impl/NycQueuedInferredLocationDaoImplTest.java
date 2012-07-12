@@ -36,7 +36,9 @@ import org.junit.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class  NycQueuedInferredLocationDaoImplTest {
 
@@ -91,8 +93,12 @@ public class  NycQueuedInferredLocationDaoImplTest {
     assertEquals(2, getNumberOfRecords());
     assertEquals(1, getNumberOfCurrentRecords());
 
+    Map<CcAndInferredLocationFilter, String> filter = new HashMap<CcAndInferredLocationFilter, String>();
+    filter.put(CcAndInferredLocationFilter.DEPOT_ID, "");
+    filter.put(CcAndInferredLocationFilter.INFERRED_ROUTEID, "");
+    filter.put(CcAndInferredLocationFilter.INFERRED_PHASE, "");
     
-    List<CcAndInferredLocationRecord> lastKnownRecords = _dao.getAllLastKnownRecords();
+    List<CcAndInferredLocationRecord> lastKnownRecords = _dao.getAllLastKnownRecords(filter);
     // this should be one as both saveOrUpdateRecords happen for the same bus. Also this will prob end up being similar to getNumberOfCurrentRecords 
 
     assertEquals(1, lastKnownRecords.size()); 
@@ -116,7 +122,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
     
     assertTrue(foundMatch);
   }
-
+  
   private CcLocationReportRecord getCcRecord() {
       ArchivedInferredLocationRecord record = getTestRecord();
       CcLocationReportRecord cc = new CcLocationReportRecord();
@@ -177,7 +183,8 @@ public class  NycQueuedInferredLocationDaoImplTest {
     return record;
   }    
  
- private int getNumberOfRecords() {
+ @SuppressWarnings("unchecked")
+private int getNumberOfRecords() {
     @SuppressWarnings("rawtypes")
     Long count = (Long) _dao.getHibernateTemplate().execute(new HibernateCallback() {
 	public Object doInHibernate(Session session) throws HibernateException {
@@ -188,7 +195,8 @@ public class  NycQueuedInferredLocationDaoImplTest {
     return count.intValue();
   }
 
-  private int getNumberOfCurrentRecords() {
+  @SuppressWarnings("unchecked")
+private int getNumberOfCurrentRecords() {
     @SuppressWarnings("rawtypes")
     Long count = (Long) _dao.getHibernateTemplate().execute(new HibernateCallback() {
 	public Object doInHibernate(Session session) throws HibernateException {

@@ -185,8 +185,9 @@ OBA.Sidebar = function() {
 					imagePiece = "end";
 				}
 				
+				// transparent stops-on-route icon mask
 				var stopItem = jQuery('<li></li>')
-								.css("background-image", "url(img/stop-on-route/stop_on_route_" + imagePiece + "_" + routeResult.color + ".png)")
+								.css("background", "#" + routeResult.color + " url('img/stop-on-route/stop_on_route_" + imagePiece + ".png') no-repeat left center")
 								.append(stopLink);
 
 				stopsList.append(stopItem);

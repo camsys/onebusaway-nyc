@@ -23,7 +23,7 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-	<meta name="viewport" content="width=device-width,initial-scale=.90,maximum-scale=.90,user-scalable=no"/>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes"/>
 
 	<title>MTA Bus Time<s:property value="title"/></title>
 	

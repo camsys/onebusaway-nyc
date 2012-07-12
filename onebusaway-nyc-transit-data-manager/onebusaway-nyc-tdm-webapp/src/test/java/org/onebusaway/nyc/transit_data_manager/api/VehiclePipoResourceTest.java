@@ -197,9 +197,8 @@ public class VehiclePipoResourceTest {
 		activePullouts.add(activePullout);
 		
 		when(vehiclePullInOutService.getActivePullOuts(isA(List.class))).thenReturn(activePullouts);
-		when(vehiclePullInOutService.getMostRecentActivePullout(isA(List.class))).thenReturn(activePullout);
 		
-		String outputJson = resource.getCurrentlyActivePulloutsForBus("1253");
+		String outputJson = resource.getActivePulloutsForBus("1253");
 		
 		//writeToFile(outputJson, "activepulloutsbybus.txt");
 		
@@ -260,7 +259,7 @@ public class VehiclePipoResourceTest {
 	
 	@Test
 	public void testActivePulloutsForInvalidBus() {
-		String outputJson = resource.getCurrentlyActivePulloutsForBus("1235");
+		String outputJson = resource.getActivePulloutsForBus("1235");
 		assertEquals("No pullouts found for bus : 1235", outputJson);
 	}
 	

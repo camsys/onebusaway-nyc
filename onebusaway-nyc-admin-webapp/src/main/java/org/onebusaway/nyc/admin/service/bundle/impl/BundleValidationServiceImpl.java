@@ -216,11 +216,16 @@ public class BundleValidationServiceImpl implements BundleValidationService {
     try {
       String tmpDir = System.getProperty("java.io.tmpdir") + File.separator
           + TRANSIT_FEED;
-      String cmd = tmpDir + File.separator
-          + "feedvalidator.py -n -m --service_gap_interval=1 --output="
-          + outputFile + " " + gtfsZipFileName;
-      _log.info("exec:" + cmd);
-      process = Runtime.getRuntime().exec(cmd);
+      String[] cmds = {
+        tmpDir + File.separator + "feedvalidator.py",
+        "-n",
+        "-m",
+        "--service_gap_interval=1",
+        "--output=" + outputFile,
+        gtfsZipFileName
+      };
+      debugCmds(cmds);
+      process = Runtime.getRuntime().exec(cmds);
       return process.waitFor();
     } catch (Exception e) {
       _log.error(e.toString());
@@ -261,4 +266,13 @@ public class BundleValidationServiceImpl implements BundleValidationService {
     response.addStatusMessage("upload complete");
   }
 
+  private String escapeFilename(String s) {
+    return FileUtils.escapeFilename(s);
+  }
+  
+  private void debugCmds(String[] array) {
+    FileUtils.debugCmds(array);
+  }
+  
+  
 }

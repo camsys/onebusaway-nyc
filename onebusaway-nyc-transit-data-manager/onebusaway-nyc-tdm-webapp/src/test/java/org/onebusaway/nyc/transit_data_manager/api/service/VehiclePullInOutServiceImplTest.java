@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 
+import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.SCHPullInOutInfo;
 
 /**
@@ -37,29 +38,70 @@ public class VehiclePullInOutServiceImplTest {
 	public void testGetActivePullouts() {
 		List<VehiclePullInOutInfo> pulloutInfo = new ArrayList<VehiclePullInOutInfo>();
 		
-		VehiclePullInOutInfo activePullout = mock(VehiclePullInOutInfo.class);
-		VehiclePullInOutInfo inactivePullout = mock(VehiclePullInOutInfo.class);
-		SCHPullInOutInfo activePulloutInfo = mock(SCHPullInOutInfo.class);
-		SCHPullInOutInfo activePullinInfo = mock(SCHPullInOutInfo.class);
-		SCHPullInOutInfo inactivePulloutInfo = mock(SCHPullInOutInfo.class);
-		SCHPullInOutInfo inactivePullinInfo = mock(SCHPullInOutInfo.class);
+		VehiclePullInOutInfo activePullout1 = mock(VehiclePullInOutInfo.class);
+		VehiclePullInOutInfo activePullout2 = mock(VehiclePullInOutInfo.class);
 		
-		when(activePullout.getPullOutInfo()).thenReturn(activePulloutInfo);
-		when(activePullout.getPullInInfo()).thenReturn(activePullinInfo);
-		when(inactivePullout.getPullOutInfo()).thenReturn(inactivePulloutInfo);
-		when(inactivePullout.getPullInInfo()).thenReturn(inactivePullinInfo);
+		SCHPullInOutInfo activePullout1Info = mock(SCHPullInOutInfo.class);
+		SCHPullInOutInfo activePullout2Info = mock(SCHPullInOutInfo.class);
 		
-		pulloutInfo.add(activePullout);
-		pulloutInfo.add(inactivePullout);
+		CPTVehicleIden vehicle1 = mock(CPTVehicleIden.class);
+		CPTVehicleIden vehicle2 = mock(CPTVehicleIden.class);
 		
-		when(activePulloutInfo.getTime()).thenReturn(getPullInOutTime(-1));
-		when(activePullinInfo.getTime()).thenReturn(getPullInOutTime(8));
-		when(inactivePulloutInfo.getTime()).thenReturn(getPullInOutTime(1));
-		when(inactivePullinInfo.getTime()).thenReturn(getPullInOutTime(8));
+		when(activePullout1.getPullOutInfo()).thenReturn(activePullout1Info);
+		when(activePullout2.getPullOutInfo()).thenReturn(activePullout2Info);
+		
+		when(activePullout1Info.getTime()).thenReturn(getPullInOutTime(-1));
+		when(activePullout2Info.getTime()).thenReturn(getPullInOutTime(-1));
+		
+		when(activePullout1Info.getVehicle()).thenReturn(vehicle1);
+		when(activePullout2Info.getVehicle()).thenReturn(vehicle2);
+		when(vehicle1.getVehicleId()).thenReturn(1L);
+		when(vehicle2.getVehicleId()).thenReturn(2L);
+		
+		pulloutInfo.add(activePullout1);
+		pulloutInfo.add(activePullout2);
 		
 		List<VehiclePullInOutInfo> activePullouts = service.getActivePullOuts(pulloutInfo);
 		
-		assertEquals("Expecting 1 active pull out", 1, activePullouts.size());
+		assertEquals("Expecting 2 active pull outs", 2, activePullouts.size());
+	}
+	
+	@Test
+	public void testMultipleActivePullouts() {
+		List<VehiclePullInOutInfo> pulloutInfo = new ArrayList<VehiclePullInOutInfo>();
+		
+		VehiclePullInOutInfo activePullout1 = mock(VehiclePullInOutInfo.class);
+		VehiclePullInOutInfo activePullout2 = mock(VehiclePullInOutInfo.class);
+		VehiclePullInOutInfo inactivePullout = mock(VehiclePullInOutInfo.class);
+		
+		SCHPullInOutInfo activePullout1Info = mock(SCHPullInOutInfo.class);
+		SCHPullInOutInfo activePullout2Info = mock(SCHPullInOutInfo.class);
+		SCHPullInOutInfo inactivePulloutInfo = mock(SCHPullInOutInfo.class);
+		
+		CPTVehicleIden vehicle1 = mock(CPTVehicleIden.class);
+		CPTVehicleIden vehicle2 = mock(CPTVehicleIden.class);
+		
+		when(activePullout1.getPullOutInfo()).thenReturn(activePullout1Info);
+		when(activePullout2.getPullOutInfo()).thenReturn(activePullout2Info);
+		when(inactivePullout.getPullOutInfo()).thenReturn(inactivePulloutInfo);
+		
+		when(activePullout1Info.getTime()).thenReturn(getPullInOutTime(-1));
+		when(inactivePulloutInfo.getTime()).thenReturn(getPullInOutTime(-5));
+		when(activePullout2Info.getTime()).thenReturn(getPullInOutTime(-2));
+		
+		when(activePullout1Info.getVehicle()).thenReturn(vehicle1);
+		when(inactivePulloutInfo.getVehicle()).thenReturn(vehicle1);
+		when(activePullout2Info.getVehicle()).thenReturn(vehicle2);
+		when(vehicle1.getVehicleId()).thenReturn(1L);
+		when(vehicle2.getVehicleId()).thenReturn(2L);
+		
+		pulloutInfo.add(activePullout1);
+		pulloutInfo.add(activePullout2);
+		pulloutInfo.add(inactivePullout);
+		
+		List<VehiclePullInOutInfo> activePullouts = service.getActivePullOuts(pulloutInfo);
+		
+		assertEquals("Expecting 2 active pull outs", 2, activePullouts.size());
 	}
 	
 	@Test

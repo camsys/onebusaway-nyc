@@ -19,8 +19,6 @@ public class RouteResult implements SearchResult, Serializable {
 	private RouteBean route;
 
 	private List<RouteDirection> directions;
-	
-	private Double distanceToQueryLocation = null;
 
 	public RouteResult(RouteBean route, List<RouteDirection> directions) {
 		this.route = route;
@@ -34,15 +32,4 @@ public class RouteResult implements SearchResult, Serializable {
 	public List<RouteDirection> getDirections() {
 		return directions;
 	}
-
-	@Override
-  public void setDistanceToQueryLocation(Double distance) {
-    this.distanceToQueryLocation = distance;
-  }
-
-  @Override
-  public Double getDistanceToQueryLocation() {
-    return this.distanceToQueryLocation;
-  }
-
 }

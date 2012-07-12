@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.remoting.RemoteConnectFailureException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -133,6 +134,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
     String dataPath = request.getTmpDirectory() + File.separator + request.getBundleName()
         + File.separator + DATA_DIR;
+    
+    // create STIF dir as well
+    String stifPath = request.getTmpDirectory() + File.separator + "stif";
+    File stifDir = new File(stifPath);
+    _log.info("creating stif directory=" + stifPath);
+    stifDir.mkdirs();
+    
     File dataDir = new File(dataPath);
     response.setBundleDataDirectory(dataPath);
     dataDir.mkdirs();
@@ -160,7 +168,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     
     // clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
     try {
-      File stifDir = new File(request.getTmpDirectory() + File.separator + "stif");
       File[] stifDirectories = stifDir.listFiles();
       if (stifDirectories != null) {
         
@@ -190,19 +197,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
             _log.info("error=" + pu.getError());
           }
           if (pu.getException() != null) {
-            response.addException(pu.getException());
+            response.setException(pu.getException());
           }
         }
         response.addStatusMessage("stif cleaning complete");
       } 
     } catch (Exception any) {
-      response.addException(any);
+      response.setException(any);
     }
   }
 
   private String getStifCleanupUrl() {
     if (configurationService != null) {
-      return configurationService.getConfigurationValueAsString("admin.stif_cleanup_url", DEFAULT_STIF_CLEANUP_URL);
+      try {
+        return configurationService.getConfigurationValueAsString("admin.stif_cleanup_url", DEFAULT_STIF_CLEANUP_URL);
+      } catch (RemoteConnectFailureException e){
+        _log.error("stifCleanupUrl failed:", e);
+        return DEFAULT_STIF_CLEANUP_URL;
+      }
     }
     return DEFAULT_STIF_CLEANUP_URL;
   }
@@ -296,11 +308,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
     } catch (Exception e) {
       _log.error(e.toString(), e);
-      response.addException(e);
+      response.setException(e);
       return 1;
     } catch (Throwable t) {
       _log.error(t.toString(), t);
-      response.addException(new RuntimeException(t.toString()));
+      response.setException(new RuntimeException(t.toString()));
       return -1;
     } finally {
       if (context != null) {
