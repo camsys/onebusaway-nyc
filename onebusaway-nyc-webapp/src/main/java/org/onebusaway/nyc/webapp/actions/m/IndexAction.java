@@ -157,11 +157,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       if(label == null) {
         label = "";
       }
-      label += " [M: " + _results.getMatches().size() + " S: " + _results.getSuggestions().size();
-      if(_location != null) {
-        label += " - with location";
-      }      
-      label += "]";
+      label += " [M: " + _results.getMatches().size() + " S: " + _results.getSuggestions().size() + "]";
       label = label.trim();
 
       String action = "Unknown";
@@ -170,13 +166,20 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
           action = "Region Search";
 
         } else if(_results.getResultType().equals("RouteResult")) {
-          action = "Route Search";
-
+          if (_location != null) {
+            action = "GPS Route Search";
+          } else {
+            action = "Route Search";
+          }
         } else if(_results.getResultType().equals("GeocodeResult")) {
           action = "Location Disambiguation";
 
         } else if(_results.getResultType().equals("StopResult")) {
-          action = "Stop or Intersection Search";
+          if (_location != null) {
+            action = "GPS Stop Search";
+          } else {
+            action = "Stop or Intersection Search";
+          }
         }         
       } else {
         if(getQueryIsEmpty()) {
@@ -187,7 +190,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       }
 
       //url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");          
-      url.append("&utmp=/m/index#" + action + "/" + label);
+      url.append("&utmp=/m/index/" + action + "/" + label);
 
       return url.toString().replace("&", "&amp;"); 
     } catch(Exception e) {

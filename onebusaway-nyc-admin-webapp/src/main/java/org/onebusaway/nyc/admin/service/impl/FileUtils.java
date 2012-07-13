@@ -147,7 +147,7 @@ public class FileUtils {
       String[] cmds = {
           "tar",
           "zxC",
-          "_workingDirectory",
+          _workingDirectory,
           "-f",
           tarFile
       };
