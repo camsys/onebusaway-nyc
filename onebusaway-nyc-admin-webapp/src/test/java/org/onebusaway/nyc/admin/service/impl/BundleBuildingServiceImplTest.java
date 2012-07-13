@@ -119,6 +119,7 @@ public class BundleBuildingServiceImplTest {
 
     BundleBuildRequest request = new BundleBuildRequest();
     request.setBundleDirectory(bundleDir);
+    request.setBundleName("testname");
     request.setTmpDirectory(tmpDir);
     request.setBundleStartDate("2012-04-08");
     request.setBundleEndDate("2012-07-07");

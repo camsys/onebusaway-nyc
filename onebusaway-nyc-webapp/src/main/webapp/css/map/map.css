@@ -247,6 +247,7 @@
 	margin-top: 5px;
 	margin-bottom: 20px;
 	margin-left: 25px;
+	outline: none;
 }
 
 #content #matches ul li.legendItem p.destination ul.stops li {

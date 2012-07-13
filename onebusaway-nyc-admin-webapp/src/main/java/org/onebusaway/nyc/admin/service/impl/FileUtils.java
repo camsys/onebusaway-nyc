@@ -144,9 +144,15 @@ public class FileUtils {
   public int tarzxf(String tarFile) {
     Process process = null;
     try {
-      String cmd = "tar zxC " + _workingDirectory + " -f " + tarFile;
-      _log.info("exec:" + cmd);
-      process = Runtime.getRuntime().exec(cmd);
+      String[] cmds = {
+          "tar",
+          "zxC",
+          _workingDirectory,
+          "-f",
+          tarFile
+      };
+      debugCmds(cmds);
+      process = Runtime.getRuntime().exec(cmds);
       return process.waitFor();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -160,8 +166,13 @@ public class FileUtils {
   public int chmod(String permissions, String destinationFileName) {
     Process process = null;
     try {
-      String cmd = "chmod " + permissions + " " + destinationFileName;
-      process = Runtime.getRuntime().exec(cmd);
+      String[] cmds = {
+          "chmod",
+          permissions,
+          destinationFileName
+      };
+      debugCmds(cmds);
+      process = Runtime.getRuntime().exec(cmds);
       return process.waitFor();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -210,7 +221,6 @@ public class FileUtils {
   }
 
   public String createTmpDirectory() {
-    // TODO trivial implementation
     String tmpDir = System.getProperty("java.io.tmpdir") + File.separator
         + "tmp" + System.currentTimeMillis();
     boolean created = new File(tmpDir).mkdir();
@@ -232,8 +242,13 @@ public class FileUtils {
   public int unzip(String zipFileName, String outputDirectory) {
     Process process = null;
     try {
-      String cmd = "unzip " + zipFileName + " -d " + outputDirectory;
-      process = Runtime.getRuntime().exec(cmd);
+      String[] cmds = {
+          "unzip",
+          zipFileName,
+          "-d",
+          outputDirectory
+      };
+      process = Runtime.getRuntime().exec(cmds);
       return process.waitFor();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -276,19 +291,6 @@ public class FileUtils {
 
   }
 
-  public int rmDir(String directory) {
-    Process process = null;
-    try {
-      String cmd = "rm -rf '" + directory + "'";
-      _log.info("exec:" + cmd);
-      process = Runtime.getRuntime().exec(cmd);
-      return process.waitFor();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
-    
-  }
 
   public InputStream read(String filename) {
     File file = new File(filename);
@@ -304,4 +306,18 @@ public class FileUtils {
     }
     return null;
   }
+
+  public static String escapeFilename(String s) {
+    return s.replace(" ", "\\ ");
+  }
+  
+  public static void debugCmds(String[] array) {
+    StringBuffer sb = new StringBuffer();
+    sb.append("exec:");
+    for (String s :array){
+      sb.append(s + " ");
+    }
+    _log.info(sb.toString());
+  }
+
 }
