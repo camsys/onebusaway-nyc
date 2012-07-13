@@ -51,6 +51,10 @@
 						<s:url var="url" action="manage-bundles" namespace="/admin/bundles"/>
 						<s:a href="%{url}">Transit Data Bundle Utility</s:a>
 					</li>
+					<li>
+						<s:url var="url" action="vehicle-status" namespace="/admin/vehiclestatus"/>
+						<s:a href="%{url}">Vehicle Status Display Utility</s:a>
+					</li>
 				</s:if>
 				<li>
 					<s:url var="url" action="barcode"></s:url>

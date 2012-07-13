@@ -55,21 +55,7 @@
     color:#35acc5;
 }
 
-.tab_contents {
-	display : none;
-}
 
-.tab_contents_active {
-	display : block;
-}
-
-
-#content #text #breadcrumb_contents_container {
-	border: 1px solid #ccc;
-	border-top: none;
-	padding: 10px;
-	height: 100%;
-}
 
 /** Individual pages for bundle building UI.*/
 
@@ -144,21 +130,6 @@
 
 .horizontalRadio {
 	margin-right: 30px; 
-}
-
-.formButton {
-	border: 1px transparent;
-	width: 100px;
-	height: 30px;
-	background-image:url('img/Button_background.png');
-}
-
-.inlineFormButton {
-	border: 1px transparent;
-	width: 100px;
-	height: 30px;
-	display: inline;
-	background-image:url('img/Button_background.png');
 }
 
 .directoryLabels {
