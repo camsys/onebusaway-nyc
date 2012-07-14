@@ -211,8 +211,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
      * TODO Note that we're using the non-run-matching prior distribution.
      */
     final StudentTDistribution schedDist = ScheduleLikelihood.getSchedDevNonRunDist();
-    final double newSchedTime = currentTime + 60d
-        * schedDist.sample(ParticleFactoryImpl.getLocalRng());
+    double newSchedTime = currentTime + 60d * schedDist.sample(ParticleFactoryImpl.getLocalRng());
+    
+    if (Double.isInfinite(newSchedTime))
+      return null;
 
     final int startSchedTime = Iterables.getFirst(
         blockInstance.getBlock().getStopTimes(), null).getStopTime().getArrivalTime();

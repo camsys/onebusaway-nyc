@@ -2,6 +2,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -54,9 +55,28 @@ public final class BlockStateObservation implements
   }
 
   public BlockStateObservation(BlockStateObservation state, Observation obs) {
-    this(state._blockState, state._isRunReported, state._isOpAssigned,
-        state._isRunFormal, state._isAtPotentialLayoverSpot, state._isSnapped,
-        obs, state._isOnTrip);
+    
+    final String runId = state.getBlockState().getRunId();
+    _blockState = state._blockState;
+    _isOpAssigned = obs.getOpAssignedRunId() != null
+        ? obs.getOpAssignedRunId().equals(runId) : null;
+    _isRunReported = ((runId != null) && (obs.getBestFuzzyRunIds() != null) && (obs.getFuzzyMatchDistance() != null))
+        ? obs.getBestFuzzyRunIds().contains(runId) : null;
+    _isRunFormal = _isOpAssigned == Boolean.TRUE
+        || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0)
+        ? true : false;
+    _isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);
+    _isSnapped = state._isSnapped;
+    _obs = obs;
+    _isOnTrip = state._isOnTrip;
+    _scheduleDeviation = computeScheduleDeviation(obs, _blockState);
+    
+    /*
+     * We now recompute these, since some of this info could change simply with time.
+     */
+//    this(state._blockState, state._isRunReported, state._isOpAssigned,
+//        state._isRunFormal, state._isAtPotentialLayoverSpot, state._isSnapped,
+//        obs, state._isOnTrip);
   }
 
   public BlockStateObservation(BlockState blockState, Observation obs,
@@ -81,7 +101,7 @@ public final class BlockStateObservation implements
   }
 
   /**
-   * Computes the schedule deviation in minutes.
+   * Computes the schedule deviation in minutes (obs.time - sched.time).
    * Note: for states that haven't started, or that have ended, the value returned is zero.
    * 
    * @param obs
