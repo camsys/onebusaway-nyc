@@ -19,6 +19,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 
 import com.google.common.collect.Lists;
@@ -106,7 +107,12 @@ public class VehicleLocationDetails {
   }
 
   public double getEffectiveSampleSize() {
-    return ParticleFilter.getEffectiveSampleSize(particles);
+    try {
+      return ParticleFilter.getEffectiveSampleSize(particles);
+    } catch (ParticleFilterException e) {
+      e.printStackTrace();
+    }
+    return Double.NaN;
   }
 
   public void setSampledParticles(Multiset<Particle> sampledParticles2) {

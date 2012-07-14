@@ -94,6 +94,21 @@ ul li {
 	outline: none;
 }
 
+.formButton {
+	border: 1px transparent;
+	width: 100px;
+	height: 30px;
+	background-image:url('img/Button_background.png');
+}
+
+.inlineFormButton {
+	border: 1px transparent;
+	width: 100px;
+	height: 30px;
+	display: inline;
+	background-image:url('img/Button_background.png');
+}
+
 /* from MTA CSS: */
 html, body {
     background-image: url("http://mta.info/css/images/grey_bg.jpg");

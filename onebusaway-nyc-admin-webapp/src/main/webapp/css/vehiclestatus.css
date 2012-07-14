@@ -1,0 +1,189 @@
+/**
+ * Copyright (c) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+ 
+
+th.ui-th-column div {
+    white-space: normal !important;
+    height: auto !important;
+    padding: 2px;
+}
+
+
+
+#menu {
+	padding: 0px;
+	background: none;
+	border-width: 0px;
+}
+
+#menu .ui-tabs-nav {
+	padding-left: 0px;
+	background: transparent;
+	border-width: 0px 0px 1px 0px;
+	-moz-border-radius: 0px;
+	-webkit-border-radius: 0px;
+	border-radius: 0px;
+}
+
+#menu #navigation li {
+    list-style-type:none;
+    float:left;
+    width: 175px;
+    color: #808080;
+}
+
+#menu #navigation a {
+    height: 10px;
+    display:block;
+    background-repeat:no-repeat;
+    background-position:right;
+    padding-right: 15px;
+    text-decoration: none;
+    color:#454545;
+}
+
+#menu .ui-tabs-panel {
+	border-width: 0px 1px 1px 1px;
+}
+
+#navigation a:hover {
+    color:#35acc5;
+}
+
+.vehicleLabel {
+	font-size: 12px;
+	font: Times New Roman, Times, serif;
+}
+
+#topBox {
+	height: 30px;
+	border: transparent 1px;
+}
+
+#topBox #search {
+	width: 250px;
+	float: left;
+	padding-top: 6px;
+}
+
+#topBox #lastUpdateBox {
+	margin-left: 100px;
+	vertical-align: middle;
+	float: left;
+	padding-top: 5px;
+}
+
+#topBox #refresh {
+	margin-left: 180px;
+	float: left;
+	padding: 0px;
+}
+
+#topBox #autoRefreshBox {
+	margin-left: 45px;
+	padding-top: 5px;
+	float: left;
+}
+
+#autoRefreshBox #autoRefresh {
+	color: #0000FF;
+	text-decoration: underline;
+}
+
+#autoRefresh:hover {
+	cursor: pointer;
+}
+
+#mainBox {
+	height: 460px;
+	border: transparent 1px;
+	margin-top: 20px;
+}
+
+#mainBox #filterBox {
+	width: 200px;
+	float: left;
+	border: solid 1px;
+	padding-top: 10px;
+	padding-left: 10px;
+}
+
+#mainBox #vehiclesBox {
+	border-right: solid 1px;
+	border-top: solid 1px;
+	border-bottom: solid 1px;
+	float: left;
+}
+
+#filterBox #filters {
+	margin-top: 20px;
+}
+
+#filters li {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+#filters li label {
+	display: block;
+}
+
+#filters li input, #filters li select {
+	width: 150px;
+}
+
+#emergencyBox #emergencyCheck {
+	margin-top: 10px;
+	margin-right: 10px;
+}
+
+#filterBox #filterButtons {
+	margin-top: 10px;
+}
+
+#filterButtons #apply, #filterButtons #reset {
+	width: 75px;
+	height: 30px;
+	background-image:url('img/Button_background.png');
+	border: 1px transparent;
+	margin-bottom: 35px;
+}
+
+#bottomBox {
+	height: 100px;
+	padding-top: 20px;
+}
+
+.infoBox {
+	width: 150px;
+	height: 75px;
+	border: solid 1px #999999;
+	float: left;
+	margin-right: 10px;
+}
+
+.boxData {
+	padding-top : 8px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.boxData label{
+	font-size: 18px;
+	font: Times New Roman, Times, serif;
+}
+
+
