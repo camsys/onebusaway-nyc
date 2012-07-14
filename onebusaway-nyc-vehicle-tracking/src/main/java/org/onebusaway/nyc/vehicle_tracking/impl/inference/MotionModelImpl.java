@@ -37,6 +37,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
@@ -214,7 +215,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
   @Override
   public Multiset<Particle> move(Multiset<Particle> particles,
       double timestamp, double timeElapsed, Observation obs,
-      boolean previouslyResampled) {
+      boolean previouslyResampled) throws ParticleFilterException {
 
     final Multiset<Particle> results = HashMultiset.create();
 
@@ -279,9 +280,11 @@ public class MotionModelImpl implements MotionModel<Observation> {
      * Normalize
      */
     for (final Entry<Particle> p : results.entrySet()) {
-      p.getElement().setLogNormedWeight(
-          p.getElement().getLogWeight() + FastMath.log(p.getCount())
-              - normOffset);
+      final double thisTotalWeight = p.getElement().getLogWeight() + FastMath.log(p.getCount());
+      double logNormed = thisTotalWeight - normOffset;
+      if (logNormed > 0d)
+        logNormed = 0d;
+      p.getElement().setLogNormedWeight(logNormed);
     }
 
     return results;
@@ -291,7 +294,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
   private Particle sampleTransitionParticle(Entry<Particle> parent,
       BlockStateObservation newParentBlockStateObs, Observation obs,
       final double vehicleHasNotMovedProb,
-      Set<BlockStateObservation> transitions) {
+      Set<BlockStateObservation> transitions) throws ParticleFilterException {
 
     final long timestamp = obs.getTime();
     final VehicleState parentState = parent.getElement().getData();
@@ -400,8 +403,9 @@ public class MotionModelImpl implements MotionModel<Observation> {
     final Particle newParticle;
     if (transitionDist.canSample()) {
       newParticle = transitionDist.sample();
-      newParticle.setLogWeight(parent.getElement().getLogWeight()
-          + newParticle.getResult().getLogProbability());
+      final double logWeight = parent.getElement().getLogWeight()
+          + newParticle.getResult().getLogProbability();
+      newParticle.setLogWeight(logWeight);
 
     } else {
       final SensorModelResult transProb = new SensorModelResult(
@@ -423,13 +427,14 @@ public class MotionModelImpl implements MotionModel<Observation> {
       transProb.addResultAsAnd(runTransitionLikelihood.likelihood(null, context));
       transProb.addResultAsAnd(nullStateLikelihood.likelihood(null, context));
       transProb.addResultAsAnd(nullLocationLikelihood.likelihood(null, context));
-      transProb.addResultAsAnd(new SensorModelResult("not-moved",
-          vehicleNotMoved ? vehicleHasNotMovedProb
-              : 1d - vehicleHasNotMovedProb));
+      transProb.addResultAsAnd( vehicleNotMoved ? 
+          new SensorModelResult("not-moved", vehicleHasNotMovedProb)
+              : new SensorModelResult("moved", 1d - vehicleHasNotMovedProb));
       newParticle = new Particle(timestamp, parent.getElement(), 0.0, nullState);
       newParticle.setResult(transProb);
-      newParticle.setLogWeight(parent.getElement().getLogWeight()
-          + newParticle.getResult().getLogProbability());
+      final double logWeight = parent.getElement().getLogWeight()
+          + newParticle.getResult().getLogProbability();
+      newParticle.setLogWeight(logWeight);
 
     }
 

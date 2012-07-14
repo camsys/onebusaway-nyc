@@ -26,6 +26,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 
 import gov.sandia.cognition.math.LogMath;
@@ -173,7 +174,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   @Override
-  public Multiset<Particle> createParticles(double timestamp, Observation obs) {
+  public Multiset<Particle> createParticles(double timestamp, Observation obs) throws ParticleFilterException {
 
     final Set<BlockStateObservation> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(obs);
 

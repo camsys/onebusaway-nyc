@@ -29,7 +29,7 @@ import org.junit.Test;
 public class CategoricalDistTest {
 
   @Test
-  public void testSampleA() {
+  public void testSampleA() throws ParticleFilterException {
 
     final CategoricalDist<String> cdf = new CategoricalDist<String>();
     cdf.logPut(FastMath.log(0.3 * 1e-5), "c");
