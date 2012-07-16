@@ -21,6 +21,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
@@ -43,7 +44,7 @@ public class GpsLikelihood implements SensorModelRule {
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
-      Context context) {
+      Context context) throws BadProbabilityParticleFilterException {
 
     final VehicleState state = context.getState();
     final Observation obs = context.getObservation();

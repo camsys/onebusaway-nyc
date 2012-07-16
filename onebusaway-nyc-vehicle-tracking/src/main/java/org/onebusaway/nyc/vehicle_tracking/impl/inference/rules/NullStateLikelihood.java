@@ -18,6 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
@@ -38,7 +39,7 @@ public class NullStateLikelihood implements SensorModelRule {
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
-      Context context) {
+      Context context) throws BadProbabilityParticleFilterException {
     final SensorModelResult result = new SensorModelResult("pNullState", 1.0);
 
     final NullStates state = getNullState(context);

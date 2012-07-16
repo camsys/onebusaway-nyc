@@ -44,7 +44,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ZeroProbabilityParticleFilterException;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
@@ -315,7 +315,7 @@ public class VehicleInferenceInstance {
 
     try {
       _particleFilter.updateFilter(timestamp, observation);
-    } catch (final ZeroProbabilityParticleFilterException ex) {
+    } catch (final BadProbabilityParticleFilterException ex) {
       /**
        * If the particle filter hangs, we try one hard reset to see if that will
        * fix it

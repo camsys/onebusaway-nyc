@@ -15,13 +15,17 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
-public class ZeroProbabilityParticleFilterException extends
+public class BadProbabilityParticleFilterException extends
     ParticleFilterException {
 
   private static final long serialVersionUID = 1L;
 
-  public ZeroProbabilityParticleFilterException() {
+  public BadProbabilityParticleFilterException() {
     super("No particle has any likelihood!");
+  }
+
+  public BadProbabilityParticleFilterException(String string) {
+    super(string);
   }
 
 }

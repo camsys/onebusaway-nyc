@@ -20,6 +20,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
@@ -52,7 +53,7 @@ public class ScheduleLikelihood implements SensorModelRule {
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
-      Context context) {
+      Context context) throws BadProbabilityParticleFilterException {
 
     final VehicleState state = context.getState();
     final Observation obs = context.getObservation();
@@ -68,7 +69,7 @@ public class ScheduleLikelihood implements SensorModelRule {
 
   private SensorModelResult computeSchedTimeProb(VehicleState parentState,
       VehicleState state, BlockState blockState, EVehiclePhase phase,
-      Observation obs) {
+      Observation obs) throws BadProbabilityParticleFilterException {
     final SensorModelResult result = new SensorModelResult("pSchedule", 1.0);
     if (blockState == null) {
       result.addLogResultAsAnd("null state", 0.0);

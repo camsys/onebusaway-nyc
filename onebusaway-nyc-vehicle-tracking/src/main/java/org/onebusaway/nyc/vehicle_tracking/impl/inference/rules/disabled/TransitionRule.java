@@ -26,6 +26,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSuppo
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
@@ -43,7 +44,7 @@ public class TransitionRule implements SensorModelRule {
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
-      Context context) {
+      Context context) throws BadProbabilityParticleFilterException {
 
     final VehicleState parentState = context.getParentState();
     final VehicleState state = context.getState();

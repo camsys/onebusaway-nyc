@@ -285,24 +285,17 @@ public class SensorModelSupportLibrary {
      * have dead-reckoning, which is much more accurate in this regard, so we
      * shrink the gps std. dev.
      */
-    return 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev / 4, d);
-
-    // final Observation prevObs = obs.getPreviousObservation();
-    // if (prevObs == null)
-    // return 0.5;
-    // //
-    // final long currentTime = obs.getTime();
-    // final long lastInMotionTime = motionState.getLastInMotionTime();
-    // final int secondsSinceLastMotion = (int) ((currentTime -
-    // lastInMotionTime) / 1000);
-    //
-    // if (120 <= secondsSinceLastMotion) {
-    // return 1.0;
-    // } else if (60 <= secondsSinceLastMotion) {
-    // return 0.9;
-    // } else {
-    // return 0.0;
-    // }
+    final double prob = 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev / 4, d);
+    
+    /*
+     * We suspect some numerical issues here, so truncate...
+     */
+    if (prob < 0d)
+      return 0d;
+    else if (prob > 1d)
+      return 1d;
+    else
+      return prob;
   }
 
   /*****

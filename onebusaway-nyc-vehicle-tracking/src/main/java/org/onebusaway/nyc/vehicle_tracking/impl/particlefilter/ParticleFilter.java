@@ -193,7 +193,8 @@ public class ParticleFilter<OBS> {
     return _particleFactory.createParticles(timestamp, observation);
   }
 
-  public static double getEffectiveSampleSize(Multiset<Particle> particles) throws ParticleFilterException {
+  public static double getEffectiveSampleSize(Multiset<Particle> particles) 
+      throws BadProbabilityParticleFilterException {
     // double CVt = 0.0;
     // double N = particles.size();
     double Wnorm = 0.0;
@@ -219,7 +220,7 @@ public class ParticleFilter<OBS> {
     // return N/(1+FastMath.pow(CVt, 2.0));
     
     if (Double.isInfinite(Wvar) || Double.isNaN(Wvar))
-      throw new ParticleFilterException("effective sample size numerical error: Wvar=" + Wvar);
+      throw new BadProbabilityParticleFilterException("effective sample size numerical error: Wvar=" + Wvar);
     
     return 1 / Wvar;
   }
@@ -339,7 +340,7 @@ public class ParticleFilter<OBS> {
   }
 
   @SuppressWarnings("unused")
-  private SensorModelResult getParticleLikelihood(Particle particle, OBS obs) {
+  private SensorModelResult getParticleLikelihood(Particle particle, OBS obs) throws BadProbabilityParticleFilterException {
     return _sensorModel.likelihood(particle, obs);
   }
 
@@ -410,7 +411,7 @@ public class ParticleFilter<OBS> {
    * @throws ParticleFilterException 
    */
   public static Multiset<Particle> lowVarianceSampler(
-      Multiset<Particle> particles, double M) throws ParticleFilterException {
+      Multiset<Particle> particles, double M) throws BadProbabilityParticleFilterException {
     Preconditions.checkArgument(particles.size() > 0);
     Preconditions.checkArgument(M > 0);
 
@@ -430,7 +431,7 @@ public class ParticleFilter<OBS> {
     }
 
     if (resampled.size() != M)
-      throw new ParticleFilterException("low variance sampler did not return a valid sample");
+      throw new BadProbabilityParticleFilterException("low variance sampler did not return a valid sample");
     
     return resampled;
   }
