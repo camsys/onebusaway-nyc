@@ -358,7 +358,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
     	
     		if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
-    			message += "at terminal, was scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
+    			message += "at terminal";
     		} else {    			
     			message += "at terminal, scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
     		}
