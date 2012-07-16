@@ -12,6 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.onebusaway.nyc.queue.IPublisher;
 import org.onebusaway.nyc.queue.Publisher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * HTTP Proxy Servet. Listens for HTTP Posts and blindly throws the content of
  * the post onto the configured topic queue.
@@ -29,7 +32,8 @@ import org.onebusaway.nyc.queue.Publisher;
 public class BHSListenerServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 245140554274414196L;
-	public static final String PUBLISHER_KEY = "bhs_publisher";
+  private static Logger _log = LoggerFactory.getLogger(BHSListenerServlet.class);
+  public static final String PUBLISHER_KEY = "bhs_publisher";
 	public static final String DEFAULT_BHS_QUEUE = "bhs_queue";
 	private static final int CHUNK_SIZE = 4096;
 	private static final String DEFAULT_PROTOCOL = "tcp";
@@ -114,6 +118,7 @@ public class BHSListenerServlet extends HttpServlet {
 		if (key == null) {
 			value = defaultValue;
 		}
+		_log.info("getInitParameter(" + key + ")=" + value);
 		return value;
 	}
 
@@ -132,6 +137,7 @@ public class BHSListenerServlet extends HttpServlet {
 				valueAsInt = defaultValue;
 			}
 		}
+		_log.info("getInitParameter(" + key + ")=" + valueAsInt);
 		return valueAsInt;
 	}
 

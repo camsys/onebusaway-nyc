@@ -31,6 +31,23 @@
       <artifactId>apache-log4j-extras</artifactId>
     </dependency>
   </dependencies>
+  <profiles>
+    <profile>
+      <id>cloud</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <log4j.appender>ROLL</log4j.appender>
+      </properties>
+    </profile>
+    <profile>
+      <id>local-front-end</id>
+      <properties>
+        <log4j.appender>stdout</log4j.appender>
+      </properties>
+    </profile>
+  </profiles>
   <build>
     <finalName>onebusaway-nyc-queue-broker</finalName>
     <plugins>
@@ -43,6 +60,47 @@
           <target>1.5</target>
         </configuration>
       </plugin>
+      <!--  start assembly -->
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>org.onebusaway.nyc.queue_broker.SimpleBroker</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>org.onebusaway.nyc.queue_broker.SimpleBroker</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id> <!-- this is used for inheritance merges -->
+            <phase>package</phase> <!-- bind to the packaging phase -->
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>     
+        </plugin> 
+      <!--  end assembly -->     
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
   </build>
 </project>
