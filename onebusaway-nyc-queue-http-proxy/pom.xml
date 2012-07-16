@@ -61,7 +61,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <log4j.appender>ROLL</log4j.appender>
+        <log4j.appender>stdout</log4j.appender><!--  needs to be stdout for integration tests -->
       </properties>
     </profile>
     <profile>
