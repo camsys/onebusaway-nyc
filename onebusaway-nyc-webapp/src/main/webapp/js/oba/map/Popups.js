@@ -489,7 +489,7 @@ OBA.Popups = (function() {
 									var departureTime = OBA.Util.ISO8601StringToDate(monitoredVehicleJourney.OriginAimedDepartureTime);
 
 									if(departureTime.getTime() < updateTimestampReference) {
-										distance += " <span class='not_bold'>(at terminal, was scheduled to depart " + departureTime.format("h:MM TT") + ")</span>";
+										distance += " <span class='not_bold'>(at terminal)</span>";
 									} else {
 										distance += " <span class='not_bold'>(at terminal, scheduled to depart " + departureTime.format("h:MM TT") + ")</span>";
 									}
