@@ -169,11 +169,11 @@ public final class SiriSupport {
 
 		if (presentationService.isInLayover(currentVehicleTripStatus)) {
 			progressStatuses.add("layover");
-		} else {
-			// "prevTrip" really means not on the framedvehiclejourney trip
-			if(!framedJourneyTripBean.getId().equals(currentVehicleTripStatus.getActiveTrip().getId())) {
-				progressStatuses.add("prevTrip");
-			}
+		}
+
+		// "prevTrip" really means not on the framedvehiclejourney trip
+		if(!framedJourneyTripBean.getId().equals(currentVehicleTripStatus.getActiveTrip().getId())) {
+			progressStatuses.add("prevTrip");
 		}
 
 		if(!progressStatuses.isEmpty()) {

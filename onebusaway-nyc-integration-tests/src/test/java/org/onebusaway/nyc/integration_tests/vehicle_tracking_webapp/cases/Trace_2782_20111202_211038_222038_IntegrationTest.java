@@ -17,6 +17,9 @@ package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
 import org.onebusaway.realtime.api.EVehiclePhase;
 
+import org.junit.Ignore;
+
+@Ignore
 public class Trace_2782_20111202_211038_222038_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_2782_20111202_211038_222038_IntegrationTest() throws Exception {
