@@ -20,6 +20,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
@@ -59,7 +60,8 @@ public class SensorModelImpl implements SensorModel<Observation> {
   @Override
   public SensorModelResult likelihood(Particle particle,
       Observation observation,
-      Map<Entry<VehicleState, VehicleState>, SensorModelResult> cache) {
+      Map<Entry<VehicleState, VehicleState>, SensorModelResult> cache)
+          throws BadProbabilityParticleFilterException {
 
     final VehicleState state = particle.getData();
     VehicleState parentState = null;
@@ -81,7 +83,7 @@ public class SensorModelImpl implements SensorModel<Observation> {
   }
 
   @Override
-  public SensorModelResult likelihood(Particle particle, Observation observation) {
+  public SensorModelResult likelihood(Particle particle, Observation observation) throws BadProbabilityParticleFilterException {
 
     final VehicleState state = particle.getData();
     VehicleState parentState = null;
@@ -102,10 +104,11 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
   /****
    * {@link SensorModelImpl} Interface
+   * @throws BadProbabilityParticleFilterException TODO
    ****/
 
   public SensorModelResult likelihood(VehicleState parentState,
-      VehicleState state, Observation obs) {
+      VehicleState state, Observation obs) throws BadProbabilityParticleFilterException {
 
     final SensorModelResult result = new SensorModelResult("pTotal", 1.0);
 

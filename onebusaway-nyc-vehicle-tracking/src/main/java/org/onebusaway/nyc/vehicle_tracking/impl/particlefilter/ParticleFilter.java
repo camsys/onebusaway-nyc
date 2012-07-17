@@ -189,11 +189,12 @@ public class ParticleFilter<OBS> {
    * place them.
    */
   protected Multiset<Particle> createInitialParticlesFromObservation(
-      double timestamp, OBS observation) {
+      double timestamp, OBS observation) throws ParticleFilterException {
     return _particleFactory.createParticles(timestamp, observation);
   }
 
-  public static double getEffectiveSampleSize(Multiset<Particle> particles) {
+  public static double getEffectiveSampleSize(Multiset<Particle> particles) 
+      throws BadProbabilityParticleFilterException {
     // double CVt = 0.0;
     // double N = particles.size();
     double Wnorm = 0.0;
@@ -217,6 +218,10 @@ public class ParticleFilter<OBS> {
     // CVt = FastMath.sqrt(N*CVt);
     //
     // return N/(1+FastMath.pow(CVt, 2.0));
+    
+    if (Double.isInfinite(Wvar) || Double.isNaN(Wvar))
+      throw new BadProbabilityParticleFilterException("effective sample size numerical error: Wvar=" + Wvar);
+    
     return 1 / Wvar;
   }
 
@@ -250,8 +255,9 @@ public class ParticleFilter<OBS> {
 
   /**
    * @return true if this is the initial entry for these particles
+   * @throws ParticleFilterException 
    */
-  private boolean checkFirst(double timestamp, OBS observation) {
+  private boolean checkFirst(double timestamp, OBS observation) throws ParticleFilterException {
 
     if (!_seenFirst) {
       _particles.addAll(createInitialParticlesFromObservation(timestamp,
@@ -334,7 +340,7 @@ public class ParticleFilter<OBS> {
   }
 
   @SuppressWarnings("unused")
-  private SensorModelResult getParticleLikelihood(Particle particle, OBS obs) {
+  private SensorModelResult getParticleLikelihood(Particle particle, OBS obs) throws BadProbabilityParticleFilterException {
     return _sensorModel.likelihood(particle, obs);
   }
 
@@ -402,10 +408,12 @@ public class ParticleFilter<OBS> {
 
   /**
    * Low variance sampler. Follows Thrun's example in Probabilistic Robots.
+   * @throws ParticleFilterException 
    */
   public static Multiset<Particle> lowVarianceSampler(
-      Multiset<Particle> particles, double M) {
+      Multiset<Particle> particles, double M) throws BadProbabilityParticleFilterException {
     Preconditions.checkArgument(particles.size() > 0);
+    Preconditions.checkArgument(M > 0);
 
     final Multiset<Particle> resampled = HashMultiset.create((int) M);
     final double r = ParticleFactoryImpl.getLocalRng().nextDouble() / M;
@@ -422,6 +430,9 @@ public class ParticleFilter<OBS> {
       resampled.add(p);
     }
 
+    if (resampled.size() != M)
+      throw new BadProbabilityParticleFilterException("low variance sampler did not return a valid sample");
+    
     return resampled;
   }
 

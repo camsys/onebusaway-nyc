@@ -20,6 +20,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
@@ -39,6 +40,12 @@ public class ScheduleLikelihood implements SensorModelRule {
       2, 0d, 1d / 15d);
   final static private StudentTDistribution schedDevRunDist = new StudentTDistribution(
       1, 0d, 1d / 90d);
+  
+  /*
+   * In minutes, as well
+   */
+  private static final double POS_SCHED_DEV_CUTOFF = 30d;
+  private static final double NEG_SCHED_DEV_CUTOFF = -75d;
 
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
@@ -46,7 +53,7 @@ public class ScheduleLikelihood implements SensorModelRule {
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
-      Context context) {
+      Context context) throws BadProbabilityParticleFilterException {
 
     final VehicleState state = context.getState();
     final Observation obs = context.getObservation();
@@ -62,19 +69,19 @@ public class ScheduleLikelihood implements SensorModelRule {
 
   private SensorModelResult computeSchedTimeProb(VehicleState parentState,
       VehicleState state, BlockState blockState, EVehiclePhase phase,
-      Observation obs) {
+      Observation obs) throws BadProbabilityParticleFilterException {
     final SensorModelResult result = new SensorModelResult("pSchedule", 1.0);
     if (blockState == null) {
       result.addLogResultAsAnd("null state", 0.0);
 
     } else {
       final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation());
+      final double x = state.getBlockStateObservation().getScheduleDeviation();
+      
       if (EVehiclePhase.DEADHEAD_AFTER == phase) {
 
-        if (FastMath.abs(state.getBlockStateObservation().getScheduleDeviation()) > 0d) {
-          final double x = state.getBlockStateObservation().getScheduleDeviation();
-          final double pSched = schedDist.getProbabilityFunction().logEvaluate(
-              x);
+        if (FastMath.abs(x) > 0d) {
+          final double pSched = getScheduleDevLogProb(x, schedDist);
           result.addLogResultAsAnd("deadhead after", pSched);
         } else {
           result.addLogResultAsAnd("deadhead after", 0.0);
@@ -82,10 +89,8 @@ public class ScheduleLikelihood implements SensorModelRule {
 
       } else if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
 
-        if (FastMath.abs(state.getBlockStateObservation().getScheduleDeviation()) > 0d) {
-          final double x = state.getBlockStateObservation().getScheduleDeviation();
-          final double pSched = schedDist.getProbabilityFunction().logEvaluate(
-              x);
+        if (FastMath.abs(x) > 0d) {
+          final double pSched = getScheduleDevLogProb(x, schedDist);
           result.addLogResultAsAnd("deadhead before", pSched);
         } else {
           result.addLogResultAsAnd("deadhead before", 0.0);
@@ -93,30 +98,25 @@ public class ScheduleLikelihood implements SensorModelRule {
 
       } else if (EVehiclePhase.LAYOVER_BEFORE == phase) {
 
-        if (FastMath.abs(state.getBlockStateObservation().getScheduleDeviation()) > 0d) {
-          final double x = state.getBlockStateObservation().getScheduleDeviation();
-          final double pSched = schedDist.getProbabilityFunction().logEvaluate(
-              x);
+        if (FastMath.abs(x) > 0d) {
+          final double pSched = getScheduleDevLogProb(x, schedDist);
           result.addLogResultAsAnd("layover before", pSched);
         } else {
           result.addLogResultAsAnd("layover before", 0.0);
         }
 
       } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
-
-        final double pSched = schedDist.getProbabilityFunction().logEvaluate(
-            state.getBlockStateObservation().getScheduleDeviation());
+        
+        final double pSched = getScheduleDevLogProb(x, schedDist);
         result.addLogResultAsAnd("deadhead during", pSched);
 
       } else if (EVehiclePhase.LAYOVER_DURING == phase) {
 
-        final double pSched = schedDist.getProbabilityFunction().logEvaluate(
-            state.getBlockStateObservation().getScheduleDeviation());
+        final double pSched = getScheduleDevLogProb(x, schedDist);
         result.addLogResultAsAnd("layover during", pSched);
 
       } else if (EVehiclePhase.IN_PROGRESS == phase) {
-        final double pSched = schedDist.getProbabilityFunction().logEvaluate(
-            state.getBlockStateObservation().getScheduleDeviation());
+        final double pSched = getScheduleDevLogProb(x, schedDist);
         result.addLogResultAsAnd("in progress", pSched);
       }
     }
@@ -124,6 +124,21 @@ public class ScheduleLikelihood implements SensorModelRule {
     return result;
   }
 
+  /**
+   * Manual truncation (when using the formal run distribution)
+   * We shouldn't have to worry about normalization, yet.
+   */
+  public static double getScheduleDevLogProb(final double x, StudentTDistribution schedDist) {
+    final double pSched; 
+    if (schedDist != schedDevRunDist || 
+        (x <= POS_SCHED_DEV_CUTOFF && x >= NEG_SCHED_DEV_CUTOFF)) {
+      pSched = schedDist.getProbabilityFunction().logEvaluate(x);
+    } else {
+      pSched = Double.NEGATIVE_INFINITY;
+    }    
+    return pSched;
+  }
+  
   public static StudentTDistribution getSchedDistForBlockState(
       BlockStateObservation blockState) {
     return blockState.isRunFormal() ? schedDevRunDist : schedDevNonRunDist;
@@ -131,6 +146,17 @@ public class ScheduleLikelihood implements SensorModelRule {
 
   public static StudentTDistribution getSchedDevNonRunDist() {
     return schedDevNonRunDist;
+  }
+
+  public static double truncateTime(double d, boolean isFormal) {
+    if (!isFormal) {
+      if (d > POS_SCHED_DEV_CUTOFF) {
+        return Double.POSITIVE_INFINITY;
+      } else if (d < NEG_SCHED_DEV_CUTOFF){
+        return -Double.NEGATIVE_INFINITY;
+      }
+    }
+    return d;
   }
 
 }

@@ -63,7 +63,7 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 	@Override
 	public Integer getQueuePort() {
 		return _configurationService.getConfigurationValueAsInteger(
-				"tds.inputQueuePort", 5563);
+				"tds.inputQueuePort", 5564);
 	}
 
 	@PostConstruct

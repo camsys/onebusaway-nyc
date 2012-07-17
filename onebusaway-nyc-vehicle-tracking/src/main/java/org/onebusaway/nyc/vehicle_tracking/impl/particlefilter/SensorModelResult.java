@@ -34,11 +34,13 @@ public class SensorModelResult {
 
   private boolean refresh = true;
 
-  public SensorModelResult(String name) {
+  public SensorModelResult(String name) throws BadProbabilityParticleFilterException {
     this(name, 1.0);
   }
 
-  public SensorModelResult(String name, double probability) {
+  public SensorModelResult(String name, double probability) throws BadProbabilityParticleFilterException {
+    if (Double.isNaN(probability) || probability < 0d || probability > 1d)
+      throw new BadProbabilityParticleFilterException("invalid weight assignment: weight=" + probability); 
     this.name = name;
     this.logProbability = FastMath.log(probability);
     this.probability = probability;
@@ -71,13 +73,17 @@ public class SensorModelResult {
     return logProbability;
   }
 
-  public void setProbability(double probability) {
+  public void setProbability(double probability) throws BadProbabilityParticleFilterException {
+    if (Double.isNaN(probability) || probability < 0d || probability > 1d)
+      throw new BadProbabilityParticleFilterException("invalid weight assignment: weight=" + probability); 
     this.logProbability = FastMath.log(probability);
     this.probability = probability;
     this.refresh = false;
   }
 
-  public void setLogProbability(double probability) {
+  public void setLogProbability(double probability) throws BadProbabilityParticleFilterException {
+    if (Double.isNaN(probability) || probability > 0d)
+      throw new BadProbabilityParticleFilterException("invalid weight assignment: weight=" + probability); 
     this.logProbability = probability;
     this.refresh = true;
   }
@@ -90,17 +96,17 @@ public class SensorModelResult {
     this.results = results;
   }
 
-  public SensorModelResult addResult(String name, double probability) {
+  public SensorModelResult addResult(String name, double probability) throws BadProbabilityParticleFilterException {
     return addResult(new SensorModelResult(name, probability));
   }
 
-  public SensorModelResult addLogResultAsAnd(String name, double logProbability) {
+  public SensorModelResult addLogResultAsAnd(String name, double logProbability) throws BadProbabilityParticleFilterException {
     final SensorModelResult newResult = new SensorModelResult(name);
     newResult.setLogProbability(logProbability);
     return addResultAsAnd(newResult);
   }
 
-  public SensorModelResult addResultAsAnd(String name, double probability) {
+  public SensorModelResult addResultAsAnd(String name, double probability) throws BadProbabilityParticleFilterException {
     return addResultAsAnd(new SensorModelResult(name, probability));
   }
 

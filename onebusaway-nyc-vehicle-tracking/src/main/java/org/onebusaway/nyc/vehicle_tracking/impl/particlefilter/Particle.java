@@ -17,6 +17,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
+import gov.sandia.cognition.math.ProbabilityUtil;
+
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Multiset;
@@ -107,11 +109,15 @@ public class Particle implements Serializable, Comparable<Particle> {
     return FastMath.exp(_logWeight);
   }
 
-  public void setWeight(double weight) {
+  public void setWeight(double weight) throws BadProbabilityParticleFilterException {
+    if (Double.isNaN(weight) || weight < 0d || weight > 1d)
+      throw new BadProbabilityParticleFilterException("invalid weight assignment: weight=" + weight);
     _logWeight = FastMath.log(weight);
   }
 
-  public void setLogWeight(double logWeight) {
+  public void setLogWeight(double logWeight) throws BadProbabilityParticleFilterException {
+    if (Double.isNaN(logWeight) || logWeight > 0d)
+      throw new BadProbabilityParticleFilterException("invalid weight assignment: logWeight=" + logWeight);
     _logWeight = logWeight;
   }
 
@@ -337,7 +343,9 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   //
 
-  public void setLogNormedWeight(double d) {
+  public void setLogNormedWeight(double d) throws BadProbabilityParticleFilterException {
+    if (Double.isNaN(d) || d > 0d)
+      throw new BadProbabilityParticleFilterException("invalid weight assignment: logWeight=" + d);
     _logNormedWeight = d;
   }
 
