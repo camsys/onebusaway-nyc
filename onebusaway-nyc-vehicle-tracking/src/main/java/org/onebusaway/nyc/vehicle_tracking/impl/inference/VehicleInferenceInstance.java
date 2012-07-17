@@ -324,6 +324,9 @@ public class VehicleInferenceInstance {
           + record.getTime() + " timeReceived=" + record.getTimeReceived()
           + " vehicleId=" + record.getVehicleId());
 
+      if(ex.getCause() != null) 
+    	_log.warn("wrapped exception was:" + ex.getCause().getMessage());
+      
       if (_badParticles == null)
         _badParticles = _particleFilter.getWeightedParticles();
 
