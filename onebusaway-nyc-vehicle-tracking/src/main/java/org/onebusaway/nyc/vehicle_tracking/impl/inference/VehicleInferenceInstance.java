@@ -322,10 +322,7 @@ public class VehicleInferenceInstance {
        */
       _log.warn("particle filter crashed for record - attempting reset: time="
           + record.getTime() + " timeReceived=" + record.getTimeReceived()
-          + " vehicleId=" + record.getVehicleId());
-
-      if(ex.getCause() != null) 
-    	_log.warn("wrapped exception was:" + ex.getCause().getMessage());
+          + " vehicleId=" + record.getVehicleId() + " cause=" + ex.getMessage());
       
       if (_badParticles == null)
         _badParticles = _particleFilter.getWeightedParticles();
