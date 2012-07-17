@@ -115,11 +115,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     boolean matchesRouteIdFilter = false;
     
+    HashMap<String, HashMap<Double, String>> distanceAwayStringsByDistanceFromStopAndRouteAndDirection = 
+        getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(stopBean);
+    
     for(RouteBean routeBean : stopBean.getRoutes()) {
       if((routeIdFilter == null || routeIdFilter.isEmpty()) || routeIdFilter != null && routeIdFilter.contains(routeBean.getId())) {
         matchesRouteIdFilter = true;
       }
-    
+      
       StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
       
       List<RouteDirection> directions = new ArrayList<RouteDirection>();
@@ -137,13 +140,13 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
             continue;
 
           HashMap<Double, String> distanceAwayStringsByDistanceFromStop = 
-              getDistanceAwayStringsForStopAndRouteAndDirectionByDistanceFromStop(stopBean, routeBean, stopGroupBean);
+              distanceAwayStringsByDistanceFromStopAndRouteAndDirection.get(routeBean.getId() + "_" + stopGroupBean.getId());
           
           Boolean hasUpcomingScheduledService = 
               _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
 
           // if there are buses on route, always have "scheduled service"
-          if(!distanceAwayStringsByDistanceFromStop.isEmpty()) {
+          if(distanceAwayStringsByDistanceFromStop != null && !distanceAwayStringsByDistanceFromStop.isEmpty()) {
         	  hasUpcomingScheduledService = true;
           }
 
@@ -171,30 +174,19 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
   /*** 
    * PRIVATE METHODS
    */
-  private HashMap<Double, String> getDistanceAwayStringsForStopAndRouteAndDirectionByDistanceFromStop(StopBean stopBean, RouteBean routeBean, StopGroupBean stopGroupBean) {
-    HashMap<Double, String> result = new HashMap<Double, String>();
+  private HashMap<String, HashMap<Double, String>> getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(StopBean stopBean) {
+    HashMap<String, HashMap<Double, String>> result = new HashMap<String, HashMap<Double, String>>();
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = 
       _realtimeService.getMonitoredStopVisitsForStop(stopBean.getId(), 0);  
     
     for(MonitoredStopVisitStructure visit : visitList) {
-      String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
-      if(!routeBean.getId().equals(routeId))
-        continue;
-
-      String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
-      if(!stopGroupBean.getId().equals(directionId))
-        continue;
-
       // on detour? don't show it. 
       MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
       if(monitoredCall == null)
         continue;
 
-      if(result.size() >= 3)
-    	break;
-      
       String distance = getPresentableDistance(visit.getMonitoredVehicleJourney(),
     		  visit.getRecordedAtTime().getTime(), true);
 
@@ -204,11 +196,22 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
       SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
       SiriDistanceExtension distanceExtension = wrapper.getDistances();    
 
-	  if(timePrediction != null) {
-	  	result.put(distanceExtension.getDistanceFromCall(), timePrediction);
-	  } else {
-		result.put(distanceExtension.getDistanceFromCall(), distance);
-	  }
+      String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
+      String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
+      String key = routeId + "_" + directionId;
+
+      HashMap<Double, String> map = result.get(key);
+      if(map == null) {
+        map = new HashMap<Double,String>();
+      }
+      
+      if(timePrediction != null) {
+        map.put(distanceExtension.getDistanceFromCall(), timePrediction);
+      } else {
+        map.put(distanceExtension.getDistanceFromCall(), distance);
+      }
+
+      result.put(key, map);
     }
     
     return result;

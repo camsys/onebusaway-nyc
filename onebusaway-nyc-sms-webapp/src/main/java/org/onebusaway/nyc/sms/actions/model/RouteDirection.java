@@ -41,7 +41,10 @@ public class RouteDirection implements Serializable {
   }
     
   public List<String> getDistanceAways() {
-    return new ArrayList<String>(distanceAwaysByDistanceFromStrings.values());
+    if(distanceAwaysByDistanceFromStrings == null) 
+      return new ArrayList<String>();
+    else
+      return new ArrayList<String>(distanceAwaysByDistanceFromStrings.values());
   }
 
   public HashMap<Double, String> getDistanceAwaysWithSortKey() {
