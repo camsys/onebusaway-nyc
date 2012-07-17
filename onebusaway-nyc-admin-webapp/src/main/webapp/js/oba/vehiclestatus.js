@@ -22,9 +22,38 @@ var VehicleStatus = Ember.Application.create({
 		
 });
 
+/******************* Views ************************************/
 VehicleStatus.VehicleView = Ember.View.extend({
 	tagName: "table",
 	didInsertElement: function() {
+		var controller = this.get('controller');
+		controller.loadGridData();
+	},
+	controllerBinding: "VehicleStatus.VehiclesController"
+});
+
+VehicleStatus.FilterView = Ember.View.extend ({
+	tagName: "ul",
+	didInsertElement: function() {
+		var controller = this.get('controller');
+		controller.loadFiltersData();
+	},
+	controllerBinding: "VehicleStatus.FiltersController"
+});
+
+VehicleStatus.ParametersView = Ember.View.extend({
+	
+
+});
+
+/******************* Controllers ************************************/
+VehicleStatus.ParametersController = Ember.ArrayController.create({
+	content: [],
+});
+
+VehicleStatus.VehiclesController = Ember.ArrayController.create({
+	content: [],
+	loadGridData : function() {
 		$("#vehicleGrid").jqGrid({
 			dataType: "local",
 			colNames: ["Status","Vehicle Id", "Last Update", "Inferred State", "Inferred DSC, Route + Direction", "Observed DSC", "Pull-out", "Pull-in", "Details"],
@@ -43,18 +72,34 @@ VehicleStatus.VehicleView = Ember.View.extend({
 			pager: "#pager"
 		}).navGrid("#pager", {edit:false,add:false,del:false});
 	}
-
 });
 
-VehicleStatus.ParametersView = Ember.View.extend({
-	
-
-});
-
-VehicleStatus.ParametersController = Ember.ArrayController.create({
+VehicleStatus.FiltersController = Ember.ArrayController.create({
 	content: [],
+	loadFiltersData : function() {
+		$.ajax({
+			type: "GET",
+			url: "../../filters/vehicle-filters.xml",
+			dataType: "xml",
+			success: function(xml) {
+				//Add depot options
+				$(xml).find("Depot").each(function(){
+					$("#depot").append("<option value=\"" +$(this).text() + "\"" + ">" +$(this).text() + "</option>");
+				});
+				//Add inferred state options
+				$(xml).find("InferredState").each(function(){
+					$("#inferredState").append("<option value=\"" +$(this).text() + "\"" + ">" +$(this).text() + "</option>");
+				});
+				//Add pullout options
+				$(xml).find("PulloutStatus").each(function(){
+					$("#pulloutStatus").append("<option value=\"" +$(this).text() + "\"" + ">" +$(this).text() + "</option>");
+				});
+			},
+			error: function(request) {
+				alert("Error: " + request.statusText);
+			}
+		});
+	}	
 });
 
-VehicleStatus.VehiclesController = Ember.ArrayController.create({
-	content: [],
-});
+/******************* Model ************************************/
