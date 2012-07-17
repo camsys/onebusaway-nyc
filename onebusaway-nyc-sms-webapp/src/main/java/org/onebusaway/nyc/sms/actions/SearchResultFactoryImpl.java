@@ -270,20 +270,21 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     
     // wrapped label only appears in stop results
     if(isStopContext) {    	
-    	if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-    		message += "+layover@term.";
-    	} else if(progressStatus != null && progressStatus.getValue().contains("layover")) {
+    	if(progressStatus != null && progressStatus.getValue().contains("layover")) {
     	   	if(journey.getOriginAimedDepartureTime() != null) {
         		DateFormat formatter = new SimpleDateFormat("h:mm");
 
         		if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
         			message += "@term.";
         		} else {
-        			message += "@term. sched. dep. " + formatter.format(journey.getOriginAimedDepartureTime());
+        			message += "@term. sched. dep. " + 
+        					formatter.format(journey.getOriginAimedDepartureTime());
         		}
         	} else {
         		message += "@term.";
         	}
+    	} else if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
+    		message += "+layover@term.";
     	}
     }
     
