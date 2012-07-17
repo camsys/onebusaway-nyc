@@ -347,26 +347,26 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
 
+    // at terminal label only appears in stop results
     if (isStopContext && progressStatus != null
+            && progressStatus.getValue().contains("layover")) {
+   
+    	if(journey.getOriginAimedDepartureTime() != null) {
+        	DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
+        	
+        	if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
+        		message += "at terminal";
+        	} else {    			
+        		message += "at terminal, scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
+        	}
+        } else {
+        	message += "at terminal";
+        }
+    } else if (isStopContext && progressStatus != null
         && progressStatus.getValue().contains("prevTrip")) {
     	message += "+ scheduled layover at terminal";
-
-    // at terminal label only appears in stop results
-    } else if (isStopContext && progressStatus != null
-        && progressStatus.getValue().contains("layover")) {
-    	if(journey.getOriginAimedDepartureTime() != null) {
-    		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
-    	
-    		if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
-    			message += "at terminal";
-    		} else {    			
-    			message += "at terminal, scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
-    		}
-    	} else {
-    		message += "at terminal";
-    	}
     }
-
+    	
     int staleTimeout = _configurationService.getConfigurationValueAsInteger(
         "display.staleTimeout", 120);
     long age = (System.currentTimeMillis() - updateTime) / 1000;
