@@ -72,7 +72,6 @@ public class GpsLikelihood implements SensorModelRule {
         final double d = SphericalGeometryLibrary.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-        result.addResult("d", d);
         result.addResultAsAnd("gps(deadhead-after)", pGps);
 
       } else {
@@ -90,7 +89,6 @@ public class GpsLikelihood implements SensorModelRule {
           p1.getLon(), p2.getLat(), p2.getLon());
       final double pGps = FoldedNormalDist.density(inProgressGpsMean,
           gpsStdDev, d);
-      result.addResult("d", d);
       result.addResultAsAnd("gps(in-progress)", pGps);
 
     } else if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
@@ -101,7 +99,6 @@ public class GpsLikelihood implements SensorModelRule {
         final double d = SphericalGeometryLibrary.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-        result.addResult("d", d);
         result.addResultAsAnd("gps(deadhead-before)", pGps);
 
       } else {
@@ -116,7 +113,6 @@ public class GpsLikelihood implements SensorModelRule {
         final double d = SphericalGeometryLibrary.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-        result.addResult("d", d);
 
         result.addResultAsAnd("gps(layover-before)", pGps);
       } else {
@@ -135,7 +131,6 @@ public class GpsLikelihood implements SensorModelRule {
         final double d = SphericalGeometryLibrary.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-        result.addResult("d", d);
         result.addResultAsAnd("gps(deadhead-during initial)", pGps);
 
       } else {
@@ -151,7 +146,6 @@ public class GpsLikelihood implements SensorModelRule {
         final double d = SphericalGeometryLibrary.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-        result.addResult("d", d);
         result.addResultAsAnd("gps(layover-during initial)", pGps);
 
       } else {
