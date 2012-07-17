@@ -99,7 +99,7 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
     if(queryString != null && !queryString.isEmpty()) {
       _lastQuery = queryString;
       _searchResults = _searchService.getSearchResults(queryString, _resultFactory);
-    } else if (commandString != null && commandString.equals("R") && _lastQuery != null & !_lastQuery.isEmpty()) {
+    } else if (commandString != null && commandString.equals("R") && _lastQuery != null && !_lastQuery.isEmpty()) {
       _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
     }
           
