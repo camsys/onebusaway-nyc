@@ -182,10 +182,10 @@ public class VehicleInferenceInstance {
     _lastUpdateTime = timestamp;
 
     /**
-     * If this record occurs BEFORE the most recent update, we take special
-     * action
+     * If this record occurs BEFORE, or at the same time as, the most recent update, 
+     * we take special action
      */
-    if (timestamp < _particleFilter.getTimeOfLastUpdated()) {
+    if (timestamp <= _particleFilter.getTimeOfLastUpdated()) {
       final long backInTime = (long) (_particleFilter.getTimeOfLastUpdated() - timestamp);
 
       /**
