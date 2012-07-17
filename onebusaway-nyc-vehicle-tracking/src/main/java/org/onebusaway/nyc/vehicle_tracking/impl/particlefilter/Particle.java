@@ -109,15 +109,15 @@ public class Particle implements Serializable, Comparable<Particle> {
     return FastMath.exp(_logWeight);
   }
 
-  public void setWeight(double weight) throws ParticleFilterException {
+  public void setWeight(double weight) throws BadProbabilityParticleFilterException {
     if (Double.isNaN(weight) || weight < 0d || weight > 1d)
-      throw new ParticleFilterException("invalid weight assignment: weight=" + weight);
+      throw new BadProbabilityParticleFilterException("invalid weight assignment: weight=" + weight);
     _logWeight = FastMath.log(weight);
   }
 
-  public void setLogWeight(double logWeight) throws ParticleFilterException {
+  public void setLogWeight(double logWeight) throws BadProbabilityParticleFilterException {
     if (Double.isNaN(logWeight) || logWeight > 0d)
-      throw new ParticleFilterException("invalid weight assignment: logWeight=" + logWeight);
+      throw new BadProbabilityParticleFilterException("invalid weight assignment: logWeight=" + logWeight);
     _logWeight = logWeight;
   }
 
@@ -343,9 +343,9 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   //
 
-  public void setLogNormedWeight(double d) throws ParticleFilterException {
+  public void setLogNormedWeight(double d) throws BadProbabilityParticleFilterException {
     if (Double.isNaN(d) || d > 0d)
-      throw new ParticleFilterException("invalid weight assignment: logWeight=" + d);
+      throw new BadProbabilityParticleFilterException("invalid weight assignment: logWeight=" + d);
     _logNormedWeight = d;
   }
 

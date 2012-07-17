@@ -21,6 +21,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
@@ -43,7 +44,7 @@ public class GpsLikelihood implements SensorModelRule {
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
-      Context context) {
+      Context context) throws BadProbabilityParticleFilterException {
 
     final VehicleState state = context.getState();
     final Observation obs = context.getObservation();
@@ -71,7 +72,6 @@ public class GpsLikelihood implements SensorModelRule {
         final double d = SphericalGeometryLibrary.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-        result.addResult("d", d);
         result.addResultAsAnd("gps(deadhead-after)", pGps);
 
       } else {
@@ -89,7 +89,6 @@ public class GpsLikelihood implements SensorModelRule {
           p1.getLon(), p2.getLat(), p2.getLon());
       final double pGps = FoldedNormalDist.density(inProgressGpsMean,
           gpsStdDev, d);
-      result.addResult("d", d);
       result.addResultAsAnd("gps(in-progress)", pGps);
 
     } else if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
@@ -100,7 +99,6 @@ public class GpsLikelihood implements SensorModelRule {
         final double d = SphericalGeometryLibrary.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-        result.addResult("d", d);
         result.addResultAsAnd("gps(deadhead-before)", pGps);
 
       } else {
@@ -115,7 +113,6 @@ public class GpsLikelihood implements SensorModelRule {
         final double d = SphericalGeometryLibrary.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-        result.addResult("d", d);
 
         result.addResultAsAnd("gps(layover-before)", pGps);
       } else {
@@ -134,7 +131,6 @@ public class GpsLikelihood implements SensorModelRule {
         final double d = SphericalGeometryLibrary.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-        result.addResult("d", d);
         result.addResultAsAnd("gps(deadhead-during initial)", pGps);
 
       } else {
@@ -150,7 +146,6 @@ public class GpsLikelihood implements SensorModelRule {
         final double d = SphericalGeometryLibrary.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-        result.addResult("d", d);
         result.addResultAsAnd("gps(layover-during initial)", pGps);
 
       } else {

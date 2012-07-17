@@ -34,6 +34,8 @@
 	<div id="mainBox">
 		<div id="filterBox">
 			<label>Filter by:</label>
+			<script type=text/x-handlebars>
+			{{#view VehicleStatus.FilterView}}
 			<ul id="filters">
 				<li>
 					<label class="vehicleLabel">Vehicle ID:</label>
@@ -74,6 +76,8 @@
 				<input type="button" id="reset" value="Reset" />
 				<input type="button" id="apply" value="Apply" />
 			</div>
+			{{/view}}
+			</script>
 		</div>
 		<div id="vehiclesBox">
 			<script type=text/x-handlebars>
