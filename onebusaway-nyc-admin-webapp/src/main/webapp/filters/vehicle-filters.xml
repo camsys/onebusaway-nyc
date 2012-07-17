@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Filters>
+	<Depots>
+		<Depot>JG</Depot>
+		<Depot>OS</Depot>
+		<Depot>CH</Depot>
+		<Depot>CA</Depot>
+		<Depot>UP</Depot>
+		<Depot>MA</Depot>
+		<Depot>YU</Depot>
+		<Depot>QV</Depot>
+		<Depot>MQ</Depot>
+		<Depot>FP</Depot>
+		<Depot>FB</Depot>
+		<Depot>CS</Depot>
+		<Depot>EN</Depot>
+	</Depots>
+	<Pullouts>
+		<PulloutStatus>Pull-out</PulloutStatus>
+		<PulloutStatus>Pull-in</PulloutStatus>
+	</Pullouts>
+	<InferredStates>
+		<InferredState>IN PROGRESS</InferredState>
+		<InferredState>DEADHEAD</InferredState>
+		<InferredState>LAYOVER</InferredState>
+	</InferredStates>
+</Filters>
