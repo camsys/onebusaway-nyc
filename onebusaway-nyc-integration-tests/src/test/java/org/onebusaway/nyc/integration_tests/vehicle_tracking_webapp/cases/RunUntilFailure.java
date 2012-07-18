@@ -10,11 +10,8 @@ import org.junit.runners.model.InitializationError;
 
 public class RunUntilFailure extends Runner {
 
-    private static final int MAX_RUN_COUNT = 50;
-
     private BlockJUnit4ClassRunner runner;
 
-    @SuppressWarnings("unchecked")
     public RunUntilFailure(final Class testClass) throws InitializationError {
         runner = new BlockJUnit4ClassRunner(testClass); 
     }

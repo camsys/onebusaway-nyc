@@ -15,17 +15,12 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
-import org.junit.Ignore;
-
-//@Ignore
 public class Trace_2782_20111202_211038_222038_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_2782_20111202_211038_222038_IntegrationTest() throws Exception {
-    super("2782_20111202_211038_222038.csv.gz");
+    super("2782_20111202_211038_222038.csv");
     setBundle("si", "2011-12-07T00:00:00EDT");
-    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.9);
-    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.85);
   }
 }
