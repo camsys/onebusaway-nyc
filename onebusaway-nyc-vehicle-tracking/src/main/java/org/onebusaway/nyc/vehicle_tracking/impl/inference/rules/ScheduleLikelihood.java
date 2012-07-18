@@ -43,8 +43,8 @@ public class ScheduleLikelihood implements SensorModelRule {
   /*
    * In minutes, as well
    */
-  private static final double POS_SCHED_DEV_CUTOFF = 30d;
-  private static final double NEG_SCHED_DEV_CUTOFF = -75d;
+  private static final double POS_SCHED_DEV_CUTOFF = 75d;
+  private static final double NEG_SCHED_DEV_CUTOFF = -30d;
 
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
