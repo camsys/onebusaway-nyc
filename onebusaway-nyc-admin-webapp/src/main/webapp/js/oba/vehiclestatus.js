@@ -32,7 +32,7 @@ VehicleStatus.VehicleView = Ember.View.extend({
 	controllerBinding: "VehicleStatus.VehiclesController"
 });
 
-VehicleStatus.FilterView = Ember.View.extend ({
+VehicleStatus.FilterView = Ember.View.extend({
 	tagName: "ul",
 	didInsertElement: function() {
 		var controller = this.get('controller');
@@ -55,7 +55,8 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 	content: [],
 	loadGridData : function() {
 		$("#vehicleGrid").jqGrid({
-			dataType: "local",
+			url: "vehicle-status!getVehicleData.action?ts=" + new Date().getTime(),
+			dataType: "json",
 			colNames: ["Status","Vehicle Id", "Last Update", "Inferred State", "Inferred DSC, Route + Direction", "Observed DSC", "Pull-out", "Pull-in", "Details"],
 			colModel:[ {name:"status",index:"status", width:65, sortable:false}, 
 			           {name:"vehicleId",index:"vehicleId", width:60}, 
@@ -69,6 +70,7 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			         ],
 			width: "100%",
 			height: "394",
+			viewrecords: true,
 			pager: "#pager"
 		}).navGrid("#pager", {edit:false,add:false,del:false});
 	}

@@ -1,6 +1,24 @@
 package org.onebusaway.nyc.admin.service.server.impl;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletContext;
+
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.MappingJsonFactory;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 import org.onebusaway.nyc.admin.service.server.BundleServerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.ServletContextAware;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -14,29 +32,12 @@ import com.amazonaws.services.ec2.model.StartInstancesResult;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.StopInstancesResult;
 
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.MappingJsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.context.ServletContextAware;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
-
 public class BundleServerServiceImpl implements BundleServerService, ServletContextAware {
 
-	private static Logger _log = LoggerFactory.getLogger(BundleServerServiceImpl.class);
+  private static Logger _log = LoggerFactory.getLogger(BundleServerServiceImpl.class);
   private static final String PING_API = "/ping/remote";
   private static final String LOCAL_HOST = "localhost";
+  private RemoteConnectionService remoteConnectionService;
 
   private AWSCredentials _credentials;
   private AmazonEC2Client _ec2;
@@ -199,61 +200,45 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
      return "http://" + host + ":8080/api" + apiCall;
    }
    
-  @SuppressWarnings("unchecked")
-  protected <T> T  makeRequestInternal(String instanceId, String apiCall, String jsonPayload, Class<T> returnType) {
-     _log.info("makeRequestInternal(" + instanceId + ", " + apiCall + ")");
-     String host = this.findPublicDns(instanceId);
-     if (host == null || host.length() == 0) {
-        _log.error("makeRequest called with unknown instanceId=" + instanceId);
-        return null;
-      }
-      HttpURLConnection connection = null;
-      try {
-        String url = generateUrl(host, apiCall);
-        _log.debug("making request for " + url);
-        connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestMethod("GET");
-        connection.setDoOutput(true);
-        connection.setReadTimeout(10000);
-   
-        // copy stream into String
-        String content = fromJson(connection);
-        
-        // parse content to appropriate return type
-        T t = null;
-        if (returnType == String.class) {
-          t = (T)content;
-        } else {
-          String json = content;
-          t =_mapper.readValue(json, returnType);
-        }
-        _log.debug("got |" + t + "|");
-        return t;
-      } catch (Exception e) {
-        _log.error("e=", e);
-      } finally {
-        if (connection != null) {
-          connection.disconnect();
-        }
-      }
-      return null;
+   @SuppressWarnings("unchecked")
+   protected <T> T  makeRequestInternal(String instanceId, String apiCall, String jsonPayload, Class<T> returnType) {
+	   _log.info("makeRequestInternal(" + instanceId + ", " + apiCall + ")");
+	   String host = this.findPublicDns(instanceId);
+	   if (host == null || host.length() == 0) {
+		   _log.error("makeRequest called with unknown instanceId=" + instanceId);
+		   return null;
+	   }
+	
+	   String url = generateUrl(host, apiCall);
+	   _log.debug("making request for " + url);
+
+	   // copy stream into String
+	   String content = remoteConnectionService.getContent(url);
+
+	   // parse content to appropriate return type
+	   T t = null;
+	   if (returnType == String.class) {
+		   t = (T)content;
+	   } else {
+		   String json = content;
+		   try {
+			t =_mapper.readValue(json, returnType);
+		} catch (JsonParseException e) {
+			_log.error("Error parsing json content : " +e);
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			_log.error("Error mapping parsed json content : " +e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			_log.error("Error parsing json content : " +e);
+			e.printStackTrace();
+		}
+	   }
+	   _log.debug("got |" + t + "|");
+	   return t;
+
    }
    
-  private String fromJson(HttpURLConnection connection) {
-    try {
-      BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-      StringBuilder sb = new StringBuilder();
-      String line = null;
-      while ((line = rd.readLine()) != null) {
-        sb.append(line + '\n');
-      }
-      return sb.toString();
-    } catch (Exception any){
-      _log.error("fromJson caught exception:", any);
-    }
-    return null;
-  }
-  
    @Override
    public <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds) {
      try {
@@ -297,4 +282,13 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
      }
     return jsonPayload;
   }
+	/**
+	 * Injects RemoteConnectionService
+	 * @param remoteConnectionService the remoteConnectionService to set
+	 */
+  	@Autowired
+	public void setRemoteConnectionService(
+			RemoteConnectionService remoteConnectionService) {
+		this.remoteConnectionService = remoteConnectionService;
+	}
 }
