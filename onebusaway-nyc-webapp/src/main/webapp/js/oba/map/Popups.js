@@ -482,9 +482,7 @@ OBA.Popups = (function() {
 
 						// distance mode
 						} else {
-							if(wrapped === true) {
-								distance += " <span class='not_bold'>(+ scheduled layover at terminal)</span>";
-							} else if(layover === true) {
+							if(layover === true) {
 								if(typeof monitoredVehicleJourney.OriginAimedDepartureTime !== 'undefined') {
 									var departureTime = OBA.Util.ISO8601StringToDate(monitoredVehicleJourney.OriginAimedDepartureTime);
 
@@ -496,8 +494,10 @@ OBA.Popups = (function() {
 								} else {
 									distance += " <span class='not_bold'>(at terminal)</span>";
 								}
+							} else if(wrapped === true) {
+								distance += " <span class='not_bold'>(+ scheduled layover at terminal)</span>";
 							}
-						
+								
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
 							html += '<li class="arrival' + lastClass + '">' + distance + '</li>';
 						}

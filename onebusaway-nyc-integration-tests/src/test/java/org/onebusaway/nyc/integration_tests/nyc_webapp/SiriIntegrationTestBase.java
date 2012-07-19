@@ -29,7 +29,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.TraceSupport;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.TraceSupport;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationListener;

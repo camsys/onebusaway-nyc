@@ -182,10 +182,10 @@ public class VehicleInferenceInstance {
     _lastUpdateTime = timestamp;
 
     /**
-     * If this record occurs BEFORE the most recent update, we take special
-     * action
+     * If this record occurs BEFORE, or at the same time as, the most recent update, 
+     * we take special action
      */
-    if (timestamp < _particleFilter.getTimeOfLastUpdated()) {
+    if (timestamp <= _particleFilter.getTimeOfLastUpdated()) {
       final long backInTime = (long) (_particleFilter.getTimeOfLastUpdated() - timestamp);
 
       /**
@@ -322,10 +322,7 @@ public class VehicleInferenceInstance {
        */
       _log.warn("particle filter crashed for record - attempting reset: time="
           + record.getTime() + " timeReceived=" + record.getTimeReceived()
-          + " vehicleId=" + record.getVehicleId());
-
-      if(ex.getCause() != null) 
-    	_log.warn("wrapped exception was:" + ex.getCause().getMessage());
+          + " vehicleId=" + record.getVehicleId() + " cause=" + ex.getMessage());
       
       if (_badParticles == null)
         _badParticles = _particleFilter.getWeightedParticles();
