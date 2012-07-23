@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;   
+package org.onebusaway.nyc.integration_tests;   
 
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -8,17 +8,19 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
-public class RunUntilFailure extends Runner {
+public class RunUntilSuccess extends Runner {
 
+	private static final int MAXIMUM_TRIES = 1;
+	
     private BlockJUnit4ClassRunner runner;
 
-    public RunUntilFailure(final Class testClass) throws InitializationError {
+    public RunUntilSuccess(final Class testClass) throws InitializationError {
         runner = new BlockJUnit4ClassRunner(testClass); 
     }
 
     @Override
     public Description getDescription() {
-        final Description description = Description.createSuiteDescription("Run many times until failure");
+        final Description description = Description.createSuiteDescription("Run until success");
         description.addChild(runner.getDescription());
         return description;
     }
@@ -31,6 +33,15 @@ public class RunUntilFailure extends Runner {
         }
         L listener = new L();
         notifier.addListener(listener);
-        while (!listener.fail) runner.run(notifier);
+
+        int i = 0;
+        while(true) { 
+        	runner.run(notifier);
+
+        	i++;
+        	if(listener.fail == false || i >= MAXIMUM_TRIES) {
+        		break;
+        	}
+        }
     }
 }

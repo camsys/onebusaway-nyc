@@ -21,7 +21,17 @@ th.ui-th-column div {
     padding: 2px;
 }
 
+.ui-jqgrid tr.jqgrow td {
+        white-space: normal !important;
+        height: auto !important;
+   	    padding: 2px;
+}
 
+.ui-jqgrid .ui-jqgrid-htable th div {
+    white-space:normal !important;
+    height:auto;
+    padding: 2px;
+}
 
 #menu {
 	padding: 0px;
@@ -114,7 +124,7 @@ th.ui-th-column div {
 }
 
 #mainBox #filterBox {
-	width: 200px;
+	width: 175px;
 	float: left;
 	border: solid 1px;
 	padding-top: 10px;
@@ -126,6 +136,8 @@ th.ui-th-column div {
 	border-top: solid 1px;
 	border-bottom: solid 1px;
 	float: left;
+	height: 458px;
+	overflow: auto;
 }
 
 #filterBox #filters {

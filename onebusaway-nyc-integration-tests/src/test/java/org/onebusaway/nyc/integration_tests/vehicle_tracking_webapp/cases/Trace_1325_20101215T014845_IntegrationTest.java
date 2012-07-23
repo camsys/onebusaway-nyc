@@ -15,8 +15,17 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
+/**
+ * A two-trip block on the B63, with layover and deadheading. No formal inference.
+ * 
+ * @author jmaki
+ *
+ */
+@RunWith(RunUntilSuccess.class)
 public class Trace_1325_20101215T014845_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_1325_20101215T014845_IntegrationTest() throws Exception {

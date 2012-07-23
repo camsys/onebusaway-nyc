@@ -67,6 +67,15 @@
         	</props>
         </property>
     </bean>
+    
+    <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
+    	<property name="order" value="-2" />
+    	<property name="properties">
+    		<props>
+    			<prop key="tdm.host">${tdm.host}</prop>
+    		</props>
+    	</property>
+    </bean>
 
    <bean id="fileService" class="org.onebusaway.nyc.admin.service.impl.FileServiceImpl">
    		<property name="bucketName" value="obanyc-bundle-data-test"/>
@@ -85,5 +94,9 @@
    <bean id="bundleBuildingService" class="org.onebusaway.nyc.admin.service.bundle.impl.BundleBuildingServiceImpl" />
    
    <bean id="bundleServerService" class="org.onebusaway.nyc.admin.service.server.impl.BundleServerServiceImpl" />
+   
+   <bean id="vehicleStatusService" class="org.onebusaway.nyc.admin.service.impl.VehicleStatusServiceImpl" />
+   
+   <bean id="remoteConnectionService" class="org.onebusaway.nyc.admin.service.impl.RemoteConnectionServiceImpl" />
    
 </beans>
