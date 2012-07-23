@@ -28,6 +28,7 @@ import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.m.model.StopResult;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.xwork.StringEscapeUtils;
@@ -38,6 +39,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -134,6 +136,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   /**
    * METHODS FOR VIEWS
    */
+  public List<ServiceAlertBean> getGlobalServiceAlerts() {
+    List<ServiceAlertBean> results = _realtimeService.getServiceAlertsGlobal();
+    return (results != null && results.size() > 0) ? results : null;
+  }
+  
   // Adapted from http://code.google.com/mobile/analytics/docs/web/#jsp
   public String getGoogleAnalyticsTrackingUrl() {
     try {

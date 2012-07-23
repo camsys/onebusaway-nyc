@@ -47,10 +47,13 @@ public abstract class SessionedIndexAction extends NextActionSupport
   
   protected VisitorData _visitorCookie;
   
+  protected Boolean _needsGlobalAlert;
+  
   public void initializeSession(String sessionId) {
     _searchResults = new SearchResultCollection();
     _searchResultsCursor = 0; 
     _visitorCookie = VisitorData.newVisitor();
+    _needsGlobalAlert = true;
   }
   
   public void setSession(Map<String, Object> session) {
@@ -61,6 +64,7 @@ public abstract class SessionedIndexAction extends NextActionSupport
       _searchResultsCursor = (Integer)session.get("searchResultsCursor");
       _lastQuery = (String)session.get("lastQuery");
       _visitorCookie = (VisitorData)session.get("visitorData");
+      _needsGlobalAlert = (Boolean)session.get("needsGlobalAlert");
 
       // if another request comes in before SESSION_RESET_WINDOW_IN_SECONDS, 
       // count it as another request in the same session--otherwise a new session from
@@ -80,6 +84,7 @@ public abstract class SessionedIndexAction extends NextActionSupport
     _session.put("searchResultsCursor", _searchResultsCursor);
     _session.put("lastQuery", _lastQuery);
     _session.put("visitorData", _visitorCookie);
+    _session.put("needsGlobalAlert", _needsGlobalAlert);
   }
   
   // user input/query

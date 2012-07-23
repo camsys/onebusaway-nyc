@@ -59,6 +59,16 @@
 
 		<small>TIP: Enter an intersection, bus route or bus stop code.</small>
 	</div>
+	
+	<s:if test="globalServiceAlerts!=null">
+		<div id="global-alerts" class="global-alerts">
+			<s:iterator value="globalServiceAlerts">
+				<s:iterator value="descriptions">
+					<p class="global-alert-content"><strong>Service Notice: </strong><s:property value="value" /></p>
+				</s:iterator>
+			</s:iterator>
+		 </div>
+	</s:if>
 
 	<s:if test="%{results.empty}">
 		<div id="content">
