@@ -85,13 +85,11 @@ public class VehicleStatusServiceImplTest {
 		VehicleStatus vehicleStatus = vehicleStatusRecords.get(0);
 		
 		assertEquals("Mismatched vehicle id", vehicleStatus.getVehicleId(), "5638");
-		assertEquals("Mismatched direction id", vehicleStatus.getDirection(), "1");
-		assertEquals("Mismatched inferred DSC", vehicleStatus.getInferredDSC(), "4611");
-		assertEquals("Mismatched inferred state", vehicleStatus.getInferredState(), "IN_PROGRESS");
+		assertEquals("Mismatched inferred state", vehicleStatus.getInferredState(), "IN PROGRESS");
 		assertEquals("Mismatched observed DSC", vehicleStatus.getObservedDSC(), "4611");
-		assertEquals("Mismatched pull in time", vehicleStatus.getPullinTime(), "2012-07-19T00:23:00-04:00");
-		assertEquals("Mismatched pull out time", vehicleStatus.getPulloutTime(), "2012-07-18T05:51:00-04:00");
-		assertEquals("Mismatched route", vehicleStatus.getRoute(), "B61");
+		assertEquals("Mismatched pull in time", vehicleStatus.getPullinTime(), "00:23");
+		assertEquals("Mismatched pull out time", vehicleStatus.getPulloutTime(), "05:51");
+		assertEquals("Mismatched inferred DSC", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
 	}
 	
 	@Test
@@ -155,14 +153,12 @@ public class VehicleStatusServiceImplTest {
 		
 		VehicleStatus vehicleStatus = vehicleStatusRecords.get(0);
 		
-		assertEquals("Mismatched vehicle id", vehicleStatus.getVehicleId(), "5638");
-		assertNull("No direction id", vehicleStatus.getDirection());
-		assertNull("No inferred DSC", vehicleStatus.getInferredDSC());
-		assertNull("No inferred state", vehicleStatus.getInferredState());
-		assertNull("No observed DSC", vehicleStatus.getObservedDSC());
-		assertEquals("Mismatched pull in time", vehicleStatus.getPullinTime(), "2012-07-19T00:23:00-04:00");
-		assertEquals("Mismatched pull out time", vehicleStatus.getPulloutTime(), "2012-07-18T05:51:00-04:00");
-		assertNull("No route", vehicleStatus.getRoute());
+		assertEquals("Mismatched vehicle id", vehicleStatus.getVehicleId(), "344");
+		assertEquals("Mismatched inferred state", vehicleStatus.getInferredState(), "IN PROGRESS");
+		assertEquals("Mismatched observed DSC", vehicleStatus.getObservedDSC(), "4611");
+		assertNull("No pull in time", vehicleStatus.getPullinTime());
+		assertNull("No pull out time", vehicleStatus.getPulloutTime());
+		assertEquals("Mismatched inferred destination information", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
 	}
 
 }

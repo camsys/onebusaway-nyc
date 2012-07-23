@@ -7,12 +7,11 @@ package org.onebusaway.nyc.admin.model.ui;
  */
 public class VehicleStatus {
 	
+	private String status;
 	private String vehicleId;
 	private String lastUpdateTime;
 	private String inferredState;
-	private String inferredDSC;
-	private String route;
-	private String direction;
+	private String inferredDestination;
 	private String observedDSC;
 	private String pullinTime;
 	private String pulloutTime;
@@ -54,42 +53,6 @@ public class VehicleStatus {
 		this.inferredState = inferredState;
 	}
 	/**
-	 * @return the inferredDSC
-	 */
-	public String getInferredDSC() {
-		return inferredDSC;
-	}
-	/**
-	 * @param inferredDSC the inferredDSC to set
-	 */
-	public void setInferredDSC(String inferredDSC) {
-		this.inferredDSC = inferredDSC;
-	}
-	/**
-	 * @return the route
-	 */
-	public String getRoute() {
-		return route;
-	}
-	/**
-	 * @param route the route to set
-	 */
-	public void setRoute(String route) {
-		this.route = route;
-	}
-	/**
-	 * @return the direction
-	 */
-	public String getDirection() {
-		return direction;
-	}
-	/**
-	 * @param direction the direction to set
-	 */
-	public void setDirection(String direction) {
-		this.direction = direction;
-	}
-	/**
 	 * @return the observedDSC
 	 */
 	public String getObservedDSC() {
@@ -124,6 +87,30 @@ public class VehicleStatus {
 	 */
 	public void setPulloutTime(String pulloutTime) {
 		this.pulloutTime = pulloutTime;
+	}
+	/**
+	 * @return the status
+	 */
+	public String getStatus() {
+		return status;
+	}
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	/**
+	 * @return the inferredDestination
+	 */
+	public String getInferredDestination() {
+		return inferredDestination;
+	}
+	/**
+	 * @param inferredDestination the inferredDestination to set
+	 */
+	public void setInferredDestination(String inferredDestination) {
+		this.inferredDestination = inferredDestination;
 	}
 	
 

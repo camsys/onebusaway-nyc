@@ -56,21 +56,31 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 	loadGridData : function() {
 		$("#vehicleGrid").jqGrid({
 			url: "vehicle-status!getVehicleData.action?ts=" + new Date().getTime(),
-			dataType: "json",
+			datatype: "json",
+			mType: "GET",
 			colNames: ["Status","Vehicle Id", "Last Update", "Inferred State", "Inferred DSC, Route + Direction", "Observed DSC", "Pull-out", "Pull-in", "Details"],
-			colModel:[ {name:"status",index:"status", width:65, sortable:false}, 
-			           {name:"vehicleId",index:"vehicleId", width:60}, 
-			           {name:"lastUpdate",index:"lastUpdate", width:60, sorttype:"date"}, 
-			           {name:"inferredState",index:"inferredState", width:65}, 
-			           {name:"routeAndDirection",index:"routeAndDirection", width:120, sortable:false}, 
-			           {name:"observedDsc",index:"observedDsc", width:65}, 
-			           {name:"pullout",index:"pullout", width:65, sorttype:"date"},
-			           {name:"pullin",index:"pullin", width:65, sorttype:"date"},
-			           {name:"details",index:"details", width:50, sortable:false}
+			colModel:[ {name:'status',index:'status', width:70, sortable:false}, 
+			           {name:'vehicleId',index:'vehicleId', width:70}, 
+			           {name:'lastUpdateTime',index:'lastUpdateTime', width:70}, 
+			           {name:'inferredState',index:'inferredState', width:100, sortable:false}, 
+			           {name:'inferredDestination',index:'inferredDestination', width:170, sortable:false}, 
+			           {name:'observedDSC',index:'observedDSC', width:80}, 
+			           {name:'pulloutTime',index:'pulloutTime', width:70},
+			           {name:'pullinTime',index:'pullinTime', width:70},
+			           {name:'details',index:'details', width:65}
 			         ],
-			width: "100%",
-			height: "394",
+			height: "390",
+			width: "670",
+			//width: "auto",
 			viewrecords: true,
+			loadonce:false,
+			jsonReader: {
+				root: "rows",
+			    page: "page",
+			    total: "total",
+			    records: "records",
+				repeatitems: false
+			},
 			pager: "#pager"
 		}).navGrid("#pager", {edit:false,add:false,del:false});
 	}

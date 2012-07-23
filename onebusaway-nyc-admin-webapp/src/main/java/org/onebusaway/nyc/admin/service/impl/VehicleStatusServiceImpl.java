@@ -8,9 +8,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.onebusaway.nyc.admin.model.json.VehicleLastKnownRecord;
@@ -43,24 +47,26 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		
 		List<VehicleStatus> vehicleStatusRecords = new ArrayList<VehicleStatus>();
 		
+		//get last known record data from operational API
+		List<VehicleLastKnownRecord> vehicleLastKnownRecords = getLastKnownRecordData();
+
 		//get vehicle pipo data
-		List<VehiclePullout> vehiclePullouts = getPulloutData();
+		Map<String, VehiclePullout> vehiclePullouts = getPulloutData();
 		
-		//get last known record data
-		Map<String, VehicleLastKnownRecord> vehicleLastKnownRecords = getLastKnownRecordData();
 		
 		//Build vehicle status objects by getting the required fields from both collections
-		for(VehiclePullout pullout : vehiclePullouts) {
-			VehicleStatus vehicleStatus = buildVehicleStatus(pullout, vehicleLastKnownRecords.get(pullout.getVehicleId()));
+		for(VehicleLastKnownRecord lastknownRecord : vehicleLastKnownRecords) {
+			VehiclePullout pullout = vehiclePullouts.get(lastknownRecord.getVehicleId());
+			VehicleStatus vehicleStatus = buildVehicleStatus(pullout, lastknownRecord);
 			vehicleStatusRecords.add(vehicleStatus);
 		}
 		
 		return vehicleStatusRecords;
 	}
 	
-	private List<VehiclePullout> getPulloutData() {
+	private Map<String, VehiclePullout> getPulloutData() {
 		String tdmHost = System.getProperty("tdm.host");
-		List<VehiclePullout> vehiclePullouts = new ArrayList<VehiclePullout>();
+		Map<String, VehiclePullout> pullouts = new HashMap<String, VehiclePullout>();
 
 		String url = buildURL(tdmHost, "/pullouts/list");
 		log.debug("making request for : " +url);
@@ -72,10 +78,10 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		try {
 			JSONArray pulloutContentArray = new JSONArray("[" +json + "]");
 			for(int i=0; i<pulloutContentArray.length(); i++) {
-				VehiclePullout vehiclePullout = convertToObject(pulloutContentArray.getString(i), VehiclePullout.class);
-				//pullout can be done if no data is returned by web service call
-				if(vehiclePullout != null) {
-					vehiclePullouts.add(vehiclePullout);
+				VehiclePullout pullout = convertToObject(pulloutContentArray.getString(i), VehiclePullout.class);
+				//pullout can be null if no data is returned by web service call
+				if(pullout !=null) {
+					pullouts.put(pullout.getVehicleId(), pullout);
 				}
 			}
 		} catch (JSONException e) {
@@ -83,12 +89,12 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 			e.printStackTrace();
 		}
 		
-		return vehiclePullouts;
+		return pullouts;
 	}
-
-	private Map<String, VehicleLastKnownRecord> getLastKnownRecordData() {
-		Map<String, VehicleLastKnownRecord> lastKnownRecords = new HashMap<String, VehicleLastKnownRecord>();
-
+	
+	private List<VehicleLastKnownRecord> getLastKnownRecordData() {
+		List<VehicleLastKnownRecord> lastKnownRecords = new ArrayList<VehicleLastKnownRecord>();
+		
 		String operationalAPIHost = null;
 		
 		try {
@@ -102,16 +108,17 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		log.debug("making request for : " +url);
 		
 		String lastknownContent = remoteConnectionService.getContent(url);
+		lastknownContent = lastknownContent.replace(System.getProperty("line.separator"), "");
 		
 		String json = extractJsonArrayString(lastknownContent);
-
+		
 		try {
 			JSONArray lastKnownContentArray = new JSONArray("[" +json + "]");
 			for(int i=0; i<lastKnownContentArray.length(); i++) {
 				VehicleLastKnownRecord lastKnownRecord = convertToObject(lastKnownContentArray.getString(i), VehicleLastKnownRecord.class);
-				//lastknownRecord can be done if no data is returned by web service call
-				if(lastKnownRecord !=null) {
-					lastKnownRecords.put(lastKnownRecord.getVehicleId(), lastKnownRecord);
+				//lastknownrecord can be null if no data is returned by web service call
+				if(lastKnownRecord != null) {
+					lastKnownRecords.add(lastKnownRecord);
 				}
 			}
 		} catch (JSONException e) {
@@ -121,7 +128,7 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		
 		return lastKnownRecords;
 	}
-	
+
 	private <T> T convertToObject(String content, Class<T> objectType) {
 		T object = null;
 		try {
@@ -156,17 +163,61 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 	
 	private VehicleStatus buildVehicleStatus(VehiclePullout pullout, VehicleLastKnownRecord lastknownRecord) {
 		VehicleStatus vehicleStatus = new VehicleStatus();
-		vehicleStatus.setVehicleId(pullout.getVehicleId());
-		vehicleStatus.setPullinTime(pullout.getPullinTime());
-		vehicleStatus.setPulloutTime(pullout.getPulloutTime());
-		if(lastknownRecord != null) {
-			vehicleStatus.setInferredDSC(lastknownRecord.getInferredDSC());
-			vehicleStatus.setInferredState(lastknownRecord.getInferredPhase());
-			vehicleStatus.setObservedDSC(lastknownRecord.getDestinationSignCode());
-			vehicleStatus.setRoute(lastknownRecord.getInferredRunId().split("-")[0]);
-			vehicleStatus.setDirection(lastknownRecord.getInferredDirectionId());
+		if(pullout != null) {
+			vehicleStatus.setPullinTime(extractTime(pullout.getPullinTime()));
+			vehicleStatus.setPulloutTime(extractTime(pullout.getPulloutTime()));
 		}
+		vehicleStatus.setVehicleId(lastknownRecord.getVehicleId());
+		
+		String inferredDestination = getInferredDestination(lastknownRecord);
+		vehicleStatus.setInferredDestination(inferredDestination);
+				
+		vehicleStatus.setInferredState(getInferredState(lastknownRecord));
+		vehicleStatus.setObservedDSC(lastknownRecord.getDestinationSignCode());
 		return vehicleStatus;
+	}
+
+	private String getInferredState(VehicleLastKnownRecord lastknownRecord) {
+		String inferredPhase = lastknownRecord.getInferredPhase();
+		String inferredState = inferredPhase;
+		if(inferredPhase.startsWith("IN")) {
+			inferredState = "IN PROGRESS";
+		}
+		if(inferredPhase.startsWith("DEAD")) {
+			inferredState = "DEADHEAD";
+		}
+		if(inferredPhase.startsWith("LAY")) {
+			inferredState = "LAYOVER";
+		}
+		
+		return inferredState;
+	}
+
+	private String getInferredDestination(
+			VehicleLastKnownRecord lastknownRecord) {
+		StringBuilder inferredDestination = new StringBuilder();
+		//all these fields can be blank
+		if(StringUtils.isNotBlank(lastknownRecord.getInferredDSC())) {
+			inferredDestination.append(lastknownRecord.getInferredDSC() + ":");
+		}
+		if(StringUtils.isNotBlank(lastknownRecord.getInferredRunId())) {
+			inferredDestination.append(lastknownRecord.getInferredRunId().split("-")[0]);
+			inferredDestination.append(" Direction: ");
+		}
+		if(StringUtils.isNotBlank(lastknownRecord.getInferredDirectionId())) {
+			inferredDestination.append(lastknownRecord.getInferredDirectionId());
+		}
+		return inferredDestination.toString();
+	}
+	
+	private String extractTime(String date) {
+		DateTimeFormatter formatter = ISODateTimeFormat.dateTimeNoMillis();
+		DateTime dateTime = formatter.parseDateTime(date);
+		int hour = dateTime.getHourOfDay();
+		String formattedHour = String.format("%02d", hour);
+		int minute = dateTime.getMinuteOfHour();
+		String formattedMinute = String.format("%02d", minute);
+		return formattedHour + ":" +formattedMinute;
 	}
 	
 

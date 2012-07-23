@@ -1,10 +1,12 @@
 package org.onebusaway.nyc.webapp.actions.admin.vehiclestatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.onebusaway.nyc.admin.model.ui.VehicleGridResponse;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 import org.onebusaway.nyc.admin.service.VehicleStatusService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
@@ -18,18 +20,24 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @Namespace(value="/admin/vehiclestatus")
 @Results({
-	@Result(name="vehicles", type="json", params= {"root","vehicleStatusRecords"})
+	@Result(name="vehicles", type="json", params= {"root","vehicleGridResponse"})
 }
 )
 public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private List<VehicleStatus> vehicleStatusRecords;
 	private VehicleStatusService vehicleStatusService;
+	private VehicleGridResponse vehicleGridResponse;
 	
 	public String getVehicleData() {
-		vehicleStatusRecords = vehicleStatusService.getVehicleStatus();
+		List<VehicleStatus> vehicleStatusRecords = vehicleStatusService.getVehicleStatus();
+		vehicleGridResponse = new VehicleGridResponse();
+		//Create 100 pages for now. Need to come up with a realistic number based on the data
+		vehicleGridResponse.setPage("1");
+		vehicleGridResponse.setRecords(String.valueOf(vehicleStatusRecords.size()));
+		vehicleGridResponse.setRows(vehicleStatusRecords);
+		vehicleGridResponse.setTotal("100");
 		return "vehicles";
 	}
 
@@ -41,13 +49,12 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	public void setVehicleStatusService(VehicleStatusService vehicleStatusService) {
 		this.vehicleStatusService = vehicleStatusService;
 	}
-
+	
 	/**
-	 * Returns a list of vehicle status info
-	 * @return the vehicleStatus
+	 * @return the vehicleGridResponse
 	 */
-	public List<VehicleStatus> getVehicleStatusRecords() {
-		return vehicleStatusRecords;
+	public VehicleGridResponse getVehicleGridResponse() {
+		return vehicleGridResponse;
 	}
 
 }
