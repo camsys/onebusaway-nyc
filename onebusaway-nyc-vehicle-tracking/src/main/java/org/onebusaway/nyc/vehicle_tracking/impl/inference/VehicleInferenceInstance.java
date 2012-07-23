@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
@@ -40,11 +39,11 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSumm
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
@@ -66,17 +65,6 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.TreeMultiset;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class VehicleInferenceInstance {
 
@@ -202,12 +190,13 @@ public class VehicleInferenceInstance {
       }
     }
 
-    Boolean reportedRunIdChange = null;
-    Boolean operatorIdChange = null;
     /**
      * If it's been a while since we've last seen a record, reset the particle
      * filter and forget the previous observation
      */
+    Boolean reportedRunIdChange = null;
+    Boolean operatorIdChange = null;
+
     if (_previousObservation != null) {
       /**
        * We use an absolute value here, since we also want to reset if we go
@@ -223,7 +212,6 @@ public class VehicleInferenceInstance {
           record.getOperatorId());
 
       if (delta > _automaticResetWindow) {
-        // || (dscChange && delta > _optionalResetWindow)) {
         _log.info("resetting inference for vid=" + record.getVehicleId()
             + " since it's been " + (delta / 1000)
             + " seconds since the previous update");
@@ -454,8 +442,8 @@ public class VehicleInferenceInstance {
       // set sched. dev. if we have a match in UTS and are therefore comfortable
       // saying that this schedule deviation is a true match to the schedule.
       if (blockState.isRunFormal()) {
-        final int deviation = // blockState.getScheduleDeviation();
-        (int) ((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
+        final int deviation = 
+        		(int)((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
 
         record.setScheduleDeviation(deviation);
       } else {
@@ -464,8 +452,7 @@ public class VehicleInferenceInstance {
 
       // distance along trip
       final BlockTripEntry activeTrip = blockLocation.getActiveTrip();
-      final double distanceAlongTrip = blockLocation.getDistanceAlongBlock()
-          - activeTrip.getDistanceAlongBlock();
+      final double distanceAlongTrip = blockLocation.getDistanceAlongBlock() - activeTrip.getDistanceAlongBlock();
       record.setDistanceAlongTrip(distanceAlongTrip);
     }
 
@@ -665,19 +652,17 @@ public class VehicleInferenceInstance {
     final JourneyState journeyState = state.getJourneyState();
     final BlockStateObservation blockState = state.getBlockStateObservation();
     final Observation obs = state.getObservation();
-
     final CoordinatePoint location = obs.getLocation();
     final NycRawLocationRecord nycRecord = obs.getRecord();
 
     final NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
     record.setLat(location.getLat());
     record.setLon(location.getLon());
+    record.setTimestamp((long) particle.getTimestamp());
+    record.setDsc(nycRecord.getDestinationSignCode());
     record.setOperatorId(nycRecord.getOperatorId());
     record.setReportedRunId(RunTripEntry.createId(nycRecord.getRunRouteId(),
         nycRecord.getRunNumber()));
-
-    record.setTimestamp((long) particle.getTimestamp());
-    record.setDsc(nycRecord.getDestinationSignCode());
 
     final EVehiclePhase phase = journeyState.getPhase();
     if (phase != null)
@@ -721,26 +706,17 @@ public class VehicleInferenceInstance {
       }
 
       final CoordinatePoint locationAlongBlock = blockLocation.getLocation();
-      if (locationAlongBlock != null) {
+      if (locationAlongBlock != null && 
+    		  (EVehiclePhase.IN_PROGRESS.equals(phase) || phase.toLabel().toUpperCase().startsWith("LAYOVER_"))) {
         record.setInferredBlockLat(locationAlongBlock.getLat());
         record.setInferredBlockLon(locationAlongBlock.getLon());
       }
 
-      if (EVehiclePhase.IN_PROGRESS.equals(phase)) {
+      if (EVehiclePhase.IN_PROGRESS.equals(phase)) {    	  
         final int secondsSinceLastMotion = (int) ((particle.getTimestamp() - motionState.getLastInMotionTime()) / 1000);
         if (secondsSinceLastMotion > 
         	_configurationService.getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
-      } else {
-    	// vehicles on detour should be in_progress with status=deviated 
-    	if (state.getJourneyState().isDetour()) {
-  		  // remap this journey state/phase to IN_PROGRESS to conform to 
-    	  // previous pilot project semantics.
-//    	  if (EVehiclePhase.DEADHEAD_DURING.equals(phase)) {
-//    		  record.setInferredPhase(EVehiclePhase.IN_PROGRESS.name());
-//    		  statusFields.add("deviated");
-//    	  }
-        }
       }
 
       record.setInferredDsc(blockState.getBlockState().getDestinationSignCode());
