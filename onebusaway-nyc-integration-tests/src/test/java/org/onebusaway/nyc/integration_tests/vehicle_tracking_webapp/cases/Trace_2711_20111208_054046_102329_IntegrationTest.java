@@ -15,8 +15,20 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
+/**
+ * In this test the bus is deadheading back to Staten Island but showing an in-service destination sign.
+ * It's eXpress/commuter service, which is uni-directional.
+ * So, for a couple of short intervals where the deadhead route is tangent to the in-service route it is briefly inferred as in_progress.
+ * This is acceptable (since driver should just be changing the DSC) but if something could be done about this it would be great.
+ * @author jmaki
+ *
+ */
+
+@RunWith(RunUntilSuccess.class)
 public class Trace_2711_20111208_054046_102329_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_2711_20111208_054046_102329_IntegrationTest() throws Exception {

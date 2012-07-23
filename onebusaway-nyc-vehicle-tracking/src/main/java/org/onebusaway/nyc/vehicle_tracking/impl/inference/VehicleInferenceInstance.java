@@ -736,10 +736,10 @@ public class VehicleInferenceInstance {
     	if (state.getJourneyState().isDetour()) {
   		  // remap this journey state/phase to IN_PROGRESS to conform to 
     	  // previous pilot project semantics.
-    	  if (EVehiclePhase.DEADHEAD_DURING.equals(phase)) {
-    		  record.setInferredPhase(EVehiclePhase.IN_PROGRESS.name());
-    		  statusFields.add("deviated");
-    	  }
+//    	  if (EVehiclePhase.DEADHEAD_DURING.equals(phase)) {
+//    		  record.setInferredPhase(EVehiclePhase.IN_PROGRESS.name());
+//    		  statusFields.add("deviated");
+//    	  }
         }
       }
 
