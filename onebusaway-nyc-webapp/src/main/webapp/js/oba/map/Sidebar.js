@@ -20,6 +20,7 @@ var expandAlerts = false;
 
 OBA.Sidebar = function() {
 	var theWindow = jQuery(window),
+		contentDiv = jQuery("#content"),
 		topBarDiv = jQuery("#topbar"), 
 		mainbox = jQuery("#mainbox"),
 		menuBar = jQuery("#cssmenu1"),
@@ -33,7 +34,9 @@ OBA.Sidebar = function() {
 		welcome = jQuery("#welcome"),
 		loading = jQuery("#loading"),
 		availableRoutes = jQuery("#available-routes"),
-		cantFind = jQuery("#cant-find");
+		cantFind = jQuery("#cant-find"),
+		sidebarGlobalAlerts = jQuery("#global-alerts"),
+		mapGlobalAlerts = jQuery("#map-global-alerts").detach();
 
 	var routeMap = null;
 	var wizard = null;
@@ -79,25 +82,35 @@ OBA.Sidebar = function() {
 			(wizard && wizard.enabled()) ? results.trigger('search_launched') : null;
 		});
 	}
+	
+	var resize = function() {
+		var w = theWindow.width();
+		
+		if (w <= 1060) {
+			mainbox.css("width", "960px");
+		} else {
+			mainbox.css("width", w - 150); // 75px margin on each 
+										   // side for dropdown menus
+		}
+
+		// size set so we can have MTA menu items calculate their widths properly
+		menuBar.width(mainbox.width());
+		
+		var alertsHeight = 0;
+		
+		if (mapGlobalAlerts.length > 0) {
+			alertsHeight = mapGlobalAlerts.outerHeight();
+		}
+		
+		var h = theWindow.height() - topBarDiv.height() - 1,
+			h2 = theWindow.height() - topBarDiv.height() - alertsHeight - 1;
+		
+		searchBarDiv.height(h);
+		mapDiv.height(h2);
+	};
 
 	function addResizeBehavior() {
-		var resize = function() {		
-			var h = theWindow.height() - topBarDiv.height(),
-				w = theWindow.width();
-
-			searchBarDiv.height(h);
-			mapDiv.height(h);
-						
-			if (w <= 1060) {
-				mainbox.css("width", "960px");
-			} else {
-				mainbox.css("width", w - 150); // 75px margin on each 
-											   // side for dropdown menus
-			}
-
-			// size set so we can have MTA menu items calculate their widths properly
-			menuBar.width(mainbox.width());
-		};
+		
 		resize();
 
 		// call when the window is resized
@@ -448,6 +461,11 @@ OBA.Sidebar = function() {
 		suggestions.children().empty();
 
 		routeMap.reset();
+		
+		if (mapGlobalAlerts.find(".global-alert-content").length > 0){
+			mapGlobalAlerts.appendTo(contentDiv);
+			resize();
+		}
 	}
 	
 	function showNoResults(message) {
@@ -470,6 +488,7 @@ OBA.Sidebar = function() {
 		
 		cantFind.hide();
 		availableRoutes.hide();
+		sidebarGlobalAlerts.hide();
 		
 		loading.show();
 		
@@ -582,6 +601,18 @@ OBA.Sidebar = function() {
 		initialize: function() {
 			addSearchBehavior();
 			addResizeBehavior();
+			
+			// Add behavior to the close link in the global alert dialog under the map
+			// so it closes when the link is clicked.
+			mapGlobalAlerts.find("a").click(function(event){
+				event.preventDefault();
+				mapGlobalAlerts.detach();
+				resize();
+			});
+			
+			// Remove the global alerts dialog under the map on page load
+			// if it exists. It will be displayed again when a search is performed.
+			mapGlobalAlerts.detach();
 			
 			// initialize map, and continue initialization of things that use the map
 			// on load only when google maps says it's ready.
