@@ -66,7 +66,7 @@ public class SiriIntegrationTestBase {
 
   public void setBundle(String bundleId, Date date) throws Exception {
     String port = System.getProperty(
-        "org.onebusaway.transit_data_federation_webapp.port", "8080");
+        "org.onebusaway.transit_data_federation_webapp.port", "9005");
 
     String url = "http://localhost:" + port
         + "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId="
@@ -84,7 +84,7 @@ public class SiriIntegrationTestBase {
   public void reset(String vId) throws Exception {
 	  // reset TDS
 	  String federationPort = System.getProperty(
-			  "org.onebusaway.transit_data_federation_webapp.port", "8080");
+			  "org.onebusaway.transit_data_federation_webapp.port", "9005");
 
 	  HessianProxyFactory factory = new HessianProxyFactory();
 
@@ -99,7 +99,7 @@ public class SiriIntegrationTestBase {
 
 	  // reset simulator
 	  String port = System.getProperty(
-			  "org.onebusaway.transit_data_federation_webapp.port", "8080");
+			  "org.onebusaway.transit_data_federation_webapp.port", "9005");
 
 	  String url = "http://localhost:" + port
 			  + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location!reset.do?vehicleId="
@@ -113,7 +113,7 @@ public class SiriIntegrationTestBase {
   protected HashMap<String,Object> getVmResponse(String operatorId, String vId) throws IOException, HttpException {
 
 	  HttpClient client = new HttpClient();
-	  String port = System.getProperty("org.onebusaway.webapp.port", "8080");
+	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
 	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel=calls&MonitoringRef=" + vId + "&time=" + _time;
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);
@@ -131,7 +131,7 @@ public class SiriIntegrationTestBase {
   protected HashMap<String,Object> getSmResponse(String operatorId, String mRef) throws IOException, HttpException {
 
 	  HttpClient client = new HttpClient();
-	  String port = System.getProperty("org.onebusaway.webapp.port", "8080");
+	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
 	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?OperatorRef=" + operatorId + "&StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);
