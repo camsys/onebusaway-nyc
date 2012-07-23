@@ -151,7 +151,7 @@ public class SiriIntegrationTestBase {
 	  List<NycTestInferredLocationRecord> expected = _traceSupport
 			  .readRecords(trace);
 
-	  String taskId = _traceSupport.uploadTraceForSimulation(trace);
+	  String taskId = _traceSupport.uploadTraceForSimulation(trace, false);
 
 	  // Wait for the task to complete
 	  long t = System.currentTimeMillis();

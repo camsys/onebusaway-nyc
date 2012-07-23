@@ -126,7 +126,7 @@ public class AbstractTraceRunner {
 	List<NycTestInferredLocationRecord> expectedResults = _traceSupport.readRecords(trace);
 
 	// run to get inferred results
-    String taskId = _traceSupport.uploadTraceForSimulation(trace);
+    String taskId = _traceSupport.uploadTraceForSimulation(trace, false);
 
     long t = System.currentTimeMillis();
     int prevRecordCount = -1;
