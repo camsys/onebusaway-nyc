@@ -125,8 +125,9 @@ public class JourneyStateTransitionModel {
         /*
          * In the middle of a block.
          */
-        final boolean isDetour = isDetour(blockState.isSnapped(),
-            hasSnappedStates, parentState);
+        final boolean isDetour = false; 
+//            isDetour(blockState.isSnapped(),
+//            hasSnappedStates, parentState);
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
           return JourneyState.layoverDuring(isDetour);
         } else {

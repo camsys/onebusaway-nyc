@@ -15,7 +15,9 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.onebusaway.realtime.api.EVehiclePhase;
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
 /**
  * At end of block:
@@ -24,19 +26,18 @@ import org.onebusaway.realtime.api.EVehiclePhase;
  * 
  * Block # 2008_12888417
  * 
- * DSC is 0000. Do we check for the start of another block?
+ * DSC for deadhead back to base is valid so IN_PROGRESS/deviated is fine.
+ * But why the few updates with DEADHEAD_AFTER before it gets to that state?
  * 
  * Also, we're fine with in-progress deviated instead of deadhead-after
  * 
- * 
  * @author bdferris
  */
+@RunWith(RunUntilSuccess.class)
 public class Trace_7560_20101122T084226_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_7560_20101122T084226_IntegrationTest() throws Exception {
-    super("7560-2010-11-22T08-42-26.csv.gz");
+    super("7560-2010-11-22T08-42-26.csv");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
-    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_AFTER, 0.00);
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.85);
   }
 }

@@ -15,7 +15,9 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.onebusaway.realtime.api.EVehiclePhase;
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
 /**
  * This trace would produce layover-during, and it shouldn't.
@@ -25,11 +27,11 @@ import org.onebusaway.realtime.api.EVehiclePhase;
  * 
  * @author bwillard
  * */
+@RunWith(RunUntilSuccess.class)
 public class Trace_4255_20111215_183433_183932_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_4255_20111215_183433_183932_IntegrationTest() throws Exception {
-    super("4255_20111215_183433_183932.csv.gz");
+    super("4255_20111215_183433_183932.csv");
     setBundle("si", "2011-12-14T00:00:00EDT");
-    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.8);
   }
 }

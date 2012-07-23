@@ -15,10 +15,22 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
+
+/**
+ * A route not in the active bundle--should return no UI-mappable IE results.
+ * e.g. all results should be DEADHEAD* or anything except IN_PROGRESS.
+ * 
+ * @author jmaki
+ *
+ */
+@RunWith(RunUntilSuccess.class)
 public class Trace_1379_20101211T010025_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_1379_20101211T010025_IntegrationTest() throws Exception {
-    super("1379-2010-12-11T01-00-25.csv.gz");
+    super("1379-2010-12-11T01-00-25.csv");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
   }
 }

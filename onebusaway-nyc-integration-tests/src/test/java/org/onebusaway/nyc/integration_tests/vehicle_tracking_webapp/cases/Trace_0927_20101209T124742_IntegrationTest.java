@@ -15,10 +15,21 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
+
+/**
+ * Standard run of the mill run on the B63. No formal inference.
+ * 
+ * @author jmaki
+ *
+ */
+@RunWith(RunUntilSuccess.class)
 public class Trace_0927_20101209T124742_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_0927_20101209T124742_IntegrationTest() throws Exception {
-    super("0927-2010-12-09T12-47-42.csv.gz");
+    super("0927-2010-12-09T12-47-42.csv");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
   }
 }

@@ -15,18 +15,15 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.onebusaway.realtime.api.EVehiclePhase;
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
+@RunWith(RunUntilSuccess.class)
 public class Trace_5318_20101202T172138_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_5318_20101202T172138_IntegrationTest() throws Exception {
-    super("5318-2010-12-02T17-21-38.csv.gz");
+    super("5318-2010-12-02T17-21-38.csv");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
-    // I imagine this used to test a distance-along-block prediction,
-    // but given the recent changes in block assignment, this won't
-    // work for that without serious, time-consuming trace fixes.
-//    setLoops(20);
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.20);
-    setMedian(100.0);
   }
 }

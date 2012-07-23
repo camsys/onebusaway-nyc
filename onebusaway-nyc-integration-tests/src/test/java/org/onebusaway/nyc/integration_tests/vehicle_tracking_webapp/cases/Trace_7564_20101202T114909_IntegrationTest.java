@@ -15,32 +15,21 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.onebusaway.realtime.api.EVehiclePhase;
+import org.junit.Ignore;
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
-/**
- * Trace: 7564-2010-12-02T11-49-09
+/** 
+ * Detour case
  * 
- * block = 2008_12888581
- * 
- * Interesting trace because it goes off route (deviation onto 4th Ave from 60th
- * to 50th)
- * 
- * @author bdferris
  */
+@Ignore
+@RunWith(RunUntilSuccess.class)
 public class Trace_7564_20101202T114909_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_7564_20101202T114909_IntegrationTest() throws Exception {
-    super("7564-2010-12-02T11-49-09.csv.gz");
+    super("7564-2010-12-02T11-49-09.csv");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
-    
-    /*
-     * FIXME unresolved deadhead/layover-before conflict.  need a 
-     * good decision on which is correct. 
-     * also, some in-progress & deviated/deadhead conflicts.
-     */
-    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.88);
-//    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.94);
-    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_AFTER, 0.83);
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0.37);
   }
 }

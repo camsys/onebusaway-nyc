@@ -15,29 +15,21 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.onebusaway.realtime.api.EVehiclePhase;
+import org.junit.Ignore;
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
 /**
- * Trace: 7564-2010-12-02T03-40-55
+ * Detour from Atlantic Ave to 3rd Ave, slow in_progress pickup out of Atlantic Ave terminal
  * 
- * blockA = 2008_12888414
- * 
- * duration = 4:55-8:55am
- * 
- * layovers = 07:08 AM - 08:25 AM
- * 
- * @author bdferris
  */
+@Ignore
+@RunWith(RunUntilSuccess.class)
 public class Trace_7564_20101202T034055_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_7564_20101202T034055_IntegrationTest() throws Exception {
     super("7564-2010-12-02T03-40-55.csv.gz");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
-    
-    /**
-     * FIXME traces think it should be in progress, new model
-     * believes it should be deadhead; it looks deadhead in reality.
-     */
-    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.70);
   }
 }
