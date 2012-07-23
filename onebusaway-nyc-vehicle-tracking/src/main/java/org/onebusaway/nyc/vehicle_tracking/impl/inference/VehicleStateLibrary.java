@@ -85,14 +85,14 @@ public class VehicleStateLibrary {
   }
 
   public boolean isAtPotentialLayoverSpot(VehicleState state, Observation obs) {
-    if (_baseLocationService.getTerminalNameForLocation(obs.getLocation()) != null)
-      return true;
-
-    /**
-     * For now, we assume that if we're at the base, we're NOT in a layover
-     */
-    if (_baseLocationService.getBaseNameForLocation(obs.getLocation()) != null)
-      return false;
+//    if (_baseLocationService.getTerminalNameForLocation(obs.getLocation()) != null)
+//      return true;
+//
+//    /**
+//     * For now, we assume that if we're at the base, we're NOT in a layover
+//     */
+//    if (_baseLocationService.getBaseNameForLocation(obs.getLocation()) != null)
+//      return false;
 
     return isAtPotentialLayoverSpot(state.getBlockState(), obs);
   }

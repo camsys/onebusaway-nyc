@@ -466,13 +466,19 @@ public class MotionModelImpl implements MotionModel<Observation> {
         && journeyState.getPhase().equals(EVehiclePhase.IN_PROGRESS)
         && !newEdge.getValue().isSnapped()) {
       final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase());
+      /*
+       * If it was a layover, and now it's not, then change to deadhead
+       */
       if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-          && !isLayoverStopped) {
+          && !(isLayoverStopped && newEdge.getValue().isAtPotentialLayoverSpot())) {
         return wasPrevStateDuring
             ? JourneyState.deadheadDuring(journeyState.isDetour())
             : JourneyState.deadheadBefore(null);
+      /*
+       * If it wasn't a layover and now it is, become one
+       */
       } else if (!EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-          && isLayoverStopped) {
+          && (isLayoverStopped && newEdge.getValue().isAtPotentialLayoverSpot())) {
         return wasPrevStateDuring
             ? JourneyState.layoverDuring(journeyState.isDetour())
             : JourneyState.layoverBefore();
