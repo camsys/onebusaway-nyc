@@ -14,8 +14,9 @@ public interface VehicleStatusService {
 	
 	/**
 	 * Creates vehicle status data by making web service calls to TDM and report archive servers
-	 * @return
+	 * @param indicates whether new data should be loaded. The service returns cached data otherwise
+	 * @return new/cached vehicle status data
 	 */
-	List<VehicleStatus> getVehicleStatus();
+	List<VehicleStatus> getVehicleStatus(boolean loadNew);
 
 }

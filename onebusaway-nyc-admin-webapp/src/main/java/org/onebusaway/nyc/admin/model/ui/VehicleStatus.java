@@ -15,6 +15,7 @@ public class VehicleStatus {
 	private String observedDSC;
 	private String pullinTime;
 	private String pulloutTime;
+	private String details;
 	
 	/**
 	 * @return the vehicleId
@@ -111,6 +112,18 @@ public class VehicleStatus {
 	 */
 	public void setInferredDestination(String inferredDestination) {
 		this.inferredDestination = inferredDestination;
+	}
+	/**
+	 * @return the details
+	 */
+	public String getDetails() {
+		return details;
+	}
+	/**
+	 * @param details the details to set
+	 */
+	public void setDetails(String details) {
+		this.details = details;
 	}
 	
 

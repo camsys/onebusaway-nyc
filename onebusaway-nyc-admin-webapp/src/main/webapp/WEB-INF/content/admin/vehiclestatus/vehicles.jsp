@@ -20,16 +20,22 @@
 <%@ taglib prefix="s" uri="/struts-tags" %>
 <jsp:directive.page contentType="text/html" />
 	<div id="topBox">
-		<input type="text" id="search" />
-		<div id="lastUpdateBox">
-			<label class="vehicleLabel">Last Update:</label>
-			<label id="lastUpdate" class="vehicleLabel"><s:property value="" /></label>
-		</div>
-		<input type="button" id="refresh" value="Refresh" class="inlineFormButton"/>
-		<div id="autoRefreshBox">
-			<label class="vehicleLabel">Auto Refresh:</label>
-			<label id="autoRefresh" class="vehicleLabel">30 sec</label>
-		</div>
+		<script type=text/x-handlebars>
+			{{#view VehicleStatus.TopBarView}}
+				<input type="text" id="search" />
+				<div id="lastUpdateBox">
+					<label class="vehicleLabel">Last Update:</label>
+					<label id="lastUpdate" class="vehicleLabel"></label>
+				</div>
+				<input type="button" id="refresh" value="Refresh" class="inlineFormButton"
+					{{action "refreshClick" on="click" }}/>
+				<div id="autoRefreshBox">
+					<input type="checkbox" id="enableAutoRefresh" class="vehicleLabel"
+						{{action "autoRefreshClick" on="click" }}>Auto Refresh:
+					<label id="autoRefresh" class="vehicleLabel" {{action "refreshLabelClick" on="click"}}>30 sec</label>
+				</div>
+			{{/view}}
+		</script>
 	</div>
 	<div id="mainBox">
 		<div id="filterBox">

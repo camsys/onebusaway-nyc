@@ -17,7 +17,7 @@ import org.onebusaway.nyc.admin.model.ui.DirectoryStatus;
 import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.FileService;
-import org.onebusaway.nyc.admin.service.impl.FileUtils;
+import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

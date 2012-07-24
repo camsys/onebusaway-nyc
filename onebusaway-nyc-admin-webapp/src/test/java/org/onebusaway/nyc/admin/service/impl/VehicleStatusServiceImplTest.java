@@ -80,7 +80,7 @@ public class VehicleStatusServiceImplTest {
 		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive.dev.obanyc.com")).thenReturn("archive.dev.obanyc.com");
 		when(remoteConnectionService.getContent("http://archive.dev.obanyc.com/api/record/last-known/list")).thenReturn(lastKnownData);
 		
-		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus();
+		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus(true);
 		
 		VehicleStatus vehicleStatus = vehicleStatusRecords.get(0);
 		
@@ -90,6 +90,7 @@ public class VehicleStatusServiceImplTest {
 		assertEquals("Mismatched pull in time", vehicleStatus.getPullinTime(), "00:23");
 		assertEquals("Mismatched pull out time", vehicleStatus.getPulloutTime(), "05:51");
 		assertEquals("Mismatched inferred DSC", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
+		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_green.png");
 	}
 	
 	@Test
@@ -98,7 +99,7 @@ public class VehicleStatusServiceImplTest {
 		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive.dev.obanyc.com")).thenReturn("archive.dev.obanyc.com");
 		when(remoteConnectionService.getContent("http://archive.dev.obanyc.com/api/record/last-known/list")).thenReturn("{\"records\":[],\"status\":\"OK\"}");
 		
-		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus();
+		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus(true);
 		
 		assertEquals("Not expecting any vehicle status records", 0, vehicleStatusRecords.size());
 	}
@@ -149,7 +150,7 @@ public class VehicleStatusServiceImplTest {
 		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive.dev.obanyc.com")).thenReturn("archive.dev.obanyc.com");
 		when(remoteConnectionService.getContent("http://archive.dev.obanyc.com/api/record/last-known/list")).thenReturn(lastKnownData);
 		
-		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus();
+		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus(true);
 		
 		VehicleStatus vehicleStatus = vehicleStatusRecords.get(0);
 		
@@ -159,6 +160,7 @@ public class VehicleStatusServiceImplTest {
 		assertNull("No pull in time", vehicleStatus.getPullinTime());
 		assertNull("No pull out time", vehicleStatus.getPulloutTime());
 		assertEquals("Mismatched inferred destination information", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
+		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_green.png");
 	}
 
 }

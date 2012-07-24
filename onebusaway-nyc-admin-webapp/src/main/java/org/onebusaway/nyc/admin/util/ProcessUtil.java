@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.admin.service.impl;
+package org.onebusaway.nyc.admin.util;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;

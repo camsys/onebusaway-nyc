@@ -25,12 +25,16 @@ th.ui-th-column div {
         white-space: normal !important;
         height: auto !important;
    	    padding: 2px;
+   	    font-size: 12px;
+		font: Times New Roman, Times, serif;
 }
 
 .ui-jqgrid .ui-jqgrid-htable th div {
     white-space:normal !important;
     height:auto;
     padding: 2px;
+    font-size: 12px;
+	font: Times New Roman, Times, serif;
 }
 
 #menu {
@@ -90,20 +94,20 @@ th.ui-th-column div {
 }
 
 #topBox #lastUpdateBox {
-	margin-left: 100px;
+	margin-left: 80px;
 	vertical-align: middle;
 	float: left;
 	padding-top: 5px;
 }
 
 #topBox #refresh {
-	margin-left: 180px;
+	margin-left: 20px;
 	float: left;
 	padding: 0px;
 }
 
 #topBox #autoRefreshBox {
-	margin-left: 45px;
+	margin-left: 20px;
 	padding-top: 5px;
 	float: left;
 }
@@ -117,6 +121,23 @@ th.ui-th-column div {
 	cursor: pointer;
 }
 
+#refreshDialog {
+	padding: 20px;
+}
+
+#refreshDialog #refreshRate {
+	width: 40px;
+	height: 20px;
+	margin-right: 10px;
+}
+
+#refreshDialog #set {
+	width: 70px;
+	height: 30px;
+	margin-left: 50px;
+	border: 1px transparent;
+	background-image:url('img/Button_background.png');
+}
 #mainBox {
 	height: 460px;
 	border: transparent 1px;

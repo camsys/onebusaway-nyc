@@ -19,9 +19,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.onebusaway.nyc.admin.model.json.VehicleLastKnownRecord;
 import org.onebusaway.nyc.admin.model.json.VehiclePullout;
+import org.onebusaway.nyc.admin.model.ui.InferredState;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 import org.onebusaway.nyc.admin.service.VehicleStatusService;
+import org.onebusaway.nyc.admin.util.VehicleStatusCache;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,24 +43,35 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 	private ConfigurationService configurationService;
 	private RemoteConnectionService remoteConnectionService;
 	private final ObjectMapper mapper = new ObjectMapper();
+	private final VehicleStatusCache cache = new VehicleStatusCache();
 	
 	@Override
-	public List<VehicleStatus> getVehicleStatus() {
+	public List<VehicleStatus> getVehicleStatus(boolean loadNew) {
 		
-		List<VehicleStatus> vehicleStatusRecords = new ArrayList<VehicleStatus>();
+		List<VehicleStatus> vehicleStatusRecords = null;
 		
-		//get last known record data from operational API
-		List<VehicleLastKnownRecord> vehicleLastKnownRecords = getLastKnownRecordData();
-
-		//get vehicle pipo data
-		Map<String, VehiclePullout> vehiclePullouts = getPulloutData();
-		
-		
-		//Build vehicle status objects by getting the required fields from both collections
-		for(VehicleLastKnownRecord lastknownRecord : vehicleLastKnownRecords) {
-			VehiclePullout pullout = vehiclePullouts.get(lastknownRecord.getVehicleId());
-			VehicleStatus vehicleStatus = buildVehicleStatus(pullout, lastknownRecord);
-			vehicleStatusRecords.add(vehicleStatus);
+		//Load new data only if asked explicitly
+		if(loadNew) {
+			
+			//get last known record data from operational API
+			List<VehicleLastKnownRecord> vehicleLastKnownRecords = getLastKnownRecordData();
+			
+			//get vehicle pipo data
+			Map<String, VehiclePullout> vehiclePullouts = getPulloutData();
+			
+			vehicleStatusRecords = new ArrayList<VehicleStatus>();
+			
+			//Build vehicle status objects by getting the required fields from both collections
+			for(VehicleLastKnownRecord lastknownRecord : vehicleLastKnownRecords) {
+				VehiclePullout pullout = vehiclePullouts.get(lastknownRecord.getVehicleId());
+				VehicleStatus vehicleStatus = buildVehicleStatus(pullout, lastknownRecord);
+				vehicleStatusRecords.add(vehicleStatus);
+			}
+			//Add these records to the cache
+			cache.add(vehicleStatusRecords);
+		} else {
+			//return data from the cache to improve performance
+			vehicleStatusRecords = cache.fetch();
 		}
 		
 		return vehicleStatusRecords;
@@ -174,7 +187,27 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 				
 		vehicleStatus.setInferredState(getInferredState(lastknownRecord));
 		vehicleStatus.setObservedDSC(lastknownRecord.getDestinationSignCode());
+		vehicleStatus.setDetails("Details");
+		vehicleStatus.setStatus(getStatus(lastknownRecord));
 		return vehicleStatus;
+	}
+	
+	private String getStatus(VehicleLastKnownRecord lastknownRecord) {
+		String imageSrc = null;
+		String inferredPhase = lastknownRecord.getInferredPhase();
+		if(inferredPhase.equals(InferredState.IN_PROGRESS.getState()) || 
+		   inferredPhase.equals(InferredState.DEADHEAD_DURING.getState()) ||
+		   inferredPhase.startsWith("LAY")) {
+			imageSrc = "circle_green.png";
+		} else {
+			if(inferredPhase.equals(InferredState.AT_BASE.getState())) {
+				imageSrc = "circle_red.png";
+			} else {
+				imageSrc = "circle_orange.png";
+			}
+		}
+		
+		return imageSrc;
 	}
 
 	private String getInferredState(VehicleLastKnownRecord lastknownRecord) {
@@ -182,12 +215,14 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		String inferredState = inferredPhase;
 		if(inferredPhase.startsWith("IN")) {
 			inferredState = "IN PROGRESS";
-		}
-		if(inferredPhase.startsWith("DEAD")) {
-			inferredState = "DEADHEAD";
-		}
-		if(inferredPhase.startsWith("LAY")) {
-			inferredState = "LAYOVER";
+		} else {
+			if(inferredPhase.startsWith("DEAD")) {
+				inferredState = "DEADHEAD";
+			} else {
+				if(inferredPhase.startsWith("LAY")) {
+					inferredState = "LAYOVER";
+				}
+			}
 		}
 		
 		return inferredState;
