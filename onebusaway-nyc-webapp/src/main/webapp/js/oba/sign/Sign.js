@@ -331,7 +331,7 @@ OBA.Sign = function() {
 		jQuery("#content").html("").empty();
 		
 		var error = jQuery("<div></div>").attr("id", "error");
-		jQuery("<p></p>").html(typeof textStatus === 'string' ? textStatus : "An error occured while updating arrival information&mdash;please check back later.").appendTo(error);
+		jQuery("<p></p>").html(typeof textStatus === 'string' ? textStatus : "An error occurred while updating arrival information&mdash;please check back later.").appendTo(error);
 		
 		jQuery("#content").append(error);
 		
@@ -430,7 +430,14 @@ OBA.Sign = function() {
 			
 			var contentWidth = oldContent.width();
 			
-			oldContent.animate({left: contentWidth}, 2000, function() {
+			// If we only have one stop to display, make the animation 0 so there is
+			// effectively no animation. The content just changes.
+			var animationSpeed = 0;
+			if (stopIdsToRequest.length > 1) {
+				animationSpeed = 2000;
+			}
+			
+			oldContent.animate({left: contentWidth}, animationSpeed, function() {
 				oldContent.html("").empty().remove();
 				jQuery("span.dot").css('background-color', 'rgb(90,90,90)');
 				jQuery("span#" + stopId + ".dot").css('background-color', 'white');
