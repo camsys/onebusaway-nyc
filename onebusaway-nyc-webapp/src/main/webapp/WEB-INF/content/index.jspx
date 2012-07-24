@@ -197,10 +197,30 @@
 			<s:url var="url" namespace="/wiki/Help" action="Routes" />
 			<p>MTA Bus Time will be available NYC-wide by the end of 2013. <a href="${url}">Click here</a> to see which routes are currently available.</p>
 		</div>
+		
+		<s:if test="globalServiceAlerts!=null">
+		 <div id="global-alerts" class="global-alerts">
+			<s:iterator value="globalServiceAlerts">
+				<s:iterator value="descriptions">
+					<p class="global-alert-content"><strong>Service Notice: </strong><s:property value="value" /></p>
+				</s:iterator>
+			</s:iterator>
+		 </div>
+		</s:if>
 	   
     </div>
 
 	<div id="map"><!-- //prevent jspx minimization --></div>
+	<div id="map-global-alerts" class="global-alerts">
+		<div id="close-map-global-alerts"><a href="#">[close]</a></div>
+		<div class="global-alerts-content">
+			<s:iterator value="globalServiceAlerts">
+				<s:iterator value="descriptions">
+					<p class="global-alert-content"><strong>Service Notice: </strong><s:property value="value" /></p>
+				</s:iterator>
+			</s:iterator>
+		</div>
+	</div>
 
 </div>
 <!-- Begin Wizard -->

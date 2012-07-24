@@ -16,14 +16,18 @@
 package org.onebusaway.nyc.webapp.actions;
 
 
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * Action for home page
@@ -35,9 +39,17 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
   @Autowired
   private ConfigurationService _configurationService;
+  
+  @Autowired
+  private RealtimeService _realtimeService;
 
   public String getGoogleMapsClientId() {
     return _configurationService.getConfigurationValueAsString("display.googleMapsClientId", "");    
+  }
+  
+  public List<ServiceAlertBean> getGlobalServiceAlerts() {
+    List<ServiceAlertBean> results = _realtimeService.getServiceAlertsGlobal();
+    return (results != null && results.size() > 0) ? results : null;
   }
 
   @Override

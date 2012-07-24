@@ -132,7 +132,7 @@ strong {
 }
 
 /* body padding */
-#branding,#searchPanel,#content,#footer {
+#branding,#searchPanel,#content,#footer,#global-alerts {
 	margin: 0;
 	padding: 0.8em;
 	padding-bottom: 0;
@@ -599,4 +599,8 @@ small {
 
 #cant-find h2 {
 	font-weight: bold;
+}
+
+.global-alert-content {
+	color: red;
 }

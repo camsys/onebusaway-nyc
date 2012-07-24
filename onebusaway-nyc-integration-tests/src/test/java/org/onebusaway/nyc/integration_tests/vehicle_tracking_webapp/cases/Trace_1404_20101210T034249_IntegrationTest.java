@@ -15,8 +15,19 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
+/**
+ * A bus that starts at base, goes out on an unknown route (bundle-wise), and comes back.
+ * Should produce no UI-mappable inference results.
+ * 
+ * @author jmaki
+ *
+ */
+
+@RunWith(RunUntilSuccess.class)
 public class Trace_1404_20101210T034249_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_1404_20101210T034249_IntegrationTest() throws Exception {

@@ -189,7 +189,8 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> distances = (HashMap<String, Object>) extensions.get("Distances");
 
 	 assertEquals(distances.get("PresentableDistance"), "approaching");	 
-	 assertEquals(distances.get("DistanceFromCall"), 36.58);	 
+	 assertTrue((Double)distances.get("DistanceFromCall") > 35.0d);	 
+	 assertTrue((Double)distances.get("DistanceFromCall") < 40.0d);	 
 	 assertEquals(distances.get("StopsFromCall"), 0);	 
 	 assertEquals(distances.get("CallDistanceAlongRoute"), 37974.57);	 
   } 
@@ -243,7 +244,8 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
 
 	 assertEquals(distances1.get("PresentableDistance"), "approaching");	 
-	 assertEquals(distances1.get("DistanceFromCall"), 36.58);	 
+	 assertTrue((Double)distances1.get("DistanceFromCall") > 35.0d);	 
+	 assertTrue((Double)distances1.get("DistanceFromCall") < 40.0d);	 
 	 assertEquals(distances1.get("StopsFromCall"), 0);	 
 	 assertEquals(distances1.get("CallDistanceAlongRoute"), 37974.57);	 
 	 
@@ -253,7 +255,8 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> distances2 = (HashMap<String, Object>) extensions2.get("Distances");
 
 	 assertEquals(distances2.get("PresentableDistance"), "1 stop away");	 
-	 assertEquals(distances2.get("DistanceFromCall"), 251.62);	 
+	 assertTrue((Double)distances2.get("DistanceFromCall") > 250.0d);	 
+	 assertTrue((Double)distances2.get("DistanceFromCall") < 255.0d);	 
 	 assertEquals(distances2.get("StopsFromCall"), 1);	 
 	 assertEquals(distances2.get("CallDistanceAlongRoute"), 38189.61);	 
   }
@@ -327,7 +330,8 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
 
 	 assertEquals(distances1.get("PresentableDistance"), "< 1 stop away");	 
-	 assertEquals(distances1.get("DistanceFromCall"), 318.86);	 
+	 assertTrue((Double)distances1.get("DistanceFromCall") > 316.0d);	 
+	 assertTrue((Double)distances1.get("DistanceFromCall") < 321.0d);	 
 	 assertEquals(distances1.get("StopsFromCall"), 0);	 
 	 assertEquals(distances1.get("CallDistanceAlongRoute"), 0.06);	 
 	 

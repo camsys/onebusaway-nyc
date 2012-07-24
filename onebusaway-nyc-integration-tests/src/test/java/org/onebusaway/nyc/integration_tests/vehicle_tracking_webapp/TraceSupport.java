@@ -46,11 +46,11 @@ public class TraceSupport {
 
   private boolean shiftStartTime;
 
-  public String uploadTraceForSimulation(File path) throws IOException {
-    return uploadTraceForSimulation(path.getName(), new FileInputStream(path));
+  public String uploadTraceForSimulation(File path, boolean bypassInference) throws IOException {
+    return uploadTraceForSimulation(path.getName(), new FileInputStream(path), bypassInference);
   }
 
-  public String uploadTraceForSimulation(String fileName, InputStream in)
+  public String uploadTraceForSimulation(String fileName, InputStream in, boolean _bypassInference)
       throws IOException {
 
     try {
@@ -64,9 +64,13 @@ public class TraceSupport {
       StringPart shiftStartTimeParam = new StringPart("shiftStartTime", "" + shiftStartTime);
       StringPart traceTypeParam = new StringPart("traceType", "NycTestInferredLocationRecord");
       StringPart historySize = new StringPart("historySize", "" + 0);
-
+      StringPart bypassInference = new StringPart("bypassInference", "false");
+      if(_bypassInference == true) {
+    	  bypassInference = new StringPart("bypassInference", "true");
+      }
+      
       post.setRequestEntity(new MultipartRequestEntity(new Part[] {
-          filePart, returnIdParam, shiftStartTimeParam, traceTypeParam, historySize},
+          filePart, returnIdParam, shiftStartTimeParam, traceTypeParam, historySize, bypassInference},
           new HttpMethodParams()));
       client.executeMethod(post);
 

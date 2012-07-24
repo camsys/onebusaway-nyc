@@ -30,21 +30,16 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
 import org.opentripplanner.routing.impl.DistanceLibrary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.caucho.hessian.client.HessianProxyFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 
 public class AbstractTraceRunner {
 
   private static TraceSupport _traceSupport = new TraceSupport();
-
-  private VehicleTrackingManagementService _vehicleTrackingManagementService;
 
   private String _factorySeed = "298763210";
 
@@ -94,17 +89,6 @@ public class AbstractTraceRunner {
 
   @Before
   public void setup() throws Exception {
-    String federationPort = System.getProperty(
-        "org.onebusaway.transit_data_federation_webapp.port", "8080");
-
-    HessianProxyFactory factory = new HessianProxyFactory();
-    _vehicleTrackingManagementService = (VehicleTrackingManagementService) factory
-        .create(
-            VehicleTrackingManagementService.class,
-            "http://localhost:"
-                + federationPort
-                + "/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management-service");
-
     setSeeds();
   }
 
@@ -142,7 +126,7 @@ public class AbstractTraceRunner {
 	List<NycTestInferredLocationRecord> expectedResults = _traceSupport.readRecords(trace);
 
 	// run to get inferred results
-    String taskId = _traceSupport.uploadTraceForSimulation(trace);
+    String taskId = _traceSupport.uploadTraceForSimulation(trace, false);
 
     long t = System.currentTimeMillis();
     int prevRecordCount = -1;
@@ -195,13 +179,13 @@ public class AbstractTraceRunner {
     		// trip ID should match
     		if(expectedResult.getActualTripId() != null && !StringUtils.isEmpty(expectedResult.getActualTripId())) {
     	    	System.out.println("TRIP ID: expected=" + expectedResult.getActualTripId() + ", inferred=" + ourResult.getInferredTripId());
-    			assertEquals(ourResult.getInferredTripId(), expectedResult.getActualTripId());
+    			assertTrue(ourResult.getInferredTripId().endsWith(expectedResult.getActualTripId()));
     		}
 
     		// block ID should match
     		if(expectedResult.getActualBlockId() != null && !StringUtils.isEmpty(expectedResult.getActualBlockId())) {
     	    	System.out.println("BLOCK ID: expected=" + expectedResult.getActualBlockId() + ", inferred=" + ourResult.getInferredBlockId());
-    			assertEquals(ourResult.getInferredBlockId(), expectedResult.getActualBlockId());
+    			assertTrue(ourResult.getInferredBlockId().endsWith(expectedResult.getActualBlockId()));
     		}
     	}
     	  
@@ -250,8 +234,13 @@ public class AbstractTraceRunner {
 		Coordinate reportedLocation = new Coordinate(expectedResult.getLat(), expectedResult.getLon());
 		Coordinate ourLocation = new Coordinate(ourResult.getInferredBlockLat(), ourResult.getInferredBlockLon());
 
-    	System.out.println("LOCATION: expected=" + reportedLocation + ", inferred=" + ourLocation);
-		assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
+		String phase = expectedResult.getActualPhase();
+		if(EVehiclePhase.IN_PROGRESS.equals(phase) 
+				|| EVehiclePhase.LAYOVER_BEFORE.equals(phase)
+				|| EVehiclePhase.LAYOVER_DURING.equals(phase)) {
+	    	System.out.println("LOCATION: expected=" + reportedLocation + ", inferred=" + ourLocation);
+			assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
+		}
       }
       
       // break out of wait-for-completion loop

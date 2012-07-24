@@ -310,6 +310,30 @@
 	color: #999;
 }
 
+.global-alerts {
+	background-color: rgb(242,247,203);
+	border: 1px solid black;
+	padding: 10px;
+}
+
+#global-alerts {
+	width:280px;
+	margin-top: 15px;
+}
+
+#map-global-alerts {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	left: 350px;
+	padding-top: 4px;
+}
+
+#close-map-global-alerts {
+	text-align: right;
+	padding-bottom: 2px;
+}
+
 /* suggestions */
 
 .ui-autocomplete.ui-widget {

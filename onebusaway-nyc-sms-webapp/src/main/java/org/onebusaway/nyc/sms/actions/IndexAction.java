@@ -31,6 +31,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 import com.dmurph.tracking.AnalyticsConfigData;
@@ -39,11 +40,13 @@ import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -943,9 +946,42 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
    * METHODS FOR VIEWS
    */
   public String getResponse() {
+    
+    String response = _response.trim();
+    
+    if (_needsGlobalAlert != null && _needsGlobalAlert) {
+      List<ServiceAlertBean> globalAlerts = _realtimeService.getServiceAlertsGlobal();
+      if (globalAlerts != null && globalAlerts.size() > 0) {
+        String alertsThatFit = "\n\nService Notice: ";
+        String end = "... More at mta.info";
+        for (ServiceAlertBean alert : globalAlerts) {
+          
+          @SuppressWarnings("unchecked")
+          Collection<String> descriptions = CollectionUtils.collect(alert.getDescriptions(), new Transformer() {
+            @Override
+            public Object transform(Object input) {
+              return ((NaturalLanguageStringBean)input).getValue();
+            }
+          });
+          
+          String descriptionString = StringUtils.join(descriptions, "\n\n");
+          
+          if (response.length() + descriptionString.length() + alertsThatFit.length() > MAX_SMS_CHARACTER_COUNT*2) {
+            int endIndex = MAX_SMS_CHARACTER_COUNT*2 - response.length() - alertsThatFit.length() - end.length();
+            descriptionString = descriptionString.substring(0, endIndex) + end;
+            alertsThatFit += descriptionString;
+            break;
+          }
+          alertsThatFit += descriptionString + "\n\n";
+        }
+        response += alertsThatFit;
+      }
+      _needsGlobalAlert = false;
+    }
+    
     syncSession();
     
-    return _response.trim();
+    return response;
   }
 
   @Override

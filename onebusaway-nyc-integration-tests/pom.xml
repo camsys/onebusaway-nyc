@@ -74,7 +74,6 @@
             <artifactId>onebusaway-users</artifactId>
             <version>${onebusaway.app-modules.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
@@ -122,7 +121,7 @@
                                 <exclude>none</exclude>
                             </excludes>
                             <includes>
-                                <include>**/TraceSuite.java</include>
+                                <include>**/TestSuite.java</include>
                             </includes>
                             <!-- We define some test system properties -->
                             <systemPropertyVariables>
@@ -163,7 +162,7 @@
                 <executions>
 <!-- valid default bundle begin -->
                     <execution>
-                        <id>graph-builder-execution-b63-current</id>
+                        <id>graph-builder-execution-2012July_r04_b02</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -179,8 +178,8 @@
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle-b63-current.xml</argument>
-                                <argument>${project.build.directory}/transit-data-bundle/b63-current</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2012July_r04_b02.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2012July_r04_b02</argument>
                             </arguments>
                         </configuration>
                     </execution>
