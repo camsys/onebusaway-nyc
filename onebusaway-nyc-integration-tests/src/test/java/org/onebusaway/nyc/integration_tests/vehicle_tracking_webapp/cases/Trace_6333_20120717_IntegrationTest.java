@@ -21,21 +21,21 @@ import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
 /**
- * Inferred block location issue while in LAYOVER_BEFORE
+ * Test to ensure lat/long of bus when in layover doesn't drift from inferred locations.
+ * Also tests formal inference.
  * 
- * To fix:
- * Layover phase from 8:22 - 8:29 shouldn't be a deadhead given bus 
- * isn't moving.
+ * To Fix:
+ * The formalness of the inference--should be matching proper trip, as indicated.
  * 
  * @author jmaki
  *
  */
 @Ignore
 @RunWith(RunUntilSuccess.class)
-public class Trace_2433_20120723_IntegrationTest extends AbstractTraceRunner {
+public class Trace_6333_20120717_IntegrationTest extends AbstractTraceRunner {
 
-  public Trace_2433_20120723_IntegrationTest() throws Exception {
-    super("2433-2012-07-23.csv");
+  public Trace_6333_20120717_IntegrationTest() throws Exception {
+    super("6333-2012-07-17.csv");
     setBundle("2012July_r04_b02", "2012-07-17T00:00:00EDT");
   }
 }

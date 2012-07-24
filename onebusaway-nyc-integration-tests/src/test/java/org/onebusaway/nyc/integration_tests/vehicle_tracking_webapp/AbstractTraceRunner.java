@@ -73,7 +73,7 @@ public class AbstractTraceRunner {
 
   public void setBundle(String bundleId, Date date) throws Exception {
     String port = System.getProperty(
-        "org.onebusaway.transit_data_federation_webapp.port", "9005");
+        "org.onebusaway.transit_data_federation_webapp.port", "8080");
     String url = "http://localhost:" + port
         + "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId="
         + bundleId + "&time=" + DateLibrary.getTimeAsIso8601String(date);
@@ -94,7 +94,7 @@ public class AbstractTraceRunner {
 
   public void setSeeds() throws Exception {
     String port = System.getProperty(
-        "org.onebusaway.transit_data_federation_webapp.port", "9005");
+        "org.onebusaway.transit_data_federation_webapp.port", "8080");
 
     String urlStr = "http://localhost:"
         + port
@@ -179,13 +179,13 @@ public class AbstractTraceRunner {
     		// trip ID should match
     		if(expectedResult.getActualTripId() != null && !StringUtils.isEmpty(expectedResult.getActualTripId())) {
     	    	System.out.println("TRIP ID: expected=" + expectedResult.getActualTripId() + ", inferred=" + ourResult.getInferredTripId());
-    			assertEquals(ourResult.getInferredTripId(), expectedResult.getActualTripId());
+    			assertTrue(ourResult.getInferredTripId().endsWith(expectedResult.getActualTripId()));
     		}
 
     		// block ID should match
     		if(expectedResult.getActualBlockId() != null && !StringUtils.isEmpty(expectedResult.getActualBlockId())) {
     	    	System.out.println("BLOCK ID: expected=" + expectedResult.getActualBlockId() + ", inferred=" + ourResult.getInferredBlockId());
-    			assertEquals(ourResult.getInferredBlockId(), expectedResult.getActualBlockId());
+    			assertTrue(ourResult.getInferredBlockId().endsWith(expectedResult.getActualBlockId()));
     		}
     	}
     	  
