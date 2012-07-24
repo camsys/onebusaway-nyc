@@ -331,7 +331,7 @@ OBA.Sign = function() {
 		jQuery("#content").html("").empty();
 		
 		var error = jQuery("<div></div>").attr("id", "error");
-		jQuery("<p></p>").html(typeof textStatus === 'string' ? textStatus : "An error occured while updating arrival information&mdash;please check back later.").appendTo(error);
+		jQuery("<p></p>").html(typeof textStatus === 'string' ? textStatus : "An error occurred while updating arrival information&mdash;please check back later.").appendTo(error);
 		
 		jQuery("#content").append(error);
 		
