@@ -9,6 +9,7 @@ import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.impl.BundleValidationServiceImpl;
 import org.onebusaway.nyc.admin.service.server.impl.BundleServerServiceImpl;
+import org.onebusaway.nyc.admin.util.FileUtils;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -41,6 +41,36 @@ VehicleStatus.FilterView = Ember.View.extend({
 	controllerBinding: "VehicleStatus.FiltersController"
 });
 
+VehicleStatus.TopBarView = Ember.View.extend({
+	refreshDialog: null,
+	didInsertElement: function() {
+		refreshDialog = $("<div id='refreshDialog'>" +
+				"<input type='text' id='refreshRate'/>" +
+		"seconds<input type='button' id='set' value='Set'/></div>").dialog({
+		autoOpen: false,
+		title: "Edit Refresh-rate",
+		height: 100
+		});
+	},
+	autoRefreshClick: function(event) {
+		var controller = this.get('controller');
+		controller.autoRefreshGrid(event.target.checked);
+	},
+	refreshClick: function() {
+		var controller = this.get('controller');
+		controller.refreshGrid();
+	},
+	refreshLabelClick: function() {
+		refreshDialog.dialog('open');
+		var set = refreshDialog.find('#set');
+		set.bind({'click' : function() {
+			 $("#autoRefreshBox #autoRefresh").text($("#refreshRate").val() + " sec");
+			 refreshDialog.dialog('close');
+		}});
+	},
+	controllerBinding: "VehicleStatus.TopBarController"
+});
+
 VehicleStatus.ParametersView = Ember.View.extend({
 	
 
@@ -54,12 +84,17 @@ VehicleStatus.ParametersController = Ember.ArrayController.create({
 VehicleStatus.VehiclesController = Ember.ArrayController.create({
 	content: [],
 	loadGridData : function() {
-		$("#vehicleGrid").jqGrid({
+		var grid = $("#vehicleGrid");
+		grid.jqGrid({
 			url: "vehicle-status!getVehicleData.action?ts=" + new Date().getTime(),
 			datatype: "json",
 			mType: "GET",
 			colNames: ["Status","Vehicle Id", "Last Update", "Inferred State", "Inferred DSC, Route + Direction", "Observed DSC", "Pull-out", "Pull-in", "Details"],
-			colModel:[ {name:'status',index:'status', width:70, sortable:false}, 
+			colModel:[ {name:'status',index:'status', width:70, sortable:false,
+						formatter: function(cellValue, options) {
+							var cellImg = "<img src='../../css/img/" +cellValue +"' alt='Not Found' />";
+							return cellImg;
+						}}, 
 			           {name:'vehicleId',index:'vehicleId', width:70}, 
 			           {name:'lastUpdateTime',index:'lastUpdateTime', width:70}, 
 			           {name:'inferredState',index:'inferredState', width:100, sortable:false}, 
@@ -67,7 +102,11 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			           {name:'observedDSC',index:'observedDSC', width:80}, 
 			           {name:'pulloutTime',index:'pulloutTime', width:70},
 			           {name:'pullinTime',index:'pullinTime', width:70},
-			           {name:'details',index:'details', width:65}
+			           {name:'details',index:'details', width:65, 
+			        	formatter: function(cellValue, options) {
+			        	   var linkHtml = "<a href='#' style='color:blue'>" + cellValue + "</a>";
+			        	   return linkHtml;
+			           }, sortable:false}
 			         ],
 			height: "390",
 			width: "670",
@@ -81,7 +120,12 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			    records: "records",
 				repeatitems: false
 			},
-			pager: "#pager"
+			pager: "#pager",
+			loadComplete: function() {
+				var lastUpdateTime = new Date();
+				var time = lastUpdateTime.getHours() + ":" + lastUpdateTime.getMinutes() + " , " +lastUpdateTime.toDateString();
+				$("#lastUpdateBox #lastUpdate").text(time);
+			}
 		}).navGrid("#pager", {edit:false,add:false,del:false});
 	}
 });
@@ -112,6 +156,22 @@ VehicleStatus.FiltersController = Ember.ArrayController.create({
 			}
 		});
 	}	
+});
+
+VehicleStatus.TopBarController = Ember.ArrayController.create({
+	content: [],
+	interval: 0,
+	autoRefreshGrid: function(checked) {
+		if(checked) {
+			var refreshInterval = $("#autoRefreshBox #autoRefresh").text().split(/ +/)[0];
+			interval = setInterval(function(){$("#vehicleGrid").trigger("reloadGrid");},refreshInterval * 1000);
+		} else {
+			window.clearInterval(interval);
+		}
+	},
+	refreshGrid: function() {
+		$("#vehicleGrid").trigger("reloadGrid");
+	}
 });
 
 /******************* Model ************************************/

@@ -1,6 +1,8 @@
-package org.onebusaway.nyc.admin.model.ui;
+package org.onebusaway.nyc.admin.model;
 
 import java.util.List;
+
+import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 
 /**
  * Holds the response object in the format expected by jqgrid on the client side

@@ -6,7 +6,7 @@ import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.model.ServiceDateRange;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleValidationService;
-import org.onebusaway.nyc.admin.service.impl.FileUtils;
+import org.onebusaway.nyc.admin.util.FileUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

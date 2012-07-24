@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.admin.service.impl;
+package org.onebusaway.nyc.admin.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

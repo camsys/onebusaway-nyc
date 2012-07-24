@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.admin.service.impl;
 
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.admin.util.FileUtils;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;

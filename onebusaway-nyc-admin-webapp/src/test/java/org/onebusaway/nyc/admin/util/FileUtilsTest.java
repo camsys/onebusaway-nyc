@@ -1,8 +1,9 @@
-package org.onebusaway.nyc.admin.service.impl;
+package org.onebusaway.nyc.admin.util;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.onebusaway.nyc.admin.util.FileUtils;
 
 public class FileUtilsTest {
 
