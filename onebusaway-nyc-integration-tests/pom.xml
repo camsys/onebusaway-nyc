@@ -13,6 +13,7 @@
     <properties>
         <tomcat-version>5.5.29</tomcat-version>
         <cargo.jvmargs>-Xmx1G -XX:MaxPermSize=256m</cargo.jvmargs>
+        <cargo.logging>low</cargo.logging>
         <hsqldb.port>9930</hsqldb.port>
         <pauseDuringIntegrationTest>false</pauseDuringIntegrationTest>
 
@@ -108,6 +109,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                  <excludes>
+                    <exclude>**/*.*</exclude>
+                  </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>integration-tests</id>
@@ -302,6 +308,12 @@
                 <version>1.0.6</version>
                 <configuration>
                     <container>
+<!-- use this when debugging cargo -->
+<!--
+                        <log>${java.io.tmpdir}/cargo.log</log>
+                        <output>${java.io.tmpdir}/cargo</output>
+-->
+                        <append>true</append>
                         <containerId>tomcat5x</containerId>
                         <systemProperties>
                             <onebusaway_prefix>${basedir}</onebusaway_prefix>
@@ -314,7 +326,7 @@
                         </zipUrlInstaller>
                     </container>
                     <!-- Don't wait around once the container has been started -->
-                    <wait>false</wait>
+                    <wait>false</wait><!-- now deprecated -->
                 </configuration>
                 <executions>
                     <execution>
@@ -331,6 +343,7 @@
                                     <cargo.servlet.port>${org.onebusaway.transit_data_federation_webapp.port}</cargo.servlet.port>
                                     <cargo.tomcat.ajp.port>${org.onebusaway.transit_data_federation_webapp.ajp_port}</cargo.tomcat.ajp.port>
                                     <cargo.rmi.port>${org.onebusaway.transit_data_federation_webapp.rmi_port}</cargo.rmi.port>
+                                    <cargo.logging>${cargo.logging}</cargo.logging>
                                 </properties>
                                 <deployables>
                                     <deployable>
@@ -362,6 +375,7 @@
                                     <cargo.servlet.port>${org.onebusaway.webapp.port}</cargo.servlet.port>
                                     <cargo.tomcat.ajp.port>${org.onebusaway.webapp.ajp_port}</cargo.tomcat.ajp.port>
                                     <cargo.rmi.port>${org.onebusaway.webapp.rmi_port}</cargo.rmi.port>
+                                    <cargo.logging>${cargo.logging}</cargo.logging>
                                 </properties>
                                 <deployables>
                                     <deployable>
@@ -405,6 +419,7 @@
                                     <cargo.servlet.port>${org.onebusaway.webapp.port}</cargo.servlet.port>
                                     <cargo.tomcat.ajp.port>${org.onebusaway.webapp.ajp_port}</cargo.tomcat.ajp.port>
                                     <cargo.rmi.port>${org.onebusaway.webapp.rmi_port}</cargo.rmi.port>
+                                    <cargo.logging>${cargo.logging}</cargo.logging>
                                 </properties>
                             </configuration>
                         </configuration>
@@ -423,6 +438,7 @@
                                     <cargo.servlet.port>${org.onebusaway.transit_data_federation_webapp.port}</cargo.servlet.port>
                                     <cargo.tomcat.ajp.port>${org.onebusaway.transit_data_federation_webapp.ajp_port}</cargo.tomcat.ajp.port>
                                     <cargo.rmi.port>${org.onebusaway.transit_data_federation_webapp.rmi_port}</cargo.rmi.port>
+                                    <cargo.logging>${cargo.logging}</cargo.logging>
                                 </properties>
                             </configuration>
                         </configuration>
