@@ -79,7 +79,6 @@ import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 public class BeanFactoryV2 {
 
@@ -343,82 +342,6 @@ public class BeanFactoryV2 {
     return bean;
   }
 
-  public TripStatusV2Bean getTripStatus(TripStatusBean tripStatus) {
-
-    TripStatusV2Bean bean = new TripStatusV2Bean();
-
-    TripBean activeTrip = tripStatus.getActiveTrip();
-    if (activeTrip != null) {
-      bean.setActiveTripId(activeTrip.getId());
-      bean.setBlockTripSequence(tripStatus.getBlockTripSequence());
-      addToReferences(activeTrip);
-    }
-
-    bean.setServiceDate(tripStatus.getServiceDate());
-
-    FrequencyBean frequency = tripStatus.getFrequency();
-    if (frequency != null)
-      bean.setFrequency(getFrequency(frequency));
-
-    bean.setScheduledDistanceAlongTrip(tripStatus.getScheduledDistanceAlongTrip());
-    bean.setTotalDistanceAlongTrip(tripStatus.getTotalDistanceAlongTrip());
-
-    bean.setPosition(tripStatus.getLocation());
-    if (tripStatus.isOrientationSet())
-      bean.setOrientation(tripStatus.getOrientation());
-
-    StopBean closestStop = tripStatus.getClosestStop();
-    if (closestStop != null) {
-      bean.setClosestStop(closestStop.getId());
-      addToReferences(closestStop);
-      bean.setClosestStopTimeOffset(tripStatus.getClosestStopTimeOffset());
-    }
-
-    StopBean nextStop = tripStatus.getNextStop();
-    if (nextStop != null) {
-      bean.setNextStop(nextStop.getId());
-      addToReferences(nextStop);
-      bean.setNextStopTimeOffset(tripStatus.getNextStopTimeOffset());
-    }
-
-    bean.setPhase(tripStatus.getPhase());
-    bean.setStatus(tripStatus.getStatus());
-
-    bean.setPredicted(tripStatus.isPredicted());
-
-    if (tripStatus.getLastUpdateTime() > 0)
-      bean.setLastUpdateTime(tripStatus.getLastUpdateTime());
-
-    if (tripStatus.getLastLocationUpdateTime() > 0)
-      bean.setLastLocationUpdateTime(tripStatus.getLastLocationUpdateTime());
-
-    if (tripStatus.isLastKnownDistanceAlongTripSet())
-      bean.setLastKnownDistanceAlongTrip(tripStatus.getLastKnownDistanceAlongTrip());
-
-    bean.setLastKnownLocation(tripStatus.getLastKnownLocation());
-
-    if (tripStatus.isLastKnownOrientationSet())
-      bean.setLastKnownOrientation(tripStatus.getLastKnownOrientation());
-
-    if (tripStatus.isScheduleDeviationSet())
-      bean.setScheduleDeviation((int) tripStatus.getScheduleDeviation());
-    if (tripStatus.isDistanceAlongTripSet())
-      bean.setDistanceAlongTrip(tripStatus.getDistanceAlongTrip());
-    bean.setVehicleId(tripStatus.getVehicleId());
-
-    List<ServiceAlertBean> situations = tripStatus.getSituations();
-    if (situations != null && !situations.isEmpty()) {
-      List<String> situationIds = new ArrayList<String>();
-      for (ServiceAlertBean situation : situations) {
-        situationIds.add(situation.getId());
-        addToReferences(situation);
-      }
-      bean.setSituationIds(situationIds);
-    }
-
-    return bean;
-  }
-
   public TripStopTimesV2Bean getTripStopTimes(TripStopTimesBean tripStopTimes) {
 
     TripStopTimesV2Bean bean = new TripStopTimesV2Bean();
@@ -478,10 +401,6 @@ public class BeanFactoryV2 {
     TripStopTimesBean stopTimes = tripDetails.getSchedule();
     if (stopTimes != null)
       bean.setSchedule(getTripStopTimes(stopTimes));
-
-    TripStatusBean status = tripDetails.getStatus();
-    if (status != null)
-      bean.setStatus(getTripStatus(status));
 
     List<ServiceAlertBean> situations = tripDetails.getSituations();
     if (!CollectionsLibrary.isEmpty(situations)) {
@@ -588,7 +507,6 @@ public class BeanFactoryV2 {
 
     CurrentVehicleEstimateV2Bean bean = new CurrentVehicleEstimateV2Bean();
     bean.setProbability(estimate.getProbability());
-    bean.setTripStatus(getTripStatus(estimate.getTripStatus()));
     bean.setDebug(estimate.getDebug());
     return bean;
   }
@@ -610,10 +528,6 @@ public class BeanFactoryV2 {
       bean.setTripId(trip.getId());
       addToReferences(trip);
     }
-
-    TripStatusBean tripStatus = vehicleStatus.getTripStatus();
-    if (tripStatus != null)
-      bean.setTripStatus(getTripStatus(tripStatus));
 
     return bean;
   }
@@ -841,13 +755,9 @@ public class BeanFactoryV2 {
 
     bean.setScheduledArrivalTime(ad.getScheduledArrivalTime());
     bean.setScheduledDepartureTime(ad.getScheduledDepartureTime());
-    bean.setPredictedArrivalTime(ad.getPredictedArrivalTime());
-    bean.setPredictedDepartureTime(ad.getPredictedDepartureTime());
 
     bean.setScheduledArrivalInterval(getTimeInterval(ad.getScheduledArrivalInterval()));
     bean.setScheduledDepartureInterval(getTimeInterval(ad.getScheduledDepartureInterval()));
-    bean.setPredictedArrivalInterval(getTimeInterval(ad.getPredictedArrivalInterval()));
-    bean.setPredictedDepartureInterval(getTimeInterval(ad.getPredictedDepartureInterval()));
 
     if (ad.getFrequency() != null)
       bean.setFrequency(getFrequency(ad.getFrequency()));
@@ -858,10 +768,6 @@ public class BeanFactoryV2 {
       bean.setDistanceFromStop(ad.getDistanceFromStop());
 
     bean.setNumberOfStopsAway(ad.getNumberOfStopsAway());
-
-    TripStatusBean tripStatus = ad.getTripStatus();
-    if (tripStatus != null)
-      bean.setTripStatus(getTripStatus(tripStatus));
 
     bean.setPredicted(ad.isPredicted());
     bean.setLastUpdateTime(ad.getLastUpdateTime());

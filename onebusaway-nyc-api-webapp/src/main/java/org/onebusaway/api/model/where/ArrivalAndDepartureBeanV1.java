@@ -31,11 +31,7 @@ public class ArrivalAndDepartureBeanV1 implements Serializable {
 
   private String stopId;
 
-  private long predictedArrivalTime;
-
   private long scheduledArrivalTime;
-
-  private long predictedDepartureTime;
 
   private long scheduledDepartureTime;
 
@@ -81,28 +77,12 @@ public class ArrivalAndDepartureBeanV1 implements Serializable {
     this.stopId = stopId;
   }
 
-  public long getPredictedArrivalTime() {
-    return predictedArrivalTime;
-  }
-
-  public void setPredictedArrivalTime(long predictedArrivalTime) {
-    this.predictedArrivalTime = predictedArrivalTime;
-  }
-
   public long getScheduledArrivalTime() {
     return scheduledArrivalTime;
   }
 
   public void setScheduledArrivalTime(long scheduledArrivalTime) {
     this.scheduledArrivalTime = scheduledArrivalTime;
-  }
-
-  public long getPredictedDepartureTime() {
-    return predictedDepartureTime;
-  }
-
-  public void setPredictedDepartureTime(long predictedDepartureTime) {
-    this.predictedDepartureTime = predictedDepartureTime;
   }
 
   public long getScheduledDepartureTime() {
@@ -121,28 +101,17 @@ public class ArrivalAndDepartureBeanV1 implements Serializable {
     this.status = status;
   }
 
-  public boolean hasPredictedArrivalTime() {
-    return this.predictedArrivalTime > 0;
-  }
-
-  public boolean hasPredictedDepartureTime() {
-    return this.predictedArrivalTime > 0;
-  }
-
   public long computeBestArrivalTime() {
-    return hasPredictedArrivalTime() ? getPredictedArrivalTime()
-        : getScheduledArrivalTime();
+    return getScheduledArrivalTime();
   }
 
   public long computeBestDepartureTime() {
-    return hasPredictedDepartureTime() ? getPredictedDepartureTime()
-        : getScheduledDepartureTime();
+    return getScheduledDepartureTime();
   }
 
   @Override
   public String toString() {
-    return "route=" + routeShortName + " scheduled=" + scheduledArrivalTime
-        + " predicted=" + predictedArrivalTime;
+    return "route=" + routeShortName + " scheduled=" + scheduledArrivalTime;
   }
 
 }

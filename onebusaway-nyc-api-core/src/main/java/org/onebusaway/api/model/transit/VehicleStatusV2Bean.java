@@ -37,8 +37,6 @@ public final class VehicleStatusV2Bean implements Serializable {
 
   private String tripId;
 
-  private TripStatusV2Bean tripStatus;
-
   public String getVehicleId() {
     return vehicleId;
   }
@@ -93,14 +91,6 @@ public final class VehicleStatusV2Bean implements Serializable {
 
   public void setTripId(String tripId) {
     this.tripId = tripId;
-  }
-
-  public TripStatusV2Bean getTripStatus() {
-    return tripStatus;
-  }
-
-  public void setTripStatus(TripStatusV2Bean tripStatus) {
-    this.tripStatus = tripStatus;
   }
 
 }

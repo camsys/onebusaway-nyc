@@ -127,8 +127,6 @@ public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
       StopBean stop = bean.getStop();
       
       ArrivalAndDepartureBeanV1 v1 = new ArrivalAndDepartureBeanV1();
-      v1.setPredictedArrivalTime(bean.getPredictedArrivalTime());
-      v1.setPredictedDepartureTime(bean.getPredictedDepartureTime());
       v1.setRouteId(route.getId());
       if (trip.getRouteShortName() != null)
         v1.setRouteShortName(trip.getRouteShortName());
