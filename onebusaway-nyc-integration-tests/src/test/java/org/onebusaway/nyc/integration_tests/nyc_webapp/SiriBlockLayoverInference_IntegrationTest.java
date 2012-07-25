@@ -105,8 +105,9 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
 	 HashMap<String,Object> extensions1 = (HashMap<String, Object>) stop1.get("Extensions");
 	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
 
-	 assertEquals(distances1.get("PresentableDistance"), "at stop");	 
-	 assertTrue(Double.parseDouble(distances1.get("DistanceFromCall").toString()) < 10);	 
+	 assertEquals(distances1.get("PresentableDistance"), "approaching");	 
+	 assertTrue(Double.parseDouble(distances1.get("DistanceFromCall").toString()) < 50);	 
+	 assertTrue(Double.parseDouble(distances1.get("DistanceFromCall").toString()) > 45);	 
 	 assertEquals(distances1.get("StopsFromCall"), 0);	 
 	 assertEquals(distances1.get("CallDistanceAlongRoute"), 38189.61);	 
 	 

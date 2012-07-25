@@ -66,7 +66,7 @@ public class SiriIntegrationTestBase {
 
   public void setBundle(String bundleId, Date date) throws Exception {
     String port = System.getProperty(
-        "org.onebusaway.transit_data_federation_webapp.port", "9005");
+        "org.onebusaway.transit_data_federation_webapp.port", "9905");
 
     String url = "http://localhost:" + port
         + "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId="
@@ -84,7 +84,7 @@ public class SiriIntegrationTestBase {
   public void reset(String vId) throws Exception {
 	  // reset TDS
 	  String federationPort = System.getProperty(
-			  "org.onebusaway.transit_data_federation_webapp.port", "9005");
+			  "org.onebusaway.transit_data_federation_webapp.port", "9905");
 
 	  HessianProxyFactory factory = new HessianProxyFactory();
 
@@ -99,7 +99,7 @@ public class SiriIntegrationTestBase {
 
 	  // reset simulator
 	  String port = System.getProperty(
-			  "org.onebusaway.transit_data_federation_webapp.port", "9005");
+			  "org.onebusaway.transit_data_federation_webapp.port", "9905");
 
 	  String url = "http://localhost:" + port
 			  + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location!reset.do?vehicleId="

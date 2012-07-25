@@ -24,8 +24,11 @@ import java.util.HashMap;
 import org.apache.commons.httpclient.HttpException;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 
 @SuppressWarnings("unchecked")
+@RunWith(RunUntilSuccess.class)
 public class SiriTripLayoverInference_IntegrationTest extends SiriIntegrationTestBase {
 	
   private boolean _isSetUp = false;
