@@ -106,6 +106,8 @@ public class VehicleStateLibrary {
      */
     if (blockState == null) {
       return obs.isAtTerminal();
+    } else if (isAtPotentialTerminal(obs.getRecord(), blockState.getBlockInstance())) {
+      return true;
     }
 
     /**
