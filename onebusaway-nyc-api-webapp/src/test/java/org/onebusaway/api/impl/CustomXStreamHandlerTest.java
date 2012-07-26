@@ -123,11 +123,9 @@ public class CustomXStreamHandlerTest extends CustomXStreamHandler {
       "    <blockTripSequence>0</blockTripSequence>" +
       "    <departureEnabled>false</departureEnabled>" +
       "    <scheduledDepartureTime>0</scheduledDepartureTime>" +
-      "    <predictedDepartureTime>0</predictedDepartureTime>" +
       "    <arrivalEnabled>false</arrivalEnabled>" +
       "    <scheduledArrivalTime>0</scheduledArrivalTime>" +
       "    <predicted>false</predicted>" +
-      "    <predictedArrivalTime>0</predictedArrivalTime>" +
       "    <distanceFromStop>0.0</distanceFromStop>" +
       "    <numberOfStopsAway>0</numberOfStopsAway>" +
       "    <situationIds>" +
