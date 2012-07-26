@@ -16,18 +16,16 @@
 package org.onebusaway.nyc.webapp.actions;
 
 
+import java.util.List;
+
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 /**
  * Action for home page
