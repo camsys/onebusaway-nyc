@@ -79,8 +79,8 @@
 				<label class="vehicleLabel">Emergency Status</label>
 			</div>
 			<div id="filterButtons">
-				<input type="button" id="reset" value="Reset" />
-				<input type="button" id="apply" value="Apply" />
+				<input type="button" id="reset" value="Reset" {{action "resetFilters" on="click" }}/>
+				<input type="button" id="apply" value="Apply" {{action "applyFilters" on="click" }}/>
 			</div>
 			{{/view}}
 			</script>
