@@ -9,13 +9,16 @@ public class VehicleStatus {
 	
 	private String status;
 	private String vehicleId;
-	private String lastUpdateTime;
+	private String lastUpdate;
 	private String inferredState;
 	private String inferredDestination;
 	private String observedDSC;
 	private String pullinTime;
 	private String pulloutTime;
 	private String details;
+	private String route;
+	private String depot;
+	private String emergencyStatus;
 	
 	/**
 	 * @return the vehicleId
@@ -30,16 +33,16 @@ public class VehicleStatus {
 		this.vehicleId = vehicleId;
 	}
 	/**
-	 * @return the lastUpdateTime
+	 * @return the lastUpdate
 	 */
-	public String getLastUpdateTime() {
-		return lastUpdateTime;
+	public String getLastUpdate() {
+		return lastUpdate;
 	}
 	/**
-	 * @param lastUpdateTime the lastUpdateTime to set
+	 * @param lastUpdateTime the lastUpdate to set
 	 */
-	public void setLastUpdateTime(String lastUpdateTime) {
-		this.lastUpdateTime = lastUpdateTime;
+	public void setLastUpdate(String lastUpdate) {
+		this.lastUpdate = lastUpdate;
 	}
 	/**
 	 * @return the inferredState
@@ -124,6 +127,42 @@ public class VehicleStatus {
 	 */
 	public void setDetails(String details) {
 		this.details = details;
+	}
+	/**
+	 * @return the route
+	 */
+	public String getRoute() {
+		return route;
+	}
+	/**
+	 * @param route the route to set
+	 */
+	public void setRoute(String route) {
+		this.route = route;
+	}
+	/**
+	 * @return the depot
+	 */
+	public String getDepot() {
+		return depot;
+	}
+	/**
+	 * @param depot the depot to set
+	 */
+	public void setDepot(String depot) {
+		this.depot = depot;
+	}
+	/**
+	 * @return the emergencyStatus
+	 */
+	public String getEmergencyStatus() {
+		return emergencyStatus;
+	}
+	/**
+	 * @param emergencyStatus the emergencyStatus to set
+	 */
+	public void setEmergencyStatus(String emergencyStatus) {
+		this.emergencyStatus = emergencyStatus;
 	}
 	
 

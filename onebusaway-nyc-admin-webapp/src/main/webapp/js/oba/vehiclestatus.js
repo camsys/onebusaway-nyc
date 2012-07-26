@@ -38,6 +38,17 @@ VehicleStatus.FilterView = Ember.View.extend({
 		var controller = this.get('controller');
 		controller.loadFiltersData();
 	},
+	applyFilters: function() {
+		var controller = this.get('controller');
+		controller.search();
+	},
+	resetFilters: function() {
+		var filters = $("#filters");
+		filters.find("input:text").val("");
+		filters.find("select").val("");
+		$("#emergencyBox #emergencyCheck").removeAttr("checked");
+		
+	},
 	controllerBinding: "VehicleStatus.FiltersController"
 });
 
@@ -96,7 +107,7 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 							return cellImg;
 						}}, 
 			           {name:'vehicleId',index:'vehicleId', width:70}, 
-			           {name:'lastUpdateTime',index:'lastUpdateTime', width:70}, 
+			           {name:'lastUpdate',index:'lastUpdate', width:70}, 
 			           {name:'inferredState',index:'inferredState', width:100, sortable:false}, 
 			           {name:'inferredDestination',index:'inferredDestination', width:170, sortable:false}, 
 			           {name:'observedDSC',index:'observedDSC', width:80}, 
@@ -125,14 +136,23 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				var lastUpdateTime = new Date();
 				var time = lastUpdateTime.getHours() + ":" + lastUpdateTime.getMinutes() + " , " +lastUpdateTime.toDateString();
 				$("#lastUpdateBox #lastUpdate").text(time);
+			},
+			postData: {
+				vehicleId: function() {return $("#filters #vehicleId").val();},
+				route: function() {return $("#filters #route").val();},
+				depot: function() {return $("#filters #depot option:selected").val();},
+				dsc: function() {return $("#filters #dsc").val();},
+				inferredState: function() {return $("#filters #inferredState option:selected").val();},
+				pulloutStatus: function() {return $("#filters #pulloutStatus option:selected").val();},
+				emergencyStatus: function() {return $("#emergencyBox #emergencyCheck").is(':checked');}
 			}
-		}).navGrid("#pager", {edit:false,add:false,del:false});
+		}).navGrid("#pager", {edit:false,add:false,del:false,search:false,refresh:false });
 	}
 });
 
 VehicleStatus.FiltersController = Ember.ArrayController.create({
 	content: [],
-	loadFiltersData : function() {
+	loadFiltersData: function() {
 		$.ajax({
 			type: "GET",
 			url: "../../filters/vehicle-filters.xml",
@@ -155,7 +175,11 @@ VehicleStatus.FiltersController = Ember.ArrayController.create({
 				alert("Error: " + request.statusText);
 			}
 		});
-	}	
+	},
+	search: function() {
+		$("#vehicleGrid").jqGrid('setGridParam', {search:true, page:1});
+		$("#vehicleGrid").trigger("reloadGrid");
+	}
 });
 
 VehicleStatus.TopBarController = Ember.ArrayController.create({
@@ -163,6 +187,7 @@ VehicleStatus.TopBarController = Ember.ArrayController.create({
 	interval: 0,
 	autoRefreshGrid: function(checked) {
 		if(checked) {
+			$("#vehicleGrid").jqGrid('setGridParam', {search:false, page:1});
 			var refreshInterval = $("#autoRefreshBox #autoRefresh").text().split(/ +/)[0];
 			interval = setInterval(function(){$("#vehicleGrid").trigger("reloadGrid");},refreshInterval * 1000);
 		} else {
@@ -170,6 +195,7 @@ VehicleStatus.TopBarController = Ember.ArrayController.create({
 		}
 	},
 	refreshGrid: function() {
+		$("#vehicleGrid").jqGrid('setGridParam', {search:false, page:1});
 		$("#vehicleGrid").trigger("reloadGrid");
 	}
 });
