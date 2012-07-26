@@ -42,7 +42,7 @@ class DummyScheduleBasedPredictionIntegrationServiceImpl implements PredictionGe
     List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
 
     VehicleStatusBean vehicleStatus = _transitDataService.getVehicleForAgency(AgencyAndId.convertToString(vehicleId), System.currentTimeMillis());
-    if(vehicleStatus == null)
+    if(vehicleStatus == null || vehicleStatus.getTripStatus() == null)
       return predictionRecords;
 
     TripStatusBean tripStatus = vehicleStatus.getTripStatus();    
