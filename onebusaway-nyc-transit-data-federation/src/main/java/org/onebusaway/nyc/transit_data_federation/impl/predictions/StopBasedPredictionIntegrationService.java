@@ -33,12 +33,12 @@ class StopBasedPredictionIntegrationService implements PredictionIntegrationServ
   @Autowired
   private PredictionGenerationService _predictionGenerationService;
 
-  private Map<AgencyAndId, List<TimepointPredictionRecord>> _predictionRecordsByVehicle =
-      new HashMap<AgencyAndId, List<TimepointPredictionRecord>>();
+  private Map<String, List<TimepointPredictionRecord>> _predictionRecordsByVehicle =
+      new HashMap<String, List<TimepointPredictionRecord>>();
   
   @Override
   public void updatePredictionsForVehicle(AgencyAndId vehicleId) {
-    _predictionRecordsByVehicle.put(vehicleId, 
+    _predictionRecordsByVehicle.put(AgencyAndId.convertToString(vehicleId), 
         _predictionGenerationService.getPredictionsForVehicle(vehicleId));
   }
 
