@@ -13,24 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.transit_data.services;
+package org.onebusaway.nyc.transit_data_federation.services.predictions;
 
 import java.util.List;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
-public interface NycTransitDataService extends TransitDataService {
+public interface PredictionIntegrationService {
 
-   public String getActiveBundleId();
+  public void updatePredictionsForVehicle(AgencyAndId vehicleId);
 
-   public List<TimepointPredictionRecord> getPredictionRecordsForTrip(TripStatusBean tripStatus);
-   
-   public Boolean routeHasUpcomingScheduledService(long time, String routeId, String directionId);
-
-   public Boolean stopHasUpcomingScheduledService(long time, String stopId, String routeId, String directionId);
-   
-   public List<String> getSearchSuggestions(String input);
+  public List<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus);
 
 }

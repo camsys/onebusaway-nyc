@@ -16,5 +16,10 @@
             <artifactId>onebusaway-transit-data</artifactId>
             <version>${onebusaway.app-modules.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-realtime-api</artifactId>
+            <version>${onebusaway.app-modules.version}</version>
+        </dependency>
     </dependencies>
 </project>

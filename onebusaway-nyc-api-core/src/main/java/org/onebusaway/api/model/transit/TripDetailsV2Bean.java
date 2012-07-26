@@ -28,8 +28,6 @@ public final class TripDetailsV2Bean implements Serializable {
 
   private FrequencyV2Bean frequency;
 
-  private TripStatusV2Bean status;
-
   private TripStopTimesV2Bean schedule;
 
   private List<String> situationIds;
@@ -56,14 +54,6 @@ public final class TripDetailsV2Bean implements Serializable {
 
   public void setFrequency(FrequencyV2Bean frequency) {
     this.frequency = frequency;
-  }
-
-  public TripStatusV2Bean getStatus() {
-    return status;
-  }
-
-  public void setStatus(TripStatusV2Bean status) {
-    this.status = status;
   }
 
   public TripStopTimesV2Bean getSchedule() {

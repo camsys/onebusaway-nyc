@@ -47,10 +47,6 @@ public class ArrivalAndDepartureV2Bean implements Serializable {
   private long scheduledDepartureTime;
 
   private TimeIntervalV2 scheduledDepartureInterval;
-
-  private long predictedDepartureTime;
-
-  private TimeIntervalV2 predictedDepartureInterval;
   
   private boolean arrivalEnabled;
 
@@ -66,15 +62,9 @@ public class ArrivalAndDepartureV2Bean implements Serializable {
 
   private Long lastUpdateTime;
 
-  private long predictedArrivalTime;
-
-  private TimeIntervalV2 predictedArrivalInterval;
-
   private double distanceFromStop;
 
   private int numberOfStopsAway;
-
-  private TripStatusV2Bean tripStatus;
 
   private List<String> situationIds;
 
@@ -256,14 +246,6 @@ public class ArrivalAndDepartureV2Bean implements Serializable {
     this.numberOfStopsAway = numberOfStopsAway;
   }
 
-  public TripStatusV2Bean getTripStatus() {
-    return tripStatus;
-  }
-
-  public void setTripStatus(TripStatusV2Bean tripStatus) {
-    this.tripStatus = tripStatus;
-  }
-
   public List<String> getSituationIds() {
     return situationIds;
   }
@@ -272,61 +254,16 @@ public class ArrivalAndDepartureV2Bean implements Serializable {
     this.situationIds = situationIds;
   }
 
-  public boolean hasPredictedArrivalTime() {
-    return this.predictedArrivalTime > 0;
-  }
-
-  public long getPredictedArrivalTime() {
-    return predictedArrivalTime;
-  }
-
-  public void setPredictedArrivalTime(long predictedArrivalTime) {
-    this.predictedArrivalTime = predictedArrivalTime;
-  }
-
-  public TimeIntervalV2 getPredictedArrivalInterval() {
-    return predictedArrivalInterval;
-  }
-
-  public void setPredictedArrivalInterval(
-      TimeIntervalV2 predictedArrivalInterval) {
-    this.predictedArrivalInterval = predictedArrivalInterval;
-  }
-
-  public boolean hasPredictedDepartureTime() {
-    return this.predictedArrivalTime > 0;
-  }
-
-  public long getPredictedDepartureTime() {
-    return predictedDepartureTime;
-  }
-
-  public void setPredictedDepartureTime(long predictedDepartureTime) {
-    this.predictedDepartureTime = predictedDepartureTime;
-  }
-
-  public TimeIntervalV2 getPredictedDepartureInterval() {
-    return predictedDepartureInterval;
-  }
-
-  public void setPredictedDepartureInterval(
-      TimeIntervalV2 predictedDepartureInterval) {
-    this.predictedDepartureInterval = predictedDepartureInterval;
-  }
-
   public long computeBestArrivalTime() {
-    return hasPredictedArrivalTime() ? getPredictedArrivalTime()
-        : getScheduledArrivalTime();
+    return getScheduledArrivalTime();
   }
 
   public long computeBestDepartureTime() {
-    return hasPredictedDepartureTime() ? getPredictedDepartureTime()
-        : getScheduledDepartureTime();
+    return getScheduledDepartureTime();
   }
 
   @Override
   public String toString() {
-    return "route=" + routeShortName + " scheduled=" + scheduledArrivalTime
-        + " predicted=" + predictedArrivalTime;
+    return "route=" + routeShortName + " scheduled=" + scheduledArrivalTime;
   }
 }

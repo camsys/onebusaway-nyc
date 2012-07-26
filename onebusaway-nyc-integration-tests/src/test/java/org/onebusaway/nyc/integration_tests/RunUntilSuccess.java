@@ -10,7 +10,7 @@ import org.junit.runners.model.InitializationError;
 
 public class RunUntilSuccess extends Runner {
 
-	private static final int MAXIMUM_TRIES = 1;
+	private static final int MAXIMUM_TRIES = 3;
 	
     private BlockJUnit4ClassRunner runner;
 
@@ -20,7 +20,7 @@ public class RunUntilSuccess extends Runner {
 
     @Override
     public Description getDescription() {
-        final Description description = Description.createSuiteDescription("Run until success");
+        final Description description = Description.createSuiteDescription("Run until success, up to " + MAXIMUM_TRIES + " times");
         description.addChild(runner.getDescription());
         return description;
     }
