@@ -13,14 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.presentation.impl.predictions;
+package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.onebusaway.nyc.presentation.service.predictions.PredictionIntegrationService;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionGenerationService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
@@ -30,45 +32,51 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-class DummyScheduleBasedPredictionIntegrationServiceImpl implements PredictionIntegrationService {
+class DummyScheduleBasedPredictionIntegrationServiceImpl implements PredictionGenerationService {
 
   @Autowired
   private NycTransitDataService _transitDataService;
-  
+
   @Override
-  public List<TimepointPredictionRecord> getTimepointPredictions(TripStatusBean tripStatus) {    
+  public List<TimepointPredictionRecord> getPredictionsForVehicle(AgencyAndId vehicleId) {    
     List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
+
+    VehicleStatusBean vehicleStatus = _transitDataService.getVehicleForAgency(AgencyAndId.convertToString(vehicleId), System.currentTimeMillis());
+    if(vehicleStatus == null)
+      return null;
+
+    TripStatusBean tripStatus = vehicleStatus.getTripStatus();    
+    if(tripStatus == null)
+      return null;
     
     BlockInstanceBean blockInstance = _transitDataService.getBlockInstance(tripStatus.getActiveTrip().getBlockId(), tripStatus.getServiceDate());
-
-    if(blockInstance == null) {
-    	return predictionRecords;
-    }
+    if(blockInstance == null)
+      return null;
     
     List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
 
     double distanceOfVehicleAlongBlock = 0;
-	boolean foundActiveTrip = false;
+    boolean foundActiveTrip = false;
     for(int i = 0; i < blockTrips.size(); i++) {
       BlockTripBean blockTrip = blockTrips.get(i);
 
       if(!foundActiveTrip) {
-		if(tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
-			distanceOfVehicleAlongBlock += tripStatus.getDistanceAlongTrip();
+        if(tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
+          distanceOfVehicleAlongBlock += tripStatus.getDistanceAlongTrip();
 
-			foundActiveTrip = true;
-		} else {
-			// a block trip's distance along block is the *beginning* of that block trip along the block
-			// so to get the size of this one, we have to look at the next.
-			if(i + 1 < blockTrips.size()) {
-				distanceOfVehicleAlongBlock = blockTrips.get(i + 1).getDistanceAlongBlock();
-			}
+          foundActiveTrip = true;
+        } else {
+          // a block trip's distance along block is the *beginning* of that block trip along the block
+          // so to get the size of this one, we have to look at the next.
+          if(i + 1 < blockTrips.size()) {
+            distanceOfVehicleAlongBlock = blockTrips.get(i + 1).getDistanceAlongBlock();
+          }
 
-			// bus has already served this trip, so no need to go further
-			continue;
-		}
-	  }
-      
+          // bus has already served this trip, so no need to go further
+          continue;
+        }
+      }
+
       for(BlockStopTimeBean blockStopTime : blockTrip.getBlockStopTimes()) {
         if(blockStopTime.getDistanceAlongBlock() < distanceOfVehicleAlongBlock) {
           continue;
@@ -81,11 +89,11 @@ class DummyScheduleBasedPredictionIntegrationServiceImpl implements PredictionIn
 
         predictionRecords.add(tpr);
       }
-      
+
       break;
     }
     
     return predictionRecords;
   }
-
+  
 }

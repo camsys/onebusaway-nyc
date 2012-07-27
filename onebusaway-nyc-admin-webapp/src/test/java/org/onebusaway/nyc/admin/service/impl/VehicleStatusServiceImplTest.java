@@ -73,11 +73,12 @@ public class VehicleStatusServiceImplTest {
 			      "\"distance-along-block\": 30650.503480107127," +
 			      "\"distance-along-trip\": 2374.6309121986087," +
 			      "\"next-scheduled-stop-id\": \"MTA NYCT_305226\"," +
-			      "\"next-scheduled-stop-distance\": 26.791625996334915" +
+			      "\"next-scheduled-stop-distance\": 26.791625996334915," +
+			      "\"emergency-code\": \"1\"" +
 			    "}],\"status\":\"OK\"}";
 		
 		when(remoteConnectionService.getContent("http://tdm.dev.obanyc.com/api/pullouts/list")).thenReturn(pulloutData);
-		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive.dev.obanyc.com")).thenReturn("archive.dev.obanyc.com");
+		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive")).thenReturn("archive.dev.obanyc.com");
 		when(remoteConnectionService.getContent("http://archive.dev.obanyc.com/api/record/last-known/list")).thenReturn(lastKnownData);
 		
 		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus(true);
@@ -90,13 +91,14 @@ public class VehicleStatusServiceImplTest {
 		assertEquals("Mismatched pull in time", vehicleStatus.getPullinTime(), "00:23");
 		assertEquals("Mismatched pull out time", vehicleStatus.getPulloutTime(), "05:51");
 		assertEquals("Mismatched inferred DSC", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
-		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_green.png");
+		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red.png");
+		assertEquals("Mismatched emergency status", vehicleStatus.getEmergencyStatus(), "1");
 	}
 	
 	@Test
 	public void testVehicleStatusNoData() {
 		when(remoteConnectionService.getContent("http://tdm.dev.obanyc.com/api/pullouts/list")).thenReturn("{\"pullouts\":[],\"status\":\"OK\"}");
-		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive.dev.obanyc.com")).thenReturn("archive.dev.obanyc.com");
+		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive")).thenReturn("archive.dev.obanyc.com");
 		when(remoteConnectionService.getContent("http://archive.dev.obanyc.com/api/record/last-known/list")).thenReturn("{\"records\":[],\"status\":\"OK\"}");
 		
 		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus(true);
@@ -147,7 +149,7 @@ public class VehicleStatusServiceImplTest {
 			    "}],\"status\":\"OK\"}";
 		
 		when(remoteConnectionService.getContent("http://tdm.dev.obanyc.com/api/pullouts/list")).thenReturn(pulloutData);
-		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive.dev.obanyc.com")).thenReturn("archive.dev.obanyc.com");
+		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive")).thenReturn("archive.dev.obanyc.com");
 		when(remoteConnectionService.getContent("http://archive.dev.obanyc.com/api/record/last-known/list")).thenReturn(lastKnownData);
 		
 		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus(true);
@@ -160,7 +162,7 @@ public class VehicleStatusServiceImplTest {
 		assertNull("No pull in time", vehicleStatus.getPullinTime());
 		assertNull("No pull out time", vehicleStatus.getPulloutTime());
 		assertEquals("Mismatched inferred destination information", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
-		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_green.png");
+		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red.png");
 	}
 
 }

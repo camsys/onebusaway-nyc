@@ -39,7 +39,7 @@
 	</div>
 	<div id="mainBox">
 		<div id="filterBox">
-			<label>Filter by:</label>
+			<label id="filterLabel">Filter by:</label>
 			<script type=text/x-handlebars>
 			{{#view VehicleStatus.FilterView}}
 			<ul id="filters">
@@ -79,8 +79,8 @@
 				<label class="vehicleLabel">Emergency Status</label>
 			</div>
 			<div id="filterButtons">
-				<input type="button" id="reset" value="Reset" />
-				<input type="button" id="apply" value="Apply" />
+				<input type="button" id="reset" value="Reset" {{action "resetFilters" on="click" }}/>
+				<input type="button" id="apply" value="Apply" {{action "applyFilters" on="click" }}/>
 			</div>
 			{{/view}}
 			</script>
@@ -95,6 +95,8 @@
 		</div>
 	</div>
 	<div id="bottomBox">
+	<script type=text/x-handlebars>
+		{{#view VehicleStatus.SummaryView}}
 		<div id="scheduleBox" class="infoBox">
 			<label class="vehicleLabel">Run/blocks scheduled to be active</label>
 			<div id="scheduleInfo" class="boxData">
@@ -127,4 +129,6 @@
 				<label><s:property value=""/></label>
 			</div>	
 		</div>
+		{{/view}}
+		</script>
 	</div>

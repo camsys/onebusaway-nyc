@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
@@ -23,14 +22,9 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTrac
 /**
  * Inferred block location issue while in LAYOVER_BEFORE
  * 
- * To fix:
- * Layover phase from 8:22 - 8:29 shouldn't be a deadhead given bus 
- * isn't moving.
- * 
  * @author jmaki
  *
  */
-@Ignore
 @RunWith(RunUntilSuccess.class)
 public class Trace_2433_20120723_IntegrationTest extends AbstractTraceRunner {
 

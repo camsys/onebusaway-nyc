@@ -99,4 +99,6 @@
    
    <bean id="remoteConnectionService" class="org.onebusaway.nyc.admin.service.impl.RemoteConnectionServiceImpl" />
    
+   <bean id="vehicleSearchService" class="org.onebusaway.nyc.admin.service.impl.VehicleSearchServiceImpl" />
+   
 </beans>

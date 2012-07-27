@@ -15,6 +15,18 @@
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
+import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.xwork.StringEscapeUtils;
+import org.apache.struts2.ServletActionContext;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
@@ -29,20 +41,7 @@ import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.m.model.StopResult;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.xwork.StringEscapeUtils;
-import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.net.URLEncoder;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
 
 public class IndexAction extends OneBusAwayNYCActionSupport {
 

@@ -13,32 +13,6 @@
  */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
-import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.onebusaway.utility.DateLibrary;
-
-import com.dmurph.tracking.AnalyticsConfigData;
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
-import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
-
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.org.siri.siri.ErrorDescriptionStructure;
-import uk.org.siri.siri.MonitoredStopVisitStructure;
-import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
-import uk.org.siri.siri.OtherErrorStructure;
-import uk.org.siri.siri.ServiceDelivery;
-import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
-import uk.org.siri.siri.Siri;
-import uk.org.siri.siri.StopMonitoringDeliveryStructure;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -50,6 +24,31 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.utility.DateLibrary;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.org.siri.siri.ErrorDescriptionStructure;
+import uk.org.siri.siri.MonitoredStopVisitStructure;
+import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.OtherErrorStructure;
+import uk.org.siri.siri.ServiceDelivery;
+import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
+import uk.org.siri.siri.Siri;
+import uk.org.siri.siri.StopMonitoringDeliveryStructure;
+
+import com.dmurph.tracking.AnalyticsConfigData;
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 
 public class StopMonitoringAction extends OneBusAwayNYCActionSupport 
   implements ServletRequestAware, ServletResponseAware {

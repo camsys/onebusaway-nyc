@@ -13,7 +13,6 @@ public class VehicleLastKnownRecord {
 	
 	private String vehicleAgencyId;
     private String timeReported;
-    private String timeReceived;
     private String archiveTimeReceived;
     private String operatorIdDesignator;
     private String routeIdDesignator;
@@ -28,6 +27,7 @@ public class VehicleLastKnownRecord {
     private String inferredDSC;
     private String inferredDirectionId;
     private String inferredRunId;
+    private String emergencyCode;
     
 	
 	/**
@@ -55,19 +55,6 @@ public class VehicleLastKnownRecord {
 	 */
 	public void setTimeReported(String timeReported) {
 		this.timeReported = timeReported;
-	}
-	/**
-	 * @return the timeReceived
-	 */
-	 @JsonProperty("time-received")
-	public String getTimeReceived() {
-		return timeReceived;
-	}
-	/**
-	 * @param timeReceived the timeReceived to set
-	 */
-	public void setTimeReceived(String timeReceived) {
-		this.timeReceived = timeReceived;
 	}
 	/**
 	 * @return the archiveTimeReceived
@@ -250,6 +237,19 @@ public class VehicleLastKnownRecord {
 	 */
 	public void setDestinationSignCode(String destinationSignCode) {
 		this.destinationSignCode = destinationSignCode;
+	}
+	/**
+	 * @return the emergencyCode
+	 */
+	 @JsonProperty("emergency-code")
+	public String getEmergencyCode() {
+		return emergencyCode;
+	}
+	/**
+	 * @param emergencyCode the emergencyCode to set
+	 */
+	public void setEmergencyCode(String emergencyCode) {
+		this.emergencyCode = emergencyCode;
 	}
 
 }

@@ -28,7 +28,9 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleSearchService;
+import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.transit_data_federation.services.schedule.ScheduledServiceService;
+import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -75,6 +77,7 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
@@ -94,6 +97,9 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
   
   @Autowired
   private BundleManagementService _bundleManagementService;
+
+  @Autowired
+  private PredictionIntegrationService _predictionIntegrationService;
 
   @Autowired
   private ScheduledServiceService _scheduledServiceService;
@@ -127,7 +133,14 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
   /****
    * {@link NycTransitDataService} Interface
    ****/
-  
+ 
+  @Override
+  public List<TimepointPredictionRecord> getPredictionRecordsForTrip(
+      TripStatusBean tripStatus) {
+    blockUntilBundleIsReady();
+    return _predictionIntegrationService.getPredictionsForTrip(tripStatus);
+  }
+ 
   @Override
   public String getActiveBundleId() {
     blockUntilBundleIsReady();
@@ -577,5 +590,5 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
       TripProblemReportQueryBean arg0, ETripProblemGroupBy arg1) {
     return _transitDataService.getTripProblemReportSummariesByGrouping(arg0, arg1);
   }
- 
+
 }
