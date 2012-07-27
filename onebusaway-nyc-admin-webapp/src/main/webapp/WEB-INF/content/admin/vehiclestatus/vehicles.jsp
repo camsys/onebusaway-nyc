@@ -39,7 +39,7 @@
 	</div>
 	<div id="mainBox">
 		<div id="filterBox">
-			<label>Filter by:</label>
+			<label id="filterLabel">Filter by:</label>
 			<script type=text/x-handlebars>
 			{{#view VehicleStatus.FilterView}}
 			<ul id="filters">

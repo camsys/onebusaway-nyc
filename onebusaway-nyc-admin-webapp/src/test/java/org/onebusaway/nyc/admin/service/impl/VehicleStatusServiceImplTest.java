@@ -78,7 +78,7 @@ public class VehicleStatusServiceImplTest {
 			    "}],\"status\":\"OK\"}";
 		
 		when(remoteConnectionService.getContent("http://tdm.dev.obanyc.com/api/pullouts/list")).thenReturn(pulloutData);
-		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive.dev.obanyc.com")).thenReturn("archive.dev.obanyc.com");
+		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive")).thenReturn("archive.dev.obanyc.com");
 		when(remoteConnectionService.getContent("http://archive.dev.obanyc.com/api/record/last-known/list")).thenReturn(lastKnownData);
 		
 		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus(true);
@@ -98,7 +98,7 @@ public class VehicleStatusServiceImplTest {
 	@Test
 	public void testVehicleStatusNoData() {
 		when(remoteConnectionService.getContent("http://tdm.dev.obanyc.com/api/pullouts/list")).thenReturn("{\"pullouts\":[],\"status\":\"OK\"}");
-		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive.dev.obanyc.com")).thenReturn("archive.dev.obanyc.com");
+		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive")).thenReturn("archive.dev.obanyc.com");
 		when(remoteConnectionService.getContent("http://archive.dev.obanyc.com/api/record/last-known/list")).thenReturn("{\"records\":[],\"status\":\"OK\"}");
 		
 		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus(true);
@@ -149,7 +149,7 @@ public class VehicleStatusServiceImplTest {
 			    "}],\"status\":\"OK\"}";
 		
 		when(remoteConnectionService.getContent("http://tdm.dev.obanyc.com/api/pullouts/list")).thenReturn(pulloutData);
-		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive.dev.obanyc.com")).thenReturn("archive.dev.obanyc.com");
+		when(configurationService.getConfigurationValueAsString("operational-api.host", "archive")).thenReturn("archive.dev.obanyc.com");
 		when(remoteConnectionService.getContent("http://archive.dev.obanyc.com/api/record/last-known/list")).thenReturn(lastKnownData);
 		
 		List<VehicleStatus> vehicleStatusRecords = service.getVehicleStatus(true);
