@@ -45,7 +45,7 @@ VehicleStatus.FilterView = Ember.View.extend({
 	resetFilters: function() {
 		var filters = $("#filters");
 		filters.find("input:text").val("");
-		filters.find("select").val("");
+		filters.find("select").val("all");
 		$("#emergencyBox #emergencyCheck").removeAttr("checked");
 		
 	},
@@ -80,6 +80,10 @@ VehicleStatus.TopBarView = Ember.View.extend({
 		}});
 	},
 	controllerBinding: "VehicleStatus.TopBarController"
+});
+
+VehicleStatus.SummaryView = Ember.View.extend({
+	controllerBinding: "VehicleStatus.SummaryController"
 });
 
 VehicleStatus.ParametersView = Ember.View.extend({
@@ -134,7 +138,21 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			pager: "#pager",
 			loadComplete: function() {
 				var lastUpdateTime = new Date();
-				var time = lastUpdateTime.getHours() + ":" + lastUpdateTime.getMinutes() + " , " +lastUpdateTime.toDateString();
+				var time = function() {
+					var hours = lastUpdateTime.getHours();
+					var meridian;
+					if(hours > 12) {
+						hours = hours - 12;
+						meridian = "PM";
+					} else {
+						meridian = "AM";
+					}
+					var minutes = lastUpdateTime.getMinutes();
+					if(minutes < 10) {
+						minutes = "0" + minutes;
+					}
+					return  hours + ":" +  minutes + " " +meridian + " , " +lastUpdateTime.toDateString();
+				}
 				$("#lastUpdateBox #lastUpdate").text(time);
 			},
 			postData: {
@@ -198,6 +216,10 @@ VehicleStatus.TopBarController = Ember.ArrayController.create({
 		$("#vehicleGrid").jqGrid('setGridParam', {search:false, page:1});
 		$("#vehicleGrid").trigger("reloadGrid");
 	}
+});
+
+VehicleStatus.SummaryController = Ember.ArrayController.create({
+	content: []
 });
 
 /******************* Model ************************************/

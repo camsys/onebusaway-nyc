@@ -95,6 +95,8 @@
 		</div>
 	</div>
 	<div id="bottomBox">
+	<script type=text/x-handlebars>
+		{{#view VehicleStatus.SummaryView}}
 		<div id="scheduleBox" class="infoBox">
 			<label class="vehicleLabel">Run/blocks scheduled to be active</label>
 			<div id="scheduleInfo" class="boxData">
@@ -127,4 +129,6 @@
 				<label><s:property value=""/></label>
 			</div>	
 		</div>
+		{{/view}}
+		</script>
 	</div>
