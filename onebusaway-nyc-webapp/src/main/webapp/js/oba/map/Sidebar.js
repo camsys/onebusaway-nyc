@@ -637,24 +637,34 @@ OBA.Sidebar = function() {
 				if(serviceAlerts.length === 0) {
 					serviceAlertsContainer.hide();
 				} else {
-					serviceAlertsContainer.show();
 					
 					var serviceAlertsList = serviceAlertsContainer.find("ul");
 					serviceAlertsList.empty();
+					
+					var showAlerts = false;
 
 					jQuery.each(serviceAlerts, function(_, serviceAlert) {
-						var text = null;
 						
-						if(typeof serviceAlert.Description !== 'undefined') {
-							text = serviceAlert.Description;
-						} else if(typeof serviceAlert.Summary !== 'undefined') {
-							text = serviceAlert.Summary;
-						}
-						
-						if(text !== null) {
-							serviceAlertsList.append(jQuery("<li></li>").html(text.replace(/\n/g, "<br/>")));
+						// If this is not a global alert, display it
+						if (!serviceAlert.Affects.Operators || (serviceAlert.Affects.Operators && !serviceAlert.Affects.Operators.hasOwnProperty("AllOperators"))) {
+							var text = null;
+							
+							if(typeof serviceAlert.Description !== 'undefined') {
+								text = serviceAlert.Description;
+							} else if(typeof serviceAlert.Summary !== 'undefined') {
+								text = serviceAlert.Summary;
+							}
+							
+							if(text !== null) {
+								serviceAlertsList.append(jQuery("<li></li>").html(text.replace(/\n/g, "<br/>")));
+								showAlerts = true;
+							}
 						}
 					});
+					
+					if (showAlerts) {
+						serviceAlertsContainer.show();
+					}
 				}
 			});
 		}

@@ -267,6 +267,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       serviceDelivery.setResponseTimestamp(getTime());
       
       _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _nycTransitDataService, stopId);
+      _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(serviceDelivery, _realtimeService);
     }
 
     Siri siri = new Siri();

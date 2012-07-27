@@ -274,6 +274,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
       _serviceAlertsHelper.addSituationExchangeToServiceDelivery(serviceDelivery,
           activities, _nycTransitDataService, routeId);
+      _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(serviceDelivery, _realtimeService);
     }
 
     Siri siri = new Siri();
