@@ -36,7 +36,7 @@ import org.springframework.remoting.RemoteConnectFailureException;
 public class VehicleStatusServiceImpl implements VehicleStatusService {
 
 	private static Logger log = LoggerFactory.getLogger(VehicleStatusServiceImpl.class);
-	private static final String DEFAULT_OPERATIONAL_API_HOST = "archive.dev.obanyc.com";
+	private static final String DEFAULT_OPERATIONAL_API_HOST = "archive";
 	
 	private ConfigurationService configurationService;
 	private RemoteConnectionService remoteConnectionService;
