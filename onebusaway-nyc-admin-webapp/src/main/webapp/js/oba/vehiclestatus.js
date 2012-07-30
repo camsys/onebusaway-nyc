@@ -14,13 +14,41 @@
  * the License.
  */
 
+function showVehiclePopup() {
+	var id = jQuery("#vehicleGrid").jqGrid('getGridParam', 'selrow');
+	var vehicleId = jQuery("#vehicleGrid").jqGrid('getRowData', id).vehicleId;
+	if (vehicleId == undefined || vehicleId == "") { 
+	  //alert("vehicleId=" + vehicleId);
+	  return;
+	}
+	
+	//Change these values to style your modal popup
+	var align = 'center';										//Valid values; left, right, center
+	var top = 100; 												//Use an integer (in pixels)
+	var padding = 10;											//Use an integer (in pixels)
+	var backgroundColor = '#FFFFFF'; 							//Use any hex code
+	var borderColor = '#000000'; 								//Use any hex code
+	var borderWeight = 4; 										//Use an integer (in pixels)
+	var borderRadius = 5; 										//Use an integer (in pixels)
+	var fadeOutTime = 300; 										//Use any integer, 0 = no fade
+	var disableColor = '#666666'; 								//Use any hex code
+	var disableOpacity = 40; 									//Valid range 0-100
+	var loadingImage = '../../css/img/loading.gif';	//Use relative path from this page	
+	
+	var source = './popup!input.action?vehicleId=' + vehicleId;	//Refer to any page on your server, external pages are not valid
+	var width = 500; 					//Use an integer (in pixels)
+	modalPopup(align, top, width, padding, disableColor, disableOpacity, backgroundColor, borderColor, borderWeight, borderRadius, fadeOutTime, source, loadingImage, createMaps);
+
+};
 
 var VehicleStatus = Ember.Application.create({
 	ready: function() {
 		$("#menu").tabs();
+		
 	}
 		
 });
+
 
 /******************* Views ************************************/
 VehicleStatus.VehicleView = Ember.View.extend({
@@ -114,11 +142,11 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			           {name:'inferredState',index:'inferredState', width:100, sortable:false}, 
 			           {name:'inferredDestination',index:'inferredDestination', width:170, sortable:false}, 
 			           {name:'observedDSC',index:'observedDSC', width:80}, 
-			           {name:'pulloutTime',index:'pulloutTime', width:70},
-			           {name:'pullinTime',index:'pullinTime', width:70},
+			           {name:'formattedPulloutTime',index:'pulloutTime', width:70},
+			           {name:'formattedPullinTime',index:'pullinTime', width:70},
 			           {name:'details',index:'details', width:65, 
 			        	formatter: function(cellValue, options) {
-			        	   var linkHtml = "<a href='#' style='color:blue'>" + cellValue + "</a>";
+			        	   var linkHtml = "<a href='javascript:showVehiclePopup();' style='color:blue'>" + cellValue + "</a>";
 			        	   return linkHtml;
 			           }, sortable:false}
 			         ],
@@ -135,7 +163,7 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				repeatitems: false
 			},
 			pager: "#pager",
-			loadComplete: function() {
+			loadComplete: function(data) {
 				var lastUpdateTime = new Date();
 				var time = function() {
 					var hours = lastUpdateTime.getHours();
@@ -152,7 +180,17 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 					}
 					return  hours + ":" +  minutes + " " +meridian + " , " +lastUpdateTime.toDateString();
 				}
+				
 				$("#lastUpdateBox #lastUpdate").text(time);
+				
+				//Do all the required data post processing here
+				$.each(data.rows, function(i) {
+					//Change observedDSC color to red if it is different from inferredDSC
+					if(data.rows[i].inferredDSC != null && 
+							(data.rows[i].observedDSC != data.rows[i].inferredDSC)) {
+						grid.jqGrid('setCell', i+1, "observedDSC", "", {color:'red'});
+					}
+				});
 				
 				//load statistics data once grid is refreshed 
 				VehicleStatus.SummaryController.getStatistics();

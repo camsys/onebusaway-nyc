@@ -22,8 +22,12 @@ public class VehicleStatusBuilder {
 	public VehicleStatus buildVehicleStatus(VehiclePullout pullout, VehicleLastKnownRecord lastknownRecord) {
 		VehicleStatus vehicleStatus = new VehicleStatus();
 		if(pullout != null) {
-			vehicleStatus.setPullinTime(extractTime(pullout.getPullinTime()));
-			vehicleStatus.setPulloutTime(extractTime(pullout.getPulloutTime()));
+			//Set the actual times for filtering
+			vehicleStatus.setPullinTime(pullout.getPullinTime());
+			vehicleStatus.setPulloutTime(pullout.getPulloutTime());
+			//Set formatted time for display
+			vehicleStatus.setFormattedPullinTime(extractTime(pullout.getPullinTime()));
+			vehicleStatus.setFormattedPulloutTime(extractTime(pullout.getPulloutTime()));
 		}
 		vehicleStatus.setVehicleId(lastknownRecord.getVehicleId());
 
@@ -31,15 +35,25 @@ public class VehicleStatusBuilder {
 		vehicleStatus.setInferredDestination(inferredDestination);
 
 		vehicleStatus.setInferredState(getInferredState(lastknownRecord));
+		
 		vehicleStatus.setObservedDSC(lastknownRecord.getDestinationSignCode());
+		
 		vehicleStatus.setDetails("Details");
+		
 		vehicleStatus.setRoute(getRoute(lastknownRecord.getInferredRunId()));
+		
 		vehicleStatus.setDepot(lastknownRecord.getDepotId());
 		vehicleStatus.setEmergencyStatus(lastknownRecord.getEmergencyCode());
+		
 		vehicleStatus.setLastUpdate(getLastUpdate(lastknownRecord.getTimeReported()));
+		
 		vehicleStatus.setStatus(getStatus(lastknownRecord.getInferredPhase(), 
 				lastknownRecord.getTimeReported()));
+		
 		vehicleStatus.setTimeReceived(lastknownRecord.getTimeReceived());
+		
+		vehicleStatus.setInferredDSC(lastknownRecord.getInferredDSC());
+		
 		return vehicleStatus;
 	}
 

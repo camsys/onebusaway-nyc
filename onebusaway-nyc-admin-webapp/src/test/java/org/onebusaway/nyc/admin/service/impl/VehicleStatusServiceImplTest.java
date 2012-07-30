@@ -88,8 +88,8 @@ public class VehicleStatusServiceImplTest {
 		assertEquals("Mismatched vehicle id", vehicleStatus.getVehicleId(), "5638");
 		assertEquals("Mismatched inferred state", vehicleStatus.getInferredState(), "IN PROGRESS");
 		assertEquals("Mismatched observed DSC", vehicleStatus.getObservedDSC(), "4611");
-		assertEquals("Mismatched pull in time", vehicleStatus.getPullinTime(), "00:23");
-		assertEquals("Mismatched pull out time", vehicleStatus.getPulloutTime(), "05:51");
+		assertEquals("Mismatched pull in time", vehicleStatus.getFormattedPullinTime(), "00:23");
+		assertEquals("Mismatched pull out time", vehicleStatus.getFormattedPulloutTime(), "05:51");
 		assertEquals("Mismatched inferred DSC", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
 		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red.png");
 		assertEquals("Mismatched emergency status", vehicleStatus.getEmergencyStatus(), "1");

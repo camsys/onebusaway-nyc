@@ -24,6 +24,7 @@
         <pattern>/admin/bundles/manage-bundles!downloadOutputFile.action*</pattern>
         <pattern>/admin/bundles/manage-bundles!buildOutputZip.action*</pattern>
         <pattern>/admin/bundles/manage-bundles!downloadValidateFile.action*</pattern>
+        <pattern>/admin/vehiclestatus/popup*</pattern>
 	</excludes>
 
 	<decorator name="decorate" page="decorate.jspx">
