@@ -3,6 +3,7 @@ package org.onebusaway.nyc.admin.service;
 import java.util.List;
 import java.util.Map;
 
+import org.onebusaway.nyc.admin.model.ui.VehicleDetail;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 import org.onebusaway.nyc.admin.util.VehicleSearchParameters;
 
@@ -29,5 +30,12 @@ public interface VehicleStatusService {
 	 * @return results matching the parameters, empty list if the cache is empty
 	 */
 	List<VehicleStatus> search(Map<VehicleSearchParameters, String> searchParameters, boolean newSearch);
+
+	/**
+	 * Make a web service call to report archive server about a specific vehicle.
+	 * @param vehicleId
+	 * @return
+	 */
+  VehicleDetail getVehicleDetail(String vehicleId);
 
 }

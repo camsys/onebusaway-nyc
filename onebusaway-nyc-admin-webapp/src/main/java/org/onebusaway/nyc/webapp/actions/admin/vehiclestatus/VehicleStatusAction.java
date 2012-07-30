@@ -14,8 +14,11 @@ import org.onebusaway.nyc.admin.model.VehicleGridResponse;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 import org.onebusaway.nyc.admin.service.VehicleStatusService;
 import org.onebusaway.nyc.admin.util.VehicleSearchParameters;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -29,11 +32,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 }
 )
 public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
-	
+
+  private static Logger _log = LoggerFactory.getLogger(VehicleStatusAction.class);	
 	private static final long serialVersionUID = 1L;
 	
 	private VehicleStatusService vehicleStatusService;
 	private VehicleGridResponse vehicleGridResponse;
+	private ConfigurationService configurationService;
+	
 	//Request URL parameters
 	private String rows;
 	private String page;
@@ -47,7 +53,11 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	private String emergencyStatus;
 	
 	List<VehicleStatus> vehicleStatusRecords;
-	
+
+ public String getGoogleMapsClientId() {
+    return configurationService.getConfigurationValueAsString("display.googleMapsClientId", "");    
+  }
+
 	public String getVehicleData() {
 		List<VehicleStatus> vehiclesPerPage = null;
 		Integer pageNum = new Integer(page);
@@ -81,7 +91,6 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 				total = vehicleStatusRecords.size();
 			}
 		}
-		
 		buildResponse(vehiclesPerPage, pageNum, rowsPerPage, total);
 		
 		return "vehicles";
@@ -139,6 +148,11 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	@Autowired
 	public void setVehicleStatusService(VehicleStatusService vehicleStatusService) {
 		this.vehicleStatusService = vehicleStatusService;
+	}
+
+	@Autowired
+	public void setConfigurationService(ConfigurationService configurationService) {
+	  this.configurationService = configurationService;
 	}
 	
 	/**

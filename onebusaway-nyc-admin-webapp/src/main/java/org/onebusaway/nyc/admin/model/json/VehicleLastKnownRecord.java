@@ -28,7 +28,9 @@ public class VehicleLastKnownRecord {
     private String inferredDirectionId;
     private String inferredRunId;
     private String emergencyCode;
-    
+    private Double latitude;
+    private Double longitude;
+    private Double direction;
 	
 	/**
 	 * @return the vehicleAgencyId
@@ -251,5 +253,26 @@ public class VehicleLastKnownRecord {
 	public void setEmergencyCode(String emergencyCode) {
 		this.emergencyCode = emergencyCode;
 	}
+	@JsonProperty("latitude")
+  public Double getLatitude() {
+    return latitude;
+  }
+  public void setLatitude(Double latitude) {
+    this.latitude = latitude;
+  }
+  @JsonProperty("longitude")
+  public Double getLongitude() {
+    return longitude;
+  }
+  public void setLongitude(Double longitude) {
+    this.longitude = longitude;
+  }
+  @JsonProperty("direction-deg")
+  public Double getDirection() {
+    return direction;
+  }
+  public void setDirection(Double direction) {
+    this.direction = direction;
+  }
 
 }
