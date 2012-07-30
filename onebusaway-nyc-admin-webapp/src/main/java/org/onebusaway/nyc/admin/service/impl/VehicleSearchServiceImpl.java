@@ -11,6 +11,7 @@ import org.onebusaway.nyc.admin.search.impl.DSCFilter;
 import org.onebusaway.nyc.admin.search.impl.DepotFilter;
 import org.onebusaway.nyc.admin.search.impl.EmergencyStatusFilter;
 import org.onebusaway.nyc.admin.search.impl.InferredStateFilter;
+import org.onebusaway.nyc.admin.search.impl.PulloutStatusFilter;
 import org.onebusaway.nyc.admin.search.impl.RevenueServiceFilter;
 import org.onebusaway.nyc.admin.search.impl.RouteFilter;
 import org.onebusaway.nyc.admin.search.impl.TimeWindowFilter;
@@ -125,7 +126,7 @@ public class VehicleSearchServiceImpl implements VehicleSearchService {
 			filters.add(new RouteFilter(route));
 		}
 		String inferredState = searchParameters.get(VehicleSearchParameters.INFERRED_STATE);
-		if(StringUtils.isNotBlank(inferredState) && !inferredState.equalsIgnoreCase("All")) {
+		if(!inferredState.equalsIgnoreCase("All")) {
 			filters.add(new InferredStateFilter(inferredState));
 		}
 		String dsc = searchParameters.get(VehicleSearchParameters.DSC);
@@ -133,8 +134,12 @@ public class VehicleSearchServiceImpl implements VehicleSearchService {
 			filters.add(new DSCFilter(dsc));
 		}
 		String depot = searchParameters.get(VehicleSearchParameters.DEPOT);
-		if(StringUtils.isNotBlank(depot) && !depot.equalsIgnoreCase("All")) {
+		if(!depot.equalsIgnoreCase("All")) {
 			filters.add(new DepotFilter(depot));
+		}
+		String pulloutStatus = searchParameters.get(VehicleSearchParameters.PULLOUT_STATUS);
+		if(!pulloutStatus.equalsIgnoreCase("All")) {
+			filters.add(new PulloutStatusFilter());
 		}
 		String emergencyStatus = searchParameters.get(VehicleSearchParameters.EMERGENCY_STATUS);
 		if(emergencyStatus.equalsIgnoreCase("true")) {

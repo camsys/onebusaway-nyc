@@ -114,8 +114,8 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			           {name:'inferredState',index:'inferredState', width:100, sortable:false}, 
 			           {name:'inferredDestination',index:'inferredDestination', width:170, sortable:false}, 
 			           {name:'observedDSC',index:'observedDSC', width:80}, 
-			           {name:'pulloutTime',index:'pulloutTime', width:70},
-			           {name:'pullinTime',index:'pullinTime', width:70},
+			           {name:'formattedPulloutTime',index:'pulloutTime', width:70},
+			           {name:'formattedPullinTime',index:'pullinTime', width:70},
 			           {name:'details',index:'details', width:65, 
 			        	formatter: function(cellValue, options) {
 			        	   var linkHtml = "<a href='#' style='color:blue'>" + cellValue + "</a>";
@@ -135,7 +135,7 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				repeatitems: false
 			},
 			pager: "#pager",
-			loadComplete: function() {
+			loadComplete: function(data) {
 				var lastUpdateTime = new Date();
 				var time = function() {
 					var hours = lastUpdateTime.getHours();
@@ -152,7 +152,17 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 					}
 					return  hours + ":" +  minutes + " " +meridian + " , " +lastUpdateTime.toDateString();
 				}
+				
 				$("#lastUpdateBox #lastUpdate").text(time);
+				
+				//Do all the required data post processing here
+				$.each(data.rows, function(i) {
+					//Change observedDSC color to red if it is different from inferredDSC
+					if(data.rows[i].inferredDSC != null && 
+							(data.rows[i].observedDSC != data.rows[i].inferredDSC)) {
+						grid.jqGrid('setCell', i+1, "observedDSC", "", {color:'red'});
+					}
+				});
 				
 				//load statistics data once grid is refreshed 
 				VehicleStatus.SummaryController.getStatistics();

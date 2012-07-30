@@ -11,6 +11,7 @@ public class VehicleStatus {
 	private String vehicleId;
 	private String lastUpdate;
 	private String inferredState;
+	private String inferredDSC;
 	private String inferredDestination;
 	private String observedDSC;
 	private String pullinTime;
@@ -20,6 +21,8 @@ public class VehicleStatus {
 	private String depot;
 	private String emergencyStatus;
 	private String timeReceived;
+	private String formattedPulloutTime;
+	private String formattedPullinTime;
 	
 	/**
 	 * @return the vehicleId
@@ -176,6 +179,42 @@ public class VehicleStatus {
 	 */
 	public void setTimeReceived(String timeReceived) {
 		this.timeReceived = timeReceived;
+	}
+	/**
+	 * @return the formattedPulloutTime
+	 */
+	public String getFormattedPulloutTime() {
+		return formattedPulloutTime;
+	}
+	/**
+	 * @param formattedPulloutTime the formattedPulloutTime to set
+	 */
+	public void setFormattedPulloutTime(String formattedPulloutTime) {
+		this.formattedPulloutTime = formattedPulloutTime;
+	}
+	/**
+	 * @return the formattedPullinTime
+	 */
+	public String getFormattedPullinTime() {
+		return formattedPullinTime;
+	}
+	/**
+	 * @param formattedPullinTime the formattedPullinTime to set
+	 */
+	public void setFormattedPullinTime(String formattedPullinTime) {
+		this.formattedPullinTime = formattedPullinTime;
+	}
+	/**
+	 * @return the inferredDSC
+	 */
+	public String getInferredDSC() {
+		return inferredDSC;
+	}
+	/**
+	 * @param inferredDSC the inferredDSC to set
+	 */
+	public void setInferredDSC(String inferredDSC) {
+		this.inferredDSC = inferredDSC;
 	}
 	
 	
