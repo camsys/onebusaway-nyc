@@ -233,13 +233,16 @@ public class AbstractTraceRunner {
     	
 		Coordinate reportedLocation = new Coordinate(expectedResult.getLat(), expectedResult.getLon());
 		Coordinate ourLocation = new Coordinate(ourResult.getInferredBlockLat(), ourResult.getInferredBlockLon());
-
-		String phase = expectedResult.getActualPhase();
-		if(EVehiclePhase.IN_PROGRESS.equals(phase) 
-				|| EVehiclePhase.LAYOVER_BEFORE.equals(phase)
-				|| EVehiclePhase.LAYOVER_DURING.equals(phase)) {
-	    	System.out.println("LOCATION: expected=" + reportedLocation + ", inferred=" + ourLocation);
-			assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
+		
+		String[] _acceptablePhases = StringUtils.split(expectedResult.getActualPhase().toUpperCase(), "+");
+		ArrayList<String> acceptablePhases = new ArrayList<String>();
+		Collections.addAll(acceptablePhases, _acceptablePhases);
+		for(String acceptablePhase : acceptablePhases) {
+			if(ourResult.getInferredPhase().toUpperCase().startsWith(acceptablePhase)) {
+			    System.out.println("LOCATION: expected=" + reportedLocation + ", inferred=" + ourLocation);
+				assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
+				break;
+			}
 		}
       }
       
