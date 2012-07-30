@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -18,6 +17,7 @@ import org.joda.time.DateMidnight;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UTSUtil;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsCrewAssignsToDataCreator;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentData;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.json.OperatorAssignmentFromTcip;
@@ -44,10 +44,14 @@ import com.sun.jersey.api.spring.Autowire;
 public class CrewResource {
 
   public CrewResource() throws IOException {
-    mostRecentPicker = new UtsCrewUploadsFilePicker(System.getProperty("tdm.crewAssignsUploadDir"));
+    if (System.getProperty("tdm.crewAssignsUploadDir") != null) {
+      mostRecentPicker = new UtsCrewUploadsFilePicker(System.getProperty("tdm.crewAssignsUploadDir"));
+    }
     
     try {
-      depotIdTranslator = new DepotIdTranslator(new File(System.getProperty("tdm.depotIdTranslationFile")));
+      if (System.getProperty("tdm.depotIdTranslationFile") != null) {
+        depotIdTranslator = new DepotIdTranslator(new File(System.getProperty("tdm.depotIdTranslationFile")));
+      }
     } catch (IOException e) {
       // Set depotIdTranslator to null and otherwise do nothing.
       // Everything works fine without the depot id translator.
@@ -109,7 +113,7 @@ public class CrewResource {
 
     ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> tcipToJsonConverter = new OperatorAssignmentFromTcip();
 
-    List<OperatorAssignment> jsonOpAssigns = listConvertOpAssignTcipToJson(tcipToJsonConverter,
+    List<OperatorAssignment> jsonOpAssigns = new UTSUtil().listConvertOpAssignTcipToJson(tcipToJsonConverter,
         data.getOperatorAssignmentsByServiceDate(serviceDate)); // grab the
                                                                 // assigns for
                                                                 // this date
@@ -158,23 +162,6 @@ public class CrewResource {
     
     return process.generateDataObject();
   }
-  /*
-   * This method also exists in the same form in
-   * UtsCrewAssignsToJsonOutputProcess
-   */
-  private List<OperatorAssignment> listConvertOpAssignTcipToJson(
-      ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> conv,
-      List<SCHOperatorAssignment> inputAssigns) {
-    
-    _log.debug("About to convert " + inputAssigns.size() + " SCHOperatorAssignments to OperatorAssignment using " + conv.getClass().getName());
-    List<OperatorAssignment> outputAssigns = new ArrayList<OperatorAssignment>();
 
-    for (SCHOperatorAssignment assignment : inputAssigns) {
-      outputAssigns.add(conv.convert(assignment));
-    }
-    
-    _log.debug("Done converting operatorassignments to tcip.");
-    return outputAssigns;
-  }
 
 }

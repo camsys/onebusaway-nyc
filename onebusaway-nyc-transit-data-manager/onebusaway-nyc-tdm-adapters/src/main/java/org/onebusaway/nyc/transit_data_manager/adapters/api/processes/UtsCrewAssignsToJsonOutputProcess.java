@@ -68,7 +68,7 @@ public class UtsCrewAssignsToJsonOutputProcess extends
       DateTimeFormatter dateDTF = ISODateTimeFormat.date();
       assignsForDateJson.setServiceDate(dateDTF.print(thisDate));
 
-      jsonOpAssigns = listConvertOpAssignTcipToJson(tcipToJsonConverter,
+      jsonOpAssigns = new UTSUtil().listConvertOpAssignTcipToJson(tcipToJsonConverter,
           data.getOperatorAssignmentsByServiceDate(thisDate)); // grab the
                                                                // assigns for
                                                                // this date and
@@ -88,20 +88,6 @@ public class UtsCrewAssignsToJsonOutputProcess extends
         FieldNamingPolicy.LOWER_CASE_WITH_DASHES).setPrettyPrinting().create();
     output = gson.toJson(allAssignsMessage);
 
-  }
-
-  private List<OperatorAssignment> listConvertOpAssignTcipToJson(
-      ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> conv,
-      List<SCHOperatorAssignment> inputAssigns) {
-    List<OperatorAssignment> outputAssigns = new ArrayList<OperatorAssignment>();
-
-    Iterator<SCHOperatorAssignment> assignTcipIt = inputAssigns.iterator();
-
-    while (assignTcipIt.hasNext()) {
-      outputAssigns.add(conv.convert(assignTcipIt.next()));
-    }
-
-    return outputAssigns;
   }
 
 }

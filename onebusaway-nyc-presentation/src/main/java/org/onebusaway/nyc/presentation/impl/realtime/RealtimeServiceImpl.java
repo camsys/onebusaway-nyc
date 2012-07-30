@@ -307,6 +307,28 @@ public class RealtimeServiceImpl implements RealtimeService {
   
   @Override
   public List<ServiceAlertBean> getServiceAlertsGlobal() {
+    
+//    NaturalLanguageStringBean naturalLanguageStringBean = new NaturalLanguageStringBean();
+//    naturalLanguageStringBean.setLang("en");
+//    naturalLanguageStringBean.setValue("This is a test global alert");
+//    List<NaturalLanguageStringBean> naturalLanguageStringBeans = new ArrayList<NaturalLanguageStringBean>();
+//    naturalLanguageStringBeans.add(naturalLanguageStringBean);
+//    
+//    SituationAffectsBean situationAffectsBean = new SituationAffectsBean();
+//    situationAffectsBean.setAgencyId("AllAgencies");
+//    situationAffectsBean.setRouteId("AllRoutes");
+//    List<SituationAffectsBean> situationAffectsBeans = new ArrayList<SituationAffectsBean>();
+//    situationAffectsBeans.add(situationAffectsBean);
+//    
+//    ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
+//    serviceAlertBean.setId("aGlobalAlertId");
+//    serviceAlertBean.setDescriptions(naturalLanguageStringBeans);
+//    serviceAlertBean.setAllAffects(situationAffectsBeans);
+//    List<ServiceAlertBean> serviceAlertBeans = new ArrayList<ServiceAlertBean>();
+//    serviceAlertBeans.add(serviceAlertBean);
+//    
+//    return serviceAlertBeans;
+    
     return null;
   }
   

@@ -215,7 +215,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		function(json) {
 			// service alerts
 			if(typeof serviceAlertCallbackFn === 'function') {
-				if(typeof json.Siri.ServiceDelivery.SituationExchangeDelivery !== 'undefined') {
+				if(typeof json.Siri.ServiceDelivery.SituationExchangeDelivery !== 'undefined' && json.Siri.ServiceDelivery.SituationExchangeDelivery.length > 0) {
 					serviceAlertCallbackFn(routeId, 
 						json.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement);
 				}

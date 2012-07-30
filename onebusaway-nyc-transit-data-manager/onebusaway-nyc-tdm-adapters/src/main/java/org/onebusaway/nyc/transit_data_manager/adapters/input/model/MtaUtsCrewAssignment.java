@@ -11,7 +11,8 @@ import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
 public class MtaUtsCrewAssignment {
   private UtsMappingTool mappingTool = null;
-
+  private static Pattern LETTERS_NUMBERS_PATTERN = Pattern.compile("^(\\D*)(\\d+)$");
+  private static Pattern ROUTE_RUN_PATTERN = Pattern.compile("^(.*)-(.*)$");
   public MtaUtsCrewAssignment() {
     mappingTool = new UtsMappingTool();
   }
@@ -42,8 +43,15 @@ public class MtaUtsCrewAssignment {
     this.routeField = routeField;
   }
 
-  public void setRunNumberField(String runNumberField) {
-    this.runNumberField = runNumberField;
+  public void setRunNumberField(String value) {
+    
+    runNumberField = stripLeadingZeros(value);
+  }
+
+  private String stripLeadingZeros(String s) {
+    if (s.startsWith("0"))
+      return stripLeadingZeros(s.substring(1, s.length()));
+    return s;
   }
 
   public void setServIdField(String servIdField) {
@@ -106,8 +114,7 @@ public class MtaUtsCrewAssignment {
     try {
       passNumberNumericPortion = Long.parseLong(value);
     } catch (NumberFormatException nfea) {
-      Pattern lettersNumbersPattern = Pattern.compile("^(\\D*)(\\d+)$");
-      Matcher matcher = lettersNumbersPattern.matcher(value);
+      Matcher matcher = LETTERS_NUMBERS_PATTERN.matcher(value);
       if (matcher.find()) {
         passNumberLeadingLetters = matcher.group(1); // The leading letter(s)
         String passNumberNumStr = matcher.group(2); // the Number
