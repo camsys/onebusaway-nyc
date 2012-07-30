@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.presentation.impl.service_alerts;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.siri.OneBusAwayConsequence;
 import org.onebusaway.transit_data.model.ListBean;
@@ -226,18 +227,50 @@ public class ServiceAlertsHelper {
       Map<String, PtSituationElementStructure> ptSituationElements) {
     if (serviceDelivery == null || ptSituationElements == null)
       return;
-    SituationExchangeDeliveryStructure situationExchangeDelivery = new SituationExchangeDeliveryStructure();
-    Situations situations = new Situations();
-    situationExchangeDelivery.setSituations(situations);
-
+    
+    SituationExchangeDeliveryStructure situationExchangeDeliveryStructure;
+    // Check if the serviceDelivery already has a situationDeliveryStructure in its list
+    if (serviceDelivery.getSituationExchangeDelivery().size() > 0) {
+      // It does, so use it
+      situationExchangeDeliveryStructure = serviceDelivery.getSituationExchangeDelivery().get(0);
+    } else {
+      // It does not, so create a new one and use it
+      situationExchangeDeliveryStructure = new SituationExchangeDeliveryStructure();
+    }
+    
+    // Try to get the situation object from our situationExchangeDeliveryStructure
+    Situations situations = situationExchangeDeliveryStructure.getSituations();
+    // If it contained no situation object, create a new one and add it to our situationExchangeDeliveryStructure
+    if (situations == null) {
+      situations = new Situations();
+      situationExchangeDeliveryStructure.setSituations(situations);
+    }
+    
+    // Iterate through our ptSituationElements and add them to our situations object
     for (PtSituationElementStructure p : ptSituationElements.values()) {
       situations.getPtSituationElement().add(p);
     }
 
-    if (situationExchangeDelivery.getSituations() != null
-        && !CollectionUtils.isEmpty(situationExchangeDelivery.getSituations().getPtSituationElement()))
-      serviceDelivery.getSituationExchangeDelivery().add(
-          situationExchangeDelivery);
+    // If our situationExchangeDeliveryStructure has a situations object...
+    if (situationExchangeDeliveryStructure.getSituations() != null
+        // AND our situations object's ptSituationsElement is not empty
+        && !CollectionUtils.isEmpty(situationExchangeDeliveryStructure.getSituations().getPtSituationElement())
+        // AND our serviceDelivery doesn't already contain our situationExchangeDeliveryStructure
+        && !serviceDelivery.getSituationExchangeDelivery().contains(situationExchangeDeliveryStructure)) {
+      
+      // Add our situationExchangeDeliveryStructure to our serviceDelivery
+      serviceDelivery.getSituationExchangeDelivery().add(situationExchangeDeliveryStructure);
+    }
+  }
+  
+  public void addGlobalServiceAlertsToServiceDelivery(ServiceDelivery serviceDelivery, RealtimeService realtimeService) {
+    List<ServiceAlertBean> serviceAlertBeans = realtimeService.getServiceAlertsGlobal();
+    if (serviceAlertBeans == null) return;
+    Map<String, PtSituationElementStructure> ptSituationElements = new HashMap<String, PtSituationElementStructure>();
+    for (ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
+      ptSituationElements.put(serviceAlertBean.getId(), getServiceAlertBeanAsPtSituationElementStructure(serviceAlertBean));
+    }
+    addPtSituationElementsToServiceDelivery(serviceDelivery, ptSituationElements);
   }
 
   public PtSituationElementStructure getServiceAlertBeanAsPtSituationElementStructure(

@@ -24,9 +24,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTrac
  * Test to ensure lat/long of bus when in layover doesn't drift from inferred locations.
  * Also tests formal inference.
  * 
- * To Fix:
- * The formalness of the inference--should be matching proper trip, as indicated.
- * 
  * @author jmaki
  *
  */

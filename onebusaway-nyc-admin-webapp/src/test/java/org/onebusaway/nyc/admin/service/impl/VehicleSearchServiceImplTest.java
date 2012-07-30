@@ -96,6 +96,24 @@ public class VehicleSearchServiceImplTest {
 		assertEquals("Expecting 1 vehicle in emeergency", matchingRecords.size(), 1);
 	}
 	
+	@Test
+	public void testEmergencyVehicleCount() {
+		List<VehicleStatus> vehicleStatusRecords = buildVehicleStatusRecords();
+		
+		List<VehicleStatus> vehiclesInemergency = service.searchVehiclesInEmergency(vehicleStatusRecords);
+		
+		assertEquals("Expecting 1 vehicle in emeergency", vehiclesInemergency.size(), 1);
+	}
+	
+	@Test
+	public void testRevenueServiceVehicleCount() {
+		List<VehicleStatus> vehicleStatusRecords = buildVehicleStatusRecords();
+		
+		List<VehicleStatus> vehiclesInRevenueService = service.searchVehiclesInRevenueService(vehicleStatusRecords);
+		
+		assertEquals("Expecting 2 vehicles in emeergency", vehiclesInRevenueService.size(), 2);
+	}
+	
 	private Map<VehicleSearchParameters, String> buildSearchParameters(String vehicleId, String route,
 			String dsc, String depot, String inferredState, String pulloutStatus, String emergencyStatus) {
 		Map<VehicleSearchParameters, String> parameters = new HashMap<VehicleSearchParameters, String>();

@@ -85,6 +85,7 @@ th.ui-th-column div {
 #topBox {
 	height: 30px;
 	border: transparent 1px;
+	margin-top: 15px;
 }
 
 #topBox #search {
@@ -146,9 +147,9 @@ th.ui-th-column div {
 
 #mainBox #filterBox {
 	width: 175px;
+	height: 458px;
 	float: left;
 	border: solid 1px;
-	padding-top: 10px;
 	padding-left: 10px;
 }
 
@@ -159,6 +160,11 @@ th.ui-th-column div {
 	float: left;
 	height: 458px;
 	overflow: auto;
+}
+
+#filterBox #filterLabel {
+	margin-top: 10px;
+	display: block;
 }
 
 #filterBox #filters {
@@ -192,7 +198,8 @@ th.ui-th-column div {
 	height: 30px;
 	background-image:url('img/Button_background.png');
 	border: 1px transparent;
-	margin-bottom: 35px;
+	margin-top: 15px;
+	margin-bottom: 25px;
 }
 
 #bottomBox {
@@ -215,8 +222,11 @@ th.ui-th-column div {
 }
 
 .boxData label{
-	font-size: 18px;
+	font-size: 24px;
 	font: Times New Roman, Times, serif;
+	margin-right: 10px;
+	float: right;
+	padding-top: 10px;
 }
 
 

@@ -87,7 +87,6 @@ VehicleStatus.SummaryView = Ember.View.extend({
 });
 
 VehicleStatus.ParametersView = Ember.View.extend({
-	
 
 });
 
@@ -154,6 +153,9 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 					return  hours + ":" +  minutes + " " +meridian + " , " +lastUpdateTime.toDateString();
 				}
 				$("#lastUpdateBox #lastUpdate").text(time);
+				
+				//load statistics data once grid is refreshed 
+				VehicleStatus.SummaryController.getStatistics();
 			},
 			postData: {
 				vehicleId: function() {return $("#filters #vehicleId").val();},
@@ -163,7 +165,7 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				inferredState: function() {return $("#filters #inferredState option:selected").val();},
 				pulloutStatus: function() {return $("#filters #pulloutStatus option:selected").val();},
 				emergencyStatus: function() {return $("#emergencyBox #emergencyCheck").is(':checked');}
-			}
+			},
 		}).navGrid("#pager", {edit:false,add:false,del:false,search:false,refresh:false });
 	}
 });
@@ -219,7 +221,34 @@ VehicleStatus.TopBarController = Ember.ArrayController.create({
 });
 
 VehicleStatus.SummaryController = Ember.ArrayController.create({
-	content: []
+	content: [],
+	getStatistics: function() {
+		$.ajax({
+			type: "GET",
+			url: "vehicle-status!getStatistics.action?ts=" + new Date().getTime(),
+			dataType: "json",
+			success: function(response) {
+				$("#emergencyVehiclesBox #emergencyCount").text(response.vehiclesInEmergency);
+				$("#inferrenceBox #revenueServiceCount").text(response.vehiclesInRevenueService);
+				$("#busBox #vehiclesTrackedCount").text(response.vehiclesTracked);
+				/*this.set('content', []);
+				var statistics = VehicleStatus.Statistics.create({
+					vehiclesTracked: response.vehiclesTracked,
+					revenueServiceVehicleCount: response.vehiclesInRevenueService,
+					emergencyVehicleCount: response.vehiclesInEmergency
+				});
+				this.pushObject(statistics);*/
+			},
+			error: function(request) {
+				alert("Error: " + request.statusText);
+			}
+		});
+	}
 });
 
 /******************* Model ************************************/
+VehicleStatus.Statistics = Ember.Object.extend({
+	vehiclesTracked: 0,
+	revenueServiceVehicleCount: 0,
+	emergencyVehicleCount : 0
+});

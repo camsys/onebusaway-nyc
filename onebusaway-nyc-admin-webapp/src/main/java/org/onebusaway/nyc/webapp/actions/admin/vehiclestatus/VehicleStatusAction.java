@@ -11,6 +11,7 @@ import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.VehicleGridResponse;
+import org.onebusaway.nyc.admin.model.ui.VehicleStatistics;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 import org.onebusaway.nyc.admin.service.VehicleStatusService;
 import org.onebusaway.nyc.admin.util.VehicleSearchParameters;
@@ -25,7 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @Namespace(value="/admin/vehiclestatus")
 @Results({
-	@Result(name="vehicles", type="json", params= {"root","vehicleGridResponse"})
+	@Result(name="vehicles", type="json", params= {"root","vehicleGridResponse"}),
+	@Result(name="statistics", type="json", params= {"root", "vehicleStatistics"})
 }
 )
 public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
@@ -34,6 +36,7 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	
 	private VehicleStatusService vehicleStatusService;
 	private VehicleGridResponse vehicleGridResponse;
+	private VehicleStatistics vehicleStatistics;
 	//Request URL parameters
 	private String rows;
 	private String page;
@@ -46,10 +49,10 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	private String pulloutStatus;
 	private String emergencyStatus;
 	
-	List<VehicleStatus> vehicleStatusRecords;
 	
 	public String getVehicleData() {
 		List<VehicleStatus> vehiclesPerPage = null;
+		List<VehicleStatus> vehicleStatusRecords = null;
 		Integer pageNum = new Integer(page);
 		Integer rowsPerPage = new Integer(rows);
 		int total = 0;
@@ -85,6 +88,11 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 		buildResponse(vehiclesPerPage, pageNum, rowsPerPage, total);
 		
 		return "vehicles";
+	}
+	
+	public String getStatistics() {
+		vehicleStatistics = vehicleStatusService.getVehicleStatistics();
+		return "statistics";
 	}
 
 	private void buildResponse(List<VehicleStatus> vehicleRecordsPerPage,
@@ -174,20 +182,6 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	 */
 	public void setPage(String page) {
 		this.page = page;
-	}
-
-	/**
-	 * @param vehicleStatusRecords the vehicleStatusRecords to set
-	 */
-	public void setVehicleStatusRecords(List<VehicleStatus> vehicleStatusRecords) {
-		this.vehicleStatusRecords = vehicleStatusRecords;
-	}
-
-	/**
-	 * @return the vehicleStatusRecords
-	 */
-	public List<VehicleStatus> getVehicleStatusRecords() {
-		return vehicleStatusRecords;
 	}
 
 	/**
@@ -300,6 +294,13 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	 */
 	public void setEmergencyStatus(String emergencyStatus) {
 		this.emergencyStatus = emergencyStatus;
+	}
+
+	/**
+	 * @return the vehicleStatistics
+	 */
+	public VehicleStatistics getVehicleStatistics() {
+		return vehicleStatistics;
 	}
 
 }

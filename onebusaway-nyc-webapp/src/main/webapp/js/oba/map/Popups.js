@@ -130,7 +130,7 @@ OBA.Popups = (function() {
         }
         
         if (situationRefs == null || situationRefsCount > 0) {
-            if (r.Siri.ServiceDelivery.SituationExchangeDelivery != null) {
+            if (r.Siri.ServiceDelivery.SituationExchangeDelivery != null && r.Siri.ServiceDelivery.SituationExchangeDelivery.length > 0) {
                 jQuery.each(r.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
                     var situationId = ptSituationElement.SituationNumber;
                     if (ptSituationElement.Description && (situationRefs == null || situationIds[situationId] === true)) {
@@ -150,7 +150,7 @@ OBA.Popups = (function() {
 	function processAlertData(situationExchangeDelivery) {
 		var alertData = {};
 		
-		if (situationExchangeDelivery) {
+		if (situationExchangeDelivery && situationExchangeDelivery.length > 0) {
             jQuery.each(situationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
             	jQuery.each(ptSituationElement.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, affectedVehicleJourney) {
             		var lineRef = affectedVehicleJourney.LineRef;

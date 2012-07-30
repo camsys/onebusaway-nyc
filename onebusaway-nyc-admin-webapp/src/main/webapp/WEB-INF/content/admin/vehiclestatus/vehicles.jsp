@@ -39,7 +39,7 @@
 	</div>
 	<div id="mainBox">
 		<div id="filterBox">
-			<label>Filter by:</label>
+			<label id="filterLabel">Filter by:</label>
 			<script type=text/x-handlebars>
 			{{#view VehicleStatus.FilterView}}
 			<ul id="filters">
@@ -97,6 +97,7 @@
 	<div id="bottomBox">
 	<script type=text/x-handlebars>
 		{{#view VehicleStatus.SummaryView}}
+		<!-- This box has been deferred by MTA at this time
 		<div id="scheduleBox" class="infoBox">
 			<label class="vehicleLabel">Run/blocks scheduled to be active</label>
 			<div id="scheduleInfo" class="boxData">
@@ -105,12 +106,13 @@
 				<label><s:property value=""/></label>
 			</div>	
 		</div>
+		-->
 		<div id="busBox" class="infoBox">
 			<label class="vehicleLabel">Buses tracked in past 5 minutes</label>
 			<div id="busInfo" class="boxData">
 				<s:url var="url" value="/css/img/user-away-2.png" />
 				<img src="${url}" alt="Not found" />
-				<label><s:property value=""/></label>
+				<label id="vehiclesTrackedCount">{{vehiclesTracked}}</label>
 			</div>	
 		</div>
 		<div id="inferrenceBox" class="infoBox">
@@ -118,15 +120,15 @@
 			<div id="inferrenceInfo" class="boxData">
 				<s:url var="url" value="/css/img/sign_dollar_icon.jpg" />
 				<img src="${url}" alt="Not found" />
-				<label><s:property value=""/></label>
+				<label id="revenueServiceCount"><s:property value=""/></label>
 			</div>	
 		</div>
-		<div id="emergencyBox" class="infoBox">
+		<div id="emergencyVehiclesBox" class="infoBox">
 			<label class="vehicleLabel">Buses reporting emergency</label>
 			<div id="emergencyInfo" class="boxData">
 				<s:url var="url" value="/css/img/dialog-warning-4.png" />
 				<img src="${url}" alt="Not found" />
-				<label><s:property value=""/></label>
+				<label id="emergencyCount"><s:property value=""/></label>
 			</div>	
 		</div>
 		{{/view}}

@@ -15,6 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.onebusaway.nyc.admin.model.json.VehicleLastKnownRecord;
 import org.onebusaway.nyc.admin.model.json.VehiclePullout;
+import org.onebusaway.nyc.admin.model.ui.VehicleStatistics;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 import org.onebusaway.nyc.admin.service.VehicleSearchService;
@@ -36,7 +37,7 @@ import org.springframework.remoting.RemoteConnectFailureException;
 public class VehicleStatusServiceImpl implements VehicleStatusService {
 
 	private static Logger log = LoggerFactory.getLogger(VehicleStatusServiceImpl.class);
-	private static final String DEFAULT_OPERATIONAL_API_HOST = "archive.dev.obanyc.com";
+	private static final String DEFAULT_OPERATIONAL_API_HOST = "archive";
 	
 	private ConfigurationService configurationService;
 	private RemoteConnectionService remoteConnectionService;
@@ -98,6 +99,29 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		
 		
 		return matchingRecords;
+	}
+	
+	@Override
+	public VehicleStatistics getVehicleStatistics(String... parameters) {
+		VehicleStatistics statistics = new VehicleStatistics();
+		
+		List<VehicleStatus> vehicleStatusRecords = cache.fetch();
+		if(vehicleStatusRecords.isEmpty()) {
+			//this should ideally never happen as statistics call should trigger after data
+			//is loaded in the grid. Still get the records from web services if cache is empty to be
+			//safe
+			vehicleStatusRecords = getVehicleStatus(true);
+		}
+		List<VehicleStatus> vehiclesInEmergency = vehicleSearchService.searchVehiclesInEmergency(vehicleStatusRecords);
+		List<VehicleStatus> vehiclesInRevenueService = vehicleSearchService.
+				searchVehiclesInRevenueService(vehicleStatusRecords);
+		List<VehicleStatus> vehiclesTracked = vehicleSearchService.searchVehiclesTracked(5, vehicleStatusRecords);
+		
+		statistics.setVehiclesInEmergency(vehiclesInEmergency.size());
+		statistics.setVehiclesInRevenueService(vehiclesInRevenueService.size());
+		statistics.setVehiclesTracked(vehiclesTracked.size());
+		
+		return statistics;
 	}
 	
 	private Map<String, VehiclePullout> getPulloutData() {
@@ -225,5 +249,6 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 	public void setVehicleSearchService(VehicleSearchService vehicleSearchService) {
 		this.vehicleSearchService = vehicleSearchService;
 	}
+
 
 }
