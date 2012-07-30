@@ -11,7 +11,9 @@ import org.onebusaway.nyc.admin.search.impl.DSCFilter;
 import org.onebusaway.nyc.admin.search.impl.DepotFilter;
 import org.onebusaway.nyc.admin.search.impl.EmergencyStatusFilter;
 import org.onebusaway.nyc.admin.search.impl.InferredStateFilter;
+import org.onebusaway.nyc.admin.search.impl.RevenueServiceFilter;
 import org.onebusaway.nyc.admin.search.impl.RouteFilter;
+import org.onebusaway.nyc.admin.search.impl.TimeWindowFilter;
 import org.onebusaway.nyc.admin.search.impl.VehicleIdFilter;
 import org.onebusaway.nyc.admin.service.VehicleSearchService;
 import org.onebusaway.nyc.admin.util.VehicleSearchParameters;
@@ -46,6 +48,52 @@ public class VehicleSearchServiceImpl implements VehicleSearchService {
 		}
 		
 		return matchingRecords;
+	}
+	
+	@Override
+	public List<VehicleStatus> searchVehiclesInEmergency(
+			List<VehicleStatus> vehicleStatusRecords) {
+		Filter<VehicleStatus> emergencyFilter = new EmergencyStatusFilter();
+		List<VehicleStatus> vehiclesInEmergency = new ArrayList<VehicleStatus>();
+		
+		for(VehicleStatus vehicleStatus : vehicleStatusRecords) {
+			if(emergencyFilter.apply(vehicleStatus)) {
+				vehiclesInEmergency.add(vehicleStatus);
+			}
+		}
+		return vehiclesInEmergency;
+	}
+
+	@Override
+	public List<VehicleStatus> searchVehiclesInRevenueService(
+			List<VehicleStatus> vehicleStatusRecords) {
+		Filter<VehicleStatus> revenueServiceFilter = new RevenueServiceFilter();
+		List<VehicleStatus> vehiclesInRevenueService = new ArrayList<VehicleStatus>();
+		
+		for(VehicleStatus vehicleStatus : vehicleStatusRecords) {
+			if(revenueServiceFilter.apply(vehicleStatus)) {
+				vehiclesInRevenueService.add(vehicleStatus);
+			}
+		}
+		return vehiclesInRevenueService;
+	}
+
+	@Override
+	public List<VehicleStatus> searchVehiclesTracked(int minutes, List<VehicleStatus> vehicleStatusRecords) {
+		Filter<VehicleStatus> timeWindowFilter = new TimeWindowFilter(minutes);
+		List<VehicleStatus> vehiclesTracked = new ArrayList<VehicleStatus>();
+		
+		for(VehicleStatus vehicleStatus: vehicleStatusRecords) {
+			if(timeWindowFilter.apply(vehicleStatus)) {
+				vehiclesTracked.add(vehicleStatus);
+			}
+		}
+		return vehiclesTracked;
+	}
+
+	@Override
+	public List<VehicleStatus> searchActiveRuns() {
+		return null;
 	}
 	
 	private boolean applyFilters(VehicleStatus vehicleStatus, List<Filter<VehicleStatus>> filters) {

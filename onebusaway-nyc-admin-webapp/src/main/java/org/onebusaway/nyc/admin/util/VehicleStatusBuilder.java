@@ -39,6 +39,7 @@ public class VehicleStatusBuilder {
 		vehicleStatus.setLastUpdate(getLastUpdate(lastknownRecord.getTimeReported()));
 		vehicleStatus.setStatus(getStatus(lastknownRecord.getInferredPhase(), 
 				lastknownRecord.getTimeReported()));
+		vehicleStatus.setTimeReceived(lastknownRecord.getTimeReceived());
 		return vehicleStatus;
 	}
 
@@ -118,17 +119,17 @@ public class VehicleStatusBuilder {
 	private String getLastUpdate(String timeReported) {
 		String lastUpdate;
 		BigDecimal difference = getTimeDifference(timeReported);
-		if(difference.intValue() > 86400) {
+		if(difference.compareTo(new BigDecimal(86400)) > 0) {
 			//Calculate the difference in days
 			BigDecimal days = difference.divide(new BigDecimal(86400), BigDecimal.ROUND_HALF_UP);
 			lastUpdate = days.toPlainString() + " days";
 		} else {
-			if(difference.intValue() > 3600) {
+			if(difference.compareTo(new BigDecimal(3600)) > 0) {
 				//Calculate the difference in hours
 				BigDecimal hours = difference.divide(new BigDecimal(3600), BigDecimal.ROUND_UP);
 				lastUpdate = hours.toPlainString() + " hours";
 			} else {
-				if(difference.intValue() > 60) {
+				if(difference.compareTo(new BigDecimal(60)) > 0) {
 					//Calculate the difference in minutes
 					BigDecimal minutes = difference.divide(new BigDecimal(60), BigDecimal.ROUND_UP);
 					lastUpdate = minutes.toPlainString() + " mins";

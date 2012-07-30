@@ -16,8 +16,7 @@
 		<Depot>EN</Depot>
 	</Depots>
 	<Pullouts>
-		<PulloutStatus>Pull-out</PulloutStatus>
-		<PulloutStatus>Pull-in</PulloutStatus>
+		<PulloutStatus>Active</PulloutStatus>
 	</Pullouts>
 	<InferredStates>
 		<InferredState>IN PROGRESS</InferredState>

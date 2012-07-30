@@ -11,9 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -26,10 +24,9 @@ import javax.xml.xpath.XPathFactory;
  * test that Depot API will ignore additional input, as long as its well formed.
  *
  */
-public class DepotResourceTest {
+public class DepotResourceTest extends ResourceTest {
 
   private static Logger _log = LoggerFactory.getLogger(DepotResourceTest.class);
-  private static final int CHUNK_SIZE = 1024;
 
   @Before
   public void setUp() throws Exception {
@@ -83,33 +80,5 @@ public class DepotResourceTest {
     tmpOutFile.deleteOnExit();
   }
 
-    private void copy(InputStream source, String destinationFileName) {
-    byte[] buff = new byte[CHUNK_SIZE];
-    DataOutputStream destination = null;
-    int read = 0;
-    try {
-      destination = new DataOutputStream(new FileOutputStream(
-          destinationFileName));
-      // lazy copy -- not recommend
-      while ((read = source.read(buff)) > -1) {
-        destination.write(buff, 0, read);
-      }
-    } catch (Exception any) {
-      _log.error(any.toString());
-      throw new RuntimeException(any);
-    } finally {
-      if (source != null)
-        try {
-          source.close();
-        } catch (Exception any) {
-        }
-      if (destination != null)
-        try {
-          destination.close();
-        } catch (Exception any) {
-        }
-    }
-
-  }
 
 }

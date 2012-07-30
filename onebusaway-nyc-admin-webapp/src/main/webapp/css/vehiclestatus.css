@@ -222,8 +222,11 @@ th.ui-th-column div {
 }
 
 .boxData label{
-	font-size: 18px;
+	font-size: 24px;
 	font: Times New Roman, Times, serif;
+	margin-right: 10px;
+	float: right;
+	padding-top: 10px;
 }
 
 
