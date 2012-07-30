@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.onebusaway.nyc.admin.model.ui.VehicleDetail;
+import org.onebusaway.nyc.admin.model.ui.VehicleStatistics;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 import org.onebusaway.nyc.admin.util.VehicleSearchParameters;
 
@@ -30,6 +31,14 @@ public interface VehicleStatusService {
 	 * @return results matching the parameters, empty list if the cache is empty
 	 */
 	List<VehicleStatus> search(Map<VehicleSearchParameters, String> searchParameters, boolean newSearch);
+	
+	/**
+	 * Returns statistics of the vehicles tracked such as vehicles reporting emergency, vehicles in
+	 * revenue servie, vehicles tracked in past five minutes
+	 * @param parameters optional parameters from client 
+	 * @return vehicle statistics with the required count
+	 */
+	VehicleStatistics getVehicleStatistics(String... parameters);
 
 	/**
 	 * Make a web service call to report archive server about a specific vehicle.

@@ -13,6 +13,7 @@ public class VehicleLastKnownRecord {
 	
 	private String vehicleAgencyId;
     private String timeReported;
+    private String timeReceived;
     private String archiveTimeReceived;
     private String operatorIdDesignator;
     private String routeIdDesignator;
@@ -253,6 +254,7 @@ public class VehicleLastKnownRecord {
 	public void setEmergencyCode(String emergencyCode) {
 		this.emergencyCode = emergencyCode;
 	}
+
 	@JsonProperty("latitude")
   public Double getLatitude() {
     return latitude;
@@ -274,5 +276,18 @@ public class VehicleLastKnownRecord {
   public void setDirection(Double direction) {
     this.direction = direction;
   }
+	/**
+	 * @return the timeReceived
+	 */
+	@JsonProperty("time-received")
+	public String getTimeReceived() {
+		return timeReceived;
+	}
+	/**
+	 * @param timeReceived the timeReceived to set
+	 */
+	public void setTimeReceived(String timeReceived) {
+		this.timeReceived = timeReceived;
+	}
 
 }
