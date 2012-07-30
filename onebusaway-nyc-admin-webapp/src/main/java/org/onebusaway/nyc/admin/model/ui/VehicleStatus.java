@@ -19,6 +19,7 @@ public class VehicleStatus {
 	private String route;
 	private String depot;
 	private String emergencyStatus;
+	private String timeReceived;
 	
 	/**
 	 * @return the vehicleId
@@ -164,6 +165,19 @@ public class VehicleStatus {
 	public void setEmergencyStatus(String emergencyStatus) {
 		this.emergencyStatus = emergencyStatus;
 	}
+	/**
+	 * @return the timeReceived
+	 */
+	public String getTimeReceived() {
+		return timeReceived;
+	}
+	/**
+	 * @param timeReceived the timeReceived to set
+	 */
+	public void setTimeReceived(String timeReceived) {
+		this.timeReceived = timeReceived;
+	}
+	
 	
 
 }

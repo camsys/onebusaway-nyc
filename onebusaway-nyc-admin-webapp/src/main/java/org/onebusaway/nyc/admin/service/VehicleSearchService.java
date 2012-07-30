@@ -23,4 +23,32 @@ public interface VehicleSearchService {
 	 */
 	List<VehicleStatus> search(List<VehicleStatus> vehicleStatusRecords, 
 			Map<VehicleSearchParameters, String> searchParameters);
+	
+	/**
+	 * Searches vehicles reporting emergency from the given collection of the vehicles
+	 * @param vehicleStatusRecords all vehicle records available at this point
+	 * @return vehicles reporting emergency status
+	 */
+	List<VehicleStatus> searchVehiclesInEmergency(List<VehicleStatus> vehicleStatusRecords);
+	
+	/**
+	 * Searches vehicles inferred in revenue service i.e buses whose inferred state is either
+	 * IN PROGRESS or LAYOVER_*
+	 * @param vehicleStatusRecords all vehicle records available at this point
+	 * @return vehicles inferred in revenue service
+	 */
+	List<VehicleStatus> searchVehiclesInRevenueService(List<VehicleStatus> vehicleStatusRecords);
+	
+	/**
+	 * Searches vehicles tracked in given time. The time can be specified by the caller
+	 * @param minutes time period for results should be returned
+	 * @return vehicles tracked in given time
+	 */
+	List<VehicleStatus> searchVehiclesTracked(int minutes, List<VehicleStatus> vehicleStatusRecords);
+	
+	/**
+	 * Searches run/blocks scheduled to be active
+	 * @return run/blocks scheduled to be active
+	 */
+	List<VehicleStatus> searchActiveRuns();
 }
