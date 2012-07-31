@@ -27,7 +27,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTrac
  * @author jmaki
  *
  */
-@Ignore
 @RunWith(RunUntilSuccess.class)
 public class Trace_6333_20120717_IntegrationTest extends AbstractTraceRunner {
 
