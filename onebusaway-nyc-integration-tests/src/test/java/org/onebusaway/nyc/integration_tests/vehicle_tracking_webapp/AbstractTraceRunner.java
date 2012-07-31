@@ -20,10 +20,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -31,7 +32,6 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
-import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
 import org.opentripplanner.routing.impl.DistanceLibrary;
 
@@ -164,7 +164,7 @@ public class AbstractTraceRunner {
 	    	NycTestInferredLocationRecord expectedResult = expectedResults.get(i);
 	    	  
 	    	// mark new row
-	    	System.out.println("\n\nRecord " + (i + 1) + ", line " + (i + 2) + ", observed timestamp= " + expectedResult.getTimestampAsDate() + "\n================================");
+	    	System.out.println("\n\nRecord " + (i + 1) + ", line " + (i + 2) + ", observed timestamp= " + expectedResult.getTimestampAsDate() + "\n============================================================");
 	
 	    	// TEST: block level inference subcases
 	    	Boolean actualIsRunFormal = expectedResult.getActualIsRunFormal();
@@ -177,13 +177,13 @@ public class AbstractTraceRunner {
 	    			assertEquals(ourResult.getInferredRunId(), expectedResult.getActualRunId());
 	    		}
 	
-	    		// trip ID should match
+	    		// trip ID should match--we accept wildcards (pegged to end of value) here
 	    		if(expectedResult.getActualTripId() != null && !StringUtils.isEmpty(expectedResult.getActualTripId())) {
 	    	    	System.out.println("TRIP ID: expected=" + expectedResult.getActualTripId() + ", inferred=" + ourResult.getInferredTripId());
 	    			assertTrue(ourResult.getInferredTripId().endsWith(expectedResult.getActualTripId()));
 	    		}
 	
-	    		// block ID should match
+	    		// block ID should match--we accept wildcards (pegged to end of value) here
 	    		if(expectedResult.getActualBlockId() != null && !StringUtils.isEmpty(expectedResult.getActualBlockId())) {
 	    	    	System.out.println("BLOCK ID: expected=" + expectedResult.getActualBlockId() + ", inferred=" + ourResult.getInferredBlockId());
 	    			assertTrue(ourResult.getInferredBlockId().endsWith(expectedResult.getActualBlockId()));
@@ -203,18 +203,27 @@ public class AbstractTraceRunner {
 	    	System.out.println("PHASE: expected=" + expectedResult.getActualPhase() + ", inferred=" + ourResult.getInferredPhase());
 	    	if(expectedResult.getActualPhase() != null && !StringUtils.isEmpty(expectedResult.getActualPhase())) {
 				String[] _acceptablePhases = StringUtils.split(expectedResult.getActualPhase().toUpperCase(), "+");
-				ArrayList<String> acceptablePhases = new ArrayList<String>();
+				Set<String> acceptablePhases = new HashSet<String>();
 				Collections.addAll(acceptablePhases, _acceptablePhases);
 	
 				// allow partial matches for "wildcards"
-				boolean pass = false;
+				boolean phasesMatched = false;
 				for(String acceptablePhase : acceptablePhases) {
-					if(ourResult.getInferredPhase().toUpperCase().startsWith(acceptablePhase)) {
-						pass = true;
+					// try wildcard matching straight up
+					phasesMatched = ourResult.getInferredPhase().toUpperCase().startsWith(acceptablePhase);
+					if(phasesMatched == true)
 						break;
-					}
+					
+					// if inference is expected to be not formal, make layovers equivalent to deadheads
+					phasesMatched = ourResult.getInferredPhase().toUpperCase().replaceAll("^LAYOVER_", "DEADHEAD_").startsWith(acceptablePhase);
+					if(phasesMatched == true)
+						break;
+					
+					phasesMatched = ourResult.getInferredPhase().toUpperCase().replaceAll("^DEADHEAD_", "LAYOVER_").startsWith(acceptablePhase);
+					if(phasesMatched == true)
+						break;
 				}
-				assertTrue(pass == true);
+				assertTrue(phasesMatched == true);
 			}
 			
 			// TEST: status matches
@@ -223,7 +232,7 @@ public class AbstractTraceRunner {
 	    	System.out.println("STATUS: expected=" + expectedResult.getActualStatus() + ", inferred=" + ourResult.getInferredStatus());
 	    	if(expectedResult.getActualStatus() != null && !StringUtils.isEmpty(expectedResult.getActualStatus())) {
 				String[] _acceptableStatuses = StringUtils.split(expectedResult.getActualStatus().toUpperCase(), "+");
-				ArrayList<String> acceptableStatuses = new ArrayList<String>();
+				Set<String> acceptableStatuses = new HashSet<String>();
 				Collections.addAll(acceptableStatuses, _acceptableStatuses);
 	    		assertTrue(acceptableStatuses.contains(ourResult.getInferredStatus().toUpperCase()));
 			}
@@ -234,17 +243,18 @@ public class AbstractTraceRunner {
 	    	
 			Coordinate reportedLocation = new Coordinate(expectedResult.getLat(), expectedResult.getLon());
 			Coordinate ourLocation = new Coordinate(ourResult.getInferredBlockLat(), ourResult.getInferredBlockLon());
+			
 			if(ourResult.getInferredPhase().toUpperCase().startsWith("LAYOVER_") || 
 					ourResult.getInferredPhase().toUpperCase().equals("IN_PROGRESS")) {
 			    System.out.println("LOCATION: expected=" + reportedLocation + ", inferred=" + ourLocation);
 				assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
 			}
 	      }
-	      
+	      	      
 	      System.out.println("\n>> PASS.");
 	      
       } catch (AssertionError e) {
-    	  System.out.println(">> ERROR HERE ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+    	  System.out.println(">> TEST FAILED HERE ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
 
     	  throw new Exception(e);
       }
