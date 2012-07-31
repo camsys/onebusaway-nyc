@@ -23,6 +23,7 @@ public class VehicleStatus {
 	private String timeReceived;
 	private String formattedPulloutTime;
 	private String formattedPullinTime;
+	private String timeReported;
 	
 	/**
 	 * @return the vehicleId
@@ -215,6 +216,18 @@ public class VehicleStatus {
 	 */
 	public void setInferredDSC(String inferredDSC) {
 		this.inferredDSC = inferredDSC;
+	}
+	/**
+	 * @return the timeReported
+	 */
+	public String getTimeReported() {
+		return timeReported;
+	}
+	/**
+	 * @param timeReported the timeReported to set
+	 */
+	public void setTimeReported(String timeReported) {
+		this.timeReported = timeReported;
 	}
 	
 	

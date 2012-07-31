@@ -142,7 +142,7 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 						}}, 
 			           {name:'vehicleId',index:'vehicleId', width:70}, 
 			           {name:'lastUpdate',index:'lastUpdate', width:70}, 
-			           {name:'inferredState',index:'inferredState', width:100, sortable:false}, 
+			           {name:'inferredState',index:'inferredState', width:100}, 
 			           {name:'inferredDestination',index:'inferredDestination', width:170, sortable:false}, 
 			           {name:'observedDSC',index:'observedDSC', width:80}, 
 			           {name:'formattedPulloutTime',index:'pulloutTime', width:70},
@@ -154,8 +154,9 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			           },
 			            sortable:false}
 			         ],
-			height: "390",
+			height: "430",
 			width: "670",
+			//height: "auto",
 			//width: "auto",
 			viewrecords: true,
 			loadonce:false,
@@ -168,6 +169,7 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			},
 			pager: "#pager",
 			loadComplete: function(data) {
+				//Update the time
 				var lastUpdateTime = new Date();
 				var time = function() {
 					var hours = lastUpdateTime.getHours();
@@ -187,9 +189,11 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				
 				$("#lastUpdateBox #lastUpdate").text(time);
 				
-				//Do all the required data post processing here
+				//Add zebra stripes to alternate grid rows
+			    $("tr.jqgrow:odd").css("background", "#DDDDDC");
+
 				$.each(data.rows, function(i) {
-					//Change observedDSC color to red if it is different from inferredDSC
+					//Change observedDSC text color to red if it is different from inferredDSC
 					if(data.rows[i].inferredDSC != null && 
 							(data.rows[i].observedDSC != data.rows[i].inferredDSC)) {
 						grid.jqGrid('setCell', i+1, "observedDSC", "", {color:'red'});

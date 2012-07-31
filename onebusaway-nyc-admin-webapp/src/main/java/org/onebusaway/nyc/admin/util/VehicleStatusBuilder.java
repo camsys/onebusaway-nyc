@@ -48,29 +48,43 @@ public class VehicleStatusBuilder {
 		vehicleStatus.setLastUpdate(getLastUpdate(lastknownRecord.getTimeReported()));
 		
 		vehicleStatus.setStatus(getStatus(lastknownRecord.getInferredPhase(), 
-				lastknownRecord.getTimeReported()));
+				lastknownRecord.getTimeReported(), lastknownRecord.getEmergencyCode()));
 		
 		vehicleStatus.setTimeReceived(lastknownRecord.getTimeReceived());
 		
 		vehicleStatus.setInferredDSC(lastknownRecord.getInferredDSC());
 		
+		vehicleStatus.setTimeReported(lastknownRecord.getTimeReported());
+		
 		return vehicleStatus;
 	}
 
-	private String getStatus(String inferredPhase, String timeReported) {
+	private String getStatus(String inferredPhase, String timeReported, String emergencyCode) {
 		String imageSrc = null;
 		BigDecimal difference  = getTimeDifference(timeReported);
 		
 		if((inferredPhase.equals(InferredState.IN_PROGRESS.getState()) || 
 				inferredPhase.equals(InferredState.DEADHEAD_DURING.getState()) ||
-				inferredPhase.startsWith("LAY")) && (difference.intValue() < 120)) {
-			imageSrc = "circle_green.png";
+				inferredPhase.startsWith("LAY")) && (difference.compareTo(new BigDecimal(120)) < 0)) {
+			if(StringUtils.isNotBlank(emergencyCode)) {
+				imageSrc = "circle_green_alert_18x18.png";
+			} else {
+				imageSrc = "circle_green18x18.png";
+			}
 		} else {
 			if((inferredPhase.equals(InferredState.AT_BASE.getState())) || 
-					(difference.intValue() > 300)) {
-				imageSrc = "circle_red.png";
+					(difference.compareTo(new BigDecimal(300)) > 0)) {
+				if(StringUtils.isNotBlank(emergencyCode)) {
+					imageSrc = "circle_red_alert_18x18.png";
+				} else {
+					imageSrc = "circle_red18x18.png";
+				}
 			} else {
-				imageSrc = "circle_orange.png";
+				if(StringUtils.isNotBlank(emergencyCode)) {
+					imageSrc = "circle_orange_alert_18x18.png";
+				} else {
+					imageSrc = "circle_orange18x18.png";
+				}
 			}
 		}
 
