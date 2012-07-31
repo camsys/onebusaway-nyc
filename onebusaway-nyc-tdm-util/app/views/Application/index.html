@@ -24,7 +24,8 @@
 			<th>summary</th>
 			<th>description</th>
 			<th>urls</th>
-			<th>affects (route:dir)</th>
+            <th>affects (route:dir)</th>
+            <th>agency</th>
 			<th>consequences</th>
 			<th>severity</th>
 		</tr>
@@ -52,6 +53,11 @@
 
             <td>#{list items:serviceAlert.allAffects, as:'affect'}
             ${affect.formatAffect()}<br/>
+            #{/list}
+            </td>
+
+            <td>#{list items:serviceAlert.allAffects, as:'affect'}
+            ${affect.formatAffectsAgency()}<br/>
             #{/list}
             </td>
 

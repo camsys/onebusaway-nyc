@@ -148,9 +148,11 @@ public class Application extends Controller {
 
     public static void sendToTds(String title, String statusType, String id,
             String begins, String expires, String affected, String text,
-            String tdsUrl) throws MalformedURLException {
+            String tdsUrl, String global) throws MalformedURLException {
         String error = "";
 
+        System.err.println("global=" + global);
+        
         if (StringUtils.isEmpty(id)) {
             error = "ID may not be null";
             render("Application/enterSa.html", error);
@@ -165,7 +167,7 @@ public class Application extends Controller {
 
         ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
         List<SituationAffectsBean> allAffects = new ArrayList<SituationAffectsBean>();
-        addAffects(affected, allAffects);
+        addAffects(affected, allAffects, global);
         serviceAlertBean.setAllAffects(allAffects);
         serviceAlertBean.setId(id);
         serviceAlertBean.setSummaries(createListNaturalLanguage(title));
@@ -191,8 +193,15 @@ public class Application extends Controller {
     }
 
     private static void addAffects(String affected,
-            List<SituationAffectsBean> allAffects) {
-        for (String route : affected.split(",")) {
+            List<SituationAffectsBean> allAffects, String global) {
+      if (global != null) {
+        System.err.println("Setting global affects");
+        SituationAffectsBean sab = new SituationAffectsBean();
+        sab.setAgencyId("__ALL_OPERATORS__");
+        allAffects.add(sab);
+        return;
+      }
+      for (String route : affected.split(",")) {
             String[] directions = new String[] { "0", "1" };
             if (route.contains(":")) {
                 String[] parts = route.split(":");
