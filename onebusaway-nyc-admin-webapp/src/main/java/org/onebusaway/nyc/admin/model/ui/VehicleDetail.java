@@ -7,6 +7,7 @@ public class VehicleDetail {
   private String inferredHeadSign;
   private String agency;
   private String depot;
+  private String operatorId;
   private String serviceDate;
   private long scheduleDeviation;
   private String routeString;
@@ -55,6 +56,14 @@ public class VehicleDetail {
 
   public void setDepot(String depot) {
     this.depot = depot;
+  }
+
+  public String getOperatorId() {
+    return operatorId;
+  }
+
+  public void setOperatorId(String operatorId) {
+    this.operatorId = operatorId;
   }
 
   public String getServiceDate() {

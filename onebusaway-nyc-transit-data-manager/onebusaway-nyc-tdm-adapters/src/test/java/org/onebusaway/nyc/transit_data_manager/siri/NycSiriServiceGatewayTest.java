@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.util.Date;
+import java.util.List;
 
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
@@ -14,8 +15,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDetails;
 
+import uk.org.siri.siri.AffectsScopeStructure;
+import uk.org.siri.siri.AffectsScopeStructure.Operators;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
@@ -52,7 +56,32 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
   }
 
   @Test
+  public void testGetPtSituationAsServiceAlertBeanAllOperators() {
+    SiriHelper siriHelper = new SiriHelper();
+    PtSituationElementStructure ptSituation = siriHelper.createPtSituationElementStructure(
+        "summaryText", "descriptionText    ", "    MTA NYCT_123",
+        "2011-11-08T00:00:00.000Z", "", "MTA NYCT_B63", "statusType");
+    
+    AffectsScopeStructure affects = new AffectsScopeStructure();
+    Operators operators = new Operators();
+    operators.setAllOperators("");
+    affects.setOperators(operators);
+    ptSituation.setAffects(affects);
+    
+    SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
+    ServiceAlertBean serviceAlertBean = getPtSituationAsServiceAlertBean(
+        ptSituation, endpointDetails);
+    
+    List<SituationAffectsBean> allAffects = serviceAlertBean.getAllAffects();
+    assertNotNull(allAffects);
+    assertEquals(1, allAffects.size());
+    SituationAffectsBean bean = allAffects.get(0);
+    assertEquals(NycSiriService.ALL_OPERATORS, bean.getAgencyId());
+  }
+
+  @Test
   public void testCreateRequest() throws Exception {
+    setup();
     SiriXmlSerializer siriXmlSerializer = new SiriXmlSerializer();
     Siri request = createSubsAndSxRequest();
     String xml = siriXmlSerializer.getXml(request);

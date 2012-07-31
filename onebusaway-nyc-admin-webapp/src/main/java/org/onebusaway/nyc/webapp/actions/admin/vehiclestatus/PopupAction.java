@@ -22,7 +22,12 @@ public class PopupAction extends OneBusAwayNYCAdminActionSupport {
 
   public String input() {
     _log.info("in input");
-    vehicleDetailRecord = vehicleStatusService.getVehicleDetail(vehicleId);
+    try {
+      vehicleDetailRecord = vehicleStatusService.getVehicleDetail(vehicleId);
+    } catch (Throwable t) {
+      _log.error("input failed:", t);
+      vehicleDetailRecord = null;
+    }
     _log.info("retrieved vehicleDetail=" + vehicleDetailRecord);
     return INPUT;
   }
@@ -88,6 +93,71 @@ public class PopupAction extends OneBusAwayNYCAdminActionSupport {
 	public String getInferredHeadSign() {
 	  if (vehicleDetailRecord != null) {
 	    return vehicleDetailRecord.getInferredHeadSign();
+	  }
+	  return null;
+	}
+	
+	public String getServiceDate() {
+	  if (vehicleDetailRecord != null) {
+	    return vehicleDetailRecord.getServiceDate();
+	  }
+	  return null;
+	}
+
+	public String getOperatorId() {
+	  if (vehicleDetailRecord != null){
+	    return vehicleDetailRecord.getOperatorId();
+	  }
+	  return null;
+	}
+	
+	public String getAgency() {
+	  if (vehicleDetailRecord != null) {
+	    return vehicleDetailRecord.getAgency();
+	  }
+	  return null;
+	}
+	
+	public String getObservedRunId() {
+	  if (vehicleDetailRecord != null) {
+	    return vehicleDetailRecord.getObservedRunId();
+	  }
+	  return null;
+	}
+	
+	public String getUtsRunId() {
+	  if (vehicleDetailRecord != null) {
+	    return vehicleDetailRecord.getUtsRunId();
+	  }
+	  return null;
+	}
+	
+	public String getInferredRunId() {
+	  if (vehicleDetailRecord != null) {
+	    return vehicleDetailRecord.getInferredRunId();
+	  }
+	  return null;
+	}
+	
+	// in seconds
+	public Long getScheduleDeviation() {
+	  if (vehicleDetailRecord != null) {
+	    return vehicleDetailRecord.getScheduleDeviation();
+	  }
+	  return null;
+	}
+	
+	public String getScheduleDeviationAsString() {
+	  Long dev = getScheduleDeviation();
+	  if (dev == null) return null;
+	  if (dev > 120)
+	    return (dev/60) + " min";
+	  return dev + " s";
+	}
+	
+	public String getTripId() {
+	  if (vehicleDetailRecord != null) {
+	    return vehicleDetailRecord.getTripId();
 	  }
 	  return null;
 	}

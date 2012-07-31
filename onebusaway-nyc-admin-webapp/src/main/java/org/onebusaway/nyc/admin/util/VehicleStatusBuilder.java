@@ -38,7 +38,7 @@ public class VehicleStatusBuilder {
 		
 		vehicleStatus.setObservedDSC(lastknownRecord.getDestinationSignCode());
 		
-		vehicleStatus.setDetails("Details");
+		vehicleStatus.setDetails(lastknownRecord.getVehicleId());
 		
 		vehicleStatus.setRoute(getRoute(lastknownRecord.getInferredRunId()));
 		

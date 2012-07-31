@@ -69,7 +69,7 @@ public class NycSiriServiceGateway extends NycSiriService {
         _log.info("Sending service alerts to subscriber: "
             + subscription.getAddress());
         subscription.send(getPersister().getAllActiveServiceAlerts(),
-            deletedIds);
+            deletedIds, _environment.getEnvironment());
         _log.info("Successfully sent service alerts to subscriber: "
             + subscription.getAddress());
       } catch (Exception e) {

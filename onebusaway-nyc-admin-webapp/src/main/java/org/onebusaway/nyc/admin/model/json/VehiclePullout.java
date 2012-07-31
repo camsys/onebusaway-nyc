@@ -18,6 +18,10 @@ public class VehiclePullout {
 	private String run;
 	private String operatorId;
 	private String pullinTime;
+	
+	public String toString() {
+	  return "VehiclePullout[vehicleId=" + vehicleId + ", run=" + run + "]";
+	}
 	/**
 	 * @return the vehicleId
 	 */

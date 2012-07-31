@@ -22,6 +22,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationServi
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
@@ -32,6 +33,8 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEn
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+
+import com.google.common.collect.Iterables;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -106,8 +109,6 @@ public class VehicleStateLibrary {
      */
     if (blockState == null) {
       return obs.isAtTerminal();
-    } else if (isAtPotentialTerminal(obs.getRecord(), blockState.getBlockInstance())) {
-      return true;
     }
 
     /**
@@ -270,6 +271,16 @@ public class VehicleStateLibrary {
       return closestStop;
 
     final BlockStopTimeEntry nextStop = location.getNextStop();
+    
+    /**
+     * If we're at the first or last stop of a trip in our run, then
+     * we're at a potential layover spot.
+     */
+    final BlockStopTimeEntry tripFirstStop = Iterables.getLast(location.getActiveTrip().getStopTimes());
+    final BlockStopTimeEntry tripLastStop = Iterables.getFirst(location.getActiveTrip().getStopTimes(), null);
+    if (tripFirstStop.equals(closestStop)
+        || tripLastStop.equals(closestStop))
+      return closestStop;
 
     /**
      * If the next stop is null, it means we're at the end of the block. Do we

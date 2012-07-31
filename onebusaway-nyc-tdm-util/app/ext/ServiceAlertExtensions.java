@@ -62,8 +62,14 @@ public class ServiceAlertExtensions extends JavaExtensions {
     }
   
   public static String formatAffect(SituationAffectsBean b) {
-      return b.getRouteId() + ":" + b.getDirectionId();
-    }
+    return b.getRouteId() + ":" + b.getDirectionId();
+  }
+
+  public static String formatAffectsAgency(SituationAffectsBean b) {
+    return b.getAgencyId();
+  }
+
+  
   
   public static String formatMultivaluedString(ServiceAlertBean serviceAlert, String fieldName) {
     String result;

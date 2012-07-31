@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
@@ -27,13 +26,9 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTrac
  * This one is failing because of a slow rejoin to the route after the bus turns around to go back to SI after
  * stopping at Central Park South, around 22:13.
  * 
- * To Fix:
- * Slow rejoin problem, described above.
- * 
  * @author jmaki
  *
  */
-@Ignore
 @RunWith(RunUntilSuccess.class)
 public class Trace_2782_20111202_211038_222038_IntegrationTest extends AbstractTraceRunner {
 
