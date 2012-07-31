@@ -14,12 +14,15 @@
  * the License.
  */
 
-function showVehiclePopup() {
-	var id = jQuery("#vehicleGrid").jqGrid('getGridParam', 'selrow');
-	var vehicleId = jQuery("#vehicleGrid").jqGrid('getRowData', id).vehicleId;
-	if (vehicleId == undefined || vehicleId == "") { 
-	  //alert("vehicleId=" + vehicleId);
-	  return;
+function showVehiclePopup(vehicleId) {
+	//alert("showVehiclePopup(" + vehicleId + ")");
+	if (vehicleId == undefined || vehicleId == "") {
+		var id = jQuery("#vehicleGrid").jqGrid('getGridParam', 'selrow');
+		vehicleId = jQuery("#vehicleGrid").jqGrid('getRowData', id).vehicleId;
+		if (vehicleId == undefined || vehicleId == "") { 
+			//alert("vehicleId=" + vehicleId);
+			return;
+		}
 	}
 	
 	//Change these values to style your modal popup
@@ -146,9 +149,10 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			           {name:'formattedPullinTime',index:'pullinTime', width:70},
 			           {name:'details',index:'details', width:65, 
 			        	formatter: function(cellValue, options) {
-			        	   var linkHtml = "<a href='javascript:showVehiclePopup();' style='color:blue'>" + cellValue + "</a>";
+			        	   var linkHtml = "<a href='javascript:showVehiclePopup(" + cellValue + ");' style='color:blue'>" + "Details" + "</a>";
 			        	   return linkHtml;
-			           }, sortable:false}
+			           },
+			            sortable:false}
 			         ],
 			height: "390",
 			width: "670",

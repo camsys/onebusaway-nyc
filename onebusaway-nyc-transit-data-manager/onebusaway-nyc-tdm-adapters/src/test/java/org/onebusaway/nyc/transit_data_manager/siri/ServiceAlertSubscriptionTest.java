@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -20,40 +21,49 @@ public class ServiceAlertSubscriptionTest extends ServiceAlertSubscription {
   private static final String TEST_ADDRESS = "http://localhost/foo/bar";
   private static final String TEST_SERVICE_ALERT_ID = "MTA NYC_101";
 
+  String EXPECTED_XML = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Siri xmlns:ns2=\"http://www.ifopt.org.uk/acsb\" "
+      + "xmlns:ns4=\"http://datex2.eu/schema/1_0/1_0\" xmlns:ns3=\"http://www.ifopt.org.uk/ifopt\" xmlns=\"http://www.siri.org.uk/siri\">"
+      + "<ServiceDelivery><ProducerRef>test</ProducerRef><SituationExchangeDelivery><Situations><PtSituationElement><SituationNumber>"
+      + "MTA NYC_101</SituationNumber><Summary xml:lang=\"EN\">summary</Summary><Description xml:lang=\"EN\">description</Description><Affects>"
+      + "<VehicleJourneys><AffectedVehicleJourney><LineRef>test route id</LineRef></AffectedVehicleJourney></VehicleJourneys></Affects>"
+      + "</PtSituationElement><PtSituationElement><SituationNumber>MTA NYCT_1000</SituationNumber><Progress>closed</Progress></PtSituationElement>"
+      + "<PtSituationElement><SituationNumber>MTA NYCT_1001</SituationNumber><Progress>closed</Progress></PtSituationElement></Situations>"
+      + "</SituationExchangeDelivery></ServiceDelivery></Siri>";
+
   @Test
   public void testSend() throws Exception {
     WebResourceWrapper webResourceWrapper = mock(WebResourceWrapper.class);
-    setWebResourceWrapper(webResourceWrapper );
+    setWebResourceWrapper(webResourceWrapper);
     setAddress(TEST_ADDRESS);
-    
+
     SituationExchangeResults results = mock(SituationExchangeResults.class);
     List<DeliveryResult> deliveryResults = new ArrayList<DeliveryResult>();
-    when(results.getDelivery()).thenReturn(deliveryResults );
+    when(results.getDelivery()).thenReturn(deliveryResults);
     DeliveryResult deliveryResult = new DeliveryResult();
     List<PtSituationElementResult> ptSituationElements = new ArrayList<PtSituationElementResult>();
     PtSituationElementResult e = new PtSituationElementResult();
     ptSituationElements.add(e);
     e.id = TEST_SERVICE_ALERT_ID;
     e.result = SituationExchangeResults.ADDED;
-    deliveryResult.setPtSituationElement(ptSituationElements );
-    deliveryResults.add(deliveryResult );
-    
+    deliveryResult.setPtSituationElement(ptSituationElements);
+    deliveryResults.add(deliveryResult);
+
     Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
     ServiceAlertBean testBean = ServiceAlertsTestSupport.createServiceAlertBean(TEST_SERVICE_ALERT_ID);
-    currentServiceAlerts.put(TEST_SERVICE_ALERT_ID, testBean );
+    currentServiceAlerts.put(TEST_SERVICE_ALERT_ID, testBean);
 
     List<String> deletedIds = new ArrayList<String>();
     deletedIds.add("MTA NYCT_1000");
     deletedIds.add("MTA NYCT_1001");
-    
-    send(currentServiceAlerts, deletedIds );
+
+    String environment = "test";
+    send(currentServiceAlerts, deletedIds, environment);
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-//    verify(webResourceWrapper).post(matches("(?s).+<SituationNumber>MTA NYC_101</SituationNumber>.+<VehicleJourneys>\\s*<AffectedVehicleJourney>\\s*<LineRef>" + 
-//        ServiceAlertsTestSupport.TEST_ROUTE_ID + "</LineRef>.+"), same(TEST_ADDRESS));
     verify(webResourceWrapper).post(argument.capture(), same(TEST_ADDRESS));
-    System.err.println(argument.getValue());
-    
+    String value = argument.getValue();
+    assertEquals(EXPECTED_XML, value);
+
   }
 
 }

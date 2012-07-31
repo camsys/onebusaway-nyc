@@ -26,7 +26,8 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTrac
  * to first observation now).
  * 
  * @author bwillard
- * */
+ * 
+ */
 @RunWith(RunUntilSuccess.class)
 public class Trace_4255_20111215_183433_183932_IntegrationTest extends AbstractTraceRunner {
 

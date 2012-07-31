@@ -169,7 +169,7 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 
 	private VehiclePullout getPulloutData(String vehicleId) {
 		String tdmHost = System.getProperty("tdm.host");
-		Map<String, VehiclePullout> pullouts = new HashMap<String, VehiclePullout>();
+		VehiclePullout pullout = null;
 
 		String url = buildURL(tdmHost, "/pullouts/" +  vehicleId + "/list");
 		log.debug("making request for : " +url);
@@ -179,22 +179,13 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		String json = extractJsonArrayString(vehiclePipocontent);
 		
 		try {
-			JSONArray pulloutContentArray = new JSONArray("[" +json + "]");
-			for(int i=0; i<pulloutContentArray.length(); i++) {
-				VehiclePullout pullout = convertToObject(pulloutContentArray.getString(i), VehiclePullout.class);
-				//pullout can be null if no data is returned by web service call
-				if(pullout !=null) {
-					pullouts.put(pullout.getVehicleId(), pullout);
-				}
-			}
-		} catch (JSONException e) {
+				pullout = convertToObject(json, VehiclePullout.class);
+		} catch (Exception e) {
 			log.error("Error parsing json content : " +e);
 			e.printStackTrace();
 		}
 		
-		if (!pullouts.isEmpty())
-		  return pullouts.get(0);
-		return null;
+		return pullout;
 	}
 
 	private List<VehicleLastKnownRecord> getLastKnownRecordData() {
@@ -279,14 +270,18 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		String url = buildURL(tdmHost, "/dsc/" +  dsc + "/sign");
 		log.debug("making request for : " +url);
 
-		String headSignContent = remoteConnectionService.getContent(url);
-
-		String json = extractJsonObjectString(headSignContent);
-		DestinationSignCode headSign = null;
-	  headSign = convertToObject("{" + json + "}", DestinationSignCode.class);
+		try {
+		  String headSignContent = remoteConnectionService.getContent(url);
+		  if (headSignContent == null) { return null;}
+		  String json = extractJsonObjectString(headSignContent);
+		  DestinationSignCode headSign = null;
+		  headSign = convertToObject("{" + json + "}", DestinationSignCode.class);
 		
-		if (headSign != null){
-		  return headSign.getMessageText();
+		  if (headSign != null){
+		    return headSign.getMessageText();
+		  }
+		} catch (Exception any) {
+		  log.error("getHeadSign failed:", any);
 		}
 		return null;
 	}

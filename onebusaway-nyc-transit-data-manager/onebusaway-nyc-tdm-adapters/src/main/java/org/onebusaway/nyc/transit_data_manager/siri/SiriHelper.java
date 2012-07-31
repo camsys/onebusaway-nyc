@@ -15,6 +15,7 @@ import uk.org.siri.siri.AffectsScopeStructure;
 import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.EntryQualifierStructure;
+import uk.org.siri.siri.ErrorDescriptionStructure;
 import uk.org.siri.siri.HalfOpenTimestampRangeStructure;
 import uk.org.siri.siri.LineRefStructure;
 import uk.org.siri.siri.PtConsequenceStructure;
@@ -22,9 +23,11 @@ import uk.org.siri.siri.PtConsequencesStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
+import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
+import uk.org.siri.siri.StatusResponseStructure;
 
 public class SiriHelper {
 
@@ -176,5 +179,19 @@ public class SiriHelper {
 		}
 		return writer.toString();
 	}
+
+  public static StatusResponseStructure createStatusResponseStructure(boolean status,
+      String errorMessage) {
+    StatusResponseStructure statusResponseStructure = new StatusResponseStructure();
+    statusResponseStructure.setStatus(status);
+    if (!status) {
+      ServiceDeliveryErrorConditionStructure condition = new ServiceDeliveryErrorConditionStructure();
+      statusResponseStructure.setErrorCondition(condition);
+      ErrorDescriptionStructure description = new ErrorDescriptionStructure();
+      condition.setDescription(description);
+      description.setValue(errorMessage);
+    }
+    return statusResponseStructure;
+  }
 
 }

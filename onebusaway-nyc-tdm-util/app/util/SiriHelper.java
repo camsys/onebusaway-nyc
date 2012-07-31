@@ -14,6 +14,7 @@ import org.joda.time.format.ISODateTimeFormat;
 
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
 import uk.org.siri.siri.AffectsScopeStructure;
+import uk.org.siri.siri.AffectsScopeStructure.Operators;
 import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.DirectionRefStructure;
 import uk.org.siri.siri.EntryQualifierStructure;
@@ -54,7 +55,7 @@ public class SiriHelper {
 
 	public void addPtSituationElementStructure(String summaryText,
 			String descriptionText, String idNumber, String begins,
-			String expires, String lines, String statusType, String progress) {
+			String expires, String lines, String statusType, String progress, String global) {
 
 		List<PtSituationElementStructure> list = siri.getServiceDelivery()
 				.getSituationExchangeDelivery().get(0).getSituations()
@@ -62,14 +63,14 @@ public class SiriHelper {
 
 		PtSituationElementStructure ptSit = createPtSituationElementStructure(
 				summaryText, descriptionText, idNumber, begins, expires, lines,
-				statusType, progress);
+				statusType, progress, global);
 		list.add(ptSit);
 
 	}
 
 	private PtSituationElementStructure createPtSituationElementStructure(
 			String summaryText, String descriptionText, String idNumber,
-			String begins, String expires, String lines, String statusType, String progress) {
+			String begins, String expires, String lines, String statusType, String progress, String global) {
 		PtSituationElementStructure ptSit = new PtSituationElementStructure();
 		ptSit.setSummary(defaultedTextStructure(summaryText));
 		ptSit.setDescription(defaultedTextStructure(descriptionText));
@@ -96,24 +97,24 @@ public class SiriHelper {
 
 		ptSit.setPublicationWindow(s);
 
-		AffectsScopeStructure affects = createAffects(lines);
+		AffectsScopeStructure affects = createAffects(lines, global);
 		ptSit.setAffects(affects);
 
-		if (false) {
-			ptSit.setDetail(defaultedTextStructure("detail text"));
-			ptSit.setAdvice(defaultedTextStructure("advice text"));
-
-			// AffectsScopeStructure affects = new AffectsScopeStructure();
-			// StopPoints stopPoints = new StopPoints();
-			// AffectedStopPointStructure stopPoint = new
-			// AffectedStopPointStructure();
-			// StopPointRefStructure stopPointRef = new StopPointRefStructure();
-			// stopPoint.setStopPointRef(stopPointRef);
-			// stopPointRef.setValue("stoppoint ref");
-			// stopPoints.getAffectedStopPoint().add(stopPoint);
-			// affects.setStopPoints(stopPoints);
-
-		}
+//		if (false) {
+//			ptSit.setDetail(defaultedTextStructure("detail text"));
+//			ptSit.setAdvice(defaultedTextStructure("advice text"));
+//
+//			// AffectsScopeStructure affects = new AffectsScopeStructure();
+//			// StopPoints stopPoints = new StopPoints();
+//			// AffectedStopPointStructure stopPoint = new
+//			// AffectedStopPointStructure();
+//			// StopPointRefStructure stopPointRef = new StopPointRefStructure();
+//			// stopPoint.setStopPointRef(stopPointRef);
+//			// stopPointRef.setValue("stoppoint ref");
+//			// stopPoints.getAffectedStopPoint().add(stopPoint);
+//			// affects.setStopPoints(stopPoints);
+//
+//		}
 		
 		if (!StringUtils.isBlank(progress)) {
 		  ptSit.setProgress(WorkflowStatusEnumeration.fromValue(progress));
@@ -129,8 +130,14 @@ public class SiriHelper {
     return s;
   }
 
-  private AffectsScopeStructure createAffects(String lines) {
+  private AffectsScopeStructure createAffects(String lines, String global) {
 		AffectsScopeStructure affects = new AffectsScopeStructure();
+		if (global != null) {
+		  Operators operators = new Operators();
+		  operators.setAllOperators("");
+      affects.setOperators(operators );
+      return affects;
+		}
 		VehicleJourneys vehicleJourneys = new VehicleJourneys();
 		affects.setVehicleJourneys(vehicleJourneys);
 

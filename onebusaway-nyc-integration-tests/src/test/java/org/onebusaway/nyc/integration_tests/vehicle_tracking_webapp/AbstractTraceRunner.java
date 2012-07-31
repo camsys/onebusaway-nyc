@@ -237,7 +237,6 @@ public class AbstractTraceRunner {
 				ourResult.getInferredPhase().toUpperCase().equals("IN_PROGRESS")) {
 		    System.out.println("LOCATION: expected=" + reportedLocation + ", inferred=" + ourLocation);
 			assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
-			break;
 		}
       }
       

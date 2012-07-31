@@ -38,8 +38,22 @@ public class CrewResourceTest extends ResourceTest {
   }
 
   @Test
+  public void testOperatorAssignmentComparator() {
+    OperatorAssignment oa1 = new OperatorAssignment();
+    oa1.setUpdated("2012-07-29T20:51:24-00:00");
+    OperatorAssignment oa2 = new OperatorAssignment();
+    oa2.setUpdated("2012-07-29T20:51:24-00:00");
+    assertEquals(0, oa1.compareTo(oa2));
+    assertEquals(0, oa2.compareTo(oa1));
+    OperatorAssignment oa3 = new OperatorAssignment();
+    oa3.setUpdated("2012-07-29T20:51:25-00:00");
+    assertEquals(1, oa3.compareTo(oa2));
+    
+  }
+  
+  @Test
   public void testPaddedRunIds() throws Exception {
-    File tmpInFile = getCISFile();
+    File tmpInFile = getCISFile("CIS_20120727.txt");
     
     UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(tmpInFile);
     // no need to set depotIdTranslater
@@ -60,18 +74,32 @@ public class CrewResourceTest extends ResourceTest {
       assertFalse(runId.contains("-0"));
     }
     assertTrue(i>0);
-    _log.error("processed " + i + " assignment records");
+    _log.info("processed " + i + " assignment records");
   }
-
 
   @Test
   public void testDuplicateAssignments() throws Exception {
-    File tmpInFile = getCISFile();
+    HashMap<String, OperatorAssignment> passMap = testDuplicateAssignments("CIS_20120727.txt", "2012-07-27");
+    
+    assertNotNull(passMap);
+    assertTrue(!passMap.isEmpty());
+    OperatorAssignment test1 = passMap.get("706005");
+    assertNotNull(test1);
+    assertEquals("455", test1.getRunNumber());
+
+    passMap = testDuplicateAssignments("CIS_20120730_1602.txt", "2012-07-30");
+    OperatorAssignment test2 = passMap.get("387009");
+    assertNotNull(test2);
+    assertEquals("Q4420", test2.getRunRoute()); // duplicate CAST should be excluded
+  }
+  
+  public HashMap<String, OperatorAssignment> testDuplicateAssignments(String filename, String serviceDateStr) throws Exception {
+    File tmpInFile = getCISFile(filename);
     UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(tmpInFile);
     // no need to set depotIdTranslater
     OperatorAssignmentData data = process.generateDataObject();
     assertNotNull(data);
-    DateMidnight serviceDate = new DateMidnight("2012-07-27");
+    DateMidnight serviceDate = new DateMidnight(serviceDateStr);
     List<SCHOperatorAssignment> list = data.getOperatorAssignmentsByServiceDate(serviceDate);
     assertNotNull(list);
 
@@ -81,20 +109,22 @@ public class CrewResourceTest extends ResourceTest {
         data.getOperatorAssignmentsByServiceDate(serviceDate));
     HashMap<String, Integer> passCounts = new HashMap<String, Integer>();
     HashMap<String, OperatorAssignment> passMap = new HashMap<String, OperatorAssignment>();
+    int i = 0;
     for (OperatorAssignment oa : jsonOpAssigns) {
-
+      i++;
       String key = oa.getPassId();
       if (passCounts.containsKey(key)) {
-
         Integer val = passCounts.get(key);
         passCounts.put(key, val + 1);
-        passMap.remove(key);
+        _log.error("found dup for pass=" + key + ", val=" + (val + 1));
         passMap.put(key, oa);
       } else {
         passCounts.put(key, 1);
         passMap.put(key, oa);
       }
     }
+    // make sure we found some data!
+    assertTrue(i>0);
     
     boolean foundDuplicate = false;
     for (String key : passCounts.keySet()) {
@@ -105,16 +135,14 @@ public class CrewResourceTest extends ResourceTest {
 
     }
     assertFalse(foundDuplicate);
-    OperatorAssignment test1 = passMap.get("706005");
-    assertNotNull(test1);
-    assertEquals("455", test1.getRunNumber());
+    return passMap;
   }
 
-  private File getCISFile() throws Exception {
+  private File getCISFile(String filename) throws Exception {
     File tmpInFile = File.createTempFile("tmp", ".tmp");
     tmpInFile.deleteOnExit();
     
-    InputStream resource = this.getClass().getResourceAsStream("CIS.txt");
+    InputStream resource = this.getClass().getResourceAsStream(filename);
     assertNotNull(resource);
     copy(resource, tmpInFile.getCanonicalPath());
     return tmpInFile;
