@@ -2,6 +2,8 @@ package org.onebusaway.nyc.admin.service.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +16,12 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import org.onebusaway.nyc.admin.comparator.InferredStateComparator;
+import org.onebusaway.nyc.admin.comparator.LastUpdateComparator;
+import org.onebusaway.nyc.admin.comparator.ObservedDSCComparator;
+import org.onebusaway.nyc.admin.comparator.PullinTimeComparator;
+import org.onebusaway.nyc.admin.comparator.PulloutTimeComparator;
+import org.onebusaway.nyc.admin.comparator.VehicleIdComparator;
 import org.onebusaway.nyc.admin.model.json.DestinationSignCode;
 import org.onebusaway.nyc.admin.model.json.VehicleLastKnownRecord;
 import org.onebusaway.nyc.admin.model.json.VehiclePullout;
@@ -25,6 +33,7 @@ import org.onebusaway.nyc.admin.service.VehicleSearchService;
 import org.onebusaway.nyc.admin.service.VehicleStatusService;
 import org.onebusaway.nyc.admin.util.VehicleDetailBuilder;
 import org.onebusaway.nyc.admin.util.VehicleSearchParameters;
+import org.onebusaway.nyc.admin.util.VehicleSortFields;
 import org.onebusaway.nyc.admin.util.VehicleStatusBuilder;
 import org.onebusaway.nyc.admin.util.VehicleStatusCache;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -137,6 +146,43 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		statistics.setVehiclesTracked(vehiclesTracked.size());
 		
 		return statistics;
+	}
+	
+	@Override
+	public void sort(List<VehicleStatus> vehiclesPerPage, String field, String order) {
+		VehicleSortFields sortField = VehicleSortFields.valueOf(field.toUpperCase());
+		Comparator<VehicleStatus> fieldComparator = null;
+		switch(sortField) {
+		
+			case VEHICLEID :
+				fieldComparator = new VehicleIdComparator(order);
+				break;
+			
+			case LASTUPDATE :
+				fieldComparator = new LastUpdateComparator(order);
+				break;
+			
+			case INFERREDSTATE :
+				fieldComparator = new InferredStateComparator(order);
+				break;
+				
+			case OBSERVEDDSC :
+				fieldComparator = new ObservedDSCComparator(order);
+				break;
+				
+			case PULLOUTTIME :
+				fieldComparator = new PulloutTimeComparator(order);
+				break;
+				
+			case PULLINTIME :
+				fieldComparator = new PullinTimeComparator(order);
+				break;
+			
+			default :
+				fieldComparator = new VehicleIdComparator(order);
+				break;
+		}
+		Collections.sort(vehiclesPerPage, fieldComparator);
 	}
 	
 	private Map<String, VehiclePullout> getPulloutData() {
@@ -362,6 +408,5 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 	public void setVehicleSearchService(VehicleSearchService vehicleSearchService) {
 		this.vehicleSearchService = vehicleSearchService;
 	}
-
 
 }

@@ -53,12 +53,13 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	private String inferredState;
 	private String pulloutStatus;
 	private String emergencyStatus;
+	private String sidx;
+	private String sord;
 
-	List<VehicleStatus> vehicleStatusRecords;
 
- public String getGoogleMapsClientId() {
-    return configurationService.getConfigurationValueAsString("display.googleMapsClientId", "");    
-  }
+	public String getGoogleMapsClientId() {
+		return configurationService.getConfigurationValueAsString("display.googleMapsClientId", "");    
+	}
 
 	public String getVehicleData() {
 		List<VehicleStatus> vehiclesPerPage = null;
@@ -72,6 +73,7 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 		if(pageNum.equals(1) && _search == false) {
 			vehicleStatusRecords = vehicleStatusService.getVehicleStatus(true);
 			//Return all the records as this is not search request
+			sortIfRequired(vehicleStatusRecords);
 			vehiclesPerPage = getVehiclesPerPage(vehicleStatusRecords, rowsPerPage, pageNum);
 			total = vehicleStatusRecords.size();
 		} else {
@@ -86,14 +88,17 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 				} else {
 					matchingVehicleRecords = vehicleStatusService.search(searchParameters, false);
 				}
+				sortIfRequired(matchingVehicleRecords);
 				vehiclesPerPage = getVehiclesPerPage(matchingVehicleRecords, rowsPerPage, pageNum);
 				total = matchingVehicleRecords.size();
 			} else {
 				//Subsequent pages for non search requests
+				sortIfRequired(vehicleStatusRecords);
 				vehiclesPerPage = getVehiclesPerPage(vehicleStatusRecords, rowsPerPage, pageNum);
 				total = vehicleStatusRecords.size();
 			}
 		}
+		
 		buildResponse(vehiclesPerPage, pageNum, rowsPerPage, total);
 		
 		return "vehicles";
@@ -102,6 +107,13 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	public String getStatistics() {
 		vehicleStatistics = vehicleStatusService.getVehicleStatistics();
 		return "statistics";
+	}
+	
+	private void sortIfRequired(List<VehicleStatus> vehicleStatusRecords) {
+		//check if the results need to be sorted
+		if(StringUtils.isNotBlank(sidx)) {
+			vehicleStatusService.sort(vehicleStatusRecords, sidx, sord);
+		}
 	}
 
 	private void buildResponse(List<VehicleStatus> vehicleRecordsPerPage,
@@ -315,6 +327,34 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	 */
 	public VehicleStatistics getVehicleStatistics() {
 		return vehicleStatistics;
+	}
+
+	/**
+	 * @return the sidx
+	 */
+	public String getSidx() {
+		return sidx;
+	}
+
+	/**
+	 * @param sidx the sidx to set
+	 */
+	public void setSidx(String sidx) {
+		this.sidx = sidx;
+	}
+
+	/**
+	 * @return the sord
+	 */
+	public String getSord() {
+		return sord;
+	}
+
+	/**
+	 * @param sord the sord to set
+	 */
+	public void setSord(String sord) {
+		this.sord = sord;
 	}
 
 }

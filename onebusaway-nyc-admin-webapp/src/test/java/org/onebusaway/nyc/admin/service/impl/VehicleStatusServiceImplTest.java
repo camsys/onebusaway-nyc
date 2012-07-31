@@ -91,7 +91,7 @@ public class VehicleStatusServiceImplTest {
 		assertEquals("Mismatched pull in time", vehicleStatus.getFormattedPullinTime(), "00:23");
 		assertEquals("Mismatched pull out time", vehicleStatus.getFormattedPulloutTime(), "05:51");
 		assertEquals("Mismatched inferred DSC", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
-		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red.png");
+		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red_alert_18x18.png");
 		assertEquals("Mismatched emergency status", vehicleStatus.getEmergencyStatus(), "1");
 	}
 	
@@ -162,7 +162,7 @@ public class VehicleStatusServiceImplTest {
 		assertNull("No pull in time", vehicleStatus.getPullinTime());
 		assertNull("No pull out time", vehicleStatus.getPulloutTime());
 		assertEquals("Mismatched inferred destination information", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
-		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red.png");
+		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red18x18.png");
 	}
 
 }

@@ -45,6 +45,14 @@ public interface VehicleStatusService {
 	 * @param vehicleId
 	 * @return
 	 */
-  VehicleDetail getVehicleDetail(String vehicleId);
+	VehicleDetail getVehicleDetail(String vehicleId);
+	
+	/**
+	 * Sorts vehicle records on the given field by given order. 
+	 * @param vehiclesPerPage vehicle records to be sorted
+	 * @param field field on which the records need to be sorted
+	 * @param order order of sorting
+	 */
+	void sort(List<VehicleStatus> vehiclesPerPage, String field, String order);
 
 }
