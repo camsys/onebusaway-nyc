@@ -15,11 +15,28 @@
  */
 package org.onebusaway.nyc.transit_data_manager.siri;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.PostConstruct;
+import javax.xml.bind.JAXBException;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.xwork.StringUtils;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
+import org.onebusaway.nyc.transit_data_manager.util.NycEnvironment;
 import org.onebusaway.siri.AffectedApplicationStructure;
 import org.onebusaway.siri.OneBusAwayAffects;
 import org.onebusaway.siri.OneBusAwayAffectsStructure.Applications;
@@ -36,9 +53,6 @@ import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDet
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.TranslatedString;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.TranslatedString.Translation;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.xwork.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +70,6 @@ import uk.org.siri.siri.AffectsScopeStructure.StopPoints;
 import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.EntryQualifierStructure;
-import uk.org.siri.siri.ErrorDescriptionStructure;
 import uk.org.siri.siri.ExtensionsStructure;
 import uk.org.siri.siri.HalfOpenTimestampRangeStructure;
 import uk.org.siri.siri.OperatorRefStructure;
@@ -65,7 +78,6 @@ import uk.org.siri.siri.PtConsequencesStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
-import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri.ServiceRequest;
 import uk.org.siri.siri.SeverityEnumeration;
 import uk.org.siri.siri.Siri;
@@ -81,25 +93,13 @@ import uk.org.siri.siri.SubscriptionResponseStructure;
 import uk.org.siri.siri.VehicleJourneyRefStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.annotation.PostConstruct;
-import javax.xml.bind.JAXBException;
-
 @SuppressWarnings("restriction")
 @Component
 public abstract class NycSiriService {
 
   static final Logger _log = LoggerFactory.getLogger(NycSiriService.class);
+
+  public static final String ALL_OPERATORS = "__ALL_OPERATORS__";
 
   @Autowired
   private NycTransitDataService _nycTransitDataService;
@@ -114,6 +114,8 @@ public abstract class NycSiriService {
 
   private SiriXmlSerializer _siriXmlSerializer = new SiriXmlSerializer();
 
+  protected NycEnvironment _environment = new NycEnvironment();
+
   abstract void setupForMode() throws Exception, JAXBException;
 
   abstract List<String> getExistingAlertIds(Set<String> agencies);
@@ -125,19 +127,18 @@ public abstract class NycSiriService {
       DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
       String defaultAgencyId);
 
-  abstract void postServiceDeliveryActions(SituationExchangeResults result, Collection<String> deletedIds)
-      throws Exception;
+  abstract void postServiceDeliveryActions(SituationExchangeResults result,
+      Collection<String> deletedIds) throws Exception;
 
   abstract void addSubscription(ServiceAlertSubscription subscription);
 
   abstract public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions();
 
   abstract public SiriServicePersister getPersister();
-  
-  abstract public void setPersister(SiriServicePersister _siriServicePersister);
-  
-  abstract public void deleteAllServiceAlerts();
 
+  abstract public void setPersister(SiriServicePersister _siriServicePersister);
+
+  abstract public void deleteAllServiceAlerts();
 
   @PostConstruct
   public void setup() {
@@ -161,15 +162,15 @@ public abstract class NycSiriService {
       handleServiceDelivery(delivery, s, ESiriModuleType.SITUATION_EXCHANGE,
           endpointDetails, result, preAlertIds);
     }
-    
+
     List<String> postAlertIds = getExistingAlertIds(incomingAgencies);
     @SuppressWarnings("unchecked")
-    Collection<String> deletedIds = CollectionUtils.subtract(preAlertIds, postAlertIds);
+    Collection<String> deletedIds = CollectionUtils.subtract(preAlertIds,
+        postAlertIds);
     postServiceDeliveryActions(result, deletedIds);
-    
+
   }
 
-  
   private Set<String> collectAgencies(ServiceDelivery delivery) {
     Set<String> agencies = new HashSet<String>();
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
@@ -195,10 +196,10 @@ public abstract class NycSiriService {
         endpointDetails, result, preAlertIds);
   }
 
-  
   void handleSituationExchange(ServiceDelivery serviceDelivery,
       SituationExchangeDeliveryStructure sxDelivery,
-      SiriEndpointDetails endpointDetails, SituationExchangeResults result, List<String> preAlertIds) {
+      SiriEndpointDetails endpointDetails, SituationExchangeResults result,
+      List<String> preAlertIds) {
 
     DeliveryResult deliveryResult = new DeliveryResult();
     result.getDelivery().add(deliveryResult);
@@ -212,7 +213,7 @@ public abstract class NycSiriService {
     List<String> serviceAlertIdsToRemove = new ArrayList<String>();
 
     deleteAllServiceAlerts();
-    
+
     for (PtSituationElementStructure ptSituation : situations.getPtSituationElement()) {
 
       ServiceAlertBean serviceAlertBean = getPtSituationAsServiceAlertBean(
@@ -230,7 +231,7 @@ public abstract class NycSiriService {
       } else {
         serviceAlertsToUpdate.add(serviceAlertBean);
       }
-      
+
     }
 
     String defaultAgencyId = null;
@@ -296,22 +297,21 @@ public abstract class NycSiriService {
       status = false;
     }
 
+    createSubscriptionSiriResponse(responseSiri, status, errorMessage,
+        subscriptionRef);
+    return;
+  }
+
+  private void createSubscriptionSiriResponse(Siri responseSiri,
+      boolean status, String errorMessage, String subscriptionRef) {
     SubscriptionResponseStructure response = new SubscriptionResponseStructure();
-    StatusResponseStructure statusResponseStructure = new StatusResponseStructure();
-    statusResponseStructure.setStatus(status);
-    if (!status) {
-      ServiceDeliveryErrorConditionStructure condition = new ServiceDeliveryErrorConditionStructure();
-      statusResponseStructure.setErrorCondition(condition);
-      ErrorDescriptionStructure description = new ErrorDescriptionStructure();
-      condition.setDescription(description);
-      description.setValue(errorMessage);
-    }
+    StatusResponseStructure statusResponseStructure = SiriHelper.createStatusResponseStructure(
+        status, errorMessage);
     SubscriptionQualifierStructure subscriptionQualifierStructure = new SubscriptionQualifierStructure();
     subscriptionQualifierStructure.setValue(subscriptionRef);
     statusResponseStructure.setSubscriptionRef(subscriptionQualifierStructure);
     response.getResponseStatus().add(statusResponseStructure);
     responseSiri.setSubscriptionResponse(response);
-    return;
   }
 
   ServiceAlertBean getPtSituationAsServiceAlertBean(
@@ -324,8 +324,8 @@ public abstract class NycSiriService {
 
       if (!endpointDetails.getDefaultAgencyIds().isEmpty()) {
         String agencyId = endpointDetails.getDefaultAgencyIds().get(0);
-        serviceAlert.setId(AgencyAndId.convertToString(new AgencyAndId(agencyId,
-            situationId)));
+        serviceAlert.setId(AgencyAndId.convertToString(new AgencyAndId(
+            agencyId, situationId)));
       } else {
         AgencyAndId id = AgencyAndIdLibrary.convertFromString(situationId);
         serviceAlert.setId(AgencyAndId.convertToString(id));
@@ -359,7 +359,8 @@ public abstract class NycSiriService {
       TranslatedString translatedString) {
     List<NaturalLanguageStringBean> nlsb = new ArrayList<NaturalLanguageStringBean>();
     for (Translation t : translatedString.getTranslationList()) {
-      nlsb.add(new NaturalLanguageStringBean(StringUtils.trim(t.getText()), StringUtils.trim(t.getLanguage())));
+      nlsb.add(new NaturalLanguageStringBean(StringUtils.trim(t.getText()),
+          StringUtils.trim(t.getLanguage())));
     }
     return nlsb;
   }
@@ -402,17 +403,18 @@ public abstract class NycSiriService {
 
     Operators operators = affectsStructure.getOperators();
 
-    if (operators != null
-        && !CollectionsLibrary.isEmpty(operators.getAffectedOperator())) {
+    if (operators != null) {
+      if (operators.getAllOperators() != null) {
+        addAffectsOperator(allAffects, ALL_OPERATORS);
+      }
+      if (!CollectionsLibrary.isEmpty(operators.getAffectedOperator())) {
 
-      for (AffectedOperatorStructure operator : operators.getAffectedOperator()) {
-        OperatorRefStructure operatorRef = operator.getOperatorRef();
-        if (operatorRef == null || operatorRef.getValue() == null)
-          continue;
-        String agencyId = StringUtils.trim(operatorRef.getValue());
-        SituationAffectsBean sab = new SituationAffectsBean();
-        sab.setAgencyId(agencyId);
-        allAffects.add(sab);
+        for (AffectedOperatorStructure operator : operators.getAffectedOperator()) {
+          OperatorRefStructure operatorRef = operator.getOperatorRef();
+          if (operatorRef == null || operatorRef.getValue() == null)
+            continue;
+          addAffectsOperator(allAffects, StringUtils.trim(operatorRef.getValue()));
+        }
       }
     }
 
@@ -502,6 +504,13 @@ public abstract class NycSiriService {
 
     if (!allAffects.isEmpty())
       serviceAlert.setAllAffects(allAffects);
+  }
+
+  private void addAffectsOperator(List<SituationAffectsBean> allAffects,
+      String operator) {
+    SituationAffectsBean sab = new SituationAffectsBean();
+    sab.setAgencyId(operator);
+    allAffects.add(sab);
   }
 
   private void handleConsequences(PtSituationElementStructure ptSituation,
@@ -600,15 +609,14 @@ public abstract class NycSiriService {
     return tsBuilder.build();
   }
 
-  protected void sendAndProcessSubscriptionAndServiceRequest()
-      throws Exception {
-        String result = sendSubscriptionAndServiceRequest();
-        Siri siri = _siriXmlSerializer.fromXml(result);
-        SituationExchangeResults handleResult = new SituationExchangeResults();
-        handleServiceDeliveries(handleResult, siri.getServiceDelivery());
-        _log.info(handleResult.toString());
-      }
-  
+  protected void sendAndProcessSubscriptionAndServiceRequest() throws Exception {
+    String result = sendSubscriptionAndServiceRequest();
+    Siri siri = _siriXmlSerializer.fromXml(result);
+    SituationExchangeResults handleResult = new SituationExchangeResults();
+    handleServiceDeliveries(handleResult, siri.getServiceDelivery());
+    _log.info(handleResult.toString());
+  }
+
   String sendSubscriptionAndServiceRequest() throws Exception {
     Siri siri = createSubsAndSxRequest();
     String sendResult = getWebResourceWrapper().post(
@@ -626,6 +634,7 @@ public abstract class NycSiriService {
     Siri siri = new Siri();
     SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
     subscriptionRequest.setAddress(makeSubscriptionUrl(getSubscriptionPath()));
+    subscriptionRequest.setRequestorRef(_environment.getParticipant() );
     siri.setSubscriptionRequest(subscriptionRequest);
     List<SituationExchangeSubscriptionStructure> exchangeSubscriptionRequests = subscriptionRequest.getSituationExchangeSubscriptionRequest();
     SituationExchangeSubscriptionStructure situationExchangeSubscriptionStructure = new SituationExchangeSubscriptionStructure();;
@@ -636,7 +645,7 @@ public abstract class NycSiriService {
     id.setValue(UUID.randomUUID().toString());
     situationExchangeSubscriptionStructure.setSubscriptionIdentifier(id);
     situationExchangeRequestStructure.setRequestTimestamp(new Date());
-
+    
     return siri;
   }
 
@@ -656,13 +665,15 @@ public abstract class NycSiriService {
     SituationExchangeRequestStructure situationExchangeRequestStructure = new SituationExchangeRequestStructure();
     situationExchangeRequest.add(situationExchangeRequestStructure);
     situationExchangeRequestStructure.setRequestTimestamp(new Date());
+    
+    serviceRequest.setRequestorRef(_environment.getParticipant());
   }
 
   public NycTransitDataService getTransitDataService() {
     return _nycTransitDataService;
   }
 
-  public void setTransitDataService(NycTransitDataService nycTransitDataService) {
+  public void setTransitDataService(NycTransitDataService nycTransitDataService) {  
     this._nycTransitDataService = nycTransitDataService;
   }
 
@@ -691,5 +702,5 @@ public abstract class NycSiriService {
   public void setWebResourceWrapper(WebResourceWrapper _webResourceWrapper) {
     this._webResourceWrapper = _webResourceWrapper;
   }
-
+  
 }

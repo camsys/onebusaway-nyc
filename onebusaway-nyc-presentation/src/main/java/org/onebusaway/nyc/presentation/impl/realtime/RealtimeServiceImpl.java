@@ -308,6 +308,13 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Override
   public List<ServiceAlertBean> getServiceAlertsGlobal() {
     
+    SituationQueryBean query = new SituationQueryBean();
+    // TODO Not great that this constant is here;
+    // see org.onebusaway.nyc.transit_data_manager.siri.NycSiriService#ALL_OPERATORS
+    query.setAgencyId("__ALL_OPERATORS__");
+    ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
+    return serviceAlerts.getList();
+    
 //    NaturalLanguageStringBean naturalLanguageStringBean = new NaturalLanguageStringBean();
 //    naturalLanguageStringBean.setLang("en");
 //    naturalLanguageStringBean.setValue("This is a test global alert");
@@ -329,7 +336,6 @@ public class RealtimeServiceImpl implements RealtimeService {
 //    
 //    return serviceAlertBeans;
     
-    return null;
   }
   
   /**

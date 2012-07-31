@@ -17,9 +17,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import uk.org.siri.siri.ParticipantRefStructure;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
 
@@ -93,16 +92,19 @@ public class ServiceAlertSubscription implements Serializable {
     this.subscriptionRef = subscriptionRef;    
   }
 
-  public void send(Map<String, ServiceAlertBean> serviceAlerts, Collection<String> deletedIds) throws Exception {
-    send(serviceAlerts.values(), deletedIds);
+  public void send(Map<String, ServiceAlertBean> serviceAlerts, Collection<String> deletedIds, String environment) throws Exception {
+    send(serviceAlerts.values(), deletedIds, environment);
   }
 
   public void send(Collection<ServiceAlertBean> collection,
-      Collection<String> deletedIds) throws Exception {
+      Collection<String> deletedIds, String environment) throws Exception {
     SiriXmlSerializer siriXmlSerializer = new SiriXmlSerializer();
     ServiceAlertsHelper h = new ServiceAlertsHelper();
     Siri s = new Siri();
     ServiceDelivery serviceDelivery = new ServiceDelivery();
+    ParticipantRefStructure producer = new ParticipantRefStructure();
+    producer.setValue(environment);
+    serviceDelivery.setProducerRef(producer);
     
     h.addSituationExchangeToServiceDelivery(serviceDelivery, collection);
     h.addClosedSituationExchangesToSiri(serviceDelivery, deletedIds);

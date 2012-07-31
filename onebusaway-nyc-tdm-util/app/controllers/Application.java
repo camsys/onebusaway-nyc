@@ -114,11 +114,11 @@ public class Application extends Controller {
     }
 
     public static void createSiri(String title, String statusType, String id,
-            String begins, String expires, String affected, String text,
+            String begins, String expires, String affected, String global, String text,
             String progress, String tdm) {
         SiriHelper s = new SiriHelper();
         s.addPtSituationElementStructure(title, text, id, begins, expires,
-                affected, null, progress);
+                affected, null, progress, global);
         String result = s.asString();
         render(result, tdm);
     }
