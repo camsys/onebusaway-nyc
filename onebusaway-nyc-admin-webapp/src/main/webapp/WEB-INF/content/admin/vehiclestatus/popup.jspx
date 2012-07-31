@@ -29,11 +29,36 @@
 <div class="vehicleDetail">
 <b>Bus ID: <s:property value="vehicleId" /></b><br/>
 <hr/>
-<b>Assigned Depot: <s:property value="depot" /></b><br/>
-Headsign: <s:property value="headSign" />
+<b>Run IDs</b><br/>
+<table>
+	<tr>
+		<td width="100px"><font color="red">Observed</font></td>
+		<td width="100px">UTS</td>
+		<td width="100px">Inferred</td>
+	</tr>
+	<tr>
+		<td>
+		<s:if test="observedRunId != inferredRunId">
+			<font color="red"><s:property value="observedRunId" /></font>
+		</s:if>
+		<s:else>
+			<font color="blue"><s:property value="observedRunId" /></font>
+		</s:else>
+		</td>
+		<td><s:property value="utsRunId" /></td>
+		<td><s:property value="inferredRunId" /></td>
+	</tr>
+</table>
+Agency: <s:property value="agency" /><br/>
+Assigned Depot: <s:property value="depot" /><br/>
+Service Date: <s:property value="serviceDate" /><br/>
+Operator ID: <s:property value="operatorId" /><br/>
+Schedule Deviation: <s:property value="scheduleDeviationAsString" /><br/>
+Headsign: <s:property value="headSign" /><br/>
 <s:if test="inferredHeadSign">
-<font color="red">reported: <s:property value="inferredHeadSign" /></font>
+<font color="red">reported: <s:property value="inferredHeadSign" /></font><br/>
 </s:if>
+Assigned Trip ID: <s:property value="tripId" /><br/>
 </div>
 <div class="position">
   <p>

@@ -28,10 +28,12 @@ public class VehicleLastKnownRecord {
     private String inferredDSC;
     private String inferredDirectionId;
     private String inferredRunId;
+    private String inferredTripId;
     private String emergencyCode;
     private Double latitude;
     private Double longitude;
     private Double direction;
+    private Long scheduleDeviation;
 	
 	/**
 	 * @return the vehicleAgencyId
@@ -228,7 +230,14 @@ public class VehicleLastKnownRecord {
 	public void setInferredRunId(String inferredRunId) {
 		this.inferredRunId = inferredRunId;
 	}
-	/**
+	@JsonProperty("inferred-trip-id")
+	public String getInferredTripId() {
+    return inferredTripId;
+  }
+  public void setInferredTripId(String inferredTripId) {
+    this.inferredTripId = inferredTripId;
+  }
+  /**
 	 * @return the destinationSignCode
 	 */
 	@JsonProperty("dest-sign-code")
@@ -289,5 +298,13 @@ public class VehicleLastKnownRecord {
 	public void setTimeReceived(String timeReceived) {
 		this.timeReceived = timeReceived;
 	}
+	
+  @JsonProperty("schedule-deviation")
+  public Long getScheduleDeviation() {
+    return scheduleDeviation;
+  }
+  public void setScheduleDeviation(Long scheduleDeviation) {
+    this.scheduleDeviation = scheduleDeviation;
+  }
 
 }

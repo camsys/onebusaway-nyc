@@ -12,11 +12,21 @@ public class VehicleDetailBuilder {
       String inferredHeadSign) {
     VehicleDetail vehicleDetail = new VehicleDetail();
     vehicleDetail.setVehicleId(lastKnownRecord.getVehicleId());
-    vehicleDetail.setLocation(lastKnownRecord.getLatitude() +", " + lastKnownRecord.getLongitude());
+    vehicleDetail.setLocation(lastKnownRecord.getLatitude() + ", " + lastKnownRecord.getLongitude());
     vehicleDetail.setDirection(Math.abs(lastKnownRecord.getDirection()) % 360);
     vehicleDetail.setDepot(lastKnownRecord.getDepotId());
     vehicleDetail.setHeadSign(headSign);
     vehicleDetail.setInferredHeadSign(inferredHeadSign);
+    vehicleDetail.setServiceDate(lastKnownRecord.getServiceDate());
+    vehicleDetail.setOperatorId(lastKnownRecord.getOperatorIdDesignator());
+    vehicleDetail.setAgency(lastKnownRecord.getAgencyId());
+    vehicleDetail.setObservedRunId(lastKnownRecord.getRouteIdDesignator() + "-" + lastKnownRecord.getRunIdDesignator());
+    if (pullout != null) {
+      vehicleDetail.setUtsRunId(pullout.getRun());
+    }
+    vehicleDetail.setInferredRunId(lastKnownRecord.getInferredRunId());
+    vehicleDetail.setScheduleDeviation(lastKnownRecord.getScheduleDeviation());
+    vehicleDetail.setTripId(lastKnownRecord.getInferredTripId());
     return vehicleDetail;
   }
 
