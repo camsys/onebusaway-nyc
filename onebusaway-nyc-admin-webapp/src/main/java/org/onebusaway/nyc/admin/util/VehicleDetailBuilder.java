@@ -25,7 +25,9 @@ public class VehicleDetailBuilder {
       vehicleDetail.setUtsRunId(pullout.getRun());
     }
     vehicleDetail.setInferredRunId(lastKnownRecord.getInferredRunId());
-    vehicleDetail.setScheduleDeviation(lastKnownRecord.getScheduleDeviation());
+    if (lastKnownRecord.getScheduleDeviation() != null) {
+      vehicleDetail.setScheduleDeviation(lastKnownRecord.getScheduleDeviation());
+    }
     vehicleDetail.setTripId(lastKnownRecord.getInferredTripId());
     return vehicleDetail;
   }

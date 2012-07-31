@@ -272,6 +272,7 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 
 		try {
 		  String headSignContent = remoteConnectionService.getContent(url);
+		  if (headSignContent == null) { return null;}
 		  String json = extractJsonObjectString(headSignContent);
 		  DestinationSignCode headSign = null;
 		  headSign = convertToObject("{" + json + "}", DestinationSignCode.class);

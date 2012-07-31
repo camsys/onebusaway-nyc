@@ -22,7 +22,12 @@ public class PopupAction extends OneBusAwayNYCAdminActionSupport {
 
   public String input() {
     _log.info("in input");
-    vehicleDetailRecord = vehicleStatusService.getVehicleDetail(vehicleId);
+    try {
+      vehicleDetailRecord = vehicleStatusService.getVehicleDetail(vehicleId);
+    } catch (Throwable t) {
+      _log.error("input failed:", t);
+      vehicleDetailRecord = null;
+    }
     _log.info("retrieved vehicleDetail=" + vehicleDetailRecord);
     return INPUT;
   }
