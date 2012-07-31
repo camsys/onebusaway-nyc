@@ -97,15 +97,6 @@ public class DscLikelihood implements SensorModelRule {
     EVehiclePhase phase = js.getPhase();
     final BlockStateObservation blockStateObs = state.getBlockStateObservation();
 
-    /*
-     * TODO clean up this hack We are really in-progress, but because of the
-     * out-of-service headsign, we can't report it as in-progress
-     */
-    if (context.getObservation().hasOutOfServiceDsc()
-        && EVehiclePhase.DEADHEAD_DURING == phase
-        && (blockStateObs != null && blockStateObs.isOnTrip()))
-      phase = EVehiclePhase.IN_PROGRESS;
-
     final String observedDsc = obs.getLastValidDestinationSignCode();
 
     if (observedDsc == null || !obs.hasValidDsc() || obs.hasOutOfServiceDsc()) {
