@@ -14,6 +14,7 @@ import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 	}
 
 	@Autowired
+	@Qualifier("sessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		_template = new HibernateTemplate(sessionFactory);
 	}

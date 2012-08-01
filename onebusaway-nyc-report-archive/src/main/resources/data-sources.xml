@@ -37,6 +37,20 @@
       <property name="resourceRef"
                 value="true" />
     </bean>
+    
+    <bean id="slaveDataSource"
+          class="org.springframework.jndi.JndiObjectFactoryBean">
+      <property name="jndiName"
+                value="java:comp/env/jdbc/slaveDB"/>   
+      <property name="lookupOnStartup"
+                value="true"/>   
+      <property name="cache"
+                value="true"/>   
+      <property name="proxyInterface"
+                value="javax.sql.DataSource"/>   
+      <property name="resourceRef"
+                value="true" />
+    </bean>
 
     <alias name="dataSource" alias="mutableDataSource" />
     
@@ -44,11 +58,6 @@
         <property name="target" value="hibernateProperties" />
         <property name="properties">
             <props>
-              <prop key="hibernate.hbm2ddl.auto">update</prop>
-              <prop key="hibernate.jdbc.batch_size">1000</prop>
-              <prop key="hibernate.order_inserts">false</prop>
-              <prop key="hibernate.order_updates">false</prop>
-              <prop key="hibernate.show_sql">false</prop>
               <prop key="bundle.location">${bundle.location}</prop>
             </props> 
         </property> 
@@ -92,5 +101,52 @@
                 <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="annotatedClasses">
+			<list>
+				<value>org.onebusaway.nyc.report_archive.model.CcLocationReportRecord</value>
+				<value>org.onebusaway.nyc.report_archive.model.InvalidLocationRecord</value>
+				<value>org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord</value>
+				<value>org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.connection.pool_size">1</prop>
+				<prop key="hibernate.current_session_context_class">thread</prop>
+				<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+	            <prop key="hibernate.jdbc.batch_size">1000</prop>
+    		    <prop key="hibernate.order_inserts">false</prop>
+            	<prop key="hibernate.order_updates">false</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<bean id="slaveSessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="slaveDataSource" />
+		<property name="annotatedClasses">
+			<list>
+				<value>org.onebusaway.nyc.report_archive.model.CcLocationReportRecord</value>
+				<value>org.onebusaway.nyc.report_archive.model.InvalidLocationRecord</value>
+				<value>org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord</value>
+				<value>org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.connection.pool_size">1</prop>
+				<prop key="hibernate.current_session_context_class">thread</prop>
+				<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+              	<prop key="hibernate.jdbc.batch_size">1000</prop>
+              	<prop key="hibernate.order_inserts">false</prop>
+              	<prop key="hibernate.order_updates">false</prop>
+              	<prop key="hibernate.show_sql">false</prop>
+			</props>
+		</property>
+	</bean>
 
 </beans>
