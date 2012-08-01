@@ -22,7 +22,7 @@
 	<div id="topBox">
 		<script type=text/x-handlebars>
 			{{#view VehicleStatus.TopBarView}}
-				<input type="text" id="search" />
+				<!--<input type="text" id="search" />-->
 				<div id="lastUpdateBox">
 					<label class="vehicleLabel">Last Update:</label>
 					<label id="lastUpdate" class="vehicleLabel"></label>

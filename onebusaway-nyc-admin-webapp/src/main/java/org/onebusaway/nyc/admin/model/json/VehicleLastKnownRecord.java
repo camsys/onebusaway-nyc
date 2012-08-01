@@ -28,6 +28,7 @@ public class VehicleLastKnownRecord {
     private String inferredDSC;
     private String inferredDirectionId;
     private String inferredRunId;
+    private String inferredRouteId;
     private String inferredTripId;
     private String emergencyCode;
     private Double latitude;
@@ -232,12 +233,12 @@ public class VehicleLastKnownRecord {
 	}
 	@JsonProperty("inferred-trip-id")
 	public String getInferredTripId() {
-    return inferredTripId;
-  }
-  public void setInferredTripId(String inferredTripId) {
-    this.inferredTripId = inferredTripId;
-  }
-  /**
+		return inferredTripId;
+	}
+	public void setInferredTripId(String inferredTripId) {
+		this.inferredTripId = inferredTripId;
+	}
+	/**
 	 * @return the destinationSignCode
 	 */
 	@JsonProperty("dest-sign-code")
@@ -265,26 +266,26 @@ public class VehicleLastKnownRecord {
 	}
 
 	@JsonProperty("latitude")
-  public Double getLatitude() {
-    return latitude;
-  }
-  public void setLatitude(Double latitude) {
-    this.latitude = latitude;
-  }
-  @JsonProperty("longitude")
-  public Double getLongitude() {
-    return longitude;
-  }
-  public void setLongitude(Double longitude) {
-    this.longitude = longitude;
-  }
-  @JsonProperty("direction-deg")
-  public Double getDirection() {
-    return direction;
-  }
-  public void setDirection(Double direction) {
-    this.direction = direction;
-  }
+	public Double getLatitude() {
+		return latitude;
+	}
+	public void setLatitude(Double latitude) {
+		this.latitude = latitude;
+	}
+	@JsonProperty("longitude")
+	public Double getLongitude() {
+		return longitude;
+	}
+	public void setLongitude(Double longitude) {
+		this.longitude = longitude;
+	}
+	@JsonProperty("direction-deg")
+	public Double getDirection() {
+		return direction;
+	}
+	public void setDirection(Double direction) {
+		this.direction = direction;
+	}
 	/**
 	 * @return the timeReceived
 	 */
@@ -299,12 +300,25 @@ public class VehicleLastKnownRecord {
 		this.timeReceived = timeReceived;
 	}
 	
-  @JsonProperty("schedule-deviation")
-  public Long getScheduleDeviation() {
-    return scheduleDeviation;
-  }
-  public void setScheduleDeviation(Long scheduleDeviation) {
-    this.scheduleDeviation = scheduleDeviation;
-  }
+	@JsonProperty("schedule-deviation")
+	public Long getScheduleDeviation() {
+		return scheduleDeviation;
+	}
+	public void setScheduleDeviation(Long scheduleDeviation) {
+		this.scheduleDeviation = scheduleDeviation;
+	}
+	/**
+	 * @return the inferredRouteId
+	 */
+	@JsonProperty("inferred-route-id")
+	public String getInferredRouteId() {
+		return inferredRouteId;
+	}
+	/**
+	 * @param inferredRouteId the inferredRouteId to set
+	 */
+	public void setInferredRouteId(String inferredRouteId) {
+		this.inferredRouteId = inferredRouteId;
+	}
 
 }

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.joda.time.Seconds;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -26,7 +27,7 @@ public class VehicleStatusBuilder {
 			vehicleStatus.setPullinTime(pullout.getPullinTime());
 			vehicleStatus.setPulloutTime(pullout.getPulloutTime());
 			//Set formatted time for display
-			vehicleStatus.setFormattedPullinTime(extractTime(pullout.getPullinTime()));
+			vehicleStatus.setFormattedPullinTime(getPullinTime(pullout.getPulloutTime(), pullout.getPullinTime()));
 			vehicleStatus.setFormattedPulloutTime(extractTime(pullout.getPulloutTime()));
 		}
 		vehicleStatus.setVehicleId(lastknownRecord.getVehicleId());
@@ -40,7 +41,7 @@ public class VehicleStatusBuilder {
 		
 		vehicleStatus.setDetails(lastknownRecord.getVehicleId());
 		
-		vehicleStatus.setRoute(getRoute(lastknownRecord.getInferredRunId()));
+		vehicleStatus.setRoute(getRoute(lastknownRecord.getInferredRouteId()));
 		
 		vehicleStatus.setDepot(lastknownRecord.getDepotId());
 		vehicleStatus.setEmergencyStatus(lastknownRecord.getEmergencyCode());
@@ -117,7 +118,7 @@ public class VehicleStatusBuilder {
 			inferredDestination.append(lastknownRecord.getInferredDSC() + ":");
 		}
 		
-		inferredDestination.append(getRoute(lastknownRecord.getInferredRunId()));
+		inferredDestination.append(getRoute(lastknownRecord.getInferredRouteId()));
 		
 		if(StringUtils.isNotBlank(lastknownRecord.getInferredDirectionId())) {
 			inferredDestination.append(" Direction: ");
@@ -126,12 +127,32 @@ public class VehicleStatusBuilder {
 		return inferredDestination.toString();
 	}
 	
-	private String getRoute(String inferredRunId) {
+	private String getRoute(String inferredRouteId) {
 		String route = StringUtils.EMPTY;
-		if(StringUtils.isNotBlank(inferredRunId)) {
-			route = inferredRunId.split("-")[0];
+		if(StringUtils.isNotBlank(inferredRouteId)) {
+			String [] routeArray = inferredRouteId.split("_");
+			if(routeArray.length > 1) {
+				route = routeArray[1];
+			}
 		}
 		return route;
+	}
+	
+	private String getPullinTime(String pulloutTime, String pullinTime) {
+		StringBuilder pullinTimeBuilder = new StringBuilder(extractTime(pullinTime));
+		
+		DateTimeFormatter formatter = ISODateTimeFormat.dateTimeNoMillis();
+		
+		DateTime pulloutDateTime = formatter.parseDateTime(pulloutTime);
+		int pulloutDay = pulloutDateTime.getDayOfMonth();
+		
+		DateTime pullinDateTime = formatter.parseDateTime(pullinTime);
+		int pullinDay = pullinDateTime.getDayOfMonth();
+		
+		if(pulloutDay != pullinDay) {
+			pullinTimeBuilder.append(" +1 day");
+		}
+		return pullinTimeBuilder.toString();
 	}
 
 	private String extractTime(String date) {
