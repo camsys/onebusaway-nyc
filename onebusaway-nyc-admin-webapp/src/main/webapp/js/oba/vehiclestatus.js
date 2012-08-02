@@ -14,13 +14,44 @@
  * the License.
  */
 
+function showVehiclePopup(vehicleId) {
+	//alert("showVehiclePopup(" + vehicleId + ")");
+	if (vehicleId == undefined || vehicleId == "") {
+		var id = jQuery("#vehicleGrid").jqGrid('getGridParam', 'selrow');
+		vehicleId = jQuery("#vehicleGrid").jqGrid('getRowData', id).vehicleId;
+		if (vehicleId == undefined || vehicleId == "") { 
+			//alert("vehicleId=" + vehicleId);
+			return;
+		}
+	}
+	
+	//Change these values to style your modal popup
+	var align = 'center';										//Valid values; left, right, center
+	var top = 100; 												//Use an integer (in pixels)
+	var padding = 10;											//Use an integer (in pixels)
+	var backgroundColor = '#FFFFFF'; 							//Use any hex code
+	var borderColor = '#000000'; 								//Use any hex code
+	var borderWeight = 4; 										//Use an integer (in pixels)
+	var borderRadius = 5; 										//Use an integer (in pixels)
+	var fadeOutTime = 300; 										//Use any integer, 0 = no fade
+	var disableColor = '#666666'; 								//Use any hex code
+	var disableOpacity = 40; 									//Valid range 0-100
+	var loadingImage = '../../css/img/loading.gif';	//Use relative path from this page	
+	
+	var source = './popup!input.action?vehicleId=' + vehicleId;	//Refer to any page on your server, external pages are not valid
+	var width = 500; 					//Use an integer (in pixels)
+	modalPopup(align, top, width, padding, disableColor, disableOpacity, backgroundColor, borderColor, borderWeight, borderRadius, fadeOutTime, source, loadingImage, createMaps);
+
+};
 
 var VehicleStatus = Ember.Application.create({
 	ready: function() {
 		$("#menu").tabs();
+		
 	}
 		
 });
+
 
 /******************* Views ************************************/
 VehicleStatus.VehicleView = Ember.View.extend({
@@ -46,14 +77,14 @@ VehicleStatus.FilterView = Ember.View.extend({
 		var filters = $("#filters");
 		filters.find("input:text").val("");
 		filters.find("select").val("all");
-		$("#emergencyBox #emergencyCheck").removeAttr("checked");
-		
+		$("#checkFilters #emergencyCheck").removeAttr("checked");
+		$("#checkFilters #formalInferrenceCheck").removeAttr("checked");
 	},
 	controllerBinding: "VehicleStatus.FiltersController"
 });
 
 VehicleStatus.TopBarView = Ember.View.extend({
-	refreshDialog: null,
+	refreshDialog: {},
 	didInsertElement: function() {
 		refreshDialog = $("<div id='refreshDialog'>" +
 				"<input type='text' id='refreshRate'/>" +
@@ -87,7 +118,6 @@ VehicleStatus.SummaryView = Ember.View.extend({
 });
 
 VehicleStatus.ParametersView = Ember.View.extend({
-	
 
 });
 
@@ -112,19 +142,21 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 						}}, 
 			           {name:'vehicleId',index:'vehicleId', width:70}, 
 			           {name:'lastUpdate',index:'lastUpdate', width:70}, 
-			           {name:'inferredState',index:'inferredState', width:100, sortable:false}, 
+			           {name:'inferredState',index:'inferredState', width:100}, 
 			           {name:'inferredDestination',index:'inferredDestination', width:170, sortable:false}, 
 			           {name:'observedDSC',index:'observedDSC', width:80}, 
-			           {name:'pulloutTime',index:'pulloutTime', width:70},
-			           {name:'pullinTime',index:'pullinTime', width:70},
+			           {name:'formattedPulloutTime',index:'pulloutTime', width:70},
+			           {name:'formattedPullinTime',index:'pullinTime', width:70},
 			           {name:'details',index:'details', width:65, 
 			        	formatter: function(cellValue, options) {
-			        	   var linkHtml = "<a href='#' style='color:blue'>" + cellValue + "</a>";
+			        	   var linkHtml = "<a href='javascript:showVehiclePopup(" + cellValue + ");' style='color:blue'>" + "Details" + "</a>";
 			        	   return linkHtml;
-			           }, sortable:false}
+			           },
+			            sortable:false}
 			         ],
-			height: "390",
+			height: "430",
 			width: "670",
+			//height: "auto",
 			//width: "auto",
 			viewrecords: true,
 			loadonce:false,
@@ -136,7 +168,8 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				repeatitems: false
 			},
 			pager: "#pager",
-			loadComplete: function() {
+			loadComplete: function(data) {
+				//Update the time
 				var lastUpdateTime = new Date();
 				var time = function() {
 					var hours = lastUpdateTime.getHours();
@@ -153,7 +186,22 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 					}
 					return  hours + ":" +  minutes + " " +meridian + " , " +lastUpdateTime.toDateString();
 				}
+				
 				$("#lastUpdateBox #lastUpdate").text(time);
+				
+				//Add zebra stripes to alternate grid rows
+			    $("tr.jqgrow:odd").css("background", "#DDDDDC");
+
+				$.each(data.rows, function(i) {
+					//Change observedDSC text color to red if it is different from inferredDSC
+					if(data.rows[i].inferredDSC != null && 
+							(data.rows[i].observedDSC != data.rows[i].inferredDSC)) {
+						grid.jqGrid('setCell', i+1, "observedDSC", "", {color:'red'});
+					}
+				});
+				
+				//load statistics data once grid is refreshed 
+				VehicleStatus.SummaryController.getStatistics();
 			},
 			postData: {
 				vehicleId: function() {return $("#filters #vehicleId").val();},
@@ -162,8 +210,9 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				dsc: function() {return $("#filters #dsc").val();},
 				inferredState: function() {return $("#filters #inferredState option:selected").val();},
 				pulloutStatus: function() {return $("#filters #pulloutStatus option:selected").val();},
-				emergencyStatus: function() {return $("#emergencyBox #emergencyCheck").is(':checked');}
-			}
+				emergencyStatus: function() {return $("#checkFilters #emergencyCheck").is(':checked');},
+				formalInferrence: function() {return $("#checkFilters #formalInferrenceCheck").is(':checked');}
+			},
 		}).navGrid("#pager", {edit:false,add:false,del:false,search:false,refresh:false });
 	}
 });
@@ -219,7 +268,34 @@ VehicleStatus.TopBarController = Ember.ArrayController.create({
 });
 
 VehicleStatus.SummaryController = Ember.ArrayController.create({
-	content: []
+	content: [],
+	getStatistics: function() {
+		$.ajax({
+			type: "GET",
+			url: "vehicle-status!getStatistics.action?ts=" + new Date().getTime(),
+			dataType: "json",
+			success: function(response) {
+				$("#emergencyVehiclesBox #emergencyCount").text(response.vehiclesInEmergency);
+				$("#inferrenceBox #revenueServiceCount").text(response.vehiclesInRevenueService);
+				$("#busBox #vehiclesTrackedCount").text(response.vehiclesTracked);
+				/*this.set('content', []);
+				var statistics = VehicleStatus.Statistics.create({
+					vehiclesTracked: response.vehiclesTracked,
+					revenueServiceVehicleCount: response.vehiclesInRevenueService,
+					emergencyVehicleCount: response.vehiclesInEmergency
+				});
+				this.pushObject(statistics);*/
+			},
+			error: function(request) {
+				alert("Error: " + request.statusText);
+			}
+		});
+	}
 });
 
 /******************* Model ************************************/
+VehicleStatus.Statistics = Ember.Object.extend({
+	vehiclesTracked: 0,
+	revenueServiceVehicleCount: 0,
+	emergencyVehicleCount : 0
+});

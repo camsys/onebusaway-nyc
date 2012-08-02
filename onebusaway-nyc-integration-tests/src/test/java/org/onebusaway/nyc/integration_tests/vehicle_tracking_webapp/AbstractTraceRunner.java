@@ -20,10 +20,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -31,7 +32,6 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
-import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
 import org.opentripplanner.routing.impl.DistanceLibrary;
 
@@ -157,95 +157,112 @@ public class AbstractTraceRunner {
       // TEST: We got a response for all records.
       assertEquals(ourResults.size(), expectedResults.size());
       
-      // TEST: Our results match expected results
-      for(int i = 0; i < ourResults.size(); i++) {
-    	NycTestInferredLocationRecord ourResult = ourResults.get(i);
-    	NycTestInferredLocationRecord expectedResult = expectedResults.get(i);
-    	  
-    	// mark new row
-    	System.out.println("\n\nRecord " + (i + 1) + ", line " + (i + 2) + "\n================================");
-
-    	// TEST: block level inference subcases
-    	Boolean actualIsRunFormal = expectedResult.getActualIsRunFormal();
-    	assertTrue(actualIsRunFormal != null);
-    	
-    	if(actualIsRunFormal == true) {
-    		// run ID should match
-    		if(expectedResult.getActualRunId() != null && !StringUtils.isEmpty(expectedResult.getActualRunId())) {
-    	    	System.out.println("RUN ID: expected=" + expectedResult.getActualRunId() + ", inferred=" + ourResult.getInferredRunId());
-    			assertEquals(ourResult.getInferredRunId(), expectedResult.getActualRunId());
-    		}
-
-    		// trip ID should match
-    		if(expectedResult.getActualTripId() != null && !StringUtils.isEmpty(expectedResult.getActualTripId())) {
-    	    	System.out.println("TRIP ID: expected=" + expectedResult.getActualTripId() + ", inferred=" + ourResult.getInferredTripId());
-    			assertTrue(ourResult.getInferredTripId().endsWith(expectedResult.getActualTripId()));
-    		}
-
-    		// block ID should match
-    		if(expectedResult.getActualBlockId() != null && !StringUtils.isEmpty(expectedResult.getActualBlockId())) {
-    	    	System.out.println("BLOCK ID: expected=" + expectedResult.getActualBlockId() + ", inferred=" + ourResult.getInferredBlockId());
-    			assertTrue(ourResult.getInferredBlockId().endsWith(expectedResult.getActualBlockId()));
-    		}
-    	}
-    	  
-    	// TEST: DSCs should always match if we're in_progress
-    	String expectedDsc = expectedResult.getActualDsc();
-    	
-    	System.out.println("DSC: expected=" + expectedDsc + ", inferred=" + ourResult.getInferredDsc());
-    	if(expectedDsc != null && !StringUtils.isEmpty(expectedDsc))
-			assertEquals(ourResult.getInferredDsc(), expectedDsc);
-
-    	// TEST: phase matches
-    	assertTrue(ourResult.getInferredPhase() != null);
-    	
-    	System.out.println("PHASE: expected=" + expectedResult.getActualPhase() + ", inferred=" + ourResult.getInferredPhase());
-    	if(expectedResult.getActualPhase() != null && !StringUtils.isEmpty(expectedResult.getActualPhase())) {
-			String[] _acceptablePhases = StringUtils.split(expectedResult.getActualPhase().toUpperCase(), "+");
-			ArrayList<String> acceptablePhases = new ArrayList<String>();
-			Collections.addAll(acceptablePhases, _acceptablePhases);
-
-			// allow partial matches for "wildcards"
-			boolean pass = false;
-			for(String acceptablePhase : acceptablePhases) {
-				if(ourResult.getInferredPhase().toUpperCase().startsWith(acceptablePhase)) {
-					pass = true;
-					break;
+      try {
+	      // TEST: Our results match expected results
+	      for(int i = 0; i < ourResults.size(); i++) {
+	    	NycTestInferredLocationRecord ourResult = ourResults.get(i);
+	    	NycTestInferredLocationRecord expectedResult = expectedResults.get(i);
+	    	  
+	    	// mark new row
+	    	System.out.println("\n\nRecord " + (i + 1) + ", line " + (i + 2) + ", observed timestamp= " + expectedResult.getTimestampAsDate() + "\n============================================================");
+	
+	    	// TEST: block level inference subcases
+	    	Boolean actualIsRunFormal = expectedResult.getActualIsRunFormal();
+	    	assertTrue(actualIsRunFormal != null);
+	    	
+	    	if(actualIsRunFormal == true) {
+	    		// run ID should match
+	    		if(expectedResult.getActualRunId() != null && !StringUtils.isEmpty(expectedResult.getActualRunId())) {
+	    	    	System.out.println("RUN ID: expected=" + expectedResult.getActualRunId() + ", inferred=" + ourResult.getInferredRunId());
+	    			assertEquals(ourResult.getInferredRunId(), expectedResult.getActualRunId());
+	    		}
+	
+	    		// trip ID should match--we accept wildcards (pegged to end of value) here
+	    		if(expectedResult.getActualTripId() != null && !StringUtils.isEmpty(expectedResult.getActualTripId())) {
+	    	    	System.out.println("TRIP ID: expected=" + expectedResult.getActualTripId() + ", inferred=" + ourResult.getInferredTripId());
+	    			assertTrue(ourResult.getInferredTripId().endsWith(expectedResult.getActualTripId()));
+	    		}
+	
+	    		// block ID should match--we accept wildcards (pegged to end of value) here
+	    		if(expectedResult.getActualBlockId() != null && !StringUtils.isEmpty(expectedResult.getActualBlockId())) {
+	    	    	System.out.println("BLOCK ID: expected=" + expectedResult.getActualBlockId() + ", inferred=" + ourResult.getInferredBlockId());
+	    			assertTrue(ourResult.getInferredBlockId().endsWith(expectedResult.getActualBlockId()));
+	    		}
+	    	}
+	    	  
+	    	// TEST: DSCs should always match if we're in_progress
+	    	String expectedDsc = expectedResult.getActualDsc();
+	    	
+	    	System.out.println("DSC: expected=" + expectedDsc + ", inferred=" + ourResult.getInferredDsc());
+	    	if(expectedDsc != null && !StringUtils.isEmpty(expectedDsc))
+				assertEquals(ourResult.getInferredDsc(), expectedDsc);
+	
+	    	// TEST: phase matches
+	    	assertTrue(ourResult.getInferredPhase() != null);
+	    	
+	    	System.out.println("PHASE: expected=" + expectedResult.getActualPhase() + ", inferred=" + ourResult.getInferredPhase());
+	    	if(expectedResult.getActualPhase() != null && !StringUtils.isEmpty(expectedResult.getActualPhase())) {
+				String[] _acceptablePhases = StringUtils.split(expectedResult.getActualPhase().toUpperCase(), "+");
+				Set<String> acceptablePhases = new HashSet<String>();
+				Collections.addAll(acceptablePhases, _acceptablePhases);
+	
+				// allow partial matches for "wildcards"
+				boolean phasesMatched = false;
+				for(String acceptablePhase : acceptablePhases) {
+					// try wildcard matching straight up
+					phasesMatched = ourResult.getInferredPhase().toUpperCase().startsWith(acceptablePhase);
+					if(phasesMatched == true)
+						break;
+					
+					// if inference is expected to be not formal, make layovers equivalent to deadheads
+					phasesMatched = ourResult.getInferredPhase().toUpperCase().replaceAll("^LAYOVER_", "DEADHEAD_").startsWith(acceptablePhase);
+					if(phasesMatched == true)
+						break;
+					
+					phasesMatched = ourResult.getInferredPhase().toUpperCase().replaceAll("^DEADHEAD_", "LAYOVER_").startsWith(acceptablePhase);
+					if(phasesMatched == true)
+						break;
 				}
+				assertTrue(phasesMatched == true);
 			}
-			assertTrue(pass == true);
-		}
-		
-		// TEST: status matches
-    	assertTrue(ourResult.getInferredStatus() != null);
+			
+			// TEST: status matches
+	    	assertTrue(ourResult.getInferredStatus() != null);
+	
+	    	System.out.println("STATUS: expected=" + expectedResult.getActualStatus() + ", inferred=" + ourResult.getInferredStatus());
+	    	if(expectedResult.getActualStatus() != null && !StringUtils.isEmpty(expectedResult.getActualStatus())) {
+				String[] _acceptableStatuses = StringUtils.split(expectedResult.getActualStatus().toUpperCase(), "+");
+				Set<String> acceptableStatuses = new HashSet<String>();
+				Collections.addAll(acceptableStatuses, _acceptableStatuses);
+	    		assertTrue(acceptableStatuses.contains(ourResult.getInferredStatus().toUpperCase()));
+			}
+	
+			// TEST: distance along block/inferred location/schedule deviation
+	    	assertTrue(ourResult.getInferredBlockLat() != Double.NaN);
+	    	assertTrue(ourResult.getInferredBlockLon() != Double.NaN);
+	    	
+			Coordinate reportedLocation = new Coordinate(expectedResult.getLat(), expectedResult.getLon());
+			Coordinate ourLocation = new Coordinate(ourResult.getInferredBlockLat(), ourResult.getInferredBlockLon());
+			
+			if(ourResult.getInferredPhase().toUpperCase().startsWith("LAYOVER_") || 
+					ourResult.getInferredPhase().toUpperCase().equals("IN_PROGRESS")) {
+			    System.out.println("LOCATION: expected=" + reportedLocation + ", inferred=" + ourLocation);
+				assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
+			}
+	      }
+	      	      
+	      System.out.println("\n>> PASS.");
+	      
+      } catch (AssertionError e) {
+    	  System.out.println(">> TEST FAILED HERE ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
 
-    	System.out.println("STATUS: expected=" + expectedResult.getActualStatus() + ", inferred=" + ourResult.getInferredStatus());
-    	if(expectedResult.getActualStatus() != null && !StringUtils.isEmpty(expectedResult.getActualStatus())) {
-			String[] _acceptableStatuses = StringUtils.split(expectedResult.getActualStatus().toUpperCase(), "+");
-			ArrayList<String> acceptableStatuses = new ArrayList<String>();
-			Collections.addAll(acceptableStatuses, _acceptableStatuses);
-    		assertTrue(acceptableStatuses.contains(ourResult.getInferredStatus().toUpperCase()));
-		}
-
-		// TEST: distance along block/inferred location/schedule deviation
-    	assertTrue(ourResult.getInferredBlockLat() != Double.NaN);
-    	assertTrue(ourResult.getInferredBlockLon() != Double.NaN);
-    	
-		Coordinate reportedLocation = new Coordinate(expectedResult.getLat(), expectedResult.getLon());
-		Coordinate ourLocation = new Coordinate(ourResult.getInferredBlockLat(), ourResult.getInferredBlockLon());
-
-		String phase = expectedResult.getActualPhase();
-		if(EVehiclePhase.IN_PROGRESS.equals(phase) 
-				|| EVehiclePhase.LAYOVER_BEFORE.equals(phase)
-				|| EVehiclePhase.LAYOVER_DURING.equals(phase)) {
-	    	System.out.println("LOCATION: expected=" + reportedLocation + ", inferred=" + ourLocation);
-			assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
-		}
+    	  throw new Exception(e);
       }
       
       // break out of wait-for-completion loop
       break;
     }
+      
   }
 
 }

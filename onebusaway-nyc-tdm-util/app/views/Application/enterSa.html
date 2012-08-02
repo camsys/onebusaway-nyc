@@ -38,15 +38,23 @@
 				yyyy-mm-ddThh:mm:ss.zzzt</span>
 		</div>
 	</div>
-	<div class="clearfix">
-		<label for="affected">Affected</label>
-		<div class="input">
-			<input type="text" name="affected" id="affected" /> <span
-				class="help-block">Comma-separated list of <b>full</b> route
-				IDs, e.g. "MTA NYCT_B63,MTA NYCT_X17".  To include direction, add with ":", e.g. "MTA NYCT_B63:0,MTA NYCT_X17:1 0=N/E, 1=S/W 
-			</span>
-		</div>
-	</div>
+    <div class="clearfix">
+        <label for="affected">Affected</label>
+        <div class="input">
+            <input type="text" name="affected" id="affected" /> <span
+                class="help-block">Comma-separated list of <b>full</b> route
+                IDs, e.g. "MTA NYCT_B63,MTA NYCT_X17".  To include direction, add with ":", e.g. "MTA NYCT_B63:0,MTA NYCT_X17:1 0=N/E, 1=S/W 
+            </span>
+        </div>
+    </div>
+    <div class="clearfix">
+        <label for="global">Global</label>
+        <div class="input">
+            <input type="checkbox" name="global" id="global" /> <span
+                class="help-block">If global (and then omit "Affected") 
+            </span>
+        </div>
+    </div>
 	<div class="clearfix">
 		<label for="text">Text</label>
 		<div class="input">

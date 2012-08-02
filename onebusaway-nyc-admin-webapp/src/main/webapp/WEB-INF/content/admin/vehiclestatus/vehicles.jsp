@@ -22,7 +22,7 @@
 	<div id="topBox">
 		<script type=text/x-handlebars>
 			{{#view VehicleStatus.TopBarView}}
-				<input type="text" id="search" />
+				<!--<input type="text" id="search" />-->
 				<div id="lastUpdateBox">
 					<label class="vehicleLabel">Last Update:</label>
 					<label id="lastUpdate" class="vehicleLabel"></label>
@@ -74,9 +74,15 @@
 					</select>
 				</li>
 			</ul>
-			<div id="emergencyBox">
-				<input type="checkbox" id="emergencyCheck" />
-				<label class="vehicleLabel">Emergency Status</label>
+			<div id="checkFilters">
+				<div>
+					<input type="checkbox" id="emergencyCheck" />
+					<label class="vehicleLabel">Emergency Status</label>
+				</div>
+				<div>
+					<input type="checkbox" id="formalInferrenceCheck" />
+					<label class="vehicleLabel">Formal Inferrence</label>
+				</div>
 			</div>
 			<div id="filterButtons">
 				<input type="button" id="reset" value="Reset" {{action "resetFilters" on="click" }}/>
@@ -97,6 +103,7 @@
 	<div id="bottomBox">
 	<script type=text/x-handlebars>
 		{{#view VehicleStatus.SummaryView}}
+		<!-- This box has been deferred by MTA at this time
 		<div id="scheduleBox" class="infoBox">
 			<label class="vehicleLabel">Run/blocks scheduled to be active</label>
 			<div id="scheduleInfo" class="boxData">
@@ -105,12 +112,13 @@
 				<label><s:property value=""/></label>
 			</div>	
 		</div>
+		-->
 		<div id="busBox" class="infoBox">
 			<label class="vehicleLabel">Buses tracked in past 5 minutes</label>
 			<div id="busInfo" class="boxData">
 				<s:url var="url" value="/css/img/user-away-2.png" />
 				<img src="${url}" alt="Not found" />
-				<label><s:property value=""/></label>
+				<label id="vehiclesTrackedCount">{{vehiclesTracked}}</label>
 			</div>	
 		</div>
 		<div id="inferrenceBox" class="infoBox">
@@ -118,15 +126,15 @@
 			<div id="inferrenceInfo" class="boxData">
 				<s:url var="url" value="/css/img/sign_dollar_icon.jpg" />
 				<img src="${url}" alt="Not found" />
-				<label><s:property value=""/></label>
+				<label id="revenueServiceCount"><s:property value=""/></label>
 			</div>	
 		</div>
-		<div id="emergencyBox" class="infoBox">
+		<div id="emergencyVehiclesBox" class="infoBox">
 			<label class="vehicleLabel">Buses reporting emergency</label>
 			<div id="emergencyInfo" class="boxData">
 				<s:url var="url" value="/css/img/dialog-warning-4.png" />
 				<img src="${url}" alt="Not found" />
-				<label><s:property value=""/></label>
+				<label id="emergencyCount"><s:property value=""/></label>
 			</div>	
 		</div>
 		{{/view}}

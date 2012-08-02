@@ -2,6 +2,7 @@ package org.onebusaway.nyc.admin.service.impl;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -88,10 +89,10 @@ public class VehicleStatusServiceImplTest {
 		assertEquals("Mismatched vehicle id", vehicleStatus.getVehicleId(), "5638");
 		assertEquals("Mismatched inferred state", vehicleStatus.getInferredState(), "IN PROGRESS");
 		assertEquals("Mismatched observed DSC", vehicleStatus.getObservedDSC(), "4611");
-		assertEquals("Mismatched pull in time", vehicleStatus.getPullinTime(), "00:23");
-		assertEquals("Mismatched pull out time", vehicleStatus.getPulloutTime(), "05:51");
+		assertEquals("Mismatched pull in time", vehicleStatus.getFormattedPullinTime(), "00:23 +1 day");
+		assertEquals("Mismatched pull out time", vehicleStatus.getFormattedPulloutTime(), "05:51");
 		assertEquals("Mismatched inferred DSC", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
-		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red.png");
+		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red_alert_18x18.png");
 		assertEquals("Mismatched emergency status", vehicleStatus.getEmergencyStatus(), "1");
 	}
 	
@@ -162,7 +163,97 @@ public class VehicleStatusServiceImplTest {
 		assertNull("No pull in time", vehicleStatus.getPullinTime());
 		assertNull("No pull out time", vehicleStatus.getPulloutTime());
 		assertEquals("Mismatched inferred destination information", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
-		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red.png");
+		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red18x18.png");
+	}
+	
+	@Test
+	public void testVehicleSort() {
+		VehicleStatus vehicle1 = new VehicleStatus();
+		vehicle1.setVehicleId("1");
+		vehicle1.setInferredState("IN PROGRESS");
+		vehicle1.setLastUpdate("2012-07-19T13:48:20.030Z");
+		vehicle1.setObservedDSC("4411");
+		vehicle1.setPulloutTime("2012-07-18T05:51:00-04:00");
+		vehicle1.setPullinTime("2012-07-19T00:23:00-04:00");
+		
+		VehicleStatus vehicle2 = new VehicleStatus();
+		vehicle2.setVehicleId("2");
+		vehicle2.setInferredState("LAYOVER");
+		vehicle2.setLastUpdate("2012-07-19T13:50:20.030Z");
+		vehicle2.setObservedDSC("4412");
+		vehicle2.setPulloutTime("2012-07-18T05:54:00-04:00");
+		vehicle2.setPullinTime("2012-07-19T00:25:00-04:00");
+		
+		List<VehicleStatus> vehicleStatusRecords = new ArrayList<VehicleStatus>();
+		vehicleStatusRecords.add(vehicle1);
+		vehicleStatusRecords.add(vehicle2);
+		
+		service.sort(vehicleStatusRecords, "vehicleId", "asc");
+		assertEquals("1", vehicleStatusRecords.get(0).getVehicleId());
+		service.sort(vehicleStatusRecords, "vehicleId", "desc");
+		assertEquals("2", vehicleStatusRecords.get(0).getVehicleId());
+		
+		service.sort(vehicleStatusRecords, "lastUpdate", "asc");
+		assertEquals("2012-07-19T13:48:20.030Z", vehicleStatusRecords.get(0).getLastUpdate());
+		service.sort(vehicleStatusRecords, "lastUpdate", "desc");
+		assertEquals("2012-07-19T13:50:20.030Z", vehicleStatusRecords.get(0).getLastUpdate());
+		
+		service.sort(vehicleStatusRecords, "inferredState", "asc");
+		assertEquals("IN PROGRESS", vehicleStatusRecords.get(0).getInferredState());
+		service.sort(vehicleStatusRecords, "inferredState", "desc");
+		assertEquals("LAYOVER", vehicleStatusRecords.get(0).getInferredState());
+		
+		service.sort(vehicleStatusRecords, "observedDSC", "asc");
+		assertEquals("4411", vehicleStatusRecords.get(0).getObservedDSC());
+		service.sort(vehicleStatusRecords, "observedDSC", "desc");
+		assertEquals("4412", vehicleStatusRecords.get(0).getObservedDSC());
+		
+		service.sort(vehicleStatusRecords, "pulloutTime", "asc");
+		assertEquals("2012-07-18T05:51:00-04:00", vehicleStatusRecords.get(0).getPulloutTime());
+		service.sort(vehicleStatusRecords, "pulloutTime", "desc");
+		assertEquals("2012-07-18T05:54:00-04:00", vehicleStatusRecords.get(0).getPulloutTime());
+		
+		service.sort(vehicleStatusRecords, "pullinTime", "asc");
+		assertEquals("2012-07-19T00:23:00-04:00", vehicleStatusRecords.get(0).getPullinTime());
+		service.sort(vehicleStatusRecords, "pullinTime", "desc");
+		assertEquals("2012-07-19T00:25:00-04:00", vehicleStatusRecords.get(0).getPullinTime());
+	}
+	
+	@Test
+	public void testSortBlankPulloutFields() {
+		VehicleStatus vehicle1 = new VehicleStatus();
+		vehicle1.setVehicleId("1");
+		vehicle1.setInferredState("IN PROGRESS");
+		vehicle1.setLastUpdate("2012-07-19T13:48:20.030Z");
+		vehicle1.setObservedDSC("4411");
+		vehicle1.setPulloutTime("");
+		vehicle1.setPullinTime("");
+		
+		VehicleStatus vehicle2 = new VehicleStatus();
+		vehicle2.setVehicleId("2");
+		vehicle2.setInferredState("LAYOVER");
+		vehicle2.setLastUpdate("2012-07-19T13:50:20.030Z");
+		vehicle2.setObservedDSC("4412");
+		vehicle2.setPulloutTime("2012-07-18T05:54:00-04:00");
+		vehicle2.setPullinTime("2012-07-19T00:25:00-04:00");
+		
+		List<VehicleStatus> vehicleStatusRecords = new ArrayList<VehicleStatus>();
+		vehicleStatusRecords.add(vehicle1);
+		vehicleStatusRecords.add(vehicle2);
+		
+		service.sort(vehicleStatusRecords, "pulloutTime", "asc");
+		assertEquals("2012-07-18T05:54:00-04:00", vehicleStatusRecords.get(0).getPulloutTime());
+		assertEquals("2", vehicleStatusRecords.get(0).getVehicleId());
+		service.sort(vehicleStatusRecords, "pulloutTime", "desc");
+		assertEquals("2012-07-18T05:54:00-04:00", vehicleStatusRecords.get(0).getPulloutTime());
+		assertEquals("2", vehicleStatusRecords.get(0).getVehicleId());
+		
+		service.sort(vehicleStatusRecords, "pullinTime", "asc");
+		assertEquals("2012-07-19T00:25:00-04:00", vehicleStatusRecords.get(0).getPullinTime());
+		assertEquals("2", vehicleStatusRecords.get(0).getVehicleId());
+		service.sort(vehicleStatusRecords, "pullinTime", "desc");
+		assertEquals("2012-07-19T00:25:00-04:00", vehicleStatusRecords.get(0).getPullinTime());
+		assertEquals("2", vehicleStatusRecords.get(0).getVehicleId());
 	}
 
 }

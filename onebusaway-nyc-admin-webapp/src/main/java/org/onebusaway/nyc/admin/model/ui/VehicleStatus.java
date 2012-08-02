@@ -11,6 +11,7 @@ public class VehicleStatus {
 	private String vehicleId;
 	private String lastUpdate;
 	private String inferredState;
+	private String inferredDSC;
 	private String inferredDestination;
 	private String observedDSC;
 	private String pullinTime;
@@ -19,7 +20,11 @@ public class VehicleStatus {
 	private String route;
 	private String depot;
 	private String emergencyStatus;
-	
+	private String timeReceived;
+	private String formattedPulloutTime;
+	private String formattedPullinTime;
+	private String timeReported;
+	private boolean inferrenceFormal;
 	/**
 	 * @return the vehicleId
 	 */
@@ -164,6 +169,79 @@ public class VehicleStatus {
 	public void setEmergencyStatus(String emergencyStatus) {
 		this.emergencyStatus = emergencyStatus;
 	}
+	/**
+	 * @return the timeReceived
+	 */
+	public String getTimeReceived() {
+		return timeReceived;
+	}
+	/**
+	 * @param timeReceived the timeReceived to set
+	 */
+	public void setTimeReceived(String timeReceived) {
+		this.timeReceived = timeReceived;
+	}
+	/**
+	 * @return the formattedPulloutTime
+	 */
+	public String getFormattedPulloutTime() {
+		return formattedPulloutTime;
+	}
+	/**
+	 * @param formattedPulloutTime the formattedPulloutTime to set
+	 */
+	public void setFormattedPulloutTime(String formattedPulloutTime) {
+		this.formattedPulloutTime = formattedPulloutTime;
+	}
+	/**
+	 * @return the formattedPullinTime
+	 */
+	public String getFormattedPullinTime() {
+		return formattedPullinTime;
+	}
+	/**
+	 * @param formattedPullinTime the formattedPullinTime to set
+	 */
+	public void setFormattedPullinTime(String formattedPullinTime) {
+		this.formattedPullinTime = formattedPullinTime;
+	}
+	/**
+	 * @return the inferredDSC
+	 */
+	public String getInferredDSC() {
+		return inferredDSC;
+	}
+	/**
+	 * @param inferredDSC the inferredDSC to set
+	 */
+	public void setInferredDSC(String inferredDSC) {
+		this.inferredDSC = inferredDSC;
+	}
+	/**
+	 * @return the timeReported
+	 */
+	public String getTimeReported() {
+		return timeReported;
+	}
+	/**
+	 * @param timeReported the timeReported to set
+	 */
+	public void setTimeReported(String timeReported) {
+		this.timeReported = timeReported;
+	}
+	/**
+	 * @return the inferrenceFormal
+	 */
+	public boolean isInferrenceFormal() {
+		return inferrenceFormal;
+	}
+	/**
+	 * @param inferrenceFormal the inferrenceFormal to set
+	 */
+	public void setInferrenceFormal(boolean inferrenceFormal) {
+		this.inferrenceFormal = inferrenceFormal;
+	}
+	
 	
 
 }

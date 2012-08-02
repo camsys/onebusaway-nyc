@@ -95,20 +95,19 @@ th.ui-th-column div {
 }
 
 #topBox #lastUpdateBox {
-	margin-left: 80px;
 	vertical-align: middle;
 	float: left;
 	padding-top: 5px;
 }
 
 #topBox #refresh {
-	margin-left: 20px;
+	margin-left: 30px;
 	float: left;
 	padding: 0px;
 }
 
 #topBox #autoRefreshBox {
-	margin-left: 20px;
+	margin-left: 30px;
 	padding-top: 5px;
 	float: left;
 }
@@ -140,14 +139,14 @@ th.ui-th-column div {
 	background-image:url('img/Button_background.png');
 }
 #mainBox {
-	height: 460px;
+	height: 500px;
 	border: transparent 1px;
 	margin-top: 20px;
 }
 
 #mainBox #filterBox {
 	width: 175px;
-	height: 458px;
+	height: 498px;
 	float: left;
 	border: solid 1px;
 	padding-left: 10px;
@@ -158,7 +157,7 @@ th.ui-th-column div {
 	border-top: solid 1px;
 	border-bottom: solid 1px;
 	float: left;
-	height: 458px;
+	height: 498px;
 	overflow: auto;
 }
 
@@ -172,8 +171,8 @@ th.ui-th-column div {
 }
 
 #filters li {
-	margin-top: 10px;
-	margin-bottom: 10px;
+	margin-top: 15px;
+	margin-bottom: 15px;
 }
 
 #filters li label {
@@ -184,13 +183,13 @@ th.ui-th-column div {
 	width: 150px;
 }
 
-#emergencyBox #emergencyCheck {
-	margin-top: 10px;
+#checkFilters {
+	margin-top: 20px;
 	margin-right: 10px;
 }
 
 #filterBox #filterButtons {
-	margin-top: 10px;
+	margin-top: 15px;
 }
 
 #filterButtons #apply, #filterButtons #reset {
@@ -198,8 +197,6 @@ th.ui-th-column div {
 	height: 30px;
 	background-image:url('img/Button_background.png');
 	border: 1px transparent;
-	margin-top: 15px;
-	margin-bottom: 25px;
 }
 
 #bottomBox {
@@ -222,8 +219,11 @@ th.ui-th-column div {
 }
 
 .boxData label{
-	font-size: 18px;
+	font-size: 24px;
 	font: Times New Roman, Times, serif;
+	margin-right: 10px;
+	float: right;
+	padding-top: 10px;
 }
 
 

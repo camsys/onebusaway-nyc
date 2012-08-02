@@ -239,10 +239,19 @@ public class MotionModelImpl implements MotionModel<Observation> {
         transitions.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(obs));
       } else if (parentBlockStateObs != null) {
         /*
-         * Only the snapped blocks
+         * Only the snapped blocks.
+         * We are also allowing changes to snapped in-progress states when
+         * they were sampled well outside of allowed backward search distance.
          */
+        final double backwardDistance = Double.NEGATIVE_INFINITY;
+//        if (parentState.getBlockStateObservation().isSnapped() 
+//            && !EVehiclePhase.IN_PROGRESS.equals(parentState.getJourneyState().getPhase()))
+//          backwardDistance = Double.NEGATIVE_INFINITY;
+//        else 
+//          backwardDistance = -1.98 * GpsLikelihood.gpsStdDev;
+        
         transitions.addAll(_blocksFromObservationService.advanceState(obs,
-            parentState.getBlockState(), -1.98 * GpsLikelihood.gpsStdDev,
+            parentState.getBlockState(), backwardDistance,
             Double.POSITIVE_INFINITY));
       }
 
@@ -394,8 +403,12 @@ public class MotionModelImpl implements MotionModel<Observation> {
           0.0, newState);
       newParticle.setResult(transProb);
 
-      if (ParticleFilter.getDebugEnabled())
+      if (ParticleFilter.getDebugEnabled()) {
+        final double logWeight = parent.getElement().getLogWeight()
+            + newParticle.getResult().getLogProbability();
+        newParticle.setLogWeight(logWeight);
         debugTransitions.add(newParticle);
+      }
 
       transitionDist.logPut(transProb.getLogProbability(), newParticle);
     }

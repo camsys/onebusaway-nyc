@@ -14,6 +14,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.transit_data_manager.util.NycEnvironment;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,14 +24,18 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import uk.org.siri.siri.DefaultedTextStructure;
+import uk.org.siri.siri.ErrorDescriptionStructure;
+import uk.org.siri.siri.ParticipantRefStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
+import uk.org.siri.siri.ServiceDeliveryStructure.ErrorCondition;
 import uk.org.siri.siri.ServiceRequest;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.SituationExchangeDeliveriesStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
 import uk.org.siri.siri.SubscriptionRequest;
+import uk.org.siri.siri.SubscriptionResponseStructure;
 
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.spring.Autowire;
@@ -49,6 +55,8 @@ public class SituationExchangeResource {
 
   private JAXBContext jc;
 
+  private NycEnvironment _environment = new NycEnvironment();
+
   public SituationExchangeResource() throws JAXBException {
     super();
     jc = JAXBContext.newInstance(Siri.class);
@@ -58,7 +66,7 @@ public class SituationExchangeResource {
   public Response handleGet() {
     _log.info("GET received, initiating re-subscribe.");
     try {
-      for (AgencyWithCoverageBean agency: _siriService.getTransitDataService().getAgenciesWithCoverage()) {
+      for (AgencyWithCoverageBean agency : _siriService.getTransitDataService().getAgenciesWithCoverage()) {
         _log.info("Clearing service alerts for agency " + agency.getAgency().getId());
         _siriService.getTransitDataService().removeAllServiceAlertsForAgencyId(agency.getAgency().getId());
       }
@@ -71,7 +79,7 @@ public class SituationExchangeResource {
     }
     return Response.ok("Re-subscribed\n").build();
   }
-  
+
   @POST
   @Produces("application/xml")
   @Consumes("application/xml")
@@ -87,7 +95,8 @@ public class SituationExchangeResource {
     Siri incomingSiri = (Siri) u.unmarshal(new StringReader(body));
 
     ServiceDelivery delivery = incomingSiri.getServiceDelivery();
-    if (delivery != null) {
+
+    if (delivery != null && deliveryIsForThisEnvironment(delivery)) {
       SituationExchangeResults result = new SituationExchangeResults();
       _siriService.handleServiceDeliveries(result, delivery);
       _log.info(result.toString());
@@ -97,13 +106,13 @@ public class SituationExchangeResource {
     Siri responseSiri = new Siri();
 
     ServiceRequest serviceRequest = incomingSiri.getServiceRequest();
-    if (serviceRequest != null)
+
+    if (serviceRequest != null && requestIsForThisEnvironment(serviceRequest, responseSiri))
       _siriService.handleServiceRequests(serviceRequest, responseSiri);
 
     SubscriptionRequest subscriptionRequests = incomingSiri.getSubscriptionRequest();
-    if (subscriptionRequests != null)
-      _siriService.handleSubscriptionRequests(subscriptionRequests,
-          responseSiri);
+    if (subscriptionRequests != null && requestIsForThisEnvironment(subscriptionRequests, responseSiri))
+      _siriService.handleSubscriptionRequests(subscriptionRequests, responseSiri);
 
     if (serviceRequest == null && subscriptionRequests == null) {
       _log.warn("Bad request from client, did not contain service delivery, service request, nor subscription request.");
@@ -114,10 +123,72 @@ public class SituationExchangeResource {
     return Response.ok(responseSiri).build();
   }
 
+  private boolean requestIsForThisEnvironment(SubscriptionRequest subscriptionRequest, Siri responseSiri) {
+    if (subscriptionRequest == null)
+      return true;
+    CheckEnvironmentHandler checkEnvironment = checkEnvironment(subscriptionRequest.getRequestorRef());
+
+    if (!checkEnvironment.isStatus()) {
+      SubscriptionResponseStructure subResponse = new SubscriptionResponseStructure();
+      subResponse.getResponseStatus().add(SiriHelper.createStatusResponseStructure(checkEnvironment.isStatus(), checkEnvironment.getMessage()));
+      responseSiri.setSubscriptionResponse(subResponse);
+    }
+    return checkEnvironment.isStatus();
+  }
+
+  private boolean requestIsForThisEnvironment(ServiceRequest serviceRequest, Siri responseSiri) {
+    if (serviceRequest == null)
+      return true;
+    CheckEnvironmentHandler checkEnvironment = checkEnvironment(serviceRequest.getRequestorRef());
+    if (!checkEnvironment.isStatus()) {
+      ServiceDelivery serviceDelivery = new ServiceDelivery();
+      serviceDelivery.setStatus(false);
+      ErrorCondition errorCondition = new ErrorCondition();
+      ErrorDescriptionStructure errorDescriptionStructure = new ErrorDescriptionStructure();
+      errorDescriptionStructure.setValue(checkEnvironment.getMessage());
+      errorCondition.setDescription(errorDescriptionStructure );
+      serviceDelivery.setErrorCondition(errorCondition);
+      responseSiri.setServiceDelivery(serviceDelivery );
+    }
+    return checkEnvironment.isStatus();
+  }
+
+  private boolean deliveryIsForThisEnvironment(ServiceDelivery delivery) {
+    if (delivery == null)
+      return true;
+    CheckEnvironmentHandler checkEnvironment = checkEnvironment(delivery.getProducerRef());
+    return checkEnvironment.isStatus();
+  }
+
+  private CheckEnvironmentHandler checkEnvironment(ParticipantRefStructure participantRefStructure) {
+    if (_environment.isUnknown()) {
+      String message = "Local environment is unknown, processing.";
+      _log.info(message);
+      return new CheckEnvironmentHandler(true, message);
+    }
+    if (participantRefStructure == null) {
+      String message = "Participant ref structure is null, processing.";
+      _log.info(message);
+      return new CheckEnvironmentHandler(true, message);
+    }
+    String incomingEnvironment = participantRefStructure.getValue();
+    if (StringUtils.equals(incomingEnvironment, "unknown")) {
+      String message = "Environment on incoming delivery is 'unknown', processing.";
+      _log.info(message);
+      return new CheckEnvironmentHandler(true, message);
+    }
+    if (!StringUtils.equals(incomingEnvironment, _environment.getEnvironment())) {
+      String message = "Environment on incoming delivery '" + incomingEnvironment + "' does not equal local environment '"
+          + _environment.getEnvironment() + "', discarding service delivery.";
+      _log.info(message);
+      return new CheckEnvironmentHandler(false, message);
+    }
+    return new CheckEnvironmentHandler(true, "ok");
+  }
+
   // TODO I don't believe this is needed any more but it may still be called by
   // a test
-  Siri generateSiriResponse(Date time,
-      List<SituationExchangeDeliveriesStructure> sxDeliveries) {
+  Siri generateSiriResponse(Date time, List<SituationExchangeDeliveriesStructure> sxDeliveries) {
     Siri siri = new Siri();
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     siri.setServiceDelivery(serviceDelivery);
@@ -143,5 +214,32 @@ public class SituationExchangeResource {
   public void setNycSiriService(NycSiriService _siriService) {
     this._siriService = _siriService;
   }
+
+  public void setEnvironment(NycEnvironment environment) {
+    this._environment = environment;
+  }
+  
+  public class CheckEnvironmentHandler {
+    private boolean status;
+    private String message;
+    public CheckEnvironmentHandler(boolean status, String message) {
+      this.status = status;
+      this.message = message;
+    }
+    public boolean isStatus() {
+      return status;
+    }
+    public void setStatus(boolean status) {
+      this.status = status;
+    }
+    public String getMessage() {
+      return message;
+    }
+    public void setMessage(String message) {
+      this.message = message;
+    }
+  }
+
+
 
 }

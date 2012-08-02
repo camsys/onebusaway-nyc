@@ -11,11 +11,15 @@ import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.VehicleGridResponse;
+import org.onebusaway.nyc.admin.model.ui.VehicleStatistics;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 import org.onebusaway.nyc.admin.service.VehicleStatusService;
 import org.onebusaway.nyc.admin.util.VehicleSearchParameters;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -25,15 +29,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @Namespace(value="/admin/vehiclestatus")
 @Results({
-	@Result(name="vehicles", type="json", params= {"root","vehicleGridResponse"})
+	@Result(name="vehicles", type="json", params= {"root","vehicleGridResponse"}),
+	@Result(name="statistics", type="json", params= {"root", "vehicleStatistics"})
 }
 )
 public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
-	
+
+  private static Logger _log = LoggerFactory.getLogger(VehicleStatusAction.class);	
 	private static final long serialVersionUID = 1L;
 	
 	private VehicleStatusService vehicleStatusService;
 	private VehicleGridResponse vehicleGridResponse;
+	private ConfigurationService configurationService;
+	private VehicleStatistics vehicleStatistics;
 	//Request URL parameters
 	private String rows;
 	private String page;
@@ -45,11 +53,18 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	private String inferredState;
 	private String pulloutStatus;
 	private String emergencyStatus;
-	
-	List<VehicleStatus> vehicleStatusRecords;
-	
+	private String formalInferrence;
+	private String sidx;
+	private String sord;
+
+
+	public String getGoogleMapsClientId() {
+		return configurationService.getConfigurationValueAsString("display.googleMapsClientId", "");    
+	}
+
 	public String getVehicleData() {
 		List<VehicleStatus> vehiclesPerPage = null;
+		List<VehicleStatus> vehicleStatusRecords = null;
 		Integer pageNum = new Integer(page);
 		Integer rowsPerPage = new Integer(rows);
 		int total = 0;
@@ -59,6 +74,7 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 		if(pageNum.equals(1) && _search == false) {
 			vehicleStatusRecords = vehicleStatusService.getVehicleStatus(true);
 			//Return all the records as this is not search request
+			sortIfRequired(vehicleStatusRecords);
 			vehiclesPerPage = getVehiclesPerPage(vehicleStatusRecords, rowsPerPage, pageNum);
 			total = vehicleStatusRecords.size();
 		} else {
@@ -73,10 +89,12 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 				} else {
 					matchingVehicleRecords = vehicleStatusService.search(searchParameters, false);
 				}
+				sortIfRequired(matchingVehicleRecords);
 				vehiclesPerPage = getVehiclesPerPage(matchingVehicleRecords, rowsPerPage, pageNum);
 				total = matchingVehicleRecords.size();
 			} else {
 				//Subsequent pages for non search requests
+				sortIfRequired(vehicleStatusRecords);
 				vehiclesPerPage = getVehiclesPerPage(vehicleStatusRecords, rowsPerPage, pageNum);
 				total = vehicleStatusRecords.size();
 			}
@@ -85,6 +103,18 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 		buildResponse(vehiclesPerPage, pageNum, rowsPerPage, total);
 		
 		return "vehicles";
+	}
+	
+	public String getStatistics() {
+		vehicleStatistics = vehicleStatusService.getVehicleStatistics();
+		return "statistics";
+	}
+	
+	private void sortIfRequired(List<VehicleStatus> vehicleStatusRecords) {
+		//check if the results need to be sorted
+		if(StringUtils.isNotBlank(sidx)) {
+			vehicleStatusService.sort(vehicleStatusRecords, sidx, sord);
+		}
 	}
 
 	private void buildResponse(List<VehicleStatus> vehicleRecordsPerPage,
@@ -128,6 +158,7 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 		searchParameters.put(VehicleSearchParameters.INFERRED_STATE, inferredState);
 		searchParameters.put(VehicleSearchParameters.PULLOUT_STATUS, pulloutStatus);
 		searchParameters.put(VehicleSearchParameters.EMERGENCY_STATUS, emergencyStatus);
+		searchParameters.put(VehicleSearchParameters.FORMAL_INFERRENCE, formalInferrence);
 		
 		return searchParameters;
 	}
@@ -139,6 +170,11 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	@Autowired
 	public void setVehicleStatusService(VehicleStatusService vehicleStatusService) {
 		this.vehicleStatusService = vehicleStatusService;
+	}
+
+	@Autowired
+	public void setConfigurationService(ConfigurationService configurationService) {
+	  this.configurationService = configurationService;
 	}
 	
 	/**
@@ -174,20 +210,6 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	 */
 	public void setPage(String page) {
 		this.page = page;
-	}
-
-	/**
-	 * @param vehicleStatusRecords the vehicleStatusRecords to set
-	 */
-	public void setVehicleStatusRecords(List<VehicleStatus> vehicleStatusRecords) {
-		this.vehicleStatusRecords = vehicleStatusRecords;
-	}
-
-	/**
-	 * @return the vehicleStatusRecords
-	 */
-	public List<VehicleStatus> getVehicleStatusRecords() {
-		return vehicleStatusRecords;
 	}
 
 	/**
@@ -300,6 +322,55 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	 */
 	public void setEmergencyStatus(String emergencyStatus) {
 		this.emergencyStatus = emergencyStatus;
+	}
+
+	/**
+	 * @return the vehicleStatistics
+	 */
+	public VehicleStatistics getVehicleStatistics() {
+		return vehicleStatistics;
+	}
+
+	/**
+	 * @return the sidx
+	 */
+	public String getSidx() {
+		return sidx;
+	}
+
+	/**
+	 * @param sidx the sidx to set
+	 */
+	public void setSidx(String sidx) {
+		this.sidx = sidx;
+	}
+
+	/**
+	 * @return the sord
+	 */
+	public String getSord() {
+		return sord;
+	}
+
+	/**
+	 * @param sord the sord to set
+	 */
+	public void setSord(String sord) {
+		this.sord = sord;
+	}
+
+	/**
+	 * @return the formalInferrence
+	 */
+	public String getFormalInferrence() {
+		return formalInferrence;
+	}
+
+	/**
+	 * @param formalInferrence the formalInferrence to set
+	 */
+	public void setFormalInferrence(String formalInferrence) {
+		this.formalInferrence = formalInferrence;
 	}
 
 }

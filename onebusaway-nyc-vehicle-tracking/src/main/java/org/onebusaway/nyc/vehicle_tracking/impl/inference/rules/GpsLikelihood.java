@@ -51,14 +51,6 @@ public class GpsLikelihood implements SensorModelRule {
     final BlockState blockState = state.getBlockState();
     EVehiclePhase phase = state.getJourneyState().getPhase();
 
-    /*
-     * TODO clean up this hack We are really in-progress, but because of the
-     * out-of-service headsign, we can't report it as in-progress
-     */
-    if (obs.hasOutOfServiceDsc() && EVehiclePhase.DEADHEAD_DURING == phase
-        && (blockState != null && state.getBlockStateObservation().isOnTrip()))
-      phase = EVehiclePhase.IN_PROGRESS;
-
     final SensorModelResult result = new SensorModelResult("pGps", 1.0);
 
     if (blockState == null) {
