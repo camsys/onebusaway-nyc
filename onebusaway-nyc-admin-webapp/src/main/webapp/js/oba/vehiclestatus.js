@@ -77,14 +77,14 @@ VehicleStatus.FilterView = Ember.View.extend({
 		var filters = $("#filters");
 		filters.find("input:text").val("");
 		filters.find("select").val("all");
-		$("#emergencyBox #emergencyCheck").removeAttr("checked");
-		
+		$("#checkFilters #emergencyCheck").removeAttr("checked");
+		$("#checkFilters #formalInferrenceCheck").removeAttr("checked");
 	},
 	controllerBinding: "VehicleStatus.FiltersController"
 });
 
 VehicleStatus.TopBarView = Ember.View.extend({
-	refreshDialog: null,
+	refreshDialog: {},
 	didInsertElement: function() {
 		refreshDialog = $("<div id='refreshDialog'>" +
 				"<input type='text' id='refreshRate'/>" +
@@ -210,7 +210,8 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				dsc: function() {return $("#filters #dsc").val();},
 				inferredState: function() {return $("#filters #inferredState option:selected").val();},
 				pulloutStatus: function() {return $("#filters #pulloutStatus option:selected").val();},
-				emergencyStatus: function() {return $("#emergencyBox #emergencyCheck").is(':checked');}
+				emergencyStatus: function() {return $("#checkFilters #emergencyCheck").is(':checked');},
+				formalInferrence: function() {return $("#checkFilters #formalInferrenceCheck").is(':checked');}
 			},
 		}).navGrid("#pager", {edit:false,add:false,del:false,search:false,refresh:false });
 	}

@@ -13,7 +13,8 @@ public enum VehicleSearchParameters {
 	DSC("dsc"),
 	INFERRED_STATE("inferredState"),
 	PULLOUT_STATUS("pulloutStatus"),
-	EMERGENCY_STATUS("emergencyStatus");
+	EMERGENCY_STATUS("emergencyStatus"),
+	FORMAL_INFERRENCE("formalInferrence");
 	
 	private String value;
 
