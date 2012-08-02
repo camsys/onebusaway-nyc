@@ -74,9 +74,15 @@
 					</select>
 				</li>
 			</ul>
-			<div id="emergencyBox">
-				<input type="checkbox" id="emergencyCheck" />
-				<label class="vehicleLabel">Emergency Status</label>
+			<div id="checkFilters">
+				<div>
+					<input type="checkbox" id="emergencyCheck" />
+					<label class="vehicleLabel">Emergency Status</label>
+				</div>
+				<div>
+					<input type="checkbox" id="formalInferrenceCheck" />
+					<label class="vehicleLabel">Formal Inferrence</label>
+				</div>
 			</div>
 			<div id="filterButtons">
 				<input type="button" id="reset" value="Reset" {{action "resetFilters" on="click" }}/>

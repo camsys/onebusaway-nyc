@@ -10,6 +10,7 @@ import org.onebusaway.nyc.admin.search.Filter;
 import org.onebusaway.nyc.admin.search.impl.DSCFilter;
 import org.onebusaway.nyc.admin.search.impl.DepotFilter;
 import org.onebusaway.nyc.admin.search.impl.EmergencyStatusFilter;
+import org.onebusaway.nyc.admin.search.impl.FormalInferrenceFilter;
 import org.onebusaway.nyc.admin.search.impl.InferredStateFilter;
 import org.onebusaway.nyc.admin.search.impl.PulloutStatusFilter;
 import org.onebusaway.nyc.admin.search.impl.RevenueServiceFilter;
@@ -144,6 +145,10 @@ public class VehicleSearchServiceImpl implements VehicleSearchService {
 		String emergencyStatus = searchParameters.get(VehicleSearchParameters.EMERGENCY_STATUS);
 		if(emergencyStatus.equalsIgnoreCase("true")) {
 			filters.add(new EmergencyStatusFilter());
+		}
+		String formalInferrence = searchParameters.get(VehicleSearchParameters.FORMAL_INFERRENCE);
+		if(formalInferrence.equalsIgnoreCase("true")) {
+			filters.add(new FormalInferrenceFilter());
 		}
 		return filters;
 	}

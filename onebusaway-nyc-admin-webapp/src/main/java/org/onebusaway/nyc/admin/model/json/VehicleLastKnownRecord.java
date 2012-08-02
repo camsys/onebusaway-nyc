@@ -35,6 +35,7 @@ public class VehicleLastKnownRecord {
     private Double longitude;
     private Double direction;
     private Long scheduleDeviation;
+    private boolean inferrenceFormal;
 	
 	/**
 	 * @return the vehicleAgencyId
@@ -319,6 +320,19 @@ public class VehicleLastKnownRecord {
 	 */
 	public void setInferredRouteId(String inferredRouteId) {
 		this.inferredRouteId = inferredRouteId;
+	}
+	/**
+	 * @return the inferrenceFormal
+	 */
+	@JsonProperty("inference-is-formal")
+	public boolean isInferrenceFormal() {
+		return inferrenceFormal;
+	}
+	/**
+	 * @param inferrenceFormal the inferrenceFormal to set
+	 */
+	public void setInferrenceFormal(boolean inferrenceFormal) {
+		this.inferrenceFormal = inferrenceFormal;
 	}
 
 }
