@@ -16,7 +16,6 @@
 package org.onebusaway.nyc.integration_tests.nyc_webapp;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,7 +50,7 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
   
   @Test
   public void testDepartureTimeSetOnSM() throws HttpException, IOException {
-	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
+	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404923");
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
@@ -95,21 +94,20 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
 	 HashMap<String,Object> onwardCallWrapper = (HashMap<String, Object>) mvj.get("OnwardCalls");
 	 ArrayList<Object> onwardCalls = (ArrayList<Object>) onwardCallWrapper.get("OnwardCall");
 	 
-	 assertEquals(onwardCalls.size(), 58);
+	 assertEquals(onwardCalls.size(), 57);
 	 
 	 HashMap<String,Object> stop1 = (HashMap<String, Object>) onwardCalls.get(0);
 	 HashMap<String,Object> stop2 = (HashMap<String, Object>) onwardCalls.get(onwardCalls.size() - 1);
 	 
-	 assertEquals(stop1.get("StopPointRef"), "MTA NYCT_903036");
+	 assertEquals(stop1.get("StopPointRef"), "MTA NYCT_404923");
 	 
 	 HashMap<String,Object> extensions1 = (HashMap<String, Object>) stop1.get("Extensions");
 	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
 
 	 assertEquals(distances1.get("PresentableDistance"), "approaching");	 
-	 assertTrue(Double.parseDouble(distances1.get("DistanceFromCall").toString()) < 50);	 
-	 assertTrue(Double.parseDouble(distances1.get("DistanceFromCall").toString()) > 45);	 
+	 assertEquals(distances1.get("DistanceFromCall"), 53.82d);	 
 	 assertEquals(distances1.get("StopsFromCall"), 0);	 
-	 assertEquals(distances1.get("CallDistanceAlongRoute"), 38189.61);	 
+	 assertEquals(distances1.get("CallDistanceAlongRoute"), 0.06);	 
 	 
 	 assertEquals(stop2.get("StopPointRef"), "MTA NYCT_905046");
 
@@ -117,8 +115,8 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
 	 HashMap<String,Object> distances2 = (HashMap<String, Object>) extensions2.get("Distances");
 
 	 assertEquals(distances2.get("PresentableDistance"), "24.9 miles away");	 
-	 assertTrue(Double.parseDouble(distances2.get("DistanceFromCall").toString()) > 40000.0);	 
-	 assertEquals(distances2.get("StopsFromCall"), 57);	 
+	 assertEquals(distances2.get("DistanceFromCall"), 39992.98);	 
+	 assertEquals(distances2.get("StopsFromCall"), 56);	 
 	 assertEquals(distances2.get("CallDistanceAlongRoute"), 39939.21);	 
   }
 }
