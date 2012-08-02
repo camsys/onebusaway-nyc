@@ -53,13 +53,6 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.17</version>
         </dependency>
-
-
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-container</artifactId>
-            <version>2.0.5-SNAPSHOT</version>
-        </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
@@ -69,6 +62,12 @@
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-jaxrs</artifactId>
             <version>1.9.2</version>
+        </dependency>
+        <!-- RMI-like service for wiring up services between VMs -->
+        <dependency>
+            <groupId>com.caucho</groupId>
+            <artifactId>resin-hessian</artifactId>
+	        <version>3.1.6</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -85,8 +84,8 @@
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-transit-data-federation</artifactId>
-            <version>${onebusaway.app-modules.version}</version>
+            <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
+            <version>${onebusaway.nyc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -149,7 +148,7 @@
                 <vtms.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
                 <config.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
-                <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolve.conf -->
+                <tdm.host>localhost</tdm.host><!-- assumes domain is set in resolve.conf -->
                 <webapp.api.url></webapp.api.url>
                 <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
@@ -161,6 +160,32 @@
                 <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
+                <bundle.location>/var/lib/obanyc/oba-bundle-tdm</bundle.location>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
+                <log4j.appender>ROLL</log4j.appender>
+            </properties>
+        </profile>
+        <profile>
+            <id>local-bundle</id>
+            <properties> <!-- sms hostname assumes search is defined in /etc/resolv.conf -->
+                <tds.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
+                <tdm.host>localhost:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
+                <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
+                <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
+                <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
+                <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
+                <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+                <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
+                <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+                <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
+                <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
+                <bundle.location>/tmp/oba-bundle-tdm</bundle.location>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
                 <log4j.appender>ROLL</log4j.appender>
             </properties>
         </profile>
