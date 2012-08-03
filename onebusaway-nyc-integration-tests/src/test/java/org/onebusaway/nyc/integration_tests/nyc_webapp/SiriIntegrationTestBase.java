@@ -48,7 +48,7 @@ public class SiriIntegrationTestBase {
   
   private long _maxTimeout = 40 * 1000;
 
-  private String _time = "2012-03-01T13:33:42-0500";
+  private String _time = "2012-03-01T13:36:00-0500";
   
   private String _trace;
 
@@ -151,7 +151,7 @@ public class SiriIntegrationTestBase {
 	  List<NycTestInferredLocationRecord> expected = _traceSupport
 			  .readRecords(trace);
 
-	  String taskId = _traceSupport.uploadTraceForSimulation(trace, false);
+	  String taskId = _traceSupport.uploadTraceForSimulation(trace, true);
 
 	  // Wait for the task to complete
 	  long t = System.currentTimeMillis();

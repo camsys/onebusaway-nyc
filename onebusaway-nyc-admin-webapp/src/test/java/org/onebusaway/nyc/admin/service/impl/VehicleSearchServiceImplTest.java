@@ -33,7 +33,7 @@ public class VehicleSearchServiceImplTest {
 	@Test
 	public void testSearchNoParameters() {
 		Map<VehicleSearchParameters, String> parameters = 
-				buildSearchParameters(" ","","", "All","All","All","false");
+				buildSearchParameters(" ","","", "All","All","All","false","false");
 		List<VehicleStatus> vehicleStatusRecords = buildVehicleStatusRecords();
 		
 		List<VehicleStatus> matchingRecords = service.search(vehicleStatusRecords, parameters);
@@ -44,7 +44,7 @@ public class VehicleSearchServiceImplTest {
 	@Test
 	public void testSearchNoMatchingParameters() {
 		Map<VehicleSearchParameters, String> parameters = 
-				buildSearchParameters("240","B61","430", "All","All","All", "false");
+				buildSearchParameters("240","B61","430", "All","All","All", "false","false");
 		List<VehicleStatus> vehicleStatusRecords = buildVehicleStatusRecords();
 		
 		List<VehicleStatus> matchingRecords = service.search(vehicleStatusRecords, parameters);
@@ -55,7 +55,7 @@ public class VehicleSearchServiceImplTest {
 	@Test
 	public void testSearchPartialMatchingParameters() {
 		Map<VehicleSearchParameters, String> parameters = 
-				buildSearchParameters("","B63","", "All","All","All", "false");
+				buildSearchParameters("","B63","", "All","All","All", "false", "false");
 		List<VehicleStatus> vehicleStatusRecords = buildVehicleStatusRecords();
 		
 		List<VehicleStatus> matchingRecords = service.search(vehicleStatusRecords, parameters);
@@ -66,7 +66,7 @@ public class VehicleSearchServiceImplTest {
 	@Test
 	public void testSearchMatchingInferredState() {
 		Map<VehicleSearchParameters, String> parameters = 
-				buildSearchParameters("","B63","", "All","DEADHEAD","All", "false");
+				buildSearchParameters("","B63","", "All","DEADHEAD","All", "false","false");
 		List<VehicleStatus> vehicleStatusRecords = buildVehicleStatusRecords();
 		
 		List<VehicleStatus> matchingRecords = service.search(vehicleStatusRecords, parameters);
@@ -77,7 +77,7 @@ public class VehicleSearchServiceImplTest {
 	@Test
 	public void testSearchExactMatchingParameters() {
 		Map<VehicleSearchParameters, String> parameters = 
-				buildSearchParameters("243","B62","437", "All","IN PROGRESS","All", "false");
+				buildSearchParameters("243","B62","437", "All","IN PROGRESS","All", "false","true");
 		List<VehicleStatus> vehicleStatusRecords = buildVehicleStatusRecords();
 		
 		List<VehicleStatus> matchingRecords = service.search(vehicleStatusRecords, parameters);
@@ -88,7 +88,7 @@ public class VehicleSearchServiceImplTest {
 	@Test
 	public void testSearchEmergencyVehicles() {
 		Map<VehicleSearchParameters, String> parameters = 
-				buildSearchParameters(""," ","", "All","All","All", "true");
+				buildSearchParameters(""," ","", "All","All","All", "true", "false");
 		List<VehicleStatus> vehicleStatusRecords = buildVehicleStatusRecords();
 		
 		List<VehicleStatus> matchingRecords = service.search(vehicleStatusRecords, parameters);
@@ -115,7 +115,8 @@ public class VehicleSearchServiceImplTest {
 	}
 	
 	private Map<VehicleSearchParameters, String> buildSearchParameters(String vehicleId, String route,
-			String dsc, String depot, String inferredState, String pulloutStatus, String emergencyStatus) {
+			String dsc, String depot, String inferredState, String pulloutStatus, 
+			String emergencyStatus, String formalInferrence) {
 		Map<VehicleSearchParameters, String> parameters = new HashMap<VehicleSearchParameters, String>();
 		
 		parameters.put(VehicleSearchParameters.VEHICLE_ID, vehicleId);
@@ -125,6 +126,7 @@ public class VehicleSearchServiceImplTest {
 		parameters.put(VehicleSearchParameters.INFERRED_STATE, inferredState);
 		parameters.put(VehicleSearchParameters.PULLOUT_STATUS, pulloutStatus);
 		parameters.put(VehicleSearchParameters.EMERGENCY_STATUS, emergencyStatus);
+		parameters.put(VehicleSearchParameters.FORMAL_INFERRENCE, formalInferrence);
 		
 		return parameters;
 	}
@@ -138,20 +140,23 @@ public class VehicleSearchServiceImplTest {
 		when(vehicle1.getInferredState()).thenReturn("IN PROGRESS");
 		when(vehicle1.getObservedDSC()).thenReturn("436");
 		when(vehicle1.getEmergencyStatus()).thenReturn("");
+		when(vehicle1.isInferrenceFormal()).thenReturn(false);
 		
 		VehicleStatus vehicle2 = mock(VehicleStatus.class);
 		when(vehicle2.getVehicleId()).thenReturn("243");
 		when(vehicle2.getRoute()).thenReturn("B62");
 		when(vehicle2.getInferredState()).thenReturn("IN PROGRESS");
 		when(vehicle2.getObservedDSC()).thenReturn("437");
-		when(vehicle1.getEmergencyStatus()).thenReturn(" ");
+		when(vehicle2.getEmergencyStatus()).thenReturn(" ");
+		when(vehicle2.isInferrenceFormal()).thenReturn(true);
 		
 		VehicleStatus vehicle3 = mock(VehicleStatus.class);
 		when(vehicle3.getVehicleId()).thenReturn("244");
 		when(vehicle3.getRoute()).thenReturn("B63");
 		when(vehicle3.getInferredState()).thenReturn("DEADHEAD");
 		when(vehicle3.getObservedDSC()).thenReturn("437");
-		when(vehicle1.getEmergencyStatus()).thenReturn("1");
+		when(vehicle3.getEmergencyStatus()).thenReturn("1");
+		when(vehicle3.isInferrenceFormal()).thenReturn(true);
 		
 		vehicleStatusRecords.add(vehicle1);
 		vehicleStatusRecords.add(vehicle2);

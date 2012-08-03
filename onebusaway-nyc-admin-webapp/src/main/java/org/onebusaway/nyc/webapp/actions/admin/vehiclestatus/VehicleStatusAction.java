@@ -53,6 +53,7 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	private String inferredState;
 	private String pulloutStatus;
 	private String emergencyStatus;
+	private String formalInferrence;
 	private String sidx;
 	private String sord;
 
@@ -157,6 +158,7 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 		searchParameters.put(VehicleSearchParameters.INFERRED_STATE, inferredState);
 		searchParameters.put(VehicleSearchParameters.PULLOUT_STATUS, pulloutStatus);
 		searchParameters.put(VehicleSearchParameters.EMERGENCY_STATUS, emergencyStatus);
+		searchParameters.put(VehicleSearchParameters.FORMAL_INFERRENCE, formalInferrence);
 		
 		return searchParameters;
 	}
@@ -355,6 +357,20 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	 */
 	public void setSord(String sord) {
 		this.sord = sord;
+	}
+
+	/**
+	 * @return the formalInferrence
+	 */
+	public String getFormalInferrence() {
+		return formalInferrence;
+	}
+
+	/**
+	 * @param formalInferrence the formalInferrence to set
+	 */
+	public void setFormalInferrence(String formalInferrence) {
+		this.formalInferrence = formalInferrence;
 	}
 
 }
