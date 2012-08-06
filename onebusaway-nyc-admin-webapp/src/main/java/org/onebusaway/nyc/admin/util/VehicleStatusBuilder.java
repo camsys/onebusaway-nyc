@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 import org.joda.time.Seconds;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -56,6 +55,8 @@ public class VehicleStatusBuilder {
 		vehicleStatus.setInferredDSC(lastknownRecord.getInferredDSC());
 		
 		vehicleStatus.setTimeReported(lastknownRecord.getTimeReported());
+		
+		vehicleStatus.setInferrenceFormal(lastknownRecord.isInferrenceFormal());
 		
 		return vehicleStatus;
 	}

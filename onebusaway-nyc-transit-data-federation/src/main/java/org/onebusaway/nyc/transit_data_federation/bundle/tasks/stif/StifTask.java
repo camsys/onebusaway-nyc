@@ -15,6 +15,24 @@
  */
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
+import org.onebusaway.csv_entities.CSVLibrary;
+import org.onebusaway.csv_entities.CSVListener;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.Route;
+import org.onebusaway.gtfs.model.StopTime;
+import org.onebusaway.gtfs.model.Trip;
+import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
+import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.utility.ObjectSerializationLibrary;
+
+import org.opentripplanner.common.model.P2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -28,20 +46,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.Route;
-import org.onebusaway.gtfs.model.StopTime;
-import org.onebusaway.gtfs.model.Trip;
-import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
-import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
-import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
-import org.onebusaway.utility.ObjectSerializationLibrary;
-import org.opentripplanner.common.model.P2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Load STIF data, including the mapping between destination sign codes and trip
@@ -57,6 +61,8 @@ public class StifTask implements Runnable {
   private GtfsMutableRelationalDao _gtfsMutableRelationalDao;
 
   private List<File> _stifPaths = new ArrayList<File>();
+  
+  private String _tripToDSCOverridePath;
 
   private Set<String> _notInServiceDscs = new HashSet<String>();
 
@@ -93,6 +99,10 @@ public class StifTask implements Runnable {
   public void setNotInServiceDsc(String notInServiceDsc) {
     _notInServiceDscs.add(notInServiceDsc);
   }
+  
+  public void setTripToDSCOverridePath(String path) {
+    _tripToDSCOverridePath = path;
+  }
 
   public void setNotInServiceDscs(List<String> notInServiceDscs) {
     _notInServiceDscs.addAll(notInServiceDscs);
@@ -117,7 +127,7 @@ public class StifTask implements Runnable {
     for (File path : _stifPaths) {
       loadStif(path, loader);
     }
-
+    
     computeBlocksFromRuns(loader);
     warnOnMissingTrips();
 
@@ -133,9 +143,48 @@ public class StifTask implements Runnable {
     } catch (IOException e) {
           throw new IllegalStateException(e);
     }
-
+    
     Map<String, List<AgencyAndId>> dscToTripMap = loader.getTripMapping();
+    
+    // Read in trip to dsc overrides if they exist
+    if (_tripToDSCOverridePath != null) {
+      Map<AgencyAndId, String> tripToDSCOverrides;
+      try {
+        tripToDSCOverrides = loadTripToDSCOverrides(_tripToDSCOverridePath);
+      } catch (Exception e) {
+        throw new IllegalStateException(e);
+      }
+
+      // Add tripToDSCOverrides to dscToTripMap
+      for (Map.Entry<AgencyAndId, String> entry : tripToDSCOverrides.entrySet()) {
+        
+        if (_gtfsMutableRelationalDao.getTripForId(entry.getKey()) == null) {
+          throw new IllegalStateException("Trip id " + entry.getKey() + " from trip ID to DSC overrides does not exist in bundle GTFS.");
+        }
+        
+        List<AgencyAndId> agencyAndIds;
+        // See if trips for this dsc are already in the map
+        agencyAndIds = dscToTripMap.get(entry.getValue());
+        // If not, care a new array of trip ids and add it to the map for this dsc
+        if (agencyAndIds == null) {
+          agencyAndIds = new ArrayList<AgencyAndId>();
+          dscToTripMap.put(entry.getValue(), agencyAndIds);
+        }
+        // Add the trip id to our list of trip ids already associated with a dsc
+        agencyAndIds.add(entry.getKey());
+      }
+    }
+
     Map<AgencyAndId, String> tripToDscMap = new HashMap<AgencyAndId, String>();
+    
+    // Populate tripToDscMap based on dscToTripMap
+    for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {
+      String destinationSignCode = entry.getKey();
+      List<AgencyAndId> tripIds = entry.getValue();
+      for (AgencyAndId tripId : tripIds) {
+       tripToDscMap.put(tripId, destinationSignCode);
+      }
+    }
 
     Set<String> inServiceDscs = new HashSet<String>();
 
@@ -160,9 +209,6 @@ public class StifTask implements Runnable {
     for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {
       String destinationSignCode = entry.getKey();
       List<AgencyAndId> tripIds = entry.getValue();
-      for (AgencyAndId tripId : tripIds) {
-    	 tripToDscMap.put(tripId, destinationSignCode);
-      }
 
       Set<AgencyAndId> routeIds = routeIdsByDsc.get(destinationSignCode);
       if (routeIds != null) {
@@ -505,7 +551,47 @@ public class StifTask implements Runnable {
       loader.run(path);
     }
   }
-
+  
+  private Map<AgencyAndId, String> loadTripToDSCOverrides(String path) throws Exception {
+    
+    final Map<AgencyAndId, String> results = new HashMap<AgencyAndId, String>();
+    
+    CSVListener listener = new CSVListener() {
+      
+      int count = 0;
+      int tripIdIndex;
+      int dscIndex;
+      
+      @Override
+      public void handleLine(List<String> line) throws Exception {
+        
+        if (line.size() != 2)
+          throw new Exception("Each Trip ID to DSC CSV line must contain two columns.");
+        
+        if (count == 0) {
+          count++;
+          
+          tripIdIndex = line.indexOf("tripId");
+          dscIndex = line.indexOf("dsc");
+          
+          if(tripIdIndex == -1 || dscIndex == -1) {
+            throw new Exception("Trip ID to DSC CSV must contain a header with column names 'tripId' and 'dsc'.");
+          }
+          
+          return;
+        }
+        
+        results.put(AgencyAndIdLibrary.convertFromString(line.get(tripIdIndex)), line.get(dscIndex));
+      }
+    };
+    
+    File source = new File(path);
+    
+    CSVLibrary.parse(source, listener);
+    
+    return results;
+  }
+  
   private void readNotInServiceDscs() {
     if (_notInServiceDscPath != null) {
       try {

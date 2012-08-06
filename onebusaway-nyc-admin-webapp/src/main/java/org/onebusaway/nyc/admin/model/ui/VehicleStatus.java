@@ -24,7 +24,7 @@ public class VehicleStatus {
 	private String formattedPulloutTime;
 	private String formattedPullinTime;
 	private String timeReported;
-	
+	private boolean inferrenceFormal;
 	/**
 	 * @return the vehicleId
 	 */
@@ -228,6 +228,18 @@ public class VehicleStatus {
 	 */
 	public void setTimeReported(String timeReported) {
 		this.timeReported = timeReported;
+	}
+	/**
+	 * @return the inferrenceFormal
+	 */
+	public boolean isInferrenceFormal() {
+		return inferrenceFormal;
+	}
+	/**
+	 * @param inferrenceFormal the inferrenceFormal to set
+	 */
+	public void setInferrenceFormal(boolean inferrenceFormal) {
+		this.inferrenceFormal = inferrenceFormal;
 	}
 	
 	

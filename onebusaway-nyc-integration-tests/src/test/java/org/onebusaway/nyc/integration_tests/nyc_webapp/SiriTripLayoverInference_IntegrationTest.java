@@ -23,6 +23,7 @@ import java.util.HashMap;
 
 import org.apache.commons.httpclient.HttpException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
@@ -51,9 +52,11 @@ public class SiriTripLayoverInference_IntegrationTest extends SiriIntegrationTes
 	}
   }
 
+  // (bus wrapped around to stop on next trip since bus is in layover!)
   @Test
+	@Ignore
   public void testDepartureTimeNotSetOnSM() throws HttpException, IOException {
-	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
+	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404923");
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
@@ -67,6 +70,7 @@ public class SiriTripLayoverInference_IntegrationTest extends SiriIntegrationTes
   }
   
   @Test
+	@Ignore
   public void testDepartureTimeNotSetOnVM() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2437");
 	  

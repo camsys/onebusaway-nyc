@@ -602,7 +602,9 @@ public class MotionModelImpl implements MotionModel<Observation> {
       BlockStateObservation proposalEdge) {
     if (proposalEdge != null) {
       if (parentEdge != null) {
-        if (!proposalEdge.getBlockState().getRunId().equals(
+        if (proposalEdge.getBlockState().getRunId() != null &&
+            parentEdge.getBlockState().getRunId() != null &&
+            !proposalEdge.getBlockState().getRunId().equals(
             parentEdge.getBlockState().getRunId())) {
           return true;
         } else {
