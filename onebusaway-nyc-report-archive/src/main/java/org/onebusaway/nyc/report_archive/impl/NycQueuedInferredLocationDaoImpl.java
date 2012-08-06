@@ -11,6 +11,7 @@ import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
+import org.onebusaway.nyc.report_archive.util.HQLBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,9 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 
 	protected static Logger _log = LoggerFactory.getLogger(NycQueuedInferredLocationDaoImpl.class);
 
-	private static final String SPACE = " ";
-	
 	private HibernateTemplate _template;
+	
+	private static final String SPACE = " ";
 
 	@Autowired
 	private CcLocationCache _ccLocationCache;
@@ -107,19 +108,22 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 	public List<CcAndInferredLocationRecord> getAllLastKnownRecords(
 			Map<CcAndInferredLocationFilter, String> filter) {
 
-		StringBuilder hql = new StringBuilder("from CcAndInferredLocationRecord");
-		hql.append(SPACE);
+		HQLBuilder queryBuilder = new HQLBuilder();
+		StringBuilder hql = queryBuilder.from(new StringBuilder(), "CcAndInferredLocationRecord");
 		
-		addQueryParam(hql, CcAndInferredLocationFilter.DEPOT_ID, filter.get(CcAndInferredLocationFilter.DEPOT_ID));
-		addQueryParam(hql, CcAndInferredLocationFilter.INFERRED_ROUTEID, filter.get(CcAndInferredLocationFilter.INFERRED_ROUTEID));
-		addQueryParam(hql, CcAndInferredLocationFilter.INFERRED_PHASE, filter.get(CcAndInferredLocationFilter.INFERRED_PHASE));
+		hql = addQueryParam(queryBuilder, hql, CcAndInferredLocationFilter.DEPOT_ID, 
+				filter.get(CcAndInferredLocationFilter.DEPOT_ID));
+		hql = addQueryParam(queryBuilder, hql, CcAndInferredLocationFilter.INFERRED_ROUTEID, 
+				filter.get(CcAndInferredLocationFilter.INFERRED_ROUTEID));
+		hql = addQueryParam(queryBuilder, hql, CcAndInferredLocationFilter.INFERRED_PHASE, 
+				filter.get(CcAndInferredLocationFilter.INFERRED_PHASE));
 
 		String boundingBox = filter.get(CcAndInferredLocationFilter.BOUNDING_BOX);
 		if(StringUtils.isNotBlank(boundingBox)) {
-			addBoundingBoxParam(hql, boundingBox);
+			hql = addBoundingBoxParam(hql, boundingBox);
 		}
 		
-		hql.append("order by vehicleId");
+		hql = queryBuilder.order(hql, "vehicleId", null);
 
 		@SuppressWarnings("unchecked")
 		List<CcAndInferredLocationRecord> list = _template.find(hql.toString());
@@ -140,28 +144,24 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 		return _template.get(CcAndInferredLocationRecord.class, vehicleId);
 	}
 	
-	private void addQueryParam(StringBuilder hql, CcAndInferredLocationFilter param, String field) {
+	private StringBuilder addQueryParam(HQLBuilder queryBuilder, StringBuilder hql, CcAndInferredLocationFilter param, String field) {
 		if(StringUtils.isNotBlank(field)) {
-			where(hql, param, field);
-			hql.append(SPACE);
+			hql = queryBuilder.where(hql, param.getValue(), field);
 		}
+		return hql;
 	}
 
-	private void where(StringBuilder hql, CcAndInferredLocationFilter param, String field) {
-		if(hql.toString().contains("where")) {
-			hql.append("and " +param.getValue() + "='" +field.toUpperCase() + "'");
-		} else {
-			hql.append("where " +param.getValue() + "='" +field.toUpperCase() + "'");
-		}
-	}
 	
-	private void addBoundingBoxParam(StringBuilder hql, String boundingBox) {
+	
+	private StringBuilder addBoundingBoxParam(StringBuilder hql, String boundingBox) {
 		if(hql.toString().contains("where")) {
 			hql.append("and(" + buildCoordinatesQueryString(boundingBox) +")");
 		} else {
 			hql.append("where(" + buildCoordinatesQueryString(boundingBox) +")");
 		}
 		hql.append(SPACE);
+		
+		return hql;
 	}
 
 	private String buildCoordinatesQueryString(String boundingBox) {
@@ -181,12 +181,12 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 		query.append("and").append(SPACE);
 		query.append(maxLongitude).append(")").append(SPACE);
 		query.append("or").append(SPACE);
-		query.append("(inferred_latitude between").append(SPACE);
+		query.append("(inferredLatitude between").append(SPACE);
 		query.append(minLatitude).append(SPACE);
 		query.append("and").append(SPACE);
 		query.append(maxLatitude).append(SPACE);
 		query.append("and").append(SPACE);
-		query.append("inferred_longitude between").append(SPACE);
+		query.append("inferredLongitude between").append(SPACE);
 		query.append(minLongitude).append(SPACE);
 		query.append("and").append(SPACE);
 		query.append(maxLongitude).append(")");
