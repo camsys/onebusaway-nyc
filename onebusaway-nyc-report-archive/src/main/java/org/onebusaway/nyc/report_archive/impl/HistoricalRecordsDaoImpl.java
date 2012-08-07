@@ -1,6 +1,9 @@
 package org.onebusaway.nyc.report_archive.impl;
 
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -114,7 +117,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		Object startDateObj = filter.get(CcAndInferredLocationFilter.START_DATE);
 		Object endDateObj = filter.get(CcAndInferredLocationFilter.END_DATE);
 		
-		addDateBoundary(queryBuilder, hql, ccLocationAlias, startDateObj, endDateObj);
+		addDateBoundary(queryBuilder, hql, ccLocationAlias, inferredLocationAlias, startDateObj, endDateObj);
 		
 		return hql;
 	}
@@ -209,25 +212,22 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		return query.toString();
 	}
 	
-	private StringBuilder addDateBoundary(HQLBuilder queryBuilder, StringBuilder hql, String alias,
-			Object startDateObj, Object endDateObj) {
-		//DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private StringBuilder addDateBoundary(HQLBuilder queryBuilder, StringBuilder hql, String ccLocationAlias,
+			String inferredLocationAlias, Object startDateObj, Object endDateObj) {
+		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
 		//Check if start date is set. Do not append date boundary if start date is not set
 		String startDate = (String) startDateObj;
 		String endDate = (String) endDateObj;
 		
 		if(StringUtils.isNotBlank(startDate)) {
-			//try {
-				//Date startDate = formatter.parse((String) startDateObj);
-				if(StringUtils.isBlank(endDate)) {
-					//Default end date to now if end Date is not specified
-					//endDate = formatter.parse(new Date().toString());
-				} 
-				hql = queryBuilder.dateBoundary(hql, alias, "timeReported", startDate, endDate);
-			/*} catch (ParseException e) {
-				log.error("Error parsing date field");
-				e.printStackTrace();
-			}*/
+			if(StringUtils.isBlank(endDate)) {
+				//Default end date to now if end Date is not specified
+				Date now = new Date();
+				endDate = formatter.format(now);
+			} 
+			hql = queryBuilder.dateBoundary(hql, ccLocationAlias, "timeReported", startDate, endDate);
+			hql = queryBuilder.dateBoundary(hql, inferredLocationAlias, "timeReported", startDate, endDate);
 		}
 		return hql;
 	}
