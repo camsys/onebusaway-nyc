@@ -1,10 +1,6 @@
 package org.onebusaway.nyc.report_archive.impl;
 
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +9,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecord;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecordResultTransformer;
 import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
@@ -64,13 +59,12 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		hql = addQueryParams(filter, queryBuilder, ccLocationAlias,
 				inferredLocationAlias, hql);
 		
-		hql = queryBuilder.join(hql, ccLocationAlias, inferredLocationAlias, 
-				CcAndInferredLocationFilter.VEHICLE_ID.getValue(), "=");
+		hql = queryBuilder.join(hql, ccLocationAlias, inferredLocationAlias, "uuid", "=");
 		
 		
 		addRecordLimit(filter.get(CcAndInferredLocationFilter.RECORDS));
 		
-		log.debug("Executing query : " + hql.toString());
+		log.info("Executing query : " + hql.toString());
 		
 		final StringBuilder hqlQuery = hql;
 		
@@ -120,7 +114,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		Object startDateObj = filter.get(CcAndInferredLocationFilter.START_DATE);
 		Object endDateObj = filter.get(CcAndInferredLocationFilter.END_DATE);
 		
-		//addDateBoundary(queryBuilder, hql, inferredLocationAlias, startDateObj, endDateObj);
+		addDateBoundary(queryBuilder, hql, ccLocationAlias, startDateObj, endDateObj);
 		
 		return hql;
 	}
@@ -219,17 +213,17 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 			Object startDateObj, Object endDateObj) {
 		//DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		//Check if start date is set. Do not append date boundary if start date is not set
-		if(startDateObj !=null) {
+		String startDate = (String) startDateObj;
+		String endDate = (String) endDateObj;
+		
+		if(StringUtils.isNotBlank(startDate)) {
 			//try {
 				//Date startDate = formatter.parse((String) startDateObj);
-				//Date endDate = null;
-				if(endDateObj == null) {
+				if(StringUtils.isBlank(endDate)) {
 					//Default end date to now if end Date is not specified
 					//endDate = formatter.parse(new Date().toString());
-				} else {
-					//endDate = formatter.parse((String) endDateObj);
-				}
-				hql = queryBuilder.dateBoundary(hql, alias, "timeReported", (String)startDateObj, (String)endDateObj);
+				} 
+				hql = queryBuilder.dateBoundary(hql, alias, "timeReported", startDate, endDate);
 			/*} catch (ParseException e) {
 				log.error("Error parsing date field");
 				e.printStackTrace();

@@ -1,7 +1,5 @@
 package org.onebusaway.nyc.report_archive.util;
 
-import java.util.Date;
-
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -127,22 +125,22 @@ public class HQLBuilder {
 	 * @param hqlBuilder hql query generated so far
 	 * @param primaryAlias alias of primary table
 	 * @param secondaryAlias alias of secondary table
-	 * @param field the field on which join needs to be created
+	 * @param joinColumn column on which join needs to be created
 	 * @param condition join condition
 	 * @return hql with join condition
 	 */
 	public StringBuilder join(StringBuilder hqlBuilder, String primaryAlias, String secondaryAlias, 
-			String field, String condition) {
+			String joinColumn, String condition) {
 		if(hqlBuilder.toString().contains("where")) {
 			hqlBuilder.append("and").append(SPACE);
 		} else {
 			hqlBuilder.append("where").append(SPACE);
 		}
-		hqlBuilder.append(primaryAlias + "." +field);
+		hqlBuilder.append(primaryAlias + "." +joinColumn);
 		hqlBuilder.append(SPACE);
 		hqlBuilder.append(condition);
 		hqlBuilder.append(SPACE);
-		hqlBuilder.append(secondaryAlias + "." +field);
+		hqlBuilder.append(secondaryAlias + "." +joinColumn);
 		hqlBuilder.append(SPACE);
 		
 		return hqlBuilder;
@@ -160,15 +158,15 @@ public class HQLBuilder {
 	public StringBuilder dateBoundary(StringBuilder hqlBuilder, String field, String startDate, 
 			String endDate) {
 		if(hqlBuilder.toString().contains("where")) {
-			hqlBuilder.append("and").append(SPACE);
+			hqlBuilder.append("and(").append(SPACE);
 		} else {
-			hqlBuilder.append("where").append(SPACE);
+			hqlBuilder.append("where(").append(SPACE);
 		}
 		hqlBuilder.append(field).append(SPACE);
 		hqlBuilder.append("between").append(SPACE);
 		hqlBuilder.append("'" +startDate + "'").append(SPACE);
 		hqlBuilder.append("and").append(SPACE);
-		hqlBuilder.append("'" +endDate +"'").append(SPACE);
+		hqlBuilder.append("'" +endDate +"'").append(")").append(SPACE);
 		
 		return hqlBuilder;
 	}

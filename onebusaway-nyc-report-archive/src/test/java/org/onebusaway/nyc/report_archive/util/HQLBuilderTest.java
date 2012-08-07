@@ -68,12 +68,12 @@ public class HQLBuilderTest {
 		hql = queryBuilder.where(hql, "cc", "vehicleAgencyId", "MTA_NYCT");
 	    /*Date startDate = new Date(formatter.parseDateTime("2012-07-07 03:00:00").getMillis());
 	    Date endDate = new Date(formatter.parseDateTime("2012-07-08 03:00:00").getMillis());*/
-		hql = queryBuilder.dateBoundary(hql, "in", "timeReported", "2012-07-07 03:00:00", "2012-07-08 03:00:00");
+		hql = queryBuilder.dateBoundary(hql, "cc", "timeReported", "2012-07-07 03:00:00", "2012-07-08 03:00:00");
 		hql = queryBuilder.join(hql, "cc", "in", "vehicleId", "=");
 		hql = queryBuilder.order(hql, "cc", "vehicleId", "desc");
 		assertEquals("Expecting well formed hql", "from CcAndInferredLocationRecord cc ," +
 				"ArchivedInferredLocationRecord in where cc.vehicleId=321" +
-				" and cc.vehicleAgencyId='MTA_NYCT' and in.timeReported between '2012-07-07 03:00:00' and '2012-07-08 03:00:00'" +
+				" and cc.vehicleAgencyId='MTA_NYCT' and( cc.timeReported between '2012-07-07 03:00:00' and '2012-07-08 03:00:00')" +
 				" and cc.vehicleId = in.vehicleId " +
 				"order by cc.vehicleId desc ", hql.toString());
 	}
