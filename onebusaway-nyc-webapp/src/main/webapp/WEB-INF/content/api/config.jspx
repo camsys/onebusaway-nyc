@@ -23,6 +23,7 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 	OBA.Config.staleTimeout=<s:property value="staleTimeout" />;
 	OBA.Config.googleAnalyticsSiteId="<s:property value="googleAnalyticsSiteId" />";
 	OBA.Config.bingMapsKey="<s:property value="bingMapsKey" />";
+	OBA.Config.mapBounds=<s:property value="mapBounds" />;
 
 	OBA.Config.configurationHasLoaded();
 }
