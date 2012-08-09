@@ -39,7 +39,7 @@ public class HistoricalRecordsResource {
 			@QueryParam(value="inferred-route-id") final String inferredRouteId,
 			@QueryParam(value="inferred-phase") final String inferredPhase,
 			@QueryParam(value="vehicle-id") final Integer vehicleId,
-			@QueryParam(value="vehicle-agency-id") final Integer vehicleAgencyId,
+			@QueryParam(value="vehicle-agency-id") final String vehicleAgencyId,
 			@QueryParam(value="bbox") final String boundingBox,
 			@QueryParam(value="start-date") final String startDate, 
 			@QueryParam(value="end-date") final String endDate,
@@ -71,7 +71,7 @@ public class HistoricalRecordsResource {
 	}
 	
 	private Map<CcAndInferredLocationFilter, Object> addFilterParameters(String depotId, 
-			String inferredRouteId, String inferredPhase, Integer vehicleId, Integer vehicleAgencyId,
+			String inferredRouteId, String inferredPhase, Integer vehicleId, String vehicleAgencyId,
 			String boundingBox, String startDate, String endDate, Integer records) {
 		
 		Map<CcAndInferredLocationFilter, Object> filter = 

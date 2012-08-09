@@ -48,7 +48,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		String ccLocationAlias = "cc";
 		String inferredLocationAlias = "inf";
 		
-		StringBuilder hql = new StringBuilder("select cc.vehicleAgencyId, cc.timeReported, " +
+		StringBuilder hql = new StringBuilder("select cc.vehicleAgencyDesignator, cc.timeReported, " +
 				"cc.timeReceived, cc.operatorIdDesignator, cc.routeIdDesignator, cc.runIdDesignator, " +
 				"cc.destSignCode, cc.emergencyCode, cc.latitude, cc.longitude, cc.nmeaSentenceGPRMC, " +
 				"cc.nmeaSentenceGPGGA, cc.speed, cc.directionDeg, cc.vehicleId, cc.manufacturerData, " +
@@ -107,10 +107,10 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		setNamedParamter(query, CcAndInferredLocationFilter.INFERRED_ROUTEID, 
 				filter.get(CcAndInferredLocationFilter.INFERRED_ROUTEID));
 		
-		setNumberNamedParamter(query, CcAndInferredLocationFilter.VEHICLE_ID, 
+		setVehicleIdParamter(query, CcAndInferredLocationFilter.VEHICLE_ID, 
 				filter.get(CcAndInferredLocationFilter.VEHICLE_ID));
 		
-		setNumberNamedParamter(query, CcAndInferredLocationFilter.VEHICLE_AGENCY_ID, 
+		setNamedParamter(query, CcAndInferredLocationFilter.VEHICLE_AGENCY_ID, 
 				filter.get(CcAndInferredLocationFilter.VEHICLE_AGENCY_ID));
 		
 		setBoundingBoxNamedParameters(query, filter.get(CcAndInferredLocationFilter.BOUNDING_BOX));
@@ -279,7 +279,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		}
 	}
 	
-	private void setNumberNamedParamter(Query query, CcAndInferredLocationFilter param, Object value) {
+	private void setVehicleIdParamter(Query query, CcAndInferredLocationFilter param, Object value) {
 		if(value != null) {
 			query.setParameter(param.getValue(), (Integer) value);
 		}

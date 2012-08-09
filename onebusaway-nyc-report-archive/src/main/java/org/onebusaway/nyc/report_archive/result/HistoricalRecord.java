@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  */
 public class HistoricalRecord {
 
-	private Integer vehicleAgencyId;
+	private String vehicleAgencyId;
 	private String timeReported;
 	private String timeReceived;
 	private String operatorIdDesignator;
@@ -49,13 +49,13 @@ public class HistoricalRecord {
 	/**
 	 * @return the vehicleAgencyId
 	 */
-	public Integer getVehicleAgencyId() {
+	public String getVehicleAgencyId() {
 		return vehicleAgencyId;
 	}
 	/**
 	 * @param vehicleAgencyId the vehicleAgencyId to set
 	 */
-	public void setVehicleAgencyId(Integer vehicleAgencyId) {
+	public void setVehicleAgencyId(String vehicleAgencyId) {
 		this.vehicleAgencyId = vehicleAgencyId;
 	}
 	/**
