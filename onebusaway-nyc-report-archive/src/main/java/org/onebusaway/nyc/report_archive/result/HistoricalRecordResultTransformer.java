@@ -21,7 +21,7 @@ public class HistoricalRecordResultTransformer implements ResultTransformer{
 	public Object transformTuple(Object[] tuple, String[] aliases) {
 		HistoricalRecord record = new HistoricalRecord();
 		
-		record.setVehicleAgencyId((String) tuple[0]); 
+		record.setVehicleAgencyId((Integer) tuple[0]); 
 		record.setTimeReported(toISODate((Date)tuple[1]));
 		record.setTimeReceived(toISODate((Date)tuple[2]));
 		record.setOperatorIdDesignator((String)tuple[3]);

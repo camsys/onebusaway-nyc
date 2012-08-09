@@ -26,10 +26,10 @@ public enum CcAndInferredLocationFilter {
 	BOUNDING_BOX("bBox"),
 	
 	/** Start date parameter for time bound query **/
-	START_DATE("start"),
+	START_DATE("start-date"),
 	
 	/** End date parameter for time bound query **/
-	END_DATE("end"),
+	END_DATE("end-date"),
 	
 	/** Number of records to be returned by the query **/
 	RECORDS("records");

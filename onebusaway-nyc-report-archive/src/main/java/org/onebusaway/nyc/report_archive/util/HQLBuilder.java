@@ -58,24 +58,15 @@ public class HQLBuilder {
 	 * @param value value of the field that is being queried
 	 * @return hql query with where clause
 	 */
-	public StringBuilder where(StringBuilder hqlBuilder, String field, Object value) {
-		if(value instanceof String) {
-			String stringValue = (String) value;
-			if(hqlBuilder.toString().contains("where")) {
-				hqlBuilder.append("and " +field + "='" +stringValue.toUpperCase() + "'");
-			} else {
-				hqlBuilder.append("where " +field + "='" +stringValue.toUpperCase() + "'");
-			}
+	public StringBuilder where(StringBuilder hqlBuilder, String field, String value) {
+		if(hqlBuilder.toString().contains("where")) {
+			hqlBuilder.append("and " +field + "= " +value);
 		} else {
-			if(hqlBuilder.toString().contains("where")) {
-				hqlBuilder.append("and " +field + "=" +value);
-			} else {
-				hqlBuilder.append("where " +field + "=" +value);
-			}
+			hqlBuilder.append("where " +field + "= " +value);
 		}
-		
+
 		hqlBuilder.append(SPACE);
-		
+
 		return hqlBuilder;
 	}
 	
@@ -87,7 +78,7 @@ public class HQLBuilder {
 	 * @param value value of the field that is being queried
 	 * @return hql query with where clause
 	 */
-	public StringBuilder where(StringBuilder hqlBuilder, String alias, String field, Object value) {
+	public StringBuilder where(StringBuilder hqlBuilder, String alias, String field, String value) {
 		return where(hqlBuilder, alias + "." +field, value);
 	}
 	
@@ -163,10 +154,12 @@ public class HQLBuilder {
 			hqlBuilder.append("where(").append(SPACE);
 		}
 		hqlBuilder.append(field).append(SPACE);
-		hqlBuilder.append("between").append(SPACE);
-		hqlBuilder.append("'" +startDate + "'").append(SPACE);
+		hqlBuilder.append(">=").append(SPACE);
+		hqlBuilder.append(startDate).append(SPACE);
 		hqlBuilder.append("and").append(SPACE);
-		hqlBuilder.append("'" +endDate +"'").append(")").append(SPACE);
+		hqlBuilder.append(field).append(SPACE);
+		hqlBuilder.append("<").append(SPACE);
+		hqlBuilder.append(endDate).append(")").append(SPACE);
 		
 		return hqlBuilder;
 	}

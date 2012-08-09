@@ -15,6 +15,11 @@ import org.onebusaway.nyc.report_archive.result.HistoricalRecord;
  */
 public interface HistoricalRecordsDao {
 	
+	/**
+	 * Returns historical vehicle records matching the filter values
+	 * @param filter filter that needs to be applied on results
+	 * @return historical vehicle records matching filters
+	 */
 	List<HistoricalRecord> getHistoricalRecords(Map<CcAndInferredLocationFilter, Object> filter);
 
 }
