@@ -136,17 +136,24 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
             polylines.add(polyline.getPoints());
           }
+          
+          Boolean hasUpcomingScheduledService = null;
+          
+          // Only set hasUpcomingScheduledService if the current stopGroupBean (direction) contains the current stop.
+          // In other words, only if the stop in question is served in the current direction.
+          // We do this to prevent checking if there is service in a direction that does not even serve this stop.
+          if (stopGroupBean.getStopIds().contains(stopBean.getId())) {
+            hasUpcomingScheduledService = 
+                _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stopBean.getId(), 
+                    routeBean.getId(), stopGroupBean.getId());
 
-          Boolean hasUpcomingScheduledService = 
-              _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stopBean.getId(), 
-            		  routeBean.getId(), stopGroupBean.getId());
+            // if there are buses on route, always have "scheduled service"
+            Boolean routeHasVehiclesInService = 
+                _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId());
 
-          // if there are buses on route, always have "scheduled service"
-          Boolean routeHasVehiclesInService = 
-        		  _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId());
-
-          if(routeHasVehiclesInService) {
-        	  hasUpcomingScheduledService = true;
+            if(routeHasVehiclesInService) {
+              hasUpcomingScheduledService = true;
+            }
           }
 
           directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));

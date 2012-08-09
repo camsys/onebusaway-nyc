@@ -16,10 +16,14 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
 
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /*
  * A service to expose certain TDM configuration values to the front-end
@@ -31,6 +35,9 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
 
   @Autowired
   private ConfigurationService _configurationService;
+  
+  @Autowired
+  NycTransitDataService _nycTransitDataService;
 
   public int getStaleTimeout() {
     return _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
@@ -42,6 +49,24 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
 
   public String getBingMapsKey() {
     return _configurationService.getConfigurationValueAsString("display.bingMapsKey", null);    
+  }
+  
+  public String getMapBounds() {
+    List<AgencyWithCoverageBean> agencyWithCoverageBeans = _nycTransitDataService.getAgenciesWithCoverage();
+    
+    Double minLat = 999d;
+    Double minLon = 999d;
+    Double maxLat = -999d;
+    Double maxLon = -999d;
+    
+    for (AgencyWithCoverageBean agencyWithCoverageBean : agencyWithCoverageBeans) {
+      minLat = Math.min(minLat, agencyWithCoverageBean.getLat() - agencyWithCoverageBean.getLatSpan()/2);
+      minLon = Math.min(minLon, agencyWithCoverageBean.getLon() - agencyWithCoverageBean.getLonSpan()/2);
+      maxLat = Math.max(maxLat, agencyWithCoverageBean.getLat() + agencyWithCoverageBean.getLatSpan()/2);
+      maxLon = Math.max(maxLon, agencyWithCoverageBean.getLon() + agencyWithCoverageBean.getLonSpan()/2);
+    }
+    
+    return "{ swLat: " + minLat + ", swLon: " + minLon + ", neLat: " + maxLat + ", neLon: " + maxLon + " }";
   }
 
 }
