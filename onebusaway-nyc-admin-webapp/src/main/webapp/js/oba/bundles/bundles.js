@@ -596,7 +596,7 @@ function buildBundle(bundleName, startDate, endDate){
 				if (bundleResponse != undefined) {
 					//display exception message if there is any
 					if(bundleResponse.exception !=null) {
-						alert(bundleResponse.exception.message);
+						alert(bundleResponse.exception.displayMessage);
 					} else {
 						jQuery("#buildBundle_resultList").html("calling...");
 						jQuery("#buildBundle_id").text(bundleResponse.id);
