@@ -50,8 +50,6 @@ public class VehicleStatusBuilder {
 		vehicleStatus.setStatus(getStatus(lastknownRecord.getInferredPhase(), 
 				lastknownRecord.getTimeReported(), lastknownRecord.getEmergencyCode()));
 		
-		vehicleStatus.setTimeReceived(lastknownRecord.getTimeReceived());
-		
 		vehicleStatus.setInferredDSC(lastknownRecord.getInferredDSC());
 		
 		vehicleStatus.setTimeReported(lastknownRecord.getTimeReported());
@@ -116,7 +114,7 @@ public class VehicleStatusBuilder {
 		StringBuilder inferredDestination = new StringBuilder();
 		//all these fields can be blank
 		if(StringUtils.isNotBlank(lastknownRecord.getInferredDSC())) {
-			inferredDestination.append(lastknownRecord.getInferredDSC() + ":");
+			inferredDestination.append(lastknownRecord.getInferredDSC());
 		}
 		
 		inferredDestination.append(getRoute(lastknownRecord.getInferredRouteId()));
@@ -133,7 +131,7 @@ public class VehicleStatusBuilder {
 		if(StringUtils.isNotBlank(inferredRouteId)) {
 			String [] routeArray = inferredRouteId.split("_");
 			if(routeArray.length > 1) {
-				route = routeArray[1];
+				route = ":" +routeArray[1];
 			}
 		}
 		return route;
