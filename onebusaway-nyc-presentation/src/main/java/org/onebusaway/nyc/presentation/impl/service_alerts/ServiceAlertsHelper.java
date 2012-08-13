@@ -157,7 +157,7 @@ public class ServiceAlertsHelper {
   
   public void addSituationExchangeToServiceDelivery(ServiceDelivery serviceDelivery,
       List<VehicleActivityStructure> activities,
-      NycTransitDataService nycTransitDataService, AgencyAndId routeId) {
+      NycTransitDataService nycTransitDataService, List<AgencyAndId> routeIds) {
 
     if (activities == null)
       return;
@@ -171,18 +171,25 @@ public class ServiceAlertsHelper {
     addPtSituationElementsToServiceDelivery(serviceDelivery,
         ptSituationElements);
     
-    if (routeId == null)
+    if (routeIds == null)
       return;
     
-    SituationQueryBean query = new SituationQueryBean();
-    query.addRoute(routeId.toString(), "0");
-    query.addRoute(routeId.toString(), "1");
-    ListBean<ServiceAlertBean> serviceAlerts = nycTransitDataService.getServiceAlerts(query);
+    List<ServiceAlertBean> serviceAlerts = new ArrayList<ServiceAlertBean>();
     
-    if (serviceAlerts == null)
+    for (AgencyAndId routeId :  routeIds) {
+      SituationQueryBean query = new SituationQueryBean();
+      query.addRoute(routeId.toString(), "0");
+      query.addRoute(routeId.toString(), "1");
+      ListBean<ServiceAlertBean> serviceAlertsForRoute = nycTransitDataService.getServiceAlerts(query);
+      if (serviceAlertsForRoute != null) {
+        serviceAlerts.addAll(serviceAlertsForRoute.getList());
+      }
+    }
+    
+    if (serviceAlerts.size() == 0)
       return;
     
-    addSituationExchangeToServiceDelivery(serviceDelivery, serviceAlerts.getList());
+    addSituationExchangeToServiceDelivery(serviceDelivery, serviceAlerts);
     
   }
 
