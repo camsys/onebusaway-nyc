@@ -92,7 +92,7 @@ public class VehicleStatusServiceImplTest {
 		assertEquals("Mismatched pull in time", vehicleStatus.getFormattedPullinTime(), "00:23 +1 day");
 		assertEquals("Mismatched pull out time", vehicleStatus.getFormattedPulloutTime(), "05:51");
 		assertEquals("Mismatched inferred DSC", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
-		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red_alert_18x18.png");
+		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_orange_alert_18x18.png");
 		assertEquals("Mismatched emergency status", vehicleStatus.getEmergencyStatus(), "1");
 	}
 	
@@ -134,7 +134,6 @@ public class VehicleStatusServiceImplTest {
 			      "\"service-date\": \"2012-07-19\"," +
 			      "\"inferred-run-id\": \"B61-14\"," +
 			      "\"inferred-block-id\": \"MTA NYCT_20120701CC_JG_22200_B61-14-JG_1972\"," +
-			      "\"inferred-trip-id\": \"MTA NYCT_20120701CC_057500_B61_0103_B61_14\"," +
 			      "\"inferred-route-id\": \"MTA NYCT_B61\"," +
 			      "\"inferred-direction-id\": \"1\"," +
 			      "\"inferred-dest-sign-code\": 4611," +
