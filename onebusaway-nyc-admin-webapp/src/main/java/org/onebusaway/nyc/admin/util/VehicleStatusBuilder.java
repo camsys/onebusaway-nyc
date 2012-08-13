@@ -48,9 +48,8 @@ public class VehicleStatusBuilder {
 		vehicleStatus.setLastUpdate(getLastUpdate(lastknownRecord.getTimeReported()));
 		
 		vehicleStatus.setStatus(getStatus(lastknownRecord.getInferredPhase(), 
-				lastknownRecord.getTimeReported(), lastknownRecord.getEmergencyCode()));
-		
-		vehicleStatus.setTimeReceived(lastknownRecord.getTimeReceived());
+				lastknownRecord.getTimeReported(), lastknownRecord.getEmergencyCode(),
+				lastknownRecord.getInferredTripId()));
 		
 		vehicleStatus.setInferredDSC(lastknownRecord.getInferredDSC());
 		
@@ -61,35 +60,36 @@ public class VehicleStatusBuilder {
 		return vehicleStatus;
 	}
 
-	private String getStatus(String inferredPhase, String timeReported, String emergencyCode) {
+	private String getStatus(String inferredPhase, String timeReported, String emergencyCode,
+			String inferredTripId) {
 		String imageSrc = null;
 		BigDecimal difference  = getTimeDifference(timeReported);
 		
 		if((inferredPhase.equals(InferredState.IN_PROGRESS.getState()) || 
 				inferredPhase.equals(InferredState.DEADHEAD_DURING.getState()) ||
 				inferredPhase.startsWith("LAY")) && (difference.compareTo(new BigDecimal(120)) < 0)) {
-			if(StringUtils.isNotBlank(emergencyCode)) {
-				imageSrc = "circle_green_alert_18x18.png";
-			} else {
-				imageSrc = "circle_green18x18.png";
-			}
+			imageSrc = getStatusImage(emergencyCode, "green");
 		} else {
-			if((inferredPhase.equals(InferredState.AT_BASE.getState())) || 
+			if((StringUtils.isNotBlank(inferredTripId)) && 
+					(difference.compareTo(new BigDecimal(120)) >= 0)) {
+				imageSrc = getStatusImage(emergencyCode, "orange");
+			} 
+			else if((StringUtils.isBlank(inferredTripId)) ||
 					(difference.compareTo(new BigDecimal(300)) > 0)) {
-				if(StringUtils.isNotBlank(emergencyCode)) {
-					imageSrc = "circle_red_alert_18x18.png";
-				} else {
-					imageSrc = "circle_red18x18.png";
-				}
-			} else {
-				if(StringUtils.isNotBlank(emergencyCode)) {
-					imageSrc = "circle_orange_alert_18x18.png";
-				} else {
-					imageSrc = "circle_orange18x18.png";
-				}
+				imageSrc = getStatusImage(emergencyCode, "red");
 			}
 		}
 
+		return imageSrc;
+	}
+
+	private String getStatusImage(String emergencyCode, String imageColor) {
+		String imageSrc;
+		if(StringUtils.isNotBlank(emergencyCode)) {
+			imageSrc = "circle_" + imageColor + "_alert_18x18.png";
+		} else {
+			imageSrc = "circle_" + imageColor + "18x18.png";
+		}
 		return imageSrc;
 	}
 
@@ -116,7 +116,7 @@ public class VehicleStatusBuilder {
 		StringBuilder inferredDestination = new StringBuilder();
 		//all these fields can be blank
 		if(StringUtils.isNotBlank(lastknownRecord.getInferredDSC())) {
-			inferredDestination.append(lastknownRecord.getInferredDSC() + ":");
+			inferredDestination.append(lastknownRecord.getInferredDSC());
 		}
 		
 		inferredDestination.append(getRoute(lastknownRecord.getInferredRouteId()));
@@ -133,7 +133,7 @@ public class VehicleStatusBuilder {
 		if(StringUtils.isNotBlank(inferredRouteId)) {
 			String [] routeArray = inferredRouteId.split("_");
 			if(routeArray.length > 1) {
-				route = routeArray[1];
+				route = ":" +routeArray[1];
 			}
 		}
 		return route;
@@ -150,9 +150,11 @@ public class VehicleStatusBuilder {
 		DateTime pullinDateTime = formatter.parseDateTime(pullinTime);
 		int pullinDay = pullinDateTime.getDayOfMonth();
 		
-		if(pulloutDay != pullinDay) {
+		//Check if pullout time falls on the next day
+		if(pulloutDay < pullinDay) {
 			pullinTimeBuilder.append(" +1 day");
 		}
+		
 		return pullinTimeBuilder.toString();
 	}
 
@@ -176,7 +178,7 @@ public class VehicleStatusBuilder {
 		} else {
 			if(difference.compareTo(new BigDecimal(3600)) > 0) {
 				//Calculate the difference in hours
-				BigDecimal hours = difference.divide(new BigDecimal(3600), BigDecimal.ROUND_UP);
+				BigDecimal hours = difference.divide(new BigDecimal(3600), BigDecimal.ROUND_HALF_UP);
 				lastUpdate = hours.toPlainString() + " hours";
 			} else {
 				if(difference.compareTo(new BigDecimal(60)) > 0) {
@@ -195,8 +197,14 @@ public class VehicleStatusBuilder {
 		DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
 		DateTime lastReportedTime = formatter.parseDateTime(timeReported);
 		DateTime now = new DateTime();
-		int seconds = Seconds.secondsBetween(lastReportedTime, now).getSeconds();
+		int seconds;
+		if(lastReportedTime.isAfter(now)) {
+			seconds= Seconds.secondsBetween(now, lastReportedTime).getSeconds();
+		} else {
+			seconds= Seconds.secondsBetween(lastReportedTime, now).getSeconds();
+		}
 		BigDecimal difference = new BigDecimal(seconds);
+		
 		return difference;
 	}
 
