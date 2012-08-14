@@ -70,12 +70,10 @@ public class VehicleStatusBuilder {
 				inferredPhase.startsWith("LAY")) && (difference.compareTo(new BigDecimal(120)) < 0)) {
 			imageSrc = getStatusImage(emergencyCode, "green");
 		} else {
-			if((StringUtils.isNotBlank(inferredTripId)) && 
-					(difference.compareTo(new BigDecimal(120)) >= 0)) {
+			if(StringUtils.isNotBlank(inferredTripId)) {
 				imageSrc = getStatusImage(emergencyCode, "orange");
 			} 
-			else if((StringUtils.isBlank(inferredTripId)) ||
-					(difference.compareTo(new BigDecimal(300)) > 0)) {
+			else {
 				imageSrc = getStatusImage(emergencyCode, "red");
 			}
 		}
@@ -119,7 +117,11 @@ public class VehicleStatusBuilder {
 			inferredDestination.append(lastknownRecord.getInferredDSC());
 		}
 		
-		inferredDestination.append(getRoute(lastknownRecord.getInferredRouteId()));
+		String route = getRoute(lastknownRecord.getInferredRouteId());
+		
+		if(StringUtils.isNotBlank(route)) {
+			inferredDestination.append(":" +route);
+		}
 		
 		if(StringUtils.isNotBlank(lastknownRecord.getInferredDirectionId())) {
 			inferredDestination.append(" Direction: ");
@@ -133,7 +135,7 @@ public class VehicleStatusBuilder {
 		if(StringUtils.isNotBlank(inferredRouteId)) {
 			String [] routeArray = inferredRouteId.split("_");
 			if(routeArray.length > 1) {
-				route = ":" +routeArray[1];
+				route = routeArray[1];
 			}
 		}
 		return route;

@@ -77,6 +77,20 @@ VehicleStatus.FilterView = Ember.View.extend({
 		var controller = this.get('controller');
 		controller.reset();
 	},
+	toggleFilters : function() {
+		//toggle filters
+		$("#filterBox").animate({width:'toggle'},350);
+		var imageSrc = $("#collapseBox #collapse").attr("src");
+		if(imageSrc.indexOf("right") != -1) {
+			$("#collapseBox #collapse").attr("src","../../css/img/arrow-left_12x12.png");
+			$("#collapseBox #collapse").attr("title","Collapse");
+			$("#vehicleGrid").jqGrid("setGridWidth", 660, true);
+		} else {
+			$("#collapseBox #collapse").attr("src","../../css/img/arrow-right_12x12.png");
+			$("#collapseBox #collapse").attr("title","Expand");
+			$("#vehicleGrid").jqGrid("setGridWidth", 815, true);
+		}
+	},
 	controllerBinding: "VehicleStatus.FiltersController"
 });
 
@@ -152,10 +166,10 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			           },
 			            sortable:false}
 			         ],
-			height: "430",
-			width: "670",
+			height: "532",
+			//width: "670",
 			//height: "auto",
-			//width: "auto",
+			width: "auto",
 			viewrecords: true,
 			loadonce:false,
 			jsonReader: {
@@ -190,6 +204,11 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				}
 				
 				$("#lastUpdateBox #lastUpdate").text(time);
+				
+				//Adjust height of filter box according to height of the grid
+				var gridHeight = $("#gbox_vehicleGrid").height();
+				$("#mainBox #filterBox").height(gridHeight);
+				$("#mainBox #collapseBox").height(gridHeight);
 				
 				//Add zebra stripes to the grid
 			    $("tr.jqgrow:odd").css("background", "#DDDDDC");
