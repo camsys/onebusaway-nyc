@@ -93,6 +93,38 @@ public class CrewResourceTest extends ResourceTest {
     assertEquals("Q4420", test2.getRunRoute()); // duplicate CAST should be excluded
   }
   
+  
+  @Test
+  public void testNumericPassNumbers() throws Exception {
+
+    File tmpInFile = getCISFile("CIS_20120816_1202.txt");
+    UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(tmpInFile);
+    // no need to set depotIdTranslater
+    OperatorAssignmentData data = process.generateDataObject();
+    assertNotNull(data);
+    DateMidnight serviceDate = new DateMidnight("2012-08-16");
+    List<SCHOperatorAssignment> list = data.getOperatorAssignmentsByServiceDate(serviceDate);
+    assertNotNull(list);
+    ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> tcipToJsonConverter = new OperatorAssignmentFromTcip();    
+    List<OperatorAssignment> jsonOpAssigns = new UTSUtil().listConvertOpAssignTcipToJson(tcipToJsonConverter,
+        data.getOperatorAssignmentsByServiceDate(serviceDate));
+    assertNotNull(jsonOpAssigns);
+    
+    int i = 0;
+    boolean found = false;
+    for (OperatorAssignment oa : jsonOpAssigns) {
+      i++;
+      String passNumber = oa.getPassId();
+      
+      if (passNumber.matches("^[A-Z].*")) {
+        _log.error("found non-numeric passNumber=" + passNumber);
+        found = true;
+      }
+    }
+    assertFalse(found);
+
+  }
+  
   public HashMap<String, OperatorAssignment> testDuplicateAssignments(String filename, String serviceDateStr) throws Exception {
     File tmpInFile = getCISFile(filename);
     UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(tmpInFile);
@@ -147,5 +179,5 @@ public class CrewResourceTest extends ResourceTest {
     copy(resource, tmpInFile.getCanonicalPath());
     return tmpInFile;
   }
-
+  
 }
