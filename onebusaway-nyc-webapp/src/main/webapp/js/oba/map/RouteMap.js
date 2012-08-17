@@ -38,10 +38,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 	var hoverPolyline = null;
 	
 	// when hovering over a stop in route view
-	var highlightedStop = null;	
-
-	// for wizard
-	var infoWindowListeners = [];
+	var highlightedStop = null;
 
 	// icons for disambiguation markers
 	var locationIconArrays = OBA.Config.loadLocationIcons();
@@ -181,6 +178,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
     			   { stopId: stopId },
     			   OBA.Popups.getStopContentForResponse, 
     			   routeFilter);
+    	  
     	});
 
         stopsById[stopId] = marker;		
@@ -654,24 +652,13 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		unregisterMapListener: function(registeredName) {
 			google.maps.event.removeListener(registeredName);
 		},
-
-		registerInfoWindowListener: function(fx) {
-			var ref = null;
-			if (infoWindow !== null) {
-				ref = google.maps.event.addListener(infoWindow, "domready", fx);
-			}
-			infoWindowListeners.push({'event': 'domready', 'func': fx, 'listener_ref': ref});
-			return ref;
+		
+		registerStopBubbleListener: function(obj, trigger) {
+			return OBA.Popups.registerStopBubbleListener(obj, trigger);
 		},
 
-		unregisterInfoWindowListeners: function() {
-			for(var key in infoWindowListeners) {
-				if ((infoWindowListeners[key].listener_ref !== null)) {
-					google.maps.event.removeListener(infoWindowListeners[key].listener_ref);
-				}
-				delete infoWindowListeners[key];
-			}
-			infoWindowListeners = [];
-		}
+		unregisterStopBubbleListener: function() {
+			return OBA.Popups.unregisterStopBubbleListener();
+		},
 	};
 };
