@@ -1,6 +1,5 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.input.model;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.joda.time.DateMidnight;
@@ -9,17 +8,14 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
-public class MtaUtsCrewAssignment {
+public class MtaUtsCrewAssignment extends MtaUtsObject {
   private UtsMappingTool mappingTool = null;
-  private static Pattern LETTERS_NUMBERS_PATTERN = Pattern.compile("^(\\D*)(\\d+)$");
   private static Pattern ROUTE_RUN_PATTERN = Pattern.compile("^(.*)-(.*)$");
   public MtaUtsCrewAssignment() {
     mappingTool = new UtsMappingTool();
   }
 
   private String depotField;
-  private String authIdField;
-  private String passNumberField;
   private String routeField;
   private String runNumberField;
   private String servIdField;
@@ -30,14 +26,6 @@ public class MtaUtsCrewAssignment {
     this.depotField = depotField;
   }
 
-  public void setAuthIdField(String authIdField) {
-    this.authIdField = authIdField;
-  }
-
-  public void setPassNumberField(String passNumberField) {
-    this.passNumberField = passNumberField;
-    setPassNumber(this.passNumberField);
-  }
 
   public void setRouteField(String routeField) {
     this.routeField = routeField;
@@ -68,8 +56,6 @@ public class MtaUtsCrewAssignment {
     setTimestamp(this.timestampField);
   }
 
-  private String passNumberLeadingLetters = ""; // Operator Pass #
-  private Long passNumberNumericPortion; // Operator Pass #
   // private Boolean runNumberContainsLetters;
   // /* servId:
   // * 1 Weekday/School Open (DOB)
@@ -110,31 +96,6 @@ public class MtaUtsCrewAssignment {
     date = new DateTime(dm);
   }
 
-  public void setPassNumber(String value) {
-    try {
-      passNumberNumericPortion = Long.parseLong(value);
-    } catch (NumberFormatException nfea) {
-      Matcher matcher = LETTERS_NUMBERS_PATTERN.matcher(value);
-      if (matcher.find()) {
-        passNumberLeadingLetters = matcher.group(1); // The leading letter(s)
-        String passNumberNumStr = matcher.group(2); // the Number
-
-        try {
-          passNumberNumericPortion = Long.parseLong(passNumberNumStr);
-        } catch (NumberFormatException nfeb) {
-          System.out.println("Exception trying to parse " + passNumberNumStr);
-          nfeb.printStackTrace();
-        }
-      } else {
-        passNumberNumericPortion = new Long(-1);
-      }
-    }
-  }
-
-  public String getAuthId() {
-    return authIdField;
-  }
-
   public DateTime getDate() {
     return date;
   }
@@ -151,16 +112,8 @@ public class MtaUtsCrewAssignment {
     return routeField;
   }
 
-  public Long getPassNumberNumericPortion() {
-    return passNumberNumericPortion;
-  }
-
   public DateTime getTimestamp() {
     return timestamp;
-  }
-
-  public String getOperatorDesignator() {
-    return authIdField + passNumberField;
   }
 
   public String getRunDesignator() {
