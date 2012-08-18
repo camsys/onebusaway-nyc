@@ -1,19 +1,15 @@
 package org.onebusaway.nyc.presentation.impl.realtime;
 
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
-
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
 
 @Component
 public class PresentationServiceImpl implements PresentationService {
@@ -23,16 +19,16 @@ public class PresentationServiceImpl implements PresentationService {
   @Autowired
   private ConfigurationService _configurationService;
 
-  private Date _now = null;
+  private Long _now = null;
   
   @Override
-  public void setTime(Date time) {
+  public void setTime(long time) {
     _now = time;
   }
 
   public long getTime() {
     if(_now != null)
-      return _now.getTime();
+      return _now;
     else
       return System.currentTimeMillis();
   }

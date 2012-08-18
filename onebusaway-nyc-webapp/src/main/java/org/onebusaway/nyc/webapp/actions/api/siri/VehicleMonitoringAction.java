@@ -34,7 +34,6 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.onebusaway.utility.DateLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -73,23 +72,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   private HttpServletResponse _servletResponse;
 
   private String _type = "xml";
-
-  private Date _now = null;
   
   private JGoogleAnalyticsTracker _googleAnalytics = null;
-
-  public void setTime(String time) throws Exception {
-    Date timeAsDate = DateLibrary.getIso8601StringAsTime(time);
-
-    _now = timeAsDate;
-  }
-
-  public Date getTime() {
-    if (_now != null)
-      return _now;
-    else
-      return new Date();
-  }
 
   public void setType(String type) {
     _type = type;
@@ -203,7 +187,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
       
       ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
-          agencyId, getTime().getTime());
+          agencyId, getTime());
 
       for (VehicleStatusBean v : vehicles.getList()) {
         VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
@@ -244,10 +228,10 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       AgencyAndId routeId, Exception error) {
     
     VehicleMonitoringDeliveryStructure vehicleMonitoringDelivery = new VehicleMonitoringDeliveryStructure();
-    vehicleMonitoringDelivery.setResponseTimestamp(getTime());
+    vehicleMonitoringDelivery.setResponseTimestamp(new Date(getTime()));
     
     ServiceDelivery serviceDelivery = new ServiceDelivery();
-    serviceDelivery.setResponseTimestamp(getTime());
+    serviceDelivery.setResponseTimestamp(new Date(getTime()));
     serviceDelivery.getVehicleMonitoringDelivery().add(vehicleMonitoringDelivery);
     
     if (error != null) {
@@ -265,7 +249,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       vehicleMonitoringDelivery.setErrorCondition(errorConditionStructure);
     } else {
       Calendar gregorianCalendar = new GregorianCalendar();
-      gregorianCalendar.setTime(getTime());
+      gregorianCalendar.setTimeInMillis(getTime());
       gregorianCalendar.add(Calendar.MINUTE, 1);
       vehicleMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
 

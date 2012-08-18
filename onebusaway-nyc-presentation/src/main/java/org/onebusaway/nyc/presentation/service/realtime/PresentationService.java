@@ -4,11 +4,9 @@ import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
-import java.util.Date;
-
 public interface PresentationService {
 
-  public void setTime(Date time);
+  public void setTime(long time);
 
   public Boolean useTimePredictionsIfAvailable(TripStatusBean statusBean);
 
