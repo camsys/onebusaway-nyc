@@ -104,7 +104,7 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
     // Set the operator to a new CPTOperatorIden, using the agency id, pass
     // number and operator designator.
     CPTOperatorIden op = new CPTOperatorIden();
-    op.setOperatorId(inputAssignment.getPassNumber());
+    op.setOperatorId(inputAssignment.getPassNumberNumericPortion());
     op.setAgencyId(agencyId);
     op.setDesignator(inputAssignment.getOperatorDesignator());
     outputAssignment.setOperator(op);

@@ -25,16 +25,16 @@ public class TimeWindowFilter implements Filter<VehicleStatus>{
 	
 	@Override
 	public boolean apply(VehicleStatus type) {
-		if(StringUtils.isNotBlank(type.getTimeReceived())) {
-			BigDecimal timeDifference = getTimeDifference(type.getTimeReceived());
+		if(StringUtils.isNotBlank(type.getTimeReported())) {
+			BigDecimal timeDifference = getTimeDifference(type.getTimeReported());
 			return timeDifference.compareTo(new BigDecimal(timeWindow * 60)) <= 0;
 		}
 		return false;
 	}
 	
-	private BigDecimal getTimeDifference(String timeReceived) {
+	private BigDecimal getTimeDifference(String timeReported) {
 		DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
-		DateTime lastReportedTime = formatter.parseDateTime(timeReceived);
+		DateTime lastReportedTime = formatter.parseDateTime(timeReported);
 		DateTime now = new DateTime();
 		int seconds = Seconds.secondsBetween(lastReportedTime, now).getSeconds();
 		BigDecimal difference = new BigDecimal(seconds);

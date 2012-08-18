@@ -13,13 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
- 
 
-th.ui-th-column div {
-    white-space: normal !important;
-    height: auto !important;
-    padding: 2px;
+.ui-jqgrid { 
+	border-right: solid 1px;
+	border-top: solid 1px;
+	border-bottom: solid 1px; 
 }
+
 
 .ui-jqgrid tr.jqgrow td {
         white-space: normal !important;
@@ -27,6 +27,7 @@ th.ui-th-column div {
    	    padding: 2px;
    	    font-size: 12px;
 		font: Times New Roman, Times, serif;
+		text-align: center;
 }
 
 .ui-jqgrid .ui-jqgrid-htable th div {
@@ -138,27 +139,43 @@ th.ui-th-column div {
 	border: 1px transparent;
 	background-image:url('img/Button_background.png');
 }
+
 #mainBox {
-	height: 500px;
-	border: transparent 1px;
+	height: 610px;
 	margin-top: 20px;
+	width: 850px;
+	overflow: auto;
 }
 
 #mainBox #filterBox {
-	width: 175px;
-	height: 498px;
+	width: 163px;
+	height: 593px;
+	float: left;
+	border-top: solid 1px;
+	border-bottom: solid 1px;
+	border-left: solid 1px;
+	padding-left: 10px;
+	display: none;
+}
+
+#mainBox #collapseBox {
+	width: 12px;
+	height: 593px;
 	float: left;
 	border: solid 1px;
-	padding-left: 10px;
+	background-color: #F2F2F2;	
+}
+
+#collapseBox #collapse {
+	margin-top: 300px;
 }
 
 #mainBox #vehiclesBox {
-	border-right: solid 1px;
-	border-top: solid 1px;
-	border-bottom: solid 1px;
 	float: left;
-	height: 498px;
-	overflow: auto;
+}
+
+#pager {
+	margin: 0px;
 }
 
 #filterBox #filterLabel {
@@ -189,7 +206,7 @@ th.ui-th-column div {
 }
 
 #filterBox #filterButtons {
-	margin-top: 15px;
+	margin-top: 25px;
 }
 
 #filterButtons #apply, #filterButtons #reset {

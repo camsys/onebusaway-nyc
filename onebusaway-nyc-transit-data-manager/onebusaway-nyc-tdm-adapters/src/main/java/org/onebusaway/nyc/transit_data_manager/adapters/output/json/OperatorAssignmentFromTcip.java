@@ -4,6 +4,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UTSUtil;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 
@@ -21,6 +22,7 @@ public class OperatorAssignmentFromTcip implements
     ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> {
 
   TcipMappingTool mappingTool = null;
+  UTSUtil util = new UTSUtil();
 
   public OperatorAssignmentFromTcip() {
     mappingTool = new TcipMappingTool();
@@ -30,7 +32,7 @@ public class OperatorAssignmentFromTcip implements
     OperatorAssignment opAssign = new OperatorAssignment();
 
     opAssign.setAgencyId(mappingTool.getJsonModelAgencyIdByTcipId(input.getOperator().getAgencyId()));
-    opAssign.setPassId(mappingTool.cutPassIdFromOperatorDesignator(input.getOperator().getDesignator()));
+    opAssign.setPassId(util.stripLeadingCharacters(mappingTool.cutPassIdFromOperatorDesignator(input.getOperator().getDesignator())));
     
     opAssign.setRunRoute(input.getLocalSCHOperatorAssignment().getRunRoute());
     opAssign.setRunNumber(mappingTool.cutRunNumberFromTcipRunDesignator(input.getRun().getDesignator()));

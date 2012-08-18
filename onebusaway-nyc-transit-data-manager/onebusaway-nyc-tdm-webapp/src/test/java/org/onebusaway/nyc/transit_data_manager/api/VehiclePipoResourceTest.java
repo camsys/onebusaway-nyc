@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.when;
 
@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -27,8 +26,11 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.PullIn
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 import org.onebusaway.nyc.transit_data_manager.api.service.VehiclePullInOutService;
+import org.onebusaway.nyc.transit_data_manager.api.service.VehiclePullInOutServiceImpl;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import tcip_final_3_0_5_1.CPTOperatorIden;
 import tcip_final_3_0_5_1.CPTTransitFacilityIden;
@@ -39,6 +41,8 @@ import tcip_final_3_0_5_1.SCHRunIden;
 
 public class VehiclePipoResourceTest {
 
+  private static Logger _log = LoggerFactory.getLogger(VehiclePipoResourceTest.class);
+  
 	private VehiclePipoResource resource;
 	private VehicleAssignmentsOutputConverter converter;
 	private JsonTool jsonTool;
@@ -48,9 +52,8 @@ public class VehiclePipoResourceTest {
 	@Mock
 	private VehiclePullInOutService vehiclePullInOutService;
 	
-	@Before
-	public void setUp() throws Exception {
-		copyInputFiles();
+	public void setUp(String filename) throws Exception {
+		copyInputFiles(filename);
 		MockitoAnnotations.initMocks(this);
 		
 		System.setProperty("tdm.vehiclepipoUploadDir", System.getProperty("java.io.tmpdir"));
@@ -81,7 +84,8 @@ public class VehiclePipoResourceTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testAllActivePullouts() {
+	public void testAllActivePullouts() throws Exception {
+	  setUp("UTSPUPUFULL_20120612_1502.txt");
 		SCHPullInOutInfo pullOutInfo1 = new SCHPullInOutInfo();
 		SCHPullInOutInfo pullInInfo1 = new SCHPullInOutInfo();
 		
@@ -190,7 +194,8 @@ public class VehiclePipoResourceTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testActivePulloutsByBus() {
+	public void testActivePulloutsByBus() throws Exception {
+	  setUp("UTSPUPUFULL_20120612_1502.txt");
 		VehiclePullInOutInfo activePullout = setupPullOutData();
 		
 		List<VehiclePullInOutInfo> activePullouts= new ArrayList<VehiclePullInOutInfo>();
@@ -258,14 +263,39 @@ public class VehiclePipoResourceTest {
 	}
 	
 	@Test
-	public void testActivePulloutsForInvalidBus() {
+	public void testActivePulloutsForInvalidBus() throws Exception {
+	  setUp("UTSPUPUFULL_20120612_1502.txt");
 		String outputJson = resource.getActivePulloutsForBus("1235");
 		assertEquals("No pullouts found for bus : 1235", outputJson);
 	}
-	
+
+  @Test
+	public void testActivePulloutsForInvalidOperator() throws Exception {
+	  setUp("UTSPUPUFULL_20120816_1202.txt");
+	  
+	  vehiclePullInOutService = new VehiclePullInOutServiceImpl() {
+	    @Override
+	    protected boolean isActive(String pullOuttimeString) {
+	      // since dates aren't meaningful in a unit test -- return everything!
+	      return true;
+	    }
+	  };
+	  
+	  // replace resource's mock impl with ours from above 
+	  resource.setVehiclePullInOutService(vehiclePullInOutService);
+	  /*
+	   * known issue with 8826 - obanyc-1678 -- pass numbers with a leading non-numeric
+	   * digits were setting operator-id to -1
+	   */
+		String outputJson = resource.getActivePulloutsForBus("8826");
+		assertNotNull(outputJson);
+		assertTrue(outputJson.contains(" \"operator-id\": \"36593\""));
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testActivePulloutsByDepot() {
+	public void testActivePulloutsByDepot() throws Exception {
+	  setUp("UTSPUPUFULL_20120612_1502.txt");
 		VehiclePullInOutInfo activePullout = setupPullOutData();
 		
 		List<VehiclePullInOutInfo> activePullouts= new ArrayList<VehiclePullInOutInfo>();
@@ -282,7 +312,8 @@ public class VehiclePipoResourceTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testActivePulloutsByAgency() {
+	public void testActivePulloutsByAgency() throws Exception {
+	  setUp("UTSPUPUFULL_20120612_1502.txt");
 		VehiclePullInOutInfo activePullout = setupPullOutData();
 		
 		List<VehiclePullInOutInfo> activePullouts= new ArrayList<VehiclePullInOutInfo>();
@@ -297,14 +328,14 @@ public class VehiclePipoResourceTest {
 		verifyPulloutData(outputJson);
 	}
 	
-	private void copyInputFiles() {
+	private void copyInputFiles(String filename) {
 		InputStream inputFileIn = null;
 		InputStream translationFileIn = null;
 		FileOutputStream inputFileOut = null;
 		FileOutputStream translationFileOut = null;
 		
 		try {
-			inputFileIn = this.getClass().getResourceAsStream("UTSPUPUFULL_20120612_1502.txt");
+			inputFileIn = this.getClass().getResourceAsStream(filename);
 			translationFileIn = this.getClass().getResourceAsStream("depot_ids.csv");
 			inputFileOut = new FileOutputStream(System.getProperty("java.io.tmpdir") + "/UTSPUPUFULL_20120612_1502.txt");
 			translationFileOut = new FileOutputStream(System.getProperty("java.io.tmpdir") + "/depot_ids.csv");

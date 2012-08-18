@@ -38,8 +38,9 @@ OBA.Sidebar = function() {
 		sidebarGlobalAlerts = jQuery("#global-alerts"),
 		mapGlobalAlerts = jQuery("#map-global-alerts").detach();
 
-	var routeMap = null;
-	var wizard = null;
+	var routeMap = null,
+		wizard = null,
+		results = jQuery("#matches"); // for wizard
 
 	var searchRequest = null;
 	
@@ -79,7 +80,7 @@ OBA.Sidebar = function() {
 				doSearch(searchInput.val());
 			}
 			
-			(wizard && wizard.enabled()) ? results.trigger('search_launched') : null;
+			(wizard && wizard.enabled()) ? results.triggerHandler('search_launched') : null;
 		});
 	}
 	
@@ -209,12 +210,25 @@ OBA.Sidebar = function() {
 					e.preventDefault();
 					
 					routeMap.showPopupForStopId(stop.id, null);
+					
+					(wizard !== null)? results.triggerHandler("stop_click") : null;
 				});
 				
 				stopLink.hover(function() {
 					routeMap.highlightStop(stop);
 				}, function() {
 					routeMap.unhighlightStop();					
+				});
+				
+				stopLink.hoverIntent({
+					over: function(e) { 
+						stopLink.addClass('stopHover');
+					},
+					out: function(e) { 
+						stopLink.removeClass('stopHover');
+					},
+					sensitivity: 1,
+					interval: 400
 				});
 			});
 			
@@ -477,14 +491,14 @@ OBA.Sidebar = function() {
 		welcome.show();
 		cantFind.show();
 
-		(wizard && wizard.enabled()) ? results.trigger('no_result') : null;
+		(wizard && wizard.enabled()) ? results.triggerHandler('no_result') : null;
 	}
 
 	// process search results
 	function doSearch(q) {
 		resetSearchPanelAndMap();		
 
-		(wizard && wizard.enabled()) ? results.trigger('search_launched') : null;
+		(wizard && wizard.enabled()) ? results.triggerHandler('search_launched') : null;
 		
 		cantFind.hide();
 		availableRoutes.hide();
@@ -537,6 +551,8 @@ OBA.Sidebar = function() {
 
 							routeMap.showBounds(latLngBounds);
 							
+							(wizard && wizard.enabled()) ? results.triggerHandler('location_result') : null;
+							
 						// result is a point--intersection or address
 						} else {
 							if(matches[0].nearbyRoutes.length === 0) {
@@ -549,17 +565,17 @@ OBA.Sidebar = function() {
 							
 							routeMap.showLocation(latlng);
 							routeMap.addLocationMarker(latlng, matches[0].formattedAddress, matches[0].neighborhood);
+							
+							(wizard && wizard.enabled()) ? results.triggerHandler('intersection_result') : null;
 						}
 
-						(wizard && wizard.enabled()) ? results.trigger('location_result') : null;
 						break;
 				
 					case "RouteResult":
 						addRoutesToLegend(matches, "Routes:", null, null);
 
 						routeMap.panToRoute(matches[0].id);
-						
-						(wizard && wizard.enabled()) ? results.trigger('route_result') : null;
+						(wizard && wizard.enabled()) ? results.triggerHandler('route_result') : null;
 						break;
 					
 					case "StopResult":
@@ -572,25 +588,23 @@ OBA.Sidebar = function() {
 						
 						routeMap.showLocation(latlng);
 						
-						(wizard && wizard.enabled()) ? results.trigger('stop_result') : null;
+						(wizard && wizard.enabled()) ? results.triggerHandler('stop_result') : null;
 						break;
-				}				
-			} 
-			
-			// did you mean suggestions
-			if(suggestions.length > 0){
+				}	
+				
+			} else if(suggestions.length > 0){    // did you mean suggestions
+				
 				switch(resultType) {
 					case "GeocodeResult":					
-						disambiguateLocations(suggestions)
-						
-						(wizard && wizard.enabled()) ? results.trigger('disambiguation_result') : null;
+						disambiguateLocations(suggestions);
+
+						(wizard && wizard.enabled()) ? results.triggerHandler('disambiguation_result') : null;
 						break;
 
 					// a route query with no direct matches
 					case "RouteResult":
 						showRoutePickerList(suggestions);								
-
-						(wizard && wizard.enabled()) ? results.trigger('route_result') : null;
+						(wizard && wizard.enabled()) ? results.triggerHandler('route_result') : null;
 						break;
 				}
 			}
@@ -625,7 +639,7 @@ OBA.Sidebar = function() {
 						doSearch(hash);
 					} else {
 						// Launch wizard
-						//(wizard !== null) ? null : wizard = OBA.Wizard(routeMap);
+						(wizard !== null) ? null : wizard = OBA.Wizard(routeMap);
 					}
 				});
 			}, function(routeId, serviceAlerts) { // service alert notification handler

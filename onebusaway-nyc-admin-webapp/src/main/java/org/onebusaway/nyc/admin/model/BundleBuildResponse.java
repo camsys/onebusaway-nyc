@@ -249,44 +249,50 @@ public class BundleBuildResponse {
 
 	 
 	 private static class SerializableException extends Exception implements Serializable {
-	   private String _msg = "";
-	   private String _rootCause = "";
-	   
-	     public SerializableException(String msg, Exception rootCause) {
-	       _msg = rootCause.getClass().getName() + ":" + msg;
-	       int count = 0;
-	       for (StackTraceElement ste:rootCause.getStackTrace()) {
-	         _rootCause += ste.toString() + "\n";
-	         count++;
-	         if (count > 1) break;
-	       }
-	     }
-	     
- 	     public SerializableException(Exception newException, Exception rootCause) {
-	       _msg = newException.getClass().getName() + ":"  + newException.getMessage() 
-	           + ";  " + rootCause.getClass().getName() + ":" + rootCause.getMessage();
-	       
-	       int count = 0;
-	       for (StackTraceElement ste:newException.getStackTrace()) {
-	         _rootCause += ste.toString() + "\n";
-	         count++;
-	         if (count > 1) break;
-	       }
-	       _rootCause += "  Caused by:\n\n";
-	       count++;
-	       for (StackTraceElement ste:rootCause.getStackTrace()) {
-	         _rootCause += ste.toString() + "\n";
-	         if (count > 1) break;
-	       }
-	     }
- 	     
- 	     public String getMessage() {
- 	       return toString();
- 	     }
- 	     
- 	     public String toString() {
- 	       return  _msg + "\n  Caused by:\n\n" + _rootCause; 
- 	     }
+		 private String _msg = "";
+		 private String _rootCause = "";
+		 private String _displayMessage = "";
+
+		 public SerializableException(String msg, Exception rootCause) {
+			 _displayMessage = msg;
+			 _msg = rootCause.getClass().getName() + ":" + msg;
+			 int count = 0;
+			 for (StackTraceElement ste:rootCause.getStackTrace()) {
+				 _rootCause += ste.toString() + "\n";
+				 count++;
+				 if (count > 1) break;
+			 }
+		 }
+
+		 public SerializableException(Exception newException, Exception rootCause) {
+			 _msg = newException.getClass().getName() + ":"  + newException.getMessage() 
+					 + ";  " + rootCause.getClass().getName() + ":" + rootCause.getMessage();
+
+			 int count = 0;
+			 for (StackTraceElement ste:newException.getStackTrace()) {
+				 _rootCause += ste.toString() + "\n";
+				 count++;
+				 if (count > 1) break;
+			 }
+			 _rootCause += "  Caused by:\n\n";
+			 count++;
+			 for (StackTraceElement ste:rootCause.getStackTrace()) {
+				 _rootCause += ste.toString() + "\n";
+				 if (count > 1) break;
+			 }
+		 }
+
+		 public String getMessage() {
+			 return toString();
+		 }
+
+		 public String toString() {
+			 return  _msg + "\n  Caused by:\n\n" + _rootCause; 
+		 }
+		 
+		public String getDisplayMessage() {
+			 return _displayMessage;
+		 }
 
 	 }
 }

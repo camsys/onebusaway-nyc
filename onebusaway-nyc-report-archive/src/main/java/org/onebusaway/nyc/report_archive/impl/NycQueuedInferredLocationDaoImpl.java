@@ -1,19 +1,27 @@
 package org.onebusaway.nyc.report_archive.impl;
 
+import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
+import org.onebusaway.nyc.report_archive.util.HQLBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +31,9 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 
 	protected static Logger _log = LoggerFactory.getLogger(NycQueuedInferredLocationDaoImpl.class);
 
-	private static final String SPACE = " ";
-	
 	private HibernateTemplate _template;
+	
+	private static final String SPACE = " ";
 
 	@Autowired
 	private CcLocationCache _ccLocationCache;
@@ -35,6 +43,7 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 	}
 
 	@Autowired
+	@Qualifier("sessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		_template = new HibernateTemplate(sessionFactory);
 	}
@@ -103,26 +112,42 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 
 	@Override
 	public List<CcAndInferredLocationRecord> getAllLastKnownRecords(
-			Map<CcAndInferredLocationFilter, String> filter) {
+			final Map<CcAndInferredLocationFilter, String> filter) {
 
-		StringBuilder hql = new StringBuilder("from CcAndInferredLocationRecord");
-		hql.append(SPACE);
+		HQLBuilder queryBuilder = new HQLBuilder();
+		StringBuilder hql = queryBuilder.from(new StringBuilder(), "CcAndInferredLocationRecord");
 		
-		addQueryParam(hql, CcAndInferredLocationFilter.DEPOT_ID, filter.get(CcAndInferredLocationFilter.DEPOT_ID));
-		addQueryParam(hql, CcAndInferredLocationFilter.INFERRED_ROUTEID, filter.get(CcAndInferredLocationFilter.INFERRED_ROUTEID));
-		addQueryParam(hql, CcAndInferredLocationFilter.INFERRED_PHASE, filter.get(CcAndInferredLocationFilter.INFERRED_PHASE));
+		hql = addQueryParam(queryBuilder, hql, CcAndInferredLocationFilter.DEPOT_ID, 
+				filter.get(CcAndInferredLocationFilter.DEPOT_ID));
+		hql = addQueryParam(queryBuilder, hql, CcAndInferredLocationFilter.INFERRED_ROUTEID, 
+				filter.get(CcAndInferredLocationFilter.INFERRED_ROUTEID));
+		hql = addQueryParam(queryBuilder, hql, CcAndInferredLocationFilter.INFERRED_PHASE, 
+				filter.get(CcAndInferredLocationFilter.INFERRED_PHASE));
 
 		String boundingBox = filter.get(CcAndInferredLocationFilter.BOUNDING_BOX);
 		if(StringUtils.isNotBlank(boundingBox)) {
-			addBoundingBoxParam(hql, boundingBox);
+			hql = addBoundingBoxParam(hql);
 		}
 		
-		hql.append("order by vehicleId");
+		hql = queryBuilder.order(hql, "vehicleId", null);
 
-		@SuppressWarnings("unchecked")
-		List<CcAndInferredLocationRecord> list = _template.find(hql.toString());
-		// our join will return a list of object arrays now, in the order
-		// we selected above
+		final StringBuilder hqlQuery = hql;
+		
+		List<CcAndInferredLocationRecord> list = _template.execute(
+				new HibernateCallback<List<CcAndInferredLocationRecord>>() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public List<CcAndInferredLocationRecord> doInHibernate(Session session) throws HibernateException,
+					SQLException {
+				
+				Query query = buildQuery(filter, hqlQuery, session);
+
+				_log.debug("Executing query : " + hqlQuery.toString());
+				
+				return query.list();
+			}
+		});
 
 		return list;
 	}
@@ -138,56 +163,87 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 		return _template.get(CcAndInferredLocationRecord.class, vehicleId);
 	}
 	
-	private void addQueryParam(StringBuilder hql, CcAndInferredLocationFilter param, String field) {
+	private Query buildQuery(Map<CcAndInferredLocationFilter, String> filter, StringBuilder hqlQuery,
+			Session session) {
+		Query query = session.createQuery(hqlQuery.toString());
+		
+		setNamedParamter(query, CcAndInferredLocationFilter.DEPOT_ID, 
+				filter.get(CcAndInferredLocationFilter.DEPOT_ID));
+		setNamedParamter(query, CcAndInferredLocationFilter.INFERRED_ROUTEID, 
+				filter.get(CcAndInferredLocationFilter.INFERRED_ROUTEID));
+		setNamedParamter(query, CcAndInferredLocationFilter.INFERRED_PHASE, 
+				filter.get(CcAndInferredLocationFilter.INFERRED_PHASE));
+		setBoundingBoxParameter(query, filter.get(CcAndInferredLocationFilter.BOUNDING_BOX));
+		
+		return query;
+	}
+	
+	private StringBuilder addQueryParam(HQLBuilder queryBuilder, StringBuilder hql, CcAndInferredLocationFilter param, String field) {
 		if(StringUtils.isNotBlank(field)) {
-			where(hql, param, field);
-			hql.append(SPACE);
+			hql = queryBuilder.where(hql, param.getValue(), ":" +param.getValue());
 		}
+		return hql;
 	}
 
-	private void where(StringBuilder hql, CcAndInferredLocationFilter param, String field) {
+	private StringBuilder addBoundingBoxParam(StringBuilder hql) {
 		if(hql.toString().contains("where")) {
-			hql.append("and " +param.getValue() + "='" +field.toUpperCase() + "'");
+			hql.append("and(" + buildCoordinatesQueryString() +")");
 		} else {
-			hql.append("where " +param.getValue() + "='" +field.toUpperCase() + "'");
+			hql.append("where(" + buildCoordinatesQueryString() +")");
+		}
+		hql.append(SPACE);
+		
+		return hql;
+	}
+
+	private void setNamedParamter(Query query, CcAndInferredLocationFilter param, String value) {
+		if(StringUtils.isNotBlank(value)) {
+			query.setParameter(param.getValue(), value);
 		}
 	}
 	
-	private void addBoundingBoxParam(StringBuilder hql, String boundingBox) {
-		if(hql.toString().contains("where")) {
-			hql.append("and(" + buildCoordinatesQueryString(boundingBox) +")");
-		} else {
-			hql.append("where(" + buildCoordinatesQueryString(boundingBox) +")");
+	private void setBoundingBoxParameter(Query query, String boundingBox) {
+		if(StringUtils.isNotBlank(boundingBox)) {
+			String [] coordinates = boundingBox.split(",");
+			BigDecimal minLongitude = new BigDecimal(coordinates[0]);
+			BigDecimal minLatitude = new BigDecimal(coordinates[1]);
+			BigDecimal maxLongitude = new BigDecimal(coordinates[2]);
+			BigDecimal maxLatitude = new BigDecimal(coordinates[3]);
+			
+			query.setParameter("minLongitude", minLongitude);
+			query.setParameter("minLatitude", minLatitude);
+			query.setParameter("maxLongitude", maxLongitude);
+			query.setParameter("maxLatitude", maxLatitude);
 		}
-		hql.append(SPACE);
-	}
-
-	private String buildCoordinatesQueryString(String boundingBox) {
-		String [] coordinates = boundingBox.split(",");
-		Double minLongitude = Double.parseDouble(coordinates[0]);
-		Double minLatitude = Double.parseDouble(coordinates[1]);
-		Double maxLongitude = Double.parseDouble(coordinates[2]);
-		Double maxLatitude = Double.parseDouble(coordinates[3]);
 		
-		StringBuilder query = new StringBuilder("(latitude between").append(SPACE);
-		query.append(minLatitude).append(SPACE);
+	}
+	
+
+	private String buildCoordinatesQueryString() {
+		
+		StringBuilder query = new StringBuilder("(latitude >=").append(SPACE);
+		query.append(":minLatitude").append(SPACE);
 		query.append("and").append(SPACE);
-		query.append(maxLatitude).append(SPACE);
+		query.append("latitude <").append(SPACE);
+		query.append(":maxLatitude").append(SPACE);
 		query.append("and").append(SPACE);
-		query.append("longitude between").append(SPACE);
-		query.append(minLongitude).append(SPACE);
+		query.append("longitude >=").append(SPACE);
+		query.append(":minLongitude").append(SPACE);
 		query.append("and").append(SPACE);
-		query.append(maxLongitude).append(")").append(SPACE);
+		query.append("longitude <").append(SPACE);
+		query.append(":maxLongitude").append(")").append(SPACE);
 		query.append("or").append(SPACE);
-		query.append("(inferred_latitude between").append(SPACE);
-		query.append(minLatitude).append(SPACE);
+		query.append("(inferredLatitude >=").append(SPACE);
+		query.append(":minLatitude").append(SPACE);
 		query.append("and").append(SPACE);
-		query.append(maxLatitude).append(SPACE);
+		query.append("inferredLatitude <");
+		query.append(":maxLatitude").append(SPACE);
 		query.append("and").append(SPACE);
-		query.append("inferred_longitude between").append(SPACE);
-		query.append(minLongitude).append(SPACE);
+		query.append("inferredLongitude >=").append(SPACE);
+		query.append(":minLongitude").append(SPACE);
 		query.append("and").append(SPACE);
-		query.append(maxLongitude).append(")");
+		query.append("inferredLongitude <").append(SPACE);
+		query.append(":maxLongitude").append(")");
 		
 		return query.toString();
 	}

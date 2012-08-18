@@ -217,6 +217,7 @@ public class RunServiceImpl implements RunService {
   }
 
   private final Pattern realRunRouteIdPattern = Pattern.compile("[a-zA-Z]+0*(\\d+)[a-zA-Z]*");
+  private final Pattern realRunNumberPattern = Pattern.compile("[a-zA-Z]*0*(\\d+)");
   private final Pattern reportedRunIdPattern = Pattern.compile("0*([0-9]+)-0*(\\d+)");
 
   @Override
@@ -248,6 +249,10 @@ public class RunServiceImpl implements RunService {
       String[] runPieces= runId.split("-");
       String runRoute = runPieces[0];
       String runNumber = runPieces[1];
+      Matcher runNumberMatcher = realRunNumberPattern.matcher(runNumber);
+      if (runNumberMatcher.matches()) {
+        runNumber = runNumberMatcher.group(1);
+      }
       List<String> runIdsToTry = Lists.newArrayList();
       if (runRoute.equals("MISC")) {
         String runIdToTry = RunTripEntry.createId("999", runNumber);
