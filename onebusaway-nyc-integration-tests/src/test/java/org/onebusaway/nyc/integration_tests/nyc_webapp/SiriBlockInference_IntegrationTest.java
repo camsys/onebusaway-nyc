@@ -24,6 +24,7 @@ import java.util.HashMap;
 
 import org.apache.commons.httpclient.HttpException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
@@ -53,6 +54,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }
   
   @Test
+  @Ignore
   public void testBlockSetOnSM() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -68,6 +70,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }
 
   @Test
+  @Ignore
   public void testBlockSetOnVM() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2436");
 	  
@@ -83,6 +86,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }
 
   @Test
+  @Ignore
   public void testStatusOnCurrentTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -98,6 +102,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }
 
   @Test
+  @Ignore
   public void testStatusOnNextTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404050");
 	  
@@ -114,6 +119,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   
   // wrapping
   @Test
+  @Ignore
   public void testWrapping() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404050");
 	  
@@ -127,6 +133,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }  
 
   @Test
+  @Ignore
   public void testBusIsWrappedOnlyOnce() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903037");
 	  
@@ -141,6 +148,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 
   // trip data matches trip bus would be on then
   @Test
+  @Ignore
   public void testNextTripIdOnCurrentTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -158,6 +166,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }  
   
   @Test
+  @Ignore
   public void testNextTripIdOnNextTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404050");
 	  
@@ -176,6 +185,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   
   // distances
   @Test
+  @Ignore
   public void testDistancesOnCurrentTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -198,6 +208,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   } 
   
   @Test
+  @Ignore
   public void testDistancesOnNextTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404050");
 	  
@@ -221,6 +232,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   
   // VM onward calls
   @Test
+  @Ignore
   public void testVMOnwardCalls() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2436");
 	  
@@ -262,6 +274,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   
   // SM onward calls
   @Test
+  @Ignore
   public void testSMOnwardCalls() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -304,6 +317,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   
   // SM onward calls
   @Test
+  @Ignore
   public void testSMOnwardCallsNextTrip() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getSmResponse("MTA%20NYCT", "404923");
 	  

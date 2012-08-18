@@ -23,6 +23,7 @@ import java.util.HashMap;
 
 import org.apache.commons.httpclient.HttpException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("unchecked")
@@ -49,6 +50,7 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
   }
   
   @Test
+  @Ignore
   public void testDepartureTimeSetOnSM() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404923");
 	  
@@ -64,6 +66,7 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
   }
   
   @Test
+  @Ignore
   public void testDepartureTimeSetOnVM() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2436");
 	  
@@ -80,6 +83,7 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
   
   // VM onward calls
   @Test
+  @Ignore
   public void testVMOnwardCalls() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2436");
 	  
