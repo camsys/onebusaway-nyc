@@ -14,44 +14,6 @@
  * the License.
  */
 
-function showVehiclePopup(vehicleId) {
-	//alert("showVehiclePopup(" + vehicleId + ")");
-	if (vehicleId == undefined || vehicleId == "") {
-		var id = jQuery("#vehicleGrid").jqGrid('getGridParam', 'selrow');
-		vehicleId = jQuery("#vehicleGrid").jqGrid('getRowData', id).vehicleId;
-		if (vehicleId == undefined || vehicleId == "") { 
-			//alert("vehicleId=" + vehicleId);
-			return;
-		}
-	}
-	
-	//Change these values to style your modal popup
-	var align = 'center';										//Valid values; left, right, center
-	var top = 100; 												//Use an integer (in pixels)
-	var padding = 10;											//Use an integer (in pixels)
-	var backgroundColor = '#FFFFFF'; 							//Use any hex code
-	var borderColor = '#000000'; 								//Use any hex code
-	var borderWeight = 4; 										//Use an integer (in pixels)
-	var borderRadius = 5; 										//Use an integer (in pixels)
-	var fadeOutTime = 300; 										//Use any integer, 0 = no fade
-	var disableColor = '#666666'; 								//Use any hex code
-	var disableOpacity = 40; 									//Valid range 0-100
-	var loadingImage = '../../css/img/loading.gif';	//Use relative path from this page	
-	
-	var source = './popup!input.action?vehicleId=' + vehicleId;	//Refer to any page on your server, external pages are not valid
-	var width = 500; 					//Use an integer (in pixels)
-	modalPopup(align, top, width, padding, disableColor, disableOpacity, backgroundColor, borderColor, borderWeight, borderRadius, fadeOutTime, source, loadingImage, createMaps);
-
-};
-
-var VehicleStatus = Ember.Application.create({
-	ready: function() {
-		$("#menu").tabs();
-		
-	}
-		
-});
-
 
 /******************* Views ************************************/
 VehicleStatus.VehicleView = Ember.View.extend({
