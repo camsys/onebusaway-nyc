@@ -100,7 +100,8 @@ public class VehiclePullInOutServiceImpl implements VehiclePullInOutService{
 		return pulloutsByBus;
 	}
 	
-	private boolean isActive(String pullOuttimeString) {
+	// allow sub-classing for unit tests
+	protected boolean isActive(String pullOuttimeString) {
 		DateTime pullOutTime = format.parseDateTime(pullOuttimeString);
 		boolean activePullOut = pullOutTime.isBeforeNow();
 		return activePullOut;

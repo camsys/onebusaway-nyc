@@ -43,7 +43,7 @@ public class RunServiceImplTest {
 
   private BlockCalendarService _blockCalendarService;
 
-  private TripEntryImpl tripA, tripB, tripC, tripD, tripE, tripF, tripG, tripH, tripI;
+  private TripEntryImpl tripA, tripB, tripC, tripD, tripE, tripF, tripG, tripH, tripI, tripJ;
 
   @Before
   public void setup() {
@@ -63,6 +63,7 @@ public class RunServiceImplTest {
     tripG = trip("tripG", "serviceId");
     tripH = trip("tripH", "serviceId");
     tripI = trip("tripI", "serviceId");
+    tripJ = trip("tripJ", "serviceId");
 
     stopTime(0, stopA, tripA, 30, 90, 0);
     stopTime(1, stopB, tripA, 120, 120, 100);
@@ -93,6 +94,7 @@ public class RunServiceImplTest {
     runDataByTrip.put(tripG.getId(), new RunData("B63-5", null, -1));
     runDataByTrip.put(tripH.getId(), new RunData("MISC-75", null, -1));
     runDataByTrip.put(tripI.getId(), new RunData("X102-5", null, -1));
+    runDataByTrip.put(tripJ.getId(), new RunData("BX39-X01", null, -1));
 
     _service.setRunDataByTrip(runDataByTrip);
 
@@ -120,6 +122,7 @@ public class RunServiceImplTest {
     when(_transitGraph.getTripEntryForId(tripG.getId())).thenReturn(tripG);
     when(_transitGraph.getTripEntryForId(tripH.getId())).thenReturn(tripH);
     when(_transitGraph.getTripEntryForId(tripI.getId())).thenReturn(tripI);
+    when(_transitGraph.getTripEntryForId(tripJ.getId())).thenReturn(tripJ);
 
     _service.transformRunData();
 
@@ -160,6 +163,15 @@ public class RunServiceImplTest {
     fuzzyMatches = matches.get(bestFuzzyDistance);
     
     assertTrue("fuzzy matches contain id", fuzzyMatches.contains("X1-5"));
+    assertEquals("fuzzy matches size", 1, fuzzyMatches.size());
+    assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
+    
+    matches = _service.getBestRunIdsForFuzzyId("039-01");
+    
+    bestFuzzyDistance = matches.keySet().first();
+    fuzzyMatches = matches.get(bestFuzzyDistance);
+    
+    assertTrue("fuzzy matches contain id", fuzzyMatches.contains("BX39-X01"));
     assertEquals("fuzzy matches size", 1, fuzzyMatches.size());
     assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
   }

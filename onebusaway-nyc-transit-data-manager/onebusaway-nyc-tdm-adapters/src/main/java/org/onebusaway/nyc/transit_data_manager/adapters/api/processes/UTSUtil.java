@@ -56,4 +56,18 @@ public class UTSUtil {
     return outputAssigns;
     
   }
+
+  /**
+   * remove leading non-numeric characters from pass (operator) id.
+   */
+  public String stripLeadingCharacters(String passId) {
+    if (passId == null) return null;
+    if (passId.length() == 0) return passId;
+    //passId.matches("^([A-Z]+).*")
+    while (passId.charAt(0) >= 'A' && passId.charAt(0) <= 'Z' ) {
+      if (passId.length() == 1) return "";
+      passId = passId.substring(1, passId.length());
+    }
+    return passId;
+  }
 }
