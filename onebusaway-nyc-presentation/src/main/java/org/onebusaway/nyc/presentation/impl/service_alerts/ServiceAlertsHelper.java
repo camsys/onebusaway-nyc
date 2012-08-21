@@ -55,7 +55,7 @@ public class ServiceAlertsHelper {
   public void addSituationExchangeToSiriForStops(
       ServiceDelivery serviceDelivery,
       List<MonitoredStopVisitStructure> visits,
-      NycTransitDataService nycTransitDataService, AgencyAndId stopId) {
+      NycTransitDataService nycTransitDataService, List<AgencyAndId> stopIds) {
 
     Map<String, PtSituationElementStructure> ptSituationElements = new HashMap<String, PtSituationElementStructure>();
 
@@ -65,34 +65,37 @@ public class ServiceAlertsHelper {
             visit.getMonitoredVehicleJourney().getSituationRef());
     }
 
-    if (stopId != null) {
-      String stopIdString = stopId.toString();
+    if (stopIds != null && stopIds.size() > 0) {
+      
+      for (AgencyAndId stopId : stopIds) {
+        String stopIdString = stopId.toString();
 
-      // First get service alerts for the stop
-      SituationQueryBean query = new SituationQueryBean();
-      List<String> stopIds = new ArrayList<String>();
-      stopIds.add(stopIdString);
-      query.setStopIds(stopIds);
+        // First get service alerts for the stop
+        SituationQueryBean query = new SituationQueryBean();
+        List<String> stopIdStrings = new ArrayList<String>();
+        stopIdStrings.add(stopIdString);
+        query.setStopIds(stopIdStrings);
 
-      addFromQuery(nycTransitDataService, ptSituationElements, query);
+        addFromQuery(nycTransitDataService, ptSituationElements, query);
 
-      // Now also add service alerts for (route+direction)s of the stop
-      query = new SituationQueryBean();
-      StopBean stopBean = nycTransitDataService.getStop(stopIdString);
-      List<RouteBean> routes = stopBean.getRoutes();
-      for (RouteBean route : routes) {
-        StopsForRouteBean stopsForRoute = nycTransitDataService.getStopsForRoute(route.getId());
-        List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
-        for (StopGroupingBean stopGrouping : stopGroupings) {
-          if (!stopGrouping.getType().equalsIgnoreCase("direction"))
-            continue;
-          for (StopGroupBean stopGroup : stopGrouping.getStopGroups()) {
-            handleStopGroupBean(stopIdString, query, route, stopGroup);
+        // Now also add service alerts for (route+direction)s of the stop
+        query = new SituationQueryBean();
+        StopBean stopBean = nycTransitDataService.getStop(stopIdString);
+        List<RouteBean> routes = stopBean.getRoutes();
+        for (RouteBean route : routes) {
+          StopsForRouteBean stopsForRoute = nycTransitDataService.getStopsForRoute(route.getId());
+          List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
+          for (StopGroupingBean stopGrouping : stopGroupings) {
+            if (!stopGrouping.getType().equalsIgnoreCase("direction"))
+              continue;
+            for (StopGroupBean stopGroup : stopGrouping.getStopGroups()) {
+              handleStopGroupBean(stopIdString, query, route, stopGroup);
+            }
           }
         }
-      }
 
-      addFromQuery(nycTransitDataService, ptSituationElements, query);
+        addFromQuery(nycTransitDataService, ptSituationElements, query);
+      }
     }
 
     addPtSituationElementsToServiceDelivery(serviceDelivery,

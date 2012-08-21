@@ -13,21 +13,6 @@
  */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
-
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
@@ -39,6 +24,13 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.utility.DateLibrary;
+
+import com.dmurph.tracking.AnalyticsConfigData;
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
+
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -50,9 +42,16 @@ import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
 
-import com.dmurph.tracking.AnalyticsConfigData;
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
-import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     implements ServletRequestAware, ServletResponseAware {
@@ -116,13 +115,14 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     
     _realtimeService.setTime(getTime());
     
+    String directionId = _request.getParameter("DirectionRef");
+    
     // We need to support the user providing no agency id which means 'all agencies'.
     // So, this array will hold a single agency if the user provides it or all
     // agencies if the user provides none. We'll iterate over them later while 
     // querying for vehicles and routes
     List<String> agencyIds = new ArrayList<String>();
 
-    String directionId = _request.getParameter("DirectionRef");
     String agencyId = _request.getParameter("OperatorRef");
     
     if (agencyId != null) {
@@ -149,16 +149,25 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     }
     
     List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
+    String routeIdErrorString = "";
     if (_request.getParameter("LineRef") != null) {
       try {
         // Same as above for vehicle id
         AgencyAndId routeId = AgencyAndIdLibrary.convertFromString(_request.getParameter("LineRef"));
-        routeIds.add(routeId);
+        if (isValidRoute(routeId)) {
+          routeIds.add(routeId);
+        } else {
+          routeIdErrorString += "No such route: " + routeId.toString() + ".";
+        }
       } catch (Exception e) {
         // Same as above for vehicle id
         for (String agency : agencyIds) {
           AgencyAndId routeId = new AgencyAndId(agency, _request.getParameter("LineRef"));
-          routeIds.add(routeId);
+          if (isValidRoute(routeId)) {
+            routeIds.add(routeId);
+          } else {
+            routeIdErrorString += "No such route: " + routeId.toString() + ". ";
+          }
         }
       }
     }
@@ -181,7 +190,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     // *** CASE 1: single vehicle, ignore any other filters
     if (vehicleIds.size() > 0) {
       
-      gaLabel = StringUtils.join(vehicleIds, ",");
+      gaLabel = _request.getParameter("VehicleRef");
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
       
@@ -198,34 +207,19 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       _response = generateSiriResponse(activities, null, null);
 
       // *** CASE 2: by route, using direction id, if provided
-    } else if (routeIds.size() > 0) {
+    } else if (_request.getParameter("LineRef") != null) {
       
-      gaLabel = StringUtils.join(routeIds, ",");
+      gaLabel = _request.getParameter("LineRef");
       
-      // Check if the provided route id is valid. Pass an error to
-      // generateSiriResponse if it is not.
-      Exception error = null;
-      String errorString = "";
-      boolean foundARoute = false;
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
       
       for (AgencyAndId routeId : routeIds) {
-        if(routeId != null && routeId.hasValues() && this._nycTransitDataService.getRouteForId(routeId.toString()) == null) {
-          errorString += "No such route: " + routeId.toString() + ". ";
-        } else {
-          foundARoute = true;
-        }
         
         List<VehicleActivityStructure> activitiesForRoute = _realtimeService.getVehicleActivityForRoute(
             routeId.toString(), directionId, maximumOnwardCalls);
         if (activitiesForRoute != null) {
           activities.addAll(activitiesForRoute);
         }
-      }
-      
-      if (!foundARoute) {
-        errorString = errorString.trim();
-        error = new Exception(errorString);
       }
       
       if (vehicleIds.size() > 0) {
@@ -243,6 +237,11 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         }
 
         activities = filteredActivities;
+      }
+      
+      Exception error = null;
+      if (_request.getParameter("LineRef") != null && routeIds.size() == 0) {
+        error = new Exception(routeIdErrorString.trim());
       }
 
       _response = generateSiriResponse(activities, routeIds, error);
@@ -334,6 +333,13 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     siri.setServiceDelivery(serviceDelivery);
 
     return siri;
+  }
+  
+  private boolean isValidRoute(AgencyAndId routeId) {
+    if (routeId != null && routeId.hasValues() && this._nycTransitDataService.getRouteForId(routeId.toString()) != null) {
+      return true;
+    }
+    return false;
   }
 
   public String getVehicleMonitoring() {

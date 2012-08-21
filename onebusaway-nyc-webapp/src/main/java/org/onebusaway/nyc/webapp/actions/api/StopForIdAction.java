@@ -129,6 +129,10 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
   }   
   
   private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits, AgencyAndId stopId) {
+    
+    List<AgencyAndId> stopIds = new ArrayList<AgencyAndId>();
+    if (stopId != null) stopIds.add(stopId);
+    
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     try {
       StopMonitoringDeliveryStructure stopMonitoringDelivery = new StopMonitoringDeliveryStructure();
@@ -144,7 +148,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
       serviceDelivery.setResponseTimestamp(getTime());
       serviceDelivery.getStopMonitoringDelivery().add(stopMonitoringDelivery);
 
-      _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _nycTransitDataService, stopId);
+      _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _nycTransitDataService, stopIds);
       _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(serviceDelivery, _realtimeService);
     } catch (RuntimeException e) {
       throw e;
