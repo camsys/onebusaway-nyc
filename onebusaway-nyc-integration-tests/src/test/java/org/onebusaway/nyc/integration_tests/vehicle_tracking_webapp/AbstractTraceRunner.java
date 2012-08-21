@@ -229,13 +229,29 @@ public class AbstractTraceRunner {
 			// TEST: status matches
 	    	assertTrue(ourResult.getInferredStatus() != null);
 	
-	    	System.out.println("STATUS: expected=" + expectedResult.getActualStatus() + ", inferred=" + ourResult.getInferredStatus());
-	    	if(expectedResult.getActualStatus() != null && !StringUtils.isEmpty(expectedResult.getActualStatus())) {
+			Set<String> acceptableStatuses = new HashSet<String>();
+			if(expectedResult.getActualStatus() != null && !StringUtils.isEmpty(expectedResult.getActualStatus())) {
 				String[] _acceptableStatuses = StringUtils.split(expectedResult.getActualStatus().toUpperCase(), "+");
-				Set<String> acceptableStatuses = new HashSet<String>();
 				Collections.addAll(acceptableStatuses, _acceptableStatuses);
-	    		assertTrue(acceptableStatuses.contains(ourResult.getInferredStatus().toUpperCase()));
 			}
+			
+			Set<String> receivedStatuses = new HashSet<String>();
+			if(ourResult.getInferredStatus() != null && !StringUtils.isEmpty(ourResult.getInferredStatus())) {
+				String[] _receivedStatuses = StringUtils.split(ourResult.getInferredStatus().toUpperCase(), "+");
+				Collections.addAll(receivedStatuses, _receivedStatuses);
+			}
+			
+			System.out.println("STATUS: expected=" + acceptableStatuses + ", inferred=" + receivedStatuses);
+
+			// if expected result is block inference, check that the matching status is set
+//	    	if(expectedResult.getActualIsRunFormal() == true) {
+//	    		assertTrue(receivedStatuses.contains("BLOCKINF"));
+//	    	}
+	    	
+	    	// if inferred result is detoured, make sure we expect that here!
+	    	if(ourResult.getInferredStatus().contains("DEVIATED")) {
+	    		assertTrue(acceptableStatuses.contains("DEVIATED"));
+	    	}
 	
 			// TEST: distance along block/inferred location/schedule deviation
 	    	assertTrue(ourResult.getInferredBlockLat() != Double.NaN);
