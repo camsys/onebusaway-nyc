@@ -38,10 +38,10 @@
 		</script>
 	</div>
 	<div id="mainBox">
-		<div id="filterBox">
-			<label id="filterLabel">Filter by:</label>
 			<script type=text/x-handlebars>
 			{{#view VehicleStatus.FilterView}}
+		<div id="filterBox">
+			<label id="filterLabel">Filter by:</label>
 			<ul id="filters">
 				<li>
 					<label class="vehicleLabel">Vehicle ID:</label>
@@ -88,9 +88,13 @@
 				<input type="button" id="reset" value="Reset" {{action "resetFilters" on="click" }}/>
 				<input type="button" id="apply" value="Apply" {{action "applyFilters" on="click" }}/>
 			</div>
-			{{/view}}
-			</script>
 		</div>
+		<div id="collapseBox">
+			<s:url var="url" value="/css/img/arrow-right_12x12.png"/>
+			<img src="${url}" alt="Not Found" id="collapse" title="Expand" {{action "toggleFilters" on="click"}}/>
+		</div>
+		{{/view}}
+			</script>
 		<div id="vehiclesBox">
 			<script type=text/x-handlebars>
 				{{#view VehicleStatus.VehicleView}}

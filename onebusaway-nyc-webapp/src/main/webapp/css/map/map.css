@@ -271,6 +271,12 @@
 #content #matches ul li.legendItem p.destination ul.stops li a:hover {
 	font-size: 125%;
 	font-weight: bold;
+	color: #000000;
+}
+
+#content #matches ul li.legendItem p.destination ul.stops li a.stopHover:hover {
+	color: #3398C7;
+	text-decoration: underline;
 }
 
 #content #filtered-matches ul li {

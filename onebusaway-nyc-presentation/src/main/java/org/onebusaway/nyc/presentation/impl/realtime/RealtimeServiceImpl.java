@@ -45,17 +45,17 @@ public class RealtimeServiceImpl implements RealtimeService {
 
   private SiriJsonSerializer _siriJsonSerializer = new SiriJsonSerializer();
 
-  private Date _now = null;
+  private Long _now = null;
   
   @Override
-  public void setTime(Date time) {
+  public void setTime(long time) {
     _now = time;
     _presentationService.setTime(time);
   }
 
   public long getTime() {
     if(_now != null)
-      return _now.getTime();
+      return _now;
     else
       return System.currentTimeMillis();
   }

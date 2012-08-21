@@ -17,6 +17,7 @@ package org.onebusaway.nyc.webapp.actions.api;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -136,16 +137,16 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     try {
       StopMonitoringDeliveryStructure stopMonitoringDelivery = new StopMonitoringDeliveryStructure();
-      stopMonitoringDelivery.setResponseTimestamp(getTime());
+      stopMonitoringDelivery.setResponseTimestamp(new Date(getTime()));
       
       Calendar gregorianCalendar = new GregorianCalendar();
-      gregorianCalendar.setTime(getTime());
+      gregorianCalendar.setTimeInMillis(getTime());
       gregorianCalendar.add(Calendar.MINUTE, 1);
       stopMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
       
       stopMonitoringDelivery.getMonitoredStopVisit().addAll(visits);
 
-      serviceDelivery.setResponseTimestamp(getTime());
+      serviceDelivery.setResponseTimestamp(new Date(getTime()));
       serviceDelivery.getStopMonitoringDelivery().add(stopMonitoringDelivery);
 
       _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _nycTransitDataService, stopIds);

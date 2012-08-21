@@ -175,7 +175,9 @@
 #createDirectory #selectExistingContents #currentDirectories {
     margin-top: 7px;
     overflow: auto;
-    max-height: 100px;
+    height: 200px;
+    border: solid 1px #C0C0C0;
+    width: 600px;
 }
 
 #currentDirectories #listItem {

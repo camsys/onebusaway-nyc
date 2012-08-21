@@ -572,13 +572,15 @@ public class VehicleLocationInferenceServiceImpl implements
             final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(_nycTestInferredLocationRecord);
             record.setVehicleId(_vehicleId.toString());
 
-            final GregorianCalendar gc = new GregorianCalendar();
-            gc.setTime(_nycTestInferredLocationRecord.getTimestampAsDate());
-            gc.set(Calendar.HOUR_OF_DAY, 0);
-            gc.set(Calendar.MINUTE, 0);
-            gc.set(Calendar.SECOND, 0);
-            record.setServiceDate(gc.getTimeInMillis());
-
+            if(record.getServiceDate() == 0) {
+            	final GregorianCalendar gc = new GregorianCalendar();
+            	gc.setTime(_nycTestInferredLocationRecord.getTimestampAsDate());
+            	gc.set(Calendar.HOUR_OF_DAY, 0);
+            	gc.set(Calendar.MINUTE, 0);
+            	gc.set(Calendar.SECOND, 0);
+            	record.setServiceDate(gc.getTimeInMillis());
+            }
+            
             _outputQueueSenderService.enqueue(record);
 
           } else {

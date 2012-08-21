@@ -14,44 +14,6 @@
  * the License.
  */
 
-function showVehiclePopup(vehicleId) {
-	//alert("showVehiclePopup(" + vehicleId + ")");
-	if (vehicleId == undefined || vehicleId == "") {
-		var id = jQuery("#vehicleGrid").jqGrid('getGridParam', 'selrow');
-		vehicleId = jQuery("#vehicleGrid").jqGrid('getRowData', id).vehicleId;
-		if (vehicleId == undefined || vehicleId == "") { 
-			//alert("vehicleId=" + vehicleId);
-			return;
-		}
-	}
-	
-	//Change these values to style your modal popup
-	var align = 'center';										//Valid values; left, right, center
-	var top = 100; 												//Use an integer (in pixels)
-	var padding = 10;											//Use an integer (in pixels)
-	var backgroundColor = '#FFFFFF'; 							//Use any hex code
-	var borderColor = '#000000'; 								//Use any hex code
-	var borderWeight = 4; 										//Use an integer (in pixels)
-	var borderRadius = 5; 										//Use an integer (in pixels)
-	var fadeOutTime = 300; 										//Use any integer, 0 = no fade
-	var disableColor = '#666666'; 								//Use any hex code
-	var disableOpacity = 40; 									//Valid range 0-100
-	var loadingImage = '../../css/img/loading.gif';	//Use relative path from this page	
-	
-	var source = './popup!input.action?vehicleId=' + vehicleId;	//Refer to any page on your server, external pages are not valid
-	var width = 500; 					//Use an integer (in pixels)
-	modalPopup(align, top, width, padding, disableColor, disableOpacity, backgroundColor, borderColor, borderWeight, borderRadius, fadeOutTime, source, loadingImage, createMaps);
-
-};
-
-var VehicleStatus = Ember.Application.create({
-	ready: function() {
-		$("#menu").tabs();
-		
-	}
-		
-});
-
 
 /******************* Views ************************************/
 VehicleStatus.VehicleView = Ember.View.extend({
@@ -76,6 +38,20 @@ VehicleStatus.FilterView = Ember.View.extend({
 	resetFilters: function() {
 		var controller = this.get('controller');
 		controller.reset();
+	},
+	toggleFilters : function() {
+		//toggle filters
+		$("#filterBox").animate({width:'toggle'},350);
+		var imageSrc = $("#collapseBox #collapse").attr("src");
+		if(imageSrc.indexOf("right") != -1) {
+			$("#collapseBox #collapse").attr("src","../../css/img/arrow-left_12x12.png");
+			$("#collapseBox #collapse").attr("title","Collapse");
+			$("#vehicleGrid").jqGrid("setGridWidth", 660, true);
+		} else {
+			$("#collapseBox #collapse").attr("src","../../css/img/arrow-right_12x12.png");
+			$("#collapseBox #collapse").attr("title","Expand");
+			$("#vehicleGrid").jqGrid("setGridWidth", 815, true);
+		}
 	},
 	controllerBinding: "VehicleStatus.FiltersController"
 });
@@ -152,10 +128,10 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			           },
 			            sortable:false}
 			         ],
-			height: "430",
-			width: "670",
+			height: "532",
+			//width: "670",
 			//height: "auto",
-			//width: "auto",
+			width: "auto",
 			viewrecords: true,
 			loadonce:false,
 			jsonReader: {
@@ -190,6 +166,11 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				}
 				
 				$("#lastUpdateBox #lastUpdate").text(time);
+				
+				//Adjust height of filter box according to height of the grid
+				var gridHeight = $("#gbox_vehicleGrid").height();
+				$("#mainBox #filterBox").height(gridHeight);
+				$("#mainBox #collapseBox").height(gridHeight);
 				
 				//Add zebra stripes to the grid
 			    $("tr.jqgrow:odd").css("background", "#DDDDDC");

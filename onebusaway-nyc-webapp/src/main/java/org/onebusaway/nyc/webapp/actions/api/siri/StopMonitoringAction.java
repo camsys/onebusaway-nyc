@@ -22,7 +22,6 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.onebusaway.utility.DateLibrary;
 
 import com.dmurph.tracking.AnalyticsConfigData;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
@@ -77,23 +76,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   private HttpServletResponse _servletResponse;
   
   private String _type = "xml";
-
-  private Date _now = null;
   
   private JGoogleAnalyticsTracker _googleAnalytics = null;
-  
-  public void setTime(String time) throws Exception {
-    Date timeAsDate = DateLibrary.getIso8601StringAsTime(time);    
-    
-    _now = timeAsDate;
-  }
-
-  public Date getTime() {
-    if(_now != null)
-      return _now;
-    else
-      return new Date();
-  }
   
   public void setType(String type) {
     _type = type;
@@ -316,10 +300,10 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits, List<AgencyAndId> stopIds, Exception error) {
     
     StopMonitoringDeliveryStructure stopMonitoringDelivery = new StopMonitoringDeliveryStructure();
-    stopMonitoringDelivery.setResponseTimestamp(getTime());
+    stopMonitoringDelivery.setResponseTimestamp(new Date(getTime()));
     
     ServiceDelivery serviceDelivery = new ServiceDelivery();
-    serviceDelivery.setResponseTimestamp(getTime());
+    serviceDelivery.setResponseTimestamp(new Date(getTime()));
     serviceDelivery.getStopMonitoringDelivery().add(stopMonitoringDelivery);
     
     if (error != null) {
@@ -337,13 +321,13 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       stopMonitoringDelivery.setErrorCondition(errorConditionStructure);
     } else {
       Calendar gregorianCalendar = new GregorianCalendar();
-      gregorianCalendar.setTime(getTime());
+      gregorianCalendar.setTimeInMillis(getTime());
       gregorianCalendar.add(Calendar.MINUTE, 1);
       stopMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
 
       stopMonitoringDelivery.getMonitoredStopVisit().addAll(visits);
 
-      serviceDelivery.setResponseTimestamp(getTime());
+      serviceDelivery.setResponseTimestamp(new Date(getTime()));
       
       _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _nycTransitDataService, stopIds);
       _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(serviceDelivery, _realtimeService);

@@ -23,6 +23,8 @@ OBA.Popups = (function() {
 
 	var refreshPopupRequest = null;
 	
+	var stopBubbleListener = null, stopBubbleTrigger = null;
+	
 	function closeInfoWindow() {
 		if(infoWindow !== null) {
 			infoWindow.close();
@@ -312,7 +314,7 @@ OBA.Popups = (function() {
 		
 		html += '<div class="header stop">';
 		html += '<p class="title">' + stopResult.name + '</p><p>';
-		html += '<span class="type">Stop #' + stopIdWithoutAgency + '</span>';
+		html += '<span class="type">Stopcode ' + stopIdWithoutAgency + '</span>';
 		
 		// update time across all arrivals
 		var updateTimestampReference = OBA.Util.ISO8601StringToDate(siri.Siri.ServiceDelivery.ResponseTimestamp).getTime();
@@ -550,7 +552,7 @@ OBA.Popups = (function() {
 		html += OBA.Config.infoBubbleFooterFunction("stop", stopIdWithoutAgency);	        
 
 		html += "<ul class='links'>";
-		html += "<a href='#' id='zoomHere'>Center and Zoom Here</a>";
+		html += "<a href='#' id='zoomHere'>Center & Zoom Here</a>";
 		html += "</ul>";
 		
 		// (end popup)
@@ -568,8 +570,22 @@ OBA.Popups = (function() {
 		});
 		
 		activateAlertLinks(content);
+		
+		(stopBubbleListener !== null)? stopBubbleListener.triggerHandler(stopBubbleTrigger) : null;
 
 		return content.get(0);
+	}
+	
+	function registerStopBubbleListener(obj, trigger) {
+		stopBubbleListener = obj;
+		stopBubbleTrigger = trigger;
+		return stopBubbleListener;
+	}
+	
+	function unregisterStopBubbleListener() {
+		stopBubbleListener = null;
+		stopBubbleTrigger = null;
+		return null;
 	}
 
 	//////////////////// CONSTRUCTOR /////////////////////
@@ -609,6 +625,10 @@ OBA.Popups = (function() {
 		// CONTENT METHODS
 		getVehicleContentForResponse: getVehicleContentForResponse,
 		
-		getStopContentForResponse: getStopContentForResponse
+		getStopContentForResponse: getStopContentForResponse,
+		
+		registerStopBubbleListener: registerStopBubbleListener,
+		
+		unregisterStopBubbleListener: unregisterStopBubbleListener
 	};
 })();

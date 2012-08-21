@@ -340,6 +340,7 @@
                                 <home>${project.build.directory}/tomcat5x/onebusaway-nyc-vehicle-tracking-webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
+<!--                                     <cargo.jvmargs>${cargo.jvmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044</cargo.jvmargs> -->
                                     <cargo.servlet.port>${org.onebusaway.transit_data_federation_webapp.port}</cargo.servlet.port>
                                     <cargo.tomcat.ajp.port>${org.onebusaway.transit_data_federation_webapp.ajp_port}</cargo.tomcat.ajp.port>
                                     <cargo.rmi.port>${org.onebusaway.transit_data_federation_webapp.rmi_port}</cargo.rmi.port>

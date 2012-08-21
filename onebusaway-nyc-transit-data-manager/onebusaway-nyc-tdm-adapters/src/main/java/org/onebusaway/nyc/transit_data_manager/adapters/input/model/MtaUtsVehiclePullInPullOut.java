@@ -5,7 +5,8 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
-public class MtaUtsVehiclePullInPullOut {
+public class MtaUtsVehiclePullInPullOut extends MtaUtsObject {
+
   public MtaUtsVehiclePullInPullOut() {
     super();
   }
@@ -21,14 +22,11 @@ public class MtaUtsVehiclePullInPullOut {
   private String actualPIField; // ACTUAL PI in the input data
   private String busNumberField; // BUS NUMBER in the input data
   private String busMileageField; // BUS MILEAGE in the input data
-  private String passNumberField; // PASS in the input data
-  private String authIdField; // AUTH ID in the input data
 
   // These fields are set by the set... methods called within the setters for
   // the fields above
   // They are typed in a sometimes more useful way.
   private Long busNumber;
-  private Long passNumber;
   private DateTime serviceDate;
 
   public void setRouteField(String routeField) {
@@ -73,21 +71,9 @@ public class MtaUtsVehiclePullInPullOut {
     this.busMileageField = busMileageField;
   }
 
-  public void setPassNumberField(String passNumberField) {
-    this.passNumberField = passNumberField;
-    setPassNumberFromString(passNumberField);
-  }
-
-  public void setAuthIdField(String authIdField) {
-    this.authIdField = authIdField;
-  }
-
+  
   public String getRunNumberField() {
     return runNumberField;
-  }
-
-  public String getAuthId() {
-    return authIdField;
   }
 
   public Long getBusNumber() {
@@ -104,10 +90,6 @@ public class MtaUtsVehiclePullInPullOut {
 
   public String getDepot() {
     return depotField;
-  }
-
-  public Long getPassNumber() {
-    return passNumber;
   }
 
   public String getRoute() {
@@ -131,14 +113,6 @@ public class MtaUtsVehiclePullInPullOut {
       busNumber = Long.parseLong(busNumStr);
     } catch (NumberFormatException nfea) {
       busNumber = new Long(-1);
-    }
-  }
-
-  private void setPassNumberFromString(String passNumStr) {
-    try {
-      passNumber = Long.parseLong(passNumStr);
-    } catch (NumberFormatException nfea) {
-      passNumber = new Long(-1);
     }
   }
 
