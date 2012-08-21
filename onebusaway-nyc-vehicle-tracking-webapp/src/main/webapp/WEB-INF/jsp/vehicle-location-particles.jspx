@@ -36,7 +36,7 @@ table td {
 <c:set var="obs" value="${details.lastObservation}"/>
 
 <ul>
-    <li>time:<jsp:text> </jsp:text><fmt:formatDate pattern="yyyy-MM-dd_HH-mm-ss" value="${obs.timeAsDate}"/></li>
+    <li>time:<jsp:text><c:out value="${obs.time}"/></jsp:text>,<fmt:formatDate pattern="yyyy-MM-dd_HH-mm-ss" value="${obs.timeAsDate}"/></li>
     <li><jsp:text>vehicle id: </jsp:text><c:out value="${obs.vehicleId}"/></li>
     <li>location:<jsp:text> </jsp:text><c:out value="${obs.latitude}"/><jsp:text> </jsp:text><c:out value="${obs.longitude}"/></li>
     <li><jsp:text>dsc: </jsp:text><c:out value="${obs.destinationSignCode}"/></li>

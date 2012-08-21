@@ -1,6 +1,5 @@
 package org.onebusaway.nyc.presentation.service.realtime;
 
-import java.util.Date;
 import java.util.List;
 
 import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializer;
@@ -12,7 +11,7 @@ import uk.org.siri.siri.VehicleActivityStructure;
 
 public interface RealtimeService {
 
-  public void setTime(Date time);
+  public void setTime(long time);
 
   public PresentationService getPresentationService();
   

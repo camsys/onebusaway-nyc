@@ -74,6 +74,10 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
 
     final CcLocationReport message = envelope.getCcLocationReport();
     final ArrayList<AgencyAndId> vehicleList = new ArrayList<AgencyAndId>();
+    
+    if(_depotPartitionKeys == null)
+    	return false;
+    
     for (final String key : _depotPartitionKeys) {
       try {
         vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));

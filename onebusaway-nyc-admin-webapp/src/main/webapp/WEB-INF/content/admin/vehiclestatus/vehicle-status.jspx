@@ -64,7 +64,7 @@
 	</script>
 	
 	
-	<s:url var="url" value="/js/oba/vehiclestatus.js" />
+	<s:url var="url" value="/js/oba/vehiclestatus/vehiclestatus.js" />
 	<script type="text/javascript" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
@@ -79,7 +79,12 @@
 		<!-- //prevent jspx minimization -->
 	</link>
  
-	<s:url var="url" value="/js/oba/popup.js" />
+	<s:url var="url" value="/js/oba/vehiclestatus/popup.js" />
+	<script type="text/javascript" src="${url}">
+	<!-- //prevent jspx minimization -->
+	</script>
+	
+	<s:url var="url" value="/js/oba/vehiclestatus/vehicles.js" />
 	<script type="text/javascript" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
@@ -100,10 +105,15 @@
 				<h2>Vehicle Status Display Utility</h2>
 				<div id="menu">
 					<ul id="navigation">
+						<li><a href="#Parameters" title="Parameters"><span>Parameters</span></a></li>
 						<li><a href="#Vehicles" title="Vehicles"><span>Vehicles</span></a></li>
 					</ul>
 					<div id="Vehicles">
 						<jsp:include page="vehicles.jsp" />
+						<!--  space -->
+					</div>
+					<div id="Parameters">
+						<jsp:include page="parameters.jsp" />
 						<!--  space -->
 					</div>
 				</div>

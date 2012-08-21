@@ -48,7 +48,7 @@ public class SiriIntegrationTestBase {
   
   private long _maxTimeout = 40 * 1000;
 
-  private String _time = "2012-03-01T13:36:00-0500";
+  private String _time = "1330626960000";
   
   private String _trace;
 

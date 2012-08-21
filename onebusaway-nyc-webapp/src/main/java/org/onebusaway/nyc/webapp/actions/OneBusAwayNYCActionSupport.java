@@ -15,16 +15,14 @@
  */
 package org.onebusaway.nyc.webapp.actions;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Map;
+
 import org.onebusaway.presentation.impl.NextActionSupport;
 import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.services.CurrentUserService;
-
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Map;
 
 /**
  * Abstract class that is currently being used to hang stub data methods onto
@@ -33,17 +31,17 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
 
   private static final long serialVersionUID = 1L;
 
-  private Date time = null;
+  private Long time = null;
   
-  public void setTime(Date time) {
+  public void setTime(long time) {
     this.time = time;
   }
   
-  public Date getTime() {
+  public long getTime() {
     if(time != null) {
       return time;
     } else {
-      return new Date();
+      return System.currentTimeMillis();
     }
   }
   
@@ -70,7 +68,7 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
   // hide or show MTA "weekender" link
   public boolean getShowWeekender() {
     Calendar calendar = new GregorianCalendar();
-    calendar.setTime(getTime());
+    calendar.setTimeInMillis(getTime());
 
     int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
     int hour = calendar.get(Calendar.HOUR_OF_DAY);
