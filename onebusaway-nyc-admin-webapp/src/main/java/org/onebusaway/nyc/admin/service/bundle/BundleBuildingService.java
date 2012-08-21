@@ -18,5 +18,7 @@ public interface BundleBuildingService {
 
   void doBuild(BundleBuildRequest request, BundleBuildResponse response);
 
+  String getDefaultAgencyId();
+
 
 }
