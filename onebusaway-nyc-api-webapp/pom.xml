@@ -152,7 +152,8 @@
                 <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
                 <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
-                <dummy.permissions></dummy.permissions>
+                <dummy.permissions>    &lt;bean id="apiKeyService" class="org.onebusaway.api.services.DummyApiKeyPermissionService" primary="true"/&gt;    
+                </dummy.permissions>
                 <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
