@@ -88,7 +88,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataService {
+class NycTransitDataServiceImpl implements NycTransitDataService {
 	
   private static Logger _log = LoggerFactory.getLogger(NycTransitDataServiceImpl.class);
 

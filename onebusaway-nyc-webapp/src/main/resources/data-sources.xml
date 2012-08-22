@@ -13,7 +13,7 @@
 
     <!-- Transit Data Service -->
     
-    <bean id="nycTransitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+<!--     <bean id="nycTransitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
     </bean>
@@ -26,8 +26,20 @@
     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="${config.path}/remoting/configuration-service" />
         <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
-    </bean>
+    </bean> -->
 
+    <!-- define which TDM to use, previously provided by transit data federation webapp -->
+    <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
+      <constructor-arg type="java.lang.String" value="${tdm.host}"/>
+      <constructor-arg type="java.lang.Integer" value="80" />
+      <constructor-arg type="java.lang.String" value="/api/" />
+    </bean>
+    
+    <!-- previously provided by transit data federation webapp -->
+    <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
+                <property name="bundleStoreRoot" value="${bundle.location}" />
+                <property name="standaloneMode" value="${bundle.mode.standalone}" />
+    </bean>
 
     <!-- Database Configuration -->
 
