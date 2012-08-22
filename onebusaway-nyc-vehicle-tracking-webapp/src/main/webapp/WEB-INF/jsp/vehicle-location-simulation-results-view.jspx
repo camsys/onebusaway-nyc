@@ -80,7 +80,7 @@ Location Simulation Console</a></p>
                 
                 <td align='center' bgcolor='#cdc9c9'><c:out value="${record.actualTripId}" /></td>
                 <c:set var="bgcolor1" value=""/>
-                <c:if test="${record.actualTripId != record.inferredTripId}">
+                <c:if test="${not empty record.actualTripId &amp;&amp; record.actualTripId != record.inferredTripId}">
                     <c:set var="bgcolor1" value="#ff6347"/>
                 </c:if>
                 <td align='center' bgcolor='${bgcolor1}'><c:out value="${record.inferredTripId}" /></td>
@@ -104,9 +104,12 @@ Location Simulation Console</a></p>
                 </c:if>
                 <td align='center'><c:out value="${infSchedTimeFormat}" /></td>
 	              <td align='center' bgcolor='#cdc9c9'><c:out value="${fn:replace(record.actualPhase, '_', ' ')}"/></td>
-                <c:set var="bgcolor2" value=""/>
-                <c:if test="${record.actualPhase != record.inferredPhase}">
-                    <c:set var="bgcolor2" value="#ff6347"/>
+                <c:set var="bgcolor2" value="#ff6347"/>
+                <c:set var="t1" value="${ fn:contains(record.actualPhase, record.inferredPhase) }"/>
+                <c:set var="t2" value="${ fn:contains(record.actualPhase, 'DEADHEAD') }"/>
+                <c:set var="t3" value="${ fn:contains(record.inferredPhase, 'DEADHEAD') }"/>
+                <c:if test="${t1 || (t2 &amp;&amp; t3)}">
+	                <c:set var="bgcolor2" value=""/>
                 </c:if>
 	              <td align='center' bgcolor='${bgcolor2}'><c:out value="${fn:replace(record.inferredPhase, '_', ' ')}"/></td>
 	              <td align='center' bgcolor='#cdc9c9'><c:out value="${record.inferredStatus}"/></td>

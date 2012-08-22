@@ -24,7 +24,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTrac
  * Detour case
  * 
  */
-@Ignore
+//@Ignore
 @RunWith(RunUntilSuccess.class)
 public class Trace_7564_20101202T114909_IntegrationTest extends AbstractTraceRunner {
 

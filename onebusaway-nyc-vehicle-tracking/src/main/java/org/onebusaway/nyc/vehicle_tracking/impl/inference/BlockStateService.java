@@ -84,13 +84,15 @@ import javax.annotation.PostConstruct;
 @Component
 public class BlockStateService {
 
-  private static final double _tripSearchRadius = 60;
+  private static final double _tripSearchRadius = 60d;
 
   private static final long _tripSearchTimeAfterLastStop = 5 * 60 * 60 * 1000;
 
   private static final long _tripSearchTimeBeforeFirstStop = 5 * 60 * 60 * 1000;
 
-  private static final double _oppositeDirMoveCutoff = 5;
+  private static final double _oppositeDirMoveCutoff = 5d;
+
+  private static final double _oppositeAngleCutoff = 35d;
   
   /*
    * Set this field to true if you want to require snapped states
@@ -184,7 +186,7 @@ public class BlockStateService {
     _shapePointsLibrary.setLocalMinimumThreshold(localMinimumThreshold);
   }
 
-  public BestBlockStates getBestBlockLocations(Observation observation,
+  public synchronized BestBlockStates getBestBlockLocations(Observation observation,
       BlockInstance blockInstance, double blockDistanceFrom,
       double blockDistanceTo) throws MissingShapePointsException {
 
@@ -335,7 +337,7 @@ public class BlockStateService {
     return new BlockState(blockInstance, blockLocation, rte, dsc);
   }
 
-  public Set<BlockState> getBlockStatesForObservation(Observation observation) {
+  public synchronized Set<BlockState> getBlockStatesForObservation(Observation observation) {
     Set<BlockState> m = _observationCache.getValueForObservation(observation,
         EObservationCacheKey.BEST_BLOCK_STATES);
 
@@ -363,7 +365,7 @@ public class BlockStateService {
    * 
    * @param observation
    */
-  public Map<BlockLocationKey, BestBlockStates> computeBlockStatesForObservation(
+  private Map<BlockLocationKey, BestBlockStates> computeBlockStatesForObservation(
       Observation observation) {
 
     final Map<BlockLocationKey, BestBlockStates> results = Maps.newHashMap();
@@ -511,8 +513,9 @@ public class BlockStateService {
          */
         if (obsOrientation != null && distMoved != null) {
           double orientDiff = Math.abs(obsOrientation - location.getOrientation());
-          if (orientDiff >= 95 && orientDiff <= 265 
-              && distMoved >= getOppositeDirMoveCutoff()) {
+          if (orientDiff >= 90d + _oppositeAngleCutoff 
+              && orientDiff <= 270d + _oppositeAngleCutoff 
+              && distMoved >= _oppositeDirMoveCutoff) {
             continue;
           }
         }
