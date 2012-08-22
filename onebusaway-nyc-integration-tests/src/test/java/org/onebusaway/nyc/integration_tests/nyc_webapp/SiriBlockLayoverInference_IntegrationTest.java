@@ -23,7 +23,6 @@ import java.util.HashMap;
 
 import org.apache.commons.httpclient.HttpException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("unchecked")
@@ -50,7 +49,6 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
   }
   
   @Test
-  @Ignore
   public void testDepartureTimeSetOnSM() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404923");
 	  
@@ -66,7 +64,6 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
   }
   
   @Test
-  @Ignore
   public void testDepartureTimeSetOnVM() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2436");
 	  
@@ -83,7 +80,6 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
   
   // VM onward calls
   @Test
-  @Ignore
   public void testVMOnwardCalls() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2436");
 	  
@@ -109,7 +105,7 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
 	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
 
 	 assertEquals(distances1.get("PresentableDistance"), "approaching");	 
-	 assertEquals(distances1.get("DistanceFromCall"), 52.74);	 
+	 assertEquals(distances1.get("DistanceFromCall"), 53.82);	 
 	 assertEquals(distances1.get("StopsFromCall"), 0);	 
 	 assertEquals(distances1.get("CallDistanceAlongRoute"), 0.06);	 
 	 
@@ -118,8 +114,8 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
 	 HashMap<String,Object> extensions2 = (HashMap<String, Object>) stop2.get("Extensions");
 	 HashMap<String,Object> distances2 = (HashMap<String, Object>) extensions2.get("Distances");
 
-	 assertEquals(distances2.get("PresentableDistance"), "24.8 miles away");	 
-	 assertEquals(distances2.get("DistanceFromCall"), 39991.89);	 
+	 assertEquals(distances2.get("PresentableDistance"), "24.9 miles away");	 
+	 assertEquals(distances2.get("DistanceFromCall"), 39992.98);	 
 	 assertEquals(distances2.get("StopsFromCall"), 56);	 
 	 assertEquals(distances2.get("CallDistanceAlongRoute"), 39939.21);	 
   }

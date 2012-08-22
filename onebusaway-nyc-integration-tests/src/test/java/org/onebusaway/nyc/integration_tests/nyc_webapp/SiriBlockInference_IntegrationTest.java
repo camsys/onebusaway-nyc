@@ -24,7 +24,6 @@ import java.util.HashMap;
 
 import org.apache.commons.httpclient.HttpException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
@@ -54,7 +53,6 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }
   
   @Test
-  @Ignore
   public void testBlockSetOnSM() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -70,7 +68,6 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }
 
   @Test
-  @Ignore
   public void testBlockSetOnVM() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2436");
 	  
@@ -86,7 +83,6 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }
 
   @Test
-  @Ignore
   public void testStatusOnCurrentTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -102,7 +98,6 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }
 
   @Test
-  @Ignore
   public void testStatusOnNextTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404050");
 	  
@@ -119,7 +114,6 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   
   // wrapping
   @Test
-  @Ignore
   public void testWrapping() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404050");
 	  
@@ -133,7 +127,6 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }  
 
   @Test
-  @Ignore
   public void testBusIsWrappedOnlyOnce() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903037");
 	  
@@ -148,7 +141,6 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 
   // trip data matches trip bus would be on then
   @Test
-  @Ignore
   public void testNextTripIdOnCurrentTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -166,7 +158,6 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   }  
   
   @Test
-  @Ignore
   public void testNextTripIdOnNextTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404050");
 	  
@@ -185,7 +176,6 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   
   // distances
   @Test
-  @Ignore
   public void testDistancesOnCurrentTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -202,13 +192,12 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> distances = (HashMap<String, Object>) extensions.get("Distances");
 
 	 assertEquals(distances.get("PresentableDistance"), "1 stop away");	 
-	 assertEquals(distances.get("DistanceFromCall"), 233.33);	 
+	 assertEquals(distances.get("DistanceFromCall"), 286.53);	 
 	 assertEquals(distances.get("StopsFromCall"), 1);	 
 	 assertEquals(distances.get("CallDistanceAlongRoute"), 38189.61);	 
   } 
   
   @Test
-  @Ignore
   public void testDistancesOnNextTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404050");
 	  
@@ -225,14 +214,13 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> distances = (HashMap<String, Object>) extensions.get("Distances");
 
 	 assertEquals(distances.get("PresentableDistance"), "3 stops away");	 
-	 assertEquals(distances.get("DistanceFromCall"), 691.65);	 
+	 assertEquals(distances.get("DistanceFromCall"), 744.85);	 
 	 assertEquals(distances.get("StopsFromCall"), 3);	 
 	 assertEquals(distances.get("CallDistanceAlongRoute"), 391.14);	 
   } 
   
   // VM onward calls
   @Test
-  @Ignore
   public void testVMOnwardCalls() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2436");
 	  
@@ -256,8 +244,8 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> extensions1 = (HashMap<String, Object>) stop1.get("Extensions");
 	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
 
-	 assertEquals(distances1.get("PresentableDistance"), "at stop");	 
-	 assertEquals(distances1.get("DistanceFromCall"), 18.29);	 
+	 assertEquals(distances1.get("PresentableDistance"), "approaching");	 
+	 assertEquals(distances1.get("DistanceFromCall"), 71.49);	 
 	 assertEquals(distances1.get("StopsFromCall"), 0);	 
 	 assertEquals(distances1.get("CallDistanceAlongRoute"), 37974.57);	 
 
@@ -267,14 +255,13 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> distances2 = (HashMap<String, Object>) extensions2.get("Distances");
 
 	 assertEquals(distances2.get("PresentableDistance"), "1 stop away");	 
-	 assertEquals(distances2.get("DistanceFromCall"), 233.33);	 
+	 assertEquals(distances2.get("DistanceFromCall"), 286.53);	 
 	 assertEquals(distances2.get("StopsFromCall"), 1);	 
 	 assertEquals(distances2.get("CallDistanceAlongRoute"), 38189.61);	 
   }
   
   // SM onward calls
   @Test
-  @Ignore
   public void testSMOnwardCalls() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -299,8 +286,8 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> extensions1 = (HashMap<String, Object>) stop1.get("Extensions");
 	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
 
-	 assertEquals(distances1.get("PresentableDistance"), "at stop");	 
-	 assertEquals(distances1.get("DistanceFromCall"), 18.29);	 
+	 assertEquals(distances1.get("PresentableDistance"), "approaching");	 
+	 assertEquals(distances1.get("DistanceFromCall"), 71.49);	 
 	 assertEquals(distances1.get("StopsFromCall"), 0);	 
 	 assertEquals(distances1.get("CallDistanceAlongRoute"), 37974.57);	 
 	 
@@ -310,14 +297,13 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> distances2 = (HashMap<String, Object>) extensions2.get("Distances");
 
 	 assertEquals(distances2.get("PresentableDistance"), "1 stop away");	 
-	 assertEquals(distances2.get("DistanceFromCall"), 233.33);	 
+	 assertEquals(distances2.get("DistanceFromCall"), 286.53);	 
 	 assertEquals(distances2.get("StopsFromCall"), 1);	 
 	 assertEquals(distances2.get("CallDistanceAlongRoute"), 38189.61);	 
   }
   
   // SM onward calls
   @Test
-  @Ignore
   public void testSMOnwardCallsNextTrip() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getSmResponse("MTA%20NYCT", "404923");
 	  
@@ -343,7 +329,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
 
 	 assertEquals(distances1.get("PresentableDistance"), "< 1 stop away");	 
-	 assertEquals(distances1.get("DistanceFromCall"), 300.57);	 
+	 assertEquals(distances1.get("DistanceFromCall"), 353.77);	 
 	 assertEquals(distances1.get("StopsFromCall"), 0);	 
 	 assertEquals(distances1.get("CallDistanceAlongRoute"), 0.06);	 
 	 
@@ -353,7 +339,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> distances2 = (HashMap<String, Object>) extensions2.get("Distances");
 
 	 assertEquals(distances2.get("PresentableDistance"), "25.0 miles away");	 
-	 assertEquals(distances2.get("DistanceFromCall"), 40239.72);	 
+	 assertEquals(distances2.get("DistanceFromCall"), 40292.93);	 
 	 assertEquals(distances2.get("StopsFromCall"), 56);	 
 	 assertEquals(distances2.get("CallDistanceAlongRoute"), 39939.21);	 
   }
