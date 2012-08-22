@@ -35,6 +35,9 @@
       <constructor-arg type="java.lang.String" value="/api/" />
     </bean>
     
+    <!-- Input Queue Configuration -->
+    <bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
+    
     <!-- previously provided by transit data federation webapp -->
     <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
                 <property name="bundleStoreRoot" value="${bundle.location}" />
