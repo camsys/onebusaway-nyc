@@ -49,11 +49,13 @@
 								<label>minutes</label>
 							</div>
 						</div>
+						
 					</div>
 				</li>
 				<li>
 					<h3><a href="#" class="heading">Module: Admin</a></h3>
 					<div id="adminSection">
+						
 						<div id="senderEmailAddress" class="propertyHolder">
 							<label class="propertyHeader">Sender Email Address</label>
 							<div class="propertyDescription">
@@ -75,11 +77,13 @@
 								<input type="text" id="instanceIdValue" class="textPropertyValue"/>
 							</div>
 						</div>
+						
 					</div>
 				</li>
 				<li>
 					<h3><a href="#" class="heading">Module: Data</a></h3>
 					<div id="dataSection">
+						
 						<div id="gpsTimeSkewThreshold" class="propertyHolder">
 							<label class="propertyHeader">GPS Time Skew Threshold</label>
 							<div class="propertyDescription">
@@ -91,11 +95,13 @@
 								<label>seconds</label>
 							</div>
 						</div>
+						
 					</div>
 				</li>
 				<li>
 					<h3><a href="#" class="heading">Module: Vehicle Tracking</a></h3>
 					<div id="vehicleTrackingSection">
+						
 						<div class="topSection">
 							<div id="stalledTimeout" class="propertyHolder">
 								<label class="propertyHeader">Stalled Timeout</label>
@@ -228,11 +234,13 @@
 								</div>
 							</div>
 						</div>
+						
 					</div>
 				</li>
 				<li>
 					<h3><a href="#" class="heading">Module: Inferrence Engine</a></h3>
 					<div id="ieSection">
+						
 						<div class="topSection">
 							<div id="inputQueueName" class="propertyHolder">
 								<label class="propertyHeader">Input Queue name</label>
@@ -309,11 +317,13 @@
 								</div>
 							</div>
 						</div>
+						
 					</div>
 				</li>
 				<li>
 					<h3><a href="#" class="heading">Module: TDS</a></h3>
 					<div id="tdsSection">
+						
 						<div class="topSection">
 							<div id="tdsInputQueueName" class="propertyHolder">
 								<label class="propertyHeader">Input Queue name</label>
@@ -353,6 +363,8 @@
 								</div>
 							</div>
 						</div>
+						
+						
 					</div>
 				</li>
 				<li>
@@ -379,7 +391,7 @@
 				<label id="message">Your changes have been saved.</label>
 			</div>
 			<div id="submitBox">
-				<input type="button" id="reset" class="inlineFormButton" value="Reset" />
+				<input type="button" id="reset" class="inlineFormButton" value="Reset Previous" />
 				<input type="button" id="save" class="inlineFormButton" value="Save" />
 			</div>
 		</div>

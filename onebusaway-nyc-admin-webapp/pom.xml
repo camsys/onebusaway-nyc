@@ -152,9 +152,9 @@
     <profile>
       <id>local-single-port</id><!-- aka services-tdf-as-tds --> <!-- aka staging, production -->
       <properties>
-        <tds.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-        <vtms.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://app1.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <log4j.appender>stdout</log4j.appender>
       </properties>

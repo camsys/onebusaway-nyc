@@ -41,6 +41,7 @@ import java.util.Map;
 public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String BUNDLE_RESOURCE = "classpath:org/onebusaway/transit_data_federation/bundle/application-context-bundle-admin.xml";
   private static final String DEFAULT_STIF_CLEANUP_URL = "https://github.com/camsys/onebusaway-nyc/raw/master/onebusaway-nyc-stif-loader/fix-stif-date-codes.py";
+  private static final String DEFAULT_AGENCY = "MTA";
   private static final String DATA_DIR = "data";
   private static final String OUTPUT_DIR = "outputs";
   private static final String INPUTS_DIR = "inputs";
@@ -431,12 +432,22 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   private List<GtfsBundle> createGtfsBundles(List<String> gtfsList) {
     List<GtfsBundle> bundles = new ArrayList<GtfsBundle>(gtfsList.size());
+    String defaultAgencyId = getDefaultAgencyId();
     for (String path : gtfsList) {
       GtfsBundle gtfsBundle = new GtfsBundle();
       gtfsBundle.setPath(new File(path));
+      if (defaultAgencyId != null && defaultAgencyId.length() == 0) {
+        gtfsBundle.setDefaultAgencyId(defaultAgencyId);
+      }
       bundles.add(gtfsBundle);
     }
     return bundles;
+  }
+
+  @Override
+  public String getDefaultAgencyId() {
+    return configurationService.getConfigurationValueAsString("admin.stif_cleanup_url", DEFAULT_AGENCY);
+
   }
 
   @Override

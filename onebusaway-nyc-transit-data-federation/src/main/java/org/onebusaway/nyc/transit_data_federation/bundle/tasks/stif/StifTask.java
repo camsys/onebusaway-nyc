@@ -571,11 +571,11 @@ public class StifTask implements Runnable {
         if (count == 0) {
           count++;
           
-          tripIdIndex = line.indexOf("tripId");
+          tripIdIndex = line.indexOf("trip_id");
           dscIndex = line.indexOf("dsc");
           
           if(tripIdIndex == -1 || dscIndex == -1) {
-            throw new Exception("Trip ID to DSC CSV must contain a header with column names 'tripId' and 'dsc'.");
+            throw new Exception("Trip ID to DSC CSV must contain a header with column names 'trip_id' and 'dsc'.");
           }
           
           return;

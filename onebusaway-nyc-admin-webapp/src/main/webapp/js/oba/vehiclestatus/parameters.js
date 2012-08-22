@@ -15,8 +15,65 @@
  */
 
 
-/******************* Views ************************************/
+jQuery(function() {
+	//Initialize the accordion control
+	$("#accordion").accordion({
+		autoHeight: false
+	});
+	
+	getConfigParameters();
+	
+	//Handle reset and save click events
+	$("#results #reset").click(resetToPrevious);
+	$("#results #save").click(saveParameters);
+	
+});
 
-/******************* Controllers ************************************/
+function getConfigParameters() {
+	$.ajax({
+		url: "parameters!getParameters.action?ts=" + new Date().getTime(),
+		type: "GET",
+		dataType: "json",
+		success: function(response) {
+			updateParametersView(response.configParameters);
+		},
+		error: function(request) {
+			alert("Error getting parameters from server : ", request.statusText);
+		}
+		
+	});
+}
 
-/******************* Model ************************************/
+function updateParametersView(configParameters) {
+	var panels = $("#accordion").children("li");
+	//Update view by looping through sections in each accordion panel
+	for(var i=0; i<panels.length; i++) {
+		var sections = $(panels[i]).children("div").children("div");
+		for(var j=0; j<sections.length; j++) {
+			if($(sections[j]).children(".propertyHolder").length > 0) {
+				//We have multiple sections per panel here. Process each one of them
+				var properties = $(sections[j]).children(".propertyHolder");
+				for(var k=0; k<properties.length; k++) {
+					var keyElement = $(properties[k]).find("input[type='hidden']");
+					var configKey = keyElement.val();
+					$(keyElement).next().val(configParameters[configKey]);
+				}
+			} else {
+				//Sections are properties in this case. Set the values to the next sibling 
+				//of the hidden child
+				var keyElement = $(sections[j]).find("input[type='hidden']");
+				var configKey = keyElement.val();
+				$(keyElement).next().val(configParameters[configKey]);
+			}
+		}
+	}
+}
+
+function resetToPrevious() {
+	//Reset parameter values to last saved values on server
+	getConfigParameters();
+}
+
+function saveParameters() {
+	
+}

@@ -47,9 +47,6 @@ function showVehiclePopup(vehicleId) {
 var VehicleStatus = Ember.Application.create({
 	ready: function() {
 		$("#menu").tabs();
-		$("#accordion").accordion({
-			autoHeight: false
-		});
 	}
 		
 });

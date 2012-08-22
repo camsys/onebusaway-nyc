@@ -39,7 +39,7 @@ public class ConfigurationServiceImplTest {
       .thenReturn(ral.getJsonObjectsForString(json));
 
     TransitDataManagerApiLibrary tdmal = new TransitDataManagerApiLibrary("tdm.staging.obanyc.com", 80, "/api");
-    URL setUrl = tdmal.buildUrl("config", "set", "test123", "testValue");
+    URL setUrl = tdmal.buildUrl("config", "set", "testComponent", "test123", "testValue");
     when(mockRestApiLibrary.executeApiMethodWithNoResult(setUrl))
       .thenReturn(true);
 
@@ -63,7 +63,7 @@ public class ConfigurationServiceImplTest {
 
   @Test
   public void setValue() throws Exception {
-    service.setConfigurationValue("test123", "testValue");
+    service.setConfigurationValue("testComponent", "test123", "testValue");
     assertEquals(service.getConfigurationValueAsString("test123", null), "testValue");
   }
 }
