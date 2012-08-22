@@ -101,4 +101,6 @@
    
    <bean id="vehicleSearchService" class="org.onebusaway.nyc.admin.service.impl.VehicleSearchServiceImpl" />
    
+   <bean id="parametersService" class="org.onebusaway.nyc.admin.service.impl.ParametersServiceImpl" />
+   
 </beans>

@@ -88,6 +88,11 @@
 	<script type="text/javascript" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
+	
+	<s:url var="url" value="/js/oba/vehiclestatus/parameters.js" />
+	<script type="text/javascript" src="${url}">
+	<!-- //prevent jspx minimization -->
+	</script>
 
 	<s:url var="url" value="http://maps.googleapis.com/maps/api/js">				
 	<s:param name="v">3</s:param>
