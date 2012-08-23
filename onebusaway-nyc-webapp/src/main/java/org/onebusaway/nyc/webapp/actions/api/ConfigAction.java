@@ -60,10 +60,12 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
     Double maxLon = -999d;
     
     for (AgencyWithCoverageBean agencyWithCoverageBean : agencyWithCoverageBeans) {
-      minLat = Math.min(minLat, agencyWithCoverageBean.getLat() - agencyWithCoverageBean.getLatSpan()/2);
-      minLon = Math.min(minLon, agencyWithCoverageBean.getLon() - agencyWithCoverageBean.getLonSpan()/2);
-      maxLat = Math.max(maxLat, agencyWithCoverageBean.getLat() + agencyWithCoverageBean.getLatSpan()/2);
-      maxLon = Math.max(maxLon, agencyWithCoverageBean.getLon() + agencyWithCoverageBean.getLonSpan()/2);
+      if (agencyWithCoverageBean.getLat() != 0 && agencyWithCoverageBean.getLon() != 0) {
+        minLat = Math.min(minLat, agencyWithCoverageBean.getLat() - agencyWithCoverageBean.getLatSpan()/2);
+        minLon = Math.min(minLon, agencyWithCoverageBean.getLon() - agencyWithCoverageBean.getLonSpan()/2);
+        maxLat = Math.max(maxLat, agencyWithCoverageBean.getLat() + agencyWithCoverageBean.getLatSpan()/2);
+        maxLon = Math.max(maxLon, agencyWithCoverageBean.getLon() + agencyWithCoverageBean.getLonSpan()/2);
+      }
     }
     
     return "{ swLat: " + minLat + ", swLon: " + minLon + ", neLat: " + maxLat + ", neLon: " + maxLon + " }";

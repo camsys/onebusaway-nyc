@@ -214,7 +214,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 
 	   // copy stream into String
 	   String content = remoteConnectionService.getContent(url);
-
+	   if (content == null) return null;
 	   // parse content to appropriate return type
 	   T t = null;
 	   if (returnType == String.class) {

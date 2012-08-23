@@ -25,13 +25,18 @@ public class BundleBuildingServiceImplTest {
 
   @Before
   public void setup() {
-    _service = new BundleBuildingServiceImpl();
+    _service = new BundleBuildingServiceImpl() {
+      @Override
+      public String getDefaultAgencyId() {
+        return null;
+      }
+    };
+    
     FileService fileService;
     fileService = new FileServiceImpl() {
       @Override
       public void setup() {
       };
-
       @Override
       public boolean bundleDirectoryExists(String filename) {
         return !"noSuchDirectory".equals(filename);

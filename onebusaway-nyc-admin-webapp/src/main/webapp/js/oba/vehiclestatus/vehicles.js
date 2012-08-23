@@ -91,9 +91,6 @@ VehicleStatus.SummaryView = Ember.View.extend({
 	controllerBinding: "VehicleStatus.SummaryController"
 });
 
-VehicleStatus.ParametersView = Ember.View.extend({
-
-});
 
 /******************* Controllers ************************************/
 VehicleStatus.ParametersController = Ember.ArrayController.create({
