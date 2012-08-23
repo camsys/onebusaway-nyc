@@ -189,12 +189,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           ProcessUtil pu = new ProcessUtil(cmd);
           pu.exec();
           if (pu.getReturnCode() == null || !pu.getReturnCode().equals(0)) {
+            // obanyc-1692, do not send to client
             String returnCodeMessage = stifUtilName + " exited with return code " + pu.getReturnCode();
-            response.addStatusMessage(returnCodeMessage);
             _log.info(returnCodeMessage);
-            response.addStatusMessage(stifUtilName + ":" + pu.getOutput());
             _log.info("output=" + pu.getOutput());
-            response.addStatusMessage(stifUtilName + ":" + pu.getError());
             _log.info("error=" + pu.getError());
           }
           if (pu.getException() != null) {
