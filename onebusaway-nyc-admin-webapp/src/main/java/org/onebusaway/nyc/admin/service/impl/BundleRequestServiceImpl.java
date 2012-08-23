@@ -371,7 +371,9 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           while (!isComplete(_response)) {
             url = "/build/remote/" + id + "/list";
             _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
-            _buildMap.put(id, _response);
+            if (_response != null) {
+              _buildMap.put(id, _response);
+            }
             pollCount++;
             Thread.sleep(5 * 1000);
           }

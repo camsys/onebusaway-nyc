@@ -23,7 +23,6 @@ import java.util.HashMap;
 
 import org.apache.commons.httpclient.HttpException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("unchecked")
@@ -50,7 +49,6 @@ public class SiriTripInference_IntegrationTest extends SiriIntegrationTestBase {
   }
   
   @Test
-  @Ignore
   public void testBlockNotSetOnSM() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -66,7 +64,6 @@ public class SiriTripInference_IntegrationTest extends SiriIntegrationTestBase {
   }
   
   @Test
-  @Ignore
   public void testBlockNotSetOnVM() throws HttpException, IOException {
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2437");
 	  
@@ -82,7 +79,6 @@ public class SiriTripInference_IntegrationTest extends SiriIntegrationTestBase {
   }
   
   @Test
-  @Ignore
   public void testNotPrevTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
 	  
@@ -98,7 +94,6 @@ public class SiriTripInference_IntegrationTest extends SiriIntegrationTestBase {
   }
   
   @Test
-  @Ignore
   public void testNoWraparound() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404050");
 	  
