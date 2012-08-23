@@ -541,6 +541,8 @@ public class SimulatorTask implements Runnable, EntityHandler {
       rr.clearInferredValues();
     }
 
+    rr.setAssignedRunId(record.getAssignedRunId());
+    rr.setActualIsRunFormal(record.getActualIsRunFormal());
     rr.setActualRunId(record.getActualRunId());
     rr.setActualBlockId(record.getActualBlockId());
     rr.setActualTripId(record.getActualTripId());
