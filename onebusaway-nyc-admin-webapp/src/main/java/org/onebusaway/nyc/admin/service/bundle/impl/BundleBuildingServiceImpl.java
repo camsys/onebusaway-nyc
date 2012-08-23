@@ -444,7 +444,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   @Override
   public String getDefaultAgencyId() {
-    return configurationService.getConfigurationValueAsString("admin.stif_cleanup_url", DEFAULT_AGENCY);
+    return configurationService.getConfigurationValueAsString("admin.default_agency", DEFAULT_AGENCY);
 
   }
 
