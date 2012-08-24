@@ -31,6 +31,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.onebusaway.nyc.integration_tests.TraceSupport;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.utility.DateLibrary;
 import org.opentripplanner.routing.impl.DistanceLibrary;
