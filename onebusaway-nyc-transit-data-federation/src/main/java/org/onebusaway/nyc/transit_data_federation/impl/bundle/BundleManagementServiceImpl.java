@@ -398,8 +398,13 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		return (_inferenceProcessingThreads.size() == 0);
 	}
 
-	private class BundleSwitchUpdateThread extends TimerTask implements Trigger {
-		@Override
+	protected class BundleSwitchUpdateThread extends TimerTask implements Trigger {
+	  // required for subclass
+		public BundleSwitchUpdateThread() {
+		  
+    }
+
+    @Override
 		public void run() {     
 			try {
 				refreshApplicableBundles();
@@ -439,9 +444,13 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		}   
 	}
 
-	private class BundleDiscoveryUpdateThread extends TimerTask implements Trigger {
+	protected class BundleDiscoveryUpdateThread extends TimerTask implements Trigger {
 
-		@Override
+	  // required for subclass
+		public BundleDiscoveryUpdateThread() {
+    }
+
+    @Override
 		public void run() {     
 			try {       
 				discoverBundles();
