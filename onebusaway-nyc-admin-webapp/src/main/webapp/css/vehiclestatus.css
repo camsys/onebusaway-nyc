@@ -388,3 +388,18 @@
 	margin-left: 10px;
 }
 
+#submitBox .inlineButton {
+	border: 1px transparent;
+	height: 30px;
+	display: inline;
+	background-image:url('img/Button_background.png');
+}
+
+#submitBox #reset {
+	width: 120px;
+}
+
+#submitBox #save {
+	width: 100px;
+}
+

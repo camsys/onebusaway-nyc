@@ -21,7 +21,13 @@ jQuery(function() {
 		autoHeight: false
 	});
 	
+	//Load config parameters from the server
 	getConfigParameters();
+	
+	//Listen to change event and mark inputs as changed
+	$("input").change(function() {
+		$(this).addClass("changed");
+	});
 	
 	//Handle reset and save click events
 	$("#results #reset").click(resetToPrevious);
@@ -38,7 +44,7 @@ function getConfigParameters() {
 			updateParametersView(response.configParameters);
 		},
 		error: function(request) {
-			alert("Error getting parameters from server : ", request.statusText);
+			alert("Error loading parameters from the server : ", request.statusText);
 		}
 		
 	});
@@ -70,10 +76,47 @@ function updateParametersView(configParameters) {
 }
 
 function resetToPrevious() {
+	clearChanges();
+	
 	//Reset parameter values to last saved values on server
 	getConfigParameters();
 }
 
 function saveParameters() {
+	var data = buildData();
 	
+	$.ajax({
+		url: "parameters!saveParameters.action",
+		type: "POST",
+		dataType: "json",
+		data: {"params": data},
+		traditional: true,
+		success: function(response) {
+			if(response.saveSuccess) {
+				$("#results #messageBox").show();
+				clearChanges();
+			} else {
+				alert("Failed to save parameters. Please try again.");
+			}
+		},
+		error: function(request) {
+			alert("Error saving parameter values : " +request.statusText);
+		}
+	});
+	
+}
+
+function buildData() {
+	var data = new Array();
+	var changedElements = $("input.changed[type='text']");
+	for(var i=0; i<changedElements.length; i++) {
+		var changedValue = $(changedElements[i]).val();
+		var key = $(changedElements[i]).prev("input[type='hidden']").val();
+		data[i] = key + ":" +changedValue;
+	}
+	return data;
+}
+
+function clearChanges() {
+	$("input[type='text']").removeClass("changed");
 }

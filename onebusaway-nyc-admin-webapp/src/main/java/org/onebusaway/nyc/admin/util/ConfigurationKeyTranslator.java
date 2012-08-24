@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.admin.util;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 /**
  * Translates keys used in TDM configuration to the keys used in admin parameters UI and vice versa.
@@ -11,10 +11,13 @@ import java.util.Map;
  */
 public class ConfigurationKeyTranslator {
 
-	private Map<String, String> configToUIKeys;
+	private BiMap<String, String> configToUIKeys;
+	private BiMap<String, String> uiToConfigKeys;
 	
 	public ConfigurationKeyTranslator() {
-		configToUIKeys = new HashMap<String, String>();
+		//Holds mappings of config keys to ui keys. This map needs to be updated for each new key
+		//introduced in tdm.config.xml if it needs to be displayed in admin parameters UI.
+		configToUIKeys = HashBiMap.create();
 		
 		configToUIKeys.put("tdm.crewAssignmentRefreshInterval", "tdmCrewAssignmentRefreshKey");
 		configToUIKeys.put("tdm.vehicleAssignmentRefreshInterval", "tdmVehicleAssignmentRefreshKey");
@@ -41,11 +44,18 @@ public class ConfigurationKeyTranslator {
 		configToUIKeys.put("tds.inputQueuePort", "tdsInputQueuePortKey");
 		configToUIKeys.put("tds.inputQueueHost", "tdsInputQueueHostKey");
 		configToUIKeys.put("operational-api.host", "opsApiHostKey");
+		
+		//Create another map with inverse mapping that is ui to config keys
+		uiToConfigKeys = configToUIKeys.inverse();
+		
 	}
 	
+	public String getUIKey(String configKey) {
+		return configToUIKeys.get(configKey);
+	}
 	
-	public String getTranslatedKey(String keyToTranslate) {
-		return configToUIKeys.get(keyToTranslate);
+	public String getConfigKey(String uiKey) {
+		return uiToConfigKeys.get(uiKey);
 	}
 
 }

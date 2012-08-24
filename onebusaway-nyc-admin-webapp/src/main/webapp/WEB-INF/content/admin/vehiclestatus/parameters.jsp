@@ -391,8 +391,8 @@
 				<label id="message">Your changes have been saved.</label>
 			</div>
 			<div id="submitBox">
-				<input type="button" id="reset" class="inlineFormButton" value="Reset Previous" />
-				<input type="button" id="save" class="inlineFormButton" value="Save" />
+				<input type="button" id="reset" class="inlineButton" value="Reset Previous" />
+				<input type="button" id="save" class="inlineButton" value="Save" />
 			</div>
 		</div>
 	</div>

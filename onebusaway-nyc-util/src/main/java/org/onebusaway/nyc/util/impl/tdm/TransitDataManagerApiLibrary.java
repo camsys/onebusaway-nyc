@@ -52,13 +52,15 @@ public class TransitDataManagerApiLibrary {
     return _restApiLibrary.buildUrl(baseObject, params);
   }
     
-  public void executeApiMethodWithNoResult(String baseObject, String... params) throws Exception {
+  public void setConfigItem(String baseObject, String component, String key, String value) 
+		  throws Exception {
+	String[] params = {component, key, "set"};  
     if (_restApiLibrary == null)
       return;
     URL requestUrl = buildUrl(baseObject, params);
     _log.info("Requesting " + requestUrl);
 
-    if(!_restApiLibrary.executeApiMethodWithNoResult(requestUrl)) {
+    if(!_restApiLibrary.setContents(requestUrl, value)) {
       throw new Exception("Error setting configuration value");
     }
   }

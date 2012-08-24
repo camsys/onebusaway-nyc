@@ -20,13 +20,27 @@ public class ParametersServiceImpl implements ParametersService {
 	private ConfigurationKeyTranslator keyTranslator;
 	
 	@Override
-	public boolean saveParameters(List<String> parameters) {
-		return false;
+	public boolean saveParameters(Map<String, String> parameters) {
+		boolean saveSuccess = true;
+		
+		for(Map.Entry<String, String> entry: parameters.entrySet()) {
+			String uiKey = entry.getKey();
+			String value = entry.getValue();
+			String configKey = keyTranslator.getConfigKey(uiKey);
+			String component = configKey.split("[.]")[0];
+			try {
+				configurationService.setConfigurationValue(component, configKey, value);
+			} catch (Exception e) {
+				saveSuccess = false;
+				e.printStackTrace();
+			}
+		}
+		
+		return saveSuccess;
 	}
 
 	@Override
 	public Map<String, String> getParameters() {
-		keyTranslator = new ConfigurationKeyTranslator();
 		Map<String, String> displayParameters = new HashMap<String, String>(); 
 		
 		//Get config values from TDM
@@ -36,7 +50,7 @@ public class ParametersServiceImpl implements ParametersService {
 			String configKey = entry.getKey();
 			String configValue = entry.getValue();
 			//Translate config key to its UI counterpart
-			String uiKey = keyTranslator.getTranslatedKey(configKey);
+			String uiKey = keyTranslator.getUIKey(configKey);
 			displayParameters.put(uiKey, configValue);
 		}
 		
@@ -50,6 +64,14 @@ public class ParametersServiceImpl implements ParametersService {
 	@Autowired
 	public void setConfigurationService(ConfigurationService configurationService) {
 		this.configurationService = configurationService;
+	}
+
+	/**
+	 * @param keyTranslator the keyTranslator to set
+	 */
+	@Autowired
+	public void setKeyTranslator(ConfigurationKeyTranslator keyTranslator) {
+		this.keyTranslator = keyTranslator;
 	}
 
 

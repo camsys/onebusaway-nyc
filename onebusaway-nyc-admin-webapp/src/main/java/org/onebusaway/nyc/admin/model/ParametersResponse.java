@@ -10,6 +10,7 @@ import java.util.Map;
 public class ParametersResponse {
 
 	private Map<String, String> configParameters;
+	private boolean saveSuccess;
 
 	/**
 	 * @return the configParameters
@@ -23,6 +24,22 @@ public class ParametersResponse {
 	 */
 	public void setConfigParameters(Map<String, String> configParameters) {
 		this.configParameters = configParameters;
+	}
+
+	/**
+	 * Returns true if all parameters are saved successfully
+	 * @return the saveSuccess
+	 */
+	public boolean isSaveSuccess() {
+		return saveSuccess;
+	}
+
+	/**
+	 * Set to true if all parameters are saved successfully
+	 * @param saveSuccess the saveSuccess to set
+	 */
+	public void setSaveSuccess(boolean saveSuccess) {
+		this.saveSuccess = saveSuccess;
 	}
 	
 	

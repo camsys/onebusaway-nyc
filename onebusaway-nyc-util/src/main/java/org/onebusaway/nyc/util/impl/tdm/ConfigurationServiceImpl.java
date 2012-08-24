@@ -37,6 +37,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
 		this._transitDataManagerApiLibrary = apiLibrary;
 	}
+	
+	@Autowired
+	public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler) {
+		this._taskScheduler = taskScheduler;
+	}
 
 	private void updateConfigurationMap(String configKey, String configValue) {
 		synchronized(_configurationKeyToValueMap) {
@@ -142,8 +147,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 				return;
 			}
 
-			_transitDataManagerApiLibrary.executeApiMethodWithNoResult("config", "set", component, 
-					configurationItemKey, value);		  
+			_transitDataManagerApiLibrary.setConfigItem("config", component, configurationItemKey, value);		  
 			updateConfigurationMap(configurationItemKey, value);
 		}		 
 	}
