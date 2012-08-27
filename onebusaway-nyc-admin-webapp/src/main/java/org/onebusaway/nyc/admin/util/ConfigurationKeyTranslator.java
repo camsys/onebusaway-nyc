@@ -23,7 +23,6 @@ public class ConfigurationKeyTranslator {
 		configToUIKeys.put("tdm.vehicleAssignmentRefreshInterval", "tdmVehicleAssignmentRefreshKey");
 		configToUIKeys.put("admin.senderEmailAddress", "adminSenderEmailAddressKey");
 		configToUIKeys.put("admin.instanceId", "adminInstanceIdKey");
-		configToUIKeys.put("data.gpsTimeSkewThreshold", "dataGpsTimeSkewKey");
 		configToUIKeys.put("display.stalledTimeout", "displayStalledTimeoutKey");
 		configToUIKeys.put("display.staleTimeout", "displayStaleTimeoutKey");
 		configToUIKeys.put("display.offRouteDistance", "displayOffrouteDistanceKey");

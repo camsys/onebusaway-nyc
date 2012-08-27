@@ -367,6 +367,25 @@
 	height: 30px;
 }
 
+#changeDialog {
+	padding: 20px;
+}
+
+#changeDialog #changeText {
+	height: 20px;
+	margin-right: 10px;
+}
+
+#changeDialog #dialogButtons input[type='button'] {
+	width: 100px;
+	height: 30px;
+	border: 1px transparent;
+	background-image:url('img/Button_background.png');
+	margin-right: 10px;
+	margin-top: 20px;
+	margin-bottom: 0px;
+}
+
 #results #messageBox {
 	margin-left: 250px;
 	background-color: #FFFF99;
@@ -397,9 +416,11 @@
 
 #submitBox #reset {
 	width: 120px;
+	color: #999999;
 }
 
 #submitBox #save {
 	width: 100px;
+	color: #999999;
 }
 

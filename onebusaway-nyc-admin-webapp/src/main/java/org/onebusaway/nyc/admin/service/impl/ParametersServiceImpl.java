@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.admin.service.ParametersService;
 import org.onebusaway.nyc.admin.util.ConfigurationKeyTranslator;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -49,9 +50,13 @@ public class ParametersServiceImpl implements ParametersService {
 		for(Map.Entry<String, String> entry : configParameters.entrySet()) {
 			String configKey = entry.getKey();
 			String configValue = entry.getValue();
-			//Translate config key to its UI counterpart
+			//Translate config key to its UI counterpart. 
 			String uiKey = keyTranslator.getUIKey(configKey);
-			displayParameters.put(uiKey, configValue);
+			if(StringUtils.isNotBlank(uiKey)) {
+				//uikey can be null if there is a mismatch between
+				//the keys on TDM and admin UI
+				displayParameters.put(uiKey, configValue);
+			}
 		}
 		
 		return displayParameters;
