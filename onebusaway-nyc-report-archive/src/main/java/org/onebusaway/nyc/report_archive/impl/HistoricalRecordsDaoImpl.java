@@ -18,6 +18,7 @@ import org.onebusaway.nyc.report_archive.result.HistoricalRecord;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecordResultTransformer;
 import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
 import org.onebusaway.nyc.report_archive.util.HQLBuilder;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	private static Logger log = LoggerFactory.getLogger(HistoricalRecordsDaoImpl.class);
 	
 	private HibernateTemplate hibernateTemplate;
+	private ConfigurationService configurationService;
 	
 	private static final String SPACE = " ";
 	private static final int MAX_RECORD_LIMIT = 3000;
@@ -163,16 +165,19 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	}
 	
 	private void addRecordLimit(Object maxRecords) {
+		Integer recordLimit = configurationService.getConfigurationValueAsInteger(
+				"operational-api.historicalRecordLimit", MAX_RECORD_LIMIT);
+		
 		if(maxRecords != null) {
-			Integer recordLimit = (Integer) maxRecords;
-			if(recordLimit.intValue() > MAX_RECORD_LIMIT) {
-				hibernateTemplate.setMaxResults(MAX_RECORD_LIMIT);
-			} else {
+			Integer recordLimitFromParameter = (Integer) maxRecords;
+			if(recordLimitFromParameter.intValue() > recordLimit) {
 				hibernateTemplate.setMaxResults(recordLimit);
+			} else {
+				hibernateTemplate.setMaxResults(recordLimitFromParameter);
 			}
 		} else {
 			//set the number to max record limit if record limit is not specified
-			hibernateTemplate.setMaxResults(MAX_RECORD_LIMIT);
+			hibernateTemplate.setMaxResults(recordLimit);
 		}
 	}
 	
@@ -317,6 +322,14 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	@Qualifier("slaveSessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		hibernateTemplate = new HibernateTemplate(sessionFactory);
+	}
+
+	/**
+	 * @param configurationService the configurationService to set
+	 */
+	@Autowired
+	public void setConfigurationService(ConfigurationService configurationService) {
+		this.configurationService = configurationService;
 	}
 
 }

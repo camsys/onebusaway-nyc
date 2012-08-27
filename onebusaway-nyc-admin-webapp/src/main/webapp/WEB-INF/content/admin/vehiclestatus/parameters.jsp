@@ -365,6 +365,17 @@
 								<input type="text" id="apiHostValue" class="textPropertyValue"/>
 							</div>
 						</div>
+						<div id="maxRecordLimit" class="propertyHolder rightProperty">
+							<label class="propertyHeader">Historical API Record Limit</label>
+							<div class="propertyDescription">
+								<p>This is the upper limit on the number of records returned by
+								historical operational API. </p>
+							</div>
+							<div>
+								<input type="hidden" id="maxRecordLimitKey" value="opsApiMaxRecordLimitKey"/>
+								<input type="text" id="apiMaxRecordLimitValue" class="propertyValue"/>
+							</div>
+						</div>
 					</div>
 				</li>
 			</ul>
