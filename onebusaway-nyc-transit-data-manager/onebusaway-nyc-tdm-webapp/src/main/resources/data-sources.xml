@@ -81,7 +81,7 @@
         </property>
     </bean>
 
-    <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
+    <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_manager.bundle.TDMBundleManagementServiceImpl">
                 <property name="bundleStoreRoot" value="${bundle.location}" />
                 <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>

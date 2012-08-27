@@ -81,24 +81,6 @@
 					</div>
 				</li>
 				<li>
-					<h3><a href="#" class="heading">Module: Data</a></h3>
-					<div id="dataSection">
-						
-						<div id="gpsTimeSkewThreshold" class="propertyHolder">
-							<label class="propertyHeader">GPS Time Skew Threshold</label>
-							<div class="propertyDescription">
-								<p></p>
-							</div>
-							<div>
-								<input type="hidden" id="timeSkewKey" value="dataGpsTimeSkewKey"/>
-								<input type="text" id="timeSkewValue" class="propertyValue"/>
-								<label>seconds</label>
-							</div>
-						</div>
-						
-					</div>
-				</li>
-				<li>
 					<h3><a href="#" class="heading">Module: Vehicle Tracking</a></h3>
 					<div id="vehicleTrackingSection">
 						
@@ -175,7 +157,8 @@
 							<div id="previousTripFilterDistance" class="propertyHolder rightProperty">
 								<label class="propertyHeader">Previous Trip Filter Distance</label>
 								<div class="propertyDescription">
-									<p>
+									<p>The distance beyond which a bus will be filtered out of SIRI SM calls, 
+									when on the previous trip, that the monitored call is on.
 									</p>
 								</div>
 								<div>
@@ -189,7 +172,7 @@
 							<div id="googleAnalyticsSiteId" class="propertyHolder">
 								<label class="propertyHeader">Google Analytics site id</label>
 								<div class="propertyDescription">
-									<p>
+									<p>The google analytics site ID used for tracking visits to all interfaces.
 									</p>
 								</div>
 								<div>
@@ -200,7 +183,8 @@
 							<div id="googleMapsClientId" class="propertyHolder rightProperty">
 								<label class="propertyHeader">Google Maps Client Id</label>
 								<div class="propertyDescription">
-									<p>
+									<p>The google maps site ID used when using the google maps enterprise geocoder
+									 and styled maps.
 									</p>
 								</div>
 								<div>
@@ -213,7 +197,8 @@
 							<div id="googleMapsSecretKey" class="propertyHolder">
 								<label class="propertyHeader">Google Maps Secret Key</label>
 								<div class="propertyDescription">
-									<p>
+									<p>The google maps secret key used when using the google maps enterprise geocoder 
+									and styled maps.
 									</p>
 								</div>
 								<div>
@@ -224,7 +209,7 @@
 							<div id="useTimePredictions" class="propertyHolder rightProperty">
 								<label class="propertyHeader">Use Time Predictions</label>
 								<div class="propertyDescription">
-									<p>Indicator if application should use time predictions. Should
+									<p>Indicator if the application should use time predictions. Should
 									be <span>true</span> or <span>false</span>.
 									</p>
 								</div>
@@ -380,6 +365,17 @@
 								<input type="text" id="apiHostValue" class="textPropertyValue"/>
 							</div>
 						</div>
+						<div id="maxRecordLimit" class="propertyHolder rightProperty">
+							<label class="propertyHeader">Historical API Record Limit</label>
+							<div class="propertyDescription">
+								<p>This is the upper limit on the number of records returned by
+								historical operational API. </p>
+							</div>
+							<div>
+								<input type="hidden" id="maxRecordLimitKey" value="opsApiMaxRecordLimitKey"/>
+								<input type="text" id="apiMaxRecordLimitValue" class="propertyValue"/>
+							</div>
+						</div>
 					</div>
 				</li>
 			</ul>
@@ -388,11 +384,11 @@
 			<div id="messageBox">
 				<s:url var="url" value="/css/img/dialog-accept-2.png"></s:url>
 				<img id="resultImg" alt="Not Found" src="${url}" />
-				<label id="message">Your changes have been saved.</label>
+				<label id="message"><s:property value=""/></label>
 			</div>
 			<div id="submitBox">
-				<input type="button" id="reset" class="inlineFormButton" value="Reset Previous" />
-				<input type="button" id="save" class="inlineFormButton" value="Save" />
+				<input type="button" id="reset" class="inlineButton" value="Reset Previous" disabled="disabled"/>
+				<input type="button" id="save" class="inlineButton" value="Save" disabled="disabled"/>
 			</div>
 		</div>
 	</div>

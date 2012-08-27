@@ -1,10 +1,16 @@
 package org.onebusaway.nyc.webapp.actions.admin.vehiclestatus;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.interceptor.ServletRequestAware;
 import org.onebusaway.nyc.admin.model.ParametersResponse;
 import org.onebusaway.nyc.admin.service.ParametersService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
@@ -26,6 +32,9 @@ public class ParametersAction extends OneBusAwayNYCAdminActionSupport {
 	private ParametersResponse parametersResponse;
 	private ParametersService parametersService;
 	
+	private String[] params;
+	
+	
 	public String getParameters() {
 		Map<String, String> configParameters = parametersService.getParameters();
 		
@@ -33,6 +42,31 @@ public class ParametersAction extends OneBusAwayNYCAdminActionSupport {
 		parametersResponse.setConfigParameters(configParameters);
 		
 		return "parameters";
+	}
+	
+	public String saveParameters() {
+		parametersResponse = new ParametersResponse();
+		Map<String, String> parameters = buildParameters();
+		if(parametersService.saveParameters(parameters)) {
+			parametersResponse.setSaveSuccess(true);
+		} else {
+			parametersResponse.setSaveSuccess(false);
+		}
+		return "parameters";
+	}
+	
+	private Map<String, String> buildParameters() {
+		Map<String, String> parameters = new HashMap<String, String>();
+		
+		for(String param : params) {
+			String [] configPairs = param.split(":");
+			if(configPairs.length < 2) {
+				throw new RuntimeException("Expecting config data in key value pairs");
+			} 
+			parameters.put(configPairs[0], configPairs[1]);
+		}
+		
+		return parameters;
 	}
 
 	/**
@@ -50,6 +84,16 @@ public class ParametersAction extends OneBusAwayNYCAdminActionSupport {
 	public void setParametersService(ParametersService parametersService) {
 		this.parametersService = parametersService;
 	}
+
+	/**
+	 * @param params the params to set
+	 */
+	public void setParams(String[] params) {
+		this.params = params;
+	}
 	
+	public String[] getParams() {
+		return params;
+	}
 
 }

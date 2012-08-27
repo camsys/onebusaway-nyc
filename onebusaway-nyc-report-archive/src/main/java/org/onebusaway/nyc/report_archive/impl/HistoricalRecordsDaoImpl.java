@@ -18,6 +18,7 @@ import org.onebusaway.nyc.report_archive.result.HistoricalRecord;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecordResultTransformer;
 import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
 import org.onebusaway.nyc.report_archive.util.HQLBuilder;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +38,10 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	private static Logger log = LoggerFactory.getLogger(HistoricalRecordsDaoImpl.class);
 	
 	private HibernateTemplate hibernateTemplate;
+	private ConfigurationService configurationService;
 	
 	private static final String SPACE = " ";
+	private static final int MAX_RECORD_LIMIT = 3000;
 	
 	@Override
 	public List<HistoricalRecord> getHistoricalRecords(
@@ -162,13 +165,19 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	}
 	
 	private void addRecordLimit(Object maxRecords) {
+		Integer recordLimit = configurationService.getConfigurationValueAsInteger(
+				"operational-api.historicalRecordLimit", MAX_RECORD_LIMIT);
+		
 		if(maxRecords != null) {
-			Integer recordLimit = (Integer) maxRecords;
-			hibernateTemplate.setMaxResults(recordLimit);
+			Integer recordLimitFromParameter = (Integer) maxRecords;
+			if(recordLimitFromParameter.intValue() > recordLimit) {
+				hibernateTemplate.setMaxResults(recordLimit);
+			} else {
+				hibernateTemplate.setMaxResults(recordLimitFromParameter);
+			}
 		} else {
-			//set the number to max int if limit is not specified. This is required if record
-			//limit is removed in the subsequent request
-			hibernateTemplate.setMaxResults(Integer.MAX_VALUE);
+			//set the number to max record limit if record limit is not specified
+			hibernateTemplate.setMaxResults(recordLimit);
 		}
 	}
 	
@@ -313,6 +322,14 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	@Qualifier("slaveSessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		hibernateTemplate = new HibernateTemplate(sessionFactory);
+	}
+
+	/**
+	 * @param configurationService the configurationService to set
+	 */
+	@Autowired
+	public void setConfigurationService(ConfigurationService configurationService) {
+		this.configurationService = configurationService;
 	}
 
 }

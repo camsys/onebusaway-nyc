@@ -248,7 +248,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       Map<String, BeanDefinition> beans = new HashMap<String, BeanDefinition>();
       creator.setContextBeans(beans);
 
-      List<GtfsBundle> gtfsBundles = createGtfsBundles(response.getGtfsList());
+      List<GtfsBundle> gtfsBundles = createGtfsBundles(response);
       List<String> contextPaths = new ArrayList<String>();
       contextPaths.add(BUNDLE_RESOURCE);
       
@@ -428,13 +428,16 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     return sb;
   }
 
-  private List<GtfsBundle> createGtfsBundles(List<String> gtfsList) {
+  private List<GtfsBundle> createGtfsBundles(BundleBuildResponse response) {
+    List<String> gtfsList = response.getGtfsList();
     List<GtfsBundle> bundles = new ArrayList<GtfsBundle>(gtfsList.size());
     String defaultAgencyId = getDefaultAgencyId();
     for (String path : gtfsList) {
       GtfsBundle gtfsBundle = new GtfsBundle();
       gtfsBundle.setPath(new File(path));
       if (defaultAgencyId != null && defaultAgencyId.length() == 0) {
+        final String msg = "for bundle " + path + " setting defaultAgencyId='" + defaultAgencyId + "'";
+        response.addStatusMessage(msg);
         gtfsBundle.setDefaultAgencyId(defaultAgencyId);
       }
       bundles.add(gtfsBundle);
