@@ -39,6 +39,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	private HibernateTemplate hibernateTemplate;
 	
 	private static final String SPACE = " ";
+	private static final int MAX_RECORD_LIMIT = 3000;
 	
 	@Override
 	public List<HistoricalRecord> getHistoricalRecords(
@@ -164,11 +165,14 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	private void addRecordLimit(Object maxRecords) {
 		if(maxRecords != null) {
 			Integer recordLimit = (Integer) maxRecords;
-			hibernateTemplate.setMaxResults(recordLimit);
+			if(recordLimit.intValue() > MAX_RECORD_LIMIT) {
+				hibernateTemplate.setMaxResults(MAX_RECORD_LIMIT);
+			} else {
+				hibernateTemplate.setMaxResults(recordLimit);
+			}
 		} else {
-			//set the number to max int if limit is not specified. This is required if record
-			//limit is removed in the subsequent request
-			hibernateTemplate.setMaxResults(Integer.MAX_VALUE);
+			//set the number to max record limit if record limit is not specified
+			hibernateTemplate.setMaxResults(MAX_RECORD_LIMIT);
 		}
 	}
 	
