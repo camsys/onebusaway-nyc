@@ -287,12 +287,25 @@ OBA.Popups = (function() {
 			html += ' <a id="alert-link||' + routeName + '" class="alert-link" href="#">Service Alert for ' + activity.MonitoredVehicleJourney.PublishedLineName + '</a>';
 		}
 		
-		html += OBA.Config.infoBubbleFooterFunction('route', activity.MonitoredVehicleJourney.PublishedLineName);			
+		html += OBA.Config.infoBubbleFooterFunction('route', activity.MonitoredVehicleJourney.PublishedLineName);
+		
+		html += "<ul class='links'>";
+		html += "<a href='#' id='zoomHere'>Center & Zoom Here</a>";
+		html += "</ul>";
 		
 		// (end popup)
 		html += '</div>';
 		
 		var content = jQuery(html);
+		var zoomHereLink = content.find("#zoomHere");
+
+		zoomHereLink.click(function(e) {
+			e.preventDefault();
+			
+			var map = marker.map;
+			map.setCenter(marker.getPosition());
+			map.setZoom(16);
+		});
 		
 		activateAlertLinks(content);
 		

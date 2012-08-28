@@ -32,7 +32,15 @@
 		<c:otherwise>
 			<h3 class="noMatches">
 				<s:url var="url" namespace="/m/wiki/Help" action="Index" />
-				No matches. <a href="${url}">Search Tips...</a>
+				<s:if test="%{t=='stops'}">
+					No stops nearby. <a href="${url}">Search Tips...</a>
+				</s:if>
+				<s:elseif test="%{t=='routes'}">
+					No routes nearby. <a href="${url}">Search Tips...</a>
+				</s:elseif>
+				<s:else>
+					No matches. <a href="${url}">Search Tips...</a>
+				</s:else>
 			</h3>
 		</c:otherwise>
 	</c:choose>
