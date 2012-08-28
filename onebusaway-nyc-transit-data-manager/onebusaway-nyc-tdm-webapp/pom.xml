@@ -162,9 +162,9 @@
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
-                <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
+                <tdm.bundlePath>/mnt/obanyc/bundleservice/activebundles</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
-                <bundle.location>/var/lib/obanyc/oba-bundle-tdm</bundle.location>
+                <bundle.location>/mnt/obanyc/oba-bundle-tdm</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <log4j.appender>ROLL</log4j.appender>
             </properties>
