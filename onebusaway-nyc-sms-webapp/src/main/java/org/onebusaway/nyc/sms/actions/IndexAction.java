@@ -15,20 +15,6 @@
  */
 package org.onebusaway.nyc.sms.actions;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
@@ -47,14 +33,28 @@ import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dmurph.tracking.AnalyticsConfigData;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 
-public class IndexAction extends SessionedIndexAction implements InitializingBean {
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+public class IndexAction extends SessionedIndexAction {
   
   private static final long serialVersionUID = 1L;
 
@@ -81,6 +81,8 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
     
     super.initializeSession(sessionId);
     
+    if (_googleAnalytics == null) initAnalytics();
+    
     // send an initial visit to google analytics to tie our events to
     if(_googleAnalytics != null) {
       try {
@@ -93,9 +95,11 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
   
   public String execute() throws Exception {
     
+    if (_googleAnalytics == null) initAnalytics();
+    
     SearchResultFactory _resultFactory = new SearchResultFactoryImpl(_nycTransitDataService, _realtimeService, _configurationService);
     
-    String commandString = getCommand(_query);    
+    String commandString = getCommand(_query);
     String queryString = getQuery(_query);
 
     if(queryString != null && !queryString.isEmpty()) {
@@ -983,8 +987,7 @@ public class IndexAction extends SessionedIndexAction implements InitializingBea
     return response;
   }
 
-  @Override
-  public void afterPropertiesSet() throws Exception {
+  private void initAnalytics() {
     // Initialize Google Analytics
     String googleAnalyticsSiteId = 
         _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);    

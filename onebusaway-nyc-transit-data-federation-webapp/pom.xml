@@ -81,7 +81,7 @@
         <profile>
             <id>cloud</id>
             <properties>
-                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
+                <bundle.location>/mnt/obanyc/oba-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
                 <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
                 <service.alerts.url>http://tdm/siri/situation-exchange</service.alerts.url>

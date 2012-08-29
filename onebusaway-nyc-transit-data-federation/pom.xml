@@ -90,53 +90,7 @@
     </dependencies>
 
     <profiles>
-<!--
-        <profile>
-            <id>cloud</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
-            </properties>
-        </profile>
-        <profile>
-            <id>local-front-end</id>
-            <properties>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
-            </properties>
-        </profile>
-        <profile>
-            <id>local-single-port</id>
-            <properties>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
-            </properties>
-        </profile>
-        <profile>
-            <id>local-ie</id>
-            <properties>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
-            </properties>
-        </profile>
-        <profile>
-            <id>local-multi-port</id>
-            <properties>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
-            </properties>
-        </profile>
-        <profile>
-            <id>bundle-tmp</id>
-            <properties>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
-            </properties>
-        </profile>
-        <profile>
-            <id>bundle-obanyc</id>
-            <properties>
-                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
-            </properties>
-        </profile>
--->
+    <!--  profile exist in webapp -->
     </profiles>
     <build>
         <finalName>onebusaway-nyc-transit-data-federation</finalName>
