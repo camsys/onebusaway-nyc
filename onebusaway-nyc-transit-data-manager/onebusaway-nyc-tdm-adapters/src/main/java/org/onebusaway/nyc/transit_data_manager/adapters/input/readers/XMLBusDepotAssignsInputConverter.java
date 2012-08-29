@@ -21,10 +21,14 @@ import org.onebusaway.nyc.transit_data_manager.adapters.input.model.busAssignmen
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.busAssignment.NewDataSet.Table;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.SpearDepotsMappingTool;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class XMLBusDepotAssignsInputConverter implements
     BusDepotAssignsInputConverter {
 
-  // private UtsMappingTool mappingTool = null;
+  private static Logger _log = LoggerFactory.getLogger(XMLBusDepotAssignsInputConverter.class);
+  
   private SpearDepotsMappingTool mappingTool;
   private File xmlFile;
 
@@ -51,10 +55,13 @@ public class XMLBusDepotAssignsInputConverter implements
           new FileReader(xmlFile));
       enclosingXml = unmarshall(NewDataSet.class, reader);
     } catch (FileNotFoundException e) {
+      _log.error("file issues with xmlFile=" + xmlFile, e);
       throw e;
     } catch (XMLStreamException e) {
+      _log.error("xmlissues with xmlFile=" + xmlFile, e);
       throw new IOException(e);
     } catch (JAXBException e) {
+      _log.error("JAXB issues with xmlFile=" + xmlFile, e);
       throw new IOException(e);
     } finally {
       if (reader != null)
@@ -75,7 +82,11 @@ public class XMLBusDepotAssignsInputConverter implements
 
       depAssign = new MtaBusDepotAssignment();
       depAssign.setAgencyId(mappingTool.getAgencyIdFromAgency(tableDepotAssign.getAGENCY()));
-      depAssign.setBusNumber(tableDepotAssign.getBUSNUMBER());
+      try {
+        depAssign.setBusNumber(Integer.decode(stripLeadingZeros(tableDepotAssign.getBUSNUMBER())));
+      } catch (NumberFormatException nfe) {
+        _log.error("invalid bus number=" + tableDepotAssign.getBUSNUMBER(), nfe);
+      }
       depAssign.setDepot(tableDepotAssign.getDEPOT());
 
       assignments.add(depAssign);
@@ -94,4 +105,10 @@ public class XMLBusDepotAssignsInputConverter implements
     return doc.getValue();
   }
 
+  private String stripLeadingZeros(String s) {
+    if (s == null) return null;
+    if (s.startsWith("0"))
+      return stripLeadingZeros(s.substring(1, s.length()));
+    return s;
+  }
 }

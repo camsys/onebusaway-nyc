@@ -119,7 +119,7 @@ public class NewDataSet {
   public static class Table {
 
     @XmlElement(name = "BUS_NUMBER")
-    protected int busnumber;
+    protected String busnumber;
     @XmlElement(name = "AGENCY")
     protected int agency;
     @XmlElement(name = "DEPOT", required = true)
@@ -129,7 +129,7 @@ public class NewDataSet {
      * Gets the value of the busnumber property.
      * 
      */
-    public int getBUSNUMBER() {
+    public String  getBUSNUMBER() {
       return busnumber;
     }
 
@@ -137,7 +137,7 @@ public class NewDataSet {
      * Sets the value of the busnumber property.
      * 
      */
-    public void setBUSNUMBER(int value) {
+    public void setBUSNUMBER(String value) {
       this.busnumber = value;
     }
 
