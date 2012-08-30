@@ -123,6 +123,9 @@ public class DepotResourceTest extends ResourceTest {
     assertEquals("6007", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[2]/group-members/group-member[1]/vehicle-id/text()", doc, XPathConstants.STRING));
     assertEquals("YUK", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[3]/group-name/text()", doc, XPathConstants.STRING));
     assertEquals("2400", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[3]/group-members/group-member[1]/vehicle-id/text()", doc, XPathConstants.STRING));
+    assertEquals("true", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[*]/group-members/group-member[*]/vehicle-id/text() = \"57\"", doc, XPathConstants.STRING));
+    assertEquals("false", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[*]/group-members/group-member[*]/vehicle-id/text() = \"0057\"", doc, XPathConstants.STRING));
+    assertEquals("true", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[*]/group-members/group-member[*]/vehicle-id/text() = \"4836\"", doc, XPathConstants.STRING));
     tmpOutFile.deleteOnExit();
   }
 
