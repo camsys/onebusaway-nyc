@@ -70,7 +70,7 @@ public class ParticleFilter<OBS> {
    * Flag for operations that keep particle trajectory information, transitions,
    * etc.
    */
-  final private static boolean _debugEnabled = false;
+  final private static boolean _debugEnabled = true;
 
   /**
    * Flag for option to use the maximum likelihood particle as reported result.

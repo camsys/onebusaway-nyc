@@ -113,7 +113,7 @@ public final class JourneyState {
     return true;
   }
 
-  public boolean isDetour() {
+  public boolean getIsDetour() {
     return this.isDetour;
   }
 

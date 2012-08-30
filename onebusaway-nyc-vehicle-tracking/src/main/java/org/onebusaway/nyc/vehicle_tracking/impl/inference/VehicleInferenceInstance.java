@@ -719,7 +719,7 @@ public class VehicleInferenceInstance {
           statusFields.add("stalled");
       } else {
         // vehicles on detour should be in_progress with status=deviated 
-        if (state.getJourneyState().isDetour()) {
+        if (state.getJourneyState().getIsDetour()) {
           // remap this journey state/phase to IN_PROGRESS to conform to 
           // previous pilot project semantics.
           if (EVehiclePhase.DEADHEAD_DURING.equals(phase)) {

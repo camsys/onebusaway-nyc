@@ -43,6 +43,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 
 import gov.sandia.cognition.math.LogMath;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Maps;
@@ -175,6 +176,15 @@ public class MotionModelImpl implements MotionModel<Observation> {
           return true;
         }
       }
+      
+      /*
+       * If we've finished a run/block and changed our dsc to a valid one, then
+       * keep checking for new states.
+       */
+      if (parentState.getJourneyState().getPhase().equals(EVehiclePhase.DEADHEAD_AFTER)
+          && obs.hasValidDsc() && !Objects.equal(obs.getLastValidDestinationSignCode(), 
+              parentState.getBlockState().getDestinationSignCode()))
+        return true;
     }
 
     if (obs.getPreviousObservation() != null) {
@@ -485,7 +495,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
           && !(isLayoverStopped && newEdge.getValue().isAtPotentialLayoverSpot())) {
         return wasPrevStateDuring
-            ? JourneyState.deadheadDuring(journeyState.isDetour())
+            ? JourneyState.deadheadDuring(journeyState.getIsDetour())
             : JourneyState.deadheadBefore(null);
       /*
        * If it wasn't a layover and now it is, become one
@@ -493,7 +503,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       } else if (!EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
           && (isLayoverStopped && newEdge.getValue().isAtPotentialLayoverSpot())) {
         return wasPrevStateDuring
-            ? JourneyState.layoverDuring(journeyState.isDetour())
+            ? JourneyState.layoverDuring(journeyState.getIsDetour())
             : JourneyState.layoverBefore();
       } else {
         return parentState.getJourneyState();

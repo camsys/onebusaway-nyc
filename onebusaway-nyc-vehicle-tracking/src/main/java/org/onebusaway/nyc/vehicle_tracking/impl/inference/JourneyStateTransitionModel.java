@@ -34,6 +34,7 @@ public class JourneyStateTransitionModel {
    * Time that the vehicle needs to be not moving in order to be a layover.
    */
   private static final double LAYOVER_WAIT_TIME = 120d;
+  private static final double _remainingTripDistanceDetourCutoff = 80d;
 
   @Autowired
   public void setBlockStateTransitionModel(
@@ -54,19 +55,43 @@ public class JourneyStateTransitionModel {
     _blocksFromObservationService = blocksFromObservationService;
   }
 
-  public static boolean isDetour(boolean currentStateIsSnapped,
+  public static boolean isDetour(BlockStateObservation newState,
       boolean hasSnappedStates, VehicleState parentState) {
 
+    /*
+     * We only give detour to states that are supposed to be in-progress,
+     * haven't just changed their run, and don't have snapped states. 
+     * 
+     */
     if (parentState == null || parentState.getBlockStateObservation() == null
-        || currentStateIsSnapped != Boolean.FALSE || hasSnappedStates)
+        || newState.isSnapped() != Boolean.FALSE || hasSnappedStates
+        || newState.isOnTrip() == Boolean.FALSE
+        || MotionModelImpl.hasRunChanged(parentState.getBlockStateObservation(), newState))
       return false;
+    
+    /*
+     * Also, some weird edge case came up (see trace 
+     * Trace_7564_20101202T034909) where perpendicular movement was
+     * occurring just at the end of a block, so that detour was possible
+     * for the remaining < 50m.  Now we make sure that there's some 
+     * trip remaining to consider detour.
+     */ 
+    final double remainingDistanceOnTrip = 
+        newState.getBlockState().getBlockLocation().getActiveTrip().getTrip().getTotalTripDistance() - (
+        newState.getBlockState().getBlockLocation().getDistanceAlongBlock() -
+        newState.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock()); 
+    
+    if (remainingDistanceOnTrip < _remainingTripDistanceDetourCutoff)
+      return false;
+        
+    
 
     /*
      * If it was previously snapped, in-service and in the middle of a block
      * (true if this was called) and the current state is not snapped, or it was
      * in detour and it's still not snapped, then it's a detour.
      */
-    if (parentState.getJourneyState().isDetour()
+    if (parentState.getJourneyState().getIsDetour()
         || (parentState.getBlockStateObservation().isSnapped()
             && parentState.getBlockStateObservation().isOnTrip() && parentState.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS)) {
       return true;
@@ -117,15 +142,20 @@ public class JourneyStateTransitionModel {
         } else {
           return JourneyState.deadheadBefore(null);
         }
-      } else if (distanceAlong >= blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()
-          && !MotionModelImpl.hasRunChanged(parentStateObservation,
-              blockState)) {
-        return JourneyState.deadheadAfter();
+      } else if (distanceAlong >= blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
+        
+//        if (!MotionModelImpl.hasRunChanged(parentStateObservation,
+//              blockState)) {
+          return JourneyState.deadheadAfter();
+//        } else {
+//          return JourneyState.deadheadBefore(null);
+//        }
+        
       } else {
         /*
          * In the middle of a block.
          */
-        final boolean isDetour = isDetour(blockState.isSnapped(),
+        final boolean isDetour = isDetour(blockState,
             hasSnappedStates, parentState);
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
           return JourneyState.layoverDuring(isDetour);

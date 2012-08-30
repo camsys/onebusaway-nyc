@@ -124,14 +124,18 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   @Override
   public BlockStateObservation sampleTransitionDistanceState(
       BlockStateObservation parentBlockStateObs, Observation obs,
-      boolean vehicleNotMoved, EVehiclePhase phase) {
+      boolean vehicleNotMoved, EVehiclePhase parentPhase) {
     double distAlongSample;
     final BlockState parentBlockState = parentBlockStateObs.getBlockState();
     final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
 
     if (!vehicleNotMoved) {
 
-      if (EVehiclePhase.DEADHEAD_DURING == phase) {
+      /*
+       * Check if we're deadheading between trips.
+       */
+      if (EVehiclePhase.DEADHEAD_DURING == parentPhase 
+          && !parentBlockStateObs.isOnTrip()) {
         /*
          * We use the observed distance moved in the direction of the next stop.
          */
@@ -139,7 +143,20 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
         if (nextStop == null
             || nextStop.getDistanceAlongBlock() <= parentDistAlong) {
-          distAlongSample = 0d;
+          /*
+           * When we're at the end of the block, sample movement as normal.
+           * Basically, this should hit the distance-along limit and put us into
+           * deadhead-after, or go the other way and keep us sitting around in
+           * deadhead-during.  Either way, we want to allow both those possibilities.
+           */
+          final double distAlongPrior = SphericalGeometryLibrary.distance(
+              obs.getPreviousObservation().getLocation(), obs.getLocation());
+          final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
+          final double distAlongErrorSample = ParticleFactoryImpl.getLocalRng().nextGaussian()
+              * 0.5d * Math.pow(obsTimeDelta, 2) / 2d;
+          distAlongSample = distAlongPrior
+              + Math.max(distAlongErrorSample, -1d * distAlongPrior);
+//          distAlongSample = 0d;
         } else {
 
           final double prevDistToNextStop = SphericalGeometryLibrary.distance(
@@ -158,8 +175,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
           // EdgeLikelihood.deadDuringEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
           distAlongSample = distAlongPrior;
         }
-      } else if (EVehiclePhase.DEADHEAD_AFTER == phase
-          || ((EVehiclePhase.DEADHEAD_BEFORE == phase || EVehiclePhase.LAYOVER_BEFORE == phase) && parentBlockStateObs.getScheduleDeviation() == 0d)) {
+      } else if (EVehiclePhase.DEADHEAD_AFTER == parentPhase
+          || ((EVehiclePhase.DEADHEAD_BEFORE == parentPhase 
+            || EVehiclePhase.LAYOVER_BEFORE == parentPhase) 
+            && parentBlockStateObs.getScheduleDeviation() == 0d)) {
         /*
          * Only start moving if it's supposed to be
          */
@@ -175,7 +194,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         final double distAlongErrorSample = ParticleFactoryImpl.getLocalRng().nextGaussian()
             * 0.5d * Math.pow(obsTimeDelta, 2) / 2d;
         distAlongSample = distAlongPrior
-            + distAlongErrorSample;
+            + Math.max(distAlongErrorSample, -1d * distAlongPrior);
       }
 
       distAlongSample += parentDistAlong;
