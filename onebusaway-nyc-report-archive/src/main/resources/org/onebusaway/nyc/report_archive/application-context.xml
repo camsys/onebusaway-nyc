@@ -35,5 +35,14 @@
             </list>
         </property>
     </bean>
+    
+    <bean id="snsEventPublisher" class="org.onebusaway.nyc.report_archive.event.handlers.SNSApplicationEventPublisher" />
+    
+    <bean id="snsEventListener" class="org.onebusaway.nyc.report_archive.event.handlers.SNSApplicationEventListener" />
+    	
+    <bean id="emergencyStatusNotificationService" 
+    				class="org.onebusaway.nyc.report_archive.impl.EmergencyStatusNotificationServiceImpl">
+    	<property name="snsEventPublisher" ref="snsEventPublisher" />
+    </bean>
 
 </beans>

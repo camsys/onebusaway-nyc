@@ -1,20 +1,5 @@
 package org.onebusaway.nyc.report_archive.queue;
 
-import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.QueueListenerTask;
-import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-import org.onebusaway.nyc.report_archive.impl.CcLocationCache;
-import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
-import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
-
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -23,6 +8,21 @@ import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.AnnotationIntrospector;
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
+import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.queue.QueueListenerTask;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.report_archive.impl.CcLocationCache;
+import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
+import org.onebusaway.nyc.report_archive.services.EmergencyStatusNotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 
@@ -37,6 +37,8 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   public void setBatchSize(String batchSizeStr) {
     _batchSize = Integer.decode(batchSizeStr);
   }
+  
+  private EmergencyStatusNotificationService emergencyStatusNotificationService;
 
   @Autowired
   private CcLocationCache _ccLocationCache;
@@ -59,7 +61,7 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 
   @Autowired
   private CcLocationReportDao _dao;
-
+  
   // offset of timezone (-04:00 or -05:00)
   private String _zoneOffset = null;
   private String _systemTimeZone = null;
@@ -164,6 +166,10 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
         _batchCount++;
         // update cache for operational API
         reports.add(record);
+        
+        //Process record for emergency status
+        emergencyStatusNotificationService.process(record);
+        
         long batchWindow = System.currentTimeMillis() - _lastCommitTime;
         if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
           try {
@@ -265,5 +271,14 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   private String getZoneOffset() {
     return getZoneOffset(new Date(), _systemTimeZone);
   }
+
+  /**
+	* @param emergencyStatusNotificationService the emergencyStatusNotificationService to set
+	*/
+  @Autowired
+  public void setEmergencyStatusNotificationService(
+		  EmergencyStatusNotificationService emergencyStatusNotificationService) {
+	this.emergencyStatusNotificationService = emergencyStatusNotificationService;
+ }
 
 }
