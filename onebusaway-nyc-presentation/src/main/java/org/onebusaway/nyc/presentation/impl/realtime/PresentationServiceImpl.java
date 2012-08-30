@@ -34,7 +34,7 @@ public class PresentationServiceImpl implements PresentationService {
   }
 
   @Override
-  public Boolean useTimePredictionsIfAvailable(TripStatusBean statusBean) {
+  public Boolean useTimePredictionsIfAvailable() {
 	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
   }
 
