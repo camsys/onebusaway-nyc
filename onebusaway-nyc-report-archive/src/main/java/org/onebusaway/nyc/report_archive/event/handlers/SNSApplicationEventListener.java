@@ -1,16 +1,20 @@
 package org.onebusaway.nyc.report_archive.event.handlers;
 
-import javax.servlet.ServletContext;
+import java.io.IOException;
+import java.io.StringWriter;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.report_archive.api.json.JsonTool;
 import org.onebusaway.nyc.report_archive.event.SNSApplicationEvent;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.web.context.ServletContextAware;
 
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sns.model.PublishRequest;
 
@@ -19,69 +23,79 @@ import com.amazonaws.services.sns.model.PublishRequest;
  * @author abelsare
  *
  */
-public class SNSApplicationEventListener implements ApplicationListener<SNSApplicationEvent>, ServletContextAware {
+public class SNSApplicationEventListener implements ApplicationListener<SNSApplicationEvent> {
 
-	private AmazonSNSClient snsClient;
-	private String topicArn;
-	
 	private static Logger log = LoggerFactory.getLogger(SNSApplicationEventListener.class);
+	
+	private JsonTool jsonTool;
 	
 	@Override
 	public void onApplicationEvent(SNSApplicationEvent event) {
-		String message = buildMessage(event.getData());
-		Integer vehicleId = event.getData().getVehicleId();
+		AmazonSNSClient snsClient = event.getData().getSnsClient();
+		CcLocationReportRecord record = event.getData().getRecord();
+		String emergencyTopicArn = event.getData().getEmergencyTopicArn();
+		String nonEmergencyTopicArn = event.getData().getNonEmergencyTopicArn();
 		
-		PublishRequest publishRequest = new PublishRequest(topicArn, message, "Emergency Status Notification - Bus Number: " +vehicleId);
-		
-		log.info("Publishing emergency notificaton for bus : {}", vehicleId);
-		
-		snsClient.publish(publishRequest);
-	}
-	
-	private String buildMessage(CcLocationReportRecord record) {
-		final String SPACE = " ";
-		final String NEW_LINE = System.getProperty("line.separator") ;
-		
-		StringBuilder messageBuilder = new StringBuilder();
-		messageBuilder.append("Emergency Status Change for bus number :").append(SPACE);
-		messageBuilder.append(record.getVehicleId()).append(NEW_LINE).append(NEW_LINE);;
-		messageBuilder.append("Details: ").append(NEW_LINE).append(NEW_LINE);
-		messageBuilder.append("Emergency code:").append(SPACE);
-		messageBuilder.append(record.getEmergencyCode()).append(NEW_LINE);
-		messageBuilder.append("Latitude:").append(SPACE);
-		messageBuilder.append(record.getLatitude()).append(NEW_LINE);
-		messageBuilder.append("Longitude:").append(SPACE);
-		messageBuilder.append(record.getLongitude()).append(NEW_LINE);
-		
-		return messageBuilder.toString();
-	}
+		Integer vehicleId = record.getVehicleId();
+		String topicArn;
+		String logMessage;
 
-	@Override
-	public void setServletContext(ServletContext servletContext) {
-		if(servletContext != null) {
-			String user = servletContext.getInitParameter("sns.user");
-			log.info("Servlet context provided sns.user : {}", user);
-			
-			String password = servletContext.getInitParameter("sns.password");
-			log.info("Servlet context provided sns.password : {}", password);
-			
-			if(StringUtils.isNotBlank(user) && StringUtils.isNotBlank(password)) {
-				snsClient = new AmazonSNSClient(new BasicAWSCredentials(user, password));
-			} else {
-				throw new RuntimeException("Cannot create Amazon SNS client. Either user name or" +
-						"password is not set.");
-			}
-			
-			String topic = servletContext.getInitParameter("sns.topicArn");
-			log.info("Servlet context provided sns.topicArn : {}", topic);
-
-			if(StringUtils.isNotBlank(topic)) {
-				topicArn = topic;
-			} else {
-				log.error("SNS Topic arn is not set in the servlet context.");
-			}
+		//If we are here, emergency code value is sufficient to figure out the transition
+		if(StringUtils.isBlank(record.getEmergencyCode())) {
+			topicArn = nonEmergencyTopicArn;
+			logMessage = "Publishing non emergency status transition notificaton for bus : {}";
+		} else {
+			topicArn = emergencyTopicArn;
+			logMessage = "Publishing emergency status transition notificaton for bus : {}";
 		}
+
+		String message;
+		try {
+			message = buildMessage(record);
+		} catch (IOException e) {
+			throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+		}
+
+		PublishRequest publishRequest = new PublishRequest(topicArn, message, "Emergency Status Change Notification - Bus Number: " +vehicleId);
+
+		log.info(logMessage, vehicleId);
+
+		snsClient.publish(publishRequest);
+		
 	}
 	
-	
+	private String buildMessage(CcLocationReportRecord record) throws IOException{
+		log.info("Serializing location record as json.");
+
+		String outputJson = null;
+
+		StringWriter writer = null;
+
+		try {
+			writer = new StringWriter();
+			jsonTool.writeJson(writer, record);
+			outputJson = writer.toString();
+		} catch (IOException e) {
+			throw new IOException("IOException while using jsonTool to write object as json.", e);
+		} finally {
+			if (writer != null)
+				try {
+					writer.close();
+				} catch (IOException e) { }
+		}
+
+		if (outputJson == null) throw new IOException("After using jsontool to write json, output was still null.");
+
+		return outputJson;
+	}
+
+	/**
+	 * Injects JsonTool
+	 * @param jsonTool the jsonTool to set
+	 */
+	@Autowired
+	public void setJsonTool(JsonTool jsonTool) {
+		this.jsonTool = jsonTool;
+	}
+
 }

@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.report_archive.event.handlers;
 
 import org.onebusaway.nyc.report_archive.event.SNSApplicationEvent;
-import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report_archive.event.SNSApplicationEventData;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
@@ -13,7 +13,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 public class SNSApplicationEventPublisher implements ApplicationEventPublisherAware{
 
 	private ApplicationEventPublisher applicationEventPublisher;
-	private CcLocationReportRecord data;
+	private SNSApplicationEventData data;
 	
 	
 	public void run() {
@@ -31,7 +31,7 @@ public class SNSApplicationEventPublisher implements ApplicationEventPublisherAw
 	/**
 	 * @param data the data to set
 	 */
-	public void setData(CcLocationReportRecord data) {
+	public void setData(SNSApplicationEventData data) {
 		this.data = data;
 	}
 

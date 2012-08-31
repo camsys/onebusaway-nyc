@@ -223,14 +223,14 @@
 					</div>
 				</li>
 				<li>
-					<h3><a href="#" class="heading">Module: Inferrence Engine</a></h3>
+					<h3><a href="#" class="heading">Module: Inference Engine</a></h3>
 					<div id="ieSection">
 						
 						<div class="topSection">
 							<div id="inputQueueName" class="propertyHolder">
 								<label class="propertyHeader">Input Queue name</label>
 								<div class="propertyDescription">
-									<p>This is the name of the queue, from which inferrence engine reads
+									<p>This is the name of the queue, from which inference engine reads
 									 inbound messages. 
 									</p>
 								</div>
@@ -242,7 +242,7 @@
 							<div id="outputQueueName" class="propertyHolder rightProperty">
 								<label class="propertyHeader">Output Queue name</label>
 								<div class="propertyDescription">
-									<p>This is the name of the queue, on which inferrence engine puts
+									<p>This is the name of the queue, on which inference engine puts
 									processed messages. 
 									</p>
 								</div>
@@ -256,7 +256,7 @@
 							<div id="inputQueuePort" class="propertyHolder">
 								<label class="propertyHeader">Input Queue Port</label>
 								<div class="propertyDescription">
-									<p>This is the port number on which, inferrence engine connects to
+									<p>This is the port number on which, inference engine connects to
 									input queue for processing inbound messages. 
 									</p>
 								</div>
@@ -268,7 +268,7 @@
 							<div id="outputQueuePort" class="propertyHolder rightProperty">
 								<label class="propertyHeader">Output Queue Port</label>
 								<div class="propertyDescription">
-									<p>This is the port number on which inferrence engine connects with output 
+									<p>This is the port number on which inference engine connects with output 
 									queue for putting processed messages.
 									</p>
 								</div>
@@ -282,7 +282,7 @@
 							<div id="inputQueueHost" class="propertyHolder">
 								<label class="propertyHeader">Input Queue Host</label>
 								<div class="propertyDescription">
-									<p>This is the machine, that hosts input queue for inferrence engine. 
+									<p>This is the machine, that hosts input queue for inference engine. 
 									</p>
 								</div>
 								<div>
@@ -293,7 +293,7 @@
 							<div id="outputQueueHost" class="propertyHolder rightProperty">
 								<label class="propertyHeader">Output Queue Host</label>
 								<div class="propertyDescription">
-									<p>This is the machine, that hosts output queue for inferrence engine.
+									<p>This is the machine, that hosts output queue for inference engine.
 									</p>
 								</div>
 								<div>
