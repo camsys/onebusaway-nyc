@@ -36,12 +36,6 @@ public class MtaUtsCrewAssignment extends MtaUtsObject {
     runNumberField = stripLeadingZeros(value);
   }
 
-  private String stripLeadingZeros(String s) {
-    if (s.startsWith("0"))
-      return stripLeadingZeros(s.substring(1, s.length()));
-    return s;
-  }
-
   public void setServIdField(String servIdField) {
     this.servIdField = servIdField;
   }

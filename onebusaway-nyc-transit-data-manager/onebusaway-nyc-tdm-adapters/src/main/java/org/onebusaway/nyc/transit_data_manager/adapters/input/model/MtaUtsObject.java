@@ -19,6 +19,13 @@ public class MtaUtsObject {
   private String passNumberLeadingLetters = ""; // Operator Pass #
   private Long passNumberNumericPortion; // Operator Pass #
 
+  protected String stripLeadingZeros(String s) {
+    if (s == null) return null;
+    if (s.startsWith("0"))
+      return stripLeadingZeros(s.substring(1, s.length()));
+    return s;
+  }
+  
   public void setPassNumberField(String passNumberField) {
     this.passNumberField = passNumberField;
     setPassNumber(this.passNumberField);

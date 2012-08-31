@@ -328,6 +328,31 @@ public class VehiclePipoResourceTest {
 		verifyPulloutData(outputJson);
 	}
 	
+	// obanyc-1680, run numbers should be trimmed of leading zeros
+	@Test
+	public void testCleanupRunNumber() throws Exception {
+
+	  setUp("UTSPUPUFULL_20120816_1202.txt");
+		
+			  
+	  vehiclePullInOutService = new VehiclePullInOutServiceImpl() {
+	    @Override
+	    protected boolean isActive(String pullOuttimeString) {
+	      // since dates aren't meaningful in a unit test -- return everything!
+	      return true;
+	    }
+	  };
+	  
+	  // replace resource's mock impl with ours from above 
+	  resource.setVehiclePullInOutService(vehiclePullInOutService);
+
+		//3244th row has X109,YUKT,004.  We want run=4, not 9, so run-route will be X109-4, not X109-004
+		// note that BX31-X01 is correct however
+		String json = resource.getActivePulloutsForDepot("YU");
+    assertTrue(json.contains(" \"run\": \"X109-4\""));
+    assertFalse(json.contains(" \"run\": \"X109-004\""));
+	}
+	
 	private void copyInputFiles(String filename) {
 		InputStream inputFileIn = null;
 		InputStream translationFileIn = null;
