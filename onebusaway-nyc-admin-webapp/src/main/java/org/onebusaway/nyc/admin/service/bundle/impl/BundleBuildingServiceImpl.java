@@ -436,10 +436,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     
     List<GtfsBundle> bundles = new ArrayList<GtfsBundle>(gtfsList.size());
     String defaultAgencyId = getDefaultAgencyId();
+    response.addStatusMessage("default agency configured to be |" + defaultAgencyId + "|");
     for (String path : gtfsList) {
       GtfsBundle gtfsBundle = new GtfsBundle();
       gtfsBundle.setPath(new File(path));
-      if (defaultAgencyId != null && defaultAgencyId.length() == 0) {
+      if (defaultAgencyId != null && defaultAgencyId.length() > 0) {
         final String msg = "for bundle " + path + " setting defaultAgencyId='" + defaultAgencyId + "'";
         response.addStatusMessage(msg);
         _log.info(msg);
