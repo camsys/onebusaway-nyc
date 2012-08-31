@@ -86,4 +86,19 @@
                 <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
+  <!--  quartz scheduling for persistence of webservice data -->
+  <bean name="pingJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <property name="jobClass" value="org.onebusaway.nyc.transit_data_manager.job.PingJob" />
+  </bean>
+  <bean id="minuteTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <property name="jobDetail" ref="pingJob"/>
+    <property name="cronExpression" value="0 */1 * * * ?"/>
+  </bean>
+  <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+    <property name="triggers">
+      <list>
+        <ref bean="minuteTrigger"/>
+      </list>
+    </property> 
+  </bean>
 </beans>

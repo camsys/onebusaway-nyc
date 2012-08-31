@@ -95,6 +95,11 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
         </dependency>
+        <dependency>
+          <groupId>quartz</groupId>
+          <artifactId>quartz</artifactId>
+          <version>1.5.2</version>
+        </dependency>
     </dependencies>
     <profiles>
         <profile>
@@ -226,7 +231,9 @@
                 <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/tmp/oba-bundle</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
-                
+                <bundle.location>/tmp/oba-bundle-tdm</bundle.location>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
+
             </properties>
         </profile>
         <profile>
