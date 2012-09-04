@@ -25,8 +25,10 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.json.VehicleFromT
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.PullInOut;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
-import org.onebusaway.nyc.transit_data_manager.api.service.VehiclePullInOutService;
-import org.onebusaway.nyc.transit_data_manager.api.service.VehiclePullInOutServiceImpl;
+import org.onebusaway.nyc.transit_data_manager.api.sourceData.VehiclePipoUploadsFilePicker;
+import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutDataProviderServiceImpl;
+import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutService;
+import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutServiceImpl;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool;
 import org.slf4j.Logger;
@@ -48,6 +50,8 @@ public class VehiclePipoResourceTest {
 	private JsonTool jsonTool;
 	private MtaUtsToTcipVehicleAssignmentConverter dataConverter;
 	private ModelCounterpartConverter<VehiclePullInOutInfo, PullInOut> pulloutDataConverter;
+	private VehiclePullInOutDataProviderServiceImpl vehiclePullInOutDataProviderService;
+	private VehiclePipoUploadsFilePicker vehicleFilePicker;
 	
 	@Mock
 	private VehiclePullInOutService vehiclePullInOutService;
@@ -76,10 +80,16 @@ public class VehiclePipoResourceTest {
 		pulloutDataConverter = new PullInOutFromTcip();
 		((PullInOutFromTcip)pulloutDataConverter).setVehConv(vehicleConverter);
 		
+		vehicleFilePicker = new VehiclePipoUploadsFilePicker("tdm.vehiclepipoUploadDir");
+		
+		vehiclePullInOutDataProviderService = new VehiclePullInOutDataProviderServiceImpl();
+		vehiclePullInOutDataProviderService.setConverter(converter);
+		vehiclePullInOutDataProviderService.setMostRecentFilePicker(vehicleFilePicker);
+		vehiclePullInOutDataProviderService.setPulloutDataConverter(pulloutDataConverter);
+		
 		resource.setJsonTool(jsonTool);
-		resource.setConverter(converter);
 		resource.setVehiclePullInOutService(vehiclePullInOutService);
-		resource.setPulloutDataConverter(pulloutDataConverter);
+		resource.setVehiclePullInOutDataProviderService(vehiclePullInOutDataProviderService);
 	}
 	
 	@SuppressWarnings("unchecked")

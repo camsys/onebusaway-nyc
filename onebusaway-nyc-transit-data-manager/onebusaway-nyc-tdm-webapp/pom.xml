@@ -120,16 +120,25 @@
         <profile>
             <id>local-paths</id>
             <properties>
+            	<!-- Use this profile for testing api calls locally -->
                 <tdm.dataPath>/mnt/tdm_data</tdm.dataPath>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>UTSPUPUFULL.txt</tdm.pipoFilename>
                 <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
-                <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
+                <tdm.config.configXmlFile>${tdm.dataPath}/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
                 <tdm.depotIdTranslationConfigFile>/mnt/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
+                <bundle.location>/tmp/oba-bundle-tdm</bundle.location>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
+                <log4j.appender>stdout</log4j.appender>
+                <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>

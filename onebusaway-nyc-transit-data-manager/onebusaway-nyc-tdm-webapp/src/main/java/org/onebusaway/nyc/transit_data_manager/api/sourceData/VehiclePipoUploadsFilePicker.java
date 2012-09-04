@@ -7,9 +7,9 @@ public class VehiclePipoUploadsFilePicker extends DateUbarTimeTimestampFilePicke
 	private static String FILE_PREFIX = "UTSPUPUFULL_";
 	private static String FILE_SUFFIX = ".txt";
 	  
-	public VehiclePipoUploadsFilePicker(String timestampedUploadsDir)
+	public VehiclePipoUploadsFilePicker(String timestampedUploadsDirProperty)
 			throws IOException {
-		super(timestampedUploadsDir);
+		super(System.getProperty(timestampedUploadsDirProperty));
 	}
 
 	@Override

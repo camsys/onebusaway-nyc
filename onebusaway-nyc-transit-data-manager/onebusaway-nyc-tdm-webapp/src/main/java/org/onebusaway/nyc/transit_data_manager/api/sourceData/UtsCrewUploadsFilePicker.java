@@ -10,7 +10,7 @@ public class UtsCrewUploadsFilePicker extends DateUbarTimeTimestampFilePicker
 
   public UtsCrewUploadsFilePicker(String timestampedUploadsDir)
       throws IOException {
-    super(timestampedUploadsDir);
+    super(System.getProperty(timestampedUploadsDir));
   }
 
   @Override

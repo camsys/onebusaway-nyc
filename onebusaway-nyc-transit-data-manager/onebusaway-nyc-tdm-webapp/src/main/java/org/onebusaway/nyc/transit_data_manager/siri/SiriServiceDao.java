@@ -8,16 +8,18 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 public class SiriServiceDao implements SiriServicePersister {
 
-  static final Logger _log = LoggerFactory.getLogger(SiriServiceDao.class);
+  private static final Logger _log = LoggerFactory.getLogger(SiriServiceDao.class);
 
   private HibernateTemplate _template;
 
   @Autowired
+  @Qualifier("appSessionFactory")
   public void setSessionFactory(SessionFactory sessionFactory) {
     _template = new HibernateTemplate(sessionFactory);
   }
