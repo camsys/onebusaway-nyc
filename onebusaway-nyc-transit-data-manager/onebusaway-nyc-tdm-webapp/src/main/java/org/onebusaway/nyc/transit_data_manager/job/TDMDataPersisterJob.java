@@ -15,13 +15,32 @@ public class TDMDataPersisterJob extends QuartzJobBean {
 
 	private static Logger _log = LoggerFactory.getLogger(TDMDataPersisterJob.class);
 
-	private UTSDataPersistenceService utsDataPersistenceService;
 	
 	@Override
 	protected void executeInternal(JobExecutionContext executionContext)
 			throws JobExecutionException {
+		persistUTSData(executionContext);
+	}
+	
+	private void persistUTSData(JobExecutionContext executionContext) {
+		UTSDataPersistenceService utsDataPersistenceService = (UTSDataPersistenceService) executionContext.getJobDetail().
+				getJobDataMap().get("utsDataPersistenceService");
+		//Persist vehicle pipo data
+		try {
+			persistVehiclePipodata(utsDataPersistenceService);
+		} catch(Exception e) {
+			//Retry once
+			_log.info("Retry persisting vehicle pipo data");
+			persistVehiclePipodata(utsDataPersistenceService);
+		}
+		
+		//Persist crew assignment data
+		
+		
+	}
+	
+	private void persistVehiclePipodata(UTSDataPersistenceService utsDataPersistenceService) {
 		_log.info("persisting vehicle PIPO data");
-		utsDataPersistenceService = (UTSDataPersistenceService) executionContext.getJobDetail().getJobDataMap().get("utsDataPersistenceService");
 		utsDataPersistenceService.saveVehiclePulloutData();
 	}
 

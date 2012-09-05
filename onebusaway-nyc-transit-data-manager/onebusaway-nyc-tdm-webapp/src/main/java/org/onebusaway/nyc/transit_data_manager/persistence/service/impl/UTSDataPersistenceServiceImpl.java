@@ -64,9 +64,10 @@ public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
 			vehicleRecords.add(buildVehiclePipoRecord(pullout));
 		}
 		
+		log.info("Persisting {} vehicle pullout records", vehicleRecords.size());
+
 		hibernateTemplate.saveOrUpdateAll(vehicleRecords);
 		
-		log.info("Persisted {} vehicle pullout records", vehicleRecords.size());
 	}
 
 	@Override
