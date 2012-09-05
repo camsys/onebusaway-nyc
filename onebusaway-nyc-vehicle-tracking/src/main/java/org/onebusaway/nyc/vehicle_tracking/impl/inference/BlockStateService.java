@@ -405,6 +405,14 @@ public class BlockStateService {
           pointOnLine.y, pointOnLine.x, startOfLine.y, startOfLine.x);
 
       for (final TripInfo tripInfo : _linesToTripInfo.get(line)) {
+        /*
+         * Skip other agencies.
+         * TODO query TripInfo by agency? 
+         */
+        if (!Objects.equal(tripInfo.getShapeAndIdx().getShapeId().getAgencyId(),
+            record.getVehicleId().getAgencyId()))
+          continue;
+        
         for (final BlockEntry block : tripInfo.getBlocks()) {
 
           /*

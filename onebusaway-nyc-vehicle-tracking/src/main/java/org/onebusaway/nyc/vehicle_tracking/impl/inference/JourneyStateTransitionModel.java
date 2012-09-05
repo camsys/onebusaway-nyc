@@ -173,10 +173,7 @@ public class JourneyStateTransitionModel {
         }
       }
     } else {
-      if (isLayoverStopped && obs.isAtTerminal())
-        return JourneyState.layoverBefore();
-      else
-        return JourneyState.deadheadBefore(null);
+      return JourneyState.deadheadBefore(null);
     }
   }
 
