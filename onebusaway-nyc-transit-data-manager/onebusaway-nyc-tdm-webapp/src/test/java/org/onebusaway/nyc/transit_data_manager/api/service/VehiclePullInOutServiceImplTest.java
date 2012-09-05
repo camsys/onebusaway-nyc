@@ -16,6 +16,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
+import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutService;
+import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutServiceImpl;
 
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.SCHPullInOutInfo;

@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
@@ -18,14 +17,12 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UTSUtil;
-import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsCrewAssignsToDataCreator;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentData;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.json.OperatorAssignmentFromTcip;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.OperatorAssignmentsMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
-import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
-import org.onebusaway.nyc.transit_data_manager.api.sourceData.UtsCrewUploadsFilePicker;
+import org.onebusaway.nyc.transit_data_manager.api.service.CrewAssignmentDataProviderService;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,9 +41,6 @@ import com.sun.jersey.api.spring.Autowire;
 public class CrewResource {
 
   public CrewResource() throws IOException {
-    if (System.getProperty("tdm.crewAssignsUploadDir") != null) {
-      mostRecentPicker = new UtsCrewUploadsFilePicker(System.getProperty("tdm.crewAssignsUploadDir"));
-    }
     
     try {
       if (System.getProperty("tdm.depotIdTranslationFile") != null) {
@@ -62,12 +56,13 @@ public class CrewResource {
   private static Logger _log = LoggerFactory.getLogger(CrewResource.class);
 
   @Autowired
-  JsonTool jsonTool;
+  private JsonTool jsonTool;
   
   
   private DepotIdTranslator depotIdTranslator = null;
   
-  private MostRecentFilePicker mostRecentPicker;
+  private CrewAssignmentDataProviderService crewAssignmentDataProviderService;
+  
   
   public void setJsonTool(JsonTool jsonTool) {
     this.jsonTool = jsonTool;
@@ -91,25 +86,7 @@ public class CrewResource {
       throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
     }
 
-    File inputFile = mostRecentPicker.getMostRecentSourceFile();
-    
-    if (inputFile == null) {
-      throw new WebApplicationException(new IOException("No Source file found."), Response.Status.INTERNAL_SERVER_ERROR);
-    }
-
-    _log.debug("Generating OperatorAssignmentData object from file " + inputFile.getPath());
-    // First create a OperatorAssignmentData object
-    
-    OperatorAssignmentData data;
-    
-    try {
-      data = getOpAssignDataObjectForFile(inputFile);
-    } catch (IOException e1) {
-      _log.info("Exception loading data. Verify input file " + inputFile.toString());
-      _log.debug(e1.getMessage());
-      throw new WebApplicationException(e1,
-          Response.Status.INTERNAL_SERVER_ERROR);
-    }
+    OperatorAssignmentData data = crewAssignmentDataProviderService.getCrewAssignmentData(depotIdTranslator);
 
     ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> tcipToJsonConverter = new OperatorAssignmentFromTcip();
 
@@ -148,20 +125,13 @@ public class CrewResource {
 
   }
 
-  private OperatorAssignmentData getOpAssignDataObjectForFile(File inputFile) throws FileNotFoundException {
-    UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(
-        inputFile);
-    
-    // If depotIdTranslator is null, print a message saying the depot id translation tool is not set up.
-    if (depotIdTranslator == null) {
-      _log.info("DepotIdTranslator has not been set up. Depot IDs will not be translated.");
-    } else {
-      _log.info("Using depot ID translation.");
-    }
-    process.setDepotIdTranslator(depotIdTranslator);
-    
-    return process.generateDataObject();
-  }
-
+ /**
+  * @param crewAssignmentDataProviderService the crewAssignmentDataProviderService to set
+  */
+  @Autowired
+ public void setCrewAssignmentDataProviderService(
+  		CrewAssignmentDataProviderService crewAssignmentDataProviderService) {
+	this.crewAssignmentDataProviderService = crewAssignmentDataProviderService;
+ }
 
 }

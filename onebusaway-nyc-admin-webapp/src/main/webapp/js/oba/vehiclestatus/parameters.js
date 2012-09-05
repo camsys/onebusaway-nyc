@@ -21,13 +21,30 @@ jQuery(function() {
 		autoHeight: false
 	});
 	
+	//Load config parameters from the server
 	getConfigParameters();
+	
+	//Listen to change event and mark inputs as changed
+	$("input").bind("keyup propertychange paste", function() {
+		$(this).addClass("changed");
+		$("#results input[type='button']").removeAttr("disabled").css("color", "#595454");
+	});
 	
 	//Handle reset and save click events
 	$("#results #reset").click(resetToPrevious);
 	$("#results #save").click(saveParameters);
 	
+	window.onbeforeunload = confirmMessage;
+	
 });
+
+function confirmMessage() {
+	var changedElements = $("input.changed[type='text']");
+	if(changedElements.length > 0) {
+		return "You have unsaved changes. Are you sure you want to leave this page?";
+	}
+	return null;
+}
 
 function getConfigParameters() {
 	$.ajax({
@@ -38,7 +55,7 @@ function getConfigParameters() {
 			updateParametersView(response.configParameters);
 		},
 		error: function(request) {
-			alert("Error getting parameters from server : ", request.statusText);
+			alert("Error loading parameters from the server : ", request.statusText);
 		}
 		
 	});
@@ -70,10 +87,77 @@ function updateParametersView(configParameters) {
 }
 
 function resetToPrevious() {
+	clearChanges();
+	
 	//Reset parameter values to last saved values on server
 	getConfigParameters();
 }
 
 function saveParameters() {
+	var data = buildData();
+	
+	$.ajax({
+		url: "parameters!saveParameters.action",
+		type: "POST",
+		dataType: "json",
+		data: {"params": data},
+		traditional: true,
+		success: function(response) {
+			if(response.saveSuccess) {
+				$("#results #messageBox #message").text("Your changes have been saved. " +getTime());
+				$("#results #messageBox").show();
+				clearChanges();
+				$("#results #messageBox").delay(10000).fadeOut(5000);
+			} else {
+				alert("Failed to save parameters. Please try again.");
+			}
+		},
+		error: function(request) {
+			alert("Error saving parameter values : " +request.statusText);
+		}
+	});
 	
 }
+
+function buildData() {
+	var data = new Array();
+	var changedElements = $("input.changed[type='text']");
+	for(var i=0; i<changedElements.length; i++) {
+		var changedValue = $(changedElements[i]).val();
+		var key = $(changedElements[i]).prev("input[type='hidden']").val();
+		data[i] = key + ":" +changedValue;
+	}
+	return data;
+}
+
+function getTime() {
+	var lastUpdateTime = new Date();
+	var hours = lastUpdateTime.getHours();
+	var meridian;
+	if(hours > 12) {
+		hours = hours - 12;
+		meridian = "PM";
+	} else {
+		if(hours == 12) {
+			meridian = "PM";
+		} else {
+			meridian = "AM";
+		}
+	}
+	var minutes = lastUpdateTime.getMinutes();
+	if(minutes < 10) {
+		minutes = "0" + minutes;
+	}
+	var seconds = lastUpdateTime.getSeconds();
+	if(seconds < 10) {
+		seconds = "0" + seconds;
+	}
+	var time = hours + ":" +  minutes + ":" + seconds + " " +meridian;
+	
+	return time;
+}
+
+function clearChanges() {
+	$("input[type='text']").removeClass("changed");
+}
+

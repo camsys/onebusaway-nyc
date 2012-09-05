@@ -31,7 +31,7 @@
 						
 		<s:if test="%{routesWithArrivals.size+routesWithNoVehiclesEnRoute.size+routesWithNoScheduledService.size==0}">
 			<s:if test="%{results.routeIdFilter.size&gt;0}">
-				<p class="noService">No service matching your filter is available at this stop.</p>
+				<p class="noService">No <s:property value="routeIdFilterShortName" /> service available at this stop.</p>
 			</s:if>
 			<s:else>
 				<p class="noService">No service is available at this stop.</p>

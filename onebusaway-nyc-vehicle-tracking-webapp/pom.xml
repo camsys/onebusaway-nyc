@@ -127,7 +127,7 @@
                 <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
                 <service.alerts.url>http://tdm/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
-                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
+                <bundle.location>/mnt/obanyc/oba-bundle</bundle.location>
                 <siri.service.config>nyc-siri-service.xml</siri.service.config>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
                 <depot.partition.key></depot.partition.key>

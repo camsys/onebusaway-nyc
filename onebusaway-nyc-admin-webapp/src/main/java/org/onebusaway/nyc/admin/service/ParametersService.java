@@ -1,6 +1,5 @@
 package org.onebusaway.nyc.admin.service;
 
-import java.util.List;
 import java.util.Map;
 
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -16,9 +15,9 @@ public interface ParametersService {
 	/**
 	 * Saves given parameter values to TDM server. 
 	 * @param paramters parameters to save
-	 * @return 
+	 * @return true if all parameters are saved sucessfully
 	 */
-	boolean saveParameters(List<String> parameters);
+	boolean saveParameters(Map<String, String> parameters);
 	
 	/**
 	 * Returns all key value pairs of configuration stored on TDM server

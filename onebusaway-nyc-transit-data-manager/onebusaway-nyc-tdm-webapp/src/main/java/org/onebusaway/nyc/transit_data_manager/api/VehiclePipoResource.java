@@ -1,10 +1,8 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -14,18 +12,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
-import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsPulloutsToDataCreator;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.ImporterVehiclePulloutData;
-import org.onebusaway.nyc.transit_data_manager.adapters.input.VehicleAssignmentsOutputConverter;
-import org.onebusaway.nyc.transit_data_manager.adapters.output.json.PullInOutFromTcip;
-import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.PullInOut;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.VehiclePipoMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
-import org.onebusaway.nyc.transit_data_manager.api.service.VehiclePullInOutService;
-import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
-import org.onebusaway.nyc.transit_data_manager.api.sourceData.VehiclePipoUploadsFilePicker;
+import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutDataProviderService;
+import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutService;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,26 +37,24 @@ import org.springframework.stereotype.Component;
 @Scope("request")
 public class VehiclePipoResource {
 
-	private MostRecentFilePicker mostRecentFilePicker;
 	private DepotIdTranslator depotIdTranslator;
 	private JsonTool jsonTool;
-	private VehicleAssignmentsOutputConverter converter;
 	private VehiclePullInOutService vehiclePullInOutService;
-	private ModelCounterpartConverter<VehiclePullInOutInfo, PullInOut> pulloutDataConverter;
+	private VehiclePullInOutDataProviderService vehiclePullInOutDataProviderService;
+	
 	
 	
 	private static Logger log = LoggerFactory.getLogger(VehiclePipoResource.class);
 	
 	public VehiclePipoResource() throws IOException {
-		mostRecentFilePicker = new VehiclePipoUploadsFilePicker(System.getProperty("tdm.vehiclepipoUploadDir"));
 	    
-	    try {
-	      depotIdTranslator = new DepotIdTranslator(new File(System.getProperty("tdm.depotIdTranslationFile")));
-	    } catch (IOException e) {
-	      // Set depotIdTranslator to null and otherwise do nothing.
-	      // Everything works fine without the depot id translator.
-	      depotIdTranslator = null;
-	    }
+		try {
+			depotIdTranslator = new DepotIdTranslator(new File(System.getProperty("tdm.depotIdTranslationFile")));
+		} catch (IOException e) {
+			// Set depotIdTranslator to null and otherwise do nothing.
+			// Everything works fine without the depot id translator.
+			depotIdTranslator = null;
+		}
 	}
 	
 	@Path("/list")
@@ -74,12 +64,12 @@ public class VehiclePipoResource {
 		String method = "getAllActivePullouts";
 		log.info("Starting " +method);
 
-		ImporterVehiclePulloutData data = getVehiclePipoData();
+		ImporterVehiclePulloutData data = vehiclePullInOutDataProviderService.getVehiclePipoData(depotIdTranslator);
 		
 		List<VehiclePullInOutInfo> activePullouts = vehiclePullInOutService.getActivePullOuts(data.getAllPullouts());
 
 		VehiclePipoMessage message  = new VehiclePipoMessage();
-		message.setPullouts(buildOutputData(activePullouts));
+		message.setPullouts(vehiclePullInOutDataProviderService.buildResponseData(activePullouts));
 		message.setStatus("OK");
 		
 		String outputJson = serializeOutput(message, method);
@@ -93,12 +83,12 @@ public class VehiclePipoResource {
 	@GET
 	@Produces("application/json")
 	public String getActivePulloutsForBus(@PathParam("busNumber") String busNumber) {
-		String method = "getCurrentlyActivePulloutsForBus";
+		String method = "getActivePulloutsForBus";
 		String output = null;
 		
 		log.info("Starting " +method);
 
-		ImporterVehiclePulloutData data = getVehiclePipoData();
+		ImporterVehiclePulloutData data = vehiclePullInOutDataProviderService.getVehiclePipoData(depotIdTranslator);
 		
 		Long busId = new Long(busNumber);
 		
@@ -110,7 +100,7 @@ public class VehiclePipoResource {
 			List<VehiclePullInOutInfo> currentActivePulloutByBus = vehiclePullInOutService.getActivePullOuts(pulloutsByBus);
 			
 			VehiclePipoMessage message  = new VehiclePipoMessage();
-			message.setPullouts(buildOutputData(currentActivePulloutByBus));
+			message.setPullouts(vehiclePullInOutDataProviderService.buildResponseData(currentActivePulloutByBus));
 			message.setStatus("OK");
 			
 			output = serializeOutput(message, method);
@@ -125,12 +115,12 @@ public class VehiclePipoResource {
 	@GET
 	@Produces("application/json")
 	public String getActivePulloutsForDepot(@PathParam("depotName") String depotName) {
-		String method = "getCurrentlyActivePulloutsForDepot";
+		String method = "getActivePulloutsForDepot";
 		String output = null;
 		
 		log.info("Starting " +method);
 
-		ImporterVehiclePulloutData	data = getVehiclePipoData();
+		ImporterVehiclePulloutData	data = vehiclePullInOutDataProviderService.getVehiclePipoData(depotIdTranslator);
 		
 		List<VehiclePullInOutInfo> pulloutsByDepot = data.getPulloutsByDepot(depotName);
 		
@@ -141,7 +131,7 @@ public class VehiclePipoResource {
 			List<VehiclePullInOutInfo> activePulloutsByDepot = vehiclePullInOutService.getActivePullOuts(pulloutsByDepot);
 			
 			VehiclePipoMessage message  = new VehiclePipoMessage();
-			message.setPullouts(buildOutputData(activePulloutsByDepot));
+			message.setPullouts(vehiclePullInOutDataProviderService.buildResponseData(activePulloutsByDepot));
 			message.setStatus("OK");
 			
 			output = serializeOutput(message, method);
@@ -156,12 +146,12 @@ public class VehiclePipoResource {
 	@GET
 	@Produces("application/json")
 	public String getActivePulloutsForAgency(@PathParam("agencyId") String agencyId) {
-		String method = "getCurrentlyActivePulloutsForAgency";
+		String method = "getActivePulloutsForAgency";
 		String output = null;
 		
 		log.info("Starting " +method);
 
-		ImporterVehiclePulloutData	data = getVehiclePipoData();
+		ImporterVehiclePulloutData	data = vehiclePullInOutDataProviderService.getVehiclePipoData(depotIdTranslator);
 		
 		List<VehiclePullInOutInfo> pulloutsByAgency = data.getPulloutsByAgency(agencyId);
 		
@@ -172,7 +162,7 @@ public class VehiclePipoResource {
 			List<VehiclePullInOutInfo> activePulloutsByAgency = vehiclePullInOutService.getActivePullOuts(pulloutsByAgency);
 			
 			VehiclePipoMessage message  = new VehiclePipoMessage();
-			message.setPullouts(buildOutputData(activePulloutsByAgency));
+			message.setPullouts(vehiclePullInOutDataProviderService.buildResponseData(activePulloutsByAgency));
 			message.setStatus("OK");
 			
 			output = serializeOutput(message, method);
@@ -208,41 +198,7 @@ public class VehiclePipoResource {
 		return outputJson;
 	}
 	
-	private ImporterVehiclePulloutData getVehiclePipoData() {
-		File inputFile = mostRecentFilePicker.getMostRecentSourceFile();
-		UtsPulloutsToDataCreator creator;
-		ImporterVehiclePulloutData pulloutData;
-		
-		 log.debug("Getting PulloutData object in getVehiclePipoData from " + inputFile.getPath());
-		
-		try {
-			creator = new UtsPulloutsToDataCreator(inputFile);
-			creator.setConverter(converter);
-			
-			if (depotIdTranslator == null) {
-				log.info("Depot ID translation has not been enabled properly. Depot ids will not be translated.");
-			} else {
-				log.info("Using depot ID translation.");
-			}
-			creator.setDepotIdTranslator(depotIdTranslator);
-			pulloutData = (ImporterVehiclePulloutData) creator.generateDataObject();
-		} catch (FileNotFoundException e) {
-			log.info("Could not create data object from " + inputFile.getPath());
-		    log.info(e.getMessage());
-		    throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
-		}
-		log.debug("Returning PulloutData object in getVehiclePipoData.");
-		return pulloutData;
-	}
 	
-	private List<PullInOut> buildOutputData(List<VehiclePullInOutInfo> vehiclePullInOuts) {
-		List<PullInOut> outputData = new ArrayList<PullInOut>();
-		//Convert to required JSON format
-		for(VehiclePullInOutInfo vehiclePullInOut : vehiclePullInOuts) {
-			outputData.add(pulloutDataConverter.convert(vehiclePullInOut));
-		}
-		return outputData;
-	}
 
 	/**
 	 * Injects {@link JsonTool}
@@ -251,15 +207,6 @@ public class VehiclePipoResource {
 	@Autowired
 	public void setJsonTool(JsonTool jsonTool) {
 		this.jsonTool = jsonTool;
-	}
-
-	/**
-	 * Injects the converter
-	 * @param converter the converter to set
-	 */
-	@Autowired
-	public void setConverter(VehicleAssignmentsOutputConverter converter) {
-		this.converter = converter;
 	}
 
 	/**
@@ -273,12 +220,11 @@ public class VehiclePipoResource {
 	}
 
 	/**
-	 * Injects {@link PullInOutFromTcip}
-	 * @param pulloutDataConverter the pulloutDataConverter to set
+	 * @param vehiclePullInOutDataProviderService the vehiclePullInOutDataProviderService to set
 	 */
 	@Autowired
-	public void setPulloutDataConverter(
-			ModelCounterpartConverter<VehiclePullInOutInfo, PullInOut> pulloutDataConverter) {
-		this.pulloutDataConverter = pulloutDataConverter;
+	public void setVehiclePullInOutDataProviderService(
+			VehiclePullInOutDataProviderService vehiclePullInOutDataProviderService) {
+		this.vehiclePullInOutDataProviderService = vehiclePullInOutDataProviderService;
 	}
 }

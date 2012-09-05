@@ -9,16 +9,7 @@
   <context:component-scan base-package="org.onebusaway.nyc.transit_data_manager.siri" />
   <import resource="classpath:org/onebusaway/container/application-context.xml" />
   <import resource="classpath:org/onebusaway/nyc/tdm_adapters/application-context.xml" />
-  <bean id="usersHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
-       <property name="target" value="hibernateAnnotatedClasses" />
-       <property name="values">
-           <list>
-               <value>org.onebusaway.nyc.transit_data_manager.siri.ServiceAlertRecord</value>
-               <value>org.onebusaway.nyc.transit_data_manager.siri.ServiceAlertSubscription</value>
-           </list>
-       </property>
-   </bean>
-   
+  
   <!-- This turns on automatic annotation configuration for Jackson -->
   <context:annotation-config />  
 
@@ -67,19 +58,31 @@
     <property name="prettyPrintOutput" value="${tdm.prettyPrintOutput}" />
   </bean>
 
-  <bean id="siriServicePersister"
-    class="org.onebusaway.nyc.transit_data_manager.siri.SiriServiceDao"></bean>
+  <bean id="siriServicePersister" class="org.onebusaway.nyc.transit_data_manager.siri.SiriServiceDao">
+    </bean>
 
   <bean id="nycSiriService"
     class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceGateway">
     <property name="persister" ref="siriServicePersister" />
   </bean>
 
-  <bean id="urlToEmbedStopIdReplace"
-    class="java.lang.String">
+  <bean id="urlToEmbedStopIdReplace" class="java.lang.String">
     <constructor-arg type="java.lang.String" value="${qrBarcodes.stopIdReplaceUrl}" />
     </bean>
     
-    <bean id="vehiclePullInOutService" class="org.onebusaway.nyc.transit_data_manager.api.service.VehiclePullInOutServiceImpl" />
+  <bean id="vehiclePullInOutService" class="org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutServiceImpl" />
 
+  <bean id="vehiclePipoFilePicker" class="org.onebusaway.nyc.transit_data_manager.api.sourceData.VehiclePipoUploadsFilePicker">
+  	<constructor-arg type="java.lang.String" value="tdm.vehiclepipoUploadDir"/>
+  </bean>
+  
+  <bean id="crewFilePicker" class="org.onebusaway.nyc.transit_data_manager.api.sourceData.UtsCrewUploadsFilePicker">
+  	<constructor-arg type="java.lang.String" value="tdm.crewAssignsUploadDir"/>
+  </bean>
+  
+  <bean id="vehiclePullInOutDataProviderService" class="org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutDataProviderServiceImpl" />
+  
+  <bean id="crewAssignmentDataProviderService" class="org.onebusaway.nyc.transit_data_manager.api.service.CrewAssignmentDataProviderServiceImpl" />
+  
+  <bean id="utsDataPersistenceService" class="org.onebusaway.nyc.transit_data_manager.persistence.service.impl.UTSDataPersistenceServiceImpl" />	
 </beans>

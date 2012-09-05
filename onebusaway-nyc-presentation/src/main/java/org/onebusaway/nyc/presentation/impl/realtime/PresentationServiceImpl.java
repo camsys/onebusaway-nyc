@@ -32,9 +32,9 @@ public class PresentationServiceImpl implements PresentationService {
     else
       return System.currentTimeMillis();
   }
-
+  
   @Override
-  public Boolean useTimePredictionsIfAvailable(TripStatusBean statusBean) {
+  public Boolean useTimePredictionsIfAvailable() {
 	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
   }
 
@@ -90,23 +90,23 @@ public class PresentationServiceImpl implements PresentationService {
   public String getPresentableDistance(SiriDistanceExtension distances, String approachingText, 
       String oneStopWord, String multipleStopsWord, String oneMileWord, String multipleMilesWord, String awayWord) {
 
-    int atStopThresholdInFeet = 
-        _configurationService.getConfigurationValueAsInteger("display.atStopThresholdInFeet", 100);    
-
-    int approachingThresholdInFeet = 
-        _configurationService.getConfigurationValueAsInteger("display.approachingThresholdInFeet", 500);    
-    
-    int distanceAsStopsThresholdInFeet = 
-        _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsTresholdInFeet", 2640);    
-    
-    int distanceAsStopsThresholdInStops = 
-        _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsThresholdInStops", 3);    
-
-    int distanceAsStopsMaximumThresholdInFeet = 
-        _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsMaximumThresholdInFeet", 2640);    
-    
     String r = "";
 
+	int atStopThresholdInFeet = 
+			  _configurationService.getConfigurationValueAsInteger("display.atStopThresholdInFeet", 100);    
+
+	int approachingThresholdInFeet = 
+			  _configurationService.getConfigurationValueAsInteger("display.approachingThresholdInFeet", 500);    
+
+	int distanceAsStopsThresholdInFeet = 
+			  _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsTresholdInFeet", 2640);    
+
+	int distanceAsStopsThresholdInStops = 
+			  _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsThresholdInStops", 3);    
+
+	int distanceAsStopsMaximumThresholdInFeet = 
+			  _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsMaximumThresholdInFeet", 2640);
+    
     // meters->feet
     double feetAway = distances.getDistanceFromCall() * 3.2808399;
 
@@ -305,5 +305,4 @@ public class PresentationServiceImpl implements PresentationService {
     
     return true;
   }
-
 }

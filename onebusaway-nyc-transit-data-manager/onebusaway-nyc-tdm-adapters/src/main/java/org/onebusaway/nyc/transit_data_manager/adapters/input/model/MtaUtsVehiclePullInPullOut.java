@@ -38,7 +38,7 @@ public class MtaUtsVehiclePullInPullOut extends MtaUtsObject {
   }
 
   public void setRunNumberField(String runNumberField) {
-    this.runNumberField = runNumberField;
+    this.runNumberField = stripLeadingZeros(runNumberField);
   }
 
   public void setDateField(String dateField) {

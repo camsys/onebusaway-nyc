@@ -22,27 +22,20 @@
 	<h3>Nearby Stops:</h3>
 
 <s:iterator value="results.matches">
-	<div class="stop">
-		<div class="stopHeader">
-			<div class="stopHeaderText">
-				<s:url var="url" namespace="/m" action="index">
-					<s:param name="q">
-						<s:property value="code" />
-					</s:param>
-				</s:url>
-				<a href="${url}"><s:property value="name" /></a>
+	<!-- Only display stop data if we have non-filtered data to show -->
+	<s:if test="%{routesWithArrivals.size+routesWithNoVehiclesEnRoute.size+routesWithNoScheduledService.size&gt;0}">
+		<div class="stop">
+			<div class="stopHeader">
+				<div class="stopHeaderText">
+					<s:url var="url" namespace="/m" action="index">
+						<s:param name="q">
+							<s:property value="code" />
+						</s:param>
+					</s:url>
+					<a href="${url}"><s:property value="name" /></a>
+				</div>
 			</div>
-		</div>
-						
-		<s:if test="%{routesWithArrivals.size+routesWithNoVehiclesEnRoute.size+routesWithNoScheduledService.size==0}">
-			<s:if test="%{results.routeIdFilter.size&gt;0}">
-				<p class="noService">No service matching your filter is available at this stop.</p>
-			</s:if>
-			<s:else>
-				<p class="noService">No service is available at this stop.</p>
-			</s:else>
-		</s:if>
-		<s:else>
+	
 			<s:if test="%{routesWithArrivals.size&gt;0}">
 				<p class="stopResultGroupHeader">Buses en-route:</p>
 				<s:iterator value="routesWithArrivals">
@@ -111,21 +104,21 @@
 						</s:iterator>
 					</p>
 			</s:if>
-		</s:else>
-		
-		<s:if test="%{uniqueServiceAlertsForResults.size&gt;0}">
-			<div class="alerts">
-				<p>
-					<strong>Service Change:</strong>
-				</p>
-				<ul class="alerts">
-					<c:forEach var="uniqueServiceAlert" items="${uniqueServiceAlertsForResults}">
-						<li><c:out value="${uniqueServiceAlert}" escapeXml="false"/></li>
-					</c:forEach>
-				</ul>
-			</div>
-		</s:if>
-	</div>
+			
+			<s:if test="%{uniqueServiceAlertsForResults.size&gt;0}">
+				<div class="alerts">
+					<p>
+						<strong>Service Change:</strong>
+					</p>
+					<ul class="alerts">
+						<c:forEach var="uniqueServiceAlert" items="${uniqueServiceAlertsForResults}">
+							<li><c:out value="${uniqueServiceAlert}" escapeXml="false"/></li>
+						</c:forEach>
+					</ul>
+				</div>
+			</s:if>
+		</div>
+	</s:if>
 </s:iterator>
 
 </html>

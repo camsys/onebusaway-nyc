@@ -8,7 +8,7 @@ public interface PresentationService {
 
   public void setTime(long time);
 
-  public Boolean useTimePredictionsIfAvailable(TripStatusBean statusBean);
+  public Boolean useTimePredictionsIfAvailable();
 
   public Boolean isBlockLevelInference(TripStatusBean statusBean);
 

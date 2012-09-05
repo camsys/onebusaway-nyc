@@ -20,6 +20,7 @@ import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import uk.org.siri.siri.AffectedOperatorStructure;
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
 import uk.org.siri.siri.AffectsScopeStructure;
 import uk.org.siri.siri.AffectsScopeStructure.Operators;
@@ -322,6 +323,14 @@ public class ServiceAlertsHelper {
     return d;
   }
 
+  private DefaultedTextStructure createDefaultedTextStructure(
+      String text) {
+    DefaultedTextStructure d = new DefaultedTextStructure();
+    d.setLang("EN");
+    d.setValue(text);
+    return d;
+  }
+
   private void handleOtherFields(ServiceAlertBean serviceAlert,
       PtSituationElementStructure ptSituation) {
 
@@ -358,14 +367,23 @@ public class ServiceAlertsHelper {
     if (serviceAlert.getAllAffects() == null)
       return;
 
+    boolean hasOperators = false;
+
     AffectsScopeStructure affectsStructure = new AffectsScopeStructure();
     VehicleJourneys vehicleJourneys = new VehicleJourneys();
     for (SituationAffectsBean affects : serviceAlert.getAllAffects()) {
       String agencyId = affects.getAgencyId();
       if (agencyId != null) {
         Operators operators = new Operators();
-        operators.setAllOperators(agencyId);
+        if (StringUtils.equals(agencyId, "__ALL_OPERATORS__")) {
+          operators.setAllOperators("");
+        } else {
+          AffectedOperatorStructure affectedOperator = new AffectedOperatorStructure();
+          affectedOperator.setOperatorName(createDefaultedTextStructure(agencyId));
+          operators.getAffectedOperator().add(affectedOperator);
+        }
         affectsStructure.setOperators(operators);
+        hasOperators = true;
       }
       String routeId = affects.getRouteId(); // LineRef
       String directionId = affects.getDirectionId();
@@ -385,6 +403,8 @@ public class ServiceAlertsHelper {
     }
     if (vehicleJourneys.getAffectedVehicleJourney().size() > 0) {
       affectsStructure.setVehicleJourneys(vehicleJourneys);
+    }
+    if ((vehicleJourneys.getAffectedVehicleJourney().size() > 0) || hasOperators) {
       ptSituation.setAffects(affectsStructure);
     }
 

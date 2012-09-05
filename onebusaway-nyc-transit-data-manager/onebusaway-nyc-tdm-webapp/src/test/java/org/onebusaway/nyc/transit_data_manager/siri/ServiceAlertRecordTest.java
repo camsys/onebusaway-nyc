@@ -18,6 +18,10 @@ import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
 public class ServiceAlertRecordTest extends ServiceAlertRecord {
 
   private static final long serialVersionUID = 1L;
+  private String testSummary = "A test summary";
+  private String testDescription = "A test description";
+  private String testUrl = "A test url";
+
 
   @Test
   public void testToJsonListTimeEmpty() {
@@ -83,31 +87,7 @@ public class ServiceAlertRecordTest extends ServiceAlertRecord {
   public void testFromRecordToBean() {
     ServiceAlertRecord record = new ServiceAlertRecord();
     
-    record.setServiceAlertId("A test id");
-    record.setCreationTime(1234567);
-
-    record.setActiveWindows("[{\"from\":1322676345,\"to\":1322677345}]");
-    record.setPublicationWindows("[{\"from\":1322676346,\"to\":1322677346}]");
-
-    record.setReason("A test reason");
-    String testSummary = "A test summary";
-    record.setSummaries(testString(testSummary));
-
-    String testDescription = "A test description";
-    record.setDescriptions(testString(testDescription));
-
-    String testUrl = "A test url";
-    record.setUrls(testString(testUrl));
-    
-    record.setAllAffects("[{\"route-id\":\"A route id\"}]");
-    
-    List<SituationConsequenceBean> scbl = new ArrayList<SituationConsequenceBean>();
-    SituationConsequenceBean scb = new SituationConsequenceBean();
-    scb.setEffect(EEffect.MODIFIED_SERVICE);
-    scbl.add(scb);
-    record.setConsequences(toJson(scbl));
-    
-    record.setSeverity("\"NORMAL\"");
+    initializeServiceAlertRecord(testSummary, testDescription, testUrl, record);
 
     ServiceAlertBean bean = ServiceAlertRecord.toBean(record);
 
@@ -122,6 +102,55 @@ public class ServiceAlertRecordTest extends ServiceAlertRecord {
     assertEquals("A route id", bean.getAllAffects().get(0).getRouteId());
     assertEquals(EEffect.MODIFIED_SERVICE, bean.getConsequences().get(0).getEffect());
     assertEquals(ESeverity.NORMAL, bean.getSeverity());
+  }
+
+  @Test
+  public void testFromRecordToBeanAffectsAllOperators() {
+    ServiceAlertRecord record = new ServiceAlertRecord();
+    
+    initializeServiceAlertRecord(testSummary, testDescription, testUrl, record);
+    
+    record.setAllAffects("[{\"agency-id\":\"__ALL_OPERATORS__\"}]");
+    
+    ServiceAlertBean bean = ServiceAlertRecord.toBean(record);
+
+    assertEquals("A test id", bean.getId());
+    assertEquals(1234567, bean.getCreationTime());
+    assertTrue(compareListTimeRangeBean(createTestListTimeRangeBean(1322676345, 1322676345+1000), bean.getActiveWindows()));
+    assertTrue(compareListTimeRangeBean(createTestListTimeRangeBean(1322676346, 1322676346+1000), bean.getPublicationWindows()));
+    assertEquals("A test reason", bean.getReason());
+    assertEquals(testSummary, bean.getSummaries().get(0).getValue());
+    assertEquals(testDescription, bean.getDescriptions().get(0).getValue());
+    assertEquals(testUrl, bean.getUrls().get(0).getValue());
+    assertEquals(null, bean.getAllAffects().get(0).getRouteId());
+    assertEquals("__ALL_OPERATORS__", bean.getAllAffects().get(0).getAgencyId());
+    assertEquals(EEffect.MODIFIED_SERVICE, bean.getConsequences().get(0).getEffect());
+    assertEquals(ESeverity.NORMAL, bean.getSeverity());
+  }
+
+  private void initializeServiceAlertRecord(String testSummary, String testDescription, String testUrl, ServiceAlertRecord record) {
+    record.setServiceAlertId("A test id");
+    record.setCreationTime(1234567);
+
+    record.setActiveWindows("[{\"from\":1322676345,\"to\":1322677345}]");
+    record.setPublicationWindows("[{\"from\":1322676346,\"to\":1322677346}]");
+
+    record.setReason("A test reason");
+    record.setSummaries(testString(testSummary));
+
+    record.setDescriptions(testString(testDescription));
+
+    record.setUrls(testString(testUrl));
+    
+    record.setAllAffects("[{\"route-id\":\"A route id\"}]");
+    
+    List<SituationConsequenceBean> scbl = new ArrayList<SituationConsequenceBean>();
+    SituationConsequenceBean scb = new SituationConsequenceBean();
+    scb.setEffect(EEffect.MODIFIED_SERVICE);
+    scbl.add(scb);
+    record.setConsequences(toJson(scbl));
+    
+    record.setSeverity("\"NORMAL\"");
   }
 
   

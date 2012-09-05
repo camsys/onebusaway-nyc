@@ -25,8 +25,10 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.json.VehicleFromT
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.PullInOut;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
-import org.onebusaway.nyc.transit_data_manager.api.service.VehiclePullInOutService;
-import org.onebusaway.nyc.transit_data_manager.api.service.VehiclePullInOutServiceImpl;
+import org.onebusaway.nyc.transit_data_manager.api.sourceData.VehiclePipoUploadsFilePicker;
+import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutDataProviderServiceImpl;
+import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutService;
+import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutServiceImpl;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool;
 import org.slf4j.Logger;
@@ -48,6 +50,8 @@ public class VehiclePipoResourceTest {
 	private JsonTool jsonTool;
 	private MtaUtsToTcipVehicleAssignmentConverter dataConverter;
 	private ModelCounterpartConverter<VehiclePullInOutInfo, PullInOut> pulloutDataConverter;
+	private VehiclePullInOutDataProviderServiceImpl vehiclePullInOutDataProviderService;
+	private VehiclePipoUploadsFilePicker vehicleFilePicker;
 	
 	@Mock
 	private VehiclePullInOutService vehiclePullInOutService;
@@ -76,10 +80,16 @@ public class VehiclePipoResourceTest {
 		pulloutDataConverter = new PullInOutFromTcip();
 		((PullInOutFromTcip)pulloutDataConverter).setVehConv(vehicleConverter);
 		
+		vehicleFilePicker = new VehiclePipoUploadsFilePicker("tdm.vehiclepipoUploadDir");
+		
+		vehiclePullInOutDataProviderService = new VehiclePullInOutDataProviderServiceImpl();
+		vehiclePullInOutDataProviderService.setConverter(converter);
+		vehiclePullInOutDataProviderService.setMostRecentFilePicker(vehicleFilePicker);
+		vehiclePullInOutDataProviderService.setPulloutDataConverter(pulloutDataConverter);
+		
 		resource.setJsonTool(jsonTool);
-		resource.setConverter(converter);
 		resource.setVehiclePullInOutService(vehiclePullInOutService);
-		resource.setPulloutDataConverter(pulloutDataConverter);
+		resource.setVehiclePullInOutDataProviderService(vehiclePullInOutDataProviderService);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -326,6 +336,31 @@ public class VehiclePipoResourceTest {
 		//writeToFile(outputJson, "activepulloutsbyagency.txt");
 		
 		verifyPulloutData(outputJson);
+	}
+	
+	// obanyc-1680, run numbers should be trimmed of leading zeros
+	@Test
+	public void testCleanupRunNumber() throws Exception {
+
+	  setUp("UTSPUPUFULL_20120816_1202.txt");
+		
+			  
+	  vehiclePullInOutService = new VehiclePullInOutServiceImpl() {
+	    @Override
+	    protected boolean isActive(String pullOuttimeString) {
+	      // since dates aren't meaningful in a unit test -- return everything!
+	      return true;
+	    }
+	  };
+	  
+	  // replace resource's mock impl with ours from above 
+	  resource.setVehiclePullInOutService(vehiclePullInOutService);
+
+		//3244th row has X109,YUKT,004.  We want run=4, not 9, so run-route will be X109-4, not X109-004
+		// note that BX31-X01 is correct however
+		String json = resource.getActivePulloutsForDepot("YU");
+    assertTrue(json.contains(" \"run\": \"X109-4\""));
+    assertFalse(json.contains(" \"run\": \"X109-004\""));
 	}
 	
 	private void copyInputFiles(String filename) {

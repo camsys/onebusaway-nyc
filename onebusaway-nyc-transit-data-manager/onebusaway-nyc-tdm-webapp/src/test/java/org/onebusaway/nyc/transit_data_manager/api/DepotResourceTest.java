@@ -37,7 +37,7 @@ public class DepotResourceTest extends ResourceTest {
   }
 
   @Test
-  public void test() throws Exception {
+  public void test1() throws Exception {
     File tmpInFile = File.createTempFile("tmp", ".tmp");
     tmpInFile.deleteOnExit();
     File tmpOutFile = new File("/tmp/results.xml");
@@ -77,6 +77,55 @@ public class DepotResourceTest extends ResourceTest {
     assertEquals("1865", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group/group-members/group-member[2]/vehicle-id/text()", doc, XPathConstants.STRING));
     assertEquals("1925", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[2]/group-members/group-member[1]/vehicle-id/text()", doc, XPathConstants.STRING));
     assertEquals("3117", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[3]/group-members/group-member[1]/vehicle-id/text()", doc, XPathConstants.STRING));
+    tmpOutFile.deleteOnExit();
+  }
+  // obanyc-1693: try out extra fields in the data feed, ensure the don't affect parsing
+  @Test
+  public void test2() throws Exception {
+    File tmpInFile = File.createTempFile("tmp1", ".tmp");
+    tmpInFile.deleteOnExit();
+    File tmpOutFile = new File("/tmp/results1.xml");
+    
+    // this draft depot assignments has additional fields in it to test leniency of parser
+    InputStream resource = this.getClass().getResourceAsStream("spear082212.txt");
+    assertNotNull(resource);
+    copy(resource, tmpInFile.getCanonicalPath());
+    
+    MtaBusDepotsToTcipXmlProcess process = new MtaBusDepotsToTcipXmlProcess(tmpInFile, tmpOutFile);
+    process.executeProcess();
+    process.writeToFile();
+
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+    DocumentBuilder builder = factory.newDocumentBuilder();
+    Document doc = builder.parse(tmpOutFile);
+    XPath xpath = XPathFactory.newInstance().newXPath();
+    
+
+    NodeList nodes = (NodeList)xpath.evaluate("/cptFleetSubsets", doc, XPathConstants.NODESET);
+
+    assertNotNull(nodes);
+    assertEquals(1, nodes.getLength());
+    
+    nodes = (NodeList)xpath.evaluate("/cptFleetSubsets/subscriptionInfo", doc, XPathConstants.NODESET);
+    assertNotNull(nodes);
+    assertTrue(nodes.getLength() > 0);
+    nodes = (NodeList)xpath.evaluate("/cptFleetSubsets/subscriptionInfo/requestedType", doc, XPathConstants.NODESET);
+    assertNotNull(nodes);
+    assertTrue(nodes.getLength() > 0);
+    
+    assertEquals("2", xpath.evaluate("/cptFleetSubsets/subscriptionInfo/requestedType/text()", doc, XPathConstants.STRING));
+    
+    assertEquals("WSIDE", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group/group-name/text()", doc, XPathConstants.STRING));
+    assertEquals("5065", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group/group-members/group-member/vehicle-id/text()", doc, XPathConstants.STRING));
+    assertEquals("5066", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group/group-members/group-member[2]/vehicle-id/text()", doc, XPathConstants.STRING));
+    assertEquals("CAST", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[2]/group-name/text()", doc, XPathConstants.STRING));
+    assertEquals("6007", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[2]/group-members/group-member[1]/vehicle-id/text()", doc, XPathConstants.STRING));
+    assertEquals("YUK", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[3]/group-name/text()", doc, XPathConstants.STRING));
+    assertEquals("2400", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[3]/group-members/group-member[1]/vehicle-id/text()", doc, XPathConstants.STRING));
+    assertEquals("true", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[*]/group-members/group-member[*]/vehicle-id/text() = \"57\"", doc, XPathConstants.STRING));
+    assertEquals("false", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[*]/group-members/group-member[*]/vehicle-id/text() = \"0057\"", doc, XPathConstants.STRING));
+    assertEquals("true", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[*]/group-members/group-member[*]/vehicle-id/text() = \"4836\"", doc, XPathConstants.STRING));
     tmpOutFile.deleteOnExit();
   }
 
