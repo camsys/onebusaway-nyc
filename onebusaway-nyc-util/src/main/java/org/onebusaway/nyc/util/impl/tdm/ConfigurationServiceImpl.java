@@ -1,8 +1,9 @@
 package org.onebusaway.nyc.util.impl.tdm;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.PostConstruct;
 
@@ -27,7 +28,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
 
-	private volatile Map<String, String> _configurationKeyToValueMap = new HashMap<String,String>();
+	private ConcurrentMap<String, String> _configurationKeyToValueMap = new ConcurrentHashMap<String,String>();
 
 	@Autowired
 	public void setRefreshService(RefreshService refreshService) {
@@ -38,22 +39,20 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
 		this._transitDataManagerApiLibrary = apiLibrary;
 	}
-	
+
 	@Autowired
 	public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler) {
 		this._taskScheduler = taskScheduler;
 	}
 
 	private void updateConfigurationMap(String configKey, String configValue) {
-		synchronized(_configurationKeyToValueMap) {
-			String currentValue = _configurationKeyToValueMap.get(configKey);
-			_configurationKeyToValueMap.put(configKey, configValue);
+		String currentValue = _configurationKeyToValueMap.get(configKey);
+		_configurationKeyToValueMap.put(configKey, configValue);
 
-			if(currentValue == null || !configValue.equals(currentValue)) {	
-				_log.info("Invoking refresh method for config key " + configKey);
+		if(currentValue == null || !configValue.equals(currentValue)) {	
+			_log.info("Invoking refresh method for config key " + configKey);
 
-				_refreshService.refresh(configKey);
-			}
+			_refreshService.refresh(configKey);
 		}
 	}
 
@@ -91,20 +90,18 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	public String getConfigurationValueAsString(String configurationItemKey,
 			String defaultValue) {
 
-		synchronized(_configurationKeyToValueMap) {
-			if(_configurationKeyToValueMap.size() == 0) {
-				_log.warn("No configuration values are present!");
-			} else {        
-				_log.debug("Have " + _configurationKeyToValueMap.size() + " configuration parameters.");
-			}
+		if(_configurationKeyToValueMap.size() == 0) {
+			_log.warn("No configuration values are present!");
+		} else {        
+			_log.debug("Have " + _configurationKeyToValueMap.size() + " configuration parameters.");
+		}
 
-			String value = _configurationKeyToValueMap.get(configurationItemKey);
+		String value = _configurationKeyToValueMap.get(configurationItemKey);
 
-			if(value == null) {
-				return defaultValue;
-			} else { 
-				return value;
-			}
+		if(value == null) {
+			return defaultValue;
+		} else { 
+			return value;
 		}
 	}
 
@@ -141,16 +138,14 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			throw new Exception("Configuration item key cannot be null.");
 		}
 
-		synchronized(_configurationKeyToValueMap) {
-			String currentValue = _configurationKeyToValueMap.get(configurationItemKey);
+		String currentValue = _configurationKeyToValueMap.get(configurationItemKey);
 
-			if(StringUtils.isNotBlank(currentValue) && currentValue.equals(value)) {
-				return;
-			}
+		if(StringUtils.isNotBlank(currentValue) && currentValue.equals(value)) {
+			return;
+		}
 
-			_transitDataManagerApiLibrary.setConfigItem("config", component, configurationItemKey, value);		  
-			updateConfigurationMap(configurationItemKey, value);
-		}		 
+		_transitDataManagerApiLibrary.setConfigItem("config", component, configurationItemKey, value);		  
+		updateConfigurationMap(configurationItemKey, value);
 	}
 
 	@Override
