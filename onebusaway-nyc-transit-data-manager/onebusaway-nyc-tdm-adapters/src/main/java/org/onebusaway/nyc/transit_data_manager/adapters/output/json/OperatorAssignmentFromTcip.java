@@ -7,6 +7,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverte
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UTSUtil;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 
@@ -18,37 +19,31 @@ import tcip_final_3_0_5_1.SCHOperatorAssignment;
  * @author sclark
  * 
  */
-public class OperatorAssignmentFromTcip implements
-    ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> {
+public class OperatorAssignmentFromTcip implements ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> {
 
-  TcipMappingTool mappingTool = null;
-  UTSUtil util = new UTSUtil();
+	public OperatorAssignment convert(SCHOperatorAssignment input) {
+		OperatorAssignment opAssign = new OperatorAssignment();
+		UTSUtil util = new UTSUtil();
+		TcipMappingTool mappingTool = new TcipMappingTool();
 
-  public OperatorAssignmentFromTcip() {
-    mappingTool = new TcipMappingTool();
-  }
+		opAssign.setAgencyId(mappingTool.getJsonModelAgencyIdByTcipId(input.getOperator().getAgencyId()));
+		opAssign.setPassId(util.stripLeadingCharacters(mappingTool.cutPassIdFromOperatorDesignator(input.getOperator().getDesignator())));
 
-  public OperatorAssignment convert(SCHOperatorAssignment input) {
-    OperatorAssignment opAssign = new OperatorAssignment();
+		opAssign.setRunRoute(input.getLocalSCHOperatorAssignment().getRunRoute());
+		opAssign.setRunNumber(mappingTool.cutRunNumberFromTcipRunDesignator(input.getRun().getDesignator()));
 
-    opAssign.setAgencyId(mappingTool.getJsonModelAgencyIdByTcipId(input.getOperator().getAgencyId()));
-    opAssign.setPassId(util.stripLeadingCharacters(mappingTool.cutPassIdFromOperatorDesignator(input.getOperator().getDesignator())));
-    
-    opAssign.setRunRoute(input.getLocalSCHOperatorAssignment().getRunRoute());
-    opAssign.setRunNumber(mappingTool.cutRunNumberFromTcipRunDesignator(input.getRun().getDesignator()));
+		opAssign.setDepot(input.getOperatorBase().getFacilityName());
 
-    opAssign.setDepot(input.getOperatorBase().getFacilityName());
-    
-    DateTimeFormatter xmlDTF = TcipMappingTool.TCIP_DATETIME_FORMATTER;
-    DateTime serviceDate = xmlDTF.parseDateTime(input.getMetadata().getEffective());
+		DateTimeFormatter xmlDTF = TcipMappingTool.TCIP_DATETIME_FORMATTER;
+		DateTime serviceDate = xmlDTF.parseDateTime(input.getMetadata().getEffective());
 
-    DateTimeFormatter shortDateDTF = TcipMappingTool.TCIP_DATEONLY_FORMATTER;
-    opAssign.setServiceDate(shortDateDTF.print(serviceDate));
+		DateTimeFormatter shortDateDTF = TcipMappingTool.TCIP_DATEONLY_FORMATTER;
+		opAssign.setServiceDate(shortDateDTF.print(serviceDate));
 
-    DateTimeFormatter jsonUpdateDTF = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-    opAssign.setUpdated(jsonUpdateDTF.print(xmlDTF.parseDateTime(input.getMetadata().getUpdated())));
+		DateTimeFormatter jsonUpdateDTF = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+		opAssign.setUpdated(jsonUpdateDTF.print(xmlDTF.parseDateTime(input.getMetadata().getUpdated())));
 
-    return opAssign;
-  }
+		return opAssign;
+	}
 
 }

@@ -25,23 +25,36 @@ public class TDMDataPersisterJob extends QuartzJobBean {
 	private void persistUTSData(JobExecutionContext executionContext) {
 		UTSDataPersistenceService utsDataPersistenceService = (UTSDataPersistenceService) executionContext.getJobDetail().
 				getJobDataMap().get("utsDataPersistenceService");
+		
+		//Persist crew assignment data
+		try {
+			persistCrewAssignmentData(utsDataPersistenceService);
+		} catch(Exception e) {
+			//Retry once
+			_log.info("Retry persisting crew assignment data");
+			persistCrewAssignmentData(utsDataPersistenceService);
+		}
+
 		//Persist vehicle pipo data
 		try {
-			persistVehiclePipodata(utsDataPersistenceService);
+			persistVehiclePipoData(utsDataPersistenceService);
 		} catch(Exception e) {
 			//Retry once
 			_log.info("Retry persisting vehicle pipo data");
-			persistVehiclePipodata(utsDataPersistenceService);
+			persistVehiclePipoData(utsDataPersistenceService);
 		}
-		
-		//Persist crew assignment data
 		
 		
 	}
 	
-	private void persistVehiclePipodata(UTSDataPersistenceService utsDataPersistenceService) {
+	private void persistVehiclePipoData(UTSDataPersistenceService utsDataPersistenceService) {
 		_log.info("persisting vehicle PIPO data");
 		utsDataPersistenceService.saveVehiclePulloutData();
+	}
+	
+	private void persistCrewAssignmentData(UTSDataPersistenceService utsDataPersistenceService) {
+		_log.info("persisting crew assignment data");
+		utsDataPersistenceService.saveCrewAssignmentData();
 	}
 
 

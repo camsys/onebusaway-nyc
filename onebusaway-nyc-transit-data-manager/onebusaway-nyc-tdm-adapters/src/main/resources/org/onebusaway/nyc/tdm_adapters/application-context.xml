@@ -21,6 +21,8 @@
     	<property name="vehConv" ref="vehicleFromTcip"/>
     </bean>
     
+    <bean id="crewDataConverter" class="org.onebusaway.nyc.transit_data_manager.adapters.output.json.OperatorAssignmentFromTcip" />
+    
     <bean id="vehicleFromTcip" class="org.onebusaway.nyc.transit_data_manager.adapters.output.json.VehicleFromTcip" >
     	<property name="mappingTool" ref="tcipMappingTool" />
     </bean>
