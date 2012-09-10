@@ -241,19 +241,19 @@ public class AbstractTraceRunner {
 				String[] _receivedStatuses = StringUtils.split(ourResult.getInferredStatus().toUpperCase(), "+");
 				Collections.addAll(receivedStatuses, _receivedStatuses);
 			}
-			
+						
 			System.out.println("STATUS: expected=" + acceptableStatuses + ", inferred=" + receivedStatuses);
-
-			// if expected result is block inference, check that the matching status is set
-//	    	if(expectedResult.getActualIsRunFormal() == true) {
-//	    		assertTrue(receivedStatuses.contains("BLOCKINF"));
-//	    	}
 	    	
-	    	// if inferred result is detoured, make sure we expect that here!
-	    	if(ourResult.getInferredStatus().contains("DEVIATED")) {
+	    	// if inferred result is detoured, make sure we expect that here
+	    	if(receivedStatuses.contains("DEVIATED")) {
 	    		assertTrue(acceptableStatuses.contains("DEVIATED"));
 	    	}
-	
+
+	    	// if trace expects detoured, make sure we got that here
+	    	if(acceptableStatuses.contains("DEVIATED")) {
+	    		assertTrue(receivedStatuses.contains("DEVIATED"));
+	    	}
+
 			// TEST: distance along block/inferred location/schedule deviation
 	    	assertTrue(ourResult.getInferredBlockLat() != Double.NaN);
 	    	assertTrue(ourResult.getInferredBlockLon() != Double.NaN);
