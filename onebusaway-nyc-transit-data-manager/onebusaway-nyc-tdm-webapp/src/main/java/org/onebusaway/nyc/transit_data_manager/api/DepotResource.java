@@ -25,6 +25,7 @@ import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -151,6 +152,7 @@ public class DepotResource {
 	 * @param vehicleConverter the vehicleConverter to set
 	 */
 	@Autowired
+	@Qualifier("vehicleFromTcip")
 	public void setVehicleConverter(
 			ModelCounterpartConverter<CPTVehicleIden, Vehicle> vehicleConverter) {
 		this.vehicleConverter = vehicleConverter;

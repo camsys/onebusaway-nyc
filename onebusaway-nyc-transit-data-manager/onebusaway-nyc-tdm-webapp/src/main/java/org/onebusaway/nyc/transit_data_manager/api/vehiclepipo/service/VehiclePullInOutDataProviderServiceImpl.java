@@ -103,6 +103,7 @@ public class VehiclePullInOutDataProviderServiceImpl implements VehiclePullInOut
 	 * @param pulloutDataConverter the pulloutDataConverter to set
 	 */
 	@Autowired
+	@Qualifier("pulloutDataConverter")
 	public void setPulloutDataConverter(
 			ModelCounterpartConverter<VehiclePullInOutInfo, PullInOut> pulloutDataConverter) {
 		this.pulloutDataConverter = pulloutDataConverter;

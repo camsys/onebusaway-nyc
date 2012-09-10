@@ -97,6 +97,7 @@ public class CrewAssignmentDataProviderServiceImpl implements CrewAssignmentData
 	 * @param crewDataConverter the crewDataConverter to set
 	 */
 	@Autowired
+	@Qualifier("crewDataConverter")
 	public void setCrewDataConverter(
 			ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> crewDataConverter) {
 		this.crewDataConverter = crewDataConverter;
