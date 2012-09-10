@@ -73,6 +73,7 @@ public class ServiceAlertsHelper {
 
         // First get service alerts for the stop
         SituationQueryBean query = new SituationQueryBean();
+        query.setTime(System.currentTimeMillis());
         List<String> stopIdStrings = new ArrayList<String>();
         stopIdStrings.add(stopIdString);
         query.setStopIds(stopIdStrings);
@@ -81,6 +82,7 @@ public class ServiceAlertsHelper {
 
         // Now also add service alerts for (route+direction)s of the stop
         query = new SituationQueryBean();
+        query.setTime(System.currentTimeMillis());
         StopBean stopBean = nycTransitDataService.getStop(stopIdString);
         List<RouteBean> routes = stopBean.getRoutes();
         for (RouteBean route : routes) {
@@ -182,6 +184,7 @@ public class ServiceAlertsHelper {
     
     for (AgencyAndId routeId :  routeIds) {
       SituationQueryBean query = new SituationQueryBean();
+      query.setTime(System.currentTimeMillis());
       query.addRoute(routeId.toString(), "0");
       query.addRoute(routeId.toString(), "1");
       ListBean<ServiceAlertBean> serviceAlertsForRoute = nycTransitDataService.getServiceAlerts(query);
