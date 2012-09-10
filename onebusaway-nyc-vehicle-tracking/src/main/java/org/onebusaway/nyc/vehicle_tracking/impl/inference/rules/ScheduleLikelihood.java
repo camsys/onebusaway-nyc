@@ -37,7 +37,7 @@ public class ScheduleLikelihood implements SensorModelRule {
    * These are all in minutes
    */
   final static private StudentTDistribution schedDevNonRunDist = new StudentTDistribution(
-      2, 0d, 1d / 15d);
+      2, 0d, 1d / 35d);
   final static private StudentTDistribution schedDevRunDist = new StudentTDistribution(
       1, 0d, 1d / 90d);
   

@@ -22,6 +22,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObserv
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,8 +179,12 @@ public class JourneyStateTransitionModel {
   }
 
   static public boolean isLocationOnATrip(BlockState blockState) {
-    final double distanceAlong = blockState.getBlockLocation().getDistanceAlongBlock();
-    final BlockTripEntry trip = blockState.getBlockLocation().getActiveTrip();
+    return isLocationOnATrip(blockState.getBlockLocation());
+  }
+
+  static public boolean isLocationOnATrip(ScheduledBlockLocation blockLoc) {
+    final double distanceAlong = blockLoc.getDistanceAlongBlock();
+    final BlockTripEntry trip = blockLoc.getActiveTrip();
     final double tripDistFrom = trip.getDistanceAlongBlock();
     final double tripDistTo = tripDistFrom
         + trip.getTrip().getTotalTripDistance();

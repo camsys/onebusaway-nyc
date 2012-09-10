@@ -123,6 +123,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
   private JourneyStateTransitionModel _journeyStateTransitionModel;
 
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
+  private final static double _distancePastEndMargin = 100d;
 
   @Autowired
   public void setNullStateLikelihood(NullStateLikelihood nullStateLikelihood) {
@@ -163,7 +164,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     if (parentBlockState != null) {
       if (!parentBlockState.isRunFormal()
-          && _blocksFromObservationService.hasSnappedBlockStates(obs)
           && obs.hasValidDsc()) {
 
         /*
@@ -172,8 +172,25 @@ public class MotionModelImpl implements MotionModel<Observation> {
          * progress. This way we're less likely to get deadheads with in-service
          * signs floating along routes.
          */
-        if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()) {
-          return true;
+        if (_blocksFromObservationService.hasSnappedBlockStates(obs)) {
+          if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()) {
+            return true;
+          }
+        }
+        
+        /*
+         * If we have no good run info and we're near/at the end of trip and our
+         * observations moved a distance past the end of the trip.
+         */
+        if (JourneyStateTransitionModel.isLocationOnATrip(parentBlockState.getBlockState())) {
+          final double tripDab = parentBlockState.getBlockState().getBlockLocation().getDistanceAlongBlock()
+              - parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock();
+          final double distanceMoved = SphericalGeometryLibrary.distance(obs.getLocation(), 
+              obs.getPreviousObservation().getLocation());
+          if (tripDab + distanceMoved + _distancePastEndMargin >= 
+              parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getTrip().getTotalTripDistance()) {
+            return true;
+          }
         }
       }
       
@@ -471,7 +488,9 @@ public class MotionModelImpl implements MotionModel<Observation> {
    * The strict schedule-time based journey state assignment doesn't work for
    * late/early transitions to in-progess, since in-progress states that are
    * produced will be judged harshly if they're not exactly on the geometry.
-   * This method works around that.
+   * This method works around that by assigning deadhead-before to some
+   * states that would otherwise be in-progress.  Also helps for mid-trip
+   * joins.
    * 
    * @param parentState
    * @param newEdge
@@ -554,15 +573,17 @@ public class MotionModelImpl implements MotionModel<Observation> {
           if (EVehiclePhase.AT_BASE == parentPhase) {
             newEdge = Maps.immutableEntry(BlockSampleType.NOT_SAMPLED,
                 parentBlockStateObs);
-          } else if (EVehiclePhase.isActiveDuringBlock(parentPhase)
-              || (EVehiclePhase.isActiveBeforeBlock(parentPhase) && FastMath.abs(currentScheduleDev) > 0.0)) {
-            /*
-             * If it's active in the block or deadhead_before after the start
-             * time...
-             */
+          } else if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
             newEdge = Maps.immutableEntry(BlockSampleType.EDGE_MOVEMENT_SAMPLE,
                 _blockStateSamplingStrategy.sampleTransitionDistanceState(
                     parentBlockStateObs, obs, vehicleNotMoved, parentPhase));
+          } else if (EVehiclePhase.isActiveBeforeBlock(parentPhase) && FastMath.abs(currentScheduleDev) > 0.0) {
+            /*
+             * Continue sampling mid-trip joins for this block...
+             */
+            newEdge = Maps.immutableEntry(BlockSampleType.SCHEDULE_STATE_SAMPLE,
+                _blockStateSamplingStrategy.samplePriorScheduleState(
+                    parentBlockStateObs.getBlockState().getBlockInstance(), obs));
           } else {
             newEdge = Maps.immutableEntry(BlockSampleType.NOT_SAMPLED,
                 parentBlockStateObs);

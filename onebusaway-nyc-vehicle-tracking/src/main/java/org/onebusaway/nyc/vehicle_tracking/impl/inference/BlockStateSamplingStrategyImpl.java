@@ -26,6 +26,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 
 import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
@@ -52,12 +54,20 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   static public DeviationModel _scheduleDeviationSigma = new DeviationModel(
       32 * 60);
 
+  private ScheduledBlockLocationService _scheduledBlockLocationService;
+  
   private BlocksFromObservationService _blocksFromObservationService;
 
   @Autowired
   public void setRunService(RunService runService) {
   }
 
+  @Autowired
+  public void setScheduledBlockService(
+      ScheduledBlockLocationService scheduledBlockLocationService) {
+    _scheduledBlockLocationService = scheduledBlockLocationService;
+  }
+  
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
@@ -225,20 +235,54 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
      * after the block's start.
      */
     final double currentTime = (obs.getTime() - blockInstance.getServiceDate()) / 1000;
-
-    /*
-     * TODO Note that we're using the non-run-matching prior distribution.
-     */
-    final StudentTDistribution schedDist = ScheduleLikelihood.getSchedDevNonRunDist();
-    double newSchedTime = currentTime + 60d * schedDist.sample(ParticleFactoryImpl.getLocalRng());
     
-    if (Double.isInfinite(newSchedTime))
-      return null;
-
+    /*
+     * Get the location at for the current time, then sample a location
+     * based on that time and the travel time to that location (for when
+     * we're not anywhere nearby).
+     */
     final int startSchedTime = Iterables.getFirst(
         blockInstance.getBlock().getStopTimes(), null).getStopTime().getArrivalTime();
     final int endSchedTime = Iterables.getLast(
         blockInstance.getBlock().getStopTimes(), null).getStopTime().getDepartureTime();
+    
+    final double timeToGetToCurrentTimeLoc;
+    if (currentTime > startSchedTime
+        && currentTime < endSchedTime
+        && obs.getPreviousObservation() != null) {
+      final ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+          blockInstance.getBlock(), (int)currentTime);
+      
+      /*
+       * If the current time puts us in deadhead-during between trips, then
+       * it's possible that the block location will be at the start
+       * of the previous trip (potentially very far away), so we skip
+       * these situations.
+       */
+      if (JourneyStateTransitionModel.isLocationOnATrip(blockLocation)) {
+        final double impliedVelocity = SphericalGeometryLibrary.distance(obs.getLocation(), 
+            obs.getPreviousObservation().getLocation())/ obs.getTimeDelta();
+        timeToGetToCurrentTimeLoc = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
+            obs.getLocation()) / impliedVelocity;
+      } else {
+        timeToGetToCurrentTimeLoc = 0d;
+      }
+    } else {
+      timeToGetToCurrentTimeLoc = 0d;
+    }
+  
+    /*
+     * TODO Note that we're using the non-run-matching prior distribution.
+     * Should we?
+     */
+    final StudentTDistribution schedDist = ScheduleLikelihood.getSchedDevNonRunDist();
+    final double schedTimeError = 60d * schedDist.sample(ParticleFactoryImpl.getLocalRng());
+    double newSchedTime = currentTime + timeToGetToCurrentTimeLoc 
+        + Math.max(schedTimeError, -timeToGetToCurrentTimeLoc/3d);
+    
+    if (Double.isInfinite(newSchedTime))
+      return null;
+
 
     BlockStateObservation schedState;
     if (newSchedTime < startSchedTime) {
