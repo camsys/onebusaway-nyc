@@ -15,10 +15,7 @@ import javax.ws.rs.core.Response;
 import org.joda.time.DateMidnight;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
-import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UTSUtil;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentData;
-import org.onebusaway.nyc.transit_data_manager.adapters.output.json.OperatorAssignmentFromTcip;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.OperatorAssignmentsMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
@@ -88,10 +85,10 @@ public class CrewResource {
 
     OperatorAssignmentData data = crewAssignmentDataProviderService.getCrewAssignmentData(depotIdTranslator);
 
-    ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> tcipToJsonConverter = new OperatorAssignmentFromTcip();
-
-    List<OperatorAssignment> jsonOpAssigns = new UTSUtil().listConvertOpAssignTcipToJson(tcipToJsonConverter,
-        data.getOperatorAssignmentsByServiceDate(serviceDate)); // grab the
+    List<SCHOperatorAssignment> dataByServiceDate = data.getOperatorAssignmentsByServiceDate(serviceDate);
+    
+    List<OperatorAssignment> jsonOpAssigns = crewAssignmentDataProviderService.
+    		buildResponseData(dataByServiceDate);// grab the
                                                                 // assigns for
                                                                 // this date
                                                                 // and

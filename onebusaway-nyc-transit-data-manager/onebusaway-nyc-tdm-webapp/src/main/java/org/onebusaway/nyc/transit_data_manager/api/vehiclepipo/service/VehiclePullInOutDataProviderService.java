@@ -17,7 +17,7 @@ import org.onebusaway.nyc.transit_data_manager.api.VehiclePipoResource;
 public interface VehiclePullInOutDataProviderService {
 	
 	/**
-	 * Processes most recent input file with pullout information and builds {@link ImporterVehiclePulloutData}
+	 * Processes most recent input file and builds {@link ImporterVehiclePulloutData}
 	 * object with all pullout records.
 	 * @param depotIdTranslator for depot id translation
 	 * @return pullout data in the form required by API resources

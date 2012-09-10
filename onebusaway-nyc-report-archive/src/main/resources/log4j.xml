@@ -28,6 +28,13 @@
 
 	<!-- 0 or more logger/category elements -->
 	
+    <logger name="org.hibernate.SQL">
+        <level value="${log4j.hibernate.sql}"/> <!-- DEBUG or OFF -->
+    </logger>
+    <logger name="org.hibernate.type">
+        <level value="${log4j.hibernate.type}"/> <!-- TRACE or OFF -->
+    </logger>
+
 	<!-- 0 or 1 root elements -->
 
 	<root>

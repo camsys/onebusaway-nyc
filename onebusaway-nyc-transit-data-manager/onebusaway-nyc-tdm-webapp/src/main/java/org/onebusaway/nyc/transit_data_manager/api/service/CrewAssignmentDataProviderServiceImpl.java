@@ -3,18 +3,24 @@ package org.onebusaway.nyc.transit_data_manager.api.service;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UTSUtil;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsCrewAssignsToDataCreator;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentData;
+import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+
+import tcip_final_3_0_5_1.SCHOperatorAssignment;
 
 /**
  * Default implementation of {@link CrewAssignmentDataProviderService}
@@ -24,6 +30,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class CrewAssignmentDataProviderServiceImpl implements CrewAssignmentDataProviderService{
 
 	private MostRecentFilePicker mostRecentFilePicker;
+	private ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> crewDataConverter;
 	
 	private static Logger log = LoggerFactory.getLogger(CrewAssignmentDataProviderServiceImpl.class);
 	
@@ -52,6 +59,13 @@ public class CrewAssignmentDataProviderServiceImpl implements CrewAssignmentData
 		return data;
 	}
 	
+	@Override
+	public List<OperatorAssignment> buildResponseData(List<SCHOperatorAssignment> crewAssignments) {
+		List<OperatorAssignment> operatorAssignments = new UTSUtil().
+	    		listConvertOpAssignTcipToJson(crewDataConverter, crewAssignments);
+		return operatorAssignments;
+	}
+
 	private OperatorAssignmentData getOpAssignDataObjectForFile(File inputFile, DepotIdTranslator depotIdTranslator) 
 				throws FileNotFoundException {
 		
@@ -78,5 +92,16 @@ public class CrewAssignmentDataProviderServiceImpl implements CrewAssignmentData
 	public void setMostRecentFilePicker(MostRecentFilePicker mostRecentFilePicker) {
 		this.mostRecentFilePicker = mostRecentFilePicker;
 	}
+
+	/**
+	 * @param crewDataConverter the crewDataConverter to set
+	 */
+	@Autowired
+	@Qualifier("crewDataConverter")
+	public void setCrewDataConverter(
+			ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> crewDataConverter) {
+		this.crewDataConverter = crewDataConverter;
+	}
+
 
 }
