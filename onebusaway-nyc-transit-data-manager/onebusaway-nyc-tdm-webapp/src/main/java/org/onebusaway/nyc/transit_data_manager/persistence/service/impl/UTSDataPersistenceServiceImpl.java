@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
 
@@ -59,7 +60,7 @@ public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
 	}
 	
 	@Override
-	public void saveVehiclePulloutData() {
+	public void saveVehiclePulloutData() throws DataAccessResourceFailureException {
 		List<VehiclePipoRecord> vehicleRecords = new ArrayList<VehiclePipoRecord>();
 		
 		//Get the data
@@ -81,7 +82,7 @@ public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
 	}
 
 	@Override
-	public void saveCrewAssignmentData() {
+	public void saveCrewAssignmentData() throws DataAccessResourceFailureException {
 		List<CrewAssignmentRecord> crewAssignments = new ArrayList<CrewAssignmentRecord>();
 		
 		//Get the data
@@ -95,7 +96,7 @@ public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
 				new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
 		
 		try {
-			//service date is the day before now as the job executes at 4 am and we are interseted in
+			//service date is the day before now as the job executes at 4 am and we are interested in
 			//yesterday's data
 			serviceDate = new DateMidnight(now.minusDays(1));
 		} catch (IllegalArgumentException e) {
@@ -181,7 +182,7 @@ public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
 			CrewAssignmentDataProviderService crewAssignmentDataProviderService) {
 		this.crewAssignmentDataProviderService = crewAssignmentDataProviderService;
 	}
-
+	
 	/**
 	 * @param sessionFactory the sessionFactory to set
 	 */

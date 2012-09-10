@@ -71,6 +71,10 @@ public class ImporterBusDepotData implements VehicleDepotData {
     return fleetSubGroupsMatchingDepotStr;
   }
   
+  public List<CPTFleetSubsetGroup> getAllDepotGroups() {
+		return depotGroups;
+	}
+  
   /**
    * Grab the depotNameStr from the "official" property of CPTFleetSubsetGroup.
    * 
@@ -80,5 +84,7 @@ public class ImporterBusDepotData implements VehicleDepotData {
   private String getDepotNameStrFromSubsetGroup(CPTFleetSubsetGroup subGroup) {
     return subGroup.getGroupGarage().getFacilityName();
   }
+
+
 
 }

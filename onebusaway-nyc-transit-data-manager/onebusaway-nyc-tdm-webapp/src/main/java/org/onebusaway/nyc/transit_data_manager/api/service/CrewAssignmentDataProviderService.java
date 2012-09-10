@@ -18,15 +18,15 @@ import tcip_final_3_0_5_1.SCHOperatorAssignment;
 public interface CrewAssignmentDataProviderService {
 
 	/**
-	 * Processes most recent input file with pullout information and builds {@link OperatorAssignmentData}
+	 * Processes most recent input file and builds {@link OperatorAssignmentData}
 	 * object with all crew assignment records.
 	 * @param depotIdTranslator for depot id translation
-	 * @return pullout data in the form required by API resources
+	 * @return crew assignment data in the form required by API resources
 	 */
 	OperatorAssignmentData getCrewAssignmentData(DepotIdTranslator depotIdTranslator);
 	
 	/**
-	 * Builds crew assignment ata as required to generate response to the api call
+	 * Builds crew assignment data as required to generate response to the api call
 	 * @param crewAssignments parsed and generated crew assignments
 	 * @return crew assignments with information required by the response.
 	 */

@@ -11,6 +11,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -51,6 +53,29 @@ public class CrewAssignmentRecord implements Serializable {
 	//No-arg constructor required by Hibernate
 	public CrewAssignmentRecord() {
 		
+	}
+	
+	@Override
+	public boolean equals(Object crewAssignmentRecordObj) {
+		if(crewAssignmentRecordObj == null) {
+			return false;
+		}
+		if(this == crewAssignmentRecordObj) {
+			return true;
+		}
+		if(crewAssignmentRecordObj.getClass() != getClass()) {
+			return false;
+		}
+		
+		CrewAssignmentRecord crewAssignmentRecord = (CrewAssignmentRecord) crewAssignmentRecordObj;
+		
+		return new EqualsBuilder().append(operatorId, crewAssignmentRecord.operatorId)
+					.append(agencyId, crewAssignmentRecord.agencyId).isEquals();
+	}
+	
+	@Override 
+	public int hashCode() {
+		return new HashCodeBuilder().append(operatorId).append(agencyId).toHashCode();
 	}
 
 	/**

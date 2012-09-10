@@ -103,6 +103,7 @@
 			<list>
 				<value>org.onebusaway.nyc.transit_data_manager.persistence.model.VehiclePipoRecord</value>
 				<value>org.onebusaway.nyc.transit_data_manager.persistence.model.CrewAssignmentRecord</value>
+				<value>org.onebusaway.nyc.transit_data_manager.persistence.model.DepotRecord</value>
 			</list>
 		</property>
 		<property name="hibernateProperties">
@@ -124,6 +125,7 @@
 		<property name="jobDataAsMap">
 			<map>
       			<entry key="utsDataPersistenceService" value-ref="utsDataPersistenceService"/>
+      			<entry key="spearDataPersistenceService" value-ref="spearDataPersistenceService"/>
      		</map>
 		</property>
 	</bean>

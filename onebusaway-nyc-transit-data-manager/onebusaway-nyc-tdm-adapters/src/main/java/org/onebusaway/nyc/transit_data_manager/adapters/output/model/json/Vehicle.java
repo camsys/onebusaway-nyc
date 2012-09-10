@@ -32,4 +32,18 @@ public class Vehicle {
 		return vehicleId;
 	}
 
+	/**
+	 * @return the agencyId
+	 */
+	public String getAgencyId() {
+		return agencyId;
+	}
+
+	/**
+	 * @return the depotId
+	 */
+	public String getDepotId() {
+		return depotId;
+	}
+
 }
