@@ -80,9 +80,18 @@
   	<constructor-arg type="java.lang.String" value="tdm.crewAssignsUploadDir"/>
   </bean>
   
+  <bean id="depotFilePicker" class="org.onebusaway.nyc.transit_data_manager.api.sourceData.DepotAssignmentsSoapDownloadsFilePicker">
+  	<constructor-arg type="java.lang.String" value="tdm.depotAssignsDownloadDir"/>
+  </bean>
+  
   <bean id="vehiclePullInOutDataProviderService" class="org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutDataProviderServiceImpl" />
   
   <bean id="crewAssignmentDataProviderService" class="org.onebusaway.nyc.transit_data_manager.api.service.CrewAssignmentDataProviderServiceImpl" />
   
-  <bean id="utsDataPersistenceService" class="org.onebusaway.nyc.transit_data_manager.persistence.service.impl.UTSDataPersistenceServiceImpl" />	
+  <bean id="depotDataProviderService" class="org.onebusaway.nyc.transit_data_manager.api.service.DepotDataProviderServiceImpl" />
+  
+  <bean id="utsDataPersistenceService" class="org.onebusaway.nyc.transit_data_manager.persistence.service.impl.UTSDataPersistenceServiceImpl" />
+  
+  <bean id="spearDataPersistenceService" class="org.onebusaway.nyc.transit_data_manager.persistence.service.impl.SpearDataPersistenceServiceImpl" />
+  
 </beans>

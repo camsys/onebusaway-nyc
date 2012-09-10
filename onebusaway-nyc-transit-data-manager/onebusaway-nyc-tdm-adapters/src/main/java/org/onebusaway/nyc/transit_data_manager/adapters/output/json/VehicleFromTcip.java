@@ -3,7 +3,6 @@ package org.onebusaway.nyc.transit_data_manager.adapters.output.json;
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicle;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import tcip_final_3_0_5_1.CPTVehicleIden;
 
@@ -33,9 +32,9 @@ public class VehicleFromTcip implements
 	 * Injects {@link TcipMappingTool}
 	 * @param mappingTool the mappingTool to set
 	 */
-	@Autowired
 	public void setMappingTool(TcipMappingTool mappingTool) {
 		this.mappingTool = mappingTool;
 	}
+
 
 }

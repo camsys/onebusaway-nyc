@@ -33,4 +33,10 @@ public interface VehicleDepotData {
    * @return a list of CPTFleetSubsetGroup
    */
   List<CPTFleetSubsetGroup> getGroupsWithDepotNameStr(String depotNameStr);
+  
+  /**
+   * Get a list of all fleet subset groups
+   * @return A list of all depot groups
+   */
+  List<CPTFleetSubsetGroup> getAllDepotGroups();
 }

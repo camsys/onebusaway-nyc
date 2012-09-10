@@ -10,7 +10,7 @@ public class DepotAssignmentsSoapDownloadsFilePicker extends
 
   public DepotAssignmentsSoapDownloadsFilePicker(String timestampedUploadsDir)
       throws IOException {
-    super(timestampedUploadsDir);
+    super(System.getProperty(timestampedUploadsDir));
   }
 
   @Override
