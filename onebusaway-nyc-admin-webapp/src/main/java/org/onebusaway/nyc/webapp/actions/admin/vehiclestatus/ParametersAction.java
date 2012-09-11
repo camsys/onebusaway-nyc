@@ -1,16 +1,11 @@
 package org.onebusaway.nyc.webapp.actions.admin.vehiclestatus;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
-import org.apache.struts2.interceptor.ServletRequestAware;
 import org.onebusaway.nyc.admin.model.ParametersResponse;
 import org.onebusaway.nyc.admin.service.ParametersService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;

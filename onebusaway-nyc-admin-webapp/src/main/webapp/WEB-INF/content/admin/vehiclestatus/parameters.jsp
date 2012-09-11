@@ -33,7 +33,7 @@
 							</div>
 							<div>
 								<input type="hidden" id="crewAssignmentKey" value="tdmCrewAssignmentRefreshKey" />
-								<input type="text" id="crewAssignmentValue" class="propertyValue" />
+								<input type="text" id="crewAssignmentValue" class="propertyValue positiveInteger" />
 								<label id="propertyUnit">minutes</label>
 							</div>
 						</div>
@@ -45,7 +45,7 @@
 							</div>
 							<div>
 								<input type="hidden" id="vehicleAssignmentKey" value="tdmVehicleAssignmentRefreshKey" />
-								<input type="text" id="vehicleAssignmentValue" class="propertyValue" />
+								<input type="text" id="vehicleAssignmentValue" class="propertyValue positiveInteger" />
 								<label>minutes</label>
 							</div>
 						</div>
@@ -96,7 +96,7 @@
 								</div>
 								<div>
 									<input type="hidden" id="stalledTimeoutKey" value="displayStalledTimeoutKey"/>
-									<input type="text" id="stalledTimeoutValue" class="propertyValue"/>
+									<input type="text" id="stalledTimeoutValue" class="propertyValue positiveInteger"/>
 									<label>seconds</label>
 								</div>
 							</div>
@@ -109,7 +109,7 @@
 								</div>
 								<div>
 									<input type="hidden" id="staleMessagesKey" value="displayStaleTimeoutKey"/>
-									<input type="text" id="staleMessagesValue" class="propertyValue"/>
+									<input type="text" id="staleMessagesValue" class="propertyValue positiveInteger"/>
 									<label>seconds</label>
 								</div>
 							</div>
@@ -125,7 +125,7 @@
 								</div>
 								<div>
 									<input type="hidden" id="offRouteMessageKey" value="displayOffrouteDistanceKey"/>
-									<input type="text" id="offRouteMessageValue" class="propertyValue"/>
+									<input type="text" id="offRouteMessageValue" class="propertyValue positiveInteger"/>
 									<label>meters</label>
 								</div>
 							</div>
@@ -138,7 +138,7 @@
 								</div>
 								<div>
 									<input type="hidden" id="hideMessagesKey" value="displayHideTimeoutKey"/>
-									<input type="text" id="hideMessagesValue" class="propertyValue"/>
+									<input type="text" id="hideMessagesValue" class="propertyValue positiveInteger"/>
 									<label>seconds</label>
 								</div>
 							</div>
@@ -163,7 +163,7 @@
 								</div>
 								<div>
 									<input type="hidden" id="previousFilterKey" value="displayPreviousFilterKey"/>
-									<input type="text" id="previousFilterValue" class="propertyValue"/>
+									<input type="text" id="previousFilterValue" class="propertyValue positiveInteger"/>
 									<label>miles</label>
 								</div>
 							</div>
@@ -262,7 +262,7 @@
 								</div>
 								<div>
 									<input type="hidden" id="inputQueuePortKey" value="ieInputQueuePortKey"/>
-									<input type="text" id="inputQueuePortValue" class="propertyValue"/>
+									<input type="text" id="inputQueuePortValue" class="propertyValue positiveInteger"/>
 								</div>
 							</div>
 							<div id="outputQueuePort" class="propertyHolder rightProperty">
@@ -274,7 +274,7 @@
 								</div>
 								<div>
 									<input type="hidden" id="outputQueuePortKey" value="ieOutputQueuePortKey"/>
-									<input type="text" id="outputQueuePortValue" class="propertyValue"/>
+									<input type="text" id="outputQueuePortValue" class="propertyValue positiveInteger"/>
 								</div>
 							</div>
 						</div>
@@ -331,7 +331,7 @@
 								</div>
 								<div>
 									<input type="hidden" id="tdsInputQueuePortKey" value="tdsInputQueuePortKey"/>
-									<input type="text" id="tdsInputQueuePortValue" class="propertyValue"/>
+									<input type="text" id="tdsInputQueuePortValue" class="propertyValue positiveInteger"/>
 								</div>
 							</div>
 						</div>
@@ -348,8 +348,6 @@
 								</div>
 							</div>
 						</div>
-						
-						
 					</div>
 				</li>
 				<li>
@@ -373,7 +371,7 @@
 							</div>
 							<div>
 								<input type="hidden" id="maxRecordLimitKey" value="opsApiMaxRecordLimitKey"/>
-								<input type="text" id="apiMaxRecordLimitValue" class="propertyValue"/>
+								<input type="text" id="apiMaxRecordLimitValue" class="propertyValue positiveInteger"/>
 							</div>
 						</div>
 					</div>

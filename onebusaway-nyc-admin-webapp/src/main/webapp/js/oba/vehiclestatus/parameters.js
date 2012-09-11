@@ -21,6 +21,13 @@ jQuery(function() {
 		autoHeight: false
 	});
 	
+	//Allow only positive numbers for text boxes with numeric units
+	$(".positiveInteger").numeric(
+			{decimal:false, negative:false}, 
+			function(){ 
+				/* no-op */
+			});
+	
 	//Load config parameters from the server
 	getConfigParameters();
 	
@@ -96,36 +103,50 @@ function resetToPrevious() {
 function saveParameters() {
 	var data = buildData();
 	
-	$.ajax({
-		url: "parameters!saveParameters.action",
-		type: "POST",
-		dataType: "json",
-		data: {"params": data},
-		traditional: true,
-		success: function(response) {
-			if(response.saveSuccess) {
-				$("#results #messageBox #message").text("Your changes have been saved. " +getTime());
-				$("#results #messageBox").show();
-				clearChanges();
-				$("#results #messageBox").delay(10000).fadeOut(5000);
-			} else {
-				alert("Failed to save parameters. Please try again.");
+	if(data != null) {
+		$.ajax({
+			url: "parameters!saveParameters.action",
+			type: "POST",
+			dataType: "json",
+			data: {"params": data},
+			traditional: true,
+			success: function(response) {
+				if(response.saveSuccess) {
+					$("#results #messageBox #message").text("Your changes have been saved. " +getTime());
+					$("#results #messageBox").show();
+					clearChanges();
+					$("#results #messageBox").delay(10000).fadeOut(5000);
+				} else {
+					alert("Failed to save parameters. Please try again.");
+				}
+			},
+			error: function(request) {
+				alert("Error saving parameter values");
 			}
-		},
-		error: function(request) {
-			alert("Error saving parameter values : " +request.statusText);
-		}
-	});
-	
+		});
+	} else {
+		alert("Cannot save parameters. One or more values is blank");
+	}
 }
 
 function buildData() {
 	var data = new Array();
+	var invalid = false;
 	var changedElements = $("input.changed[type='text']");
 	for(var i=0; i<changedElements.length; i++) {
-		var changedValue = $(changedElements[i]).val();
-		var key = $(changedElements[i]).prev("input[type='hidden']").val();
-		data[i] = key + ":" +changedValue;
+		var changedElement = $(changedElements[i]);
+		if(changedElement.val() == "" || changedElement.val() == null) {
+			//Cannot save blank values
+			invalid = true;
+			break;
+		} else {
+			var changedValue = changedElement.val();
+			var key = $(changedElements[i]).prev("input[type='hidden']").val();
+			data[i] = key + ":" +changedValue;
+		}
+	}
+	if(invalid) {
+		data = null;
 	}
 	return data;
 }
@@ -159,5 +180,8 @@ function getTime() {
 
 function clearChanges() {
 	$("input[type='text']").removeClass("changed");
+	$("#results input[type='button']").attr("disabled", "disabled").css("color", "#999999");
 }
+
+
 
