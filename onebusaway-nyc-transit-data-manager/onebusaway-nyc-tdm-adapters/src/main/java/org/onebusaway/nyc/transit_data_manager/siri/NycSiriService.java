@@ -338,7 +338,8 @@ public abstract class NycSiriService {
         serviceAlert.setId(AgencyAndId.convertToString(id));
       }
 
-      serviceAlert.setCreationTime(ptSituation.getCreationTime().getTime());
+      if (ptSituation.getCreationTime() != null)
+        serviceAlert.setCreationTime(ptSituation.getCreationTime().getTime());
       
       handleDescriptions(ptSituation, serviceAlert);
       handleOtherFields(ptSituation, serviceAlert);
