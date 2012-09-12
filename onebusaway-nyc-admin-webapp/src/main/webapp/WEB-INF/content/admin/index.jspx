@@ -39,6 +39,10 @@
 					<s:a href="%{url}">Create User</s:a>
 				</li>
 				<li>
+					<s:url var="url" action="list-user"/>
+					<s:a href="%{url}">Edit Users</s:a>
+				</li>
+				<li>
 					<s:url var="url" action="api-key"/>
 					<s:a href="%{url}">Create API key</s:a>
 				</li>
