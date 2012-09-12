@@ -295,6 +295,9 @@ public class ServiceAlertsHelper {
     value.setValue(serviceAlert.getId());
     ptSit.setSituationNumber(value);
 
+    if (serviceAlert.getCreationTime() != 0)
+      ptSit.setCreationTime(new Date(serviceAlert.getCreationTime()));
+    
     handleDescriptions(serviceAlert, ptSit);
     handleOtherFields(serviceAlert, ptSit);
     handleAffects(serviceAlert, ptSit);

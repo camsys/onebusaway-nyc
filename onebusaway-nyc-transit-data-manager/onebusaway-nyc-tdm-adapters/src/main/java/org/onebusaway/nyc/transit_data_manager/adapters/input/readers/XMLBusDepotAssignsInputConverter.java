@@ -85,7 +85,7 @@ public class XMLBusDepotAssignsInputConverter implements
       try {
         depAssign.setBusNumber(Integer.decode(stripLeadingZeros(tableDepotAssign.getBUSNUMBER())));
       } catch (NumberFormatException nfe) {
-        _log.error("invalid bus number=" + tableDepotAssign.getBUSNUMBER(), nfe);
+        _log.warn("invalid bus number=" + tableDepotAssign.getBUSNUMBER());
       }
       depAssign.setDepot(tableDepotAssign.getDEPOT());
 
