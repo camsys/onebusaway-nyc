@@ -154,6 +154,9 @@ OBA.Popups = (function() {
 		
 		if (situationExchangeDelivery && situationExchangeDelivery.length > 0) {
             jQuery.each(situationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
+            	// Skip the alert if there is no VehicleJourneys... It's probably a global alert.
+            	if (!ptSituationElement.Affects.hasOwnProperty('VehicleJourneys'))
+            		return true;
             	jQuery.each(ptSituationElement.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, affectedVehicleJourney) {
             		var lineRef = affectedVehicleJourney.LineRef;
             		if (!(lineRef in alertData)) {
