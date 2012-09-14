@@ -71,7 +71,7 @@
                        <fmt:formatNumber var="weight" value="${p.logWeight}" pattern="0.###E0"/>
                        <c:out value="${weight}"/></a>
                     </td>
-                    <td><c:out value="${journeyState.phase}" /></td>
+                    <td><c:out value="${journeyState.phase}"/><c:out value="${journeyState.isDetour ? ' (detour)' : ''}" /></td>
                     <td bgcolor='#cdc9c9'><c:out value="${runReported == null?'NA':runReported}" /></td>
                     <td><c:out value="${opAssigned == null?'NA':opAssigned}" /></td>
                     <td bgcolor='#cdc9c9'><c:out value="${blockState.runTripEntry.runId}" /></td>

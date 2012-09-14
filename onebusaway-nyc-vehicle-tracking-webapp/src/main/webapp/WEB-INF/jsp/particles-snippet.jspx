@@ -97,7 +97,7 @@
 										<c:if test="${details.history}">
 	                    <c:set var="recordNumber" value="${recordNumber - 1}" />
                     </c:if>
-                    <td><c:out value="${journeyState.phase}"/><c:out value="${journeyState.isDetour ? '(detour)' : ''}" /></td>
+                    <td><c:out value="${journeyState.phase}"/><c:out value="${journeyState.isDetour ? ' (detour)' : ''}" /></td>
                     <td bgcolor='#cdc9c9'><c:out value="${runReported == null?'NA':runReported}" /></td>
                     <td><c:out value="${opAssigned == null?'NA':opAssigned}" /></td>
                     

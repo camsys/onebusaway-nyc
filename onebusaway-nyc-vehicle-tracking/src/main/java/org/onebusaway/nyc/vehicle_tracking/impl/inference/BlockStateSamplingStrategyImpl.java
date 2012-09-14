@@ -19,6 +19,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.GpsLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
@@ -159,13 +160,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
            * deadhead-after, or go the other way and keep us sitting around in
            * deadhead-during.  Either way, we want to allow both those possibilities.
            */
-          final double distAlongPrior = SphericalGeometryLibrary.distance(
-              obs.getPreviousObservation().getLocation(), obs.getLocation());
-          final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
+          final double distAlongPrior = obs.getDistanceMoved();
           final double distAlongErrorSample = ParticleFactoryImpl.getLocalRng().nextGaussian()
-              * 0.5d * Math.pow(obsTimeDelta, 2) / 2d;
+              * GpsLikelihood.gpsStdDev;
           distAlongSample = distAlongPrior
-              + Math.max(distAlongErrorSample, -1d * distAlongPrior);
+              + Math.max(distAlongErrorSample, -distAlongPrior);
 //          distAlongSample = 0d;
         } else {
 
@@ -180,7 +179,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
           if (distAlongPrior <= 0d)
             distAlongPrior = 0d;
-          //
+          
           // distAlongSample =
           // EdgeLikelihood.deadDuringEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
           distAlongSample = distAlongPrior;
@@ -194,17 +193,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
          */
         return new BlockStateObservation(parentBlockStateObs, obs);
       } else {
-        final double distAlongPrior = SphericalGeometryLibrary.distance(
-            obs.getPreviousObservation().getLocation(), obs.getLocation());
-        // final double distAlongErrorSample =
-        // EdgeLikelihood.inProgressEdgeMovementDist.sample(
-        // ParticleFactoryImpl.getLocalRng());
-        final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
-        
+        final double distAlongPrior = obs.getDistanceMoved();
         final double distAlongErrorSample = ParticleFactoryImpl.getLocalRng().nextGaussian()
-            * 0.5d * Math.pow(obsTimeDelta, 2) / 2d;
+            * GpsLikelihood.gpsStdDev;
         distAlongSample = distAlongPrior
-            + Math.max(distAlongErrorSample, -1d * distAlongPrior);
+            + Math.max(distAlongErrorSample, -distAlongPrior);
       }
 
       distAlongSample += parentDistAlong;
@@ -260,8 +253,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
        * these situations.
        */
       if (JourneyStateTransitionModel.isLocationOnATrip(blockLocation)) {
-        final double impliedVelocity = SphericalGeometryLibrary.distance(obs.getLocation(), 
-            obs.getPreviousObservation().getLocation())/ obs.getTimeDelta();
+        final double impliedVelocity = obs.getDistanceMoved() / obs.getTimeDelta();
         timeToGetToCurrentTimeLoc = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
             obs.getLocation()) / impliedVelocity;
       } else {
@@ -357,15 +349,12 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     Double obsOrientation = null;
     Double distMoved = null;
     if (observation.getPreviousRecord() != null && blockStateObs.isOnTrip()) {
-      final NycRawLocationRecord prevRecord = observation.getPreviousRecord();
-      obsOrientation = SphericalGeometryLibrary.getOrientation(
-          prevRecord.getLatitude(), prevRecord.getLongitude(),
-          observation.getLocation().getLat(),
-          observation.getLocation().getLon());
-      distMoved = SphericalGeometryLibrary.distanceFaster(
-          prevRecord.getLatitude(), prevRecord.getLongitude(),
-          observation.getLocation().getLat(),
-          observation.getLocation().getLon());
+      distMoved = observation.getDistanceMoved();
+      obsOrientation = observation.getOrientation();
+      if (Double.isNaN(obsOrientation)) {
+        obsOrientation = blockStateObs.getBlockState().getBlockLocation().getOrientation();
+      }
+      
       final double orientDiff = Math.abs(obsOrientation
           - blockStateObs.getBlockState().getBlockLocation().getOrientation());
       if (orientDiff >= 140d && orientDiff <= 225d

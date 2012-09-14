@@ -165,7 +165,15 @@ public class MotionModelImpl implements MotionModel<Observation> {
     if (parentBlockState != null) {
       if (!parentBlockState.isRunFormal()
           && obs.hasValidDsc()) {
-
+        
+        /*
+         * Always expect that we can go off from a detour when
+         * the run-info is bad.
+         */
+        if (parentState.getJourneyState().getIsDetour()) {
+          return true;
+        }
+        
         /*
          * We have no good run information, but a valid DSC, so we will allow a
          * run transition when there are snapped states and it's not in
@@ -265,6 +273,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
          */
         transitions.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(obs));
       } else if (parentBlockStateObs != null) {
+
         /*
          * Only the snapped blocks.
          * We are also allowing changes to snapped in-progress states when
@@ -360,11 +369,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
           obs, parentState.getJourneyState().getPhase(), vehicleNotMoved);
       journeyState = _journeyStateTransitionModel.getJourneyState(
           newEdge.getValue(), parentState, obs, vehicleNotMoved);
-
-      final boolean isLayoverStopped = JourneyStateTransitionModel.isLayoverStopped(
-          vehicleNotMoved, obs, parentState);
-      journeyState = adjustInProgressTransition(parentState, newEdge,
-          journeyState, isLayoverStopped);
 
       final VehicleState newState = new VehicleState(motionState,
           newEdge.getValue(), journeyState, null, obs);
@@ -484,53 +488,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return newParticle;
   }
 
-  /**
-   * The strict schedule-time based journey state assignment doesn't work for
-   * late/early transitions to in-progess, since in-progress states that are
-   * produced will be judged harshly if they're not exactly on the geometry.
-   * This method works around that by assigning deadhead-before to some
-   * states that would otherwise be in-progress.  Also helps for mid-trip
-   * joins.
-   * 
-   * @param parentState
-   * @param newEdge
-   * @param journeyState
-   * @return
-   */
-  private JourneyState adjustInProgressTransition(VehicleState parentState,
-      java.util.Map.Entry<BlockSampleType, BlockStateObservation> newEdge,
-      JourneyState journeyState, boolean isLayoverStopped) {
-
-    if ((!parentState.getJourneyState().getPhase().equals(
-        EVehiclePhase.IN_PROGRESS)
-        && !parentState.getJourneyState().getPhase().equals(
-        EVehiclePhase.DEADHEAD_AFTER))
-        && journeyState.getPhase().equals(EVehiclePhase.IN_PROGRESS)
-        && !newEdge.getValue().isSnapped()) {
-      final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase());
-      /*
-       * If it was a layover, and now it's not, then change to deadhead
-       */
-      if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-          && !(isLayoverStopped && newEdge.getValue().isAtPotentialLayoverSpot())) {
-        return wasPrevStateDuring
-            ? JourneyState.deadheadDuring(journeyState.getIsDetour())
-            : JourneyState.deadheadBefore(null);
-      /*
-       * If it wasn't a layover and now it is, become one
-       */
-      } else if (!EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-          && (isLayoverStopped && newEdge.getValue().isAtPotentialLayoverSpot())) {
-        return wasPrevStateDuring
-            ? JourneyState.layoverDuring(journeyState.getIsDetour())
-            : JourneyState.layoverBefore();
-      } else {
-        return parentState.getJourneyState();
-      }
-    } else {
-      return journeyState;
-    }
-  }
 
   public static enum BlockSampleType {
     NOT_SAMPLED, SCHEDULE_STATE_SAMPLE, EDGE_MOVEMENT_SAMPLE

@@ -491,16 +491,6 @@ public class BlockStateService {
       }
     }
     
-    Double obsOrientation = null;
-    Double distMoved = null;
-    if (observation.getPreviousRecord() != null) {
-      NycRawLocationRecord prevRecord = observation.getPreviousRecord();
-      obsOrientation = SphericalGeometryLibrary.getOrientation(prevRecord.getLatitude(),
-          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
-      distMoved = SphericalGeometryLibrary.distanceFaster(prevRecord.getLatitude(),
-          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
-    }
-
     for (final Entry<BlockInstance, Collection<Double>> biEntry : instancesToDists.asMap().entrySet()) {
       final BlockInstance instance = biEntry.getKey();
       final int searchTimeFrom = (int) (timeFrom.getTime() - instance.getServiceDate()) / 1000;
@@ -519,14 +509,8 @@ public class BlockStateService {
         /*
          * Don't consider opposite direction trips.
          */
-        if (obsOrientation != null && distMoved != null) {
-          double orientDiff = Math.abs(obsOrientation - location.getOrientation());
-          if (orientDiff >= 90d + _oppositeAngleCutoff 
-              && orientDiff <= 270d + _oppositeAngleCutoff 
-              && distMoved >= _oppositeDirMoveCutoff) {
-            continue;
-          }
-        }
+        if (movedInOppositeDirection(observation, location))
+          continue;
           
         /*
          * Should be increasing time for increasing distanceAlongBlock...
@@ -575,6 +559,31 @@ public class BlockStateService {
       }
     }
     return results;
+  }
+
+  private boolean movedInOppositeDirection(Observation observation,
+      ScheduledBlockLocation location) {
+    
+    if (observation.getPreviousRecord() != null) {
+      /*
+       * We get NaN when the locations are the same;
+       * in which case, we don't have a comparison to make,
+       * so use an orientation difference of 0.
+       */
+      double obsOrientation = observation.getOrientation();
+      if (Double.isNaN(obsOrientation)) {
+        obsOrientation = location.getOrientation();
+      }
+      
+      double orientDiff = Math.abs(obsOrientation - location.getOrientation());
+      if (orientDiff >= 90d + _oppositeAngleCutoff 
+          && orientDiff <= 270d + _oppositeAngleCutoff 
+          ) {
+        return true;
+      }
+    } 
+        
+    return false;
   }
 
   /**

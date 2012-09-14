@@ -117,4 +117,9 @@ public final class JourneyState {
     return this.isDetour;
   }
 
+  public static JourneyState getStateForPhase(EVehiclePhase phase,
+      boolean isDetour, JourneyStartState data) {
+    return new JourneyState(phase, isDetour, data);
+  }
+
 }

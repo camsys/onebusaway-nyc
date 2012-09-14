@@ -130,7 +130,6 @@ public class JourneyStateTransitionModel {
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       return JourneyState.atBase();
 
-    final BlockStateObservation parentStateObservation = parentState == null ? null : parentState.getBlockStateObservation(); 
     final boolean isLayoverStopped = isLayoverStopped(vehicleNotMoved, obs,
         parentState);
     final boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
@@ -167,7 +166,8 @@ public class JourneyStateTransitionModel {
             else if (obs.hasOutOfServiceDsc())
               return JourneyState.deadheadDuring(isDetour);
             else
-              return JourneyState.inProgress();
+              return adjustInProgressTransition(parentState.getJourneyState().getPhase(), 
+                  blockState, isDetour, isLayoverStopped);
           } else {
             return JourneyState.deadheadDuring(false);
           }
@@ -178,6 +178,52 @@ public class JourneyStateTransitionModel {
     }
   }
 
+  /**
+   * The strict schedule-time based journey state assignment doesn't work for
+   * late/early transitions to in-progess, since in-progress states that are
+   * produced will be judged harshly if they're not exactly on the geometry.
+   * This method works around that by assigning deadhead-before to some
+   * states that would otherwise be in-progress.  Also helps for mid-trip
+   * joins.
+   * 
+   * @param parentState
+   * @param newEdge
+   * @param journeyState
+   * @return
+   */
+  private JourneyState adjustInProgressTransition(EVehiclePhase parentPhase,
+      BlockStateObservation newBlockState, boolean isDetour, boolean isLayoverStopped) {
+
+    if ((!parentPhase.equals(
+        EVehiclePhase.IN_PROGRESS)
+        && !parentPhase.equals(
+        EVehiclePhase.DEADHEAD_AFTER))
+        && !newBlockState.isSnapped()) {
+      final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(parentPhase);
+      /*
+       * If it was a layover, and now it's not, then change to deadhead
+       */
+      if (EVehiclePhase.isLayover(parentPhase)
+          && !(isLayoverStopped && newBlockState.isAtPotentialLayoverSpot())) {
+        return wasPrevStateDuring
+            ? JourneyState.deadheadDuring(isDetour)
+            : JourneyState.deadheadBefore(null);
+      /*
+       * If it wasn't a layover and now it is, become one
+       */
+      } else if (!EVehiclePhase.isLayover(parentPhase)
+          && (isLayoverStopped && newBlockState.isAtPotentialLayoverSpot())) {
+        return wasPrevStateDuring
+            ? JourneyState.layoverDuring(isDetour)
+            : JourneyState.layoverBefore();
+      } else {
+        return JourneyState.getStateForPhase(parentPhase, isDetour, null);
+      }
+    } else {
+      return JourneyState.inProgress();
+    }
+  }
+  
   static public boolean isLocationOnATrip(BlockState blockState) {
     return isLocationOnATrip(blockState.getBlockLocation());
   }

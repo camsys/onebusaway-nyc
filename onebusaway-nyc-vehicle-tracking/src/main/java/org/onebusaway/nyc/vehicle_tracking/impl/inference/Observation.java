@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
@@ -77,8 +78,19 @@ public class Observation implements Comparable<Observation> {
 
     if (previousObservation == null) {
       this._timeDelta = null;
+      this._distanceMoved = 0d;
+      this._orientation = Double.NaN;
     } else {
       this._timeDelta = (timestamp - previousObservation.getTime()) / 1000d;
+      this._distanceMoved = SphericalGeometryLibrary.distance(
+          previousObservation.getLocation(),
+          _point.toCoordinatePoint());
+      this._orientation = SphericalGeometryLibrary.getOrientation(
+          previousObservation.getLocation().getLat(),
+          previousObservation.getLocation().getLon(),
+          record.getLatitude(),
+          record.getLongitude()
+          );
     }
 
     _previousObservation = previousObservation;
@@ -187,6 +199,10 @@ public class Observation implements Comparable<Observation> {
 
   private final Double _timeDelta;
 
+  private final double _orientation;
+
+  private final double _distanceMoved;
+
   @Override
   public int hashCode() {
 
@@ -279,6 +295,14 @@ public class Observation implements Comparable<Observation> {
    */
   public Double getTimeDelta() {
     return _timeDelta;
+  }
+
+  public double getDistanceMoved() {
+    return _distanceMoved;
+  }
+
+  public double getOrientation() {
+    return _orientation;
   }
 
 }
