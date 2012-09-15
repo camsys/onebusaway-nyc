@@ -166,7 +166,7 @@ public class JourneyStateTransitionModel {
             else if (obs.hasOutOfServiceDsc())
               return JourneyState.deadheadDuring(isDetour);
             else
-              return adjustInProgressTransition(parentState.getJourneyState().getPhase(), 
+              return adjustInProgressTransition(parentState != null ? parentState.getJourneyState().getPhase() : null, 
                   blockState, isDetour, isLayoverStopped);
           } else {
             return JourneyState.deadheadDuring(false);
@@ -194,10 +194,9 @@ public class JourneyStateTransitionModel {
   private JourneyState adjustInProgressTransition(EVehiclePhase parentPhase,
       BlockStateObservation newBlockState, boolean isDetour, boolean isLayoverStopped) {
 
-    if ((!parentPhase.equals(
-        EVehiclePhase.IN_PROGRESS)
-        && !parentPhase.equals(
-        EVehiclePhase.DEADHEAD_AFTER))
+    if (parentPhase != null
+        && (!parentPhase.equals(EVehiclePhase.IN_PROGRESS)
+          && !parentPhase.equals(EVehiclePhase.DEADHEAD_AFTER))
         && !newBlockState.isSnapped()) {
       final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(parentPhase);
       /*
