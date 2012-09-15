@@ -22,7 +22,7 @@ public class DSCFilter implements Filter<VehicleStatus> {
 	@Override
 	public boolean apply(VehicleStatus type) {
 		if(StringUtils.isNotBlank(type.getObservedDSC())) {
-			return type.getObservedDSC().equalsIgnoreCase(dsc);
+			return type.getObservedDSC().startsWith(dsc);
 		}
 		return false;
 	}

@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.SessionFactory;
@@ -34,10 +35,14 @@ public class SiriServiceDao implements SiriServicePersister {
     boolean isNew = false;
     ServiceAlertRecord record = getServiceAlertByServiceAlertId(serviceAlertBean.getId());
     if (record != null) {
+      record.setUpdatedAt(new Date());
       record.setDeleted(false);
       _template.saveOrUpdate(record.updateFrom(serviceAlertBean));
     } else {
-      _template.saveOrUpdate(new ServiceAlertRecord(serviceAlertBean));
+      ServiceAlertRecord newRecord = new ServiceAlertRecord(serviceAlertBean);
+      newRecord.setUpdatedAt(new Date());
+      newRecord.setCreatedAt(new Date());
+      _template.saveOrUpdate(newRecord);
       isNew = true;
     }
     return isNew;
@@ -50,6 +55,7 @@ public class SiriServiceDao implements SiriServicePersister {
     if (record == null)
       return null;
     record.setDeleted(true);
+    record.setUpdatedAt(new Date());
     _template.saveOrUpdate(record);
     return ServiceAlertRecord.toBean(record);
   }

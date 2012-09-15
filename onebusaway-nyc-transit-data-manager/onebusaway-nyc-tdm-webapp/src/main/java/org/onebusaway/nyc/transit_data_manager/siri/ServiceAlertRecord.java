@@ -172,17 +172,6 @@ public class ServiceAlertRecord implements Serializable {
   }
 
 
-  // These 2 annotations are NOT working at the moment.  See https://issuetracker.camsys.com/browse/OBANYC-589
-  @PrePersist
-  protected void onCreate() {
-    createdAt = updatedAt = new Date();
-  }
-
-  @PreUpdate
-  protected void onUpdate() {
-    updatedAt = new Date();
-  }
-
   public Integer getId() {
     return id;
   }

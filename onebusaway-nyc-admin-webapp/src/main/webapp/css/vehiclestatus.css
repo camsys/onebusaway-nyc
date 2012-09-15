@@ -405,6 +405,7 @@
 
 #results #submitBox input[type="button"] {
 	margin-left: 10px;
+	color: #999999;
 }
 
 #submitBox .inlineButton {
@@ -416,11 +417,9 @@
 
 #submitBox #reset {
 	width: 120px;
-	color: #999999;
 }
 
 #submitBox #save {
 	width: 100px;
-	color: #999999;
 }
 

@@ -31,6 +31,7 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.xwork.StringUtils;
+import org.hibernate.hql.CollectionSubqueryFactory;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
@@ -219,7 +220,8 @@ public abstract class NycSiriService {
       ServiceAlertBean serviceAlertBean = getPtSituationAsServiceAlertBean(
           ptSituation, endpointDetails);
 
-      if (StringUtils.isEmpty(serviceAlertBean.getId())) {
+      String id = serviceAlertBean.getId();
+      if (StringUtils.isEmpty(id)) {
         _log.warn("Service alert has no id, discarding.");
         continue;
       }
@@ -227,13 +229,18 @@ public abstract class NycSiriService {
       boolean remove = (progress != null && (progress == WorkflowStatusEnumeration.CLOSING || progress == WorkflowStatusEnumeration.CLOSED));
 
       if (remove) {
-        serviceAlertIdsToRemove.add(serviceAlertBean.getId());
+        serviceAlertIdsToRemove.add(id);
       } else {
         serviceAlertsToUpdate.add(serviceAlertBean);
+        preAlertIds.remove(id);
       }
 
     }
 
+    for (String id: preAlertIds) {
+      serviceAlertIdsToRemove.add(id);
+    }
+    
     String defaultAgencyId = null;
     if (!CollectionsLibrary.isEmpty(endpointDetails.getDefaultAgencyIds()))
       defaultAgencyId = endpointDetails.getDefaultAgencyIds().get(0);
@@ -331,6 +338,9 @@ public abstract class NycSiriService {
         serviceAlert.setId(AgencyAndId.convertToString(id));
       }
 
+      if (ptSituation.getCreationTime() != null)
+        serviceAlert.setCreationTime(ptSituation.getCreationTime().getTime());
+      
       handleDescriptions(ptSituation, serviceAlert);
       handleOtherFields(ptSituation, serviceAlert);
       // TODO not yet implemented

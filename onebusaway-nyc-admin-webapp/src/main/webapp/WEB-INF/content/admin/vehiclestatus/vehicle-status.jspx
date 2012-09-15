@@ -63,6 +63,11 @@
 	<!-- //prevent jspx minimization -->
 	</script>
 	
+	<s:url var="url" value="/js/lib/jquery.numeric.js" />
+	<script type="text/javascript" src="${url}">
+	<!-- //prevent jspx minimization -->
+	</script>
+	
 	
 	<s:url var="url" value="/js/oba/vehiclestatus/vehiclestatus.js" />
 	<script type="text/javascript" src="${url}">
