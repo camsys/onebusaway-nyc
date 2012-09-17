@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AuthenticatedResource {
 
   private static Logger _log = LoggerFactory.getLogger(AuthenticatedResource.class);
-  private CurrentUserService _currentUserService;
+  protected CurrentUserService _currentUserService;
   
   @Autowired
   public void setCurrentUserService(CurrentUserService userDataService) {

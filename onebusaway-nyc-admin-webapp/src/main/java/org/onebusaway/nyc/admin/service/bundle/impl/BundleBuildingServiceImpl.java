@@ -11,6 +11,7 @@ import org.onebusaway.nyc.admin.util.ProcessUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.logging.LoggingService;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
@@ -18,6 +19,7 @@ import org.onebusaway.transit_data_federation.bundle.model.TaskDefinition;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 
 import org.apache.log4j.Layout;
+import org.apache.log4j.Level;
 import org.apache.log4j.SimpleLayout;
 import org.apache.log4j.WriterAppender;
 import org.slf4j.Logger;
@@ -49,6 +51,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImpl.class);
   private FileService _fileService;
   private ConfigurationService configurationService;
+  private LoggingService loggingService;
   
   @Autowired
   public void setFileService(FileService service) {
@@ -77,6 +80,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     assemble(request, response);
     upload(request, response);
     response.addStatusMessage("Bundle build process complete");
+    String component = System.getProperty("admin.chefRole");
+    loggingService.log(component, Level.INFO, "Bundle build process complete for bundle '" 
+    			+request.getBundleName() + "'");
   }
   /**
    * download from S3 and stage for building 
@@ -489,5 +495,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         _fileService.getBuildPath() +  File.separator +
         bundleName;
   }
+
+	/**
+	 * @param loggingService the loggingService to set
+	 */
+    @Autowired
+	public void setLoggingService(LoggingService loggingService) {
+		this.loggingService = loggingService;
+	}
 
 }

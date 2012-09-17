@@ -1,19 +1,19 @@
 package org.onebusaway.nyc.util.impl.tdm;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import org.apache.commons.lang.StringUtils;
-import org.onebusaway.nyc.util.impl.RestApiLibrary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.util.impl.RestApiLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class TransitDataManagerApiLibrary {
 
@@ -63,6 +63,10 @@ public class TransitDataManagerApiLibrary {
     if(!_restApiLibrary.setContents(requestUrl, value)) {
       throw new Exception("Error setting configuration value");
     }
+  }
+  
+  public String log(String baseObject, String component, Integer priority, String message) {
+	  return _restApiLibrary.log(baseObject, component, priority, message);
   }
   
   public List<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {		

@@ -15,16 +15,13 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.PropertyNamingStrategy;
-import org.codehaus.jackson.map.ser.StdSerializerProvider;
 import org.joda.time.DateTime;
-import org.onebusaway.nyc.transit_data_manager.config.AllLowerWithDashesNamingStrategy;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItemsMessage;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.Message;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.SingleConfigItem;
-import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.WarningMessage;
+import org.onebusaway.nyc.transit_data_manager.util.ObjectMapperProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -163,16 +160,14 @@ public class ConfigResource {
 
     if (!giveNoValueError) datastore.setConfigItemByComponentKey(component, key, configToSet);
 
-    Message statusMessage = null;
+    Message statusMessage = new Message();
 
     if (giveNoValueError){
-      statusMessage = new WarningMessage();
       statusMessage.setStatus("ERROR");
-      ((WarningMessage) statusMessage).setWarningMessage("No Value entered. Nothing saved.");
+      statusMessage.setMessageText("No Value entered. Nothing saved.");
     } else if (giveUnsupportedValueTypeWarning) {
-      statusMessage = new WarningMessage();
       statusMessage.setStatus("WARNING");
-      ((WarningMessage) statusMessage).setWarningMessage("valueTypes other than string are unsupported at this time. Value will be stored as a string.");
+      statusMessage.setMessageText("valueTypes other than string are unsupported at this time. Value will be stored as a string.");
     } else {
       statusMessage = new Message();
       statusMessage.setStatus("OK");
@@ -191,19 +186,6 @@ public class ConfigResource {
    * @return
    */
   private ObjectMapper getObjectMapper() {
-    // this code was taken from
-    // http://wiki.fasterxml.com/JacksonHowToCustomSerializers
-    // Basically it sets up a serializer for null values, so that they are
-    // mapped to an empty string.
-
-    ObjectMapper m = new ObjectMapper();
-    
-    StdSerializerProvider sp = new StdSerializerProvider();
-    m.setSerializerProvider(sp);
-    
-    PropertyNamingStrategy pns = new AllLowerWithDashesNamingStrategy();
-    m.setPropertyNamingStrategy(pns);
-
-    return m;
+   return ObjectMapperProvider.getObjectMapper();
   }
 }
