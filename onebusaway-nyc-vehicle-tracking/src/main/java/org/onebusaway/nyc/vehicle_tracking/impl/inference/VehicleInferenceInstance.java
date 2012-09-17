@@ -264,7 +264,7 @@ public class VehicleInferenceInstance {
     }
 
     final boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
-    final boolean atTerminal = _vehicleStateLibrary.isAtPotentialBlockTerminal(record);
+    final boolean atTerminal = false; //_vehicleStateLibrary.isAtPotentialBlockTerminal(record);
     final boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode);
     final boolean hasValidDsc = !_destinationSignCodeService.isMissingDestinationSignCode(lastValidDestinationSignCode)
         && !_destinationSignCodeService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
@@ -717,6 +717,16 @@ public class VehicleInferenceInstance {
         if (secondsSinceLastMotion > 
         	_configurationService.getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
+      } else {
+        // vehicles on detour should be in_progress with status=deviated 
+        if (state.getJourneyState().getIsDetour()) {
+          // remap this journey state/phase to IN_PROGRESS to conform to 
+          // previous pilot project semantics.
+          if (EVehiclePhase.DEADHEAD_DURING.equals(phase)) {
+            record.setInferredPhase(EVehiclePhase.IN_PROGRESS.name());
+            statusFields.add("deviated");
+          }
+        }
       }
 
       record.setInferredDsc(blockState.getBlockState().getDestinationSignCode());

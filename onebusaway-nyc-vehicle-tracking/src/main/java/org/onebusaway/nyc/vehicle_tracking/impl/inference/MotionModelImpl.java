@@ -43,6 +43,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 
 import gov.sandia.cognition.math.LogMath;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Maps;
@@ -122,6 +123,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
   private JourneyStateTransitionModel _journeyStateTransitionModel;
 
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
+  private final static double _distancePastEndMargin = 100d;
 
   @Autowired
   public void setNullStateLikelihood(NullStateLikelihood nullStateLikelihood) {
@@ -162,19 +164,52 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     if (parentBlockState != null) {
       if (!parentBlockState.isRunFormal()
-          && _blocksFromObservationService.hasSnappedBlockStates(obs)
           && obs.hasValidDsc()) {
-
+        
+        /*
+         * Always expect that we can go off from a detour when
+         * the run-info is bad.
+         */
+        if (parentState.getJourneyState().getIsDetour()) {
+          return true;
+        }
+        
         /*
          * We have no good run information, but a valid DSC, so we will allow a
          * run transition when there are snapped states and it's not in
          * progress. This way we're less likely to get deadheads with in-service
          * signs floating along routes.
          */
-        if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()) {
-          return true;
+        if (_blocksFromObservationService.hasSnappedBlockStates(obs)) {
+          if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()) {
+            return true;
+          }
+        }
+        
+        /*
+         * If we have no good run info and we're near/at the end of trip and our
+         * observations moved a distance past the end of the trip.
+         */
+        if (JourneyStateTransitionModel.isLocationOnATrip(parentBlockState.getBlockState())) {
+          final double tripDab = parentBlockState.getBlockState().getBlockLocation().getDistanceAlongBlock()
+              - parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock();
+          final double distanceMoved = SphericalGeometryLibrary.distance(obs.getLocation(), 
+              obs.getPreviousObservation().getLocation());
+          if (tripDab + distanceMoved + _distancePastEndMargin >= 
+              parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getTrip().getTotalTripDistance()) {
+            return true;
+          }
         }
       }
+      
+      /*
+       * If we've finished a run/block and changed our dsc to a valid one, then
+       * keep checking for new states.
+       */
+      if (parentState.getJourneyState().getPhase().equals(EVehiclePhase.DEADHEAD_AFTER)
+          && obs.hasValidDsc() && !Objects.equal(obs.getLastValidDestinationSignCode(), 
+              parentState.getBlockState().getDestinationSignCode()))
+        return true;
     }
 
     if (obs.getPreviousObservation() != null) {
@@ -238,6 +273,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
          */
         transitions.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(obs));
       } else if (parentBlockStateObs != null) {
+
         /*
          * Only the snapped blocks.
          * We are also allowing changes to snapped in-progress states when
@@ -333,11 +369,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
           obs, parentState.getJourneyState().getPhase(), vehicleNotMoved);
       journeyState = _journeyStateTransitionModel.getJourneyState(
           newEdge.getValue(), parentState, obs, vehicleNotMoved);
-
-      final boolean isLayoverStopped = JourneyStateTransitionModel.isLayoverStopped(
-          vehicleNotMoved, obs, parentState);
-      journeyState = adjustInProgressTransition(parentState, newEdge,
-          journeyState, isLayoverStopped);
 
       final VehicleState newState = new VehicleState(motionState,
           newEdge.getValue(), journeyState, null, obs);
@@ -457,51 +488,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return newParticle;
   }
 
-  /**
-   * The strict schedule-time based journey state assignment doesn't work for
-   * late/early transitions to in-progess, since in-progress states that are
-   * produced will be judged harshly if they're not exactly on the geometry.
-   * This method works around that.
-   * 
-   * @param parentState
-   * @param newEdge
-   * @param journeyState
-   * @return
-   */
-  private JourneyState adjustInProgressTransition(VehicleState parentState,
-      java.util.Map.Entry<BlockSampleType, BlockStateObservation> newEdge,
-      JourneyState journeyState, boolean isLayoverStopped) {
-
-    if ((!parentState.getJourneyState().getPhase().equals(
-        EVehiclePhase.IN_PROGRESS)
-        && !parentState.getJourneyState().getPhase().equals(
-        EVehiclePhase.DEADHEAD_AFTER))
-        && journeyState.getPhase().equals(EVehiclePhase.IN_PROGRESS)
-        && !newEdge.getValue().isSnapped()) {
-      final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase());
-      /*
-       * If it was a layover, and now it's not, then change to deadhead
-       */
-      if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-          && !(isLayoverStopped && newEdge.getValue().isAtPotentialLayoverSpot())) {
-        return wasPrevStateDuring
-            ? JourneyState.deadheadDuring(journeyState.isDetour())
-            : JourneyState.deadheadBefore(null);
-      /*
-       * If it wasn't a layover and now it is, become one
-       */
-      } else if (!EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-          && (isLayoverStopped && newEdge.getValue().isAtPotentialLayoverSpot())) {
-        return wasPrevStateDuring
-            ? JourneyState.layoverDuring(journeyState.isDetour())
-            : JourneyState.layoverBefore();
-      } else {
-        return parentState.getJourneyState();
-      }
-    } else {
-      return journeyState;
-    }
-  }
 
   public static enum BlockSampleType {
     NOT_SAMPLED, SCHEDULE_STATE_SAMPLE, EDGE_MOVEMENT_SAMPLE
@@ -544,15 +530,17 @@ public class MotionModelImpl implements MotionModel<Observation> {
           if (EVehiclePhase.AT_BASE == parentPhase) {
             newEdge = Maps.immutableEntry(BlockSampleType.NOT_SAMPLED,
                 parentBlockStateObs);
-          } else if (EVehiclePhase.isActiveDuringBlock(parentPhase)
-              || (EVehiclePhase.isActiveBeforeBlock(parentPhase) && FastMath.abs(currentScheduleDev) > 0.0)) {
-            /*
-             * If it's active in the block or deadhead_before after the start
-             * time...
-             */
+          } else if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
             newEdge = Maps.immutableEntry(BlockSampleType.EDGE_MOVEMENT_SAMPLE,
                 _blockStateSamplingStrategy.sampleTransitionDistanceState(
                     parentBlockStateObs, obs, vehicleNotMoved, parentPhase));
+          } else if (EVehiclePhase.isActiveBeforeBlock(parentPhase) && FastMath.abs(currentScheduleDev) > 0.0) {
+            /*
+             * Continue sampling mid-trip joins for this block...
+             */
+            newEdge = Maps.immutableEntry(BlockSampleType.SCHEDULE_STATE_SAMPLE,
+                _blockStateSamplingStrategy.samplePriorScheduleState(
+                    parentBlockStateObs.getBlockState().getBlockInstance(), obs));
           } else {
             newEdge = Maps.immutableEntry(BlockSampleType.NOT_SAMPLED,
                 parentBlockStateObs);

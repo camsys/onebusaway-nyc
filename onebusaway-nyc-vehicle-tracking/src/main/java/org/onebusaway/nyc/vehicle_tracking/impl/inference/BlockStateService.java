@@ -84,13 +84,15 @@ import javax.annotation.PostConstruct;
 @Component
 public class BlockStateService {
 
-  private static final double _tripSearchRadius = 60;
+  private static final double _tripSearchRadius = 60d;
 
   private static final long _tripSearchTimeAfterLastStop = 5 * 60 * 60 * 1000;
 
   private static final long _tripSearchTimeBeforeFirstStop = 5 * 60 * 60 * 1000;
 
-  private static final double _oppositeDirMoveCutoff = 5;
+  private static final double _oppositeDirMoveCutoff = 5d;
+
+  private static final double _oppositeAngleCutoff = 35d;
   
   /*
    * Set this field to true if you want to require snapped states
@@ -184,7 +186,7 @@ public class BlockStateService {
     _shapePointsLibrary.setLocalMinimumThreshold(localMinimumThreshold);
   }
 
-  public BestBlockStates getBestBlockLocations(Observation observation,
+  public synchronized BestBlockStates getBestBlockLocations(Observation observation,
       BlockInstance blockInstance, double blockDistanceFrom,
       double blockDistanceTo) throws MissingShapePointsException {
 
@@ -335,7 +337,7 @@ public class BlockStateService {
     return new BlockState(blockInstance, blockLocation, rte, dsc);
   }
 
-  public Set<BlockState> getBlockStatesForObservation(Observation observation) {
+  public synchronized Set<BlockState> getBlockStatesForObservation(Observation observation) {
     Set<BlockState> m = _observationCache.getValueForObservation(observation,
         EObservationCacheKey.BEST_BLOCK_STATES);
 
@@ -363,7 +365,7 @@ public class BlockStateService {
    * 
    * @param observation
    */
-  public Map<BlockLocationKey, BestBlockStates> computeBlockStatesForObservation(
+  private Map<BlockLocationKey, BestBlockStates> computeBlockStatesForObservation(
       Observation observation) {
 
     final Map<BlockLocationKey, BestBlockStates> results = Maps.newHashMap();
@@ -403,6 +405,14 @@ public class BlockStateService {
           pointOnLine.y, pointOnLine.x, startOfLine.y, startOfLine.x);
 
       for (final TripInfo tripInfo : _linesToTripInfo.get(line)) {
+        /*
+         * Skip other agencies.
+         * TODO query TripInfo by agency? 
+         */
+        if (!Objects.equal(tripInfo.getShapeAndIdx().getShapeId().getAgencyId(),
+            record.getVehicleId().getAgencyId()))
+          continue;
+        
         for (final BlockEntry block : tripInfo.getBlocks()) {
 
           /*
@@ -481,16 +491,6 @@ public class BlockStateService {
       }
     }
     
-    Double obsOrientation = null;
-    Double distMoved = null;
-    if (observation.getPreviousRecord() != null) {
-      NycRawLocationRecord prevRecord = observation.getPreviousRecord();
-      obsOrientation = SphericalGeometryLibrary.getOrientation(prevRecord.getLatitude(),
-          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
-      distMoved = SphericalGeometryLibrary.distanceFaster(prevRecord.getLatitude(),
-          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
-    }
-
     for (final Entry<BlockInstance, Collection<Double>> biEntry : instancesToDists.asMap().entrySet()) {
       final BlockInstance instance = biEntry.getKey();
       final int searchTimeFrom = (int) (timeFrom.getTime() - instance.getServiceDate()) / 1000;
@@ -509,13 +509,8 @@ public class BlockStateService {
         /*
          * Don't consider opposite direction trips.
          */
-        if (obsOrientation != null && distMoved != null) {
-          double orientDiff = Math.abs(obsOrientation - location.getOrientation());
-          if (orientDiff >= 95 && orientDiff <= 265 
-              && distMoved >= getOppositeDirMoveCutoff()) {
-            continue;
-          }
-        }
+        if (movedInOppositeDirection(observation, location))
+          continue;
           
         /*
          * Should be increasing time for increasing distanceAlongBlock...
@@ -564,6 +559,31 @@ public class BlockStateService {
       }
     }
     return results;
+  }
+
+  private boolean movedInOppositeDirection(Observation observation,
+      ScheduledBlockLocation location) {
+    
+    if (observation.getPreviousRecord() != null) {
+      /*
+       * We get NaN when the locations are the same;
+       * in which case, we don't have a comparison to make,
+       * so use an orientation difference of 0.
+       */
+      double obsOrientation = observation.getOrientation();
+      if (Double.isNaN(obsOrientation)) {
+        obsOrientation = location.getOrientation();
+      }
+      
+      double orientDiff = Math.abs(obsOrientation - location.getOrientation());
+      if (orientDiff >= 90d + _oppositeAngleCutoff 
+          && orientDiff <= 270d + _oppositeAngleCutoff 
+          ) {
+        return true;
+      }
+    } 
+        
+    return false;
   }
 
   /**

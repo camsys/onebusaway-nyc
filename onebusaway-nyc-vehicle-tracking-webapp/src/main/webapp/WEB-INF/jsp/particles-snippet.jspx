@@ -97,10 +97,15 @@
 										<c:if test="${details.history}">
 	                    <c:set var="recordNumber" value="${recordNumber - 1}" />
                     </c:if>
-                    <td><c:out value="${journeyState.phase}" /></td>
+                    <td><c:out value="${journeyState.phase}"/><c:out value="${journeyState.isDetour ? ' (detour)' : ''}" /></td>
                     <td bgcolor='#cdc9c9'><c:out value="${runReported == null?'NA':runReported}" /></td>
                     <td><c:out value="${opAssigned == null?'NA':opAssigned}" /></td>
-                    <td bgcolor='#cdc9c9'><c:out value="${blockState.runTripEntry.runId}" /></td>
+                    
+                    <c:set var="prevRun" value="" />
+										<c:if test="${(p.parent != null) &amp;&amp; (p.parent.data.blockState != null)}">
+	                    <c:set var="prevRun" value="${p.parent.data.blockState.runTripEntry.runId}" />
+                    </c:if>
+                    <td bgcolor='#cdc9c9'><c:out value="${blockState.runTripEntry.runId}" /> (<c:out value="${prevRun}" />)</td>
                     <td><a
                         href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out
                         value="${blockState.blockInstance.block.block.id}" /></a></td>

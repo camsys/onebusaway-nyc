@@ -108,7 +108,8 @@ public class VehicleStateLibrary {
      * layover spot the terminals of all blocks.
      */
     if (blockState == null) {
-      return obs.isAtTerminal();
+//      return obs.isAtTerminal();
+      return false;
     }
 
     /**

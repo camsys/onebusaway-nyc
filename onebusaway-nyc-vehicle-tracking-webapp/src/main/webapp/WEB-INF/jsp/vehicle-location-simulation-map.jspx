@@ -256,6 +256,7 @@ OBA.Debug = function() {
           	inferredTripId: "NA",
           	timestampAsDate: "NA",
           	inferredPhase: "NA",
+          	status: "default",
           	dsc: "NA",
           	inferredDsc: "NA",
           	reportedRunId: "NA",
@@ -272,7 +273,7 @@ OBA.Debug = function() {
           		 + "dsc: " + this.dsc + "<br/>"
           		 + "reportedRunId: " + this.reportedRunId + "<br/>"
           		 + "inferredTripId:" + this.inferredTripId + "<br/>"
-          		 + "inferredPhase: " + this.inferredPhase + "<br/>"
+          		 + "inferredPhase: " + this.inferredPhase + "(" + this.status + ")" + "<br/>"
           		 + "inferredDsc: " + this.inferredDsc + "<br/>"
           		 + "inferredRunId: " + this.inferredRunId + "<br/>"
           		 + "inferredSchedTime: " + this.inferredSchedTime + "<br/>"
@@ -308,10 +309,14 @@ OBA.Debug = function() {
 									icon_url = 'http://www.openlayers.org/dev/img/marker-green.png';
 								} else if (value.indexOf("LAYOVER") != -1) {
 									icon_url = 'http://www.openlayers.org/dev/img/marker-blue.png';
-								}
-								
+								} 
 							} else if (property === "dsc") {
 								markerText.dsc = value;
+							} else if (property === "inferredStatus") {
+								markerText.status = value;
+								if (value.indexOf("deviated") != -1) {
+									icon_url = 'http://query.mtabuscis.net/tools/img/marker-red-center.png';
+								}
 							} else if (property === "inferredDsc") {
 								markerText.inferredDsc = value;
 							} else if (property === "reportedRunId") {

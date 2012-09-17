@@ -63,25 +63,25 @@ public class DscLikelihood implements SensorModelRule {
     final DSC_STATE state = getDscState(context);
     switch (state) {
       case DSC_OOS_IP:
-        result.addResultAsAnd("in-progress o.o.s. dsc", 0.0);
+        result.addResultAsAnd("i.p. o.o.s. dsc", 0.0);
         return result;
       case DSC_NOT_VALID:
-        result.addResultAsAnd("non-valid dsc", 0.95 / 3d);
+        result.addResultAsAnd("!valid dsc", 0.95 / 3d);
         return result;
       case DSC_OOS_NOT_IP:
-        result.addResultAsAnd("not-in-progress o.o.s. dsc", 0.95 / 3d);
+        result.addResultAsAnd("!i.p. o.o.s. dsc", 0.95 / 3d);
         return result;
       case DSC_IS_NO_BLOCK:
-        result.addResultAsAnd("not o.o.s. dsc null-block", 0.01);
+        result.addResultAsAnd("!o.o.s. dsc null-block", 0.01);
         return result;
       case DSC_MATCH:
-        result.addResultAsAnd("in-service matching DSC", 0.95 / 3d);
+        result.addResultAsAnd("i.s. matching DSC", 0.95 / 3d);
         return result;
       case DSC_ROUTE_MATCH:
-        result.addResultAsAnd("in-service route-matching DSC", 0.04);
+        result.addResultAsAnd("i.s. route-matching/deadhead-before/after", 0.04);
         return result;
       case DSC_NO_ROUTE_MATCH:
-        result.addResultAsAnd("in-service non-route-matching DSC", 0.0);
+        result.addResultAsAnd("i.s. non-route-matching DSC", 0.0);
         return result;
       default:
         return null;
@@ -135,7 +135,15 @@ public class DscLikelihood implements SensorModelRule {
           }
         }
 
-        if (dscs.contains(observedDsc)) {
+        /*
+         * Check if it's active, since deadhead-after/before's
+         * can/should have o.o.s. dsc's, although they often don't.
+         * TODO perhaps check the last non-o.o.s. dsc to give
+         * higher weight to deadhead-after's that match (when
+         * we have good run-info, perhaps).
+         */
+        if (phase != EVehiclePhase.DEADHEAD_AFTER
+            && dscs.contains(observedDsc)) {
           return DSC_STATE.DSC_MATCH;
         } else {
           /*

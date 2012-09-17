@@ -15,21 +15,22 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
-/** 
- * Detour case
+/**
+ * This test is to check that informal pickup of in-progress occurs as expected.
  * 
+ * @author bwillard 
+ *
  */
-//@Ignore
-@RunWith(RunUntilSuccess.class)
-public class Trace_7564_20101202T114909_IntegrationTest extends AbstractTraceRunner {
 
-  public Trace_7564_20101202T114909_IntegrationTest() throws Exception {
-    super("7564-2010-12-02T11-49-09.csv");
-    setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
+@RunWith(RunUntilSuccess.class)
+public class Trace_3819_20120829_220004_222001_IntegrationTest extends AbstractTraceRunner {
+
+  public Trace_3819_20120829_220004_222001_IntegrationTest() throws Exception {
+    super("3819-pickup-labeled.csv");
+    setBundle("2012July_r04_b02", "2012-08-28T00:00:00EDT");
   }
 }
