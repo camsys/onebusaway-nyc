@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Level;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -21,6 +22,7 @@ import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.exceptions.DateValidationException;
+import org.onebusaway.nyc.util.logging.LoggingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ import org.springframework.stereotype.Component;
 public class BuildResource extends AuthenticatedResource {
 	@Autowired
 	private BundleRequestService _bundleService;
+	private LoggingService loggingService;
+	
 	private final ObjectMapper _mapper = new ObjectMapper();
 	private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
 
@@ -75,6 +79,10 @@ public class BuildResource extends AuthenticatedResource {
 			
 			
 			try {
+				String message = "Starting bundle building process for bundle '" + buildRequest.getBundleName()
+						+ "' initiated by user : " + _currentUserService.getCurrentUserDetails().getUsername();
+				String component = System.getProperty("admin.chefRole");
+				loggingService.log(component, Level.INFO, message);
 				buildResponse =_bundleService.build(buildRequest);
 				buildResponse = _bundleService.buildBundleResultURL(buildResponse.getId());
 				response = constructResponse(buildResponse);
@@ -156,5 +164,13 @@ public class BuildResource extends AuthenticatedResource {
 			response = Response.serverError().build();
 		}
 		return response;
+	}
+
+	/**
+	 * @param loggingService the loggingService to set
+	 */
+	@Autowired
+	public void setLoggingService(LoggingService loggingService) {
+		this.loggingService = loggingService;
 	}
 }

@@ -2,9 +2,6 @@ package org.onebusaway.nyc.transit_data_manager.persistence.service.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +13,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.api.service.DepotDataProviderService;
 import org.onebusaway.nyc.transit_data_manager.persistence.model.DepotRecord;
 import org.onebusaway.nyc.transit_data_manager.persistence.service.SpearDataPersistenceService;
+import org.onebusaway.nyc.transit_data_manager.util.DateUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,18 +76,7 @@ public class SpearDataPersistenceServiceImpl implements SpearDataPersistenceServ
 	}
 	
 	private Date getFormattedDate() {
-		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		String dateString = formatter.format(new Date());
-		Date formattedDate = null;
-		
-		try {
-			formattedDate = formatter.parse(dateString);
-		} catch (ParseException e) {
-			log.error("Error parsing today's date");
-			e.printStackTrace();
-		}
-		
-		return formattedDate;
+		return DateUtility.getTodaysDate();
 	}
 
 	/**

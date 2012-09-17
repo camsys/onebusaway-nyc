@@ -251,10 +251,8 @@ public class BundleBuildResponse {
 	 private static class SerializableException extends Exception implements Serializable {
 		 private String _msg = "";
 		 private String _rootCause = "";
-		 private String _displayMessage = "";
 
 		 public SerializableException(String msg, Exception rootCause) {
-			 _displayMessage = msg;
 			 _msg = rootCause.getClass().getName() + ":" + msg;
 			 int count = 0;
 			 for (StackTraceElement ste:rootCause.getStackTrace()) {
@@ -289,10 +287,6 @@ public class BundleBuildResponse {
 		 public String toString() {
 			 return  _msg + "\n  Caused by:\n\n" + _rootCause; 
 		 }
-		 
-		public String getDisplayMessage() {
-			 return _displayMessage;
-		 }
-
+		
 	 }
 }

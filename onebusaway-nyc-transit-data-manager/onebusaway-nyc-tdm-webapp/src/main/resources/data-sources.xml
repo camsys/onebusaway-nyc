@@ -104,6 +104,7 @@
 				<value>org.onebusaway.nyc.transit_data_manager.persistence.model.VehiclePipoRecord</value>
 				<value>org.onebusaway.nyc.transit_data_manager.persistence.model.CrewAssignmentRecord</value>
 				<value>org.onebusaway.nyc.transit_data_manager.persistence.model.DepotRecord</value>
+				<value>org.onebusaway.nyc.transit_data_manager.logging.SystemLogRecord</value>
 			</list>
 		</property>
 		<property name="hibernateProperties">
