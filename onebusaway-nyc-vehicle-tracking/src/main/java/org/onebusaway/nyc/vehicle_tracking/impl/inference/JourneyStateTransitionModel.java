@@ -57,7 +57,7 @@ public class JourneyStateTransitionModel {
   }
 
   public static boolean isDetour(BlockStateObservation newState,
-      boolean hasSnappedStates, VehicleState parentState) {
+      boolean hasSnappedStates, boolean hasNotMoved, VehicleState parentState) {
 
     /*
      * We only give detour to states that are supposed to be in-progress,
@@ -94,7 +94,9 @@ public class JourneyStateTransitionModel {
      */
     if (parentState.getJourneyState().getIsDetour()
         || (parentState.getBlockStateObservation().isSnapped()
-            && parentState.getBlockStateObservation().isOnTrip() && parentState.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS)) {
+            && parentState.getBlockStateObservation().isOnTrip() 
+            && parentState.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS
+            && !hasNotMoved)) {
       return true;
     }
 
@@ -156,7 +158,7 @@ public class JourneyStateTransitionModel {
          * In the middle of a block.
          */
         final boolean isDetour = isDetour(blockState,
-            hasSnappedStates, parentState);
+            hasSnappedStates, vehicleNotMoved, parentState);
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
           return JourneyState.layoverDuring(isDetour);
         } else {

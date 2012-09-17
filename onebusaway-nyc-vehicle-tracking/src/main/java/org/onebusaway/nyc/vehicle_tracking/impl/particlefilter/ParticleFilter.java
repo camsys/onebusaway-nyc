@@ -70,7 +70,7 @@ public class ParticleFilter<OBS> {
    * Flag for operations that keep particle trajectory information, transitions,
    * etc.
    */
-  final private static boolean _debugEnabled = true;
+  private static boolean _debugEnabled = false;
 
   /**
    * Flag for option to use the maximum likelihood particle as reported result.
@@ -98,7 +98,7 @@ public class ParticleFilter<OBS> {
 
   private ParticleFactory<OBS> _particleFactory;
 
-  private Multiset<Particle> _particles = HashMultiset.create(200);
+  private Multiset<Particle> _particles = HashMultiset.create(150);
 
   private boolean _seenFirst;
 
@@ -434,6 +434,10 @@ public class ParticleFilter<OBS> {
       throw new BadProbabilityParticleFilterException("low variance sampler did not return a valid sample");
     
     return resampled;
+  }
+
+  public static void setDebugEnabled(Boolean debugEnabled) {
+    _debugEnabled = debugEnabled;
   }
 
 }

@@ -90,7 +90,7 @@ public class BlockStateService {
 
   private static final long _tripSearchTimeBeforeFirstStop = 5 * 60 * 60 * 1000;
 
-  private static final double _oppositeDirMoveCutoff = 5d;
+  private static final double _oppositeDirMoveCutoff = 10d;
 
   private static final double _oppositeAngleCutoff = 35d;
   
@@ -564,7 +564,8 @@ public class BlockStateService {
   private boolean movedInOppositeDirection(Observation observation,
       ScheduledBlockLocation location) {
     
-    if (observation.getPreviousRecord() != null) {
+    if (observation.getPreviousRecord() != null 
+        && observation.getDistanceMoved() >= _oppositeDirMoveCutoff) {
       /*
        * We get NaN when the locations are the same;
        * in which case, we don't have a comparison to make,

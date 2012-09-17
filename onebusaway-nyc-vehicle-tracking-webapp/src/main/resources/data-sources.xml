@@ -97,6 +97,10 @@
         </property>
     </bean>
     
+    <bean class="org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter" scope="prototype">
+        <property name="_debugEnabled" value="${particle.filter.debug}"/>
+    </bean>
+
     <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
                 <property name="bundleStoreRoot" value="${bundle.location}" />
                 <property name="standaloneMode" value="${bundle.mode.standalone}" />

@@ -132,6 +132,7 @@
                 <bundle.mode.standalone>false</bundle.mode.standalone>
                 <depot.partition.key></depot.partition.key>
                 <log4j.appender>ROLL</log4j.appender>
+                <particle.filter.debug>false</particle.filter.debug>
             </properties>
         </profile>
         <profile>
@@ -157,6 +158,7 @@
                  <bundle.mode.standalone>false</bundle.mode.standalone>
                  <depot.partition.key></depot.partition.key>
                  <log4j.appender>stdout</log4j.appender>
+                 <particle.filter.debug>false</particle.filter.debug>
           </properties>
         </profile>
         <profile>
@@ -181,6 +183,7 @@
                  <bundle.mode.standalone>false</bundle.mode.standalone>
                  <depot.partition.key></depot.partition.key>
                  <log4j.appender>stdout</log4j.appender>
+                 <particle.filter.debug>false</particle.filter.debug>
           </properties>
         </profile>
         <profile>
@@ -205,6 +208,7 @@
 <!--                  <bundle.mode.standalone>false</bundle.mode.standalone> -->
                  <depot.partition.key></depot.partition.key>
                  <log4j.appender>stdout</log4j.appender>
+                 <particle.filter.debug>true</particle.filter.debug>
           </properties>
         </profile>
         <profile>
@@ -229,6 +233,7 @@
                  <bundle.mode.standalone>false</bundle.mode.standalone>
                  <depot.partition.key>YU</depot.partition.key>
                  <log4j.appender>stdout</log4j.appender>
+                 <particle.filter.debug>false</particle.filter.debug>
           </properties>
         </profile>
 
