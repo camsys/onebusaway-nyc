@@ -110,10 +110,10 @@ public class AbstractTraceRunner {
     if (!response.equals("OK"))
       throw new Exception("Failed trying to execute:" + urlStr);
 
-    System.out.println("Successfully set seeds: phase=" + _factorySeed + ", cdf="
-        + _cdfSeed);
+    System.out.println("Successfully set seeds: phase=" + _factorySeed
+        + ", cdf=" + _cdfSeed);
   }
-  
+
   /**
    * 
    * @return map of phases to average acceptance ratios
@@ -122,164 +122,208 @@ public class AbstractTraceRunner {
   @Test
   public void test() throws Throwable {
 
-	// expected results
-	File trace = new File("src/integration-test/resources/traces/" + _trace);
-	List<NycTestInferredLocationRecord> expectedResults = _traceSupport.readRecords(trace);
+    // expected results
+    File trace = new File("src/integration-test/resources/traces/" + _trace);
+    List<NycTestInferredLocationRecord> expectedResults = _traceSupport.readRecords(trace);
 
-	// run to get inferred results
+    // run to get inferred results
     String taskId = _traceSupport.uploadTraceForSimulation(trace, false);
 
     long t = System.currentTimeMillis();
     int prevRecordCount = -1;
     while (true) {
       List<NycTestInferredLocationRecord> ourResults = _traceSupport.getSimulationResults(taskId);
-      System.out.println("records=" + ourResults.size() + "/" + expectedResults.size());
+      System.out.println("records=" + ourResults.size() + "/"
+          + expectedResults.size());
 
       // wait for all records to come in
       if (ourResults.size() < expectedResults.size()) {
 
-    	  if (t + _maxTimeout < System.currentTimeMillis()) {
-    		  fail("waited but never received enough records: expected="
-    				  + expectedResults.size() + " actual=" + expectedResults.size());
-    	  }
+        if (t + _maxTimeout < System.currentTimeMillis()) {
+          fail("waited but never received enough records: expected="
+              + expectedResults.size() + " actual=" + expectedResults.size());
+        }
 
-    	  // We reset our timeout if the record count is growing
-    	  if (ourResults.size() > prevRecordCount) {
-    		  t = System.currentTimeMillis();
-    		  prevRecordCount = ourResults.size();
-    	  }
+        // We reset our timeout if the record count is growing
+        if (ourResults.size() > prevRecordCount) {
+          t = System.currentTimeMillis();
+          prevRecordCount = ourResults.size();
+        }
 
-    	  Thread.sleep(1000);
-    	  continue;
+        Thread.sleep(1000);
+        continue;
       }
 
       // all results are in!
 
       // TEST: We got a response for all records.
       assertEquals(ourResults.size(), expectedResults.size());
-      
+
       try {
-	      // TEST: Our results match expected results
-	      for(int i = 0; i < ourResults.size(); i++) {
-	    	NycTestInferredLocationRecord ourResult = ourResults.get(i);
-	    	NycTestInferredLocationRecord expectedResult = expectedResults.get(i);
-	    	  
-	    	// mark new row
-	    	System.out.println("\n\nRecord " + (i + 1) + ", line " + (i + 2) + ", observed timestamp= " + expectedResult.getTimestampAsDate() + "\n============================================================");
-	
-	    	// TEST: block level inference subcases
-	    	Boolean actualIsRunFormal = expectedResult.getActualIsRunFormal();
-	    	assertTrue(actualIsRunFormal != null);
-	    	
-	    	if(actualIsRunFormal == true) {
-	    		// run ID should match
-	    		if(expectedResult.getActualRunId() != null && !StringUtils.isEmpty(expectedResult.getActualRunId())) {
-	    	    	System.out.println("RUN ID: expected=" + expectedResult.getActualRunId() + ", inferred=" + ourResult.getInferredRunId());
-	    			assertEquals(ourResult.getInferredRunId(), expectedResult.getActualRunId());
-	    		}
-	
-	    		// trip ID should match--we accept wildcards (pegged to end of value) here
-	    		if(expectedResult.getActualTripId() != null && !StringUtils.isEmpty(expectedResult.getActualTripId())) {
-	    	    	System.out.println("TRIP ID: expected=" + expectedResult.getActualTripId() + ", inferred=" + ourResult.getInferredTripId());
-	    			assertTrue(ourResult.getInferredTripId().endsWith(expectedResult.getActualTripId()));
-	    		}
-	
-	    		// block ID should match--we accept wildcards (pegged to end of value) here
-	    		if(expectedResult.getActualBlockId() != null && !StringUtils.isEmpty(expectedResult.getActualBlockId())) {
-	    	    	System.out.println("BLOCK ID: expected=" + expectedResult.getActualBlockId() + ", inferred=" + ourResult.getInferredBlockId());
-	    			assertTrue(ourResult.getInferredBlockId().endsWith(expectedResult.getActualBlockId()));
-	    		}
-	    	}
-	    	  
-	    	// TEST: DSCs should always match if we're in_progress
-	    	String expectedDsc = expectedResult.getActualDsc();
-	    	
-	    	System.out.println("DSC: expected=" + expectedDsc + ", inferred=" + ourResult.getInferredDsc());
-	    	if(expectedDsc != null && !StringUtils.isEmpty(expectedDsc))
-				assertEquals(ourResult.getInferredDsc(), expectedDsc);
-	
-	    	// TEST: phase matches
-	    	assertTrue(ourResult.getInferredPhase() != null);
-	    	
-	    	System.out.println("PHASE: expected=" + expectedResult.getActualPhase() + ", inferred=" + ourResult.getInferredPhase());
-	    	if(expectedResult.getActualPhase() != null && !StringUtils.isEmpty(expectedResult.getActualPhase())) {
-				String[] _acceptablePhases = StringUtils.split(expectedResult.getActualPhase().toUpperCase(), "+");
-				Set<String> acceptablePhases = new HashSet<String>();
-				Collections.addAll(acceptablePhases, _acceptablePhases);
-	
-				// allow partial matches for "wildcards"
-				boolean phasesMatched = false;
-				for(String acceptablePhase : acceptablePhases) {
-					// try wildcard matching straight up
-					phasesMatched = ourResult.getInferredPhase().toUpperCase().startsWith(acceptablePhase);
-					if(phasesMatched == true)
-						break;
-					
-					// if inference is expected to be not formal, make layovers equivalent to deadheads
-					phasesMatched = ourResult.getInferredPhase().toUpperCase().replaceAll("^LAYOVER_", "DEADHEAD_").startsWith(acceptablePhase);
-					if(phasesMatched == true)
-						break;
-					
-					phasesMatched = ourResult.getInferredPhase().toUpperCase().replaceAll("^DEADHEAD_", "LAYOVER_").startsWith(acceptablePhase);
-					if(phasesMatched == true)
-						break;
-				}
-				assertTrue(phasesMatched == true);
-			}
-			
-			// TEST: status matches
-	    	assertTrue(ourResult.getInferredStatus() != null);
-	
-			Set<String> acceptableStatuses = new HashSet<String>();
-			if(expectedResult.getActualStatus() != null && !StringUtils.isEmpty(expectedResult.getActualStatus())) {
-				String[] _acceptableStatuses = StringUtils.split(expectedResult.getActualStatus().toUpperCase(), "+");
-				Collections.addAll(acceptableStatuses, _acceptableStatuses);
-			}
-			
-			Set<String> receivedStatuses = new HashSet<String>();
-			if(ourResult.getInferredStatus() != null && !StringUtils.isEmpty(ourResult.getInferredStatus())) {
-				String[] _receivedStatuses = StringUtils.split(ourResult.getInferredStatus().toUpperCase(), "+");
-				Collections.addAll(receivedStatuses, _receivedStatuses);
-			}
-						
-			System.out.println("STATUS: expected=" + acceptableStatuses + ", inferred=" + receivedStatuses);
-	    	
-	    	// if inferred result is detoured, make sure we expect that here
-	    	if(receivedStatuses.contains("DEVIATED")) {
-	    		assertTrue(acceptableStatuses.contains("DEVIATED"));
-	    	}
+        // TEST: Our results match expected results
+        for (int i = 0; i < ourResults.size(); i++) {
+          NycTestInferredLocationRecord ourResult = ourResults.get(i);
+          NycTestInferredLocationRecord expectedResult = expectedResults.get(i);
 
-	    	// if trace expects detoured, make sure we got that here
-	    	if(acceptableStatuses.contains("DEVIATED")) {
-	    		assertTrue(receivedStatuses.contains("DEVIATED"));
-	    	}
+          // mark new row
+          System.out.println("\n\nRecord "
+              + (i + 1)
+              + ", line "
+              + (i + 2)
+              + ", observed timestamp= "
+              + expectedResult.getTimestampAsDate()
+              + "\n============================================================");
 
-			// TEST: distance along block/inferred location/schedule deviation
-	    	assertTrue(ourResult.getInferredBlockLat() != Double.NaN);
-	    	assertTrue(ourResult.getInferredBlockLon() != Double.NaN);
-	    	
-			Coordinate reportedLocation = new Coordinate(expectedResult.getLat(), expectedResult.getLon());
-			Coordinate ourLocation = new Coordinate(ourResult.getInferredBlockLat(), ourResult.getInferredBlockLon());
-			
-			if(ourResult.getInferredPhase().toUpperCase().startsWith("LAYOVER_") || 
-					ourResult.getInferredPhase().toUpperCase().equals("IN_PROGRESS")) {
-			    System.out.println("LOCATION: expected=" + reportedLocation + ", inferred=" + ourLocation);
-				assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
-			}
-	      }
-	      	      
-	      System.out.println("\n>> PASS.");
-	      
+          // TEST: block level inference subcases
+          Boolean actualIsRunFormal = expectedResult.getActualIsRunFormal();
+          assertTrue(actualIsRunFormal != null);
+
+          if (actualIsRunFormal == true) {
+            // run ID should match
+            if (expectedResult.getActualRunId() != null
+                && !StringUtils.isEmpty(expectedResult.getActualRunId())) {
+              System.out.println("RUN ID: expected="
+                  + expectedResult.getActualRunId() + ", inferred="
+                  + ourResult.getInferredRunId());
+              assertEquals(ourResult.getInferredRunId(),
+                  expectedResult.getActualRunId());
+            }
+
+            // trip ID should match--we accept wildcards (pegged to end of
+            // value) here
+            if (expectedResult.getActualTripId() != null
+                && !StringUtils.isEmpty(expectedResult.getActualTripId())) {
+              System.out.println("TRIP ID: expected="
+                  + expectedResult.getActualTripId() + ", inferred="
+                  + ourResult.getInferredTripId());
+              assertTrue(ourResult.getInferredTripId().endsWith(
+                  expectedResult.getActualTripId()));
+            }
+
+            // block ID should match--we accept wildcards (pegged to end of
+            // value) here
+            if (expectedResult.getActualBlockId() != null
+                && !StringUtils.isEmpty(expectedResult.getActualBlockId())) {
+              System.out.println("BLOCK ID: expected="
+                  + expectedResult.getActualBlockId() + ", inferred="
+                  + ourResult.getInferredBlockId());
+              assertTrue(ourResult.getInferredBlockId().endsWith(
+                  expectedResult.getActualBlockId()));
+            }
+          }
+
+          // TEST: DSCs should always match if we're in_progress
+          String expectedDsc = expectedResult.getActualDsc();
+
+          System.out.println("DSC: expected=" + expectedDsc + ", inferred="
+              + ourResult.getInferredDsc());
+          if (expectedDsc != null && !StringUtils.isEmpty(expectedDsc))
+            assertEquals(ourResult.getInferredDsc(), expectedDsc);
+
+          // TEST: phase matches
+          assertTrue(ourResult.getInferredPhase() != null);
+
+          System.out.println("PHASE: expected="
+              + expectedResult.getActualPhase() + ", inferred="
+              + ourResult.getInferredPhase());
+          if (expectedResult.getActualPhase() != null
+              && !StringUtils.isEmpty(expectedResult.getActualPhase())) {
+            String[] _acceptablePhases = StringUtils.split(
+                expectedResult.getActualPhase().toUpperCase(), "+");
+            Set<String> acceptablePhases = new HashSet<String>();
+            Collections.addAll(acceptablePhases, _acceptablePhases);
+
+            // allow partial matches for "wildcards"
+            boolean phasesMatched = false;
+            for (String acceptablePhase : acceptablePhases) {
+              // try wildcard matching straight up
+              phasesMatched = ourResult.getInferredPhase().toUpperCase().startsWith(
+                  acceptablePhase);
+              if (phasesMatched == true)
+                break;
+
+              // if inference is expected to be not formal, make layovers
+              // equivalent to deadheads
+              phasesMatched = ourResult.getInferredPhase().toUpperCase().replaceAll(
+                  "^LAYOVER_", "DEADHEAD_").startsWith(acceptablePhase);
+              if (phasesMatched == true)
+                break;
+
+              phasesMatched = ourResult.getInferredPhase().toUpperCase().replaceAll(
+                  "^DEADHEAD_", "LAYOVER_").startsWith(acceptablePhase);
+              if (phasesMatched == true)
+                break;
+            }
+            assertTrue(phasesMatched == true);
+          }
+
+          // TEST: status matches
+          assertTrue(ourResult.getInferredStatus() != null);
+
+          Set<String> acceptableStatuses = new HashSet<String>();
+          if (expectedResult.getActualStatus() != null
+              && !StringUtils.isEmpty(expectedResult.getActualStatus())) {
+            String[] _acceptableStatuses = StringUtils.split(
+                expectedResult.getActualStatus().toUpperCase(), "+");
+            Collections.addAll(acceptableStatuses, _acceptableStatuses);
+          }
+
+          Set<String> receivedStatuses = new HashSet<String>();
+          if (ourResult.getInferredStatus() != null
+              && !StringUtils.isEmpty(ourResult.getInferredStatus())) {
+            String[] _receivedStatuses = StringUtils.split(
+                ourResult.getInferredStatus().toUpperCase(), "+");
+            Collections.addAll(receivedStatuses, _receivedStatuses);
+          }
+
+          System.out.println("STATUS: expected=" + acceptableStatuses
+              + ", inferred=" + receivedStatuses);
+
+          // if inferred result is detoured, make sure we expect that here
+          if (receivedStatuses.contains("DEVIATED")) {
+            assertTrue(acceptableStatuses.contains("DEVIATED"));
+          }
+
+          // If trace expects detoured, and only detour, then make sure we got that here.
+          // Note that this only holds when the inferred status is in-progress, since
+          // deadheads aren't deviated.  Also, if the inferred phase wasn't acceptable, then
+          // we should've caught that earlier.
+          if (acceptableStatuses.size() == 1 
+              && ourResult.getInferredPhase() == "IN_PROGRESS"
+              && acceptableStatuses.contains("DEVIATED")) {
+            assertTrue(receivedStatuses.contains("DEVIATED"));
+          }
+
+          // TEST: distance along block/inferred location/schedule deviation
+          assertTrue(ourResult.getInferredBlockLat() != Double.NaN);
+          assertTrue(ourResult.getInferredBlockLon() != Double.NaN);
+
+          Coordinate reportedLocation = new Coordinate(expectedResult.getLat(),
+              expectedResult.getLon());
+          Coordinate ourLocation = new Coordinate(
+              ourResult.getInferredBlockLat(), ourResult.getInferredBlockLon());
+
+          if (ourResult.getInferredPhase().toUpperCase().startsWith("LAYOVER_")
+              || ourResult.getInferredPhase().toUpperCase().equals(
+                  "IN_PROGRESS")) {
+            System.out.println("LOCATION: expected=" + reportedLocation
+                + ", inferred=" + ourLocation);
+            assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
+          }
+        }
+
+        System.out.println("\n>> PASS.");
+
       } catch (AssertionError e) {
-    	  System.out.println(">> TEST FAILED HERE ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+        System.out.println(">> TEST FAILED HERE ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
 
-    	  throw new Exception(e);
+        throw new Exception(e);
       }
-      
+
       // break out of wait-for-completion loop
       break;
     }
-      
+
   }
 
 }
