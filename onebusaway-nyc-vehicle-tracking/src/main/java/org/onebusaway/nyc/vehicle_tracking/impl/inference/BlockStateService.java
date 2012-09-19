@@ -405,13 +405,6 @@ public class BlockStateService {
           pointOnLine.y, pointOnLine.x, startOfLine.y, startOfLine.x);
 
       for (final TripInfo tripInfo : _linesToTripInfo.get(line)) {
-        /*
-         * Skip other agencies.
-         * TODO query TripInfo by agency? 
-         */
-        if (!Objects.equal(tripInfo.getShapeAndIdx().getShapeId().getAgencyId(),
-            record.getVehicleId().getAgencyId()))
-          continue;
         
         for (final BlockEntry block : tripInfo.getBlocks()) {
 
@@ -505,6 +498,14 @@ public class BlockStateService {
       for (final Double distanceAlongBlock : biEntry.getValue()) {
         final ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
             instance.getBlock(), distanceAlongBlock);
+        
+        /*
+         * Skip other agencies.
+         * TODO query TripInfo by agency? 
+         */
+        if (!Objects.equal(location.getActiveTrip().getTrip().getId().getAgencyId(),
+            record.getVehicleId().getAgencyId()))
+          continue;
         
         /*
          * Don't consider opposite direction trips.
