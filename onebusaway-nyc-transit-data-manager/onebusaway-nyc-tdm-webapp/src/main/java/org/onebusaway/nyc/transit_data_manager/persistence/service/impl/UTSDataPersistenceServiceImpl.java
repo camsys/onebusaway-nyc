@@ -12,6 +12,7 @@ import java.util.List;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Level;
 import org.hibernate.SessionFactory;
 import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
@@ -27,10 +28,12 @@ import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePu
 import org.onebusaway.nyc.transit_data_manager.persistence.model.CrewAssignmentRecord;
 import org.onebusaway.nyc.transit_data_manager.persistence.model.VehiclePipoRecord;
 import org.onebusaway.nyc.transit_data_manager.persistence.service.UTSDataPersistenceService;
+import org.onebusaway.nyc.util.logging.LoggingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
@@ -46,6 +49,7 @@ public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
 	private CrewAssignmentDataProviderService crewAssignmentDataProviderService;
 	private DepotIdTranslator depotIdTranslator;
 	private HibernateTemplate hibernateTemplate;
+	private LoggingService loggingService;
 	
 	private static final Logger log = LoggerFactory.getLogger(UTSDataPersistenceServiceImpl.class);
 	
@@ -77,7 +81,14 @@ public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
 		
 		log.info("Persisting {} vehicle pullout records", vehicleRecords.size());
 
-		hibernateTemplate.saveOrUpdateAll(vehicleRecords);
+		try {
+			hibernateTemplate.saveOrUpdateAll(vehicleRecords);
+			String message = "Persisted " + vehicleRecords.size() + " vehicle pullout records";
+			log(message);
+		} catch(DataAccessException e) {
+			log.error("Error persisting pullout records");
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -114,7 +125,19 @@ public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
 		
 		log.info("Persisting {} crew assignment records", crewAssignments.size());
 
-		hibernateTemplate.saveOrUpdateAll(crewAssignments);
+		try {
+			hibernateTemplate.saveOrUpdateAll(crewAssignments);
+			String message = "Persisted " + crewAssignments.size() + " crew assignment records";
+			log(message);
+		} catch(DataAccessException e) {
+			log.error("Error persisting crew assignment records");
+			e.printStackTrace();
+		}
+	}
+	
+	private void log(String message) {
+		String component = System.getProperty("tdm.chefRole");
+		loggingService.log(component, Level.INFO, message);
 	}
 	
 	private VehiclePipoRecord buildVehiclePipoRecord(PullInOut pullout) {
@@ -190,6 +213,14 @@ public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
 	@Qualifier("archiveSessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.hibernateTemplate = new HibernateTemplate(sessionFactory);
+	}
+
+	/**
+	 * @param loggingService the loggingService to set
+	 */
+	@Autowired
+	public void setLoggingService(LoggingService loggingService) {
+		this.loggingService = loggingService;
 	}
 
 }

@@ -33,9 +33,20 @@
         <prop key="tdm.prettyPrintOutput">${tdm.prettyPrintOutput}</prop>
         <prop key="tdm.vehiclepipoUploadDir">${tdm.vehiclepipoUploadDir}</prop>
         <prop key="tdm.chefRole">TDM</prop>
+        <prop key="tdm.host">${tdm.host}</prop>
       </props>
     </property>
   </bean>
+  
+  <!-- define which TDM to use -->
+	<bean id="transitDataManagerApiLibrary"
+		class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary">
+		<constructor-arg type="java.lang.String" value="${tdm.host}" />
+		<constructor-arg type="java.lang.Integer" value="80" />
+		<constructor-arg type="java.lang.String" value="/api/" />
+	</bean>
+	
+	<bean id="loggingService" class="org.onebusaway.nyc.util.logging.impl.LoggingServiceImpl" />
 
   <bean
     class="org.onebusaway.nyc.transit_data_manager.config.XMLConfigurationDatastore">

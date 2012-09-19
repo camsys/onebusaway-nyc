@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.hibernate.SessionFactory;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.VehicleDepotData;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicle;
@@ -14,10 +15,12 @@ import org.onebusaway.nyc.transit_data_manager.api.service.DepotDataProviderServ
 import org.onebusaway.nyc.transit_data_manager.persistence.model.DepotRecord;
 import org.onebusaway.nyc.transit_data_manager.persistence.service.SpearDataPersistenceService;
 import org.onebusaway.nyc.transit_data_manager.util.DateUtility;
+import org.onebusaway.nyc.util.logging.LoggingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
@@ -33,6 +36,7 @@ public class SpearDataPersistenceServiceImpl implements SpearDataPersistenceServ
 	private DepotDataProviderService depotDataProviderService;
 	private DepotIdTranslator depotIdTranslator;
 	private HibernateTemplate hibernateTemplate;
+	private LoggingService loggingService;
 	
 	private static final Logger log = LoggerFactory.getLogger(SpearDataPersistenceServiceImpl.class);
 	
@@ -61,7 +65,19 @@ public class SpearDataPersistenceServiceImpl implements SpearDataPersistenceServ
 		
 		log.info("Persisting {} depot records", depotRecords.size());
 		
-		hibernateTemplate.saveOrUpdateAll(depotRecords);
+		try {
+			hibernateTemplate.saveOrUpdateAll(depotRecords);
+			String message = "Persisted " + depotRecords.size() + " depot records";
+			log(message);
+		} catch(DataAccessException e) {
+			log.error("Error persisting depot records");
+			e.printStackTrace();
+		}
+	}
+	
+	private void log(String message) {
+		String component = System.getProperty("tdm.chefRole");
+		loggingService.log(component, Level.INFO, message);
 	}
 	
 	private DepotRecord buildDepotRecord(Vehicle vehicle) {
@@ -95,6 +111,14 @@ public class SpearDataPersistenceServiceImpl implements SpearDataPersistenceServ
 	@Qualifier("archiveSessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.hibernateTemplate = new HibernateTemplate(sessionFactory);
+	}
+
+	/**
+	 * @param loggingService the loggingService to set
+	 */
+	@Autowired
+	public void setLoggingService(LoggingService loggingService) {
+		this.loggingService = loggingService;
 	}
 
 }
