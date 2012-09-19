@@ -30,7 +30,7 @@
     <import resource="classpath:org/onebusaway/users/application-context-security.xml" />
     <import resource="classpath:org/onebusaway/presentation/application-context.xml" />
     <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
-     <import resource="classpath:org/onebusaway/nyc/util/application-context.xml" />
+    <import resource="classpath:org/onebusaway/nyc/util/application-context.xml" />
     
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
     <context:component-scan base-package="org.onebusaway.nyc.admin.service.bundle.api" />
@@ -54,7 +54,7 @@
         <sec:intercept-url pattern="/admin/**" access="ROLE_USER" />
         <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1" />
         <sec:remember-me />
-        <sec:logout invalidate-session="false" logout-url="/logout.action" />
+        <sec:logout invalidate-session="true" logout-url="/logout.action" />
     </sec:http>
     
  
@@ -87,9 +87,8 @@
    		<property name="buildPath" value="builds" />
    </bean>
    
-   <bean id="emailService" class="org.onebusaway.nyc.admin.service.impl.EmailServiceImpl">
-   </bean>
-   
+   <bean id="emailService" class="org.onebusaway.nyc.admin.service.impl.EmailServiceImpl" />
+      
    <bean id="bundleRequestService" class="org.onebusaway.nyc.admin.service.impl.BundleRequestServiceImpl" />
    		
    <bean id="bundleValidationService" class="org.onebusaway.nyc.admin.service.bundle.impl.BundleValidationServiceImpl" />
@@ -107,5 +106,9 @@
    <bean id="parametersService" class="org.onebusaway.nyc.admin.service.impl.ParametersServiceImpl" />
    
    <bean id="keyTranslator" class="org.onebusaway.nyc.admin.util.ConfigurationKeyTranslator" />
+   
+   <bean id="loginEventListener" class="org.onebusaway.nyc.admin.event.handler.LoginEventListener" />
+   
+   <bean id="logoutEventListener" class="org.onebusaway.nyc.admin.event.handler.LogoutEventListener" />
    
 </beans>

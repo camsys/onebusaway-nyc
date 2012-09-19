@@ -103,6 +103,9 @@
   <listener>
     <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
   </listener>
+   <listener>
+	 <listener-class>org.springframework.security.ui.session.HttpSessionEventPublisher</listener-class>
+  </listener>
 
   <servlet>
     <servlet-name>Jersey Spring Web Application</servlet-name>
