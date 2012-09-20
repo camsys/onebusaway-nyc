@@ -21,9 +21,9 @@ public class RouteDirection {
   
   private Boolean hasUpcomingScheduledService;
 
-  public RouteDirection(StopGroupBean stopGroup, List<StopOnRoute> stops, Boolean hasUpcomingScheduledService, List<String> distanceAways) {
+  public RouteDirection(String destinationName, StopGroupBean stopGroup, List<StopOnRoute> stops, Boolean hasUpcomingScheduledService, List<String> distanceAways) {
     this.directionId = stopGroup.getId();
-    this.destination = stopGroup.getName().getName();    
+    this.destination = destinationName;    
     this.stops = stops;
     this.hasUpcomingScheduledService = hasUpcomingScheduledService;
     this.distanceAways = distanceAways;

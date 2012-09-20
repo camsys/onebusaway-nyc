@@ -50,6 +50,17 @@ OBA.Util = (function() {
     	
     	return ret;
     };
+    
+    // djb2 from http://erlycoder.com/49/javascript-hash-functions-to-convert-string-into-integer-hash-
+    String.prototype.hashCode = function() {
+    	var i;
+    	var hash = 5381;
+        for (i = 0; i < this.length; i++) {
+            char = this.charCodeAt(i);
+            hash = ((hash << 5) + hash) + char; /* hash * 33 + c */
+        }
+        return hash;
+    };
 	
 	return {
 		log: function(s) {
