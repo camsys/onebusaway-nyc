@@ -19,12 +19,14 @@ import org.onebusaway.nyc.admin.search.impl.TimeWindowFilter;
 import org.onebusaway.nyc.admin.search.impl.VehicleIdFilter;
 import org.onebusaway.nyc.admin.service.VehicleSearchService;
 import org.onebusaway.nyc.admin.util.VehicleSearchParameters;
+import org.springframework.stereotype.Component;
 
 /**
  * Default implementation of {@link VehicleSearchService}
  * @author abelsare
  *
  */
+@Component
 public class VehicleSearchServiceImpl implements VehicleSearchService {
 
 	@Override

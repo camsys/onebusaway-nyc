@@ -9,12 +9,14 @@ import org.onebusaway.nyc.admin.service.ParametersService;
 import org.onebusaway.nyc.admin.util.ConfigurationKeyTranslator;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Default implementation of {@link ParametersService}
  * @author abelsare
  *
  */
+@Component
 public class ParametersServiceImpl implements ParametersService {
 
 	private ConfigurationService configurationService;

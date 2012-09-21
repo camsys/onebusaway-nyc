@@ -1,12 +1,6 @@
 package org.onebusaway.nyc.admin.service.api;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -18,6 +12,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 @Path("/barcode/")
 @Component
 /**
@@ -27,8 +25,8 @@ import javax.ws.rs.core.Response;
  */
 public class BarcodeResource {
 
-  private static final int CHUNK_SIZE = 1024;
   private static Logger _log = LoggerFactory.getLogger(BarcodeResource.class);
+  
   @Path("/getByStopId/{stopId}")
   @GET
   @Produces("image/jpeg")

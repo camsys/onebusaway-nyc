@@ -35,6 +35,7 @@
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
     <context:component-scan base-package="org.onebusaway.nyc.admin.service.bundle.api" />
     <context:component-scan base-package="org.onebusaway.nyc.admin.service.api" />
+     <context:component-scan base-package="org.onebusaway.nyc.admin.service.impl" />
     
     
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
@@ -96,14 +97,6 @@
    <bean id="bundleBuildingService" class="org.onebusaway.nyc.admin.service.bundle.impl.BundleBuildingServiceImpl" />
    
    <bean id="bundleServerService" class="org.onebusaway.nyc.admin.service.server.impl.BundleServerServiceImpl" />
-   
-   <bean id="vehicleStatusService" class="org.onebusaway.nyc.admin.service.impl.VehicleStatusServiceImpl" />
-   
-   <bean id="remoteConnectionService" class="org.onebusaway.nyc.admin.service.impl.RemoteConnectionServiceImpl" />
-   
-   <bean id="vehicleSearchService" class="org.onebusaway.nyc.admin.service.impl.VehicleSearchServiceImpl" />
-   
-   <bean id="parametersService" class="org.onebusaway.nyc.admin.service.impl.ParametersServiceImpl" />
    
    <bean id="keyTranslator" class="org.onebusaway.nyc.admin.util.ConfigurationKeyTranslator" />
    
