@@ -50,7 +50,7 @@ public class SiriTripInference_IntegrationTest extends SiriIntegrationTestBase {
   
   @Test
   public void testBlockNotSetOnSM() throws HttpException, IOException {
-	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
+	 HashMap<String,Object> smResponse = getSmResponse("MTA", "903036");
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
@@ -80,7 +80,7 @@ public class SiriTripInference_IntegrationTest extends SiriIntegrationTestBase {
   
   @Test
   public void testNotPrevTrip() throws HttpException, IOException {
-	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "903036");
+	 HashMap<String,Object> smResponse = getSmResponse("MTA", "903036");
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
@@ -95,7 +95,7 @@ public class SiriTripInference_IntegrationTest extends SiriIntegrationTestBase {
   
   @Test
   public void testNoWraparound() throws HttpException, IOException {
-	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404050");
+	 HashMap<String,Object> smResponse = getSmResponse("MTA", "404050");
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
