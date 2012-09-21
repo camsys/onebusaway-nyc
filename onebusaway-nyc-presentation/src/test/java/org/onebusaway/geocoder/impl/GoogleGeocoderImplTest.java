@@ -45,7 +45,6 @@ public class GoogleGeocoderImplTest {
     assertEquals("",result.getAddress());
     assertEquals("New York", result.getCity());
     assertEquals("NY", result.getAdministrativeArea());
-    assertEquals("10009", result.getPostalCode());
     assertEquals("US", result.getCountry());
   }
   
@@ -70,7 +69,6 @@ public class GoogleGeocoderImplTest {
     assertEquals("",result.getAddress());
     assertTrue(result.getCity() == null || result.getCity().equals("New York"));
     assertEquals("NY", result.getAdministrativeArea());
-    assertEquals(null, result.getPostalCode());
     assertEquals("US", result.getCountry());
   }
   
@@ -104,7 +102,6 @@ public class GoogleGeocoderImplTest {
     assertEquals("",result.getAddress());
     assertEquals("New York", result.getCity());
     assertEquals("NY", result.getAdministrativeArea());
-    assertEquals("11217", result.getPostalCode());
     assertEquals("US", result.getCountry());
   }
 }

@@ -54,7 +54,7 @@ public class SiriTripLayoverInference_IntegrationTest extends SiriIntegrationTes
   // (bus wrapped around to stop on next trip since bus is in layover!)
   @Test
   public void testDepartureTimeNotSetOnSM() throws HttpException, IOException {
-	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404923");
+	 HashMap<String,Object> smResponse = getSmResponse("MTA", "404923");
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");

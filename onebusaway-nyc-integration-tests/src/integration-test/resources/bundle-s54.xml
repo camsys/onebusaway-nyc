@@ -20,11 +20,19 @@
         <property name="bundles">
             <list>
                 <ref bean="gtfs_s54" />
+                <ref bean="gtfs_mta_stub" />
             </list>
         </property>
     </bean>
 
+    <bean id="gtfs_mta_stub" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="defaultAgencyId" value="MTA" />
+        <property name="path" 
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-mta.zip" />
+    </bean>
+
     <bean id="gtfs_s54" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+		<property name="defaultAgencyId" value="MTA" /> 
         <property name="path" 
         	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-s54.zip" />
     </bean>
