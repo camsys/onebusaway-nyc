@@ -145,13 +145,6 @@
 	margin-right: 10px;
 }
 
-.required {
-	color: red;
-	font-weight: bold;
-	display: inline;
-	margin-left: 5px;
-}
-
 #createDirectory {
 	padding-top: 20px;
 }

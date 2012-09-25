@@ -109,6 +109,44 @@ ul li {
 	background-image:url('img/Button_background.png');
 }
 
+#content #text #codesHolder {
+	margin-top : 20px;
+	overflow: hidden;
+}
+
+#codesHolder #quickCodes {
+	float: left;
+	border: 1px transparent;
+	width: 400px;
+}
+
+#codesHolder #batchCodes {
+	float: left;
+	border: 1px transparent;
+	width: 400px;
+	margin-left: 50px;
+}
+
+.fileUpload {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.qrSubmit {
+	margin-top: 10px;
+	background-image:url('img/Button_background.png');
+	width: 100px;
+	height: 30px;
+	margin-bottom: 10px;
+}
+
+.required {
+	color: red;
+	font-weight: bold;
+	display: inline;
+	margin-left: 5px;
+}
+
 /* from MTA CSS: */
 html, body {
     background-image: url("http://mta.info/css/images/grey_bg.jpg");

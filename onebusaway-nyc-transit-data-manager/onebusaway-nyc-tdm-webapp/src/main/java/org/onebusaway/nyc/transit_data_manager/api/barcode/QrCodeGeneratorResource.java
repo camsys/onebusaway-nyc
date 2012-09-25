@@ -28,6 +28,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverter;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverterImpl;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeImageType;
@@ -84,14 +85,10 @@ public class QrCodeGeneratorResource {
 
   @Path("/getByStopId/{stopId}")
   @GET
-  public Response getQrCodeForStopUrlById(@PathParam("stopId")
-  int stopId, @DefaultValue("99")
-  @QueryParam("img-dimension")
-  final int imgDimension, @DefaultValue("BMP")
-  @QueryParam("img-type")
-  String imgFormatName, @DefaultValue("4")
-  @QueryParam("margin-rows")
-  final int quietZoneRows) {
+  public Response getQrCodeForStopUrlById(@PathParam("stopId") int stopId, 
+		  @DefaultValue("99") @QueryParam("img-dimension") final int imgDimension, 
+		  @DefaultValue("BMP") @QueryParam("img-type") String imgFormatName, 
+		  @DefaultValue("4") @QueryParam("margin-rows") final int quietZoneRows) {
 
     _log.info("Starting getQrCodeForStopUrlById.");
 
@@ -112,7 +109,7 @@ public class QrCodeGeneratorResource {
 
     Response response = null;
 
-    if (!"".equals(barcodeContents) && contentsFitBarcodeVersion) {
+    if (StringUtils.isNotBlank(barcodeContents) && contentsFitBarcodeVersion) {
       StreamingOutput output = new StreamingOutput() {
 
         @Override
@@ -143,13 +140,10 @@ public class QrCodeGeneratorResource {
   @Path("/batchGen")
   @Consumes({"text/comma-separated-values", "text/csv"})
   @POST
-  public Response batchGenerateBarcodes(@DefaultValue("99")
-  @QueryParam("img-dimension")
-  int imgDimension, @DefaultValue("BMP")
-  @QueryParam("img-type")
-  String imgFormatName, @DefaultValue("4")
-  @QueryParam("margin-rows")
-  int quietZoneRows, InputStream inputFileStream) {
+  public Response batchGenerateBarcodes(@DefaultValue("99") @QueryParam("img-dimension") int imgDimension, 
+		  @DefaultValue("BMP") @QueryParam("img-type") String imgFormatName, 
+		  @DefaultValue("4") @QueryParam("margin-rows") int quietZoneRows, 
+		  InputStream inputFileStream) {
 
     _log.info("batchGenerateBarcodes Started.");
 

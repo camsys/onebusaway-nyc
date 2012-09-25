@@ -51,7 +51,7 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
   
   @Test
   public void testDepartureTimeSetOnSM() throws HttpException, IOException {
-	 HashMap<String,Object> smResponse = getSmResponse("MTA%20NYCT", "404923");
+	 HashMap<String,Object> smResponse = getSmResponse("MTA", "404923");
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");

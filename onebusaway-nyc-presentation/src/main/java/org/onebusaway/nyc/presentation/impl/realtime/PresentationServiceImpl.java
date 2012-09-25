@@ -162,6 +162,11 @@ public class PresentationServiceImpl implements PresentationService {
       _log.debug("  " + statusBean.getVehicleId() + " filtered out because D.A.T. is NaN.");
       return false;
     }
+
+    // TEMPORARY MTA THING FOR BX-RELEASE
+    // hide buses that are on detour from a-d queries
+    if(isOnDetour(statusBean))
+      return false;
     
     // not in-service
     String phase = statusBean.getPhase();
