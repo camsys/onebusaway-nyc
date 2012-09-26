@@ -24,6 +24,9 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 	OBA.Config.googleAnalyticsSiteId="<s:property value="googleAnalyticsSiteId" />";
 	OBA.Config.bingMapsKey="<s:property value="bingMapsKey" />";
 	OBA.Config.mapBounds=<s:property value="mapBounds" />;
+	OBA.Config.mapCenterLat=<s:property value="mapCenterLat" default="null" />;
+	OBA.Config.mapCenterLon=<s:property value="mapCenterLon" default="null" />;
+	OBA.Config.mapZoom=<s:property value="mapZoom" default="null" />;
 
 	OBA.Config.configurationHasLoaded();
 }

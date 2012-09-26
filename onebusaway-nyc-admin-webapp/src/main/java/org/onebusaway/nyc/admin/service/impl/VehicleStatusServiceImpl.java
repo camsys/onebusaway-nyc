@@ -41,12 +41,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.remoting.RemoteConnectFailureException;
+import org.springframework.stereotype.Component;
 
 /**
  * Default implementation of {@link VehicleStatusService}
  * @author abelsare
  *
  */
+@Component
 public class VehicleStatusServiceImpl implements VehicleStatusService {
 
 	private static Logger log = LoggerFactory.getLogger(VehicleStatusServiceImpl.class);

@@ -421,14 +421,15 @@ OBA.Popups = (function() {
 			}
 			
 			var directionId = monitoredJourney.MonitoredVehicleJourney.DirectionRef;
+			var destinationNameHash = monitoredJourney.MonitoredVehicleJourney.DestinationName.hashCode();
 
-			if(typeof routeAndDirectionWithArrivals[routeId + "_" + directionId] === 'undefined') {
-				routeAndDirectionWithArrivals[routeId + "_" + directionId] = [];
-				delete routeAndDirectionWithoutArrivals[routeId + "_" + directionId];
+			if(typeof routeAndDirectionWithArrivals[routeId + "_" + directionId + "_" + destinationNameHash] === 'undefined') {
+				routeAndDirectionWithArrivals[routeId + "_" + directionId + "_" + destinationNameHash] = [];
+				delete routeAndDirectionWithoutArrivals[routeId + "_" + directionId + "_" + destinationNameHash];
 				routeAndDirectionWithoutArrivalsCount--;
 			}
 
-			routeAndDirectionWithArrivals[routeId + "_" + directionId].push(monitoredJourney.MonitoredVehicleJourney);
+			routeAndDirectionWithArrivals[routeId + "_" + directionId + "_" + destinationNameHash].push(monitoredJourney.MonitoredVehicleJourney);
 			routeAndDirectionWithArrivalsCount++;
 		});	    
 	    
@@ -449,7 +450,7 @@ OBA.Popups = (function() {
 				html += '<ul>';
 
 				html += '<li class="route">';
-				html += '<a href="#' + mvj.PublishedLineName + '"><span class="route-name">' + mvj.PublishedLineName + "</span>&nbsp;&nbsp; to " + mvj.DestinationName + '</a>';
+				html += '<a href="#' + stopIdWithoutAgency + '%20' + mvj.PublishedLineName + '"><span class="route-name">' + mvj.PublishedLineName + "</span>&nbsp;&nbsp; " + mvj.DestinationName + '</a>';
 				if (mvj.LineRef in alertData) {
 					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + mvj.LineRef + '" class="alert-link" href="#">Alert</a>';
 				}

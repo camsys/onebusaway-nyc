@@ -122,7 +122,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
           }
         }
 
-        directions.add(new RouteDirection(stopGroupBean, stopsOnRoute,
+        directions.add(new RouteDirection(stopGroupBean.getName().getName(), stopGroupBean, stopsOnRoute,
             hasUpcomingScheduledService, null));
       }
     }
@@ -169,7 +169,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
             continue;
 
           // arrivals in this direction
-          List<String> arrivalsForRouteAndDirection = getDisplayStringsForStopAndRouteAndDirection(
+          Map<String, List<String>> arrivalsForRouteAndDirection = getDisplayStringsByHeadsignForStopAndRouteAndDirection(
               stopBean, routeBean, stopGroupBean);
 
           // service alerts for this route + direction
@@ -187,8 +187,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
             hasUpcomingScheduledService = true;
           }
 
-          directions.add(new RouteDirection(stopGroupBean, null,
-              hasUpcomingScheduledService, arrivalsForRouteAndDirection));
+          for (Map.Entry<String,List<String>> entry : arrivalsForRouteAndDirection.entrySet()) {
+            directions.add(new RouteDirection(entry.getKey(), stopGroupBean, null, 
+                hasUpcomingScheduledService, entry.getValue()));
+          }
         }
       }
 
@@ -223,9 +225,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   // stop view
-  private List<String> getDisplayStringsForStopAndRouteAndDirection(
+  private Map<String, List<String>> getDisplayStringsByHeadsignForStopAndRouteAndDirection(
       StopBean stopBean, RouteBean routeBean, StopGroupBean stopGroupBean) {
-    List<String> result = new ArrayList<String>();
+    
+    Map<String, List<String>> results = new HashMap<String, List<String>>();
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
@@ -245,8 +248,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       if (monitoredCall == null)
         continue;
 
-      if(result.size() >= 3)
-    	break;
+      if (!results.containsKey(visit.getMonitoredVehicleJourney().getDestinationName()))
+        results.put(visit.getMonitoredVehicleJourney().getDestinationName().getValue(), new ArrayList<String>());
+      
+      if(results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).size() >= 3)
+        continue;
       
       String distance = getPresentableDistance(visit.getMonitoredVehicleJourney(),
     		visit.getRecordedAtTime().getTime(), true);
@@ -255,13 +261,13 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     	 	visit.getRecordedAtTime().getTime(), true);
 
       if(timePrediction != null) {
-    	result.add(timePrediction);
+        results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).add(timePrediction);
       } else {
-    	result.add(distance);
+        results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).add(distance);
       }
     }
 
-    return result;
+    return results;
   }
 
   // route view

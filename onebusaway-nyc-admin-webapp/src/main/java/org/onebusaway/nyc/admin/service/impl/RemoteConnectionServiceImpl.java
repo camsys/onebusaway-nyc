@@ -1,6 +1,9 @@
 package org.onebusaway.nyc.admin.service.impl;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -10,8 +13,16 @@ import java.net.URL;
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-public class RemoteConnectionServiceImpl implements RemoteConnectionService{
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.UniformInterfaceException;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+
+@Component
+public class RemoteConnectionServiceImpl implements RemoteConnectionService {
 
 	private static Logger log = LoggerFactory.getLogger(RemoteConnectionServiceImpl.class);
 	
@@ -39,6 +50,28 @@ public class RemoteConnectionServiceImpl implements RemoteConnectionService{
 		return content;
 	}
 	
+	@Override
+	public <T> T postBinaryData(String url, File data, Class<T> responseType) {
+		T response = null;
+		
+		ClientConfig config = new DefaultClientConfig();
+		Client client = Client.create(config);
+		WebResource resource = client.resource(url);
+		
+		try {
+			response = resource.accept("text/csv").type("text/csv")
+					.post(responseType, new FileInputStream(data));
+		} catch (UniformInterfaceException e) {
+			log.error("Unable to read response from the server.");
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			log.error("CSV File not found. It is not uploaded correctly");
+			e.printStackTrace();
+		}
+		
+		return response;
+	}
+
 	private String fromJson(HttpURLConnection connection) {
 		BufferedReader rd;
 		try {
@@ -55,5 +88,6 @@ public class RemoteConnectionServiceImpl implements RemoteConnectionService{
 		}
 		return null;
 	}
+
 
 }
