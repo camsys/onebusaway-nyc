@@ -70,5 +70,16 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
     
     return "{ swLat: " + minLat + ", swLon: " + minLon + ", neLat: " + maxLat + ", neLon: " + maxLon + " }";
   }
-
+  
+  public Float getMapCenterLat() {
+    return _configurationService.getConfigurationValueAsFloat("display.mapCenterLat", null);
+  }
+  
+  public Float getMapCenterLon() {
+    return _configurationService.getConfigurationValueAsFloat("display.mapCenterLon", null);
+  }
+  
+  public Integer getMapZoom() {
+    return _configurationService.getConfigurationValueAsInteger("display.mapZoom", null);
+  }
 }
