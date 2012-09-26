@@ -2,8 +2,19 @@ var OBA = window.OBA || {};
 
 OBA.GoogleMapWrapper = function(mapNode) {	
 	
+	var lat = OBA.Config.mapCenterLat;
+	var lon = OBA.Config.mapCenterLon;
+	var zoom = OBA.Config.mapZoom;
+    
+	if (!lat || !lon || !zoom) {
+		// These will get overridden by the bundle bounds after the map initially loads.
+		lat = 40.639228;
+		lon = -74.081154;
+		zoom = 11;
+	}
+	
 	var defaultMapOptions = {
-			zoom: 11,
+			zoom: zoom,
 			mapTypeControl: false,
 			streetViewControl: false,
 			zoomControl: true,
@@ -13,7 +24,7 @@ OBA.GoogleMapWrapper = function(mapNode) {
 			minZoom: 9, 
 			maxZoom: 19,
 			navigationControlOptions: { style: google.maps.NavigationControlStyle.DEFAULT },
-			center: new google.maps.LatLng(40.639228,-74.081154)
+			center: new google.maps.LatLng(lat,lon)
 	};
 
 	var map = new google.maps.Map(mapNode, defaultMapOptions);
