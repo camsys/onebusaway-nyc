@@ -16,7 +16,7 @@
   <properties>
     <xwiki.version>2.3.1</xwiki.version>
     <xwiki.integration.version>0.0.2</xwiki.integration.version>
-    <front-end.version>2.2</front-end.version>
+    <front-end.version>2.4</front-end.version>
   </properties>
 
   <repositories>
