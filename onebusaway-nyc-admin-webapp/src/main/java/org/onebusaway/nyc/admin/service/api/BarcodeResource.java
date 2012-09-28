@@ -4,9 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -27,15 +25,24 @@ import javax.ws.rs.core.Response;
  */
 public class BarcodeResource {
 
-  private static final int CHUNK_SIZE = 1024;
+  private static final String DEFAULT_TDM_URL = "http://tdm";
+  
   private static Logger _log = LoggerFactory.getLogger(BarcodeResource.class);
+  
+  /*
+   * override of default TDM location:  for local testing use 
+   * http://localhost:8080/onebusaway-nyc-tdm-webapp
+   * This should be set in context.xml
+   */
+  private String tdmURL;
+
   @Path("/getByStopId/{stopId}")
   @GET
   @Produces("image/jpeg")
   public Response proxy(@PathParam("stopId") String stopId, 
       @DefaultValue("99") @QueryParam("img-dimension") String imgDimension) {
     // proxy request here to TDM
-    String uri = "http://tdm/api/barcode/getByStopId/" + stopId;
+    String uri = getTDMURL() + "/api/barcode/getByStopId/" + stopId;
     uri = uri + "?" + "img-dimension=" + imgDimension;
 
     Response response = Response.ok(proxyRequest(uri)).build();
@@ -56,5 +63,12 @@ public class BarcodeResource {
     }
     return is;
   }
-  
+
+    private String getTDMURL() {
+    if (tdmURL != null && tdmURL.length() > 0) {
+      return tdmURL;
+    }
+    return DEFAULT_TDM_URL;
+  }
+
 }
