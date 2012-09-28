@@ -186,36 +186,38 @@ public class BlockStateService {
     _shapePointsLibrary.setLocalMinimumThreshold(localMinimumThreshold);
   }
 
-  public synchronized BestBlockStates getBestBlockLocations(Observation observation,
+  public BestBlockStates getBestBlockLocations(Observation observation,
       BlockInstance blockInstance, double blockDistanceFrom,
       double blockDistanceTo) throws MissingShapePointsException {
 
-    final BlockLocationKey key = new BlockLocationKey(blockInstance, 0,
-        Double.POSITIVE_INFINITY);
-
-    Map<BlockLocationKey, BestBlockStates> mb = _observationCache.getValueForObservation(
-        observation, EObservationCacheKey.BLOCK_LOCATION);
-
-    if (mb == null) {
-      mb = computeBlockStatesForObservation(observation);
-      _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.BLOCK_LOCATION, mb);
-
-      final Set<BlockState> m = Sets.newHashSet();
-      for (final BestBlockStates bbs : mb.values()) {
-        m.addAll(bbs.getAllStates());
+    synchronized (observation) {
+      final BlockLocationKey key = new BlockLocationKey(blockInstance, 0,
+          Double.POSITIVE_INFINITY);
+  
+      Map<BlockLocationKey, BestBlockStates> mb = _observationCache.getValueForObservation(
+          observation, EObservationCacheKey.BLOCK_LOCATION);
+  
+      if (mb == null) {
+        mb = computeBlockStatesForObservation(observation);
+        _observationCache.putValueForObservation(observation,
+            EObservationCacheKey.BLOCK_LOCATION, mb);
+  
+        final Set<BlockState> m = Sets.newHashSet();
+        for (final BestBlockStates bbs : mb.values()) {
+          m.addAll(bbs.getAllStates());
+        }
+        _observationCache.putValueForObservation(observation,
+            EObservationCacheKey.BEST_BLOCK_STATES, m);
       }
-      _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.BEST_BLOCK_STATES, m);
+  
+      BestBlockStates blockStates = mb.get(key);
+  
+      if (blockStates == null) {
+        blockStates = new BestBlockStates(Collections.<BlockState> emptySet());
+      }
+  
+      return blockStates;
     }
-
-    BestBlockStates blockStates = mb.get(key);
-
-    if (blockStates == null) {
-      blockStates = new BestBlockStates(Collections.<BlockState> emptySet());
-    }
-
-    return blockStates;
   }
 
   public BlockState getScheduledTimeAsState(BlockInstance blockInstance,
@@ -337,34 +339,27 @@ public class BlockStateService {
     return new BlockState(blockInstance, blockLocation, rte, dsc);
   }
 
-  public synchronized Set<BlockState> getBlockStatesForObservation(Observation observation) {
-    Set<BlockState> m = _observationCache.getValueForObservation(observation,
-        EObservationCacheKey.BEST_BLOCK_STATES);
-
-    if (m == null) {
-      final Map<BlockLocationKey, BestBlockStates> res = computeBlockStatesForObservation(observation);
-      _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.BLOCK_LOCATION, res);
-
-      m = Sets.newHashSet();
-      for (final BestBlockStates bbs : res.values()) {
-        m.addAll(bbs.getAllStates());
+  public Set<BlockState> getBlockStatesForObservation(Observation observation) {
+    synchronized(observation) {
+      Set<BlockState> m = _observationCache.getValueForObservation(observation,
+          EObservationCacheKey.BEST_BLOCK_STATES);
+      
+      if (m == null) {
+        final Map<BlockLocationKey, BestBlockStates> res = computeBlockStatesForObservation(observation);
+        _observationCache.putValueForObservation(observation,
+            EObservationCacheKey.BLOCK_LOCATION, res);
+  
+        m = Sets.newHashSet();
+        for (final BestBlockStates bbs : res.values()) {
+          m.addAll(bbs.getAllStates());
+        }
+        _observationCache.putValueForObservation(observation,
+            EObservationCacheKey.BEST_BLOCK_STATES, m);
       }
-      _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.BEST_BLOCK_STATES, m);
+      return m;
     }
-    return m;
   }
 
-  /**
-   * New method that does an STR-tree-based lookup of block-locations. XXX:
-   * Still very experimental! Run integration tests
-   * Trace_4138_20111207_150000_220000_IntegrationTest and see what I mean.
-   * There is a bug somewhere that doesn't catch block MTA NYCT_MTA
-   * NYCT_20110904EE_YU_51600_MISC-158_2161 as associated with any lines.
-   * 
-   * @param observation
-   */
   private Map<BlockLocationKey, BestBlockStates> computeBlockStatesForObservation(
       Observation observation) {
 

@@ -349,13 +349,15 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 
 	map = new OBA.GoogleMapWrapper(document.getElementById("map"));
 	
+	// If there is no configured map center and zoom...
 	// Zoom/pan the map to the area specified from our configuration Javascrit that gets its
 	// values from the server dynamically on page load.
-	var swCorner = new google.maps.LatLng(OBA.Config.mapBounds.swLat, OBA.Config.mapBounds.swLon);
-	var neCorner = new google.maps.LatLng(OBA.Config.mapBounds.neLat, OBA.Config.mapBounds.neLon);
-	var bounds = new google.maps.LatLngBounds(swCorner, neCorner);
-	map.fitBounds(bounds);
-	
+	if (!OBA.Config.mapCenterLat || !OBA.Config.mapCenterLon || !OBA.Config.mapZoom) {
+		var swCorner = new google.maps.LatLng(OBA.Config.mapBounds.swLat, OBA.Config.mapBounds.swLon);
+		var neCorner = new google.maps.LatLng(OBA.Config.mapBounds.neLat, OBA.Config.mapBounds.neLon);
+		var bounds = new google.maps.LatLngBounds(swCorner, neCorner);
+		map.fitBounds(bounds);
+	}
 	
 	// when map is idle ("ready"), initialize the rest of the google maps stuff, if we haven't already.
 	// otherwise, refresh the stops on the map after the user is done panning.

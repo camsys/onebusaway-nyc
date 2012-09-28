@@ -38,6 +38,7 @@ import uk.org.siri.siri.LineRefStructure;
 import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.NaturalLanguageStringStructure;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SearchResultFactoryImplTest {
@@ -46,6 +47,7 @@ public class SearchResultFactoryImplTest {
   private static final String TEST_DESCRIPTION2 = "Test description 2";
   private static final String TEST_SUMMARY = "Test summary";
   private static final String ROUTE_ID = "route id";
+  private static final String TEST_DESTINATION_NAME = "destination name";
   private static final String TEST_STOP_ID = "test stop id";
   private static final String TEST_PRESENTABLE_DISTANCE = "test presentable distance";
 
@@ -195,6 +197,10 @@ public class SearchResultFactoryImplTest {
     DirectionRefStructure directionRef = mock(DirectionRefStructure.class);
     when(monVehJourney.getDirectionRef()).thenReturn(directionRef );
     when(directionRef.getValue()).thenReturn(TEST_STOP_ID);
+    
+    NaturalLanguageStringStructure natLangStrStructure = mock(NaturalLanguageStringStructure.class);
+    when(natLangStrStructure.getValue()).thenReturn(TEST_DESTINATION_NAME);
+    when(monVehJourney.getDestinationName()).thenReturn(natLangStrStructure);
     
     MonitoredCallStructure monCall = mock(MonitoredCallStructure.class);
     ExtensionsStructure extensions = mock(ExtensionsStructure.class);
