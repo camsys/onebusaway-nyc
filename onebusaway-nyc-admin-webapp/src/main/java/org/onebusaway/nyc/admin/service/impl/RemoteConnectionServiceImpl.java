@@ -4,13 +4,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
+
+import org.h2.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -73,15 +75,10 @@ public class RemoteConnectionServiceImpl implements RemoteConnectionService {
 	}
 
 	private String fromJson(HttpURLConnection connection) {
-		BufferedReader rd;
 		try {
-			rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			StringBuilder sb = new StringBuilder();
-			String line = null;
-			while ((line = rd.readLine()) != null) {
-				sb.append(line + '\n');
-			}
-			return sb.toString();
+		  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		  IOUtils.copy(connection.getInputStream(), baos);
+			return baos.toString();
 		} catch (IOException e) {
 			 log.error("fromJson caught exception:", e);
 			e.printStackTrace();

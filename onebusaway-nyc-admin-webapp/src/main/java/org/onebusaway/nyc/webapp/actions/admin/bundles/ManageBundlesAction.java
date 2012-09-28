@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.ServletContext;
+
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
@@ -22,6 +24,7 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.ServletContextAware;
 
 
 /**
@@ -53,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
         "contentDisposition", "attachment;filename=\"${downloadFilename}\"",
         "bufferSize", "1024"})
 })
-public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
+public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport implements ServletContextAware {
   private static Logger _log = LoggerFactory.getLogger(ManageBundlesAction.class);
 	private static final long serialVersionUID = 1L;
 	//To hold the final directory name 
@@ -75,6 +78,9 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private InputStream downloadInputStream;
 	private List<String> fileList = new ArrayList<String>();
 	private DirectoryStatus directoryStatus;
+	// where the bundle is deployed to
+	private String s3Path = "s3://bundle-data/activebundle/<env>/";
+	private String environment = "dev";
 	
 	@Override
 	public String input() {
@@ -341,4 +347,25 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	  emailTo = to;
 	}
 
+	public String getS3Path() {
+	  return s3Path;
+	}
+
+	public String getEnvironment() {
+	  return environment;
+	}
+	
+	@Override
+  public void setServletContext(ServletContext context) {
+	    if (context != null) {
+	      String obanycEnv = context.getInitParameter("obanyc.environment");
+	      if (obanycEnv != null && obanycEnv.length() > 0) {
+	        environment = obanycEnv;
+	        s3Path = "s3://" + context.getInitParameter("s3.bundle.bucketName")
+	          + "/activebundles/" + environment
+	          + "/";
+	        _log.error("env=" + environment);
+	      }
+	    }
+  }
 }

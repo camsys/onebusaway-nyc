@@ -243,6 +243,15 @@ jQuery(function() {
 			disableContinueButton(jQuery("#create_continue"));
 		}
 	});
+	
+	//toggle bundle deploy progress list
+	jQuery("#deployBundle #deployBundle_progress #expand").bind({
+			'click' : toggleDeployBundleResultList});
+	
+	//Handle deploy button click event
+	jQuery("#deployBundle_deployButton").click(onDeployClick);
+	jQuery("#deployBundle_listButton").click(onDeployListClick);
+	onDeployListClick();
 });
 
 function onCreateContinueClick() {
@@ -343,6 +352,14 @@ function toggleBuildBundleResultList() {
 	jQuery("#buildBundle #buildBundle_resultList").toggle();
 }
 
+function toggleDeployBundleResultList() {
+	var $image = jQuery("#deployBundle #deployBundle_progress #expand");
+	changeImageSrc($image);
+	//Toggle progress result list
+	jQuery("#deployBundle #deployBundle_resultList").toggle();
+}
+
+
 function changeImageSrc($image) {
 	
 	var $imageSource = $image.attr("src");
@@ -415,7 +432,7 @@ function onValidateClick() {
 				if (bundleResponse != undefined) {
 					jQuery("#prevalidate_id").text(bundleResponse.id);
 					//jQuery("#prevalidate_resultList").text("calling...");
-					window.setTimeout(updateValidateStatus, 1000);
+					window.setTimeout(updateValidateStatus, 5000);
 				} else {
 					jQuery("#prevalidate_id").text(error);
 					jQuery("#prevalidate_resultList").text("error");
@@ -448,7 +465,7 @@ function updateValidateStatus() {
 					}
 				}
 				if (bundleResponse.complete == false) {
-					window.setTimeout(updateValidateStatus, 1000); // recurse
+					window.setTimeout(updateValidateStatus, 5000); // recurse
 				} else {
 					jQuery("#prevalidate_validationProgress").text("Complete.");
 					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").attr("src","../../css/img/dialog-accept-2.png");
@@ -600,7 +617,7 @@ function buildBundle(bundleName, startDate, endDate){
 					} else {
 						jQuery("#buildBundle_resultList").html("calling...");
 						jQuery("#buildBundle_id").text(bundleResponse.id);
-						window.setTimeout(updateBuildStatus, 1000);
+						window.setTimeout(updateBuildStatus, 5000);
 						bundleUrl();
 					}
 				} else {
@@ -635,7 +652,7 @@ function updateBuildStatus() {
 					}
 				}
 				if (bundleResponse.complete == false) {
-					window.setTimeout(updateBuildStatus, 1000); // recurse
+					window.setTimeout(updateBuildStatus, 5000); // recurse
 				} else {
 					jQuery("#buildBundle_buildProgress").text("Bundle Complete!");
 					jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-accept-2.png");
@@ -727,6 +744,122 @@ function updateBuildList(id) {
 	});	
 }
 
+
+function onDeployClick() {
+	deployBundle();
+}
+
+function deployBundle(){
+	var environment = jQuery("#deploy_environment").text();
+
+	jQuery.ajax({
+		url: "../../api/bundle/deploy/from/" + environment + "?ts=" +new Date().getTime(),
+		type: "GET",
+		async: false,
+		success: function(response) {
+				var bundleResponse = response;
+				if (bundleResponse != undefined) {
+					// the header is set wrong for the proxied object, run eval to correct
+					if (typeof response=="string") {
+						bundleResponse = eval('(' + response + ')');
+					}
+					jQuery("#deployBundle_resultList").html("calling...");
+					jQuery("#deployBundle_id").text(bundleResponse.id);
+					jQuery("#deployBundle #requestLabels").show().css("display","block");
+					jQuery("#deployContentsHolder #deployBox #deploying").show().css("display","block");
+					jQuery("#deployBundle_deployProgress").text("Deploying ...");
+					jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/ajax-loader.gif");
+					window.setTimeout(updateDeployStatus, 5000);
+				} else {
+					jQuery("#deployBundle_id").text(error);
+					jQuery("#deployBundle_resultList").html("error");
+				}
+		},
+		error: function(request) {
+			alert("There was an error processing your request. Please try again");
+		}
+	});
+}
+
+function updateDeployStatus() {
+	id = jQuery("#deployBundle_id").text();
+	jQuery.ajax({
+		url: "../../api/bundle/deploy/status/" + id + "/list?ts=" +new Date().getTime(),
+		type: "GET",
+		async: false,
+		success: function(response) {
+				var txt = "<ul>";
+				var bundleResponse = response;
+				if (bundleResponse == null) {
+					jQuery("#deployBundle_deployProgress").text("Bundle Complete!");
+					jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-accept-2.png");
+					jQuery("#deployBundle_resultList").html("unknown id=" + id);
+					return;
+				}
+				// the header is set wrong for the proxied object, run eval to correct
+				if (typeof response=="string") {
+					bundleResponse = eval('(' + response + ')');
+				}
+				if (bundleResponse.status != "complete" && bundleResponse.status != "error") {
+					window.setTimeout(updateDeployStatus, 5000); // recurse
+				} else {
+					jQuery("#deployBundle_deployProgress").text("Bundle Complete!");
+					toggleDeployBundleResultList();
+					jQuery("#bundleResultsHolder #bundleResults #deployBundle_progress").show().css("display","block");
+					jQuery("#bundleResultsHolder #bundleResults #deployBundle_resultList").show().css("display","block");
+					jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-accept-2.png");
+					if (bundleResponse.status == "complete") {
+						// set resultList to bundleNames list
+						var size = bundleResponse.bundleNames.length;
+						if (size > 0) {
+							for (var i=0; i<size; i++) {
+								txt = txt + "<li>" + bundleResponse.bundleNames[i] + "</li>";
+							}
+						}
+					}
+				}
+				txt = txt + "</ul>";
+				jQuery("#deployBundle_resultList").html(txt).css("font-size", "12px");	
+		},
+		error: function(request) {
+			clearTimeout(timeout);
+			timeout = setTimeout(updateDeployStatus, 10000);
+		}
+	});
+}
+
+
+function onDeployListClick(){
+	var environment = jQuery("#deploy_environment").text();
+	jQuery.ajax({
+		url: "../../api/bundle/deploy/list/" + environment + "?ts=" +new Date().getTime(),
+		type: "GET",
+		async: false,
+		success: function(response) {
+				var bundleResponse = response;
+				if (bundleResponse != undefined) {
+					var txt = "<ul>";
+					// the header is set wrong for the proxied object, run eval to correct
+					if (typeof response=="string") {
+						bundleResponse = eval('(' + response + ')');
+					}
+					// parse array of bundle names
+					var size = bundleResponse.length;
+					if (size > 0) {
+						for (var i=0; i<size; i++) {
+							txt = txt + "<li>" + bundleResponse[i] + "</li>";
+						}
+					}
+					txt = txt + "</ul>";
+					jQuery("#deployBundle_bundleList").html(txt).css("font-size", "12px");	
+
+				}
+		},
+		error: function(request) {
+			alert("There was an error processing your request. Please try again");
+		}
+	});
+}
 
 // add support for parsing query string
   function parseQuerystring (){
