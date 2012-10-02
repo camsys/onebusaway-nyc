@@ -34,11 +34,15 @@ public class BundleResource implements ServletContextAware {
    * list the bundle(s) that are on S3, potentials to be deployed.
    */
   public Response list(@PathParam("environment") String environment) {
+    try {
     String url = getTDMURL() + "/api/bundle/deploy/list/" + environment;
     _log.debug("requesting:" + url);
     String json = _remoteConnectionService.getContent(url);
     _log.debug("response:" + json);
-    return Response.ok(json).build();    
+    return Response.ok(json).build();
+    } catch (Exception e) {
+      return Response.serverError().build();
+    }
   }  
   
   @Path("/deploy/from/{environment}")
@@ -72,12 +76,16 @@ public class BundleResource implements ServletContextAware {
    * @return a serialized version of the requested BundleDeploymentStatus, null otherwise
    */
   public Response deployStatus(@PathParam("id") String id) {
-    String url = getTDMURL() + "/api/bundle/deploy/status/" + id + "/list";
-    _log.debug("requesting:" + url);
-    String json = _remoteConnectionService.getContent(url);
-    _log.debug("response:" + json);
-    return Response.ok(json).build();
+    try {
+      String url = getTDMURL() + "/api/bundle/deploy/status/" + id + "/list";
+      _log.debug("requesting:" + url);
+      String json = _remoteConnectionService.getContent(url);
+      _log.debug("response:" + json);
+      return Response.ok(json).build();
+    } catch (Exception e) {
+      return Response.serverError().build();
     }
+  }
 
   @Override
   public void setServletContext(ServletContext context) {

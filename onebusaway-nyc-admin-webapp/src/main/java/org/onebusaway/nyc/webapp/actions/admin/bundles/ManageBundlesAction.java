@@ -364,7 +364,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	        s3Path = "s3://" + context.getInitParameter("s3.bundle.bucketName")
 	          + "/activebundles/" + environment
 	          + "/";
-	        _log.error("env=" + environment);
+	        _log.info("injecting env=" + environment + ", s3Path=" + s3Path);
 	      }
 	    }
   }

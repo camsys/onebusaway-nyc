@@ -641,8 +641,8 @@ function updateBuildStatus() {
 				var txt = "<ul>";
 				var bundleResponse = response;
 				if (bundleResponse == null) {
-					jQuery("#buildBundle_buildProgress").text("Bundle Complete!");
-					jQuery("#buildBundle #buildBox #building #buildProgress").attr("src","../../css/img/dialog-accept-2.png");
+					jQuery("#buildBundle_buildProgress").text("Bundle Status Unkown!");
+					jQuery("#buildBundle #buildBox #building #buildProgress").attr("src","../../css/img/dialog-warning-4.png");
 					jQuery("#buildBundle_resultList").html("unknown id=" + id);
 				}
 				var size = bundleResponse.statusList.length;
@@ -663,6 +663,8 @@ function updateBuildStatus() {
 				jQuery("#buildBundle_resultList").html(txt).css("font-size", "12px");	
 				// check for exception
 				if (bundleResponse.exception != null) {
+						jQuery("#buildBundle_buildProgress").text("Bundle Failed!");
+						jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-warning-4.png");
 					if (bundleResponse.exception.message != undefined) {
 						jQuery("#buildBundle_exception").show().css("display","inline");
 						jQuery("#buildBundle_exception").html(bundleResponse.exception.message);
@@ -791,8 +793,8 @@ function updateDeployStatus() {
 				var txt = "<ul>";
 				var bundleResponse = response;
 				if (bundleResponse == null) {
-					jQuery("#deployBundle_deployProgress").text("Bundle Complete!");
-					jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-accept-2.png");
+					jQuery("#deployBundle_deployProgress").text("Deploy Complete!");
+					jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-warning-4.png");
 					jQuery("#deployBundle_resultList").html("unknown id=" + id);
 					return;
 				}
@@ -803,12 +805,12 @@ function updateDeployStatus() {
 				if (bundleResponse.status != "complete" && bundleResponse.status != "error") {
 					window.setTimeout(updateDeployStatus, 5000); // recurse
 				} else {
-					jQuery("#deployBundle_deployProgress").text("Bundle Complete!");
 					toggleDeployBundleResultList();
 					jQuery("#bundleResultsHolder #bundleResults #deployBundle_progress").show().css("display","block");
 					jQuery("#bundleResultsHolder #bundleResults #deployBundle_resultList").show().css("display","block");
-					jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-accept-2.png");
 					if (bundleResponse.status == "complete") {
+						jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-accept-2.png");
+						jQuery("#deployBundle_deployProgress").text("Deploy Complete!");
 						// set resultList to bundleNames list
 						var size = bundleResponse.bundleNames.length;
 						if (size > 0) {
@@ -816,6 +818,12 @@ function updateDeployStatus() {
 								txt = txt + "<li>" + bundleResponse.bundleNames[i] + "</li>";
 							}
 						}
+					} else {
+						jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-warning-4.png");
+						jQuery("#deployBundle_deployProgress").text("Deploy Failed!");
+						// we've got an error
+						txt = txt + "<li><font color=\"red\">ERROR!  Please consult the logs and check the "
+							+ "filesystem permissions before continuing</font></li>";
 					}
 				}
 				txt = txt + "</ul>";
@@ -823,7 +831,18 @@ function updateDeployStatus() {
 		},
 		error: function(request) {
 			clearTimeout(timeout);
-			timeout = setTimeout(updateDeployStatus, 10000);
+			toggleDeployBundleResultList();
+			jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-warning-4.png");
+			jQuery("#deployBundle_deployProgress").text("Deploy Failed!");
+			jQuery("#bundleResultsHolder #bundleResults #deployBundle_progress").show().css("display","block");
+			jQuery("#bundleResultsHolder #bundleResults #deployBundle_resultList").show().css("display","block");
+
+			// error out on a 500 error, the session will be lost so it will not recover
+			var txt = "<ul>";
+			txt = txt + "<li><font color=\"red\">The server returned an internal error.  Please consult the logs" 
+				+ " or retry your request</font></li>";
+			txt = txt + "</ul>";
+			jQuery("#deployBundle_resultList").html(txt).css("font-size", "12px");
 		}
 	});
 }
