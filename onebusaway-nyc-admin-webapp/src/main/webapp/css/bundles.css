@@ -487,10 +487,6 @@
 	cursor: pointer; 
 }	
 
-.clear {
-	clear: both;
-}
-
 .summaryFont {
 	font: 13px/1.231 helvetica,arial,clean,sans-serif;
 }

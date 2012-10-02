@@ -1,48 +1,63 @@
-package org.onebusaway.nyc.webapp.actions.admin;
+package org.onebusaway.nyc.webapp.actions.admin.usermanagement;
 
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
-import org.onebusaway.presentation.impl.NextActionSupport;
-import org.onebusaway.users.model.User;
-import org.onebusaway.users.model.UserIndex;
-import org.onebusaway.users.services.UserService;
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.admin.service.UserManagementService;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
 
 /**
  * Creates a user in the database. 
  * @author abelsare
  *
  */
-@Results({@Result(type = "redirectAction", name = "redirect", params = {
-	     "actionName", "register-user"})})
-public class RegisterUserAction extends NextActionSupport {
+public class RegisterUserAction extends OneBusAwayNYCAdminActionSupport {
 
 	private static final long serialVersionUID = 1L;
 	private String username;
 	private String password;
 	private boolean admin;
-	private UserService userService;
+	
+	private UserManagementService userManagementService;
 	
 	/**
 	 * Creates a new user in the system.
 	 * @return success message
 	 */
 	public String createUser() {
-		UserIndex userIndex = userService.getOrCreateUserForUsernameAndPassword(
-		        username, password);
+		boolean valid = validateFields();
+		if(valid) {
+			boolean success = userManagementService.createUser(username, password, admin);
+			
+			if(success) {
+				addActionMessage("User '" +username + "' created successfully");
+				return SUCCESS;
+			} else {
+				addActionError("Error creating user : '" +username + "'");
+			}
+		}
+		
+		return ERROR;
 
-		    if (userIndex == null)
-		      return ERROR;
-
-		    if (admin) {
-		      User user = userIndex.getUser();
-		      userService.enableAdminRoleForUser(user, false);
-		    }
-		addActionMessage("User '" +username + "' created successfully");
-		return SUCCESS;
-
+	}
+	
+	
+	private boolean validateFields() {
+		boolean valid = true;
+		
+		if(StringUtils.isBlank(username)) {
+			valid = false;
+			addFieldError("username", "User name is required");
+		}
+		
+		if(StringUtils.isBlank(password)) {
+			valid = false;
+			addFieldError("password", "Password is required");
+		}
+		
+		return valid;
 	}
 	
 
@@ -50,7 +65,6 @@ public class RegisterUserAction extends NextActionSupport {
 	 * Returns user name of the user being created
 	 * @return the username
 	 */
-	//@RequiredStringValidator(message="User name is required")
 	public String getUsername() {
 		return username;
 	}
@@ -67,7 +81,6 @@ public class RegisterUserAction extends NextActionSupport {
 	 * Returns password of the user being created
 	 * @return the password
 	 */
-	//@RequiredStringValidator(message="Password is required")
 	public String getPassword() {
 		return password;
 	}
@@ -97,14 +110,10 @@ public class RegisterUserAction extends NextActionSupport {
 	}
 
 	/**
-	 * Injects {@link UserService}
-	 * @param userService the userService to set
+	 * @param userManagementService the userManagementService to set
 	 */
 	@Autowired
-	public void setUserService(UserService userService) {
-		this.userService = userService;
+	public void setUserManagementService(UserManagementService userManagementService) {
+		this.userManagementService = userManagementService;
 	}
-
-	
-
 }

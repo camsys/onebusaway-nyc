@@ -50,9 +50,9 @@
       <property name="username" value="operator"/>
       <property name="password" value="operator"/>
     </bean>
- 
+    
     <sec:http>
-        <sec:intercept-url pattern="/admin/**" access="ROLE_USER" />
+        <sec:intercept-url pattern="/admin/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
         <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1" />
         <sec:remember-me />
         <sec:logout invalidate-session="true" logout-url="/logout.action" />
@@ -103,5 +103,7 @@
    <bean id="loginEventListener" class="org.onebusaway.nyc.admin.event.handler.LoginEventListener" />
    
    <bean id="logoutEventListener" class="org.onebusaway.nyc.admin.event.handler.LogoutEventListener" />
+   
+   <bean id="jsonTool" class="com.google.gson.Gson" />
    
 </beans>

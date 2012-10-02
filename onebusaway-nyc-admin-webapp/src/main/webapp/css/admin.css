@@ -63,7 +63,7 @@
 #content #text #indexList li {
 	padding-top: 20px;
 	font-size: 12px;
-	vertical-align: center;
+	vertical-align: middle;
 	padding-bottom: 10px;
 }
 
@@ -109,6 +109,14 @@ ul li {
 	background-image:url('img/Button_background.png');
 }
 
+.backToMenu {
+	padding: 10px 0;
+}
+
+.backToMenu a {
+	color: rgb(0,0,255);
+}
+
 #content #text #codesHolder {
 	margin-top : 20px;
 	overflow: hidden;
@@ -145,6 +153,14 @@ ul li {
 	font-weight: bold;
 	display: inline;
 	margin-left: 5px;
+}
+
+.clear {
+	clear: both;
+}
+
+.errorMessage {
+	color: rgb(255,0,0);
 }
 
 /* from MTA CSS: */

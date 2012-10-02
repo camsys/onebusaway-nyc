@@ -35,8 +35,8 @@
 			</s:else>
 			<ul id="indexList">
 				<li>
-					<s:url var="url" action="register-user"/>
-					<s:a href="%{url}">Create User</s:a>
+					<s:url var="url" action="manage-users" namespace="/admin/usermanagement"/>
+					<s:a href="%{url}">Manage Users</s:a>
 				</li>
 				<li>
 					<s:url var="url" action="api-key"/>
