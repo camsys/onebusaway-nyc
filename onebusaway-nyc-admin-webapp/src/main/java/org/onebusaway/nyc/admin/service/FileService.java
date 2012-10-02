@@ -13,6 +13,8 @@ public interface FileService {
   void setStifPath(String stifPath);
   String getStifPath();
   void setBuildPath(String buildPath);
+  String getConfigPath();
+  void setConfigPath(String configPath);
   String getBuildPath();
   String getBucketName();
   
@@ -41,4 +43,5 @@ public interface FileService {
    * @param fileName the given file name
    */
   void validateFileName(String fileName);
+
 }

@@ -100,6 +100,33 @@
           <artifactId>quartz</artifactId>
           <version>1.5.2</version>
         </dependency>
+    	<!--  s3 integration -->
+    	<dependency>
+      		<groupId>com.amazonaws</groupId>
+      		<artifactId>aws-java-sdk</artifactId>
+      		<version>1.3.9</version>
+      		<exclusions>
+        		<exclusion>
+          			<groupId>org.codehaus.jackson</groupId>
+          			<artifactId>jackson-core-asl</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>org.codehaus.jackson</groupId>
+          			<artifactId>jackson-mapper-asl</artifactId>
+        		</exclusion>
+      		</exclusions>
+    	</dependency>
+        <dependency>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+          <version>1.1.1</version>
+        </dependency>
+        <dependency>
+      		<groupId>javax.servlet</groupId>
+      		<artifactId>servlet-api</artifactId>
+      		<version>2.4</version>
+      		<scope>provided</scope>
+    	</dependency>      
     </dependencies>
     <profiles>
         <profile>
@@ -139,6 +166,8 @@
                 <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.port>80</tdm.port>
+                <tdm.url>/api/</tdm.url>
             </properties>
         </profile>
         <profile>
@@ -166,7 +195,9 @@
                 <vtms.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
                 <config.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
-                <tdm.host>localhost</tdm.host><!-- assumes domain is set in resolve.conf -->
+                <tdm.host>localhost</tdm.host>
+                <tdm.port>80</tdm.port>
+                <tdm.url>/api/</tdm.url>
                 <webapp.api.url></webapp.api.url>
                 <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
@@ -190,9 +221,11 @@
                 <vtms.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
                 <config.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
-                <tdm.host>localhost:8080</tdm.host>
+                <tdm.host>localhost</tdm.host>
+                <tdm.port>8080</tdm.port>
+                <tdm.url>/onebusaway-nyc-tdm-webapp/api/</tdm.url>
                 <webapp.api.url></webapp.api.url>
-                <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
+                <tdm.dataPath>/var/lib/obanyc/tdm_input/upload/mta</tdm.dataPath>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
@@ -215,6 +248,8 @@
                 <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.port>80</tdm.port>
+                <tdm.url>/api/</tdm.url>
                 <webapp.api.url></webapp.api.url>
                 <log4j.appender>stdout</log4j.appender>
             </properties>
@@ -227,6 +262,8 @@
                 <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.port>8080</tdm.port>
+                <tdm.url>/api/</tdm.url>
                 <webapp.api.url></webapp.api.url>
                 <log4j.appender>stdout</log4j.appender>
                 
@@ -268,6 +305,8 @@
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <webapp.api.url>http://localhost:8080</webapp.api.url>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.port>80</tdm.port>
+                <tdm.url>/api/</tdm.url>
                 <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>

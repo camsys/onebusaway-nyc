@@ -208,7 +208,8 @@
 <!--                  <bundle.mode.standalone>false</bundle.mode.standalone> -->
                  <depot.partition.key></depot.partition.key>
                  <log4j.appender>stdout</log4j.appender>
-                 <particle.filter.debug>true</particle.filter.debug>
+                 <particle.filter.debug>false</particle.filter.debug>
+<!--                  <particle.filter.debug>true</particle.filter.debug> -->
           </properties>
         </profile>
         <profile>

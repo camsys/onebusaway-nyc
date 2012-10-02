@@ -1,31 +1,33 @@
 package org.onebusaway.nyc.admin.util;
 
+import org.onebusaway.nyc.util.impl.FileUtility;
+
+import org.h2.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
 
 /**
  * A collection of file handling utilities making life easier when working with
- * Java.
+ * Java but specific to the admin module needs.  More Generic functions exist
+ * in org.onebusaway.nyc.util.impl.FileUtility.
  * 
  */
 public class FileUtils {
   private static Logger _log = LoggerFactory.getLogger(FileUtils.class);
-  private static final int CHUNK_SIZE = 1024;
+
   private String _workingDirectory = null;
+  // more generic file handling functions belong in nyc.util
+  private FileUtility _fileUtil = new FileUtility();
 
   public FileUtils() {
     _workingDirectory = System.getProperty("java.io.tmpdir");
@@ -36,39 +38,35 @@ public class FileUtils {
   }
 
   /**
-   * Retrieve a file at the remote URL. THe file will be named the last portion
+   * Retrieve a file at the remote URL. The file will be named the last portion
    * of the URL, following the conventions of the UNIX tool wget.
    */
   public void wget(String urlString) {
     URL url;
     InputStream is = null;
-    DataInputStream dis = null;
-    DataOutputStream dos = null;
+    BufferedInputStream bis = null;
+    FileOutputStream fos = null;
     String fileName = parseFileName(urlString);
     _log.info("downloading " + urlString + " to fileName " + _workingDirectory
         + File.separatorChar + fileName);
-    byte[] buff = new byte[CHUNK_SIZE];
-    int read = 0;
     try {
       url = new URL(urlString);
       is = url.openStream();
-      dis = new DataInputStream(new BufferedInputStream(is));
-      dos = new DataOutputStream(new FileOutputStream(_workingDirectory
-          + File.separatorChar + fileName));
-      while ((read = dis.read(buff)) > -1) {
-        dos.write(buff, 0, read);
-      }
+      bis = new BufferedInputStream(is);
+      fos = new FileOutputStream(_workingDirectory
+          + File.separatorChar + fileName);
+      IOUtils.copy(bis, fos);
     } catch (Exception any) {
       throw new RuntimeException(any);
     } finally {
-      if (dis != null)
+      if (bis != null)
         try {
-          dis.close();
+          bis.close();
         } catch (Exception e1) {
         }
-      if (dos != null)
+      if (fos != null)
         try {
-          dos.close();
+          fos.close();
         } catch (Exception e2) {
         }
     }
@@ -79,35 +77,11 @@ public class FileUtils {
    * and filename).
    */
   public void copy(InputStream source, String destinationFileName) {
-    byte[] buff = new byte[CHUNK_SIZE];
-    DataOutputStream destination = null;
-    int read = 0;
-    try {
-      destination = new DataOutputStream(new FileOutputStream(
-          destinationFileName));
-      // lazy copy -- not recommend
-      while ((read = source.read(buff)) > -1) {
-        destination.write(buff, 0, read);
-      }
-    } catch (Exception any) {
-      _log.error(any.toString());
-      throw new RuntimeException(any);
-    } finally {
-      if (source != null)
-        try {
-          source.close();
-        } catch (Exception any) {
-        }
-      if (destination != null)
-        try {
-          destination.close();
-        } catch (Exception any) {
-        }
-    }
-
+    _fileUtil.copy(source, destinationFileName);
   }
 
   public String parseFileName(String urlString) {
+    if (urlString == null) return null;
     int i = urlString.lastIndexOf("/");
     if (i+1 < urlString.length()) {
       return urlString.substring(i+1, urlString.length());
@@ -202,11 +176,7 @@ public class FileUtils {
         try {
           in = new FileInputStream(from);
           out = new FileOutputStream(to);
-
-          int byteCount = 0;
-          byte[] buffer = new byte[1024];
-          while ((byteCount = in.read(buffer)) >= 0)
-            out.write(buffer, 0, byteCount);
+          IOUtils.copy(in, out);
         } finally {
           if (in != null)
             in.close();

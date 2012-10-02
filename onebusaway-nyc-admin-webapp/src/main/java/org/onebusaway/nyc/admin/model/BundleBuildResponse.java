@@ -8,6 +8,7 @@ import java.util.List;
 public class BundleBuildResponse {
 	private List<String> _gtfsList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _stifZipList = Collections.synchronizedList(new ArrayList<String>());
+	private List<String> _configList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _statusList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _outputFileList = Collections.synchronizedList(new ArrayList<String>());
 	private SerializableException _exception = null;
@@ -78,6 +79,18 @@ public class BundleBuildResponse {
 		_stifZipList = stifZipList;
 	}
 
+	public List<String> getConfigList() {
+	  return new ArrayList<String>(_configList);
+	}
+	
+	public void setConfigList(List<String> configList) {
+	  _configList = configList;
+	}
+	
+  public void addConfigFile(String file) {
+    _configList.add(file);
+  }
+  
 	public void addStatusMessage(String msg) {
 		_statusList.add(msg);
 	}
@@ -289,4 +302,5 @@ public class BundleBuildResponse {
 		 }
 		
 	 }
+
 }

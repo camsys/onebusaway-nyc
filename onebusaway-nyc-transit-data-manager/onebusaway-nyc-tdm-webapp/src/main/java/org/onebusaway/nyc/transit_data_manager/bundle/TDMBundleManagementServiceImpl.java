@@ -39,7 +39,7 @@ public class TDMBundleManagementServiceImpl extends BundleManagementServiceImpl 
     public void run() {
 
       try {
-        final int SLEEP_TIME = 10 * 1000;
+        final int SLEEP_TIME = 60 * 1000;
         _log.info("init thread sleeping " + SLEEP_TIME + " on startup");
         /*
          * Initial bundle load is already in progress due to other TDM

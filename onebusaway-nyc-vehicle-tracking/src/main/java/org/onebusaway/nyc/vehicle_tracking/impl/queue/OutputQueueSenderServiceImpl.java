@@ -38,6 +38,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -115,6 +116,21 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
     @Override
     public void run() {
       while (!Thread.currentThread().isInterrupted()) {
+        String r = null;
+        try {
+          r = _outputBuffer.poll(250, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ie) {
+          _log.error("SendThread interrupted", ie);
+          return;
+        }
+
+        if (r != null) {
+          if (_isPrimaryInferenceInstance) {
+            _zmqSocket.send(_topicName, ZMQ.SNDMORE);
+            _zmqSocket.send(r.getBytes(), 0);
+          }
+        }
+
         final String h = _heartbeatBuffer.poll();
         if (h != null) {
           if (_isPrimaryInferenceInstance) {
@@ -124,16 +140,10 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
           }
         }
 
-        final String r = _outputBuffer.poll();
-        if (r == null)
+        if (r == null){
+          // skip output message below if no queue content
           continue;
-
-        if (_isPrimaryInferenceInstance) {
-          _zmqSocket.send(_topicName, ZMQ.SNDMORE);
-          _zmqSocket.send(r.getBytes(), 0);
         }
-
-        Thread.yield();
 
         if (processedCount > 50) {
           _log.warn("Inference output queue(primary="

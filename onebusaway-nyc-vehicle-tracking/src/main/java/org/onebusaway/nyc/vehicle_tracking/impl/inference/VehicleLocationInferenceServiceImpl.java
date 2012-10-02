@@ -428,7 +428,7 @@ public class VehicleLocationInferenceServiceImpl implements
    * reference data (bundle). Also reset vehicles with no current match, as they
    * may have a match in the new bundle.
    */
-  private synchronized void verifyVehicleResultMappingToCurrentBundle() {
+  private void verifyVehicleResultMappingToCurrentBundle() {
     if (!bundleHasChanged())
       return;
 

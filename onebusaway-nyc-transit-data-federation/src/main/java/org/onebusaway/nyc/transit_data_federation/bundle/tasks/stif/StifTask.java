@@ -425,9 +425,13 @@ public class StifTask implements Runnable {
             RawRunData rawRunData = loader.getRawRunDataByTrip().get(gtfsTrip);
             String blockId;
             if (trip.agencyId.equals("MTA NYCT")) {
-              blockId = gtfsTrip.getServiceId().getId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.getRunIdWithDepot() + "_" + blockNo;
+              blockId = gtfsTrip.getServiceId().getId() + "_" +
+                  trip.serviceCode.getLetterCode() + "_" +
+                  rawRunData.getDepotCode() + "_" +
+                  pullout.firstStopTime + "_" +
+                  pullout.runId;
             } else {
-              blockId = gtfsTrip.getServiceId().getId() + "_" + trip.blockId + "_" + blockNo;
+              blockId = gtfsTrip.getServiceId().getId() + "_" + trip.blockId;
             }
 
             blockId = blockId.intern();
@@ -465,7 +469,8 @@ public class StifTask implements Runnable {
             + " must not have an associated pullout");
         for (Trip gtfsTrip : trip.getGtfsTrips()) {
           blockNo++;
-          String blockId = gtfsTrip.getServiceId().getId() + "_" + trip.firstStop + "_"
+          String blockId = gtfsTrip.getServiceId().getId() + "_"
+              + trip.serviceCode.getLetterCode() + "_ " + trip.firstStop + "_"
               + trip.firstStopTime + "_" + trip.runId.replace("-", "_")
               + "_orphan_" + blockNo;
           _log.warn("Generating single-trip block id for GTFS trip: "
