@@ -81,6 +81,7 @@ public class FileUtils {
   }
 
   public String parseFileName(String urlString) {
+    if (urlString == null) return null;
     int i = urlString.lastIndexOf("/");
     if (i+1 < urlString.length()) {
       return urlString.substring(i+1, urlString.length());
