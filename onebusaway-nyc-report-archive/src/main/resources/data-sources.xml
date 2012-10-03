@@ -96,11 +96,13 @@
         </property>
     </bean>
     
-    <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-                <property name="bundleStoreRoot" value="${bundle.location}" />
-                <property name="standaloneMode" value="${bundle.mode.standalone}" />
-    </bean>
-
+   	<bean id="bundleManagementService"
+		class="org.onebusaway.nyc.report_archive.impl.ArchiveBundleManagementServiceImpl">
+		<property name="bundleStoreRoot" value="${bundle.location}" />
+		<property name="standaloneMode" value="${bundle.mode.standalone}" />
+        <property name="tz" value="America/New_York" />
+	</bean>
+  
 	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="annotatedClasses">
