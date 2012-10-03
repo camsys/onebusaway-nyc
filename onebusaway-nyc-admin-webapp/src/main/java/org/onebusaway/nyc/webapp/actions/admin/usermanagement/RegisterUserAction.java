@@ -1,7 +1,5 @@
 package org.onebusaway.nyc.webapp.actions.admin.usermanagement;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.admin.service.UserManagementService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
@@ -58,6 +56,10 @@ public class RegisterUserAction extends OneBusAwayNYCAdminActionSupport {
 		}
 		
 		return valid;
+	}
+	
+	public void init() {
+		createUser();
 	}
 	
 

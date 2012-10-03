@@ -64,6 +64,7 @@
 	margin 0;
 	text-align: left;
 	font-size: 12px;
+	padding-left: 3px;
 }
 
 #detailsTable .headerRow th{
@@ -73,6 +74,7 @@
 #detailsTable td {
 	padding-right: 10px;
 	padding-top: 10px;
+	padding-left: 3px;
 }
 
 .userLabel {
