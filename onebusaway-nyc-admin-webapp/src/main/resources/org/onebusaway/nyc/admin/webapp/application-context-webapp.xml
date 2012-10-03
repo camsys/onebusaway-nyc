@@ -40,13 +40,26 @@
     
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
 
-    <bean id="createAdmin" class="org.onebusaway.users.impl.CreateUserAction">
+    <!-- bean id="createAdmin" class="org.onebusaway.users.impl.CreateUserAction">
       <property name="username" value="admin"/>
       <property name="password" value="admin"/>
       <property name="admin" value="true"/>
     </bean>
     
     <bean id="createOperator" class="org.onebusaway.users.impl.CreateUserAction">
+      <property name="username" value="operator"/>
+      <property name="password" value="operator"/>
+    </bean-->
+    
+    <bean id="createAdmin" class="org.onebusaway.nyc.webapp.actions.admin.usermanagement.RegisterUserAction"
+     	  init-method="init">
+      <property name="username" value="admin"/>
+      <property name="password" value="admin"/>
+      <property name="admin" value="true"/>
+    </bean>
+    
+    <bean id="createOperator" class="org.onebusaway.nyc.webapp.actions.admin.usermanagement.RegisterUserAction"
+    	  init-method="init">
       <property name="username" value="operator"/>
       <property name="password" value="operator"/>
     </bean>
