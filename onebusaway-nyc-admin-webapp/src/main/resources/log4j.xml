@@ -36,5 +36,11 @@
 	</root>
 
 	<!-- 0 or 1 categoryFactory elements -->
+	
+	<!-- Spring debug config -->
+	<!-- category name="org.springframework">
+         <priority value="debug" />
+      </category-->
+	
 
 </log4j:configuration>

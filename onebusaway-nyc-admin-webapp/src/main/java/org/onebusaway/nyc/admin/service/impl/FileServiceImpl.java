@@ -53,7 +53,8 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 
 	// the stif directory relative to the bundle directory; e.g. stif_latest
 	private String _stifPath;
-
+	// the config directory, relative to the bundle directory; e.g., config
+	private String _configPath;
 	private String _buildPath;
 	private String _username;
 	private String _password;
@@ -97,6 +98,15 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 		return _stifPath;
 	}
 
+ @Override
+  public String getConfigPath() {
+   return _configPath;
+  }
+  @Override
+  public void setConfigPath(String configPath) {
+    _configPath = configPath;
+    
+  }
 	@Override
 	public void setBuildPath(String buildPath) {
 		this._buildPath = buildPath;
@@ -411,5 +421,6 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 					"traversal attack");
 		}
 	}
+
 	
 }

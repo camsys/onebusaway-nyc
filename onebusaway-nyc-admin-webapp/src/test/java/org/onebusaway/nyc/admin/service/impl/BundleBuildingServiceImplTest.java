@@ -73,6 +73,8 @@ public class BundleBuildingServiceImplTest {
           list.add("gtfs-m34.zip");
         } else if (directory.equals("test/stif_latest")) {
           list.add("stif-m34.zip");
+        } else if (directory.equals("test/config")) {
+          // do nothing
         } else {
           list.add("empty");
         }
@@ -104,6 +106,7 @@ public class BundleBuildingServiceImplTest {
     fileService.setGtfsPath("gtfs_latest");
     fileService.setStifPath("stif_latest");
     fileService.setBuildPath("builds");
+    fileService.setConfigPath("config");
     fileService.setup();
 
     // uncomment for s3
@@ -112,6 +115,7 @@ public class BundleBuildingServiceImplTest {
     // fileService.setGtfsPath("gtfs_latest");
     // fileService.setStifPath("stif_latest");
     // fileService.setBuildPath("builds");
+    // fileService.setConfigPath("config");
     // fileService.setup();
     _service.setFileService(fileService);
     _service.setup();
@@ -146,6 +150,9 @@ public class BundleBuildingServiceImplTest {
     assertNotNull(response.getStatusList());
     assertTrue(response.getStatusList().size() > 0);
 
+    assertNotNull(response.getConfigList());
+    assertEquals(0, response.getConfigList().size());
+    
     // step 2
     _service.prepare(request, response);
 

@@ -15,6 +15,9 @@
   <context:annotation-config />  
 
   <context:component-scan base-package="org.onebusaway.nyc.transit_data_manager.bundle.api" />
+
+    <import resource="classpath:org/onebusaway/users/application-context.xml" />
+    <import resource="classpath:org/onebusaway/users/application-context-security.xml" />
   
   <!--  why is this here? -->
   <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl" />
@@ -37,13 +40,13 @@
       </props>
     </property>
   </bean>
-  
+
   <!-- define which TDM to use -->
 	<bean id="transitDataManagerApiLibrary"
 		class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary">
 		<constructor-arg type="java.lang.String" value="${tdm.host}" />
-		<constructor-arg type="java.lang.Integer" value="80" />
-		<constructor-arg type="java.lang.String" value="/api/" />
+		<constructor-arg type="java.lang.Integer" value="${tdm.port}" />
+		<constructor-arg type="java.lang.String" value="${tdm.url}" />
 	</bean>
 	
 	<bean id="loggingService" class="org.onebusaway.nyc.util.logging.impl.LoggingServiceImpl" />
@@ -58,6 +61,12 @@
 
   <bean class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
     <constructor-arg ref="bundleSource" />
+  </bean>
+
+  <bean id="bundleDeployer"
+    class="org.onebusaway.nyc.transit_data_manager.bundle.impl.BundleDeployerImpl">
+    <property name="localBundlePath" value="${bundle.location}" />
+    <property name="localBundleStagingPath" value="${tdm.bundlePath}" />
   </bean>
 
   <bean id="bundleSource"

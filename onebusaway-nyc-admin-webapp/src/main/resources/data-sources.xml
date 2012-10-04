@@ -74,7 +74,17 @@
         <prop key="cacheManager.cacheManagerName">org.onebusaway.nyc.admin.cacheManager</prop>
       </props>
     </property>
-</bean>
+	</bean>
+	
+	<bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+        <property name="target" value="hibernateProperties" />
+        <property name="properties">
+            <props>
+              <prop key="hibernate.show_sql">false</prop>
+               <prop key="hibernate.hbm2ddl.auto">update</prop>
+            </props> 
+        </property> 
+    </bean>
     
 
 </beans>

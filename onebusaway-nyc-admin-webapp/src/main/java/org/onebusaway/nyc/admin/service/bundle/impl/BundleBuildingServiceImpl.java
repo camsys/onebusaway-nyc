@@ -47,6 +47,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String DATA_DIR = "data";
   private static final String OUTPUT_DIR = "outputs";
   private static final String INPUTS_DIR = "inputs";
+  private static final String DEFAULT_TRIP_TO_DSC_FILE = "tripToDSCMap.txt";
 
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImpl.class);
   private FileService _fileService;
@@ -113,6 +114,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       response.addStifZipFile(_fileService.get(file, tmpDirectory));
     }
 
+    // download optional configuration files
+    List<String> config = _fileService.list(
+        bundleDir + "/" + _fileService.getConfigPath(), -1);
+    for (String file : config) {
+      response.addStatusMessage("downloading config file " + file);
+      response.addConfigFile(_fileService.get(file, tmpDirectory));
+    }
   }
 
   /**
@@ -172,6 +180,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     // stage baseLocations
     InputStream baseLocationsStream = this.getClass().getResourceAsStream("/BaseLocations.txt");
     new FileUtils().copy(baseLocationsStream, dataPath + File.separator + "BaseLocations.txt");
+    
+    File configPath = new File(inputsPath + File.separator + "config");
+    configPath.mkdirs();
+    
+    // stage any configuration files
+    for (String config : response.getConfigList()) {
+      _log.info("config copying " + config + " to " + inputsPath + File.separator + "config");
+      response.addStatusMessage("found additional configuration file=" + config);
+      String outputFilename = inputsPath + File.separator + "config" + File.separator + fs.parseFileName(config);
+      fs.copyFiles(new File(config), new File(outputFilename));
+    }
     
     // clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
     try {
@@ -279,12 +298,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           + File.separator + "stif");// TODO this is a convention, pull out into config?
       String notInServiceFilename = request.getTmpDirectory() + File.separator
           + "NotInServiceDSCs.txt";
+
       new FileUtils().createFile(notInServiceFilename,
           listToFile(request.getNotInServiceDSCList()));
       stifLoaderTask.addPropertyValue("notInServiceDscPath",
           notInServiceFilename);
       stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
       stifLoaderTask.addPropertyValue("logPath", response.getBundleOutputDirectory());
+      String dscMapPath = response.getBundleInputDirectory() + File.separator + "config" + File.separator 
+          + getTripToDSCFilename();
+      _log.info("looking for configuration at " + dscMapPath);
+      File dscMapFile = new File(dscMapPath);
+      if (dscMapFile.exists()) {
+        _log.info("loading tripToDSCMap at" + dscMapPath);
+        response.addStatusMessage("loading tripToDSCMap at" + dscMapPath);
+        stifLoaderTask.addPropertyValue("tripToDSCOverridePath", dscMapPath);
+      } else {
+        response.addStatusMessage(getTripToDSCFilename() + " not found, override ignored");
+      }
       beans.put("stifLoaderTask", stifLoaderTask.getBeanDefinition());
 
       BeanDefinitionBuilder task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
@@ -342,6 +373,20 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
   
+  private String getTripToDSCFilename() {
+    String dscFilename = null;
+    try {
+        dscFilename = configurationService.getConfigurationValueAsString("admin.tripToDSCFilename", DEFAULT_TRIP_TO_DSC_FILE);
+        
+    } catch (Exception any) {
+      return DEFAULT_TRIP_TO_DSC_FILE;
+    }
+    if (dscFilename != null && dscFilename.length() > 0) {
+      return dscFilename;
+    }
+    return DEFAULT_TRIP_TO_DSC_FILE;
+  }
+
   /**
    * tear down the logger for the bundle building activity. 
    */

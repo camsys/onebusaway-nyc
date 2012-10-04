@@ -340,22 +340,24 @@ public class BlockStateService {
   }
 
   public Set<BlockState> getBlockStatesForObservation(Observation observation) {
+    synchronized(observation) {
       Set<BlockState> m = _observationCache.getValueForObservation(observation,
           EObservationCacheKey.BEST_BLOCK_STATES);
+      
+      if (m == null) {
+        final Map<BlockLocationKey, BestBlockStates> res = computeBlockStatesForObservation(observation);
+        _observationCache.putValueForObservation(observation,
+            EObservationCacheKey.BLOCK_LOCATION, res);
   
-    if (m == null) {
-      final Map<BlockLocationKey, BestBlockStates> res = computeBlockStatesForObservation(observation);
-      _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.BLOCK_LOCATION, res);
-
-      m = Sets.newHashSet();
-      for (final BestBlockStates bbs : res.values()) {
-        m.addAll(bbs.getAllStates());
+        m = Sets.newHashSet();
+        for (final BestBlockStates bbs : res.values()) {
+          m.addAll(bbs.getAllStates());
+        }
+        _observationCache.putValueForObservation(observation,
+            EObservationCacheKey.BEST_BLOCK_STATES, m);
       }
-      _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.BEST_BLOCK_STATES, m);
+      return m;
     }
-    return m;
   }
 
   private Map<BlockLocationKey, BestBlockStates> computeBlockStatesForObservation(

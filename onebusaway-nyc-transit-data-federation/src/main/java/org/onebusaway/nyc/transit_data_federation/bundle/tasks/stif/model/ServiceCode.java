@@ -40,6 +40,7 @@ public enum ServiceCode {
 	NEW_YEARS_DAY_OBSERVED;
 
 	static HashMap<String, ServiceCode> serviceCodeForGtfsId = new HashMap<String, ServiceCode>();
+	static HashMap<ServiceCode, String> letterCodeForServiceCode = new HashMap<ServiceCode, String>();
 
 	static {
 		mapServiceCode("1", WEEKDAY_SCHOOL_OPEN);
@@ -76,6 +77,9 @@ public enum ServiceCode {
 	private static void mapServiceCode(String string,
 			ServiceCode serviceCode) {
 		serviceCodeForGtfsId.put(string, serviceCode);
+		if (Character.isLetter(string.charAt(0))) {
+		  letterCodeForServiceCode.put(serviceCode, string);
+		}
 	}
 
 	public static ServiceCode getServiceCodeForBusCoGTFS(String id) {
@@ -91,6 +95,10 @@ public enum ServiceCode {
 	    return SUNDAY;
 	  } else
 	    return null;
+	}
+
+	public String getLetterCode() {
+	  return letterCodeForServiceCode.get(this);
 	}
 
 }

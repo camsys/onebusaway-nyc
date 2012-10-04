@@ -59,7 +59,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	protected String _currentBundleId = null;
 
-	private ServiceDate _currentServiceDate = null;
+	protected ServiceDate _currentServiceDate = null;
 
 	private boolean _bundleIsReady = false;
 

@@ -487,10 +487,6 @@
 	cursor: pointer; 
 }	
 
-.clear {
-	clear: both;
-}
-
 .summaryFont {
 	font: 13px/1.231 helvetica,arial,clean,sans-serif;
 }
@@ -502,4 +498,60 @@
 #currentDirectories .ui-selected {  
   	background-color:#eEeF8F;  
 }  
+
+/** deploy section **/
+#deployBundle {
+	padding-top: 20px;
+}
+
+#deployBundle #deployContentsHolder {
+	border: solid 1px transparent;
+	width: 890px;
+	height: 200px;
+	overflow: none;
+}
+#deployBundle #bundleResultsHolder #deployBundle_progress {
+	vertical-align: middle;
+	margin-right: 10px;
+	display: none;
+}
+
+#bundleResultsHolder #bundleResults #deployBundle_progress {
+	display: none;
+	padding-top : 10px;
+}
+
+#bundleResultsHolder #bundleResults #deployBundle_resultList {
+	display: none;
+	padding-top : 10px;
+}
+
+#deployContentsHolder #deployBox #deploying {
+	display: none;
+	background-color: #F0F0F0;
+}
+
+#deployBundle #requestLabels {
+	padding-top : 20px;
+	display:none;
+}
+
+#deploypage_info {
+	display:none;
+}
+
+#helpfulMessage {
+	padding-top : 20px;
+}
+
+#deployBundle #listButton {
+	padding-left: 20px;
+	display: inline;
+	align: right;
+}
+
+#deployBundle_bundleList {
+	display: block;
+	padding-top : 10px;
+}
 
