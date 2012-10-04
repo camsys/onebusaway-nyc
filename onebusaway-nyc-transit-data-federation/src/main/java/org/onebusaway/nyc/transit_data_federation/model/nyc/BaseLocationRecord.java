@@ -21,9 +21,10 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class BaseLocationRecord {
 
+  @CsvField(name = "Name")
   private String baseName;
 
-  @CsvField(mapping = GeometryFieldMappingFactory.class)
+  @CsvField(name = "WKT", mapping = GeometryFieldMappingFactory.class)
   private Geometry geometry;
 
   public String getBaseName() {
