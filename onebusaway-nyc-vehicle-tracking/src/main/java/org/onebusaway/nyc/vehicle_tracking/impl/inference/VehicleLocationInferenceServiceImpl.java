@@ -102,7 +102,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private ExecutorService _executorService;
 
-  private int _numberOfProcessingThreads = 10;
+  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 2);
 
   private int _skippedUpdateLogCounter = 0;
 
@@ -132,6 +132,7 @@ public class VehicleLocationInferenceServiceImpl implements
     if (_numberOfProcessingThreads <= 0)
       throw new IllegalArgumentException(
           "numberOfProcessingThreads must be positive");
+    _log.info("creating threadpool of size=" + _numberOfProcessingThreads);
     _executorService = Executors.newFixedThreadPool(_numberOfProcessingThreads);
   }
 
