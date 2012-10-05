@@ -130,7 +130,7 @@ function showDeleteDialog() {
 				autoOpen: false,
 				height: "auto",
 				width: "auto",
-				position: [600,125]	
+				position: [500,125]	
 			});
 	
 	deleteDialog.dialog('open');
