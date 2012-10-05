@@ -69,6 +69,12 @@
     <property name="localBundleStagingPath" value="${tdm.bundlePath}" />
   </bean>
 
+  <bean id="configDeployer"
+    class="org.onebusaway.nyc.transit_data_manager.config.impl.ConfigurationDeployerImpl">
+    <property name="localDepotIdMapDir" value="${tdm.home}" />
+    <property name="localDscFileDir" value="${tdm.dscFilesDir}" />
+  </bean>
+
   <bean id="bundleSource"
     class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryBundleSource">
     <constructor-arg type="java.lang.String" value="${tdm.bundlePath}" />

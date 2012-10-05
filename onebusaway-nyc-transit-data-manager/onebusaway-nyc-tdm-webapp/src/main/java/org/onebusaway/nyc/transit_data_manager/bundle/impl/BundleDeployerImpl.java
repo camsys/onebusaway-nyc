@@ -2,29 +2,12 @@ package org.onebusaway.nyc.transit_data_manager.bundle.impl;
 
 import org.onebusaway.nyc.transit_data_manager.bundle.BundleDeployer;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleDeployStatus;
-import org.onebusaway.nyc.util.impl.FileUtility;
-
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-
+import org.onebusaway.nyc.transit_data_manager.util.BaseDeployer;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.context.ServletContextAware;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
 
 /**
  * Implementation of deploying bundles to the TDM (and hence the rest of the
@@ -32,38 +15,11 @@ import javax.servlet.ServletContext;
  * namely that s3://{bucketName}/activebundles/{environment} contain bundle.tar.gz
  *
  */
-public class BundleDeployerImpl implements BundleDeployer, ServletContextAware {
+public class BundleDeployerImpl extends BaseDeployer implements BundleDeployer {
 
-  private static Logger _log = LoggerFactory.getLogger(BundleDeployerImpl.class);
-  private static final int MAX_RESULTS = -1;
-
-  private AWSCredentials _credentials;
-  private AmazonS3Client _s3;
-  private FileUtility _fileUtil;
-  private String _bucketName;
-  private String _username;
-  private String _password;
   private String _localBundlePath;
   private String _localBundleStagingPath;
 
-  @Override
-  public void setUser(String user) {
-    _username = user;
-  }
-
-  @Override
-  public void setPassword(String password) {
-    _password = password;
-  }
-
-  @Override
-  public void setBucketName(String bucketName) {
-    this._bucketName = bucketName;
-  }
-
-  public String getBucketName() {
-    return this._bucketName;
-  }
 
   public void setLocalBundleStagingPath(String localBundlePath) {
     this._localBundleStagingPath = localBundlePath;
@@ -71,58 +27,6 @@ public class BundleDeployerImpl implements BundleDeployer, ServletContextAware {
 
   public void setLocalBundlePath(String localBundlePath) {
     this._localBundlePath = localBundlePath;
-  }
-
-  @PostConstruct
-  @Override
-  public void setup() {
-    try {
-      _log.info("setting up BundleDeployerImpl with username=" + _username 
-          + " and bucket=" + _bucketName);
-      _credentials = new BasicAWSCredentials(_username, _password);
-      _s3 = new AmazonS3Client(_credentials);
-      _fileUtil = new FileUtility();
-    } catch (Exception ioe) {
-      _log.error(ioe.toString());
-      throw new RuntimeException(ioe);
-    }
-
-  }
-
-  @Override
-  /**
-   * Retrieve the specified key from S3 and store in the given directory.
-   */
-  public String get(String s3Key, String destinationDirectory) {
-    _log.info("get(" + s3Key + ", " + destinationDirectory + ")");
-    String filename = parseFileName(s3Key);
-    _log.info("filename=" + filename);
-    GetObjectRequest request = new GetObjectRequest(this._bucketName, s3Key);
-    S3Object file = _s3.getObject(request);
-    String pathAndFileName = destinationDirectory + File.separator + filename;
-    _fileUtil.copy(file.getObjectContent(), pathAndFileName);
-    return pathAndFileName;
-  }
-
-  @Override
-  /**
-   * list the files in the given directory.
-   */
-  public List<String> listFiles(String directory, int maxResults) {
-    _log.info("list(" + directory + ")");
-    ListObjectsRequest request = new ListObjectsRequest(_bucketName, directory,
-        File.separator, null, maxResults);
-    ObjectListing listing = _s3.listObjects(request);
-    List<String> rows = new ArrayList<String>();
-    for (S3ObjectSummary summary : listing.getObjectSummaries()) {
-      String key = summary.getKey();
-      _log.info("found=" + key);
-      // hide directories
-      if (!key.endsWith(File.separator)) {
-        rows.add(summary.getKey());
-      }
-    }
-    return rows;
   }
 
   @Override
@@ -268,40 +172,6 @@ public class BundleDeployerImpl implements BundleDeployer, ServletContextAware {
     new File(_localBundleStagingPath).mkdir();
   }
 
-  private String parseFileName(String urlString) {
-    int i = urlString.lastIndexOf("/");
-    if (i+1 < urlString.length()) {
-      return urlString.substring(i+1, urlString.length());
-    }
-    if (i >= 0) {
-      return urlString.substring(i, urlString.length());
-    }
-    return urlString;
-  }
-
-
-  @Override
-  public void setServletContext(ServletContext servletContext) {
-    if (servletContext != null) {
-      String user = servletContext.getInitParameter("s3.user");
-      _log.info("servlet context provided s3.user=" + user);
-      if (user != null) {
-        setUser(user);
-      }
-      String password = servletContext.getInitParameter("s3.password");
-      if (password != null) {
-        setPassword(password);
-      }
-      String bucketName = servletContext.getInitParameter("s3.bundle.bucketName");
-      if (bucketName != null) {
-        _log.info("servlet context provided bucketName=" + bucketName);
-        setBucketName(bucketName);
-      } else {
-        _log.info("servlet context missing bucketName, using "
-            + getBucketName());
-      }
-    }
-  }
 
   @Override
   /**
