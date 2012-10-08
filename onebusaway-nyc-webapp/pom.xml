@@ -37,12 +37,6 @@
     </dependency>
 
     <dependency>
-        <groupId>org.onebusaway</groupId>
-        <artifactId>onebusaway-nyc-api-core</artifactId>
-        <version>${onebusaway.nyc.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-nyc-transit-data</artifactId>
       <version>${onebusaway.nyc.version}</version>
