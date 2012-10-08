@@ -27,40 +27,44 @@
 <body>
 	<div id="content">
 		<div id="text">
-			<s:if test="adminUser">
-				<h2>Welcome Admin</h2>
-			</s:if>
-			<s:else>
-				<h2>Welcome Operator</h2>
-			</s:else>
-			<ul id="indexList">
-				<li>
-					<s:url var="url" action="manage-users" namespace="/admin/usermanagement"/>
-					<s:a href="%{url}">Manage Users</s:a>
-				</li>
-				<li>
-					<s:url var="url" action="api-key"/>
-					<s:a href="%{url}">Create API key</s:a>
-				</li>
-				<li>
-					<s:url var="url" action="api-keys"/>
-					<s:a href="%{url}">Create API key (Legacy)</s:a>
-				</li>
+			<div id="indexContainer">
 				<s:if test="adminUser">
-					<li>
-						<s:url var="url" action="manage-bundles" namespace="/admin/bundles"/>
-						<s:a href="%{url}">Transit Data Bundle Utility</s:a>
-					</li>
-					<li>
-						<s:url var="url" action="vehicle-status" namespace="/admin/vehiclestatus"/>
-						<s:a href="%{url}">Vehicle Status Display Utility</s:a>
-					</li>
+					<h2>Welcome Admin</h2>
 				</s:if>
-				<li>
-					<s:url var="url" action="barcode"></s:url>
-					<s:a href="%{url}">QR Code Generation</s:a>
-				</li>
-			</ul>
+				<s:else>
+					<h2>Welcome Operator</h2>
+				</s:else>
+				<ul id="indexList">
+					<li>
+						<s:url var="url" action="api-key"/>
+						<s:a href="%{url}">Create API key</s:a>
+					</li>
+					<!-- Commented out until its fixed 
+					<li>
+						<s:url var="url" action="api-keys"/>
+						<s:a href="%{url}">Create API key (Legacy)</s:a>
+					</li>
+					-->
+					<s:if test="adminUser">
+						<li>
+							<s:url var="url" action="manage-users" namespace="/admin/usermanagement"/>
+							<s:a href="%{url}">Manage Users</s:a>
+						</li>
+						<li>
+							<s:url var="url" action="manage-bundles" namespace="/admin/bundles"/>
+							<s:a href="%{url}">Transit Data Bundle Utility</s:a>
+						</li>
+						<li>
+							<s:url var="url" action="vehicle-status" namespace="/admin/vehiclestatus"/>
+							<s:a href="%{url}">Vehicle Status Display Utility</s:a>
+						</li>
+					</s:if>
+					<li>
+						<s:url var="url" action="barcode"></s:url>
+						<s:a href="%{url}">QR Code Generation</s:a>
+					</li>
+				</ul>
+			</div>
 		</div>
 	</div>
 </body>
