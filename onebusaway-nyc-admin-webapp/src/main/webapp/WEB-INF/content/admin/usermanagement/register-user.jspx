@@ -22,8 +22,21 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>Create a new user</title>
+
 <s:url var="url" value="/css/user-management.css"/>
 <link rel="stylesheet" href="${url}" type="text/css"/>
+
+<script type="text/javascript">
+function clearForm() {
+	var userName = document.getElementById("username");
+	userName.value = "";
+	var password = document.getElementById("password");
+	password.value = "";
+	var isAdmin = document.getElementById("isadmin");
+	isAdmin.checked = false;
+}
+</script>
+
 </head>
 <body>
 	<div id="content">
@@ -32,23 +45,28 @@
 				<s:form action="register-user!createUser" namespace="/admin/usermanagement">
 					<div class="userField">
 						<label id="top">User Name :</label>
-						<s:textfield name="username"/>
+						<s:textfield name="username" id="username"/>
 						<label class="required">*</label>
 						<s:fielderror fieldName="username" cssClass="errorMessage"/>
 					</div>
 					<div class="userField">
 						<label id="top">Password :</label>
-						<s:textfield name="password"/>
+						<s:textfield name="password" id="password"/>
 						<label class="required">*</label>
 						<s:fielderror fieldName="password" cssClass="errorMessage" />
 					</div>
 					<fieldset>
-						<s:checkbox name="admin"/>
+						<s:checkbox name="admin" id="isadmin"/>
 						<label class="inline">Is Admin?</label>
 					</fieldset>
 					<s:submit/>
 					<div id="createUserResult">
-						<s:actionmessage />
+						<s:if test="hasActionMessages()">
+							<s:actionmessage />
+							<script type="text/javascript">
+								clearForm();
+							</script>
+						</s:if>
 						<s:actionerror/>
 					</div>
 				</s:form>
