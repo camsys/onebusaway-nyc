@@ -2,6 +2,7 @@ package org.onebusaway.nyc.transit_data_manager.bundle.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class BundleDeployStatus implements Serializable {
@@ -15,10 +16,10 @@ public class BundleDeployStatus implements Serializable {
   
   private String id = null;
   private String status = "initialized";
-  private List<String> bundleNames = new ArrayList<String>();
+  private List<String> bundleNames = Collections.synchronizedList(new ArrayList<String>());
   
   public List<String> getBundleNames() {
-    return bundleNames;
+    return new ArrayList<String>(bundleNames);
   }
   
   public void setBundleNames(List<String> bundleNames) {

@@ -132,6 +132,7 @@
         <profile>
             <id>default-paths</id>
             <properties>
+                <tdm.home>/var/lib/obanyc/tdm</tdm.home>
                 <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
@@ -139,7 +140,7 @@
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
-                <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
+                <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
             </properties>
@@ -149,6 +150,7 @@
             <properties>
             	<!-- Use this profile for testing api calls locally -->
                 <tdm.dataPath>/mnt/tdm_data</tdm.dataPath>
+                <tdm.home>/mnt</tdm.home>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
@@ -174,6 +176,7 @@
             <id>local-paths-windows</id>
             <properties>
                 <tdm.dataPath>D:\tmp</tdm.dataPath>
+                <tdm.home>/var/lib/obanyc/tdm</tdm.home>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}\crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}\depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}\dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
@@ -200,13 +203,14 @@
                 <tdm.url>/api/</tdm.url>
                 <webapp.api.url></webapp.api.url>
                 <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
+                <tdm.home>/var/lib/obanyc/tdm</tdm.home>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
-                <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
+                <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/mnt/obanyc/bundleservice/activebundles</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
                 <bundle.location>/mnt/obanyc/oba-bundle-tdm</bundle.location>
@@ -226,13 +230,14 @@
                 <tdm.url>/onebusaway-nyc-tdm-webapp/api/</tdm.url>
                 <webapp.api.url></webapp.api.url>
                 <tdm.dataPath>/var/lib/obanyc/tdm_input/upload/mta</tdm.dataPath>
+                <tdm.home>/var/lib/obanyc/tdm</tdm.home>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
-                <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
+                <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
                 <bundle.location>/tmp/oba-bundle-tdm</bundle.location>
@@ -268,13 +273,14 @@
                 <log4j.appender>stdout</log4j.appender>
                 
                 <tdm.dataPath>/var/lib/obanyc/tdm-datapath</tdm.dataPath>
+                <tdm.home>/var/lib/obanyc/tdm</tdm.home>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
-                <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
+                <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/tmp/oba-bundle</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
                 <bundle.location>/tmp/oba-bundle-tdm</bundle.location>

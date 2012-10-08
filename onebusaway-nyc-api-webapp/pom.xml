@@ -124,9 +124,9 @@
         <profile>
             <id>local-front-end</id>
             <properties>
-                <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <vtms.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-                <config.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <tds.path>http://app1.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app1.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app1.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <dummy.permissions></dummy.permissions>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>

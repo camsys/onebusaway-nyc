@@ -16,11 +16,26 @@
       <artifactId>onebusaway-transit-data</artifactId>
       <version>${onebusaway.app-modules.version}</version>
     </dependency>
+    <dependency>
+        <groupId>org.onebusaway</groupId>
+        <artifactId>onebusaway-nyc-presentation</artifactId>
+        <version>${onebusaway.nyc.version}</version>
+    </dependency>
 
     <!-- We use this for exposing API calls as CSV data -->
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-csv-entities</artifactId>
+    </dependency>
+
+    <!-- Struts 2 -->
+    <dependency>
+        <groupId>org.apache.struts</groupId>
+        <artifactId>struts2-core</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.struts</groupId>
+        <artifactId>struts2-rest-plugin</artifactId>
     </dependency>
 
     <dependency>

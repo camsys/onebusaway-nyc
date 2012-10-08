@@ -132,6 +132,7 @@ public class VehicleLocationInferenceServiceImpl implements
     if (_numberOfProcessingThreads <= 0)
       throw new IllegalArgumentException(
           "numberOfProcessingThreads must be positive");
+    _log.info("creating threadpool of size=" + _numberOfProcessingThreads);
     _executorService = Executors.newFixedThreadPool(_numberOfProcessingThreads);
   }
 
