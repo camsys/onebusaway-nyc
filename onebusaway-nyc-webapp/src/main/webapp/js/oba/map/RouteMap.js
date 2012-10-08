@@ -661,6 +661,6 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 
 		unregisterStopBubbleListener: function() {
 			return OBA.Popups.unregisterStopBubbleListener();
-		},
+		}
 	};
 };
