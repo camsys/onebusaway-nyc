@@ -60,17 +60,24 @@
 	padding-bottom: 5px;
 }
 
+#content #text #indexContainer {
+	padding-bottom: 20px;
+}
+
+#content #text #indexList {
+	border: solid 1px #999999;
+	margin-top: 20px;
+	width: 200px;
+	padding: 10px 0;
+}
+
 #content #text #indexList li {
-	padding-top: 20px;
-	font-size: 12px;
-	vertical-align: middle;
-	padding-bottom: 10px;
+	padding: 10px 5px 10px;
 }
 
 #content #text #indexList a {
-	text-decoration: none;
-	padding-bottom: 10px;
-	padding-top: 10px;
+	font-size: 12px;
+	color: #0000FF;
 }
 
 
