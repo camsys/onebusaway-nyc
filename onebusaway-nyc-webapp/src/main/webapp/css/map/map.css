@@ -50,6 +50,11 @@
 	margin-top: 5px;
 }
 
+#content #searchbar #ad {
+	padding-top: 20px;
+	padding-bottom: 10px;	
+}
+
 #content #searchbar form input.submit {
 	position: absolute;
 	top: 0px;
@@ -329,9 +334,8 @@
 
 #map-global-alerts {
 	position: absolute;
-	bottom: 0;
 	right: 0;
-	left: 350px;
+	left: 330px;
 	padding-top: 4px;
 }
 

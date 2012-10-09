@@ -72,6 +72,11 @@
   </s:url>
   <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+  <s:url var="url" value="/js/oba/Wiki.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+  </s:url>
+  <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
   <decorator:head />
 </head>
 
@@ -171,6 +176,19 @@
 			</div>  		
   		
 			<decorator:body />
+
+		    <div id="skyscraper_ad">
+			 <script type="text/javascript">&lt;!-- 
+				google_ad_client = "<s:property value="googleAdClientId" />"; 
+				/* MTA BusTime Page Ads */ 
+				google_ad_slot = "8916589146"; 
+				google_ad_width = 160; 
+				google_ad_height = 600; 
+				//--&gt;
+			 </script> 
+			 <script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"> <!-- //prevent jspx minimization --></script> 	    
+	    	</div>
+	    	<div class="container clear"></div>
 	    </div>
 
 	<!-- End Content -->

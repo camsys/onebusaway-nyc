@@ -102,7 +102,7 @@ OBA.Wizard = function(routeMap) {
 	 **/
 		
 	// Set wizard at footer
-	function reviseHeight(wizard_height) {	
+	function reviseHeight(wizard_height) {
 		wizard.css("height", wizard_height);
 		wizard.css("margin-top", -1 * wizard_height - 1);
 		current_height = wizard_height;

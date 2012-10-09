@@ -17,9 +17,10 @@
 #wizard {
 	overflow: hidden;
 	position: absolute;
-	width: 100%;
+	width: auto;
 	top: 100%;
-	left: 0;
+	right: 0;
+	left: 330px;
 	opacity:0.9;
 	z-index: 10;
 	filter:alpha(opacity=90);  /* IE 8- */
@@ -71,7 +72,7 @@
 #wizard-col1 {
 	background: url("img/wizard/look_arrow.png") no-repeat 3% 5%;
 	border: 0;
-	width: 50%;
+	width: 30%;
 }
 
 #wizard-col1 h2 {
@@ -90,9 +91,9 @@
 }
 
 #inner-col1 {
-	left: 10%;
-	margin-top: 7%;
-	width: 50%;
+	width: 75%;
+	margin-left: 10%;
+	margin-top: 20%;
 	float: left;
 	color: #000000;
 }
