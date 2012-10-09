@@ -296,6 +296,7 @@
 #content #searchbar #loading {
 	padding-left: 40px;	
 	padding-top: 25px;
+	padding-bottom: 25px;
 	display: none;
 }
 
@@ -321,6 +322,8 @@
 	color: #999;
 }
 
+/* global alerts */
+
 .global-alerts {
 	background-color: rgb(242,247,203);
 	border: 1px solid black;
@@ -330,6 +333,7 @@
 #global-alerts {
 	width:280px;
 	margin-top: 15px;
+	margin-bottom: 15px;
 }
 
 #map-global-alerts {
@@ -342,6 +346,12 @@
 #close-map-global-alerts {
 	text-align: right;
 	padding-bottom: 2px;
+}
+
+/* google translate */
+
+#google_translate_element {
+	margin-bottom: 10px;
 }
 
 /* suggestions */
