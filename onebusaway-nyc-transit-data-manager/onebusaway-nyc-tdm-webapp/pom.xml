@@ -296,8 +296,10 @@
                 <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <webapp.api.url>http://localhost:8080</webapp.api.url>
-<!--                 <tdm.host>tdm.dev.obanyc.com</tdm.host> -->
-                <tdm.host></tdm.host>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
+<!--                 <tdm.host></tdm.host> -->
+                <tdm.port>80</tdm.port>
+                <tdm.url>/api/</tdm.url>
                 <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>

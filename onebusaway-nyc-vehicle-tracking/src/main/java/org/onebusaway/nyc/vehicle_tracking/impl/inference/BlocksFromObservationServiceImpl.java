@@ -180,20 +180,22 @@ public class BlocksFromObservationServiceImpl implements
   public Set<BlockStateObservation> determinePotentialBlockStatesForObservation(
       Observation observation, boolean bestBlockLocation) {
 
-    final EObservationCacheKey thisKey = bestBlockLocation
-        ? EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK
-        : EObservationCacheKey.JOURNEY_START_BLOCK;
-
-    Set<BlockStateObservation> potentialBlockStates = _observationCache.getValueForObservation(
-        observation, thisKey);
-
-    if (potentialBlockStates == null) {
-      unCachedDeterminePotentialBlockStatesForObservation(observation);
-      potentialBlockStates = _observationCache.getValueForObservation(
+    synchronized (observation) {
+      final EObservationCacheKey thisKey = bestBlockLocation
+          ? EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK
+          : EObservationCacheKey.JOURNEY_START_BLOCK;
+  
+      Set<BlockStateObservation> potentialBlockStates = _observationCache.getValueForObservation(
           observation, thisKey);
+  
+      if (potentialBlockStates == null) {
+        unCachedDeterminePotentialBlockStatesForObservation(observation);
+        potentialBlockStates = _observationCache.getValueForObservation(
+            observation, thisKey);
+      }
+  
+      return potentialBlockStates;
     }
-
-    return potentialBlockStates;
   }
 
   /**
@@ -213,80 +215,82 @@ public class BlocksFromObservationServiceImpl implements
   public Set<BlockStateObservation> determinePotentialBlockStatesForObservation(
       Observation observation) {
 
-    final Set<BlockStateObservation> potentialBlockStates;
-
-    Set<BlockStateObservation> inProgressStates = _observationCache.getValueForObservation(
-        observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK);
-    final Set<BlockStateObservation> notInProgressStates = _observationCache.getValueForObservation(
-        observation, EObservationCacheKey.JOURNEY_START_BLOCK);
-
-    if (inProgressStates == null || notInProgressStates == null) {
-      potentialBlockStates = unCachedDeterminePotentialBlockStatesForObservation(observation);
-      inProgressStates = _observationCache.getValueForObservation(observation,
-          EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK);
-    } else {
-      potentialBlockStates = Sets.newHashSet(Iterables.concat(inProgressStates,
-          notInProgressStates));
-    }
-
-    if (inProgressStates == null || inProgressStates.isEmpty()
-        || potentialBlockStates.isEmpty())
-      potentialBlockStates.add(null);
-
-    return potentialBlockStates;
-
+    synchronized(observation) {
+      final Set<BlockStateObservation> potentialBlockStates;
+  
+      Set<BlockStateObservation> inProgressStates = _observationCache.getValueForObservation(
+          observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK);
+      final Set<BlockStateObservation> notInProgressStates = _observationCache.getValueForObservation(
+          observation, EObservationCacheKey.JOURNEY_START_BLOCK);
+  
+      if (inProgressStates == null || notInProgressStates == null) {
+        potentialBlockStates = unCachedDeterminePotentialBlockStatesForObservation(observation);
+        inProgressStates = _observationCache.getValueForObservation(observation,
+            EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK);
+      } else {
+        potentialBlockStates = Sets.newHashSet(Iterables.concat(inProgressStates,
+            notInProgressStates));
+      }
+      if (inProgressStates == null || inProgressStates.isEmpty()
+          || potentialBlockStates.isEmpty())
+        potentialBlockStates.add(null);
+  
+      return potentialBlockStates;
+    } 
   }
 
   private Set<BlockStateObservation> unCachedDeterminePotentialBlockStatesForObservation(
       Observation observation) {
 
-    final Set<BlockStateObservation> potentialBlockStatesInProgress = Sets.newHashSet();
-    final Set<BlockStateObservation> potentialBlockStatesNotInProgress = Sets.newHashSet();
-    final Set<BlockInstance> snappedBlocks = Sets.newHashSet();
-
-    if (observation.getRunResults().hasRunResults()
-        || observation.hasValidDsc()) {
-      for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
-        final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-            bs, observation);
-        potentialBlockStatesInProgress.add(new BlockStateObservation(bs,
-            observation, isAtPotentialLayoverSpot, true));
-        snappedBlocks.add(bs.getBlockInstance());
+    synchronized (observation) {
+      final Set<BlockStateObservation> potentialBlockStatesInProgress = Sets.newHashSet();
+      final Set<BlockStateObservation> potentialBlockStatesNotInProgress = Sets.newHashSet();
+      final Set<BlockInstance> snappedBlocks = Sets.newHashSet();
+  
+      if (observation.getRunResults().hasRunResults()
+          || observation.hasValidDsc()) {
+        for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
+          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+              bs, observation);
+          potentialBlockStatesInProgress.add(new BlockStateObservation(bs,
+              observation, isAtPotentialLayoverSpot, true));
+          snappedBlocks.add(bs.getBlockInstance());
+        }
+  
+        _observationCache.putValueForObservation(observation,
+            EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK,
+            potentialBlockStatesInProgress);
       }
-
+  
+      /*
+       * now, use dsc, run-id and whatnot to determine blocks potentially being
+       * started (i.e. 0 distance-along-block).
+       */
+      final Set<BlockInstance> notSnappedBlocks = Sets.newHashSet();
+      determinePotentialBlocksForObservation(observation, notSnappedBlocks);
+      // notSnappedBlocks.removeAll(snappedBlocks);
+      for (final BlockInstance thisBIS : notSnappedBlocks) {
+        final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
+        try {
+          final BlockState bs = _blockStateService.getAsState(thisBIS, 0.0);
+          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+              bs, observation);
+          states.add(new BlockStateObservation(bs, observation,
+              isAtPotentialLayoverSpot, false));
+        } catch (final Exception e) {
+          _log.warn(e.getMessage());
+          continue;
+        }
+        potentialBlockStatesNotInProgress.addAll(states);
+      }
+  
       _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK,
-          potentialBlockStatesInProgress);
+          EObservationCacheKey.JOURNEY_START_BLOCK,
+          potentialBlockStatesNotInProgress);
+  
+      return Sets.newHashSet(Iterables.concat(potentialBlockStatesInProgress,
+          potentialBlockStatesNotInProgress));
     }
-
-    /*
-     * now, use dsc, run-id and whatnot to determine blocks potentially being
-     * started (i.e. 0 distance-along-block).
-     */
-    final Set<BlockInstance> notSnappedBlocks = Sets.newHashSet();
-    determinePotentialBlocksForObservation(observation, notSnappedBlocks);
-    // notSnappedBlocks.removeAll(snappedBlocks);
-    for (final BlockInstance thisBIS : notSnappedBlocks) {
-      final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
-      try {
-        final BlockState bs = _blockStateService.getAsState(thisBIS, 0.0);
-        final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-            bs, observation);
-        states.add(new BlockStateObservation(bs, observation,
-            isAtPotentialLayoverSpot, false));
-      } catch (final Exception e) {
-        _log.warn(e.getMessage());
-        continue;
-      }
-      potentialBlockStatesNotInProgress.addAll(states);
-    }
-
-    _observationCache.putValueForObservation(observation,
-        EObservationCacheKey.JOURNEY_START_BLOCK,
-        potentialBlockStatesNotInProgress);
-
-    return Sets.newHashSet(Iterables.concat(potentialBlockStatesInProgress,
-        potentialBlockStatesNotInProgress));
 
   }
 

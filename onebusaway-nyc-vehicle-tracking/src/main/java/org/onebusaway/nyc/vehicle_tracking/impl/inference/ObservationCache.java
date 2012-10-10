@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @Component
@@ -71,17 +72,23 @@ public class ObservationCache {
       EObservationCacheKey key) {
     final NycRawLocationRecord record = observation.getRecord();
     final MinMaxPriorityQueue<ObservationContents> contentsCache =  _contentsByVehicleId.getUnchecked(record.getVehicleId());
-    final ObservationContents contents = Iterables.find(contentsCache, new ObsSearch(observation), null);
-    
-    if (contents == null) {
-      /*
-       *  Add this new observation content, which, if it's truly a new obs, 
-       *  will be added later
-       */
-      if (!contentsCache.offer(new ObservationContents(observation))) {
+    /*
+     * Synchronize for integration tests, which can do crazy things.
+     */
+    final ObservationContents contents;
+    synchronized (contentsCache) {
+      contents = Iterables.find(contentsCache, new ObsSearch(observation), null);
+      
+      if (contents == null) {
+        /*
+         *  Add this new observation content, which, if it's truly a new obs, 
+         *  will be added later
+         */
+        if (!contentsCache.offer(new ObservationContents(observation))) {
+          return null;
+        }
         return null;
       }
-      return null;
     }
 
     return (T) contents.getValueForValueType(key);
@@ -92,18 +99,24 @@ public class ObservationCache {
     final NycRawLocationRecord record = observation.getRecord();
     final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
 
-    ObservationContents contents = Iterables.find(contentsCache, new ObsSearch(observation), null);
-    
-    if (contents == null) {
-      contents = new ObservationContents(observation);
-      /*
-       * If we attempt to add observations that are behind our current, 
-       * then just return
-       */
-      if (!contentsCache.offer(contents)) {
-        return;
-      }
-    } 
+    /*
+     * Synchronize for integration tests, which can do crazy things.
+     */
+    ObservationContents contents;
+    synchronized (contentsCache) {
+      contents = Iterables.find(contentsCache, new ObsSearch(observation), null);
+      
+      if (contents == null) {
+        contents = new ObservationContents(observation);
+        /*
+         * If we attempt to add observations that are behind our current, 
+         * then just return
+         */
+        if (!contentsCache.offer(contents)) {
+          return;
+        }
+      } 
+    }
 
     contents.putValueForValueType(key, value);
   }
@@ -117,7 +130,7 @@ public class ObservationCache {
     }
     
     @Override
-    public boolean apply(@Nullable ObservationContents input) {
+    public boolean apply(@Nonnull ObservationContents input) {
       return input.getObservation().getTime() == obsToFind.getTime();
     }
     
@@ -150,6 +163,14 @@ public class ObservationCache {
 
     public Observation getObservation() {
       return observation;
+    }
+  }
+
+  
+  public void purge(AgencyAndId vehicleId) {
+    final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(vehicleId);
+    if (contentsCache != null) {
+      contentsCache.clear();
     }
   }
 

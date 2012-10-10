@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
@@ -44,6 +45,7 @@ import com.google.common.collect.TreeMultiset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -73,7 +75,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
   private NycTestInferredLocationRecord _mostRecentRecord = null;
 
   private VehicleLocationInferenceService _vehicleLocationInferenceService;
-
+  
   private int _id;
 
   private Future<?> _future;
@@ -111,6 +113,8 @@ public class SimulatorTask implements Runnable, EntityHandler {
   private String _filename = null;
 
   private int _particleParentSize = 2;
+  
+  private final long creationTime = System.currentTimeMillis();
 
   public SimulatorTask() {
   }
@@ -194,6 +198,13 @@ public class SimulatorTask implements Runnable, EntityHandler {
     _records.add(record);
     record.setRecordNumber(_records.size() - 1);
 
+    /*
+     * We add this time so that multiple traces for the 
+     * same vehicle id can be run without conflict.
+     */
+    final String adjId = record.getVehicleId().getId() + "_" + this.creationTime;
+    record.getVehicleId().setId(adjId);
+    
     final AgencyAndId vid = record.getVehicleId();
     if (_vehicleId != null) {
       if (!_vehicleId.equals(vid))
@@ -572,21 +583,8 @@ public class SimulatorTask implements Runnable, EntityHandler {
       details.setSampledParticles(weightedParticles);
     }
 
-    // Multiset<Particle> sampledParticles =
-    // TreeMultiset.create(ParticleComparator.INSTANCE);
-    // sampledParticles.addAll(_vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId));
-    // if (!sampledParticles.isEmpty()) {
-    // details.setSampledParticles(sampledParticles);
-    // }
-
-    // List<JourneyPhaseSummary> summaries =
-    // _vehicleLocationInferenceService.getCurrentJourneySummariesForVehicleId(_vehicleId);
-    // details.setSummaries(summaries);
-
     if (_details.size() < _maxParticleHistorySize)
       _details.add(details);
-    // while (_details.size() > _maxParticleHistorySize)
-    // _details.removeFirst();
 
     return true;
   }
@@ -613,5 +611,9 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
   public void setParticleParentSize(int particleParentSize) {
     _particleParentSize = particleParentSize;
+  }
+
+  public AgencyAndId getVehicleId() {
+    return this._vehicleId;
   }
 }

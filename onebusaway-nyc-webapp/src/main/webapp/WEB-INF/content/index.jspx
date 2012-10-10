@@ -120,6 +120,8 @@
 </s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+<meta name="google-translate-customization" content="ea3490d1ee5252ce-b5ce8e118c6dc2b1-gca0b8e88b1c76aea-10"></meta>
+
 </head>
 <body>
 <div id="content" class="map">
@@ -207,10 +209,88 @@
 			</s:iterator>
 		 </div>
 		</s:if>
+
+		<div id="ad">
+		 <script type="text/javascript">&lt;!-- 
+			google_ad_client = "<s:property value="googleAdClientId" />"; 
+			/* MTA BusTime Page Ads */ 
+			google_ad_slot = "4760132359"; 
+			google_ad_width = 300; 
+			google_ad_height = 250; 
+			//--&gt;
+		 </script> 
+		 <script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"> <!-- //prevent jspx minimization --></script> 		
+		</div>
 	   
+		<div id="google_translate_element"><!-- jspx --></div>
+		<script type="text/javascript">
+			function googleTranslateElementInit() {
+  				new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+			}
+		</script>
+		<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"><!-- jspx --></script>
     </div>
 
 	<div id="map"><!-- //prevent jspx minimization --></div>
+
+    <div id="wizard">
+	   	<div id="wizard_start">
+	   		<ul>
+	   			<li id="wizard-col1">
+	   				<a data-placement="right" class="wizard_panel" rel="popover">
+	    				<div id="inner-col1">
+	    					<h2>New to Bus Time?</h2>
+	    					<p>Click here for instructions:</p>
+	    					<p>Just a few easy steps!</p>
+	    				</div>
+	   				</a>
+			    </li>
+			    <li id="wizard-col2">
+			    	<p>Also</p>
+			    	<p>available</p>
+			    	<p>using:</p>
+			    </li>
+			    <li id="wizard-col3">
+			    	<s:url var="url" namespace="/wiki/Help" action="MobileOverview"/>
+			    	<a href="${url}" target="_new">
+			    		<p>Mobile Web</p>
+			    		<a rel="popover"><div id="smartphone_img">&amp;nbsp;</div></a>
+			    	</a>
+			    </li>
+			    <li id="wizard-col4">
+			    	<s:url var="url" namespace="/wiki/Help" action="SMSOverview"/>
+			    	<a href="${url}" target="_new">
+			    		<p>SMS</p>
+			    		<a rel="popover"><div id="sms_img">&amp;nbsp;</div></a>
+			    	</a>
+			    </li>
+			</ul>
+			<a class="close"><span class="close_txt">Close</span> ×</a>
+		</div>
+		<div id="wizard_didyoumean">
+			<a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a>
+			<a class="close"><span class="close_txt">Close</span> ×</a>
+		</div>
+		<div id="wizard_inuse">
+			<a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a>
+			<span class="text_span">Follow the instructions above . . .</span>
+			<a class="close"><span class="close_txt">Close</span> ×</a>
+		</div>
+		<div id="wizard_finaltip">
+			<div>
+				<p><span style="font-weight: bold;">Tips:</span> <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a> Bus Time is also available via <a id="wizard_mobile" rel="popover">Mobile Web</a> or <a id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
+				<p>Remember your 6-digit Stopcode from the pop-ups or find it on a <a id="tips_code_popup" rel="popover" data-placement="above">bus stop pole box</a>.</p>
+				<p id="sharelinks"><a id="wizard_share" rel="popover">Share</a> this link and tell others about Bus Time!
+					<a href="http://twitter.com/MTAInsider" target="_new"><span class="ui-icon ui-icon-twitter"> &amp;nbsp; </span></a>
+					<a href="http://www.facebook.com/MTA.info" target="_new"><span class="ui-icon ui-icon-facebook"> &amp;nbsp; </span></a>
+					<a href="http://www.youtube.com/playlist?list=PL70B2273F7B23A5F3" target="_new"><span class="ui-icon ui-icon-youtube"> &amp;nbsp; </span></a>
+					<a href="http://www.flickr.com/photos/mtaphotos" target="_new"><span class="ui-icon ui-icon-flickr"> &amp;nbsp; </span></a>
+				</p>
+			</div>
+			<a class="close"><span class="close_txt">Close</span> ×</a>
+		</div>
+	</div>
+
 	<div id="map-global-alerts" class="global-alerts">
 		<div id="close-map-global-alerts"><a href="#">[close]</a></div>
 		<div class="global-alerts-content">
@@ -221,6 +301,7 @@
 			</s:iterator>
 		</div>
 	</div>
+	    
 </div>
 </body>
 </html>
