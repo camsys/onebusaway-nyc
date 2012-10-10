@@ -43,8 +43,7 @@ public class SiriTripLayoverInference_IntegrationTest extends SiriIntegrationTes
 		setTrace("siri-test-trip-level-inference-layover.csv");
 		setBundle("2012Jan_SIB63M34_r20_b01", "2012-03-02T13:57:00-04:00");
 
-		reset("MTA NYCT_2437");
-		reset("MTA NYCT_2436");    
+		resetAll();
 		loadRecords();
 		
 		_isSetUp = true;

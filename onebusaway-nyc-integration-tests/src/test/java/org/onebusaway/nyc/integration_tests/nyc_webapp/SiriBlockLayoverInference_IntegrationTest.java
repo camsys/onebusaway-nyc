@@ -41,8 +41,7 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
 		setTrace("siri-test-block-level-inference-layover.csv");
 		setBundle("2012Jan_SIB63M34_r20_b01", "2012-03-02T13:57:00-04:00");
 
-		reset("MTA NYCT_2437");
-		reset("MTA NYCT_2436");    
+		resetAll();
 		loadRecords();
 		
 		_isSetUp = true;
