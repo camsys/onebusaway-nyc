@@ -37,6 +37,7 @@ import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.TreeMultiset;
@@ -85,6 +86,9 @@ public class VehicleLocationInferenceServiceImpl implements
   private static Logger _log = LoggerFactory.getLogger(VehicleLocationInferenceServiceImpl.class);
 
   private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
+
+  @Autowired
+  private ObservationCache _observationCache;
 
   @Autowired
   private OutputQueueSenderService _outputQueueSenderService;
@@ -296,6 +300,7 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public void resetVehicleLocation(AgencyAndId vid) {
     _vehicleInstancesByVehicleId.remove(vid);
+    _observationCache.purge(vid);
   }
 
   @Override
@@ -337,7 +342,7 @@ public class VehicleLocationInferenceServiceImpl implements
       AgencyAndId vehicleId) {
     final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
-      return null;
+      return ImmutableMultiset.of();
     return instance.getCurrentParticles();
   }
 
@@ -346,7 +351,7 @@ public class VehicleLocationInferenceServiceImpl implements
       AgencyAndId vehicleId) {
     final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
-      return null;
+      return ImmutableMultiset.of();
     return instance.getCurrentSampledParticles();
   }
 

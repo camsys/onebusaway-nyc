@@ -24,6 +24,7 @@ import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache;
 import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
@@ -122,9 +123,17 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private final RandomStream streamArr = new MRG32k3a();
 
+  private ObservationCache _observationCache;
+  
   // TODO consistent?
   private final UniformGen ung = new UniformGen(streamArr);
 
+
+  @Autowired
+  public void setObservationCache(ObservationCache observationCache) {
+    _observationCache = observationCache;
+  }
+  
   @Autowired
   public void setCalendarService(CalendarService calendarService) {
     _calendarService = calendarService;
@@ -292,6 +301,7 @@ public class VehicleLocationSimulationServiceImpl implements
   public void restartSimulation(int taskId) {
     final SimulatorTask task = _tasks.get(taskId);
     if (task != null) {
+      _observationCache.purge(task.getVehicleId());
       task.restart();
       if (task.isComplete())
         _executor.execute(task);
