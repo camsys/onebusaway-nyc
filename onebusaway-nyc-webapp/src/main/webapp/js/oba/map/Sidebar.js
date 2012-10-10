@@ -24,6 +24,7 @@ OBA.Sidebar = function() {
 		topBarDiv = jQuery("#topbar"), 
 		mainbox = jQuery("#mainbox"),
 		menuBar = jQuery("#cssmenu1"),
+		adDiv = jQuery("#ad");
 		mapDiv = jQuery("#map");
 
 	var searchBarDiv = jQuery("#searchbar"), 
@@ -462,6 +463,7 @@ OBA.Sidebar = function() {
 	}
 	
 	function resetSearchPanelAndMap() {
+		adDiv.hide();
 		welcome.hide();
 		noResults.hide();
 
@@ -488,6 +490,7 @@ OBA.Sidebar = function() {
 			noResults.show();
 		}
 
+		adDiv.show();
 		welcome.show();
 		cantFind.show();
 

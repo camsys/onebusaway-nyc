@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.jsp.JspException;
 
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.wiki.model.NycWikiPageWrapper;
 import org.onebusaway.wiki.api.WikiDocumentService;
@@ -38,6 +39,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	@Autowired
 	private WikiRenderingService _wikiRenderingService;
 
+	@Autowired
+	private ConfigurationService _configurationService;
+	
 	protected String namespace;
 	protected String name;
 	
@@ -67,6 +71,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 		return hasToc;
 	}
 	
+	public String getGoogleAdClientId() {
+		return _configurationService.getConfigurationValueAsString("display.googleAdsClientId", "");    
+	}
+
 	// FIXME: should replace namespace at the service level?
 	public String getEditLink() {
 		return editLink.replace("%{namespace}", namespace);
