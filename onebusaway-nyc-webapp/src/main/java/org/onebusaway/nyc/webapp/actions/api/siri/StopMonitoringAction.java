@@ -28,6 +28,7 @@ import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@ParentPackage("onebusaway-webapp-api")
 public class StopMonitoringAction extends OneBusAwayNYCActionSupport 
   implements ServletRequestAware, ServletResponseAware {
 
@@ -75,6 +77,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
   private HttpServletResponse _servletResponse;
   
+  // See urlrewrite.xml as to how this is set.  Which means this action doesn't respect an HTTP Accept: header.
   private String _type = "xml";
   
   private JGoogleAnalyticsTracker _googleAnalytics = null;

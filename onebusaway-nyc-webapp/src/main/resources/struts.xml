@@ -71,5 +71,17 @@
 		</global-exception-mappings>
 
     </package>
+
+    <package name="onebusaway-webapp-api" extends="onebusaway-webapp-default" namespace="/api/siri">
+      <interceptors>
+        <interceptor name="ApiKeyInterceptor" class="org.onebusaway.nyc.webapp.api.ApiKeyInterceptor" />
+        <interceptor-stack name="onebusaway-nyc-webapp-api-stack">
+          <interceptor-ref name="defaultStack" />
+          <interceptor-ref name="ApiKeyInterceptor" />
+        </interceptor-stack>
+      </interceptors>
+      <default-interceptor-ref name="onebusaway-nyc-webapp-api-stack" />
+    </package>
+    
     
 </struts>
