@@ -58,6 +58,10 @@
 							<s:url var="url" action="vehicle-status" namespace="/admin/vehiclestatus"/>
 							<s:a href="%{url}">Vehicle Status Display Utility</s:a>
 						</li>
+						<li>
+							<s:url var="url" action="parameters" namespace="/admin"/>
+							<s:a href="%{url}">Configuration Parameters Utility</s:a>
+						</li>
 					</s:if>
 					<li>
 						<s:url var="url" action="barcode"></s:url>
