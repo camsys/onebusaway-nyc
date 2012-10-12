@@ -40,44 +40,10 @@
 	font: Times New Roman, Times, serif;
 }
 
-#menu {
+#vehicles {
 	padding: 0px;
 	background: none;
 	border-width: 0px;
-}
-
-#menu .ui-tabs-nav {
-	padding-left: 0px;
-	background: transparent;
-	border-width: 0px 0px 1px 0px;
-	-moz-border-radius: 0px;
-	-webkit-border-radius: 0px;
-	border-radius: 0px;
-}
-
-#menu #navigation li {
-    list-style-type:none;
-    float:left;
-    width: 175px;
-    color: #808080;
-}
-
-#menu #navigation a {
-    height: 10px;
-    display:block;
-    background-repeat:no-repeat;
-    background-position:right;
-    padding-right: 15px;
-    text-decoration: none;
-    color:#454545;
-}
-
-#menu .ui-tabs-panel {
-	border-width: 0px 1px 1px 1px;
-}
-
-#navigation a:hover {
-    color:#35acc5;
 }
 
 .vehicleLabel {
@@ -143,9 +109,8 @@
 }
 
 #mainBox {
-	height: 610px;
 	margin-top: 20px;
-	width: 850px;
+	width: 100%;
 	overflow: auto;
 }
 
@@ -254,18 +219,15 @@
     background-image: none;
 }
 
-.ui-accordion-header {
-	border: solid 1px;
-}
-
 #parametersBox {
 	overflow: none;
 	border: transparent 1px;
 }
 
 #parametersBox #parameters {
-	max-height: 575px;
+	max-height: 600px;
 	overflow-y: auto;
+	margin-top: 10px;
 }
 
 #parameters #accordion {

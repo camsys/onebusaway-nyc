@@ -36,7 +36,7 @@ OBA.Sign = function() {
 	var obaApiBaseUrlPosition = url.indexOf("/", hostnamePosition);
 	var obaApiBaseUrl = url.substring(0, obaApiBaseUrlPosition);
 	
-	var agencyId = "MTA NYCT";
+	var agencyId = "MTA";
 	
 	var setupUITimeout = null;
 	
@@ -173,7 +173,7 @@ OBA.Sign = function() {
 	}
 	
 	function initStop(stopId, initMonitor) {
-		var params = { stopId: 'MTA NYCT_' + stopId };
+		var params = { stopId: 'MTA_' + stopId };
 		jQuery.getJSON(baseUrl + "/" + OBA.Config.stopForId, params, function(json) {
 			stopInfo[stopId] = json.stop;
 			jQuery.each(json.stop.routesAvailable, function(_, route) {

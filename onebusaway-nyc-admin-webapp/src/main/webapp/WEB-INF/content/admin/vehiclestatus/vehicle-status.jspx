@@ -63,12 +63,6 @@
 	<!-- //prevent jspx minimization -->
 	</script>
 	
-	<s:url var="url" value="/js/lib/jquery.numeric.js" />
-	<script type="text/javascript" src="${url}">
-	<!-- //prevent jspx minimization -->
-	</script>
-	
-	
 	<s:url var="url" value="/js/oba/vehiclestatus/vehiclestatus.js" />
 	<script type="text/javascript" src="${url}">
 	<!-- //prevent jspx minimization -->
@@ -89,16 +83,6 @@
 	<!-- //prevent jspx minimization -->
 	</script>
 	
-	<s:url var="url" value="/js/oba/vehiclestatus/vehicles.js" />
-	<script type="text/javascript" src="${url}">
-	<!-- //prevent jspx minimization -->
-	</script>
-	
-	<s:url var="url" value="/js/oba/vehiclestatus/parameters.js" />
-	<script type="text/javascript" src="${url}">
-	<!-- //prevent jspx minimization -->
-	</script>
-
 	<s:url var="url" value="http://maps.googleapis.com/maps/api/js">				
 	<s:param name="v">3</s:param>
 	<s:param name="client"><s:property value="googleMapsClientId" /></s:param>
@@ -113,19 +97,9 @@
 		<div id="content">
 			<div id="text">
 				<h2>Vehicle Status Display Utility</h2>
-				<div id="menu">
-					<ul id="navigation">
-						<li><a href="#Parameters" title="Parameters"><span>Parameters</span></a></li>
-						<li><a href="#Vehicles" title="Vehicles"><span>Vehicles</span></a></li>
-					</ul>
-					<div id="Vehicles">
+				<div id="vehicles">
 						<jsp:include page="vehicles.jsp" />
 						<!--  space -->
-					</div>
-					<div id="Parameters">
-						<jsp:include page="parameters.jsp" />
-						<!--  space -->
-					</div>
 				</div>
 			</div>
 		</div>
