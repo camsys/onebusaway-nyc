@@ -33,10 +33,7 @@ import org.onebusaway.nyc.integration_tests.TraceSupport;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationListener;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.utility.DateLibrary;
-
-import com.caucho.hessian.client.HessianProxyFactory;
 
 public class SiriIntegrationTestBase {
 	  
@@ -81,29 +78,12 @@ public class SiriIntegrationTestBase {
       throw new Exception("Bundle switch failed!");
   }
 
-  public void reset(String vId) throws Exception {
-	  // reset TDS
+  public void resetAll() throws Exception {
+	  // reset TDS	  
 	  String federationPort = System.getProperty(
 			  "org.onebusaway.transit_data_federation_webapp.port", "9905");
 
-	  HessianProxyFactory factory = new HessianProxyFactory();
-
-	  _vehicleLocationListener = (VehicleLocationListener) factory
-			  .create(
-					  VehicleLocationListener.class,
-					  "http://localhost:"
-							  + federationPort
-							  + "/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-location-listener");
-
-	  _vehicleLocationListener.resetVehicleLocation(AgencyAndIdLibrary.convertFromString(vId));
-
-	  // reset simulator
-	  String port = System.getProperty(
-			  "org.onebusaway.transit_data_federation_webapp.port", "9905");
-
-	  String url = "http://localhost:" + port
-			  + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location!reset.do?vehicleId="
-			  + vId;
+	  String url = "http://localhost:" + federationPort + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location-simulation!cancelAll.do";
 
 	  HttpClient client = new HttpClient();
 	  GetMethod get = new GetMethod(url);
@@ -132,7 +112,7 @@ public class SiriIntegrationTestBase {
 
 	  HttpClient client = new HttpClient();
 	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
-	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?OperatorRef=" + operatorId + "&StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
+	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);
 

@@ -44,7 +44,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   public String getGoogleMapsClientId() {
     return _configurationService.getConfigurationValueAsString("display.googleMapsClientId", "");    
   }
-  
+
+  public String getGoogleAdClientId() {
+	return _configurationService.getConfigurationValueAsString("display.googleAdsClientId", "");    
+  }
+
   public List<ServiceAlertBean> getGlobalServiceAlerts() {
     List<ServiceAlertBean> results = _realtimeService.getServiceAlertsGlobal();
     return (results != null && results.size() > 0) ? results : null;

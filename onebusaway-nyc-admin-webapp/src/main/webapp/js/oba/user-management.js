@@ -78,7 +78,7 @@ jQuery(function() {
 	jQuery("#actions #edit").on("click", showEditUser);
 	
 	//Delete image click
-	jQuery("#actions #deactivate").on({"click": showDeleteDialog});
+	jQuery("#actions #deactivate").on("click", showDeleteDialog);
 	
 });
 
@@ -196,3 +196,4 @@ function showResult() {
 	jQuery("#userResult #result").css("display", "block");
 	jQuery("#userResult").show();
 }
+
