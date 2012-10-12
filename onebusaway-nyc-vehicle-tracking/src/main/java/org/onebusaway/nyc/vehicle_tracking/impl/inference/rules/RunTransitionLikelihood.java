@@ -41,6 +41,8 @@ public class RunTransitionLikelihood implements SensorModelRule {
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
   }
+  
+  final private static double pAcceptibleOrNoChangeLik = 0.88;
 
   public static enum RUN_TRANSITION_STATE {
     RUN_CHANGE_INFO_DIFF, RUN_CHANGE_FROM_OOS_TO_OSS, RUN_CHANGE_FROM_IS, RUN_NOT_CHANGED, RUN_CHANGE_FROM_OOS_TO_IN, RUN_CHANGE_FROM_OOS_NORUN_TO_IN
@@ -49,31 +51,28 @@ public class RunTransitionLikelihood implements SensorModelRule {
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) throws BadProbabilityParticleFilterException {
-    final SensorModelResult result = new SensorModelResult("pTransition", 1.0);
+    final SensorModelResult result = new SensorModelResult("pRunTransition", 1.0);
 
     final RUN_TRANSITION_STATE state = getRunTransitionState(context);
 
     switch (state) {
       case RUN_CHANGE_INFO_DIFF:
-        result.addResultAsAnd("changed reported run or operator id",
-            0.98 * (1d / 3d));
+        result.addResultAsAnd("changed reported run or operator id", pAcceptibleOrNoChangeLik * (1d / 3d));
         return result;
       case RUN_CHANGE_FROM_OOS_TO_OSS:
-        result.addResultAsAnd("change from o.o.s. to o.o.s", 0.98 * (1d / 4d)
-            * (1d / 4d));
+        result.addResultAsAnd("change from o.o.s. to o.o.s", pAcceptibleOrNoChangeLik * (1d / 4d) * (1d / 4d));
         return result;
       case RUN_CHANGE_FROM_OOS_TO_IN:
-        result.addResultAsAnd("change from o.o.s. to i.s.", 0.98 * (1d / 4d)
-            * (3d / 4d));
+        result.addResultAsAnd("change from o.o.s. to i.s.", pAcceptibleOrNoChangeLik * (1d / 4d) * (3d / 4d));
         return result;
       case RUN_CHANGE_FROM_OOS_NORUN_TO_IN:
-        result.addResultAsAnd("change from o.o.s. no run-info to i.s.", 0.98 * (1d / 4d));
+        result.addResultAsAnd("change from o.o.s. no run-info to i.s.", pAcceptibleOrNoChangeLik * (1d / 4d));
         return result;
       case RUN_CHANGE_FROM_IS:
-        result.addResultAsAnd("change not from o.o.s.", 0.02);
+        result.addResultAsAnd("change not from o.o.s.", (1d-pAcceptibleOrNoChangeLik));
         return result;
       case RUN_NOT_CHANGED:
-        result.addResultAsAnd("not-changed run", 0.98 * (1d / 4d));
+        result.addResultAsAnd("not-changed run", pAcceptibleOrNoChangeLik * (1d / 4d));
         return result;
       default:
         return null;
