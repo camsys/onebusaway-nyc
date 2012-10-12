@@ -2,6 +2,8 @@ package org.onebusaway.nyc.transit_data_manager.config;
 
 import org.onebusaway.nyc.transit_data_manager.bundle.model.ConfigDeployStatus;
 
+import java.util.List;
+
 public interface ConfigurationDeployer {
 
   void deploy(ConfigDeployStatus status, String s3Path);
@@ -17,4 +19,6 @@ public interface ConfigurationDeployer {
   void setLocalDepotIdMapDir(String dir);
 
   void setLocalDscFileDir(String dir);
+
+  List<String> listFiles(String s3Path);
 }

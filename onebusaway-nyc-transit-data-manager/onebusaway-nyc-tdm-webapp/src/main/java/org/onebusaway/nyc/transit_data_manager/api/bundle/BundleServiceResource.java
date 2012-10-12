@@ -251,7 +251,6 @@ public class BundleServiceResource {
    * @return a serialized version of the requested BundleDeploymentStatus, null otherwise
    */
   public Response deployStatus(@PathParam("id") String id) {
-    _log.info("Starting deployStatus(" + id+ ")...");
     BundleDeployStatus status = this.lookupDeployRequest(id);
     try {
       final StringWriter sw = new StringWriter();

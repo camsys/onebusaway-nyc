@@ -23,7 +23,7 @@
 		<div class="tabHeader">
 			<label class="headerLabel">Deploy Bundle(s)</label>
 		</div>
-		<div class="deploypage_info">
+		<div id="deploypage_info">
   			<label id="deploy_environment" class="adminLabel directoryLabel">
 				<s:property value="environment" ></s:property>
 			</label>
