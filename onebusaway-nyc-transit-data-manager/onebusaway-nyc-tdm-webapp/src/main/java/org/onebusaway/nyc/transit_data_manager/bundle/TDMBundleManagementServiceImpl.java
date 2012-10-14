@@ -32,14 +32,25 @@ public class TDMBundleManagementServiceImpl extends BundleManagementServiceImpl 
     InitThread thread = new InitThread();
     new Thread(thread).start();
   }
-
+  
+  @Override
+  protected void timingHook() {
+    _log.info("sleeping to stabilize");
+    try {
+          Thread.sleep(10 * 1000);
+        } catch (InterruptedException ie) {
+          return;
+        }
+    _log.info("end sleep");
+	}
+  
   private class InitThread implements Runnable {
 
     @Override
     public void run() {
 
       try {
-        final int SLEEP_TIME = 60 * 1000;
+        final int SLEEP_TIME = 20 * 1000;
         _log.info("init thread sleeping " + SLEEP_TIME + " on startup");
         /*
          * Initial bundle load is already in progress due to other TDM
@@ -47,7 +58,7 @@ public class TDMBundleManagementServiceImpl extends BundleManagementServiceImpl 
          * value can be very small but is currently large for safety.
          */
         Thread.sleep(SLEEP_TIME);
-        Thread.yield();
+        _log.info("thread resuming");
       } catch (InterruptedException e) {
         // assuming server was killed, exit
         return;
@@ -82,4 +93,5 @@ public class TDMBundleManagementServiceImpl extends BundleManagementServiceImpl 
     }
 
   }
+
 }

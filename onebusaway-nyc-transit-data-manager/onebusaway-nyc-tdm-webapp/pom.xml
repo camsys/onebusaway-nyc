@@ -246,6 +246,33 @@
             </properties>
         </profile>
         <profile>
+            <id>local-bundle-eclipse</id>
+            <properties> <!-- sms hostname assumes search is defined in /etc/resolv.conf -->
+                <tds.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
+                <tdm.host>localhost</tdm.host>
+                <tdm.port>8080</tdm.port>
+                <tdm.url>/onebusaway-nyc-tdm-webapp/api/</tdm.url>
+                <webapp.api.url></webapp.api.url>
+                <tdm.dataPath>/var/lib/obanyc/tdm_input/upload/mta</tdm.dataPath>
+                <tdm.home>/var/lib/obanyc/tdm</tdm.home>
+                <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
+                <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
+                <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
+                <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+                <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
+                <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+                <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
+                <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles-eclipse</tdm.bundlePath>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
+                <bundle.location>/tmp/oba-bundle-tdm-eclipse</bundle.location>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
+                <log4j.appender>ROLL</log4j.appender>
+            </properties>
+        </profile>
+        <profile>
             <id>local-front-end</id> <!-- aka staging, production -->
             <properties> <!-- sms hostname assumes search is defined in /etc/resolv.conf -->
                 <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
