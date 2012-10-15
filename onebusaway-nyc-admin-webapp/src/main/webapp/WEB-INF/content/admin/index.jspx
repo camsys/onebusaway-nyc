@@ -62,6 +62,10 @@
 							<s:url var="url" action="parameters" namespace="/admin"/>
 							<s:a href="%{url}">Configuration Parameters Utility</s:a>
 						</li>
+						<li>
+							<s:url var="url" action="deploy-config" namespace="/admin"/>
+							<s:a href="%{url}">Update Configuration Files</s:a>
+						</li>
 					</s:if>
 					<li>
 						<s:url var="url" action="barcode"></s:url>

@@ -34,6 +34,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimula
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -124,6 +125,9 @@ public class VehicleLocationSimulationServiceImpl implements
   private final RandomStream streamArr = new MRG32k3a();
 
   private ObservationCache _observationCache;
+  
+  @Autowired
+  private VehicleLocationListener _vehicleLocationListener;
   
   // TODO consistent?
   private final UniformGen ung = new UniformGen(streamArr);
@@ -328,10 +332,13 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public void cancelAllSimulations() {
-
     final List<Integer> taskIds = new ArrayList<Integer>(_tasks.keySet());
-    for (final int taskId : taskIds)
-      cancelSimulation(taskId);
+    for (final int taskId : taskIds) {
+    	SimulatorTask task = _tasks.get(taskId);
+    	_vehicleLocationListener.resetVehicleLocation(task.getVehicleId());
+    	cancelSimulation(taskId);
+    }
+    		
   }
 
   @Override

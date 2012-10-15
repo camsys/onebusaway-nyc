@@ -66,19 +66,19 @@ public class DscLikelihood implements SensorModelRule {
         result.addResultAsAnd("i.p. o.o.s. dsc", 0.0);
         return result;
       case DSC_NOT_VALID:
-        result.addResultAsAnd("!valid dsc", 0.95 / 3d);
+        result.addResultAsAnd("!valid dsc", (10d/40d));
         return result;
       case DSC_OOS_NOT_IP:
-        result.addResultAsAnd("!i.p. o.o.s. dsc", 0.95 / 3d);
-        return result;
-      case DSC_IS_NO_BLOCK:
-        result.addResultAsAnd("!o.o.s. dsc null-block", 0.01);
+        result.addResultAsAnd("!i.p. o.o.s. dsc", (10d/40d));
         return result;
       case DSC_MATCH:
-        result.addResultAsAnd("i.s. matching DSC", 0.95 / 3d);
+        result.addResultAsAnd("i.s. matching DSC", (10d/40d));
         return result;
       case DSC_ROUTE_MATCH:
-        result.addResultAsAnd("i.s. route-matching/deadhead-before/after", 0.04);
+        result.addResultAsAnd("i.s. route-matching/deadhead-before/after", (7d/40d));
+        return result;
+      case DSC_IS_NO_BLOCK:
+        result.addResultAsAnd("!o.o.s. dsc null-block", (3d/40d));
         return result;
       case DSC_NO_ROUTE_MATCH:
         result.addResultAsAnd("i.s. non-route-matching DSC", 0.0);
@@ -142,7 +142,7 @@ public class DscLikelihood implements SensorModelRule {
          * higher weight to deadhead-after's that match (when
          * we have good run-info, perhaps).
          */
-        if (phase != EVehiclePhase.DEADHEAD_AFTER
+        if (!EVehiclePhase.isActiveAfterBlock(phase) && !EVehiclePhase.isActiveBeforeBlock(phase)
             && dscs.contains(observedDsc)) {
           return DSC_STATE.DSC_MATCH;
         } else {

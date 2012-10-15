@@ -33,6 +33,8 @@ public class NullStateLikelihood implements SensorModelRule {
   public void setBlockStateService(BlockStateService blockStateService) {
   }
 
+  private static final double nonNullLik = 0.998d;
+  
   static public enum NullStates {
     NULL_STATE, NON_NULL_STATE
   }
@@ -45,10 +47,10 @@ public class NullStateLikelihood implements SensorModelRule {
     final NullStates state = getNullState(context);
     switch (state) {
       case NULL_STATE:
-        result.addResultAsAnd("null-state", 0.005);
+        result.addResultAsAnd("null-state", 1d - nonNullLik);
         break;
       case NON_NULL_STATE:
-        result.addResultAsAnd("non-null-state", 0.995);
+        result.addResultAsAnd("non-null-state", nonNullLik);
         break;
     }
     return result;

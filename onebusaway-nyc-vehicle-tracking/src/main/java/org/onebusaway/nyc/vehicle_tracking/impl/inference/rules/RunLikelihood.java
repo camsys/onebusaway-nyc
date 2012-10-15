@@ -31,8 +31,6 @@ public class RunLikelihood implements SensorModelRule {
     NO_RUN_INFO, RUN_INFO_NO_RUN, FORMAL_RUN_MATCH, NO_FORMAL_FUZZY_MATCH, NO_FORMAL_NO_FUZZY_MATCH,
   };
 
-  private final double matchProportion = 0.99;
-
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) throws BadProbabilityParticleFilterException {
@@ -42,21 +40,19 @@ public class RunLikelihood implements SensorModelRule {
 
     switch (state) {
       case NO_RUN_INFO:
-        result.addResultAsAnd("no run info", matchProportion / 2d);
+        result.addResultAsAnd("no run info", 1d);
         return result;
       case FORMAL_RUN_MATCH:
-        result.addResultAsAnd("formal run match", matchProportion / 2d);
+        result.addResultAsAnd(">= operator run match", (10d/20d));
         return result;
       case NO_FORMAL_FUZZY_MATCH:
-        result.addResultAsAnd("non-formal fuzzy match",
-            0.75 * (1d - matchProportion));
-        return result;
-      case RUN_INFO_NO_RUN:
-        result.addResultAsAnd("run-info, no run",
-            1d / 8d * (1d - matchProportion));
+        result.addResultAsAnd("just fuzzy match", (6d/20d));
         return result;
       case NO_FORMAL_NO_FUZZY_MATCH:
-        result.addResultAsAnd("no matches", 1d / 8d * (1d - matchProportion));
+        result.addResultAsAnd("no matches", (3d/20d));
+        return result;
+      case RUN_INFO_NO_RUN:
+        result.addResultAsAnd("run-info, but no run", (1d/20d));
         return result;
       default:
         return null;

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.remoting.RemoteConnectFailureException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -118,6 +119,17 @@ public class ConfigurationDeployerImpl extends BaseDeployer implements Configura
             + getBucketName());
       }
     }
+  }
+
+  @Override
+  public List<String> listFiles(String s3Path) {
+    
+    List<String> paths = listFiles(s3Path, MAX_RESULTS);
+    List<String> files = new ArrayList<String>(paths.size());
+    for (String path : paths) {
+      files.add(this.parseFileName(path));
+    }
+    return files;
   }
 
 }

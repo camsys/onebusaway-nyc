@@ -36,10 +36,12 @@ public class ScheduleLikelihood implements SensorModelRule {
   /*
    * These are all in minutes
    */
-  final static private StudentTDistribution schedDevNonRunDist = new StudentTDistribution(
-      2, 0d, 1d / 35d);
-  final static private StudentTDistribution schedDevRunDist = new StudentTDistribution(
-      1, 0d, 1d / 90d);
+  final static private StudentTDistribution schedDevInformalRunDist = new StudentTDistribution(
+      2, 0d, 1d / (2d * 40d));
+  final static private StudentTDistribution schedDevFormalRunDist = new StudentTDistribution(
+      1, 0d, 1d / (2d * 290d));
+  
+  final static private double pFormal = 0.85d;
   
   /*
    * In minutes, as well
@@ -130,9 +132,10 @@ public class ScheduleLikelihood implements SensorModelRule {
    */
   public static double getScheduleDevLogProb(final double x, StudentTDistribution schedDist) {
     final double pSched; 
-    if (schedDist != schedDevRunDist || 
+    final boolean isFormal = schedDist == schedDevFormalRunDist;
+    if ( !isFormal || 
         (x <= POS_SCHED_DEV_CUTOFF && x >= NEG_SCHED_DEV_CUTOFF)) {
-      pSched = schedDist.getProbabilityFunction().logEvaluate(x);
+      pSched = (isFormal ? Math.log(pFormal) : Math.log1p(-pFormal)) + schedDist.getProbabilityFunction().logEvaluate(x);
     } else {
       pSched = Double.NEGATIVE_INFINITY;
     }    
@@ -141,11 +144,11 @@ public class ScheduleLikelihood implements SensorModelRule {
   
   public static StudentTDistribution getSchedDistForBlockState(
       BlockStateObservation blockState) {
-    return blockState.isRunFormal() ? schedDevRunDist : schedDevNonRunDist;
+    return blockState.isRunFormal() ? schedDevFormalRunDist : schedDevInformalRunDist;
   }
 
   public static StudentTDistribution getSchedDevNonRunDist() {
-    return schedDevNonRunDist;
+    return schedDevInformalRunDist;
   }
 
   public static double truncateTime(double d, boolean isFormal) {
