@@ -71,7 +71,7 @@ public class BundleDeployerImpl extends BaseDeployer implements BundleDeployer {
         _log.info("unTar(" + tarFilename + ", " + _localBundleStagingPath + ")" );
         _fileUtil.unTar(new File(tarFilename), new File(_localBundleStagingPath));
         _log.info("deleting bundle tar.gz=" + bundleFileLocation);
-        status.getBundleNames().add(bundleFilename);
+        status.addBundleName(bundleFilename);
         new File(tarFilename).delete();
         new File(bundleFileLocation).delete();
         bundlesDownloaded++;
