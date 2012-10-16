@@ -47,11 +47,6 @@
 			<s:property value="content" escape="false"/>
 
 		  	<p class="meta">
-				<span>
-					Last Updated: 
-					<s:property value="lastModifiedTimestamp"/>
-				</span>
-
 				<s:if test="admin">
 				  	<s:a href="%{editLink}">Edit This Page</s:a>
 				</s:if>
@@ -60,12 +55,12 @@
 	</div>
 </s:if>
 <s:else>
-	<div id="content">
+	<div id="content" class="wiki_content">
 		<div id="text">
 			<s:property value="content" escape="false"/>
 
 		  	<p class="meta">
-				<span>
+				<span id="timestamp">
 					Last Updated: 
 					<s:property value="lastModifiedTimestamp"/>
 				</span>
