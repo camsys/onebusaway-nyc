@@ -9,9 +9,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.ImporterVehiclePulloutData;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.VehiclePipoMessage;
@@ -60,13 +62,16 @@ public class VehiclePipoResource {
 	@Path("/list")
 	@GET
 	@Produces("application/json")
-	public String getAllActivePullouts() {
+	public String getAllActivePullouts(@QueryParam(value="includeAll") final String includeAllPullouts) {
 		String method = "getAllActivePullouts";
 		log.info("Starting " +method);
 
+		boolean includeAll = isIncludeAllSet(includeAllPullouts);
+		
 		ImporterVehiclePulloutData data = vehiclePullInOutDataProviderService.getVehiclePipoData(depotIdTranslator);
 		
-		List<VehiclePullInOutInfo> activePullouts = vehiclePullInOutService.getActivePullOuts(data.getAllPullouts());
+		List<VehiclePullInOutInfo> activePullouts = vehiclePullInOutService.getActivePullOuts(
+				data.getAllPullouts(), includeAll);
 
 		VehiclePipoMessage message  = new VehiclePipoMessage();
 		message.setPullouts(vehiclePullInOutDataProviderService.buildResponseData(activePullouts));
@@ -78,15 +83,18 @@ public class VehiclePipoResource {
 		
 		return outputJson;
 	}
-	
+
 	@Path("/{busNumber}/list")
 	@GET
 	@Produces("application/json")
-	public String getActivePulloutsForBus(@PathParam("busNumber") String busNumber) {
+	public String getActivePulloutsForBus(@PathParam("busNumber") String busNumber,
+			@QueryParam(value="includeAll") final String includeAllPullouts) {
 		String method = "getActivePulloutsForBus";
 		String output = null;
 		
 		log.info("Starting " +method);
+		
+		boolean includeAll = isIncludeAllSet(includeAllPullouts);
 
 		ImporterVehiclePulloutData data = vehiclePullInOutDataProviderService.getVehiclePipoData(depotIdTranslator);
 		
@@ -97,7 +105,8 @@ public class VehiclePipoResource {
 		if(pulloutsByBus.isEmpty()) {
 			output = "No pullouts found for bus : " +busId;
 		} else {
-			List<VehiclePullInOutInfo> currentActivePulloutByBus = vehiclePullInOutService.getActivePullOuts(pulloutsByBus);
+			List<VehiclePullInOutInfo> currentActivePulloutByBus = vehiclePullInOutService.
+					getActivePullOuts(pulloutsByBus, includeAll);
 			
 			VehiclePipoMessage message  = new VehiclePipoMessage();
 			message.setPullouts(vehiclePullInOutDataProviderService.buildResponseData(currentActivePulloutByBus));
@@ -114,11 +123,14 @@ public class VehiclePipoResource {
 	@Path("/depot/{depotName}/list")
 	@GET
 	@Produces("application/json")
-	public String getActivePulloutsForDepot(@PathParam("depotName") String depotName) {
+	public String getActivePulloutsForDepot(@PathParam("depotName") String depotName,
+			@QueryParam(value="includeAll") final String includeAllPullouts) {
 		String method = "getActivePulloutsForDepot";
 		String output = null;
 		
 		log.info("Starting " +method);
+		
+		boolean includeAll = isIncludeAllSet(includeAllPullouts);
 
 		ImporterVehiclePulloutData	data = vehiclePullInOutDataProviderService.getVehiclePipoData(depotIdTranslator);
 		
@@ -128,7 +140,8 @@ public class VehiclePipoResource {
 			output = "No pullouts found for depot : " +depotName;
 		} else {
 			//Get active pullouts once we have all pullouts for a depot
-			List<VehiclePullInOutInfo> activePulloutsByDepot = vehiclePullInOutService.getActivePullOuts(pulloutsByDepot);
+			List<VehiclePullInOutInfo> activePulloutsByDepot = vehiclePullInOutService.
+					getActivePullOuts(pulloutsByDepot, includeAll);
 			
 			VehiclePipoMessage message  = new VehiclePipoMessage();
 			message.setPullouts(vehiclePullInOutDataProviderService.buildResponseData(activePulloutsByDepot));
@@ -145,11 +158,14 @@ public class VehiclePipoResource {
 	@Path("/agency/{agencyId}/list")
 	@GET
 	@Produces("application/json")
-	public String getActivePulloutsForAgency(@PathParam("agencyId") String agencyId) {
+	public String getActivePulloutsForAgency(@PathParam("agencyId") String agencyId,
+			@QueryParam(value="includeAll") final String includeAllPullouts) {
 		String method = "getActivePulloutsForAgency";
 		String output = null;
 		
 		log.info("Starting " +method);
+		
+		boolean includeAll = isIncludeAllSet(includeAllPullouts);
 
 		ImporterVehiclePulloutData	data = vehiclePullInOutDataProviderService.getVehiclePipoData(depotIdTranslator);
 		
@@ -159,7 +175,8 @@ public class VehiclePipoResource {
 			output = "No pullouts found for agency : " +agencyId;
 		} else {
 			//Get active pullouts once we have all pullouts for a depot
-			List<VehiclePullInOutInfo> activePulloutsByAgency = vehiclePullInOutService.getActivePullOuts(pulloutsByAgency);
+			List<VehiclePullInOutInfo> activePulloutsByAgency = vehiclePullInOutService.
+					getActivePullOuts(pulloutsByAgency, includeAll);
 			
 			VehiclePipoMessage message  = new VehiclePipoMessage();
 			message.setPullouts(vehiclePullInOutDataProviderService.buildResponseData(activePulloutsByAgency));
@@ -173,8 +190,17 @@ public class VehiclePipoResource {
 		return output;
 	}
 	
+	private boolean isIncludeAllSet(final String includeAllPullouts) {
+		boolean includeAll = false;
+		
+		//Set include all flag as per the query parameter value
+		if(StringUtils.isNotBlank(includeAllPullouts) && 
+				StringUtils.equalsIgnoreCase(includeAllPullouts, "true")) {
+			includeAll = true;
+		}
+		return includeAll;
+	}
 	
-
 	private String serializeOutput(VehiclePipoMessage message, String method) {
 		String outputJson;
 		StringWriter writer = null;
