@@ -285,7 +285,7 @@ public class SensorModelSupportLibrary {
      * have dead-reckoning, which is much more accurate in this regard, so we
      * shrink the gps std. dev.
      */
-    final double prob = 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev / 4, d);
+    final double prob = 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev, d);
     
     /*
      * We suspect some numerical issues here, so truncate...

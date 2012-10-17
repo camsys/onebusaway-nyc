@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,7 +38,8 @@ import javax.ws.rs.core.Response;
 public class DeployResource {
 
   private static final String DEFAULT_CONFIG_DIRECTORY = "";
-
+  private static final String DEPOT_PATH = "depot_id_map";
+  private static final String DSC_PATH = "destination_sign_codes";
   private static Logger _log = LoggerFactory.getLogger(DeployResource.class);
 
   @Autowired
@@ -57,6 +59,51 @@ public class DeployResource {
     return _deployMap.get(id);
   }
 
+  @Path("/deploy/list/depot/{environment}")
+  @GET
+  /**
+   * list the depot id maps that are on S3, potentials to be deployed.
+   */
+  public Response listDepots(@PathParam("environment") String environment) {
+    String s3Path = environment + "/" + DEPOT_PATH;
+    List<String> list = _configurationDeployer.listFiles(s3Path);
+    try {
+      // serialize the status object and send to client -- it contains an id for querying
+      final StringWriter sw = new StringWriter();
+      final MappingJsonFactory jsonFactory = new MappingJsonFactory();
+      final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.writeValue(jsonGenerator, list);
+      return Response.ok(sw.toString()).build();
+    } catch (Exception e) {
+      _log.error("exception serializing response:", e);
+    }
+    return Response.serverError().build();
+  }
+
+  @Path("/deploy/list/dsc/{environment}")
+  @GET
+  /**
+   * list the destination sign code CSV files that are on S3, potentials to be deployed.
+   */
+  public Response listDscs(@PathParam("environment") String environment) {
+    String s3Path = environment + "/" + DSC_PATH;
+    List<String> list = _configurationDeployer.listFiles(s3Path);
+    try {
+      // serialize the status object and send to client -- it contains an id for querying
+      final StringWriter sw = new StringWriter();
+      final MappingJsonFactory jsonFactory = new MappingJsonFactory();
+      final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.writeValue(jsonGenerator, list);
+      return Response.ok(sw.toString()).build();
+    } catch (Exception e) {
+      _log.error("exception serializing response:", e);
+    }
+    return Response.serverError().build();
+  }
+
+  
   @Path("/deploy/status/{id}/list")
   @GET
   /**

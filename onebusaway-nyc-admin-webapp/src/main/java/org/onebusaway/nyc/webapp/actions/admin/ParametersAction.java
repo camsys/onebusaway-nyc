@@ -1,9 +1,8 @@
-package org.onebusaway.nyc.webapp.actions.admin.vehiclestatus;
+package org.onebusaway.nyc.webapp.actions.admin;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.ParametersResponse;
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author abelsare
  *
  */
-@Namespace("/admin/vehiclestatus")
 @Results({
 	@Result(name="parameters", type="json", params= {"root","parametersResponse"})
 })

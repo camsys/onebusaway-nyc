@@ -53,7 +53,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	private List<BundleItem> _allBundles = new ArrayList<BundleItem>();
 
-	private HashMap<String, BundleItem> _applicableBundles = new HashMap<String, BundleItem>();
+	protected HashMap<String, BundleItem> _applicableBundles = new HashMap<String, BundleItem>();
 
 	private volatile List<Future> _inferenceProcessingThreads = new ArrayList<Future>();
 
@@ -287,6 +287,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 		try {
 			_refreshService.refresh(RefreshableResources.TRANSIT_GRAPH);
+      timingHook();
 			_refreshService.refresh(RefreshableResources.CALENDAR_DATA);
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTIONS_DATA);
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTION_SEARCH_DATA);
@@ -331,10 +332,15 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		return;
 	}
 
+	protected void timingHook() {
+	  // for subclasses to override
+	}
+	
 	/*****
 	 * Private helper things
 	 *****/
 	private void removeAndRebuildCache() {
+	  timingHook();
 		// Clear all existing cache elements
 		for (String cacheName : _cacheManager.getCacheNames()) {
 			_log.info("Clearing cache with ID " + cacheName);

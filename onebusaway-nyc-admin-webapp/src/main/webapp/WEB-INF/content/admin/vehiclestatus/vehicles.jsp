@@ -134,7 +134,7 @@
 			</div>	
 		</div>
 		<div id="emergencyVehiclesBox" class="infoBox">
-			<label class="vehicleLabel">Buses reporting emergency</label>
+			<label class="vehicleLabel">Buses reporting emergency status</label>
 			<div id="emergencyInfo" class="boxData">
 				<s:url var="url" value="/css/img/dialog-warning-4.png" />
 				<img src="${url}" alt="Not found" />

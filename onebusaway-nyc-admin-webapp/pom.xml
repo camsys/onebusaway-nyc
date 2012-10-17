@@ -162,6 +162,15 @@
       </properties>
     </profile>
     <profile>
+      <id>local-tdm</id><!-- aka services-tdf-as-tds --> <!-- aka staging, production -->
+      <properties>
+        <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <tdm.host>localhost:8080/onebusaway-nyc-tdm-webapp</tdm.host>
+        <log4j.appender>stdout</log4j.appender>
+      </properties>
+    </profile>
+    <profile>
       <!-- Vehicle tracking webapp offers the TDS -->
       <id>local-ie</id> <!-- aka services-vtw-as-tds --> <!-- single port, aka development -->
       <properties>

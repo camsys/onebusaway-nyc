@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -34,6 +35,7 @@ import com.google.common.collect.Ordering;
 import org.apache.commons.math.util.FastMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collection;
 import java.util.Iterator;

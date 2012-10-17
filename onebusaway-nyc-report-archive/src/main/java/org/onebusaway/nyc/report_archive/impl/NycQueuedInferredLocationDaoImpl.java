@@ -3,6 +3,7 @@ package org.onebusaway.nyc.report_archive.impl;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.hibernate.SessionFactory;
 import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report_archive.model.InvalidLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 import org.onebusaway.nyc.report_archive.util.HQLBuilder;
 import org.slf4j.Logger;
@@ -24,6 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
@@ -161,6 +164,18 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 		}
 
 		return _template.get(CcAndInferredLocationRecord.class, vehicleId);
+	}
+	
+	@Override
+	@Transactional(rollbackFor = Throwable.class, propagation = Propagation.REQUIRES_NEW)
+	public void handleException(String content, Throwable error,
+			Date timeReceived) {
+		InvalidLocationRecord ilr = new InvalidLocationRecord(content, error,
+				timeReceived);
+		_template.saveOrUpdate(ilr);
+		// clear from level one cache
+		_template.flush();
+		_template.evict(ilr);
 	}
 	
 	private Query buildQuery(Map<CcAndInferredLocationFilter, String> filter, StringBuilder hqlQuery,

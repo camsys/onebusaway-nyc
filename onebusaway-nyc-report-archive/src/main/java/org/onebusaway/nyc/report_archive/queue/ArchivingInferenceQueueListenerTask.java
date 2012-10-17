@@ -1,20 +1,5 @@
 package org.onebusaway.nyc.report_archive.queue;
 
-import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
-import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
-import org.onebusaway.nyc.report_archive.services.NycVehicleManagementStatusDao;
-import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
-import org.onebusaway.transit_data.model.VehicleStatusBean;
-import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
-
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -23,18 +8,31 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
+import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
+import org.onebusaway.nyc.report_archive.services.RecordValidationService;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 public class ArchivingInferenceQueueListenerTask extends
     InferenceQueueListenerTask {
 
   public static final int DELAY_THRESHOLD = 10 * 1000;
   private static Logger _log = LoggerFactory.getLogger(ArchivingInferenceQueueListenerTask.class);
 
-  @Autowired
   private NycQueuedInferredLocationDao _locationDao;
-  @Autowired
-  private NycVehicleManagementStatusDao _statusDao;
-  @Autowired
+  
   private NycTransitDataService _nycTransitDataService;
+  
+  private RecordValidationService validationService;
 
   private int _batchSize;
 
@@ -53,6 +51,21 @@ public class ArchivingInferenceQueueListenerTask extends
    */
   public void setCommitTimeout(String commitTimeout) {
     _commitTimeout = Integer.decode(commitTimeout);
+  }
+  
+  @Autowired
+  public void setLocationDao(NycQueuedInferredLocationDao locationDao) {
+	  this._locationDao = locationDao;
+  }
+  
+  @Autowired
+  public void setNycTransitDataService(NycTransitDataService nycTransitDataService) {
+	  this._nycTransitDataService = nycTransitDataService;
+  }
+  
+  @Autowired
+  public void setValidationService(RecordValidationService validationService) {
+	  this.validationService = validationService;
   }
 
   private int _batchCount = 0;
@@ -87,37 +100,57 @@ public class ArchivingInferenceQueueListenerTask extends
   @Override
   // this method must throw exceptions to force a transaction rollback
   protected void processResult(NycQueuedInferredLocationBean inferredResult,
-      String contents) {
+		  String contents) {
+	  ArchivedInferredLocationRecord locationRecord = null;
+	  
+	  if (_log.isDebugEnabled())
+		  _log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
+				  + new Date(inferredResult.getRecordTimestamp()));
 
-    if (_log.isDebugEnabled())
-      _log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
-          + new Date(inferredResult.getRecordTimestamp()));
-    ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(
-        inferredResult, contents);
-    postProcess(locationRecord);
-    _batchCount++;
-    records.add(locationRecord);
-    long batchWindow = System.currentTimeMillis() - _lastCommitTime;
-    if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
-      try {
-        _locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
-      } finally {
-        records.clear();
-        _batchCount = 0;
-        _lastCommitTime = System.currentTimeMillis();
-      }
-    }
+	  boolean validInferredResult = validationService.validateInferenceRecord(inferredResult);
 
-    if (_batchCount == 0) {
-      if (locationRecord != null) {
-        long delta = System.currentTimeMillis()
-            - locationRecord.getTimeReported().getTime();
-        if (delta > DELAY_THRESHOLD) {
-          _log.error("inference queue is " + (delta / 1000) + " seconds behind");
-        }
-      }
-    }
+	  if(validInferredResult) {
+		  locationRecord = new ArchivedInferredLocationRecord(inferredResult, contents);
+		  boolean postProcessSuccess = postProcess(locationRecord);
+		  if(postProcessSuccess) {
+			  _batchCount++;
+			  records.add(locationRecord);
+		  } else {
+			  discardRecord(inferredResult.getVehicleId(), contents);
+		  }
+	  } else {
+		  discardRecord(inferredResult.getVehicleId(), contents);
+	  }
+	  
+	  long batchWindow = System.currentTimeMillis() - _lastCommitTime;
+	  if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
+		  try {
+			  _locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
+		  } finally {
+			  records.clear();
+			  _batchCount = 0;
+			  _lastCommitTime = System.currentTimeMillis();
+		  }
+	  }
+
+	  if (_batchCount == 0) {
+		  if (locationRecord != null) {
+			  long delta = System.currentTimeMillis()
+					  - locationRecord.getTimeReported().getTime();
+			  if (delta > DELAY_THRESHOLD) {
+				  _log.error("inference queue is " + (delta / 1000) + " seconds behind");
+			  }
+		  }
+	  }
   }
+
+	private void discardRecord(String vehicleId, String contents) {
+		  _log.error("Discarding inferred record for vehicle : {} as inferred latitude or inferred longitude " +
+			  		"values are out of range", vehicleId);
+		  Exception e = new Exception("Inference record for vehile : " +vehicleId + " failed validation." +
+			  		"Discarding");
+		  _locationDao.handleException(contents, e, new Date());
+	}
 
   @Override
   public String getQueueHost() {
@@ -141,21 +174,34 @@ public class ArchivingInferenceQueueListenerTask extends
         "tds.inputQueuePort", 5567);
   }
 
-  private void postProcess(ArchivedInferredLocationRecord locationRecord) {
-    // Extract next stop id and distance
-    String vehicleId = locationRecord.getAgencyId() + "_"
-        + locationRecord.getVehicleId().toString();
-    VehicleStatusBean vehicle = _nycTransitDataService.getVehicleForAgency(
-        vehicleId, locationRecord.getTimeReported().getTime());
-    locationRecord.setVehicleStatusBean(vehicle);
-    VehicleLocationRecordBean vehicleLocation = _nycTransitDataService.getVehicleLocationRecordForVehicleId(
-        vehicleId, locationRecord.getTimeReported().getTime());
-    if (vehicleLocation != null && vehicleLocation.getCurrentLocation() != null) {
-      locationRecord.setVehicleLocationRecordBean(vehicleLocation);
-    }
+  private boolean postProcess(ArchivedInferredLocationRecord locationRecord) {
+	  boolean postProcessSuccess = true;
 
+	  // Extract next stop id and distance
+	  String vehicleId = locationRecord.getAgencyId() + "_"
+			  + locationRecord.getVehicleId().toString();
+
+	  VehicleStatusBean vehicle = _nycTransitDataService.getVehicleForAgency(
+			  vehicleId, locationRecord.getTimeReported().getTime());
+	  locationRecord.setVehicleStatusBean(vehicle);
+
+	  VehicleLocationRecordBean vehicleLocation = _nycTransitDataService.getVehicleLocationRecordForVehicleId(
+			  vehicleId, locationRecord.getTimeReported().getTime());
+
+	  if (vehicleLocation != null && vehicleLocation.getCurrentLocation() != null) {
+		  if(validationService.isValueWithinRange(vehicleLocation.getCurrentLocation().getLat(), 
+				  -999.999999, 999.999999) &&
+			 validationService.isValueWithinRange(vehicleLocation.getCurrentLocation().getLon(), 
+					 -999.999999, 999.999999)) {
+			  locationRecord.setVehicleLocationRecordBean(vehicleLocation);
+		  } else {
+			  postProcessSuccess = false;
+		  }
+	  }
+
+	  return postProcessSuccess;
   }
-
+  
   @PostConstruct
   public void setup() {
     super.setup();
