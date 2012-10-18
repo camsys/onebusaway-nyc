@@ -23,10 +23,14 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 	OBA.Config.staleTimeout=<s:property value="staleTimeout" />;
 	OBA.Config.googleAnalyticsSiteId="<s:property value="googleAnalyticsSiteId" />";
 	OBA.Config.bingMapsKey="<s:property value="bingMapsKey" />";
+	OBA.Config.obaApiKey="<s:property value="obaApiKey" />";
 	OBA.Config.mapBounds=<s:property value="mapBounds" />;
 	OBA.Config.mapCenterLat=<s:property value="mapCenterLat" default="null" />;
 	OBA.Config.mapCenterLon=<s:property value="mapCenterLon" default="null" />;
 	OBA.Config.mapZoom=<s:property value="mapZoom" default="null" />;
+
+	OBA.Config.siriSMUrl = "api/siri/stop-monitoring.json?key=" + OBA.Config.obaApiKey;
+	OBA.Config.siriVMUrl = "api/siri/vehicle-monitoring.json?key=" + OBA.Config.obaApiKey;
 
 	OBA.Config.configurationHasLoaded();
 }

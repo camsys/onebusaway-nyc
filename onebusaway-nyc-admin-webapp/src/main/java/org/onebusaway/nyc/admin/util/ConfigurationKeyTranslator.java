@@ -27,7 +27,8 @@ public class ConfigurationKeyTranslator {
 		configToUIKeys.put("display.staleTimeout", "displayStaleTimeoutKey");
 		configToUIKeys.put("display.offRouteDistance", "displayOffrouteDistanceKey");
 		configToUIKeys.put("display.hideTimeout", "displayHideTimeoutKey");
-		configToUIKeys.put("display.bingMapsKey", "displayBingMapsKey");
+    configToUIKeys.put("display.bingMapsKey", "displayBingMapsKey");
+    configToUIKeys.put("display.obaApiKey", "displayObaApiKey");
 		configToUIKeys.put("display.previousTripFilterDistance", "displayPreviousFilterKey");
 		configToUIKeys.put("display.googleAnalyticsSiteId", "displayGoogleAnalyticsIdKey");
 		configToUIKeys.put("display.googleMapsClientId","displayGoogleMapsIdKey");
