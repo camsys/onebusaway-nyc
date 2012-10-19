@@ -13,6 +13,20 @@
  */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.struts2.convention.annotation.ParentPackage;
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
@@ -23,14 +37,6 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-
-import com.dmurph.tracking.AnalyticsConfigData;
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
-import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
-
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -42,16 +48,6 @@ import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 @ParentPackage("onebusaway-webapp-api")
 public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
@@ -64,24 +60,24 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   @Autowired
   private RealtimeService _realtimeService;
-  
-  @Autowired
-  private ConfigurationService _configurationService;
 
+  @Autowired
+  protected ConfigurationService _configurationService;
+  
   private Siri _response;
 
   private ServiceAlertsHelper _serviceAlertsHelper = new ServiceAlertsHelper();
 
-  private HttpServletRequest _request;
+  HttpServletRequest _request;
   
   private HttpServletResponse _servletResponse;
 
   // See urlrewrite.xml as to how this is set. Which means this action doesn't
   // respect an HTTP Accept: header.
   private String _type = "xml";
-  
-  private JGoogleAnalyticsTracker _googleAnalytics = null;
 
+  private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
+  
   public void setType(String type) {
     _type = type;
   }
@@ -89,17 +85,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   @Override
   public String execute() {
     
-    String googleAnalyticsSiteId = 
-        _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);
-    
-    try {
-      if(googleAnalyticsSiteId != null) {    
-        AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, null);
-        _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
-      }
-    } catch(Exception e) {
-      // discard
-    }
+    _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
     
     _realtimeService.setTime(getTime());
     
@@ -259,13 +245,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       _response = generateSiriResponse(activities, null, null);
     }
     
-    if(_googleAnalytics != null && _request.getParameter("key") != null && !_request.getParameter("key").isEmpty()) {
-      try {
-      _googleAnalytics.trackEvent("API", "Vehicle Monitoring", gaLabel);
-      } catch(Exception e) {
-        //discard
-      }
-    }
+    _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
     
     try {
       this._servletResponse.getWriter().write(getVehicleMonitoring());

@@ -203,7 +203,17 @@
 									</div>
 								</div>
 								<div class="followingSection">
-									<div id="previousTripFilterDistance" class="propertyHolder">
+									<div id="obaApiExcludeGaKey" class="propertyHolder">
+										<label class="propertyHeader">OBA API keys to exclude from google analytics</label>
+										<div class="propertyDescription">
+											<p>Comma-separated list of OBA API keys to exclude from google analytics.  If omitted, will default in code to 'OBANYC'.</p>
+										</div>
+										<div>
+											<input type="hidden" id="obaApiExcludeGaKey" value="displayObaApiExcludeGaKey"/>
+											<input type="text" id="obaApiExcludeGaKeyValue" />
+										</div>
+									</div>
+									<div id="previousTripFilterDistance" class="propertyHolder rightProperty">
 										<label class="propertyHeader">Previous Trip Filter Distance</label>
 										<div class="propertyDescription">
 											<p>The distance beyond which a bus will be filtered out of SIRI SM calls, 
