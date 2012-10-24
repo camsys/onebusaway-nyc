@@ -17,6 +17,7 @@ package org.onebusaway.nyc.webapp.actions.m;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -187,9 +188,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
             hasUpcomingScheduledService = true;
           }
 
-          for (Map.Entry<String,List<String>> entry : arrivalsForRouteAndDirection.entrySet()) {
-            directions.add(new RouteDirection(entry.getKey(), stopGroupBean, null, 
-                hasUpcomingScheduledService, entry.getValue()));
+          if(arrivalsForRouteAndDirection.isEmpty()) {
+            directions.add(new RouteDirection(stopGroupBean.getName().getName(), stopGroupBean, null, 
+                hasUpcomingScheduledService, Collections.EMPTY_LIST));
+          } else {          
+            for (Map.Entry<String,List<String>> entry : arrivalsForRouteAndDirection.entrySet()) {
+              directions.add(new RouteDirection(entry.getKey(), stopGroupBean, null, 
+                 hasUpcomingScheduledService, entry.getValue()));
+            }
           }
         }
       }
@@ -197,9 +203,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions,
           serviceAlertDescriptions);
 
+      // Keep track of service and no service per route. If at least one
+      // direction per route meets some criteria, break because that route is handled.
       for (RouteDirection direction : routeAtStop.getDirections()) {
-        if (direction.getHasUpcomingScheduledService() == false
-            && direction.getDistanceAways().isEmpty()) {
+        if (direction.getHasUpcomingScheduledService() == false && direction.getDistanceAways().isEmpty()) {
           routesWithNoScheduledService.add(routeAtStop);
           break;
         } else {
