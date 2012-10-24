@@ -38,6 +38,7 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -49,7 +50,6 @@ import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.StopMonitoringDeliveryStructure;
 
-@ParentPackage("onebusaway-webapp-api")
 public class StopMonitoringAction extends OneBusAwayNYCActionSupport 
   implements ServletRequestAware, ServletResponseAware {
 
@@ -72,7 +72,6 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
   private HttpServletResponse _servletResponse;
   
-  // See urlrewrite.xml as to how this is set.  Which means this action doesn't respect an HTTP Accept: header.
   private String _type = "xml";
 
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
