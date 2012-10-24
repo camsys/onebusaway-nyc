@@ -24,6 +24,10 @@
 	position: relative;
 }
 
+#content #searchbar .sidebar {
+	min-height: 92%;
+}
+
 #content #searchbar form {
 	position: relative;
 	display: block;

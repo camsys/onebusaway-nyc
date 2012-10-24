@@ -178,15 +178,15 @@
 	padding-bottom: 20px;
 }
 
-#bustime #footer #google_translate_element {
+#google_translate_element {
 	text-decoration: none;
 	font-weight: bold;
 	color: #0189c7;
 	cursor: pointer;
-	height: 40px;
+	height: 25px;
 }
 
-#bustime #footer #google_translate_element #icon {
+#google_translate_element #icon {
 	vertical-align: baseline;
 }
 

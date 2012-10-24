@@ -248,7 +248,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       if (monitoredCall == null)
         continue;
 
-      if (!results.containsKey(visit.getMonitoredVehicleJourney().getDestinationName()))
+      if (!results.containsKey(visit.getMonitoredVehicleJourney().getDestinationName().getValue()))
         results.put(visit.getMonitoredVehicleJourney().getDestinationName().getValue(), new ArrayList<String>());
       
       if(results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).size() >= 3)
