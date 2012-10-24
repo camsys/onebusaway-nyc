@@ -164,7 +164,6 @@
         <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <archive.path>http://archive/onebusaway-nyc-report-archive</archive.path><!-- assumes domain is set in resolv.conf -->
-        <service.wikihost>xwiki.prod.obanyc.com</service.wikihost>
         <tdm.host>tdm</tdm.host><!-- assumes domain is set -->
         <webapp.api.url></webapp.api.url>
         <log4j.appender>ROLL</log4j.appender>
@@ -178,7 +177,6 @@
         <vtms.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <config.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <archive.path>http://archive.dev.obanyc.com/onebusaway-nyc-report-archive</archive.path>
-        <service.wikihost>xwiki.dev.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
         <log4j.appender>stdout</log4j.appender>
@@ -192,7 +190,6 @@
         <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
         <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
         <archive.path>http://localhost:8080/onebusaway-nyc-report-archive</archive.path>
-        <service.wikihost>xwiki.dev.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
         <log4j.appender>stdout</log4j.appender>
@@ -207,7 +204,6 @@
         <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
         <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
         <archive.path>http://localhost:8080/onebusaway-nyc-report-archive</archive.path>
-        <service.wikihost>xwiki.dev.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url>http://localhost:8080</webapp.api.url>
         <log4j.appender>stdout</log4j.appender>
@@ -223,7 +219,6 @@
         <vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
         <config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
         <archive.path>http://localhost:8081/onebusaway-nyc-report-archive</archive.path>
-        <service.wikihost>xwiki.dev.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url>http://localhost:8082</webapp.api.url>
         <log4j.appender>stdout</log4j.appender>
