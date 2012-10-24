@@ -33,10 +33,6 @@
         <groupId>org.apache.struts</groupId>
         <artifactId>struts2-core</artifactId>
     </dependency>
-    <dependency>
-        <groupId>org.apache.struts</groupId>
-        <artifactId>struts2-rest-plugin</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>junit</groupId>

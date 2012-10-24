@@ -13,34 +13,6 @@
  */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
-import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
-import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-
-import com.dmurph.tracking.AnalyticsConfigData;
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
-import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.org.siri.siri.ErrorDescriptionStructure;
-import uk.org.siri.siri.MonitoredStopVisitStructure;
-import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
-import uk.org.siri.siri.OtherErrorStructure;
-import uk.org.siri.siri.ServiceDelivery;
-import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
-import uk.org.siri.siri.Siri;
-import uk.org.siri.siri.StopMonitoringDeliveryStructure;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,6 +25,31 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.struts2.convention.annotation.ParentPackage;
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
+import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.org.siri.siri.ErrorDescriptionStructure;
+import uk.org.siri.siri.MonitoredStopVisitStructure;
+import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.OtherErrorStructure;
+import uk.org.siri.siri.ServiceDelivery;
+import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
+import uk.org.siri.siri.Siri;
+import uk.org.siri.siri.StopMonitoringDeliveryStructure;
+
+@ParentPackage("onebusaway-webapp-api")
 public class StopMonitoringAction extends OneBusAwayNYCActionSupport 
   implements ServletRequestAware, ServletResponseAware {
 
@@ -75,9 +72,10 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
   private HttpServletResponse _servletResponse;
   
+  // See urlrewrite.xml as to how this is set.  Which means this action doesn't respect an HTTP Accept: header.
   private String _type = "xml";
-  
-  private JGoogleAnalyticsTracker _googleAnalytics = null;
+
+  private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
   
   public void setType(String type) {
     _type = type;
@@ -86,17 +84,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   @Override
   public String execute() {
     
-    String googleAnalyticsSiteId = 
-        _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);
-    
-    try {
-      if(googleAnalyticsSiteId != null) {    
-        AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, null);
-        _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
-      }
-    } catch(Exception e) {
-      // discard
-    }
+    _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
     
     _realtimeService.setTime(getTime());
     
@@ -202,13 +190,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       minimumStopVisitsPerLine = null;
     }
     
-    if(_googleAnalytics != null && _request.getParameter("key") != null && !_request.getParameter("key").isEmpty()) {
-      try {
-      _googleAnalytics.trackEvent("API", "Stop Monitoring", StringUtils.join(stopIds, ","));
-      } catch(Exception e) {
-        //discard
-      }
-    }
+    _monitoringActionSupport.reportToGoogleAnalytics(_request, "Stop Monitoring", StringUtils.join(stopIds, ","), _configurationService);
 
     List<MonitoredStopVisitStructure> visits = new ArrayList<MonitoredStopVisitStructure>();
 

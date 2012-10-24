@@ -47,6 +47,12 @@
       <version>${onebusaway.app-modules.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-nyc-api-core</artifactId>
+      <version>${onebusaway.nyc.version}</version>
+    </dependency>
+
     <!-- Wiki Integration Support -->
     <!-- XWiki depends on an old verion of beanutils that causes conflicts 
       for some reason -->
@@ -144,7 +150,8 @@
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.17</version>
     </dependency>
-  </dependencies>
+
+   </dependencies>
 
   <profiles>
     <profile>
