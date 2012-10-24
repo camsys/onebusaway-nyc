@@ -7,6 +7,7 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A stop as a top-level search result.
@@ -25,14 +26,17 @@ public class StopResult implements SearchResult {
 	private List<RouteAtStop> routesWithNoScheduledService;
 	
 	private List<RouteBean> filteredRoutes;
+	
+	private Set<String> stopServiceAlerts;
 
 	public StopResult(StopBean stop, List<RouteAtStop> routesWithArrivals, List<RouteAtStop> routesWithNoVehiclesEnRoute,
-			List<RouteAtStop> routesWithNoScheduledService, List<RouteBean> filteredRoutes) {
+			List<RouteAtStop> routesWithNoScheduledService, List<RouteBean> filteredRoutes, Set<String> serviceAlerts) {
 		this.stop = stop;
 		this.routesWithArrivals = routesWithArrivals;
 		this.routesWithNoVehiclesEnRoute = routesWithNoVehiclesEnRoute;
 		this.routesWithNoScheduledService = routesWithNoScheduledService;
 		this.filteredRoutes = filteredRoutes;
+		this.stopServiceAlerts = serviceAlerts;
 	}
 
 	public String getId() {
@@ -74,5 +78,9 @@ public class StopResult implements SearchResult {
 	
 	public List<RouteBean> getFilteredRoutes() {
 	  return filteredRoutes;
+	}
+	
+	public Set<String> getStopServiceAlerts() {
+		return stopServiceAlerts;
 	}
 }
