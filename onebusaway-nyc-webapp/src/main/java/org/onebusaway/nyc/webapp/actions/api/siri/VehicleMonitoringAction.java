@@ -37,6 +37,13 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+
+import com.dmurph.tracking.AnalyticsConfigData;
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
+
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -49,7 +56,6 @@ import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
 
 
-@ParentPackage("onebusaway-webapp-api")
 public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     implements ServletRequestAware, ServletResponseAware {
 
@@ -72,8 +78,6 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   
   private HttpServletResponse _servletResponse;
 
-  // See urlrewrite.xml as to how this is set. Which means this action doesn't
-  // respect an HTTP Accept: header.
   private String _type = "xml";
 
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
