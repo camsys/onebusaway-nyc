@@ -52,7 +52,9 @@ public class VehiclePullInOutServiceImpl implements VehiclePullInOutService {
 				}
 				//Get the most recent active pullout by sorting records by descending pullout time
 				Collections.sort(allActivePulloutsByBus, new PulloutsComparator());
-				activePullouts.add(allActivePulloutsByBus.get(0));
+				if(!allActivePulloutsByBus.isEmpty()) {
+					activePullouts.add(allActivePulloutsByBus.get(0));
+				}
 			}
 		}
 
@@ -89,14 +91,17 @@ public class VehiclePullInOutServiceImpl implements VehiclePullInOutService {
 
 		//Group pullout data by bus number
 		for(VehiclePullInOutInfo currentPullout : allPullouts) {
-			Long vehicleId = currentPullout.getPullOutInfo().getVehicle().getVehicleId();
-			if(pulloutsByBus.containsKey(vehicleId)) {
-				List<VehiclePullInOutInfo> existingPullouts = pulloutsByBus.get(vehicleId);
-				existingPullouts.add(currentPullout);
-			} else {
-				List<VehiclePullInOutInfo> currentPullouts = new ArrayList<VehiclePullInOutInfo>();
-				currentPullouts.add(currentPullout);
-				pulloutsByBus.put(vehicleId, currentPullouts);
+			//Check if the pullout record has required information
+			if(currentPullout.getPullOutInfo() != null) {
+				Long vehicleId = currentPullout.getPullOutInfo().getVehicle().getVehicleId();
+				if(pulloutsByBus.containsKey(vehicleId)) {
+					List<VehiclePullInOutInfo> existingPullouts = pulloutsByBus.get(vehicleId);
+					existingPullouts.add(currentPullout);
+				} else {
+					List<VehiclePullInOutInfo> currentPullouts = new ArrayList<VehiclePullInOutInfo>();
+					currentPullouts.add(currentPullout);
+					pulloutsByBus.put(vehicleId, currentPullouts);
+				}
 			}
 		}
 		return pulloutsByBus;
