@@ -8,11 +8,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc</artifactId>
-    <version>2.0.3-SNAPSHOT</version>
+    <version>2.0.3-20121029-1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>onebusaway-nyc</name>
 
     <properties>
+      <nyc_site_id>build.staging.obanyc.com</nyc_site_id>
+      <nyc_site_deployment_base>scp://${nyc_site_id}/var/www/sites/developer/modules</nyc_site_deployment_base>
+      <nyc_site_url>${site_deployment_base}/${project.name}/${project.version}</nyc_site_url>
     	<onebusaway.gtfs.version>1.2.6</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
     	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
     	<onebusaway.csv-entities.version>1.0.3</onebusaway.csv-entities.version>
@@ -118,6 +121,18 @@
         <developerConnection>scm:git:github.com/camsys/onebusaway-nyc/</developerConnection>
         <url>https://github.com/camsys/onebusaway-nyc/</url>
     </scm>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/camsys/onebusaway-nyc/issues</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <site>
+      <id>${nyc_site_id}</id>
+      <url>${nyc_site_deployment_base}/onebusaway-nyc/${project.version}</url>
+    </site>
+  </distributionManagement>
 
   <!-- NOTE If you change the module list, make sure to keep the one
        in the skip-integration-tests profile updated. -->
