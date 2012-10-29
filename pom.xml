@@ -18,6 +18,7 @@
       <nyc_site_url>${site_deployment_base}/${project.name}/${project.version}</nyc_site_url>
     	<onebusaway.gtfs.version>1.2.6</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
     	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
+      <onebusaway.nyc.version>2.0.3-SNAPSHOT</onebusaway.nyc.version>
     	<onebusaway.csv-entities.version>1.0.3</onebusaway.csv-entities.version>
     	<struts.version>2.2.1.1</struts.version>
         <jetty.version>6.1.26</jetty.version>
