@@ -127,6 +127,14 @@
   </issueManagement>
 
   <distributionManagement>
+    <repository>
+      <id>repo</id>
+      <url>https://github.com/camsys/onebusaway-nyc/raw/master/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>snapshot-repo</id>
+      <url>https://github.com/camsys/onebusaway-nyc/raw/master/snapshots</url>
+    </snapshotRepository>
     <site>
       <id>${nyc_site_id}</id>
       <url>${nyc_site_deployment_base}/onebusaway-nyc/${project.version}</url>
