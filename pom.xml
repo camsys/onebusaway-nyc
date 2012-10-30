@@ -128,12 +128,12 @@
 
   <distributionManagement>
     <repository>
-      <id>repo</id>
-      <url>https://github.com/camsys/onebusaway-nyc/raw/master/releases</url>
+      <id>releases-mvn-repo</id>
+      <url>https://github.com/camsys/mvn-repo/raw/master/releases</url>
     </repository>
     <snapshotRepository>
-      <id>snapshot-repo</id>
-      <url>https://github.com/camsys/onebusaway-nyc/raw/master/snapshots</url>
+      <id>snapshots-mvn-repo</id>
+      <url>https://github.com/camsys/mvn-repo/raw/master/snapshots</url>
     </snapshotRepository>
     <site>
       <id>${nyc_site_id}</id>
