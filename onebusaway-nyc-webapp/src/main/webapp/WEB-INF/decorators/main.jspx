@@ -80,7 +80,8 @@
 	<div id="topbar">
 		<div id="branding">
 			<a href="http://mta.info/default.html">
-				<img src="http://mta.info/template/images/mta_info.gif" alt="MTA.info logo" />
+			  	<s:url var="url" value="/css/img/mta_info.gif"></s:url>
+				<img src="${url}" alt="MTA.info logo" />
 			</a>
 		</div>
 		
