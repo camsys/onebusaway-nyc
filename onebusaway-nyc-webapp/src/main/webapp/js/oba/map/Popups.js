@@ -404,7 +404,7 @@ OBA.Popups = (function() {
 	    			routeAndDirectionWithoutSerivce[route.id + "_" + direction.directionId] = { "id":route.id, "shortName":route.shortName, "destination":direction.destination };
 	    			routeAndDirectionWithoutSerivceCount++;
 	    		} else {
-	    			routeAndDirectionWithoutArrivals[route.id + "_" + direction.directionId] = { "id":route.id, "shortName":route.shortName, "destination":direction.destination };
+	    			routeAndDirectionWithoutArrivals[route.id + "_" + direction.directionId + "_" + direction.destination.hashCode()] = { "id":route.id, "shortName":route.shortName, "destination":direction.destination };
 	    			routeAndDirectionWithoutArrivalsCount++;
 	    		}
 	    	});
@@ -532,7 +532,7 @@ OBA.Popups = (function() {
 			var i = 0;
 			jQuery.each(routeAndDirectionWithoutArrivals, function(_, d) {
 				html += '<li class="route">';
-				html += '<a class="muted" href="#' + stopIdWithoutAgency + "%20" + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; to " + d.destination + '</a>';
+				html += '<a class="muted" href="#' + stopIdWithoutAgency + "%20" + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; " + d.destination + '</a>';
 				if (d.id in alertData) {
 					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + d.id + '" class="alert-link" href="#">Alert</a>';
 				}
