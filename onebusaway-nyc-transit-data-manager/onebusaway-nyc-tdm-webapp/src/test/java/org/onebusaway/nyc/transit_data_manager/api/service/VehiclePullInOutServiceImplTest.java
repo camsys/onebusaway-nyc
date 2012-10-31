@@ -181,6 +181,7 @@ public class VehiclePullInOutServiceImplTest {
 		pulloutInfo.add(activePullout1);
 		pulloutInfo.add(activePullout2);
 		pulloutInfo.add(activePullout3);
+		pulloutInfo.add(new VehiclePullInOutInfo());
 		
 		List<VehiclePullInOutInfo> activePullouts = service.getActivePullOuts(pulloutInfo, true);
 		
