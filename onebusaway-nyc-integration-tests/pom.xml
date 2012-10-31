@@ -127,7 +127,8 @@
                                 <exclude>none</exclude>
                             </excludes>
                             <includes>
-                                <include>**/*IntegrationTest.java</include>
+                                <include>**/TraceSuite.java</include>
+<!--                                 <include>**/*IntegrationTest.java</include> -->
                             </includes>
                             <!-- We define some test system properties -->
                             <systemPropertyVariables>
@@ -189,7 +190,29 @@
                             </arguments>
                         </configuration>
                     </execution>
-
+<!-- valid default bundle begin -->
+                    <execution>
+                        <id>graph-builder-execution-2012September</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx1500m</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2012September.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2012September</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
 <!-- valid default bundl end -->
                     <execution>
                         <id>graph-builder-execution-b63-winter10</id>
