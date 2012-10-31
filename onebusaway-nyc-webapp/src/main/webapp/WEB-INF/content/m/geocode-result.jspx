@@ -28,7 +28,7 @@
 			<p>
 				<s:url var="url" namespace="/m" action="index">
 					<s:param name="q">
-						<s:property value="formattedAddress" />
+						<s:property value="%{latitude + ',' + longitude}" />
 					</s:param>
 				</s:url>
 
