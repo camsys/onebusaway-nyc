@@ -122,6 +122,5 @@
 	    	<a href="${url}">Refresh (<strong>Updated <s:property value="lastUpdateTime" /></strong>)</a>
 		</div>
 	</s:else>
-	<img src="${googleAnalyticsTrackingUrl}" alt=""/>
 </body>
 </html>
