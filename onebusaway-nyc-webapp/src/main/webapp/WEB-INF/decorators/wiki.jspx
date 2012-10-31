@@ -86,7 +86,8 @@
 	<div id="topbar">
 		<div id="branding">
 			<a href="http://mta.info/default.html">
-				<img src="http://mta.info/template/images/mta_info.gif"/>
+			  	<s:url var="url" value="/css/img/mta_info.gif"></s:url>
+				<img src="${url}"/>
 			</a>
 		</div>
 		
@@ -192,7 +193,8 @@
 	    	
 	    	<div class="container clear"></div>
 	    	<div id="footer" class="clear">
-					<div id="google_translate_element">Google Translate <img id="icon" src="http://mta.info/siteimages/google_logo.png" /></div>
+			  	<s:url var="url" value="/css/img/google_logo.png"></s:url>
+				<div id="google_translate_element">Google Translate <img id="icon" src="${url}" /></div>
 			</div>
 		</div>
 

@@ -61,7 +61,7 @@
 #bustime #header ul {
 	position: absolute;
 	left: 330px;
-	bottom: 15px;
+	bottom: 25px;
 }
 
 #bustime #header ul li {
@@ -212,7 +212,7 @@
 /* from MTA CSS: */
 
 html, body {
-    background-image: url("http://mta.info/css/images/grey_bg.jpg");
+    background-image: url("img/grey_bg.jpg");
     background-repeat: repeat-x;
     color: #333333;
     font: 13px/1.231 helvetica,arial,clean,sans-serif;
@@ -307,7 +307,7 @@ html, body {
     width: auto;	
 }
 #topbar .list_h {
-    background-image: url("http://mta.info/css/images/arrow-gn.gif");
+    background-image: url("img/arrow-gn.gif");
     background-position: left -1px;
     background-repeat: no-repeat;
     display: inline;
@@ -334,7 +334,7 @@ html, body {
     position: relative;
 }
 #horizontalcssmenu ul#cssmenu1 li a {
-    background: url("http://mta.info/css/images/nav_bg.jpg") repeat-x scroll left top #FFFFFF;
+    background: url("img/nav_bg.jpg") repeat-x scroll left top #FFFFFF;
     color: #FFFFFF;
     display: block;
     font-weight: bold;
@@ -344,7 +344,7 @@ html, body {
     text-decoration: none;
 }
 #horizontalcssmenu ul#cssmenu1 li a:hover {
-    background: url("http://mta.info/css/images/nav_bg_on.jpg") repeat-x scroll left top #FFFFFF;
+    background: url("img/nav_bg_on.jpg") repeat-x scroll left top #FFFFFF;
 }
 #horizontalcssmenu ul#cssmenu1 li ul {
     background-color: #DDDDDD;
