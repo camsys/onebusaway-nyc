@@ -49,25 +49,19 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ 
 
+	PauseDuringIntegrationTest.class,
+	
 	/*
      * Inference tests
      */
-    Trace_0927_20101209T124742_IntegrationTest.class,
+
+	// b63-winter 10
+	Trace_0927_20101209T124742_IntegrationTest.class,
     Trace_1325_20101215T014845_IntegrationTest.class,
     Trace_1379_20101211T010025_IntegrationTest.class,
     Trace_1404_20101210T034249_IntegrationTest.class,
-    Trace_2423_20120111_091352_092348_IntegrationTest.class,    
-    Trace_2433_20120723_IntegrationTest.class,
-    Trace_2711_20111208_054046_102329_IntegrationTest.class,
-  	Trace_2782_20111202_211038_222038_IntegrationTest.class,
-    Trace_3649_20101125T121801_IntegrationTest.class,
-    Trace_4111_20120717_IntegrationTest.class,
-    Trace_4138_20111207_150000_220000_IntegrationTest.class,
-    Trace_4255_20111215_183433_183932_IntegrationTest.class,
+  	Trace_3649_20101125T121801_IntegrationTest.class,
     Trace_5318_20101202T172138_IntegrationTest.class,
-    Trace_6154_20111214_123000_143500_IntegrationTest.class,
-    Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest.class,
-    Trace_6333_20120717_IntegrationTest.class,
     Trace_7560_20101122T084226_IntegrationTest.class,
     Trace_7560_20101122T221007_IntegrationTest.class,
     Trace_7560_20101123T031734_IntegrationTest.class,
@@ -75,7 +69,23 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
     Trace_7564_20101201T010042_IntegrationTest.class,
     Trace_7564_20101202T034055_IntegrationTest.class,
     Trace_7564_20101202T114909_IntegrationTest.class,
+
+    // 2012Jan_SIB63M34_r20_b01
+    Trace_2423_20120111_091352_092348_IntegrationTest.class,    
+
+    // 2012July_r04_b02
+    Trace_2433_20120723_IntegrationTest.class,
+    Trace_4111_20120717_IntegrationTest.class,
+    Trace_6333_20120717_IntegrationTest.class,
   	Trace_3819_20120829_220004_222001_IntegrationTest.class,
+
+    // si
+    Trace_2711_20111208_054046_102329_IntegrationTest.class,
+  	Trace_2782_20111202_211038_222038_IntegrationTest.class,
+    Trace_4138_20111207_150000_220000_IntegrationTest.class,
+    Trace_4255_20111215_183433_183932_IntegrationTest.class,
+    Trace_6154_20111214_123000_143500_IntegrationTest.class,
+    Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest.class,  	
 
 	/*
 	 * Wrapping logic tests
