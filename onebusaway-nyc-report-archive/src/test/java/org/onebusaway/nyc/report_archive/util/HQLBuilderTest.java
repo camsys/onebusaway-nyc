@@ -1,18 +1,9 @@
 package org.onebusaway.nyc.report_archive.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 
 /**
@@ -42,7 +33,7 @@ public class HQLBuilderTest {
 		hql = queryBuilder.from(hql, "ArchivedInferredLocationRecord", "in");
 		hql = queryBuilder.where(hql, "cc", "vehicleId", ":vehicleId");
 		hql = queryBuilder.where(hql, "cc", "vehicleAgencyId", ":vehicleAgencyId");
-		hql = queryBuilder.join(hql, "cc", "in", "vehicleId", "=");
+		hql = queryBuilder.join(hql, "cc", "in", "vehicleId");
 		hql = queryBuilder.order(hql, "cc", "vehicleId", "desc");
 		assertEquals("Expecting well formed hql", "from CcAndInferredLocationRecord cc ," +
 				"ArchivedInferredLocationRecord in where cc.vehicleId= :vehicleId" +
@@ -55,7 +46,7 @@ public class HQLBuilderTest {
 		queryBuilder = new HQLBuilder();
 		StringBuilder hql = queryBuilder.from(new StringBuilder(), "CcAndInferredLocationRecord", "cc");
 		hql = queryBuilder.from(hql, "ArchivedInferredLocationRecord", "in");
-		hql = queryBuilder.join(hql, "cc", "in", "vehicleId", "=");
+		hql = queryBuilder.join(hql, "cc", "in", "vehicleId");
 		hql = queryBuilder.order(hql, "cc", "vehicleId", "desc");
 		assertEquals("Expecting well formed hql", "from CcAndInferredLocationRecord cc ," +
 				"ArchivedInferredLocationRecord in where " +
@@ -73,7 +64,7 @@ public class HQLBuilderTest {
 	    
 		
 		hql = queryBuilder.dateBoundary(hql, "cc", "timeReported", ":startDate", ":endDate");
-		hql = queryBuilder.join(hql, "cc", "in", "vehicleId", "=");
+		hql = queryBuilder.join(hql, "cc", "in", "vehicleId");
 		hql = queryBuilder.order(hql, "cc", "vehicleId", "desc");
 		
 		assertEquals("Expecting well formed hql", "from CcAndInferredLocationRecord cc ," +

@@ -117,11 +117,10 @@ public class HQLBuilder {
 	 * @param primaryAlias alias of primary table
 	 * @param secondaryAlias alias of secondary table
 	 * @param joinColumn column on which join needs to be created
-	 * @param condition join condition
 	 * @return hql with join condition
 	 */
 	public StringBuilder join(StringBuilder hqlBuilder, String primaryAlias, String secondaryAlias, 
-			String joinColumn, String condition) {
+			String joinColumn) {
 		if(hqlBuilder.toString().contains("where")) {
 			hqlBuilder.append("and").append(SPACE);
 		} else {
@@ -129,7 +128,7 @@ public class HQLBuilder {
 		}
 		hqlBuilder.append(primaryAlias + "." +joinColumn);
 		hqlBuilder.append(SPACE);
-		hqlBuilder.append(condition);
+		hqlBuilder.append("=");
 		hqlBuilder.append(SPACE);
 		hqlBuilder.append(secondaryAlias + "." +joinColumn);
 		hqlBuilder.append(SPACE);
