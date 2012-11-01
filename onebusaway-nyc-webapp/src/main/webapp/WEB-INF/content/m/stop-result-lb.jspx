@@ -108,7 +108,7 @@
 			<s:if test="%{stopServiceAlerts.size&gt;0}">
 				<div class="alerts">
 					<p>
-						<strong>Service Change:</strong>
+						<strong>Service Alert:</strong>
 					</p>
 					<ul class="alerts">
 						<c:forEach var="stopServiceAlert" items="${stopServiceAlerts}">

@@ -190,7 +190,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
           if(arrivalsForRouteAndDirection.isEmpty()) {
             directions.add(new RouteDirection(stopGroupBean.getName().getName(), stopGroupBean, null, 
-                hasUpcomingScheduledService, Collections.EMPTY_LIST));
+                hasUpcomingScheduledService, Collections.<String>emptyList()));
           } else {          
             for (Map.Entry<String,List<String>> entry : arrivalsForRouteAndDirection.entrySet()) {
               directions.add(new RouteDirection(entry.getKey(), stopGroupBean, null, 

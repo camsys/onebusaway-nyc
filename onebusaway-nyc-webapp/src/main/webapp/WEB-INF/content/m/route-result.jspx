@@ -34,7 +34,7 @@
 			<s:if test="%{uniqueServiceAlertsForResults.size&gt;0}">
 				<div class="alerts">
 					<p>
-						<strong>Service Change for Route:</strong>
+						<strong>Service Alert for Route:</strong>
 					</p>
 					<ul class="alerts">
 						<c:forEach var="uniqueServiceAlert" items="${uniqueServiceAlertsForResults}">

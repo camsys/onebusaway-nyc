@@ -15,18 +15,14 @@
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.xwork.StringEscapeUtils;
-import org.apache.struts2.ServletActionContext;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.model.SearchResult;
@@ -148,26 +144,12 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return (results != null && results.size() > 0) ? results : null;
   }
 
-  // Adapted from http://code.google.com/mobile/analytics/docs/web/#jsp
-  public String getGoogleAnalyticsTrackingUrl() {
-    try {
-      StringBuilder url = new StringBuilder();
-      url.append("ga?");
-      url.append("guid=ON");
-      url.append("&utmn=").append(
-          Integer.toString((int) (Math.random() * 0x7fffffff)));
-      url.append("&utmac=").append(
-          _configurationService.getConfigurationValueAsString(
-              "display.googleAnalyticsSiteId", null));
-
-      // referrer
-      HttpServletRequest request = ServletActionContext.getRequest();
-      String referer = request.getHeader("referer");
-      if (referer == null || referer.isEmpty()) {
-        referer = "-";
-      }
-      url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
-
+  public String getGoogleAnalyticsSiteId() {
+	  return _configurationService.getConfigurationValueAsString(
+              "display.googleAnalyticsSiteId", null);
+  }
+  
+  public String getGoogleAnalyticsValue() {
       // event tracking
       String label = getQ();
       if (label == null) {
@@ -176,7 +158,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       label += " [M: " + _results.getMatches().size() + " S: "
           + _results.getSuggestions().size() + "]";
       label = label.trim();
-
+      return label;
+  }
+  
+  public String getGoogleAnalyticsLabel() {
       String action = "Unknown";
       if (_results != null && !_results.isEmpty()) {
         if (_results.getResultType().equals("RouteInRegionResult")) {
@@ -205,15 +190,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
           action = "No Search Results";
         }
       }
-
-      // url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label +
-      // ")");
-      url.append("&utmp=/m/index/" + action + "/" + label);
-
-      return url.toString().replace("&", "&amp;");
-    } catch (Exception e) {
-      return null;
-    }
+      return action;
   }
 
   public String getQ() {

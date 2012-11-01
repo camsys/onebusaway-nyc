@@ -223,7 +223,8 @@
 			</div>
 		</div>
 		<div class="container clear"><!-- jspx --></div>
-		<div id="google_translate_element">Google Translate <img id="icon" src="http://mta.info/siteimages/google_logo.png" /></div>
+	  	<s:url var="url" value="/css/img/google_logo.png"></s:url>
+		<div id="google_translate_element">Google Translate <img id="icon" src="${url}" /></div>
     </div>
 
 	<div id="map"><!-- //prevent jspx minimization --></div>

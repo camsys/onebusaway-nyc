@@ -1,15 +1,14 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-    xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>onebusaway-nyc-transit-data-manager</artifactId>
         <groupId>org.onebusaway</groupId>
-        <version>2.0.3-SNAPSHOT</version>
+        <version>2.0.7-SNAPSHOT</version>
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-tdm-webapp</artifactId>
-    <version>2.0.3-SNAPSHOT</version>
+    <version>2.0.7-SNAPSHOT</version>
     <name>onebusaway-nyc-tdm-webapp</name>
     <description>TDM API</description>
     <packaging>war</packaging>
@@ -33,7 +32,7 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
-            <version>2.0.3-SNAPSHOT</version>
+            <version>2.0.7-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
@@ -89,7 +88,7 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
-            <version>${onebusaway.nyc.version}</version>
+            <version>2.0.7-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -183,7 +182,7 @@
                 <tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
                 <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
-                <tdm.depotIdTranslationConfigFile></tdm.depotIdTranslationConfigFile>
+                <tdm.depotIdTranslationConfigFile />
                 <tdm.bundlePath>D:\tmp\bundles</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}\vehicle_pipo</tdm.vehiclepipoUploadDir>
             </properties>
@@ -201,7 +200,7 @@
                 <tdm.host>localhost</tdm.host>
                 <tdm.port>80</tdm.port>
                 <tdm.url>/api/</tdm.url>
-                <webapp.api.url></webapp.api.url>
+                <webapp.api.url />
                 <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
                 <tdm.home>/var/lib/obanyc/tdm</tdm.home>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
@@ -228,7 +227,7 @@
                 <tdm.host>localhost</tdm.host>
                 <tdm.port>8080</tdm.port>
                 <tdm.url>/onebusaway-nyc-tdm-webapp/api/</tdm.url>
-                <webapp.api.url></webapp.api.url>
+                <webapp.api.url />
                 <tdm.dataPath>/var/lib/obanyc/tdm_input/upload/mta</tdm.dataPath>
                 <tdm.home>/var/lib/obanyc/tdm</tdm.home>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
@@ -255,7 +254,7 @@
                 <tdm.host>localhost</tdm.host>
                 <tdm.port>8080</tdm.port>
                 <tdm.url>/onebusaway-nyc-tdm-webapp/api/</tdm.url>
-                <webapp.api.url></webapp.api.url>
+                <webapp.api.url />
                 <tdm.dataPath>/var/lib/obanyc/tdm_input/upload/mta</tdm.dataPath>
                 <tdm.home>/var/lib/obanyc/tdm</tdm.home>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
@@ -282,7 +281,7 @@
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <tdm.port>80</tdm.port>
                 <tdm.url>/api/</tdm.url>
-                <webapp.api.url></webapp.api.url>
+                <webapp.api.url />
                 <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
@@ -296,7 +295,7 @@
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <tdm.port>8080</tdm.port>
                 <tdm.url>/api/</tdm.url>
-                <webapp.api.url></webapp.api.url>
+                <webapp.api.url />
                 <log4j.appender>stdout</log4j.appender>
                 
                 <tdm.dataPath>/var/lib/obanyc/tdm-datapath</tdm.dataPath>
