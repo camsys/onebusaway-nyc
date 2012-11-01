@@ -267,7 +267,7 @@ OBA.Sidebar = function() {
 												.append(jQuery("<span class='click_info'> + Click for info</span>"));
 				
 				var serviceAlertContainer = jQuery("<div></div>")
-												.attr("id", "alerts-" + routeResult.id.replace(" ", "_"))
+												.attr("id", "alerts-" + routeResult.id.hashCode())
 												.addClass("serviceAlertContainer")
 												.append(serviceAlertHeader)
 												.append(serviceAlertList);
@@ -660,7 +660,7 @@ OBA.Sidebar = function() {
 					}
 				});
 			}, function(routeId, serviceAlerts) { // service alert notification handler
-				var serviceAlertsContainer = jQuery("#alerts-" + routeId.replace(" ", "_"));
+				var serviceAlertsContainer = jQuery("#alerts-" + routeId.hashCode());
 				if(serviceAlertsContainer.length === 0) {
 					return;
 				}
