@@ -94,7 +94,7 @@ public class SiriIntegrationTestBase {
 
 	  HttpClient client = new HttpClient();
 	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
-	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel=calls&MonitoringRef=" + vId + "&time=" + _time;
+	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel=calls&MonitoringRef=" + vId + "&time=" + _time;
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);
 
@@ -112,7 +112,7 @@ public class SiriIntegrationTestBase {
 
 	  HttpClient client = new HttpClient();
 	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
-	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
+	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?key=TEST&StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);
 
