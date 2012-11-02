@@ -52,6 +52,12 @@
         <property name="overflowToDisk" value="false" />
         <property name="diskPersistent" value="false" />
     </bean>
+    
+    <bean id="createAPIKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction" 
+    	init-method="init">
+    	<property name="createAPIKey" value="${create-apikey}" />
+    	<property name="key" value="OBANYC" />
+    </bean>
 
     
 </beans>

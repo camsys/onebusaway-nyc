@@ -167,6 +167,7 @@
         <webapp.api.url />
         <log4j.appender>ROLL</log4j.appender>
         <front-end-version>${front-end.version}</front-end-version>
+        <create-apikey>false</create-apikey>
       </properties>
     </profile>
     <profile>
@@ -180,6 +181,7 @@
         <webapp.api.url />
         <log4j.appender>stdout</log4j.appender>
         <front-end-version>${front-end.version}</front-end-version>
+        <create-apikey>true</create-apikey>
       </properties>
     </profile>
     <profile>
@@ -193,6 +195,7 @@
         <webapp.api.url />
         <log4j.appender>stdout</log4j.appender>
         <front-end-version>${front-end.version}</front-end-version>
+        <create-apikey>true</create-apikey>
       </properties>
     </profile>
     <profile>
@@ -207,6 +210,7 @@
         <webapp.api.url>http://localhost:8080</webapp.api.url>
         <log4j.appender>stdout</log4j.appender>
         <front-end-version>${front-end.version}</front-end-version>
+        <create-apikey>true</create-apikey>
       </properties>
     </profile>
     <profile>
@@ -222,6 +226,7 @@
         <webapp.api.url>http://localhost:8082</webapp.api.url>
         <log4j.appender>stdout</log4j.appender>
         <front-end-version>${front-end.version}</front-end-version>
+        <create-apikey>true</create-apikey>
       </properties>
     </profile>
   </profiles>
