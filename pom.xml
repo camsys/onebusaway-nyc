@@ -116,9 +116,9 @@
     </pluginRepositories>
 
     <scm>
-        <connection>scm:git:http://github.com/camsys/onebusaway-nyc.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/camsys/onebusaway-nyc.git</developerConnection>
-        <url>https://github.com/camsys/onebusaway-nyc</url>
+        <connection>scm:git:git@github.com:camsys/onebusaway-nyc.git</connection>
+        <developerConnection>scm:git:git@github.com:camsys/onebusaway-nyc.git</developerConnection>
+        <url>scm:git:git@github.com:camsys/onebusaway-nyc</url>
     </scm>
 
   <issueManagement>
