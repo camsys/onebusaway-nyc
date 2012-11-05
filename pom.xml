@@ -29,6 +29,36 @@
 
     <repositories>
         <repository>
+            <id>releases.svn2.camsys.com</id>
+            <url>http://svn2.camsys.com/archiva/repository/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>snapshots.svn2.camsys.com</id>
+            <url>http://svn2.camsys.com/archiva/repository/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>releases.developer.onebusaway.org</id>
+            <url>http://developer.onebusaway.org/maven/repository/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>releases.github.onebusaway.org</id>
             <url>https://github.com/camsys/mvn-repo/raw/master/releases</url>
             <releases>
@@ -63,6 +93,16 @@
             <url>http://developer.onebusaway.org/maven/snapshot-repository/</url>
             <releases>
                 <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>camsys-cache</id>
+            <url>http://svn2.camsys.com/archiva/repository/internal/</url>
+            <releases>
+                <enabled>true</enabled>
             </releases>
             <snapshots>
                 <enabled>true</enabled>
@@ -129,11 +169,11 @@
   <distributionManagement>
     <repository>
       <id>releases-mvn-repo</id>
-      <url>https://github.com/camsys/mvn-repo/raw/master/releases</url>
+      <url>http://svn2.camsys.com/archiva/repository/releases/</url>
     </repository>
     <snapshotRepository>
       <id>snapshots-mvn-repo</id>
-      <url>https://github.com/camsys/mvn-repo/raw/master/snapshots</url>
+      <url>http://svn2.camsys.com/archiva/repository/snapshots/</url>
     </snapshotRepository>
     <site>
       <id>${nyc_site_id}</id>
