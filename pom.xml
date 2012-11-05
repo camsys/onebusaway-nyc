@@ -49,16 +49,6 @@
             </snapshots>
         </repository>
         <repository>
-            <id>releases.developer.onebusaway.org</id>
-            <url>http://developer.onebusaway.org/maven/repository/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
             <id>releases.github.onebusaway.org</id>
             <url>https://github.com/camsys/mvn-repo/raw/master/releases</url>
             <releases>
