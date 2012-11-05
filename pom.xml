@@ -39,16 +39,6 @@
             </snapshots>
         </repository>
         <repository>
-            <id>snapshots.svn2.camsys.com</id>
-            <url>http://svn2.camsys.com/archiva/repository/snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
             <id>releases.github.onebusaway.org</id>
             <url>https://github.com/camsys/mvn-repo/raw/master/releases</url>
             <releases>
