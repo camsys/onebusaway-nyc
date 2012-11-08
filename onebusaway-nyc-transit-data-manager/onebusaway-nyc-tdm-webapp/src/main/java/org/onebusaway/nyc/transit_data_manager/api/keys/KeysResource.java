@@ -183,27 +183,32 @@ public class KeysResource {
     UserIndex userIndex = _userService.getUserIndexForId(key);
 
     if (userIndex == null)
-      throw new Exception("API key " + apiKey + " not found.");
+      throw new Exception("API key " + apiKey + " not found (userIndex null).");
 
     User user = userIndex.getUser();
 
     boolean found = false;
     for (UserIndex index : user.getUserIndices()) {
-      if (index.getId().equals(key)) {
+      if (index.getId().getValue().equalsIgnoreCase(key.getValue())) {
+        userIndex = index;
         found = true;
         break;
       }
     }
     if (!found)
-      throw new Exception("API key " + apiKey + " not found.");
+      throw new Exception("API key " + apiKey + " not found (no exact match).");
 
-    _userService.removeUserIndexForUser(user, key);
+    _userService.removeUserIndexForUser(user, userIndex.getId());
 
     if (user.getUserIndices().isEmpty())
       _userService.deleteUser(user);
 
     // Clear the cached value here
+    try {
     _userService.getMinApiRequestIntervalForKey(apiKey, true);
+    } catch (Exception e) {
+      // Ignore this
+    }
   }
 
   private Response generateResponse(Message message) throws IOException,
