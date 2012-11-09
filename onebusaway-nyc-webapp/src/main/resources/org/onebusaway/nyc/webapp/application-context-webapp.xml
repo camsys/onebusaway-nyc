@@ -41,4 +41,23 @@
     <bean id="geocoderImpl" class="org.onebusaway.geocoder.impl.DatabaseCachingGeocoderImpl" primary="true">
         <property name="geocoderService" ref="externalGeocoderImpl" />
     </bean>
+    
+    <bean id="minApiRequestIntervalForKeyCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean" primary="true">
+        <property name="cacheManager" ref="cacheManager" />
+        <property name="cacheName" value="org.onebusaway.users.services.UserService.getMinApiRequestIntervalForKey" />
+        <property name="maxElementsInMemory" value="50" />
+        <property name="eternal" value="false" />
+        <property name="timeToLive" value="900" />
+        <property name="timeToIdle" value="3600" />
+        <property name="overflowToDisk" value="false" />
+        <property name="diskPersistent" value="false" />
+    </bean>
+    
+    <bean id="createAPIKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction" 
+    	init-method="init">
+    	<property name="createAPIKey" value="${create-apikey}" />
+    	<property name="key" value="OBANYC" />
+    </bean>
+
+    
 </beans>

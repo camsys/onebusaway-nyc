@@ -64,7 +64,7 @@
 								<div id="crewAssignments" class="propertyHolder">
 									<label class="propertyHeader">Crew Assignment Refresh Interval</label>
 									<div class="propertyDescription">
-										<p>This is the number of minutes after which crew assignments
+										<p>Number of minutes after which crew assignments
 										are refreshed.</p>
 									</div>
 									<div>
@@ -76,7 +76,7 @@
 								<div id="vehicleAssignments" class="propertyHolder rightProperty">
 									<label class="propertyHeader">Vehicle Assignment Refresh Interval</label>
 									<div class="propertyDescription">
-										<p>This is the number of minutes after which vehicle assignments
+										<p>Number of minutes after which vehicle assignments
 										are refreshed.</p>
 									</div>
 									<div>
@@ -95,8 +95,8 @@
 								<div id="senderEmailAddress" class="propertyHolder">
 									<label class="propertyHeader">Sender Email Address</label>
 									<div class="propertyDescription">
-										<p>This is the email address to which, bundle building service
-										will send email once bundle build process is complete.</p>
+										<p>Email address to which the bundle building service
+										will send email once process is complete.</p>
 									</div>
 									<div>
 										<input type="hidden" id="emailAddressKey" value="adminSenderEmailAddressKey"/>
@@ -106,7 +106,7 @@
 								<div id="instanceId" class="propertyHolder rightProperty">
 									<label class="propertyHeader">Admin Server instance id</label>
 									<div class="propertyDescription">
-										<p>This is amazon ec2 instance id for admin server.</p>
+										<p>AWS EC2 instance-id for admin server.</p>
 									</div>
 									<div>
 										<input type="hidden" id="instanceIdKey" value="adminInstanceIdKey"/>
@@ -124,7 +124,7 @@
 									<div id="stalledTimeout" class="propertyHolder">
 										<label class="propertyHeader">Stalled Timeout</label>
 										<div class="propertyDescription">
-											<p>This is the number of minutes after which a bus, if it does not 
+											<p>Number of minutes after which a bus, if it does not 
 											   move, is considered to not be making progress. "Stalled" 
 											   buses that are not on a journey are considered to be at the 
 											   depot, and hidden from users. 
@@ -139,8 +139,8 @@
 									<div id="staleMessages" class="propertyHolder rightProperty">
 										<label class="propertyHeader">No Messages: Stale</label>
 										<div class="propertyDescription">
-											<p>Bus is not sending messages. After this period, the data is
-											   considered "stale".
+											<p>If a bus is not sending messages, after this period its data is
+											   considered stale.
 											</p>
 										</div>
 										<div>
@@ -154,7 +154,7 @@
 									<div id="offRouteMessages" class="propertyHolder">
 										<label class="propertyHeader">"Off Route" Messages</label>
 										<div class="propertyDescription">
-											<p>This is the distance away from a matched route that a bus is 
+											<p>Distance away from a matched route that a bus is 
 												allowed to deviate before it is considered "off route". Such 
 												buses are hidden in the UI, reported as such in the API. 
 											</p>
@@ -168,7 +168,7 @@
 									<div id="hideMessages" class="propertyHolder rightProperty">
 										<label class="propertyHeader">No Messages: Hide</label>
 										<div class="propertyDescription">
-											<p>Bus is not sending messages. After this period, the bus is
+											<p>If a bus is not sending messages, after this period the bus is
 												hidden from users.
 											</p>
 										</div>
@@ -188,6 +188,29 @@
 										<div>
 											<input type="hidden" id="bingMapsKey" value="displayBingMapsKey"/>
 											<input type="text" id="bingMapsKeyValue" />
+										</div>
+									</div>
+									<div id="obaApiKey" class="propertyHolder rightProperty">
+										<label class="propertyHeader">OBA API key</label>
+										<div class="propertyDescription">
+											<p>OBA API key (defaults in code to 'OBANYC' if no value specified here). This is the value the front-end AP
+											 calls use; the specified key must also be added to the system via the API key management API.</p>
+										</div>
+										<div>
+											<input type="hidden" id="obaApiKey" value="displayObaApiKey"/>
+											<input type="text" id="obaApiKeyValue" />
+										</div>
+									</div>
+								</div>
+								<div class="followingSection">
+									<div id="obaApiExcludeGaKey" class="propertyHolder">
+										<label class="propertyHeader">OBA API keys to exclude from google analytics</label>
+										<div class="propertyDescription">
+											<p>Comma-separated list of OBA API keys to exclude from google analytics.  If omitted, will default in code to 'OBANYC'.</p>
+										</div>
+										<div>
+											<input type="hidden" id="obaApiExcludeGaKey" value="displayObaApiExcludeGaKey"/>
+											<input type="text" id="obaApiExcludeGaKeyValue" />
 										</div>
 									</div>
 									<div id="previousTripFilterDistance" class="propertyHolder rightProperty">
@@ -266,7 +289,7 @@
 									<div id="inputQueueName" class="propertyHolder">
 										<label class="propertyHeader">Input Queue name</label>
 										<div class="propertyDescription">
-											<p>This is the name of the queue, from which inference engine reads
+											<p>Name of the queue from which inference engine reads
 											 inbound messages. 
 											</p>
 										</div>
@@ -278,7 +301,7 @@
 									<div id="outputQueueName" class="propertyHolder rightProperty">
 										<label class="propertyHeader">Output Queue name</label>
 										<div class="propertyDescription">
-											<p>This is the name of the queue, on which inference engine puts
+											<p>Name of the queue onto which inference engine puts
 											processed messages. 
 											</p>
 										</div>
@@ -292,7 +315,7 @@
 									<div id="inputQueuePort" class="propertyHolder">
 										<label class="propertyHeader">Input Queue Port</label>
 										<div class="propertyDescription">
-											<p>This is the port number on which, inference engine connects to
+											<p>Port number on which inference engine connects to
 											input queue for processing inbound messages. 
 											</p>
 										</div>
@@ -304,7 +327,7 @@
 									<div id="outputQueuePort" class="propertyHolder rightProperty">
 										<label class="propertyHeader">Output Queue Port</label>
 										<div class="propertyDescription">
-											<p>This is the port number on which inference engine connects with output 
+											<p>Port number on which inference engine connects with output 
 											queue for putting processed messages.
 											</p>
 										</div>
@@ -318,7 +341,7 @@
 									<div id="inputQueueHost" class="propertyHolder">
 										<label class="propertyHeader">Input Queue Host</label>
 										<div class="propertyDescription">
-											<p>This is the machine, that hosts input queue for inference engine. 
+											<p>Hostname of machine that hosts input queue for inference engine. 
 											</p>
 										</div>
 										<div>
@@ -329,7 +352,7 @@
 									<div id="outputQueueHost" class="propertyHolder rightProperty">
 										<label class="propertyHeader">Output Queue Host</label>
 										<div class="propertyDescription">
-											<p>This is the machine, that hosts output queue for inference engine.
+											<p>Hostname of machine that hosts output queue for inference engine.
 											</p>
 										</div>
 										<div>
@@ -349,7 +372,7 @@
 									<div id="tdsInputQueueName" class="propertyHolder">
 										<label class="propertyHeader">Input Queue name</label>
 										<div class="propertyDescription">
-											<p>This is the name of the queue, from which transit data service reads
+											<p>Name of the queue from which the transit data service reads
 											 inbound messages. 
 											</p>
 										</div>
@@ -361,7 +384,7 @@
 									<div id="tdsInputQueuePort" class="propertyHolder rightProperty">
 										<label class="propertyHeader">Input Queue Port</label>
 										<div class="propertyDescription">
-											<p>This is the port number on which, transit data service connects to
+											<p>Port number on which transit data service connects to
 											input queue for processing messages. 
 											</p>
 										</div>
@@ -375,7 +398,7 @@
 									<div id="tdsInputQueueHost" class="propertyHolder">
 										<label class="propertyHeader">Input Queue Host</label>
 										<div class="propertyDescription">
-											<p>This is the machine, that hosts input queue for transit data service. 
+											<p>Hostname of machine that hosts input queue for the transit data service. 
 											</p>
 										</div>
 										<div>
@@ -402,7 +425,7 @@
 								<div id="maxRecordLimit" class="propertyHolder rightProperty">
 									<label class="propertyHeader">Historical API Record Limit</label>
 									<div class="propertyDescription">
-										<p>This is the upper limit on the number of records returned by
+										<p>Maximum number of records returned by
 										historical operational API. </p>
 									</div>
 									<div>

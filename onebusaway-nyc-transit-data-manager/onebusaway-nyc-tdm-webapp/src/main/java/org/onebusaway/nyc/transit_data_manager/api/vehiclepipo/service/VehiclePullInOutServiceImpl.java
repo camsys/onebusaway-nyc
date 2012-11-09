@@ -19,46 +19,50 @@ import org.slf4j.LoggerFactory;
  * @author abelsare
  *
  */
-public class VehiclePullInOutServiceImpl implements VehiclePullInOutService{
+public class VehiclePullInOutServiceImpl implements VehiclePullInOutService {
 
 	private Logger log = LoggerFactory.getLogger(VehiclePullInOutServiceImpl.class);
 	private static DateTimeFormatter format = ISODateTimeFormat.dateTimeNoMillis();
 	
 	@Override
 	public List<VehiclePullInOutInfo> getActivePullOuts(
-			List<VehiclePullInOutInfo> allPullouts) {
+			List<VehiclePullInOutInfo> allPullouts, boolean includeAllPullouts) {
 		List<VehiclePullInOutInfo> activePullouts = new ArrayList<VehiclePullInOutInfo>();
-		
+
 		//group pullout data by bus
 		Map<Long, List<VehiclePullInOutInfo>> pulloutsByBus = buildPulloutDataByBus(allPullouts);
-		
-		for(Map.Entry<Long, List<VehiclePullInOutInfo>> entry : pulloutsByBus.entrySet()) {
-			List<VehiclePullInOutInfo> pullouts = entry.getValue();
-			if(pullouts.size() > 1) {
-				//If we have multiple pullouts for the same bus, reverse sort the pullouts
-				//by pullout time and find the active one. Break on most recent active pullout
-				Collections.sort(pullouts, new PulloutsComparator());
+
+		if(includeAllPullouts) {
+			for(List<VehiclePullInOutInfo> pullouts : pulloutsByBus.values()) {
+				//Check all pullouts for the bus and add only active ones to the list 
 				for(VehiclePullInOutInfo pullout : pullouts) {
 					if(isActive(pullout.getPullOutInfo().getTime())) {
 						activePullouts.add(pullout);
-						break;
 					}
 				}
-			} else {
-				//We have only one pullout data entry. Check if it is active
-				VehiclePullInOutInfo pulloutData = pullouts.get(0);
-				if(pulloutData!= null && isActive(pulloutData.getPullOutInfo().getTime())) {
-					activePullouts.add(pulloutData);
+			}
+		} else {
+			for(List<VehiclePullInOutInfo> pullouts : pulloutsByBus.values()) {
+				//Check for active pullouts
+				List<VehiclePullInOutInfo> allActivePulloutsByBus = new ArrayList<VehiclePullInOutInfo>();
+				for(VehiclePullInOutInfo pullout : pullouts) {
+					if(isActive(pullout.getPullOutInfo().getTime())) {
+						allActivePulloutsByBus.add(pullout);
+					}
+				}
+				//Get the most recent active pullout by sorting records by descending pullout time
+				Collections.sort(allActivePulloutsByBus, new PulloutsComparator());
+				if(!allActivePulloutsByBus.isEmpty()) {
+					activePullouts.add(allActivePulloutsByBus.get(0));
 				}
 			}
 		}
-		
+
 		return activePullouts;
 	}
 
 	@Override
-	public VehiclePullInOutInfo getMostRecentActivePullout(
-			List<VehiclePullInOutInfo> activePullouts) {
+	public VehiclePullInOutInfo getMostRecentActivePullout(	List<VehiclePullInOutInfo> activePullouts) {
 		DateTimeFormatter format = ISODateTimeFormat.dateTimeNoMillis();
 		VehiclePullInOutInfo mostRecentActivePullout;
 
@@ -84,17 +88,20 @@ public class VehiclePullInOutServiceImpl implements VehiclePullInOutService{
 	private Map<Long, List<VehiclePullInOutInfo>> buildPulloutDataByBus(
 			List<VehiclePullInOutInfo> allPullouts) {
 		Map<Long, List<VehiclePullInOutInfo>> pulloutsByBus = new HashMap<Long, List<VehiclePullInOutInfo>>();
-		
+
 		//Group pullout data by bus number
 		for(VehiclePullInOutInfo currentPullout : allPullouts) {
-			Long vehicleId = currentPullout.getPullOutInfo().getVehicle().getVehicleId();
-			if(pulloutsByBus.containsKey(vehicleId)) {
-				List<VehiclePullInOutInfo> existingPullouts = pulloutsByBus.get(vehicleId);
-				existingPullouts.add(currentPullout);
-			} else {
-				List<VehiclePullInOutInfo> currentPullouts = new ArrayList<VehiclePullInOutInfo>();
-				currentPullouts.add(currentPullout);
-				pulloutsByBus.put(vehicleId, currentPullouts);
+			//Check if the pullout record has required information
+			if(currentPullout.getPullOutInfo() != null) {
+				Long vehicleId = currentPullout.getPullOutInfo().getVehicle().getVehicleId();
+				if(pulloutsByBus.containsKey(vehicleId)) {
+					List<VehiclePullInOutInfo> existingPullouts = pulloutsByBus.get(vehicleId);
+					existingPullouts.add(currentPullout);
+				} else {
+					List<VehiclePullInOutInfo> currentPullouts = new ArrayList<VehiclePullInOutInfo>();
+					currentPullouts.add(currentPullout);
+					pulloutsByBus.put(vehicleId, currentPullouts);
+				}
 			}
 		}
 		return pulloutsByBus;

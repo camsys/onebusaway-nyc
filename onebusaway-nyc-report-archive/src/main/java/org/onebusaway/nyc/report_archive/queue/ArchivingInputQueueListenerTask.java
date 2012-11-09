@@ -20,6 +20,7 @@ import org.onebusaway.nyc.report_archive.impl.CcLocationCache;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
 import org.onebusaway.nyc.report_archive.services.EmergencyStatusNotificationService;
+import org.onebusaway.nyc.report_archive.services.RecordValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 
   public static final int DELAY_THRESHOLD = 10 * 1000;
   protected static Logger _log = LoggerFactory.getLogger(ArchivingInputQueueListenerTask.class);
+  
+  private RecordValidationService validationService;
 
   /**
    * number of inserts to batch together
@@ -40,11 +43,16 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   
   private EmergencyStatusNotificationService emergencyStatusNotificationService;
 
-  @Autowired
   private CcLocationCache _ccLocationCache;
 
+  @Autowired
   public void setCcLocationCache(CcLocationCache cache) {
     _ccLocationCache = cache;
+  }
+  
+  @Autowired
+  public void setValidationService(RecordValidationService validationService) {
+	  this.validationService = validationService;
   }
 
   private long _lastCommitTime = System.currentTimeMillis();
@@ -146,73 +154,85 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   // this method can't throw exceptions or it will stop the queue
   // listening
   public boolean processMessage(String address, String contents) {
-    RealtimeEnvelope envelope = null;
-    try {
-      envelope = deserializeMessage(contents);
+	  RealtimeEnvelope envelope = null;
+	  CcLocationReportRecord record = null;
+	  try {
+		  envelope = deserializeMessage(contents);
 
-      if (envelope == null || envelope.getCcLocationReport() == null) {
-        _log.error("Message discarded, probably corrupted, contents= "
-            + contents);
-        Exception e = new Exception(
-            "deserializeMessage failed, possible corrupted message.");
-        _dao.handleException(contents, e, null);
-        return false;
-      }
+		  if (envelope == null || envelope.getCcLocationReport() == null) {
+			  _log.error("Message discarded, probably corrupted, contents= "
+					  + contents);
+			  Exception e = new Exception(
+					  "deserializeMessage failed, possible corrupted message.");
+			  _dao.handleException(contents, e, null);
+			  return false;
+		  }
 
-      CcLocationReportRecord record = new CcLocationReportRecord(envelope,
-          contents, getZoneOffset());
-      _ccLocationCache.put(record);
-      if (record != null) {
-        _batchCount++;
-        // update cache for operational API
-        reports.add(record);
-        
-        //Process record for emergency status
-        emergencyStatusNotificationService.process(record);
-        
-        long batchWindow = System.currentTimeMillis() - _lastCommitTime;
-        if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
-          try {
-            // unfortunately save needs to be called here to allow transactional
-            // semantics to work
-            _dao.saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
-          } finally {
-            reports.clear();
-            _batchCount = 0;
-            _lastCommitTime = System.currentTimeMillis();
-          }
-        }
+		  boolean validEnvelope = validationService.validateRealTimeRecord(envelope);
+		  if(validEnvelope) {
+			  record = new CcLocationReportRecord(envelope, contents, getZoneOffset());
+			  _ccLocationCache.put(record);
+		  } else {
+			  long vehicleId = envelope.getCcLocationReport().getVehicle().getVehicleId();
+			  _log.error("Discarding real time record for vehicle : {} as it does not meet the " +
+				  		"required database constraints", vehicleId);
+			  Exception e = new Exception("Real time record for vehile : " +vehicleId + " failed validation." +
+			  		"Discarding");
+			  _dao.handleException(contents, e, new Date());
+		  }
+		  if (record != null) {
+			  _batchCount++;
+			  // update cache for operational API
+			  reports.add(record);
 
-      }
-      // re-calculate zoneOffset periodically
-      if (_batchCount == 0) {
-        _zoneOffset = null;
-        if (record != null) {
-          long delta = System.currentTimeMillis()
-              - record.getTimeReceived().getTime();
-          if (delta > DELAY_THRESHOLD) {
-            _log.warn("realtime queue is " + (delta / 1000) 
-                + " seconds behind with cache_size=" + _ccLocationCache.size());
-          }
-        }
-      }
-    } catch (Throwable t) {
-      _log.error("Exception processing contents= " + contents, t);
-      try {
-        Date timeReceived = null;
-        if (envelope != null)
-          timeReceived = new Date(envelope.getTimeReceived());
-        _dao.handleException(contents, t, timeReceived);
-      } catch (Throwable tt) {
-        // we tried
-        _log.error("Exception handling exception= " + tt);
-      }
-    }
+			  //Process record for emergency status
+			  emergencyStatusNotificationService.process(record);
 
-    return true;
+			  long batchWindow = System.currentTimeMillis() - _lastCommitTime;
+			  if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
+				  try {
+					  // unfortunately save needs to be called here to allow transactional
+					  // semantics to work
+					  _dao.saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
+				  } finally {
+					  reports.clear();
+					  _batchCount = 0;
+					  _lastCommitTime = System.currentTimeMillis();
+				  }
+			  }
+
+		  }
+		  // re-calculate zoneOffset periodically
+		  if (_batchCount == 0) {
+			  _zoneOffset = null;
+			  if (record != null) {
+				  long delta = System.currentTimeMillis()
+						  - record.getTimeReceived().getTime();
+				  if (delta > DELAY_THRESHOLD) {
+					  _log.warn("realtime queue is " + (delta / 1000) 
+							  + " seconds behind with cache_size=" + _ccLocationCache.size());
+				  }
+			  }
+		  }
+	  } catch (Throwable t) {
+		  _log.error("Exception processing contents= " + contents, t);
+		  try {
+			  Date timeReceived = null;
+			  if (envelope != null)
+				  timeReceived = new Date(envelope.getTimeReceived());
+			  _dao.handleException(contents, t, timeReceived);
+		  } catch (Throwable tt) {
+			  // we tried
+			  _log.error("Exception handling exception= " + tt);
+		  }
+	  }
+
+	  return true;
   }
 
-  @PostConstruct
+ 
+
+@PostConstruct
   public void setup() {
     super.setup();
     // make parsing lenient

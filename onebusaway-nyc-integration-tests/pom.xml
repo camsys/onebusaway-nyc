@@ -4,7 +4,7 @@
     <parent>
         <artifactId>onebusaway-nyc</artifactId>
         <groupId>org.onebusaway</groupId>
-        <version>2.0.3-SNAPSHOT</version>
+        <version>2.0.11-SNAPSHOT</version>
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-integration-tests</artifactId>
@@ -34,35 +34,35 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
-            <version>${onebusaway.nyc.version}</version>
+            <version>2.0.11-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-api-webapp</artifactId>
-            <version>${onebusaway.nyc.version}</version>
+            <version>2.0.11-SNAPSHOT</version>
             <type>war</type>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
-            <version>${onebusaway.nyc.version}</version>
+            <version>2.0.11-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
-            <version>${onebusaway.nyc.version}</version>
+            <version>2.0.11-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking-webapp</artifactId>
-            <version>${onebusaway.nyc.version}</version>
+            <version>2.0.11-SNAPSHOT</version>
             <type>war</type>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-webapp</artifactId>
-            <version>${onebusaway.nyc.version}</version>
+            <version>2.0.11-SNAPSHOT</version>
             <type>war</type>
         </dependency>
         <dependency>
@@ -128,7 +128,7 @@
                                 <exclude>none</exclude>
                             </excludes>
                             <includes>
-                                <include>**/*IntegrationTest.java</include>
+                                 <include>**/*IntegrationTest.java</include>
                             </includes>
                             <!-- We define some test system properties -->
                             <systemPropertyVariables>
@@ -190,9 +190,6 @@
                             </arguments>
                         </configuration>
                     </execution>
-<!-- valid default bundle end -->
-
-<!-- valid default bundle begin -->
                     <execution>
                         <id>graph-builder-execution-2012July_r04_b02</id>
                         <phase>pre-integration-test</phase>
@@ -215,8 +212,6 @@
                             </arguments>
                         </configuration>
                     </execution>
-
-<!-- valid default bundle end -->
                     <execution>
                         <id>graph-builder-execution-b63-winter10</id>
                         <phase>pre-integration-test</phase>

@@ -60,8 +60,8 @@
 
 #bustime #header ul {
 	position: absolute;
-	left: 320px;
-	bottom: 15px;
+	left: 330px;
+	bottom: 25px;
 }
 
 #bustime #header ul li {
@@ -69,11 +69,41 @@
 	float: left;
 	font-size: 125%;
 	margin-right: 20px;
+	display: inline;
+	margin: 0;
+	margin-right: 1px;
+	height: 14px;
 }
 
 #bustime #header ul li a {
 	text-decoration: none;
+   	background-color: #3399C9;
+    color: #FFFFFF;
+    display: block;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 4px 6px;
+    text-align: center;
 }
+#bustime #header ul #link_mobile {
+	width: 84px;
+}
+#bustime #header ul #link_about {
+	width: 46px;
+}
+#bustime #header ul #link_contact {
+	width: 55px;
+}
+#bustime #header ul #link_developers {
+	width: 75px;
+}
+#bustime #header ul #link_help {
+	width: 37px;
+}
+#bustime #header ul li a:hover {
+    background-color: #94CB45;
+}
+
 
 /* header on map page */
 #bustime #map_header {
@@ -142,11 +172,47 @@
 	padding-top: 0;
 }
 
+/* For Help wiki markup */
+
+#bustime #footer {
+	padding-bottom: 20px;
+}
+
+#google_translate_element {
+	text-decoration: none;
+	font-weight: bold;
+	color: #0189c7;
+	cursor: pointer;
+	height: 25px;
+}
+
+#google_translate_element #icon {
+	vertical-align: baseline;
+}
+
+.wiki_content .meta span#timestamp {
+	color: #FFFFFF;
+}
+
+.wiki_content {
+	font-size: 14px; 
+	line-height: 1.2em;
+	border: 0;
+}
+
+.wiki_content a {
+	text-decoration: none;
+}
+
+.wiki_content a img {
+	border: 0;
+}
+
 
 /* from MTA CSS: */
 
 html, body {
-    background-image: url("http://mta.info/css/images/grey_bg.jpg");
+    background-image: url("img/grey_bg.jpg");
     background-repeat: repeat-x;
     color: #333333;
     font: 13px/1.231 helvetica,arial,clean,sans-serif;
@@ -241,7 +307,7 @@ html, body {
     width: auto;	
 }
 #topbar .list_h {
-    background-image: url("http://mta.info/css/images/arrow-gn.gif");
+    background-image: url("img/arrow-gn.gif");
     background-position: left -1px;
     background-repeat: no-repeat;
     display: inline;
@@ -268,7 +334,7 @@ html, body {
     position: relative;
 }
 #horizontalcssmenu ul#cssmenu1 li a {
-    background: url("http://mta.info/css/images/nav_bg.jpg") repeat-x scroll left top #FFFFFF;
+    background: url("img/nav_bg.jpg") repeat-x scroll left top #FFFFFF;
     color: #FFFFFF;
     display: block;
     font-weight: bold;
@@ -278,7 +344,7 @@ html, body {
     text-decoration: none;
 }
 #horizontalcssmenu ul#cssmenu1 li a:hover {
-    background: url("http://mta.info/css/images/nav_bg_on.jpg") repeat-x scroll left top #FFFFFF;
+    background: url("img/nav_bg_on.jpg") repeat-x scroll left top #FFFFFF;
 }
 #horizontalcssmenu ul#cssmenu1 li ul {
     background-color: #DDDDDD;

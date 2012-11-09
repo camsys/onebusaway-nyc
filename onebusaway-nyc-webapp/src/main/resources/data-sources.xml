@@ -4,11 +4,15 @@
     Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS 
     IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language 
     governing permissions and limitations under the License. -->
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context" xmlns:aop="http://www.springframework.org/schema/aop"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
-        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" 
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd">
 
 
     <!-- Transit Data Service -->
@@ -93,15 +97,19 @@
         </property>
     </bean>
 
-    <bean id="wikiDocumentService" class="org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl">
-        <property name="xwikiUrl" value="http://${service.wikihost}" />
+	<!--  look up these values from web.xml/context.xml as they change per environment -->
+    <jee:jndi-lookup id="xwikiUrlBean" jndi-name="java:comp/env/xwikiUrl" resource-ref="true" ></jee:jndi-lookup>
+    <jee:jndi-lookup id="xwikiDocumentEditUrlBean" jndi-name="java:comp/env/wikiDocumentEditUrl" resource-ref="true" ></jee:jndi-lookup>
+    <jee:jndi-lookup id="xwikiAttachmentUrlBean" jndi-name="java:comp/env/wikiAttachmentUrl" resource-ref="true" ></jee:jndi-lookup>
+
+    <bean id="wikiDocumentService" class="org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl" lazy-init="true">
+        <property name="xwikiUrl" ref="xwikiUrlBean" />
     </bean>
 
-    <bean id="wikiRenderingService" class="org.onebusaway.wiki.xwiki.impl.XWikiRenderingServiceImpl">
+    <bean id="wikiRenderingService" class="org.onebusaway.wiki.xwiki.impl.XWikiRenderingServiceImpl" lazy-init="true">
         <property name="wikiDocumentViewUrl" value="/wiki/%{documentName}" />
-        <property name="wikiDocumentEditUrl" value="http://${service.wikihost}/bin/edit/%{namespace}/%{documentName}" />
-        <property name="wikiAttachmentUrl"
-            value="http://${service.wikihost}/bin/download/%{namespace}/%{documentName}/%{attachmentName}" />
+        <property name="wikiDocumentEditUrl" ref="xwikiDocumentEditUrlBean" />
+        <property name="wikiAttachmentUrl" ref="xwikiAttachmentUrlBean" />
     </bean>
 
 </beans>

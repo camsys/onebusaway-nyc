@@ -1,7 +1,9 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.when;
 
@@ -31,8 +33,6 @@ import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePu
 import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutServiceImpl;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import tcip_final_3_0_5_1.CPTOperatorIden;
 import tcip_final_3_0_5_1.CPTTransitFacilityIden;
@@ -43,7 +43,6 @@ import tcip_final_3_0_5_1.SCHRunIden;
 
 public class VehiclePipoResourceTest {
 
-  private static Logger _log = LoggerFactory.getLogger(VehiclePipoResourceTest.class);
   
 	private VehiclePipoResource resource;
 	private VehicleAssignmentsOutputConverter converter;
@@ -95,7 +94,7 @@ public class VehiclePipoResourceTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testAllActivePullouts() throws Exception {
-	  setUp("UTSPUPUFULL_20120612_1502.txt");
+	    setUp("UTSPUPUFULL_20120612_1502.txt");
 		SCHPullInOutInfo pullOutInfo1 = new SCHPullInOutInfo();
 		SCHPullInOutInfo pullInInfo1 = new SCHPullInOutInfo();
 		
@@ -172,9 +171,9 @@ public class VehiclePipoResourceTest {
 		activePullouts.add(activePullout1);
 		activePullouts.add(activePullout2);
 		
-		when(vehiclePullInOutService.getActivePullOuts(isA(List.class))).thenReturn(activePullouts);
+		when(vehiclePullInOutService.getActivePullOuts(isA(List.class), isA(Boolean.class))).thenReturn(activePullouts);
 		
-		String outputJson = resource.getAllActivePullouts();
+		String outputJson = resource.getAllActivePullouts(null);
 		
 		//writeToFile(outputJson, "activepullouts.txt");
 		
@@ -211,9 +210,9 @@ public class VehiclePipoResourceTest {
 		List<VehiclePullInOutInfo> activePullouts= new ArrayList<VehiclePullInOutInfo>();
 		activePullouts.add(activePullout);
 		
-		when(vehiclePullInOutService.getActivePullOuts(isA(List.class))).thenReturn(activePullouts);
+		when(vehiclePullInOutService.getActivePullOuts(isA(List.class), isA(Boolean.class))).thenReturn(activePullouts);
 		
-		String outputJson = resource.getActivePulloutsForBus("1253");
+		String outputJson = resource.getActivePulloutsForBus("1253", null);
 		
 		//writeToFile(outputJson, "activepulloutsbybus.txt");
 		
@@ -275,7 +274,7 @@ public class VehiclePipoResourceTest {
 	@Test
 	public void testActivePulloutsForInvalidBus() throws Exception {
 	  setUp("UTSPUPUFULL_20120612_1502.txt");
-		String outputJson = resource.getActivePulloutsForBus("1235");
+		String outputJson = resource.getActivePulloutsForBus("1235", null);
 		assertEquals("No pullouts found for bus : 1235", outputJson);
 	}
 
@@ -297,7 +296,7 @@ public class VehiclePipoResourceTest {
 	   * known issue with 8826 - obanyc-1678 -- pass numbers with a leading non-numeric
 	   * digits were setting operator-id to -1
 	   */
-		String outputJson = resource.getActivePulloutsForBus("8826");
+		String outputJson = resource.getActivePulloutsForBus("8826", null);
 		assertNotNull(outputJson);
 		assertTrue(outputJson.contains(" \"operator-id\": \"36593\""));
 	}
@@ -311,9 +310,9 @@ public class VehiclePipoResourceTest {
 		List<VehiclePullInOutInfo> activePullouts= new ArrayList<VehiclePullInOutInfo>();
 		activePullouts.add(activePullout);
 		
-		when(vehiclePullInOutService.getActivePullOuts(isA(List.class))).thenReturn(activePullouts);
+		when(vehiclePullInOutService.getActivePullOuts(isA(List.class), isA(Boolean.class))).thenReturn(activePullouts);
 		
-		String outputJson = resource.getActivePulloutsForDepot("OS");
+		String outputJson = resource.getActivePulloutsForDepot("OS", null);
 		
 		//writeToFile(outputJson, "activepulloutsbydepot.txt");
 		
@@ -329,9 +328,9 @@ public class VehiclePipoResourceTest {
 		List<VehiclePullInOutInfo> activePullouts= new ArrayList<VehiclePullInOutInfo>();
 		activePullouts.add(activePullout);
 		
-		when(vehiclePullInOutService.getActivePullOuts(isA(List.class))).thenReturn(activePullouts);
+		when(vehiclePullInOutService.getActivePullOuts(isA(List.class), isA(Boolean.class))).thenReturn(activePullouts);
 		
-		String outputJson = resource.getActivePulloutsForAgency("MTA NYCT");
+		String outputJson = resource.getActivePulloutsForAgency("MTA NYCT", null);
 		
 		//writeToFile(outputJson, "activepulloutsbyagency.txt");
 		
@@ -358,7 +357,7 @@ public class VehiclePipoResourceTest {
 
 		//3244th row has X109,YUKT,004.  We want run=4, not 9, so run-route will be X109-4, not X109-004
 		// note that BX31-X01 is correct however
-		String json = resource.getActivePulloutsForDepot("YU");
+		String json = resource.getActivePulloutsForDepot("YU", null);
     assertTrue(json.contains(" \"run\": \"X109-4\""));
     assertFalse(json.contains(" \"run\": \"X109-004\""));
 	}

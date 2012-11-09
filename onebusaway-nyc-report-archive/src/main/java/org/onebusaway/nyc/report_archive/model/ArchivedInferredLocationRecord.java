@@ -197,6 +197,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
       setInferredLongitude(null);
     else
       setInferredLongitude(new BigDecimal(message.getInferredLongitude()));
+   
     setInferredPhase(message.getPhase());
     setInferredStatus(message.getStatus());
     setInferredRouteId(message.getRouteId());

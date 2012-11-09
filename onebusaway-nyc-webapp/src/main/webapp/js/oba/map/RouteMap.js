@@ -209,7 +209,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		if(typeof siriVMRequestsByRouteId[routeId] !== 'undefined' && siriVMRequestsByRouteId[routeId] !== null) {
 			siriVMRequestsByRouteId[routeId].abort();
 		}
-		siriVMRequestsByRouteId[routeId] = jQuery.getJSON(OBA.Config.siriVMUrl + "?callback=?", params, 
+		siriVMRequestsByRouteId[routeId] = jQuery.getJSON(OBA.Config.siriVMUrl + "&callback=?", params, 
 		function(json) {
 			// service alerts
 			if(typeof serviceAlertCallbackFn === 'function') {
@@ -253,7 +253,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 			    	google.maps.event.addListener(marker, "click", function(mouseEvent) {
 			    		OBA.Config.analyticsFunction("Vehicle Marker Click", vehicleIdWithoutAgency);
 
-			    		OBA.Popups.showPopupWithContentFromRequest(map, this, OBA.Config.siriVMUrl + "?callback=?", 
+			    		OBA.Popups.showPopupWithContentFromRequest(map, this, OBA.Config.siriVMUrl + "&callback=?", 
 			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, MaximumNumberOfCallsOnwards: "3", VehicleMonitoringDetailLevel: "calls" }, 
 			    				OBA.Popups.getVehicleContentForResponse, null);
 			    	});

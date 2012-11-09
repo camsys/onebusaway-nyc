@@ -41,4 +41,8 @@ public class BundleDeployStatus implements Serializable {
     this.id = id;
   }
 
+  public void addBundleName(String bundleFilename) {
+	bundleNames.add(bundleFilename);
+  }
+
 }

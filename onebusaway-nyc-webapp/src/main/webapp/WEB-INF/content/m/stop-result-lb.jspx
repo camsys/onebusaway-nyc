@@ -105,14 +105,14 @@
 					</p>
 			</s:if>
 			
-			<s:if test="%{uniqueServiceAlertsForResults.size&gt;0}">
+			<s:if test="%{stopServiceAlerts.size&gt;0}">
 				<div class="alerts">
 					<p>
-						<strong>Service Change:</strong>
+						<strong>Service Alert:</strong>
 					</p>
 					<ul class="alerts">
-						<c:forEach var="uniqueServiceAlert" items="${uniqueServiceAlertsForResults}">
-							<li><c:out value="${uniqueServiceAlert}" escapeXml="false"/></li>
+						<c:forEach var="stopServiceAlert" items="${stopServiceAlerts}">
+							<li><c:out value="${stopServiceAlert}" escapeXml="false"/></li>
 						</c:forEach>
 					</ul>
 				</div>

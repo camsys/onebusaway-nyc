@@ -27,7 +27,7 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 	@Autowired
 	private NycTransitDataService _transitDataService = null;
 	
-	private Map<String,List<String>> suggestions;
+	private Map<String,List<String>> suggestions = Collections.synchronizedMap(new HashMap<String, List<String>>());
 	
 	@PostConstruct
 	@Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
@@ -37,7 +37,7 @@ public class BundleSearchServiceImpl implements BundleSearchService {
       
       @Override
       public void run() {
-        suggestions = new HashMap<String, List<String>>();
+        suggestions.clear();
         
         Map<String, List<CoordinateBounds>> agencies = _transitDataService.getAgencyIdsWithCoverageArea();
         for (String agency : agencies.keySet()) {
@@ -69,11 +69,13 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 			int length = part.length();
 			for (int i = 0; i < length; i++) {
 				String key = part.substring(0, i+1).toLowerCase();
-				if (suggestions.get(key) == null) {
-					suggestions.put(key, new ArrayList<String>());
+        List<String> suggestion = suggestions.get(key);
+				if (suggestion == null) {
+          suggestion = new ArrayList<String>();
 				}
-				suggestions.get(key).add(string);
-				Collections.sort(suggestions.get(key));
+        suggestion.add(string);
+				Collections.sort(suggestion);
+				suggestions.put(key, suggestion);
 			}
 		}
 	}

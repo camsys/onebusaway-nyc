@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>onebusaway-nyc</artifactId>
     <groupId>org.onebusaway</groupId>
-    <version>2.0.3-SNAPSHOT</version>
+    <version>2.0.11-SNAPSHOT</version>
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-admin-webapp</artifactId>
@@ -74,12 +73,12 @@
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-nyc-presentation</artifactId>
-      <version>${onebusaway.nyc.version}</version>
+      <version>2.0.11-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-nyc-transit-data</artifactId>
-      <version>${onebusaway.nyc.version}</version>
+      <version>2.0.11-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
@@ -158,6 +157,15 @@
         <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
         <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
+        <log4j.appender>stdout</log4j.appender>
+      </properties>
+    </profile>
+    <profile>
+      <id>local-tdm</id><!-- aka services-tdf-as-tds --> <!-- aka staging, production -->
+      <properties>
+        <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <tdm.host>localhost:8080/onebusaway-nyc-tdm-webapp</tdm.host>
         <log4j.appender>stdout</log4j.appender>
       </properties>
     </profile>
@@ -264,7 +272,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore></ignore>
+                    <ignore />
                   </action>
                 </pluginExecution>
               </pluginExecutions>

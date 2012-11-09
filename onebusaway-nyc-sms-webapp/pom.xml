@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>onebusaway-nyc</artifactId>
     <groupId>org.onebusaway</groupId>
-    <version>2.0.3-SNAPSHOT</version>
+    <version>2.0.11-SNAPSHOT</version>
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-sms-webapp</artifactId>
@@ -28,7 +27,7 @@
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-nyc-presentation</artifactId>
-      <version>${onebusaway.nyc.version}</version>
+      <version>2.0.11-SNAPSHOT</version>
     </dependency>
 
     <dependency>
@@ -71,7 +70,7 @@
     <dependency>
       <groupId>com.dmurph</groupId>
       <artifactId>JGoogleAnalyticsTracker</artifactId>
-      <version>1.2.2-SNAPSHOT</version>
+      <version>1.2.2</version>
     </dependency>
     
     <dependency>
@@ -100,7 +99,7 @@
         <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
-        <webapp.api.url></webapp.api.url>
+        <webapp.api.url />
         <log4j.appender>ROLL</log4j.appender>
         <sms.sessions.manager>org.onebusaway.nyc.sms.impl.MemcacheSessionManagerImpl</sms.sessions.manager>
       </properties>
@@ -248,7 +247,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore></ignore>
+                    <ignore />
                   </action>
                 </pluginExecution>
               </pluginExecutions>

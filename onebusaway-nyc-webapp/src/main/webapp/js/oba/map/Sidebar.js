@@ -267,7 +267,7 @@ OBA.Sidebar = function() {
 												.append(jQuery("<span class='click_info'> + Click for info</span>"));
 				
 				var serviceAlertContainer = jQuery("<div></div>")
-												.attr("id", "alerts-" + routeResult.id.replace(" ", "_"))
+												.attr("id", "alerts-" + routeResult.id.hashCode())
 												.addClass("serviceAlertContainer")
 												.append(serviceAlertHeader)
 												.append(serviceAlertList);
@@ -614,10 +614,24 @@ OBA.Sidebar = function() {
 		});
 	}
 	
+	function googleTranslateElementInit() {
+		
+		var translate_element = jQuery("#google_translate_element");		
+		translate_element.click(function (e) {
+			e.preventDefault();
+			translate_element.html(' ')
+							 .attr('src','//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit');
+			new google.translate.TranslateElement({pageLanguage: 'en', 
+				layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+			translate_element.unbind('click');
+		});						
+	}
+	
 	return {
 		initialize: function() {
 			addSearchBehavior();
 			addResizeBehavior();
+			googleTranslateElementInit();
 			
 			// Add behavior to the close link in the global alert dialog under the map
 			// so it closes when the link is clicked.
@@ -646,7 +660,7 @@ OBA.Sidebar = function() {
 					}
 				});
 			}, function(routeId, serviceAlerts) { // service alert notification handler
-				var serviceAlertsContainer = jQuery("#alerts-" + routeId.replace(" ", "_"));
+				var serviceAlertsContainer = jQuery("#alerts-" + routeId.hashCode());
 				if(serviceAlertsContainer.length === 0) {
 					return;
 				}
