@@ -23,12 +23,14 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
 import com.google.common.base.Preconditions;
+import com.vividsolutions.jts.algorithm.Angle;
 
 import cern.jet.math.Bessel;
 
@@ -48,8 +50,13 @@ public class EdgeLikelihood implements SensorModelRule {
   /*
    * Parameters for a Von Mises distribution concentration parameter
    */
-  private static final double _inProgressConcParam = 1d;
-  private static final double _deadheadConcParam = 2d;
+  private static final double _inProgressConcParam = 8d;
+  private static final double _deadheadConcParam = 3d;
+  private static final double _deadheadEntranceConcParam = 5d;
+  private static final double _stoppedConcParam = 0.5d;
+  
+  private static final double _inProgressProb = 0.85d;
+  private static final double _deadheadOffProb = 1d - _inProgressProb;
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
@@ -58,17 +65,17 @@ public class EdgeLikelihood implements SensorModelRule {
     final VehicleState state = context.getState();
     final VehicleState parentState = context.getParentState();
     final Observation obs = context.getObservation();
-    EVehiclePhase phase = state.getJourneyState().getPhase();
+    final EVehiclePhase phase = state.getJourneyState().getPhase();
     final BlockStateObservation blockStateObs = state.getBlockStateObservation();
 
-    /*-
-     * TODO clean up this hack 
-     * We are really in-progress, but because of the
-     * out-of-service headsign, we can't report it as in-progress
-     */
-    if (obs.hasOutOfServiceDsc() && EVehiclePhase.DEADHEAD_DURING == phase
-        && (blockStateObs != null && blockStateObs.isOnTrip()))
-      phase = EVehiclePhase.IN_PROGRESS;
+//    /*-
+//     * TODO clean up this hack 
+//     * We are really in-progress, but because of the
+//     * out-of-service headsign, we can't report it as in-progress
+//     */
+//    if (obs.hasOutOfServiceDsc() && EVehiclePhase.DEADHEAD_DURING == phase
+//        && (blockStateObs != null && blockStateObs.isOnTrip()))
+//      phase = EVehiclePhase.IN_PROGRESS;
 
     final SensorModelResult result = new SensorModelResult("pEdge", 1d);
 
@@ -88,9 +95,7 @@ public class EdgeLikelihood implements SensorModelRule {
 
     if (blockStateObs == null) {
 
-      final double pDistAlong = computeNoEdgeMovementLogProb(state, obs);
-
-      result.addLogResultAsAnd("pNotInProgress(no-edge)", pDistAlong);
+      result.addResultAsAnd(computeNoEdgeMovementLogProb(state, obs));
       return result;
     }
 
@@ -103,19 +108,7 @@ public class EdgeLikelihood implements SensorModelRule {
         state.getBlockStateObservation());
 
     final boolean hasMoved = !state.getMotionState().hasVehicleNotMoved();
-    final double pDistAlong;
     if (!previouslyInactive && !newRun) {
-
-      if (parentState.getBlockStateObservation().isSnapped()
-          && state.getBlockStateObservation().isSnapped()) {
-        /*
-         * We're snapped and were.
-         */
-        pDistAlong = computeEdgeMovementLogProb(obs, state,
-            parentState.getBlockState(), hasMoved, false);
-        result.addLogResultAsAnd("snapped states", pDistAlong);
-
-      } else {
 
         /*
          * This could be a transition from being on a trip geom to off, and vice
@@ -128,42 +121,31 @@ public class EdgeLikelihood implements SensorModelRule {
           if (EVehiclePhase.isActiveDuringBlock(phase)) {
             if (state.getBlockState().getBlockInstance().equals(
                 parentState.getBlockState().getBlockInstance())) {
-              pDistAlong = computeEdgeMovementLogProb(obs, state,
-                  parentState.getBlockState(), hasMoved, true);
-              result.addLogResultAsAnd("not-in-progress (during)", pDistAlong);
+              result.addResultAsAnd(computeEdgeMovementLogProb(obs, state,
+                  parentState, hasMoved, true));
             } else {
-              pDistAlong = computeEdgeEntranceMovementLogProb(state, obs);
-              result.addLogResultAsAnd("not-in-progress (during & new block)", pDistAlong);
+              result.addResultAsAnd(computeNoEdgeMovementLogProb(state, parentState, obs));
             }
           } else {
-            pDistAlong = computeNoEdgeMovementLogProb(state, obs);
-            result.addLogResultAsAnd("not-in-progress (before)", pDistAlong);
+            result.addResultAsAnd(computeNoEdgeMovementLogProb(state, obs));
           }
         } else if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()) {
           /*
            * We were previously not in-progress, and now we are.
            */
-          if (parentState.getBlockStateObservation().isSnapped()) {
-            pDistAlong = computeEdgeMovementLogProb(obs, state,
-                parentState.getBlockState(), hasMoved, false);
-            result.addLogResultAsAnd("in-progress (prev snapped)", pDistAlong);
-          } else if (EVehiclePhase.DEADHEAD_DURING == parentState.getJourneyState().getPhase()) {
-            pDistAlong = computeEdgeMovementLogProb(obs, state,
-                parentState.getBlockState(), hasMoved, false);
-            result.addLogResultAsAnd("in-progress (starting trip in block/run)", pDistAlong);
+          if (EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase())) {
+            result.addResultAsAnd(computeEdgeMovementLogProb(obs, state,
+                parentState, hasMoved, true));
           } else {
-            pDistAlong = computeEdgeEntranceMovementLogProb(state, obs);
-            result.addLogResultAsAnd("in-progress (starting block/run)", pDistAlong);
+            result.addResultAsAnd(computeNoEdgeMovementLogProb(state, parentState, obs));
           }
         } else {
           /*
            * We're in-progress and were before.
            */
-          pDistAlong = computeEdgeMovementLogProb(obs, state,
-              parentState.getBlockState(), hasMoved, false);
-          result.addLogResultAsAnd("in-progress", pDistAlong);
+          result.addResultAsAnd(computeEdgeMovementLogProb(obs, state,
+              parentState, hasMoved, false));
         }
-      }
 
     } else {
       /*
@@ -171,64 +153,38 @@ public class EdgeLikelihood implements SensorModelRule {
        */
       
       if (EVehiclePhase.IN_PROGRESS == phase) {
-        final BlockState previousState = parentState.getBlockState();
-            //library.getPreviousStateOnSameBlock(state,
-            //state.getBlockState().getBlockLocation().getDistanceAlongBlock());
-        if (previousState != null) {
-          pDistAlong = computeEdgeMovementLogProb(obs, state,
-              previousState, hasMoved, false);
-          result.addLogResultAsAnd("new-run (edge movement)", pDistAlong);
+        if (EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase())) {
+          result.addResultAsAnd(computeEdgeMovementLogProb(obs, state,
+              parentState, hasMoved, false));
         } else {
-          pDistAlong = computeEdgeEntranceMovementLogProb(state, obs);
-          result.addLogResultAsAnd("new-run (edge entrance)", pDistAlong);
+          result.addResultAsAnd(computeNoEdgeMovementLogProb(state, parentState, obs));
         }
         
       } else {
-        pDistAlong = computeNoEdgeMovementLogProb(state, obs);
-        result.addLogResultAsAnd("new-run (no edge)", pDistAlong);
+        result.addResultAsAnd(computeNoEdgeMovementLogProb(state, obs));
       }
     }
 
     return result;
   }
 
-  static private final double computeEdgeEntranceMovementLogProb(
-      VehicleState state, Observation obs) {
-    
-    final double obsDelta = SphericalGeometryLibrary.distance(
-        obs.getLocation(), obs.getPreviousObservation().getLocation());
-    final double obsToTripDelta = SphericalGeometryLibrary.distance(
-        state.getBlockState().getBlockLocation().getLocation(),
-        obs.getPreviousObservation().getLocation());
-    final double x = obsToTripDelta - obsDelta;
-    final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
-    
-    CoordinatePoint lastLoc = state.getMotionState().getLastInMotionLocation();
-    double obsOrientation = SphericalGeometryLibrary.getOrientation(
-        lastLoc.getLat(), 
-        lastLoc.getLon(),
-        obs.getLocation().getLat(),
-        obs.getLocation().getLon());
-    if (Double.isNaN(obsOrientation)) {
-      obsOrientation = state.getBlockState().getBlockLocation().getOrientation();
-    } 
-    
-    final double orientDiff = Math.toRadians(obsOrientation - state.getBlockState().getBlockLocation().getOrientation());
-      
-    final double logLik = UnivariateGaussian.PDF.logEvaluate(x, 0d, Math.pow(obsTimeDelta, 4) / 4d)
-          + logVonMisesPdf(orientDiff, EVehiclePhase.IN_PROGRESS !=  state.getJourneyState().getPhase()
-          ? _deadheadConcParam : _inProgressConcParam);
-    return logLik;
+  static private final SensorModelResult computeNoEdgeMovementLogProb(VehicleState state,
+      Observation obs) throws BadProbabilityParticleFilterException {
+    return computeNoEdgeMovementLogProb(state, null, obs);
   }
+  
+  static private final SensorModelResult computeNoEdgeMovementLogProb(VehicleState state,
+      VehicleState prevState, Observation obs) throws BadProbabilityParticleFilterException {
 
-  static private final double computeNoEdgeMovementLogProb(VehicleState state,
-      Observation obs) {
-
+    final SensorModelResult result = new SensorModelResult("no-edge");
     final Observation prevObs = obs.getPreviousObservation();
-    final double obsDistDelta = SphericalGeometryLibrary.distance(
-        obs.getLocation(), obs.getPreviousObservation().getLocation());
+    final double obsDistDelta = obs.getDistanceMoved();
+    
+    if (ParticleFilter.getDebugEnabled())
+      result.addResult("dist: " + obsDistDelta, 0d);
+    
     final double expAvgDist;
-    final double pDistAlong;
+    final double logpDistAlong;
     if (prevObs != null) {
 
       /*
@@ -247,27 +203,84 @@ public class EdgeLikelihood implements SensorModelRule {
             : _avgVelocity * obsTimeDelta;
       }
       
-      double prevOrientation = prevObs.getOrientation(); 
+      if (ParticleFilter.getDebugEnabled())
+        result.addResult("expAvgDist: " + expAvgDist, 0d);
       
-      final double currentOrientation = obs.getOrientation(); 
+      /*
+       * TODO: Is this needed?
+       */
+      final boolean prevInProgress;
+      double prevOrientation;
+      if (prevState != null
+          && prevState.getBlockState() != null
+          && prevState.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS) {
+        prevOrientation = prevState.getBlockState().getBlockLocation().getOrientation();
+        prevInProgress = true;
+        if (ParticleFilter.getDebugEnabled())
+          result.addResult("prevOrient (state): " + prevOrientation, 0d);
+      } else {
+        prevOrientation = prevObs.getOrientation();
+        prevInProgress = false;
+        if (ParticleFilter.getDebugEnabled())
+          result.addResult("prevOrient: " + prevOrientation, 0d);
+      }
+      
+          
+      final boolean isOff;
+      final double currentOrientation;
+      if (state.getBlockState() != null
+          && state.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS) {
+        /*
+         * We're entering an edge in progress, so we want to compare the 
+         * entrance orientation to the direction of the edge
+         */
+        isOff = false;
+        currentOrientation = state.getBlockState().getBlockLocation().getOrientation();
+        /*
+         * We don't want to use the obs orientation when we're considered stopped
+         * since gps error can reverse the orientation, making reverse 
+         * trip transitions look reasonable.
+         * Similarly, if we were on a trip, use that orientation.
+         * TODO FIXME: we should have the orientation in the motion state, then
+         * we wouldn't need to evaluate this logic here.
+         */
+        if (!state.getMotionState().hasVehicleNotMoved()) {
+          if (!prevInProgress) {
+            prevOrientation = obs.getOrientation();
+          }
+          
+          if (ParticleFilter.getDebugEnabled())
+            result.addResult("new prevOrient (state): " + prevOrientation, 0d);
+        }
+      } else {
+        isOff = true;
+        currentOrientation = obs.getOrientation();
+      }
+          
+      if (ParticleFilter.getDebugEnabled())
+        result.addResult("curOrient: " + currentOrientation, 0d);
+          
       final double orientDiff;
       if (Double.isNaN(prevOrientation) || Double.isNaN(currentOrientation)) {
         orientDiff = 0d;
       } else {
-        orientDiff = Math.toRadians(prevOrientation - currentOrientation);
+        orientDiff = Angle.diff(Math.toRadians(prevOrientation), Math.toRadians(currentOrientation));
       }
       
-      pDistAlong = UnivariateGaussian.PDF.logEvaluate(obsDistDelta, expAvgDist, Math.pow(obsTimeDelta, 4) / 4d) 
-        + logVonMisesPdf(orientDiff, _deadheadConcParam);
+      logpDistAlong = UnivariateGaussian.PDF.logEvaluate(obsDistDelta, expAvgDist, Math.pow(obsTimeDelta, 4) / 4d) 
+        + (isOff ? _deadheadOffProb * logVonMisesPdf(orientDiff, _deadheadConcParam)
+            : _inProgressProb * logVonMisesPdf(orientDiff, _deadheadEntranceConcParam));
 
     } else {
       /*
        * No movement
        */
-      pDistAlong = 1d;
+      logpDistAlong = 1d;
     }
+    
+    result.addLogResultAsAnd("lik", logpDistAlong);
 
-    return pDistAlong;
+    return result;
   }
 
   static public final double getAvgVelocityBetweenStops(BlockState blockState) {
@@ -284,21 +297,21 @@ public class EdgeLikelihood implements SensorModelRule {
 
   }
 
-  private static final double computeEdgeMovementLogProb(Observation obs,
-      VehicleState state, BlockState parentBlockState, boolean hasMoved, boolean isDuring) {
+  private static final SensorModelResult computeEdgeMovementLogProb(Observation obs,
+      VehicleState state, VehicleState parentState, boolean hasMoved, boolean isDuring) throws BadProbabilityParticleFilterException {
 
     final BlockState blockState = state.getBlockState();
+    final BlockState parentBlockState = parentState.getBlockState();
     final double currentDab;
     final double prevDab;
     if (!blockState.getBlockInstance().equals(parentBlockState.getBlockInstance())) {
-      Preconditions.checkState(!isDuring);
       /*
        * Note: this isn't really working like we want it to, since there are
        * separate shapes that share the same segments of geometry.
        */
       if (!parentBlockState.getBlockLocation().getActiveTrip().getTrip().getShapeId().equals(
                blockState.getBlockLocation().getActiveTrip().getTrip().getShapeId())) {
-        return computeEdgeEntranceMovementLogProb(state, obs);
+        return computeNoEdgeMovementLogProb(state, parentState, obs);
       }
       currentDab = blockState.getBlockLocation().getDistanceAlongBlock() - 
           blockState.getBlockLocation().getActiveTrip().getDistanceAlongBlock();
@@ -309,7 +322,10 @@ public class EdgeLikelihood implements SensorModelRule {
       prevDab = parentBlockState.getBlockLocation().getDistanceAlongBlock(); 
     }
     
+    final SensorModelResult result = new SensorModelResult("edge-move");
     final double dabDelta = currentDab - prevDab;
+    if (ParticleFilter.getDebugEnabled())
+      result.addResult("dist: " + dabDelta, 0d);
 
     // FIXME really lame. use a Kalman filter.
     final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
@@ -323,47 +339,84 @@ public class EdgeLikelihood implements SensorModelRule {
     } else {
       expAvgDist = 0d;
     }
+    if (ParticleFilter.getDebugEnabled())
+      result.addResult("expAvgDist: " + expAvgDist, 0d);
 
     final double x = dabDelta - expAvgDist;
     
-    final double orientDiff;
-    if (hasMoved) {
-      double obsOrientation = obs.getOrientation();
-      if (Double.isNaN(obsOrientation)) {
-        obsOrientation = blockState.getBlockLocation().getOrientation();
-      } 
+    /*
+     * Now, we need to measure the state transition likelihood
+     * wrt. heading.
+     * For the in-progress -> in-progress transition, we need
+     * to calculate the expected turn-rate/orientation between the two states.
+     */
+    double obsOrientation = Math.toRadians(obs.getOrientation());
+    if (Double.isNaN(obsOrientation)) {
+      obsOrientation = Math.toRadians(blockState.getBlockLocation().getOrientation());
+    } 
+    if (ParticleFilter.getDebugEnabled())
+      result.addResult("obsOrient:" + obsOrientation, 0d);
       
-      double pathOrDestOrientation;
+    final double orientDiff;
+    final double logpOrient;
+    if (hasMoved) {
       if (!isDuring || blockState.getBlockLocation().getNextStop() == null) {
         /*
-         * Orientation is the direction of the trip.
+         * TODO
+         * We could use a polar velocity model and the turn rate...
          */
-        pathOrDestOrientation = blockState.getBlockLocation().getOrientation();
+        final double prevOrientation = Math.toRadians(parentBlockState.getBlockLocation().getOrientation());
+        final double currentOrientation = Math.toRadians(blockState.getBlockLocation().getOrientation());
+        final double angleDiff = Angle.diff(prevOrientation, currentOrientation);
+        final double avgExpOrientation = Angle.normalizePositive(prevOrientation + 
+            (Angle.getTurn(prevOrientation, currentOrientation) == Angle.CLOCKWISE ? -1d : 1d) * angleDiff/2d);
+        orientDiff = Angle.diff(obsOrientation, avgExpOrientation);
+        if (ParticleFilter.getDebugEnabled())
+          result.addResult("expOrient: " + avgExpOrientation, 0d);
+        logpOrient = _inProgressProb * logVonMisesPdf(orientDiff, _inProgressConcParam);
       } else {
         /*
          * The orientation is wrt. the next stop destination, i.e.
          * we want to check that we're heading toward it.
          */
-        pathOrDestOrientation = SphericalGeometryLibrary.getOrientation(
+        double pathOrDestOrientation = Math.toRadians(SphericalGeometryLibrary.getOrientation(
             obs.getLocation().getLat(), 
             obs.getLocation().getLon(),
             blockState.getBlockLocation().getNextStop().getStopTime().getStop().getStopLocation().getLat(),
             blockState.getBlockLocation().getNextStop().getStopTime().getStop().getStopLocation().getLon()
-            );
+            ));
         if (Double.isNaN(pathOrDestOrientation)) {
           pathOrDestOrientation = obsOrientation;
         } 
+        orientDiff = Angle.diff(obsOrientation, pathOrDestOrientation);
+        if (ParticleFilter.getDebugEnabled())
+          result.addResult("expOrient: " + pathOrDestOrientation, 0d);
+        logpOrient = _inProgressProb * logVonMisesPdf(orientDiff, _deadheadEntranceConcParam);
       }
-      
-      orientDiff = Math.toRadians(obsOrientation - pathOrDestOrientation);
     } else {
-      orientDiff = 0d;
+//      /*
+//       * What if we're switching trips while in the middle of doing one?
+//       * We assume that it's unlikely to do a complete 180 when we're
+//       * stopped.
+//       */
+//      if (parentState.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS
+//          && state.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS) {
+//        orientDiff = Math.toRadians(blockState.getBlockLocation().getOrientation() 
+//            - parentBlockState.getBlockLocation().getOrientation());
+//      } else {
+        orientDiff = Angle.diff(obsOrientation, Math.toRadians(blockState.getBlockLocation().getOrientation()));
+//      }
+      if (ParticleFilter.getDebugEnabled())
+        result.addResult("orientDiff (stopped):" + orientDiff, 0d);
+      logpOrient = _inProgressProb * logVonMisesPdf(orientDiff, _stoppedConcParam);
     }
     
-    final double pMove = UnivariateGaussian.PDF.logEvaluate(x, 0d, Math.pow(obsTimeDelta, 4) / 4d) 
-        + logVonMisesPdf(orientDiff, isDuring ? _inProgressConcParam : _deadheadConcParam);
+    final double logpMove = UnivariateGaussian.PDF.logEvaluate(x, 0d, Math.pow(obsTimeDelta, 4) / 4d) 
+        + logpOrient;
+    
+    result.addLogResultAsAnd("lik", logpMove);
 
-    return pMove;
+    return result;
   }
   
   private static double getAvgVelocityToNextStop(Observation obs, BlockState blockState) {
