@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The local codes for the ITIS Revsion 3.0 schema -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.www.itis-3-0-0-local" targetNamespace="http://www.itis-3-0-0-local" elementFormDefault="unqualified">
+	<xs:simpleType name="TrafficConditions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AccidentsAndIncidents">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Closures">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Roadwork">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Obstruction">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="DelayStatusCancellation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UnusualDriving">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="MobileSituation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="DeviceStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RestrictionClass">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="IncidentResponseStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Disasters">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Disturbances">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SportingEvents">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SpecialEvents">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ParkingInformation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SystemInformation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="WeatherConditions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Precipitation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Winds">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VisibilityAndAirQuality">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Temperature">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PavementConditions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="WinterDrivingRestrictions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="WinterDrivingIndex">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SuggestionAdvice">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="WarningAdvice">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AdviceInstructionsRecommendations">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AdviceInstructionsMandatory">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Qualifiers">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="GenericLocations">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LaneRoadway">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AlternateRoute">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Units">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TransitMode">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VehicleGroupAffected">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TravelerGroupAffected">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ResponderGroupAffected">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="IncidentResponseEquipment">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AssetStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RoadsideAssets">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TransitOperations">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Objects">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

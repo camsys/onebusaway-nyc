@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Siri xmlns="http://www.siri.org.uk/siri" xmlns:ns2="http://www.ifopt.org.uk/acsb" xmlns:ns3="http://www.ifopt.org.uk/ifopt"
+    xmlns:ns4="http://datex2.eu/schema/1_0/1_0">
+    <ServiceDelivery>
+        <!--=======ENDPOINT ================================== -->
+        <RequestorRef>NADER</RequestorRef>
+        <RequestRef>2004-12-17T09:30:47</RequestRef>
+        <!--=======FIRST SUBSCRIPTION======================== -->
+        <SituationExchangeDelivery version="1.1">
+            <ResponseTimestamp>2004-12-17T09:30:47</ResponseTimestamp>
+            <SubscriberRef> NADER </SubscriberRef>
+            <Status>true</Status>
+            <MoreData>false</MoreData>
+            <!--=======PAYLOAD ===================================== -->
+<!--             <PtSituation xsi:schemaLocation="http://www.siri.org.uk/siri siri_situationExchange_service.xsd"
+                xmlns:acsb="http://www.ifopt.org.uk/acsb" xmlns:siri="http://www.siri.org.uk/siri" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">  -->
+            <Situation>
+                <CreationTime>2001-12-17T09:30:47.0Z</CreationTime>
+                <ParticipantRef>RAILCO01</ParticipantRef>
+                <SituationNumber>000354</SituationNumber>
+                <Version>0</Version>
+                <References>
+                    <RelatedToRef>
+                        <CreationTime>2001-12-17T09:30:47.0Z</CreationTime>
+                        <ParticipantRef>RAILCO01</ParticipantRef>
+                        <SituationNumber>000354</SituationNumber>
+                        <Version>0</Version>
+                    </RelatedToRef>
+                </References>
+                <Source>
+                    <Phone>017654</Phone>
+                    <AgentReference>03274</AgentReference>
+                    <TimeOfCommunication>2001-12-17T09:30:47.0Z</TimeOfCommunication>
+                </Source>
+                <Verification>verified</Verification>
+                <Progress>open</Progress>
+                <QualityIndex>certain</QualityIndex>
+                <ValidityPeriod>
+                    <StartTime>2001-12-17T09:30:47.0Z</StartTime>
+                </ValidityPeriod>
+                <MiscellaneousReason>bombExplosion</MiscellaneousReason>
+                <Severity>severe</Severity>
+                <Audience>public</Audience>
+                <ReportType>point</ReportType>
+                <Summary overridden="false">Bomb at Barchester station</Summary>
+                <Description overridden="true" xml:lang="en-us">Building evacuated. Avoid station until further
+                    notice
+                </Description>
+                <Affects>
+                    <Operators>
+                        <AllOperators />
+                    </Operators>
+                    <StopPoints>
+                        <AffectedStopPoint>
+                            <StopPointRef>BAAR0003</StopPointRef>
+                            <StopPointName>Barchester Station</StopPointName>
+                            <StopPointType>pti17_0</StopPointType>
+                            <Location srsName="wgs84">
+                                <Longitude>-180</Longitude>
+                                <Latitude>-90</Latitude>
+                            </Location>
+                        </AffectedStopPoint>
+                    </StopPoints>
+                    <StopPlaces>
+                        <AffectedStopPlace>
+                            <StopPlaceRef>BArF001</StopPlaceRef>
+                            <AffectedComponents>
+                                <AffectedComponent>
+                                    <ComponentRef>BAR00021</ComponentRef>
+                                    <ComponentName>Platform 3</ComponentName>
+                                </AffectedComponent>
+                            </AffectedComponents>
+                        </AffectedStopPlace>
+                    </StopPlaces>
+                </Affects>
+                <Consequences>
+                    <Consequence>
+                        <Period>
+                            <StartTime>2001-12-17T09:30:47.0Z</StartTime>
+                        </Period>
+                        <Condition>pti13_0</Condition>
+                        <Severity>pti26_0</Severity>
+                        <Blocking>
+                            <JourneyPlanner>true</JourneyPlanner>
+                            <RealTime>true</RealTime>
+                        </Blocking>
+                        <Boarding>
+                            <ArrivalBoardingActivity>noAlighting</ArrivalBoardingActivity>
+                            <DepartureBoardingActivity>noBoarding</DepartureBoardingActivity>
+                        </Boarding>
+                    </Consequence>
+                </Consequences>
+                <PublishingActions>
+                    <PublishToWebAction>
+                        <Incidents>true</Incidents>
+                        <HomePage>true</HomePage>
+                        <Ticker>false</Ticker>
+                    </PublishToWebAction>
+                    <PublishToMobileAction>
+                        <Incidents>true</Incidents>
+                        <HomePage>false</HomePage>
+                    </PublishToMobileAction>
+                    <PublishToAlertsAction>
+                        <ClearNotice>true</ClearNotice>
+                        <ByEmail>true</ByEmail>
+                        <ByMobile>true</ByMobile>
+                    </PublishToAlertsAction>
+                </PublishingActions>
+            </Situation>
+        </SituationExchangeDelivery>
+    </ServiceDelivery>
+</Siri>

@@ -171,7 +171,9 @@
         <module>onebusaway-nyc-presentation</module>
         <module>onebusaway-nyc-sms-webapp</module>
         <module>onebusaway-nyc-transit-data</module>
-        <module>onebusaway-nyc-transit-data-manager</module>
+        <module>onebusaway-nyc-tdm-adapters</module>
+        <module>onebusaway-nyc-tdm-webapp</module>
+<!--        <module>onebusaway-nyc-tdm-util</module> -->
         <module>onebusaway-nyc-transit-data-federation</module>
         <module>onebusaway-nyc-transit-data-federation-webapp</module>
         <module>onebusaway-nyc-api-webapp</module>
@@ -203,7 +205,9 @@
                 <module>onebusaway-nyc-presentation</module>
                 <module>onebusaway-nyc-sms-webapp</module>
                 <module>onebusaway-nyc-transit-data</module>
-                <module>onebusaway-nyc-transit-data-manager</module>
+                <module>onebusaway-nyc-tdm-adapters</module>
+                <module>onebusaway-nyc-tdm-webapp</module>
+                <module>onebusaway-nyc-tdm-util</module>
                 <module>onebusaway-nyc-transit-data-federation</module>
                 <module>onebusaway-nyc-transit-data-federation-webapp</module>
                 <module>onebusaway-nyc-api-webapp</module>
