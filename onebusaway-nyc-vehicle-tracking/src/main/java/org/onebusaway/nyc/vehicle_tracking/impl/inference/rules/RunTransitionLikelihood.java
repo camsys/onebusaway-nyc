@@ -126,12 +126,7 @@ public class RunTransitionLikelihood implements SensorModelRule {
         }
       }
     } else {
-      if (blockStateObs == null 
-          && parentState != null
-          && parentState.getBlockStateObservation() == null)
-        return RUN_TRANSITION_STATE.RUN_CHANGE_FROM_OOS_TO_OSS;
-      else
-        return RUN_TRANSITION_STATE.RUN_NOT_CHANGED;
+      return RUN_TRANSITION_STATE.RUN_NOT_CHANGED;
     }
   }
 }

@@ -51,7 +51,7 @@ public class DscLikelihood implements SensorModelRule {
   }
 
   public static enum DSC_STATE {
-    DSC_OOS_IP, DSC_OOS_NOT_IP, DSC_IS_NO_BLOCK, DSC_MATCH, DSC_ROUTE_MATCH, DSC_NO_ROUTE_MATCH, DSC_NOT_VALID, DSC_DEADHEAD_MATCH
+    DSC_OOS_IP, DSC_OOS_NOT_IP, DSC_IS_NO_BLOCK, DSC_MATCH, DSC_ROUTE_MATCH, DSC_NO_ROUTE_MATCH, DSC_NOT_VALID
   }
 
   @Override
@@ -66,22 +66,19 @@ public class DscLikelihood implements SensorModelRule {
         result.addResultAsAnd("i.p. o.o.s. dsc", 0.0);
         return result;
       case DSC_NOT_VALID:
-        result.addResultAsAnd("!valid dsc", 1d);
+        result.addResultAsAnd("!valid dsc", (10d/40d));
         return result;
       case DSC_OOS_NOT_IP:
-        result.addResultAsAnd("!i.p. o.o.s. dsc", 1d);
+        result.addResultAsAnd("!i.p. o.o.s. dsc", (10d/40d));
         return result;
       case DSC_MATCH:
-        result.addResultAsAnd("i.s. matching DSC", (13d/30d));
-        return result;
-      case DSC_DEADHEAD_MATCH:
-        result.addResultAsAnd("i.s. deadhead matching DSC", (8d/30d));
+        result.addResultAsAnd("i.s. matching DSC", (10d/40d));
         return result;
       case DSC_ROUTE_MATCH:
-        result.addResultAsAnd("i.s. route-matching/deadhead-before/after", (8d/30d));
+        result.addResultAsAnd("i.s. route-matching/deadhead-before/after", (7d/40d));
         return result;
       case DSC_IS_NO_BLOCK:
-        result.addResultAsAnd("!o.o.s. dsc null-block", (1d/30d));
+        result.addResultAsAnd("!o.o.s. dsc null-block", (3d/40d));
         return result;
       case DSC_NO_ROUTE_MATCH:
         result.addResultAsAnd("i.s. non-route-matching DSC", 0.0);
@@ -147,10 +144,7 @@ public class DscLikelihood implements SensorModelRule {
          */
         if (!EVehiclePhase.isActiveAfterBlock(phase) && !EVehiclePhase.isActiveBeforeBlock(phase)
             && dscs.contains(observedDsc)) {
-          if (EVehiclePhase.IN_PROGRESS == phase)
-            return DSC_STATE.DSC_MATCH;
-          else
-            return DSC_STATE.DSC_DEADHEAD_MATCH;
+          return DSC_STATE.DSC_MATCH;
         } else {
           /*
            * a dsc implies a route. even though the reported dsc may not match,

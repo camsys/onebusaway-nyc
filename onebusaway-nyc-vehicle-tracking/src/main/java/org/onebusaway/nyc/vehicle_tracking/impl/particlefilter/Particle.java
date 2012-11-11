@@ -81,11 +81,8 @@ public class Particle implements Serializable, Comparable<Particle> {
      * in memory. All we really need is a Markov chain. Debug mode will allow it
      * for bookkeeping.
      */
-    if (parent != null) {
-      if (!ParticleFilter.getDebugEnabled()) {
-        parent.clearParent();
-      } 
-    }
+    if (!ParticleFilter.getDebugEnabled() && parent != null)
+      parent.clearParent();
   }
 
   private void clearParent() {

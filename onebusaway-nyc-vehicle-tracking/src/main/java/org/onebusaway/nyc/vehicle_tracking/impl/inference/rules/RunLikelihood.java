@@ -43,16 +43,16 @@ public class RunLikelihood implements SensorModelRule {
         result.addResultAsAnd("no run info", 1d);
         return result;
       case FORMAL_RUN_MATCH:
-        result.addResultAsAnd(">= operator run match", (7d/20d));
+        result.addResultAsAnd(">= operator run match", (10d/20d));
         return result;
       case NO_FORMAL_FUZZY_MATCH:
         result.addResultAsAnd("just fuzzy match", (6d/20d));
         return result;
       case NO_FORMAL_NO_FUZZY_MATCH:
-        result.addResultAsAnd("no matches", (5d/20d));
+        result.addResultAsAnd("no matches", (3d/20d));
         return result;
       case RUN_INFO_NO_RUN:
-        result.addResultAsAnd("run-info, but no run", (2d/20d));
+        result.addResultAsAnd("run-info, but no run", (1d/20d));
         return result;
       default:
         return null;
@@ -69,7 +69,7 @@ public class RunLikelihood implements SensorModelRule {
       return RUN_INFO_STATE.NO_RUN_INFO;
 
     if (blockState != null) {
-      if (blockState.getOpAssigned() == Boolean.TRUE) {
+      if (blockState.isRunFormal()) {
         return RUN_INFO_STATE.FORMAL_RUN_MATCH;
       } else {
         if (blockState.getRunReported() == Boolean.TRUE) {

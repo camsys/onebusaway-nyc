@@ -85,16 +85,12 @@ public class Observation implements Comparable<Observation> {
       this._distanceMoved = SphericalGeometryLibrary.distance(
           previousObservation.getLocation(),
           _point.toCoordinatePoint());
-      if (_distanceMoved == 0d) {
-        this._orientation = previousObservation.getOrientation();
-      } else {
-        this._orientation = SphericalGeometryLibrary.getOrientation(
-            previousObservation.getLocation().getLat(),
-            previousObservation.getLocation().getLon(),
-            record.getLatitude(),
-            record.getLongitude()
-            );
-      }
+      this._orientation = SphericalGeometryLibrary.getOrientation(
+          previousObservation.getLocation().getLat(),
+          previousObservation.getLocation().getLon(),
+          record.getLatitude(),
+          record.getLongitude()
+          );
     }
 
     _previousObservation = previousObservation;

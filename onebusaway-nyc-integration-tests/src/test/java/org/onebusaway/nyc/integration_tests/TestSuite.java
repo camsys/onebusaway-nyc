@@ -29,7 +29,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2433_20120723_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2711_20111208_054046_102329_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2782_20111202_211038_222038_IntegrationTest;
-import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_324_20121004_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_3649_20101125T121801_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_3819_20120829_220004_222001_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4111_20120717_IntegrationTest;
@@ -38,7 +37,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4257_20120907_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4264_20120907T162054_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5318_20101202T172138_IntegrationTest;
-import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5799_20121011_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5725_20120919T101417_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_6154_20111214_123000_143500_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest;
@@ -50,8 +48,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7564_20101201T010042_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7564_20101202T034055_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7564_20101202T114909_IntegrationTest;
-import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7659_20121010_IntegrationTest;
-import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7726_20121010_IntegrationTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ 
@@ -59,51 +55,45 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	PauseDuringIntegrationTest.class,
 	
 	/*
-   * Inference tests
-   */
-
-  // September_Bronx_r10_b03
-  Trace_324_20121004_IntegrationTest.class,
-  Trace_5799_20121011_IntegrationTest.class,
-  Trace_7659_20121010_IntegrationTest.class,
-  Trace_7726_20121010_IntegrationTest.class,
+     * Inference tests
+     */
 
 	// b63-winter 10
 	Trace_0927_20101209T124742_IntegrationTest.class,
-  Trace_1325_20101215T014845_IntegrationTest.class,
-  Trace_1379_20101211T010025_IntegrationTest.class,
-  Trace_1404_20101210T034249_IntegrationTest.class,
-  Trace_3649_20101125T121801_IntegrationTest.class,
-  Trace_5318_20101202T172138_IntegrationTest.class,
-  Trace_7560_20101122T084226_IntegrationTest.class,
-  Trace_7560_20101122T221007_IntegrationTest.class,
-  Trace_7560_20101123T031734_IntegrationTest.class,
-  Trace_7560_20101127T003153_IntegrationTest.class,
-  Trace_7564_20101201T010042_IntegrationTest.class,
-  Trace_7564_20101202T034055_IntegrationTest.class,
-  Trace_7564_20101202T114909_IntegrationTest.class,
+    Trace_1325_20101215T014845_IntegrationTest.class,
+    Trace_1379_20101211T010025_IntegrationTest.class,
+    Trace_1404_20101210T034249_IntegrationTest.class,
+  	Trace_3649_20101125T121801_IntegrationTest.class,
+    Trace_5318_20101202T172138_IntegrationTest.class,
+    Trace_7560_20101122T084226_IntegrationTest.class,
+    Trace_7560_20101122T221007_IntegrationTest.class,
+    Trace_7560_20101123T031734_IntegrationTest.class,
+    Trace_7560_20101127T003153_IntegrationTest.class,
+    Trace_7564_20101201T010042_IntegrationTest.class,
+    Trace_7564_20101202T034055_IntegrationTest.class,
+    Trace_7564_20101202T114909_IntegrationTest.class,
 
-  // 2012Jan_SIB63M34_r20_b01
-  Trace_2423_20120111_091352_092348_IntegrationTest.class,    
+    // 2012Jan_SIB63M34_r20_b01
+    Trace_2423_20120111_091352_092348_IntegrationTest.class,    
 
-  // 2012July_r04_b02
-  Trace_2433_20120723_IntegrationTest.class,
-  Trace_4111_20120717_IntegrationTest.class,
-  Trace_6333_20120717_IntegrationTest.class,
-  Trace_3819_20120829_220004_222001_IntegrationTest.class,
+    // 2012July_r04_b02
+    Trace_2433_20120723_IntegrationTest.class,
+    Trace_4111_20120717_IntegrationTest.class,
+    Trace_6333_20120717_IntegrationTest.class,
+  	Trace_3819_20120829_220004_222001_IntegrationTest.class,
 
-  // 2012September
-  Trace_5725_20120919T101417_IntegrationTest.class,
-  Trace_4257_20120907_IntegrationTest.class,
-  Trace_4264_20120907T162054_IntegrationTest.class,
-  
-  // si
-  Trace_2711_20111208_054046_102329_IntegrationTest.class,
-  Trace_2782_20111202_211038_222038_IntegrationTest.class,
-  Trace_4138_20111207_150000_220000_IntegrationTest.class,
-  Trace_4255_20111215_183433_183932_IntegrationTest.class,
-  Trace_6154_20111214_123000_143500_IntegrationTest.class,
-  Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest.class,  	
+    // 2012September
+  	Trace_5725_20120919T101417_IntegrationTest.class,
+  	Trace_4257_20120907_IntegrationTest.class,
+  	Trace_4264_20120907T162054_IntegrationTest.class,
+  	
+    // si
+    Trace_2711_20111208_054046_102329_IntegrationTest.class,
+  	Trace_2782_20111202_211038_222038_IntegrationTest.class,
+    Trace_4138_20111207_150000_220000_IntegrationTest.class,
+    Trace_4255_20111215_183433_183932_IntegrationTest.class,
+    Trace_6154_20111214_123000_143500_IntegrationTest.class,
+    Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest.class,  	
 
 	/*
 	 * Wrapping logic tests
@@ -112,6 +102,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	SiriBlockLayoverInference_IntegrationTest.class,
 
 	SiriTripInference_IntegrationTest.class,
-	SiriTripLayoverInference_IntegrationTest.class
+	SiriTripLayoverInference_IntegrationTest.class,
 })
 public class TestSuite {}
