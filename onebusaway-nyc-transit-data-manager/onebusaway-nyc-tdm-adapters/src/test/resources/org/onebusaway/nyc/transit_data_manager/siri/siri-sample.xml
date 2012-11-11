@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Siri xmlns="http://www.siri.org.uk/siri" xmlns:ns2="http://www.ifopt.org.uk/acsb" xmlns:ns3="http://www.ifopt.org.uk/ifopt"
-    xmlns:ns4="http://datex2.eu/schema/1_0/1_0">
-    <ServiceDelivery>
-        <SituationExchangeDelivery />
-    </ServiceDelivery>
-</Siri>
-
