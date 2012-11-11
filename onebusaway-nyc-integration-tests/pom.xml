@@ -123,6 +123,7 @@
                         </goals>
                         <configuration>
 <!--                         	<debugForkedProcess>true</debugForkedProcess> -->
+                            <forkMode>never</forkMode>
                             <excludes>
                                 <exclude>none</exclude>
                             </excludes>
@@ -168,6 +169,28 @@
                 <executions>
 <!-- valid default bundle begin -->
                     <execution>
+                        <id>graph-builder-execution-2012September_Bronx_r10_b03</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx1500m</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2012September_Bronx_r10_b03.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2012September_Bronx_r10_b03</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>graph-builder-execution-2012July_r04_b02</id>
                         <phase>pre-integration-test</phase>
                         <goals>
@@ -189,30 +212,6 @@
                             </arguments>
                         </configuration>
                     </execution>
-<!-- valid default bundle begin -->
-                    <execution>
-                        <id>graph-builder-execution-2012September</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>java</executable>
-                            <arguments>
-                                <argument>-Xmx1500m</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
-                                <argument>-Donebusaway_prefix=${basedir}</argument>
-                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
-                                <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle-2012September.xml</argument>
-                                <argument>${project.build.directory}/transit-data-bundle/2012September</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-<!-- valid default bundl end -->
                     <execution>
                         <id>graph-builder-execution-b63-winter10</id>
                         <phase>pre-integration-test</phase>

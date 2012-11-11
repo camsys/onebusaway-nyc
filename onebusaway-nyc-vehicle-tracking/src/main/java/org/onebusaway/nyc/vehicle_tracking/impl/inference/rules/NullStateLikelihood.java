@@ -33,7 +33,7 @@ public class NullStateLikelihood implements SensorModelRule {
   public void setBlockStateService(BlockStateService blockStateService) {
   }
 
-  private static final double nonNullLik = 0.998d;
+  private static final double nonNullLik = 0.9999d;
   
   static public enum NullStates {
     NULL_STATE, NON_NULL_STATE
