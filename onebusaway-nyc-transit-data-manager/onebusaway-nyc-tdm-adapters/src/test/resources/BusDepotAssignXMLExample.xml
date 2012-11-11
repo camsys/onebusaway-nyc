@@ -1,0 +1,17 @@
+<NewDataSet>
+  <Table>
+    <BUS_NUMBER>1009</BUS_NUMBER>
+    <AGENCY>1</AGENCY>
+    <DEPOT>GH</DEPOT>
+  </Table>
+  <Table>
+    <BUS_NUMBER>101</BUS_NUMBER>
+    <AGENCY>2</AGENCY>
+    <DEPOT>LAG</DEPOT>
+  </Table>
+  <Table>
+    <BUS_NUMBER>1019</BUS_NUMBER>
+    <AGENCY>1</AGENCY>
+    <DEPOT>GH</DEPOT>
+  </Table>
+</NewDataSet>

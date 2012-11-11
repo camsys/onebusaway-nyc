@@ -163,6 +163,17 @@ public class MotionModelImpl implements MotionModel<Observation> {
       return true;
 
     if (parentBlockState != null) {
+      
+      /*
+       * When a bus is waiting to start a block within the snapping distance
+       * and then it starts moving, we want to make sure that  
+       */
+      if (EVehiclePhase.isActiveBeforeBlock(parentState.getJourneyState().getPhase())
+          && parentBlockState.isSnapped() 
+          && _blocksFromObservationService.hasSnappedBlockStates(obs)) {
+        return true;
+      }
+      
       if (!parentBlockState.isRunFormal()
           && obs.hasValidDsc()) {
         
@@ -226,7 +237,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
   }
 
   private boolean allowGeneralBlockTransition(Observation obs, double ess,
-      boolean previouslyResampled) {
+      boolean previouslyResampled, boolean anySnapped) {
 
     if (BlockStateTransitionModel.hasDestinationSignCodeChangedBetweenObservations(obs))
       return true;
@@ -243,6 +254,19 @@ public class MotionModelImpl implements MotionModel<Observation> {
         && ess / ParticleFactoryImpl.getInitialNumberOfParticles() <= essResampleThreshold) {
       return true;
     }
+    
+    /*
+     * If none of our current particles are snapped, yet there were snapped states and there are
+     * currently snapped states, then resample, since there's usually a problem when nothing is snapped
+     * in these cases.
+     */
+    if (obs.getPreviousObservation() != null) {
+      final boolean hadSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs.getPreviousObservation());
+      final boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
+      if (hasSnappedStates && hadSnappedStates && !anySnapped) {
+        return true;
+      }
+    }
 
     return false;
   }
@@ -254,9 +278,21 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     final Multiset<Particle> results = HashMultiset.create();
 
+    boolean anySnapped = false;
+    /*
+     * TODO FIXME could keep a particle-set-info record...
+     */
+    for (final Multiset.Entry<Particle> parent : particles.entrySet()) {
+      final VehicleState state = parent.getElement().getData();
+      if (state.getBlockStateObservation() != null 
+          && state.getBlockStateObservation().isSnapped()) {
+        anySnapped = true;
+        break;
+      }
+    }
     final double ess = ParticleFilter.getEffectiveSampleSize(particles);
     final boolean generalBlockTransition = allowGeneralBlockTransition(obs,
-        ess, previouslyResampled);
+        ess, previouslyResampled, anySnapped);
     double normOffset = Double.NEGATIVE_INFINITY;
 
     for (final Multiset.Entry<Particle> parent : particles.entrySet()) {
@@ -641,6 +677,10 @@ public class MotionModelImpl implements MotionModel<Observation> {
       final double d = SphericalGeometryLibrary.distance(
           motionState.getLastInMotionLocation(), obs.getLocation());
 
+      /*
+       * FIXME there's an inconsistency here (with having sampled
+       * whether we moved or not).
+       */
       if (d <= _motionThreshold) {
         lastInMotionTime = motionState.getLastInMotionTime();
         lastInMotionLocation = motionState.getLastInMotionLocation();

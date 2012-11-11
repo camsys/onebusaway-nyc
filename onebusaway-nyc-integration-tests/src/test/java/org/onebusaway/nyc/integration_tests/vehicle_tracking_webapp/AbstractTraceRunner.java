@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.integration_tests.TraceSupport;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
 import org.opentripplanner.routing.impl.DistanceLibrary;
 
@@ -217,7 +218,11 @@ public class AbstractTraceRunner {
 
           System.out.println("DSC: expected=" + expectedDsc + ", inferred="
               + ourResult.getInferredDsc());
-          if (expectedDsc != null && !StringUtils.isEmpty(expectedDsc))
+          if (expectedDsc != null && !StringUtils.isEmpty(expectedDsc)
+              /*
+               * Enforce the statement above that the DSCs should match if we're in-progress
+               */
+              && EVehiclePhase.IN_PROGRESS == EVehiclePhase.valueOf(ourResult.getInferredPhase()))
             assertEquals(ourResult.getInferredDsc(), expectedDsc);
 
           // TEST: phase matches
@@ -280,7 +285,8 @@ public class AbstractTraceRunner {
               + ", inferred=" + receivedStatuses);
 
           // if inferred result is detoured, make sure we expect that here
-          if (receivedStatuses.contains("DEVIATED")) {
+          if (!acceptableStatuses.isEmpty() 
+              && receivedStatuses.contains("DEVIATED")) {
             assertTrue(acceptableStatuses.contains("DEVIATED"));
           }
 

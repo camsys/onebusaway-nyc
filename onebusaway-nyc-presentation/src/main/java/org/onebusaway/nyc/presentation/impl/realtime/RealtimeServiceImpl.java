@@ -291,12 +291,12 @@ public class RealtimeServiceImpl implements RealtimeService {
       String routeId, String directionId) {
 
     SituationQueryBean query = new SituationQueryBean();
-    query.setTime(System.currentTimeMillis());
-    if (directionId == null) {
-      query.addRoute(routeId.toString(), "0");
-      query.addRoute(routeId.toString(), "1");
-    } else {
-      query.addRoute(routeId.toString(), directionId);
+    SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+    query.getAffects().add(affects);
+
+    affects.setRouteId(routeId.toString());
+    if (directionId != null) {
+      affects.setDirectionId(directionId);
     }
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
 
@@ -307,10 +307,10 @@ public class RealtimeServiceImpl implements RealtimeService {
   public List<ServiceAlertBean> getServiceAlertsGlobal() {
     
     SituationQueryBean query = new SituationQueryBean();
-    query.setTime(System.currentTimeMillis());
-    // TODO Not great that this constant is here;
-    // see org.onebusaway.nyc.transit_data_manager.siri.NycSiriService#ALL_OPERATORS
-    query.setAgencyId("__ALL_OPERATORS__");
+    SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+    query.getAffects().add(affects);
+
+
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
     return serviceAlerts.getList();
     

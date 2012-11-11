@@ -80,9 +80,6 @@
         <!--  bundle location profiles -->
         <profile>
             <id>cloud</id>
-            <activation>
-              <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <bundle.location>/mnt/obanyc/oba-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>

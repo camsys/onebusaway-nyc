@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Siri xmlns:ns2="http://www.ifopt.org.uk/acsb" xmlns:ns4="http://datex2.eu/schema/1_0/1_0" xmlns:ns3="http://www.ifopt.org.uk/ifopt" xmlns="http://www.siri.org.uk/siri">
+    <SubscriptionRequest>
+        <Address>http://localhost/foo/bar</Address>
+        <SituationExchangeSubscriptionRequest>
+            <SubscriptionIdentifier>my excellent subscription</SubscriptionIdentifier>
+            <SituationExchangeRequest>
+                <RequestTimestamp>2011-11-28T12:13:11.746-05:00</RequestTimestamp>
+            </SituationExchangeRequest>
+        </SituationExchangeSubscriptionRequest>
+    </SubscriptionRequest>
+</Siri>
