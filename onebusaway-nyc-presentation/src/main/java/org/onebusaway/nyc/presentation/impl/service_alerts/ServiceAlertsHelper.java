@@ -75,17 +75,14 @@ public class ServiceAlertsHelper {
         SituationQueryBean query = new SituationQueryBean();
         List<String> stopIdStrings = new ArrayList<String>();
         stopIdStrings.add(stopIdString);
-        query.setTime(System.currentTimeMillis());
-        query.setStopIds(stopIdStrings);
-//        SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-//        query.getAffects().add(affects);
-//        affects.setStopId(stopIdString);
+        SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+        query.getAffects().add(affects);
+        affects.setStopId(stopIdString);
 
         addFromQuery(nycTransitDataService, ptSituationElements, query);
 
         // Now also add service alerts for (route+direction)s of the stop
         query = new SituationQueryBean();
-        query.setTime(System.currentTimeMillis());
         
         StopBean stopBean = nycTransitDataService.getStop(stopIdString);
         List<RouteBean> routes = stopBean.getRoutes();
@@ -123,11 +120,10 @@ public class ServiceAlertsHelper {
     String direction = stopGroup.getId();
     for (String groupStopId : stopGroup.getStopIds()) {
       if (groupStopId.equals(stopIdString)) {
-    	  query.addRoute(route.getId(), direction);
-//    	SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-//    	query.getAffects().add(affects);
-//    	affects.setRouteId(route.getId());
-//    	affects.setDirectionId(direction);
+    	SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+    	query.getAffects().add(affects);
+    	affects.setRouteId(route.getId());
+    	affects.setDirectionId(direction);
       }
     }
   }
@@ -192,12 +188,9 @@ public class ServiceAlertsHelper {
     
     for (AgencyAndId routeId :  routeIds) {
       SituationQueryBean query = new SituationQueryBean();
-      query.setTime(System.currentTimeMillis());
-      query.addRoute(routeId.toString(), "0");
-      query.addRoute(routeId.toString(), "1");
-//      SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-//      query.getAffects().add(affects);
-//      affects.setRouteId(routeId.toString());
+      SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+      query.getAffects().add(affects);
+      affects.setRouteId(routeId.toString());
       ListBean<ServiceAlertBean> serviceAlertsForRoute = nycTransitDataService.getServiceAlerts(query);
       if (serviceAlertsForRoute != null) {
         serviceAlerts.addAll(serviceAlertsForRoute.getList());

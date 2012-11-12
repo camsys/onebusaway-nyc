@@ -35,8 +35,6 @@ public class ServiceAlertsResource {
   @Produces("application/xml")
   public Response list() throws JAXBException {
 	SituationQueryBean situationQueryBean = new SituationQueryBean();
-	situationQueryBean.setTime(System.currentTimeMillis());
-	situationQueryBean.setAgencyId("MTA NYCT");
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(situationQueryBean);
 		return Response.ok(serviceAlerts).build();
   }

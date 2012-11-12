@@ -291,17 +291,13 @@ public class RealtimeServiceImpl implements RealtimeService {
       String routeId, String directionId) {
 
     SituationQueryBean query = new SituationQueryBean();
-    if (directionId == null) {
-    	query.addRoute(routeId.toString(), "0");
-    	query.addRoute(routeId.toString(), "1");
+    SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+    query.getAffects().add(affects);
+
+    affects.setRouteId(routeId.toString());
+    if (directionId != null) {
+      affects.setDirectionId(directionId);
     }
-//    SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-//    query.getAffects().add(affects);
-//
-//    affects.setRouteId(routeId.toString());
-//    if (directionId != null) {
-//      affects.setDirectionId(directionId);
-//    }
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
 
     return serviceAlerts.getList();
@@ -311,9 +307,8 @@ public class RealtimeServiceImpl implements RealtimeService {
   public List<ServiceAlertBean> getServiceAlertsGlobal() {
     
     SituationQueryBean query = new SituationQueryBean();
-    query.setTime(System.currentTimeMillis());
-//    SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-//    query.getAffects().add(affects);
+    SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+    query.getAffects().add(affects);
 
 
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
