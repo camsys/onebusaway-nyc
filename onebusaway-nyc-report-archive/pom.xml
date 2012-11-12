@@ -161,8 +161,8 @@
             	<bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
                 <jetty.port>8082</jetty.port>
-                <tds.path>http://sms.replay.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <tdm.host>tdm.replay.obanyc.com</tdm.host>
+                <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
                 <log4j.hibernate.type>OFF</log4j.hibernate.type>
@@ -212,6 +212,33 @@
     <build>
       <finalName>onebusaway-nyc-report-archive</finalName>
         <plugins>
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.1.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<prefix>git</prefix>
+					<dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
+					<verbose>true</verbose>
+					<skipPoms>false</skipPoms>
+					<generateGitPropertiesFile>false</generateGitPropertiesFile>
+					<generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
+					<gitDescribe>
+						<skip>false</skip>
+						<always>true</always>
+						<abbrev>7</abbrev>
+						<dirty>-dirty</dirty>
+						<forceLongFormat>false</forceLongFormat>
+					</gitDescribe>
+				</configuration>
+			</plugin>        
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>hibernate3-maven-plugin</artifactId>
