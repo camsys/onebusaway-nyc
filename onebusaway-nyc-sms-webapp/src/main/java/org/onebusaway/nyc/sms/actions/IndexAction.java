@@ -194,9 +194,13 @@ public class IndexAction extends SessionedIndexAction {
             _searchResults.getMatches().clear();
             _searchResults.getMatches().add(selectedStop);
             
-            AgencyAndId id = AgencyAndIdLibrary.convertFromString((String)_searchResults.getRouteIdFilter().toArray()[0]);
-            
-            _lastQuery = selectedStop.getIdWithoutAgency() + " " + id.getId();
+            if (_searchResults.getRouteIdFilter().size() > 0) {
+              AgencyAndId id = AgencyAndIdLibrary.convertFromString((String)_searchResults.getRouteIdFilter().toArray()[0]);
+              _lastQuery = selectedStop.getIdWithoutAgency() + " " + id.getId();
+            } else {
+              _lastQuery = selectedStop.getIdWithoutAgency();
+            }
+           
             _response = singleStopResponse(null);
             _searchResults = null;
             
@@ -811,10 +815,10 @@ public class IndexAction extends SessionedIndexAction {
     staticStuff += "Add ROUTE for best results\n\n";
     
     staticStuff += "Examples:\n";
-    staticStuff += "'PARK AV AND 21 ST X1'\n";
+    staticStuff += "'PARK AV & 21 ST X1'\n";
     staticStuff += "'400145 X1'\n\n";
     
-    staticStuff += "Find 6-digit stopcode on bus stop pole";
+    staticStuff += "Find 6-digit stopcode on stop pole";
 
     if(_googleAnalytics != null) {
       try {
@@ -879,7 +883,8 @@ public class IndexAction extends SessionedIndexAction {
     }
     
     // if we have nearby stops and the user wants to see them
-    if (query.toUpperCase().equals("N") && (_searchResults.getResultType().equals("StopResult") || _searchResults.getResultType().equals("ServiceAlertResult"))) {
+    if (query.toUpperCase().equals("N") && _searchResults != null && 
+        ("StopResult".equals(_searchResults.getResultType()) || "ServiceAlertResult".equals(_searchResults.getResultType()))) {
       return "N";
     }
     
@@ -896,7 +901,7 @@ public class IndexAction extends SessionedIndexAction {
       }
       
       // a list of things other than location results can't be a pick from ambiguous locations.
-      if (!(_searchResults.getResultType().equals("GeocodeResult")) && !(_searchResults.getResultType().equals("StopResult"))) {
+      if (!("GeocodeResult".equals(_searchResults.getResultType())) && !("StopResult".equals(_searchResults.getResultType()))) {
         return null;
       }
       
