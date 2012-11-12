@@ -30,18 +30,18 @@
   	</resource-ref>
 	<env-entry>
 	        <env-entry-name>xwikiUrl</env-entry-name>
-	        <env-entry-value>http://xwiki.prod.obanyc.com</env-entry-value>
 	        <env-entry-type>java.lang.String</env-entry-type>
+	        <env-entry-value>http://xwiki.prod.obanyc.com</env-entry-value>
     </env-entry>
 	<env-entry>
 	        <env-entry-name>wikiDocumentEditUrl</env-entry-name>
-	        <env-entry-value>http://xwiki.prod.obanyc.com/bin/edit/%{namespace}/%{documentName}</env-entry-value>
 	        <env-entry-type>java.lang.String</env-entry-type>
+	        <env-entry-value>http://xwiki.prod.obanyc.com/bin/edit/%{namespace}/%{documentName}</env-entry-value>
     </env-entry>
 	<env-entry>
 	        <env-entry-name>wikiAttachmentUrl</env-entry-name>
-	        <env-entry-value>http://xwiki.prod.obanyc.com/bin/download/%{namespace}/%{documentName}/%{attachmentName}</env-entry-value>
 	        <env-entry-type>java.lang.String</env-entry-type>
+	        <env-entry-value>http://xwiki.prod.obanyc.com/bin/download/%{namespace}/%{documentName}/%{attachmentName}</env-entry-value>
     </env-entry>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>

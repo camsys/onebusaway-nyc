@@ -84,7 +84,7 @@
             <props>
                 <prop key="webapp.api.url">${webapp.api.url}</prop>
                 <prop key="tdm.host">${tdm.host}</prop>
-                <prop key="front-end.version">${front-end-version}</prop>
+                <prop key="front-end.version">${git.commit.id}</prop>
             </props>
         </property>
     </bean>
@@ -111,5 +111,4 @@
         <property name="wikiDocumentEditUrl" ref="xwikiDocumentEditUrlBean" />
         <property name="wikiAttachmentUrl" ref="xwikiAttachmentUrlBean" />
     </bean>
-
 </beans>

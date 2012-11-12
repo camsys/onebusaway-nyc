@@ -114,7 +114,7 @@ public class ServiceAlertsHelper {
       SituationQueryBean query, RouteBean route, StopGroupBean stopGroup) {
 
     List<StopGroupBean> subGroups = stopGroup.getSubGroups();
-    if (!CollectionUtils.isEmpty(subGroups)) {
+    if (subGroups != null && !subGroups.isEmpty()) {
       for (StopGroupBean stopSubGroup : subGroups) {
         handleStopGroupBean(stopIdString, query, route, stopSubGroup);
       }
@@ -279,7 +279,8 @@ public class ServiceAlertsHelper {
     // If our situationExchangeDeliveryStructure has a situations object...
     if (situationExchangeDeliveryStructure.getSituations() != null
         // AND our situations object's ptSituationsElement is not empty
-        && !CollectionUtils.isEmpty(situationExchangeDeliveryStructure.getSituations().getPtSituationElement())
+        && (situationExchangeDeliveryStructure.getSituations().getPtSituationElement() != null
+        		&& !situationExchangeDeliveryStructure.getSituations().getPtSituationElement().isEmpty())
         // AND our serviceDelivery doesn't already contain our situationExchangeDeliveryStructure
         && !serviceDelivery.getSituationExchangeDelivery().contains(situationExchangeDeliveryStructure)) {
       
