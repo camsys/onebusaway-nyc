@@ -10,49 +10,19 @@
 
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-tdm-util</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <name>TDM utility app</name>
   <description>TDM utility app</description>
 
   <repositories>
     <repository>
-      <id>releases.github.onebusaway.org</id>
-      <url>https://github.com/camsys/mvn-repo/raw/master/releases</url>
+      <id>camsys-cache</id>
+      <url>http://svn2.camsys.com/archiva/repository/internal/</url>
       <releases>
-        <enabled>true</enabled>
+	<enabled>true</enabled>
       </releases>
       <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>snapshots.github.onebusaway.org</id>
-      <url>https://github.com/camsys/mvn-repo/raw/master/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>releases.developer.onebusaway.org</id>
-      <url>http://developer.onebusaway.org/maven/repository/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>snapshots.developer.onebusaway.org</id>
-      <url>http://developer.onebusaway.org/maven/snapshot-repository/</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
+	<enabled>true</enabled>
       </snapshots>
     </repository>
     <repository>
@@ -78,46 +48,38 @@
   </repositories>
 
   <dependencies>
-  		<dependency>
-		    <groupId>org.onebusaway</groupId>
-		    <artifactId>onebusaway-siri-api-v13</artifactId>
-		    <version>1.0.0</version>
-		</dependency>
-          <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
-            <version>2.0.3-SNAPSHOT</version>
-        </dependency>
-  
-  <!-- Add your dependencies here
     <dependency>
-      <groupId></groupId>
-      <artifactId></artifactId>
-      <version></version>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-siri-api-v13</artifactId>
+      <version>1.0.0</version>
     </dependency>
-   -->
-  <dependency>
-    <groupId>org.onebusaway</groupId>
-    <artifactId>onebusaway-transit-data-federation</artifactId>
-    <version>2.0.9-SNAPSHOT</version>
-  </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
+      <version>2.0.11-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-transit-data-federation</artifactId>
+      <version>2.0.11-SNAPSHOT</version>
+    </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-nyc-transit-data</artifactId>
-      <version>2.0.3-SNAPSHOT</version>
+      <version>2.0.11-SNAPSHOT</version>
     </dependency>  
-  <dependency>
-    <groupId>com.sun.jersey</groupId>
-    <artifactId>jersey-bundle</artifactId>
-    <version>1.10</version>
-  </dependency>
-  <dependency>
-    <groupId>javax.ws.rs</groupId>
-    <artifactId>jsr311-api</artifactId>
-    <version>1.1.1</version>
-  </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-bundle</artifactId>
+      <version>1.10</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>jsr311-api</artifactId>
+      <version>1.1.1</version>
+    </dependency>
   </dependencies>
-  
+
   <profiles>
     <profile>
       <id>local-single-port</id><!-- aka services-tdf-as-tds --> <!-- aka staging, production -->
@@ -139,12 +101,12 @@
   </profiles>
   
   <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
+    <resources>
+      <resource>
+	<directory>src/main/resources</directory>
+	<filtering>true</filtering>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
