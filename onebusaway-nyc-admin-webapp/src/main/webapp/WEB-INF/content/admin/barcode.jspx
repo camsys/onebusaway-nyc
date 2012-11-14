@@ -21,8 +21,16 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 
-<title>OneBusAway NYC: QR Barcode Generator</title>
+	<title>OneBusAway NYC: QR Barcode Generator</title>
 
+	<s:url var="url" value="/js/lib/jquery.js" />	
+	<script type="text/javascript" src="${url}">
+		<!-- //prevent jspx minimization -->
+	</script>
+	
+	<s:url var="url" value="/js/oba/barcode.js" />
+	<script type="text/javascript" src="${url}"><!-- Prevent jspx minimization --></script>
+	
 </head>
 <body>
 
@@ -36,41 +44,45 @@
 			
 				<s:form action="barcode!genBusStopCode" method="post">
 			
-					<h3>Generate Quick Response Codes</h3>
+					<h3 id="generateQRCode">Generate Quick Response Code</h3>
+					<div id="singleCodeContainer">
+						<div >Generate a QR code for bus stop number:
+							<s:textfield name="busStopId" value="%{busStopId}" label="Bus Stop Id" size="8" />
+							<label class="required">*</label>  
+						</div>
+						
+						<div >with edge dimension(s) of:
+							<s:textfield name="edgeDimension" value="%{edgeDimension}" label="Edge dimension" size="3" />
+							<label class="required">*</label> 
+						</div>
+						
+						<s:submit name="submit" value="Generate" cssClass="qrSubmit" />
 					
-					<div >Generate a QR code for bus stop number:
-						<s:textfield name="busStopId" value="%{busStopId}" label="Bus Stop Id" size="8" />  
-					</div>
-					
-					<div >with edge dimension(s) of:
-						<s:textfield name="edgeDimension" value="%{edgeDimension}" label="Edge dimension" size="3" /> 
-					</div>
-					
-					<s:submit name="submit" value="Generate" cssClass="qrSubmit" />
-				
-					<div class="resultDiv">
-					
-						<s:if test='%{!"".equals(qrResourceUrl)}'> 
-							<div>Barcode generated for bus stop id <s:property value="busStopId" />:</div> 
-							<img src='${qrResourceUrl}' alt="Bad Image Url. Check source."/>
-						</s:if>		
-					
-					</div>
-				
+						<div class="resultDiv">
+						
+							<s:if test='%{!"".equals(qrResourceUrl)}'> 
+								<div>Barcode generated for bus stop id <s:property value="busStopId" />:</div> 
+								<img src='${qrResourceUrl}' alt="Bad Image Url. Check source."/>
+							</s:if>		
+						
+						</div>
+				    </div>
 				</s:form>
 			</div>
 			<div id="batchCodes">
 				<s:form action="barcode!generateCodesBatch" method="post" enctype="multipart/form-data" validate="true">
-					<h3>Generate Quick Response Codes Batch</h3>
-					<div>
-						<s:file name="stopIdCsvFile" label="Select CSV file to upload" cssClass="fileUpload" required="true"/>
-						<label class="required">*</label>
-					</div>
-					<div >with edge dimension(s) of:
-						<s:textfield name="batchEdgeDimension" value="%{batchEdgeDimension}" label="Edge dimension" size="3" required="true"/>
-						<label class="required">*</label> 
-					</div>
-					<s:submit name="submit" value="Generate" cssClass="qrSubmit" /> 
+					<h3 id="generateQRCodeBatch">Generate Quick Response Codes Batch</h3>
+					<div id="batchCodeContainer">
+						<div>
+							<s:file name="stopIdCsvFile" label="Select CSV file to upload" cssClass="fileUpload" required="true"/>
+							<label class="required">*</label>
+						</div>
+						<div >with edge dimension(s) of:
+							<s:textfield name="batchEdgeDimension" value="%{batchEdgeDimension}" label="Edge dimension" size="3" required="true"/>
+							<label class="required">*</label> 
+						</div>
+						<s:submit name="submit" value="Generate" cssClass="qrSubmit" />
+					</div> 
 				</s:form>
 			</div>
 		</div>
