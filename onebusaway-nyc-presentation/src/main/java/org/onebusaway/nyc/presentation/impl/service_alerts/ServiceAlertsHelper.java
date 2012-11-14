@@ -17,7 +17,6 @@ import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import uk.org.siri.siri.AffectedOperatorStructure;
@@ -111,7 +110,7 @@ public class ServiceAlertsHelper {
       SituationQueryBean query, RouteBean route, StopGroupBean stopGroup) {
 
     List<StopGroupBean> subGroups = stopGroup.getSubGroups();
-    if (!CollectionUtils.isEmpty(subGroups)) {
+    if (subGroups != null && !subGroups.isEmpty()) {
       for (StopGroupBean stopSubGroup : subGroups) {
         handleStopGroupBean(stopIdString, query, route, stopSubGroup);
       }
@@ -272,7 +271,8 @@ public class ServiceAlertsHelper {
     // If our situationExchangeDeliveryStructure has a situations object...
     if (situationExchangeDeliveryStructure.getSituations() != null
         // AND our situations object's ptSituationsElement is not empty
-        && !CollectionUtils.isEmpty(situationExchangeDeliveryStructure.getSituations().getPtSituationElement())
+        && (situationExchangeDeliveryStructure.getSituations().getPtSituationElement() != null 
+	    && !situationExchangeDeliveryStructure.getSituations().getPtSituationElement().isEmpty())
         // AND our serviceDelivery doesn't already contain our situationExchangeDeliveryStructure
         && !serviceDelivery.getSituationExchangeDelivery().contains(situationExchangeDeliveryStructure)) {
       
@@ -350,7 +350,7 @@ public class ServiceAlertsHelper {
     ptSituation.setSeverity(SeverityEnumeration.UNDEFINED);
 
     HalfOpenTimestampRangeStructure timestampRangeStructure = new HalfOpenTimestampRangeStructure();
-    if (!CollectionUtils.isEmpty(serviceAlert.getPublicationWindows())) {
+    if (serviceAlert.getPublicationWindows() != null && !serviceAlert.getPublicationWindows().isEmpty()) {
       timestampRangeStructure.setStartTime(serviceAlertTimeToDate(serviceAlert.getPublicationWindows().get(
           0).getFrom()));
       timestampRangeStructure.setEndTime(serviceAlertTimeToDate(serviceAlert.getPublicationWindows().get(
@@ -426,7 +426,7 @@ public class ServiceAlertsHelper {
     if (serviceAlert == null)
       return;
     List<SituationConsequenceBean> consequences = serviceAlert.getConsequences();
-    if (consequences == null || CollectionUtils.isEmpty(consequences))
+    if (consequences == null || consequences.isEmpty())
       return;
 
     PtConsequencesStructure ptConsequences = new PtConsequencesStructure();

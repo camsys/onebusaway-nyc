@@ -298,6 +298,7 @@ public class RealtimeServiceImpl implements RealtimeService {
     if (directionId != null) {
       affects.setDirectionId(directionId);
     }
+    
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
 
     return serviceAlerts.getList();
@@ -308,7 +309,14 @@ public class RealtimeServiceImpl implements RealtimeService {
     
     SituationQueryBean query = new SituationQueryBean();
     SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+    // TODO fix this
+    affects.setAgencyId("MTA NYCT");
     query.getAffects().add(affects);
+
+    SituationQueryBean.AffectsBean affects1 = new SituationQueryBean.AffectsBean();
+    // TODO fix this
+    affects1.setAgencyId("MTA BC");
+    query.getAffects().add(affects1);
 
 
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);

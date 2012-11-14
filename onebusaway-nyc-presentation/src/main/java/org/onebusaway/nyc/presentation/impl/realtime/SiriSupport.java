@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
@@ -417,7 +416,7 @@ public final class SiriSupport {
 	}
 
 	private static void fillSituations(MonitoredVehicleJourneyStructure monitoredVehicleJourney, TripStatusBean tripStatus) {
-		if (tripStatus == null || CollectionUtils.isEmpty(tripStatus.getSituations())) {
+	    if (tripStatus == null || tripStatus.getSituations() == null || tripStatus.getSituations().isEmpty()) {
 			return;
 		}
 
