@@ -2,9 +2,9 @@
 	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.play</groupId>
-    <artifactId>play-parent</artifactId>
-    <version>1.1</version>
+    <groupId>org.onebusaway</groupId>
+    <artifactId>onebusaway-nyc</artifactId>
+    <version>2.0.11-SNAPSHOT</version>
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-tdm-tcip</artifactId>
