@@ -319,10 +319,10 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<execute>
-										<runOnIncremental>true</runOnIncremental>
-										<runOnConfiguration>true</runOnConfiguration>
-										</execute>
+									<execute>
+											<runOnIncremental>true</runOnIncremental>
+											<runOnConfiguration>true</runOnConfiguration>
+									</execute>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

@@ -321,8 +321,8 @@
 									</pluginExecutionFilter>
 									<action>
 										<execute>
-										<runOnIncremental>true</runOnIncremental>
-										<runOnConfiguration>true</runOnConfiguration>
+											<runOnIncremental>true</runOnIncremental>
+											<runOnConfiguration>true</runOnConfiguration>
 										</execute>
 									</action>
 								</pluginExecution>
