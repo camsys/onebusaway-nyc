@@ -33,6 +33,7 @@ public class PresentationServiceImpl implements PresentationService {
       return System.currentTimeMillis();
   }
   
+  // NB: If you're hardcoding any return value here for testing, also see InferenceInputQueueListenerTask in the TDF package.
   @Override
   public Boolean useTimePredictionsIfAvailable() {
 	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
