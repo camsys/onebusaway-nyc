@@ -35,7 +35,7 @@ public class JourneyStateTransitionModel {
    * Time that the vehicle needs to be not moving in order to be a layover.
    */
   private static final double LAYOVER_WAIT_TIME = 120d;
-  private static final double _remainingTripDistanceDetourCutoff = 80d;
+  private static final double _remainingTripDistanceDetourCutoff = 280d;
 
   @Autowired
   public void setBlockStateTransitionModel(
@@ -144,7 +144,11 @@ public class JourneyStateTransitionModel {
         } else {
           return JourneyState.deadheadBefore(null);
         }
-      } else if (distanceAlong >= blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
+      } else if (distanceAlong > blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
+        /*
+         * Note: we changed this from >= because snapped deadhead-after states could be more
+         * likely than in-progress at/near the end.
+         */
         
 //        if (!MotionModelImpl.hasRunChanged(parentStateObservation,
 //              blockState)) {

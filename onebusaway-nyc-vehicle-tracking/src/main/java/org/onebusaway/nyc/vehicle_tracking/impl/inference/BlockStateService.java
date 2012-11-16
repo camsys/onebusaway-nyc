@@ -55,6 +55,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.math.DoubleMath;
+import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -92,8 +93,6 @@ public class BlockStateService {
 
   private static final double _oppositeDirMoveCutoff = 10d;
 
-  private static final double _oppositeAngleCutoff = 35d;
-  
   /*
    * Set this field to true if you want to require snapped states
    * match the DSC implied Route
@@ -567,15 +566,16 @@ public class BlockStateService {
        * in which case, we don't have a comparison to make,
        * so use an orientation difference of 0.
        */
-      double obsOrientation = observation.getOrientation();
-      if (Double.isNaN(obsOrientation)) {
-        obsOrientation = location.getOrientation();
+      final double locOrientation = Angle.normalize(Angle.toRadians(location.getOrientation()));
+      final double obsOrientation;
+      if (Double.isNaN(observation.getOrientation())) {
+        obsOrientation = locOrientation;
+      } else {
+        obsOrientation = Angle.normalize(Angle.toRadians(observation.getOrientation()));
       }
       
-      double orientDiff = Math.abs(obsOrientation - location.getOrientation());
-      if (orientDiff >= 90d + _oppositeAngleCutoff 
-          && orientDiff <= 270d + _oppositeAngleCutoff 
-          ) {
+      double orientDiff = Angle.diff(obsOrientation, locOrientation);
+      if (orientDiff >= Math.PI * 3d/4d) {
         return true;
       }
     } 

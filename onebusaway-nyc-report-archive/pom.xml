@@ -3,7 +3,7 @@
     <parent>
         <artifactId>onebusaway-nyc</artifactId>
         <groupId>org.onebusaway</groupId>
-        <version>2.0.7-SNAPSHOT</version>
+        <version>2.0.11-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>onebusaway-nyc-report-archive</artifactId>
@@ -14,29 +14,29 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-queue-realtime</artifactId>
-            <version>2.0.7-SNAPSHOT</version>
+            <version>2.0.11-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
-            <version>2.0.7-SNAPSHOT</version>
+            <version>2.0.11-SNAPSHOT</version>
         </dependency>
 	<!-- transit data service -->
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-transit-data</artifactId>
-            <version>2.0.7-SNAPSHOT</version>
+            <version>2.0.11-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-util</artifactId>
-            <version>2.0.7-SNAPSHOT</version>
+            <version>2.0.11-SNAPSHOT</version>
         </dependency>
 	<!-- for configuration service impl -->
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
-            <version>2.0.7-SNAPSHOT</version>
+            <version>2.0.11-SNAPSHOT</version>
         </dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
@@ -102,7 +102,7 @@
         <dependency>
           <groupId>org.onebusaway</groupId>
           <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
-          <version>2.0.7-SNAPSHOT</version>
+          <version>2.0.11-SNAPSHOT</version>
         </dependency>
 	     <!--  amazon ws integration -->
 	    <dependency>
@@ -161,8 +161,8 @@
             	<bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
                 <jetty.port>8082</jetty.port>
-                <tds.path>http://sms.replay.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <tdm.host>tdm.replay.obanyc.com</tdm.host>
+                <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
                 <log4j.hibernate.type>OFF</log4j.hibernate.type>
@@ -212,6 +212,33 @@
     <build>
       <finalName>onebusaway-nyc-report-archive</finalName>
         <plugins>
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.1.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<prefix>git</prefix>
+					<dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
+					<verbose>true</verbose>
+					<skipPoms>false</skipPoms>
+					<generateGitPropertiesFile>false</generateGitPropertiesFile>
+					<generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
+					<gitDescribe>
+						<skip>false</skip>
+						<always>true</always>
+						<abbrev>7</abbrev>
+						<dirty>-dirty</dirty>
+						<forceLongFormat>false</forceLongFormat>
+					</gitDescribe>
+				</configuration>
+			</plugin>        
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>hibernate3-maven-plugin</artifactId>
@@ -267,8 +294,43 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-
-
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											pl.project13.maven
+										</groupId>
+										<artifactId>
+											git-commit-id-plugin
+										</artifactId>
+										<versionRange>
+											[2.1.2,)
+										</versionRange>
+										<goals>
+											<goal>revision</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+									<execute>
+											<runOnIncremental>true</runOnIncremental>
+											<runOnConfiguration>true</runOnConfiguration>
+									</execute>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
     </build>
 
 </project>
