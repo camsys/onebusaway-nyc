@@ -39,7 +39,7 @@ public class TripRecord implements StifRecord {
   private String depotCode;
 
   public void setSignCode(String signCode) {
-    this.signCode = signCode;
+    this.signCode = signCode.replaceAll("^0+", "");
   }
 
   public String getSignCode() {
