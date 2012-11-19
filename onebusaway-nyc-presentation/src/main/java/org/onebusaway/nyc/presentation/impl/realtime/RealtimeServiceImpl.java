@@ -26,6 +26,9 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +40,8 @@ import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 @Component
 public class RealtimeServiceImpl implements RealtimeService {
 
+  
+  private static Logger _log = LoggerFactory.getLogger(RealtimeServiceImpl.class);
   private NycTransitDataService _nycTransitDataService;
 
   private PresentationService _presentationService;
@@ -289,35 +294,40 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Override
   public List<ServiceAlertBean> getServiceAlertsForRouteAndDirection(
       String routeId, String directionId) {
-
     SituationQueryBean query = new SituationQueryBean();
     SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
     query.getAffects().add(affects);
 
-    affects.setRouteId(routeId.toString());
+    affects.setRouteId(routeId);
     if (directionId != null) {
       affects.setDirectionId(directionId);
+    } else {
+      /*
+       * TODO
+       * The route index is not currently being populated correctly; query by route and direction,
+       * and supply both directions if not present
+       */
+      SituationQueryBean.AffectsBean affects1 = new SituationQueryBean.AffectsBean();
+      query.getAffects().add(affects1);
+      affects1.setRouteId(routeId);
+      affects1.setDirectionId("0");
+      SituationQueryBean.AffectsBean affects2 = new SituationQueryBean.AffectsBean();
+      query.getAffects().add(affects2);
+      affects2.setRouteId(routeId);
+      affects2.setDirectionId("1");
     }
     
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
-
     return serviceAlerts.getList();
   }
   
   @Override
   public List<ServiceAlertBean> getServiceAlertsGlobal() {
-    
     SituationQueryBean query = new SituationQueryBean();
     SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-    // TODO fix this
-    affects.setAgencyId("MTA NYCT");
+    
+    affects.setAgencyId("__ALL_OPERATORS__");
     query.getAffects().add(affects);
-
-    SituationQueryBean.AffectsBean affects1 = new SituationQueryBean.AffectsBean();
-    // TODO fix this
-    affects1.setAgencyId("MTA BC");
-    query.getAffects().add(affects1);
-
 
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
     return serviceAlerts.getList();

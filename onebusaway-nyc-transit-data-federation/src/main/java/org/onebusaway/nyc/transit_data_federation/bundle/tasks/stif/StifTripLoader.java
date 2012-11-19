@@ -319,8 +319,13 @@ public class StifTripLoader {
           }
 
           List<Trip> filtered = new ArrayList<Trip>();
-          /* filter trips by schedule */
+          /* filter trips by schedule or (for MTABC) GTFS trip ID */
           for (Trip trip : trips) {
+            if (trip.getId().getId().equals(tripRecord.getGtfsTripId())) {
+              rawTrip.addGtfsTrip(trip);
+              continue;
+            }
+
             /*
              * Service codes are of the form 20100627CA Only the last two
              * characters are important. They have the meaning: A = sat B =

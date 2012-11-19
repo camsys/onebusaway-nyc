@@ -30,7 +30,7 @@
     <repositories>
         <repository>
             <id>camsys-cache</id>
-            <url>http://svn2.camsys.com/archiva/repository/internal/</url>
+            <url>http://build.staging.obanyc.com/archiva/repository/internal/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -79,8 +79,8 @@
             </snapshots>
         </repository>
         <repository>
-            <id>releases.svn2.camsys.com</id>
-            <url>http://svn2.camsys.com/archiva/repository/releases/</url>
+            <id>releases.staging.obanyc.com</id>
+            <url>http://build.staging.obanyc.com/archiva/repository/releases/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -149,11 +149,11 @@
   <distributionManagement>
     <repository>
       <id>releases-mvn-repo</id>
-      <url>http://svn2.camsys.com/archiva/repository/releases/</url>
+      <url>http://build.staging.obanyc.com/archiva/repository/releases/</url>
     </repository>
     <snapshotRepository>
       <id>snapshots-mvn-repo</id>
-      <url>http://svn2.camsys.com/archiva/repository/snapshots/</url>
+      <url>http://build.staging.obanyc.com/archiva/repository/snapshots/</url>
     </snapshotRepository>
     <site>
       <id>${nyc_site_id}</id>
