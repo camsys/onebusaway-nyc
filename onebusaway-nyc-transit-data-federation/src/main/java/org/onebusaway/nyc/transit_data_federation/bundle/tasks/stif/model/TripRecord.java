@@ -37,6 +37,7 @@ public class TripRecord implements StifRecord {
   private boolean lastTripInSequence;
   private boolean firstTripInSequence;
   private String depotCode;
+  private String gtfsTripId;
 
   public void setSignCode(String signCode) {
     this.signCode = signCode.replaceAll("^0+", "");
@@ -225,5 +226,13 @@ public class TripRecord implements StifRecord {
 
   public void setDepotCode(String depotCode) {
     this.depotCode = depotCode;
+  }
+
+  public void setGtfsTripId(String gtfsTripId) {
+    this.gtfsTripId = gtfsTripId;
+  }
+
+  public String getGtfsTripId() {
+    return gtfsTripId;
   }
 }
