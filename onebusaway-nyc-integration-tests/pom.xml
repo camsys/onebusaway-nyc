@@ -128,7 +128,8 @@
                                 <exclude>none</exclude>
                             </excludes>
                             <includes>
-                                 <include>**/*IntegrationTest.java</include>
+                                <include>**/TraceSuite.java</include>
+<!--                                  <include>**/*IntegrationTest.java</include> -->
                             </includes>
                             <!-- We define some test system properties -->
                             <systemPropertyVariables>
