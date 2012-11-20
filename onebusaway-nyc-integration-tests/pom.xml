@@ -123,7 +123,6 @@
                         </goals>
                         <configuration>
 <!--                         	<debugForkedProcess>true</debugForkedProcess> -->
-                            <forkMode>never</forkMode>
                             <excludes>
                                 <exclude>none</exclude>
                             </excludes>
