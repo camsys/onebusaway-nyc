@@ -101,4 +101,9 @@ public enum ServiceCode {
 	  return letterCodeForServiceCode.get(this);
 	}
 
+	public boolean isHoliday() {
+    return !(this == WEEKDAY_SCHOOL_OPEN || this == WEEKDAY_SCHOOL_CLOSED
+        || this == SATURDAY || this == SUNDAY);
+	}
+
 }
