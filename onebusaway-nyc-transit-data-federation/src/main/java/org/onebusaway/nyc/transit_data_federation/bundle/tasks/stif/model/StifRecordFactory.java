@@ -29,6 +29,10 @@ public abstract class StifRecordFactory<T extends StifRecord> {
 				f.setter.setField(record);
 			}
 			start += f.length;
+			if (start >= end) {
+			  //fell off end of record (because STIF is from an earlier version than parser)
+			  break;
+			}
 		}
 		return record;
 	}
