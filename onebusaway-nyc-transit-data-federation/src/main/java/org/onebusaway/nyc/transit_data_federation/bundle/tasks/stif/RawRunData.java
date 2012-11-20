@@ -6,18 +6,14 @@ public class RawRunData {
 
   private String run1;
   private String run2;
-  private ServiceCode serviceCode;
   private String nextRun;
-  private String serviceId;
   private String block;
   private String depotCode;
 
-  public RawRunData(String run1, String run2, String nextRun, String serviceId, ServiceCode serviceCode, String block, String depotCode) {
+  public RawRunData(String run1, String run2, String nextRun, String block, String depotCode) {
     this.run1 = run1;
     this.run2 = run2;
     this.nextRun = nextRun;
-    this.serviceId = serviceId;
-    this.serviceCode = serviceCode;
     this.block = block;
     this.depotCode = depotCode;
   }
@@ -38,16 +34,8 @@ public class RawRunData {
     this.run2 = run2;
   }
 
-  public ServiceCode getServiceCode() {
-    return serviceCode;
-  }
-
   public String getNextRun() {
     return nextRun;
-  }
-
-  public String getServiceId() {
-    return serviceId;
   }
 
   public String getBlock() {
