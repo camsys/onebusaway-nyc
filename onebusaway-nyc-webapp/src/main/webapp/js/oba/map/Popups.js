@@ -249,9 +249,12 @@ OBA.Popups = (function() {
 		html += '</div>';
 		
 		// service available at stop
-		if(typeof activity.MonitoredVehicleJourney.MonitoredCall === 'undefined' 
-			&& (typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined'
-			|| typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall === 'undefined')) {
+		if(typeof activity.MonitoredVehicleJourney.MonitoredCall === 'undefined' && (
+			(typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined'
+				|| typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall === 'undefined') 
+			|| (typeof activity.MonitoredVehicleJourney.OnwardCalls !== 'undefined' 
+				&& activity.MonitoredVehicleJourney.OnwardCalls.length === 0)
+			)) {
 
 			html += '<p class="service">Next stops are not known for this vehicle.</p>';
 		} else {

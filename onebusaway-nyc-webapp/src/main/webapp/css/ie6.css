@@ -25,6 +25,14 @@ body, html {
 	height: 100%;	
 }
 
+#bustime {
+	margin-bottom: 200px;	
+}
+
+#skyscraper_ad {
+	top: 50px;
+}
+
 #searchbar {
 	overflow: auto;
 }

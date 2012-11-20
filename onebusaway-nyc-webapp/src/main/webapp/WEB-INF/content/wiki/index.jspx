@@ -60,11 +60,6 @@
 			<s:property value="content" escape="false"/>
 
 		  	<p class="meta">
-				<span id="timestamp">
-					Last Updated: 
-					<s:property value="lastModifiedTimestamp"/>
-				</span>
-
 				<s:if test="admin">
 				  	<s:a href="%{editLink}">Edit This Page</s:a>
 				</s:if>
