@@ -296,7 +296,7 @@
 		</resources>
 		<pluginManagement>
 			<plugins>
-				<!-- This tells eclipse to ignore the git-commit plugin, maven takes care of it -->
+			<!-- This tells eclipse to when to execute the git-commit plugin -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -320,7 +320,10 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<execute>
+											<runOnIncremental>true</runOnIncremental>
+											<runOnConfiguration>true</runOnConfiguration>
+										</execute>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

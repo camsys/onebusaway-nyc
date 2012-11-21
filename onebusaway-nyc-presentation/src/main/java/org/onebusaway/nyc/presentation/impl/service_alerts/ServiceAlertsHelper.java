@@ -17,7 +17,6 @@ import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import uk.org.siri.siri.AffectedOperatorStructure;
@@ -75,17 +74,14 @@ public class ServiceAlertsHelper {
         SituationQueryBean query = new SituationQueryBean();
         List<String> stopIdStrings = new ArrayList<String>();
         stopIdStrings.add(stopIdString);
-        query.setTime(System.currentTimeMillis());
-        query.setStopIds(stopIdStrings);
-//        SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-//        query.getAffects().add(affects);
-//        affects.setStopId(stopIdString);
+        SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+        query.getAffects().add(affects);
+        affects.setStopId(stopIdString);
 
         addFromQuery(nycTransitDataService, ptSituationElements, query);
 
         // Now also add service alerts for (route+direction)s of the stop
         query = new SituationQueryBean();
-        query.setTime(System.currentTimeMillis());
         
         StopBean stopBean = nycTransitDataService.getStop(stopIdString);
         List<RouteBean> routes = stopBean.getRoutes();
@@ -123,11 +119,10 @@ public class ServiceAlertsHelper {
     String direction = stopGroup.getId();
     for (String groupStopId : stopGroup.getStopIds()) {
       if (groupStopId.equals(stopIdString)) {
-    	  query.addRoute(route.getId(), direction);
-//    	SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-//    	query.getAffects().add(affects);
-//    	affects.setRouteId(route.getId());
-//    	affects.setDirectionId(direction);
+    	SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+    	query.getAffects().add(affects);
+    	affects.setRouteId(route.getId());
+    	affects.setDirectionId(direction);
       }
     }
   }
@@ -192,12 +187,9 @@ public class ServiceAlertsHelper {
     
     for (AgencyAndId routeId :  routeIds) {
       SituationQueryBean query = new SituationQueryBean();
-      query.setTime(System.currentTimeMillis());
-      query.addRoute(routeId.toString(), "0");
-      query.addRoute(routeId.toString(), "1");
-//      SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-//      query.getAffects().add(affects);
-//      affects.setRouteId(routeId.toString());
+      SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+      query.getAffects().add(affects);
+      affects.setRouteId(routeId.toString());
       ListBean<ServiceAlertBean> serviceAlertsForRoute = nycTransitDataService.getServiceAlerts(query);
       if (serviceAlertsForRoute != null) {
         serviceAlerts.addAll(serviceAlertsForRoute.getList());
@@ -358,7 +350,7 @@ public class ServiceAlertsHelper {
     ptSituation.setSeverity(SeverityEnumeration.UNDEFINED);
 
     HalfOpenTimestampRangeStructure timestampRangeStructure = new HalfOpenTimestampRangeStructure();
-    if (!CollectionUtils.isEmpty(serviceAlert.getPublicationWindows())) {
+    if (serviceAlert.getPublicationWindows() != null && !serviceAlert.getPublicationWindows().isEmpty()) {
       timestampRangeStructure.setStartTime(serviceAlertTimeToDate(serviceAlert.getPublicationWindows().get(
           0).getFrom()));
       timestampRangeStructure.setEndTime(serviceAlertTimeToDate(serviceAlert.getPublicationWindows().get(
@@ -434,7 +426,7 @@ public class ServiceAlertsHelper {
     if (serviceAlert == null)
       return;
     List<SituationConsequenceBean> consequences = serviceAlert.getConsequences();
-    if (consequences == null || CollectionUtils.isEmpty(consequences))
+    if (consequences == null || consequences.isEmpty())
       return;
 
     PtConsequencesStructure ptConsequences = new PtConsequencesStructure();

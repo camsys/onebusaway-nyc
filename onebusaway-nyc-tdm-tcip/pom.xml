@@ -3,8 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.onebusaway</groupId>
-    <artifactId>onebusaway-nyc-transit</artifactId>
-    <version>2.0.3-SNAPSHOT</version>
+    <artifactId>onebusaway-nyc</artifactId>
+    <version>2.0.11-SNAPSHOT</version>
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-tdm-tcip</artifactId>

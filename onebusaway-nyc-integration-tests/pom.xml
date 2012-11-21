@@ -123,12 +123,12 @@
                         </goals>
                         <configuration>
 <!--                         	<debugForkedProcess>true</debugForkedProcess> -->
-                            <forkMode>never</forkMode>
                             <excludes>
                                 <exclude>none</exclude>
                             </excludes>
                             <includes>
-                                 <include>**/*IntegrationTest.java</include>
+                                <include>**/*TestSuite*.java</include>
+<!--                                  <include>**/*IntegrationTest.java</include> -->
                             </includes>
                             <!-- We define some test system properties -->
                             <systemPropertyVariables>

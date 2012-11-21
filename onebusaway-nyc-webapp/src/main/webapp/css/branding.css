@@ -49,6 +49,11 @@
 	height: 58px;
 }
 
+#bustime #header .title {
+	margin: 0px;
+	padding: 0px;
+}
+
 #bustime #header .title h1 a {
 	width: 302px;
 	height: 58px;

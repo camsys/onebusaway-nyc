@@ -23,14 +23,14 @@
         <jetty.version>6.1.26</jetty.version>
         <spring.version>3.0.3.RELEASE</spring.version>
         <onebusaway.nyc-tcip.version>2.0.2</onebusaway.nyc-tcip.version>
-        <onebusaway.app-modules.version>1.0.7</onebusaway.app-modules.version>
+        <onebusaway.app-modules.version>1.1.5-SNAPSHOT</onebusaway.app-modules.version>
         <gitDescribe>99999</gitDescribe>
     </properties>
 
     <repositories>
         <repository>
-            <id>camsys-cache</id>
-            <url>http://svn2.camsys.com/archiva/repository/internal/</url>
+            <id>nyc-cache</id>
+            <url>http://build.staging.obanyc.com/archiva/repository/internal/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -39,8 +39,8 @@
             </snapshots>
         </repository>
         <repository>
-            <id>releases.github.onebusaway.org</id>
-            <url>https://github.com/camsys/mvn-repo/raw/master/releases</url>
+            <id>releases.staging.obanyc.com</id>
+            <url>http://build.staging.obanyc.com/archiva/repository/releases/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -48,46 +48,8 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>snapshots.github.onebusaway.org</id>
-            <url>https://github.com/camsys/mvn-repo/raw/master/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>releases.developer.onebusaway.org</id>
-            <url>http://developer.onebusaway.org/maven/repository/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>snapshots.developer.onebusaway.org</id>
-            <url>http://developer.onebusaway.org/maven/snapshot-repository/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>releases.svn2.camsys.com</id>
-            <url>http://svn2.camsys.com/archiva/repository/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
+<!-- cached by nyc-cache -->
+<!--
         <repository>
             <id>caucho</id>
             <url>http://caucho.com/m2</url>
@@ -108,7 +70,10 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+-->
     <!-- for UUID support -->
+    <!-- cached by nyc-cache -->
+<!--
         <repository>
             <id>eaio.com</id>
             <url>http://eaio.com/maven2</url>
@@ -119,6 +84,64 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+-->
+<!-- if nyc-cache is down is down, try camsys.com -->
+        <repository>
+            <id>camsys-cache</id>
+            <url>http://svn2.camsys.com/archiva/repository/internal/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+<!-- these have been phased out -->
+<!--
+        <repository>
+            <id>releases.github.onebusaway.org</id>
+            <url>https://github.com/camsys/mvn-repo/raw/master/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>snapshots.github.onebusaway.org</id>
+            <url>https://github.com/camsys/mvn-repo/raw/master/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+-->
+<!-- this is inheritied implicitly -->
+<!--
+        <repository>
+            <id>snapshots.nexus.onebusaway.org</id>
+            <url>http://nexus.onebusaway.org/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>public.nexus.onebusaway.org</id>
+            <url>http://nexus.onebusaway.org/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+-->
     </repositories>
 
     <pluginRepositories>
@@ -149,11 +172,11 @@
   <distributionManagement>
     <repository>
       <id>releases-mvn-repo</id>
-      <url>http://svn2.camsys.com/archiva/repository/releases/</url>
+      <url>http://build.staging.obanyc.com/archiva/repository/releases/</url>
     </repository>
     <snapshotRepository>
       <id>snapshots-mvn-repo</id>
-      <url>http://svn2.camsys.com/archiva/repository/snapshots/</url>
+      <url>http://build.staging.obanyc.com/archiva/repository/snapshots/</url>
     </snapshotRepository>
     <site>
       <id>${nyc_site_id}</id>

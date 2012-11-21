@@ -17,7 +17,7 @@
 #skyscraper_ad {
 	position: absolute;
 	right: 20px;
-	top: 80px;
+	top: 0px;
 	padding: 10px;
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -26,14 +26,26 @@
 	background-color: #FFFFFF;
 }
 
+.holding_box {
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	border: 1px solid #C0C0C0;
+	background-color: #FFFFFF;
+	margin-right: 225px;
+	margin-top: 50px;
+	margin-bottom: 30px;
+	padding: 25px;
+	padding-top: 10px;
+	min-height: 590px;
+}
+
 #content #text {
     position: relative;
 	padding-top: 5px;
 	margin-right: 20px;
 	line-height: 120%;
 	overflow: hidden;
-	padding-right: 220px;
-	min-height: 760px;
 }
 
 #content.sidebar #text {
@@ -157,7 +169,6 @@
 }
 
 #content #text .meta {
-	border-top: 1px solid #EFEFEF;
 	margin-top: 15px;
 	padding-top: 5px;	
 	color: #C0C0C0;

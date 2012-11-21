@@ -15,9 +15,15 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.util.git.GitRepositoryHelper;
 import org.onebusaway.nyc.util.model.GitRepositoryState;
 /**
@@ -27,14 +33,16 @@ import org.onebusaway.nyc.util.model.GitRepositoryState;
 @Controller
 public class ReleaseController {
 
+	ObjectMapper _mapper = new ObjectMapper();
 	private GitRepositoryState gitState = null;
 	
-  @RequestMapping("/release.do")
-  public ModelAndView gitDetails() {
+  @RequestMapping(value="/release.do", method=RequestMethod.GET)
+  public void gitDetailsInJSON(HttpServletResponse response) throws IOException {
 	  if (gitState == null) {
 		  gitState = new GitRepositoryHelper().getGitRepositoryState();
 	  }
-	  return new ModelAndView("release.jspx", "git", gitState);
+	  OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream());
+	  _mapper.writeValue(writer, gitState);
   }
 
 }
