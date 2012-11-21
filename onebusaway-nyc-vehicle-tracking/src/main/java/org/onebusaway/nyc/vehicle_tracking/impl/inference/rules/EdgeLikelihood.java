@@ -29,6 +29,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.algorithm.Angle;
 
@@ -309,7 +310,7 @@ public class EdgeLikelihood implements SensorModelRule {
        * Note: this isn't really working like we want it to, since there are
        * separate shapes that share the same segments of geometry.
        */
-      if (!parentBlockState.getBlockLocation().getActiveTrip().getTrip().getShapeId().equals(
+      if (!Objects.equal(parentBlockState.getBlockLocation().getActiveTrip().getTrip().getShapeId(),
                blockState.getBlockLocation().getActiveTrip().getTrip().getShapeId())) {
         return computeNoEdgeMovementLogProb(state, parentState, obs);
       }
