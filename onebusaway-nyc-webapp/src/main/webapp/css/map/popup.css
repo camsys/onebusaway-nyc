@@ -112,7 +112,7 @@
 }
 
 .popup ul li.arrival {
-	white-space: no-wrap;
+	white-space: nowrap;
 	height: 16px;
 	font-weight: bold;
 	padding-left: 19px;
@@ -123,10 +123,12 @@
 
 .popup ul li.arrival .not_bold {
 	font-weight: normal;
+	white-space: nowrap;
+	position: relative;
 }
 
 .popup ul li.nextStop {
-	white-space: no-wrap;
+	white-space: nowrap;
 	color: #000099;
 	height: 16px;
 	font-weight: bold;
