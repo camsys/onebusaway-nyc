@@ -587,8 +587,9 @@ OBA.Popups = (function() {
 			var map = marker.map;
 			map.setCenter(marker.getPosition());
 			map.setZoom(16);
-			marker.setVisible(true);
 		});
+		
+		marker.setVisible(true);
 		
 		activateAlertLinks(content);
 		
