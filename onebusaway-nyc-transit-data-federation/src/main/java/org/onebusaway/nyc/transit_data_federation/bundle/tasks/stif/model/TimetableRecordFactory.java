@@ -68,18 +68,7 @@ public class TimetableRecordFactory extends StifRecordFactory<TimetableRecord> {
 		new FieldDef(119-118, "empty", null),
 		new FieldDef(125-119, "additional schedule number 3", null),
 		new FieldDef(126-125, "empty", null),
-		new FieldDef(132-126, "additional schedule number 4", null),
-		new FieldDef(146-132, "(fields skipped)", null),
-		new FieldDef(154-146, "holiday code", new TimetableFieldSetter() {
-      public void setField(TimetableRecord record) {
-        if (record.getServiceCode() == null || !record.getServiceCode().isHoliday()) {
-          String data = getStringData();
-          if (data != null && data.length() > 0) {
-            record.setServiceCode(ServiceCode.getServiceCodeForId(data));
-          }
-        }
-      }
-      })
+		new FieldDef(132-126, "additional schedule number 4", null)
 	};
 
 	@Override

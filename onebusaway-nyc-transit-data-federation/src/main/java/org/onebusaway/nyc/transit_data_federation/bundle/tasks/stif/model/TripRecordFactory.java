@@ -157,14 +157,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
         }
       }),
       new FieldDef(176 - 175, "empty", null),
-      new FieldDef(183 - 176, "previous trip origin time", null),
-      new FieldDef(218 - 183, "(many fields skipped)", null),
-      new FieldDef(257 - 218, "gtfs trip ID", new TripFieldSetter() {
-        public void setField(TripRecord record) {
-          record.setGtfsTripId(getStringData());
-        }
-      }),
-  };
+      new FieldDef(183 - 176, "previous trip operator origin time", null),};
 
   @Override
   public TripRecord createEmptyRecord() {
