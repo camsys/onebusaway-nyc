@@ -33,6 +33,6 @@ public class Trace_324_20121004_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_324_20121004_IntegrationTest() throws Exception {
     super("324-deadhead-labeled.csv");
-    setBundle("2012September_Bronx_r10_b03", "2012-09-01T01:00:00EDT");
+    setBundle("2012September_Bronx_r10_b03", "2012-09-03T01:00:00EDT");
   }
 }

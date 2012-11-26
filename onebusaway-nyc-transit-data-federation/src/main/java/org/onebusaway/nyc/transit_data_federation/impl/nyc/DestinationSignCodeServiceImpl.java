@@ -34,11 +34,15 @@ import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollec
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
+
+  private Logger _log = LoggerFactory.getLogger(DestinationSignCodeServiceImpl.class);
 
   private Map<String, List<AgencyAndId>> _dscToTripMap;
 
@@ -98,6 +102,11 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
       
       if (dscTripIds != null && !dscTripIds.isEmpty()) {
           TripEntry trip = _transitGraphDao.getTripEntryForId(dscTripIds.get(0));
+          if(trip == null) {
+            _log.warn("No route collection found for trip ID " + dscTripIds.get(0));
+            return routeIds;
+          }
+          
           RouteCollectionEntry route = trip.getRouteCollection();
           routeIds.add(route.getId());
       }
