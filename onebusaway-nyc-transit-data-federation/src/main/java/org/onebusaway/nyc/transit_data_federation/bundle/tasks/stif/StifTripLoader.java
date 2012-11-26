@@ -319,8 +319,14 @@ public class StifTripLoader {
           }
 
           List<Trip> filtered = new ArrayList<Trip>();
-          /* filter trips by schedule */
+          /* filter trips by schedule or (for MTABC) GTFS trip ID */
           for (Trip trip : trips) {
+            if (trip.getId().getId().equals(tripRecord.getGtfsTripId())) {
+              addGtfsTrip(path, tripLineNumber, tripRecord, run1, run2, run3,
+                  rawTrip, code, id, filtered, trip);
+              continue;
+            }
+
             /*
              * Service codes are of the form 20100627CA Only the last two
              * characters are important. They have the meaning: A = sat B =
@@ -363,24 +369,8 @@ public class StifTripLoader {
             }
             if (trip != null) {
 
-              rawTrip.addGtfsTrip(trip);
-
-              int reliefTime = tripRecord.getReliefTime();
-              String block = tripRecord.getBlockNumber();
-              String depotCode = tripRecord.getDepotCode();
-              RawRunData rawRunData = new RawRunData(run1, run2, run3,
-                  serviceId, serviceCode, block, depotCode);
-
-              filtered.add(trip);
-              rawRunDataByTrip.put(trip, rawRunData);
-              runsForTrip.put(trip.getId(), new RunData(run1, run2, reliefTime));
-
-              if (rawTrip.type == StifTripType.REVENUE
-                  && (code == null || code.length() == 0)) {
-                _log.warn("Revenue trip " + rawTrip + " did not have a DSC");
-                csvLogger.log("trips_with_null_dscs.csv", trip.getId(), id,
-                    path, tripLineNumber);
-              }
+              addGtfsTrip(path, tripLineNumber, tripRecord, run1, run2, run3,
+                  rawTrip, code, id, filtered, trip);
             }
           }
           if (filtered.size() == 0) {
@@ -409,6 +399,30 @@ public class StifTripLoader {
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private void addGtfsTrip(File path, int tripLineNumber,
+      TripRecord tripRecord, String run1, String run2, String run3,
+      RawTrip rawTrip, String code, TripIdentifier id, List<Trip> filtered,
+      Trip trip) {
+    rawTrip.addGtfsTrip(trip);
+
+    int reliefTime = tripRecord.getReliefTime();
+    String block = tripRecord.getBlockNumber();
+    String depotCode = tripRecord.getDepotCode();
+    RawRunData rawRunData = new RawRunData(run1, run2, run3,
+        block, depotCode);
+
+    filtered.add(trip);
+    rawRunDataByTrip.put(trip, rawRunData);
+    runsForTrip.put(trip.getId(), new RunData(run1, run2, reliefTime));
+
+    if (rawTrip.type == StifTripType.REVENUE
+        && (code == null || code.length() == 0)) {
+      _log.warn("Revenue trip " + rawTrip + " did not have a DSC");
+      csvLogger.log("trips_with_null_dscs.csv", trip.getId(), id,
+          path, tripLineNumber);
     }
   }
 
