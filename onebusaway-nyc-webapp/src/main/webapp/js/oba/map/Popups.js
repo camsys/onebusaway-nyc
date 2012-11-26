@@ -589,6 +589,8 @@ OBA.Popups = (function() {
 			map.setZoom(16);
 		});
 		
+		marker.setVisible(true);
+		
 		activateAlertLinks(content);
 		
 		(stopBubbleListener !== null)? stopBubbleListener.triggerHandler(stopBubbleTrigger) : null;
