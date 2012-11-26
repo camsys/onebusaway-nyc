@@ -10,7 +10,7 @@
 
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-tdm-util</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>0.0.2</version>
   <name>TDM utility app</name>
   <description>TDM utility app</description>
 
