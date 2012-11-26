@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.onebusaway</groupId>
 	<artifactId>onebusaway-nyc-tcip</artifactId>
-	<version>2.0.3-SNAPSHOT</version>
+	<version>2.0.11-SNAPSHOT</version>
 	<name>onebusaway-nyc-tcip</name>
 	<description>JAXB-enabled Java classes for TCIP and utilities for TCIP use</description>
 	<packaging>pom</packaging>

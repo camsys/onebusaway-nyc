@@ -119,12 +119,7 @@
                     </arguments>
                 </configuration>
                 <dependencies>
-<!--                     <dependency>
-                        <groupId>org.onebusaway</groupId>
-                        <artifactId>onebusaway-transit-data-federation</artifactId>
-                        <version>2.0.3-SNAPSHOT</version>
-                    </dependency>
- -->                    <dependency>
+                    <dependency>
                         <groupId>org.onebusaway</groupId>
                         <artifactId>onebusaway-gtfs</artifactId>
                         <version>1.2.4</version>
