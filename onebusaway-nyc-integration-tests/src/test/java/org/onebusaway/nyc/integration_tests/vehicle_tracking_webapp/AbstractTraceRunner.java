@@ -122,6 +122,26 @@ public class AbstractTraceRunner {
    */
   @Test
   public void test() throws Throwable {
+	  int tries = 3;
+	  while(tries-- > 0) {
+		  try {
+			  theRealTest();
+	      } catch (AssertionError e) {
+	    	  // out of tries
+	    	  if(tries == 1) {
+	    		  throw e;
+	    		  
+	    	  // try again
+	    	  } else {
+	    		  continue;
+	    	  }
+		  }
+		  
+		  break;
+	  }
+  }
+  
+  private void theRealTest() throws Throwable {
 
     // expected results
     File trace = new File("src/integration-test/resources/traces/" + _trace);
@@ -322,8 +342,7 @@ public class AbstractTraceRunner {
 
       } catch (AssertionError e) {
         System.out.println(">> TEST FAILED HERE ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
-
-        throw new Exception(e);
+        throw e;
       }
 
       // break out of wait-for-completion loop

@@ -15,15 +15,12 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.junit.runner.RunWith;
-import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
 /**
  * This trace has a "correct" reported run, a sizable deadhead between trips,
  * and a bad/detoured start.
  */
-@RunWith(RunUntilSuccess.class)
 public class Trace_6154_20111214_123000_143500_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_6154_20111214_123000_143500_IntegrationTest() throws Exception {

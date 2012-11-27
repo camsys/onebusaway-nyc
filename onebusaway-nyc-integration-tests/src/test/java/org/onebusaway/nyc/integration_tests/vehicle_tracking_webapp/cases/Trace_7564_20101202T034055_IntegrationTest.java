@@ -15,16 +15,12 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.junit.runner.RunWith;
-import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
 /**
  * Detour from Atlantic Ave to 3rd Ave, slow in_progress pickup out of Atlantic Ave terminal
  * 
  */
-//@Ignore
-@RunWith(RunUntilSuccess.class)
 public class Trace_7564_20101202T034055_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_7564_20101202T034055_IntegrationTest() throws Exception {
