@@ -21,6 +21,6 @@ public class Trace_4257_20120907_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_4257_20120907_IntegrationTest() throws Exception {
     super("4257-20120907T16-12-45.csv");
-    setBundle("2012September", "2012-09-04T00:00:00EDT");
+    setBundle("2012September_Bronx_r10_b03", "2012-09-04T00:00:00EDT");
   }
 }
