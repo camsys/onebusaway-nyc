@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
+package org.onebusaway.nyc.transit_data_federation.bundle.tasks;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,6 +21,8 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,32 +38,40 @@ import org.slf4j.LoggerFactory;
 public class MultiCSVLogger {
   private Logger _log = LoggerFactory.getLogger(MultiCSVLogger.class);
 
+  private HashMap<String, Log> logs;
+  
+  private File basePath;
+  
+  public void setBasePath(File path) {
+    this.basePath = path;
+  }
+  
   class Log {
     int lines;
     PrintStream stream;
     Log(String file) {
       FileOutputStream outputStream;
       try {
-        outputStream = new FileOutputStream(new File(basePath, file));
+        outputStream = new FileOutputStream(new File(basePath, file), true);
       } catch (FileNotFoundException e) {
         throw new RuntimeException(e);
       }
       stream = new PrintStream(outputStream);
     }
   }
-  HashMap<String, Log> logs;
-  
-  File basePath;
 
-  public MultiCSVLogger(String path) {
+  public MultiCSVLogger() {
     logs = new HashMap<String, Log>();
+  }
+  
+  @PostConstruct
+  public void postConstruct() {
     // integration tests may not have a path
-    if (path == null) {
-      path = System.getProperty("java.io.tmpdir");
+    if (basePath == null) {
+      basePath = new File(System.getProperty("java.io.tmpdir"));
       _log.warn("MultiCSVLogger initialized without path:  using "
-          + path);
+          + basePath);
     }
-    basePath = new File(path);
     if (!basePath.exists()) {
       basePath.mkdirs();
     }
@@ -102,7 +112,7 @@ public class MultiCSVLogger {
   public void summarize() {
     FileOutputStream outputStream;
     try {
-      outputStream = new FileOutputStream(new File(basePath, "summary.csv"));
+      outputStream = new FileOutputStream(new File(basePath, "summary.csv"), true);
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);
     }
@@ -114,5 +124,14 @@ public class MultiCSVLogger {
       String filename = entry.getKey().replace(",", "_");
       stream.println(filename + "," + name + "," + log.lines);
     }
+  }
+  
+  public void clear() {
+    for (File file : basePath.listFiles()) {
+      if (file.getName().endsWith(".csv")) {
+        file.delete();
+      }
+    }
+    
   }
 }
