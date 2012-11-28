@@ -1,8 +1,11 @@
 package com.dmurph.tracking;
 
+import java.io.Serializable;
 import java.security.SecureRandom;
 
-public class VisitorData {
+public class VisitorData implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private int visitorId;
 	private long timestampFirst;
 	private long timestampPrevious;
