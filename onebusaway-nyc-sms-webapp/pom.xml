@@ -3,7 +3,7 @@
   <parent>
     <artifactId>onebusaway-nyc</artifactId>
     <groupId>org.onebusaway</groupId>
-    <version>2.0.12-SNAPSHOT</version>
+    <version>2.0.13-SNAPSHOT</version>
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-sms-webapp</artifactId>
@@ -27,7 +27,7 @@
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-nyc-presentation</artifactId>
-      <version>2.0.12-SNAPSHOT</version>
+      <version>2.0.13-SNAPSHOT</version>
     </dependency>
 
     <dependency>
@@ -70,7 +70,7 @@
     <dependency>
       <groupId>com.dmurph</groupId>
       <artifactId>JGoogleAnalyticsTracker</artifactId>
-      <version>1.2.2</version>
+      <version>1.2.3</version>
     </dependency>
     
     <dependency>
