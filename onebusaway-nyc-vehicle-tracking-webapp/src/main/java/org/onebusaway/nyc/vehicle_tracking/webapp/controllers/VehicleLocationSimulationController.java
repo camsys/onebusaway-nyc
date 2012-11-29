@@ -691,9 +691,7 @@ public class VehicleLocationSimulationController {
           
           StopEntry reliefStop = null;
           for (int i = 0; i < entry.getTripEntry().getStopTimes().size() - 1; i++) {
-            
             StopEntry currentStop = entry.getTripEntry().getStopTimes().get(i).getStop();
-            int currentStopArrivalTime = entry.getTripEntry().getStopTimes().get(i).getArrivalTime();
             int currentStopDepartureTime = entry.getTripEntry().getStopTimes().get(i).getDepartureTime();
             
             StopEntry nextStop = entry.getTripEntry().getStopTimes().get(i + 1).getStop();

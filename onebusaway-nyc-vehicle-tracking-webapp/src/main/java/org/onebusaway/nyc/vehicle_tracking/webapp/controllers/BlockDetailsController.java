@@ -76,6 +76,7 @@ public class BlockDetailsController {
     Map<String, Object> model = new HashMap<String, Object>();
     model.put("block", block);
     model.put("dscs", dscsByTripId);
+    
     return new ModelAndView("block-details.jspx", model);
   }
 

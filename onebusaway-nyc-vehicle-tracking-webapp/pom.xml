@@ -12,7 +12,6 @@
     <name>onebusaway-nyc-vehicle-tracking-webapp</name>
 
     <dependencies>
-
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
@@ -57,13 +56,11 @@
             <artifactId>standard</artifactId>
             <version>1.1.2</version>
         </dependency>
-
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
             <version>1.3.1</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
@@ -78,7 +75,6 @@
             <artifactId>commons-io</artifactId>
             <version>1.4</version>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
@@ -87,12 +83,10 @@
             <groupId>log4j</groupId>
             <artifactId>apache-log4j-extras</artifactId>
         </dependency>
-
         <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
@@ -112,15 +106,13 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-	    <!-- db is only for bundle, don't use RDS -->
+	
+		    <!-- db is only for bundle, don't use RDS -->
             <properties>
                 <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
                 <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
                 <db.username>sa</db.username>
                 <db.password />
-<!--
-                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
--->
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
@@ -142,15 +134,12 @@
                 <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
                 <db.username>sa</db.username>
                 <db.password />
-<!--
-                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
--->
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
-                <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
+<!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
 <!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
                  <siri.service.config>empty.xml</siri.service.config>
                  <bundle.location>/tmp/oba-bundle</bundle.location>
@@ -167,15 +156,12 @@
                 <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
                 <db.username>sa</db.username>
                 <db.password />
-<!--
-                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
--->
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
-                <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
+<!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
 <!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
                  <siri.service.config>empty.xml</siri.service.config>
                  <bundle.location>/tmp/oba-bundle</bundle.location>
@@ -195,22 +181,19 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
-<!--                 <tdm.host>tdm.dev.obanyc.com</tdm.host> -->
                 <tdm.host />
                 <tdm.port>80</tdm.port>
                 <tdm.url>/api/</tdm.url>
                 
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
-                <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
+<!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
 <!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
                  <siri.service.config>empty.xml</siri.service.config>
                  <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
                  <bundle.mode.standalone>true</bundle.mode.standalone>
-<!--                  <bundle.mode.standalone>false</bundle.mode.standalone> -->
                  <depot.partition.key />
                  <log4j.appender>stdout</log4j.appender>
-<!--                  <particle.filter.debug>false</particle.filter.debug> -->
                  <particle.filter.debug>true</particle.filter.debug>
           </properties>
         </profile>
@@ -221,15 +204,12 @@
                 <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
                 <db.username>sa</db.username>
                 <db.password />
-<!--
-                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
--->
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
-                <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
+<!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
 <!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
                  <siri.service.config>empty.xml</siri.service.config>
                  <bundle.location>/tmp/oba-bundle</bundle.location>
@@ -307,14 +287,7 @@
                 <version>${jetty.version}</version>
                 <!-- TODO This configuration needs to be under a profile for local operation -->
                 <configuration>
-                    <!-- TODO Only for OSX? -->
-<!--                     <systemProperties>
-                        <systemProperty>
-                            <name>java.library.path</name>
-                            <value>/usr/local/lib</value>
-                        </systemProperty>
-                    </systemProperties>
- -->                    <connectors>
+                    <connectors>
                         <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
                             <port>8081</port>
                         </connector>
