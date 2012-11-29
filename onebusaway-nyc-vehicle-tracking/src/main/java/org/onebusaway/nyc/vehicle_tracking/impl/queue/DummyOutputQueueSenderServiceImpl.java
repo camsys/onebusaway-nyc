@@ -24,6 +24,10 @@ import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Sends data to a local TDS instead of onto the queue.
+ *
+ */
 public class DummyOutputQueueSenderServiceImpl implements
     OutputQueueSenderService {
 

@@ -101,7 +101,7 @@ public class RunTransitionLikelihood implements SensorModelRule {
         EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
 
         /*
-         * TODO clean up this hack We are really in-progress, but because of the
+         * TODO Clean up, we are really in-progress, but because of the
          * out-of-service headsign, we can't report it as in-progress
          */
         if (context.getObservation().hasOutOfServiceDsc()

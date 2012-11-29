@@ -58,7 +58,6 @@ public class NullStateLikelihood implements SensorModelRule {
 
   public static NullStates getNullState(Context context) {
     final VehicleState state = context.getState();
-    // final Observation obs = context.getObservation();
     final BlockStateObservation blockStateObs = state.getBlockStateObservation();
     EVehiclePhase phase = state.getJourneyState().getPhase();
 

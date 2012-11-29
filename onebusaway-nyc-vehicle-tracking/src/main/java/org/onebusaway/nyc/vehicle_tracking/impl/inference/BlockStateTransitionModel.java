@@ -15,6 +15,13 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
@@ -26,24 +33,12 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-
-import org.apache.commons.lang.ObjectUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Component
 public class BlockStateTransitionModel {
-
-  private static Logger _log = LoggerFactory.getLogger(BlockStateTransitionModel.class);
-
+	
   private DestinationSignCodeService _destinationSignCodeService;
 
   private BlocksFromObservationService _blocksFromObservationService;
@@ -189,32 +184,6 @@ public class BlockStateTransitionModel {
         if (parentState.getJourneyState().getPhase() == EVehiclePhase.DEADHEAD_AFTER) {
           return true;
         }
-
-        // final Observation prevObs = obs.getPreviousObservation();
-        // /**
-        // * Have we just transitioned out of a terminal?
-        // */
-        // if (prevObs != null) {
-        // /**
-        // * If we were assigned a block, then use the block's terminals,
-        // otherwise,
-        // * all terminals.
-        // */
-        // if (parentBlockState != null) {
-        // final boolean wasAtBlockTerminal =
-        // VehicleStateLibrary.isAtPotentialTerminal(
-        // prevObs.getRecord(),
-        // parentBlockState.getBlockState().getBlockInstance());
-        // final boolean isAtBlockTerminal =
-        // VehicleStateLibrary.isAtPotentialTerminal(
-        // obs.getRecord(),
-        // parentBlockState.getBlockState().getBlockInstance());
-        //
-        // if (wasAtBlockTerminal && !isAtBlockTerminal) {
-        // return true;
-        // }
-        // }
-        // }
       }
     }
 

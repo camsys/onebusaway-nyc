@@ -70,8 +70,6 @@ public class VehicleInferenceInstance {
 
   private static Logger _log = LoggerFactory.getLogger(VehicleInferenceInstance.class);
 
-  private VehicleStateLibrary _vehicleStateLibrary;
-
   @Autowired
   private ConfigurationService _configurationService;
 
@@ -117,11 +115,6 @@ public class VehicleInferenceInstance {
   }
 
   @Autowired
-  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
-    _vehicleStateLibrary = vehicleStateLibrary;
-  }
-
-  @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
     _destinationSignCodeService = destinationSignCodeService;
@@ -130,15 +123,6 @@ public class VehicleInferenceInstance {
   @Autowired
   public void setBaseLocationService(BaseLocationService baseLocationService) {
     _baseLocationService = baseLocationService;
-  }
-
-  /**
-   * If we haven't received a GPS update in the specified window, the inference
-   * engine is reset only if the DSC has changed since the last update
-   * 
-   * @param optionalResetWindow
-   */
-  public void setOptionalResetWindow(long optionalResetWindow) {
   }
 
   /**

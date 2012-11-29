@@ -17,8 +17,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
-import gov.sandia.cognition.math.ProbabilityUtil;
-
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Multiset;

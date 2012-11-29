@@ -40,20 +40,6 @@ public final class BlockStateObservation implements
 
   private final boolean _isOnTrip;
 
-  private BlockStateObservation(BlockState blockState, Boolean isRunReported,
-      Boolean isUTSassigned, boolean isFormal, boolean isAtLayoverSpot,
-      boolean isSnapped, Observation obs, boolean isOnTrip) {
-    _blockState = blockState;
-    this._isRunFormal = isFormal;
-    this._isRunReported = isRunReported;
-    this._isOpAssigned = isUTSassigned;
-    this._isAtPotentialLayoverSpot = isAtLayoverSpot;
-    this._isSnapped = isSnapped;
-    this._obs = obs;
-    this._scheduleDeviation = computeScheduleDeviation(obs, blockState);
-    this._isOnTrip = isOnTrip;
-  }
-
   public BlockStateObservation(BlockStateObservation state, Observation obs) {
     
     final String runId = state.getBlockState().getRunId();
@@ -70,13 +56,6 @@ public final class BlockStateObservation implements
     _obs = obs;
     _isOnTrip = state._isOnTrip;
     _scheduleDeviation = computeScheduleDeviation(obs, _blockState);
-    
-    /*
-     * We now recompute these, since some of this info could change simply with time.
-     */
-//    this(state._blockState, state._isRunReported, state._isOpAssigned,
-//        state._isRunFormal, state._isAtPotentialLayoverSpot, state._isSnapped,
-//        obs, state._isOnTrip);
   }
 
   public BlockStateObservation(BlockState blockState, Observation obs,

@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.RunLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -24,7 +22,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -84,8 +81,6 @@ public class JourneyStateTransitionModel {
     
     if (remainingDistanceOnTrip < _remainingTripDistanceDetourCutoff)
       return false;
-        
-    
 
     /*
      * If it was previously snapped, in-service and in the middle of a block
@@ -149,13 +144,7 @@ public class JourneyStateTransitionModel {
          * Note: we changed this from >= because snapped deadhead-after states could be more
          * likely than in-progress at/near the end.
          */
-        
-//        if (!MotionModelImpl.hasRunChanged(parentStateObservation,
-//              blockState)) {
-          return JourneyState.deadheadAfter();
-//        } else {
-//          return JourneyState.deadheadBefore(null);
-//        }
+         return JourneyState.deadheadAfter();
         
       } else {
         /*

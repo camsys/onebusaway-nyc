@@ -15,11 +15,16 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import gov.sandia.cognition.math.LogMath;
+
+import java.util.Random;
+import java.util.Set;
+
+import org.apache.commons.math.util.FastMath;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -28,24 +33,14 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
-
-import gov.sandia.cognition.math.LogMath;
-
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Multiset.Entry;
-
-import org.apache.commons.math.util.FastMath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import umontreal.iro.lecuyer.rng.MRG32k3a;
 import umontreal.iro.lecuyer.rng.RandomStream;
 
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 
 /**
  * Create particles from an observation.
@@ -65,13 +60,9 @@ import java.util.Set;
  */
 public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
-  private static Logger _log = LoggerFactory.getLogger(ParticleFactoryImpl.class);
   private static int _initialNumberOfParticles = 200;
-
-  private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
-
   private MotionModelImpl _motionModel;
-
+  
   private BlocksFromObservationService _blocksFromObservationService;
   private JourneyStateTransitionModel _journeyStateTransitionModel;
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
@@ -295,13 +286,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       BlockStateObservation blockState, JourneyState journeyState,
       Observation obs) {
 
-    final List<JourneyPhaseSummary> summaries = null;
-    // if (ParticleFilter.getDebugEnabled()) {
-    // summaries = _journeyStatePhaseLibrary.extendSummaries(null, blockState,
-    // journeyState, obs);
-    // }
-
-    return new VehicleState(motionState, blockState, journeyState, summaries,
+    return new VehicleState(motionState, blockState, journeyState, null,
         obs);
   }
 

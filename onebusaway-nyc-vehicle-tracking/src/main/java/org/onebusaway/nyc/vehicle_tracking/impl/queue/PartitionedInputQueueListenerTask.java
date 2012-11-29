@@ -18,6 +18,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 
+/**
+ * Reads an entire depot's worth of buses from the queue
+ *
+ */
 public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
     implements PartitionedInputQueueListener, ServletContextAware {
 
@@ -118,8 +122,6 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   @Override
   @PostConstruct
   public void setup() {
-    // test is depotPartitionKeys is overridden in context
-    // XXXX
     super.setup();
   }
 

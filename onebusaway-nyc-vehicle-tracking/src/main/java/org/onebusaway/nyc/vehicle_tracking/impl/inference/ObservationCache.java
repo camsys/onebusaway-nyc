@@ -15,8 +15,15 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
+
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.springframework.stereotype.Component;
 
 import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
@@ -25,16 +32,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.MinMaxPriorityQueue;
 import com.google.common.primitives.Longs;
-
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
-import org.springframework.stereotype.Component;
-
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 @Component
 public class ObservationCache {

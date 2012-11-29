@@ -58,7 +58,6 @@ public class RecordLibrary {
     qlr.setObservedLongitude(record.getLon());
     qlr.setPhase(record.getInferredPhase());
     qlr.setStatus(record.getInferredStatus());
-    // TODO add operator, run?
 
     return qlr;
   }
@@ -79,7 +78,6 @@ public class RecordLibrary {
     vlr.setPhase(EVehiclePhase.valueOf(record.getPhase()));
     vlr.setStatus(record.getStatus());
     vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(record.getVehicleId()));
-    // TODO add operator, run?
 
     return vlr;
   }
