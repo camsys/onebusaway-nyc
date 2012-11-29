@@ -56,6 +56,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ 
 
+	// user defined pause to leave cargo apps running for manual testing
 	PauseDuringIntegrationTest.class,
 
 	/*

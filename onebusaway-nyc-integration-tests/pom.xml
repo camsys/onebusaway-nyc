@@ -122,6 +122,7 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
+<!--  Use for debugging individual tests -->                        
 <!--                         	<debugForkedProcess>true</debugForkedProcess> -->
                             <excludes>
                                 <exclude>none</exclude>
@@ -139,6 +140,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <!-- We create custom integration-test versions of all the webapp wars that include custom resources and data-sources 
                 for our integration-testing setup -->
             <plugin>
@@ -160,6 +162,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <!-- Build a graph bundle using our integration-test data sources (currently, a reduced set of MTA data) -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -300,6 +303,7 @@
                     </execution>                
 				</executions>
             </plugin>
+            
             <!-- Start up an embedded database for sharing the user database between webapps -->
             <plugin>
                 <groupId>org.onebusaway.plugins</groupId>
@@ -320,6 +324,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <!-- Start up all the webapps using the cargo plugin -->
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
@@ -327,7 +332,7 @@
                 <version>1.0.6</version>
                 <configuration>
                     <container>
-<!-- use this when debugging cargo -->
+<!-- Use for debugging cargo -->
 <!--
                         <log>${java.io.tmpdir}/cargo.log</log>
                         <output>${java.io.tmpdir}/cargo</output>
@@ -359,6 +364,7 @@
                                 <home>${project.build.directory}/tomcat5x/onebusaway-nyc-vehicle-tracking-webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
+<!-- Use when you want to debug the Cargo-started VTW -->                                    
 <!--                                     <cargo.jvmargs>${cargo.jvmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044</cargo.jvmargs> -->
                                     <cargo.servlet.port>${org.onebusaway.transit_data_federation_webapp.port}</cargo.servlet.port>
                                     <cargo.tomcat.ajp.port>${org.onebusaway.transit_data_federation_webapp.ajp_port}</cargo.tomcat.ajp.port>
