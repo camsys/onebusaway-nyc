@@ -28,12 +28,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
             <version>2.0.13-SNAPSHOT</version>
         </dependency>
+        
         <!-- Standard Java Webapp Libraries -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -180,7 +180,7 @@
                  <siri.service.config>empty.xml</siri.service.config>
                  <bundle.location>/tmp/oba-bundle</bundle.location>
                  <bundle.mode.standalone>false</bundle.mode.standalone>
-                 <depot.partition.key />
+                 <depot.partition.key/>
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
           </properties>
@@ -245,13 +245,13 @@
         <profile>
             <id>depots-all</id>
             <properties>
-                <depot.partition.key>JG,CA,MA,MH,YU,100th,126,BPK,CAST,CHAR,CP,ECH,ENY,FLAT,FP,FRK,GH,GRAND,JAM,JFK,KB,LAG,MANVI,MJQ,NJL,QV,RVC,SPRCK,STF,ULPK,WF,YNK,YUK</depot.partition.key>
+                <depot.partition.key>JG,CA,MA,MH,YU,100th,126,BPK,CAST,CHAR,CP,ECH,ENY,FLAT,FP,FRK,GH,GRAND,JAM,JFK,KB,LAG,MANVI,MJQ,NJL,QV,RVC,SPRCK,STF,ULPK,WF,YNK,YU</depot.partition.key>
             </properties>            
         </profile>
         <profile>
             <id>depots-one</id>
             <properties>
-                <depot.partition.key>YUK</depot.partition.key>
+                <depot.partition.key>YU</depot.partition.key>
             </properties>            
         </profile>
         <profile>
