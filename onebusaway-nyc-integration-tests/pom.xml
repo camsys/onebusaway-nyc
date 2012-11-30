@@ -128,6 +128,7 @@
                             </excludes>
                             <includes>
                                 <include>**/*TestSuite*.java</include>
+<!--                                  <include>**/*IntegrationTest.java</include> -->
                             </includes>
                             <!-- We define some test system properties -->
                             <systemPropertyVariables>
@@ -166,6 +167,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1.1</version>
                 <executions>
+<!-- valid default bundle begin -->
                     <execution>
                         <id>graph-builder-execution-2012September_Bronx_r10_b03</id>
                         <phase>pre-integration-test</phase>
