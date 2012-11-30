@@ -16,6 +16,9 @@ public class LocationDevDist implements
   private double[] _locationVarParams = {101.0, 2700.0};
   private Double _currentLocVarSample = null;
 
+  // private InverseGammaDist _locationVarDist = new InverseGammaDist(
+  // _locationVarParams[0], _locationVarParams[1]);
+
   private final RandomStream _rng;
   private Double _lastLocVarSample = null;
 

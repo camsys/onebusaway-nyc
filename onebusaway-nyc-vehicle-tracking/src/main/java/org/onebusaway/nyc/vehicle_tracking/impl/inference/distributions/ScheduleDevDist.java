@@ -16,6 +16,7 @@ import java.util.Arrays;
 public class ScheduleDevDist implements
     ConjugateDist<ScheduleDevParams, Double, Double> {
 
+  // TODO break these into separate classes
   private double[] _scheduleDevVarParams = {101.0, 90000.0};
   private Double _currentDevVarSample = null;
 
@@ -25,6 +26,10 @@ public class ScheduleDevDist implements
   private double[] _scheduleDevKalmanParams = {0.0, Math.pow(60.0 * 15.0, 2.0)};
   private Double _currentDevSample = null;
   private Double _lastDevSample = null;
+
+  // private InverseGammaDist _scheduleVarDist = new
+  // InverseGammaDist(_scheduleVarParams[0],
+  // _scheduleVarParams[1]);
 
   RandomStream _rng;
 
@@ -78,7 +83,6 @@ public class ScheduleDevDist implements
 
     _scheduleDevTransVarParams[0] += 1.0;
     _scheduleDevTransVarParams[1] += Math.pow(schedDev - _currentDevSample, 2.0);
-
     /*
      * predictive variance
      */

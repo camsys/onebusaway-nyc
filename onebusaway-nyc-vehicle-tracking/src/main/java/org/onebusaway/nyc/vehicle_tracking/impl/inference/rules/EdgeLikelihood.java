@@ -15,8 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
-import gov.sandia.cognition.statistics.distribution.UnivariateGaussian;
-
+import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
@@ -29,18 +28,22 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
-import org.springframework.stereotype.Component;
+
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.vividsolutions.jts.algorithm.Angle;
 
 import cern.jet.math.Bessel;
 
-import com.google.common.base.Objects;
-import com.vividsolutions.jts.algorithm.Angle;
+import gov.sandia.cognition.statistics.distribution.UnivariateGaussian;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class EdgeLikelihood implements SensorModelRule {
 
   /*
-   * Values for deadhead movement
+   * Hackish values for deadhead movement
    */
   private static final double _avgVelocity = 13.4112d;
   private static final double _avgTripVelocity = 6.4112d;
@@ -65,6 +68,16 @@ public class EdgeLikelihood implements SensorModelRule {
     final Observation obs = context.getObservation();
     final EVehiclePhase phase = state.getJourneyState().getPhase();
     final BlockStateObservation blockStateObs = state.getBlockStateObservation();
+
+//    /*-
+//     * TODO clean up this hack 
+//     * We are really in-progress, but because of the
+//     * out-of-service headsign, we can't report it as in-progress
+//     */
+//    if (obs.hasOutOfServiceDsc() && EVehiclePhase.DEADHEAD_DURING == phase
+//        && (blockStateObs != null && blockStateObs.isOnTrip()))
+//      phase = EVehiclePhase.IN_PROGRESS;
+
     final SensorModelResult result = new SensorModelResult("pEdge", 1d);
 
     if (obs.getPreviousObservation() == null || parentState == null) {
@@ -176,7 +189,8 @@ public class EdgeLikelihood implements SensorModelRule {
     if (prevObs != null) {
 
       /*
-       * TODO: Use a Kalman filter?
+       * Trying to get away with not using a real tracking filter FIXME really
+       * lame. use a Kalman filter.
        */
       final double obsTimeDelta = obs.getTimeDelta();
       if (prevObs.getTimeDelta() != null) {
@@ -314,7 +328,7 @@ public class EdgeLikelihood implements SensorModelRule {
     if (ParticleFilter.getDebugEnabled())
       result.addResult("dist: " + dabDelta, 0d);
 
-    // FIXME Use a Kalman filter?
+    // FIXME really lame. use a Kalman filter.
     final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
     final double expAvgDist;
     if (hasMoved) {
@@ -381,7 +395,18 @@ public class EdgeLikelihood implements SensorModelRule {
         logpOrient = _inProgressProb * logVonMisesPdf(orientDiff, _deadheadEntranceConcParam);
       }
     } else {
-      orientDiff = Angle.diff(obsOrientation, Math.toRadians(blockState.getBlockLocation().getOrientation()));
+//      /*
+//       * What if we're switching trips while in the middle of doing one?
+//       * We assume that it's unlikely to do a complete 180 when we're
+//       * stopped.
+//       */
+//      if (parentState.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS
+//          && state.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS) {
+//        orientDiff = Math.toRadians(blockState.getBlockLocation().getOrientation() 
+//            - parentBlockState.getBlockLocation().getOrientation());
+//      } else {
+        orientDiff = Angle.diff(obsOrientation, Math.toRadians(blockState.getBlockLocation().getOrientation()));
+//      }
       if (ParticleFilter.getDebugEnabled())
         result.addResult("orientDiff (stopped):" + orientDiff, 0d);
       logpOrient = _inProgressProb * logVonMisesPdf(orientDiff, _stoppedConcParam);

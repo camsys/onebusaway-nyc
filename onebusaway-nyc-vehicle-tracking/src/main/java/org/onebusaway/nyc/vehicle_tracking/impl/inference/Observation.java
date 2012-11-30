@@ -96,6 +96,7 @@ public class Observation implements Comparable<Observation> {
             );
       }
     }
+
     _previousObservation = previousObservation;
   }
 

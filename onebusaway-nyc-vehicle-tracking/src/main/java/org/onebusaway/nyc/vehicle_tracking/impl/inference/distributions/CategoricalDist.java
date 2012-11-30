@@ -168,6 +168,9 @@ public class CategoricalDist<T extends Comparable<T>> {
           }
         });
 
+    // final double u = threadLocalRng.get().nextDouble();
+    // final int newIdx = (int) emd.inverseF(u);
+
     return (T) _entries[_objIdx.get(newIdx)];
   }
 

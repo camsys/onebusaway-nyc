@@ -27,6 +27,10 @@ public class DistAlongDevDist implements
   private Double _distAlongDevSample = null;
   private Double _lastDevSample = null;
 
+  // private InverseGammaDist _scheduleVarDist = new
+  // InverseGammaDist(_scheduleVarParams[0],
+  // _scheduleVarParams[1]);
+
   RandomStream _rng;
 
   public DistAlongDevDist(DistAlongDevDist obj) {

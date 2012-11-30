@@ -15,20 +15,14 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.realtime.api.EVehiclePhase;
+
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gov.sandia.cognition.math.LogMath;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.apache.commons.math.util.FastMath;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
@@ -36,6 +30,17 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
+import com.google.common.collect.Ordering;
+
+import org.apache.commons.math.util.FastMath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Core particle filter implementation.<br>
@@ -192,8 +197,9 @@ public class ParticleFilter<OBS> {
 
   public static double getEffectiveSampleSize(Multiset<Particle> particles) 
       throws BadProbabilityParticleFilterException {
-
-	double Wnorm = 0.0;
+    // double CVt = 0.0;
+    // double N = particles.size();
+    double Wnorm = 0.0;
     for (final Multiset.Entry<Particle> p : particles.entrySet()) {
       final double weight = p.getElement().getWeight();
       Wnorm += weight * p.getCount();
@@ -207,12 +213,47 @@ public class ParticleFilter<OBS> {
       final double weight = p.getElement().getWeight();
       Wvar += FastMath.pow(weight / Wnorm, 2) * p.getCount();
     }
+    // for (Multiset.Entry<Particle> p : particles.entrySet()) {
+    // CVt += FastMath.pow(p.getElement().getWeight()/Wnorm - 1/N,
+    // 2.0)*p.getCount();
+    // }
+    // CVt = FastMath.sqrt(N*CVt);
+    //
+    // return N/(1+FastMath.pow(CVt, 2.0));
     
     if (Double.isInfinite(Wvar) || Double.isNaN(Wvar))
       throw new BadProbabilityParticleFilterException("effective sample size numerical error: Wvar=" + Wvar);
     
     return 1 / Wvar;
   }
+
+  private static final Ordering<Particle> _nullBlockStateComparator = new Ordering<Particle>() {
+
+    @Override
+    public int compare(Particle o1, Particle o2) {
+      final VehicleState v1 = o1.getData();
+      final VehicleState v2 = o2.getData();
+
+      if (v1.getBlockState() == null) {
+        if (v2.getBlockState() != null)
+          return 1;
+        else
+          return 0;
+      } else if (v2.getBlockState() == null) {
+        return -1;
+      }
+
+      if (!EVehiclePhase.isActiveDuringBlock(v1.getJourneyState().getPhase())) {
+        if (EVehiclePhase.isActiveDuringBlock(v2.getJourneyState().getPhase()))
+          return 1;
+      } else if (!EVehiclePhase.isActiveDuringBlock(v2.getJourneyState().getPhase())) {
+        return -1;
+      }
+
+      return 0;
+    }
+
+  };
 
   /**
    * @return true if this is the initial entry for these particles
@@ -314,6 +355,7 @@ public class ParticleFilter<OBS> {
    * @param moveParticles
    * @throws ParticleFilterException
    */
+  @SuppressWarnings("unused")
   private void runSingleTimeStep(double timestamp, OBS obs,
       boolean moveParticles) throws ParticleFilterException {
 
@@ -336,6 +378,10 @@ public class ParticleFilter<OBS> {
     /**
      * 4. store the most likely particle's information
      */
+
+    // if (!cdf.canSample())
+    // throw new ZeroProbabilityParticleFilterException();
+
     computeBestState(particles);
 
     if (getEffectiveSampleSize(particles)

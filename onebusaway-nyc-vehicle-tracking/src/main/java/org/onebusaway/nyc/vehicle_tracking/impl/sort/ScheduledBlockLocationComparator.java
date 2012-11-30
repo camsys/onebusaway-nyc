@@ -1,15 +1,29 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.sort;
 
-import java.util.Comparator;
-
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import com.google.common.collect.ComparisonChain;
+
+import java.util.Comparator;
 
 public final class ScheduledBlockLocationComparator implements
     Comparator<ScheduledBlockLocation> {
 
+  private ScheduledBlockLocationComparator() {
+
+  }
+
   public final static ScheduledBlockLocationComparator INSTANCE = new ScheduledBlockLocationComparator();
+
+  private static class TripIdComparator implements Comparator<TripEntry> {
+    @Override
+    public int compare(TripEntry o1, TripEntry o2) {
+      return o1.getId().compareTo(o2.getId());
+    }
+  }
+
+  static final private TripIdComparator _tripIdComparator = new TripIdComparator();
 
   @Override
   public int compare(ScheduledBlockLocation arg0, ScheduledBlockLocation arg1) {

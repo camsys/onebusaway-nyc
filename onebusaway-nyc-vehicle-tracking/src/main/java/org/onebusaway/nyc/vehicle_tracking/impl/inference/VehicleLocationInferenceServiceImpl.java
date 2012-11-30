@@ -281,8 +281,7 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
 
-    @SuppressWarnings("rawtypes")
-	final Future result = _executorService.submit(new ProcessingTask(r));
+    final Future result = _executorService.submit(new ProcessingTask(r));
     _bundleManagementService.registerInferenceProcessingThread(result);
   }
 

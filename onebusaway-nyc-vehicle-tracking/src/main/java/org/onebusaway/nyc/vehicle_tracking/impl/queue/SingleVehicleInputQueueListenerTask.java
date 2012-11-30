@@ -13,10 +13,6 @@ import tcip_final_3_0_5_1.CcLocationReport;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-/**
- * Reads one vehicle from the queue for debugging purposes.
- *
- */
 public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
     implements PartitionedInputQueueListener {
 

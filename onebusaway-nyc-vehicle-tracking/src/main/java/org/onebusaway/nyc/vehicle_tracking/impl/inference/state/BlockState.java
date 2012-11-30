@@ -89,7 +89,7 @@ public final class BlockState implements Comparable<BlockState> {
   }
 
   public String getRunId() {
-    // TODO AgencyAndId?
+    // TODO agencyId?
     return runTrip == null ? null : runTrip.getRunId();
   }
 
@@ -123,6 +123,9 @@ public final class BlockState implements Comparable<BlockState> {
     int result = 1;
     result = prime * result
         + ((blockInstance == null) ? 0 : blockInstance.hashCode());
+    /*
+     * don't want/need to change OBA api, so do this...
+     */
     result = prime * result
         + ((blockLocation == null) ? 0 : blockLocation.getScheduledTime());
     result = prime
@@ -130,6 +133,12 @@ public final class BlockState implements Comparable<BlockState> {
         + ((blockLocation == null) ? 0
             : ((blockLocation.getActiveTrip() == null) ? 0
                 : blockLocation.getActiveTrip().getTrip().getId().hashCode()));
+    // long temp = 0;
+    // if (blockLocation != null)
+    // temp = Double.doubleToLongBits(blockLocation.getDistanceAlongBlock());
+    // result = (int) (prime * result + ((temp == 0) ? temp
+    // : (int) (temp ^ (temp >>> 32))));
+
     result = prime * result
         + ((destinationSignCode == null) ? 0 : destinationSignCode.hashCode());
     result = prime * result + ((runTrip == null) ? 0 : runTrip.hashCode());
@@ -167,6 +176,9 @@ public final class BlockState implements Comparable<BlockState> {
       if (!blockLocation.getActiveTrip().getTrip().getId().equals(
           other.blockLocation.getActiveTrip().getTrip().getId()))
         return false;
+      // if (Double.compare(blockLocation.getDistanceAlongBlock(),
+      // other.blockLocation.getDistanceAlongBlock()) != 0)
+      // return false;
     }
 
     if (destinationSignCode == null) {

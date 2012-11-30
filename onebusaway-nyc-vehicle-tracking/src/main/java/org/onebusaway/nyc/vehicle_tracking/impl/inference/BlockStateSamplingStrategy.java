@@ -32,6 +32,9 @@ public interface BlockStateSamplingStrategy {
   public BlockStateObservation sampleTransitionScheduleDev(
       BlockStateObservation parentBlockStateObs, Observation obs);
 
+  // public BlockStateObservation sampleGpsObservationState(
+  // BlockStateObservation parentBlockStateObs, Observation obs);
+
   public BlockStateObservation samplePriorScheduleState(
       BlockInstance blockInstance, Observation obs);
 }

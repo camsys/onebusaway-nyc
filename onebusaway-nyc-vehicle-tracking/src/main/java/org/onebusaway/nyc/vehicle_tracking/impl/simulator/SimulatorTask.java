@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
@@ -41,6 +42,19 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultiset;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SimulatorTask implements Runnable, EntityHandler {
 
@@ -82,6 +96,8 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
   private boolean _bypassInference = false;
 
+  private boolean _fillActualProperties = false;
+
   private int _minimumRecordInterval = 0;
 
   private long _startTimeOffset = 0;
@@ -99,6 +115,9 @@ public class SimulatorTask implements Runnable, EntityHandler {
   private int _particleParentSize = 2;
   
   private final long creationTime = System.currentTimeMillis();
+
+  public SimulatorTask() {
+  }
 
   public void setVehicleLocationService(
       VehicleLocationInferenceService vehicleLocationService) {
@@ -139,6 +158,10 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
   public void setBypassInference(boolean bypassInference) {
     _bypassInference = bypassInference;
+  }
+
+  public void setFillActualProperties(boolean fillActualProperties) {
+    _fillActualProperties = fillActualProperties;
   }
 
   public void setLoop(boolean loop) {
@@ -243,6 +266,15 @@ public class SimulatorTask implements Runnable, EntityHandler {
   public VehicleLocationDetails getDetails(int recordNumber) {
     return recordNumber < 0 || recordNumber >= _details.size() ? null
         : _details.get(recordNumber);
+    // int index = 0;
+    // for (final Iterator<VehicleLocationDetails> it =
+    // _details.descendingIterator(); it.hasNext();) {
+    // final VehicleLocationDetails details = it.next();
+    // if (index == historyOffset)
+    // return details;
+    // index++;
+    // }
+    // return null;
   }
 
   public VehicleLocationDetails getTransitionParticleDetails(
@@ -385,6 +417,10 @@ public class SimulatorTask implements Runnable, EntityHandler {
         _vehicleLocationInferenceService.handleNycTestInferredLocationRecord(record);
       }
 
+      if (shouldExitAfterWaitingForInferenceToComplete(record))
+        ;
+      // return;
+
       _mostRecentRecord = record;
       _recordsProcessed.incrementAndGet();
     }
@@ -470,6 +506,87 @@ public class SimulatorTask implements Runnable, EntityHandler {
       _results.clear();
       _recordsProcessed.set(0);
     }
+  }
+
+  private boolean shouldExitAfterWaitingForInferenceToComplete(
+      NycTestInferredLocationRecord record) {
+
+    for (int i = 0; i < 20; i++) {
+
+      if (processResultRecord(record))
+        return false;
+
+      try {
+        Thread.sleep(10 * i);
+      } catch (final InterruptedException ex) {
+        return true;
+      }
+    }
+
+    _log.warn("vehicle location inference never completed");
+    return true;
+  }
+
+  private boolean processResultRecord(NycTestInferredLocationRecord record) {
+
+    final NycTestInferredLocationRecord rr = _vehicleLocationInferenceService.getNycTestInferredLocationRecordForVehicle(record.getVehicleId());
+
+    if (rr == null || rr.getTimestamp() < record.getTimestamp())
+      return false;
+
+    rr.setVehicleId(_vehicleId);
+
+    if (_fillActualProperties) {
+      rr.setActualRunId(rr.getInferredRunId());
+      rr.setActualBlockId(rr.getInferredBlockId());
+      rr.setActualTripId(rr.getInferredTripId());
+      rr.setActualBlockLat(rr.getInferredBlockLat());
+      rr.setActualBlockLon(rr.getInferredBlockLon());
+      rr.setActualDistanceAlongBlock(rr.getInferredDistanceAlongBlock());
+      rr.setActualScheduleTime(rr.getInferredScheduleTime());
+      rr.setActualDsc(rr.getInferredDsc());
+      rr.setActualPhase(rr.getInferredPhase());
+      rr.setActualServiceDate(rr.getInferredServiceDate());
+      rr.setActualStatus(rr.getInferredStatus());
+
+      rr.clearInferredValues();
+    }
+
+    rr.setAssignedRunId(record.getAssignedRunId());
+    rr.setActualIsRunFormal(record.getActualIsRunFormal());
+    rr.setActualRunId(record.getActualRunId());
+    rr.setActualBlockId(record.getActualBlockId());
+    rr.setActualTripId(record.getActualTripId());
+    rr.setActualBlockLat(record.getActualBlockLat());
+    rr.setActualBlockLon(record.getActualBlockLon());
+    rr.setActualDistanceAlongBlock(record.getActualDistanceAlongBlock());
+    rr.setActualScheduleTime(record.getActualScheduleTime());
+    rr.setActualDsc(record.getActualDsc());
+    rr.setActualPhase(record.getActualPhase());
+    rr.setActualServiceDate(record.getActualServiceDate());
+    rr.setActualStatus(record.getActualStatus());
+
+    synchronized (_results) {
+      _results.add(rr);
+      rr.setRecordNumber(_results.size() - 1);
+    }
+
+    final VehicleLocationDetails details = new VehicleLocationDetails();
+    details.setId(_id);
+    details.setVehicleId(_vehicleId);
+    details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record));
+
+    final Multiset<Particle> weightedParticles = TreeMultiset.create(Ordering.natural());
+    weightedParticles.addAll(_vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId));
+    if (!weightedParticles.isEmpty()) {
+      details.setParticles(weightedParticles);
+      details.setSampledParticles(weightedParticles);
+    }
+
+    if (_details.size() < _maxParticleHistorySize)
+      _details.add(details);
+
+    return true;
   }
 
   public String getFilename() {

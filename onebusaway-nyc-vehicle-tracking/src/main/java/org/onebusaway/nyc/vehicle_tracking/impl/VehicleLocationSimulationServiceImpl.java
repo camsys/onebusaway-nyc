@@ -90,6 +90,8 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private static final String ARG_VEHICLE_ID = "vehicle_id";
 
+  private static final String ARG_RUN_TRANSITION_PARAMS = "run_transition_params";
+
   private static final String ARG_SHIFT_START_TIME = "shift_start_time";
 
   private static final String ARG_LOCATION_SIGMA = "location_sigma";
@@ -124,12 +126,13 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private ObservationCache _observationCache;
   
-  // TODO Consistent?
-  private final UniformGen ung = new UniformGen(streamArr);
-
   @Autowired
   private VehicleLocationListener _vehicleLocationListener;
   
+  // TODO consistent?
+  private final UniformGen ung = new UniformGen(streamArr);
+
+
   @Autowired
   public void setObservationCache(ObservationCache observationCache) {
     _observationCache = observationCache;
@@ -196,6 +199,7 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setShiftStartTime(shiftStartTime);
     task.setMinimumRecordInterval(minimumRecordInterval);
     task.setBypassInference(bypassInference);
+    task.setFillActualProperties(fillActualProperties);
     task.setLoop(loop);
     task.setMaxParticleHistorySize(historySize);
 
@@ -215,9 +219,12 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public List<VehicleLocationSimulationSummary> getSimulations() {
+
     final List<VehicleLocationSimulationSummary> summaries = new ArrayList<VehicleLocationSimulationSummary>();
+
     for (final SimulatorTask task : _tasks.values())
       summaries.add(task.getSummary());
+
     return summaries;
   }
 
@@ -389,6 +396,7 @@ public class VehicleLocationSimulationServiceImpl implements
     String runRoute = runTrip.getRunRoute();
 
     if (StringUtils.equals(runRoute, "MISC")) {
+      // runRoute = "0" + random.nextInt(9) + random.nextInt(9);
       runRoute = "000";
     } else if (runRoute.length() >= 5) {
       final String firstPart = runRoute.substring(1, 3);
@@ -420,6 +428,8 @@ public class VehicleLocationSimulationServiceImpl implements
     Collections.sort(rtes, new RunTripComparator(serviceDate,
         _blockCalendarService));
 
+    // String agencyId = runTrip.getTripEntry().getId().getAgencyId();
+
     CoordinatePoint lastLocation = null;
     final RunTripEntry lastRunTrip = rtes.get(rtes.size() - 1);
     final int firstTime = runTrip.getStartTime();
@@ -441,9 +451,11 @@ public class VehicleLocationSimulationServiceImpl implements
           break;
         currRunIdx += 1;
         runTrip = rtes.get(currRunIdx);
+        // runTrip = _runService.getNextEntry(runTrip);
+
         runningLastTime = runTrip.getStopTime();
 
-        // FIXME Saw weird run setups like this. are these in error?
+        // FIXME saw weird run setups like this. are these in error?
         if (scheduleTime >= runningLastTime) {
           _log.error("runs are ordered oddly:" + rtes.get(currRunIdx - 1)
               + " -> " + runTrip);
@@ -466,6 +478,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
       // TODO dsc changes for new block/run?
       String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(tripId);
+
       if (StringUtils.isEmpty(dsc))
         dsc = "0";
 
@@ -507,7 +520,14 @@ public class VehicleLocationSimulationServiceImpl implements
            */
           record.setActualPhase(EVehiclePhase.DEADHEAD_BEFORE.toString());
           dsc = "0";
+
           runTrip = newRun;
+
+          /*
+           * similarly, do we reset the reportedRunId? TODO also a user option?
+           */
+          // reportedRunId = runTrip.getRun();
+
         }
       }
 
@@ -526,6 +546,7 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setActualRunId(runTrip.getRunId());
 
       final String currentBlockId = AgencyAndIdLibrary.convertToString(blockEntry.getId());
+      // if (_log.isDebugEnabled())
       if (lastBlockId != null
           && !StringUtils.equals(currentBlockId, lastBlockId)) {
         _log.info("changed blocks: " + lastBlockId + " -> " + currentBlockId);
@@ -551,6 +572,7 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setLon(p.getLon());
       record.setTimestamp(perterbedTimestamp);
       record.setVehicleId(vehicleId);
+      // TODO options for whether these are reported or not?
       if (reportsOperatorId)
         record.setOperatorId("0000");
 
@@ -566,8 +588,10 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setActualDsc(dsc);
       record.setActualBlockLat(location.getLat());
       record.setActualBlockLon(location.getLon());
-      
+      // TODO setActualStatus?
+
       task.addRecord(record);
+
       scheduleTime += 30 + random.nextGaussian() * 2;
     }
 
@@ -653,6 +677,7 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setPauseOnStart(false);
     task.setRunInRealtime(realtime);
     task.setBypassInference(bypassInference);
+    task.setFillActualProperties(fillActual);
 
     final BlockInstance blockInstance = _blockCalendarService.getBlockInstance(
         blockId, serviceDate);
@@ -681,10 +706,11 @@ public class VehicleLocationSimulationServiceImpl implements
 
       _log.info("Using runTrip=" + runTrip.toString());
 
-      // TODO create "config" object?
       // TODO pass these along to run-simulation method
       // List<Double> transitionParams =
       // getRunTransitionParams(properties);
+
+      // TODO create "config" object to hold this mess?
       generateRunSim(random, task, runTrip, serviceDate, scheduleTime,
           shiftStartTime, reportsOperatorId, reportsRunId, allowRunTransitions,
           scheduleDeviations, locationSigma, vehicleId);

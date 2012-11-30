@@ -105,6 +105,7 @@ public class JourneyPhaseSummary {
     private double blockCompletionRatioTo;
 
     public Builder() {
+
     }
 
     public Builder(JourneyPhaseSummary s) {

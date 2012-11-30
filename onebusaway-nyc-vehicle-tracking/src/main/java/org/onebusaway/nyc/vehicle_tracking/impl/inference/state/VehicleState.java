@@ -125,8 +125,11 @@ public final class VehicleState implements Comparable<VehicleState> {
         * result
         + ((blockStateObservation == null) ? 0
             : blockStateObservation.hashCode());
+    // XXX we're only concerned with phase here
     result = prime * result
         + ((journeyState == null) ? 0 : journeyState.getPhase().hashCode());
+    // result = prime * result
+    // + ((journeySummaries == null) ? 0 : journeySummaries.hashCode());
     result = prime * result
         + ((motionState == null) ? 0 : motionState.hashCode());
     result = prime * result
@@ -143,14 +146,13 @@ public final class VehicleState implements Comparable<VehicleState> {
       return false;
     if (!(obj instanceof VehicleState))
       return false;
-    
     final VehicleState other = (VehicleState) obj;
     if (blockStateObservation == null) {
       if (other.blockStateObservation != null)
         return false;
     } else if (!blockStateObservation.equals(other.blockStateObservation))
       return false;
-    
+    // XXX we're only concerned with phase here
     if (journeyState == null) {
       if (other.journeyState != null)
         return false;
@@ -158,7 +160,11 @@ public final class VehicleState implements Comparable<VehicleState> {
       return false;
     } else if (!journeyState.getPhase().equals(other.journeyState.getPhase()))
       return false;
-
+    // if (journeySummaries == null) {
+    // if (other.journeySummaries != null)
+    // return false;
+    // } else if (!journeySummaries.equals(other.journeySummaries))
+    // return false;
     if (motionState == null) {
       if (other.motionState != null)
         return false;
@@ -169,7 +175,6 @@ public final class VehicleState implements Comparable<VehicleState> {
         return false;
     } else if (!observation.equals(other.observation))
       return false;
-
     return true;
   }
 

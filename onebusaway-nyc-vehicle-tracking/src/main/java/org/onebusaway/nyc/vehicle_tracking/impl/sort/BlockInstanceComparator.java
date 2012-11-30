@@ -8,6 +8,10 @@ import java.util.Comparator;
 
 public final class BlockInstanceComparator implements Comparator<BlockInstance> {
 
+  private BlockInstanceComparator() {
+
+  }
+
   public static final BlockInstanceComparator INSTANCE = new BlockInstanceComparator();
 
   @Override

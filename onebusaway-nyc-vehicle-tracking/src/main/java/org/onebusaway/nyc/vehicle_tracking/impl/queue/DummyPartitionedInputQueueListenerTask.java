@@ -3,7 +3,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
 
 /**
- * No-op implementation for disconnected inference engine
+ * No-op implementation for inference engine
  */
 public class DummyPartitionedInputQueueListenerTask implements
     PartitionedInputQueueListener {

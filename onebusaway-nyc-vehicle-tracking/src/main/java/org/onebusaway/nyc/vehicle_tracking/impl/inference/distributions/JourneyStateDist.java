@@ -34,8 +34,8 @@ public class JourneyStateDist implements
   public EVehiclePhase sample(JourneyStateParams condParams) {
 
     final Double[] stateProbs = samplePrior();
+
     final int inProgress = BinomialGen.nextInt(_rng, 1, stateProbs[0]);
-    
     // At this point, we could be dead heading before a block or actually on a
     // block in progress. We slightly favor blocks already in progress
     if (inProgress > 0) {
