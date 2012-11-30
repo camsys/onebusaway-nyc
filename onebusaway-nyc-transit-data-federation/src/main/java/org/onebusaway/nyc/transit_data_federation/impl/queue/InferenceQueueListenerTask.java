@@ -66,7 +66,6 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 				"tds.inputQueuePort", 5564);
 	}
 
-	@SuppressWarnings("deprecation")
 	@PostConstruct
 	public void setup() {
 		super.setup();
@@ -75,6 +74,7 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 		// generated from XSDs
 		AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
 		_mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
+
 	}
 
 	@PreDestroy

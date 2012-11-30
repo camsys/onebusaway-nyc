@@ -37,6 +37,21 @@ class VehicleTrackingManagementServiceImpl implements VehicleTrackingManagementS
 		  new HashMap<String, NycVehicleManagementStatusBean>();
   
   @Override
+  public void setVehicleStatus(String vehicleId, boolean status) throws Exception {
+	  NycVehicleManagementStatusBean b = _vehicleIdToVehicleStatusBeanMap.get(vehicleId);
+	  _vehicleIdToVehicleStatusBeanMap.put(vehicleId, b);
+
+	  throw new Exception("Not implemented.");
+  }
+
+  @Override
+  public void resetVehicleTrackingForVehicleId(String vehicleId) throws Exception {
+	  _vehicleIdToVehicleStatusBeanMap.remove(vehicleId);
+
+	  throw new Exception("Not implemented.");
+  }
+
+  @Override
   public List<NycVehicleManagementStatusBean> getAllVehicleManagementStatusBeans() {
 	  return new ArrayList<NycVehicleManagementStatusBean>(_vehicleIdToVehicleStatusBeanMap.values());
   }

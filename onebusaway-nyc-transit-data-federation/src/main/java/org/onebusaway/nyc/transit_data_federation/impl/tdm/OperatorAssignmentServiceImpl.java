@@ -39,8 +39,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   private static final DateTimeFormatter _updatedDateFormatter = ISODateTimeFormat.dateTimeNoMillis();
 
   // map structure: service date -> (operator pass ID->operator assignment item)
-  private volatile Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> _serviceDateToOperatorListMap = 
-		  new HashMap<ServiceDate, HashMap<String, OperatorAssignmentItem>>();
+  private volatile Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> _serviceDateToOperatorListMap = new HashMap<ServiceDate, HashMap<String, OperatorAssignmentItem>>();
 
   private ScheduledFuture<OperatorAssignmentServiceImpl.UpdateThread> _updateTask = null;
 
@@ -87,6 +86,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
             "updated").getAsString()));
 
         Matcher operatorIdMatcher = operatorIdPattern.matcher(item.getPassId());
+
         if (!operatorIdMatcher.matches()) {
           _log.error("Couldn't parse operator-id: " + item.getPassId());
           break;
