@@ -51,6 +51,16 @@
         <property name="password" value="${db.password}" />
     </bean>
     
+<!--
+    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+        <property name="target" value="hibernateProperties" />
+        <property name="properties">
+            <props>
+                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
+            </props> 
+        </property> 
+    </bean> 
+-->
     <alias name="dataSource" alias="mutableDataSource" />
 
     <!-- define which TDM to use -->
@@ -66,6 +76,7 @@
  		<property name="depotPartitionKey" value="${depot.partition.key}"/>
    	</bean>
 
+
 	<!-- Output Queue Configuration -->
 	<!-- This option sends inference output to a TDM configured queue for pickup by an external TDF/TDS -->
 	<!-- This option sends inference output to a local running TDF/TDS -->
@@ -73,6 +84,7 @@
   		<property name="isPrimaryInferenceInstance" value="true"/>
         <property name="primaryHostname" value=""/>
 	</bean>
+
 
 	<!-- Other Stuff: -->
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">

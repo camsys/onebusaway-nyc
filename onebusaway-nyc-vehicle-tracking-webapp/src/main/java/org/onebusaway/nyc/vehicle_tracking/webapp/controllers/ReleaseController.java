@@ -35,14 +35,14 @@ public class ReleaseController {
 
 	ObjectMapper _mapper = new ObjectMapper();
 	private GitRepositoryState gitState = null;
-
-	@RequestMapping(value="/release.do", method=RequestMethod.GET)
-	public void gitDetailsInJSON(HttpServletResponse response) throws IOException {
-		if (gitState == null) {
-			gitState = new GitRepositoryHelper().getGitRepositoryState();
-		}
-		OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream());
-		_mapper.writeValue(writer, gitState);
-	}
+	
+  @RequestMapping(value="/release.do", method=RequestMethod.GET)
+  public void gitDetailsInJSON(HttpServletResponse response) throws IOException {
+	  if (gitState == null) {
+		  gitState = new GitRepositoryHelper().getGitRepositoryState();
+	  }
+	  OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream());
+	  _mapper.writeValue(writer, gitState);
+  }
 
 }

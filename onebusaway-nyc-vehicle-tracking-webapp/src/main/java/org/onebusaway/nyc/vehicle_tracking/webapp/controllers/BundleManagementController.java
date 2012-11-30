@@ -86,7 +86,7 @@ public class BundleManagementController {
   	  _bundleManager.setTime(new Date());
     }
 
-    // if automaticallySetDate == true, we set the date to what it needs to be to have the bundle
+    // if ignore time == true, we set the date to what it needs to be to have the bundle
     // change succeed
     if(automaticallySetDate == true) {
     	List<BundleItem> bundles = _bundleManager.getAllKnownBundles();

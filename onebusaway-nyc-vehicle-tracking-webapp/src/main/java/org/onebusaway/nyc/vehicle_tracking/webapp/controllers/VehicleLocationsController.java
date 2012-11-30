@@ -177,7 +177,7 @@ public class VehicleLocationsController {
   }
 
   /****
-   * Private Methods
+   * 
    ****/
   private Comparator<NycTestInferredLocationRecord> getComparatorForSortString(
       String sort) {
