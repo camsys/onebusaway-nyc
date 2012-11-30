@@ -106,7 +106,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private ExecutorService _executorService;
 
-  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 2);
+  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 3);
 
   private int _skippedUpdateLogCounter = 0;
 
