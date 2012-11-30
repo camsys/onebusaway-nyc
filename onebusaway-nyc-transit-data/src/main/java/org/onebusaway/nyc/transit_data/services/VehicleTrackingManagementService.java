@@ -28,11 +28,7 @@ import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
  *
  */
 public interface VehicleTrackingManagementService {
-    
-  public void setVehicleStatus(String vehicleId, boolean enabled) throws Exception ;
-  
-  public void resetVehicleTrackingForVehicleId(String vehicleId) throws Exception ;
-
+      
   public List<NycVehicleManagementStatusBean> getAllVehicleManagementStatusBeans();
 
   public NycVehicleManagementStatusBean getVehicleManagementStatusBeanForVehicleId(String vehicleId);

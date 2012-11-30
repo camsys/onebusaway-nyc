@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * This class is used for playback. With it we can test operator-assigned
+ * This class is used for playback in the simulator. With it we can test operator-assigned
  * results.
  * 
  * @author bwillard

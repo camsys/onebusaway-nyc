@@ -35,10 +35,10 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
   private ScheduledFuture<VehicleAssignmentServiceImpl.UpdateThread> _updateTask = null;
 
+  private ConfigurationService _configurationService;
+
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
-
-  private ConfigurationService _configurationService;
 
   @Autowired
   private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;

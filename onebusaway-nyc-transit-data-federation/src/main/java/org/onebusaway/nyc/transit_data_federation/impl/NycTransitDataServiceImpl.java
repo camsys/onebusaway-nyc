@@ -240,6 +240,7 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
     return _transitDataService.getAllTripProblemReportLabels();
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public List<TripProblemReportBean> getAllTripProblemReportsForTripId(
       String arg0) {
@@ -468,6 +469,7 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
     return _transitDataService.getTripProblemReportForTripIdAndId(arg0, arg1);
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public ListBean<TripProblemReportSummaryBean> getTripProblemReportSummaries(
       TripProblemReportQueryBean arg0) {
