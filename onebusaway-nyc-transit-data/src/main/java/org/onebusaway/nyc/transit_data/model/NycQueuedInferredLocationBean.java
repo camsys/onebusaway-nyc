@@ -4,7 +4,8 @@ import java.io.Serializable;
 
 /**
  * An "over the wire", queued inferred location result--gets passed between the inference
- * engine and the TDF/TDS running on all front-end notes.
+ * engine and the TDF/TDS running on all front-end notes, plus the archiver and other inference
+ * data consumers.
  * 
  * @author jmaki
  *
@@ -13,14 +14,16 @@ public class NycQueuedInferredLocationBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	// the timestamp applied to the record when received by the inference engine
 	private Long recordTimestamp;
-	
+
 	private String vehicleId;
-	
+
+	// service date of trip/block
 	private Long serviceDate;
-	
+
 	private Integer scheduleDeviation;
-	
+
 	private String blockId;
 
 	private String tripId;
@@ -29,20 +32,25 @@ public class NycQueuedInferredLocationBean implements Serializable {
 
 	private Double distanceAlongTrip;
 
+	// snapped lat/long of vehicle to route shape
 	private Double inferredLatitude;
-	
+
 	private Double inferredLongitude;
 
+	// raw lat/long of vehicle as reported by BHS.
 	private Double observedLatitude;
-	
+
 	private Double observedLongitude;
 
+	// inferred operational status/phase
 	private String phase;
-	
+
 	private String status;
-	
+
+	// inference engine telemetry
 	private NycVehicleManagementStatusBean managementRecord;
 
+	// filled by the archiver when this class is used as the DB record model.
 	private String runId;
 
 	private String routeId;
@@ -171,29 +179,29 @@ public class NycQueuedInferredLocationBean implements Serializable {
 		this.managementRecord = managementRecord;
 	}
 
-  public void setRunId(String runId) {
-    this.runId = runId;
-  }
-  
-  public String getRunId() {
-    return runId;
-  }
-  
-  public void setRouteId(String routeId) {
-    this.routeId = routeId;
-  }
-  
-  public String getRouteId() {
-    return routeId;
-  }
+	public void setRunId(String runId) {
+		this.runId = runId;
+	}
 
-  public void setBearing(double bearing) {
-    this.bearing = bearing;
-  }
-  
-  public double getBearing() {
-    return bearing;
-  }  
+	public String getRunId() {
+		return runId;
+	}
+
+	public void setRouteId(String routeId) {
+		this.routeId = routeId;
+	}
+
+	public String getRouteId() {
+		return routeId;
+	}
+
+	public void setBearing(double bearing) {
+		this.bearing = bearing;
+	}
+
+	public double getBearing() {
+		return bearing;
+	}  
 
 }
 

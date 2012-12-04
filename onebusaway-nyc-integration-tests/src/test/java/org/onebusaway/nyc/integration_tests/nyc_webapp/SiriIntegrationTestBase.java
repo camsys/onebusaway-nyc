@@ -30,7 +30,6 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.onebusaway.nyc.integration_tests.TraceSupport;
-import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.utility.DateLibrary;
@@ -38,8 +37,6 @@ import org.onebusaway.utility.DateLibrary;
 public class SiriIntegrationTestBase {
 	  
   private static TraceSupport _traceSupport = new TraceSupport();
-
-  protected VehicleTrackingManagementService _vehicleTrackingManagementService;
 
   protected VehicleLocationListener _vehicleLocationListener;
   

@@ -67,6 +67,9 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	Trace_5799_20121011_IntegrationTest.class,
 	Trace_7659_20121010_IntegrationTest.class,
 	Trace_7726_20121010_IntegrationTest.class,
+	Trace_5725_20120919T101417_IntegrationTest.class,
+	Trace_4257_20120907_IntegrationTest.class,
+	Trace_4264_20120907T162054_IntegrationTest.class,
 
 	// b63-winter 10
 	Trace_0927_20101209T124742_IntegrationTest.class,
@@ -91,11 +94,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	Trace_4111_20120717_IntegrationTest.class,
 	Trace_6333_20120717_IntegrationTest.class,
 	Trace_3819_20120829_220004_222001_IntegrationTest.class,
-
-	// 2012September
-	Trace_5725_20120919T101417_IntegrationTest.class,
-	Trace_4257_20120907_IntegrationTest.class,
-	Trace_4264_20120907T162054_IntegrationTest.class,
 
 	// si
 	Trace_2711_20111208_054046_102329_IntegrationTest.class,

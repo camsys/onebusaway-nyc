@@ -27,26 +27,25 @@
         </property>
     </bean>
 
-    <bean id="gtfs_mta_stub" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
-        <property name="defaultAgencyId" value="MTA" />
-        <property name="path" 
-        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-mta.zip" />
-    </bean>
-
     <bean id="gtfs_2012July_r04_b02" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
 		<property name="defaultAgencyId" value="MTA" /> 
         <property name="path" 
-        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-2012July_r04_b02-si.zip" />
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2012July_r04_b02/gtfs-2012July_r04_b02-si.zip" />
     </bean>
     <bean id="gtfs_2012July_r04_b02_2" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
 		<property name="defaultAgencyId" value="MTA" /> 
         <property name="path" 
-        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-2012July_r04_b02-m34.zip" />
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2012July_r04_b02/gtfs-2012July_r04_b02-m34.zip" />
     </bean>
     <bean id="gtfs_2012July_r04_b02_3" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
 		<property name="defaultAgencyId" value="MTA" /> 
         <property name="path" 
-        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-2012July_r04_b02-bk.zip" />
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2012July_r04_b02/gtfs-2012July_r04_b02-bk.zip" />
+    </bean>
+    <bean id="gtfs_mta_stub" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="defaultAgencyId" value="MTA" />
+        <property name="path" 
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-mta.zip" />
     </bean>
 
     <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">

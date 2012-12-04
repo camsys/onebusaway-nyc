@@ -16,7 +16,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
@@ -37,15 +36,11 @@ public class DummyOutputQueueSenderServiceImpl implements
   @Autowired
   private VehicleLocationListener _vehicleLocationListener;
 
-  @Autowired
-  private VehicleTrackingManagementService _vehicleTrackingManagementService;
-
   @Override
   public void enqueue(NycQueuedInferredLocationBean r) {
     final VehicleLocationRecord vlr = RecordLibrary.getNycQueuedInferredLocationBeanAsVehicleLocationRecord(r);
     _vehicleLocationListener.handleVehicleLocationRecord(vlr);
     _predictionIntegrationService.updatePredictionsForVehicle(vlr.getVehicleId());
-    _vehicleTrackingManagementService.handleRecord(r);
   }
 
   @Override

@@ -46,7 +46,6 @@
 	</bean>
 
 
-
 	<!-- other things -->
 	<bean id="externalGeocoderImpl" class="org.onebusaway.nyc.geocoder.impl.GoogleGeocoderImpl">
 		<property name="wktFilterPolygon"
@@ -73,8 +72,7 @@
 		<property name="calculateDefaultBoundsFromAgencyCoverage"
 			value="false" />
 	</bean>
-
-
+	
 
 	<bean id="wikiDocumentService" class="org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl">
 		<property name="xwikiUrl" value="http://xwiki.staging.obanyc.com" />

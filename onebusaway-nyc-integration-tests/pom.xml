@@ -15,6 +15,8 @@
         <cargo.jvmargs>-Xmx2G -XX:MaxPermSize=256m</cargo.jvmargs>
         <cargo.logging>low</cargo.logging>
         <hsqldb.port>9930</hsqldb.port>
+
+		<!-- Useful for debugging: leaves cargo running but doesn't run the tests -->
         <pauseDuringIntegrationTest>false</pauseDuringIntegrationTest>
 
         <!-- This value is in milliseconds, so 5 minutes... thing run slow on the CI server sometimes -->
@@ -122,15 +124,14 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
-<!--                         	<debugForkedProcess>true</debugForkedProcess> -->
+							<!-- Allows you to attach a debugger to the individual trace classes as they run. -->
+							<!-- <debugForkedProcess>true</debugForkedProcess> -->
                             <excludes>
                                 <exclude>none</exclude>
                             </excludes>
                             <includes>
                                 <include>**/*TestSuite*.java</include>
-<!--                                  <include>**/*IntegrationTest.java</include> -->
                             </includes>
-                            <!-- We define some test system properties -->
                             <systemPropertyVariables>
                                 <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
                                 <org.onebusaway.webapp.port>${org.onebusaway.api_webapp.port}</org.onebusaway.webapp.port>
@@ -167,7 +168,6 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1.1</version>
                 <executions>
-<!-- valid default bundle begin -->
                     <execution>
                         <id>graph-builder-execution-2012September_Bronx_r10_b03</id>
                         <phase>pre-integration-test</phase>
@@ -361,7 +361,8 @@
                                 <home>${project.build.directory}/tomcat5x/onebusaway-nyc-vehicle-tracking-webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
-<!--                                     <cargo.jvmargs>${cargo.jvmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044</cargo.jvmargs> -->
+										<!-- Use this to attach the debugger to the VTW running within cargo -->
+										<!-- <cargo.jvmargs>${cargo.jvmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044</cargo.jvmargs> -->
                                     <cargo.servlet.port>${org.onebusaway.transit_data_federation_webapp.port}</cargo.servlet.port>
                                     <cargo.tomcat.ajp.port>${org.onebusaway.transit_data_federation_webapp.ajp_port}</cargo.tomcat.ajp.port>
                                     <cargo.rmi.port>${org.onebusaway.transit_data_federation_webapp.rmi_port}</cargo.rmi.port>

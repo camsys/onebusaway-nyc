@@ -16,7 +16,6 @@
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -32,9 +31,6 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 
   @Autowired
   private PredictionIntegrationService _predictionIntegrationService;
-
-  @Autowired
-  private VehicleTrackingManagementService _vehicleTrackingManagementService;
 
   @Autowired
   private ConfigurationService _configurationService;
@@ -66,8 +62,6 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 
     if(useTimePredictionsIfAvailable()) 
       _predictionIntegrationService.updatePredictionsForVehicle(vlr.getVehicleId());
-
-    _vehicleTrackingManagementService.handleRecord(inferredResult);
   }
 
 }

@@ -15,36 +15,19 @@
  */
 package org.onebusaway.nyc.transit_data.services;
 
-import java.util.List;
-
-import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 
 /**
- * Service to receive NycVehicleManagementStatusBeans and to interact with the inference engine
- * infrastructure from the front-end (admin) console.
+ * Service used to control inference engine remotely. Right now, only for integration testing. 
  * 
  * @author jmaki
  *
  */
 public interface VehicleTrackingManagementService {
-    
-  public void setVehicleStatus(String vehicleId, boolean enabled) throws Exception ;
+
+  // DSC query methods used in the vehicles admin screen and the integration tests
+//  public boolean isOutOfServiceDestinationSignCode(String destinationSignCode);
   
-  public void resetVehicleTrackingForVehicleId(String vehicleId) throws Exception ;
-
-  public List<NycVehicleManagementStatusBean> getAllVehicleManagementStatusBeans();
-
-  public NycVehicleManagementStatusBean getVehicleManagementStatusBeanForVehicleId(String vehicleId);
-
-  public void handleRecord(NycQueuedInferredLocationBean record);
-
-  /**
-   * DSC methods used in the vehicles admin screen and the integration tests
-   */
-  public boolean isOutOfServiceDestinationSignCode(String destinationSignCode);
+//  public boolean isMissingDestinationSignCode(String destinationSignCode);
   
-  public boolean isMissingDestinationSignCode(String destinationSignCode);
-  
-  public boolean isUnknownDestinationSignCode(String destinationSignCode);
+//  public boolean isUnknownDestinationSignCode(String destinationSignCode);
 }

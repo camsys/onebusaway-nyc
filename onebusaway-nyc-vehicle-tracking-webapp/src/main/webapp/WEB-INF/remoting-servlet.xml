@@ -50,11 +50,6 @@
         <property name="service" ref="nycTransitDataServiceImpl" />
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
     </bean>
-    
-    <bean name="/vehicle-tracking-management-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
-        <property name="service" ref="vehicleTrackingManagementServiceImpl" />
-        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
-    </bean>
 
     <bean name="/configuration-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
         <property name="service" ref="configurationService" />

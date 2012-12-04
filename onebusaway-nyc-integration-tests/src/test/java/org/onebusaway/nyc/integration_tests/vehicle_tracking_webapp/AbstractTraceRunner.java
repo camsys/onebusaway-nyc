@@ -115,11 +115,6 @@ public class AbstractTraceRunner {
         + ", cdf=" + _cdfSeed);
   }
 
-  /**
-   * 
-   * @return map of phases to average acceptance ratios
-   * @throws Throwable
-   */
   @Test
   public void test() throws Throwable {
 	  int tries = 3;
@@ -142,7 +137,6 @@ public class AbstractTraceRunner {
   }
   
   private void theRealTest() throws Throwable {
-
     // expected results
     File trace = new File("src/integration-test/resources/traces/" + _trace);
     List<NycTestInferredLocationRecord> expectedResults = _traceSupport.readRecords(trace);

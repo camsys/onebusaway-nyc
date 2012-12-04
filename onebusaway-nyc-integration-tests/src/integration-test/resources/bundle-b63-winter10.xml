@@ -30,11 +30,10 @@
         <property name="path" 
         	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-mta.zip" />
     </bean>
-
     <bean id="gtfs_b63" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
 		<property name="defaultAgencyId" value="MTA" /> 
         <property name="path" 
-        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-b63-winter10.zip" />
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/B63-winter10/gtfs-b63-winter10.zip" />
     </bean>
 
     <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">

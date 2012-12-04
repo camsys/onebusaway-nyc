@@ -26,55 +26,55 @@ import java.io.Serializable;
  */
 public class NycVehicleManagementStatusBean implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-  // record identifier
+	// record identifier
 	private String uuid;
 
 	// is inference enabled?
-  private boolean inferenceIsEnabled;
+	private boolean inferenceIsEnabled;
 
-  // last filter update time for this vehicle
-  private Long lastUpdateTime;
-	
-  // last time a valid (non 0) location update was provided
-  private Long lastLocationUpdateTime;
+	// last filter update time for this vehicle
+	private Long lastUpdateTime;
 
-  // last latitude observed
-  private Double lastObservedLatitude;
-	
-  // lat longitude observed
-  private Double lastObservedLongitude;
-	
-  // most recent DSC from the bus
-  private String mostRecentObservedDestinationSignCode;
+	// last time a valid (non 0) location update was provided
+	private Long lastLocationUpdateTime;
 
-  // most recent inferred DSC
-  private String lastInferredDestinationSignCode;
+	// last latitude observed
+	private Double lastObservedLatitude;
 
-  // is this inference engine the primary?
-  private boolean inferenceEngineIsPrimary;
+	// lat longitude observed
+	private Double lastObservedLongitude;
 
-  // the bundle ID this result was generated with
-  private String activeBundleId;
-  
-  // is inference formal? e.g. comes from an assigned run? 
-  private boolean inferenceIsFormal;
+	// most recent DSC from the bus
+	private String mostRecentObservedDestinationSignCode;
 
-  // the depot this vehicle is assigned to in the vehicle assignment service
-  private String depotId;
+	// most recent inferred DSC
+	private String lastInferredDestinationSignCode;
 
-  // the bus' in-emergency flag.
-  private boolean emergencyFlag;
+	// is this inference engine the primary?
+	private boolean inferenceEngineIsPrimary;
 
-  // the last observed operator ID from the bus. 
-  private String lastInferredOperatorId;
+	// the bundle ID this result was generated with
+	private String activeBundleId;
 
-  // the run ID calculated by the system
-  private String inferredRunId;
-  
-  // the run ID provided by the operator assignment service
-  private String assignedRunId;
+	// is inference formal? e.g. comes from an assigned run? 
+	private boolean inferenceIsFormal;
+
+	// the depot this vehicle is assigned to in the vehicle assignment service
+	private String depotId;
+
+	// the bus' in-emergency flag.
+	private boolean emergencyFlag;
+
+	// the last observed operator ID from the bus. 
+	private String lastInferredOperatorId;
+
+	// the run ID calculated by the system
+	private String inferredRunId;
+
+	// the run ID provided by the operator assignment service
+	private String assignedRunId;
 
 	public String getUUID() {
 		return uuid;
@@ -84,124 +84,124 @@ public class NycVehicleManagementStatusBean implements Serializable {
 		this.uuid = uuid;
 	}
 
-  public boolean isInferenceIsEnabled() {
-    return inferenceIsEnabled;
-  }
+	public boolean isInferenceIsEnabled() {
+		return inferenceIsEnabled;
+	}
 
-  public void setInferenceIsEnabled(boolean enabled) {
-    this.inferenceIsEnabled = enabled;
-  }
+	public void setInferenceIsEnabled(boolean enabled) {
+		this.inferenceIsEnabled = enabled;
+	}
 
-  public long getLastUpdateTime() {
-    return lastUpdateTime;
-  }
+	public long getLastUpdateTime() {
+		return lastUpdateTime;
+	}
 
-  public void setLastUpdateTime(long lastUpdateTime) {
-    this.lastUpdateTime = lastUpdateTime;
-  }
+	public void setLastUpdateTime(long lastUpdateTime) {
+		this.lastUpdateTime = lastUpdateTime;
+	}
 
-  public long getLastLocationUpdateTime() {
-    return lastLocationUpdateTime;
-  }
+	public long getLastLocationUpdateTime() {
+		return lastLocationUpdateTime;
+	}
 
-  public void setLastLocationUpdateTime(long lastGpsTime) {
-    this.lastLocationUpdateTime = lastGpsTime;
-  }
+	public void setLastLocationUpdateTime(long lastGpsTime) {
+		this.lastLocationUpdateTime = lastGpsTime;
+	}
 
-  public double getLastObservedLatitude() {
-    return lastObservedLatitude;
-  }
+	public double getLastObservedLatitude() {
+		return lastObservedLatitude;
+	}
 
-  public void setLastObservedLatitude(double lastGpsLat) {
-    this.lastObservedLatitude = lastGpsLat;
-  }
+	public void setLastObservedLatitude(double lastGpsLat) {
+		this.lastObservedLatitude = lastGpsLat;
+	}
 
-  public double getLastObservedLongitude() {
-    return lastObservedLongitude;
-  }
+	public double getLastObservedLongitude() {
+		return lastObservedLongitude;
+	}
 
-  public void setLastObservedLongitude(double lastGpsLon) {
-    this.lastObservedLongitude = lastGpsLon;
-  }
+	public void setLastObservedLongitude(double lastGpsLon) {
+		this.lastObservedLongitude = lastGpsLon;
+	}
 
-  public String getMostRecentObservedDestinationSignCode() {
-    return mostRecentObservedDestinationSignCode;
-  }
+	public String getMostRecentObservedDestinationSignCode() {
+		return mostRecentObservedDestinationSignCode;
+	}
 
-  public void setMostRecentObservedDestinationSignCode(String mostRecentDestinationSignCode) {
-    this.mostRecentObservedDestinationSignCode = mostRecentDestinationSignCode;
-  }
+	public void setMostRecentObservedDestinationSignCode(String mostRecentDestinationSignCode) {
+		this.mostRecentObservedDestinationSignCode = mostRecentDestinationSignCode;
+	}
 
-  public String getLastInferredDestinationSignCode() {
-    return lastInferredDestinationSignCode;
-  }
+	public String getLastInferredDestinationSignCode() {
+		return lastInferredDestinationSignCode;
+	}
 
-  public void setLastInferredDestinationSignCode(String inferredDestinationSignCode) {
-    this.lastInferredDestinationSignCode = inferredDestinationSignCode;
-  }
+	public void setLastInferredDestinationSignCode(String inferredDestinationSignCode) {
+		this.lastInferredDestinationSignCode = inferredDestinationSignCode;
+	}
 
-  public boolean isInferenceIsFormal() {
-    return inferenceIsFormal;
-  }
+	public boolean isInferenceIsFormal() {
+		return inferenceIsFormal;
+	}
 
-  public void setInferenceIsFormal(boolean inferenceIsFormal) {
-    this.inferenceIsFormal = inferenceIsFormal;
-  }
+	public void setInferenceIsFormal(boolean inferenceIsFormal) {
+		this.inferenceIsFormal = inferenceIsFormal;
+	}
 
-  public boolean isInferenceEngineIsPrimary() {
-    return inferenceEngineIsPrimary;
-  }
+	public boolean isInferenceEngineIsPrimary() {
+		return inferenceEngineIsPrimary;
+	}
 
-  public void setInferenceEngineIsPrimary(boolean inferenceEngineIsPrimary) {
-    this.inferenceEngineIsPrimary = inferenceEngineIsPrimary;
-  }
+	public void setInferenceEngineIsPrimary(boolean inferenceEngineIsPrimary) {
+		this.inferenceEngineIsPrimary = inferenceEngineIsPrimary;
+	}
 
-  public String getActiveBundleId() {
-    return activeBundleId;
-  }
+	public String getActiveBundleId() {
+		return activeBundleId;
+	}
 
-  public void setActiveBundleId(String activeBundleId) {
-    this.activeBundleId = activeBundleId;
-  }
+	public void setActiveBundleId(String activeBundleId) {
+		this.activeBundleId = activeBundleId;
+	}
 
-  public void setDepotId(String depotId) {
-    this.depotId = depotId;
-  }
+	public void setDepotId(String depotId) {
+		this.depotId = depotId;
+	}
 
-  public String getDepotId() {
-    return depotId;
-  }
+	public String getDepotId() {
+		return depotId;
+	}
 
-  public boolean isEmergencyFlag() {
-    return emergencyFlag;
-  }
+	public boolean isEmergencyFlag() {
+		return emergencyFlag;
+	}
 
-  public void setEmergencyFlag(boolean emergencyFlag) {
-    this.emergencyFlag = emergencyFlag;
-  }
+	public void setEmergencyFlag(boolean emergencyFlag) {
+		this.emergencyFlag = emergencyFlag;
+	}
 
-  public void setLastInferredOperatorId(String operatorId) {
-    this.lastInferredOperatorId = operatorId;
-  }
+	public void setLastInferredOperatorId(String operatorId) {
+		this.lastInferredOperatorId = operatorId;
+	}
 
-  public String getLastInferredOperatorId() {
-    return lastInferredOperatorId;
-  }
+	public String getLastInferredOperatorId() {
+		return lastInferredOperatorId;
+	}
 
-  public void setInferredRunId(String inferredRunId) {
-    this.inferredRunId = inferredRunId;
-  }
+	public void setInferredRunId(String inferredRunId) {
+		this.inferredRunId = inferredRunId;
+	}
 
-  public String getInferredRunId() {
-    return inferredRunId;
-  }
+	public String getInferredRunId() {
+		return inferredRunId;
+	}
 
-  public String getAssignedRunId() {
-    return assignedRunId;
-  }
+	public String getAssignedRunId() {
+		return assignedRunId;
+	}
 
-  public void setAssignedRunId(String assignedRunId) {
-    this.assignedRunId = assignedRunId;
-  }
+	public void setAssignedRunId(String assignedRunId) {
+		this.assignedRunId = assignedRunId;
+	}
 
 }

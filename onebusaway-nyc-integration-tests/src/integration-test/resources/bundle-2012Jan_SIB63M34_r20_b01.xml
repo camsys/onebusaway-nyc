@@ -26,21 +26,20 @@
         </property>
     </bean>
 
-    <bean id="gtfs_mta_stub" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
-        <property name="defaultAgencyId" value="MTA" />
-        <property name="path" 
-        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-mta.zip" />
-    </bean>
-
     <bean id="gtfs_2012Jan_SIB63M34_r20_b01" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
 		<property name="defaultAgencyId" value="MTA" /> 
         <property name="path" 
-        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-2012Jan_SIB63M34_r20_b01-si.zip" />
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2012Jan_SIB63M34_r20_b01/gtfs-2012Jan_SIB63M34_r20_b01-si.zip" />
     </bean>
     <bean id="gtfs_2012Jan_SIB63M34_r20_b01_2" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
 		<property name="defaultAgencyId" value="MTA" /> 
         <property name="path" 
-        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-2012Jan_SIB63M34_r20_b01-m34.zip" />
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2012Jan_SIB63M34_r20_b01/gtfs-2012Jan_SIB63M34_r20_b01-m34.zip" />
+    </bean>
+    <bean id="gtfs_mta_stub" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="defaultAgencyId" value="MTA" />
+        <property name="path" 
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-mta.zip" />
     </bean>
 
     <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">
