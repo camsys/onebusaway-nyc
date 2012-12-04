@@ -20,6 +20,11 @@ import java.util.Set;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 
+/**
+ * Map of DSC to trips (individual and collections of) and vice-versa.
+ * @author jmaki
+ *
+ */
 public interface DestinationSignCodeService {
 
   public List<AgencyAndId> getTripIdsForDestinationSignCode(
@@ -35,4 +40,5 @@ public interface DestinationSignCodeService {
 
   public Set<AgencyAndId> getRouteCollectionIdsForDestinationSignCode(
       String destinationSignCode);
+  
 }

@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.transit_data_federation.services.nyc;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -13,38 +12,38 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import com.google.common.collect.TreeMultimap;
 
+/**
+ * Maps of runs to trips (individual and groups of) and vice-versa.
+ * @author jmaki
+ *
+ */
 public interface RunService {
+
+  /**
+   * Simulator
+   */
   public String getInitialRunForTrip(AgencyAndId trip);
 
   public String getReliefRunForTrip(AgencyAndId trip);
 
   public int getReliefTimeForTrip(AgencyAndId trip);
+  
+  public List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(String agencyId,
+		  long time);
 
   public Collection<RunTripEntry> getRunTripEntriesForRun(String runId);
 
-  public RunTripEntry getActiveRunTripEntryForRunAndTime(String runId,
-      long time);
-
-  public List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(String agencyId,
-      long time);
-
-  public RunTripEntry getPreviousEntry(RunTripEntry entry, long date);
-
-  public RunTripEntry getNextEntry(RunTripEntry entry, long date);
-
   public RunTripEntry getActiveRunTripEntryForBlockInstance(
-      BlockInstance blockInstance, int scheduleTime);
+		  BlockInstance blockInstance, int scheduleTime);
 
   public ScheduledBlockLocation getSchedBlockLocForRunTripEntryAndTime(
-      RunTripEntry runTrip, long timestamp);
-
-  public BlockInstance getBlockInstanceForRunTripEntry(RunTripEntry rte,
-      Date serviceDate);
+		  RunTripEntry runTrip, long timestamp);
 
   public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip, int scheduledTime);
 
-  public boolean isValidRunNumber(String runNumber);
-
+  /**
+   * Inference engine
+   */
   public TreeMultimap<Integer, String> getBestRunIdsForFuzzyId(
       String runAgencyAndId) throws IllegalArgumentException;
 
@@ -54,7 +53,13 @@ public interface RunService {
 
   public Set<AgencyAndId> getRoutesForRunId(String opAssignedRunId);
 
-  public Collection<RunTripEntry> getRunTripsForTrip(TripEntry trip); 
   public Set<String> getRunIdsForTrip(TripEntry trip);
 
+  /** 
+   * Unit Testing
+   */
+  public RunTripEntry getPreviousEntry(RunTripEntry entry, long date);
+
+  public RunTripEntry getNextEntry(RunTripEntry entry, long date);
+  
 }

@@ -27,8 +27,7 @@ import javax.annotation.PreDestroy;
 
 public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 
-	protected abstract void processResult(
-			NycQueuedInferredLocationBean inferredResult, String contents);
+	protected abstract void processResult(NycQueuedInferredLocationBean inferredResult, String contents);
 
 	@Override
 	public boolean processMessage(String address, String contents) {
@@ -36,13 +35,13 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 			if (address == null || !address.equals(getQueueName())) {
 				return false;
 			}
-			NycQueuedInferredLocationBean inferredResult = _mapper.readValue(
-					contents, NycQueuedInferredLocationBean.class);
+
+			NycQueuedInferredLocationBean inferredResult = _mapper.readValue(contents, NycQueuedInferredLocationBean.class);
 			processResult(inferredResult, contents);
+			
 			return true;
 		} catch (Exception e) {
-			_log.warn("Received corrupted message from queue; discarding: "
-					+ e.getMessage());
+			_log.warn("Received corrupted message from queue; discarding: " + e.getMessage());
 			_log.warn("Contents: " + contents);
 			return false;
 		}
@@ -50,25 +49,24 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 
 	@Override
 	public String getQueueHost() {
-		return _configurationService.getConfigurationValueAsString(
-				"tds.inputQueueHost", null);
+		return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
 	}
 
 	@Override
 	public String getQueueName() {
-		return _configurationService.getConfigurationValueAsString(
-				"tds.inputQueueName", null);
+		return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
 	}
 
 	@Override
 	public Integer getQueuePort() {
-		return _configurationService.getConfigurationValueAsInteger(
-				"tds.inputQueuePort", 5564);
+		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5564);
 	}
 
+	@SuppressWarnings("deprecation")
 	@PostConstruct
 	public void setup() {
 		super.setup();
+
 		// use JAXB annotations so that we pick up anything from the
 		// auto-generated XML classes
 		// generated from XSDs
@@ -82,8 +80,7 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 		super.destroy();
 	}
 
-	@Refreshable(dependsOn = { "tds.inputQueueHost", "tds.inputQueuePort",
-			"tds.inputQueueName" })
+	@Refreshable(dependsOn = { "tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName" })
 	public void startListenerThread() {
 		if (_initialized == true) {
 			_log.warn("Configuration service tried to reconfigure TDS input queue reader; this service is not reconfigurable once started.");
@@ -99,8 +96,8 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 			return;
 		}
 
-		_log.info("queue listening on " + host + ":" + port + ", queue="
-				+ queueName);
+		_log.info("queue listening on " + host + ":" + port + ", queue=" + queueName);
+
 		try {
 			initializeQueue(host, queueName, port);
 		} catch (InterruptedException ie) {

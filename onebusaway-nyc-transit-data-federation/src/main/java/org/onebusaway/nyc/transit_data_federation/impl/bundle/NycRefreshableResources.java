@@ -15,6 +15,13 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl.bundle;
 
+/**
+ * A collection of resources that can be notified upon bundle changes that 
+ * they should refresh their data. This is an extension of an OBA paradigm. 
+ * 
+ * @author jmaki
+ *
+ */
 public final class NycRefreshableResources {
 
   public static final String DESTINATION_SIGN_CODE_DATA = "__dsc_data";

@@ -28,21 +28,10 @@
 
 	<context:component-scan base-package="org.onebusaway.nyc.transit_data_federation.impl" />
 
-
 	<!-- The beans below used to be imported by adding org/onebusaway/transit_data_federation/application-context.xml -->
 	<!-- to our resource list; we need more control over the initialization of the TDF application container, so we -->
 	<!-- brought the directives from that file into this one and control them here in an NYC specific way. -->
 	<import resource="classpath:org/onebusaway/container/application-context.xml" />
-
-	<!-- Override the default ehcache diskstore path -->
-<!-- 	<bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer"> -->
-<!-- 		<property name="properties"> -->
-<!-- 			<props> -->
-<!-- 				<prop key="ehCacheConfiguration.diskStorePath">/${bundle.location}/caches</prop> -->
-<!-- 			</props> -->
-<!-- 		</property> -->
-<!-- 		<property name="order" value="-1" /> -->
-<!-- 	</bean> -->
 
 	<!-- Common Services -->
 	<bean id="shapePointsLibrary" class="org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary" />
@@ -59,6 +48,7 @@
 		class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">
 		<property name="cacheManager" ref="cacheManager" />
 		<property name="cacheName" value="org.onebusaway.transit_data_federation.impl.ExtendedCalendarServiceImpl.serviceDateRangeCache" />
+		<!-- This should be increased when the bundle grows, since the eviction process is blocking inside of ehcache. -->
 		<property name="maxElementsInMemory" value="5000" />
 		<property name="eternal" value="false" />
 		<property name="timeToLive" value="0" />

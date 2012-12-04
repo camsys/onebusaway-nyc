@@ -22,7 +22,7 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 /**
- * Extensions to the OBA TransitDataService that serve to power NYC-specific UI features.
+ * Extensions to the OBA TransitDataService that power NYC-specific UI features.
  * 
  * TODO: Merge these into the OBA TDS inferface, and then eliminate this class (or keep it empty). 
  * 

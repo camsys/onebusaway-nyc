@@ -1,7 +1,5 @@
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
-
 public class RawRunData {
 
   private String run1;

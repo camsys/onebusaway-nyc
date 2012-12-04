@@ -14,6 +14,13 @@ import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+/** 
+ * Serializer for XSD-generated SIRI classes, creating XML in the format suitable
+ * for Bus Time front-ends and third-party apps.
+ * 
+ * @author jmaki
+ *
+ */
 public class SiriXmlSerializer {
 
   private JAXBContext context = null;

@@ -43,7 +43,6 @@
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-csv-entities</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -51,19 +50,16 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-        
         <dependency>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
           <version>10.0.1</version>
         </dependency>
-        
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>2.0</version>
 		</dependency>        
-        
         <dependency>
             <groupId>org.zeromq</groupId>
             <artifactId>jzmq</artifactId>
@@ -71,7 +67,6 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-xc</artifactId>
@@ -88,55 +83,8 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-    <!--  profile exist in webapp -->
-    </profiles>
     <build>
         <finalName>onebusaway-nyc-transit-data-federation</finalName>
-        <plugins>
-            <!-- Build a graph bundle (currently, a reduced set of MTA data) -->
-            <!-- TODO This is SERIOUSLY hacky at the moment. -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <configuration>
-                    <includeProjectDependencies>false</includeProjectDependencies>
-                    <includePluginDependencies>true</includePluginDependencies>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Xmx1500m</argument>
-                        <argument>-classpath</argument>
-                        <classpath />
-                        <argument>-Donebusaway_prefix=${basedir}</argument>
-                        <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
-                        <argument>-onlyIfDoesNotExist</argument>
-                        <argument>-additionalResourcesDirectory</argument>
-                        <argument>${basedir}/src/integration-test/resources/bundle</argument>
-                        <argument>${basedir}/src/bundle-building-sample/bundle.xml</argument>
-                        <!-- <argument>${basedir}/src/integration-test/resources/bundle.xml</argument> -->
-                        <argument>${project.build.directory}/transit-data-bundle</argument>
-                    </arguments>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.onebusaway</groupId>
-                        <artifactId>onebusaway-gtfs</artifactId>
-                        <version>1.2.4</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.onebusaway</groupId>
-                        <artifactId>onebusaway-gtfs-hibernate</artifactId>
-                        <version>1.2.4</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.onebusaway</groupId>
-                        <artifactId>onebusaway-gtfs-transformer</artifactId>
-                        <version>1.2.4</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

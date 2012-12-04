@@ -29,9 +29,11 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
   private static Logger _log = LoggerFactory.getLogger(VehicleAssignmentServiceImpl.class);
 
-  private volatile HashMap<String, ArrayList<AgencyAndId>> _depotToVehicleIdListMap = new HashMap<String, ArrayList<AgencyAndId>>();
+  private volatile HashMap<String, ArrayList<AgencyAndId>> _depotToVehicleIdListMap = 
+		  new HashMap<String, ArrayList<AgencyAndId>>();
 
-  private volatile Map<AgencyAndId, String> _vehicleIdToDepotMap = new HashMap<AgencyAndId, String>();
+  private volatile Map<AgencyAndId, String> _vehicleIdToDepotMap = 
+		  new HashMap<AgencyAndId, String>();
 
   private ScheduledFuture<VehicleAssignmentServiceImpl.UpdateThread> _updateTask = null;
 
@@ -55,11 +57,9 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
   private ArrayList<AgencyAndId> getVehicleListForDepot(String depotId) {
     try {
-      List<Map<String, String>> vehicleAssignments = _transitDataManagerApiLibrary.getItems(
-          "depot", depotId, "vehicles", "list");
+      List<Map<String, String>> vehicleAssignments = _transitDataManagerApiLibrary.getItems("depot", depotId, "vehicles", "list");
 
       ArrayList<AgencyAndId> vehiclesForThisDepot = new ArrayList<AgencyAndId>();
-
       for (Map<String, String> depotVehicleAssignment : vehicleAssignments) {
         AgencyAndId vehicle = new AgencyAndId(
             depotVehicleAssignment.get("agency-id"),
@@ -77,13 +77,13 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
   private void updateVehicleIdToDepotMap(List<AgencyAndId> oldList,
       List<AgencyAndId> newList, String depotId) {
-    // remove all vehicles assigned to the depot we're "refreshing"
+    
+	// remove all vehicles assigned to the depot we're "refreshing"
     if (oldList != null) {
       for (AgencyAndId vehicleId : oldList) {
         if (newList.contains(vehicleId)) {
           continue;
         }
-
         _vehicleIdToDepotMap.remove(vehicleId);
       }
     }
@@ -100,8 +100,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
       ArrayList<AgencyAndId> list = getVehicleListForDepot(depotId);
 
       if (list != null) {
-        updateVehicleIdToDepotMap(_depotToVehicleIdListMap.get(depotId), list,
-            depotId);
+        updateVehicleIdToDepotMap(_depotToVehicleIdListMap.get(depotId), list, depotId);
         _depotToVehicleIdListMap.put(depotId, list);
       }
     }
@@ -117,8 +116,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   @SuppressWarnings("unused")
   @Refreshable(dependsOn = "tdm.vehicleAssignmentRefreshInterval")
   private void configChanged() {
-    Integer updateInterval = _configurationService.getConfigurationValueAsInteger(
-        "tdm.vehicleAssignmentRefreshInterval", null);
+    Integer updateInterval = _configurationService.getConfigurationValueAsInteger("tdm.vehicleAssignmentRefreshInterval", null);
 
     if (updateInterval != null) {
       setUpdateFrequency(updateInterval);
@@ -130,9 +128,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
     if (_updateTask != null) {
       _updateTask.cancel(true);
     }
-
-    _updateTask = _taskScheduler.scheduleWithFixedDelay(new UpdateThread(),
-        seconds * 1000);
+    _updateTask = _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), seconds * 1000);
   }
 
   @SuppressWarnings("unused")
@@ -154,16 +150,14 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
             "Vehicle assignment service is temporarily unavailable.");
       }
 
-      updateVehicleIdToDepotMap(_depotToVehicleIdListMap.get(depotId), list,
-          depotId);
+      updateVehicleIdToDepotMap(_depotToVehicleIdListMap.get(depotId), list, depotId);
       _depotToVehicleIdListMap.put(depotId, list);
     }
 
     if (_depotToVehicleIdListMap.size() == 0) {
       _log.warn("No depot/vehicle assignment values are present!");
     } else {
-      _log.debug("Have " + _depotToVehicleIdListMap.size()
-          + " depot/vehicle assignments.");
+      _log.debug("Have " + _depotToVehicleIdListMap.size() + " depot/vehicle assignments.");
     }
 
     return list;

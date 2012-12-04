@@ -17,9 +17,15 @@ package org.onebusaway.nyc.transit_data_federation.services.nyc;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 
+/**
+ * Locations of bases/depots.
+ * @author jmaki
+ *
+ */
 public interface BaseLocationService {
 
   public String getBaseNameForLocation(CoordinatePoint location);
 
   public String getTerminalNameForLocation(CoordinatePoint location);
+
 }

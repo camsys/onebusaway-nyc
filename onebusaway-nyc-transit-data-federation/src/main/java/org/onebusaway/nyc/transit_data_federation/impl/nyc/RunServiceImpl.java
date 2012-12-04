@@ -1,8 +1,25 @@
 package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ReliefState;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
@@ -21,6 +38,10 @@ import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdAc
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
@@ -31,31 +52,15 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.PostConstruct;
-
+/**
+ * A service that maps trips to runs and vice-versa.
+ * 
+ * @author jmaki
+ *
+ */
 @Component
 public class RunServiceImpl implements RunService {
+	
   private Logger _log = LoggerFactory.getLogger(RunServiceImpl.class);
 
   private NycFederatedTransitDataBundle _bundle;
@@ -76,16 +81,9 @@ public class RunServiceImpl implements RunService {
 
   private TransitGraphDao transitGraph;
   
-  private CalendarService calendarService;
-
   private ScheduledBlockLocationService scheduledBlockLocationService;
 
   private ExtendedCalendarService extCalendarService;
-
-  @Autowired
-  public void setCalendarService(CalendarService calendarService) {
-    this.calendarService = calendarService;
-  }
 
   public ExtendedCalendarService getCalendarService() {
     return extCalendarService;
@@ -132,6 +130,7 @@ public class RunServiceImpl implements RunService {
     transformRunData();
   }
 
+  // public only for unit testing
   public void transformRunData() {
     entriesByRun = TreeMultimap.create();
     runIdsToRoutes = HashMultimap.create();
@@ -186,6 +185,13 @@ public class RunServiceImpl implements RunService {
     entriesByTrip.put(tripId, rte);
   }
 
+  public void setRunDataByTrip(Map<AgencyAndId, RunData> runDataByTrip) {
+	    this.runDataByTrip = runDataByTrip;
+  }
+  
+  /**
+   * PUBLIC METHODS
+   */
   @Override
   public String getInitialRunForTrip(AgencyAndId trip) {
     RunData runData = runDataByTrip.get(trip);
@@ -287,40 +293,6 @@ public class RunServiceImpl implements RunService {
     return matchedRTEs;
   }
 
-  /**
-   * If a schedule time is between the last stop time of a trip and the first
-   * start time of the next, we return the next trip.
-   */
-  @Override
-  public RunTripEntry getActiveRunTripEntryForRunAndTime(String runId, long time) {
-
-    if (!entriesByRun.containsKey(runId)) {
-      _log.warn("Run id " + runId + " was not found.");
-      return null;
-    }
-
-    Date serviceDate = getTimestampAsDate(time);
-    int scheduleTime = (int) (time - serviceDate.getTime()) / 1000;
-
-    for (RunTripEntry entry : entriesByRun.get(runId)) {
-      if (!calendarService.isLocalizedServiceIdActiveOnDate(
-          entry.getTripEntry().getServiceId(), serviceDate))
-        continue;
-
-      boolean activeInThisTrip = scheduleTime >= entry.getStartTime()
-          && scheduleTime < entry.getStopTime();
-
-      if (activeInThisTrip)
-        return entry;
-
-      RunTripEntry nextTrip = getNextEntry(entry, serviceDate.getTime());
-      if (nextTrip != null && scheduleTime <= nextTrip.getStartTime()) {
-        return nextTrip;
-      }
-    }
-    return null;
-  }
-
   @Override
   public List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(
       String agencyId, long time) {
@@ -344,6 +316,103 @@ public class RunServiceImpl implements RunService {
     return out;
   }
 
+  /**
+   * This follows the same general contract of
+   * ScheduledBlockLocation.getActiveTrip, i.e. if we go past the end of the
+   * block, return the last run-trip
+   */
+  @Override
+  public RunTripEntry getActiveRunTripEntryForBlockInstance(
+      BlockInstance blockInstance, int scheduleTime) {
+
+    ScheduledBlockLocation blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+        blockInstance.getBlock(), scheduleTime);
+
+    /*
+     * according to getScheduledBlockLocationFromScheduledTime, we get null when
+     * we've gone past the end of the block.
+     */
+    if (blockLocation == null) {
+      blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+          blockInstance.getBlock(),
+          blockInstance.getBlock().getTotalBlockDistance());
+    }
+
+    BlockTripEntry trip = blockLocation.getActiveTrip();
+
+    return getRunTripEntryForTripAndTime(trip.getTrip(),
+        blockLocation.getScheduledTime());
+  }
+
+  // TODO these methods don't require this much effort. they can
+  // be pre-computed in setup(), or earlier.
+  @Override
+  public ScheduledBlockLocation getSchedBlockLocForRunTripEntryAndTime(
+      RunTripEntry runTrip, long timestamp) {
+
+    Date serviceDate = getTimestampAsDate(timestamp);
+    BlockInstance activeBlock = getBlockInstanceForRunTripEntry(runTrip,
+        serviceDate);
+    int scheduleTime = (int) ((timestamp - serviceDate.getTime()) / 1000);
+    BlockTripEntry bte = getTargetBlockTrip(activeBlock, runTrip.getTripEntry());
+    ScheduledBlockLocation sbl = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+        bte.getBlockConfiguration(), scheduleTime);
+
+    return sbl;
+
+  }
+
+  /**
+   * Notice that this will only match times EXACTLY within the ACTIVE schedule
+   * times (based on stops times).
+   */
+  @Override
+  public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip,
+      int scheduleTime) {
+
+    List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getId());
+
+    if (!bothTrips.isEmpty()) {
+      RunTripEntry firstTrip = bothTrips.get(0);
+      if (bothTrips.size() == 1) {
+        return firstTrip;
+      } else {
+        RunTripEntry secondTrip = bothTrips.get(1);
+        if (secondTrip.getStartTime() <= scheduleTime 
+            && secondTrip.getStartTime() >= firstTrip.getStartTime())
+          return secondTrip;
+      }
+      return firstTrip;
+    }
+
+    return null;
+  }
+  
+  @Override
+  public Set<String> getRunIdsForTrip(TripEntry trip) {
+    Set<String> ids = Sets.newHashSet();
+    for (RunTripEntry rte : entriesByTrip.get(trip.getId())) {
+      ids.add(rte.getRunId());
+    }
+    return ids;
+  }
+
+  @Override
+  public boolean isValidRunId(String runId) {
+    return this.entriesByRun.containsKey(runId);
+  }
+
+  @Override
+  public Collection<? extends AgencyAndId> getTripIdsForRunId(String runId) {
+    return runIdsToTripIds.get(runId);
+  }
+
+  @Override
+  public Set<AgencyAndId> getRoutesForRunId(String runId) {
+    Collection<AgencyAndId> routeIds = runIdsToRoutes.get(runId);
+    return Objects.firstNonNull(Sets.newHashSet(routeIds), Collections.<AgencyAndId>emptySet());
+  }
+  
   @Override
   public RunTripEntry getPreviousEntry(RunTripEntry before, long serviceDate) {
     GregorianCalendar calendar = new GregorianCalendar();
@@ -421,40 +490,11 @@ public class RunServiceImpl implements RunService {
     }
     return null;
   }
-
-  public void setRunDataByTrip(Map<AgencyAndId, RunData> runDataByTrip) {
-    this.runDataByTrip = runDataByTrip;
-  }
-
+ 
   /**
-   * This follows the same general contract of
-   * ScheduledBlockLocation.getActiveTrip, i.e. if we go past the end of the
-   * block, return the last run-trip
+   * PRIVATE METHODS
    */
-  @Override
-  public RunTripEntry getActiveRunTripEntryForBlockInstance(
-      BlockInstance blockInstance, int scheduleTime) {
-
-    ScheduledBlockLocation blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
-        blockInstance.getBlock(), scheduleTime);
-
-    /*
-     * according to getScheduledBlockLocationFromScheduledTime, we get null when
-     * we've gone past the end of the block.
-     */
-    if (blockLocation == null) {
-      blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-          blockInstance.getBlock(),
-          blockInstance.getBlock().getTotalBlockDistance());
-    }
-
-    BlockTripEntry trip = blockLocation.getActiveTrip();
-
-    return getRunTripEntryForTripAndTime(trip.getTrip(),
-        blockLocation.getScheduledTime());
-  }
-
-  public static Date getTimestampAsDate(long timestamp) {
+  private static Date getTimestampAsDate(long timestamp) {
     Calendar cd = Calendar.getInstance();
     cd.setTimeInMillis(timestamp);
     cd.set(Calendar.HOUR_OF_DAY, 0);
@@ -462,100 +502,6 @@ public class RunServiceImpl implements RunService {
     cd.set(Calendar.SECOND, 0);
     cd.set(Calendar.MILLISECOND, 0);
     return cd.getTime();
-  }
-
-  // TODO FIXME these methods don't require this much effort. they can
-  // be pre-computed in setup(), or earlier.
-  @Override
-  public ScheduledBlockLocation getSchedBlockLocForRunTripEntryAndTime(
-      RunTripEntry runTrip, long timestamp) {
-
-    Date serviceDate = getTimestampAsDate(timestamp);
-    BlockInstance activeBlock = getBlockInstanceForRunTripEntry(runTrip,
-        serviceDate);
-    int scheduleTime = (int) ((timestamp - serviceDate.getTime()) / 1000);
-    BlockTripEntry bte = getTargetBlockTrip(activeBlock, runTrip.getTripEntry());
-    ScheduledBlockLocation sbl = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
-        bte.getBlockConfiguration(), scheduleTime);
-
-    return sbl;
-
-  }
-
-  @Override
-  public BlockInstance getBlockInstanceForRunTripEntry(RunTripEntry rte,
-      Date serviceDate) {
-
-    Date trunDate = getTimestampAsDate(serviceDate.getTime());
-    AgencyAndId blockId = rte.getTripEntry().getBlock().getId();
-    BlockInstance bli = blockCalendarService.getBlockInstance(blockId,
-        trunDate.getTime());
-
-    if (bli == null) {
-      // FIXME just a hack, mostly for time issues
-      List<BlockInstance> tmpBli = blockCalendarService.getClosestActiveBlocks(
-          blockId, serviceDate.getTime());
-      if (tmpBli != null && !tmpBli.isEmpty())
-        return tmpBli.get(0);
-    }
-    return bli;
-  }
-
-  /**
-   * Notice that this will only match times EXACTLY within the ACTIVE schedule
-   * times (based on stops times).
-   */
-  @Override
-  public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip,
-      int scheduleTime) {
-
-    List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getId());
-
-    if (!bothTrips.isEmpty()) {
-
-      RunTripEntry firstTrip = bothTrips.get(0);
-      if (bothTrips.size() == 1) {
-        return firstTrip;
-      } else {
-        RunTripEntry secondTrip = bothTrips.get(1);
-        if (secondTrip.getStartTime() <= scheduleTime 
-            && secondTrip.getStartTime() >= firstTrip.getStartTime())
-          return secondTrip;
-      }
-      return firstTrip;
-    }
-
-    return null;
-  }
-  
-  @Override
-  public Collection<RunTripEntry> getRunTripsForTrip(TripEntry trip) {
-    Collection<RunTripEntry> trips = entriesByTrip.get(trip.getId());
-    return trips;
-  }
-  
-  @Override
-  public Set<String> getRunIdsForTrip(TripEntry trip) {
-    Set<String> ids = Sets.newHashSet();
-    for (RunTripEntry rte : entriesByTrip.get(trip.getId())) {
-      ids.add(rte.getRunId());
-    }
-    return ids;
-  }
-
-  @Override
-  public boolean isValidRunId(String runId) {
-    return this.entriesByRun.containsKey(runId);
-  }
-  
-  @Override
-  public boolean isValidRunNumber(String runNumber) {
-    return this.entriesByRunNumber.containsKey(runNumber);
-  }
-
-  @Override
-  public Collection<? extends AgencyAndId> getTripIdsForRunId(String runId) {
-    return runIdsToTripIds.get(runId);
   }
 
   private static BlockTripEntry getTargetBlockTrip(BlockInstance blockInstance,
@@ -569,10 +515,22 @@ public class RunServiceImpl implements RunService {
     }
     return null;
   }
+  
+  private BlockInstance getBlockInstanceForRunTripEntry(RunTripEntry rte,
+      Date serviceDate) {
 
-  @Override
-  public Set<AgencyAndId> getRoutesForRunId(String runId) {
-    Collection<AgencyAndId> routeIds = runIdsToRoutes.get(runId);
-    return Objects.firstNonNull(Sets.newHashSet(routeIds), Collections.<AgencyAndId>emptySet());
+    Date trunDate = getTimestampAsDate(serviceDate.getTime());
+    AgencyAndId blockId = rte.getTripEntry().getBlock().getId();
+    BlockInstance bli = blockCalendarService.getBlockInstance(blockId,
+        trunDate.getTime());
+
+    if (bli == null) {
+      // FIXME a hack, mostly for time issues
+      List<BlockInstance> tmpBli = blockCalendarService.getClosestActiveBlocks(
+          blockId, serviceDate.getTime());
+      if (tmpBli != null && !tmpBli.isEmpty())
+        return tmpBli.get(0);
+    }
+    return bli;
   }
 }

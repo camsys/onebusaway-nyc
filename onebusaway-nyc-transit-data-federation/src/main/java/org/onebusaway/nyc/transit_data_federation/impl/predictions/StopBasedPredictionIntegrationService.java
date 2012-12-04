@@ -27,6 +27,18 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * A component to update predictions for a vehicle when an update is received from the vehicle.
+ * The workflow is that the system updates the TDS with the inferred result, queries the PredictionGenerationService,
+ * and then updates the TDS with those predicted results.
+ * 
+ * This service exists as a way to synchronize and match those two results across what might be two separate systems, 
+ * allow the prediction generation service to use the (then updated) TDS data, as well as cache the result of the time
+ * prediction generation service between updates.
+ * 
+ * @author jmaki
+ *
+ */
 @Component
 class StopBasedPredictionIntegrationService implements PredictionIntegrationService {
 

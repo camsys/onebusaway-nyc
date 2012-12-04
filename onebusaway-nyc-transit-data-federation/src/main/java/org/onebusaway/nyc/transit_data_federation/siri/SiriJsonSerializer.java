@@ -27,6 +27,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+/** 
+ * Serializer for XSD-generated SIRI classes, creating JSON in the format suitable
+ * for Bus Time front-ends and third-party apps.
+ * 
+ * @author jmaki
+ *
+ */
 public class SiriJsonSerializer {
   
   private static class CustomValueObjectSerializer extends BeanSerializerBase {

@@ -50,7 +50,6 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	// inference engine telemetry
 	private NycVehicleManagementStatusBean managementRecord;
 
-	// filled by the archiver when this class is used as the DB record model.
 	private String runId;
 
 	private String routeId;

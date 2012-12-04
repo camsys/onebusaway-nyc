@@ -49,9 +49,6 @@
         <property name="target" value="hibernateProperties" />
         <property name="properties">
             <props>
-<!--
-                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
--->
                 <prop key="bundle.location">${bundle.location}</prop>
             </props> 
         </property> 
@@ -59,7 +56,7 @@
 
     <alias name="dataSource" alias="mutableDataSource" />
 
-	
+    
 	<!-- Input Queue Configuration -->
   	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
 
@@ -76,12 +73,11 @@
     </bean>
     
     <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-                <property name="bundleStoreRoot" value="${bundle.location}" />
-                <property name="standaloneMode" value="${bundle.mode.standalone}" />
+        <property name="bundleStoreRoot" value="${bundle.location}" />
+        <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
-    <bean id="nycSiriService"
-        class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
+    <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
         <property name="serviceAlertsUrl" value="${service.alerts.url}" />
         <property name="subscriptionPath" value="${service.alerts.subscription.path}" />        
     </bean>

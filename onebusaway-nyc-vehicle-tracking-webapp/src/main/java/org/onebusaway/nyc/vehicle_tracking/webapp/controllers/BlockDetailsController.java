@@ -61,7 +61,6 @@ public class BlockDetailsController {
       return new ModelAndView("block-details-notFound.jspx");
     
     Map<String,String> dscsByTripId = new HashMap<String, String>();
-    
     for( BlockConfigurationBean blockConfig : block.getConfigurations() ) {
       for( BlockTripBean blockTrip : blockConfig.getTrips() ) {
         TripBean trip = blockTrip.getTrip();

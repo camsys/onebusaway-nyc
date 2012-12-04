@@ -3,11 +3,8 @@ package org.onebusaway.nyc.transit_data_federation.bundle.model;
 import java.io.File;
 
 /**
- * Captures the file structure of various file artifacts of a federated transit
+ * Captures the file structure of various file artifacts of an NYC federated transit
  * data bundle. All artifact file paths are relative to a base path.
- * 
- * @author bdferris
- * @see FederatedTransitDataBundleCreator
  */
 public class NycFederatedTransitDataBundle {
 
@@ -17,7 +14,8 @@ public class NycFederatedTransitDataBundle {
 	  _path = path;
   }
 
-  public NycFederatedTransitDataBundle() {}
+  public NycFederatedTransitDataBundle() {
+  }
 
   public void setPath(File path) {
     _path = path;

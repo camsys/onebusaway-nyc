@@ -24,6 +24,12 @@ import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * This component listens to the inference output queue and injects records into the local TDF/TDS.
+ * 
+ * @author jmaki
+ *
+ */
 public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask {
 
   @Autowired
@@ -60,6 +66,8 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 
     _vehicleLocationListener.handleVehicleLocationRecord(vlr);
 
+    // if we're updating time predictions with the generation service, tell the integration service to fetch
+    // a new set of predictions now that the TDS has been updated appropriately.
     if(useTimePredictionsIfAvailable()) 
       _predictionIntegrationService.updatePredictionsForVehicle(vlr.getVehicleId());
   }

@@ -51,16 +51,6 @@
         <property name="password" value="${db.password}" />
     </bean>
     
-<!--
-    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-        <property name="target" value="hibernateProperties" />
-        <property name="properties">
-            <props>
-                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
-            </props> 
-        </property> 
-    </bean> 
--->
     <alias name="dataSource" alias="mutableDataSource" />
 
     <!-- define which TDM to use -->
@@ -70,12 +60,12 @@
       <constructor-arg type="java.lang.String" value="/api/" />
     </bean>
     
+    
 	<!-- Input Queue Configuration -->
 	<!-- This option listens to the queue with pilot and SI data on it. -->
    	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.${ie.listener}"> 
  		<property name="depotPartitionKey" value="${depot.partition.key}"/>
    	</bean>
-
 
 	<!-- Output Queue Configuration -->
 	<!-- This option sends inference output to a TDM configured queue for pickup by an external TDF/TDS -->
@@ -90,8 +80,12 @@
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
+				<!-- This turns off OBA's feature to log vehicle updates into the DB. -->
                 <prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
+                
+				<!-- This turns off OBA's feature to propagate vehicle positions based on schedule between updates -->
                 <prop key="blockLocationServiceImpl.locationInterpolation">false</prop>
+
                 <prop key="cacheManager.cacheManagerName">org.onebusaway.transit_data_federation_webapp.cacheManager</prop>
             </props>
         </property>
@@ -102,8 +96,8 @@
     </bean>
 
     <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-                <property name="bundleStoreRoot" value="${bundle.location}" />
-                <property name="standaloneMode" value="${bundle.mode.standalone}" />
+        <property name="bundleStoreRoot" value="${bundle.location}" />
+        <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
     <import resource="${siri.service.config}"/>

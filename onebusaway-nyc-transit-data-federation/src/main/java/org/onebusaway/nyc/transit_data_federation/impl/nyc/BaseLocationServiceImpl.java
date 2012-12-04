@@ -42,6 +42,12 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
+/**
+ * Returns the name of a "base"/depot given an input coordinate.
+ * 
+ * @author jmaki
+ *
+ */
 @Component
 class BaseLocationServiceImpl implements BaseLocationService {
 

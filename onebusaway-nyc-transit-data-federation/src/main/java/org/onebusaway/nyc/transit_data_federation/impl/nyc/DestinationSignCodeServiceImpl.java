@@ -39,6 +39,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * A service that maps between DSCs and trip IDs.
+ * 
+ * @author jmaki
+ *
+ */
 @Component
 class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
 
@@ -50,6 +56,9 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   
   private Set<String> _notInServiceDscs;
   
+  @Autowired
+  private NycFederatedTransitDataBundle _bundle;
+  
   private TransitGraphDao _transitGraphDao;
 
   @Autowired
@@ -57,9 +66,6 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
     _transitGraphDao = transitGraphDao;
   }
 
-  @Autowired
-  private NycFederatedTransitDataBundle _bundle;
-  
   @PostConstruct
   @Refreshable(dependsOn = NycRefreshableResources.DESTINATION_SIGN_CODE_DATA)
   public void setup() throws IOException, ClassNotFoundException {

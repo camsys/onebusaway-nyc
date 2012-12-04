@@ -31,6 +31,11 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * A component that fetches operator assignment data from the TDM and provides it to the IE upon request.
+ * @author jmaki
+ *
+ */
 @Component
 public class OperatorAssignmentServiceImpl implements OperatorAssignmentService {
 
@@ -39,7 +44,8 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   private static final DateTimeFormatter _updatedDateFormatter = ISODateTimeFormat.dateTimeNoMillis();
 
   // map structure: service date -> (operator pass ID->operator assignment item)
-  private volatile Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> _serviceDateToOperatorListMap = new HashMap<ServiceDate, HashMap<String, OperatorAssignmentItem>>();
+  private volatile Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> _serviceDateToOperatorListMap = 
+		  new HashMap<ServiceDate, HashMap<String, OperatorAssignmentItem>>();
 
   private ScheduledFuture<OperatorAssignmentServiceImpl.UpdateThread> _updateTask = null;
 
@@ -56,18 +62,15 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   }
 
   @Autowired
-  public void setTransitDataManagerApiLibrary(
-      TransitDataManagerApiLibrary apiLibrary) {
+  public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
     this._transitDataManagerApiLibrary = apiLibrary;
   }
 
   private final Pattern operatorIdPattern = Pattern.compile("^0*[a-zA-Z]*0*(\\d+)$");
 
-  private HashMap<String, OperatorAssignmentItem> getOperatorMapForServiceDate(
-      ServiceDate serviceDate) {
+  private HashMap<String, OperatorAssignmentItem> getOperatorMapForServiceDate(ServiceDate serviceDate) {
     try {
-      String serviceDateUrlParameter = serviceDate.getYear() + "-"
-          + serviceDate.getMonth() + "-" + serviceDate.getDay();
+      String serviceDateUrlParameter = serviceDate.getYear() + "-" + serviceDate.getMonth() + "-" + serviceDate.getDay();
       List<JsonObject> operatorAssignments = _transitDataManagerApiLibrary.getItemsForRequest(
           "crew", serviceDateUrlParameter, "list");
 
@@ -80,38 +83,32 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
         item.setRunNumber(itemToAdd.get("run-number").getAsString());
         item.setRunRoute(itemToAdd.get("run-route").getAsString());
         item.setDepot(itemToAdd.get("depot").getAsString());
-        item.setServiceDate(ServiceDate.parseString(itemToAdd.get(
-            "service-date").getAsString().replace("-", "")));
-        item.setUpdated(_updatedDateFormatter.parseDateTime(itemToAdd.get(
-            "updated").getAsString()));
+        item.setServiceDate(ServiceDate.parseString(itemToAdd.get("service-date").getAsString().replace("-", "")));
+        item.setUpdated(_updatedDateFormatter.parseDateTime(itemToAdd.get("updated").getAsString()));
 
         Matcher operatorIdMatcher = operatorIdPattern.matcher(item.getPassId());
-
         if (!operatorIdMatcher.matches()) {
-          _log.error("Couldn't parse operator-id: " + item.getPassId());
-          break;
+          _log.error("Couldn't parse operator ID from TDM: " + item.getPassId());
+          continue;
         }
+
         String tailoredId = operatorIdMatcher.group(1);
         output.put(item.getAgencyId() + "_" + tailoredId, item);
       }
 
       return output;
     } catch (Exception e) {
-      _log.error("Error getting operator list for serviceDate=" + serviceDate
-          + "; error was " + e.getMessage());
+      _log.error("Error getting operator list for serviceDate=" + serviceDate + "; error was " + e.getMessage());
       return null;
     }
   }
 
   public synchronized void refreshData() {
-    Set<ServiceDate> keySet = new HashSet<ServiceDate>(
-        _serviceDateToOperatorListMap.keySet());
+    Set<ServiceDate> keySet = new HashSet<ServiceDate>(_serviceDateToOperatorListMap.keySet());
     for (ServiceDate serviceDate : keySet) {
       HashMap<String, OperatorAssignmentItem> operatorIdToAssignmentItemMap = getOperatorMapForServiceDate(serviceDate);
-
       if (operatorIdToAssignmentItemMap != null) {
-        _serviceDateToOperatorListMap.put(serviceDate,
-            operatorIdToAssignmentItemMap);
+        _serviceDateToOperatorListMap.put(serviceDate, operatorIdToAssignmentItemMap);
       }
     }
   }
@@ -126,9 +123,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   @SuppressWarnings("unused")
   @Refreshable(dependsOn = "tdm.crewAssignmentRefreshInterval")
   private void configChanged() {
-    Integer updateInterval = _configurationService.getConfigurationValueAsInteger(
-        "tdm.crewAssignmentRefreshInterval", null);
-
+    Integer updateInterval = _configurationService.getConfigurationValueAsInteger("tdm.crewAssignmentRefreshInterval", null);
     if (updateInterval != null) {
       setUpdateFrequency(updateInterval);
     }
@@ -139,9 +134,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     if (_updateTask != null) {
       _updateTask.cancel(true);
     }
-
-    _updateTask = _taskScheduler.scheduleWithFixedDelay(new UpdateThread(),
-        seconds * 1000);
+    _updateTask = _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), seconds * 1000);
   }
 
   @SuppressWarnings("unused")
