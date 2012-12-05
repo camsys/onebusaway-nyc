@@ -70,8 +70,6 @@ public class VehicleInferenceInstance {
 
   private static Logger _log = LoggerFactory.getLogger(VehicleInferenceInstance.class);
 
-  private VehicleStateLibrary _vehicleStateLibrary;
-
   @Autowired
   private ConfigurationService _configurationService;
 
@@ -84,8 +82,6 @@ public class VehicleInferenceInstance {
   private RunService _runService;
 
   private long _automaticResetWindow = 20 * 60 * 1000;
-
-  private boolean _enabled = true;
 
   private Observation _previousObservation = null;
 
@@ -111,34 +107,22 @@ public class VehicleInferenceInstance {
   }
 
   @Autowired
-  public void setOperatorAssignmentService(
-      OperatorAssignmentService operatorAssignmentService) {
+  public void setOperatorAssignmentService(OperatorAssignmentService operatorAssignmentService) {
     _operatorAssignmentService = operatorAssignmentService;
   }
 
-  @Autowired
-  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
-    _vehicleStateLibrary = vehicleStateLibrary;
+  public OperatorAssignmentService getOperatorAssignmentService() {
+    return _operatorAssignmentService;
   }
 
   @Autowired
-  public void setDestinationSignCodeService(
-      DestinationSignCodeService destinationSignCodeService) {
+  public void setDestinationSignCodeService(DestinationSignCodeService destinationSignCodeService) {
     _destinationSignCodeService = destinationSignCodeService;
   }
 
   @Autowired
   public void setBaseLocationService(BaseLocationService baseLocationService) {
     _baseLocationService = baseLocationService;
-  }
-
-  /**
-   * If we haven't received a GPS update in the specified window, the inference
-   * engine is reset only if the DSC has changed since the last update
-   * 
-   * @param optionalResetWindow
-   */
-  public void setOptionalResetWindow(long optionalResetWindow) {
   }
 
   /**
@@ -155,7 +139,7 @@ public class VehicleInferenceInstance {
    * Process a NycRawLocationRecord, usually from a bus or the simulator.
    * 
    * @param record
-   * @return true if the resulting inferred location record should be passed on,
+   * @return true if the resulting inferred location record was successfully processed,
    *         otherwise false
    */
   public synchronized boolean handleUpdate(NycRawLocationRecord record) {
@@ -164,9 +148,7 @@ public class VehicleInferenceInstance {
      * Choose the best timestamp based on device timestamp and received
      * timestamp
      */
-    final long timestamp = RecordLibrary.getBestTimestamp(record.getTime(),
-        record.getTimeReceived());
-
+    final long timestamp = RecordLibrary.getBestTimestamp(record.getTime(),record.getTimeReceived());
     _lastUpdateTime = timestamp;
 
     /**
@@ -205,11 +187,8 @@ public class VehicleInferenceInstance {
       final long delta = Math.abs(timestamp - _previousObservation.getTime());
       final NycRawLocationRecord lastRecord = _previousObservation.getRecord();
 
-      reportedRunIdChange = !StringUtils.equals(lastRecord.getRunId(),
-          record.getRunId());
-
-      operatorIdChange = !StringUtils.equals(lastRecord.getOperatorId(),
-          record.getOperatorId());
+      reportedRunIdChange = !StringUtils.equals(lastRecord.getRunId(), record.getRunId());
+      operatorIdChange = !StringUtils.equals(lastRecord.getOperatorId(), record.getOperatorId());
 
       if (delta > _automaticResetWindow) {
         _log.info("resetting inference for vid=" + record.getVehicleId()
@@ -241,8 +220,7 @@ public class VehicleInferenceInstance {
       record.setLongitude(previousRecord.getLongitude());
     }
 
-    final CoordinatePoint location = new CoordinatePoint(record.getLatitude(),
-        record.getLongitude());
+    final CoordinatePoint location = new CoordinatePoint(record.getLatitude(), record.getLongitude());
 
     /**
      * Sometimes, DSCs take the form "  11", where there is whitespace in there.
@@ -256,35 +234,30 @@ public class VehicleInferenceInstance {
 
     String lastValidDestinationSignCode = null;
 
-    if (dsc != null
-        && !_destinationSignCodeService.isMissingDestinationSignCode(dsc)) {
+    if (dsc != null && !_destinationSignCodeService.isMissingDestinationSignCode(dsc)) {
       lastValidDestinationSignCode = dsc;
     } else if (_previousObservation != null) {
       lastValidDestinationSignCode = _lastValidDestinationSignCode;
     }
 
     final boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
-    final boolean atTerminal = false; //_vehicleStateLibrary.isAtPotentialBlockTerminal(record);
+    final boolean atTerminal = false;
     final boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode);
     final boolean hasValidDsc = !_destinationSignCodeService.isMissingDestinationSignCode(lastValidDestinationSignCode)
         && !_destinationSignCodeService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
 
     Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
-    if (_previousObservation == null
-        || !StringUtils.equals(_lastValidDestinationSignCode,
-            lastValidDestinationSignCode)) {
+    if (_previousObservation == null || !StringUtils.equals(_lastValidDestinationSignCode, lastValidDestinationSignCode)) {
       routeIds = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(lastValidDestinationSignCode);
     } else {
       routeIds = _previousObservation.getDscImpliedRouteCollections();
     }
 
     RunResults runResults = null;
-    if (_previousObservation == null || operatorIdChange == Boolean.TRUE
-        || reportedRunIdChange == Boolean.TRUE) {
+    if (_previousObservation == null || operatorIdChange == Boolean.TRUE || reportedRunIdChange == Boolean.TRUE) {
       runResults = findRunIdMatches(record);
     } else {
-      runResults = updateRunIdMatches(record,
-          _previousObservation.getRunResults());
+      runResults = updateRunIdMatches(record, _previousObservation.getRunResults());
     }
 
     final Observation observation = new Observation(timestamp, record,
@@ -329,7 +302,7 @@ public class VehicleInferenceInstance {
       throw new IllegalStateException(ex);
     }
 
-    return _enabled;
+    return true;
   }
 
   /**
@@ -348,7 +321,7 @@ public class VehicleInferenceInstance {
     if (!record.locationDataIsMissing())
       _lastLocationUpdateTime = record.getTimestamp();
 
-    return _enabled;
+    return true;
   }
 
   /****
@@ -433,9 +406,8 @@ public class VehicleInferenceInstance {
     final BlockStateObservation blockState = state.getBlockStateObservation();
     final Observation obs = state.getObservation();
     final NycRawLocationRecord nycRawRecord = obs.getRecord();
-
     record.setBearing(nycRawRecord.getBearing());
-
+    
     if (blockState != null) {
       final ScheduledBlockLocation blockLocation = blockState.getBlockState().getBlockLocation();
 
@@ -472,7 +444,7 @@ public class VehicleInferenceInstance {
     final BlockStateObservation blockState = state.getBlockStateObservation();
 
     record.setUUID(nycRawRecord.getUuid());
-    record.setInferenceIsEnabled(_enabled);
+    record.setInferenceIsEnabled(true);
     record.setLastUpdateTime(_lastUpdateTime);
     record.setLastLocationUpdateTime(_lastLocationUpdateTime);
     record.setAssignedRunId(obs.getOpAssignedRunId());
@@ -490,14 +462,9 @@ public class VehicleInferenceInstance {
     return record;
   }
 
-  public synchronized void setVehicleStatus(boolean enabled) {
-    _enabled = enabled;
-  }
-
   /****
    * Private Methods
    ****/
-
   private void setLastRecordForDetails(VehicleLocationDetails details) {
     NycRawLocationRecord lastRecord = null;
     if (_previousObservation != null)
@@ -642,6 +609,10 @@ public class VehicleInferenceInstance {
         routeIds);
   }
 
+  /**
+   * Returns the most recent inference result as an NycTestInferredLocationRecord, i.e. simulator output.
+   * @return
+   */
   private NycTestInferredLocationRecord getMostRecentParticleAsNycTestInferredLocationRecord() {
     final Particle particle = _particleFilter.getMostLikelyParticle();
     if (particle == null)
@@ -745,7 +716,4 @@ public class VehicleInferenceInstance {
     return record;
   }
 
-  public OperatorAssignmentService getOperatorAssignmentService() {
-    return _operatorAssignmentService;
-  }
 }

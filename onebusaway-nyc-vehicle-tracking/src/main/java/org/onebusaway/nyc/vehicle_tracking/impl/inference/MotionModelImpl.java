@@ -315,13 +315,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
          * We are also allowing changes to snapped in-progress states when
          * they were sampled well outside of allowed backward search distance.
          */
-        final double backwardDistance = Double.NEGATIVE_INFINITY;
-//        if (parentState.getBlockStateObservation().isSnapped() 
-//            && !EVehiclePhase.IN_PROGRESS.equals(parentState.getJourneyState().getPhase()))
-//          backwardDistance = Double.NEGATIVE_INFINITY;
-//        else 
-//          backwardDistance = -1.98 * GpsLikelihood.gpsStdDev;
-        
+        final double backwardDistance = Double.NEGATIVE_INFINITY;        
         transitions.addAll(_blocksFromObservationService.advanceState(obs,
             parentState.getBlockState(), backwardDistance,
             Double.POSITIVE_INFINITY));
@@ -371,7 +365,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return results;
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes", "null"})
   private Particle sampleTransitionParticle(Entry<Particle> parent,
       BlockStateObservation newParentBlockStateObs, Observation obs,
       final double vehicleHasNotMovedProb,
@@ -548,9 +541,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
             proposalEdge);
 
         if (proposalEdge.isSnapped()) {
-          // newEdge =
-          // _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge,
-          // obs);
           newEdge = Maps.immutableEntry(BlockSampleType.NOT_SAMPLED,
               proposalEdge);
         } else if (runChanged) {
@@ -584,9 +574,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
         }
       } else {
         if (proposalEdge.isSnapped()) {
-          // newEdge =
-          // _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge,
-          // obs);
           newEdge = Maps.immutableEntry(BlockSampleType.NOT_SAMPLED,
               proposalEdge);
         } else {
@@ -601,26 +588,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     return newEdge;
   }
-
-  // @Override
-  // public void move(Entry<Particle> parent, double timestamp, double
-  // timeElapsed,
-  // Observation obs, Multiset<Particle> results,
-  // Multimap<VehicleState, VehicleState> cache) {
-  //
-  // final VehicleState parentState = parent.getElement().getData();
-  // final MotionState motionState = updateMotionState(parentState, obs);
-  //
-  // final Collection<VehicleState> vehicleStates = cache.get(parentState);
-  //
-  // if (vehicleStates.isEmpty()) {
-  // _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
-  // for (final VehicleState vs : vehicleStates)
-  // results.add(new Particle(timestamp, parent.getElement(), 1.0, vs),
-  // parent.getCount());
-  // }
-  //
-  // }
 
   public static boolean hasRunChanged(BlockStateObservation parentEdge,
       BlockStateObservation proposalEdge) {
@@ -643,21 +610,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
       return false;
     }
   }
-
-  // @Override
-  // public void move(Particle parent, double timestamp, double timeElapsed,
-  // Observation obs, Collection<Particle> results) {
-  //
-  // final VehicleState parentState = parent.getData();
-  //
-  // final MotionState motionState = updateMotionState(parentState, obs, false);
-  //
-  // final List<VehicleState> vehicleStates = new ArrayList<VehicleState>();
-  // _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
-  //
-  // for (final VehicleState vs : vehicleStates)
-  // results.add(new Particle(timestamp, parent, 0.0, vs));
-  // }
 
   public MotionState updateMotionState(Observation obs,
       boolean vehicleHasNotMoved) {

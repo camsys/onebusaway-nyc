@@ -23,6 +23,13 @@ import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * An output service for debugging--sends inference output to the VTW-embedded TDS instead
+ * of to an inference output queue.
+ * 
+ * @author jmaki
+ *
+ */
 public class DummyOutputQueueSenderServiceImpl implements
     OutputQueueSenderService {
 

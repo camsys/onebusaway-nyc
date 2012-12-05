@@ -13,6 +13,11 @@ import tcip_final_3_0_5_1.CcLocationReport;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+/**
+ * Listens to the real time queue for one vehicle and injects it into the inference process.
+ * 
+ * @author jmaki
+ */
 public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
     implements PartitionedInputQueueListener {
 
@@ -74,6 +79,7 @@ public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
 
   @Override
   public void setDepotPartitionKey(String depotPartitionKey) {
+    // not partitioned by depot, nothing to do here.
   }
 
 }

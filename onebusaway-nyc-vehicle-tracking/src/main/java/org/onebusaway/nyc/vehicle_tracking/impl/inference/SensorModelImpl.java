@@ -111,7 +111,6 @@ public class SensorModelImpl implements SensorModel<Observation> {
       VehicleState state, Observation obs) throws BadProbabilityParticleFilterException {
 
     final SensorModelResult result = new SensorModelResult("pTotal", 1.0);
-
     final Context context = new Context(parentState, state, obs);
 
     for (final SensorModelRule rule : _rules) {

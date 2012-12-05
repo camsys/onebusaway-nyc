@@ -44,6 +44,12 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 
+/**
+ * Sends inference output to the inference output queue.
+ * 
+ * @author sheldonabrown
+ *
+ */
 public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
     ServletContextAware {
 

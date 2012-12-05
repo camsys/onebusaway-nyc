@@ -15,6 +15,13 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
@@ -26,23 +33,18 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-
-import org.apache.commons.lang.ObjectUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class BlockStateTransitionModel {
 
-  private static Logger _log = LoggerFactory.getLogger(BlockStateTransitionModel.class);
+  /**
+   * Given a potential distance to travel in physical / street-network space, a
+   * fudge factor that determines how far ahead we will look along the block of
+   * trips in distance to travel
+   */
+  private double _blockDistanceTravelScale = 1.5;
 
   private DestinationSignCodeService _destinationSignCodeService;
 
@@ -53,7 +55,6 @@ public class BlockStateTransitionModel {
   /****
    * Parameters
    ****/
-
   static class LocalRandom extends ThreadLocal<Random> {
     long _seed = 0;
 
@@ -101,25 +102,12 @@ public class BlockStateTransitionModel {
       threadLocalRng = new LocalRandom(seed);
     } else {
       threadLocalRng = new LocalRandomDummy(seed);
-
     }
   }
-
-  /**
-   * Given a potential distance to travel in physical / street-network space, a
-   * fudge factor that determines how far ahead we will look along the block of
-   * trips in distance to travel
-   */
-  private double _blockDistanceTravelScale = 1.5;
 
   /****
    * Setters
    ****/
-
-  @Autowired
-  public void setBlockStateService(BlockStateService blockStateService) {
-  }
-
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
@@ -149,18 +137,14 @@ public class BlockStateTransitionModel {
 
     if (states == null) {
       states = new ConcurrentHashMap<BlockInstance, Set<BlockStateObservation>>();
-      _observationCache.putValueForObservation(obs,
-          EObservationCacheKey.CLOSEST_BLOCK_LOCATION, states);
+      _observationCache.putValueForObservation(obs, EObservationCacheKey.CLOSEST_BLOCK_LOCATION, states);
     }
 
     final BlockInstance blockInstance = blockState.getBlockInstance();
-
     Set<BlockStateObservation> closestState = states.get(blockInstance);
 
     if (closestState == null) {
-
       closestState = getClosestBlockStateUncached(blockState, obs);
-
       states.put(blockInstance, closestState);
     }
 
@@ -173,8 +157,7 @@ public class BlockStateTransitionModel {
 
   public boolean allowBlockTransition(VehicleState parentState, Observation obs) {
 
-    final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
-
+	final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
     if (parentBlockState == null
         && (!obs.hasOutOfServiceDsc() && obs.hasValidDsc()))
       return true;
@@ -189,32 +172,6 @@ public class BlockStateTransitionModel {
         if (parentState.getJourneyState().getPhase() == EVehiclePhase.DEADHEAD_AFTER) {
           return true;
         }
-
-        // final Observation prevObs = obs.getPreviousObservation();
-        // /**
-        // * Have we just transitioned out of a terminal?
-        // */
-        // if (prevObs != null) {
-        // /**
-        // * If we were assigned a block, then use the block's terminals,
-        // otherwise,
-        // * all terminals.
-        // */
-        // if (parentBlockState != null) {
-        // final boolean wasAtBlockTerminal =
-        // VehicleStateLibrary.isAtPotentialTerminal(
-        // prevObs.getRecord(),
-        // parentBlockState.getBlockState().getBlockInstance());
-        // final boolean isAtBlockTerminal =
-        // VehicleStateLibrary.isAtPotentialTerminal(
-        // obs.getRecord(),
-        // parentBlockState.getBlockState().getBlockInstance());
-        //
-        // if (wasAtBlockTerminal && !isAtBlockTerminal) {
-        // return true;
-        // }
-        // }
-        // }
       }
     }
 
@@ -253,16 +210,16 @@ public class BlockStateTransitionModel {
   private Set<BlockStateObservation> getClosestBlockStateUncached(
       BlockState blockState, Observation obs) {
 
+	/**
+	 * The minimum distance to look ahead along the blocks when generating block state proposals.
+	 */
     double distanceToTravel = 400;
 
     final Observation prevObs = obs.getPreviousObservation();
-
     if (prevObs != null) {
-      distanceToTravel = Math.max(
-          distanceToTravel,
+      distanceToTravel = Math.max(distanceToTravel,
           SphericalGeometryLibrary.distance(obs.getLocation(),
-              prevObs.getLocation())
-              * _blockDistanceTravelScale);
+              prevObs.getLocation()) * _blockDistanceTravelScale);
     }
 
     final Set<BlockStateObservation> results = new HashSet<BlockStateObservation>();
@@ -273,13 +230,11 @@ public class BlockStateTransitionModel {
       final double d = SphericalGeometryLibrary.distance(
           blockLocation.getLocation(), obs.getLocation());
 
-      if (d > 400) {
-        final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-            blockState, obs);
-        final BlockStateObservation blockStateObservation = new BlockStateObservation(
-            blockState, obs, isAtPotentialLayoverSpot, true);
-        results.addAll(_blocksFromObservationService.bestStates(obs,
-            blockStateObservation));
+      if (d > distanceToTravel) {
+        final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(blockState, obs);
+        final BlockStateObservation blockStateObservation = 
+        		new BlockStateObservation(blockState, obs, isAtPotentialLayoverSpot, true);
+        results.addAll(_blocksFromObservationService.bestStates(obs, blockStateObservation));
       } else {
         results.add(bso);
       }
@@ -304,13 +259,13 @@ public class BlockStateTransitionModel {
 
   public static class BlockStateResult {
 
-    public BlockStateResult(BlockStateObservation BlockStateObservation,
-        boolean outOfService) {
+	public BlockStateResult(BlockStateObservation BlockStateObservation, boolean outOfService) {
       this.BlockStateObservation = BlockStateObservation;
       this.outOfService = outOfService;
     }
 
     public BlockStateObservation BlockStateObservation;
+
     public boolean outOfService;
   }
 

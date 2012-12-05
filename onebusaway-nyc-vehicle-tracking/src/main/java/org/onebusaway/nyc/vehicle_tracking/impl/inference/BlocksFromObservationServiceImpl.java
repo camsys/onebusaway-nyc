@@ -15,21 +15,19 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
-import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
-import org.onebusaway.transit_data_federation.services.RouteService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
@@ -37,26 +35,32 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTi
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
-
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 @Component
 public class BlocksFromObservationServiceImpl implements
     BlocksFromObservationService {
 
   private static Logger _log = LoggerFactory.getLogger(BlocksFromObservationServiceImpl.class);
+
+  /**
+   * Search window for active trips: slop before the start of the trip.
+   */
+  private long _tripSearchTimeBeforeFirstStop = 60 * 60 * 1000;
+
+  /**
+   * Search window for active trips: slop after the end of the trip.
+   */
+  private long _tripSearchTimeAfterLastStop = 30 * 60 * 1000;
+
+  private ObservationCache _observationCache;
 
   private TransitGraphDao _transitGraphDao;
 
@@ -69,51 +73,9 @@ public class BlocksFromObservationServiceImpl implements
   private RunService _runService;
 
   @Autowired
-  public void setCalendarService(ExtendedCalendarService calendarService) {
-  }
-
-  @Autowired
-  public void setRouteService(RouteService routeService) {
-  }
-
-  @Autowired
-  public void setBlockGeospatialService(
-      BlockGeospatialService blockGeospatialService) {
-  }
-
-  @Autowired
-  public void setBlockIndexService(BlockIndexService blockIndexService) {
-  }
-
-  @Autowired
-  public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
-  }
-
-  @Autowired
   public void setRunService(RunService runService) {
     _runService = runService;
   }
-
-  @Autowired
-  public void setOperatorAssignmentService(
-      OperatorAssignmentService operatorAssignmentService) {
-  }
-
-  /**
-   * Default is 50 minutes
-   */
-  private long _tripSearchTimeBeforeFirstStop = 60 * 60 * 1000;
-
-  /**
-   * Default is 30 minutes
-   */
-  private long _tripSearchTimeAfterLastStop = 30 * 60 * 1000;
-
-  private ObservationCache _observationCache;
-
-  /****
-   * Public Methods
-   ****/
 
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
@@ -133,42 +95,16 @@ public class BlocksFromObservationServiceImpl implements
   }
 
   @Autowired
-  public void setBlockIndexFactoryService(
-      BlockIndexFactoryService blockIndexFactoryService) {
-  }
-
-  @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
     _blockStateService = blockStateService;
   }
 
-  @Autowired
-  public void setVehicleAssignmentService(
-      VehicleAssignmentService vehicleAssignmentService) {
-  }
-
-  @Autowired
-  public void setObservationCache(ObservationCache observationCache) {
-    _observationCache = observationCache;
-  }
-
-  /**
-   * 
-   * @param tripSearchRadius in meters
-   */
-  public void setTripSearchRadius(double tripSearchRadius) {
-  }
-
-  public void setTripSearchTimeBeforeFirstStop(
-      long tripSearchTimeBeforeFirstStop) {
-    _tripSearchTimeBeforeFirstStop = tripSearchTimeBeforeFirstStop;
+  public void setTripSearchTimeBeforeFirstStop(long tripSearchTimeBeforeFirstStop) {
+	_tripSearchTimeBeforeFirstStop = tripSearchTimeBeforeFirstStop;
   }
 
   public void setTripSearchTimeAfterLastStop(long tripSearchTimeAfteLastStop) {
-    _tripSearchTimeAfterLastStop = tripSearchTimeAfteLastStop;
-  }
-
-  public void setIncludeNearbyBlocks(boolean includeNearbyBlocks) {
+	_tripSearchTimeAfterLastStop = tripSearchTimeAfteLastStop;
   }
 
   /****
@@ -268,7 +204,7 @@ public class BlocksFromObservationServiceImpl implements
        */
       final Set<BlockInstance> notSnappedBlocks = Sets.newHashSet();
       determinePotentialBlocksForObservation(observation, notSnappedBlocks);
-      // notSnappedBlocks.removeAll(snappedBlocks);
+
       for (final BlockInstance thisBIS : notSnappedBlocks) {
         final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
         try {
@@ -535,7 +471,6 @@ public class BlocksFromObservationServiceImpl implements
       return true;
     else
       return false;
-
   }
 
   @Override

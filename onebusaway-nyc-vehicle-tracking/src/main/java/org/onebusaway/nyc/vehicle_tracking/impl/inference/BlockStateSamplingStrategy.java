@@ -21,19 +21,12 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 
 public interface BlockStateSamplingStrategy {
 
-  /****
-   *
-   ****/
-
   public BlockStateObservation sampleTransitionDistanceState(
       BlockStateObservation parentBlockStateObs, Observation obs,
       boolean vehicleNotMoved, EVehiclePhase eVehiclePhase);
 
   public BlockStateObservation sampleTransitionScheduleDev(
       BlockStateObservation parentBlockStateObs, Observation obs);
-
-  // public BlockStateObservation sampleGpsObservationState(
-  // BlockStateObservation parentBlockStateObs, Observation obs);
 
   public BlockStateObservation samplePriorScheduleState(
       BlockInstance blockInstance, Observation obs);

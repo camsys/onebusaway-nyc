@@ -110,7 +110,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private boolean _bypassInference = false;
 
-  private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
+  private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = 
+		  new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
 
@@ -160,6 +161,7 @@ public class VehicleLocationInferenceServiceImpl implements
   public void handleBypassUpdateForNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
     _bypassInference = true;
+
     _executorService.execute(new ProcessingTask(record));
   }
 
@@ -270,7 +272,7 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
 
-    final Future result = _executorService.submit(new ProcessingTask(r));
+    final Future<?> result = _executorService.submit(new ProcessingTask(r));
     _bundleManagementService.registerInferenceProcessingThread(result);
   }
 
@@ -280,9 +282,11 @@ public class VehicleLocationInferenceServiceImpl implements
     final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
     if (instance == null)
       return null;
+
     final NycTestInferredLocationRecord record = instance.getCurrentState();
     if (record != null)
       record.setVehicleId(vid);
+    
     return record;
   }
 
@@ -292,21 +296,12 @@ public class VehicleLocationInferenceServiceImpl implements
     _observationCache.purge(vid);
   }
 
-  @Override
-  public void setVehicleStatus(AgencyAndId vid, boolean enabled) {
-    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
-    if (instance == null)
-      return;
-    instance.setVehicleStatus(enabled);
-  }
-
   /****
    * Debugging Methods
    ****/
 
   @Override
   public List<NycTestInferredLocationRecord> getLatestProcessedVehicleLocationRecords() {
-
     final List<NycTestInferredLocationRecord> records = new ArrayList<NycTestInferredLocationRecord>();
 
     for (final Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
@@ -523,16 +518,14 @@ public class VehicleLocationInferenceServiceImpl implements
       if (instance == null) {
         final VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
 
-        instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId,
-            newInstance);
-
+        instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
         if (instance == null)
           instance = newInstance;
 
         if (_simulation) {
           final DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
           newInstance.setOperatorAssignmentService(opSvc);
-          _log.warn("Set operator assignment service to dummy!");
+          _log.warn("Set operator assignment service to dummy for debugging!");
         }
       }
 
@@ -547,13 +540,11 @@ public class VehicleLocationInferenceServiceImpl implements
         if (_simulation) {
           final String assignedRun = _nycTestInferredLocationRecord.getAssignedRunId();
           final String operatorId = _nycTestInferredLocationRecord.getOperatorId();
-          if (!Strings.isNullOrEmpty(assignedRun)
-              && !Strings.isNullOrEmpty(operatorId)) {
+          if (!Strings.isNullOrEmpty(assignedRun) && !Strings.isNullOrEmpty(operatorId)) {
             DummyOperatorAssignmentServiceImpl opSvc;
             if ((existing.getOperatorAssignmentService() instanceof DummyOperatorAssignmentServiceImpl)) {
               opSvc = (DummyOperatorAssignmentServiceImpl) existing.getOperatorAssignmentService();
               final String[] runParts = assignedRun.split("-");
-
               opSvc.setOperatorAssignment(new AgencyAndId(
                   _inferenceRecord.getVehicleId().getAgencyId(), operatorId),
                   runParts[1], runParts[0]);
@@ -562,12 +553,15 @@ public class VehicleLocationInferenceServiceImpl implements
         }
 
         final boolean passOnRecord = sendRecord(existing);
-        if (passOnRecord) {
 
+        if (passOnRecord) {
+          // send input "actuals" as inferred result to output queue
           if (_bypassInference == true) {
             final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(_nycTestInferredLocationRecord);
             record.setVehicleId(_vehicleId.toString());
 
+            // fix up the service date if we're shifting the dates of the record to now, since
+            // the wrong service date will make the TDS not match the trip properly.
             if(record.getServiceDate() == 0) {
             	final GregorianCalendar gc = new GregorianCalendar();
             	gc.setTime(_nycTestInferredLocationRecord.getTimestampAsDate());
@@ -579,6 +573,7 @@ public class VehicleLocationInferenceServiceImpl implements
             
             _outputQueueSenderService.enqueue(record);
 
+          // send inferred result to output queue
           } else {
             // management bean (becomes part of inference bean)
             final NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
@@ -603,12 +598,12 @@ public class VehicleLocationInferenceServiceImpl implements
         _observationCache.purge(_vehicleId);
       } catch (final Throwable ex) {
         _observationCache.purge(_vehicleId);
-        _log.error(
-            "Error processing new location record for inference on vehicle "
-                + _vehicleId + ": ", ex);
+        _log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", ex);
       }
     }
 
+    // sends the record to the inference engine and returns a boolean 
+    // of whether to send the result to the queue or not.
     private boolean sendRecord(VehicleInferenceInstance existing) {
       if (_inferenceRecord != null) {
         if (_bypassInference == true) {

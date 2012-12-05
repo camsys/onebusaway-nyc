@@ -15,18 +15,15 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import java.io.Serializable;
 
-import gov.sandia.cognition.math.ProbabilityUtil;
+import org.apache.commons.math.util.FastMath;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
-
-import org.apache.commons.math.util.FastMath;
-
-import java.io.Serializable;
 
 /**
  * Particle object has information about time, weight, the parent particle, and
@@ -336,15 +333,6 @@ public class Particle implements Serializable, Comparable<Particle> {
   public void setTransitions(Multiset<Particle> transitions) {
     _transitions = transitions;
   }
-
-  // static public class logWeightGetter implements Function<Particle, Double> {
-  // @Override
-  // public Double apply(Particle input) {
-  // return input.getLogWeight();
-  // }
-  // }
-
-  //
 
   public void setLogNormedWeight(double d) throws BadProbabilityParticleFilterException {
     if (Double.isNaN(d) || d > 0d)

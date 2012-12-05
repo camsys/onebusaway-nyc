@@ -3,7 +3,9 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
 
 /**
- * No-op implementation for inference engine
+ * A no-op implementation for simulations with the inference engine--
+ * we want to receive no actual real time queue input in that case.
+ * 
  */
 public class DummyPartitionedInputQueueListenerTask implements
     PartitionedInputQueueListener {
