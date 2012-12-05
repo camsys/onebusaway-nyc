@@ -33,10 +33,8 @@
     <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
 
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
-
     
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
-
 
     <bean id="geocoderImpl" class="org.onebusaway.geocoder.impl.DatabaseCachingGeocoderImpl" primary="true">
         <property name="geocoderService" ref="externalGeocoderImpl" />
@@ -58,6 +56,5 @@
     	<property name="createAPIKey" value="${create-apikey}" />
     	<property name="key" value="OBANYC" />
     </bean>
-
     
 </beans>

@@ -35,20 +35,6 @@
 
     <package name="onebusaway-webapp-default" extends="struts-default">
 
-<!--  Remove this interceptor for time being. We don't want to do this is-there-an-admin check in production. -->
-<!--         <interceptors>
-            <interceptor name="is-setup" class="org.onebusaway.presentation.impl.users.IsSetupInterceptor" />
-            <interceptor-stack name="onebusaway-webapp-stack">
-                <interceptor-ref name="defaultStack">
-                    <param name="modelDriven.refreshModelBeforeResult">true</param>
-                </interceptor-ref>
-                <interceptor-ref name="is-setup" />
-            </interceptor-stack>
-        </interceptors>
- 
-        <default-interceptor-ref name="onebusaway-webapp-stack" />
- -->
-  		
         <global-results>
          	<result name="NotFound">
                 <param name="location">/WEB-INF/content/error/404.jspx</param>
