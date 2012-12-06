@@ -208,6 +208,7 @@
         <module>onebusaway-nyc-report-archive</module>
     	<module>onebusaway-nyc-util</module>
     	<module>onebusaway-nyc-admin-webapp</module>
+    	<module>onebusaway-nyc-acta-webapp</module>
   </modules>
 
     <profiles>
@@ -239,6 +240,7 @@
                 <module>onebusaway-nyc-queue-subscriber</module>
                 <module>onebusaway-nyc-report-archive</module>
                 <module>onebusaway-nyc-admin-webapp</module>
+                <module>onebusaway-nyc-acta-webapp</module>
             </modules>
         </profile>
     </profiles>
@@ -383,7 +385,7 @@
                                 <requireJavaVersion>
                                     <version>1.6</version>
                                 </requireJavaVersion>
-                                <requirePluginVersions />
+                                <requirePluginVersions/>
                                 <requireReleaseDeps>
                                     <onlyWhenRelease>true</onlyWhenRelease>
                                 </requireReleaseDeps>
