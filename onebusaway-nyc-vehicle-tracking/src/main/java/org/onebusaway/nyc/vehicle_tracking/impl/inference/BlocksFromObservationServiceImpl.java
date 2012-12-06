@@ -51,12 +51,12 @@ public class BlocksFromObservationServiceImpl implements
   private static Logger _log = LoggerFactory.getLogger(BlocksFromObservationServiceImpl.class);
 
   /**
-   * Search window for active trips: slop before the start of the trip.
+   * Search window for active trips: slop before the start of the trip (ms).
    */
   private long _tripSearchTimeBeforeFirstStop = 60 * 60 * 1000;
 
   /**
-   * Search window for active trips: slop after the end of the trip.
+   * Search window for active trips: slop after the end of the trip (ms).
    */
   private long _tripSearchTimeAfterLastStop = 30 * 60 * 1000;
 
@@ -72,6 +72,11 @@ public class BlocksFromObservationServiceImpl implements
 
   private RunService _runService;
 
+  @Autowired
+  public void setObservationCache(ObservationCache observationCache) {
+	_observationCache = observationCache;
+  }
+  
   @Autowired
   public void setRunService(RunService runService) {
     _runService = runService;
