@@ -16,9 +16,8 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.Context;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.SensorModelRule;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
@@ -42,16 +41,9 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
   private List<SensorModelRule> _rules = Collections.emptyList();
 
-  private SensorModelSupportLibrary _sensorModelLibrary;
-
   @PostConstruct
   @Refreshable(dependsOn = {RefreshableResources.NARRATIVE_DATA})
   public void setup() {
-  }
-
-  @Autowired
-  public void setSensorModelLibrary(SensorModelSupportLibrary sensorModelLibrary) {
-    _sensorModelLibrary = sensorModelLibrary;
   }
 
   /****
@@ -114,7 +106,7 @@ public class SensorModelImpl implements SensorModel<Observation> {
     final Context context = new Context(parentState, state, obs);
 
     for (final SensorModelRule rule : _rules) {
-      final SensorModelResult r = rule.likelihood(_sensorModelLibrary, context);
+      final SensorModelResult r = rule.likelihood(context);
       result.addResultAsAnd(r);
     }
 

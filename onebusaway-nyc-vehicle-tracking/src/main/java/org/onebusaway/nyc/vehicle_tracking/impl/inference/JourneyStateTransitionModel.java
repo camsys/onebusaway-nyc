@@ -43,11 +43,6 @@ public class JourneyStateTransitionModel {
   private BlocksFromObservationService _blocksFromObservationService;
 
   @Autowired
-  public void setBlockStateTransitionModel(
-      BlockStateTransitionModel blockStateTransitionModel) {
-  }
-
-  @Autowired
   public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
     _vehicleStateLibrary = vehicleStateLibrary;
   }

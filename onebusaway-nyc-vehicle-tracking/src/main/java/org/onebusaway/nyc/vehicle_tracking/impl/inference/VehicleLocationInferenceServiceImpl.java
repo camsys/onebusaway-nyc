@@ -24,7 +24,6 @@ import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignme
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
@@ -620,7 +619,6 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public void setSeeds(long cdfSeed, long factorySeed) {
     ParticleFactoryImpl.setSeed(factorySeed);
-    BlockStateTransitionModel.setSeed(factorySeed);
     CategoricalDist.setSeed(cdfSeed);
   }
 }

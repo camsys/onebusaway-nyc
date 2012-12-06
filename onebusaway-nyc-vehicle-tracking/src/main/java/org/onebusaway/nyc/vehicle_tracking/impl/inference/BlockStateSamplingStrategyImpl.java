@@ -18,11 +18,10 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.GpsLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.ScheduleLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.GpsLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
@@ -35,16 +34,6 @@ import com.google.common.collect.Iterables;
 
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
-
-  /**
-   * Scoring of trips given distance away (meters) 
-   */
-  static public DeviationModel _nearbyTripSigma = new DeviationModel(400.0);
-
-  /**
-   * Scoring of trips based on schedule deviation (seconds)
-   */
-  static public DeviationModel _scheduleDeviationSigma = new DeviationModel(32 * 60);
 
   private ScheduledBlockLocationService _scheduledBlockLocationService;
   
@@ -62,13 +51,6 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     _blocksFromObservationService = blocksFromObservationService;
   }
 
-  /**
-   * @param scheduleDeviationSigma time, in seconds
-   */
-  static public void setScheduleDeviationSigma(int scheduleDeviationSigma) {
-    _scheduleDeviationSigma = new DeviationModel(scheduleDeviationSigma);
-  }
-  
   @Override
   public BlockStateObservation sampleTransitionDistanceState(
       BlockStateObservation parentBlockStateObs, Observation obs,

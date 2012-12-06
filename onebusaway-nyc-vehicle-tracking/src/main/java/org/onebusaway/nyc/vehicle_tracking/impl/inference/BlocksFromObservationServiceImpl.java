@@ -73,6 +73,11 @@ public class BlocksFromObservationServiceImpl implements
   private RunService _runService;
 
   @Autowired
+  public void setObservationCache(ObservationCache observationCache) {
+    _observationCache = observationCache;
+  }
+  
+  @Autowired
   public void setRunService(RunService runService) {
     _runService = runService;
   }
