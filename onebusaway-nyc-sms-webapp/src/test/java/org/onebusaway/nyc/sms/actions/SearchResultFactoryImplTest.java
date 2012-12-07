@@ -62,7 +62,6 @@ public class SearchResultFactoryImplTest {
   private static final String TEST_STOP_ID = "test stop id";
   private static final String TEST_PRESENTABLE_DISTANCE = "test presentable distance";
   private static final String TEST_LONG_DESCRIPTION = StringUtils.join(STRINGS_FOR_LONG_DESCRIPTION, "\n");
-  private static final String TEST_LONG_DESCRIPTION_WITH_BRS = StringUtils.join(STRINGS_FOR_LONG_DESCRIPTION, "<br/>");
 
   @Mock
   private ConfigurationService _configurationService;

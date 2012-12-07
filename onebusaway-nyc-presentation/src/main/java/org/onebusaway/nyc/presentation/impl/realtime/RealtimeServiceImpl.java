@@ -26,9 +26,6 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,11 +34,16 @@ import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
+/**
+ * A source of SIRI classes containing real time data, subject to the conventions expressed
+ * in the PresentationService.
+ * 
+ * @author jmaki
+ *
+ */
 @Component
 public class RealtimeServiceImpl implements RealtimeService {
 
-  
-  private static Logger _log = LoggerFactory.getLogger(RealtimeServiceImpl.class);
   private NycTransitDataService _nycTransitDataService;
 
   private PresentationService _presentationService;
@@ -286,6 +288,7 @@ public class RealtimeServiceImpl implements RealtimeService {
   /**
    * SERVICE ALERTS METHODS
    */
+  
   @Override
   public List<ServiceAlertBean> getServiceAlertsForRoute(String routeId) {
     return getServiceAlertsForRouteAndDirection(routeId, null); 
@@ -331,28 +334,6 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
     return serviceAlerts.getList();
-    
-//    NaturalLanguageStringBean naturalLanguageStringBean = new NaturalLanguageStringBean();
-//    naturalLanguageStringBean.setLang("en");
-//    naturalLanguageStringBean.setValue("This is a test global alert");
-//    List<NaturalLanguageStringBean> naturalLanguageStringBeans = new ArrayList<NaturalLanguageStringBean>();
-//    naturalLanguageStringBeans.add(naturalLanguageStringBean);
-//    
-//    SituationAffectsBean situationAffectsBean = new SituationAffectsBean();
-//    situationAffectsBean.setAgencyId("AllAgencies");
-//    situationAffectsBean.setRouteId("AllRoutes");
-//    List<SituationAffectsBean> situationAffectsBeans = new ArrayList<SituationAffectsBean>();
-//    situationAffectsBeans.add(situationAffectsBean);
-//    
-//    ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
-//    serviceAlertBean.setId("aGlobalAlertId");
-//    serviceAlertBean.setDescriptions(naturalLanguageStringBeans);
-//    serviceAlertBean.setAllAffects(situationAffectsBeans);
-//    List<ServiceAlertBean> serviceAlertBeans = new ArrayList<ServiceAlertBean>();
-//    serviceAlertBeans.add(serviceAlertBean);
-//    
-//    return serviceAlertBeans;
-    
   }
   
   /**

@@ -18,15 +18,17 @@ package org.onebusaway.nyc.sms.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.spy.memcached.CASValue;
 import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.MemcachedClientIF;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,11 +37,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.onebusaway.nyc.sms.impl.SessionManagerImpl;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MemcacheSessionManagerImplTest {
@@ -72,7 +69,8 @@ public class MemcacheSessionManagerImplTest {
 
     assertFalse(_sessionManager.contextExistsFor("A"));
 
-    CASValue<Object> mockCasValue = mock(CASValue.class);
+    @SuppressWarnings("unchecked")
+	CASValue<Object> mockCasValue = mock(CASValue.class);
     Map<String, Object> mockSession = new HashMap<String, Object>();
     when(mockCasValue.getValue()).thenReturn(mockSession);
     when(mockMemcacheClient.getAndTouch(eq("A"), anyInt())).thenReturn(mockCasValue);

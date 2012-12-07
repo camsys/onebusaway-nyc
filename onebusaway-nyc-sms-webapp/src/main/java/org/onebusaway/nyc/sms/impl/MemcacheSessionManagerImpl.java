@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.internal.OperationFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

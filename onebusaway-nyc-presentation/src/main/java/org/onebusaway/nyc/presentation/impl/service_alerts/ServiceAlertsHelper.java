@@ -66,7 +66,6 @@ public class ServiceAlertsHelper {
     }
 
     if (stopIds != null && stopIds.size() > 0) {
-      
       for (AgencyAndId stopId : stopIds) {
         String stopIdString = stopId.toString();
 
@@ -104,7 +103,6 @@ public class ServiceAlertsHelper {
     addPtSituationElementsToServiceDelivery(serviceDelivery,
         ptSituationElements);
   }
-
   
   private void handleStopGroupBean(String stopIdString,
       SituationQueryBean query, RouteBean route, StopGroupBean stopGroup) {
@@ -127,7 +125,6 @@ public class ServiceAlertsHelper {
     }
   }
 
-  
   private void addFromQuery(NycTransitDataService nycTransitDataService,
       Map<String, PtSituationElementStructure> ptSituationElements,
       SituationQueryBean queryBean) {
@@ -155,14 +152,12 @@ public class ServiceAlertsHelper {
     }
   }
 
-  
   public void addSituationExchangeToServiceDelivery(ServiceDelivery serviceDelivery,
       List<VehicleActivityStructure> activities,
       NycTransitDataService nycTransitDataService) {
     
     addSituationExchangeToServiceDelivery(serviceDelivery, activities, nycTransitDataService, null);
   }
-
   
   public void addSituationExchangeToServiceDelivery(ServiceDelivery serviceDelivery,
       List<VehicleActivityStructure> activities,

@@ -41,6 +41,11 @@ import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+/**
+ * A geocoder that queries against Google's REST-ful Enterprise API. 
+ * @author jmaki
+ *
+ */
 public class GoogleGeocoderImpl extends FilteredGeocoderBase {
 
   private static Logger _log = LoggerFactory.getLogger(GoogleGeocoderImpl.class);
