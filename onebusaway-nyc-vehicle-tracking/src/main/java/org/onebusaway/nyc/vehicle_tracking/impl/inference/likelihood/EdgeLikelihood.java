@@ -15,7 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood;
 
-import org.onebusaway.geospatial.model.CoordinatePoint;
+import gov.sandia.cognition.statistics.distribution.UnivariateGaussian;
+
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
@@ -28,16 +29,12 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.algorithm.Angle;
+import org.springframework.stereotype.Component;
 
 import cern.jet.math.Bessel;
 
-import gov.sandia.cognition.statistics.distribution.UnivariateGaussian;
-
-import org.springframework.stereotype.Component;
+import com.google.common.base.Objects;
+import com.vividsolutions.jts.algorithm.Angle;
 
 @Component
 public class EdgeLikelihood implements SensorModelRule {

@@ -16,22 +16,10 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood;
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.realtime.api.EVehiclePhase;
-
-import gov.sandia.cognition.math.MathUtil;
-
-import org.apache.commons.math.stat.StatUtils;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import umontreal.iro.lecuyer.probdist.FoldedNormalDist;

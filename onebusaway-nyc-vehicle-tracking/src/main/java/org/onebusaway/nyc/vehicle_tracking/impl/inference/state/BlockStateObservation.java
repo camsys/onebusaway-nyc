@@ -40,20 +40,6 @@ public final class BlockStateObservation implements
 
   private final boolean _isOnTrip;
 
-  private BlockStateObservation(BlockState blockState, Boolean isRunReported,
-      Boolean isUTSassigned, boolean isFormal, boolean isAtLayoverSpot,
-      boolean isSnapped, Observation obs, boolean isOnTrip) {
-    _blockState = blockState;
-    this._isRunFormal = isFormal;
-    this._isRunReported = isRunReported;
-    this._isOpAssigned = isUTSassigned;
-    this._isAtPotentialLayoverSpot = isAtLayoverSpot;
-    this._isSnapped = isSnapped;
-    this._obs = obs;
-    this._scheduleDeviation = computeScheduleDeviation(obs, blockState);
-    this._isOnTrip = isOnTrip;
-  }
-
   public BlockStateObservation(BlockStateObservation state, Observation obs) {
     
     final String runId = state.getBlockState().getRunId();
