@@ -64,7 +64,10 @@ import java.util.Set;
  * @author bdferris, bwillard
  */
 public class MotionModelImpl implements MotionModel<Observation> {
-
+ 
+  /**
+   * Effective sample size thresholds that trigger resampling.
+   */
   private static final double _essNoRunInfoTransitionThreshold = 0.60;
   private static final double _essRunInfoTransitionThreshold = 0.65;
 
