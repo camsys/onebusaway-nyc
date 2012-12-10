@@ -9,11 +9,106 @@
   </parent>
   <artifactId>onebusaway-nyc-acta-webapp</artifactId>
   <packaging>war</packaging>
+  
   <name>onebusaway-nyc-acta-webapp</name>
-  <url>http://maven.apache.org</url>
+  
+  
+  	<properties>
+		<xwiki.version>2.3.1</xwiki.version>
+		<xwiki.integration.version>0.0.2</xwiki.integration.version>
+		<branding-webapp>{project.name}</branding-webapp>
+	</properties>
+
+	<repositories>
+		<!-- Required for the xwiki-rendering-macros -->
+		<repository>
+			<id>xwiki</id>
+			<url>http://maven.xwiki.org/releases</url>
+		</repository>
+	</repositories>
+	
   <dependencies>
-    
+    <dependency>
+		<groupId>org.onebusaway</groupId>
+		<artifactId>onebusaway-nyc-webapp</artifactId>
+		<version>2.0.13-SNAPSHOT</version>
+		<type>war</type>
+	</dependency>
   </dependencies>
+  
+  <profiles>
+		<profile>
+			<id>cloud</id> <!-- aka services-dev --> <!-- aka staging, production -->
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+				<vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+				<config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+				<archive.path>http://archive/onebusaway-nyc-report-archive</archive.path><!-- 
+					assumes domain is set in resolv.conf -->
+				<tdm.host>tdm</tdm.host><!-- assumes domain is set -->
+				<webapp.api.url />
+				<log4j.appender>ROLL</log4j.appender>
+				<create-apikey>false</create-apikey>
+			</properties>
+		</profile>
+		<profile>
+			<id>local-front-end</id>
+			<properties>
+				<tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+				<vtms.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+				<config.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+				<archive.path>http://archive.dev.obanyc.com/onebusaway-nyc-report-archive</archive.path>
+				<tdm.host>tdm.dev.obanyc.com</tdm.host>
+				<webapp.api.url />
+				<log4j.appender>stdout</log4j.appender>
+				<create-apikey>true</create-apikey>
+			</properties>
+		</profile>
+		<profile>
+			<id>local-single-port</id><!-- aka services-tdf-as-tds --> <!-- aka staging, production -->
+			<properties>
+				<tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+				<vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+				<config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+				<archive.path>http://localhost:8080/onebusaway-nyc-report-archive</archive.path>
+				<tdm.host>tdm.dev.obanyc.com</tdm.host>
+				<webapp.api.url />
+				<log4j.appender>stdout</log4j.appender>
+				<create-apikey>true</create-apikey>
+			</properties>
+		</profile>
+		<profile>
+			<!-- Vehicle tracking webapp offers the TDS -->
+			<id>local-ie</id> <!-- aka services-vtw-as-tds --> <!-- single port, aka development -->
+			<properties>
+				<tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+				<vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+				<config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+				<archive.path>http://localhost:8080/onebusaway-nyc-report-archive</archive.path>
+				<tdm.host>tdm.dev.obanyc.com</tdm.host>
+				<webapp.api.url>http://localhost:8080</webapp.api.url>
+				<log4j.appender>stdout</log4j.appender>
+				<create-apikey>true</create-apikey>
+			</properties>
+		</profile>
+		<profile>
+			<id>local-multi-port</id> <!-- services-vtw-as-tds-multiport --><!-- multi port, also for development -->
+			<!-- assumes we're running on 8080, and vtw and api are on different ports -->
+			<properties>
+				<tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+				<vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+				<config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+				<archive.path>http://localhost:8081/onebusaway-nyc-report-archive</archive.path>
+				<tdm.host>tdm.dev.obanyc.com</tdm.host>
+				<webapp.api.url>http://localhost:8082</webapp.api.url>
+				<log4j.appender>stdout</log4j.appender>
+				<create-apikey>true</create-apikey>
+			</properties>
+		</profile>
+	</profiles>
   <build>
     <finalName>onebusaway-nyc-acta-webapp</finalName>
     <plugins>
@@ -44,6 +139,32 @@
 				</gitDescribe>
 			</configuration>
 		</plugin>
+		<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2.1</version>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>maven-jetty-plugin</artifactId>
+				<version>${jetty.version}</version>
+				<configuration>
+					<contextPath>/</contextPath>
+				</configuration>
+			</plugin>
 	</plugins>
 	<resources>
 		<resource>
@@ -91,6 +212,25 @@
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
+				<plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>2.1</version>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Implementation-Build>${gitDescribe}</Implementation-Build>
+                            </manifestEntries>
+                        </archive>
+                        <overlays>
+                        	<overlay>
+              					<groupId>org.onebusaway</groupId>
+              					<artifactId>onebusaway-nyc-webapp</artifactId>
+              					<!-- filtered>true</filtered-->
+              				</overlay>
+                        </overlays>
+                    </configuration>
+                </plugin>
 			</plugins>
 		</pluginManagement>
   </build>

@@ -15,7 +15,6 @@
 	<properties>
 		<xwiki.version>2.3.1</xwiki.version>
 		<xwiki.integration.version>0.0.2</xwiki.integration.version>
-		<branding-webapp>onebusaway-nyc-acta-webapp</branding-webapp>
 	</properties>
 
 	<repositories>
@@ -57,14 +56,6 @@
 			<version>2.0.13-SNAPSHOT</version>
 		</dependency>
 		
-		<dependency>
-			<groupId>org.onebusaway</groupId>
-			<artifactId>${branding-webapp}</artifactId>
-			<version>2.0.13-SNAPSHOT</version>
-			<type>war</type>
-      		<scope>runtime</scope>
-		</dependency>
-
 		<!-- Wiki Integration Support -->
 		<!-- XWiki depends on an old verion of beanutils that causes conflicts 
 			for some reason -->
@@ -338,27 +329,6 @@
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
-				<plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>2.1</version>
-                    <configuration>
-                        <archive>
-                            <manifestEntries>
-                                <Implementation-Build>${gitDescribe}</Implementation-Build>
-                            </manifestEntries>
-                        </archive>
-                        <overlays>
-                        	<overlay>
-              					<groupId>org.onebusaway</groupId>
-              					<artifactId>${branding-webapp}</artifactId>
-              					<excludes>
-              						<exclude>index.jsp</exclude>
-              					</excludes>
-               				</overlay>
-                        </overlays>
-                    </configuration>
-                </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
