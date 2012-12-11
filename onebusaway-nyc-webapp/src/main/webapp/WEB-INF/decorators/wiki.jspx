@@ -97,7 +97,7 @@
 	<div id="topbar">
 		<div id="branding">
 			<a href="http://mta.info/default.html">
-			  	<s:url var="url" value="/css/img/mta_info.gif"></s:url>
+			  	<s:url var="url" value="/css/img/agency_logo.gif"></s:url>
 				<img src="${url}"/>
 			</a>
 		</div>
