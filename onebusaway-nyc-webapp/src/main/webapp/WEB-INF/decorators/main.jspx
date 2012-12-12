@@ -27,7 +27,8 @@
 <jsp:directive.page contentType="text/html" />
 
 <head>
-  <title><decorator:title default="MTA Bus Time" /></title>
+  <s:set var="title" value="getText('main.title')" /> 	
+  <title><decorator:title default="${title}" /></title>
 
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=8" />
@@ -79,24 +80,30 @@
 <div id="mainbox">
 	<div id="topbar">
 		<div id="branding">
-			<a href="http://mta.info/default.html">
+			<s:set var="link" value="getText('main.agency.link')" />
+			<a href="${link}">
 			  	<s:url var="url" value="/css/img/agency_logo.gif"></s:url>
-				<img src="${url}" alt="MTA.info logo" />
+				<img src="${url}" alt="Agency logo" />
 			</a>
 		</div>
 		
 		<div id="search">
 			<ul id="topbar-links">
 				<c:if test="${showWeekender}">
-					<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/weekender.html">The Weekender</a></li>
+					<s:set var="link" value="getText('main.weekender.link')" />
+					<li class="list_h" style="margin-left:4px;"><a href="${link}">The Weekender</a></li>
 				</c:if>			
-				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/accessibility">Accessibility</a></li>
-				<li class="list_h" style="margin-left:4px;"><a href="http://assistive.usablenet.com/tt/http://mta.info/index.html">Text-only</a></li>
-				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/faqs.htm">FAQs/Contact Us</a></li>
+				<s:set var="link" value="getText('main.accessibility.link')" />
+				<li class="list_h" style="margin-left:4px;"><a href="${link}">Accessibility</a></li>
+				<s:set var="link" value="getText('main.textonly.link')" />
+				<li class="list_h" style="margin-left:4px;"><a href="${link}">Text-only</a></li>
+				<s:set var="link" value="getText('main.faq.link')" />
+				<li class="list_h" style="margin-left:4px;"><a href="${link}">FAQs/Contact Us</a></li>
 			</ul>
 			<br />
 	
-			<form id="searchform" method="get" action="http://search.mta.info/search">
+			<s:set var="link" value="getText('main.search.action')" />
+			<form id="searchform" method="get" action="${link}">
 				<input type="hidden" name="site" value="my_collection"/>
 				<input type="hidden" name="client" value="my_collection"/>
 				<input type="hidden" name="proxystylesheet" value="my_collection"/>
@@ -109,34 +116,58 @@
 
 		<div id="horizontalcssmenu" style="clear: both;">	
 			<ul id="cssmenu1">
-				<li style="width:7%; border-left: none;"><a href="http://mta.info/default.html">Home</a>
+				<s:set var="link" value="getText('main.agency.link')" />
+				<li style="width:7%; border-left: none;"><a href="${link}">Home</a>
 					<ul>
-						<li><a href="http://mta.info/default.html">MTA Home</a></li>
-						<li><a href="http://mta.info/nyct">NYC Subways and Buses</a></li>
-						<li><a href="http://mta.info/lirr">Long Island Rail Road</a></li>						
-						<li><a href="http://mta.info/libus">Long Island Bus</a></li>
-						<li><a href="http://mta.info/mnr">Metro-North Railroad</a></li>
-						<li><a href="http://mta.info/bandt">Bridges and Tunnels</a></li>
-						<li><a href="http://mta.info/capital">MTA Capital Program</a></li>
+						<s:set var="link" value="getText('main.agency.link')" />
+						<li><a href="${link}"><s:property value="getText('main.agency.home')" /></a></li>
+						<s:set var="link" value="getText('main.subway.link')" />
+						<li><a href="${link}">NYC Subways and Buses</a></li>
+						<s:set var="link" value="getText('main.lirr.link')" />
+						<li><a href="${link}">Long Island Rail Road</a></li>						
+						<s:set var="link" value="getText('main.libus.link')" />
+						<li><a href="${link}">Long Island Bus</a></li>
+						<s:set var="link" value="getText('main.mnr.link')" />
+						<li><a href="${link}">Metro-North Railroad</a></li>
+						<s:set var="link" value="getText('main.bandt.link')" />
+						<li><a href="${link}">Bridges and Tunnels</a></li>
+						<s:set var="link" value="getText('main.capital.link')" />
+						<li><a href="${link}"><s:property value="getText('main.capital.text')" /></a></li>
 					</ul> 
 				</li>
-				<li style="width: 9%;"><a href="http://mta.info/schedules">Schedules</a></li>
-				<li style="width: 12%;"><a href="http://mta.info/fares">Fares &amp;amp; Tolls</a></li>
-				<li style="width: 7%;"><a href="http://mta.info/maps">Maps</a></li>
-				<li style="width: 19%;"><a href="http://mta.info/service">Planned Service Changes</a></li>
-				<li style="width: 13%;"><a href="http://mta.info/about">About the MTA</a></li>
-				<li style="width: 19%;"><a href="http://mta.info/business">Doing Business With Us</a></li>
-				<li style="width: 14%; position: absolute; margin-left:-1px;"><a href="http://mta.info/accountability/">Transparency</a>
+				<s:set var="link" value="getText('main.schedules.link')" />
+				<li style="width: 9%;"><a href="${link}">Schedules</a></li>
+				<s:set var="link" value="getText('main.fares.link')" />
+				<li style="width: 12%;"><a href="${link}">Fares &amp;amp; Tolls</a></li>
+				<s:set var="link" value="getText('main.maps.link')" />
+				<li style="width: 7%;"><a href="${link}">Maps</a></li>
+				<s:set var="link" value="getText('main.service.link')" />
+				<li style="width: 19%;"><a href="${link}">Planned Service Changes</a></li>
+				<s:set var="link" value="getText('main.about.link')" />
+				<li style="width: 13%;"><a href="${link}"><s:property value="getText('main.agency.about')" /></a></li>
+				<s:set var="link" value="getText('main.business.link')" />
+				<li style="width: 19%;"><a href="${link}">Doing Business With Us</a></li>
+				<s:set var="link" value="getText('main.accountability.link')" />
+				<li style="width: 14%; position: absolute; margin-left:-1px;"><a href="${link}">Transparency</a>
 					<ul>
-						<li><a href="http://mta.info/accountability">Main Page</a></li>
-						<li><a href="http://mta.info/mta/boardmaterials.html">Board Materials</a></li>
-						<li><a href="http://mta.info/mta/budget/">Budget Info</a></li>
-						<li><a href="http://mta.info/capital">Capital Program Info</a></li>
-						<li><a href="http://mta.info/capitaldashboard/index.html">Capital Program Dashboard</a></li>
-						<li><a href="http://mta.info/mta/leadership/">MTA Leadership</a></li>
-						<li><a href="http://mta.info/mta/ind-perform/">Performance Indicators</a></li>				
-						<li><a href="http://mta.info/news/">Press Releases and News</a></li>
-						<li><a href="http://mta.info/mta/news/hearings">Public Hearings</a></li>
+						<s:set var="link" value="getText('main.accountability.link')" />
+						<li><a href="${link}">Main Page</a></li>
+						<s:set var="link" value="getText('main.beardmaterials.link')" />
+						<li><a href="${link}">Board Materials</a></li>
+						<s:set var="link" value="getText('main.budget.link')" />
+						<li><a href="${link}">Budget Info</a></li>
+						<s:set var="link" value="getText('main.capital.link')" />
+						<li><a href="${link}">Capital Program Info</a></li>
+						<s:set var="link" value="getText('main.capitaldashboard.link')" />
+						<li><a href="${link}">Capital Program Dashboard</a></li>
+						<s:set var="link" value="getText('main.leadership.link')" />
+						<li><a href="${link}"></a><s:property value="getText('main.leadership.text')" /></li>
+						<s:set var="link" value="getText('main.performind.link')" />
+						<li><a href="${link}">Performance Indicators</a></li>				
+						<s:set var="link" value="getText('main.news.link')" />
+						<li><a href="${link}">Press Releases and News</a></li>
+						<s:set var="link" value="getText('main.hearings.link')" />
+						<li><a href="${link}">Public Hearings</a></li>
 					</ul>
 				</li>
 			</ul>
