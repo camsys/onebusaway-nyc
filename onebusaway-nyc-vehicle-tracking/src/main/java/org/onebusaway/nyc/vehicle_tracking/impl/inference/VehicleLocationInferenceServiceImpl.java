@@ -29,10 +29,8 @@ import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -108,13 +106,19 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private int _skippedUpdateLogCounter = 0;
 
+  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 5);
+
   private boolean _bypassInference = false;
 
   private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = 
 		  new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
-
+	
+  public void setNumberOfProcessingThreads(int numberOfProcessingThreads) {
+    _numberOfProcessingThreads = numberOfProcessingThreads;
+  }
+  
   /**
    * Usually, we shoudn't ever have a reference to ApplicationContext, but we
    * need it for the prototype
@@ -128,7 +132,11 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @PostConstruct
   public void start() {
-    _executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L * 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+	if (_numberOfProcessingThreads <= 0)
+	  throw new IllegalArgumentException("numberOfProcessingThreads must be positive");
+	
+	_log.info("Creating thread pool of size=" + _numberOfProcessingThreads);
+	_executorService = Executors.newFixedThreadPool(_numberOfProcessingThreads);
   }
 
   @PreDestroy
@@ -536,62 +544,63 @@ public class VehicleLocationInferenceServiceImpl implements
     public void run() {
       try {
         final VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
-
-        if (_simulation) {
-          final String assignedRun = _nycTestInferredLocationRecord.getAssignedRunId();
-          final String operatorId = _nycTestInferredLocationRecord.getOperatorId();
-          if (!Strings.isNullOrEmpty(assignedRun) && !Strings.isNullOrEmpty(operatorId)) {
-            DummyOperatorAssignmentServiceImpl opSvc;
-            if ((existing.getOperatorAssignmentService() instanceof DummyOperatorAssignmentServiceImpl)) {
-              opSvc = (DummyOperatorAssignmentServiceImpl) existing.getOperatorAssignmentService();
-              final String[] runParts = assignedRun.split("-");
-              opSvc.setOperatorAssignment(new AgencyAndId(
-                  _inferenceRecord.getVehicleId().getAgencyId(), operatorId),
-                  runParts[1], runParts[0]);
-            }
-          }
-        }
-
-        final boolean passOnRecord = sendRecord(existing);
-
-        if (passOnRecord) {
-          // send input "actuals" as inferred result to output queue
-          if (_bypassInference == true) {
-            final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(_nycTestInferredLocationRecord);
-            record.setVehicleId(_vehicleId.toString());
-
-            // fix up the service date if we're shifting the dates of the record to now, since
-            // the wrong service date will make the TDS not match the trip properly.
-            if(record.getServiceDate() == 0) {
-            	final GregorianCalendar gc = new GregorianCalendar();
-            	gc.setTime(_nycTestInferredLocationRecord.getTimestampAsDate());
-            	gc.set(Calendar.HOUR_OF_DAY, 0);
-            	gc.set(Calendar.MINUTE, 0);
-            	gc.set(Calendar.SECOND, 0);
-            	record.setServiceDate(gc.getTimeInMillis());
-            }
-            
-            _outputQueueSenderService.enqueue(record);
-
-          // send inferred result to output queue
-          } else {
-            // management bean (becomes part of inference bean)
-            final NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
-            managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
-            managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
-
-            final BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
-            if (currentBundle != null) {
-              managementRecord.setActiveBundleId(currentBundle.getId());
-            }
-
-            // inference result bean
-            final NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
-            record.setVehicleId(_vehicleId.toString());
-            record.setManagementRecord(managementRecord);
-
-            _outputQueueSenderService.enqueue(record);
-          }
+        synchronized(existing) {
+	        if (_simulation) {
+	          final String assignedRun = _nycTestInferredLocationRecord.getAssignedRunId();
+	          final String operatorId = _nycTestInferredLocationRecord.getOperatorId();
+	          if (!Strings.isNullOrEmpty(assignedRun) && !Strings.isNullOrEmpty(operatorId)) {
+	            DummyOperatorAssignmentServiceImpl opSvc;
+	            if ((existing.getOperatorAssignmentService() instanceof DummyOperatorAssignmentServiceImpl)) {
+	              opSvc = (DummyOperatorAssignmentServiceImpl) existing.getOperatorAssignmentService();
+	              final String[] runParts = assignedRun.split("-");
+	              opSvc.setOperatorAssignment(new AgencyAndId(
+	                  _inferenceRecord.getVehicleId().getAgencyId(), operatorId),
+	                  runParts[1], runParts[0]);
+	            }
+	          }
+	        }
+	
+	        final boolean passOnRecord = sendRecord(existing);
+	
+	        if (passOnRecord) {
+	          // send input "actuals" as inferred result to output queue
+	          if (_bypassInference == true) {
+	            final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(_nycTestInferredLocationRecord);
+	            record.setVehicleId(_vehicleId.toString());
+	
+	            // fix up the service date if we're shifting the dates of the record to now, since
+	            // the wrong service date will make the TDS not match the trip properly.
+	            if(record.getServiceDate() == 0) {
+	            	final GregorianCalendar gc = new GregorianCalendar();
+	            	gc.setTime(_nycTestInferredLocationRecord.getTimestampAsDate());
+	            	gc.set(Calendar.HOUR_OF_DAY, 0);
+	            	gc.set(Calendar.MINUTE, 0);
+	            	gc.set(Calendar.SECOND, 0);
+	            	record.setServiceDate(gc.getTimeInMillis());
+	            }
+	            
+	            _outputQueueSenderService.enqueue(record);
+	
+	          // send inferred result to output queue
+	          } else {
+	            // management bean (becomes part of inference bean)
+	            final NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
+	            managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
+	            managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
+	
+	            final BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
+	            if (currentBundle != null) {
+	              managementRecord.setActiveBundleId(currentBundle.getId());
+	            }
+	
+	            // inference result bean
+	            final NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
+	            record.setVehicleId(_vehicleId.toString());
+	            record.setManagementRecord(managementRecord);
+	
+	            _outputQueueSenderService.enqueue(record);
+	          }
+	        }
         }
       } catch (final ProjectionException e) {
         // discard
