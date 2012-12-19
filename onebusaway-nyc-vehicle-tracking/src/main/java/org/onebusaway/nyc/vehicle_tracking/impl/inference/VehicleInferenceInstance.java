@@ -142,7 +142,7 @@ public class VehicleInferenceInstance {
    * @return true if the resulting inferred location record was successfully processed,
    *         otherwise false
    */
-  public synchronized boolean handleUpdate(NycRawLocationRecord record) {
+  public boolean handleUpdate(NycRawLocationRecord record) {
 
     /**
      * Choose the best timestamp based on device timestamp and received
@@ -312,7 +312,7 @@ public class VehicleInferenceInstance {
    * @return true if the resulting inferred location record should be passed on,
    *         otherwise false.
    */
-  public synchronized boolean handleBypassUpdate(
+  public boolean handleBypassUpdate(
       NycTestInferredLocationRecord record) {
     _previousObservation = null;
     _nycTestInferredLocationRecord = record;
@@ -327,19 +327,19 @@ public class VehicleInferenceInstance {
   /****
    * Simulator/debugging methods
    */
-  public synchronized Multiset<Particle> getPreviousParticles() {
+  public Multiset<Particle> getPreviousParticles() {
     return HashMultiset.create(_particleFilter.getWeightedParticles());
   }
 
-  public synchronized Multiset<Particle> getCurrentParticles() {
+  public Multiset<Particle> getCurrentParticles() {
     return HashMultiset.create(_particleFilter.getWeightedParticles());
   }
 
-  public synchronized Multiset<Particle> getCurrentSampledParticles() {
+  public Multiset<Particle> getCurrentSampledParticles() {
     return HashMultiset.create(_particleFilter.getSampledParticles());
   }
 
-  public synchronized List<JourneyPhaseSummary> getJourneySummaries() {
+  public List<JourneyPhaseSummary> getJourneySummaries() {
     final Particle particle = _particleFilter.getMostLikelyParticle();
     if (particle == null)
       return Collections.emptyList();
@@ -347,7 +347,7 @@ public class VehicleInferenceInstance {
     return state.getJourneySummaries();
   }
 
-  public synchronized NycTestInferredLocationRecord getCurrentState() {
+  public NycTestInferredLocationRecord getCurrentState() {
     if (_previousObservation != null)
       return getMostRecentParticleAsNycTestInferredLocationRecord();
     else if (_nycTestInferredLocationRecord != null)
@@ -394,7 +394,7 @@ public class VehicleInferenceInstance {
   /****
    * Service methods
    */
-  public synchronized NycQueuedInferredLocationBean getCurrentStateAsNycQueuedInferredLocationBean() {
+  public NycQueuedInferredLocationBean getCurrentStateAsNycQueuedInferredLocationBean() {
     final NycTestInferredLocationRecord tilr = getCurrentState();
     final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(tilr);
 
@@ -431,7 +431,7 @@ public class VehicleInferenceInstance {
     return record;
   }
 
-  public synchronized NycVehicleManagementStatusBean getCurrentManagementState() {
+  public NycVehicleManagementStatusBean getCurrentManagementState() {
     final NycVehicleManagementStatusBean record = new NycVehicleManagementStatusBean();
 
     final Particle particle = _particleFilter.getMostLikelyParticle();
