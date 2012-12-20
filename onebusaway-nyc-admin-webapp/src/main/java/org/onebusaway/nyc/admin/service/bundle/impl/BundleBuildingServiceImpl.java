@@ -173,9 +173,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     for (String stifZip : response.getStifZipList()) {
       _log.info("stif copying " + stifZip + " to " + request.getTmpDirectory() + File.separator
           + "stif");
+        _log.info("unzipping " + stifZip);
       new FileUtils().unzip(stifZip, request.getTmpDirectory() + File.separator
           + "stif");
     }
+
+    _log.info("stip unzip complete ");
     
     // stage baseLocations
     InputStream baseLocationsStream = this.getClass().getResourceAsStream("/BaseLocations.txt");
