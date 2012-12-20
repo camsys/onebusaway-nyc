@@ -251,7 +251,7 @@
         <profile>
             <id>depots-one</id>
             <properties>
-                <depot.partition.key>YUK</depot.partition.key>
+                <depot.partition.key>YU</depot.partition.key>
             </properties>            
         </profile>
         <profile>
