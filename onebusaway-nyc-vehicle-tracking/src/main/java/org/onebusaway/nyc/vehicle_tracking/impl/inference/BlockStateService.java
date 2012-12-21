@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -395,14 +396,17 @@ public class BlockStateService {
 
     final Map<BlockLocationKey, BestBlockStates> results = Maps.newHashMap();
 
-    final NycRawLocationRecord record = observation.getRecord();
-    final long time = observation.getTime();
+    GregorianCalendar gc = new GregorianCalendar();
+    gc.setTimeInMillis(observation.getTime());
+    gc.set(GregorianCalendar.MINUTE, (int)Math.floor(gc.get(GregorianCalendar.MINUTE) / 15) * 60);
+    gc.set(GregorianCalendar.SECOND, 0);
+    final long time = gc.getTimeInMillis();        
     final Date timeFrom = new Date(time - _tripSearchTimeAfterLastStop);
     final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
 
+    final NycRawLocationRecord record = observation.getRecord();
     final CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         record.getLatitude(), record.getLongitude(), _tripSearchRadius);
-
     final Coordinate obsPoint = new Coordinate(record.getLongitude(),
         record.getLatitude());
     final Envelope searchEnv = new Envelope(bounds.getMinLon(),
@@ -442,6 +446,8 @@ public class BlockStateService {
             instances = blockToActiveInstances.get(block.getId());
             instances.addAll(_blockCalendarService.getActiveBlocks(
                 block.getId(), timeFrom.getTime(), timeTo.getTime()));
+            if(!instances.isEmpty())
+            	blockToActiveInstances.putAll(block.getId(), instances);
           } else {
             instances = blockToActiveInstances.get(block.getId());
           }
