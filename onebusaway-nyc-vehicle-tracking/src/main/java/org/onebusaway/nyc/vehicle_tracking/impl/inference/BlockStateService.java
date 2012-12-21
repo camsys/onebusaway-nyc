@@ -28,6 +28,7 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.onebusaway.collections.Min;
+import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
@@ -448,7 +449,9 @@ public class BlockStateService {
           if (!blockToActiveInstances.containsKey(block.getId())) {
             instances = blockToActiveInstances.get(block.getId());
             instances.addAll(_blockCalendarService.getActiveBlocks(
-                block.getId(), timeFrom.getTime(), timeTo.getTime()));
+                    block.getId(), timeFrom.getTime(), timeTo.getTime()));
+            if(!instances.isEmpty())
+            	blockToActiveInstances.putAll(block.getId(), instances);
           } else {
             instances = blockToActiveInstances.get(block.getId());
           }
