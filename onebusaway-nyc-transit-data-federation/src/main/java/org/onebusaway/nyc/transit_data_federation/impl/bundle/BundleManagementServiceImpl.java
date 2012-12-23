@@ -15,7 +15,6 @@ import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 
-import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
 import org.onebusaway.container.refresh.RefreshService;
@@ -78,9 +77,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	@Autowired
 	private NycTransitDataService _nycTransitDataService;
-
-	@Autowired
-	private CacheManager _cacheManager;
 
 	@Autowired
 	private TransitGraphDao _transitGraphDao;
@@ -349,17 +345,24 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	/*****
 	 * Private helper things
 	 *****/
+
 	private void removeAndRebuildCache() {
 		// Not sure why this is here?
 		timingHook();
-		
-		// Clear all existing cache elements
-		for (String cacheName : _cacheManager.getCacheNames()) {
-			_log.info("Clearing cache with ID " + cacheName);
-			Cache cache = _cacheManager.getCache(cacheName);
-			cache.removeAll();
-		}
 
+		_log.info("Clearing all caches...");
+		for(CacheManager cacheManager : CacheManager.ALL_CACHE_MANAGERS) { 
+			_log.info("Found " + cacheManager.getName());
+			
+			for(String cacheName : cacheManager.getCacheNames()) {
+				_log.info(" > Cache: " + cacheName);
+				cacheManager.getCache(cacheName).flush();
+				cacheManager.clearAllStartingWith(cacheName);
+			}
+			
+			cacheManager.clearAll(); // why not?
+		}
+		
 		// Rebuild cache
 		try {
 			List<AgencyWithCoverageBean> agenciesWithCoverage = _nycTransitDataService.getAgenciesWithCoverage();
