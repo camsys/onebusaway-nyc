@@ -16,12 +16,10 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,9 +33,6 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
-import org.onebusaway.gtfs.model.calendar.ServiceDate;
-import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
@@ -48,7 +43,12 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
+import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
@@ -91,12 +91,6 @@ public class BlockStateService {
    * Distance in meters to search around the current lat/long for blocks.
    */
   private static final double _tripSearchRadius = 60d;
-
-  /**
-   * The number of hours past midnight that today and yesterday's service dates should be included
-   * in the trip search list.
-   */
-  private static final double _serviceDateSearchWindow = 6d;
 
   /**
    * Time in ms to search after the last stop time on the trip, compared against the search time, to determine
@@ -147,16 +141,17 @@ public class BlockStateService {
   private SpatialIndex _index;
 
   @Autowired
-  private CalendarService _calendarService;
+  private BlockCalendarService _blockCalendarService;
+
+  @Autowired
+  private BlockIndexService _blockIndexService;
 
   private TransitGraphDao _transitGraphDao;
 
-  private Multimap<LocationIndexedLine, TripInfo> _linesToTripInfo;
-
+  private Map<String, Multimap<LocationIndexedLine, TripInfo>> _linesToTripInfoByAgencyId;
+  
   private ShapePointService _shapePointService;
-
-  private Multimap<Entry<AgencyAndId, BlockConfigurationEntry>, BlockTripEntry> _shapesAndBlockConfigsToBlockTrips;
-
+  
   @PostConstruct
   @Refreshable(dependsOn = {
       RefreshableResources.TRANSIT_GRAPH, 
@@ -402,36 +397,19 @@ public class BlockStateService {
 
     final Map<BlockLocationKey, BestBlockStates> results = Maps.newHashMap();
 
-    Set<String> validRunIds = Sets.newHashSet(Iterables.concat(observation.getBestFuzzyRunIds(),
-            Collections.singleton(observation.getOpAssignedRunId())));
-
     final NycRawLocationRecord record = observation.getRecord();
+    final Set<String> validRunIds = Sets.newHashSet(Iterables.concat(observation.getBestFuzzyRunIds(),
+            Collections.singleton(observation.getOpAssignedRunId())));
+    final String vehicleAgencyId = record.getVehicleId().getAgencyId();
+
+    final long time = observation.getTime();       
+    final Date timeFrom = new Date(time - _tripSearchTimeAfterLastStop);
+    final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
+
     final CoordinateBounds bounds = SphericalGeometryLibrary.bounds(record.getLatitude(), record.getLongitude(), _tripSearchRadius);
     final Coordinate obsPoint = new Coordinate(record.getLongitude(), record.getLatitude());
     final Envelope searchEnv = new Envelope(bounds.getMinLon(), bounds.getMaxLon(), bounds.getMinLat(), bounds.getMaxLat());
 
-    Set<AgencyAndId> serviceIdsActiveToday = new HashSet<AgencyAndId>();
-    GregorianCalendar gc = new GregorianCalendar();
-
-    // today's service IDs
-    gc.setTimeInMillis(observation.getTime());
-    gc.set(Calendar.HOUR, 0);
-    gc.set(Calendar.MINUTE, 0);
-    gc.set(Calendar.SECOND, 0);    
-
-    ServiceDate observedServiceDate = new ServiceDate(gc.getTime());
-    serviceIdsActiveToday.addAll(_calendarService.getServiceIdsOnDate(observedServiceDate));
-    
-    // if we're within _serviceDateSearchWindow hours over the midnight border, include
-    // yesterday's service IDs, too, since buses are probably sill on those trips.
-    long millisecondsIntoToday = observation.getTime() - gc.getTimeInMillis();
-    if(millisecondsIntoToday < _serviceDateSearchWindow * 60 * 60 * 1000) {
-    	gc.set(Calendar.DATE, gc.get(Calendar.DATE) - 1);
-    	
-        ServiceDate serviceDateForYesterday = new ServiceDate(gc.getTime());
-        serviceIdsActiveToday.addAll(_calendarService.getServiceIdsOnDate(serviceDateForYesterday));
-    }
-    
     @SuppressWarnings("unchecked")
     final List<Collection<LocationIndexedLine>> lineMatches = _index.query(searchEnv);
     final Multimap<BlockInstance, Double> instancesToDists = TreeMultimap.create(
@@ -452,98 +430,71 @@ public class BlockStateService {
       final double distTraveledOnLine = SphericalGeometryLibrary.distance(
           pointOnLine.y, pointOnLine.x, startOfLine.y, startOfLine.x);
 
-      // trips that follow the path under the current observed location
-      for (final TripInfo tripInfo : _linesToTripInfo.get(line)) {
-    	      	  
-    	// blocks that contain the matched trip  
-    	for (final BlockEntry block : tripInfo.getBlocks()) {
-          String vehicleAgency = observation.getRecord().getVehicleId().getAgencyId();
-          String blockAgency = block.getId().getAgencyId();
-
-          // filter out blocks from other agencies
-          if(!vehicleAgency.equals(blockAgency))
-        	break; // entire tripInfo/block set will be for the other agency since shapes are not shared
-        	  
-    	  // filter out blocks that are not active during the observation date
-          for(BlockConfigurationEntry config : block.getConfigurations()) {
-        	  for(LocalizedServiceId activeId : config.getServiceIds().getActiveServiceIds()) {
-        		  // block config is not applicable to today; skip
-        		  if(!serviceIdsActiveToday.contains(activeId.getId())) {
-        			  continue;
-        		  }
-        			  
-    			  BlockInstance instance = new BlockInstance(config, observedServiceDate.getAsDate().getTime());
-    			  
-    			  final Collection<BlockTripEntry> blockTrips = _shapesAndBlockConfigsToBlockTrips.get(Maps.immutableEntry(
-	                  tripInfo.getShapeAndIdx().getShapeId(), instance.getBlock()));
-
-	              final double distanceAlongShape = tripInfo.getDistanceFrom()
-	                  + distTraveledOnLine;
-
-	              for (final BlockTripEntry blockTrip : blockTrips) {
-
-	                /*
-	                 * XXX: This is still questionable, however,
-	                 * ScheduledBlockLocationServiceImpl.java appears to do something
-	                 * similar, where it assumes the block's distance-along can be
-	                 * related to the shape's (for the particular BlockTripEntry).
-	                 * (see ScheduledBlockLocationServiceImpl.getLocationAlongShape)
-	                 * 
-	                 * Anyway, what we're doing is using the blockTrip's
-	                 * getDistanceAlongBlock to find out what the distance-along the
-	                 * block is for the start of the shape, then we're using our
-	                 * computed distance along shape for the snapped point to find the
-	                 * total distanceAlongBlock.
-	                 */
-	                double distanceAlongBlock = blockTrip.getDistanceAlongBlock()
-	                    + distanceAlongShape;
-
-	                /*
-	                 * Here we make sure that the DSC and/or run-info matches
-	                 */
-	                if (_requireDSCImpliedRoutes) {
-	                  if (!observation.getImpliedRouteCollections()
-	                        .contains(blockTrip.getTrip().getRouteCollection().getId()))
-	                    continue;
-	                }
-	                  
-	                if (_requireRunMatchesForNullDSC) {
-	                  /*
-	                   * When there is no valid DSC only allow snapping
-	                   * to assigned or best fuzzy run.
-	                   */
-	                  if (!observation.hasValidDsc()) {
-	                    if (Sets.intersection(validRunIds, 
-	                        _runService.getRunIdsForTrip(blockTrip.getTrip())).isEmpty()) {
-	                      continue;
-	                    }
-	                  } 
-	                }
-
-	                // is block trip active *now* on the given active service date?
-	            	long firstStopTimeMs = 
-	            			observedServiceDate.getAsDate().getTime() + (blockTrip.getArrivalTimeForIndex(0) * 1000);
-	            	long lastStopTimeMs = 
-	            			observedServiceDate.getAsDate().getTime() + (blockTrip.getDepartureTimeForIndex(blockTrip.getStopTimes().size() - 1) * 1000);
-	            	
-	            	// is observed time within the trip's running times + search windows?
-	            	if(!(observation.getTime() > firstStopTimeMs - _tripSearchTimeBeforeFirstStop))
-	            		continue;
-	            	if(!(observation.getTime() < lastStopTimeMs + _tripSearchTimeAfterLastStop))
-	            		continue;
-
-	                instancesToDists.put(instance, distanceAlongBlock);
-	              }
-	            }
-        	  }
-          }
+      final Multimap<LocationIndexedLine, TripInfo> linesToTripInfoForVehicleAgencyId = 
+    		  _linesToTripInfoByAgencyId.get(vehicleAgencyId);
+      if(linesToTripInfoForVehicleAgencyId == null || linesToTripInfoForVehicleAgencyId.isEmpty()) {
+    	  continue;
       }
-    }
-    
-    final long time = observation.getTime();       
-    final Date timeFrom = new Date(time - _tripSearchTimeAfterLastStop);
-    final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
+      
+      // trips that follow the path under the current observed location
+      for (final TripInfo tripInfo : linesToTripInfoForVehicleAgencyId.get(line)) {
+    	  final Collection<BlockTripIndex> indices = tripInfo.getIndices();
+    	  final Collection<BlockLayoverIndex> layoverIndices = tripInfo.getLayoverIndices();
+    	  final Collection<FrequencyBlockTripIndex> frequencyIndices = tripInfo.getFrequencyIndices();
 
+    	  List<BlockInstance> instances = 
+    			  _blockCalendarService.getActiveBlocksInTimeRange(indices, layoverIndices, frequencyIndices, 
+    					  timeFrom.getTime(), timeTo.getTime());
+
+    	  for(BlockInstance instance : instances) {    
+    		  for(BlockTripEntry blockTrip : instance.getBlock().getTrips()) {
+    			  /*
+    			   * XXX: This is still questionable, however,
+    			   * ScheduledBlockLocationServiceImpl.java appears to do something
+    			   * similar, where it assumes the block's distance-along can be
+    			   * related to the shape's (for the particular BlockTripEntry).
+    			   * (see ScheduledBlockLocationServiceImpl.getLocationAlongShape)
+    			   * 
+    			   * Anyway, what we're doing is using the blockTrip's
+    			   * getDistanceAlongBlock to find out what the distance-along the
+    			   * block is for the start of the shape, then we're using our
+    			   * computed distance along shape for the snapped point to find the
+    			   * total distanceAlongBlock.
+    			   */
+    			  final double distanceAlongShape = tripInfo.getDistanceFrom()
+    					  + distTraveledOnLine;
+
+    			  final double distanceAlongBlock = blockTrip.getDistanceAlongBlock()
+    					  + distanceAlongShape;
+
+    			  /*
+    			   * Here we make sure that the DSC and/or run-info matches
+    			   */
+    			  if (_requireDSCImpliedRoutes) {
+    				  if (!observation.getImpliedRouteCollections()
+    						  .contains(blockTrip.getTrip().getRouteCollection().getId()))
+    					  continue;
+    			  }
+
+    			  if (_requireRunMatchesForNullDSC) {
+    				  /*
+    				   * When there is no valid DSC only allow snapping
+    				   * to assigned or best fuzzy run.
+    				   */
+    				  if (!observation.hasValidDsc()) {
+    					  if (Sets.intersection(validRunIds, 
+    							  _runService.getRunIdsForTrip(blockTrip.getTrip())).isEmpty()) {
+    						  continue;
+    					  }
+    				  } 
+    			  }
+
+    			  instancesToDists.put(instance, distanceAlongBlock);
+    		  }
+    	  }
+      }
+	}
+	
     for (final Entry<BlockInstance, Collection<Double>> biEntry : instancesToDists.asMap().entrySet()) {
       final BlockInstance instance = biEntry.getKey();
       final int searchTimeFrom = (int) (timeFrom.getTime() - instance.getServiceDate()) / 1000;
@@ -558,9 +509,13 @@ public class BlockStateService {
       for (final Double distanceAlongBlock : biEntry.getValue()) {
         final ScheduledBlockLocation location = 
         	_scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-            instance.getBlock(), distanceAlongBlock); 
+            instance.getBlock(), Math.floor(distanceAlongBlock)); 
         
-        // e.g. DAB is beyond block's distance due to rounding errors
+        // this and the above Math.floor() on the DAB is here because the calculation of 
+        // blocks that are scheduled can vary ever so slightly from the distance along block
+        // associated with that scheduled time due to numeric issues--so we round down to make
+        // sure we catch the proper trip when going back in the other direction. This check is
+        // just a last ditch effort to ensure consistency if we're on the trip's edge. 
         if(location == null) 
         	continue;
         
@@ -585,14 +540,13 @@ public class BlockStateService {
             activeTrip, activeTrip.getTrip().getDirectionId());
 
         Min<ScheduledBlockLocation> thisMin = tripToDists.get(tripDistEntry);
-
         if (thisMin == null) {
           thisMin = new Min<ScheduledBlockLocation>();
           tripToDists.put(tripDistEntry, thisMin);
         }
         
-        final double dist = SphericalGeometryLibrary.distance(
-            observation.getLocation(), location.getLocation());
+        final double dist = 
+        		SphericalGeometryLibrary.distance(observation.getLocation(), location.getLocation());
         thisMin.add(dist, location);
       }
 
@@ -604,7 +558,6 @@ public class BlockStateService {
             activeTrip.getTrip(), location.getScheduledTime());
 
         final BlockState state = new BlockState(instance, location, rte, dsc);
-
         final BlockLocationKey key = new BlockLocationKey(instance, 0,
             Double.POSITIVE_INFINITY);
 
@@ -734,41 +687,36 @@ public class BlockStateService {
 
   private static class TripInfo {
     final double _distanceFrom;
-    final ShapeIdxAndId _shapeAndIdx;
-    final private Collection<BlockEntry> _blocks;
+    final private Collection<BlockTripIndex> _indices;
+    final private Collection<BlockLayoverIndex> _layoverIndices;
+    final private Collection<FrequencyBlockTripIndex> _frequencyIndices;
 
     public TripInfo(double distanceFrom, double distanceTo,
-        Collection<BlockEntry> blocks, ShapeIdxAndId shapeIdxAndId) {
+        Collection<BlockTripIndex> indices, 
+        Collection<BlockLayoverIndex> layoverIndices, 
+        Collection<FrequencyBlockTripIndex> frequencyIndices) {
       _distanceFrom = distanceFrom;
-      _shapeAndIdx = shapeIdxAndId;
-      _blocks = blocks;
-    }
-
-    public Collection<BlockEntry> getBlocks() {
-      return _blocks;
+      _indices = indices;
+      _layoverIndices = layoverIndices;
+      _frequencyIndices = frequencyIndices;
     }
 
     public double getDistanceFrom() {
       return _distanceFrom;
     }
 
-    public ShapeIdxAndId getShapeAndIdx() {
-      return _shapeAndIdx;
-    }
+	public Collection<BlockTripIndex> getIndices() {
+	  return _indices;
+	}
 
+	public Collection<BlockLayoverIndex> getLayoverIndices() {
+	  return _layoverIndices;
+	}
+
+	public Collection<FrequencyBlockTripIndex> getFrequencyIndices() {
+	  return _frequencyIndices;
+	}
   };
-
-  private static class ShapeIdxAndId {
-    final private AgencyAndId _shapeId;
-
-    public ShapeIdxAndId(AgencyAndId shapeId, int shapePointIndex) {
-      _shapeId = shapeId;
-    }
-
-    public AgencyAndId getShapeId() {
-      return _shapeId;
-    }
-  }
 
   /**
    * 
@@ -777,61 +725,86 @@ public class BlockStateService {
    */
   private void buildShapeSpatialIndex() throws IOException, ClassNotFoundException {
     try {
-      _shapesAndBlockConfigsToBlockTrips = HashMultimap.create();
-      _linesToTripInfo = HashMultimap.create();
+      _linesToTripInfoByAgencyId = new HashMap<String, Multimap<LocationIndexedLine, TripInfo>>();
 
-      final Multimap<AgencyAndId, BlockEntry> allUniqueShapePoints = HashMultimap.create();
-      final GeometryFactory gf = new GeometryFactory();
+      final Multimap<AgencyAndId, AgencyAndId> allUniqueShapePointsToBlockId = HashMultimap.create();
+      final Multimap<AgencyAndId, BlockTripIndex> blockTripIndicesByShapeId = HashMultimap.create();
+      final Multimap<AgencyAndId, BlockLayoverIndex> blockLayoverIndicesByShapeId = HashMultimap.create();
+      final Multimap<AgencyAndId, FrequencyBlockTripIndex> frequencyBlockTripIndicesByShapeId = HashMultimap.create();
+
       final Multimap<Envelope, LocationIndexedLine> envToLines = HashMultimap.create();
+      final GeometryFactory gf = new GeometryFactory();
 
-      _log.debug("generating shapeId & blockConfig to block trips map...");
+      _log.info("generating shapeId & blockConfig to block trips map...");
       for (final BlockEntry blockEntry : _transitGraphDao.getAllBlocks()) {
-        _log.debug(blockEntry.getId().toString());
         for (final BlockConfigurationEntry blockConfig : blockEntry.getConfigurations()) {
           for (final BlockTripEntry blockTrip : blockConfig.getTrips()) {
             final TripEntry trip = blockTrip.getTrip();
-            final AgencyAndId shapeId = trip.getShapeId();
-            if (shapeId != null) {
-              _shapesAndBlockConfigsToBlockTrips.put(Maps.immutableEntry(shapeId, blockConfig), blockTrip);
-              allUniqueShapePoints.put(shapeId, blockEntry);
+            final AgencyAndId shapeId = trip.getShapeId(); 
+        	final AgencyAndId blockId = blockEntry.getId();
+            
+            if (shapeId != null) {            	
+            	allUniqueShapePointsToBlockId.put(shapeId, blockId);
+            	blockTripIndicesByShapeId.putAll(shapeId, _blockIndexService.getBlockTripIndicesForBlock(blockId));
+            	blockLayoverIndicesByShapeId.putAll(shapeId, _blockIndexService.getBlockLayoverIndicesForBlock(blockId));
+            	frequencyBlockTripIndicesByShapeId.putAll(shapeId, _blockIndexService.getFrequencyBlockTripIndicesForBlock(blockId));
             }
           }
         }
       }
 
-      _log.debug("\tshapePoints=" + allUniqueShapePoints.keySet().size());
-      for (final Entry<AgencyAndId, Collection<BlockEntry>> shapePointsEntry : allUniqueShapePoints.asMap().entrySet()) {
-        final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapePointsEntry.getKey());
+      _log.info("\tshapePoints=" + allUniqueShapePointsToBlockId.keySet().size());
+      for (final Entry<AgencyAndId, Collection<AgencyAndId>> shapePointsEntry : allUniqueShapePointsToBlockId.asMap().entrySet()) {
+        final AgencyAndId shapeId = shapePointsEntry.getKey();
+        final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapeId);        
         if (shapePoints == null || shapePoints.isEmpty()) {
-          _log.debug("blocks with no shapes: " + shapePointsEntry.getValue());
+          _log.warn("blocks with no shapes: " + shapePointsEntry.getValue());
           continue;
         }
 
-        final Collection<BlockEntry> blocks = shapePointsEntry.getValue();
+        final Collection<BlockTripIndex> indices = blockTripIndicesByShapeId.get(shapeId);
+  	  	final Collection<BlockLayoverIndex> layoverIndices = blockLayoverIndicesByShapeId.get(shapeId);
+  	  	final Collection<FrequencyBlockTripIndex> frequencyIndices = frequencyBlockTripIndicesByShapeId.get(shapeId);
+                
+        final Collection<AgencyAndId> blockIds = shapePointsEntry.getValue();
+  	  	if(blockIds.isEmpty()) 
+  	  		continue;
+
+  	  	// shape agency ID cannot be used when the bundle builder is configured for agency ID remapping,
+  	  	// so we use the agency ID from the block ID, since shapes are not shared across agencies, they should all be the same. 
+  	  	final String agencyId = blockIds.iterator().next().getAgencyId();
+  	  	
+        Multimap<LocationIndexedLine, TripInfo> linesToTripInfoForThisAgencyId = 
+        		_linesToTripInfoByAgencyId.get(agencyId);        
+        if(linesToTripInfoForThisAgencyId == null) {
+        	linesToTripInfoForThisAgencyId = HashMultimap.create();
+        }
+        
         for (int i = 0; i < shapePoints.getSize() - 1; ++i) {
           final CoordinatePoint from = shapePoints.getPointForIndex(i);
           final CoordinatePoint to = shapePoints.getPointForIndex(i + 1);
 
-          final Coordinate fromJts = new Coordinate(from.getLon(),
-              from.getLat());
+          final Coordinate fromJts = new Coordinate(from.getLon(), from.getLat());
           final Coordinate toJts = new Coordinate(to.getLon(), to.getLat());
 
-          final Geometry lineGeo = gf.createLineString(new Coordinate[] {
-              fromJts, toJts});
+          final Geometry lineGeo = gf.createLineString(new Coordinate[] {fromJts, toJts});
           final LocationIndexedLine line = new LocationIndexedLine(lineGeo);
           final Envelope env = lineGeo.getEnvelopeInternal();
 
           final double distanceFrom = shapePoints.getDistTraveledForIndex(i);
           final double distanceTo = shapePoints.getDistTraveledForIndex(i + 1);
-          _linesToTripInfo.put(line, new TripInfo(distanceFrom, distanceTo,
-              blocks, new ShapeIdxAndId(shapePoints.getShapeId(), i)));
+          
+          linesToTripInfoForThisAgencyId.put(line, new TripInfo(distanceFrom, distanceTo,
+        		  indices, layoverIndices, frequencyIndices));
 
           envToLines.put(env, line);
         }
+        
+        _linesToTripInfoByAgencyId.put(agencyId, linesToTripInfoForThisAgencyId);
       }
 
       if (envToLines.size() > 0) {
-        _log.debug("\ttree size=" + envToLines.keySet().size());
+        _log.info("\ttree size=" + envToLines.keySet().size());
         _index = new STRtree(envToLines.keySet().size());
         for (final Entry<Envelope, Collection<LocationIndexedLine>> envLines : envToLines.asMap().entrySet()) {
           _index.insert(envLines.getKey(), envLines.getValue());
@@ -841,7 +814,7 @@ public class BlockStateService {
       ex.printStackTrace();
     }
     
-    _log.debug("done.");
+    _log.info("done.");
   }
 
 }
