@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -90,6 +91,12 @@ public class BlockStateService {
    * Distance in meters to search around the current lat/long for blocks.
    */
   private static final double _tripSearchRadius = 60d;
+
+  /**
+   * The number of hours past midnight that today and yesterday's service dates should be included
+   * in the trip search list.
+   */
+  private static final double _serviceDateSearchWindow = 6d;
 
   /**
    * Time in ms to search after the last stop time on the trip, compared against the search time, to determine
@@ -395,27 +402,38 @@ public class BlockStateService {
 
     final Map<BlockLocationKey, BestBlockStates> results = Maps.newHashMap();
 
+    Set<String> validRunIds = Sets.newHashSet(Iterables.concat(observation.getBestFuzzyRunIds(),
+            Collections.singleton(observation.getOpAssignedRunId())));
+
     final NycRawLocationRecord record = observation.getRecord();
     final CoordinateBounds bounds = SphericalGeometryLibrary.bounds(record.getLatitude(), record.getLongitude(), _tripSearchRadius);
     final Coordinate obsPoint = new Coordinate(record.getLongitude(), record.getLatitude());
     final Envelope searchEnv = new Envelope(bounds.getMinLon(), bounds.getMaxLon(), bounds.getMinLat(), bounds.getMaxLat());
-    
-    Set<String> validRunIds = Sets.newHashSet(Iterables.concat(observation.getBestFuzzyRunIds(),
-                      Collections.singleton(observation.getOpAssignedRunId())));
 
+    Set<AgencyAndId> serviceIdsActiveToday = new HashSet<AgencyAndId>();
     GregorianCalendar gc = new GregorianCalendar();
+
+    // today's service IDs
     gc.setTimeInMillis(observation.getTime());
     gc.set(Calendar.HOUR, 0);
     gc.set(Calendar.MINUTE, 0);
     gc.set(Calendar.SECOND, 0);    
-    ServiceDate observedServiceDate = new ServiceDate(gc.getTime());
 
-    Set<AgencyAndId> serviceIdsActiveToday = 
-    		_calendarService.getServiceIdsOnDate(observedServiceDate);   	  
+    ServiceDate observedServiceDate = new ServiceDate(gc.getTime());
+    serviceIdsActiveToday.addAll(_calendarService.getServiceIdsOnDate(observedServiceDate));
+    
+    // if we're within _serviceDateSearchWindow hours over the midnight border, include
+    // yesterday's service IDs, too, since buses are probably sill on those trips.
+    long millisecondsIntoToday = observation.getTime() - gc.getTimeInMillis();
+    if(millisecondsIntoToday < _serviceDateSearchWindow * 60 * 60 * 1000) {
+    	gc.set(Calendar.DATE, gc.get(Calendar.DATE) - 1);
+    	
+        ServiceDate serviceDateForYesterday = new ServiceDate(gc.getTime());
+        serviceIdsActiveToday.addAll(_calendarService.getServiceIdsOnDate(serviceDateForYesterday));
+    }
     
     @SuppressWarnings("unchecked")
     final List<Collection<LocationIndexedLine>> lineMatches = _index.query(searchEnv);
-    
     final Multimap<BlockInstance, Double> instancesToDists = TreeMultimap.create(
         BlockInstanceComparator.INSTANCE, Ordering.natural());
 	
