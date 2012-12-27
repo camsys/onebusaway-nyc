@@ -226,7 +226,6 @@
                         	<overlay>
               					<groupId>org.onebusaway</groupId>
               					<artifactId>onebusaway-nyc-webapp</artifactId>
-              					<!-- filtered>true</filtered-->
               				</overlay>
                         </overlays>
                     </configuration>
