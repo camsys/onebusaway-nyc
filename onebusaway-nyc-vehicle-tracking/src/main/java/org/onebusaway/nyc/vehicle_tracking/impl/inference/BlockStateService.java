@@ -397,9 +397,13 @@ public class BlockStateService {
 
     final Map<BlockLocationKey, BestBlockStates> results = Maps.newHashMap();
 
+    Set<String> validRunIds = null;
+	if (_requireRunMatchesForNullDSC) {
+		validRunIds = Sets.newHashSet(Iterables.concat(observation.getBestFuzzyRunIds(),
+			  Collections.singleton(observation.getOpAssignedRunId())));
+	}
+
     final NycRawLocationRecord record = observation.getRecord();
-    final Set<String> validRunIds = Sets.newHashSet(Iterables.concat(observation.getBestFuzzyRunIds(),
-            Collections.singleton(observation.getOpAssignedRunId())));
     final String vehicleAgencyId = record.getVehicleId().getAgencyId();
 
     final long time = observation.getTime();       
@@ -419,16 +423,11 @@ public class BlockStateService {
 	for (final LocationIndexedLine line : Iterables.concat(lineMatches)) {
       final LinearLocation here = line.project(obsPoint);
       final Coordinate pointOnLine = line.extractPoint(here);
-      final double dist = SphericalGeometryLibrary.distance(pointOnLine.y,
-          pointOnLine.x, obsPoint.y, obsPoint.x);
+      final double dist = pointOnLine.distance(obsPoint);
 
       // filter out if too far away
       if (dist > _tripSearchRadius)
         continue;
-
-      final Coordinate startOfLine = line.extractPoint(line.getStartIndex());
-      final double distTraveledOnLine = SphericalGeometryLibrary.distance(
-          pointOnLine.y, pointOnLine.x, startOfLine.y, startOfLine.x);
 
       final Multimap<LocationIndexedLine, TripInfo> linesToTripInfoForVehicleAgencyId = 
     		  _linesToTripInfoByAgencyId.get(vehicleAgencyId);
@@ -441,6 +440,13 @@ public class BlockStateService {
     	  final Collection<BlockTripIndex> indices = tripInfo.getIndices();
     	  final Collection<BlockLayoverIndex> layoverIndices = tripInfo.getLayoverIndices();
     	  final Collection<FrequencyBlockTripIndex> frequencyIndices = tripInfo.getFrequencyIndices();
+
+	      final Coordinate startOfLine = line.extractPoint(line.getStartIndex());
+	      final double distTraveledOnLine = 
+	    		  SphericalGeometryLibrary.distance(pointOnLine.y, pointOnLine.x, startOfLine.y, startOfLine.x);
+
+		  final double distanceAlongShape = tripInfo.getDistanceFrom()
+				  + distTraveledOnLine;
 
     	  List<BlockInstance> instances = 
     			  _blockCalendarService.getActiveBlocksInTimeRange(indices, layoverIndices, frequencyIndices, 
@@ -461,9 +467,6 @@ public class BlockStateService {
     			   * computed distance along shape for the snapped point to find the
     			   * total distanceAlongBlock.
     			   */
-    			  final double distanceAlongShape = tripInfo.getDistanceFrom()
-    					  + distTraveledOnLine;
-
     			  final double distanceAlongBlock = blockTrip.getDistanceAlongBlock()
     					  + distanceAlongShape;
 
@@ -509,7 +512,7 @@ public class BlockStateService {
       for (final Double distanceAlongBlock : biEntry.getValue()) {
         final ScheduledBlockLocation location = 
         	_scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-            instance.getBlock(), distanceAlongBlock); 
+        			instance.getBlock(), distanceAlongBlock); 
 
         if(location == null) 
         	continue;
