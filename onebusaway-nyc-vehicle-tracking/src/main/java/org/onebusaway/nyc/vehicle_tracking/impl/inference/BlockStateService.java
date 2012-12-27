@@ -509,13 +509,8 @@ public class BlockStateService {
       for (final Double distanceAlongBlock : biEntry.getValue()) {
         final ScheduledBlockLocation location = 
         	_scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-            instance.getBlock(), Math.floor(distanceAlongBlock)); 
-        
-        // this and the above Math.floor() on the DAB is here because the calculation of 
-        // blocks that are scheduled can vary ever so slightly from the distance along block
-        // associated with that scheduled time due to numeric issues--so we round down to make
-        // sure we catch the proper trip when going back in the other direction. This check is
-        // just a last ditch effort to ensure consistency if we're on the trip's edge. 
+            instance.getBlock(), distanceAlongBlock); 
+
         if(location == null) 
         	continue;
         
@@ -529,6 +524,7 @@ public class BlockStateService {
          * Should be increasing time for increasing distanceAlongBlock...
          */
         final int schedTime = location.getScheduledTime();
+
         if (schedTime > searchTimeTo)
           break;
 
