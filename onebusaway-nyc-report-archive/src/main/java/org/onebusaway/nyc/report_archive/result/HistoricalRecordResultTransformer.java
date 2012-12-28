@@ -52,8 +52,8 @@ public class HistoricalRecordResultTransformer implements ResultTransformer{
 		record.setInferredLongitude((BigDecimal)tuple[27]);
 		record.setInferredPhase((String)tuple[28]);
 		record.setInferredStatus((String)tuple[29]);
-		//Fix for OBANYC-1910. Boolean value cannot be null
-		record.setInferenceIsFormal((Boolean)tuple[30] == null ? Boolean.FALSE : (Boolean)tuple[30]);
+		//Fix for OBANYC-1905. Boolean value cannot be null
+		record.setInferenceIsFormal(tuple[30] == null ? Boolean.FALSE : (Boolean)tuple[30]);
 		record.setDistanceAlongBlock((Double)tuple[31]);
 		record.setDistanceAlongTrip((Double)tuple[32]);
 		record.setNextScheduledStopId((String)tuple[33]);
