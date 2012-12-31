@@ -44,7 +44,7 @@ public class StatusController {
 
 	private static final String INSTANCE_ID_URL = "http://169.254.169.254/latest/meta-data/instance-id";
 	private static final String INSTANCE_TYPE_URL = "http://169.254.169.254/latest/meta-data/instance-type";
-	private static final String AMI_ID_URL = "http://169.254.169.254/latest/meta-data/amiid";
+	private static final String AMI_ID_URL = "http://169.254.169.254/latest/meta-data/ami-id";
 	private static final String PUBLIC_HOSTNAME_URL = "http://169.254.169.254/latest/meta-data/public-hostname";
 	private static final String INTERNAL_HOSTNAME_URL = "http://169.254.169.254/latest/meta-data/hostname";
 
