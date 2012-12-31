@@ -11,6 +11,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
@@ -134,6 +135,57 @@ public class DepotResource {
 		}
 
 		_log.info("getDepotAssignments returning json output.");
+
+		return output;
+
+	}
+
+	@Path("/vehicles/list")
+	@GET
+	@Produces("application/json")
+	public String getDepotsAssignments(@QueryParam("depots") List<String> depots,
+				@QueryParam("inverse") boolean inverseSelection)
+			throws FileNotFoundException {
+
+		
+		_log.info("Starting getDepotsAssignments(" + depots + ", " + inverseSelection + ")");
+
+		VehicleDepotData data = depotDataProviderService.getVehicleDepotData(depotIdTranslator);
+		List<CPTVehicleIden> depotVehicles = new ArrayList<CPTVehicleIden>(); 
+
+		if (!inverseSelection) {
+			for (String depot : depots) {
+				depotVehicles.addAll(data.getVehiclesByDepotNameStr(depot));
+			}
+		} else {	
+			// Then I need to get the data for the input depot
+			depotVehicles.addAll(data.getVehiclesExceptForDepotNameStr(depots));
+		}
+		
+		List<Vehicle> depotVehiclesJson = new ArrayList<Vehicle>();
+
+		// now iterate through all the vehicles at that depot, converting each
+		// vehicle to its json model representation.
+		for(CPTVehicleIden depotVehicle : depotVehicles) {
+			depotVehiclesJson.add(vehicleConverter.convert(depotVehicle));
+		}
+
+		// Now add it to a message object
+		VehiclesMessage message = new VehiclesMessage();
+		message.setVehicles(depotVehiclesJson);
+		message.setStatus("OK");
+
+		StringWriter writer = new StringWriter();
+		String output = null;
+		try {
+			jsonTool.writeJson(writer, message);
+			output = writer.toString();
+			writer.close();
+		} catch (IOException e) {
+			throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+		}
+
+		_log.info("getDepotsAssignments returning json output.");
 
 		return output;
 

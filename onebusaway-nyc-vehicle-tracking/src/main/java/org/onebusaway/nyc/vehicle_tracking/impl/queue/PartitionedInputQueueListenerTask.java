@@ -13,6 +13,7 @@ import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CcLocationReport;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -88,7 +89,10 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
     
     for (final String key : _depotPartitionKeys) {
       try {
-        vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));
+    	  // TODO
+    	  // param for inverseSelection
+    	  //vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));
+    	  vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepots(Arrays.asList(_depotPartitionKeys), true));
       } catch (final Exception e) {
         _log.warn("Error fetching assigned vehicles for depot " + key
             + "; will retry.");

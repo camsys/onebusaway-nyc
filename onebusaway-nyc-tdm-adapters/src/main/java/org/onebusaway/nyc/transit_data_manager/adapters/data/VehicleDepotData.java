@@ -26,7 +26,16 @@ public interface VehicleDepotData {
    *         associated with the depot param.
    */
   List<CPTVehicleIden> getVehiclesByDepotNameStr(String depotNameStr);
-  
+  /**
+   * Get a list of vehicles (in tcip format of course) not associated with
+   * these depots.
+   * 
+   * @param depotNameStr A list of MTA style depot name, such as 'YUK4' to return
+   *          vehicles for.
+   * @return A list of CPTVehicleIden, each corresponding to a vehicle
+   *         associated with the depot param.
+   */
+  List<CPTVehicleIden> getVehiclesExceptForDepotNameStr(List<String> depots);
   /**
    * Get a list of all the fleetsubsetgroups matching a depotNameStr
    * @param depotNameStr the depot name string to match
@@ -39,4 +48,6 @@ public interface VehicleDepotData {
    * @return A list of all depot groups
    */
   List<CPTFleetSubsetGroup> getAllDepotGroups();
+
+
 }

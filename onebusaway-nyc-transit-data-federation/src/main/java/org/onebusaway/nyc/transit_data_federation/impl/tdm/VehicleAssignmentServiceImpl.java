@@ -75,6 +75,37 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
     }
   }
 
+    private ArrayList<AgencyAndId> getVehicleListExceptForDepots(List<String> depotIds) {
+    try {
+      String depotIdsKey = null;
+      for (String s : depotIds) {
+    	  if (depotIdsKey == null) {
+    		  depotIdsKey = s;
+    	  } else {
+    		  depotIdsKey = "," + s;
+    	  }
+      }
+      // /api/depot/<depot_id>/vehicles/list
+      // /api/depot/vehicles/list?depots=<depot1,depot2>&inverse=true
+      String paramString = "list?depots=" + depotIdsKey + "&inverse=true"; 
+      List<Map<String, String>> vehicleAssignments = _transitDataManagerApiLibrary.getItems("depot", "vehicles", paramString);
+
+      ArrayList<AgencyAndId> vehiclesNotForTheseDepots = new ArrayList<AgencyAndId>();
+      for (Map<String, String> depotVehicleAssignment : vehicleAssignments) {
+        AgencyAndId vehicle = new AgencyAndId(
+            depotVehicleAssignment.get("agency-id"),
+            depotVehicleAssignment.get("vehicle-id"));
+
+        vehiclesNotForTheseDepots.add(vehicle);
+      }
+
+      return vehiclesNotForTheseDepots;
+    } catch (Exception e) {
+      _log.error("Error getting vehicle list for depot with ID " + depotIds);
+      return null;
+    }
+  }
+
   private void updateVehicleIdToDepotMap(List<AgencyAndId> oldList,
       List<AgencyAndId> newList, String depotId) {
     
@@ -138,12 +169,28 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   }
 
   @Override
+  public synchronized ArrayList<AgencyAndId> getAssignedVehicleIdsForDepots(List<String> depots, 
+		  boolean inverseSelection) throws Exception {
+	  ArrayList<AgencyAndId> list = new ArrayList<AgencyAndId>();
+	  // the easy case, a convenience wrapper for existing API
+	  if (!inverseSelection) {
+		  for (String depot : depots) {
+			  list.addAll(getAssignedVehicleIdsForDepot(depot));
+		  }
+	  } else {
+		  list = getVehicleListExceptForDepots(depots);
+	  }
+	  return list;
+  }
+  
+  @Override
   public synchronized ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(
       String depotId) throws Exception {
 
     ArrayList<AgencyAndId> list = _depotToVehicleIdListMap.get(depotId);
 
     if (list == null) {
+      _log.info("cache miss for depotId=" + depotId);
       list = getVehicleListForDepot(depotId);
       if (list == null) {
         throw new Exception(
@@ -152,6 +199,8 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
       updateVehicleIdToDepotMap(_depotToVehicleIdListMap.get(depotId), list, depotId);
       _depotToVehicleIdListMap.put(depotId, list);
+    } else {
+  		_log.info("cache hit for depotId=" + depotId);
     }
 
     if (_depotToVehicleIdListMap.size() == 0) {

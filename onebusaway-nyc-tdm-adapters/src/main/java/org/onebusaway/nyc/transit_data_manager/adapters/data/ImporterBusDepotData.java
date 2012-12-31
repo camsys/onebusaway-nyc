@@ -55,7 +55,30 @@ public class ImporterBusDepotData implements VehicleDepotData {
 
     return vehicles;
   }
-  
+
+    public List<CPTVehicleIden> getVehiclesExceptForDepotNameStr(List<String> depots) {
+    List<CPTVehicleIden> vehicles = new ArrayList<CPTVehicleIden>();
+
+    // I'll do this in two rounds, first to grab all the CPTFleetSubsetGroups
+    // that don't have our depotNameStr
+    
+    List<CPTFleetSubsetGroup> fleetSubGroupsNotMatchingDepotStr = getGroupsExceptForDepots(depots);
+    
+    // And second to put all the vehicles in each matching CPTFleetSubsetGroup
+    // into the same
+    // list for output.
+    CPTFleetSubsetGroup subGroup = null;
+    
+    Iterator<CPTFleetSubsetGroup> matchDGroupsIt = fleetSubGroupsNotMatchingDepotStr.iterator();
+    while (matchDGroupsIt.hasNext()) {
+      subGroup = matchDGroupsIt.next();
+
+      vehicles.addAll(subGroup.getGroupMembers().getGroupMember());
+    }
+
+    return vehicles;
+  }
+
   public List<CPTFleetSubsetGroup> getGroupsWithDepotNameStr(String depotNameStr) {
     List<CPTFleetSubsetGroup> fleetSubGroupsMatchingDepotStr = new ArrayList<CPTFleetSubsetGroup>();
     
@@ -69,6 +92,37 @@ public class ImporterBusDepotData implements VehicleDepotData {
     }
     
     return fleetSubGroupsMatchingDepotStr;
+  }
+  
+  /**
+   * return list of groups that do not match the depot names of the depots param.
+   */
+  public List<CPTFleetSubsetGroup> getGroupsExceptForDepots(List<String> depots) {
+    List<CPTFleetSubsetGroup> fleetSubGroupsMatchingDepotStr = new ArrayList<CPTFleetSubsetGroup>();
+    List<CPTFleetSubsetGroup> fleetSubGroupsNotMatchingDepotStr = new ArrayList<CPTFleetSubsetGroup>();
+    List<CPTFleetSubsetGroup> allSubGroupsDepotStr = new ArrayList<CPTFleetSubsetGroup>();
+    allSubGroupsDepotStr.addAll(this.getAllDepotGroups());
+
+    // list all groups matching depots
+    for (String depotNameStr : depots) {
+      Iterator<CPTFleetSubsetGroup> depGroupsIt = depotGroups.iterator();
+      while (depGroupsIt.hasNext()) {
+        CPTFleetSubsetGroup group = depGroupsIt.next();
+      
+        if (getDepotNameStrFromSubsetGroup(group).equals(depotNameStr)) {
+          fleetSubGroupsMatchingDepotStr.add(group);
+        }
+      }
+    }
+
+    // now take the inverse
+    for (CPTFleetSubsetGroup group : allSubGroupsDepotStr) {
+    	if (!fleetSubGroupsMatchingDepotStr.contains(group)) {
+    		fleetSubGroupsNotMatchingDepotStr.add(group);
+    	}
+    }
+    
+    return fleetSubGroupsNotMatchingDepotStr;
   }
   
   public List<CPTFleetSubsetGroup> getAllDepotGroups() {

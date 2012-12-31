@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_federation.services.tdm;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 
@@ -21,6 +22,16 @@ public interface VehicleAssignmentService {
     throws Exception;
 
   /**
+   * Get a list of vehicles assigned to the named depots, unless inverseSelection is set.  Otherwise
+   * return the list of vehicles not served by these depots.
+   * 
+   * @param depots The  list of depot identifiers to request vehicles for.
+   * @param inverseSelection boolean indicating inverse results of the response
+   */
+  public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepots(List<String> depots,
+		boolean inverseSelection) throws Exception;
+
+  /**
    * Get depot for the given vehicleId, assuming the depot has been previously requested
    * with getAssignedVehicleIdsForDepot().
    * 
@@ -28,4 +39,5 @@ public interface VehicleAssignmentService {
    */
   public String getAssignedDepotForVehicleId(AgencyAndId vehicle);
 
+  
 }
