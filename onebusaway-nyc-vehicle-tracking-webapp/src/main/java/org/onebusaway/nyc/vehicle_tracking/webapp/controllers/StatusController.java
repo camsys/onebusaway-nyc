@@ -17,8 +17,12 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.util.git.GitRepositoryHelper;
 import org.onebusaway.nyc.util.model.GitRepositoryState;
 import org.onebusaway.nyc.vehicle_tracking.impl.queue.PartitionedInputQueueListenerTask;
@@ -43,6 +48,7 @@ public class StatusController {
 	private static final String PUBLIC_HOSTNAME_URL = "http://169.254.169.254/latest/meta-data/public-hostname";
 	private static final String INTERNAL_HOSTNAME_URL = "http://169.254.169.254/latest/meta-data/hostname";
 
+	private ObjectMapper _mapper = new ObjectMapper();
 	private GitRepositoryState gitState = null;
 	
 	@Autowired
@@ -54,11 +60,20 @@ public class StatusController {
 	
   @RequestMapping(value="/status.do", method=RequestMethod.GET)
   public ModelAndView index() {
+	  return new ModelAndView("status.jspx", "sm", getStatus());
+  }
+
+ @RequestMapping(value="/status-json.do", method=RequestMethod.GET)
+  public void json(HttpServletResponse response) throws IOException {
+	  OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream());
+	  _mapper.writeValue(writer, getStatus());
+  }
+
+  private StatusModel getStatus() {
 	  if (gitState == null) {
 		  gitState = new GitRepositoryHelper().getGitRepositoryState();
 	  }
-	  
-	  StatusModel status = new StatusModel();
+  	  StatusModel status = new StatusModel();
 	  status.setOutputService(queueSenderService.getClass().getName());
 	  status.setHostname(queueSenderService.getPrimaryHostname());
 	  status.setPrimary(queueSenderService.getIsPrimaryInferenceInstance());
@@ -70,10 +85,9 @@ public class StatusController {
 	  status.setAmiId(slurp(AMI_ID_URL));
 	  status.setPublicHostname(slurp(PUBLIC_HOSTNAME_URL));
 	  status.setInternalHostname(slurp(INTERNAL_HOSTNAME_URL));
-	  
-	  return new ModelAndView("status.jspx", "sm", status);
+	  return status;
   }
-
+  
   private String slurp(String urlString) {
     URL url;
     InputStream is = null;
@@ -122,9 +136,6 @@ public class StatusController {
 	}
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
-	}
-	public boolean isPrimary() {
-		return isPrimary;
 	}
 	public void setPrimary(boolean isPrimary) {
 		this.isPrimary = isPrimary;
