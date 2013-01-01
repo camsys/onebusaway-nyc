@@ -36,6 +36,17 @@
 		<br/>
 		<b>Git Version:</b> <c:out value="${sm.gitDescribe}" />
 		<br/>
+		<b>Instance Id:</b> <c:out value="${sm.instanceId}" />
+		<br/>
+		<b>Instance Type:</b> <c:out value="${sm.instanceType}" />
+		<br/>
+		<b>AMI Id:</b> <c:out value="${sm.amiId}" />
+		<br/>
+		<b>Public Hostname:</b> <c:out value="${sm.publicHostname}" />
+		<br/>
+		<b>Internal Hostname:</b> <c:out value="${sm.internalHostname}" />
+		<br/>
+
 	</p>
 </body>
 </html>

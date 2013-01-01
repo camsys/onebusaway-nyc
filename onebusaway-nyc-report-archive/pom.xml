@@ -139,7 +139,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
+                <bundle.location>/mnt/obanyc/oba-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
                 <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path><!-- assumes domain is set in resolv.conf -->
                 <tdm.host>tdm</tdm.host>
