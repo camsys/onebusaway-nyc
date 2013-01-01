@@ -54,7 +54,9 @@
             </props>
         </property>
     </bean>
-    
+
+    <bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyPartitionedInputQueueListenerTask"/>     
+
   	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyOutputQueueSenderServiceImpl">
   		<property name="isPrimaryInferenceInstance" value="true"/>
 	</bean>

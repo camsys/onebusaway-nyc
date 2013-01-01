@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.onebusaway.nyc.util.git.GitRepositoryHelper;
 import org.onebusaway.nyc.util.model.GitRepositoryState;
-import org.onebusaway.nyc.vehicle_tracking.impl.queue.PartitionedInputQueueListenerTask;
+import org.onebusaway.nyc.vehicle_tracking.impl.queue.InputQueueListenerTask;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 /**
  * Controller for git status. 
@@ -43,7 +43,7 @@ public class StatusController {
 	private OutputQueueSenderService queueSenderService;
 	
 	@Autowired
-	private PartitionedInputQueueListenerTask queueListener;
+	private InputQueueListenerTask queueListener;
 	
 	
   @RequestMapping(value="/status.do", method=RequestMethod.GET)

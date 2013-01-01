@@ -7,8 +7,8 @@ import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueL
  * we want to receive no actual real time queue input in that case.
  * 
  */
-public class DummyPartitionedInputQueueListenerTask implements
-    PartitionedInputQueueListener {
+public class DummyPartitionedInputQueueListenerTask extends InputQueueListenerTask
+     implements PartitionedInputQueueListener {
 
   @Override
   public String getDepotPartitionKey() {
@@ -24,5 +24,25 @@ public class DummyPartitionedInputQueueListenerTask implements
   public boolean processMessage(String address, String contents) {
     return true;
   }
+
+	public void startListenerThread() {
+  }
+
+	public String getQueueHost() {
+    return null;
+  }
+
+	public String getQueueName() {
+    return null;
+  }
+	
+	public String getQueueDisplayName() {
+    return null;
+  }
+
+	public Integer getQueuePort() {
+    return -1;
+  }
+
 
 }

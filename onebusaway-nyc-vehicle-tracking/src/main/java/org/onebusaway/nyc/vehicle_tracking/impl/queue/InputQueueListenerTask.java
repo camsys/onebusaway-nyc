@@ -84,6 +84,10 @@ public abstract class InputQueueListenerTask extends QueueListenerTask {
     }
   }
 
+  public String getDepotPartitionKey() {
+    return null;
+  }
+
   @Override
   public String getQueueHost() {
     return _configurationService.getConfigurationValueAsString(
