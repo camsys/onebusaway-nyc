@@ -111,6 +111,9 @@
   <bean id="depotFilePicker" class="org.onebusaway.nyc.transit_data_manager.api.sourceData.DepotAssignmentsSoapDownloadsFilePicker">
   	<constructor-arg type="java.lang.String" value="tdm.depotAssignsDownloadDir"/>
   </bean>
+  <bean id="depotFileDir" class="java.lang.String">
+    <constructor-arg type="java.lang.String" value="tdm.depotAssignsDownloadDir"/>
+  </bean>
   
   <bean id="vehiclePullInOutDataProviderService" class="org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutDataProviderServiceImpl" />
   

@@ -1,10 +1,13 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -36,14 +39,18 @@ import tcip_final_3_0_5_1.CPTVehicleIden;
 @Scope("request")
 public class DepotResource {
 
+	private static final String TEST_DEPOT = "TEST";
+	private static final String TEST_DEPOT_FILE = "testDepot.csv";
+
 	private static Logger _log = LoggerFactory.getLogger(DepotResource.class);
 
 	@Autowired
 	private JsonTool jsonTool;
-
+	
 	private DepotIdTranslator depotIdTranslator = null;
 	private DepotDataProviderService depotDataProviderService;
 	ModelCounterpartConverter<CPTVehicleIden, Vehicle> vehicleConverter;
+	private String depotDirKey;
 
 	public DepotResource() throws IOException {
 		try {
@@ -110,6 +117,13 @@ public class DepotResource {
 		// Then I need to get the data for the input depot
 		List<CPTVehicleIden> depotVehicles = data.getVehiclesByDepotNameStr(depotName);
 
+		// add support for testing/monitoring depot and vehicles
+		if (TEST_DEPOT.equalsIgnoreCase(depotName)) {
+			_log.info("looking for test depots in file=" + getDepotDir() + File.separator
+					+ TEST_DEPOT_FILE);
+			depotVehicles.addAll(getTestVehicles());
+		}
+		
 		List<Vehicle> depotVehiclesJson = new ArrayList<Vehicle>();
 
 		// now iterate through all the vehicles at that depot, converting each
@@ -139,6 +153,55 @@ public class DepotResource {
 
 	}
 
+	private Collection<CPTVehicleIden> getTestVehicles() {
+		List<CPTVehicleIden> testVehicles = new ArrayList<CPTVehicleIden>();
+		BufferedReader br = null;
+		try {
+			// look for test file
+			
+			File testFile = new File(getDepotDir() + File.separator
+					+ TEST_DEPOT_FILE);
+			// if present, load file
+			if (testFile.exists() && testFile.canRead()) {
+				br = new BufferedReader(new FileReader(testFile));
+				String line;
+				while ((line = br.readLine()) != null) {
+					testVehicles.add(parseCPTVehicleIden(line));
+				}
+				// translate vile to CPTVehicleIden
+			}
+		} catch (Exception any) {
+			_log.error("exception loading test vehicles:", any);
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (Exception bury) {
+					// bury it
+				}
+			}
+		}
+		// return
+		return testVehicles;
+	}
+
+
+
+	private CPTVehicleIden parseCPTVehicleIden(String line) {
+		if (line == null || line.indexOf(',') == -1) return null;
+		String[] elements = line.split(",");
+		CPTVehicleIden vehicle = new CPTVehicleIden();
+		try {
+			vehicle.setAgencyId(Long.parseLong(elements[0]));
+			vehicle.setVehicleId(Integer.parseInt(elements[1]));
+		} catch (NumberFormatException nfe) {
+			_log.error("invalid test vehicle=" + line, nfe);
+		}
+		return vehicle;
+	}
+
+
+
 	/**
 	 * @param depotDataProviderService the depotDataProviderService to set
 	 */
@@ -158,4 +221,14 @@ public class DepotResource {
 		this.vehicleConverter = vehicleConverter;
 	}
 
+	@Autowired
+	@Qualifier("depotFileDir")
+	public void setDepotDirKey(String depotDirKey) {
+		this.depotDirKey = depotDirKey;
+	}
+	
+	private String getDepotDir() {
+		String depotDir = System.getProperty(depotDirKey);
+		return depotDir;
+	}
 }
