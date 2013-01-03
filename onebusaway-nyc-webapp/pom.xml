@@ -12,11 +12,6 @@
 
 	<name>onebusaway-nyc-webapp</name>
 
-	<properties>
-		<xwiki.version>2.3.1</xwiki.version>
-		<xwiki.integration.version>0.0.2</xwiki.integration.version>
-	</properties>
-
 	<repositories>
 		<!-- Required for the xwiki-rendering-macros -->
 		<repository>

@@ -14,8 +14,6 @@
   
   
   	<properties>
-		<xwiki.version>2.3.1</xwiki.version>
-		<xwiki.integration.version>0.0.2</xwiki.integration.version>
 		<branding-webapp>{project.name}</branding-webapp>
 	</properties>
 
@@ -107,6 +105,69 @@
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>
 			</properties>
+		</profile>
+		<profile>
+			<id>eclipse-only</id>
+			<dependencies>
+					<!-- OneBusAway Dependencies -->
+				<dependency>
+					<groupId>org.onebusaway</groupId>
+					<artifactId>onebusaway-nyc-presentation</artifactId>
+					<version>2.0.13-SNAPSHOT</version>
+				</dependency>
+		
+				<dependency>
+					<groupId>org.onebusaway</groupId>
+					<artifactId>onebusaway-nyc-transit-data</artifactId>
+					<version>2.0.13-SNAPSHOT</version>
+				</dependency>
+				<dependency>
+					<groupId>org.onebusaway</groupId>
+					<artifactId>onebusaway-realtime-api</artifactId>
+					<version>${onebusaway.app-modules.version}</version>
+				</dependency>
+		
+				<dependency>
+					<groupId>org.onebusaway</groupId>
+					<artifactId>onebusaway-nyc-api-core</artifactId>
+					<version>2.0.13-SNAPSHOT</version>
+				</dependency>
+				<dependency>
+					<groupId>org.onebusaway</groupId>
+					<artifactId>onebusaway-nyc-util</artifactId>
+					<version>2.0.13-SNAPSHOT</version>
+				</dependency>
+				<dependency>
+					<groupId>commons-beanutils</groupId>
+					<artifactId>commons-beanutils</artifactId>
+					<version>1.8.0</version>
+				</dependency>
+				<dependency>
+					<groupId>org.onebusaway</groupId>
+					<artifactId>onebusaway-wiki-integration-tags</artifactId>
+					<version>${xwiki.integration.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.onebusaway</groupId>
+					<artifactId>onebusaway-wiki-integration-xwiki-impl</artifactId>
+					<version>${xwiki.integration.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.onebusaway</groupId>
+					<artifactId>onebusaway-wiki-integration-xwiki-struts-macros</artifactId>
+					<version>${xwiki.integration.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.onebusaway</groupId>
+					<artifactId>onebusaway-wiki-integration-xwiki-macros</artifactId>
+					<version>${xwiki.integration.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>com.dmurph</groupId>
+					<artifactId>JGoogleAnalyticsTracker</artifactId>
+					<version>1.2.2</version>
+				</dependency>
+			</dependencies>
 		</profile>
 	</profiles>
   <build>

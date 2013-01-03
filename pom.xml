@@ -25,6 +25,8 @@
         <onebusaway.nyc-tcip.version>2.0.2</onebusaway.nyc-tcip.version>
         <onebusaway.app-modules.version>1.1.5</onebusaway.app-modules.version>
         <gitDescribe>99999</gitDescribe>
+        <xwiki.version>2.3.1</xwiki.version>
+		<xwiki.integration.version>0.0.2</xwiki.integration.version>
     </properties>
 
     <repositories>
