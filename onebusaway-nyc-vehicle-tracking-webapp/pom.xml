@@ -243,12 +243,6 @@
         <!--  depot partition keys -->
         <!--  mainly useful for limiting data for development environments -->
         <profile>
-            <id>depots-all</id>
-            <properties>
-                <depot.partition.key>JG,CA,MA,MH,YU,100th,126,BPK,CAST,CHAR,CP,ECH,ENY,FLAT,FP,FRK,GH,GRAND,JAM,JFK,KB,LAG,MANVI,MJQ,NJL,QV,RVC,SPRCK,STF,ULPK,WF,YNK,YUK</depot.partition.key>
-            </properties>            
-        </profile>
-        <profile>
             <id>depots-one</id>
             <properties>
                 <depot.partition.key>YU</depot.partition.key>
