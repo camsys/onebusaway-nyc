@@ -130,7 +130,7 @@
 	    	<div id="map_header">
 			  	<div class="title">
 		   			<s:url var="url" value="/"></s:url>
-					<h1><a href="${url}">MTA Bus Time</a></h1>
+					<h1><a href="${url}"><s:property value="getText('main.title')" /></a></h1>
 		  		</div>	  	
 		  			
 		   	  	<ul>
@@ -197,7 +197,7 @@
 			<div id="cant-find">
 				<h2>Can't find your bus route?</h2>
 				<s:url var="url" namespace="/wiki/Help" action="Routes" />
-				<p>MTA Bus Time will be available NYC-wide by the end of 2013. <a href="${url}">Click here</a> to see which routes are currently available.</p>
+				<p><s:property value="getText('main.cantfindroute.text')" /> <a href="${url}">Click here</a> to see which routes are currently available.</p>
 			</div>
 			
 			<s:if test="globalServiceAlerts!=null">
@@ -235,7 +235,7 @@
 	   			<li id="wizard-col1">
 	   				<a data-placement="right" class="wizard_panel" rel="popover">
 	    				<div id="inner-col1">
-	    					<h2>New to Bus Time?</h2>
+	    					<h2>New to <s:property value="getText('main.application.name')" />?</h2>
 	    					<p>Click here for instructions:</p>
 	    					<p>Just a few easy steps!</p>
 	    				</div>
@@ -274,13 +274,17 @@
 		</div>
 		<div id="wizard_finaltip">
 			<div>
-				<p><span style="font-weight: bold;">Tips:</span> <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a> Bus Time is also available via <a id="wizard_mobile" rel="popover">Mobile Web</a> or <a id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
+				<p><span style="font-weight: bold;">Tips:</span> <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a> <s:property value="getText('main.application.name')" /> is also available via <a id="wizard_mobile" rel="popover">Mobile Web</a> or <a id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
 				<p>Remember your 6-digit Stopcode from the pop-ups or find it on a <a id="tips_code_popup" rel="popover" data-placement="above">bus stop pole box</a>.</p>
-				<p id="sharelinks"><a id="wizard_share" rel="popover">Share</a> this link and tell others about Bus Time!
-					<a href="http://twitter.com/MTAInsider" target="_new"><span class="ui-icon ui-icon-twitter"> &amp;nbsp; </span></a>
-					<a href="http://www.facebook.com/MTA.info" target="_new"><span class="ui-icon ui-icon-facebook"> &amp;nbsp; </span></a>
-					<a href="http://www.youtube.com/playlist?list=PL70B2273F7B23A5F3" target="_new"><span class="ui-icon ui-icon-youtube"> &amp;nbsp; </span></a>
-					<a href="http://www.flickr.com/photos/mtaphotos" target="_new"><span class="ui-icon ui-icon-flickr"> &amp;nbsp; </span></a>
+				<p id="sharelinks"><a id="wizard_share" rel="popover">Share</a> this link and tell others about <s:property value="getText('main.application.name')" />!
+					<s:set var="link" value="getText('main.agency.twitter.link')" />
+					<a href="${link}" target="_new"><span class="ui-icon ui-icon-twitter"> &amp;nbsp; </span></a>
+					<s:set var="link" value="getText('main.agency.facebook.link')" />
+					<a href="${link}" target="_new"><span class="ui-icon ui-icon-facebook"> &amp;nbsp; </span></a>
+					<s:set var="link" value="getText('main.agency.youtube.link')" />
+					<a href="${link}" target="_new"><span class="ui-icon ui-icon-youtube"> &amp;nbsp; </span></a>
+					<s:set var="link" value="getText('main.agency.flickr.link')" />
+					<a href="${link}" target="_new"><span class="ui-icon ui-icon-flickr"> &amp;nbsp; </span></a>
 				</p>
 			</div>
 			<a class="close"><span class="close_txt">Close</span> ×</a>

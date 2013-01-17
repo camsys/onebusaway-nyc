@@ -20,7 +20,7 @@
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>MTA Bus Time: <s:property value="title" /></title>
+<title><s:property value="getText('main.title')"/></title>
 
 <s:url var="url" value="/api/config">
 	<s:param name="v"><s:property value="cacheBreaker" /></s:param>
