@@ -82,6 +82,10 @@ public class ParticleFilter<OBS> {
    */
   private static boolean _enabledReproducibility = true;
 
+  public static void setDebugEnabled(boolean enabled) {
+	_debugEnabled = enabled;
+  }
+  
   public static boolean getDebugEnabled() {
     return _debugEnabled;
   }
