@@ -430,7 +430,7 @@ public class BlocksFromObservationServiceImpl implements
       tripIds.addAll(_runService.getTripIdsForRunId(runId));
     }
 
-    if (tripIds.isEmpty()) {
+    if (tripIds.isEmpty() && !_destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc)) {
       _log.info("no trips found for dsc: " + dsc);
       return;
     }
