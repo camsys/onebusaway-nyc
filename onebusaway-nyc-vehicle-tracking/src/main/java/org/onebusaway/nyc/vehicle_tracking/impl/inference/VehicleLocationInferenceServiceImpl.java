@@ -159,7 +159,7 @@ public class VehicleLocationInferenceServiceImpl implements
     verifyVehicleResultMappingToCurrentBundle();
     _bypassInference = false;
 
-    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
+    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId(), false);    
     synchronized(i) {    
     	final Future<?> result = _executorService.submit(new ProcessingTask(i, record));
     	_bundleManagementService.registerInferenceProcessingThread(result);
@@ -172,7 +172,7 @@ public class VehicleLocationInferenceServiceImpl implements
     verifyVehicleResultMappingToCurrentBundle();
     _bypassInference = false;
 
-    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
+    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId(), true);    
     synchronized(i) {
     	final Future<?> result = _executorService.submit(new ProcessingTask(i, record));
     	_bundleManagementService.registerInferenceProcessingThread(result);
@@ -184,7 +184,7 @@ public class VehicleLocationInferenceServiceImpl implements
       NycTestInferredLocationRecord record) {
     _bypassInference = true;
 
-    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
+    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId(), true);    
     synchronized(i) {
     	final Future<?> result = _executorService.submit(new ProcessingTask(i, record));
     	_bundleManagementService.registerInferenceProcessingThread(result);
@@ -298,7 +298,7 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
 
-    final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId);    
+    final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId, false);    
     synchronized(i) {
     	final Future<?> result = _executorService.submit(new ProcessingTask(i, r));
     	_bundleManagementService.registerInferenceProcessingThread(result);
@@ -419,7 +419,7 @@ public class VehicleLocationInferenceServiceImpl implements
   /****
    * Private Methods
    ****/
-  private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
+  private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId, boolean simulation) {
 	  synchronized(_vehicleInstancesByVehicleId) {
 		  VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
 	      if (instance == null) {
@@ -427,6 +427,12 @@ public class VehicleLocationInferenceServiceImpl implements
 	        instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
 	        if (instance == null)
 	          instance = newInstance;
+
+	        if(simulation) {
+	        	final DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
+	        	newInstance.setOperatorAssignmentService(opSvc);
+	        	_log.warn("Set operator assignment service to dummy for debugging!");
+	        }
 	      }	
 	      return instance;
 	  }
