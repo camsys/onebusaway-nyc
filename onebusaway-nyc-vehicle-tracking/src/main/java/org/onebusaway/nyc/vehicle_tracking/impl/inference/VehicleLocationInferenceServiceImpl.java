@@ -114,8 +114,6 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 5);
 
-  private boolean _bypassInference = false;
-
   private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = 
 		  new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
@@ -154,43 +152,58 @@ public class VehicleLocationInferenceServiceImpl implements
    * Service Methods
    ****/
 
-  @Override
-  public void handleNycRawLocationRecord(NycRawLocationRecord record) {
-    verifyVehicleResultMappingToCurrentBundle();
-    _bypassInference = false;
-
-    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId(), false);    
-    synchronized(i) {    
-    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record));
-    	_bundleManagementService.registerInferenceProcessingThread(result);
-    }
-  }
-
+  /**
+   * This method is used by the simulator to inject a trace into the inference process.
+   */
   @Override
   public void handleNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
-    _bypassInference = false;
 
-    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId(), true);    
+    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
     synchronized(i) {
-    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record));
+    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record, true, false));
     	_bundleManagementService.registerInferenceProcessingThread(result);
     }
   }
-
+  
+  /**
+   * This method is used by the simulator to inject a trace into the inference PIPELINE, but not through
+   * the inference algorithm itself. 
+   */
   @Override
   public void handleBypassUpdateForNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
-    _bypassInference = true;
+	verifyVehicleResultMappingToCurrentBundle();
 
-    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId(), true);    
+    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
     synchronized(i) {
-    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record));
+    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record, true, true));
     	_bundleManagementService.registerInferenceProcessingThread(result);
     }
   }
 
+  /**
+   * This method is used by the simulator to inject real time records into the inference
+   * process. This is used as a replacement to the queue infrastructure by some users, so
+   * we don't handle this as a simulation.
+   */
+  @Override
+  public void handleNycRawLocationRecord(NycRawLocationRecord record) {
+    verifyVehicleResultMappingToCurrentBundle();
+
+    VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
+    synchronized(i) {    
+    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record, false, false));
+    	_bundleManagementService.registerInferenceProcessingThread(result);
+    }
+  }
+
+  /**
+   * This method is used by the queue listener to process raw messages from the message queue. 
+   *
+   * ***This is the main entry point for data in the MTA project.***
+   */
   @Override
   public void handleRealtimeEnvelopeRecord(RealtimeEnvelope envelope) {
     final CcLocationReport message = envelope.getCcLocationReport();
@@ -298,9 +311,9 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
 
-    final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId, false);    
+    final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId);    
     synchronized(i) {
-    	final Future<?> result = _executorService.submit(new ProcessingTask(i, r));
+    	final Future<?> result = _executorService.submit(new ProcessingTask(i, r, false, false));
     	_bundleManagementService.registerInferenceProcessingThread(result);
     }
   }
@@ -419,7 +432,7 @@ public class VehicleLocationInferenceServiceImpl implements
   /****
    * Private Methods
    ****/
-  private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId, boolean simulation) {
+  private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
 	  synchronized(_vehicleInstancesByVehicleId) {
 		  VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
 	      if (instance == null) {
@@ -427,12 +440,6 @@ public class VehicleLocationInferenceServiceImpl implements
 	        instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
 	        if (instance == null)
 	          instance = newInstance;
-
-	        if(simulation) {
-	        	final DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
-	        	newInstance.setOperatorAssignmentService(opSvc);
-	        	_log.warn("Set operator assignment service to dummy for debugging!");
-	        }
 	      }	
 	      return instance;
 	  }
@@ -558,52 +565,77 @@ public class VehicleLocationInferenceServiceImpl implements
 
     private final AgencyAndId _vehicleId;
 
-    private final NycRawLocationRecord _inferenceRecord;
+    private final NycRawLocationRecord _nycRawLocationRecord;
 
     private NycTestInferredLocationRecord _nycTestInferredLocationRecord;
 
     private final VehicleInferenceInstance _inferenceInstance;
+
+    private boolean _bypass = false;
     
     private boolean _simulation = false;
     
-    public ProcessingTask(VehicleInferenceInstance inferenceInstance, NycRawLocationRecord record) {
+    public ProcessingTask(VehicleInferenceInstance inferenceInstance, NycRawLocationRecord record, 
+    		boolean simulation, boolean bypass) {
       _inferenceInstance = inferenceInstance;
       _vehicleId = record.getVehicleId();
-      _inferenceRecord = record;
+
+      _nycRawLocationRecord = record;
+      
+      _simulation = simulation;
+      _bypass = bypass;
     }
 
-    public ProcessingTask(VehicleInferenceInstance inferenceInstance, NycTestInferredLocationRecord record) {
-      _vehicleId = record.getVehicleId();
+    public ProcessingTask(VehicleInferenceInstance inferenceInstance, NycTestInferredLocationRecord record, 
+    		boolean simulation, boolean bypass) {
       _inferenceInstance = inferenceInstance;
+      _vehicleId = record.getVehicleId();      
+      
       _nycTestInferredLocationRecord = record;
-      _inferenceRecord = RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record);
-      _simulation = true;
+      _nycRawLocationRecord = RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record);
+
+      _simulation = simulation;
+      _bypass = bypass;
     }
 
     @Override
     public void run() {
       try {
+
+    	// operator assignment service in simulation case: returns a 1:1 result to what the trace indicates is the 
+    	// true operator assignment.
         if (_simulation) {
+  	      final DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
+
           final String assignedRun = _nycTestInferredLocationRecord.getAssignedRunId();
           final String operatorId = _nycTestInferredLocationRecord.getOperatorId();
           if (!Strings.isNullOrEmpty(assignedRun) && !Strings.isNullOrEmpty(operatorId)) {
-            DummyOperatorAssignmentServiceImpl opSvc;
-            if ((_inferenceInstance.getOperatorAssignmentService() instanceof DummyOperatorAssignmentServiceImpl)) {
-              opSvc = (DummyOperatorAssignmentServiceImpl) _inferenceInstance.getOperatorAssignmentService();
               final String[] runParts = assignedRun.split("-");
               opSvc.setOperatorAssignment(new AgencyAndId(
-                  _inferenceRecord.getVehicleId().getAgencyId(), operatorId),
+                  _nycRawLocationRecord.getVehicleId().getAgencyId(), operatorId),
                   runParts[1], runParts[0]);
-            }
           }
+
+          _inferenceInstance.setOperatorAssignmentService(opSvc);
+  	      _log.warn("Set operator assignment service to dummy for debugging!");
         }
 
-        final boolean passOnRecord = sendRecord(_inferenceInstance);
+        // bypass/process record through inference
+        boolean inferenceSuccess = false;
+        if (_nycRawLocationRecord != null) {
+        	if (_bypass == true) {
+        		inferenceSuccess = _inferenceInstance.handleBypassUpdate(_nycTestInferredLocationRecord);
+        	} else {
+        		inferenceSuccess = _inferenceInstance.handleUpdate(_nycRawLocationRecord);
+        	}
+        }
 
-        if (passOnRecord) {
-          // send input "actuals" as inferred result to output queue
-          if (_bypassInference == true) {
-            final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(_nycTestInferredLocationRecord);
+        if (inferenceSuccess) {
+
+          // send input "actuals" as inferred result to output queue to bypass inference process
+          if (_bypass == true) {
+            final NycQueuedInferredLocationBean record = 
+            		RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(_nycTestInferredLocationRecord);
             record.setVehicleId(_vehicleId.toString());
 
             // fix up the service date if we're shifting the dates of the record to now, since
@@ -621,8 +653,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
           // send inferred result to output queue
           } else {
-            // management bean (becomes part of inference bean)
-            final NycVehicleManagementStatusBean managementRecord = _inferenceInstance.getCurrentManagementState();
+        	final NycVehicleManagementStatusBean managementRecord = _inferenceInstance.getCurrentManagementState();
             managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
             managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
 
@@ -631,7 +662,6 @@ public class VehicleLocationInferenceServiceImpl implements
               managementRecord.setActiveBundleId(currentBundle.getId());
             }
 
-            // inference result bean
             final NycQueuedInferredLocationBean record = _inferenceInstance.getCurrentStateAsNycQueuedInferredLocationBean();
             record.setVehicleId(_vehicleId.toString());
             record.setManagementRecord(managementRecord);
@@ -641,28 +671,12 @@ public class VehicleLocationInferenceServiceImpl implements
         }
       
       } catch (final ProjectionException e) {
-        _observationCache.purge(_vehicleId);
-
+    	// discard this one
       } catch (final Throwable ex) {
-        _observationCache.purge(_vehicleId);
-        _log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", ex);
-        
+        _log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", ex);        
         resetVehicleLocation(_vehicleId);
+        _observationCache.purge(_vehicleId);    	  
       }
-    }
-
-    // sends the record to the inference engine and returns a boolean 
-    // of whether to send the result to the queue or not.
-    private boolean sendRecord(VehicleInferenceInstance existing) {
-      if (_inferenceRecord != null) {
-        if (_bypassInference == true) {
-          return existing.handleBypassUpdate(_nycTestInferredLocationRecord);
-        } else {
-          return existing.handleUpdate(_inferenceRecord);
-        }
-      }
-
-      return false;
     }
   }
 

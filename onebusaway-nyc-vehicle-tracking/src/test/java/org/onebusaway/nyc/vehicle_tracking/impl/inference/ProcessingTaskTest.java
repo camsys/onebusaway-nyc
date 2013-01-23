@@ -60,7 +60,7 @@ public class ProcessingTaskTest {
 
     service.setApplicationContext(appContext);
 
-    final ProcessingTask task = service.new ProcessingTask(vehInfInst, infLocationRec);
+    final ProcessingTask task = service.new ProcessingTask(vehInfInst, infLocationRec, false, false);
     task.run();
 
     // verify(mgmtStatus).setDepotId(DEPOT);
