@@ -87,12 +87,12 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
               + Math.max(distAlongErrorSample, -distAlongPrior);
         } else {
 
-          final double prevDistToNextStop = SphericalGeometryLibrary.distanceFaster(
-              obs.getPreviousObservation().getLocation().getLat(), obs.getPreviousObservation().getLocation().getLon(),
-              nextStop.getStopTime().getStop().getStopLocation().getLat(), nextStop.getStopTime().getStop().getStopLocation().getLon());
-          final double currentDistToNextStop = SphericalGeometryLibrary.distanceFaster(
-              obs.getLocation().getLat(),  obs.getLocation().getLon(),
-              nextStop.getStopTime().getStop().getStopLocation().getLat(), nextStop.getStopTime().getStop().getStopLocation().getLon());
+          final double prevDistToNextStop = SphericalGeometryLibrary.distance(
+              obs.getPreviousObservation().getLocation(),
+              nextStop.getStopTime().getStop().getStopLocation());
+          final double currentDistToNextStop = SphericalGeometryLibrary.distance(
+              obs.getLocation(),
+              nextStop.getStopTime().getStop().getStopLocation());
 
           double distAlongPrior = prevDistToNextStop - currentDistToNextStop;
 
@@ -171,8 +171,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
        */
       if (JourneyStateTransitionModel.isLocationOnATrip(blockLocation)) {
         final double impliedVelocity = obs.getDistanceMoved() / obs.getTimeDelta();
-        timeToGetToCurrentTimeLoc = SphericalGeometryLibrary.distanceFaster(blockLocation.getLocation().getLat(), blockLocation.getLocation().getLon(),
-            obs.getLocation().getLat(), obs.getLocation().getLon()) / impliedVelocity;
+        timeToGetToCurrentTimeLoc = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
+            obs.getLocation()) / impliedVelocity;
       } else {
         timeToGetToCurrentTimeLoc = 0d;
       }

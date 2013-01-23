@@ -418,8 +418,8 @@ public class EdgeLikelihood implements SensorModelRule {
   private static double getAvgVelocityToNextStop(Observation obs, BlockState blockState) {
     
     StopTimeEntry stop =  blockState.getBlockLocation().getNextStop().getStopTime();
-    final double distToDest = SphericalGeometryLibrary.distanceFaster(obs.getLocation().getLat(), obs.getLocation().getLon(),
-         stop.getStop().getStopLocation().getLat(), stop.getStop().getStopLocation().getLon());
+    final double distToDest = SphericalGeometryLibrary.distance(obs.getLocation(),
+         stop.getStop().getStopLocation());
     final int currSchedTime = (int)(obs.getTime() - blockState.getBlockInstance().getServiceDate())/1000;
     
     final double expectedVelocity;

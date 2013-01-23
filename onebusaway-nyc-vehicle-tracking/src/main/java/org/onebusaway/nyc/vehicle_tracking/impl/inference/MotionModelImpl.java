@@ -199,8 +199,8 @@ public class MotionModelImpl implements MotionModel<Observation> {
         if (JourneyStateTransitionModel.isLocationOnATrip(parentBlockState.getBlockState())) {
           final double tripDab = parentBlockState.getBlockState().getBlockLocation().getDistanceAlongBlock()
               - parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock();
-          final double distanceMoved = SphericalGeometryLibrary.distanceFaster(obs.getLocation().getLat(), obs.getLocation().getLon(), 
-              obs.getPreviousObservation().getLocation().getLat(), obs.getPreviousObservation().getLocation().getLon());
+          final double distanceMoved = SphericalGeometryLibrary.distance(obs.getLocation(), 
+              obs.getPreviousObservation().getLocation());
           if (tripDab + distanceMoved + _distancePastEndMargin >= 
               parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getTrip().getTotalTripDistance()) {
             return true;
@@ -590,9 +590,8 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
       final MotionState motionState = parentState.getMotionState();
 
-      final double d = SphericalGeometryLibrary.distanceFaster(
-          motionState.getLastInMotionLocation().getLat(), motionState.getLastInMotionLocation().getLon(), 
-          obs.getLocation().getLat(), obs.getLocation().getLon());
+      final double d = SphericalGeometryLibrary.distance(
+          motionState.getLastInMotionLocation(), obs.getLocation());
 
       /*
        * FIXME there's an inconsistency here (with having sampled
