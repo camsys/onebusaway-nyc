@@ -13,7 +13,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicl
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.api.service.DepotDataProviderService;
 import org.onebusaway.nyc.transit_data_manager.persistence.model.DepotRecord;
-import org.onebusaway.nyc.transit_data_manager.persistence.service.SpearDataPersistenceService;
+import org.onebusaway.nyc.transit_data_manager.persistence.service.DepotDataPersistenceService;
 import org.onebusaway.nyc.transit_data_manager.util.DateUtility;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.slf4j.Logger;
@@ -27,20 +27,20 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 
 /**
- * Default implementation of {@link SpearDataPersistenceService}
+ * Default implementation of {@link DepotDataPersistenceService}
  * @author abelsare
  *
  */
-public class SpearDataPersistenceServiceImpl implements SpearDataPersistenceService {
+public class DepotDataPersistenceServiceImpl implements DepotDataPersistenceService {
 
 	private DepotDataProviderService depotDataProviderService;
 	private DepotIdTranslator depotIdTranslator;
 	private HibernateTemplate hibernateTemplate;
 	private LoggingService loggingService;
 	
-	private static final Logger log = LoggerFactory.getLogger(SpearDataPersistenceServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(DepotDataPersistenceServiceImpl.class);
 	
-	public SpearDataPersistenceServiceImpl() {
+	public DepotDataPersistenceServiceImpl() {
 		try {
 			depotIdTranslator = new DepotIdTranslator(new File(System.getProperty("tdm.depotIdTranslationFile")));
 		} catch (IOException e) {

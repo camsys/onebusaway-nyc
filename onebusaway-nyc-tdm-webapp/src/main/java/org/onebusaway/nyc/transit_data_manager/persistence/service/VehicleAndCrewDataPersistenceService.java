@@ -8,7 +8,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
  * @author abelsare
  *
  */
-public interface UTSDataPersistenceService {
+public interface VehicleAndCrewDataPersistenceService {
 	
 	/**
 	 * Persists vehicle pullout data from the final file per service date.

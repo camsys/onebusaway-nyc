@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.job;
 
-import org.onebusaway.nyc.transit_data_manager.persistence.service.SpearDataPersistenceService;
-import org.onebusaway.nyc.transit_data_manager.persistence.service.UTSDataPersistenceService;
+import org.onebusaway.nyc.transit_data_manager.persistence.service.DepotDataPersistenceService;
+import org.onebusaway.nyc.transit_data_manager.persistence.service.VehicleAndCrewDataPersistenceService;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -21,22 +21,22 @@ public class TDMDataPersisterJob extends QuartzJobBean {
 	@Override
 	protected void executeInternal(JobExecutionContext executionContext)
 			throws JobExecutionException {
-		persistUTSData(executionContext);
-		persistSpearData(executionContext);
+		persistvehicleAndCrewData(executionContext);
+		persistDepotData(executionContext);
 	}
 	
-	private void persistUTSData(JobExecutionContext executionContext) {
-		UTSDataPersistenceService utsDataPersistenceService = (UTSDataPersistenceService) executionContext.getJobDetail().
-				getJobDataMap().get("utsDataPersistenceService");
+	private void persistvehicleAndCrewData(JobExecutionContext executionContext) {
+		VehicleAndCrewDataPersistenceService vehicleAndCrewDataPersistenceService = (VehicleAndCrewDataPersistenceService) executionContext.getJobDetail().
+				getJobDataMap().get("vehicleAndCrewDataPersistenceService");
 		
-		persistCrewAssignmentData(utsDataPersistenceService);
-		persistVehiclePipoData(utsDataPersistenceService);
+		persistCrewAssignmentData(vehicleAndCrewDataPersistenceService);
+		persistVehiclePipoData(vehicleAndCrewDataPersistenceService);
 		
 	}
 	
-	private void persistSpearData(JobExecutionContext executionContext) {
-		SpearDataPersistenceService spearDataPersistenceService = (SpearDataPersistenceService) executionContext.getJobDetail().
-				getJobDataMap().get("spearDataPersistenceService");
+	private void persistDepotData(JobExecutionContext executionContext) {
+		DepotDataPersistenceService depotDataPersistenceService = (DepotDataPersistenceService) executionContext.getJobDetail().
+				getJobDataMap().get("depotDataPersistenceService");
 		
 		//Persist depot data
 		boolean retry = true;
@@ -44,7 +44,7 @@ public class TDMDataPersisterJob extends QuartzJobBean {
 		while(retry) {
 			try {
 				_log.info("persisting depot data");
-				spearDataPersistenceService.saveDepotData();
+				depotDataPersistenceService.saveDepotData();
 				retry = false;
 			} catch(DataAccessResourceFailureException e) {
 				//Retry once if there is an exception
@@ -61,14 +61,14 @@ public class TDMDataPersisterJob extends QuartzJobBean {
 		}
 	}
 	
-	private void persistVehiclePipoData(UTSDataPersistenceService utsDataPersistenceService) {
+	private void persistVehiclePipoData(VehicleAndCrewDataPersistenceService vehicleAndCrewDataPersistenceService) {
 		//Persist vehicle PIPO data
 		boolean retry = true;
 		int retryCount = 0;
 		while(retry) {
 			try {
 				_log.info("persisting vehicle PIPO data");
-				utsDataPersistenceService.saveVehiclePulloutData();
+				vehicleAndCrewDataPersistenceService.saveVehiclePulloutData();
 				retry = false;
 			} catch(DataAccessResourceFailureException e) {
 				//Retry once if there is an exception
@@ -85,14 +85,14 @@ public class TDMDataPersisterJob extends QuartzJobBean {
 		}
 	}
 	
-	private void persistCrewAssignmentData(UTSDataPersistenceService utsDataPersistenceService) {
+	private void persistCrewAssignmentData(VehicleAndCrewDataPersistenceService vehicleAndCrewDataPersistenceService) {
 		//Persist crew assignment data
 		boolean retry = true;
 		int retryCount = 0;
 		while(retry) {
 			try {
 				_log.info("persisting crew assignment data");
-				utsDataPersistenceService.saveCrewAssignmentData();
+				vehicleAndCrewDataPersistenceService.saveCrewAssignmentData();
 				retry = false;
 			} catch(DataAccessResourceFailureException e) {
 				//Retry once if there is an exception
