@@ -56,7 +56,7 @@ public class MovedLikelihood implements SensorModelRule {
       return 0.5d;
     }
 
-    final double d = SphericalGeometryLibrary.distance(
+    final double d = SphericalGeometryLibrary.distanceFaster(
         prevRecord.getLatitude(), prevRecord.getLongitude(),
         obs.getLocation().getLat(), obs.getLocation().getLon());
 

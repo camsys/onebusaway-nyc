@@ -82,9 +82,9 @@ public class Observation implements Comparable<Observation> {
       this._orientation = Double.NaN;
     } else {
       this._timeDelta = (timestamp - previousObservation.getTime()) / 1000d;
-      this._distanceMoved = SphericalGeometryLibrary.distance(
-          previousObservation.getLocation(),
-          _point.toCoordinatePoint());
+      this._distanceMoved = SphericalGeometryLibrary.distanceFaster(
+          previousObservation.getLocation().getLat(), previousObservation.getLocation().getLon(),
+          _point.toCoordinatePoint().getLat(), _point.toCoordinatePoint().getLon());
       if (_distanceMoved == 0d) {
         this._orientation = previousObservation.getOrientation();
       } else {

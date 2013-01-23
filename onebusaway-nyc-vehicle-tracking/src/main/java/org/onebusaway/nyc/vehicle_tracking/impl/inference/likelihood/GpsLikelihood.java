@@ -60,7 +60,7 @@ public class GpsLikelihood implements SensorModelRule {
       if (state.getBlockStateObservation().isSnapped()) {
         final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
         final ProjectedPoint p2 = obs.getPoint();
-        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        final double d = SphericalGeometryLibrary.distanceFaster(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
         result.addResultAsAnd("gps(deadhead-after)", pGps);
@@ -76,7 +76,7 @@ public class GpsLikelihood implements SensorModelRule {
 
       final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
       final ProjectedPoint p2 = obs.getPoint();
-      final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+      final double d = SphericalGeometryLibrary.distanceFaster(p1.getLat(),
           p1.getLon(), p2.getLat(), p2.getLon());
       final double pGps = FoldedNormalDist.density(inProgressGpsMean,
           gpsStdDev, d);
@@ -87,7 +87,7 @@ public class GpsLikelihood implements SensorModelRule {
       if (state.getBlockStateObservation().isSnapped()) {
         final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
         final ProjectedPoint p2 = obs.getPoint();
-        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        final double d = SphericalGeometryLibrary.distanceFaster(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
         result.addResultAsAnd("gps(deadhead-before)", pGps);
@@ -101,7 +101,7 @@ public class GpsLikelihood implements SensorModelRule {
       if (state.getBlockStateObservation().isSnapped()) {
         final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
         final ProjectedPoint p2 = obs.getPoint();
-        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        final double d = SphericalGeometryLibrary.distanceFaster(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
 
@@ -119,7 +119,7 @@ public class GpsLikelihood implements SensorModelRule {
       if (state.getBlockStateObservation().isSnapped()) {
         final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
         final ProjectedPoint p2 = obs.getPoint();
-        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        final double d = SphericalGeometryLibrary.distanceFaster(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
         result.addResultAsAnd("gps(deadhead-during initial)", pGps);
@@ -134,7 +134,7 @@ public class GpsLikelihood implements SensorModelRule {
       if (state.getBlockStateObservation().isSnapped()) {
         final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
         final ProjectedPoint p2 = obs.getPoint();
-        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        final double d = SphericalGeometryLibrary.distanceFaster(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
         result.addResultAsAnd("gps(layover-during initial)", pGps);

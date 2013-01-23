@@ -443,7 +443,7 @@ public class BlockStateService {
 
 	      final Coordinate startOfLine = line.extractPoint(line.getStartIndex());
 	      final double distTraveledOnLine = 
-	    		  SphericalGeometryLibrary.distance(pointOnLine.y, pointOnLine.x, startOfLine.y, startOfLine.x);
+	    		  SphericalGeometryLibrary.distanceFaster(pointOnLine.y, pointOnLine.x, startOfLine.y, startOfLine.x);
 
 		  final double distanceAlongShape = tripInfo.getDistanceFrom()
 				  + distTraveledOnLine;
@@ -545,7 +545,8 @@ public class BlockStateService {
         }
         
         final double dist = 
-        		SphericalGeometryLibrary.distance(observation.getLocation(), location.getLocation());
+        		SphericalGeometryLibrary.distanceFaster(observation.getLocation().getLat(), observation.getLocation().getLon(), 
+        				location.getLocation().getLat(), location.getLocation().getLon());
         thisMin.add(dist, location);
       }
 
