@@ -330,7 +330,7 @@ public class QrCodeGeneratorResource {
       int datafileDescriptionIdx = 3;
 
       // The various strings that are basically constant.
-      String datafileFilename = "hastus_datafile.txt";
+      String datafileFilename = "datafile.txt";
       String datafileKeywordValue = "stpattach";
       String datafileDescriptionReplaceStr = "QR Code for stop ~~STOP_ID~~";
       String datafileDescriptionStopIdReplaceToken = "~~STOP_ID~~";

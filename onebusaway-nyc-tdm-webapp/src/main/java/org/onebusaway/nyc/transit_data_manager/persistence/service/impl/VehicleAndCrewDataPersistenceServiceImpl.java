@@ -27,7 +27,7 @@ import org.onebusaway.nyc.transit_data_manager.api.service.CrewAssignmentDataPro
 import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutDataProviderService;
 import org.onebusaway.nyc.transit_data_manager.persistence.model.CrewAssignmentRecord;
 import org.onebusaway.nyc.transit_data_manager.persistence.model.VehiclePipoRecord;
-import org.onebusaway.nyc.transit_data_manager.persistence.service.UTSDataPersistenceService;
+import org.onebusaway.nyc.transit_data_manager.persistence.service.VehicleAndCrewDataPersistenceService;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +39,11 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 
 
 /**
- * Default implementation of {@link UTSDataPersistenceService}
+ * Default implementation of {@link VehicleAndCrewDataPersistenceService}
  * @author abelsare
  *
  */
-public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
+public class VehicleAndCrewDataPersistenceServiceImpl implements VehicleAndCrewDataPersistenceService{
 
 	private VehiclePullInOutDataProviderService vehiclePullInOutDataProviderService;
 	private CrewAssignmentDataProviderService crewAssignmentDataProviderService;
@@ -51,9 +51,9 @@ public class UTSDataPersistenceServiceImpl implements UTSDataPersistenceService{
 	private HibernateTemplate hibernateTemplate;
 	private LoggingService loggingService;
 	
-	private static final Logger log = LoggerFactory.getLogger(UTSDataPersistenceServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(VehicleAndCrewDataPersistenceServiceImpl.class);
 	
-	public UTSDataPersistenceServiceImpl() {
+	public VehicleAndCrewDataPersistenceServiceImpl() {
 		try {
 			depotIdTranslator = new DepotIdTranslator(new File(System.getProperty("tdm.depotIdTranslationFile")));
 		} catch (IOException e) {

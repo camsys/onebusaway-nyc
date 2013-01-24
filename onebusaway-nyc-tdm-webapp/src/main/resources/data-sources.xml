@@ -118,8 +118,8 @@
 		<property name="jobClass" value="org.onebusaway.nyc.transit_data_manager.job.TDMDataPersisterJob" />
 		<property name="jobDataAsMap">
 			<map>
-      			<entry key="utsDataPersistenceService" value-ref="utsDataPersistenceService"/>
-      			<entry key="spearDataPersistenceService" value-ref="spearDataPersistenceService"/>
+      			<entry key="vehicleAndCrewDataPersistenceService" value-ref="vehicleAndCrewDataPersistenceService"/>
+      			<entry key="depotDataPersistenceService" value-ref="depotDataPersistenceService"/>
      		</map>
 		</property>
 	</bean>

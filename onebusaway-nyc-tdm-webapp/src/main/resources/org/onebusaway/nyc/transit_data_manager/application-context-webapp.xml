@@ -121,8 +121,8 @@
   
   <bean id="depotDataProviderService" class="org.onebusaway.nyc.transit_data_manager.api.service.DepotDataProviderServiceImpl" />
   
-  <bean id="utsDataPersistenceService" class="org.onebusaway.nyc.transit_data_manager.persistence.service.impl.UTSDataPersistenceServiceImpl" />
+  <bean id="vehicleAndCrewDataPersistenceService" class="org.onebusaway.nyc.transit_data_manager.persistence.service.impl.VehicleAndCrewDataPersistenceServiceImpl" />
   
-  <bean id="spearDataPersistenceService" class="org.onebusaway.nyc.transit_data_manager.persistence.service.impl.SpearDataPersistenceServiceImpl" />
+  <bean id="depotDataPersistenceService" class="org.onebusaway.nyc.transit_data_manager.persistence.service.impl.DepotDataPersistenceServiceImpl" />
   
 </beans>
