@@ -15,11 +15,11 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood;
 
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.springframework.stereotype.Component;
 
 import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
@@ -56,7 +56,7 @@ public class MovedLikelihood implements SensorModelRule {
       return 0.5d;
     }
 
-    final double d = SphericalGeometryLibrary.distance(
+    final double d = TurboButton.distance(
         prevRecord.getLatitude(), prevRecord.getLongitude(),
         obs.getLocation().getLat(), obs.getLocation().getLon());
 

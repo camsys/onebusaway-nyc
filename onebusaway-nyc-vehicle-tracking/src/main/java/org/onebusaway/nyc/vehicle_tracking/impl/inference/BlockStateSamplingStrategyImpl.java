@@ -22,6 +22,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.GpsLikeliho
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
@@ -87,10 +88,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
               + Math.max(distAlongErrorSample, -distAlongPrior);
         } else {
 
-          final double prevDistToNextStop = SphericalGeometryLibrary.distance(
+          final double prevDistToNextStop = TurboButton.distance(
               obs.getPreviousObservation().getLocation(),
               nextStop.getStopTime().getStop().getStopLocation());
-          final double currentDistToNextStop = SphericalGeometryLibrary.distance(
+          final double currentDistToNextStop = TurboButton.distance(
               obs.getLocation(),
               nextStop.getStopTime().getStop().getStopLocation());
 
@@ -171,7 +172,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
        */
       if (JourneyStateTransitionModel.isLocationOnATrip(blockLocation)) {
         final double impliedVelocity = obs.getDistanceMoved() / obs.getTimeDelta();
-        timeToGetToCurrentTimeLoc = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
+        timeToGetToCurrentTimeLoc = TurboButton.distance(blockLocation.getLocation(),
             obs.getLocation()) / impliedVelocity;
       } else {
         timeToGetToCurrentTimeLoc = 0d;

@@ -19,6 +19,7 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 
@@ -82,7 +83,7 @@ public class Observation implements Comparable<Observation> {
       this._orientation = Double.NaN;
     } else {
       this._timeDelta = (timestamp - previousObservation.getTime()) / 1000d;
-      this._distanceMoved = SphericalGeometryLibrary.distance(
+      this._distanceMoved = TurboButton.distance(
           previousObservation.getLocation(),
           _point.toCoordinatePoint());
       if (_distanceMoved == 0d) {

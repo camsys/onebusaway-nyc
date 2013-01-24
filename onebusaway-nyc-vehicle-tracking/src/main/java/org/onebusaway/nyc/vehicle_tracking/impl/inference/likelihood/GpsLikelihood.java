@@ -16,16 +16,15 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -60,7 +59,7 @@ public class GpsLikelihood implements SensorModelRule {
       if (state.getBlockStateObservation().isSnapped()) {
         final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
         final ProjectedPoint p2 = obs.getPoint();
-        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        final double d = TurboButton.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
         result.addResultAsAnd("gps(deadhead-after)", pGps);
@@ -76,7 +75,7 @@ public class GpsLikelihood implements SensorModelRule {
 
       final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
       final ProjectedPoint p2 = obs.getPoint();
-      final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+      final double d = TurboButton.distance(p1.getLat(),
           p1.getLon(), p2.getLat(), p2.getLon());
       final double pGps = FoldedNormalDist.density(inProgressGpsMean,
           gpsStdDev, d);
@@ -87,7 +86,7 @@ public class GpsLikelihood implements SensorModelRule {
       if (state.getBlockStateObservation().isSnapped()) {
         final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
         final ProjectedPoint p2 = obs.getPoint();
-        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        final double d = TurboButton.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
         result.addResultAsAnd("gps(deadhead-before)", pGps);
@@ -101,7 +100,7 @@ public class GpsLikelihood implements SensorModelRule {
       if (state.getBlockStateObservation().isSnapped()) {
         final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
         final ProjectedPoint p2 = obs.getPoint();
-        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        final double d = TurboButton.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
 
@@ -119,7 +118,7 @@ public class GpsLikelihood implements SensorModelRule {
       if (state.getBlockStateObservation().isSnapped()) {
         final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
         final ProjectedPoint p2 = obs.getPoint();
-        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        final double d = TurboButton.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
         result.addResultAsAnd("gps(deadhead-during initial)", pGps);
@@ -134,7 +133,7 @@ public class GpsLikelihood implements SensorModelRule {
       if (state.getBlockStateObservation().isSnapped()) {
         final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
         final ProjectedPoint p2 = obs.getPoint();
-        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        final double d = TurboButton.distance(p1.getLat(),
             p1.getLon(), p2.getLat(), p2.getLon());
         pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
         result.addResultAsAnd("gps(layover-during initial)", pGps);

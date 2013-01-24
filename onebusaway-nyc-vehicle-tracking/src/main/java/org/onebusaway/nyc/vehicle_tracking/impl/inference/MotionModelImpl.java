@@ -15,8 +15,14 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import gov.sandia.cognition.math.LogMath;
+
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.math.util.FastMath;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.DscLikelihood;
@@ -38,9 +44,9 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.realtime.api.EVehiclePhase;
-
-import gov.sandia.cognition.math.LogMath;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -49,13 +55,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Sets;
-
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.math.util.FastMath;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Motion model implementation for vehicle location inference. Determine if the
@@ -199,7 +198,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
         if (JourneyStateTransitionModel.isLocationOnATrip(parentBlockState.getBlockState())) {
           final double tripDab = parentBlockState.getBlockState().getBlockLocation().getDistanceAlongBlock()
               - parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock();
-          final double distanceMoved = SphericalGeometryLibrary.distance(obs.getLocation(), 
+          final double distanceMoved = TurboButton.distance(obs.getLocation(), 
               obs.getPreviousObservation().getLocation());
           if (tripDab + distanceMoved + _distancePastEndMargin >= 
               parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getTrip().getTotalTripDistance()) {
@@ -590,7 +589,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
       final MotionState motionState = parentState.getMotionState();
 
-      final double d = SphericalGeometryLibrary.distance(
+      final double d = TurboButton.distance(
           motionState.getLastInMotionLocation(), obs.getLocation());
 
       /*

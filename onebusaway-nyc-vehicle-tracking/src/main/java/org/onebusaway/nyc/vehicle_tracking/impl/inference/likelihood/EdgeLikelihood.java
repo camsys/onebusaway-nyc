@@ -26,6 +26,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
@@ -418,7 +419,7 @@ public class EdgeLikelihood implements SensorModelRule {
   private static double getAvgVelocityToNextStop(Observation obs, BlockState blockState) {
     
     StopTimeEntry stop =  blockState.getBlockLocation().getNextStop().getStopTime();
-    final double distToDest = SphericalGeometryLibrary.distance(obs.getLocation(),
+    final double distToDest = TurboButton.distance(obs.getLocation(),
          stop.getStop().getStopLocation());
     final int currSchedTime = (int)(obs.getTime() - blockState.getBlockInstance().getServiceDate())/1000;
     

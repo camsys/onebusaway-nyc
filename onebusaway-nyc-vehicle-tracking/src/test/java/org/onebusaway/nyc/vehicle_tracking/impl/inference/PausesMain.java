@@ -15,17 +15,17 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import org.onebusaway.csv_entities.CsvEntityReader;
-import org.onebusaway.csv_entities.EntityHandler;
-import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
-import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
+
+import org.onebusaway.csv_entities.CsvEntityReader;
+import org.onebusaway.csv_entities.EntityHandler;
+import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
+import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 
 public class PausesMain {
   public static void main(String[] args) throws CsvEntityIOException,
@@ -58,7 +58,7 @@ public class PausesMain {
         lastTime = record.getTimestamp();
       }
 
-      final double d = SphericalGeometryLibrary.distance(lastPoint, p);
+      final double d = TurboButton.distance(lastPoint, p);
       if (d > 20) {
 
         if (record.getTimestamp() - lastTime > 1 * 60 * 1000) {
