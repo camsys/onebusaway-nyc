@@ -79,7 +79,6 @@ public class RecordLibrary {
     vlr.setPhase(EVehiclePhase.valueOf(record.getPhase()));
     vlr.setStatus(record.getStatus());
     vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(record.getVehicleId()));
-    // TODO add operator, run?
 
     return vlr;
   }

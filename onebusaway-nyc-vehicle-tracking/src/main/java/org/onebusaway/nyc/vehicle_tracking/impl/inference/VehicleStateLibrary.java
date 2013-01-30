@@ -25,6 +25,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationServi
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
@@ -121,7 +122,7 @@ public class VehicleStateLibrary {
     if (layoverSpot == null)
       return false;
 
-    final double dist = SphericalGeometryLibrary.distance(obs.getLocation(),
+    final double dist = TurboButton.distance(obs.getLocation(),
         layoverSpot.getStopTime().getStop().getStopLocation());
     return dist <= _layoverStopDistance;
   }
@@ -143,14 +144,14 @@ public class VehicleStateLibrary {
 
     final StopEntry firstStop = blockInstance.getBlock().getStopTimes().get(0).getStopTime().getStop();
 
-    final double firstStopDist = SphericalGeometryLibrary.distance(loc,
+    final double firstStopDist = TurboButton.distance(loc,
         firstStop.getStopLocation());
 
     final int lastStopIdx = blockInstance.getBlock().getStopTimes().size() - 1;
 
     final StopEntry lastStop = blockInstance.getBlock().getStopTimes().get(
         lastStopIdx).getStopTime().getStop();
-    final double lastStopDist = SphericalGeometryLibrary.distance(loc,
+    final double lastStopDist = TurboButton.distance(loc,
         lastStop.getStopLocation());
 
     if (firstStopDist <= _terminalSearchRadius
@@ -189,13 +190,13 @@ public class VehicleStateLibrary {
 
       final StopEntry firstStop = block.getStopTimes().get(0).getStopTime().getStop();
 
-      final double firstStopDist = SphericalGeometryLibrary.distance(loc,
+      final double firstStopDist = TurboButton.distance(loc,
           firstStop.getStopLocation());
 
       final int lastStopIdx = block.getStopTimes().size() - 1;
 
       final StopEntry lastStop = block.getStopTimes().get(lastStopIdx).getStopTime().getStop();
-      final double lastStopDist = SphericalGeometryLibrary.distance(loc,
+      final double lastStopDist = TurboButton.distance(loc,
           lastStop.getStopLocation());
 
       if (firstStopDist <= _terminalSearchRadius
@@ -332,7 +333,7 @@ public class VehicleStateLibrary {
     final CoordinatePoint blockStart = blockLocation.getLocation();
     final CoordinatePoint currentLocation = obs.getLocation();
 
-    return SphericalGeometryLibrary.distance(currentLocation, blockStart);
+    return TurboButton.distance(currentLocation, blockStart);
   }
 
   public boolean isOffBlock(Observation obs, BlockState blockState) {

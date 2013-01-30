@@ -40,6 +40,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObse
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.BlockInstanceComparator;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
@@ -443,7 +444,7 @@ public class BlockStateService {
 
 	      final Coordinate startOfLine = line.extractPoint(line.getStartIndex());
 	      final double distTraveledOnLine = 
-	    		  SphericalGeometryLibrary.distance(pointOnLine.y, pointOnLine.x, startOfLine.y, startOfLine.x);
+	    		  TurboButton.distance(pointOnLine.y, pointOnLine.x, startOfLine.y, startOfLine.x);
 
 		  final double distanceAlongShape = tripInfo.getDistanceFrom()
 				  + distTraveledOnLine;
@@ -545,7 +546,7 @@ public class BlockStateService {
         }
         
         final double dist = 
-        		SphericalGeometryLibrary.distance(observation.getLocation(), location.getLocation());
+        		TurboButton.distance(observation.getLocation(), location.getLocation());
         thisMin.add(dist, location);
       }
 
