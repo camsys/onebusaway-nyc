@@ -134,7 +134,7 @@ public class ScheduleLikelihood implements SensorModelRule {
     final boolean isFormal = schedDist == schedDevFormalRunDist;
     if ( !isFormal || 
         (x <= POS_SCHED_DEV_CUTOFF && x >= NEG_SCHED_DEV_CUTOFF)) {
-      pSched = (isFormal ? Math.log(pFormal) : Math.log1p(-pFormal)) + schedDist.getProbabilityFunction().logEvaluate(x);
+      pSched = (isFormal ? FastMath.log(pFormal) : FastMath.log1p(-pFormal)) + schedDist.getProbabilityFunction().logEvaluate(x);
     } else {
       pSched = Double.NEGATIVE_INFINITY;
     }    
