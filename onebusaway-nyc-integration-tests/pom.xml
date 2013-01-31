@@ -8,6 +8,7 @@
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-integration-tests</artifactId>
+    <packaging>pom</packaging>
     <name>onebusaway-nyc-integration-tests</name>
 
     <properties>
