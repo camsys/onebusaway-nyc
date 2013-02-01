@@ -44,6 +44,10 @@ public class CreateAPIKeyOnInitAction {
     this.key = key;
   }
 
+  public void init() {
+    // no-op, createAPIKey determines if execute is called or not
+  }
+  
   @PostConstruct
   public void execute() {
     if (createAPIKey) {
