@@ -8,6 +8,7 @@
 	</parent>
 	<groupId>org.onebusaway</groupId>
 	<artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
+	<packaging>pom</packaging>
 	<name>onebusaway-nyc-vehicle-tracking</name>
 
 	<dependencies>

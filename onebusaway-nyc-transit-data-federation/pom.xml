@@ -7,7 +7,7 @@
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>onebusaway-nyc-transit-data-federation</name>
 

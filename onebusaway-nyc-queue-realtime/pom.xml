@@ -7,6 +7,7 @@
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-queue-realtime</artifactId>
+  <packaging>pom</packaging>
   <name>onebusaway-nyc-queue-realtime</name>
   <dependencies>
     <dependency>

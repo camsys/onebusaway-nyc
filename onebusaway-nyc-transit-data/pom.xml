@@ -7,6 +7,7 @@
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-transit-data</artifactId>
+    <packaging>pom</packaging>
     <name>onebusaway-nyc-transit-data</name>
     <description>Common interfaces and classes for exchanging transit data between UI front-end and transit back-end data sources.</description>
 
