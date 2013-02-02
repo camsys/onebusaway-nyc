@@ -7,7 +7,7 @@
     <version>2.2.0-SNAPSHOT</version>
   </parent>
   <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
   <name>onebusaway-nyc-tdm-adapters</name>
   <description>Conversion of inputs into standard formats</description>
 

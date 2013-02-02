@@ -7,7 +7,7 @@
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-presentation</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <name>onebusaway-nyc-presentation</name>
 
     <dependencies>
