@@ -30,6 +30,7 @@
     </head>
     <body>
         <div id="content" >
+            <h1 id="HRoutes"><span><strong>Routes</strong></span></h1>
             <div id="routes">
                 <ul class="routeList">
                     <s:iterator value="routes">
