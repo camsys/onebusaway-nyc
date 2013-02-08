@@ -97,6 +97,7 @@
 		</div>
 
 		<div id="horizontalcssmenu" style="clear: both;">	
+			<s:if test="%{!getText('branding.webapp').equals('onebusaway-nyc-acta-webapp')}">
 			<ul id="cssmenu1">
 				<s:set var="link" value="getText('main.agency.link')" />
 				<li style="width:7%; border-left: none;"><a href="${link}">Home</a>
@@ -154,7 +155,9 @@
 						<li><a href="${link}">Public Hearings</a></li>
 					</ul>
 				</li>
-			</ul>
+			</ul> 
+			<!-- </c:if> -->
+			</s:if>
 		</div>
 	</div> <!-- close topbar -->
 	
