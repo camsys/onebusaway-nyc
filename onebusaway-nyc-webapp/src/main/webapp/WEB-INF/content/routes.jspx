@@ -17,28 +17,21 @@
 
 -->
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
-	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
-	xmlns:wiki="/oba-wiki-tags">
-<jsp:directive.page contentType="text/html" />
-<head>
-<s:url var="url" value="/css/routes/routes.css">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+      xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
+      xmlns:wiki="/oba-wiki-tags">
+    <jsp:directive.page contentType="text/html" />
+    <head>
+        <s:url var="url" value="/css/routes/routes.css">
+            <s:param name="v"><s:property value="frontEndVersion" /></s:param>
+        </s:url>
+        <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-<title><s:property value="getText('routes.title')"/></title>
-
-<s:url var="url" value="/api/config">
-	<s:param name="v"><s:property value="cacheBreaker" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-</head>
-<body>
-
-	<div id="content" >
-		<div id="routes">
-                    <ul class="routeList">
+        <title><s:property value="getText('routes.title')"/></title>
+    </head>
+    <body>
+        <div id="content" >
+            <div id="routes">
+                <ul class="routeList">
                     <s:iterator value="routes">
                         <li>
                             <s:set var="routeColor">#<s:property value="color" default="000" /></s:set>
@@ -51,32 +44,31 @@
                                         <s:property value="shortName" />
                                     </s:else>
                                 </s:set>
-                                
+
                                 <s:url var="url" value="/" anchor="%{linkDestination}" />
-                          
-                            <a href="${url}">
-                              <s:if test="showAgencyNames">
-                                <s:property value="agency.name" />&amp;nbsp;
-                              </s:if>
-                            <s:if test="shortName != null and longName != null">
-                              <s:property value="shortName" />&amp;nbsp;<s:property value="longName" />
-                            </s:if>
-                            <s:elseif test="shortName != null">
-                              <s:property value="shortName" />
-                            </s:elseif>
-                            <s:elseif test="longName != null">
-                              <s:property value="longName" />
-                            </s:elseif>
-                            </a>
+
+                                <a href="${url}">
+                                    <s:if test="showAgencyNames">
+                                        <s:property value="agency.name" />&amp;nbsp;
+                                    </s:if>
+                                    <s:if test="shortName != null and longName != null">
+                                        <s:property value="shortName" />&amp;nbsp;<s:property value="longName" />
+                                    </s:if>
+                                    <s:elseif test="shortName != null">
+                                        <s:property value="shortName" />
+                                    </s:elseif>
+                                    <s:elseif test="longName != null">
+                                        <s:property value="longName" />
+                                    </s:elseif>
+                                </a>
                             </p>
-                        <s:if test="description != null">
-                            <br /><p class="description"><s:property value="description" /></p>
-                        </s:if>
+                            <s:if test="description != null">
+                                <br /><p class="description"><s:property value="description" /></p>
+                            </s:if>
                         </li>
                     </s:iterator>
-                    </ul>
-		</div>
-	</div>
-
-</body>
+                </ul>
+            </div>
+        </div>
+    </body>
 </html>
