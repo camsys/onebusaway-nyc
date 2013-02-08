@@ -326,7 +326,22 @@
 <!--                 <tdm.host></tdm.host> -->
                 <tdm.port>80</tdm.port>
                 <tdm.url>/api/</tdm.url>
+                <webapp.api.url />
+                
                 <log4j.appender>stdout</log4j.appender>
+                <tdm.dataPath>/var/lib/obanyc/tdm-datapath</tdm.dataPath>
+                <tdm.home>/var/lib/obanyc/tdm</tdm.home>
+                <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
+                <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
+                <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
+                <tdm.pipoFilename>/tmp/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+                <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
+                <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+                <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
+                <tdm.bundlePath>/var/lib/obanyc/oba-bundle</tdm.bundlePath>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
+                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
             </properties>
         </profile>
         <profile>
