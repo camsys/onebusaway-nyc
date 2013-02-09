@@ -16,17 +16,11 @@
  */
 package org.onebusaway.nyc.webapp.actions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.presentation.service.routes.RouteListService;
 import org.springframework.beans.factory.annotation.Autowired;
-
 
 /**
  * Action for route index page
@@ -36,42 +30,18 @@ public class RoutesAction extends OneBusAwayNYCActionSupport {
 
     private static final long serialVersionUID = 1L;
     @Autowired
-    private ConfigurationService _configurationService;
-    @Autowired
-    private NycTransitDataService _nycTransitDataService;
+    private RouteListService _routeListService;
 
     public boolean getShowAgencyNames() {
-        return _configurationService.getConfigurationValueAsString("display.showAgencyNames", "false").equals("true");
+        return _routeListService.getShowAgencyNames();
     }
-    
+
     public boolean getUseAgencyId() {
-        return _configurationService.getConfigurationValueAsString("display.useAgencyId", "false").equals("true");   
+        return _routeListService.getUseAgencyId();
     }
-    
+
     public List<RouteBean> getRoutes() {
-        List<RouteBean> allRoutes = new ArrayList<RouteBean>();
+        return _routeListService.getRoutes();
 
-        List<AgencyWithCoverageBean> agencies = _nycTransitDataService.getAgenciesWithCoverage();
-
-        for (AgencyWithCoverageBean agency : agencies) {
-            allRoutes.addAll(_nycTransitDataService.getRoutesForAgencyId(agency.getAgency().getId()).getList());
-        }
-        Collections.sort(allRoutes, new Comparator<RouteBean>(){
-
-            @Override
-            public int compare(RouteBean t, RouteBean t1) {
-                if (t.getAgency().getName().compareTo(t1.getAgency().getName()) == 0) {
-                    if (t.getShortName() != null && t1.getShortName() != null) {
-                    return t.getShortName().compareTo(t1.getShortName());
-                    } else {
-                    return t.getId().compareTo(t1.getId());
-                    }
-                } else {
-                return t.getAgency().getName().compareTo(t1.getAgency().getName());
-                }
-            }
-        
-    });
-     return allRoutes;   
     }
 }
