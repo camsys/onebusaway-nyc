@@ -132,49 +132,6 @@ public class VehicleLocationsController {
     
     return new ModelAndView("json", "polylinesByRoute", routes);
   }
-  
-  @RequestMapping(value = "/vehicle-location!particle-details.do")
-  public ModelAndView particleDetails(@RequestParam() String vehicleId,
-      @RequestParam() int particleId) {
-
-    VehicleLocationDetails details = _vehicleLocationInferenceService.getDetailsForVehicleId(
-    	AgencyAndIdLibrary.convertFromString(vehicleId), particleId);
-
-    return new ModelAndView("vehicle-location-particles.jspx", "details",
-        details);
-  }
-
-  @RequestMapping("/vehicle-location!bad-particles.do")
-  public ModelAndView badParticles(@RequestParam() String vehicleId) {
-
-    VehicleLocationDetails details = _vehicleLocationInferenceService.getBadDetailsForVehicleId(AgencyAndIdLibrary.convertFromString(vehicleId));
-
-    return new ModelAndView("vehicle-location-particles.jspx", "details",
-        details);
-  }
-
-  @RequestMapping(value = "/vehicle-location!bad-particle-details.do")
-  public ModelAndView badParticleDetails(@RequestParam() AgencyAndId vehicleId,
-      @RequestParam() int particleId) {
-
-    VehicleLocationDetails details = _vehicleLocationInferenceService.getBadDetailsForVehicleId(
-    	vehicleId, particleId);
-
-    return new ModelAndView("vehicle-location-particles.jspx", "details",
-        details);
-  }
-
-  @RequestMapping("/vehicle-location!particle.do")
-  public ModelAndView particles(@RequestParam() String vehicleId,
-      @RequestParam() int particleId) {
-
-    VehicleLocationDetails details = _vehicleLocationInferenceService.getDetailsForVehicleId(
-    	AgencyAndIdLibrary.convertFromString(vehicleId), particleId);
-
-    ModelAndView mv = new ModelAndView("vehicle-location-particles.jspx");
-    mv.addObject("details", details);
-    return mv;
-  }
 
   /****
    * 

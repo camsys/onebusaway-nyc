@@ -49,27 +49,7 @@ public interface VehicleLocationInferenceService {
 
   public List<NycTestInferredLocationRecord> getLatestProcessedVehicleLocationRecords();
 
-  /**
-   * These are primarily here for debugging
-   */
-  public Multiset<Particle> getCurrentParticlesForVehicleId(
-      AgencyAndId vehicleId);
-
-  public Multiset<Particle> getCurrentSampledParticlesForVehicleId(
-      AgencyAndId vehicleId);
-
-  public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
-      AgencyAndId agencyAndId);
-
-  public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId);
-
-  public VehicleLocationDetails getBadDetailsForVehicleId(
-      AgencyAndId vehicleId, int particleId);
-
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId);
-
-  public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId,
-      int particleId);
 
   public void setSeeds(long cdfSeed, long factorySeed);
 }

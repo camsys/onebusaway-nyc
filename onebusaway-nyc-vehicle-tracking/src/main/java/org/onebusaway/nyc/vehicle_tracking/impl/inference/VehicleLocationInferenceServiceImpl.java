@@ -41,6 +41,7 @@ import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
@@ -51,8 +52,7 @@ import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManageme
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MtaPathStateBelief;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
@@ -66,6 +66,10 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfig
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+
+import gov.sandia.cognition.statistics.DataDistribution;
+
+import org.opentrackingtools.impl.VehicleState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -364,33 +368,6 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public Multiset<Particle> getCurrentParticlesForVehicleId(
-      AgencyAndId vehicleId) {
-    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
-    if (instance == null)
-      return ImmutableMultiset.of();
-    return instance.getCurrentParticles();
-  }
-
-  @Override
-  public Multiset<Particle> getCurrentSampledParticlesForVehicleId(
-      AgencyAndId vehicleId) {
-    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
-    if (instance == null)
-      return ImmutableMultiset.of();
-    return instance.getCurrentSampledParticles();
-  }
-
-  @Override
-  public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
-      AgencyAndId vehicleId) {
-    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
-    if (instance == null)
-      return Collections.emptyList();
-    return instance.getJourneySummaries();
-  }
-
-  @Override
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId) {
     final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
@@ -398,35 +375,6 @@ public class VehicleLocationInferenceServiceImpl implements
     final VehicleLocationDetails details = instance.getDetails();
     details.setVehicleId(vehicleId);
     return details;
-  }
-
-  @Override
-  public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId) {
-    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
-    if (instance == null)
-      return null;
-    final VehicleLocationDetails details = instance.getBadParticleDetails();
-    details.setVehicleId(vehicleId);
-    details.setParticleFilterFailureActive(true);
-    return details;
-  }
-
-  @Override
-  public VehicleLocationDetails getBadDetailsForVehicleId(
-      AgencyAndId vehicleId, int particleId) {
-    final VehicleLocationDetails details = getBadDetailsForVehicleId(vehicleId);
-    if (details == null)
-      return null;
-    return findParticle(details, particleId);
-  }
-
-  @Override
-  public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId,
-      int particleId) {
-    final VehicleLocationDetails details = getDetailsForVehicleId(vehicleId);
-    if (details == null)
-      return null;
-    return findParticle(details, particleId);
   }
 
   /****
@@ -501,9 +449,10 @@ public class VehicleLocationInferenceServiceImpl implements
 
         // make sure none of the current journey summaries contain blocks we no longer have
         boolean vehicleStateResetVehicle = false;
-        for(Particle particle : getCurrentSampledParticlesForVehicleId(vehicleId)) {
-        	final VehicleState particleState = particle.getData();
-        	final BlockStateObservation particleBlockState = particleState.getBlockStateObservation();
+        for(VehicleState particleState : vehicleInstance.getCurrentParticles().getDomain()) {
+          MtaVehicleState mtaState = (MtaVehicleState) particleState;
+        	final BlockStateObservation particleBlockState = mtaState.getOldTypeVehicleState()
+        	    .getBlockStateObservation();
         	if(particleBlockState == null)
         		continue;
         	
@@ -536,27 +485,6 @@ public class VehicleLocationInferenceServiceImpl implements
         this.resetVehicleLocation(vehicleId);
       }
     }
-  }
-
-  private VehicleLocationDetails findParticle(VehicleLocationDetails details,
-      int particleId) {
-    final List<Entry<Particle>> particles = details.getParticles();
-    if (particles != null) {
-      for (final Entry<Particle> pEntry : particles) {
-        Particle p = pEntry.getElement();
-        if (p.getIndex() == particleId) {
-          final Multiset<Particle> history = TreeMultiset.create();
-          while (p != null) {
-            history.add(p, pEntry.getCount());
-            p = p.getParent();
-          }
-          details.setParticles(history);
-          details.setHistory(true);
-          return details;
-        }
-      }
-    }
-    return null;
   }
 
   public class ProcessingTask implements Runnable {

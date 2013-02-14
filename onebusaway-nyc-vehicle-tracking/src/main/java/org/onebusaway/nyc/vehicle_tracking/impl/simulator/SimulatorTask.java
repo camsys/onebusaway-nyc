@@ -263,71 +263,6 @@ public class SimulatorTask implements Runnable, EntityHandler {
     // return null;
   }
 
-  public VehicleLocationDetails getTransitionParticleDetails(
-      int parentParticleId, int transParticleNumber, int recordIndex) {
-    final VehicleLocationDetails details = new VehicleLocationDetails();
-    details.setId(_id);
-
-    final Collection<Multiset.Entry<Particle>> particles;
-    if (recordIndex < 0) {
-      details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(_mostRecentRecord));
-      particles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(
-          _vehicleId).entrySet();
-    } else {
-      details.setLastObservation(getDetails(recordIndex).getLastObservation());
-      particles = getDetails(recordIndex).getParticles();
-    }
-
-    if (particles != null) {
-      for (final Multiset.Entry<Particle> pEntry : particles) {
-        final Particle p = pEntry.getElement();
-        if (p.getIndex() == parentParticleId) {
-          final Multiset<Particle> history = HashMultiset.create();
-          history.add(Iterables.get(p.getTransitions().elementSet(),
-              transParticleNumber));
-          details.setParticles(history);
-          details.setHistory(true);
-          break;
-        }
-      }
-    }
-    return details;
-  }
-
-  public VehicleLocationDetails getParticleDetails(int particleId,
-      int recordIndex) {
-    final VehicleLocationDetails details = new VehicleLocationDetails();
-    details.setId(_id);
-
-    final Collection<Multiset.Entry<Particle>> particles;
-    if (recordIndex < 0) {
-      details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(_mostRecentRecord));
-      particles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(
-          _vehicleId).entrySet();
-    } else {
-      details.setLastObservation(getDetails(recordIndex).getLastObservation());
-      particles = getDetails(recordIndex).getParticles();
-    }
-
-    if (particles != null) {
-      for (final Multiset.Entry<Particle> pEntry : particles) {
-        Particle p = pEntry.getElement();
-        if (p.getIndex() == particleId) {
-          final Multiset<Particle> history = TreeMultiset.create(Ordering.natural());
-          while (p != null
-              && history.elementSet().size() <= _particleParentSize) {
-            history.add(p, pEntry.getCount());
-            p = p.getParent();
-          }
-          details.setParticles(history);
-          details.setHistory(true);
-          break;
-        }
-      }
-    }
-    return details;
-  }
-
   public List<NycTestInferredLocationRecord> getResults() {
     synchronized (_results) {
       return new ArrayList<NycTestInferredLocationRecord>(_results);
@@ -557,20 +492,20 @@ public class SimulatorTask implements Runnable, EntityHandler {
       rr.setRecordNumber(_results.size() - 1);
     }
 
-    final VehicleLocationDetails details = new VehicleLocationDetails();
-    details.setId(_id);
-    details.setVehicleId(_vehicleId);
-    details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record));
-
-    final Multiset<Particle> weightedParticles = TreeMultiset.create(Ordering.natural());
-    weightedParticles.addAll(_vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId));
-    if (!weightedParticles.isEmpty()) {
-      details.setParticles(weightedParticles);
-      details.setSampledParticles(weightedParticles);
-    }
-
-    if (_details.size() < _maxParticleHistorySize)
-      _details.add(details);
+//    final VehicleLocationDetails details = new VehicleLocationDetails();
+//    details.setId(_id);
+//    details.setVehicleId(_vehicleId);
+//    details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record));
+//
+//    final Multiset<Particle> weightedParticles = TreeMultiset.create(Ordering.natural());
+//    weightedParticles.addAll(_vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId));
+//    if (!weightedParticles.isEmpty()) {
+//      details.setParticles(weightedParticles);
+//      details.setSampledParticles(weightedParticles);
+//    }
+//
+//    if (_details.size() < _maxParticleHistorySize)
+//      _details.add(details);
 
     return true;
   }

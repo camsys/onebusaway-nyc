@@ -23,18 +23,29 @@ import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 
+import gov.sandia.cognition.math.matrix.Vector;
+
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.geom.Coordinate;
 
+import org.geotools.geometry.jts.JTS;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opentrackingtools.GpsObservation;
+import org.opentrackingtools.util.GeoUtils;
+import org.opentrackingtools.util.geom.ProjectedCoordinate;
+
+import java.util.Date;
 import java.util.Set;
 
-public class Observation implements Comparable<Observation> {
+public class Observation implements GpsObservation {
 
-  private final long _timestamp;
+  private final Date _timestamp;
 
   private final NycRawLocationRecord _record;
 
@@ -58,12 +69,15 @@ public class Observation implements Comparable<Observation> {
 
   private final Set<AgencyAndId> _impliedRouteCollections;
 
+  private Vector _projPoint;
+
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
       boolean outOfService, boolean hasValidDsc,
       Observation previousObservation, Set<AgencyAndId> dscImpliedRoutes,
-      RunResults runResults) {
-    _timestamp = timestamp;
+      RunResults runResults) throws TransformException {
+    
+    _timestamp = new Date(timestamp);
     _record = record;
     _point = ProjectedPointFactory.forward(record.getLatitude(),
         record.getLongitude());
@@ -96,13 +110,24 @@ public class Observation implements Comparable<Observation> {
             record.getLongitude()
             );
       }
+      
     }
 
+    /*
+     * tracking-tools additions
+     */
+    _gpsCoord = new Coordinate(this._point.getLat(), this._point.getLon());
+    Coordinate euclidCoord = new Coordinate();
+    _transform = GeoUtils.getTransform(getObsCoordsLatLon());
+    JTS.transform(_gpsCoord, euclidCoord, _transform);
+    _projCoord = new ProjectedCoordinate(_transform,euclidCoord, _gpsCoord); 
+    _projPoint = GeoUtils.getVector(_projCoord);
+    
     _previousObservation = previousObservation;
   }
 
   public long getTime() {
-    return _timestamp;
+    return _timestamp.getTime();
   }
 
   public NycRawLocationRecord getRecord() {
@@ -185,17 +210,22 @@ public class Observation implements Comparable<Observation> {
       Ordering.natural().nullsLast().onResultOf(PointFunction.getY));
 
   @Override
-  public int compareTo(Observation o2) {
+  public int compareTo(GpsObservation o2) {
 
     if (this == o2)
       return 0;
-
-    final int res = ComparisonChain.start().compare(_timestamp, o2._timestamp).compare(
-        _point, o2._point, _orderByXandY).compare(
-        _lastValidDestinationSignCode, o2._lastValidDestinationSignCode,
-        Ordering.natural().nullsLast()).compare(_record, o2._record).compare(
-        outOfService, o2.outOfService).compare(atTerminal, o2.atTerminal).compare(
-        atBase, o2.atBase).compare(_runResults, o2._runResults).result();
+    
+    int res = 0;
+    if (o2 instanceof Observation) {
+      
+      final Observation o2Obs = (Observation) o2;
+      res = ComparisonChain.start().compare(_timestamp, o2Obs._timestamp).compare(
+        _point, o2Obs._point, _orderByXandY).compare(
+        _lastValidDestinationSignCode, o2Obs._lastValidDestinationSignCode,
+        Ordering.natural().nullsLast()).compare(_record, o2Obs._record).compare(
+        outOfService, o2Obs.outOfService).compare(atTerminal, o2Obs.atTerminal).compare(
+        atBase, o2Obs.atBase).compare(_runResults, o2Obs._runResults).result();
+    }
 
     return res;
   }
@@ -207,6 +237,12 @@ public class Observation implements Comparable<Observation> {
   private final double _orientation;
 
   private final double _distanceMoved;
+
+  private Coordinate _gpsCoord;
+
+  private MathTransform _transform;
+
+  private ProjectedCoordinate _projCoord;
 
   @Override
   public int hashCode() {
@@ -224,7 +260,7 @@ public class Observation implements Comparable<Observation> {
             : _lastValidDestinationSignCode.hashCode());
     result = prime * result + ((_point == null) ? 0 : _point.hashCode());
     result = prime * result + ((_record == null) ? 0 : _record.hashCode());
-    result = prime * result + (int) (_timestamp ^ (_timestamp >>> 32));
+    result = prime * result + (int) (_timestamp.getTime() ^ (_timestamp.getTime() >>> 32));
     result = prime * result + (atBase ? 1231 : 1237);
     result = prime * result + (atTerminal ? 1231 : 1237);
     result = prime * result + (outOfService ? 1231 : 1237);
@@ -308,6 +344,51 @@ public class Observation implements Comparable<Observation> {
 
   public double getOrientation() {
     return _orientation;
+  }
+
+  @Override
+  public Double getAccuracy() {
+    return null;
+  }
+
+  @Override
+  public Double getHeading() {
+    return getOrientation();
+  }
+
+  @Override
+  public Coordinate getObsCoordsLatLon() {
+    return _gpsCoord;
+  }
+
+  @Override
+  public ProjectedCoordinate getObsProjected() {
+    return _projCoord;
+  }
+
+  @Override
+  public Vector getProjectedPoint() {
+    return _projPoint;
+  }
+
+  @Override
+  public int getRecordNumber() {
+    return (int)this._record.getId();
+  }
+
+  @Override
+  public Date getTimestamp() {
+    return _timestamp;
+  }
+
+  @Override
+  public String getSourceId() {
+    return this._record.getDeviceId();
+  }
+
+  @Override
+  public Double getVelocity() {
+    return new Double(this._record.getSpeed());
   }
 
 }
