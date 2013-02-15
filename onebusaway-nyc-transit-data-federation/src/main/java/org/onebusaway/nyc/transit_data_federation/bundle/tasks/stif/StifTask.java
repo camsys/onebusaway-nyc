@@ -292,15 +292,15 @@ public class StifTask implements Runnable {
         if (o2 instanceof Integer) {
           return ((Integer) o1) - ((Integer) o2);
         } else {
-          RawTrip trip = (RawTrip) o2;
+          StifTrip trip = (StifTrip) o2;
           return ((Integer) o1) - trip.listedFirstStopTime;
         }
       } else {
         if (o2 instanceof Integer) {
-          return ((RawTrip) o1).listedFirstStopTime - ((Integer) o2);
+          return ((StifTrip) o1).listedFirstStopTime - ((Integer) o2);
         } else {
-          RawTrip trip = (RawTrip) o2;
-          return ((RawTrip) o1).listedFirstStopTime - trip.listedFirstStopTime;
+          StifTrip trip = (StifTrip) o2;
+          return ((StifTrip) o1).listedFirstStopTime - trip.listedFirstStopTime;
         }
       }
     }
@@ -319,19 +319,19 @@ public class StifTask implements Runnable {
     csvLogger.header("matched_trips_gtfs_stif.csv", "agency_id,gtfs_service_id,service_id,blockId,tripId,dsc,firstStop,"+
         "firstStopTime,lastStop,lastStopTime,runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute,routeId");
 
-    Map<ServiceCode, List<RawTrip>> rawData = loader.getRawStifData();
-    for (Map.Entry<ServiceCode, List<RawTrip>> entry : rawData.entrySet()) {
-      List<RawTrip> rawTrips = entry.getValue();
+    Map<ServiceCode, List<StifTrip>> rawData = loader.getRawStifData();
+    for (Map.Entry<ServiceCode, List<StifTrip>> entry : rawData.entrySet()) {
+      List<StifTrip> rawTrips = entry.getValue();
       // this is a monster -- we want to group these by run and find the
       // pullouts
-      HashMap<String, List<RawTrip>> tripsByRun = new HashMap<String, List<RawTrip>>();
-      HashSet<RawTrip> unmatchedTrips = new HashSet<RawTrip>();
-      ArrayList<RawTrip> pullouts = new ArrayList<RawTrip>();
-      for (RawTrip trip : rawTrips) {
+      HashMap<String, List<StifTrip>> tripsByRun = new HashMap<String, List<StifTrip>>();
+      HashSet<StifTrip> unmatchedTrips = new HashSet<StifTrip>();
+      ArrayList<StifTrip> pullouts = new ArrayList<StifTrip>();
+      for (StifTrip trip : rawTrips) {
         String runId = trip.getRunIdWithDepot();
-        List<RawTrip> byRun = tripsByRun.get(runId);
+        List<StifTrip> byRun = tripsByRun.get(runId);
         if (byRun == null) {
-          byRun = new ArrayList<RawTrip>();
+          byRun = new ArrayList<StifTrip>();
           tripsByRun.put(runId, byRun);
         }
         unmatchedTrips.add(trip);
@@ -346,13 +346,13 @@ public class StifTask implements Runnable {
               + "without pullout.");
         }
       }
-      for (List<RawTrip> byRun : tripsByRun.values()) {
+      for (List<StifTrip> byRun : tripsByRun.values()) {
         Collections.sort(byRun);
       }
 
-      for (RawTrip pullout : pullouts) {
+      for (StifTrip pullout : pullouts) {
         blockNo ++;
-        RawTrip lastTrip = pullout;
+        StifTrip lastTrip = pullout;
         int i = 0;
         HashSet<P2<String>> blockIds = new HashSet<P2<String>>();
         while (lastTrip.type != StifTripType.PULLIN) {
@@ -378,7 +378,7 @@ public class StifTask implements Runnable {
             break;
           }
 
-          List<RawTrip> trips = tripsByRun.get(nextRunId);
+          List<StifTrip> trips = tripsByRun.get(nextRunId);
           if (trips == null) {
             _log.warn("No trips for run " + nextRunId);
             break;
@@ -400,7 +400,7 @@ public class StifTask implements Runnable {
             break;
           }
 
-          RawTrip trip = trips.get(index);
+          StifTrip trip = trips.get(index);
 
           if (trip == lastTrip) {
             //we have two trips with the same start time -- usually one is a pullout of zero-length
@@ -463,7 +463,7 @@ public class StifTask implements Runnable {
         }
       }
 
-      for (RawTrip trip : unmatchedTrips) {
+      for (StifTrip trip : unmatchedTrips) {
         _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey()
             + " trip type " + trip.type
             + " must not have an associated pullout");
@@ -522,7 +522,7 @@ public class StifTask implements Runnable {
   /**
    * Dump some raw block matching data to a CSV file from stif trips
    */
-  private void dumpBlockDataForTrip(RawTrip trip, String gtfsServiceId,
+  private void dumpBlockDataForTrip(StifTrip trip, String gtfsServiceId,
       String tripId, String blockId, String routeId) {
 
     csvLogger.log("matched_trips_gtfs_stif.csv", trip.agencyId,

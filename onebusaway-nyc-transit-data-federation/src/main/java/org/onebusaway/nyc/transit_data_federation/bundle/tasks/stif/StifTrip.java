@@ -8,7 +8,7 @@ import java.util.List;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 
-public class RawTrip implements Comparable<RawTrip> {
+public class StifTrip implements Comparable<StifTrip> {
 
   public String nextRun;
   public String runId;
@@ -40,7 +40,7 @@ public class RawTrip implements Comparable<RawTrip> {
   public String agencyId;
 
 
-  public RawTrip(String runId, String reliefRunId, String nextRun,
+  public StifTrip(String runId, String reliefRunId, String nextRun,
       StifTripType type, String dsc) {
     this.runId = runId;
     this.reliefRunId = reliefRunId;
@@ -50,12 +50,12 @@ public class RawTrip implements Comparable<RawTrip> {
   }
 
   // this is just for creating bogus objects for searching
-  public RawTrip(int firstStopTime) {
+  public StifTrip(int firstStopTime) {
     this.firstStopTime = firstStopTime;
   }
 
   @Override
-  public int compareTo(RawTrip o) {
+  public int compareTo(StifTrip o) {
     return firstStopTime - o.firstStopTime;
   }
 

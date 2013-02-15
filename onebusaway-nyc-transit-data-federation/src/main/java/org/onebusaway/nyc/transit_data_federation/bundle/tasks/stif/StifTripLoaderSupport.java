@@ -68,7 +68,7 @@ public class StifTripLoaderSupport {
     stopIdsByLocation.put(location, stopId);
   }
 
-  public TripIdentifier getIdentifierForStifTrip(TripRecord tripRecord, RawTrip rawTrip) {
+  public TripIdentifier getIdentifierForStifTrip(TripRecord tripRecord, StifTrip rawTrip) {
     String routeName = tripRecord.getSignCodeRoute();
     if (routeName == null || routeName.trim().length() == 0) {
       routeName = tripRecord.getRunRoute();
