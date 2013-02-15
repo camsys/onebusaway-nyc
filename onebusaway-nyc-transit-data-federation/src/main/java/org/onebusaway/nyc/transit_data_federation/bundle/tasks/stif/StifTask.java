@@ -396,7 +396,9 @@ public class StifTask implements Runnable {
                 + nextRunId
                 + " is next, but there are no trips after "
                 + lastTrip.firstStopTime
-                + ", so some trips will end up with missing blocks.");
+                + ", so some trips will end up with missing blocks."
+                + " The last trip starts at " + lastTrip.firstStop + " at "
+                + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
             break;
           }
 
@@ -416,7 +418,9 @@ public class StifTask implements Runnable {
                   + nextRunId
                   + " is next, and that the next trip should start at " + nextTripStartTime
                   + ". As it happens, *this* trip starts at that time, but no other trips on"
-                  + " this run do, so some trips will end up with missing blocks.");
+                  + " this run do, so some trips will end up with missing blocks."
+                  + " The last trip starts at " + lastTrip.firstStop + " at "
+                  + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
               break;
             }
           }

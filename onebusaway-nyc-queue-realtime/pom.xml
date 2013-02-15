@@ -7,11 +7,12 @@
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-queue-realtime</artifactId>
+  <packaging>jar</packaging>
   <name>onebusaway-nyc-queue-realtime</name>
   <dependencies>
     <dependency>
       <groupId>org.onebusaway</groupId>
-      <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
+      <artifactId>onebusaway-nyc-tcip-api</artifactId>
       <version>${onebusaway.nyc-tcip.version}</version>
     </dependency>
     <dependency>

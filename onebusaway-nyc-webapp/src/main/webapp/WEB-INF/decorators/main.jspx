@@ -93,28 +93,11 @@
 					<s:set var="link" value="getText('main.weekender.link')" />
 					<li class="list_h" style="margin-left:4px;"><a href="${link}">The Weekender</a></li>
 				</c:if>			
-				<s:set var="link" value="getText('main.accessibility.link')" />
-				<li class="list_h" style="margin-left:4px;"><a href="${link}">Accessibility</a></li>
-				<s:set var="link" value="getText('main.textonly.link')" />
-				<li class="list_h" style="margin-left:4px;"><a href="${link}">Text-only</a></li>
-				<s:set var="link" value="getText('main.faq.link')" />
-				<li class="list_h" style="margin-left:4px;"><a href="${link}">FAQs/Contact Us</a></li>
 			</ul>
-			<br />
-	
-			<s:set var="link" value="getText('main.search.action')" />
-			<form id="searchform" method="get" action="${link}">
-				<input type="hidden" name="site" value="my_collection"/>
-				<input type="hidden" name="client" value="my_collection"/>
-				<input type="hidden" name="proxystylesheet" value="my_collection"/>
-				<input type="hidden" name="output" value="xml_no_dtd"/>				
-				
-				<input type="submit" name="btnG" value="search" id="searchbutton" style="padding: 1px 8px;"/>
-				<input type="text" name="q" id="searchinputbox" alt="searchinputbox" size="12" maxlength="255" value=""/>
-			</form>		
 		</div>
 
 		<div id="horizontalcssmenu" style="clear: both;">	
+			<s:if test="%{!getText('branding.webapp').equals('onebusaway-nyc-acta-webapp')}">
 			<ul id="cssmenu1">
 				<s:set var="link" value="getText('main.agency.link')" />
 				<li style="width:7%; border-left: none;"><a href="${link}">Home</a>
@@ -172,7 +155,9 @@
 						<li><a href="${link}">Public Hearings</a></li>
 					</ul>
 				</li>
-			</ul>
+			</ul> 
+			<!-- </c:if> -->
+			</s:if>
 		</div>
 	</div> <!-- close topbar -->
 	

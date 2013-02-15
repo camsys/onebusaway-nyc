@@ -31,7 +31,7 @@
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
+            <artifactId>onebusaway-nyc-tcip-api</artifactId>
             <version>${onebusaway.nyc-tcip.version}</version>
         </dependency>
         <dependency>

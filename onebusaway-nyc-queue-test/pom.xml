@@ -8,7 +8,7 @@
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-queue-test</artifactId>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
   <name>onebusaway-nyc-queue-test</name>
   <dependencies>
     <dependency>
@@ -65,7 +65,7 @@
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
-      <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
+      <artifactId>onebusaway-nyc-tcip-api</artifactId>
       <version>${onebusaway.nyc-tcip.version}</version>
     </dependency>
     <dependency>
@@ -118,14 +118,6 @@
               <mainClass>org.onebusaway.nyc.queue_test.ThroughputHarness</mainClass>
             </manifest>
           </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
         </configuration>
       </plugin>
     </plugins>
