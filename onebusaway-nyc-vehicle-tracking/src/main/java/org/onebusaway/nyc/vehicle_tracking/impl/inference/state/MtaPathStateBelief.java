@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 
 import gov.sandia.cognition.statistics.distribution.MultivariateGaussian;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.opentrackingtools.graph.paths.InferredPath;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
 import org.opentrackingtools.graph.paths.states.impl.SimplePathStateBelief;
@@ -43,5 +44,14 @@ public class MtaPathStateBelief extends SimplePathStateBelief {
         result.getGlobalStateBelief());
     mtaResult.setBlockState(this.blockState);
     return mtaResult;
+  }
+
+  @Override
+  public String toString() {
+    ToStringBuilder builder = new ToStringBuilder(this);
+    builder.append("path", path.toString());
+    builder.append("globalState", getGlobalState().toString());
+    builder.append("blockState", blockState);
+    return builder.toString();
   }
 }

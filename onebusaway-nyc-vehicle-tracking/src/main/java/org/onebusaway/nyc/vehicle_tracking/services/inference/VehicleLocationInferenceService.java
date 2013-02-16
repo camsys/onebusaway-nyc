@@ -26,12 +26,13 @@ import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetail
 import com.google.common.collect.Multiset;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 public interface VehicleLocationInferenceService {
 
   public void handleNycRawLocationRecord(NycRawLocationRecord record);
 
-  public void handleNycTestInferredLocationRecord(
+  public Future<?> handleNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record);
 
   public void handleBypassUpdateForNycTestInferredLocationRecord(

@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -33,6 +34,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -302,7 +304,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
     }
   }
 
-  private void runInternal() {
+  private void runInternal() throws InterruptedException, ExecutionException {
 
     while (true) {
 
@@ -335,12 +337,14 @@ public class SimulatorTask implements Runnable, EntityHandler {
       if (_bypassInference) {
         _vehicleLocationInferenceService.handleBypassUpdateForNycTestInferredLocationRecord(record);
       } else {
-        _vehicleLocationInferenceService.handleNycTestInferredLocationRecord(record);
+        Future<?> taskFuture = _vehicleLocationInferenceService.handleNycTestInferredLocationRecord(record);
+        taskFuture.get();
       }
+      
+      processResultRecord(record);
 
-      if (shouldExitAfterWaitingForInferenceToComplete(record))
-        ;
-      // return;
+//      if (shouldExitAfterWaitingForInferenceToComplete(record))
+//       return;
 
       _mostRecentRecord = record;
       _recordsProcessed.incrementAndGet();

@@ -1,8 +1,13 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import org.onebusaway.transit_data_federation.services.blocks.AbstractBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.builder.CompareToBuilder;
@@ -10,6 +15,9 @@ import org.opentrackingtools.graph.edges.InferredEdge;
 import org.opentrackingtools.graph.edges.impl.SimpleInferredEdge;
 import org.opentrackingtools.graph.paths.edges.PathEdge;
 import org.opentrackingtools.graph.paths.edges.impl.SimplePathEdge;
+
+import java.util.Collections;
+import java.util.List;
 
 public class MtaPathEdge extends SimplePathEdge {
   
@@ -39,7 +47,7 @@ public class MtaPathEdge extends SimplePathEdge {
 
   public static MtaPathEdge getNullPathEdge() {
     return new MtaPathEdge(
-      SimpleInferredEdge.getNullEdge(), null, null, null, null);
+      SimpleInferredEdge.getNullEdge(), null, null, nullBlockTripEntry, null);
   }
 
   /**
@@ -127,4 +135,85 @@ public class MtaPathEdge extends SimplePathEdge {
     return builder.toString();
   }
 
+  final static BlockTripEntry nullBlockTripEntry = new BlockTripEntry() {
+
+    @Override
+    public List<BlockStopTimeEntry> getStopTimes() {
+      return Collections.emptyList();
+    }
+
+    @Override
+    public BlockConfigurationEntry getBlockConfiguration() {
+      return null;
+    }
+
+    @Override
+    public TripEntry getTrip() {
+      return null;
+    }
+
+    @Override
+    public short getSequence() {
+      return 0;
+    }
+
+    @Override
+    public short getAccumulatedStopTimeIndex() {
+      return 0;
+    }
+
+    @Override
+    public int getAccumulatedSlackTime() {
+      return 0;
+    }
+
+    @Override
+    public double getDistanceAlongBlock() {
+      return 0;
+    }
+
+    @Override
+    public BlockTripEntry getPreviousTrip() {
+      return null;
+    }
+
+    @Override
+    public BlockTripEntry getNextTrip() {
+      return null;
+    }
+
+    @Override
+    public int getArrivalTimeForIndex(int index) {
+      return 0;
+    }
+
+    @Override
+    public int getDepartureTimeForIndex(int index) {
+      return 0;
+    }
+
+    @Override
+    public double getDistanceAlongBlockForIndex(int blockSequence) {
+      return 0;
+    }
+
+    @Override
+    public AbstractBlockTripIndex getPattern() {
+      return null;
+    }
+    
+  };
+      
+  /**
+   * We use this to tell the difference between an entry that is set
+   * and one that is supposed to be empty.
+   * @return
+   */
+  public static BlockTripEntry getNullBlockTripEntry() {
+    return nullBlockTripEntry;
+  }
+
+  public boolean isNullBlockTrip() {
+    return Objects.equal(this.getBlockTripEntry(), nullBlockTripEntry);
+  }
 }

@@ -160,15 +160,16 @@ public class VehicleLocationInferenceServiceImpl implements
    * This method is used by the simulator to inject a trace into the inference process.
    */
   @Override
-  public void handleNycTestInferredLocationRecord(
+  public Future<?> handleNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
-
+    final Future<?> result;
     synchronized(_vehicleInstancesByVehicleId) {
     	final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
-    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record, true, false));
+    	result = _executorService.submit(new ProcessingTask(i, record, true, false));
     	_bundleManagementService.registerInferenceProcessingThread(result);
     }
+    return result;
   }
   
   /**

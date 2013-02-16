@@ -1,14 +1,18 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MtaInferredPath.MtaEdgePredictiveResults;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.MtaTrackingGraph.BlockTripEntryAndDate;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MtaTrackingGraph.TripInfo;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MtaPathStateBelief;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.InstanceState;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -30,6 +34,7 @@ import org.opentrackingtools.statistics.impl.StatisticsUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -67,65 +72,108 @@ public class MtaVehicleTrackingPLFilter extends VehicleTrackingPLFilter {
       
       if (tripInfo != null) {
         
-        for (BlockTripIndex index: tripInfo.getIndices()) {
-          for (Pair<BlockTripEntry, Date> blockTripPair : mtaGraph.getActiveBlockTripEntries(index, timeFrom, timeTo)) {
-            final BlockTripEntry blockTripEntry = blockTripPair.getFirst();
+        Collection<BlockTripEntryAndDate> activeEntries = tripInfo.getTimeIndex().query(timeFrom.getTime(), timeTo.getTime());
+        for (BlockTripEntryAndDate blockTripEntryAndDate: activeEntries) {
             
-            final double distanceAlongBlock = blockTripEntry.getDistanceAlongBlock() 
-                + pathStateBelief.getGlobalState().getElement(0);
-            
-            InstanceState instState = new InstanceState(blockTripPair.getSecond().getTime());
-            BlockInstance instance = new BlockInstance(blockTripEntry.getBlockConfiguration(), 
-                instState);
-            
-            final MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief)pathStateBelief.clone();
-            mtaPathStateBelief.setBlockState(mtaGraph.getBlockState(instance, distanceAlongBlock));
-            
-            org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState currOldTypeVehicleState
-              = mtaGraph.createOldTypeVehicleState(obs, mtaPathStateBelief, null);
-            
-            final double runPredLogLik = MtaInferredPath.computeRunPredictiveLogLikelihood(
-                mtaGraph,
-                obs, 
-                currOldTypeVehicleState,
-                prevOldTypeVehicleState);
-            
-            final MtaVehicleState newState = (MtaVehicleState) this.inferredGraph.createVehicleState(state.getObservation(),
-                state.getMovementFilter().clone(), 
-                mtaPathStateBelief.clone(), 
-                state.getEdgeTransitionDist().clone(), null);
-            
-            newState.setOldTypeVehicleState(currOldTypeVehicleState);
-            
-            reweightedPathEdges
-                .add(new WrappedWeightedValue<VehicleState>(newState, runPredLogLik));
+          final BlockTripEntry blockTripEntry = blockTripEntryAndDate.getBlockTripEntry();
+          
+          if (blockTripEntry.getTrip().getId().toString().equals("MTABC_2537222-NOPE2-YO_E2-Weekday-99")) {
+            System.out.println("wtf");
           }
+          
+          final double distanceAlongBlock = blockTripEntry.getDistanceAlongBlock() 
+              + pathStateBelief.getGlobalState().getElement(0);
+          
+          InstanceState instState = new InstanceState(blockTripEntryAndDate.getServiceDate().getTime());
+          BlockInstance instance = new BlockInstance(blockTripEntry.getBlockConfiguration(), 
+              instState);
+          
+          MtaInferredPath mtaInferredPath = MtaInferredPath.deepCopyPath((MtaInferredPath) pathStateBelief.getPath());
+          final MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief) mtaInferredPath.getStateBeliefOnPath(
+              pathStateBelief.getGlobalStateBelief().clone());
+          mtaPathStateBelief.setBlockState(mtaGraph.getBlockState(instance, distanceAlongBlock));
+          MtaPathEdge mtaPathEdge = ((MtaPathEdge)mtaPathStateBelief.getEdge());
+          mtaPathEdge.setBlockTripEntry(blockTripEntry);
+          mtaPathEdge.setServiceDate(blockTripEntryAndDate.getServiceDate().getTime());
+          
+          org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState currOldTypeVehicleState
+            = mtaGraph.createOldTypeVehicleState(obs, mtaPathStateBelief, null);
+          
+          final EdgePredictiveResults edgeResults = new EdgePredictiveResults(null, null, 
+              0d,
+              0d,
+              initialDist.getLogFraction(state)
+              );
+          final double runPredLogLik = MtaInferredPath.computeRunPredictiveLogLikelihood(
+              edgeResults,
+              mtaGraph,
+              obs, 
+              currOldTypeVehicleState,
+              prevOldTypeVehicleState).getTotalLogLik();
+          
+          final MtaVehicleState newState = (MtaVehicleState) this.inferredGraph.createVehicleState(state.getObservation(),
+              state.getMovementFilter().clone(), 
+              mtaPathStateBelief, 
+              state.getEdgeTransitionDist().clone(), null);
+          
+          newState.setOldTypeVehicleState(currOldTypeVehicleState);
+          
+          reweightedPathEdges
+              .add(new WrappedWeightedValue<VehicleState>(newState, runPredLogLik));
         }
       } else {
         Collection<BlockStateObservation> blockStates = mtaGraph.getBlockStateObs(obs);
         blockStates.add(null);
         for (BlockStateObservation blockStateObs : blockStates) {
           
-          final MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief)pathStateBelief.clone();
+          if (blockStateObs != null && JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState()))
+            continue;
           
-          if (blockStateObs != null)
+          /*
+           * The entire path needs to be recreated to reflect this block/run
+           */
+          MtaInferredPath mtaInferredPath = MtaInferredPath.deepCopyPath((MtaInferredPath) pathStateBelief.getPath());
+          final MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief) mtaInferredPath.getStateBeliefOnPath(
+              pathStateBelief.getGlobalStateBelief().clone());
+          
+          final BlockTripEntry blockTripEntry;
+          final Long serviceDate;
+          if (blockStateObs != null) {
             mtaPathStateBelief.setBlockState(blockStateObs.getBlockState());
+            blockTripEntry = blockStateObs.getBlockState().getBlockLocation().getActiveTrip();
+            serviceDate = blockStateObs.getBlockState().getBlockInstance().getServiceDate();
+          } else {
+            blockTripEntry = MtaPathEdge.getNullBlockTripEntry();
+            serviceDate = null;
+          }
+          MtaPathEdge mtaPathEdge = ((MtaPathEdge)mtaPathStateBelief.getEdge());
+          mtaPathEdge.setBlockTripEntry(blockTripEntry);
+          mtaPathEdge.setServiceDate(serviceDate);
           
           org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState currOldTypeVehicleState
             = mtaGraph.createOldTypeVehicleState((Observation)obs, mtaPathStateBelief, null);
           
+          Preconditions.checkState(currOldTypeVehicleState.getJourneyState().getPhase() 
+              != EVehiclePhase.IN_PROGRESS);
+          
           final MtaVehicleState newState = (MtaVehicleState) this.inferredGraph.createVehicleState(state.getObservation(),
               state.getMovementFilter().clone(), 
-              mtaPathStateBelief.clone(), 
+              mtaPathStateBelief, 
               state.getEdgeTransitionDist().clone(), null);
           
           newState.setOldTypeVehicleState(currOldTypeVehicleState);
-          
+            
+          final EdgePredictiveResults edgeResults = new EdgePredictiveResults(null, null, 
+              0d,
+              0d,
+              initialDist.getLogFraction(state)
+              );
           final double runPredLogLik = MtaInferredPath.computeRunPredictiveLogLikelihood(
+              edgeResults,
               mtaGraph,
-              (Observation)obs, 
+              obs, 
               currOldTypeVehicleState,
-              prevOldTypeVehicleState);
+              prevOldTypeVehicleState).getTotalLogLik();
           
           reweightedPathEdges
               .add(new WrappedWeightedValue<VehicleState>(newState, runPredLogLik));

@@ -37,6 +37,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCo
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -314,8 +315,9 @@ public class VehicleInferenceInstance {
       _particleFilter = new MtaVehicleTrackingPLFilter(observation, 
           _trackingGraph, _initialParams, true, rng);
       _trackingGraph.setRng(rng);
+    }
+    if (_particles == null || _particles.isEmpty()) {
       _particles = _particleFilter.createInitialLearnedObject();
-      
     } else {
       _particleFilter.update(_particles, observation);
     }
@@ -382,6 +384,12 @@ public class VehicleInferenceInstance {
     if (_particles == null)
       return null;
     final MtaVehicleState state = (MtaVehicleState) _particles.getMaxValueKey();
+    if (state.getOldTypeVehicleState() == null) {
+      final org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldState = 
+          this._trackingGraph.createOldTypeVehicleState((Observation)state.getObservation(),
+          (MtaPathStateBelief) state.getBelief(), (MtaVehicleState) state.getParentState());
+      state.setOldTypeVehicleState(oldState);
+    }
     final Observation obs = (Observation) state.getOldTypeVehicleState().getObservation();
     final BlockStateObservation blockState = state.getOldTypeVehicleState().getBlockStateObservation();
     final NycRawLocationRecord nycRawRecord = obs.getRecord();
@@ -416,6 +424,12 @@ public class VehicleInferenceInstance {
     if (_particles == null)
       return null;
     final MtaVehicleState state = (MtaVehicleState) _particles.getMaxValueKey();
+    if (state.getOldTypeVehicleState() == null) {
+      final org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldState = 
+          this._trackingGraph.createOldTypeVehicleState((Observation)state.getObservation(),
+          (MtaPathStateBelief) state.getBelief(), (MtaVehicleState) state.getParentState());
+      state.setOldTypeVehicleState(oldState);
+    }
     final Observation obs = (Observation) state.getObservation();
     final NycRawLocationRecord nycRawRecord = obs.getRecord();
     final BlockStateObservation blockState = state.getOldTypeVehicleState().getBlockStateObservation();
@@ -596,6 +610,12 @@ public class VehicleInferenceInstance {
       return null;
     
     final MtaVehicleState state = (MtaVehicleState) _particles.getMaxValueKey();
+    if (state.getOldTypeVehicleState() == null) {
+      final org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldState = 
+          this._trackingGraph.createOldTypeVehicleState((Observation)state.getObservation(),
+          (MtaPathStateBelief) state.getBelief(), (MtaVehicleState) state.getParentState());
+      state.setOldTypeVehicleState(oldState);
+    }
     final Observation obs = (Observation) state.getObservation();
     final MotionState motionState = state.getOldTypeVehicleState().getMotionState();
     final JourneyState journeyState = state.getOldTypeVehicleState().getJourneyState();
