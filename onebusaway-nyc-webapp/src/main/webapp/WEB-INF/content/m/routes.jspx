@@ -22,6 +22,8 @@
       xmlns:wiki="/oba-wiki-tags">
     <jsp:directive.page contentType="text/html" />
     <jsp:output omit-xml-declaration="yes"/>
+    <s:set name="useAgencyId" value="useAgencyId" />
+    <s:set name="showAgencyNames" value="showAgencyNames" />
     <head>
 
 
@@ -34,7 +36,7 @@
                     <s:iterator value="routes">
                         <s:url var="url" value="/m/">
                             <s:param name="q">
-                                <s:if test="useAgencyId">
+                                <s:if test="#useAgencyId">
                                     <s:property value="id" />
                                 </s:if>
                                 <s:else>
@@ -44,7 +46,7 @@
                         </s:url>
 
                         <a href="${url}">
-                            <s:if test="showAgencyNames">
+                            <s:if test="#showAgencyNames">
                                 <s:property value="agency.name" />&amp;nbsp;
                             </s:if>
                             <s:if test="shortName != null">
