@@ -69,9 +69,9 @@ public class SearchServiceImpl implements SearchService {
 	@Autowired
 	private NycTransitDataService _nycTransitDataService;
 
-	private Map<String, String> _routeShortNameToIdMap = new HashMap<String, String>();
+	private Map<String, RouteBean> _routeShortNameToRouteBeanMap = new HashMap<String, RouteBean>();
 
-	private Map<String, String> _routeLongNameToIdMap = new HashMap<String, String>();
+	private Map<String, RouteBean> _routeLongNameToRouteBeanMap = new HashMap<String, RouteBean>();
 
 	private String _bundleIdForCaches = null;
 
@@ -91,14 +91,13 @@ public class SearchServiceImpl implements SearchService {
 			return;
 		}
 
-		_routeShortNameToIdMap.clear();
-		_routeLongNameToIdMap.clear();
+		_routeShortNameToRouteBeanMap.clear();
+		_routeLongNameToRouteBeanMap.clear();
 
 		for (AgencyWithCoverageBean agency : _nycTransitDataService.getAgenciesWithCoverage()) {
-			for (String routeId : _nycTransitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
-				RouteBean routeBean = _nycTransitDataService.getRouteForId(routeId);
-				_routeShortNameToIdMap.put(routeBean.getShortName().toUpperCase(), routeId);
-				_routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
+			for (RouteBean routeBean : _nycTransitDataService.getRoutesForAgencyId(agency.getAgency().getId()).getList()) {
+				_routeShortNameToRouteBeanMap.put(routeBean.getShortName().toUpperCase(), routeBean);
+				_routeLongNameToRouteBeanMap.put(routeBean.getLongName(), routeBean);
 			}
 		}
 
@@ -107,7 +106,7 @@ public class SearchServiceImpl implements SearchService {
 
 	@Override
 	public SearchResultCollection findStopsNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory,
-			Set<String> routeIdFilter) {
+			Set<RouteBean> routeFilter) {
 
 		CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, DISTANCE_TO_STOPS);
 
@@ -200,10 +199,10 @@ public class SearchServiceImpl implements SearchService {
 		// Create our search results object, iterate through our stops, create stop
 		// results from each of those stops, and add them to the search results.
 		SearchResultCollection results = new SearchResultCollection();
-		results.addRouteIdFilters(routeIdFilter);
+		results.addRouteFilters(routeFilter);
 
 		for (StopBean stop : stopsForResults) {
-			SearchResult result = resultFactory.getStopResult(stop, routeIdFilter);
+			SearchResult result = resultFactory.getStopResult(stop, routeFilter);
 			results.addMatch(result);
 		}
 
@@ -308,14 +307,14 @@ public class SearchServiceImpl implements SearchService {
 			}
 
 			// keep track of route tokens we found when parsing
-			if (_routeShortNameToIdMap.containsKey(token)) {
+			if (_routeShortNameToRouteBeanMap.containsKey(token)) {
 				// if a route is included as part of another type of query, then
 				// it's a filter--
 				// so remove it from the normalized query sent to the geocoder
 				// or stop service
-				if ((lastItem != null && !_routeShortNameToIdMap.containsKey(lastItem))
-						|| (nextItem != null && !_routeShortNameToIdMap.containsKey(nextItem))) {
-					results.addRouteIdFilter(_routeShortNameToIdMap.get(token));
+				if ((lastItem != null && !_routeShortNameToRouteBeanMap.containsKey(lastItem))
+						|| (nextItem != null && !_routeShortNameToRouteBeanMap.containsKey(nextItem))) {
+					results.addRouteFilter(_routeShortNameToRouteBeanMap.get(token));
 					continue;
 				}
 			} else {
@@ -331,7 +330,7 @@ public class SearchServiceImpl implements SearchService {
 				// if a user is prepending a route filter with a plus sign, chop
 				// it off
 				// e.g. main and craig + B63
-				if (_routeShortNameToIdMap.containsKey(nextItem)) {
+				if (_routeShortNameToRouteBeanMap.containsKey(nextItem)) {
 					continue;
 				}
 
@@ -356,12 +355,12 @@ public class SearchServiceImpl implements SearchService {
 		}
 
 		// short name matching
-		if (_routeShortNameToIdMap.get(routeQuery) != null) {
-			RouteBean routeBean = _nycTransitDataService.getRouteForId(_routeShortNameToIdMap.get(routeQuery));
+		if (_routeShortNameToRouteBeanMap.get(routeQuery) != null) {
+			RouteBean routeBean = _routeShortNameToRouteBeanMap.get(routeQuery);
 			results.addMatch(resultFactory.getRouteResult(routeBean));
 		}
 
-		for (String routeShortName : _routeShortNameToIdMap.keySet()) {
+		for (String routeShortName : _routeShortNameToRouteBeanMap.keySet()) {
 			// if the route short name ends or starts with our query, and
 			// whatever's left over
 			// matches the regex
@@ -371,16 +370,16 @@ public class SearchServiceImpl implements SearchService {
 
 			if (!routeQuery.equals(routeShortName)
 					&& ((routeShortName.startsWith(routeQuery) && leftOversAreDiscardable) || (routeShortName.endsWith(routeQuery) && leftOversAreDiscardable))) {
-				RouteBean routeBean = _nycTransitDataService.getRouteForId(_routeShortNameToIdMap.get(routeShortName));
+				RouteBean routeBean = _routeShortNameToRouteBeanMap.get(routeShortName);
 				results.addSuggestion(resultFactory.getRouteResult(routeBean));
 				continue;
 			}
 		}
 
 		// long name matching
-		for (String routeLongName : _routeLongNameToIdMap.keySet()) {
+		for (String routeLongName : _routeLongNameToRouteBeanMap.keySet()) {
 			if (routeLongName.contains(routeQuery + " ") || routeLongName.contains(" " + routeQuery)) {
-				RouteBean routeBean = _nycTransitDataService.getRouteForId(_routeLongNameToIdMap.get(routeLongName));
+				RouteBean routeBean = _routeLongNameToRouteBeanMap.get(routeLongName);
 				results.addSuggestion(resultFactory.getRouteResult(routeBean));
 				continue;
 			}
@@ -399,10 +398,10 @@ public class SearchServiceImpl implements SearchService {
 		List<StopBean> matches = stopsForId(stopQuery);
 
 		if (matches.size() == 1)
-			results.addMatch(resultFactory.getStopResult(matches.get(0), results.getRouteIdFilter()));
+			results.addMatch(resultFactory.getStopResult(matches.get(0), results.getRouteFilter()));
 		else {
 			for (StopBean match : matches) {
-				results.addSuggestion(resultFactory.getStopResult(match, results.getRouteIdFilter()));
+				results.addSuggestion(resultFactory.getStopResult(match, results.getRouteFilter()));
 			}
 		}
 	}
@@ -412,9 +411,9 @@ public class SearchServiceImpl implements SearchService {
 
 		for (NycGeocoderResult result : geocoderResults) {
 			if (geocoderResults.size() == 1) {
-				results.addMatch(resultFactory.getGeocoderResult(result, results.getRouteIdFilter()));
+				results.addMatch(resultFactory.getGeocoderResult(result, results.getRouteFilter()));
 			} else {
-				results.addSuggestion(resultFactory.getGeocoderResult(result, results.getRouteIdFilter()));
+				results.addSuggestion(resultFactory.getGeocoderResult(result, results.getRouteFilter()));
 			}
 		}
 	}

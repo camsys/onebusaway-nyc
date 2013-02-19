@@ -220,8 +220,8 @@ public class SearchResultFactoryImplTest {
         serviceAlerts);
     SearchResultFactoryImpl srf = new SearchResultFactoryImpl(
         _nycTransitDataService, _realtimeService, _configurationService);
-    Set<String> routeIdFilter = new HashSet<String>();
-    StopResult result = (StopResult) srf.getStopResult(stopBean, routeIdFilter);
+    Set<RouteBean> routeFilter = new HashSet<RouteBean>();
+    StopResult result = (StopResult) srf.getStopResult(stopBean, routeFilter);
     return result;
   }
 

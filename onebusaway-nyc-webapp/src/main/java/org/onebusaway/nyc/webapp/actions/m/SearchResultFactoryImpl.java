@@ -138,7 +138,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   @Override
-  public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
+  public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
     List<RouteAtStop> routesWithArrivals = new ArrayList<RouteAtStop>();
     List<RouteAtStop> routesWithNoVehiclesEnRoute = new ArrayList<RouteAtStop>();
     List<RouteAtStop> routesWithNoScheduledService = new ArrayList<RouteAtStop>();
@@ -147,8 +147,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     Set<String> serviceAlertDescriptions = new HashSet<String>();
 
     for (RouteBean routeBean : stopBean.getRoutes()) {
-      if (routeIdFilter != null && !routeIdFilter.isEmpty()
-          && !routeIdFilter.contains(routeBean.getId())) {
+      if (routeFilter != null && !routeFilter.isEmpty()
+          && !routeFilter.contains(routeBean)) {
         filteredRoutes.add(routeBean);
         continue;
       }
@@ -226,8 +226,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult,
-      Set<String> routeShortNameFilter) {
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeFilter) {
     return new GeocodeResult(geocodeResult);
   }
 

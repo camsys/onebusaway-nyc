@@ -372,15 +372,11 @@ OBA.Popups = (function() {
 	    var routeAndDirectionWithoutSerivce = {};
 	    var routeAndDirectionWithoutSerivceCount = 0;
 	    var totalRouteCount = 0;
-	    
-	    if (!routeFilter) {
-	    	routeFilter = [];
-	    }
 		
 		var filterExistsInResults = false;
 		
 		jQuery.each(stopResult.routesAvailable, function(_, routeResult) {
-			if (jQuery.inArray(routeResult.id, routeFilter) > -1) {
+			if (routeResult.shortName === routeFilter) {
 				filterExistsInResults = true;
 				return false;
 			}
@@ -394,7 +390,7 @@ OBA.Popups = (function() {
 		filteredMatchesData.append("<ul></ul>");
 	    
 		jQuery.each(stopResult.routesAvailable, function(_, route) {
-	    	if (filterExistsInResults && jQuery.inArray(route.id, routeFilter) < 0) {
+	    	if (filterExistsInResults && route.shortName !== routeFilter) {
 	    		var filteredMatch = jQuery("<li></li>").addClass("filtered-match");
 	    		var link = jQuery('<a href="#' + stopResult.id.match(/\d*$/) + '%20' + route.shortName + '"><span class="route-name">' + route.shortName + '</span></a>');
 	    		link.appendTo(filteredMatch);
@@ -418,8 +414,9 @@ OBA.Popups = (function() {
 	    var visits = siri.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
 	    jQuery.each(visits, function(_, monitoredJourney) {
 			var routeId = monitoredJourney.MonitoredVehicleJourney.LineRef;
+			var routeShortName = monitoredJourney.MonitoredVehicleJourney.PublishedLineName;
 			
-			if (filterExistsInResults && jQuery.inArray(routeId, routeFilter) < 0) {
+			if (filterExistsInResults && routeShortName !== routeFilter) {
 				return true; //continue
 			}
 			

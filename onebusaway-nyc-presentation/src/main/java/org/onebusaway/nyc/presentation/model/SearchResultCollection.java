@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.onebusaway.transit_data.model.RouteBean;
+
 public class SearchResultCollection implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -16,7 +18,7 @@ public class SearchResultCollection implements Serializable {
 
   private List<SearchResult> _suggestions = new ArrayList<SearchResult>();
 
-  private Set<String> _routeIdFilter = new HashSet<String>();
+  private Set<RouteBean> _routeFilter = new HashSet<RouteBean>();
   
   private Double _queryLat = null;
   
@@ -46,12 +48,12 @@ public class SearchResultCollection implements Serializable {
     _suggestions.add(thing);
   }
 
-  public void addRouteIdFilter(String routeId) {
-    _routeIdFilter.add(routeId);
+  public void addRouteFilter(RouteBean route) {
+    _routeFilter.add(route);
   }
   
-  public void addRouteIdFilters(Set<String> routeIds) {
-    _routeIdFilter.addAll(routeIds);
+  public void addRouteFilters(Set<RouteBean> routes) {
+    _routeFilter.addAll(routes);
   }
 
   public boolean isEmpty() {
@@ -62,8 +64,8 @@ public class SearchResultCollection implements Serializable {
     return _matches;
   }
 
-  public Set<String> getRouteIdFilter() {
-    return _routeIdFilter;
+  public Set<RouteBean> getRouteFilter() {
+    return _routeFilter;
   }
 
   public List<SearchResult> getSuggestions() {
