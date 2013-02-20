@@ -339,6 +339,12 @@ public class SearchServiceImpl implements SearchService {
 
 			normalizedQuery += token + " ";
 		}
+		
+		// If we parsed more than one route filter from the query, remove route filters
+		// because user interfaces don't support more than one route filter
+		if (results.getRouteFilter() != null && results.getRouteFilter().size() > 1) {
+		  results.getRouteFilter().clear();
+		}
 
 		return normalizedQuery.trim();
 	}

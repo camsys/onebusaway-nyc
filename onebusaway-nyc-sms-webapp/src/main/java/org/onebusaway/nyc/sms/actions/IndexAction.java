@@ -871,7 +871,7 @@ public class IndexAction extends SessionedIndexAction {
       return "R";
     }
 
-    if (query.toUpperCase().equals("M")) {
+    if (query.toUpperCase().equals("M") && _searchResults != null && "GeocodeResult".equals(_searchResults.getResultType())) {
       return "M";
     }
 
