@@ -57,6 +57,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaVehicleState;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;

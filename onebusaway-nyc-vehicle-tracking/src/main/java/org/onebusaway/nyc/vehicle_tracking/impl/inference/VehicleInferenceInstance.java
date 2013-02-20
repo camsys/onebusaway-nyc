@@ -47,6 +47,9 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGraph;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaVehicleState;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaVehicleTrackingPLFilter;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -189,6 +192,7 @@ public class VehicleInferenceInstance {
      * we take special action
      */
     if (_particleFilter != null && 
+        _particleFilter.getLastProcessedTime() != null && 
         timestamp <= _particleFilter.getLastProcessedTime()) {
       final long backInTime = (long) (_particleFilter.getLastProcessedTime() - timestamp);
 

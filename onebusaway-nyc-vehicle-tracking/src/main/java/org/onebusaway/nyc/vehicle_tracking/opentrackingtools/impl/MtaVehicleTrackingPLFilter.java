@@ -1,11 +1,13 @@
-package org.onebusaway.nyc.vehicle_tracking.impl.inference;
+package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.MtaInferredPath.MtaEdgePredictiveResults;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.MtaTrackingGraph.BlockTripEntryAndDate;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.MtaTrackingGraph.TripInfo;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MtaPathStateBelief;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaInferredPath.MtaEdgePredictiveResults;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGraph.BlockTripEntryAndDate;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGraph.TripInfo;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
@@ -65,6 +67,12 @@ public class MtaVehicleTrackingPLFilter extends VehicleTrackingPLFilter {
     final Date timeFrom = new Date(time - MtaInferredPath.getTripSearchTimeAfterLastStop());
     final Date timeTo = new Date(time + MtaInferredPath.getTripSearchTimeBeforeFirstStop());
     
+    /*
+     * In this setting we can integrate over the block/run dependent
+     * space and make valid marginal comparisions with nulls states.  
+     */
+    double blockStateTotalLogLikelihood = Double.NEGATIVE_INFINITY;
+    
     for (VehicleState state : initialDist.getDomain()) {
       final PathEdge pathEdge = state.getBelief().getEdge();
       final TripInfo tripInfo = mtaGraph.getTripInfo(pathEdge.getInferredEdge());
@@ -76,10 +84,6 @@ public class MtaVehicleTrackingPLFilter extends VehicleTrackingPLFilter {
         for (BlockTripEntryAndDate blockTripEntryAndDate: activeEntries) {
             
           final BlockTripEntry blockTripEntry = blockTripEntryAndDate.getBlockTripEntry();
-          
-          if (blockTripEntry.getTrip().getId().toString().equals("MTABC_2537222-NOPE2-YO_E2-Weekday-99")) {
-            System.out.println("wtf");
-          }
           
           final double distanceAlongBlock = blockTripEntry.getDistanceAlongBlock() 
               + pathStateBelief.getGlobalState().getElement(0);
@@ -104,12 +108,16 @@ public class MtaVehicleTrackingPLFilter extends VehicleTrackingPLFilter {
               0d,
               initialDist.getLogFraction(state)
               );
-          final double runPredLogLik = MtaInferredPath.computeRunPredictiveLogLikelihood(
+          final MtaEdgePredictiveResults mtaEdgeLikelihood = MtaInferredPath.computeRunPredictiveLogLikelihood(
               edgeResults,
               mtaGraph,
               obs, 
               currOldTypeVehicleState,
-              prevOldTypeVehicleState).getTotalLogLik();
+              prevOldTypeVehicleState);
+          blockStateTotalLogLikelihood = LogMath.add(blockStateTotalLogLikelihood, 
+              mtaEdgeLikelihood.schedLogLikelihood);
+          
+          final double runPredLogLik = mtaEdgeLikelihood.getTotalLogLik();
           
           final MtaVehicleState newState = (MtaVehicleState) this.inferredGraph.createVehicleState(state.getObservation(),
               state.getMovementFilter().clone(), 
@@ -125,7 +133,6 @@ public class MtaVehicleTrackingPLFilter extends VehicleTrackingPLFilter {
         Collection<BlockStateObservation> blockStates = mtaGraph.getBlockStateObs(obs);
         blockStates.add(null);
         for (BlockStateObservation blockStateObs : blockStates) {
-          
           if (blockStateObs != null && JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState()))
             continue;
           
@@ -166,17 +173,21 @@ public class MtaVehicleTrackingPLFilter extends VehicleTrackingPLFilter {
           final EdgePredictiveResults edgeResults = new EdgePredictiveResults(null, null, 
               0d,
               0d,
-              initialDist.getLogFraction(state)
-              );
-          final double runPredLogLik = MtaInferredPath.computeRunPredictiveLogLikelihood(
+              initialDist.getLogFraction(state));
+          MtaEdgePredictiveResults mtaEdgeLikelihood = MtaInferredPath.computeRunPredictiveLogLikelihood(
               edgeResults,
               mtaGraph,
               obs, 
               currOldTypeVehicleState,
-              prevOldTypeVehicleState).getTotalLogLik();
+              prevOldTypeVehicleState);
           
-          reweightedPathEdges
-              .add(new WrappedWeightedValue<VehicleState>(newState, runPredLogLik));
+          if (blockStateObs != null)
+            blockStateTotalLogLikelihood = LogMath.add(blockStateTotalLogLikelihood, 
+                mtaEdgeLikelihood.schedLogLikelihood);
+          
+          reweightedPathEdges 
+              .add(new WrappedWeightedValue<VehicleState>(newState, 
+                  mtaEdgeLikelihood.getTotalLogLik()));
         }
       }
     }

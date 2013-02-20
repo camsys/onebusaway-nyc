@@ -1,8 +1,8 @@
-package org.onebusaway.nyc.vehicle_tracking.impl.inference;
+package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 
 import org.onebusaway.gtfs.model.calendar.ServiceInterval;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.MtaTrackingGraph.BlockTripEntryAndDate;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.MtaTrackingGraph.TripInfo;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.DscLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.RunLikelihood;
@@ -13,6 +13,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObserv
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MtaPathStateBelief;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGraph.BlockTripEntryAndDate;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGraph.TripInfo;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
@@ -241,9 +243,9 @@ public class MtaInferredPath extends SimpleInferredPath {
               instState);
           
           MtaInferredPath mtaInferredPath = MtaInferredPath.deepCopyPath(
-              (MtaInferredPath) predEdgeResults.getLocationPrediction().getPath());
+              (MtaInferredPath) pathStateBelief.getPath());
           final MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief) mtaInferredPath.getStateBeliefOnPath(
-              predEdgeResults.getLocationPrediction().getGlobalStateBelief().clone());
+              pathStateBelief.getGlobalStateBelief().clone());
           EdgePredictiveResults predEdgeResultsCopy = new EdgePredictiveResults(
               predEdgeResults.getBeliefPrediction().clone(), mtaPathStateBelief, 
               predEdgeResults.getEdgePredMarginalLogLik(),
@@ -288,7 +290,16 @@ public class MtaInferredPath extends SimpleInferredPath {
         blockStates.add(null);
         for (BlockStateObservation blockStateObs : blockStates) {
           
-          if (blockStateObs != null && JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState()))
+          /*
+           * We don't want to infer a run with road location when the state
+           * isn't on one.
+           * We do allow a null run for an on-road state, though.  This comes in 
+           * handy when we add more streets to the graph (ones that don't correspond
+           * to routes).
+           */
+          if (blockStateObs != null 
+              && (JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState())
+                  || pathStateBelief.isOnRoad()))
             continue;
           
           MtaInferredPath mtaInferredPath = MtaInferredPath.deepCopyPath(

@@ -49,8 +49,8 @@ public class MtaPathStateBelief extends SimplePathStateBelief {
   @Override
   public String toString() {
     ToStringBuilder builder = new ToStringBuilder(this);
-    builder.append("path", path.toString());
-    builder.append("globalState", getGlobalState().toString());
+    builder.append("path", path);
+    builder.append("globalState", this.globalStateBelief.getMean());
     builder.append("blockState", blockState);
     return builder.toString();
   }

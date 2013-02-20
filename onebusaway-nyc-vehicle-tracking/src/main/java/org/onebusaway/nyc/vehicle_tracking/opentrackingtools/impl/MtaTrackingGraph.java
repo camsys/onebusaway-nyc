@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.vehicle_tracking.impl.inference;
+package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 
 import org.onebusaway.collections.tuple.Tuples;
 import org.onebusaway.container.refresh.Refreshable;
@@ -9,6 +9,11 @@ import org.onebusaway.gtfs.model.calendar.ServiceInterval;
 import org.onebusaway.gtfs.services.GtfsDao;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.DscLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.GpsLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.NullStateLikelihood;
@@ -61,6 +66,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateList;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
@@ -138,8 +144,8 @@ public class MtaTrackingGraph extends GenericJTSGraph {
   
   public RunLikelihood runLikelihood = new RunLikelihood();
   
-  @Autowired
-  public OBAGraphServiceImpl obaGraph;
+//  @Autowired
+//  public OBAGraphServiceImpl obaGraph;
 
   @Autowired
   public FederatedTransitDataBundle _bundle;
@@ -238,14 +244,11 @@ public class MtaTrackingGraph extends GenericJTSGraph {
           continue;
         }
       
-        final List<Coordinate> coords = Lists.newArrayList();
+        final CoordinateList coords = new CoordinateList();
         for (int i = 0; i < shapePoints.getSize(); ++i) {
-          final CoordinatePoint next = shapePoints.getPointForIndex(i);
-          final Coordinate nextJts = new Coordinate(next.getLat(), next.getLon());
-
-          if (coords.size() == 0 || !nextJts.equals2D(coords.get(coords.size() - 1))) {
-            coords.add(nextJts);
-          }
+          final Coordinate nextCoord = new Coordinate(shapePoints.getLats()[i], 
+              shapePoints.getLons()[i]);
+          coords.add(nextCoord, false);
         }
         
         if (coords.isEmpty()) {
@@ -253,7 +256,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
           continue;
         }
 
-        final Geometry lineGeo = gf.createLineString(coords.toArray(new Coordinate[coords.size()]));
+        final Geometry lineGeo = gf.createLineString(coords.toCoordinateArray());
         
         _geoToShapeId.put(lineGeo, shapeId);
         _shapeIdToGeo.put(shapeId, lineGeo);
@@ -489,7 +492,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
       return null;
     BasicDirectedEdge edge = (BasicDirectedEdge) inferredEdge.getBackingEdge();
     LineString edgeGeom = (LineString)edge.getObject();
-    final TripInfo tripInfo = this._geometryToTripInfo.get(edgeGeom.getUserData());
+    final TripInfo tripInfo = Preconditions.checkNotNull(this._geometryToTripInfo.get(edgeGeom.getUserData()));
     return tripInfo;
   }
 
