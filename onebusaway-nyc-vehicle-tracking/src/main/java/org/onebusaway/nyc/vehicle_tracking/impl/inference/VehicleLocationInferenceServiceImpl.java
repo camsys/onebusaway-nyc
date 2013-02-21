@@ -453,8 +453,8 @@ public class VehicleLocationInferenceServiceImpl implements
         boolean vehicleStateResetVehicle = false;
         for(VehicleState particleState : vehicleInstance.getCurrentParticles().getDomain()) {
           MtaVehicleState mtaState = (MtaVehicleState) particleState;
-        	final BlockStateObservation particleBlockState = mtaState.getOldTypeVehicleState()
-        	    .getBlockStateObservation();
+        	final BlockStateObservation particleBlockState = mtaState.getRunStateBelief().getMaxValueKey()
+        	    .getBlockStateObs();
         	if(particleBlockState == null)
         		continue;
         	

@@ -3,44 +3,86 @@ package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MtaPathStateBelief;
 
 import org.opentrackingtools.GpsObservation;
 import org.opentrackingtools.graph.InferenceGraph;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
 import org.opentrackingtools.impl.VehicleState;
-import org.opentrackingtools.statistics.distributions.impl.OnOffEdgeTransDirMulti;
+import org.opentrackingtools.statistics.distributions.impl.DeterministicDataDistribution;
+import org.opentrackingtools.statistics.distributions.impl.OnOffEdgeTransDistribution;
 import org.opentrackingtools.statistics.filters.vehicles.road.impl.AbstractRoadTrackingFilter;
 
 public class MtaVehicleState extends VehicleState {
   
   private static final long serialVersionUID = 6667209143463134023L;
   
-  private org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldTypeVehicleState;
+  private DeterministicDataDistribution<RunState> runStateBelief;
 
   public MtaVehicleState(InferenceGraph inferredGraph,
       GpsObservation observation, AbstractRoadTrackingFilter updatedFilter,
-      PathStateBelief belief, OnOffEdgeTransDirMulti edgeTransitionDist,
+      PathStateBelief belief, OnOffEdgeTransDistribution edgeTransitionDist,
       VehicleState parentState, 
-      org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldTypeVehicleState) {
+      DeterministicDataDistribution<RunState> runStateBelief) {
     
     super(inferredGraph, observation, updatedFilter, belief, edgeTransitionDist,
         parentState);
     
-    this.oldTypeVehicleState = oldTypeVehicleState;
+    this.runStateBelief = runStateBelief;
   }
 
   public MtaVehicleState(MtaVehicleState other) {
     super(other);
-    this.oldTypeVehicleState = other.oldTypeVehicleState;
+    this.runStateBelief = other.getRunStateBelief();
   }
 
-  public org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState getOldTypeVehicleState() {
-    return oldTypeVehicleState;
+  public DeterministicDataDistribution<RunState> getRunStateBelief() {
+    // TODO run state should be here, and not in the path belief, right?
+    if (runStateBelief == null)
+      runStateBelief = ((MtaPathStateBelief) this.getBelief()).getRunStateBelief();
+    return runStateBelief;
   }
 
-  public void setOldTypeVehicleState(
-      org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldTypeVehicleState) {
-    this.oldTypeVehicleState = oldTypeVehicleState;
+  public void setRunStateBelief(DeterministicDataDistribution<RunState> runState) {
+    this.runStateBelief = runState;
+  }
+
+  @Override
+  public MtaVehicleState clone() {
+    MtaVehicleState clone = (MtaVehicleState) super.clone();
+    clone.runStateBelief = this.getRunStateBelief();
+    return clone;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    if (!(obj instanceof MtaVehicleState)) {
+      return false;
+    }
+    MtaVehicleState other = (MtaVehicleState) obj;
+    if (runStateBelief == null) {
+      if (other.runStateBelief != null) {
+        return false;
+      }
+    } else if (!runStateBelief.equals(other.runStateBelief)) {
+      return false;
+    }
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result
+        + ((runStateBelief == null) ? 0 : runStateBelief.hashCode());
+    return result;
   }
 
 }

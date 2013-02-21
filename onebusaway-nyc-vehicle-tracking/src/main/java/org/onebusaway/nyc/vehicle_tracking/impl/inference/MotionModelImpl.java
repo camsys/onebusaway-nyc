@@ -428,7 +428,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
           0.0, newState);
       newParticle.setResult(transProb);
 
-      if (ParticleFilter.getDebugEnabled()) {
+      if (debugTransitions != null) {
         final double logWeight = parent.getElement().getLogWeight()
             + newParticle.getResult().getLogProbability();
         newParticle.setLogWeight(logWeight);

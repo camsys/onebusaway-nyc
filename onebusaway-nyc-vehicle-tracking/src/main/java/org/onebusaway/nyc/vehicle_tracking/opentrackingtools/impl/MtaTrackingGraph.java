@@ -83,9 +83,10 @@ import org.opentrackingtools.graph.edges.InferredEdge;
 import org.opentrackingtools.graph.impl.GenericJTSGraph;
 import org.opentrackingtools.graph.paths.InferredPath;
 import org.opentrackingtools.graph.paths.edges.PathEdge;
+import org.opentrackingtools.graph.paths.states.PathState;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
 import org.opentrackingtools.impl.VehicleState;
-import org.opentrackingtools.statistics.distributions.impl.OnOffEdgeTransDirMulti;
+import org.opentrackingtools.statistics.distributions.impl.OnOffEdgeTransDistribution;
 import org.opentrackingtools.statistics.filters.vehicles.road.impl.AbstractRoadTrackingFilter;
 import org.opentrackingtools.util.GeoUtils;
 import org.slf4j.Logger;
@@ -106,6 +107,8 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
 @Component
@@ -367,7 +370,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
   @Override
   public VehicleState createVehicleState(GpsObservation obs,
       AbstractRoadTrackingFilter trackingFilter,
-      PathStateBelief pathStateBelief, OnOffEdgeTransDirMulti edgeTransDist,
+      PathStateBelief pathStateBelief, OnOffEdgeTransDistribution edgeTransDist,
       VehicleState parent) {
     
     Preconditions.checkState((obs instanceof Observation));
@@ -375,123 +378,54 @@ public class MtaTrackingGraph extends GenericJTSGraph {
     Preconditions.checkState(parent == null || (parent instanceof MtaVehicleState));
     
     MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief) pathStateBelief;
-    final org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState
-      oldTypeVehicleState; 
-    if (mtaPathStateBelief.getBlockState() != null) {
-      oldTypeVehicleState = createOldTypeVehicleState((Observation)obs, 
-            mtaPathStateBelief, (MtaVehicleState) parent);
-    } else {
-      oldTypeVehicleState = null;
-    }
     
     return new MtaVehicleState(this, obs, trackingFilter,
-        pathStateBelief, edgeTransDist, parent, oldTypeVehicleState);
+        pathStateBelief, edgeTransDist, parent, mtaPathStateBelief.getRunStateBelief());
   }
+  
+  public BlockStateObservation getBlockStateObs(@Nonnull Observation obs, @Nonnull PathState pathState, 
+     @Nullable BlockTripEntry blockTripEntry, long serviceDate) {
     
-  public org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState
-    createOldTypeVehicleState(Observation mtaObs, MtaPathStateBelief pathStateBelief, 
-        MtaVehicleState mtaParentState) {
-    /*
-     * Here are some hacks that enable us to use the old logic
-     */
-    try {
-
-      final boolean vehicleHasNotMoved;
+    final BlockState blockState;
+    
+    if (pathState.isOnRoad()) {
       
-      final double velocityAvg = 
-          AbstractRoadTrackingFilter.getVg().times(
-          pathStateBelief.getGroundState()).norm2();
-      final double velocityVar =
-          AbstractRoadTrackingFilter.getVg().times(
-              pathStateBelief.getGroundBelief().getCovariance()).times(
-                  AbstractRoadTrackingFilter.getVg().transpose()).normFrobenius();
+      Preconditions.checkNotNull(blockTripEntry);
       
-//      new UnivariateGaussian(velocityAvg, velocityVar).getCDF().evaluate())
-      /*
-       * If we could be stopped, then don't update this
-       */
-      if (rng.nextDouble() 
-          < Math.min(1d, Math.max(0d, 
-              1d - FoldedNormalDist.cdf(0d, Math.sqrt(velocityVar), velocityAvg))))
-        vehicleHasNotMoved = true;
-      else
-        vehicleHasNotMoved = false;
-      
-      final MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief)pathStateBelief;
-      final BlockState blockState = getBlockState(mtaPathStateBelief);
-      final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(blockState, 
-          mtaObs);
-      final BlockStateObservation blockStateObs;
-      if (blockState != null) {
-        blockStateObs = new BlockStateObservation(
-          blockState, mtaObs, isAtPotentialLayoverSpot,
-          pathStateBelief.isOnRoad());
-      } else {
-        blockStateObs = null;
-      }
-      Coordinate latLonCoord = GeoUtils.convertToLatLon(
-              AbstractRoadTrackingFilter.getOg().times(pathStateBelief.getGroundState()), 
-              mtaObs.getObsProjected().getTransform());
-      final MotionState motionState = new MotionState(mtaObs.getTime(), 
-          new CoordinatePoint(latLonCoord.x, latLonCoord.y), vehicleHasNotMoved);
-      final org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldTypeParent;
-      
-      if (mtaParentState != null) {
-        oldTypeParent = mtaParentState.getOldTypeVehicleState();
-      } else {
-        oldTypeParent = null;
-      }
-      
-      final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
-          blockStateObs, oldTypeParent, mtaObs, vehicleHasNotMoved); 
-      
-      return new org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState(
-          motionState, blockStateObs, journeyState, null, mtaObs);
-      
-    } catch (NoninvertibleTransformException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (TransformException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      final double distanceAlongBlock = blockTripEntry.getDistanceAlongBlock() 
+          + pathState.getGlobalState().getElement(0);
+    
+      InstanceState instState = new InstanceState(serviceDate);
+      BlockInstance instance = new BlockInstance(blockTripEntry.getBlockConfiguration(), 
+          instState);
+//        _blockCalendarService.getBlockInstance(
+//              blockTripEntry.getBlockConfiguration().getBlock().getId(),
+//              serviceDate);
+        
+      blockState = _blockStateService.getAsState(instance, distanceAlongBlock);
+    } else {
+      blockState = null;
     }
     
-    return null;
-  }
-
-  private BlockState getBlockState(MtaPathStateBelief mtaPathStateBelief) {
-    if (mtaPathStateBelief.getBlockState() == null) {
-      final MtaPathEdge mtaPathEdge = (MtaPathEdge) mtaPathStateBelief.getEdge();
-      if (mtaPathEdge.isNullBlockTrip())
-        return null;
-      final BlockTripEntry blockTripEntry = Preconditions.checkNotNull(mtaPathEdge.getBlockTripEntry());
-  	  final double distanceAlongBlock = blockTripEntry.getDistanceAlongBlock() 
-  			  + mtaPathStateBelief.getGlobalState().getElement(0);
-      
-      mtaPathStateBelief.setBlockState(_blockStateService.getAsState(_blockCalendarService.getBlockInstance(
-          blockTripEntry.getBlockConfiguration().getBlock().getId(),
-          mtaPathEdge.getServiceDate()), distanceAlongBlock));
+    final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(blockState, 
+        obs);
+    final BlockStateObservation blockStateObs;
+    if (blockState != null) {
+      blockStateObs = new BlockStateObservation(
+        blockState, obs, isAtPotentialLayoverSpot,
+        pathState.isOnRoad());
+    } else {
+      blockStateObs = null;
     }
-    return mtaPathStateBelief.getBlockState();
+    return blockStateObs;
   }
-
-//  public Collection<BlockInstance> getBlockInstances(InferredEdge inferredEdge, GpsObservation obs) {
-//    final TripInfo tripInfo = getTripInfo(inferredEdge);
-//    final long time = obs.getTimestamp().getTime();       
-//    final Date timeFrom = new Date(time - _tripSearchTimeAfterLastStop);
-//    final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
-//	  List<BlockInstance> instances = 
-//			  _blockCalendarService.getActiveBlocksInTimeRange(tripInfo.getIndices(), tripInfo.getLayoverIndices(), 
-//			      tripInfo.getFrequencyIndices(), 
-//					  timeFrom.getTime(), timeTo.getTime());
-//	  return instances;
-//  }
-
-  public TripInfo getTripInfo(InferredEdge inferredEdge) {
+  
+  public TripInfo getTripInfo(@Nonnull InferredEdge inferredEdge) {
     if (inferredEdge.isNullEdge())
       return null;
     BasicDirectedEdge edge = (BasicDirectedEdge) inferredEdge.getBackingEdge();
     LineString edgeGeom = (LineString)edge.getObject();
+    // TODO this null check is temporary.  remove when non-route streets are included.
     final TripInfo tripInfo = Preconditions.checkNotNull(this._geometryToTripInfo.get(edgeGeom.getUserData()));
     return tripInfo;
   }
@@ -526,12 +460,12 @@ public class MtaTrackingGraph extends GenericJTSGraph {
     return blockTripTimeIndex;
   }
   
-  public BlockState getBlockState(BlockInstance instance,
+  public BlockState getBlockState(@Nonnull BlockInstance instance,
       double distanceAlongBlock) {
     return _blockStateService.getAsState(instance, distanceAlongBlock);
   }
   
-  public Collection<BlockStateObservation> getBlockStateObs(Observation obs) {
+  public Collection<BlockStateObservation> getBlockStatesFromObservation(@Nonnull Observation obs) {
     return _blocksFromObservationService.determinePotentialBlockStatesForObservation(obs);
   }
 
@@ -593,6 +527,33 @@ public class MtaTrackingGraph extends GenericJTSGraph {
 
   public Map<AgencyAndId, Geometry> getShapeIdToGeo() {
     return _shapeIdToGeo;
+  }
+
+  public org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState createOldTypeVehicleState(
+      @Nonnull Observation mtaObs, @Nullable BlockStateObservation blockStateObs, boolean vehicleHasNotMoved,
+      @Nullable org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldTypeParent) {
+
+    final CoordinatePoint point;
+    if (blockStateObs != null) {
+      point = blockStateObs.getBlockState().getBlockLocation().getLocation();
+    } else {
+      point = mtaObs.getLocation();
+    }
+    final MotionState motionState = new MotionState(mtaObs.getTime(), 
+        point, vehicleHasNotMoved);
+    
+    final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
+        blockStateObs, oldTypeParent, mtaObs, vehicleHasNotMoved); 
+    
+    final org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState newOldTypeState = 
+        new org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState(
+          motionState, blockStateObs, journeyState, null, mtaObs);
+    
+    return newOldTypeState;
+  }
+
+  public JourneyStateTransitionModel getJourneyStateTransitionModel() {
+    return _journeyStateTransitionModel;
   }
 
 }

@@ -50,6 +50,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetail
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGraph;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaVehicleState;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaVehicleTrackingPLFilter;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.RunState;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -388,14 +389,9 @@ public class VehicleInferenceInstance {
     if (_particles == null)
       return null;
     final MtaVehicleState state = (MtaVehicleState) _particles.getMaxValueKey();
-    if (state.getOldTypeVehicleState() == null) {
-      final org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldState = 
-          this._trackingGraph.createOldTypeVehicleState((Observation)state.getObservation(),
-          (MtaPathStateBelief) state.getBelief(), (MtaVehicleState) state.getParentState());
-      state.setOldTypeVehicleState(oldState);
-    }
-    final Observation obs = (Observation) state.getOldTypeVehicleState().getObservation();
-    final BlockStateObservation blockState = state.getOldTypeVehicleState().getBlockStateObservation();
+    final RunState runState = state.getRunStateBelief().getMaxValueKey();
+    final Observation obs = runState.getBlockStateObs().getObs();
+    final BlockStateObservation blockState = runState.getBlockStateObs();
     final NycRawLocationRecord nycRawRecord = obs.getRecord();
     record.setBearing(nycRawRecord.getBearing());
     
@@ -428,15 +424,10 @@ public class VehicleInferenceInstance {
     if (_particles == null)
       return null;
     final MtaVehicleState state = (MtaVehicleState) _particles.getMaxValueKey();
-    if (state.getOldTypeVehicleState() == null) {
-      final org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldState = 
-          this._trackingGraph.createOldTypeVehicleState((Observation)state.getObservation(),
-          (MtaPathStateBelief) state.getBelief(), (MtaVehicleState) state.getParentState());
-      state.setOldTypeVehicleState(oldState);
-    }
-    final Observation obs = (Observation) state.getObservation();
+    final RunState runState = state.getRunStateBelief().getMaxValueKey();
+    final Observation obs = runState.getBlockStateObs().getObs();
+    final BlockStateObservation blockState = runState.getBlockStateObs();
     final NycRawLocationRecord nycRawRecord = obs.getRecord();
-    final BlockStateObservation blockState = state.getOldTypeVehicleState().getBlockStateObservation();
 
     record.setUUID(nycRawRecord.getUuid());
     record.setInferenceIsEnabled(true);
@@ -614,16 +605,11 @@ public class VehicleInferenceInstance {
       return null;
     
     final MtaVehicleState state = (MtaVehicleState) _particles.getMaxValueKey();
-    if (state.getOldTypeVehicleState() == null) {
-      final org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState oldState = 
-          this._trackingGraph.createOldTypeVehicleState((Observation)state.getObservation(),
-          (MtaPathStateBelief) state.getBelief(), (MtaVehicleState) state.getParentState());
-      state.setOldTypeVehicleState(oldState);
-    }
-    final Observation obs = (Observation) state.getObservation();
-    final MotionState motionState = state.getOldTypeVehicleState().getMotionState();
-    final JourneyState journeyState = state.getOldTypeVehicleState().getJourneyState();
-    final BlockStateObservation blockState = state.getOldTypeVehicleState().getBlockStateObservation();
+    final RunState runState = state.getRunStateBelief().getMaxValueKey();
+    final Observation obs = runState.getBlockStateObs().getObs();
+    final BlockStateObservation blockState = runState.getBlockStateObs();
+    final MotionState motionState = runState.getVehicleState().getMotionState();
+    final JourneyState journeyState = runState.getJourneyState();
     final CoordinatePoint location = obs.getLocation();
     final NycRawLocationRecord nycRecord = obs.getRecord();
 

@@ -195,13 +195,15 @@ public class Particle implements Serializable, Comparable<Particle> {
         return -1;
     } else if (o == null) {
       return 1;
+    } else {
+      final int particleComp = ComparisonChain.start().compare(t.getTimestamp(),
+          o.getTimestamp(), Ordering.natural().reverse()).compare(
+          t.getLogWeight(), o.getLogWeight(), Ordering.natural().reverse()).compare(
+          t.getData(), o.getData(), _particleDataOrdering.nullsLast()).result();
+      return particleComp;
     }
-
-    final int particleComp = ComparisonChain.start().compare(t.getTimestamp(),
-        o.getTimestamp(), Ordering.natural().reverse()).compare(
-        t.getLogWeight(), o.getLogWeight(), Ordering.natural().reverse()).compare(
-        t.getData(), o.getData(), _particleDataOrdering.nullsLast()).result();
-    return particleComp;
+    
+    throw new IllegalStateException("Illegal particle comparison");
   }
 
   @Override
@@ -260,40 +262,43 @@ public class Particle implements Serializable, Comparable<Particle> {
     if (thisObj == null) {
       if (obj != null)
         return false;
-    } else if (obj == null)
+    } else if (obj == null) {
       return false;
-
-    if (!(obj instanceof Particle)) {
-      return false;
-    }
-    final Particle other = (Particle) obj;
-    if (Double.doubleToLongBits(thisObj._timestamp) != Double.doubleToLongBits(other._timestamp)) {
-      return false;
-    }
-    if (Double.doubleToLongBits(thisObj._logWeight) != Double.doubleToLongBits(other._logWeight)) {
-      return false;
-    }
-    if (thisObj._data == null) {
-      if (other._data != null) {
+    } else {
+      if (!(obj instanceof Particle)) {
         return false;
       }
-    } else if (other._data != null) {
-      if (thisObj._data instanceof VehicleState) {
-        final VehicleState vdata = (VehicleState) thisObj._data;
-        final VehicleState vother = (VehicleState) other._data;
-
-        if (!vdata.equals(vother)) {
+      final Particle other = (Particle) obj;
+      if (Double.doubleToLongBits(thisObj._timestamp) != Double.doubleToLongBits(other._timestamp)) {
+        return false;
+      }
+      if (Double.doubleToLongBits(thisObj._logWeight) != Double.doubleToLongBits(other._logWeight)) {
+        return false;
+      }
+      if (thisObj._data == null) {
+        if (other._data != null) {
           return false;
         }
-      } else if (!thisObj._data.equals(other._data)) {
+      } else if (other._data != null) {
+        if (thisObj._data instanceof VehicleState) {
+          final VehicleState vdata = (VehicleState) thisObj._data;
+          final VehicleState vother = (VehicleState) other._data;
+  
+          if (!vdata.equals(vother)) {
+            return false;
+          }
+        } else if (!thisObj._data.equals(other._data)) {
+          return false;
+        }
+  
+      } else {
         return false;
       }
-
-    } else {
-      return false;
+      
+      return true;
     }
 
-    return true;
+    throw new IllegalStateException("Illegal particle equality check");
   }
 
   @Override

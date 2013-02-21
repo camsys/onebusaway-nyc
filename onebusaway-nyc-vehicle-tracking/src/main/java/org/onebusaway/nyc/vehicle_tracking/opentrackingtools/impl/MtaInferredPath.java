@@ -15,6 +15,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MtaPathStateBeli
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGraph.BlockTripEntryAndDate;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGraph.TripInfo;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.RunState.RunStateEdgePredictiveResults;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
@@ -26,6 +27,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEn
 
 import gov.sandia.cognition.math.LogMath;
 import gov.sandia.cognition.math.matrix.Vector;
+import gov.sandia.cognition.statistics.DataDistribution;
 import gov.sandia.cognition.statistics.distribution.MultivariateGaussian;
 import gov.sandia.cognition.util.Pair;
 
@@ -49,6 +51,8 @@ import org.opentrackingtools.graph.paths.states.PathState;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
 import org.opentrackingtools.impl.VehicleState;
 import org.opentrackingtools.impl.WrappedWeightedValue;
+import org.opentrackingtools.statistics.distributions.impl.DefaultCountedDataDistribution;
+import org.opentrackingtools.statistics.distributions.impl.DeterministicDataDistribution;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -59,93 +63,6 @@ import java.util.Map.Entry;
 
 public class MtaInferredPath extends SimpleInferredPath {
 
-  public static class MtaEdgePredictiveResults extends EdgePredictiveResults {
-
-    protected double nullStateLogLikelihood;
-    protected double runTransitionLogLikelihood;
-    protected double runLogLikelihood;
-    protected double schedLogLikelihood;
-    protected double dscLogLikelihood;
-    private Double total;
-
-    public MtaEdgePredictiveResults(EdgePredictiveResults edgePredictiveResults) {
-      super(edgePredictiveResults.getBeliefPrediction()
-          , edgePredictiveResults.getLocationPrediction()
-          , edgePredictiveResults.getEdgePredMarginalLogLik()
-          , edgePredictiveResults.getEdgePredTransLogLik()
-          , edgePredictiveResults.getMeasurementPredLogLik());
-    }
-
-    @Override
-    public double getTotalLogLik() {
-      if (total == null) {
-        total = super.getTotalLogLik() + nullStateLogLikelihood
-            + runTransitionLogLikelihood + runLogLikelihood + schedLogLikelihood
-            + dscLogLikelihood;
-      }
-      
-      return total;
-    }
-
-    public void setDscLogLikelihood(double logLikelihood) {
-      total = null;
-      this.dscLogLikelihood = logLikelihood;
-    }
-
-    public void setSchedLogLikelihood(double logLikelihood) {
-      total = null;
-      this.schedLogLikelihood = logLikelihood;
-    }
-
-    public void setRunLogLikelihood(double logLikelihood) {
-      total = null;
-      this.runLogLikelihood = logLikelihood;
-    }
-
-    public void setRunTransitionLogLikelihood(double logLikelihood) {
-      total = null;
-      this.runTransitionLogLikelihood = logLikelihood;
-    }
-
-    public void setNullStateLogLikelihood(double logLikelihood) {
-      total = null;
-      this.nullStateLogLikelihood = logLikelihood;
-    }
-
-    @Override
-    public String toString() {
-      ToStringBuilder builder = new ToStringBuilder(this);
-      builder.append("locationPrediction", locationPrediction);
-      builder.append("total", total);
-      builder.append("edgePredMarginalLogLik", edgePredMarginalLogLik);
-      builder.append("edgePredTransLogLik", edgePredTransLogLik);
-      builder.append("measurementPredLogLik", measurementPredLogLik);
-      builder.append("nullStateLogLikelihood", nullStateLogLikelihood);
-      builder.append("runTransitionLogLikelihood", runTransitionLogLikelihood);
-      builder.append("runLogLikelihood", runLogLikelihood);
-      builder.append("schedLogLikelihood", schedLogLikelihood);
-      builder.append("dscLogLikelihood", dscLogLikelihood);
-      return builder.toString();
-    }
-
-    @Override
-    public EdgePredictiveResults clone() {
-      MtaEdgePredictiveResults clone = (MtaEdgePredictiveResults) super.clone();
-      clone.dscLogLikelihood = dscLogLikelihood;
-      clone.runLogLikelihood = runLogLikelihood;
-      clone.runTransitionLogLikelihood = runTransitionLogLikelihood;
-      clone.schedLogLikelihood = schedLogLikelihood;
-      clone.nullStateLogLikelihood = nullStateLogLikelihood;
-      return clone;
-    }
-
-    
-  }
-
-  private static final long _tripSearchTimeAfterLastStop = 5 * 60 * 60 * 1000;
-
-  private static final long _tripSearchTimeBeforeFirstStop = 5 * 60 * 60 * 1000;
-  
   public static InferredPath getNullPath() {
     return new MtaInferredPath(MtaPathEdge.getNullPathEdge());
   } 
@@ -201,161 +118,43 @@ public class MtaInferredPath extends SimpleInferredPath {
     if (generalPathPred == null)
       return null;
     
-    org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState prevOldTypeVehicleState;
-    if (state != null) {
-      prevOldTypeVehicleState = ((MtaVehicleState)state).getOldTypeVehicleState(); 
-    } else {
-      prevOldTypeVehicleState = null;
-    }
-    
     final MtaTrackingGraph mtaGraph = (MtaTrackingGraph) graph;
     
     Map<PathEdge, EdgePredictiveResults> updatedEdgeToBeliefMap = Maps.newHashMap();
     List<WrappedWeightedValue<PathEdge>> reweightedPathEdges = Lists.newArrayList();
-    
-    final long time = obs.getTimestamp().getTime();       
-    final Date timeFrom = new Date(time - _tripSearchTimeAfterLastStop);
-    final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
+    DeterministicDataDistribution<RunState> prevRunStateDist = 
+        ((MtaPathStateBelief)state.getBelief()).getRunStateBelief();
     
     double pathLogLik = Double.NEGATIVE_INFINITY;
-    for (PathEdge pathEdge: generalPathPred.getPath().getPathEdges()) {
-      final TripInfo tripInfo = mtaGraph.getTripInfo(pathEdge.getInferredEdge());
+    for (PathEdge pathEdge : generalPathPred.getPath().getPathEdges()) {
       final EdgePredictiveResults predEdgeResults = 
           Preconditions.checkNotNull(generalPathPred.getEdgeToPredictiveBelief().get(pathEdge));
-      final PathStateBelief pathStateBelief = predEdgeResults.getLocationPrediction();
+      final MtaPathStateBelief locPredBelief = (MtaPathStateBelief) predEdgeResults.getLocationPrediction();
+      final MtaPathStateBelief predBelief = (MtaPathStateBelief) predEdgeResults.getBeliefPrediction();
       
-      if (tripInfo != null) {
-        /*
-         * In this case our previous state was snapped to particular road segment for 
-         * run/block set, so find all the active ones in our time window, produce states 
-         * for them, and weigh.
-         */
-        Collection<BlockTripEntryAndDate> activeEntries = tripInfo.getTimeIndex().query(timeFrom.getTime(), timeTo.getTime());
-        for (BlockTripEntryAndDate blockTripEntryAndDate: activeEntries) {
-          
-          final BlockTripEntry blockTripEntry = blockTripEntryAndDate.getBlockTripEntry();
-          long serviceDate = blockTripEntryAndDate.getServiceDate().getTime();
-      	  final double distanceAlongBlock = blockTripEntry.getDistanceAlongBlock() 
-      			  + pathStateBelief.getGlobalState().getElement(0);
-          
-          InstanceState instState = new InstanceState(serviceDate);
-          BlockInstance instance = new BlockInstance(blockTripEntry.getBlockConfiguration(), 
-              instState);
-          
-          MtaInferredPath mtaInferredPath = MtaInferredPath.deepCopyPath(
-              (MtaInferredPath) pathStateBelief.getPath());
-          final MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief) mtaInferredPath.getStateBeliefOnPath(
-              pathStateBelief.getGlobalStateBelief().clone());
-          EdgePredictiveResults predEdgeResultsCopy = new EdgePredictiveResults(
-              predEdgeResults.getBeliefPrediction().clone(), mtaPathStateBelief, 
-              predEdgeResults.getEdgePredMarginalLogLik(),
-              predEdgeResults.getEdgePredTransLogLik(), 
-              predEdgeResults.getMeasurementPredLogLik());
-          mtaPathStateBelief.setBlockState(mtaGraph.getBlockState(instance, distanceAlongBlock));
-          
-          final MtaPathEdge mtaPathEdge = (MtaPathEdge) mtaPathStateBelief.getEdge();
-          mtaPathEdge.setBlockTripEntry(blockTripEntry);
-          mtaPathEdge.setServiceDate(serviceDate);
-              
-          org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState currOldTypeVehicleState
-            = mtaGraph.createOldTypeVehicleState((Observation)obs, mtaPathStateBelief, (MtaVehicleState)state);
-          
-          final MtaEdgePredictiveResults mtaEdgeResults = 
-              computeRunPredictiveLogLikelihood(
-              predEdgeResultsCopy,
-              mtaGraph,
-              (Observation)obs, 
-              currOldTypeVehicleState,
-              prevOldTypeVehicleState);
-          
-          
-          if (mtaEdgeResults.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-            updatedEdgeToBeliefMap.put(mtaPathEdge, mtaEdgeResults);
-            
-            reweightedPathEdges
-                .add(new WrappedWeightedValue<PathEdge>(mtaPathEdge,
-                    mtaEdgeResults.getTotalLogLik()));
-            pathLogLik =
-                LogMath.add(pathLogLik,
-                    mtaEdgeResults.getTotalLogLik());
-          }
-        }
-      } else {
-        /*
-         * Our state wasn't on a road corresponding to a run/block set, or it wasn't
-         * on a road at all.
-         * We add null to ensure a run/block-less possibility.
-         */
-        Collection<BlockStateObservation> blockStates = mtaGraph.getBlockStateObs((Observation)obs);
-        blockStates.add(null);
-        for (BlockStateObservation blockStateObs : blockStates) {
-          
-          /*
-           * We don't want to infer a run with road location when the state
-           * isn't on one.
-           * We do allow a null run for an on-road state, though.  This comes in 
-           * handy when we add more streets to the graph (ones that don't correspond
-           * to routes).
-           */
-          if (blockStateObs != null 
-              && (JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState())
-                  || pathStateBelief.isOnRoad()))
-            continue;
-          
-          MtaInferredPath mtaInferredPath = MtaInferredPath.deepCopyPath(
-              (MtaInferredPath) predEdgeResults.getLocationPrediction().getPath());
-          final MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief) mtaInferredPath.getStateBeliefOnPath(
-              predEdgeResults.getLocationPrediction().getGlobalStateBelief().clone());
-          EdgePredictiveResults predEdgeResultsCopy = new EdgePredictiveResults(
-              predEdgeResults.getBeliefPrediction().clone(), mtaPathStateBelief, 
-              predEdgeResults.getEdgePredMarginalLogLik(),
-              predEdgeResults.getEdgePredTransLogLik(), 
-              predEdgeResults.getMeasurementPredLogLik());
-          
-          final Long serviceDate;
-          final BlockTripEntry blockTripEntry;
-          if (blockStateObs != null) {
-            mtaPathStateBelief.setBlockState(blockStateObs.getBlockState());
-            blockTripEntry = blockStateObs.getBlockState().getBlockLocation().getActiveTrip();
-            serviceDate = blockStateObs.getBlockState().getBlockInstance().getServiceDate();
-          } else {
-            blockTripEntry = MtaPathEdge.getNullBlockTripEntry();
-            serviceDate = null;
-          }
-          
-          final MtaPathEdge mtaPathEdge = (MtaPathEdge) mtaPathStateBelief.getEdge();
-          mtaPathEdge.setBlockTripEntry(blockTripEntry);
-          mtaPathEdge.setServiceDate(serviceDate);
-          
-          org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState currOldTypeVehicleState
-            = mtaGraph.createOldTypeVehicleState((Observation)obs, mtaPathStateBelief, (MtaVehicleState)state);
-          
-          Preconditions.checkState(currOldTypeVehicleState.getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS);
-          
-          Preconditions.checkState(!pathEdge.isNullEdge() 
-              || (currOldTypeVehicleState.getJourneyState() != JourneyState.inProgress()));
-          
-            final MtaEdgePredictiveResults mtaEdgeResults = 
-                computeRunPredictiveLogLikelihood(
-                predEdgeResultsCopy,
-                mtaGraph,
-                (Observation)obs, 
-                currOldTypeVehicleState,
-                prevOldTypeVehicleState);
-          
-          if (mtaEdgeResults.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-            updatedEdgeToBeliefMap.put(mtaPathEdge, mtaEdgeResults);
-            
-            reweightedPathEdges
-                .add(new WrappedWeightedValue<PathEdge>(mtaPathEdge,
-                    mtaEdgeResults.getTotalLogLik()));
-            pathLogLik =
-                LogMath.add(pathLogLik,
-                    mtaEdgeResults.getTotalLogLik());
-            
-          }
-        }
-      }
+      RunStateEstimator runEstimator = new RunStateEstimator(mtaGraph, 
+          (Observation)obs, locPredBelief, prevRunStateDist.getMaxValueKey().getVehicleState(), 
+          mtaGraph.getRng());
+      
+      DataDistribution<RunState> runDistribution = 
+          runEstimator.createPredictiveDistribution(prevRunStateDist);
+      
+      final RunState newRunState = runDistribution.sample(mtaGraph.getRng());
+      
+      final DeterministicDataDistribution<RunState> newRunDist = new DeterministicDataDistribution<RunState>(newRunState);
+      locPredBelief.setRunStateBelief(newRunDist);
+      predBelief.setRunStateBelief(newRunDist);
+      
+      final RunStateEdgePredictiveResults newEdgeResults = newRunState.computeAnnotatedLogLikelihood();
+      newEdgeResults.setBeliefPrediction(predEdgeResults.getBeliefPrediction());
+      newEdgeResults.setLocationPrediction(predEdgeResults.getLocationPrediction());
+      newEdgeResults.setEdgePredMarginalLogLik(predEdgeResults.getEdgePredMarginalLogLik());
+      newEdgeResults.setEdgePredTransLogLik(predEdgeResults.getEdgePredTransLogLik());
+      newEdgeResults.setMeasurementPredLogLik(predEdgeResults.getMeasurementPredLogLik());
+      
+      updatedEdgeToBeliefMap.put(pathEdge, newEdgeResults);
+      reweightedPathEdges.add(new WrappedWeightedValue<PathEdge>(pathEdge, newEdgeResults.getTotalLogLik()));
+      pathLogLik = LogMath.add(pathLogLik, newEdgeResults.getTotalLogLik());
     }
     
     /*
@@ -385,44 +184,6 @@ public class MtaInferredPath extends SimpleInferredPath {
     return new MtaInferredPath(newEdges.build(), path.isBackward());
   }
 
-  public static MtaEdgePredictiveResults computeRunPredictiveLogLikelihood(
-      EdgePredictiveResults baseEdgeResults,
-      MtaTrackingGraph graph,
-      Observation obs, 
-      org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState currentOldTypeVehicleState,
-      org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState prevOldTypeVehicleState) {
-    final Context context = new Context(prevOldTypeVehicleState, currentOldTypeVehicleState, obs);
-    double runTransitionLogLikelihood = Double.NEGATIVE_INFINITY;
-    double nullStateLogLikelihood = Double.NEGATIVE_INFINITY;
-    double runLogLikelihood = Double.NEGATIVE_INFINITY;
-    double schedLogLikelihood = Double.NEGATIVE_INFINITY;
-    double dscLogLikelihood = Double.NEGATIVE_INFINITY;
-    MtaEdgePredictiveResults result = new MtaEdgePredictiveResults(baseEdgeResults);
-    try {
-      dscLogLikelihood = graph.getDscLikelihood().likelihood(context).getLogProbability();
-      result.setDscLogLikelihood(dscLogLikelihood);
-      if (dscLogLikelihood <= Double.NEGATIVE_INFINITY)
-        return result;
-      schedLogLikelihood = graph.getSchedLikelihood().likelihood(context).getLogProbability();
-      result.setSchedLogLikelihood(schedLogLikelihood);
-      if (schedLogLikelihood <= Double.NEGATIVE_INFINITY)
-        return result;
-      runLogLikelihood = graph.getRunLikelihood().likelihood(context).getLogProbability();
-      result.setRunLogLikelihood(runLogLikelihood);
-      if (runLogLikelihood <= Double.NEGATIVE_INFINITY)
-        return result;
-      runTransitionLogLikelihood = graph.getRunTransitionLikelihood().likelihood(context).getLogProbability();
-      result.setRunTransitionLogLikelihood(runTransitionLogLikelihood);
-      if (runTransitionLogLikelihood <= Double.NEGATIVE_INFINITY)
-        return result;
-      nullStateLogLikelihood = graph.getNullStateLikelihood().likelihood(context).getLogProbability();
-      result.setNullStateLogLikelihood(nullStateLogLikelihood);
-    } catch (BadProbabilityParticleFilterException e) {
-      e.printStackTrace();
-    }
-    
-    return result;
-  }
 
   @Override
   public PathStateBelief getStateBeliefOnPath(PathStateBelief stateBelief) {
@@ -455,14 +216,6 @@ public class MtaInferredPath extends SimpleInferredPath {
   public boolean isNullPath() {
     return (this.edges.size() == 1 
         && Iterables.getOnlyElement(this.edges).isNullEdge());
-  }
-
-  public static long getTripSearchTimeAfterLastStop() {
-    return _tripSearchTimeAfterLastStop;
-  }
-
-  public static long getTripSearchTimeBeforeFirstStop() {
-    return _tripSearchTimeBeforeFirstStop;
   }
 
   @Override
