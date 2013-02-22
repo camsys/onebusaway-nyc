@@ -27,7 +27,8 @@
 
 	<title><s:property value="getText('main.title')"/></title>
 	
-  	<link rel="shortcut icon" href="http://mta.info/siteimages/favicon.ico" type="image/x-icon"/>
+  	<s:set var="favicon" value="getText('favicon.url')" />
+  	<link rel="shortcut icon" href="${favicon}" type="image/x-icon"/>
 
   	<s:url var="url" value="/css/mobile/mobile.css">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
