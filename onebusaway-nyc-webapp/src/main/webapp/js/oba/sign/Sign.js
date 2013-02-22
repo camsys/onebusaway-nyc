@@ -300,7 +300,7 @@ OBA.Sign = function() {
 		if(r === 0) {
 			jQuery('<tr class="last">' + 
 					'<td colspan="3">' + 
-						'MTA Bus Time is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
+						'No buses en-route to this stop. Please check back shortly for an update.</li>' +
 					'</td>' +
 				   '</tr>')
 				   .appendTo(tableBody);
