@@ -52,37 +52,6 @@ OBA.Config = {
 			_gaq.push(['_trackEvent', "Desktop Web", type, value]);
 		},
 		
-		infoBubbleFooterFunction: function(type, query) {
-			var html = '';
-
-			if(type === "stop")	{
-				html += '<div class="footer">';
-				html += '<span class="header">While at the bus stop... </strong></span>';
-				html += '<br/>';
-
-				html += 'Send stop code <strong>' + query + '</strong> as a text to <strong>511123</strong>';
-				html += '<br/>';
-				html += 'or check <a href="m/?q=' + query + '">this stop</a> on your smartphone.';
-
-				html += '</div>';
-
-			} else if(type === "route") {
-				html += '<div class="footer">';
-				html += '<span class="header">While at the bus stop... </strong></span>';
-				html += '<br/>';
-				
-				html += 'Check <a href="m/?q=' + query + '">this route</a> on your smartphone.';
-
-				html += '</div>';				
-
-			} else if(type === "sign") {
-				html += 'Text <strong> ' + query + '</strong> to <strong>511123</strong> ';
-				html += 'or check this stop on your smartphone at <strong>http://' + window.location.hostname + ((window.location.port !== '') ? ':' + window.location.port : '') + '/m/?q=' + query + '</strong>';
-			}
-
-			return html;
-		},
-		
 		loadLocationIcons: function() {
 			var locationIcons = [], activeLocationIcons = [];
 			var size = new google.maps.Size(24, 32), 
