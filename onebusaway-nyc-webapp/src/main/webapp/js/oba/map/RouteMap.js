@@ -336,8 +336,10 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 	function unhighlightStop() {
 		if(highlightedStop !== null) {
 			var previousVisibility = highlightedStop.previousVisibility;
-			highlightedStop.setVisible(previousVisibility);
-			highlightedStop.previousVisibility = null;
+			if(OBA.Popups.getPopupStopId() !== highlightedStop.stopId) {
+				highlightedStop.setVisible(previousVisibility);
+				highlightedStop.previousVisibility = null;
+			}
 			
 			highlightedStop.setIcon(highlightedStop.previousIcon);
 			highlightedStop.previousIcon = null;
