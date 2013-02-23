@@ -29,6 +29,7 @@ import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.serialization.GtfsReader;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 
 public class TestStifTripLoaderTest {
   @Test
@@ -43,7 +44,7 @@ public class TestStifTripLoaderTest {
     reader.run();
 
     StifTripLoader loader = new StifTripLoader();
-    loader.setLogger(new MultiCSVLogger(null));
+    loader.setLogger(new MultiCSVLogger());
     loader.setGtfsDao(dao);
     loader.run(in, new File("stif.m_0014__.210186.sun"));
     Map<String, List<AgencyAndId>> mapping = loader.getTripMapping();

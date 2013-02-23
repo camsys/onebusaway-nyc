@@ -28,6 +28,7 @@ import java.util.zip.GZIPInputStream;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.EventRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.GeographyRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;

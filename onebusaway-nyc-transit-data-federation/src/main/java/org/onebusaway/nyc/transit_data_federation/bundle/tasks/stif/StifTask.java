@@ -23,6 +23,7 @@ import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -71,14 +72,17 @@ public class StifTask implements Runnable {
   @Autowired 
   private NycFederatedTransitDataBundle _bundle;
 
-  private String logPath;
-
   private boolean fallBackToStifBlocks = false;
 
   private MultiCSVLogger csvLogger;
 
   private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>();
 
+  @Autowired
+  public void setLogger(MultiCSVLogger logger) {
+    this.csvLogger = logger;
+  }
+  
   @Autowired
   public void setGtfsMutableRelationalDao(
       GtfsMutableRelationalDao gtfsMutableRelationalDao) {
@@ -112,13 +116,7 @@ public class StifTask implements Runnable {
     _notInServiceDscPath = notInServiceDscPath;
   }
 
-  public void setLogPath(String logPath) {
-    this.logPath = logPath;
-  }
-  
   public void run() {
-
-    csvLogger = new MultiCSVLogger(logPath);
 
     StifTripLoader loader = new StifTripLoader();
     loader.setGtfsDao(_gtfsMutableRelationalDao);
@@ -199,8 +197,6 @@ public class StifTask implements Runnable {
 
     serializeDSCData(dscToTripMap, tripToDscMap, inServiceDscs);
 
-    csvLogger.summarize();
-    csvLogger = null; //ensure no writes after summary
   }
 
   private void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,
