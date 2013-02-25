@@ -221,6 +221,7 @@
     	<module>onebusaway-nyc-util</module>
     	<module>onebusaway-nyc-admin-webapp</module>
     	<module>onebusaway-nyc-acta-webapp</module>
+    	<module>onebusaway-nyc-tcip-api</module>
   </modules>
 
     <profiles>
@@ -253,6 +254,7 @@
                 <module>onebusaway-nyc-report-archive</module>
                 <module>onebusaway-nyc-admin-webapp</module>
                 <module>onebusaway-nyc-acta-webapp</module>
+		<module>onebusaway-nyc-tcip-api</module>
             </modules>
         </profile>
     </profiles>
