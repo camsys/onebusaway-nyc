@@ -467,6 +467,8 @@ public class VehicleLocationSimulationController {
     TripDetailsQueryBean query = new TripDetailsQueryBean();
     query.setTripId(tripId);
     TripDetailsBean trip = _nycTransitDataService.getSingleTripDetails(query);
+    if (trip == null)
+      return null;
     TripStopTimesBean stops = trip.getSchedule();
     
     return new ModelAndView("json", "stopTimes", stops.getStopTimes());

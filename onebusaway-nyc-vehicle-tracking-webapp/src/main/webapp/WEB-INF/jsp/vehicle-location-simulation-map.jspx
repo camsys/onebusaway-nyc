@@ -267,6 +267,9 @@ OBA.Debug = function() {
           	timestamp: "",
           	inferredSchedTime: "",
           	inferredDAB: "",
+          	inferredMean: "",
+          	inferredCov: "",
+          	inferredEdge: "",
           	toString: function () {
           		return "record #: " + this.recordNum + "<br/>"
           		 + "timestamp:" + this.timestampAsDate + "<br/>"
@@ -280,6 +283,9 @@ OBA.Debug = function() {
           		 + "schedDeviation: " + Math.round(this.schedDeviation) + " (mins)<br/>"
           		 + "inferredLatLon: " + this.inferredLatLon + "<br/>"
           		 + "inferredDAB: " + this.inferredDAB + "<br/>"
+          		 + "inferredMean: " + this.inferredMean + "<br/>"
+          		 + "inferredCov: " + this.inferredCov + "<br/>"
+          		 + "inferredEdge: " + this.inferredEdge + "<br/>"
           		 + this.other;
           	}
           };
@@ -323,9 +329,14 @@ OBA.Debug = function() {
 								markerText.reportedRunId = value;
 							} else if (property === "inferredRunId") {
 								markerText.inferredRunId = value;
+							} else if (property === "inferredStateMean") {
+								markerText.inferredMean = value;
+							} else if (property === "inferredStateCovariance") {
+								markerText.inferredCov = value;
+							} else if (property === "inferredEdge") {
+								markerText.inferredEdge = value;
 							} else if (property.indexOf("Set") == -1
 									&& !isNaN(value)){
-								
 								if (property === "inferredBlockLat" && value != record.lat) {
 									inferredLat = value;
 								} else if (property === "inferredBlockLon" && value != record.lon) {
@@ -337,10 +348,9 @@ OBA.Debug = function() {
 									serviceDate = value;
 								} else if (property === "inferredScheduleTime") {
 									schedTime += value*1000;
-								} 
-							} 
-							
-						}
+								}
+							}
+						} 
 					});
 					
 					if (currentTime !== null) {
@@ -668,6 +678,12 @@ OBA.Debug = function() {
 				addedMarkers.clearMarkers();
 			});
 			
+			jQuery("#clear_trips").click(function(e) {
+				e.preventDefault();
+				routes.removeAllFeatures();
+				stopMarkers.clearMarkers();
+			});
+			
 			jQuery("#latlon_button").click(function(e) {
 				e.preventDefault();
 				
@@ -746,6 +762,10 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 	<br/>
 	<input type="submit" value="Add LatLon" id="latlon_button"/>
 	<input type="submit" value="Clear" id="latlon_clear_button"/>
+	<br/>
+	<br/>
+	<input type="submit" value="Clear trips" id="clear_trips"/>
+	
 </td>
 <td>
 	<div id="map" style="width: 1500px; height: 1000px;"></div>

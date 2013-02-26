@@ -49,7 +49,7 @@ public class DscLikelihood implements SensorModelRule {
   }
 
   public static enum DSC_STATE {
-    DSC_OOS_IP, DSC_OOS_NOT_IP, DSC_IS_NO_BLOCK, DSC_MATCH, DSC_ROUTE_MATCH, DSC_NO_ROUTE_MATCH, DSC_NOT_VALID, DSC_DEADHEAD_MATCH
+    DSC_OOS_IP, DSC_OOS_NOT_IP, DSC_IS_NO_BLOCK, DSC_MATCH, DSC_ROUTE_MATCH, DSC_NO_ROUTE_MATCH, DSC_DEADHEAD_MATCH, DSC_NOT_VALID_BLOCK, DSC_NOT_VALID_NO_BLOCK
   }
 
   @Override
@@ -60,10 +60,13 @@ public class DscLikelihood implements SensorModelRule {
     final DSC_STATE state = getDscState(context);
     switch (state) {
       case DSC_OOS_IP:
-        result.addResultAsAnd("i.p. o.o.s. dsc", 0.0);
+        result.addResultAsAnd("i.p. o.o.s. dsc", 0d);
         return result;
-      case DSC_NOT_VALID:
-        result.addResultAsAnd("!valid dsc", 1d);
+      case DSC_NOT_VALID_BLOCK:
+        result.addResultAsAnd("!valid dsc w/ block", 0d);
+        return result;
+      case DSC_NOT_VALID_NO_BLOCK:
+        result.addResultAsAnd("!valid dsc w/o block", 1d);
         return result;
       case DSC_OOS_NOT_IP:
         result.addResultAsAnd("!i.p. o.o.s. dsc", 1d);
@@ -81,7 +84,7 @@ public class DscLikelihood implements SensorModelRule {
         result.addResultAsAnd("!o.o.s. dsc null-block", (1d/30d));
         return result;
       case DSC_NO_ROUTE_MATCH:
-        result.addResultAsAnd("i.s. non-route-matching DSC", 0.0);
+        result.addResultAsAnd("i.s. non-route-matching DSC", 0d);
         return result;
       default:
         return null;
@@ -103,7 +106,10 @@ public class DscLikelihood implements SensorModelRule {
        * If we haven't yet seen a valid DSC, or it's out of service
        */
       if (!obs.hasValidDsc()) {
-        return DSC_STATE.DSC_NOT_VALID;
+        if (state.getBlockState() == null)
+          return DSC_STATE.DSC_NOT_VALID_NO_BLOCK;
+        else
+          return DSC_STATE.DSC_NOT_VALID_BLOCK;
       } else if (EVehiclePhase.IN_PROGRESS == phase && obs.hasOutOfServiceDsc()) {
         return DSC_STATE.DSC_OOS_IP;
       } else {

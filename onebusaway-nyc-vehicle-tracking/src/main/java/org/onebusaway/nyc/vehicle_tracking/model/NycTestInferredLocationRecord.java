@@ -31,7 +31,7 @@ public class NycTestInferredLocationRecord implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private static final int MISSING_VALUE = -999;
-
+  
   /****
    * Raw Observation Values
    ****/
@@ -152,6 +152,16 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   @CsvField(optional = true)
   private Boolean inferredIsRunFormal;
+  
+  @CsvField(optional = true, ignore=true)
+  private String inferredStateMean = null;
+  
+  @CsvField(optional = true, ignore=true)
+  private String inferredStateCovariance = null;
+  
+  @CsvField(optional = true, ignore=true)
+  private String inferredEdge = null;
+
 
   // **************
 
@@ -513,5 +523,29 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public void setAssignedRunId(String assignedRunId) {
     this.assignedRunId = assignedRunId;
+  }
+
+  public String getInferredStateMean() {
+    return inferredStateMean;
+  }
+
+  public void setInferredStateMean(String stateMean) {
+    this.inferredStateMean = stateMean;
+  }
+
+  public String getInferredStateCovariance() {
+    return inferredStateCovariance;
+  }
+
+  public void setInferredStateCovariance(String stateCovariance) {
+    this.inferredStateCovariance = stateCovariance;
+  }
+
+  public String getInferredEdge() {
+    return inferredEdge;
+  }
+
+  public void setInferredEdge(String inferredEdge) {
+    this.inferredEdge = inferredEdge;
   }
 }

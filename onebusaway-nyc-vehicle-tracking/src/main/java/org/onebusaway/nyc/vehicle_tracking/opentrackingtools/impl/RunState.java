@@ -23,6 +23,7 @@ public class RunState {
     protected double runLogLikelihood;
     protected double schedLogLikelihood;
     protected double dscLogLikelihood;
+    protected double movedLogLikelihood;
   
     public RunStateEdgePredictiveResults(EdgePredictiveResults edgePredictiveResults) {
       super(edgePredictiveResults.getBeliefPrediction()
@@ -41,7 +42,7 @@ public class RunState {
       if (total == null) {
         total = super.getTotalLogLik() + nullStateLogLikelihood
             + runTransitionLogLikelihood + runLogLikelihood + schedLogLikelihood
-            + dscLogLikelihood;
+            + dscLogLikelihood + movedLogLikelihood;
       }
       
       return total;
@@ -71,6 +72,11 @@ public class RunState {
       total = null;
       this.nullStateLogLikelihood = logLikelihood;
     }
+    
+    public void setMovedLogLikelihood(double logLikelihood) {
+      total = null;
+      this.movedLogLikelihood = logLikelihood;
+    }
   
     @Override
     public String toString() {
@@ -85,6 +91,7 @@ public class RunState {
       builder.append("runLogLikelihood", runLogLikelihood);
       builder.append("schedLogLikelihood", schedLogLikelihood);
       builder.append("dscLogLikelihood", dscLogLikelihood);
+      builder.append("movedLogLikelihood", movedLogLikelihood);
       return builder.toString();
     }
   
@@ -109,6 +116,7 @@ public class RunState {
   protected VehicleState oldTypeVehicleState;
   protected Observation obs;
   protected JourneyState journeyState;
+  private RunStateEdgePredictiveResults likelihoodInfo;
   
   public RunState(MtaTrackingGraph graph, Observation obs,
       BlockStateObservation blockStateObs, boolean vehicleHasNotMoved,
@@ -171,6 +179,7 @@ public class RunState {
         return result;
       nullStateLogLikelihood = graph.getNullStateLikelihood().likelihood(context).getLogProbability();
       result.setNullStateLogLikelihood(nullStateLogLikelihood);
+//      result.setNullStateLogLikelihood(0d);
     } catch (BadProbabilityParticleFilterException e) {
       e.printStackTrace();
     }
@@ -201,7 +210,7 @@ public class RunState {
     result = prime * result
         + ((oldTypeParent == null) ? 0 : oldTypeParent.hashCode());
     result = prime * result
-        + ((oldTypeVehicleState == null) ? 0 : oldTypeVehicleState.hashCode());
+        + ((getVehicleState() == null) ? 0 : oldTypeVehicleState.hashCode());
     return result;
   }
 
@@ -224,7 +233,7 @@ public class RunState {
     } else if (!oldTypeParent.equals(other.oldTypeParent)) {
       return false;
     }
-    if (oldTypeVehicleState == null) {
+    if (getVehicleState() == null) {
       if (other.oldTypeVehicleState != null) {
         return false;
       }
@@ -232,5 +241,30 @@ public class RunState {
       return false;
     }
     return true;
+  }
+
+  public VehicleState getParentVehicleState() {
+    return oldTypeParent;
+  }
+
+  public boolean getVehicleHasNotMoved() {
+    return this.vehicleHasNotMoved;
+  }
+
+  public MtaTrackingGraph getGraph() {
+    return graph;
+  }
+
+  public Observation getObs() {
+    return obs;
+  }
+
+  public void setLikelihoodInfo(
+      RunStateEdgePredictiveResults mtaEdgeResultsNotMoved) {
+    this.likelihoodInfo = mtaEdgeResultsNotMoved;
+  }
+
+  public RunStateEdgePredictiveResults getLikelihoodInfo() {
+    return likelihoodInfo;
   }
 }

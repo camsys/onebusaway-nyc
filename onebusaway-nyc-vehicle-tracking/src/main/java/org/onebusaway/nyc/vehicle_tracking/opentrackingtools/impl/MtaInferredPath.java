@@ -45,7 +45,8 @@ import org.opentrackingtools.graph.edges.impl.SimpleInferredEdge;
 import org.opentrackingtools.graph.paths.InferredPath;
 import org.opentrackingtools.graph.paths.edges.PathEdge;
 import org.opentrackingtools.graph.paths.edges.impl.EdgePredictiveResults;
-import org.opentrackingtools.graph.paths.impl.InferredPathPrediction;
+import org.opentrackingtools.graph.paths.edges.impl.SimplePathEdge;
+import org.opentrackingtools.graph.paths.impl.PathEdgeDistribution;
 import org.opentrackingtools.graph.paths.impl.SimpleInferredPath;
 import org.opentrackingtools.graph.paths.states.PathState;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
@@ -64,7 +65,7 @@ import java.util.Map.Entry;
 public class MtaInferredPath extends SimpleInferredPath {
 
   public static InferredPath getNullPath() {
-    return new MtaInferredPath(MtaPathEdge.getNullPathEdge());
+    return new MtaInferredPath(SimplePathEdge.getNullPathEdge());
   } 
   
   public static MtaInferredPath getInferredPath(
@@ -107,21 +108,21 @@ public class MtaInferredPath extends SimpleInferredPath {
    * The log lik reflects these additions.
    */
   @Override
-  public InferredPathPrediction getPriorPredictionResults(
+  public PathEdgeDistribution getPriorPredictionResults(
       InferenceGraph graph,
       GpsObservation obs,
       VehicleState state,
       Map<PathEdge, EdgePredictiveResults> edgeToPreBeliefAndLogLik) {
     
-    InferredPathPrediction generalPathPred = super.getPriorPredictionResults(graph, obs, state, edgeToPreBeliefAndLogLik);
+    PathEdgeDistribution generalPathPred = super.getPriorPredictionResults(graph, obs, state, edgeToPreBeliefAndLogLik);
     
     if (generalPathPred == null)
       return null;
     
     final MtaTrackingGraph mtaGraph = (MtaTrackingGraph) graph;
     
-    Map<PathEdge, EdgePredictiveResults> updatedEdgeToBeliefMap = Maps.newHashMap();
-    List<WrappedWeightedValue<PathEdge>> reweightedPathEdges = Lists.newArrayList();
+//    Map<PathEdge, EdgePredictiveResults> updatedEdgeToBeliefMap = Maps.newHashMap();
+//    List<WrappedWeightedValue<PathEdge>> reweightedPathEdges = Lists.newArrayList();
     DeterministicDataDistribution<RunState> prevRunStateDist = 
         ((MtaPathStateBelief)state.getBelief()).getRunStateBelief();
     
@@ -145,45 +146,37 @@ public class MtaInferredPath extends SimpleInferredPath {
       locPredBelief.setRunStateBelief(newRunDist);
       predBelief.setRunStateBelief(newRunDist);
       
-      final RunStateEdgePredictiveResults newEdgeResults = newRunState.computeAnnotatedLogLikelihood();
-      newEdgeResults.setBeliefPrediction(predEdgeResults.getBeliefPrediction());
-      newEdgeResults.setLocationPrediction(predEdgeResults.getLocationPrediction());
-      newEdgeResults.setEdgePredMarginalLogLik(predEdgeResults.getEdgePredMarginalLogLik());
-      newEdgeResults.setEdgePredTransLogLik(predEdgeResults.getEdgePredTransLogLik());
-      newEdgeResults.setMeasurementPredLogLik(predEdgeResults.getMeasurementPredLogLik());
+//      final RunStateEdgePredictiveResults newEdgeResults = newRunState.computeAnnotatedLogLikelihood();
+//      newEdgeResults.setBeliefPrediction(predEdgeResults.getBeliefPrediction());
+//      newEdgeResults.setLocationPrediction(predEdgeResults.getLocationPrediction());
+//      newEdgeResults.setEdgePredMarginalLogLik(predEdgeResults.getEdgePredMarginalLogLik());
+//      newEdgeResults.setEdgePredTransLogLik(predEdgeResults.getEdgePredTransLogLik());
+//      newEdgeResults.setMeasurementPredLogLik(predEdgeResults.getMeasurementPredLogLik());
       
-      updatedEdgeToBeliefMap.put(pathEdge, newEdgeResults);
-      reweightedPathEdges.add(new WrappedWeightedValue<PathEdge>(pathEdge, newEdgeResults.getTotalLogLik()));
-      pathLogLik = LogMath.add(pathLogLik, newEdgeResults.getTotalLogLik());
+//      updatedEdgeToBeliefMap.put(pathEdge, newEdgeResults);
+//      reweightedPathEdges.add(new WrappedWeightedValue<PathEdge>(pathEdge, newEdgeResults.getTotalLogLik()));
+//      pathLogLik = LogMath.add(pathLogLik, newEdgeResults.getTotalLogLik());
     }
     
     /*
      * Total of zero likelihood
      */
-    if (Double.isInfinite(pathLogLik))
-      return null;
-
-    assert !Double.isNaN(pathLogLik);
+//    if (Double.isInfinite(pathLogLik))
+//      return null;
+//
+//    assert !Double.isNaN(pathLogLik);
     
-    final InferredPathPrediction updatedPathPrediction = new InferredPathPrediction(this, 
-        updatedEdgeToBeliefMap, 
-        generalPathPred.getFilter(), 
-        reweightedPathEdges, 
-        pathLogLik);
+//    final InferredPathPrediction updatedPathPrediction = new InferredPathPrediction(this, 
+//        updatedEdgeToBeliefMap, 
+//        generalPathPred.getFilter(), 
+//        reweightedPathEdges, 
+//        pathLogLik);
     
-    return updatedPathPrediction;
+//    return updatedPathPrediction;
+    
+    return generalPathPred;
   }
   
-  public static MtaInferredPath deepCopyPath(MtaInferredPath path) {
-    if (path.isNullPath())
-      return (MtaInferredPath) getNullPath();
-    Builder<PathEdge> newEdges = ImmutableList.builder();
-    for (PathEdge pathEdge : path.getPathEdges()) {
-      newEdges.add(((MtaPathEdge)pathEdge).clone());
-    }
-    return new MtaInferredPath(newEdges.build(), path.isBackward());
-  }
-
 
   @Override
   public PathStateBelief getStateBeliefOnPath(PathStateBelief stateBelief) {

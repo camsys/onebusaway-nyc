@@ -5,6 +5,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MtaPathStateBelief;
 
+import gov.sandia.cognition.statistics.DataDistribution;
+
 import org.opentrackingtools.GpsObservation;
 import org.opentrackingtools.graph.InferenceGraph;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
@@ -17,7 +19,7 @@ public class MtaVehicleState extends VehicleState {
   
   private static final long serialVersionUID = 6667209143463134023L;
   
-  private DeterministicDataDistribution<RunState> runStateBelief;
+  private DataDistribution<RunState> runStateBelief;
 
   public MtaVehicleState(InferenceGraph inferredGraph,
       GpsObservation observation, AbstractRoadTrackingFilter updatedFilter,
@@ -36,15 +38,14 @@ public class MtaVehicleState extends VehicleState {
     this.runStateBelief = other.getRunStateBelief();
   }
 
-  public DeterministicDataDistribution<RunState> getRunStateBelief() {
-    // TODO run state should be here, and not in the path belief, right?
+  public DataDistribution<RunState> getRunStateBelief() {
     if (runStateBelief == null)
       runStateBelief = ((MtaPathStateBelief) this.getBelief()).getRunStateBelief();
     return runStateBelief;
   }
 
-  public void setRunStateBelief(DeterministicDataDistribution<RunState> runState) {
-    this.runStateBelief = runState;
+  public void setRunStateBelief(DataDistribution<RunState> avgRunStateBelief) {
+    this.runStateBelief = avgRunStateBelief;
   }
 
   @Override
@@ -66,7 +67,7 @@ public class MtaVehicleState extends VehicleState {
       return false;
     }
     MtaVehicleState other = (MtaVehicleState) obj;
-    if (runStateBelief == null) {
+    if (this.getRunStateBelief() == null) {
       if (other.runStateBelief != null) {
         return false;
       }
@@ -81,7 +82,7 @@ public class MtaVehicleState extends VehicleState {
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result
-        + ((runStateBelief == null) ? 0 : runStateBelief.hashCode());
+        + ((this.getRunStateBelief()== null) ? 0 : runStateBelief.hashCode());
     return result;
   }
 

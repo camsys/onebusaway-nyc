@@ -16,6 +16,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEn
 
 import gov.sandia.cognition.learning.algorithm.AbstractBatchAndIncrementalLearner;
 import gov.sandia.cognition.math.LogMath;
+import gov.sandia.cognition.math.MutableDouble;
 import gov.sandia.cognition.statistics.ComputableDistribution;
 import gov.sandia.cognition.statistics.DataDistribution;
 import gov.sandia.cognition.statistics.bayesian.BayesianEstimatorPredictor;
@@ -30,6 +31,7 @@ import org.opentrackingtools.graph.paths.edges.PathEdge;
 import org.opentrackingtools.graph.paths.edges.impl.EdgePredictiveResults;
 import org.opentrackingtools.graph.paths.states.PathState;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
+import org.opentrackingtools.impl.MutableDoubleCount;
 import org.opentrackingtools.impl.WrappedWeightedValue;
 import org.opentrackingtools.statistics.distributions.impl.DefaultCountedDataDistribution;
 import org.opentrackingtools.statistics.distributions.impl.DeterministicDataDistribution;
@@ -41,6 +43,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 /**
@@ -92,8 +95,6 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
   @Override
   public DataDistribution<RunState> createInitialLearnedObject() {
     
-    DefaultCountedDataDistribution<RunState> result = new DefaultCountedDataDistribution<RunState>(true);
-    
     final long time = obs.getTimestamp().getTime();       
     final Date timeFrom = new Date(time - _tripSearchTimeAfterLastStop);
     final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
@@ -101,8 +102,12 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
     final PathEdge pathEdge = pathStateBelief.getEdge();
     final TripInfo tripInfo = mtaGraph.getTripInfo(pathEdge.getInferredEdge());
     final double likelihoodHasNotMoved = likelihoodOfNotMovedState(this.pathStateBelief);
+    double nonNullTotalLikelihood = Double.NEGATIVE_INFINITY;
+    
+    Map<RunState, MutableDoubleCount> resultDist = Maps.newIdentityHashMap();
     
     if (tripInfo != null) {
+      
       /*
        * In this case our previous state was snapped to particular road segment for 
        * run/block set, so find all the active ones in our time window, produce states 
@@ -119,17 +124,25 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
         
         final RunState runStateMoved = new RunState(mtaGraph, obs, blockStateObs, false, this.prevOldTypeVehicleState);
         
-        final RunState runStateNotMoved = new RunState(mtaGraph, obs, blockStateObs, true, this.prevOldTypeVehicleState);
         
         final RunState.RunStateEdgePredictiveResults mtaEdgeResultsMoved = runStateMoved.
             computeAnnotatedLogLikelihood();
+        runStateMoved.setLikelihoodInfo(mtaEdgeResultsMoved);
+        mtaEdgeResultsMoved.setMovedLogLikelihood(Math.log(1d-likelihoodHasNotMoved));
         if (mtaEdgeResultsMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-          result.increment(runStateMoved, mtaEdgeResultsMoved.getTotalLogLik());
+          nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood, mtaEdgeResultsMoved.schedLogLikelihood);
+          resultDist.put(runStateMoved, new MutableDoubleCount(mtaEdgeResultsMoved.getTotalLogLik(), 1));
         }
+        
+        final RunState runStateNotMoved = new RunState(mtaGraph, obs, blockStateObs, true, this.prevOldTypeVehicleState);
+        
         final RunState.RunStateEdgePredictiveResults mtaEdgeResultsNotMoved = runStateNotMoved.
             computeAnnotatedLogLikelihood();
+        runStateNotMoved.setLikelihoodInfo(mtaEdgeResultsNotMoved);
+        mtaEdgeResultsNotMoved.setMovedLogLikelihood(Math.log(likelihoodHasNotMoved));
         if (mtaEdgeResultsNotMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-          result.increment(runStateNotMoved, mtaEdgeResultsNotMoved.getTotalLogLik());
+          nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood, mtaEdgeResultsNotMoved.schedLogLikelihood);
+          resultDist.put(runStateNotMoved, new MutableDoubleCount(mtaEdgeResultsNotMoved.getTotalLogLik(), 1));
         }
       }
     } 
@@ -155,21 +168,21 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
               || pathStateBelief.isOnRoad()))
         continue;
       
-      final Long serviceDate;
-      final BlockTripEntry blockTripEntry;
-      if (blockStateObs != null) {
-        blockTripEntry = blockStateObs.getBlockState().getBlockLocation().getActiveTrip();
-        serviceDate = blockStateObs.getBlockState().getBlockInstance().getServiceDate();
-      } else {
-        blockTripEntry = MtaPathEdge.getNullBlockTripEntry();
-        serviceDate = null;
-      }
-      
       final RunState runStateMoved = new RunState(mtaGraph, obs, blockStateObs, false, this.prevOldTypeVehicleState);
       Preconditions.checkState(runStateMoved.getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS);
       
       Preconditions.checkState(!pathEdge.isNullEdge() 
           || (runStateMoved.getJourneyState() != JourneyState.inProgress()));
+      
+      final RunState.RunStateEdgePredictiveResults mtaEdgeResultsMoved = runStateMoved.
+          computeAnnotatedLogLikelihood();
+      runStateMoved.setLikelihoodInfo(mtaEdgeResultsMoved);
+      mtaEdgeResultsMoved.setMovedLogLikelihood(Math.log(1d-likelihoodHasNotMoved));
+      if (mtaEdgeResultsMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
+        if (blockStateObs != null)
+          nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood, mtaEdgeResultsMoved.schedLogLikelihood);
+        resultDist.put(runStateMoved, new MutableDoubleCount(mtaEdgeResultsMoved.getTotalLogLik(), 1));
+      }
       
       final RunState runStateNotMoved = new RunState(mtaGraph, obs, blockStateObs, true, this.prevOldTypeVehicleState);
       Preconditions.checkState(runStateNotMoved.getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS);
@@ -177,19 +190,37 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
       Preconditions.checkState(!pathEdge.isNullEdge() 
           || (runStateNotMoved.getJourneyState() != JourneyState.inProgress()));
       
-      final RunState.RunStateEdgePredictiveResults mtaEdgeResultsMoved = runStateMoved.
-          computeAnnotatedLogLikelihood();
-      if (mtaEdgeResultsMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-        result.increment(runStateMoved, mtaEdgeResultsMoved.getTotalLogLik());
-      }
       final RunState.RunStateEdgePredictiveResults mtaEdgeResultsNotMoved = runStateNotMoved.
           computeAnnotatedLogLikelihood();
+      runStateNotMoved.setLikelihoodInfo(mtaEdgeResultsNotMoved);
+      mtaEdgeResultsNotMoved.setMovedLogLikelihood(Math.log(likelihoodHasNotMoved));
       if (mtaEdgeResultsNotMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-        result.increment(runStateNotMoved, mtaEdgeResultsNotMoved.getTotalLogLik());
+        if (blockStateObs != null)
+          nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood, mtaEdgeResultsNotMoved.schedLogLikelihood);
+        resultDist.put(runStateNotMoved, new MutableDoubleCount(mtaEdgeResultsNotMoved.getTotalLogLik(), 1));
       }
       
     }
     
+    /*
+     * Now, normalize the non-null block states, so that comparisons
+     * with null block states will be valid.
+     */
+    for (Entry<RunState, MutableDoubleCount> entry : resultDist.entrySet()) {
+      if (entry.getKey().getBlockStateObs() != null) {
+        final double newValue = entry.getValue().doubleValue() - nonNullTotalLikelihood;
+        entry.getValue().setValue(newValue);
+      } else {
+        Preconditions.checkState(true);
+      }
+    }
+    
+    DefaultCountedDataDistribution<RunState> result = 
+        new DefaultCountedDataDistribution<RunState>(resultDist, true);
+    Preconditions.checkState(!result.isEmpty());
+    // TODO debug. remove.
+    if (this.pathStateBelief.isOnRoad() && result.getMaxValueKey().getBlockStateObs() == null)
+        Preconditions.checkState(true);
     return result;
   }
 

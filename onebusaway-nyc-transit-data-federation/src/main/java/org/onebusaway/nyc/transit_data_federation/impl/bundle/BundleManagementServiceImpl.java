@@ -200,8 +200,9 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			BundleDiscoveryUpdateThread discoveryThread = new BundleDiscoveryUpdateThread();
 			_taskScheduler.schedule(discoveryThread, discoveryThread);
 
-			BundleSwitchUpdateThread switchThread = new BundleSwitchUpdateThread();
-			_taskScheduler.schedule(switchThread, switchThread);
+			// XXX local debug change.  remove.
+//			BundleSwitchUpdateThread switchThread = new BundleSwitchUpdateThread();
+//			_taskScheduler.schedule(switchThread, switchThread);
 		}
 	}	
 

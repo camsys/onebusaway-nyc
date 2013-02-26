@@ -235,7 +235,7 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
   @Override
   public String toString() {
     return Objects.toStringHelper("NycRawLocationRecord").add("vehicleId",
-        vehicleId).add("latitude", latitude).add("longitude", longitude).add(
+        vehicleId).add("coords", latitude).addValue(longitude).add(
         "destinationSignCode", destinationSignCode).add("timeReceived",
         new Date(timeReceived)).toString();
   }

@@ -65,13 +65,22 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.algorithm.LineIntersector;
+import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geomgraph.Edge;
+import com.vividsolutions.jts.geomgraph.Label;
+import com.vividsolutions.jts.geomgraph.index.EdgeSetIntersector;
+import com.vividsolutions.jts.geomgraph.index.SegmentIntersector;
+import com.vividsolutions.jts.geomgraph.index.SimpleMCSweepLineIntersector;
 import com.vividsolutions.jts.index.strtree.SIRtree;
 import com.vividsolutions.jts.index.strtree.STRtree;
+import com.vividsolutions.jts.operation.overlay.EdgeSetNoder;
 
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.graph.build.line.DirectedLineStringGraphGenerator;
@@ -83,6 +92,7 @@ import org.opentrackingtools.graph.edges.InferredEdge;
 import org.opentrackingtools.graph.impl.GenericJTSGraph;
 import org.opentrackingtools.graph.paths.InferredPath;
 import org.opentrackingtools.graph.paths.edges.PathEdge;
+import org.opentrackingtools.graph.paths.edges.impl.MtaPathEdge;
 import org.opentrackingtools.graph.paths.states.PathState;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
 import org.opentrackingtools.impl.VehicleState;
@@ -99,8 +109,11 @@ import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -134,12 +147,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
 
   }
 
-  private static final long _tripSearchTimeAfterLastStop = 5 * 60 * 60 * 1000;
-
-  private static final long _tripSearchTimeBeforeFirstStop = 5 * 60 * 60 * 1000;
-
   private final Logger _log = LoggerFactory.getLogger(MtaTrackingGraph.class);
-  
   
   public ScheduleLikelihood schedLikelihood = new ScheduleLikelihood();
   
@@ -211,7 +219,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
     public SIRtree getTimeIndex() {
       return timeIndex;
     }
-    
+
   };
 
   @PostConstruct
@@ -223,12 +231,17 @@ public class MtaTrackingGraph extends GenericJTSGraph {
     buildGraph();
   }
 
+//  final private Multimap<LineString, AgencyAndId> _geoToShapeId = HashMultimap.create(); 
+//  
+//  final private Multimap<AgencyAndId, LineString> _shapeIdToGeo = HashMultimap.create();
+//
+//  final private Map<LineString, TripInfo> _geometryToTripInfo = Maps.newHashMap();
   final private Multimap<Geometry, AgencyAndId> _geoToShapeId = HashMultimap.create(); 
   
   final private Map<AgencyAndId, Geometry> _shapeIdToGeo = Maps.newHashMap();
 
   final private Map<Geometry, TripInfo> _geometryToTripInfo = Maps.newHashMap();
-
+  
   private Random rng;
   
   private void buildGraph() {
@@ -243,7 +256,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
         AgencyAndId shapeId = trip.getShapeId();
         final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapeId);
         if (shapePoints == null || shapePoints.isEmpty()) {
-          _log.warn("shape with no shapepoints: " + shapeId);
+          _log.debug("shape with no shapepoints: " + shapeId);
           continue;
         }
       
@@ -255,7 +268,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
         }
         
         if (coords.isEmpty()) {
-          _log.warn("shape with no length found: " + shapeId);
+          _log.debug("shape with no length found: " + shapeId);
           continue;
         }
 
@@ -280,7 +293,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
 //                System.out.println(trip.toString() + ", " + blockId.toString());
 //              }
               if (!blockId.hasValues()) {
-                _log.warn("trip with null block id: " + blockId);
+                _log.debug("trip with null block id: " + blockId);
                 continue;
               }
               
@@ -302,7 +315,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
       }
 
       if (missingShapeGeoms.size() > 0) {
-        _log.warn(missingShapeGeoms.size() + " shape(s) with no geom mapping: " + missingShapeGeoms);
+        _log.debug(missingShapeGeoms.size() + " shape(s) with no geom mapping: " + missingShapeGeoms);
       }
       
       _log.info("\ttripInfo=" + _geometryToTripInfo.size());
@@ -327,14 +340,149 @@ public class MtaTrackingGraph extends GenericJTSGraph {
     }
 
     _log.info("done.");
+  } 
+  
+  /*
+  private void buildGraphTest() {
+    try {
+      _shapeIdToGeo.clear();
+      _geoToShapeId.clear();
+      _geometryToTripInfo.clear();
+
+      final GeometryFactory gf = JTSFactoryFinder.getGeometryFactory();
+      
+      Map<Geometry, Pair<Edge, AgencyAndId>> geoEdgePairMap = Maps.newHashMap();
+      Map<Geometry, Edge> geoEdgeMap = Maps.newHashMap();
+      for (TripEntry trip: _transitGraphDao.getAllTrips()) {
+        AgencyAndId shapeId = trip.getShapeId();
+        final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapeId);
+        if (shapePoints == null || shapePoints.isEmpty()) {
+//          _log.warn("shape with no shapepoints: " + shapeId);
+          continue;
+        }
+      
+        final CoordinateList coords = new CoordinateList();
+        for (int i = 0; i < shapePoints.getSize(); ++i) {
+          final Coordinate nextCoord = new Coordinate(shapePoints.getLats()[i], 
+              shapePoints.getLons()[i]);
+          coords.add(nextCoord, false);
+        }
+        
+        if (coords.isEmpty()) {
+//          _log.warn("shape with no length found: " + shapeId);
+          continue;
+        }
+        
+        final LineString lineGeo = gf.createLineString(coords.toCoordinateArray());
+        final Edge edge = new Edge(coords.toCoordinateArray(), new Label(0));
+        geoEdgeMap.put(lineGeo, edge);
+        geoEdgePairMap.put(lineGeo, DefaultPair.create(edge, shapeId));
+      }
+      _log.info("\tshapes=" + geoEdgeMap.size());
+      
+      LineIntersector li = new RobustLineIntersector();
+      EdgeSetIntersector esi = new SimpleMCSweepLineIntersector();
+      SegmentIntersector si = new SegmentIntersector(li, true, false);
+      esi.computeIntersections(Lists.newArrayList(geoEdgeMap.values()), si, false);
+
+      for (Pair<Edge, AgencyAndId> edgePair: geoEdgePairMap.values()) {
+        List<Edge> splitEdges = Lists.newArrayList();
+        edgePair.getFirst().getEdgeIntersectionList().addSplitEdges(splitEdges);
+        AgencyAndId shapeId = edgePair.getSecond();
+        
+        Preconditions.checkState(!splitEdges.isEmpty());
+        
+        for (Edge sedge : splitEdges) {
+          final LineString lineGeo = gf.createLineString(sedge.getCoordinates());
+          _geoToShapeId.put(lineGeo, shapeId);
+        }
+      }
+      
+      // Now create the unique exploded geometries to shape map.
+      for (Entry<LineString, AgencyAndId> entry : _geoToShapeId.entries()) {
+        _shapeIdToGeo.put(entry.getValue(), entry.getKey());
+      }
+      
+      geoEdgePairMap = null;
+      geoEdgeMap = null;
+      _log.info("\tnodedShapes=" + _geoToShapeId.keySet().size());
+      
+      Set<AgencyAndId> missingShapeGeoms = Sets.newHashSet();
+      _log.info("generating shapeId & blockConfig to block trips map...");
+      Set<TripInfo> allTripInfo = Sets.newHashSet();
+      Map<AgencyAndId, TripInfo> shapeToTripInfo = Maps.newHashMap();
+      for (final BlockEntry blockEntry : _transitGraphDao.getAllBlocks()) {
+        for (final BlockConfigurationEntry blockConfig : blockEntry.getConfigurations()) {
+          for (final BlockTripEntry blockTrip : blockConfig.getTrips()) {
+            final TripEntry trip = blockTrip.getTrip();
+            final AgencyAndId shapeId = trip.getShapeId();
+            final AgencyAndId blockId = blockEntry.getId();
+
+            if (shapeId != null) {
+//              if (shapeId.toString().equals("MTA_BXM20075")) {
+//                System.out.println(trip.toString() + ", " + blockId.toString());
+//              }
+              if (!blockId.hasValues()) {
+//                _log.warn("trip with null block id: " + blockId);
+                continue;
+              }
+              
+              TripInfo tripInfo = shapeToTripInfo.get(shapeId);
+              if (tripInfo == null) {
+                List<BlockTripEntry> entries = Lists.newArrayList(blockTrip);
+                tripInfo = new TripInfo(shapeId, entries);
+                shapeToTripInfo.put(shapeId, tripInfo);
+                allTripInfo.add(tripInfo);
+              } else {
+                tripInfo.getEntries().add(blockTrip);
+              }
+              
+              for (LineString line : _shapeIdToGeo.get(shapeId)) {
+                _geometryToTripInfo.put(line, tripInfo);
+              }
+            }
+          }
+        }
+      }
+      shapeToTripInfo = null;
+
+      if (missingShapeGeoms.size() > 0) {
+        _log.warn(missingShapeGeoms.size() + " shape(s) with no geom mapping: " + missingShapeGeoms);
+      }
+      missingShapeGeoms = null;
+      
+      _log.info("\ttripInfo=" + allTripInfo.size());
+      
+      _log.info("\tbuilding trip time indices...");
+      
+      int i = 0;
+      for (TripInfo info : allTripInfo) {
+        if (i % 100 == 0)
+          _log.info("\t" + i + "/" + allTripInfo.size());
+        info.setTimeIndex(buildTimeIndex(info.getEntries()));
+        i++;
+      }
+      allTripInfo = null;
+      
+      final List<LineString> geoms = Lists.newArrayList(_geometryToTripInfo.keySet());
+
+      _log.info("\tcreating graph...");
+      this.createGraphFromLineStrings(geoms);
+
+    } catch (final Exception ex) {
+      ex.printStackTrace();
+    }
+
+    _log.info("done.");
   }
+  */
 
   private MtaTrackingGraph() {
   }
 
   @Override
-  public PathEdge getPathEdge(InferredEdge edge, double d, Boolean b) {
-    return MtaPathEdge.getEdge(edge, d, b);
+  public PathEdge getPathEdge(InferredEdge edge, Geometry line, double d, Boolean b) {
+    return new MtaPathEdge(edge, line, d, b);
   }
 
   @Override
@@ -435,26 +583,17 @@ public class MtaTrackingGraph extends GenericJTSGraph {
   }
 
   private SIRtree buildTimeIndex(Collection<BlockTripEntry> collection) {
-    List<Object[]> intervalTrips = Lists.newArrayList();
+    // TODO what's a good value for max nodes?
+    SIRtree blockTripTimeIndex = new SIRtree();
     for (BlockTripEntry entry : collection) {
       for (Date serviceDate : _calendarService.getDatesForLocalizedServiceId(entry.getTrip().getServiceId())) {
         final int maxDeparture = Iterables.getFirst(entry.getStopTimes(), null).getStopTime().getDepartureTime();
         final double fromTime = maxDeparture * 1000d + serviceDate.getTime();
         final int minArrival = Iterables.getLast(entry.getStopTimes()).getStopTime().getArrivalTime();
         final double toTime = minArrival * 1000d + serviceDate.getTime();
-        intervalTrips.add(new Object[] {new Double(fromTime), new Double(toTime), 
-            new BlockTripEntryAndDate(entry, serviceDate)});
+        blockTripTimeIndex.insert(fromTime, toTime, new BlockTripEntryAndDate(entry, serviceDate));
       }
     }
-    
-    // TODO what's a good value?
-    final int initialSize = 10; //intervalTrips.size()/3;
-    SIRtree blockTripTimeIndex = new SIRtree(initialSize);
-    
-    for (Object[] objects : intervalTrips) {
-      blockTripTimeIndex.insert((Double)objects[0], (Double)objects[1], (BlockTripEntryAndDate)objects[2]);
-    }
-    
     blockTripTimeIndex.build();
     
     return blockTripTimeIndex;
@@ -513,21 +652,21 @@ public class MtaTrackingGraph extends GenericJTSGraph {
     return _blockIndexService;
   }
 
-  public Map<Geometry, TripInfo> getGeometryToTripInfo() {
-    return _geometryToTripInfo;
-  }
-
   public ExtendedCalendarService getExtCalendarService() {
     return _extCalendarService;
   }
 
-  public Multimap<Geometry, AgencyAndId> getGeoToShapeId() {
-    return _geoToShapeId;
-  }
-
-  public Map<AgencyAndId, Geometry> getShapeIdToGeo() {
-    return _shapeIdToGeo;
-  }
+//  public Map<LineString, TripInfo> getGeometryToTripInfo() {
+//    return _geometryToTripInfo;
+//  }
+//
+//  public Multimap<LineString, AgencyAndId> getGeoToShapeId() {
+//    return _geoToShapeId;
+//  }
+//
+//  public Multimap<AgencyAndId, LineString> getShapeIdToGeo() {
+//    return _shapeIdToGeo;
+//  }
 
   public org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState createOldTypeVehicleState(
       @Nonnull Observation mtaObs, @Nullable BlockStateObservation blockStateObs, boolean vehicleHasNotMoved,

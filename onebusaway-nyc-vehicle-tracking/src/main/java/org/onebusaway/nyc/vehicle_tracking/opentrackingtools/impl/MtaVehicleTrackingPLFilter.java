@@ -12,6 +12,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.InstanceState;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 
 import com.google.common.base.Preconditions;
@@ -26,8 +27,9 @@ import org.opentrackingtools.GpsObservation;
 import org.opentrackingtools.graph.InferenceGraph;
 import org.opentrackingtools.graph.paths.edges.PathEdge;
 import org.opentrackingtools.graph.paths.edges.impl.EdgePredictiveResults;
-import org.opentrackingtools.graph.paths.impl.InferredPathPrediction;
+import org.opentrackingtools.graph.paths.impl.PathEdgeDistribution;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
+import org.opentrackingtools.impl.MutableDoubleCount;
 import org.opentrackingtools.impl.VehicleState;
 import org.opentrackingtools.impl.VehicleStateInitialParameters;
 import org.opentrackingtools.impl.WrappedWeightedValue;
@@ -64,8 +66,8 @@ public class MtaVehicleTrackingPLFilter extends VehicleTrackingPLFilter {
     
     DefaultCountedDataDistribution<VehicleState> newDist = 
         new DefaultCountedDataDistribution<VehicleState>(initialDist.getDomainSize(), true);
-    for (VehicleState state : initialDist.getDomain()) {
-      final MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief) state.getBelief();
+    for (Entry<VehicleState, ? extends Number> entry  : initialDist.asMap().entrySet()) {
+      final MtaPathStateBelief mtaPathStateBelief = (MtaPathStateBelief) entry.getKey().getBelief();
       
       RunStateEstimator runEstimator = new RunStateEstimator(mtaGraph, 
           obs, mtaPathStateBelief, null, this.getRandom());
@@ -78,9 +80,11 @@ public class MtaVehicleTrackingPLFilter extends VehicleTrackingPLFilter {
       mtaPathStateBelief.setRunStateBelief(
           new DeterministicDataDistribution<RunState>(newRunState));
       
-      newDist.increment(state, 
-          initialDist.getLogFraction(state) + 
-          newRunState.computeAnnotatedLogLikelihood().getTotalLogLik());
+      MutableDoubleCount value = (MutableDoubleCount) entry.getValue();
+      newDist.set(entry.getKey(), 
+          value.value, value.count);
+//          initialDist.getLogFraction(state) + 
+//          newRunState.computeAnnotatedLogLikelihood().getTotalLogLik());
     }
     
     return newDist;
@@ -94,8 +98,32 @@ public class MtaVehicleTrackingPLFilter extends VehicleTrackingPLFilter {
     /*
      * FIXME more ridiculous hackery that demands an api redesign.
      */
-    ((MtaPathStateBelief) newState.getBelief()).setRunStateBelief(
-       ((MtaPathStateBelief) predictionResults.getLocationPrediction()).getRunStateBelief());
+    final DeterministicDataDistribution<RunState> runStateBelief = 
+        ((MtaPathStateBelief) predictionResults.getLocationPrediction()).getRunStateBelief();
+    
+    final RunState priorPredRunState = runStateBelief.getMaxValueKey();
+    
+    /*
+     * We must update also update the run state, since the path belief has been updated. 
+     */
+    final DeterministicDataDistribution<RunState> updatedRunStateBelief;
+    if (priorPredRunState.getBlockStateObs() != null) {
+      final ScheduledBlockLocation priorSchedLoc = priorPredRunState.getBlockStateObs().getBlockState().getBlockLocation();
+      MtaTrackingGraph mtaGraph = (MtaTrackingGraph)this.inferredGraph;
+      final BlockStateObservation newBlockStateObs = mtaGraph.getBlockStateObs((Observation)obs, 
+          newState.getBelief(), 
+          priorSchedLoc.getActiveTrip(), 
+          priorPredRunState.getBlockStateObs().getBlockState().getBlockInstance().getServiceDate());
+      updatedRunStateBelief = 
+          new DeterministicDataDistribution<RunState>(new RunState(mtaGraph,
+              (Observation)obs, newBlockStateObs, priorPredRunState.getVehicleHasNotMoved(), 
+              priorPredRunState.getParentVehicleState()));
+    } else {
+      updatedRunStateBelief = runStateBelief;
+    }
+    
+    Preconditions.checkNotNull(updatedRunStateBelief);
+    ((MtaPathStateBelief) newState.getBelief()).setRunStateBelief(updatedRunStateBelief);
     return newState;
   }
   

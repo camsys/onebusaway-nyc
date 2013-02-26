@@ -24,6 +24,9 @@ import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.builder.StandardToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -51,6 +54,7 @@ import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGra
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaVehicleState;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaVehicleTrackingPLFilter;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.RunState;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.RunStateEstimator;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -62,19 +66,27 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import gov.sandia.cognition.math.matrix.VectorFactory;
 import gov.sandia.cognition.statistics.DataDistribution;
+import gov.sandia.cognition.statistics.distribution.DefaultDataDistribution;
+import gov.sandia.cognition.statistics.distribution.MultivariateGaussian;
 
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
+import org.opentrackingtools.graph.paths.edges.PathEdge;
+import org.opentrackingtools.graph.paths.states.PathStateBelief;
 import org.opentrackingtools.impl.VehicleState;
 import org.opentrackingtools.impl.VehicleStateInitialParameters;
+import org.opentrackingtools.statistics.distributions.impl.DeterministicDataDistribution;
 import org.opentrackingtools.statistics.filters.vehicles.particle_learning.impl.VehicleTrackingPLFilter;
 import org.opentrackingtools.statistics.filters.vehicles.road.impl.ErrorEstimatingRoadTrackingFilter;
+import org.opentrackingtools.statistics.filters.vehicles.road.impl.ForwardMovingRoadTrackingFilter;
 import org.opentrackingtools.util.GeoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
@@ -85,6 +97,10 @@ public class VehicleInferenceInstance {
 
   private static Logger _log = LoggerFactory.getLogger(VehicleInferenceInstance.class);
 
+  static {
+    ToStringBuilder.setDefaultStyle(ToStringStyle.SHORT_PREFIX_STYLE);
+  }
+  
   @Autowired
   private ConfigurationService _configurationService;
   
@@ -94,12 +110,13 @@ public class VehicleInferenceInstance {
   private VehicleStateInitialParameters _initialParams =
       new VehicleStateInitialParameters(
           VectorFactory.getDefault().createVector2D(100d, 100d), 20,
-          VectorFactory.getDefault().createVector1D(0.000625), 20,
-          VectorFactory.getDefault().createVector2D(0.000625, 0.000625), 20,
+          VectorFactory.getDefault().createVector1D(0.00625), 20,
+          VectorFactory.getDefault().createVector2D(0.00625, 0.00625), 20,
           VectorFactory.getDefault().createVector2D(5d, 95d),
           VectorFactory.getDefault().createVector2D(95d, 5d), 
           VehicleTrackingPLFilter.class.getName(),
-          ErrorEstimatingRoadTrackingFilter.class.getName(),
+          ForwardMovingRoadTrackingFilter.class.getName(),
+//          ErrorEstimatingRoadTrackingFilter.class.getName(),
           25, 30, 0l);
   
   private DestinationSignCodeService _destinationSignCodeService;
@@ -125,6 +142,10 @@ public class VehicleInferenceInstance {
   private DataDistribution<VehicleState> _particles;
   
   private VehicleTrackingPLFilter _particleFilter;
+
+  private MtaVehicleState prevAvgVehicleState;
+
+  private MtaVehicleState currentAvgVehicleState;
 
   public void setModel(ParticleFilterModel<Observation> model) {
     // TODO remove.
@@ -388,9 +409,9 @@ public class VehicleInferenceInstance {
 
     if (_particles == null)
       return null;
-    final MtaVehicleState state = (MtaVehicleState) _particles.getMaxValueKey();
+    final MtaVehicleState state = getAverageVehicleState();;
     final RunState runState = state.getRunStateBelief().getMaxValueKey();
-    final Observation obs = runState.getBlockStateObs().getObs();
+    final Observation obs = (Observation) state.getObservation();
     final BlockStateObservation blockState = runState.getBlockStateObs();
     final NycRawLocationRecord nycRawRecord = obs.getRecord();
     record.setBearing(nycRawRecord.getBearing());
@@ -418,14 +439,70 @@ public class VehicleInferenceInstance {
     return record;
   }
 
+  private MtaVehicleState getAverageVehicleState() {
+    final DefaultDataDistribution<String> edgeDist = new DefaultDataDistribution<String>();
+    for (VehicleState state : _particles.getDomain()) {
+      BlockStateObservation blockStateObs = ((MtaVehicleState)state).getRunStateBelief()
+          .getMaxValueKey().getBlockStateObs();
+      edgeDist.increment(
+          blockStateObs != null ? blockStateObs.getBlockState().getRunTripEntry().getRunId() : null);
+    }
+    final String bestRun = edgeDist.getMaxValueKey();
+    
+    MtaVehicleState bestPathVehicleState = null;
+    MultivariateGaussian avgLoc = null;
+    for (VehicleState state : Iterables.filter(_particles.getDomain(), new Predicate<VehicleState>() {
+      @Override
+      public boolean apply(VehicleState input) {
+        RunState runState = ((MtaVehicleState)input).getRunStateBelief().getMaxValueKey();
+        if (runState.getBlockStateObs() == null)
+          return false;
+        
+        return runState.getBlockStateObs().getBlockState().getRunTripEntry().getRunId()
+          .equals(bestRun);
+      }
+    })) {
+      if (avgLoc == null)
+        avgLoc = state.getBelief().getGlobalStateBelief();
+      else
+        avgLoc.convolve(state.getBelief().getGlobalStateBelief());
+      
+      bestPathVehicleState = (MtaVehicleState) state;
+    }
+    
+    final MtaVehicleState naiveBestState = (MtaVehicleState) _particles.getMaxValueKey();
+    
+    final MtaVehicleState avgState;
+    if (bestPathVehicleState != null) {
+//      final Observation obs = (Observation)naiveBestState.getObservation();
+//      final PathStateBelief avgPathStateBelief = bestPathVehicleState.getBelief().getPath().getStateBeliefOnPath(avgLoc);
+//      final RunStateEstimator estimator = new RunStateEstimator(this._trackingGraph,
+//          obs, avgPathStateBelief, 
+//          prevAvgVehicleState != null ? prevAvgVehicleState.getRunStateBelief().getMaxValueKey().getVehicleState() : null,
+//          this._trackingGraph.getRng());
+//      final DataDistribution<RunState> avgRunStateBelief = estimator.createInitialLearnedObject();
+//      avgState = (MtaVehicleState) this._trackingGraph.createVehicleState(obs, bestPathVehicleState.getMovementFilter(),
+//          avgPathStateBelief, bestPathVehicleState.getEdgeTransitionDist(), prevAvgVehicleState);
+//      avgState.setRunStateBelief(avgRunStateBelief);
+      avgState = bestPathVehicleState;
+    } else {
+      avgState = naiveBestState; 
+    }
+    
+    prevAvgVehicleState = currentAvgVehicleState;
+    currentAvgVehicleState = avgState; 
+    
+    return avgState;
+  }
+
   public NycVehicleManagementStatusBean getCurrentManagementState() {
     final NycVehicleManagementStatusBean record = new NycVehicleManagementStatusBean();
 
     if (_particles == null)
       return null;
-    final MtaVehicleState state = (MtaVehicleState) _particles.getMaxValueKey();
+    final MtaVehicleState state = getAverageVehicleState();;
     final RunState runState = state.getRunStateBelief().getMaxValueKey();
-    final Observation obs = runState.getBlockStateObs().getObs();
+    final Observation obs = (Observation) state.getObservation();
     final BlockStateObservation blockState = runState.getBlockStateObs();
     final NycRawLocationRecord nycRawRecord = obs.getRecord();
 
@@ -604,9 +681,9 @@ public class VehicleInferenceInstance {
     if (_particles == null)
       return null;
     
-    final MtaVehicleState state = (MtaVehicleState) _particles.getMaxValueKey();
+    final MtaVehicleState state = getAverageVehicleState();;
     final RunState runState = state.getRunStateBelief().getMaxValueKey();
-    final Observation obs = runState.getBlockStateObs().getObs();
+    final Observation obs = (Observation) state.getObservation();
     final BlockStateObservation blockState = runState.getBlockStateObs();
     final MotionState motionState = runState.getVehicleState().getMotionState();
     final JourneyState journeyState = runState.getJourneyState();
@@ -647,6 +724,9 @@ public class VehicleInferenceInstance {
     } catch (TransformException e) {
       e.printStackTrace();
     } 
+    record.setInferredStateMean(state.getBelief().getGlobalState().toString());
+    record.setInferredStateCovariance(state.getBelief().getCovariance().toString());
+    record.setInferredEdge(state.getBelief().getEdge().getInferredEdge().getEdgeId());
 
     if (blockState != null) {
       record.setInferredRunId(blockState.getBlockState().getRunId());
