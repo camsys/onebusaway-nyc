@@ -267,7 +267,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     ConfigurableApplicationContext context = null;
     try {
       File outputPath = new File(response.getBundleDataDirectory());
-
+      File loggingPath = new File(response.getBundleOutputDirectory());
+      
       // beans assume bundlePath is set -- this will be where files are written!
       System.setProperty("bundlePath", outputPath.getAbsolutePath());
       
@@ -295,7 +296,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       beans.put("gtfsRelationalDaoImpl", bean.getBeanDefinition());
 
       BeanDefinitionBuilder multiCSVLogger = BeanDefinitionBuilder.genericBeanDefinition(MultiCSVLogger.class);
-      multiCSVLogger.addPropertyValue("basePath", outputPath);
+      multiCSVLogger.addPropertyValue("basePath", loggingPath);
       beans.put("multiCSVLogger", multiCSVLogger.getBeanDefinition());
             
       // configure for NYC specifics
