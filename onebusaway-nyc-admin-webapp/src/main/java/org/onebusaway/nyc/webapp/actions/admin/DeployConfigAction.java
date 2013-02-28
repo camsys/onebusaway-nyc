@@ -38,9 +38,9 @@ public class DeployConfigAction extends OneBusAwayNYCAdminActionSupport
       if (obanycEnv != null && obanycEnv.length() > 0) {
         environment = obanycEnv;
         s3DepotPath = "s3://"
-            + context.getInitParameter("s3.bundle.bucketName") + "/" 
+            + context.getInitParameter("s3.config.bucketName") + "/" 
             + environment + "/" + DEPOT_ID_PATH + "/";
-        s3DscPath = "s3://" + context.getInitParameter("s3.bundle.bucketName") + "/"
+        s3DscPath = "s3://" + context.getInitParameter("s3.config.bucketName") + "/"
             + environment + "/" + DSC_PATH + "/";
         _log.info("injecting env=" + environment + ", s3DepotPath="
             + s3DepotPath);
