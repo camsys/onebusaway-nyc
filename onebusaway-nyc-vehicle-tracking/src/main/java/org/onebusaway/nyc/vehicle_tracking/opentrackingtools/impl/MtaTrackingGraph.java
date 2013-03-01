@@ -87,6 +87,7 @@ import com.vividsolutions.jts.noding.SegmentString;
 import com.vividsolutions.jts.noding.SegmentStringDissolver;
 import com.vividsolutions.jts.noding.SegmentStringDissolver.SegmentStringMerger;
 import com.vividsolutions.jts.operation.overlay.EdgeSetNoder;
+import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
@@ -259,8 +260,8 @@ public class MtaTrackingGraph extends GenericJTSGraph {
 
       final GeometryFactory gf = JTSFactoryFinder.getGeometryFactory();
       
-      final List<NodedSegmentString> allSegments = Lists.newArrayList();
       final Map<AgencyAndId, NodedSegmentString> shapeIdToSegments = Maps.newHashMap();
+      final Map<LineString, NodedSegmentString> lineToSegments = Maps.newHashMap();
       for (TripEntry trip: _transitGraphDao.getAllTrips()) {
         AgencyAndId shapeId = trip.getShapeId();
         final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapeId);
@@ -282,22 +283,25 @@ public class MtaTrackingGraph extends GenericJTSGraph {
         }
 
         final Geometry lineGeo = gf.createLineString(coords.toCoordinateArray());
-        final Geometry euclidGeo = JTS.transform(lineGeo, 
+        
+        Geometry euclidGeo = JTS.transform(lineGeo, 
             GeoUtils.getTransform(lineGeo.getCoordinate()));
+        euclidGeo = DouglasPeuckerSimplifier.simplify(euclidGeo, 5);
         
         final NodedSegmentString segments = new NodedSegmentString(euclidGeo.getCoordinates(), 
             Lists.newArrayList(DefaultPair.create(shapeId, true)));
-        allSegments.add(segments);
+        
+        lineToSegments.put((LineString)euclidGeo, segments);
         shapeIdToSegments.put(shapeId, segments);
         
       }
-      _log.info("\tshapePoints=" + allSegments.size());
+      _log.info("\tshapePoints=" + lineToSegments.size());
       
       MCIndexNoder noder = new MCIndexNoder();
       noder.setSegmentIntersector(new IntersectionAdder(new RobustLineIntersector()));
       
       _log.info("\tcomputing nodes");
-      noder.computeNodes(allSegments);
+      noder.computeNodes(lineToSegments.values());
       
       SegmentStringMerger merger = new SegmentStringMerger() {
         @Override
