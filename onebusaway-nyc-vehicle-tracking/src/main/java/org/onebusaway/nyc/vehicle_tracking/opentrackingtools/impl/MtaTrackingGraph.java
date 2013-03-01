@@ -282,18 +282,21 @@ public class MtaTrackingGraph extends GenericJTSGraph {
         }
 
         final Geometry lineGeo = gf.createLineString(coords.toCoordinateArray());
-        final Geometry euclidGeo = JTS.transform(lineGeo, GeoUtils.getTransform(lineGeo.getCoordinate()));
+        final Geometry euclidGeo = JTS.transform(lineGeo, 
+            GeoUtils.getTransform(lineGeo.getCoordinate()));
         
         final NodedSegmentString segments = new NodedSegmentString(euclidGeo.getCoordinates(), 
-            Lists.newArrayList(DefaultPair.create(shapeId, false)));
+            Lists.newArrayList(DefaultPair.create(shapeId, true)));
         allSegments.add(segments);
         shapeIdToSegments.put(shapeId, segments);
         
       }
-      _log.info("\tshapePoints=" + _geoToShapeId.size());
+      _log.info("\tshapePoints=" + allSegments.size());
       
       MCIndexNoder noder = new MCIndexNoder();
       noder.setSegmentIntersector(new IntersectionAdder(new RobustLineIntersector()));
+      
+      _log.info("\tcomputing nodes");
       noder.computeNodes(allSegments);
       
       SegmentStringMerger merger = new SegmentStringMerger() {
@@ -312,10 +315,12 @@ public class MtaTrackingGraph extends GenericJTSGraph {
         }
       };
       
+      _log.info("\tdissolving nodes");
       SegmentStringDissolver dissolver = new SegmentStringDissolver(merger);
       dissolver.dissolve(noder.getNodedSubstrings());
     
       
+      _log.info("\tdissolved nodes=" + dissolver.getDissolved().size());
       for (Object obj : dissolver.getDissolved()) {
         final NodedSegmentString segments = (NodedSegmentString) obj;
         final LineString line = gf.createLineString(segments.getCoordinates());
@@ -388,7 +393,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
         geoms.add((LineString)entry.getKey());
       }
 
-      this.createGraphFromLineStrings(geoms, true);
+      this.createGraphFromLineStrings(geoms, false);
 
     } catch (final Exception ex) {
       ex.printStackTrace();
