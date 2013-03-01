@@ -80,8 +80,15 @@ import com.vividsolutions.jts.geomgraph.index.SegmentIntersector;
 import com.vividsolutions.jts.geomgraph.index.SimpleMCSweepLineIntersector;
 import com.vividsolutions.jts.index.strtree.SIRtree;
 import com.vividsolutions.jts.index.strtree.STRtree;
+import com.vividsolutions.jts.noding.IntersectionAdder;
+import com.vividsolutions.jts.noding.MCIndexNoder;
+import com.vividsolutions.jts.noding.NodedSegmentString;
+import com.vividsolutions.jts.noding.SegmentString;
+import com.vividsolutions.jts.noding.SegmentStringDissolver;
+import com.vividsolutions.jts.noding.SegmentStringDissolver.SegmentStringMerger;
 import com.vividsolutions.jts.operation.overlay.EdgeSetNoder;
 
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.graph.build.line.DirectedLineStringGraphGenerator;
 import org.geotools.graph.structure.basic.BasicDirectedEdge;
@@ -252,6 +259,8 @@ public class MtaTrackingGraph extends GenericJTSGraph {
 
       final GeometryFactory gf = JTSFactoryFinder.getGeometryFactory();
       
+      final List<NodedSegmentString> allSegments = Lists.newArrayList();
+      final Map<AgencyAndId, NodedSegmentString> shapeIdToSegments = Maps.newHashMap();
       for (TripEntry trip: _transitGraphDao.getAllTrips()) {
         AgencyAndId shapeId = trip.getShapeId();
         final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapeId);
@@ -273,11 +282,57 @@ public class MtaTrackingGraph extends GenericJTSGraph {
         }
 
         final Geometry lineGeo = gf.createLineString(coords.toCoordinateArray());
+        final Geometry euclidGeo = JTS.transform(lineGeo, GeoUtils.getTransform(lineGeo.getCoordinate()));
         
-        _geoToShapeId.put(lineGeo, shapeId);
-        _shapeIdToGeo.put(shapeId, lineGeo);
+        final NodedSegmentString segments = new NodedSegmentString(euclidGeo.getCoordinates(), 
+            Lists.newArrayList(DefaultPair.create(shapeId, false)));
+        allSegments.add(segments);
+        shapeIdToSegments.put(shapeId, segments);
+        
       }
       _log.info("\tshapePoints=" + _geoToShapeId.size());
+      
+      MCIndexNoder noder = new MCIndexNoder();
+      noder.setSegmentIntersector(new IntersectionAdder(new RobustLineIntersector()));
+      noder.computeNodes(allSegments);
+      
+      SegmentStringMerger merger = new SegmentStringMerger() {
+        @Override
+        public void merge(SegmentString mergeTarget, SegmentString ssToMerge,
+            boolean isSameOrientation) {
+          
+          List<Pair<AgencyAndId, Boolean>> newPairs = Lists.newArrayList();
+          for (Pair<AgencyAndId, Boolean> pair : (List<Pair<AgencyAndId, Boolean>>) ssToMerge.getData()) {
+            newPairs.add(DefaultPair.create(pair.getFirst(), isSameOrientation));
+          }
+            
+          List<Pair<AgencyAndId, Boolean>> currentPairs = 
+              (List<Pair<AgencyAndId, Boolean>>) mergeTarget.getData();
+          currentPairs.addAll(newPairs);
+        }
+      };
+      
+      SegmentStringDissolver dissolver = new SegmentStringDissolver(merger);
+      dissolver.dissolve(noder.getNodedSubstrings());
+    
+      
+      for (Object obj : dissolver.getDissolved()) {
+        final NodedSegmentString segments = (NodedSegmentString) obj;
+        final LineString line = gf.createLineString(segments.getCoordinates());
+        LineString revLine = null;
+        for (Pair<AgencyAndId, Boolean> pair : (List<Pair<AgencyAndId, Boolean>>) segments.getData()) {
+          final LineString lineToUse;
+          if (!pair.getSecond()) {
+            if (revLine == null)
+              revLine = (LineString) line.reverse();
+            lineToUse = revLine;
+          } else {
+            lineToUse = line;
+          }
+          _geoToShapeId.put(lineToUse, pair.getFirst());
+          _shapeIdToGeo.put(pair.getFirst(), lineToUse);
+        }
+      }
       
       Set<AgencyAndId> missingShapeGeoms = Sets.newHashSet();
       _log.info("generating shapeId & blockConfig to block trips map...");
