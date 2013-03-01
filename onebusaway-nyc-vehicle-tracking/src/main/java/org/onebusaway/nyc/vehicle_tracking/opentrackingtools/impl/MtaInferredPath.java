@@ -46,7 +46,7 @@ import org.opentrackingtools.graph.paths.InferredPath;
 import org.opentrackingtools.graph.paths.edges.PathEdge;
 import org.opentrackingtools.graph.paths.edges.impl.EdgePredictiveResults;
 import org.opentrackingtools.graph.paths.edges.impl.SimplePathEdge;
-import org.opentrackingtools.graph.paths.impl.PathEdgeDistribution;
+import org.opentrackingtools.graph.paths.impl.PathEdgeDistributionWrapper;
 import org.opentrackingtools.graph.paths.impl.SimpleInferredPath;
 import org.opentrackingtools.graph.paths.states.PathState;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
@@ -108,13 +108,13 @@ public class MtaInferredPath extends SimpleInferredPath {
    * The log lik reflects these additions.
    */
   @Override
-  public PathEdgeDistribution getPriorPredictionResults(
+  public PathEdgeDistributionWrapper getPriorPredictionResults(
       InferenceGraph graph,
       GpsObservation obs,
       VehicleState state,
       Map<PathEdge, EdgePredictiveResults> edgeToPreBeliefAndLogLik) {
     
-    PathEdgeDistribution generalPathPred = super.getPriorPredictionResults(graph, obs, state, edgeToPreBeliefAndLogLik);
+    PathEdgeDistributionWrapper generalPathPred = super.getPriorPredictionResults(graph, obs, state, edgeToPreBeliefAndLogLik);
     
     if (generalPathPred == null)
       return null;
@@ -126,7 +126,7 @@ public class MtaInferredPath extends SimpleInferredPath {
     DeterministicDataDistribution<RunState> prevRunStateDist = 
         ((MtaPathStateBelief)state.getBelief()).getRunStateBelief();
     
-    double pathLogLik = Double.NEGATIVE_INFINITY;
+//    double pathLogLik = Double.NEGATIVE_INFINITY;
     for (PathEdge pathEdge : generalPathPred.getPath().getPathEdges()) {
       final EdgePredictiveResults predEdgeResults = 
           Preconditions.checkNotNull(generalPathPred.getEdgeToPredictiveBelief().get(pathEdge));
@@ -173,7 +173,13 @@ public class MtaInferredPath extends SimpleInferredPath {
 //        pathLogLik);
     
 //    return updatedPathPrediction;
-    
+    // TODO remove.  debug
+    if (!this.isNullPath()
+        && ((MtaPathStateBelief)generalPathPred.getEdgeToPredictiveBelief().get(
+            generalPathPred.getPathEdgeDisribution().getMaxValueKey()).getLocationPrediction())
+            .getRunStateBelief().getMaxValueKey().getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS) {
+      Preconditions.checkState(true);
+    }
     return generalPathPred;
   }
   

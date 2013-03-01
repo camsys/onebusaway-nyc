@@ -27,7 +27,7 @@ import org.opentrackingtools.GpsObservation;
 import org.opentrackingtools.graph.InferenceGraph;
 import org.opentrackingtools.graph.paths.edges.PathEdge;
 import org.opentrackingtools.graph.paths.edges.impl.EdgePredictiveResults;
-import org.opentrackingtools.graph.paths.impl.PathEdgeDistribution;
+import org.opentrackingtools.graph.paths.impl.PathEdgeDistributionWrapper;
 import org.opentrackingtools.graph.paths.states.PathStateBelief;
 import org.opentrackingtools.impl.MutableDoubleCount;
 import org.opentrackingtools.impl.VehicleState;

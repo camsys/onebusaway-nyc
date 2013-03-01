@@ -333,7 +333,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
         geoms.add((LineString)entry.getKey());
       }
 
-      this.createGraphFromLineStrings(geoms);
+      this.createGraphFromLineStrings(geoms, true);
 
     } catch (final Exception ex) {
       ex.printStackTrace();

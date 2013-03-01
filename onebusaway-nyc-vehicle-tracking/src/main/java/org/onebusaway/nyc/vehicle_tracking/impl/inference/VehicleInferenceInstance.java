@@ -109,11 +109,11 @@ public class VehicleInferenceInstance {
   
   private VehicleStateInitialParameters _initialParams =
       new VehicleStateInitialParameters(
-          VectorFactory.getDefault().createVector2D(100d, 100d), 20,
+          VectorFactory.getDefault().createVector2D(300d, 300d), 20,
           VectorFactory.getDefault().createVector1D(0.00625), 20,
           VectorFactory.getDefault().createVector2D(0.00625, 0.00625), 20,
-          VectorFactory.getDefault().createVector2D(5d, 95d),
-          VectorFactory.getDefault().createVector2D(95d, 5d), 
+          VectorFactory.getDefault().createVector2D(15d, 95d),
+          VectorFactory.getDefault().createVector2D(95d, 15d), 
           VehicleTrackingPLFilter.class.getName(),
           ForwardMovingRoadTrackingFilter.class.getName(),
 //          ErrorEstimatingRoadTrackingFilter.class.getName(),
@@ -462,10 +462,10 @@ public class VehicleInferenceInstance {
           .equals(bestRun);
       }
     })) {
-      if (avgLoc == null)
-        avgLoc = state.getBelief().getGlobalStateBelief();
-      else
-        avgLoc.convolve(state.getBelief().getGlobalStateBelief());
+//      if (avgLoc == null)
+//        avgLoc = state.getBelief().getGlobalStateBelief();
+//      else
+//        avgLoc.convolve(state.getBelief().getGlobalStateBelief());
       
       bestPathVehicleState = (MtaVehicleState) state;
     }
