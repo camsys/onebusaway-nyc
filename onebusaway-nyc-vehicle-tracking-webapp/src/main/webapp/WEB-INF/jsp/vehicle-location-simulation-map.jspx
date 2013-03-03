@@ -7,7 +7,7 @@
     use this file except in compliance with the License. You may obtain a copy of
     the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    http:// www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -23,8 +23,18 @@
 <head>
 <title>Vehicle Location Simulations - Block</title>
 
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"><!-- //prevent jspx minimization --></script>
-<script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"><!-- // prevent
+																											// jspx
+																											// minimization
+																											// --></script>
+<script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"><!-- // prevent
+																					// jspx
+																					// minimization
+																					// --></script>
+<script type="text/javascript" src="Direction.js"><!-- // prevent
+																					// jspx
+																					// minimization
+																					// --></script>
 
 <script type="text/javascript">
 /* <![CDATA[ */
@@ -41,6 +51,7 @@ OBA.Debug = function() {
 	var feature = null;
 	var searchStartTime = null;
 	var searchEndTime = null;
+	var dirLayer = null;
 	
 	var tripsByBlockId = null;
 	
@@ -81,9 +92,8 @@ OBA.Debug = function() {
 	
 	/*
 	 * Move a popup with a drag.
-	 *
-	 * @author Matt Walker
-	 * @class
+	 * 
+	 * @author Matt Walker @class
 	 */
 	OpenLayers.Control.DragPopup = OpenLayers.Class(OpenLayers.Control, {
 
@@ -98,13 +108,16 @@ OBA.Debug = function() {
 	    docMouseUpProxy: null,
 
 	    /**
-	     * Constructor: OpenLayers.Control.DragPopup
-	     * Create a new control to drag a popup.
-	     *
-	     * Parameters:
-	     * @param {OpenLayers.Popup} popup
-	     * @param {Object} options
-	     */
+		 * Constructor: OpenLayers.Control.DragPopup Create a new control to
+		 * drag a popup.
+		 * 
+		 * Parameters:
+		 * 
+		 * @param {OpenLayers.Popup}
+		 *            popup
+		 * @param {Object}
+		 *            options
+		 */
 	    initialize: function(popup, options) {
 	        OpenLayers.Control.prototype.initialize.apply(this, [options]);
 	        this.popup = popup;
@@ -117,19 +130,17 @@ OBA.Debug = function() {
 	    },
 
 	    /**
-	     * Method: setMap
-	     * Set the map property for the control.
-	     *
-	     * Parameters:
-	     * map - {<openlayers.map>} The controls map.
-	     */
+		 * Method: setMap Set the map property for the control.
+		 * 
+		 * Parameters: map - {<openlayers.map>} The controls map.
+		 */
 	    setMap: function(map) {
 	        OpenLayers.Control.prototype.setMap.apply(this, [map]);
 	        this.map.events.register('mousemove', this, this.mouseMove);
 	    },
 
 	    mouseDown: function(evt) {
-	        //console.log('mouseDown');
+	        // console.log('mouseDown');
 	        this.down = true;
 	        this.popPnt = this.popup.events.getMousePosition(evt);
 	        OpenLayers.Event.observe(document, 'mouseup', this.docMouseUpProxy);
@@ -137,20 +148,20 @@ OBA.Debug = function() {
 	    },
 
 	    mouseUp: function(evt) {
-	        //console.log('mouseUp');
+	        // console.log('mouseUp');
 	        this.down = false;
 	        OpenLayers.Event.stopObserving(document, 'mouseup', this.docMouseUpProxy);
 	        OpenLayers.Event.stop(evt);
 	    },
 
 	    mouseOut: function(evt) {
-	        //console.log('map.mouseOut');
+	        // console.log('map.mouseOut');
 	        this.down = false;
 	        OpenLayers.Event.stop(evt);
 	    },
 
 	    mouseMove: function(evt) {
-	        //console.log('mouseMove');
+	        // console.log('mouseMove');
 	        if (this.down) {
 	            var mapPntPx = this.map.events.getMousePosition(evt);
 	            mapPntPx = mapPntPx.add((this.popPnt.x*-1), (this.popPnt.y*-1));
@@ -173,7 +184,10 @@ OBA.Debug = function() {
 	        OpenLayers.Control.prototype.destroy.apply(this, []);
 	    },
 
-	    /** @final @type String */
+	    /**
+		 * @final
+		 * @type String
+		 */
 	    CLASS_NAME: "OpenLayers.Control.DragPopup"
 	});	
 	
@@ -295,6 +309,8 @@ OBA.Debug = function() {
           var serviceDate = null;
           var inferredLat = null;
           var inferredLon = null;
+          var infEdgeGeom = null;
+          var pathEdgeGeom = null;
           
 					jQuery.each(record, function(property, value) {
 						if (value !== null) {
@@ -334,7 +350,11 @@ OBA.Debug = function() {
 							} else if (property === "inferredStateCovariance") {
 								markerText.inferredCov = value;
 							} else if (property === "inferredEdge") {
-								markerText.inferredEdge = value;
+								markerText.inferredEdge = "<a name='edge' href='#'>" + value + "</a>";
+							} else if (property === "inferredEdgeGeom") {
+								infEdgeGeom = value;
+							} else if (property === "inferredPathEdgeGeom") {
+								pathEdgeGeom = value;
 							} else if (property.indexOf("Set") == -1
 									&& !isNaN(value)){
 								if (property === "inferredBlockLat" && value != record.lat) {
@@ -381,7 +401,7 @@ OBA.Debug = function() {
           
           marker.events.register("mousedown", marker, function(event) {
 	          feature = new OpenLayers.Feature(markers, point);	
-						feature.data.popupSize = new OpenLayers.Size(500, 300);
+						feature.data.popupSize = new OpenLayers.Size(500, 500);
 	          popup = feature.createPopup(true);
 	          popup.setContentHTML(markerText.toString());
 	          var new_popup = new OpenLayers.Control.DragPopup(popup);
@@ -403,8 +423,24 @@ OBA.Debug = function() {
 	          	selectTrip(jQuery(this).text(), serviceDate);
 	          });
 	          
-	          var tripLink = jQuery(popup.contentDiv).find("a[name='trip_time_select']");
+	          var tripLink = jQuery(popup.contentDiv).find("a[name='edge']");
 	          tripLink.click(function(e) {
+	          	e.preventDefault();
+					    var infEdge = createLineString(infEdgeGeom);
+					    var infEdgeArrow = createDirection(infEdge.geometry, "end", false).pop();
+					    dirLayer.addFeatures([infEdgeArrow]);
+					    
+					    var pathEdge = createLineString(pathEdgeGeom);
+					    pathEdge.style.strokeColor = "#8FD8D8";
+// 					    var pathEdgeArrow = createDirection(pathEdge.geometry, "end", false).pop();
+// 					    dirLayer.addFeatures([pathEdgeArrow]);
+// 					    pathEdgeArrow.style.strokeColor = pathEdge.style.strokeColor;
+					    
+				      routes.addFeatures([infEdge, pathEdge]);
+	          });
+	          
+	          var tripTimeLink = jQuery(popup.contentDiv).find("a[name='trip_time_select']");
+	          tripTimeLink.click(function(e) {
 	          	e.preventDefault();
 	          	jQuery("#trip_time").val(jQuery(this).text());
 	          });
@@ -423,13 +459,13 @@ OBA.Debug = function() {
 							}
 	          });
 	
-// 						if (marker.inferredMarker !== null) {
-// 	          	if (marker.inferredMarker.onScreen()) {
-// 		          	marker.inferredMarker.display(false);
-// 	          	} else {
-// 		          	marker.inferredMarker.display(true);
-// 	          	}
-// 						}
+// if (marker.inferredMarker !== null) {
+// if (marker.inferredMarker.onScreen()) {
+// marker.inferredMarker.display(false);
+// } else {
+// marker.inferredMarker.display(true);
+// }
+// }
           	
             OpenLayers.Event.stop(event);
 	        });
@@ -464,6 +500,35 @@ OBA.Debug = function() {
      addedMarkers.addMarker(addedMarker);
 	}
 	
+	function createLineString(rawPoints) {
+    var points = [];
+    var proj = new OpenLayers.Projection("EPSG:4326");
+    for(var i = 0; i < rawPoints.length; i++) {
+    	var rawPoint = rawPoints[i];
+    	var wgsPoint = null;
+    	if (rawPoint.x) 
+	      wgsPoint = new OpenLayers.Geometry.Point(rawPoint.y, rawPoint.x);
+    	else
+    		wgsPoint = new OpenLayers.Geometry.Point(rawPoint[1], rawPoint[0]);
+      var point = wgsPoint.transform(proj, map.getProjectionObject());
+      points.push(point);
+    }
+
+    if(points.length === 0) {
+        return;
+    }
+
+    var style = {
+        strokeColor: "#00FF00",
+        strokeOpacity: 0.80,
+        strokeWidth: 5
+    };
+
+    var polyline = new OpenLayers.Geometry.LineString(points);
+    var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
+    return lineFeature;
+	}
+	
 	function selectTrip(selectedTripId, serviceDate) {
 		if(typeof selectedTripId === 'undefined' 
 				|| typeof selectedTripId === 'object') {
@@ -478,30 +543,10 @@ OBA.Debug = function() {
 			dataType: "json",
 			success: function(data) {
 	      var rawPoints = decodePolyline(data.points);
-	
-	      var points = [];
-	      for(var i = 0; i < rawPoints.length; i++) {
-	          var wgsPoint = new OpenLayers.Geometry.Point(rawPoints[i][1], rawPoints[i][0]);
-	          var proj = new OpenLayers.Projection("EPSG:4326");
-	          var point = wgsPoint.transform(proj, map.getProjectionObject());
-	          points.push(point);
-	      }
-	
-	      if(points.length === 0) {
-	          return;
-	      }
-	
-	      var style = {
-	          strokeColor: "#00FF00",
-	          strokeOpacity: 0.80,
-	          strokeWidth: 5
-	      };
-	
-	      var polyline = new OpenLayers.Geometry.LineString(points);
-	      var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
+	      var lineFeature = createLineString(rawPoints);
 	      routes.addFeatures([lineFeature]);
 	      
-// 	      map.zoomToExtent(routes.getDataExtent());
+// map.zoomToExtent(routes.getDataExtent());
 			}
 		});		
 		
@@ -541,8 +586,8 @@ OBA.Debug = function() {
           html += "distance:" + stop.distanceAlongTrip + "<br/>";
           
           /*
-          * wtf, closure issue in for loop...
-          */
+			 * wtf, closure issue in for loop...
+			 */
           (function(point, html) {
         	  marker.events.register("mousedown", marker, function(event) {
 	        	  var feature = new OpenLayers.Feature(stopMarkers, point);	
@@ -659,6 +704,17 @@ OBA.Debug = function() {
 			    type: "Road",
 			    metadataParams: {mapVersion: "v1"}
 			});
+      
+      OpenLayers.Renderer.symbol.arrow = [0,2, 1,0, 2,2, 1,0, 0,2];
+      var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
+          {graphicName:"arrow", 
+        	 rotation: "\${angle}",
+		       strokeColor: "#000000",
+		       strokeOpacity: 1,
+		       strokeWidth: 5},
+          OpenLayers.Feature.Vector.style["default"]));
+      dirLayer = new OpenLayers.Layer.Vector("direction", {styleMap: styleMap});
+      map.addLayer(dirLayer);
       
 			map.addLayers([road, routes, obslines, stopMarkers, inferredMarkers, addedMarkers, markers]);
 			map.addControl(new OpenLayers.Control.LayerSwitcher());

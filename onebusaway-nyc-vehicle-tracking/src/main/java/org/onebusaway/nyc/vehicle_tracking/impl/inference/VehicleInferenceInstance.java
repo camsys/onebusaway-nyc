@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.StandardToStringStyle;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.geotools.geometry.jts.JTS;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -69,6 +70,8 @@ import gov.sandia.cognition.statistics.DataDistribution;
 import gov.sandia.cognition.statistics.distribution.DefaultDataDistribution;
 import gov.sandia.cognition.statistics.distribution.MultivariateGaussian;
 
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.opentrackingtools.graph.paths.edges.PathEdge;
@@ -92,6 +95,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.TreeMultiset;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class VehicleInferenceInstance {
 
@@ -675,6 +679,9 @@ public class VehicleInferenceInstance {
   /**
    * Returns the most recent inference result as an NycTestInferredLocationRecord, i.e. simulator output.
    * @return
+   * @throws TransformException 
+   * @throws NoninvertibleTransformException 
+   * @throws MismatchedDimensionException 
    */
   private NycTestInferredLocationRecord getMostRecentParticleAsNycTestInferredLocationRecord() {
     
@@ -719,14 +726,21 @@ public class VehicleInferenceInstance {
           obs.getObsProjected().getTransform());
       record.setInferredBlockLat(stateMeanGps.x);
       record.setInferredBlockLon(stateMeanGps.y);
+      record.setInferredStateMean(state.getBelief().getGlobalState().toString());
+      record.setInferredStateCovariance(state.getBelief().getCovariance().toString());
+      record.setInferredEdge(state.getBelief().getEdge().getInferredEdge().getEdgeId());
+      if (state.getBelief().isOnRoad()) {
+        MathTransform transform = state.getObservation().getObsProjected().getTransform();
+        Geometry infEdgeGeom = JTS.transform(state.getBelief().getEdge().getInferredEdge().getGeometry(), transform.inverse());
+        Geometry pathEdgeGeom = JTS.transform(state.getBelief().getEdge().getGeometry(), transform.inverse());
+        record.setInferredEdgeGeom(infEdgeGeom.getCoordinates());
+        record.setInferredPathEdgeGeom(pathEdgeGeom.getCoordinates());
+      }
     } catch (NoninvertibleTransformException e) {
       e.printStackTrace();
     } catch (TransformException e) {
       e.printStackTrace();
     } 
-    record.setInferredStateMean(state.getBelief().getGlobalState().toString());
-    record.setInferredStateCovariance(state.getBelief().getCovariance().toString());
-    record.setInferredEdge(state.getBelief().getEdge().getInferredEdge().getEdgeId());
 
     if (blockState != null) {
       record.setInferredRunId(blockState.getBlockState().getRunId());

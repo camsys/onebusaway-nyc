@@ -203,16 +203,15 @@ public class MtaTrackingGraph extends GenericJTSGraph {
   private ShapePointService _shapePointService;
 
   public static class TripInfo {
-    final private Collection<BlockTripEntry> _entries;
+    final private Collection<SIRtree> _entries;
     final private AgencyAndId _shapeId;
-    private SIRtree timeIndex;
 
-    public TripInfo(AgencyAndId shapeId, Collection<BlockTripEntry> entries) {
+    public TripInfo(AgencyAndId shapeId, Collection<SIRtree> entries) {
       _shapeId = shapeId;
       _entries = entries;
     }
 
-    public Collection<BlockTripEntry> getEntries() {
+    public Collection<SIRtree> getEntries() {
       return _entries;
     }
 
@@ -220,12 +219,12 @@ public class MtaTrackingGraph extends GenericJTSGraph {
       return _shapeId;
     }
 
-    public void setTimeIndex(SIRtree timeIndex) {
-      this.timeIndex = timeIndex;
-    }
-
-    public SIRtree getTimeIndex() {
-      return timeIndex;
+    public Set<BlockTripEntryAndDate> getActiveTrips(double timeFrom, double timeTo) {
+      Set<BlockTripEntryAndDate> activeTrips = Sets.newHashSet();
+      for (SIRtree tree : _entries) {
+        activeTrips.addAll((Collection<BlockTripEntryAndDate>)tree.query(timeFrom, timeTo));
+      } 
+      return activeTrips;
     }
 
   };
@@ -246,7 +245,7 @@ public class MtaTrackingGraph extends GenericJTSGraph {
 //  final private Map<LineString, TripInfo> _geometryToTripInfo = Maps.newHashMap();
   final private Multimap<Geometry, AgencyAndId> _geoToShapeId = HashMultimap.create(); 
   
-  final private Map<AgencyAndId, Geometry> _shapeIdToGeo = Maps.newHashMap();
+  final private Multimap<AgencyAndId, Geometry> _shapeIdToGeo = HashMultimap.create();
 
   final private Map<Geometry, TripInfo> _geometryToTripInfo = Maps.newHashMap();
   
@@ -324,24 +323,23 @@ public class MtaTrackingGraph extends GenericJTSGraph {
       dissolver.dissolve(noder.getNodedSubstrings());
     
       
-      _log.info("\tdissolved nodes=" + dissolver.getDissolved().size());
+      _log.info("\tdissolved lines=" + dissolver.getDissolved().size());
       for (Object obj : dissolver.getDissolved()) {
         final NodedSegmentString segments = (NodedSegmentString) obj;
         final LineString line = gf.createLineString(segments.getCoordinates());
-        LineString revLine = null;
+        line.setUserData(Boolean.FALSE);
         for (Pair<AgencyAndId, Boolean> pair : (List<Pair<AgencyAndId, Boolean>>) segments.getData()) {
-          final LineString lineToUse;
-          if (!pair.getSecond()) {
-            if (revLine == null)
-              revLine = (LineString) line.reverse();
-            lineToUse = revLine;
-          } else {
-            lineToUse = line;
-          }
-          _geoToShapeId.put(lineToUse, pair.getFirst());
-          _shapeIdToGeo.put(pair.getFirst(), lineToUse);
+          /*
+           * Mark line as having a reverse
+           */
+          if (!pair.getSecond())
+            line.setUserData(Boolean.TRUE);
+          _geoToShapeId.put(line, pair.getFirst());
+          _shapeIdToGeo.put(pair.getFirst(), line);
         }
       }
+      _log.info("\tresult shapes=" + _geoToShapeId.keySet().size());
+      _log.info("\tresult shapeIds=" + _geoToShapeId.size());
       
       Set<AgencyAndId> missingShapeGeoms = Sets.newHashSet();
       _log.info("generating shapeId & blockConfig to block trips map...");
@@ -361,17 +359,22 @@ public class MtaTrackingGraph extends GenericJTSGraph {
                 continue;
               }
               
-              Geometry lineGeo = _shapeIdToGeo.get(shapeId);
-              if (lineGeo == null) {
+              Collection<Geometry> shapesForId = _shapeIdToGeo.get(shapeId);
+              if (shapesForId.isEmpty()) {
                 missingShapeGeoms.add(shapeId);
                 continue;
               }
-              if (!_geometryToTripInfo.containsKey(lineGeo)) {
-                List<BlockTripEntry> entries = Lists.newArrayList(blockTrip);
-                _geometryToTripInfo.put(lineGeo, new TripInfo(shapeId, entries));
-              } else {
-                final TripInfo tripInfo = _geometryToTripInfo.get(lineGeo);
-                tripInfo.getEntries().add(blockTrip);
+              
+              SIRtree tree = buildTimeIndex(Collections.singletonList(blockTrip));
+              
+              for (Geometry lineGeo : shapesForId) {
+                TripInfo tripInfo = _geometryToTripInfo.get(lineGeo);
+                if (tripInfo == null) {
+                  List<SIRtree> entries = Lists.newArrayList(tree);
+                  _geometryToTripInfo.put(lineGeo, new TripInfo(shapeId, entries));
+                } else {
+                  tripInfo.getEntries().add(tree);
+                }
               }
             }
           }
@@ -384,17 +387,19 @@ public class MtaTrackingGraph extends GenericJTSGraph {
       
       _log.info("\ttripInfo=" + _geometryToTripInfo.size());
       
-      _log.info("\tbuilding trip time indices=" + _geometryToTripInfo.size());
-      
-      for (TripInfo info : _geometryToTripInfo.values()) {
-        info.setTimeIndex(buildTimeIndex(info.getEntries()));
-      }
-      
-
       final List<LineString> geoms = Lists.newArrayList();
 
-      for (final Entry<Geometry, TripInfo> entry : _geometryToTripInfo.entrySet()) {
+      Set<Entry<Geometry, TripInfo>> currentEntries = Sets.newHashSet(_geometryToTripInfo.entrySet());
+      for (final Entry<Geometry, TripInfo> entry : currentEntries) {
         geoms.add((LineString)entry.getKey());
+        /*
+         * Add reverses, if they exist.
+         */
+        if ((Boolean)entry.getKey().getUserData()) {
+          final LineString revLine = (LineString)(entry.getKey().reverse());
+          geoms.add(revLine);
+          _geometryToTripInfo.put(revLine, entry.getValue());
+        }
       }
 
       this.createGraphFromLineStrings(geoms, false);

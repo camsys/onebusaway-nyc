@@ -22,6 +22,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFact
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 
 import com.google.common.base.Strings;
+import com.vividsolutions.jts.geom.Coordinate;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -161,6 +162,12 @@ public class NycTestInferredLocationRecord implements Serializable {
   
   @CsvField(optional = true, ignore=true)
   private String inferredEdge = null;
+
+  @CsvField(optional = true, ignore=true)
+  private Coordinate[] inferredPathEdgeGeom;
+
+  @CsvField(optional = true, ignore=true)
+  private Coordinate[] inferredEdgeGeom;
 
 
   // **************
@@ -547,5 +554,21 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public void setInferredEdge(String inferredEdge) {
     this.inferredEdge = inferredEdge;
+  }
+
+  public void setInferredPathEdgeGeom(Coordinate[] coordinates) {
+    this.inferredPathEdgeGeom = coordinates;
+  }
+
+  public void setInferredEdgeGeom(Coordinate[] coordinates) {
+    this.inferredEdgeGeom = coordinates;
+  }
+
+  public Coordinate[] getInferredPathEdgeGeom() {
+    return inferredPathEdgeGeom;
+  }
+
+  public Coordinate[] getInferredEdgeGeom() {
+    return inferredEdgeGeom;
   }
 }

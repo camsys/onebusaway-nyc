@@ -113,7 +113,7 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
        * run/block set, so find all the active ones in our time window, produce states 
        * for them, and weigh.
        */
-      Collection<BlockTripEntryAndDate> activeEntries = tripInfo.getTimeIndex().query(timeFrom.getTime(), timeTo.getTime());
+      Collection<BlockTripEntryAndDate> activeEntries = tripInfo.getActiveTrips(timeFrom.getTime(), timeTo.getTime());
       for (BlockTripEntryAndDate blockTripEntryAndDate: activeEntries) {
         
         final BlockTripEntry blockTripEntry = blockTripEntryAndDate.getBlockTripEntry();
