@@ -68,8 +68,8 @@ public class BaseDeployer implements ServletContextAware {
       _s3 = new AmazonS3Client(_credentials);
       _fileUtil = new FileUtility();
     } catch (Exception ioe) {
+      _log.error("BaseDeplyer setup failed, likely due to missing or invalid s3 credentials");
       _log.error(ioe.toString());
-      throw new RuntimeException(ioe);
     }
 
   }
