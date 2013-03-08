@@ -105,7 +105,7 @@ public class EmergencyStatusNotificationServiceImpl implements EmergencyStatusNo
 			if(StringUtils.isNotBlank(user) && StringUtils.isNotBlank(password)) {
 				snsClient = new AmazonSNSClient(new BasicAWSCredentials(user, password));
 			} else {
-				throw new RuntimeException("Cannot create Amazon SNS client. Either user name or" +
+				log.error("Cannot create Amazon SNS client. Either user name or" +
 						"password is not set.");
 			}
 			

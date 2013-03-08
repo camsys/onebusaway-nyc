@@ -81,5 +81,29 @@
         </property> 
     </bean>
     
+	<!-- quartz scheduling for PingJob -->
+	<bean name="pingJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="org.onebusaway.nyc.admin.job.PingJob" />
+		<property name="jobDataAsMap">
+			<map>
+      			<entry key="userManagementService" value-ref="userManagementServiceImpl"/>
+     		</map>
+		</property>
+		
+	</bean>
+	
+	<bean id="pingTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="pingJob" />
+		<property name="cronExpression" value="0 * * * * ?" /><!--  every minute -->
+	</bean>
+	
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="pingTrigger" />
+			</list>
+		</property>
+	</bean>
+    
 
 </beans>
