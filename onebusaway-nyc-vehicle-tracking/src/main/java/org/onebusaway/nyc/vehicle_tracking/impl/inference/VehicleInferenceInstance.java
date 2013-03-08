@@ -73,6 +73,9 @@ public class VehicleInferenceInstance {
   @Autowired
   private ConfigurationService _configurationService;
 
+  @Autowired
+  private BlockStateService _blockStateService;
+
   private DestinationSignCodeService _destinationSignCodeService;
 
   private BaseLocationService _baseLocationService;
@@ -689,8 +692,11 @@ public class VehicleInferenceInstance {
         	_configurationService.getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
       } else {
+        final boolean vehicleIsDetourEligible = 
+        		_blockStateService.locationIsEligibleForDetour(activeTrip, location);
+        		
         // vehicles on detour should be in_progress with status=deviated 
-        if (state.getJourneyState().getIsDetour()) {
+        if (state.getJourneyState().getIsDetour() && vehicleIsDetourEligible) {
           // remap this journey state/phase to IN_PROGRESS to conform to 
           // previous pilot project semantics.
           if (EVehiclePhase.DEADHEAD_DURING.equals(phase)) {

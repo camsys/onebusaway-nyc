@@ -125,9 +125,18 @@ public class BlockStateService {
   private static boolean _requireRunMatchesForNullDSC = true;
 
   /**
+   * Maximum distance in meters a bus can be away from a route geometry
+   * and still be eligible for detour status.
+   */
+  private static double _maximumDetourDistanceInMeters = 600;
+  
+  
+  /**
    * This will sound weird, but DON'T REMOVE THIS
    */
   private final Logger _log = LoggerFactory.getLogger(BlockStateService.class);
+
+  private final GeometryFactory _geometryFactory = new GeometryFactory();
 
   private ObservationCache _observationCache;
 
@@ -148,6 +157,8 @@ public class BlockStateService {
   private BlockIndexService _blockIndexService;
 
   private TransitGraphDao _transitGraphDao;
+
+  private Map<AgencyAndId, Geometry> _shapeIdToBufferedGeometryMap = new HashMap<AgencyAndId, Geometry>();
 
   private Map<String, Multimap<LocationIndexedLine, TripInfo>> _linesToTripInfoByAgencyId;
   
@@ -602,6 +613,26 @@ public class BlockStateService {
   }
 
   /**
+   * Can a vehicle on the given trip, at the given location, be considered for detour status?
+   * 
+   * @param trip
+   * @param location
+   * @return
+   */
+  public boolean locationIsEligibleForDetour(BlockTripEntry trip, CoordinatePoint location) {
+    AgencyAndId shapeId = trip.getTrip().getShapeId();
+    Geometry bufferedShape = _shapeIdToBufferedGeometryMap.get(shapeId);
+
+    if(bufferedShape != null) {
+    	Coordinate vehicleLocation = new Coordinate(location.getLon(), location.getLat());
+    	Geometry vehicleLocationGeometry = _geometryFactory.createPoint(vehicleLocation);
+        return bufferedShape.contains(vehicleLocationGeometry);
+    }
+    
+    return false;
+  }
+  
+  /**
    * Computes distance along a blockConfigEntry for a given starting stop-time
    * index.<br>
    * Here's an example of how to get the index:<br>
@@ -718,6 +749,19 @@ public class BlockStateService {
 	}
   };
 
+  // make detour checking shapes
+  public void addShapeToDetourGeometryMap(ShapePoints shapePoints) {
+	  Coordinate[] allPoints = new Coordinate[shapePoints.getSize() - 1];
+	  for (int i = 0; i < shapePoints.getSize() - 1; i++) {
+	  	allPoints[i] = new Coordinate(shapePoints.getLonForIndex(i), shapePoints.getLatForIndex(i));
+	  }        
+	  final Geometry lineGeo = _geometryFactory.createLineString(allPoints);     
+	  
+	  // conversion from http://gis.stackexchange.com/questions/14449/java-vividsolutions-jts-wgs-84-distance-to-meters
+	  _shapeIdToBufferedGeometryMap.put(shapePoints.getShapeId(), 
+			  lineGeo.buffer(_maximumDetourDistanceInMeters / (Math.PI/180) / 6378137));
+  }
+  
   /**
    * 
    * Build the maps and STR tree for look-up.
@@ -731,9 +775,8 @@ public class BlockStateService {
       final Multimap<AgencyAndId, BlockTripIndex> blockTripIndicesByShapeId = HashMultimap.create();
       final Multimap<AgencyAndId, BlockLayoverIndex> blockLayoverIndicesByShapeId = HashMultimap.create();
       final Multimap<AgencyAndId, FrequencyBlockTripIndex> frequencyBlockTripIndicesByShapeId = HashMultimap.create();
-
+      
       final Multimap<Envelope, LocationIndexedLine> envToLines = HashMultimap.create();
-      final GeometryFactory gf = new GeometryFactory();
 
       _log.info("generating shapeId & blockConfig to block trips map...");
       for (final BlockEntry blockEntry : _transitGraphDao.getAllBlocks()) {
@@ -787,10 +830,10 @@ public class BlockStateService {
           final Coordinate fromJts = new Coordinate(from.getLon(), from.getLat());
           final Coordinate toJts = new Coordinate(to.getLon(), to.getLat());
 
-          final Geometry lineGeo = gf.createLineString(new Coordinate[] {fromJts, toJts});
+          final Geometry lineGeo = _geometryFactory.createLineString(new Coordinate[] {fromJts, toJts});
           final LocationIndexedLine line = new LocationIndexedLine(lineGeo);
           final Envelope env = lineGeo.getEnvelopeInternal();
-
+          
           final double distanceFrom = shapePoints.getDistTraveledForIndex(i);
           final double distanceTo = shapePoints.getDistTraveledForIndex(i + 1);
           
@@ -799,8 +842,9 @@ public class BlockStateService {
 
           envToLines.put(env, line);
         }
-        
+
         _linesToTripInfoByAgencyId.put(agencyId, linesToTripInfoForThisAgencyId);
+        addShapeToDetourGeometryMap(shapePoints);
       }
 
       if (envToLines.size() > 0) {
