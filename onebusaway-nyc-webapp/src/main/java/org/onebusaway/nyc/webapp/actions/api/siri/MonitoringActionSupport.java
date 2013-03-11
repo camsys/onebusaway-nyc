@@ -7,6 +7,7 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import com.dmurph.tracking.AnalyticsConfigData;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
+import com.dmurph.tracking.VisitorData;
 
 public class MonitoringActionSupport {
 
@@ -22,8 +23,10 @@ public class MonitoringActionSupport {
         configService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);
     
     try {
-      if ((googleAnalyticsSiteId != null) && (gaApiHelper.reportToGoogleAnalytics(request.getParameter("key")))) {    
-        AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, null);
+      if ((googleAnalyticsSiteId != null) && (gaApiHelper.reportToGoogleAnalytics(request.getParameter("key")))) { 
+        VisitorData visitorData =  VisitorData.newVisitor();
+        visitorData.newRequest();
+        AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, visitorData);
         _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
       }
     } catch(Exception e) {
