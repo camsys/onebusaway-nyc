@@ -328,27 +328,33 @@ public class StifTripLoader {
               continue;
             }
 
-            /*
-             * Service codes are of the form 20100627CA Only the last two
-             * characters are important. They have the meaning: A = sat B =
-             * weekday closed C = weekday open D = sun
-             * 
-             * The first character is for trips on that day's STIF schedule,
-             * while the second character is for trips on the next day's STIF
-             * schedule (but that run on that day).
-             * 
-             * To figure out whether a GTFS trip corresponds to a STIF trip, if
-             * the STIF trip is before midnight, check daycode1; else check
-             * daycode2
-             */
-
             String serviceId = gtfsTrip.getServiceId().getId();
-            if (isBusCo) {
-              ServiceCode tripServiceCode = ServiceCode.getServiceCodeForBusCoGTFS(serviceId);
+            String[] serviceIdParts = serviceId.split("_");
+            boolean isNewMTAHastusGtfsFormat = (serviceIdParts.length == 2);
+
+            // bus company GTFS matches with GTFS with an embedded GTFS trip ID in the STIF, new MTA NYCT
+            // format GTFS is matched using a simplified strategy as compared to the case below.
+            if (isBusCo || isNewMTAHastusGtfsFormat) {
+              ServiceCode tripServiceCode = ServiceCode.getServiceCodeForMTAHastusGTFS(serviceId);
               if (serviceCode != tripServiceCode) {
                   gtfsTrip = null;
               }
+            	
+            // legacy NYCT format, where service ID ends in primary/secondary schedule 
             } else {
+              /*
+               * Service codes are of the form 20100627CA Only the last two
+               * characters are important. They have the meaning: A = sat B =
+               * weekday closed C = weekday open D = sun
+               * 
+               * The first character is for trips on that day's STIF schedule,
+               * while the second character is for trips on the next day's STIF
+               * schedule (but that run on that day).
+               * 
+               * To figure out whether a GTFS trip corresponds to a STIF trip, if
+               * the STIF trip is before midnight, check daycode1; else check
+               * daycode2
+               */
               Character dayCode1 = serviceId.charAt(serviceId.length() - 2);
               Character dayCode2 = serviceId.charAt(serviceId.length() - 1);
 

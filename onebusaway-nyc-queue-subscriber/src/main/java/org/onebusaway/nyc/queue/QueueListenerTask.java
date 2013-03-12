@@ -92,12 +92,15 @@ public abstract class QueueListenerTask {
 			while (!Thread.currentThread().isInterrupted()) {
 				_zmqPoller.poll();
 				if (_zmqPoller.pollin(0)) {
-					@SuppressWarnings("unused")
 					String address = new String(_zmqSocket.recv(0));
 					String contents = new String(_zmqSocket.recv(0));
 
-					processMessage(address, contents);
-
+					try {
+						processMessage(address, contents);
+					} catch(Exception ex) {
+						_log.error("#####>>>>> processMessage() failed, exception was: " + ex.getMessage());
+					}
+						
 					Thread.yield();
 				}
 

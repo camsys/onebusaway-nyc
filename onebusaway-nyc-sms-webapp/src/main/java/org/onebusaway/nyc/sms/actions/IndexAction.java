@@ -104,6 +104,9 @@ public class IndexAction extends SessionedIndexAction {
       _searchResults = _searchService.getSearchResults(queryString, _resultFactory);
     } else if (commandString != null && commandString.equals("R") && _lastQuery != null && !_lastQuery.isEmpty()) {
       _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
+    } else if (queryString == null || queryString.isEmpty()) {
+      _response = errorResponse("No results.");
+      return SUCCESS;
     }
           
     while(true) {
