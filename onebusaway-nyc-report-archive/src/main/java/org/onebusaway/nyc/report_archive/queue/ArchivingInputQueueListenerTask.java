@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 
   public static final int DELAY_THRESHOLD = 10 * 1000;
+  private static final long SAVE_THRESHOLD = 500; //milliseconds, report if save takes longer than this
   protected static Logger _log = LoggerFactory.getLogger(ArchivingInputQueueListenerTask.class);
   
   private RecordValidationService validationService;
@@ -189,11 +190,15 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 			  emergencyStatusNotificationService.process(record);
 
 			  long batchWindow = System.currentTimeMillis() - _lastCommitTime;
-			  if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
+			  if (_batchCount >= _batchSize || batchWindow > _commitTimeout) {
 				  try {
 					  // unfortunately save needs to be called here to allow transactional
 					  // semantics to work
+				    long saveWindow = System.currentTimeMillis();
 					  _dao.saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
+					  long saveTime = System.currentTimeMillis() - saveWindow;
+					  if (saveTime > SAVE_THRESHOLD)
+					  _log.info("bhs save took " + saveTime + " ms");
 				  } finally {
 					  reports.clear();
 					  _batchCount = 0;

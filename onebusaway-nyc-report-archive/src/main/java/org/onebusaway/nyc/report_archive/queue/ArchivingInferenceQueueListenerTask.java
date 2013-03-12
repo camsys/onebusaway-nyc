@@ -26,6 +26,7 @@ public class ArchivingInferenceQueueListenerTask extends
     InferenceQueueListenerTask {
 
   public static final int DELAY_THRESHOLD = 10 * 1000;
+  private static final long SAVE_THRESHOLD = 500; // milliseconds, report if save takes longer than this;
   private static Logger _log = LoggerFactory.getLogger(ArchivingInferenceQueueListenerTask.class);
 
   private NycQueuedInferredLocationDao _locationDao;
@@ -123,9 +124,14 @@ public class ArchivingInferenceQueueListenerTask extends
 	  }
 	  
 	  long batchWindow = System.currentTimeMillis() - _lastCommitTime;
-	  if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
+	  if (_batchCount >= _batchSize || batchWindow > _commitTimeout) {
 		  try {
+		    long saveWindow = System.currentTimeMillis();
 			  _locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
+			  long saveTime = System.currentTimeMillis() - saveWindow;
+        if (saveTime > SAVE_THRESHOLD)
+        _log.info("inference save took " + saveTime + " ms");
+			 
 		  } finally {
 			  records.clear();
 			  _batchCount = 0;

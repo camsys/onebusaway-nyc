@@ -50,7 +50,7 @@ public class LastKnownLocationResource {
 	@GET
 	@Produces("application/json")
 	public Response getlastLocationRecordForVehicle(@PathParam("vehicleId") Integer vehicleId) {
-		_log.info("Starting getlastLocationRecordForVehicle.");
+		_log.debug("Starting getlastLocationRecordForVehicle.");
 		
 		String outputJson;
 		
@@ -68,7 +68,7 @@ public class LastKnownLocationResource {
 		
 		Response response = Response.ok(outputJson, "application/json").build();
 		
-		_log.info("Returning ok response from getlastLocationRecordForVehicle");
+		_log.debug("Returning ok response from getlastLocationRecordForVehicle");
 		return response;
 	}
 
@@ -80,7 +80,7 @@ public class LastKnownLocationResource {
 			@QueryParam(value="inferred-phase") final String inferredPhase,
 			@QueryParam(value="bbox") final String boundingBox) {
 
-		_log.info("Starting getAllLastLocationRecords");
+		_log.debug("Starting getAllLastLocationRecords");
 		
 		Map<CcAndInferredLocationFilter, String> filter = addFilterParameters(depotId, 
 				inferredRouteId, inferredPhase, boundingBox);
@@ -100,7 +100,7 @@ public class LastKnownLocationResource {
 		
 		Response response = Response.ok(outputJson, "application/json").build();
 
-		_log.info("Returning ok response in getAllLastLocationRecords");
+		_log.debug("Returning ok response in getAllLastLocationRecords");
 		return response;
 	}
 	
@@ -119,7 +119,7 @@ public class LastKnownLocationResource {
 	}
 
 	private List<CcAndInferredLocationRecord> getLastKnownRecordsFromDao(Map<CcAndInferredLocationFilter, String> filter) {
-		_log.info("Fetching all last known vehicle location records from dao.");
+		_log.debug("Fetching all last known vehicle location records from dao.");
 		
 		List<CcAndInferredLocationRecord> lastKnownRecords = _locationDao.getAllLastKnownRecords(filter);
 
@@ -129,7 +129,7 @@ public class LastKnownLocationResource {
 
 	private List<CcAndInferredLocationRecord> getLastKnownRecordForVehicleFromDao(
 			Integer vehicleId) throws Exception {
-		_log.info("Fetching last known record for vehicle " + String.valueOf(vehicleId));
+		_log.debug("Fetching last known record for vehicle " + String.valueOf(vehicleId));
 		CcAndInferredLocationRecord record = _locationDao.getLastKnownRecordForVehicle(vehicleId);
 		
 		List<CcAndInferredLocationRecord> records = new ArrayList<CcAndInferredLocationRecord>();
@@ -139,7 +139,7 @@ public class LastKnownLocationResource {
 	}
 	
 	private String getObjectAsJsonString(Object object) throws IOException {
-		_log.info("In getObjectAsJsonString, serializing input object as json.");
+		_log.debug("In getObjectAsJsonString, serializing input object as json.");
 		
 		String outputJson = null;
 		
