@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.nyc.report_archive.services.InferencePersistenceService;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 import org.onebusaway.nyc.report_archive.services.RecordValidationService;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
@@ -28,6 +29,9 @@ public class ArchivingInferenceQueueListenerTaskTest {
 	
 	@Mock
 	private NycQueuedInferredLocationDao locationDao;
+	
+	@Mock
+	private InferencePersistenceService persister;
 	
 	@Mock
 	private NycTransitDataService nycTransitDataService;
@@ -51,10 +55,9 @@ public class ArchivingInferenceQueueListenerTaskTest {
 		when(inferredResult.getInferredLongitude()).thenReturn(-1D);
 		
 		inferenceQueueListenertask = new ArchivingInferenceQueueListenerTask();
-		inferenceQueueListenertask.setBatchSize("1000");
 		inferenceQueueListenertask.setLocationDao(locationDao);
-		inferenceQueueListenertask.setNycTransitDataService(nycTransitDataService);
 		inferenceQueueListenertask.setValidationService(validationService);
+		inferenceQueueListenertask.setInferencePersistenceService(persister);
 	}
 
 	@Test
@@ -62,9 +65,6 @@ public class ArchivingInferenceQueueListenerTaskTest {
 		when(validationService.validateInferenceRecord(inferredResult)).thenReturn(false);	
 		inferenceQueueListenertask.processResult(inferredResult, "");
 		
-		verify(nycTransitDataService, times(0)).getVehicleForAgency(isA(String.class), isA(Long.class));
-		verify(nycTransitDataService, times(0)).getVehicleLocationRecordForVehicleId(isA(String.class), 
-				isA(Long.class));
 	}
 	
 	
@@ -85,8 +85,6 @@ public class ArchivingInferenceQueueListenerTaskTest {
 		
 		inferenceQueueListenertask.processResult(inferredResult, "");
 		
-		verify(nycTransitDataService).getVehicleForAgency(isA(String.class), isA(Long.class));
-		verify(nycTransitDataService).getVehicleLocationRecordForVehicleId(isA(String.class), isA(Long.class));
 	}
 	
 	@Test
@@ -107,8 +105,6 @@ public class ArchivingInferenceQueueListenerTaskTest {
 		
 		inferenceQueueListenertask.processResult(inferredResult, "");
 		
-		verify(nycTransitDataService).getVehicleForAgency(isA(String.class), isA(Long.class));
-		verify(nycTransitDataService).getVehicleLocationRecordForVehicleId(isA(String.class), isA(Long.class));
 	}
 	
 	@Test 
@@ -130,8 +126,6 @@ public class ArchivingInferenceQueueListenerTaskTest {
 		
 		inferenceQueueListenertask.processResult(inferredResult, "");
 		
-		verify(nycTransitDataService).getVehicleForAgency(isA(String.class), isA(Long.class));
-		verify(nycTransitDataService).getVehicleLocationRecordForVehicleId(isA(String.class), isA(Long.class));
 	}
 
 }
