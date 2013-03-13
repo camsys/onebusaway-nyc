@@ -74,6 +74,7 @@ public class ArchivingInferenceQueueListenerTask extends
   // this method must throw exceptions to force a transaction rollback
   protected void processResult(NycQueuedInferredLocationBean inferredResult,
       String contents) {
+    long timeReceived = System.currentTimeMillis();
     ArchivedInferredLocationRecord locationRecord = null;
 
     if (_log.isDebugEnabled())
@@ -84,7 +85,7 @@ public class ArchivingInferenceQueueListenerTask extends
 
     if (validInferredResult) {
       locationRecord = new ArchivedInferredLocationRecord(inferredResult,
-          contents);
+          contents, timeReceived);
         persister.persist(locationRecord, contents);
     } else {
       discardRecord(inferredResult.getVehicleId(), contents);
