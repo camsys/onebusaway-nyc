@@ -23,10 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
-* Manage the persistence of inference records.  Handles the need to save in batches for performance, but
-* with a timeout to keep the db up-to-date.  Also does the post-processing of records via the TDS.
-*
-*/
+ * Manage the persistence of inference records. Handles the need to save in
+ * batches for performance, but with a timeout to keep the db up-to-date. Also
+ * does the post-processing of records via the TDS.
+ * 
+ */
 public class InferencePersistenceServiceImpl implements
     InferencePersistenceService {
   private static Logger _log = LoggerFactory.getLogger(InferencePersistenceServiceImpl.class);
@@ -39,23 +40,22 @@ public class InferencePersistenceServiceImpl implements
   }
 
   private NycTransitDataService _nycTransitDataService;
-  
+
   @Autowired
   public void setNycTransitDataService(
       NycTransitDataService nycTransitDataService) {
     this._nycTransitDataService = nycTransitDataService;
   }
-  
+
   private RecordValidationService validationService;
-  
+
   @Autowired
   public void setValidationService(RecordValidationService validationService) {
     this.validationService = validationService;
   }
-  
+
   private ExecutorService executorService = null;
-  
-  
+
   private ArrayBlockingQueue<ArchivedInferredLocationRecordAndContents> preMessages = new ArrayBlockingQueue<ArchivedInferredLocationRecordAndContents>(
       100000);
   private ArrayBlockingQueue<ArchivedInferredLocationRecord> postMessages = new ArrayBlockingQueue<ArchivedInferredLocationRecord>(
@@ -126,13 +126,12 @@ public class InferencePersistenceServiceImpl implements
 
     return postProcessSuccess;
   }
-  
+
   @PreDestroy
   public void destroy() {
     executorService.shutdownNow();
   }
 
-  
   private class PostProcessThread implements Runnable {
 
     @Override
@@ -163,21 +162,47 @@ public class InferencePersistenceServiceImpl implements
       List<ArchivedInferredLocationRecord> reports = new ArrayList<ArchivedInferredLocationRecord>();
       // remove at most _batchSize (1000) records
       postMessages.drainTo(reports, _batchSize);
-      if (reports.size() > 0) {
-        _log.info("inf drained "
-            + reports.size()
-            + " messages and is "
-            + ((System.currentTimeMillis() - reports.get(0).getTimeReported().getTime()) / 1000)
-            + " seconds behind");
-      } else {
-        _log.info("inf nothing to do");
-      }
+      logLatency(reports);
       try {
         _locationDao.saveOrUpdateRecords(reports.toArray(new ArchivedInferredLocationRecord[0]));
 
       } catch (Exception e) {
         _log.error("Error persisting=" + e);
       }
+    }
+
+    private void logLatency(List<ArchivedInferredLocationRecord> reports) {
+      long now = System.currentTimeMillis();
+      if (reports.size() > 0) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("inf drained ");
+        sb.append(reports.size());
+        sb.append(" messages and has avg reported latency ");
+        long reportedLatencySum = 0;
+        for (int i = 0; i < reports.size(); i++) {
+          reportedLatencySum += now - reports.get(i).getTimeReported().getTime();
+        }
+        sb.append((reportedLatencySum / reports.size()) / 1000);
+
+        sb.append(" s and avg received latency ");
+        long receivedLatencySum = 0;
+        for (int i = 0; i < reports.size(); i++) {
+          receivedLatencySum += now - reports.get(i).getLastUpdateTime();
+        }
+        sb.append((receivedLatencySum / reports.size()) / 1000);
+        
+        sb.append(" s and avg processing latency ");
+        long processingLatencySum = 0;
+        for (int i = 0; i < reports.size(); i++) {
+          processingLatencySum += now - reports.get(i).getArchiveTimeReceived().getTime();
+        }
+        sb.append((processingLatencySum / reports.size()));
+        sb.append(" ms");
+        _log.info(sb.toString());
+      } else {
+        _log.info("inf nothing to do");
+      }
+
     }
   }
 
