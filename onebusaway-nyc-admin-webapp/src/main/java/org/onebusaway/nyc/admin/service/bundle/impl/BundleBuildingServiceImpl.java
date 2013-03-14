@@ -510,7 +510,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     File outputPath = new File(response.getBundleDataDirectory());
     String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
     fs.copyFiles(new File(logFilename), new File(response.getBundleOutputDirectory() + File.separator + "bundleBuilder.out.txt"));
-
+    response.addOutputFile("bundleBuilder.out.txt");
+    
     // copy the rest of the bundle content to outputs directory
     File outputsDir = new File(response.getBundleOutputDirectory());
     File[] outputFiles = outputsDir.listFiles();

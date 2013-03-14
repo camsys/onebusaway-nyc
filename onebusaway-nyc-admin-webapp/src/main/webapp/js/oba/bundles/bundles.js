@@ -729,6 +729,14 @@ function updateBuildList(id) {
 						}
 					}
 				}
+				// append log file
+				txt = txt + "<li>" + "Bundle Builder Log:" + "&nbsp;"
+				+ "X" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+				+ "<img src=\"../../css/img/go-down-5.png\" />"
+				+ "<a href=\"manage-bundles!downloadOutputFile.action?id="
+				+ id+ "&downloadFilename=" 
+				+ encodeURIComponent("bundlerBuilder.out.txt") + "\">" + ".txt" +  "</a></li>";
+				
 				txt = txt + "</ul>";
 				jQuery("#buildBundle_fileList").html(txt).css("display", "block");
 				jQuery("#buildBundle #downloadLogs").show().css("display", "block");
