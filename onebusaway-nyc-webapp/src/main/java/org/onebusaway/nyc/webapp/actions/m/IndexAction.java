@@ -183,7 +183,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
           }
         }
       } else {
-        if (getQueryIsEmpty()) {
+        if (getQueryIsEmpty() && _location == null) {
           action = "Home";
         } else {
           action = "No Search Results";
@@ -226,7 +226,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   public boolean getQueryIsEmpty() {
-    return (_q == null || _q.isEmpty()) && _location == null;
+    return (_q == null || _q.isEmpty());
   }
 
   public String getLastUpdateTime() {
@@ -265,14 +265,23 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   public String getTitle() {
-    if (!getQueryIsEmpty()) {
-      if (this._q != null && !this._q.isEmpty())
-        return ": " + this._q;
-      else
-        return "";
-    } else {
+    if (_location != null && getQueryIsEmpty()) {
       return "";
     }
+    if (_results.getMatches().size() > 0) {
+      SearchResult result = _results.getMatches().get(0);
+      if (_results.getResultType().equals("StopResult")) {
+        StopResult stopResult = (StopResult)result;
+        return ": Stop " + stopResult.getCode() + " " + stopResult.getName();
+      } else if (_results.getResultType().equals("RouteResult")) {
+        RouteResult routeResult = (RouteResult)result;
+        return ": Route " + routeResult.getShortName();
+      }
+    }
+    if (!getQueryIsEmpty()) {
+      return ": " + _q;
+    }
+    return "";
   }
 
   public String getRouteFilterShortName() {
