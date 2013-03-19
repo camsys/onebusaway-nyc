@@ -24,6 +24,8 @@ package org.onebusaway.nyc.transit_data_federation.impl.bundle;
  */
 public final class NycRefreshableResources {
 
+  public static final String NON_REVENUE_MOVES_DATA = "__non_revenue_moves_data";
+
   public static final String DESTINATION_SIGN_CODE_DATA = "__dsc_data";
 
   public static final String TERMINAL_DATA = "__terminal_data";

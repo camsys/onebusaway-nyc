@@ -57,6 +57,8 @@ public class StifTripLoader {
 
   private int _tripsWithoutMatchCount = 0;
 
+  private Map<AgencyAndId, GeographyRecord> geographyRecordsByBoxId = new HashMap<AgencyAndId, GeographyRecord>();
+
   private Map<AgencyAndId, RunData> runsForTrip = new HashMap<AgencyAndId, RunData>();
 
   private Map<Trip, RawRunData> rawRunDataByTrip = new HashMap<Trip, RawRunData>();
@@ -92,6 +94,10 @@ public class StifTripLoader {
     return tripIdsBySignCode;
   }
 
+  public Map<AgencyAndId, GeographyRecord> getGeographyRecordsByBoxId() {
+    return geographyRecordsByBoxId;
+  }
+  
   public int getTripsCount() {
     return _tripsCount;
   }
@@ -148,6 +154,8 @@ public class StifTripLoader {
         }
         if (record instanceof GeographyRecord) {
           GeographyRecord geographyRecord = ((GeographyRecord) record);
+          geographyRecordsByBoxId.put(new AgencyAndId(agencyId, geographyRecord.getBoxID()), 
+        		  geographyRecord);
           support.putStopIdForLocation(geographyRecord.getIdentifier(),
               geographyRecord.getBoxID());
           continue;
@@ -201,6 +209,7 @@ public class StifTripLoader {
                 "Using first/last stops from trip layer rather than event layer.");
               fakeDeadhead = true;
           }
+          
           if (tripType == 2 || tripType == 3 || tripType == 4 || fakeDeadhead) {
             // this must be a non-revenue trip
             if (firstEventRecord != null) {

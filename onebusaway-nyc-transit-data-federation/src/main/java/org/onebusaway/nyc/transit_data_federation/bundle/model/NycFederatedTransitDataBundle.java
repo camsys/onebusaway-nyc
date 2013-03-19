@@ -25,6 +25,14 @@ public class NycFederatedTransitDataBundle {
     return _path;
   }
 
+  public File getNonRevenueMoveLocationsPath() {
+	return new File(_path, "NonRevenueMoveLocations.obj");
+  }
+
+  public File getNonRevenueMovePath() {
+	return new File(_path, "NonRevenueMoves.obj");
+  }
+
   public File getNotInServiceDSCs() {
 	return new File(_path, "NotInServiceDSCs.obj");
   }

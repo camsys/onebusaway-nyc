@@ -24,6 +24,7 @@ import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.GeographyRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -75,7 +76,7 @@ public class StifTask implements Runnable {
   private boolean fallBackToStifBlocks = false;
 
   private MultiCSVLogger csvLogger;
-
+  
   private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>();
 
   @Autowired
@@ -133,8 +134,8 @@ public class StifTask implements Runnable {
       loadStifBlocks(loader);
     }
 
-    Map<AgencyAndId, RunData> runsForTrip = loader.getRunsForTrip();
     //store trip-run mapping in bundle
+    Map<AgencyAndId, RunData> runsForTrip = loader.getRunsForTrip();
     try {
       ObjectSerializationLibrary.writeObject(_bundle.getTripRunDataPath(),
           runsForTrip);
@@ -142,6 +143,10 @@ public class StifTask implements Runnable {
           throw new IllegalStateException(e);
     }
     
+    // non revenue moves
+    serializeNonRevenueMoveData(loader.getRawStifData(), loader.getGeographyRecordsByBoxId());
+
+    // dsc to trip map
     Map<String, List<AgencyAndId>> dscToTripMap = loader.getTripMapping();
     
     // Read in trip to dsc overrides if they exist
@@ -161,18 +166,21 @@ public class StifTask implements Runnable {
         }
         
         List<AgencyAndId> agencyAndIds;
+        
         // See if trips for this dsc are already in the map
         agencyAndIds = dscToTripMap.get(entry.getValue());
+
         // If not, care a new array of trip ids and add it to the map for this dsc
         if (agencyAndIds == null) {
           agencyAndIds = new ArrayList<AgencyAndId>();
           dscToTripMap.put(entry.getValue(), agencyAndIds);
         }
+
         // Add the trip id to our list of trip ids already associated with a dsc
         agencyAndIds.add(entry.getKey());
       }
     }
-
+    
     Map<AgencyAndId, String> tripToDscMap = new HashMap<AgencyAndId, String>();
     
     // Populate tripToDscMap based on dscToTripMap
@@ -185,7 +193,6 @@ public class StifTask implements Runnable {
     }
 
     Set<String> inServiceDscs = new HashSet<String>();
-
     logDSCStatistics(dscToTripMap, tripToDscMap);
 
     int withoutMatch = loader.getTripsWithoutMatchCount();
@@ -194,9 +201,7 @@ public class StifTask implements Runnable {
     _log.info("stif trips without match: " + withoutMatch + " / " + total);
 
     readNotInServiceDscs();
-
     serializeDSCData(dscToTripMap, tripToDscMap, inServiceDscs);
-
   }
 
   private void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,
@@ -215,6 +220,18 @@ public class StifTask implements Runnable {
     }
   }
 
+  private void serializeNonRevenueMoveData(Map<ServiceCode, List<StifTrip>> nonRevenueMovesByServiceCode, 
+		  Map<AgencyAndId, GeographyRecord> nonRevenueMoveLocationsByBoxId) {
+	  try {
+		  ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueMovePath(), 
+				  nonRevenueMovesByServiceCode);
+		  ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueMoveLocationsPath(), 
+				  nonRevenueMoveLocationsByBoxId);
+	  } catch (IOException e) {
+		  throw new IllegalStateException("error serializing non-revenue move/STIF data", e);
+	  }	  
+  }
+  
   private void serializeDSCData(Map<String, List<AgencyAndId>> dscToTripMap,
       Map<AgencyAndId, String> tripToDscMap, Set<String> inServiceDscs) {
     for (String notInServiceDsc : _notInServiceDscs) {
