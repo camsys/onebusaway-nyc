@@ -15,7 +15,10 @@
  */
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model;
 
-public class GeographyRecord implements StifRecord {
+import java.io.Serializable;
+
+public class GeographyRecord implements StifRecord, Serializable {
+	private static final long serialVersionUID = 1L;
 
 	private String identifier;
 	private float latitude;

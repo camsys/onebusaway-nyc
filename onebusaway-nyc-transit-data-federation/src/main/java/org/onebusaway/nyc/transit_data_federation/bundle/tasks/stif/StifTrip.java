@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,8 +9,9 @@ import java.util.List;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 
-public class StifTrip implements Comparable<StifTrip> {
-
+public class StifTrip implements Comparable<StifTrip>, Serializable {
+  private static final long serialVersionUID = 1L;
+  
   public String nextRun;
   public String runId;
   public String reliefRunId;
