@@ -75,8 +75,12 @@ public class NonRevenueMovementServiceImpl implements NonRevenueMovementService 
 					continue;
 
 				AgencyAndId blockId = new AgencyAndId(trip.agencyId, trip.blockId);
-				GeographyRecord fromLocation = _nonRevenueMoveLocationsByBoxId.get(new AgencyAndId(trip.agencyId, trip.firstStop));
-				GeographyRecord toLocation = _nonRevenueMoveLocationsByBoxId.get(new AgencyAndId(trip.agencyId, trip.lastStop));
+				GeographyRecord fromLocation = null;
+				if(trip.firstStop != null)
+					fromLocation = _nonRevenueMoveLocationsByBoxId.get(new AgencyAndId(trip.agencyId, trip.firstStop));
+				GeographyRecord toLocation = null;
+				if(trip.lastStop != null)
+					toLocation = _nonRevenueMoveLocationsByBoxId.get(new AgencyAndId(trip.agencyId, trip.lastStop));
 								
 				NonRevenueMoveData nrmd = new NonRevenueMoveData();
 				nrmd.setMoveType(trip.type);
