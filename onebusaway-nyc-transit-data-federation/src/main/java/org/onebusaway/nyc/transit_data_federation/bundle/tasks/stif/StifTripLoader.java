@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -67,6 +69,8 @@ public class StifTripLoader {
 
   private MultiCSVLogger csvLogger;
 
+  private Pattern oldNYCTServiceIdFormat = Pattern.compile(".*[0-9]{8}[A-Z]{2}$");
+  
   private Map<DuplicateTripCheckKey, StifTrip> tripsByRunAndStartTime = new HashMap<DuplicateTripCheckKey, StifTrip>();
 
   class DuplicateTripCheckKey {
@@ -338,13 +342,11 @@ public class StifTripLoader {
             }
 
             String serviceId = gtfsTrip.getServiceId().getId();
-            String[] serviceIdParts = serviceId.split("_");
-            boolean isNewMTAHastusGtfsFormat = (serviceIdParts.length == 2);
-
-            // bus company GTFS matches with GTFS with an embedded GTFS trip ID in the STIF, new MTA NYCT
-            // format GTFS is matched using a simplified strategy as compared to the case below.
+            Matcher m = oldNYCTServiceIdFormat.matcher(serviceId);
+            boolean isNewMTAHastusGtfsFormat = !m.matches();
+            
             if (isBusCo || isNewMTAHastusGtfsFormat) {
-              ServiceCode tripServiceCode = ServiceCode.getServiceCodeForMTAHastusGTFS(serviceId);
+              ServiceCode tripServiceCode = ServiceCode.getServiceCodeForMTAHastusGTFS(serviceId);              
               if (serviceCode != tripServiceCode) {
                   gtfsTrip = null;
               }
@@ -366,11 +368,6 @@ public class StifTripLoader {
                */
               Character dayCode1 = serviceId.charAt(serviceId.length() - 2);
               Character dayCode2 = serviceId.charAt(serviceId.length() - 1);
-
-              // schedule runs on on days where a dayCode1 is followed by a
-              // dayCode2;
-              // contains all trips from dayCode1, and pre-midnight trips for
-              // dayCode2;
 
               if (stifTrip.firstStopTime < 0) {
                 // possible trip records are those containing the previous day

@@ -84,7 +84,6 @@ public enum ServiceCode {
 		String[] serviceIdParts = id.split("_");
 		if(serviceIdParts.length != 2)
 			return null;
-		
 		String[] serviceIdSubparts = serviceIdParts[1].split("-");
 		if(serviceIdParts.length < 2)
 			return null;
@@ -110,7 +109,7 @@ public enum ServiceCode {
 			return serviceCodeForGtfsId.get(Character.toString(pickCodeWithoutYear));
 		}
 	}
-
+	
 	public String getLetterCode() {
 	  return letterCodeForServiceCode.get(this);
 	}
