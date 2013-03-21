@@ -4,17 +4,18 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransition
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MtaPathStateBelief;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGraph.BlockTripEntryAndDate;
-import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaTrackingGraph.TripInfo;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycTrackingGraph.BlockTripEntryAndDate;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycTrackingGraph.TripInfo;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.RunState.RunStateEdgePredictiveResults;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.InstanceState;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 
 import gov.sandia.cognition.learning.algorithm.AbstractBatchAndIncrementalLearner;
+import gov.sandia.cognition.learning.algorithm.IncrementalLearner;
 import gov.sandia.cognition.math.LogMath;
 import gov.sandia.cognition.math.MutableDouble;
 import gov.sandia.cognition.statistics.ComputableDistribution;
@@ -26,16 +27,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import org.opentrackingtools.distributions.CountedDataDistribution;
+import org.opentrackingtools.distributions.DeterministicDataDistribution;
+import org.opentrackingtools.distributions.PathStateDistribution;
+import org.opentrackingtools.estimators.MotionStateEstimatorPredictor;
 import org.opentrackingtools.graph.InferenceGraph;
-import org.opentrackingtools.graph.paths.edges.PathEdge;
-import org.opentrackingtools.graph.paths.edges.impl.EdgePredictiveResults;
-import org.opentrackingtools.graph.paths.states.PathState;
-import org.opentrackingtools.graph.paths.states.PathStateBelief;
-import org.opentrackingtools.impl.MutableDoubleCount;
-import org.opentrackingtools.impl.WrappedWeightedValue;
-import org.opentrackingtools.statistics.distributions.impl.DefaultCountedDataDistribution;
-import org.opentrackingtools.statistics.distributions.impl.DeterministicDataDistribution;
-import org.opentrackingtools.statistics.filters.vehicles.road.impl.AbstractRoadTrackingFilter;
+import org.opentrackingtools.paths.PathEdge;
+import org.opentrackingtools.util.model.MutableDoubleCount;
 
 import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 
@@ -55,13 +53,14 @@ import java.util.Random;
  * @author bwillard
  *
  */
-public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunState, DataDistribution<RunState>> implements
+public class RunStateEstimator extends AbstractCloneableSerializable implements
+  IncrementalLearner<PathStateDistribution, DataDistribution<RunState>>,
     BayesianEstimatorPredictor<RunState, RunState, DataDistribution<RunState>> {
   
   private static final long serialVersionUID = -1461026886038720233L;
   
-  private final MtaTrackingGraph mtaGraph;
-  private final PathStateBelief pathStateBelief;
+  private final NycTrackingGraph nycGraph;
+  private final PathStateDistribution pathStateDistribution;
   private final VehicleState prevOldTypeVehicleState;
   private final Observation obs;
   private final Random rng;
@@ -77,31 +76,31 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
     return _tripSearchTimeBeforeFirstStop;
   }
 
-  public RunStateEstimator(MtaTrackingGraph graph, Observation obs, 
-      PathStateBelief pathStateBelief, VehicleState prevOldTypeVehicleState, Random rng) {
+  public RunStateEstimator(NycTrackingGraph graph, Observation obs, 
+      PathStateDistribution pathStateBelief, VehicleState prevOldTypeVehicleState, Random rng) {
     this.obs = obs;
-    this.mtaGraph = graph;
-    this.pathStateBelief = pathStateBelief;
+    this.nycGraph = graph;
+    this.pathStateDistribution = pathStateBelief;
     this.prevOldTypeVehicleState = prevOldTypeVehicleState;
     this.rng = rng;
   }
 
   @Override
-  public DataDistribution<RunState> createPredictiveDistribution(
+  public CountedDataDistribution<RunState> createPredictiveDistribution(
       DataDistribution<RunState> posterior) {
     return createInitialLearnedObject();
   }
     
   @Override
-  public DataDistribution<RunState> createInitialLearnedObject() {
+  public CountedDataDistribution<RunState> createInitialLearnedObject() {
     
     final long time = obs.getTimestamp().getTime();       
     final Date timeFrom = new Date(time - _tripSearchTimeAfterLastStop);
     final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
     
-    final PathEdge pathEdge = pathStateBelief.getEdge();
-    final TripInfo tripInfo = mtaGraph.getTripInfo(pathEdge.getInferredEdge());
-    final double likelihoodHasNotMoved = likelihoodOfNotMovedState(this.pathStateBelief);
+    final PathEdge pathEdge = pathStateDistribution.getPathState().getEdge();
+    final TripInfo tripInfo = nycGraph.getTripInfo(pathEdge.getInferenceGraphEdge());
+    final double likelihoodHasNotMoved = likelihoodOfNotMovedState(this.pathStateDistribution);
     double nonNullTotalLikelihood = Double.NEGATIVE_INFINITY;
     
     Map<RunState, MutableDoubleCount> resultDist = Maps.newIdentityHashMap();
@@ -119,10 +118,10 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
         final BlockTripEntry blockTripEntry = blockTripEntryAndDate.getBlockTripEntry();
         long serviceDate = blockTripEntryAndDate.getServiceDate().getTime();
         
-        final BlockStateObservation blockStateObs = this.mtaGraph.getBlockStateObs(obs, pathStateBelief, 
-            blockTripEntry, serviceDate);
+        final BlockStateObservation blockStateObs = this.nycGraph.getBlockStateObs(obs, 
+            pathStateDistribution.getPathState(), blockTripEntry, serviceDate);
         
-        final RunState runStateMoved = new RunState(mtaGraph, obs, blockStateObs, false, this.prevOldTypeVehicleState);
+        final RunState runStateMoved = new RunState(nycGraph, obs, blockStateObs, false, this.prevOldTypeVehicleState);
         
         
         final RunState.RunStateEdgePredictiveResults mtaEdgeResultsMoved = runStateMoved.
@@ -134,7 +133,7 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
           resultDist.put(runStateMoved, new MutableDoubleCount(mtaEdgeResultsMoved.getTotalLogLik(), 1));
         }
         
-        final RunState runStateNotMoved = new RunState(mtaGraph, obs, blockStateObs, true, this.prevOldTypeVehicleState);
+        final RunState runStateNotMoved = new RunState(nycGraph, obs, blockStateObs, true, this.prevOldTypeVehicleState);
         
         final RunState.RunStateEdgePredictiveResults mtaEdgeResultsNotMoved = runStateNotMoved.
             computeAnnotatedLogLikelihood();
@@ -152,7 +151,7 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
      * on a road at all.
      * We add null to ensure a run/block-less possibility.
      */
-    Collection<BlockStateObservation> blockStates = mtaGraph.getBlockStatesFromObservation((Observation)obs);
+    Collection<BlockStateObservation> blockStates = nycGraph.getBlockStatesFromObservation((Observation)obs);
     blockStates.add(null);
     for (BlockStateObservation blockStateObs : blockStates) {
       
@@ -165,10 +164,10 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
        */
       if (blockStateObs != null 
           && (JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState())
-              || pathStateBelief.isOnRoad()))
+              || pathStateDistribution.getPathState().isOnRoad()))
         continue;
       
-      final RunState runStateMoved = new RunState(mtaGraph, obs, blockStateObs, false, this.prevOldTypeVehicleState);
+      final RunState runStateMoved = new RunState(nycGraph, obs, blockStateObs, false, this.prevOldTypeVehicleState);
       Preconditions.checkState(runStateMoved.getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS);
       
       Preconditions.checkState(!pathEdge.isNullEdge() 
@@ -184,7 +183,7 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
         resultDist.put(runStateMoved, new MutableDoubleCount(mtaEdgeResultsMoved.getTotalLogLik(), 1));
       }
       
-      final RunState runStateNotMoved = new RunState(mtaGraph, obs, blockStateObs, true, this.prevOldTypeVehicleState);
+      final RunState runStateNotMoved = new RunState(nycGraph, obs, blockStateObs, true, this.prevOldTypeVehicleState);
       Preconditions.checkState(runStateNotMoved.getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS);
       
       Preconditions.checkState(!pathEdge.isNullEdge() 
@@ -206,41 +205,40 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
      * Now, normalize the non-null block states, so that comparisons
      * with null block states will be valid.
      */
+    CountedDataDistribution<RunState> result = 
+        new CountedDataDistribution<RunState>(true);
     for (Entry<RunState, MutableDoubleCount> entry : resultDist.entrySet()) {
       if (entry.getKey().getBlockStateObs() != null) {
         final double newValue = entry.getValue().doubleValue() - nonNullTotalLikelihood;
-        entry.getValue().setValue(newValue);
-      } else {
-        Preconditions.checkState(true);
-      }
+        result.increment(entry.getKey(), newValue);
+      } 
     }
     
-    DefaultCountedDataDistribution<RunState> result = 
-        new DefaultCountedDataDistribution<RunState>(resultDist, true);
     Preconditions.checkState(!result.isEmpty());
     // TODO debug. remove.
-    if (this.pathStateBelief.isOnRoad() && result.getMaxValueKey().getBlockStateObs() == null)
+    if (this.pathStateDistribution.getPathState().isOnRoad() && result.getMaxValueKey().getBlockStateObs() == null)
         Preconditions.checkState(true);
     return result;
   }
 
-  /**
-   * No-op: prior is deterministic
-   */
   @Override
-  public DeterministicDataDistribution<RunState> learn(
-      Collection<? extends RunState> data) {
-    return null;
+  public void update(DataDistribution<RunState> priorPredRunStateDist, 
+      PathStateDistribution posteriorPathStateDist) {
+    
+    Preconditions.checkArgument(priorPredRunStateDist instanceof DeterministicDataDistribution<?>);
+    /*
+     * We must update update the run state, since the path belief gets updated. 
+     */
+    RunState priorPredRunState = priorPredRunStateDist.getMaxValueKey();
+    if (priorPredRunState.getBlockStateObs() != null) {
+      final ScheduledBlockLocation priorSchedLoc = priorPredRunState.getBlockStateObs().getBlockState().getBlockLocation();
+      final BlockStateObservation newBlockStateObs = nycGraph.getBlockStateObs(obs, 
+          posteriorPathStateDist.getPathState(), 
+          priorSchedLoc.getActiveTrip(), 
+          priorPredRunState.getBlockStateObs().getBlockState().getBlockInstance().getServiceDate());
+      priorPredRunState.setBlockStateObs(newBlockStateObs);
+    } 
   }
-  
-  /**
-   * No-op: deterministic
-   */
-  @Override
-  public void update(DataDistribution<RunState> target,
-      RunState data) {
-  }
-
 
   /**
    * Sample a state of moved/not-moved using a belief's velocity distribution.
@@ -252,27 +250,31 @@ public class RunStateEstimator extends AbstractBatchAndIncrementalLearner<RunSta
    * @param pathStateBelief
    * @return
    */
-  public double likelihoodOfNotMovedState(PathStateBelief pathStateBelief) {
+  public double likelihoodOfNotMovedState(PathStateDistribution pathStateBelief) {
     final double velocityAvg = 
-        AbstractRoadTrackingFilter.getVg().times(
-        pathStateBelief.getGroundState()).norm2();
+        MotionStateEstimatorPredictor.getVg().times(
+        pathStateBelief.getGroundDistribution().getMean()).norm2();
     final double velocityVar =
-        AbstractRoadTrackingFilter.getVg().times(
-            pathStateBelief.getGroundBelief().getCovariance()).times(
-                AbstractRoadTrackingFilter.getVg().transpose()).normFrobenius();
+        MotionStateEstimatorPredictor.getVg().times(
+            pathStateBelief.getGroundDistribution().getCovariance()).times(
+                MotionStateEstimatorPredictor.getVg().transpose()).normFrobenius();
     
     final double likelihood = Math.min(1d, Math.max(0d, 
             1d - FoldedNormalDist.cdf(0d, Math.sqrt(velocityVar), velocityAvg)));
     
     return likelihood;
-    
-//    final boolean vehicleHasNotMoved;
-//    if (rng.nextDouble() < likelihood)
-//      vehicleHasNotMoved = true;
-//    else
-//      vehicleHasNotMoved = false;
-//    
-//    return vehicleHasNotMoved;
+  }
+  
+
+  @Override
+  public DataDistribution<RunState> learn(Collection<? extends RunState> data) {
+    return null;
+  }
+  
+
+  @Override
+  public void update(DataDistribution<RunState> target,
+      Iterable<? extends PathStateDistribution> data) {
   }
 
 }

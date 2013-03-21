@@ -52,12 +52,11 @@ import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManageme
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MtaPathStateBelief;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.MtaVehicleState;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycVehicleStateDistribution;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -70,7 +69,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TransitGrap
 
 import gov.sandia.cognition.statistics.DataDistribution;
 
-import org.opentrackingtools.impl.VehicleState;
+import org.opentrackingtools.model.VehicleStateDistribution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -451,9 +450,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
         // make sure none of the current journey summaries contain blocks we no longer have
         boolean vehicleStateResetVehicle = false;
-        for(VehicleState particleState : vehicleInstance.getCurrentParticles().getDomain()) {
-          MtaVehicleState mtaState = (MtaVehicleState) particleState;
-        	final BlockStateObservation particleBlockState = mtaState.getRunStateBelief().getMaxValueKey()
+        for(VehicleStateDistribution<Observation> nycState : vehicleInstance.getCurrentParticles().getDomain()) {
+        	final BlockStateObservation particleBlockState = ((NycVehicleStateDistribution)nycState).getRunStateParam().getValue()
         	    .getBlockStateObs();
         	if(particleBlockState == null)
         		continue;

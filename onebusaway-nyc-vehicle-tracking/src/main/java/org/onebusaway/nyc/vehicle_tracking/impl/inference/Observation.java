@@ -36,14 +36,14 @@ import com.vividsolutions.jts.geom.Coordinate;
 import org.geotools.geometry.jts.JTS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opentrackingtools.GpsObservation;
+import org.opentrackingtools.model.GpsObservation;
+import org.opentrackingtools.model.ProjectedCoordinate;
 import org.opentrackingtools.util.GeoUtils;
-import org.opentrackingtools.util.geom.ProjectedCoordinate;
 
 import java.util.Date;
 import java.util.Set;
 
-public class Observation implements GpsObservation {
+public class Observation extends GpsObservation implements Comparable<Observation> {
 
   private final Date _timestamp;
 
@@ -76,6 +76,13 @@ public class Observation implements GpsObservation {
       boolean outOfService, boolean hasValidDsc,
       Observation previousObservation, Set<AgencyAndId> dscImpliedRoutes,
       RunResults runResults) throws TransformException {
+    
+    super(record.getDeviceId(), record.getTimeAsDate(), new Coordinate(record.getLatitude(), record.getLongitude()),
+        (double)record.getSpeed(), (double)record.getBearing(), null, (int)record.getId(), previousObservation, 
+        new ProjectedCoordinate(GeoUtils.getTransform(new Coordinate(record.getLatitude(), record.getLongitude())), 
+            new Coordinate(record.getLatitude(), record.getLongitude()), 
+            new Coordinate(record.getLatitude(), record.getLongitude()))
+        );
     
     _timestamp = new Date(timestamp);
     _record = record;
@@ -113,15 +120,6 @@ public class Observation implements GpsObservation {
       
     }
 
-    /*
-     * tracking-tools additions
-     */
-    _gpsCoord = new Coordinate(this._point.getLat(), this._point.getLon());
-    Coordinate euclidCoord = new Coordinate();
-    _transform = GeoUtils.getTransform(getObsCoordsLatLon());
-    JTS.transform(_gpsCoord, euclidCoord, _transform);
-    _projCoord = new ProjectedCoordinate(_transform,euclidCoord, _gpsCoord); 
-    _projPoint = GeoUtils.getVector(_projCoord);
     
     _previousObservation = previousObservation;
   }
@@ -210,7 +208,7 @@ public class Observation implements GpsObservation {
       Ordering.natural().nullsLast().onResultOf(PointFunction.getY));
 
   @Override
-  public int compareTo(GpsObservation o2) {
+  public int compareTo(Observation o2) {
 
     if (this == o2)
       return 0;
