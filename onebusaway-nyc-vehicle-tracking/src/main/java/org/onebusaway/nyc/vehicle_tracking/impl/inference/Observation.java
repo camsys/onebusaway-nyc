@@ -69,8 +69,6 @@ public class Observation extends GpsObservation implements Comparable<Observatio
 
   private final Set<AgencyAndId> _impliedRouteCollections;
 
-  private Vector _projPoint;
-
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
       boolean outOfService, boolean hasValidDsc,
@@ -79,10 +77,7 @@ public class Observation extends GpsObservation implements Comparable<Observatio
     
     super(record.getDeviceId(), record.getTimeAsDate(), new Coordinate(record.getLatitude(), record.getLongitude()),
         (double)record.getSpeed(), (double)record.getBearing(), null, (int)record.getId(), previousObservation, 
-        new ProjectedCoordinate(GeoUtils.getTransform(new Coordinate(record.getLatitude(), record.getLongitude())), 
-            new Coordinate(record.getLatitude(), record.getLongitude()), 
-            new Coordinate(record.getLatitude(), record.getLongitude()))
-        );
+        GeoUtils.convertToEuclidean(new Coordinate(record.getLatitude(), record.getLongitude())));
     
     _timestamp = new Date(timestamp);
     _record = record;
@@ -342,51 +337,6 @@ public class Observation extends GpsObservation implements Comparable<Observatio
 
   public double getOrientation() {
     return _orientation;
-  }
-
-  @Override
-  public Double getAccuracy() {
-    return null;
-  }
-
-  @Override
-  public Double getHeading() {
-    return getOrientation();
-  }
-
-  @Override
-  public Coordinate getObsCoordsLatLon() {
-    return _gpsCoord;
-  }
-
-  @Override
-  public ProjectedCoordinate getObsProjected() {
-    return _projCoord;
-  }
-
-  @Override
-  public Vector getProjectedPoint() {
-    return _projPoint;
-  }
-
-  @Override
-  public int getRecordNumber() {
-    return (int)this._record.getId();
-  }
-
-  @Override
-  public Date getTimestamp() {
-    return _timestamp;
-  }
-
-  @Override
-  public String getSourceId() {
-    return this._record.getDeviceId();
-  }
-
-  @Override
-  public Double getVelocity() {
-    return new Double(this._record.getSpeed());
   }
 
 }

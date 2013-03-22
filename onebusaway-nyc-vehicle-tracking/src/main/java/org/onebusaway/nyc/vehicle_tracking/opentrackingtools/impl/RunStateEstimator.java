@@ -209,9 +209,11 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         new CountedDataDistribution<RunState>(true);
     for (Entry<RunState, MutableDoubleCount> entry : resultDist.entrySet()) {
       if (entry.getKey().getBlockStateObs() != null) {
-        final double newValue = entry.getValue().doubleValue() - nonNullTotalLikelihood;
+        final double newValue = entry.getValue().doubleValue() + entry.getValue().count - nonNullTotalLikelihood;
         result.increment(entry.getKey(), newValue);
-      } 
+      } else {
+        result.increment(entry.getKey(), entry.getValue().doubleValue() + entry.getValue().count);
+      }
     }
     
     Preconditions.checkState(!result.isEmpty());

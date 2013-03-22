@@ -8,6 +8,7 @@ import gov.sandia.cognition.statistics.DataDistribution;
 import gov.sandia.cognition.statistics.distribution.InverseWishartDistribution;
 import gov.sandia.cognition.statistics.distribution.MultivariateGaussian;
 
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.opentrackingtools.VehicleStateInitialParameters;
 import org.opentrackingtools.distributions.CountedDataDistribution;
 import org.opentrackingtools.distributions.DeterministicDataDistribution;
@@ -23,6 +24,7 @@ import org.opentrackingtools.paths.PathEdge;
 import org.opentrackingtools.paths.PathState;
 import org.opentrackingtools.util.model.TransitionProbMatrix;
 
+import java.util.Comparator;
 import java.util.Random;
 
 public class NycVehicleStateDistribution extends
@@ -99,6 +101,53 @@ public class NycVehicleStateDistribution extends
   public void setRunStateParam(
       SimpleBayesianParameter<RunState, DataDistribution<RunState>, DataDistribution<RunState>> runStateParam) {
     this.runStateParam = runStateParam;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result
+        + ((runStateParam == null) ? 0 : runStateParam.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    if (!(obj instanceof NycVehicleStateDistribution)) {
+      return false;
+    }
+    NycVehicleStateDistribution other = (NycVehicleStateDistribution) obj;
+    if (runStateParam == null) {
+      if (other.runStateParam != null) {
+        return false;
+      }
+    } else if (!runStateParam.equals(other.runStateParam)) {
+      return false;
+    }
+    return true;
+  }
+
+  @Override
+  public int compareTo(VehicleStateDistribution<Observation> arg0) {
+    final CompareToBuilder comparator = new CompareToBuilder();
+    comparator.appendSuper(super.compareTo(arg0));
+    if (arg0 instanceof NycVehicleStateDistribution)
+      comparator.append(this.runStateParam, ((NycVehicleStateDistribution)arg0).runStateParam);
+    return comparator.toComparison();
+  }
+
+  @Override
+  public NycVehicleStateDistribution clone() {
+    NycVehicleStateDistribution clone = (NycVehicleStateDistribution) super.clone();
+    clone.runStateParam = this.runStateParam.clone();
+    return clone; 
   }
   
 }
