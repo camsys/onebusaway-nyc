@@ -110,9 +110,9 @@ public class VehicleInferenceInstance {
   private VehicleStateInitialParameters _initialParams =
       new VehicleStateInitialParameters(
           null,
-          VectorFactory.getDefault().createVector2D(300d, 300d), 20,
-          VectorFactory.getDefault().createVector1D(0.00625), 20,
-          VectorFactory.getDefault().createVector2D(0.00625, 0.00625), 20,
+          VectorFactory.getDefault().createVector2D(100d, 100d), Integer.MAX_VALUE,
+          VectorFactory.getDefault().createVector1D(0.00625), Integer.MAX_VALUE,
+          VectorFactory.getDefault().createVector2D(0.00625, 0.00625), Integer.MAX_VALUE,
           VectorFactory.getDefault().createVector2D(15d, 95d),
           VectorFactory.getDefault().createVector2D(95d, 15d), 
           25, 30, 0l);
@@ -198,7 +198,7 @@ public class VehicleInferenceInstance {
    * @throws IllegalArgumentException 
    * @throws SecurityException 
    */
-  public boolean handleUpdate(NycRawLocationRecord record) throws TransformException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+  public boolean handleUpdate(NycRawLocationRecord record) throws TransformException {
 
     /**
      * Choose the best timestamp based on device timestamp and received

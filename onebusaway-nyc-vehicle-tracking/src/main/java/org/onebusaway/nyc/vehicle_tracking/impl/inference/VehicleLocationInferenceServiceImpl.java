@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -69,6 +70,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TransitGrap
 
 import gov.sandia.cognition.statistics.DataDistribution;
 
+import org.opengis.referencing.operation.TransformException;
 import org.opentrackingtools.model.VehicleStateDistribution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -597,11 +599,21 @@ public class VehicleLocationInferenceServiceImpl implements
     		}
     	} catch (final ProjectionException e) {
     		// discard this one
-    	} catch (final Throwable ex) {
-    		_log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", ex);        
+    	} 
+//    	catch (final Throwable ex) {
+//    		_log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", ex);        
+//    		resetVehicleLocation(_vehicleId);
+//    		_observationCache.purge(_vehicleId);    	  
+//    	}
+       catch (SecurityException e) {
+    		_log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", e);        
     		resetVehicleLocation(_vehicleId);
     		_observationCache.purge(_vehicleId);    	  
-    	}
+      } catch (TransformException e) {
+    		_log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", e);        
+    		resetVehicleLocation(_vehicleId);
+    		_observationCache.purge(_vehicleId);    	  
+      } 
     }
   }
 
