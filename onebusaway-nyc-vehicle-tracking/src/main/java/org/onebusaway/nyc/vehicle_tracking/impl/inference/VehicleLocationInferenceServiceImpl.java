@@ -262,7 +262,7 @@ public class VehicleLocationInferenceServiceImpl implements
       r.setEmergencyFlag(false);
 
     final tcip_3_0_5_local.CcLocationReport gpsData = message.getLocalCcLocationReport();
-    if (gpsData != null) {
+    if (gpsData != null && gpsData.getNMEA() != null) {
       final NMEA nemaSentences = gpsData.getNMEA();
       final List<String> sentenceStrings = nemaSentences.getSentence();
 
