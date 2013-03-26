@@ -34,7 +34,8 @@ public class PartitionedInputQueueListenerTaskTest {
   public void setup() throws Exception {
     final ArrayList<AgencyAndId> list = new ArrayList<AgencyAndId>();
     list.add(AgencyAndIdLibrary.convertFromString("MTA NYCT_7578"));
-
+    list.add(AgencyAndIdLibrary.convertFromString("MTA NYCT_3905"));
+    
     when(vehicleAssignmentService.getAssignedVehicleIdsForDepot("JG")).thenReturn(
         list);
 
@@ -62,5 +63,12 @@ public class PartitionedInputQueueListenerTaskTest {
     final String message = "{\"RealtimeEnvelope\":{\"UUID\":\"foo\",\"timeReceived\":1234567,\"CcLocationReport\": {\"request-id\" : 528271,\"vehicle\": {\"vehicle-id\": 7579,\"agency-id\": 2008,\"agencydesignator\": \"MTA NYCT\"},\"status-info\": 0,\"time-reported\": \"2011-10-15T03:26:19.000-00:00\",\"latitude\": 40612060,\"longitude\": -74035771,\"direction\": {\"deg\": 128.77},\"speed\": 0,\"manufacturer-data\": \"VFTP123456789\",\"operatorID\": {\"operator-id\": 0,\"designator\": \"\"},\"runID\": {\"run-id\": 0,\"designator\": \"\"},\"destSignCode\": 4631,\"routeID\": {\"route-id\": 0,\"route-designator\": \"\"},\"localCcLocationReport\": {\"NMEA\": {\"sentence\": [\"\",\"\"]}}}}}";
     assertEquals(service.processMessage(null, message), false);
   }
+
+  @Test
+  public void testNoNMEA() throws Exception {
+    final String message = "{\"RealtimeEnvelope\": {\"UUID\":\"e0f9f990-95ee-11e2-a2f1-1231391c6b0a\",\"timeReceived\": 1364286398377,\"CcLocationReport\":{\"request-id\":2,\"vehicle\":{\"vehicle-id\":3905,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2013-03-26T08:26:28.0-00:00\",\"latitude\":0,\"longitude\":0,\"direction\":{\"deg\":0.0},\"speed\":0,\"data-quality\":{\"qualitative-indicator\":4},\"manufacturer-data\":\"BMV30101\",\"operatorID\":{\"operator-id\":0,\"designator\":\"0\"},\"runID\":{\"run-id\":0,\"designator\":\"0\"},\"destSignCode\":6,\"routeID\":{\"route-id\":0,\"route-designator\":\"0\"},\"localCcLocationReport\":{\"vehiclePowerState\":1}}}}" ;
+    assertEquals(service.processMessage(null, message), true);
+  }
+
 
 }
