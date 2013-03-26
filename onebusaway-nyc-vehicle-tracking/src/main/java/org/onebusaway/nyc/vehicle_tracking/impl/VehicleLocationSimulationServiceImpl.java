@@ -246,19 +246,19 @@ public class VehicleLocationSimulationServiceImpl implements
   @Override
   public VehicleLocationDetails getParticleDetails(int taskId, int particleId,
       int recordIndex) {
-//    final SimulatorTask task = _tasks.get(taskId);
-//    if (task != null)
-//      return task.getParticleDetails(particleId, recordIndex);
+    final SimulatorTask task = _tasks.get(taskId);
+    if (task != null)
+      return task.getParticleDetails(particleId, recordIndex);
     return null;
   }
 
   @Override
   public VehicleLocationDetails getTransitionParticleDetails(int taskId,
       int particleId, int transParticleNum, int recordIndex) {
-//    final SimulatorTask task = _tasks.get(taskId);
-//    if (task != null)
-//      return task.getTransitionParticleDetails(particleId, transParticleNum,
-//          recordIndex);
+    final SimulatorTask task = _tasks.get(taskId);
+    if (task != null)
+      return task.getTransitionParticleDetails(particleId, transParticleNum,
+          recordIndex);
     return null;
   }
 

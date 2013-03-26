@@ -599,13 +599,7 @@ public class VehicleLocationInferenceServiceImpl implements
     		}
     	} catch (final ProjectionException e) {
     		// discard this one
-    	} 
-//    	catch (final Throwable ex) {
-//    		_log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", ex);        
-//    		resetVehicleLocation(_vehicleId);
-//    		_observationCache.purge(_vehicleId);    	  
-//    	}
-       catch (SecurityException e) {
+    	} catch (SecurityException e) {
     		_log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", e);        
     		resetVehicleLocation(_vehicleId);
     		_observationCache.purge(_vehicleId);    	  
@@ -621,5 +615,10 @@ public class VehicleLocationInferenceServiceImpl implements
   public void setSeeds(long cdfSeed, long factorySeed) {
     ParticleFactoryImpl.setSeed(factorySeed);
     CategoricalDist.setSeed(cdfSeed);
+  }
+
+  @Override
+  public DataDistribution<VehicleStateDistribution<Observation>> getCurrentParticlesForVehicleId(AgencyAndId vehicleId) {
+    return this._vehicleInstancesByVehicleId.get(vehicleId).getCurrentParticles();
   }
 }

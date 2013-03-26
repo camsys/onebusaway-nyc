@@ -46,7 +46,10 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
@@ -55,6 +58,7 @@ import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycTrackingGra
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycVehicleStateDistribution;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycVehicleStatePLFilter;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.RunState;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.RunState.RunStateEdgePredictiveResults;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.RunStateEstimator;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -79,6 +83,7 @@ import org.opentrackingtools.VehicleStatePLFilter;
 import org.opentrackingtools.distributions.PathStateDistribution;
 import org.opentrackingtools.model.VehicleStateDistribution;
 import org.opentrackingtools.util.GeoUtils;
+import org.opentrackingtools.util.model.MutableDoubleCount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +92,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.TreeMultiset;
@@ -111,8 +118,8 @@ public class VehicleInferenceInstance {
       new VehicleStateInitialParameters(
           null,
           VectorFactory.getDefault().createVector2D(100d, 100d), Integer.MAX_VALUE,
-          VectorFactory.getDefault().createVector1D(0.00625), Integer.MAX_VALUE,
-          VectorFactory.getDefault().createVector2D(0.00625, 0.00625), Integer.MAX_VALUE,
+          VectorFactory.getDefault().createVector1D(0.0625), Integer.MAX_VALUE,
+          VectorFactory.getDefault().createVector2D(0.0625, 0.0625), Integer.MAX_VALUE,
           VectorFactory.getDefault().createVector2D(15d, 95d),
           VectorFactory.getDefault().createVector2D(95d, 15d), 
           25, 30, 0l);
@@ -384,15 +391,47 @@ public class VehicleInferenceInstance {
     return _particleFilter;
   }
 
+  public synchronized Multiset<Particle> getCurrentParticlesOld() {
+    Multiset<Particle> particles = getParticleSet(this._particles, true);
+    return particles;
+  }
+  
+  private static Multiset<Particle> getParticleSet(
+      DataDistribution<? extends VehicleStateDistribution<Observation>> distribution,
+          boolean computeTransitions) {
+    int i = 0;
+    final Multiset<Particle> weightedParticles = TreeMultiset.create(Ordering.natural());
+    for (java.util.Map.Entry<? extends VehicleStateDistribution<Observation>, ? extends Number> entry : 
+      distribution.asMap().entrySet()) {
+      NycVehicleStateDistribution nycVehicleState = (NycVehicleStateDistribution) entry.getKey();
+      final Particle particle = VehicleInferenceInstance.createParticleForVehicleState(nycVehicleState);
+      if (nycVehicleState.getTransitionStateDistribution() != null) {
+        particle.setTransitions(getParticleSet(nycVehicleState.getTransitionStateDistribution(), false));
+      }
+      MutableDoubleCount value = (MutableDoubleCount) entry.getValue();
+      try {
+        particle.setWeight(value.doubleValue());
+      } catch (BadProbabilityParticleFilterException e) {
+        e.printStackTrace();
+      }
+      particle.setIndex(i);
+      if (nycVehicleState.getParentState() != null) {
+        particle.setParent(VehicleInferenceInstance.createParticleForVehicleState(nycVehicleState.getParentState()));
+      }
+      weightedParticles.add(particle, value.getCount());
+      i++;
+    }
+    return weightedParticles;
+  }
+  
   public VehicleLocationDetails getDetails() {
     final VehicleLocationDetails details = new VehicleLocationDetails();
 
-    // TODO details..what are they?
-//    setLastRecordForDetails(details);
-//
-//    final Multiset<Particle> particles = TreeMultiset.create();
-//    particles.addAll(getCurrentParticles());
-//    details.setParticles(particles);
+    setLastRecordForDetails(details);
+
+    final Multiset<Particle> particles = TreeMultiset.create();
+    particles.addAll(getCurrentParticlesOld());
+    details.setParticles(particles);
 
     return details;
   }
@@ -757,6 +796,29 @@ public class VehicleInferenceInstance {
       record.setInferredDsc("0000");
 
     return record;
+  }
+
+  public static Particle createParticleForVehicleState(
+      NycVehicleStateDistribution nycVehicleState) {
+    final Particle particle =  new Particle(nycVehicleState.getObservation().getTime());
+    particle.setData(nycVehicleState.getRunStateParam().getValue().getVehicleState());
+    try {
+      SensorModelResult result = new SensorModelResult("likelihood");
+      result.addLogResultAsAnd("edgeTrans", nycVehicleState.getEdgeTransitionLogLikelihood());
+      result.addLogResultAsAnd("priorPredObs", nycVehicleState.getPredictiveLogLikelihood());
+      result.addLogResultAsAnd("pathState", nycVehicleState.getPathStateDistLogLikelihood());
+      RunStateEdgePredictiveResults runLikelihoodInfo = nycVehicleState.getRunStateParam().getValue().getLikelihoodInfo();
+      result.addLogResultAsAnd("dsc", runLikelihoodInfo.getDscLogLikelihood());
+      result.addLogResultAsAnd("movement", runLikelihoodInfo.getMovedLogLikelihood());
+      result.addLogResultAsAnd("null", runLikelihoodInfo.getNullStateLogLikelihood());
+      result.addLogResultAsAnd("run", runLikelihoodInfo.getRunLogLikelihood());
+      result.addLogResultAsAnd("runTrans", runLikelihoodInfo.getRunTransitionLogLikelihood());
+      result.addLogResultAsAnd("schedule", runLikelihoodInfo.getSchedLogLikelihood());
+      particle.setResult(result);
+    } catch (BadProbabilityParticleFilterException e) {
+      e.printStackTrace();
+    }
+    return particle;
   }
 
 }

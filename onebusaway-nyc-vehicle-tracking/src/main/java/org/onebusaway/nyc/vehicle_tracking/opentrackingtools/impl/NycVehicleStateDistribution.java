@@ -149,5 +149,10 @@ public class NycVehicleStateDistribution extends
     clone.runStateParam = this.runStateParam.clone();
     return clone; 
   }
+
+  @Override
+  public NycVehicleStateDistribution getParentState() {
+    return (NycVehicleStateDistribution) super.getParentState();
+  }
   
 }

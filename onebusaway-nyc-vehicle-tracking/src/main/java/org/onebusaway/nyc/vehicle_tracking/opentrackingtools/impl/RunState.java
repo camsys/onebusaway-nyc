@@ -92,6 +92,34 @@ public class RunState {
       return clone;
     }
 
+    public double getNullStateLogLikelihood() {
+      return nullStateLogLikelihood;
+    }
+
+    public double getRunTransitionLogLikelihood() {
+      return runTransitionLogLikelihood;
+    }
+
+    public double getRunLogLikelihood() {
+      return runLogLikelihood;
+    }
+
+    public double getSchedLogLikelihood() {
+      return schedLogLikelihood;
+    }
+
+    public double getDscLogLikelihood() {
+      return dscLogLikelihood;
+    }
+
+    public double getMovedLogLikelihood() {
+      return movedLogLikelihood;
+    }
+
+    public Double getTotal() {
+      return total;
+    }
+
   }
 
   protected BlockStateObservation blockStateObs;
