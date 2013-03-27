@@ -173,7 +173,7 @@ public class StifTripLoaderSupport {
       endTime = endStopTime.getArrivalTime();
     }
     String run = null;
-    String[] parts = trip.getId().getId().split("_");
+    String[] parts = trip.getId().getId().toUpperCase().split("_");
     if (parts.length >= 6) {
       //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
       //their current trip id format.

@@ -26,6 +26,10 @@ public abstract class StifFieldSetter<T extends StifRecord> {
 	}
 	public abstract void setField(T record);
 	
+	public String getStringDataUppercased() {
+	  return getStringData().toUpperCase();
+	}
+	
 	public String getStringData() {
 	  if (start > bytes.length) {
 	    return "";
