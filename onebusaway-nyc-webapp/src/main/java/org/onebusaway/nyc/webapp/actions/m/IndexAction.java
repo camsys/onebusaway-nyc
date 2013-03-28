@@ -268,7 +268,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     if (_location != null && getQueryIsEmpty()) {
       return "";
     }
-    if (_results.getMatches().size() > 0) {
+    if (_results.getMatches().size() == 1) {
       SearchResult result = _results.getMatches().get(0);
       if (_results.getResultType().equals("StopResult")) {
         StopResult stopResult = (StopResult)result;
