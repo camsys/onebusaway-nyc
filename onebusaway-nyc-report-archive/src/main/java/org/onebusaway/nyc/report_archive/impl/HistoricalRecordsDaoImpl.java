@@ -134,7 +134,10 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		
 		sql = addQueryParam(sql, ccLocationAlias +".vehicle_id", CcAndInferredLocationFilter.VEHICLE_ID, 
 				filter.get(CcAndInferredLocationFilter.VEHICLE_ID));
-		
+		// limit left outer join on inference records if we have vehicle_id
+		sql = addQueryParam(sql, inferredLocationAlias +".vehicle_id", CcAndInferredLocationFilter.VEHICLE_ID, 
+        filter.get(CcAndInferredLocationFilter.VEHICLE_ID));
+    
 		sql = addQueryParam(sql, ccLocationAlias +".vehicle_agency_designator", CcAndInferredLocationFilter.VEHICLE_AGENCY_ID,
 				filter.get(CcAndInferredLocationFilter.VEHICLE_AGENCY_ID));
 		
