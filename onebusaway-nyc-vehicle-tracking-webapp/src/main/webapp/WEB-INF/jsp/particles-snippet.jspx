@@ -53,7 +53,7 @@
                 <td>Distance Along Block</td>
                 <td>Scheduled Dev</td>
                 <td>Snapped</td>
-                <td>BlockId</td>
+                <td>PathState</td>
             </tr>
         </thead>
         <tbody>
@@ -121,9 +121,7 @@
                       <fmt:formatNumber var="schedDev" value="${p.data.blockStateObservation.scheduleDeviation}" maxFractionDigits="2"/>
                     <td bgcolor='#cdc9c9'><c:out value="${schedDev} mins" /></td>
                     <td><c:out value="${p.data.blockStateObservation.snapped}" /></td>
-                    <td><a
-                        href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out
-                        value="${blockState.blockInstance.block.block.id}" /></a></td>
+                    <td><c:out value="${p.data.distribution.pathStateParam.parameterPrior}" /></td>
                 </tr>
             </c:forEach>
         </tbody>

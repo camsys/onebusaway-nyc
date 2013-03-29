@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycVehicleStateDistribution;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -33,6 +34,8 @@ import java.util.List;
  */
 public final class VehicleState implements Comparable<VehicleState> {
 
+  private NycVehicleStateDistribution distribution;
+  
   private final MotionState motionState;
 
   private final BlockStateObservation blockStateObservation;
@@ -176,6 +179,14 @@ public final class VehicleState implements Comparable<VehicleState> {
     } else if (!observation.equals(other.observation))
       return false;
     return true;
+  }
+
+  public NycVehicleStateDistribution getDistribution() {
+    return distribution;
+  }
+
+  public void setDistribution(NycVehicleStateDistribution distribution) {
+    this.distribution = distribution;
   }
 
 }

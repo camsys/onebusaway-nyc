@@ -45,10 +45,14 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateArrays;
 import com.vividsolutions.jts.geom.CoordinateList;
+import com.vividsolutions.jts.geom.CoordinateSequences;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.index.strtree.SIRtree;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.noding.IntersectionAdder;
@@ -57,6 +61,7 @@ import com.vividsolutions.jts.noding.NodedSegmentString;
 import com.vividsolutions.jts.noding.SegmentString;
 import com.vividsolutions.jts.noding.SegmentStringDissolver;
 import com.vividsolutions.jts.noding.SegmentStringDissolver.SegmentStringMerger;
+import com.vividsolutions.jts.noding.SegmentStringUtil;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
 import org.geotools.geometry.jts.JTS;
@@ -217,7 +222,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
       final GeometryFactory gf = JTSFactoryFinder.getGeometryFactory();
 
-      final Map<AgencyAndId, NodedSegmentString> shapeIdToSegments = Maps.newHashMap();
+      final Map<AgencyAndId, PreparedGeometry> shapeIdToPrepedGeom = Maps.newHashMap();
       final Map<LineString, NodedSegmentString> lineToSegments = Maps.newHashMap();
       for (final TripEntry trip : _transitGraphDao.getAllTrips()) {
         final AgencyAndId shapeId = trip.getShapeId();
@@ -250,8 +255,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
                 shapeId, true)));
 
         lineToSegments.put((LineString) euclidGeo, segments);
-        shapeIdToSegments.put(shapeId, segments);
-
+        shapeIdToPrepedGeom.put(shapeId, PreparedGeometryFactory.prepare(lineGeo));
       }
       _log.info("\tshapePoints=" + lineToSegments.size());
 
@@ -262,18 +266,30 @@ public class NycTrackingGraph extends GenericJTSGraph {
       _log.info("\tcomputing nodes");
       noder.computeNodes(lineToSegments.values());
 
+      /*
+       * This merge method takes two segments for which one will
+       * be abandoned due to it being a duplicate of the other.
+       * The one abandoned is the second argument.
+       * We extend the line merge process by merging the associated
+       * shape ids as well.  Additionally, we need to know which direction
+       * each segment is for each shape id.  
+       */
       final SegmentStringMerger merger = new SegmentStringMerger() {
         @Override
         public void merge(SegmentString mergeTarget, SegmentString ssToMerge,
             boolean isSameOrientation) {
 
           final List<Pair<AgencyAndId, Boolean>> newPairs = Lists.newArrayList();
-          for (final Pair<AgencyAndId, Boolean> pair : (List<Pair<AgencyAndId, Boolean>>) ssToMerge.getData()) {
-            newPairs.add(DefaultPair.create(pair.getFirst(), isSameOrientation));
+          for (final Pair<AgencyAndId, Boolean> pair : 
+              Iterables.concat((List<Pair<AgencyAndId, Boolean>>) ssToMerge.getData(),
+              (List<Pair<AgencyAndId, Boolean>>) mergeTarget.getData())) {
+            PreparedGeometry prepGeom = shapeIdToPrepedGeom.get(pair.getFirst());
+            LineString lineGeo = gf.createLineString(mergeTarget.getCoordinates());
+            Geometry int1 = lineGeo.intersection(prepGeom.getGeometry());
+            Geometry int2 = prepGeom.getGeometry().intersection(lineGeo);
+            newPairs.add(DefaultPair.create(pair.getFirst(), int1.equalsExact(int2)));
           }
-
-          final List<Pair<AgencyAndId, Boolean>> currentPairs = (List<Pair<AgencyAndId, Boolean>>) mergeTarget.getData();
-          currentPairs.addAll(newPairs);
+          mergeTarget.setData(newPairs);
         }
       };
 
@@ -286,15 +302,18 @@ public class NycTrackingGraph extends GenericJTSGraph {
       for (final Object obj : dissolver.getDissolved()) {
         final NodedSegmentString segments = (NodedSegmentString) obj;
         final LineString line = gf.createLineString(segments.getCoordinates());
-        line.setUserData(Boolean.FALSE);
         for (final Pair<AgencyAndId, Boolean> pair : (List<Pair<AgencyAndId, Boolean>>) segments.getData()) {
           /*
            * Mark line as having a reverse
            */
-          if (!pair.getSecond())
-            line.setUserData(Boolean.TRUE);
-          _geoToShapeId.put(line, pair.getFirst());
-          _shapeIdToGeo.put(pair.getFirst(), line);
+          final LineString actualLine;
+          if (!pair.getSecond()) {
+            actualLine = (LineString) line.reverse();
+          } else {
+            actualLine = line;
+          }
+          _geoToShapeId.put(actualLine, pair.getFirst());
+          _shapeIdToGeo.put(pair.getFirst(), actualLine);
         }
       }
       _log.info("\tresult shapes=" + _geoToShapeId.keySet().size());
@@ -310,10 +329,9 @@ public class NycTrackingGraph extends GenericJTSGraph {
             final AgencyAndId blockId = blockEntry.getId();
 
             if (shapeId != null) {
-              // if (shapeId.toString().equals("MTA_BXM20075")) {
-              // System.out.println(trip.toString() + ", " +
-              // blockId.toString());
-              // }
+              if (shapeId.toString().equals("MTA_BXM20073")) {
+                System.out.println(trip.toString() + ", " + blockId.toString());
+              }
               if (!blockId.hasValues()) {
                 _log.debug("trip with null block id: " + blockId);
                 continue;
@@ -354,14 +372,6 @@ public class NycTrackingGraph extends GenericJTSGraph {
       final Set<Entry<Geometry, TripInfo>> currentEntries = Sets.newHashSet(_geometryToTripInfo.entrySet());
       for (final Entry<Geometry, TripInfo> entry : currentEntries) {
         geoms.add((LineString) entry.getKey());
-        /*
-         * Add reverses, if they exist.
-         */
-        if ((Boolean) entry.getKey().getUserData()) {
-          final LineString revLine = (LineString) (entry.getKey().reverse());
-          geoms.add(revLine);
-          _geometryToTripInfo.put(revLine, entry.getValue());
-        }
       }
 
       this.createGraphFromLineStrings(geoms, false);

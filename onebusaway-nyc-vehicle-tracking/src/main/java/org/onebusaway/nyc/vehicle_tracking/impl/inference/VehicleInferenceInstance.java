@@ -16,10 +16,12 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -46,6 +48,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
@@ -71,6 +74,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import gov.sandia.cognition.math.matrix.VectorFactory;
 import gov.sandia.cognition.statistics.DataDistribution;
+import gov.sandia.cognition.statistics.bayesian.BayesianUtil;
 import gov.sandia.cognition.statistics.distribution.DefaultDataDistribution;
 import gov.sandia.cognition.statistics.distribution.MultivariateGaussian;
 
@@ -83,16 +87,20 @@ import org.opentrackingtools.VehicleStatePLFilter;
 import org.opentrackingtools.distributions.PathStateDistribution;
 import org.opentrackingtools.model.VehicleStateDistribution;
 import org.opentrackingtools.util.GeoUtils;
+import org.opentrackingtools.util.StatisticsUtil;
 import org.opentrackingtools.util.model.MutableDoubleCount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
@@ -346,6 +354,8 @@ public class VehicleInferenceInstance {
       _particleFilter = new NycVehicleStatePLFilter(observation, _trackingGraph, _initialParams, true, rng);
       _trackingGraph.setRng(rng);
     }
+    
+    currentAvgVehicleState = null;
     if (_particles == null || _particles.isEmpty()) {
       _particles = _particleFilter.createInitialLearnedObject();
     } else {
@@ -405,12 +415,12 @@ public class VehicleInferenceInstance {
       distribution.asMap().entrySet()) {
       NycVehicleStateDistribution nycVehicleState = (NycVehicleStateDistribution) entry.getKey();
       final Particle particle = VehicleInferenceInstance.createParticleForVehicleState(nycVehicleState);
-      if (nycVehicleState.getTransitionStateDistribution() != null) {
+      if (computeTransitions && nycVehicleState.getTransitionStateDistribution() != null) {
         particle.setTransitions(getParticleSet(nycVehicleState.getTransitionStateDistribution(), false));
       }
       MutableDoubleCount value = (MutableDoubleCount) entry.getValue();
       try {
-        particle.setWeight(value.doubleValue());
+        particle.setLogWeight(value.doubleValue());
       } catch (BadProbabilityParticleFilterException e) {
         e.printStackTrace();
       }
@@ -477,10 +487,34 @@ public class VehicleInferenceInstance {
 
   private NycVehicleStateDistribution getAverageVehicleState() {
     
-    final NycVehicleStateDistribution naiveBestState = (NycVehicleStateDistribution)_particles.getMaxValueKey();
+    if (currentAvgVehicleState != null)
+      return currentAvgVehicleState;
     
     prevAvgVehicleState = currentAvgVehicleState;
-    currentAvgVehicleState = naiveBestState; 
+    Multimap<String, NycVehicleStateDistribution> runToStates = HashMultimap.create();
+    DataDistribution<String> runDist = new DefaultDataDistribution<String>();
+    for (java.util.Map.Entry<VehicleStateDistribution<Observation>, ? extends Number> entry : _particles.asMap().entrySet()) {
+      MutableDoubleCount countEntry = (MutableDoubleCount) entry.getValue();
+      NycVehicleStateDistribution vehicleState = (NycVehicleStateDistribution) entry.getKey();
+      final String runId;
+      if (vehicleState.getRunStateParam().getValue().getVehicleState().getBlockState() != null) {
+        runId = vehicleState.getRunStateParam().getValue().getVehicleState().getBlockState().getRunId();
+      } else {
+        runId = "none";
+      }
+      runToStates.put(runId, vehicleState);
+      runDist.increment(runId, countEntry.count);
+    }
+    
+    final String sampledRun = runDist.getMaxValueKey();//.sample(this._particleFilter.getRandom());
+    Collection<NycVehicleStateDistribution> states = runToStates.get(sampledRun);
+    if (states.size() == 1)
+      currentAvgVehicleState = Iterables.getOnlyElement(states);
+    else
+      currentAvgVehicleState = Iterables.get(states, this._particleFilter.getRandom().nextInt(
+          states.size() - 1));
+    
+//    final NycVehicleStateDistribution naiveBestState = (NycVehicleStateDistribution)_particles.getMaxValueKey();
     
     return currentAvgVehicleState;
   }
@@ -801,7 +835,9 @@ public class VehicleInferenceInstance {
   public static Particle createParticleForVehicleState(
       NycVehicleStateDistribution nycVehicleState) {
     final Particle particle =  new Particle(nycVehicleState.getObservation().getTime());
-    particle.setData(nycVehicleState.getRunStateParam().getValue().getVehicleState());
+    final VehicleState vehicleState = nycVehicleState.getRunStateParam().getValue().getVehicleState();
+    vehicleState.setDistribution(nycVehicleState);
+    particle.setData(vehicleState);
     try {
       SensorModelResult result = new SensorModelResult("likelihood");
       result.addLogResultAsAnd("edgeTrans", nycVehicleState.getEdgeTransitionLogLikelihood());
