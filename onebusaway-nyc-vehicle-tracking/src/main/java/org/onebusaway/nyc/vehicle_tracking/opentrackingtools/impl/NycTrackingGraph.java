@@ -206,11 +206,11 @@ public class NycTrackingGraph extends GenericJTSGraph {
   //
   // final private Map<LineString, TripInfo> _geometryToTripInfo =
   // Maps.newHashMap();
-  final private Multimap<Geometry, AgencyAndId> _geoToShapeId = HashMultimap.create();
+  final private Multimap<LineString, AgencyAndId> _geoToShapeId = HashMultimap.create();
 
-  final private Multimap<AgencyAndId, Geometry> _shapeIdToGeo = HashMultimap.create();
+  final private Multimap<AgencyAndId, LineString> _shapeIdToGeo = HashMultimap.create();
 
-  final private Map<Geometry, TripInfo> _geometryToTripInfo = Maps.newHashMap();
+  final private Map<LineString, TripInfo> _geometryToTripInfo = Maps.newHashMap();
 
   private Random rng;
 
@@ -280,15 +280,20 @@ public class NycTrackingGraph extends GenericJTSGraph {
             boolean isSameOrientation) {
 
           final List<Pair<AgencyAndId, Boolean>> newPairs = Lists.newArrayList();
-          for (final Pair<AgencyAndId, Boolean> pair : 
-              Iterables.concat((List<Pair<AgencyAndId, Boolean>>) ssToMerge.getData(),
-              (List<Pair<AgencyAndId, Boolean>>) mergeTarget.getData())) {
-            PreparedGeometry prepGeom = shapeIdToPrepedGeom.get(pair.getFirst());
-            LineString lineGeo = gf.createLineString(mergeTarget.getCoordinates());
-            Geometry int1 = lineGeo.intersection(prepGeom.getGeometry());
-            Geometry int2 = prepGeom.getGeometry().intersection(lineGeo);
-            newPairs.add(DefaultPair.create(pair.getFirst(), int1.equalsExact(int2)));
+          
+          for (final Pair<AgencyAndId, Boolean> pair : (List<Pair<AgencyAndId, Boolean>>) ssToMerge.getData()) {
+            newPairs.add(DefaultPair.create(pair.getFirst(), pair.getSecond().equals(new Boolean(isSameOrientation))));
           }
+          newPairs.addAll((List<Pair<AgencyAndId, Boolean>>) mergeTarget.getData());
+//          for (final Pair<AgencyAndId, Boolean> pair : 
+//              Iterables.concat((List<Pair<AgencyAndId, Boolean>>) ssToMerge.getData(),
+//              (List<Pair<AgencyAndId, Boolean>>) mergeTarget.getData())) {
+//            PreparedGeometry prepGeom = shapeIdToPrepedGeom.get(pair.getFirst());
+//            LineString lineGeo = gf.createLineString(mergeTarget.getCoordinates());
+//            Geometry int1 = lineGeo.intersection(prepGeom.getGeometry());
+//            Geometry int2 = prepGeom.getGeometry().intersection(lineGeo);
+//            newPairs.add(DefaultPair.create(pair.getFirst(), int1.equalsExact(int2)));
+//          }
           mergeTarget.setData(newPairs);
         }
       };
@@ -329,15 +334,12 @@ public class NycTrackingGraph extends GenericJTSGraph {
             final AgencyAndId blockId = blockEntry.getId();
 
             if (shapeId != null) {
-              if (shapeId.toString().equals("MTA_BXM20073")) {
-                System.out.println(trip.toString() + ", " + blockId.toString());
-              }
               if (!blockId.hasValues()) {
                 _log.debug("trip with null block id: " + blockId);
                 continue;
               }
 
-              final Collection<Geometry> shapesForId = _shapeIdToGeo.get(shapeId);
+              final Collection<LineString> shapesForId = _shapeIdToGeo.get(shapeId);
               if (shapesForId.isEmpty()) {
                 missingShapeGeoms.add(shapeId);
                 continue;
@@ -345,7 +347,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
               final SIRtree tree = buildTimeIndex(Collections.singletonList(blockTrip));
 
-              for (final Geometry lineGeo : shapesForId) {
+              for (final LineString lineGeo : shapesForId) {
                 final TripInfo tripInfo = _geometryToTripInfo.get(lineGeo);
                 if (tripInfo == null) {
                   final List<SIRtree> entries = Lists.newArrayList(tree);
@@ -367,14 +369,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
       _log.info("\ttripInfo=" + _geometryToTripInfo.size());
 
-      final List<LineString> geoms = Lists.newArrayList();
-
-      final Set<Entry<Geometry, TripInfo>> currentEntries = Sets.newHashSet(_geometryToTripInfo.entrySet());
-      for (final Entry<Geometry, TripInfo> entry : currentEntries) {
-        geoms.add((LineString) entry.getKey());
-      }
-
-      this.createGraphFromLineStrings(geoms, false);
+      this.createGraphFromLineStrings(_geometryToTripInfo.keySet(), false);
 
     } catch (final Exception ex) {
       ex.printStackTrace();
