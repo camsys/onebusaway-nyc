@@ -10,8 +10,6 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -23,14 +21,12 @@ import tcip_final_3_0_5_1.SCHRouteIden;
 
 public class CSVCcAnnouncementInfoConverter implements
     CcAnnouncementInfoConverter {
-  
-  private static Logger _log = LoggerFactory.getLogger(CSVCcAnnouncementInfoConverter.class);
-  
-  public static final int AGENCY = 0;
-  public static final int ROUTE = 1;
-  public static final int DSC = 2;
-  public static final int MESSAGE = 3;
-  private static final boolean DEBUG = true;
+  public static final int ROUTE = 0;
+  public static final int DSC = 1;
+  public static final int MESSAGE = 2;
+  public static final int DIRECTION = 3;
+  public static final int DEPOT = 4;
+  private static final boolean DEBUG = false;
   
   private File csvFile;
   
@@ -63,7 +59,7 @@ public class CSVCcAnnouncementInfoConverter implements
       csvReader = new CSVReader(new FileReader(csvFile));
       
       // swallow header
-      debug(csvReader.readNext());
+      csvReader.readNext();
 
       String[] lastLine = null;
       String[] line = csvReader.readNext();
@@ -100,7 +96,7 @@ public class CSVCcAnnouncementInfoConverter implements
   }
 
   /*
-   * line format 0) agency 1) Route 2) DSC 3) Message X) ignored if present
+   * line format 0) Route 1) DSC 2) Message 3) Direction 4) Depot
    */
   private CCDestinationSignMessage convert(String[] line) {
     CCDestinationSignMessage msg = new CCDestinationSignMessage();
@@ -108,6 +104,7 @@ public class CSVCcAnnouncementInfoConverter implements
     msg.setRouteID(createRouteID(line));
     msg.setMessageID(createMessageID(line));
     msg.setMessageText(line[MESSAGE]);
+    msg.setDirection(line[DIRECTION]);
 
     return msg;
   }
@@ -117,7 +114,6 @@ public class CSVCcAnnouncementInfoConverter implements
     try {
       id.setMsgID(Long.parseLong(line[DSC]));
     } catch (NumberFormatException nfe) {
-      _log.error("invalid dsc id=" + line[DSC]);
       id.setName(line[DSC]);
     }
     return id;
@@ -127,7 +123,6 @@ public class CSVCcAnnouncementInfoConverter implements
     SCHRouteIden id = new SCHRouteIden();
     id.setRouteId(0);
     id.setRouteName(line[ROUTE]);
-    id.setAgencydesignator(line[AGENCY]);
     return id;
   }
 
@@ -141,9 +136,9 @@ public class CSVCcAnnouncementInfoConverter implements
 
   // append multi-line message text from secondLine into firstLine
   private String[] append(String[] firstLine, String[] secondLine) {
-    if (firstLine != null & firstLine.length > MESSAGE && secondLine != null
-        && secondLine.length > MESSAGE) {
-      firstLine[MESSAGE] = firstLine[MESSAGE] + " " + secondLine[MESSAGE]; // add space for
+    if (firstLine != null & firstLine.length > 2 && secondLine != null
+        && secondLine.length > 2) {
+      firstLine[2] = firstLine[2] + " " + secondLine[2]; // add space for
                                                          // formatting
     }
     return firstLine;
@@ -151,7 +146,7 @@ public class CSVCcAnnouncementInfoConverter implements
 
   private void debug(String[] line) {
     if (DEBUG) {
-      System.out.print("line=");
+      System.out.println("line=");
       for (String s : line) {
         System.out.print(s + ",");
       }
