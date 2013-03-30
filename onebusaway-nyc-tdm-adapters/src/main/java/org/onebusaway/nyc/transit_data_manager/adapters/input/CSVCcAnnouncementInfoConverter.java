@@ -30,7 +30,7 @@ public class CSVCcAnnouncementInfoConverter implements
   public static final int ROUTE = 1;
   public static final int DSC = 2;
   public static final int MESSAGE = 3;
-  private static final boolean DEBUG = true;
+  private static final boolean DEBUG = false;
   
   private File csvFile;
   

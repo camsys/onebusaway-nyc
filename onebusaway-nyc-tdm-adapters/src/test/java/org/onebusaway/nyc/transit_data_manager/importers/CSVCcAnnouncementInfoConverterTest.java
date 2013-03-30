@@ -69,7 +69,8 @@ public class CSVCcAnnouncementInfoConverterTest {
     assertNotNull(msg);
     assertNotNull(msg.getMessageText());
     assertEquals(messageText, msg.getMessageText());
-    assertEquals(direction, msg.getDirection());
+    // direction semantics have changed, its now null (not collected even if present)
+    assertEquals(null, msg.getDirection());
     SCHRouteIden rId = msg.getRouteID();
     assertNotNull(rId);
     assertEquals(0, rId.getRouteId());
