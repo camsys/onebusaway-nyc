@@ -65,17 +65,22 @@ public class DscResource {
     try {
       data = getDataObject();
     } catch (IOException e1) {
+      _log.error("getDisplayForCode Failure:", e1);
       throw new WebApplicationException(e1, Response.Status.INTERNAL_SERVER_ERROR);
     }
     
-    CCDestinationSignMessage messageTcip = data.getDisplayForCode(dscCode);
+    List<CCDestinationSignMessage> messages = data.getDisplayForCode(dscCode);
 
     ModelCounterpartConverter<CCDestinationSignMessage, DestinationSign> tcipToJsonConverter = new SignMessageFromTcip();
 
-    DestinationSign messageJson = tcipToJsonConverter.convert(messageTcip);
+    List<DestinationSign> jsonSigns = new ArrayList<DestinationSign>();
+    
+    for (CCDestinationSignMessage message : messages) {
+      jsonSigns.add(tcipToJsonConverter.convert(message));
+    }
 
-    DestinationSignMessage outputMessage = new DestinationSignMessage();
-    outputMessage.setSign(messageJson);
+    DestinationSignsMessage outputMessage = new DestinationSignsMessage();
+    outputMessage.setSigns(jsonSigns);
     outputMessage.setStatus("OK");
 
     String output = null;
@@ -101,6 +106,7 @@ public class DscResource {
     try {
       data = getDataObject();
     } catch (IOException e) {
+      _log.error("getAllDisplays Failure:", e);
       throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
     }
     
@@ -132,6 +138,10 @@ public class DscResource {
   private SignCodeData getDataObject() throws IOException{
     File inputFile = mostRecentPicker.getMostRecentSourceFile();
     
+    if (inputFile == null) {
+      final String msg = "could not find dsc input file in dir = " + System.getProperty("tdm.dscFilesDir");
+      throw new NullPointerException(msg);
+    }
     _log.debug("Loading SignCodeData object from " + inputFile.getPath());
     
     CsvSignCodeToDataCreator process = new CsvSignCodeToDataCreator(inputFile);
