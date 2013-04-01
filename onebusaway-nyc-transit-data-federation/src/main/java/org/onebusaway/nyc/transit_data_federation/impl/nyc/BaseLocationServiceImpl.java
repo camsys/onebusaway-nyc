@@ -19,7 +19,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -28,10 +30,13 @@ import org.onebusaway.csv_entities.ListEntityHandler;
 import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.NonRevenueStopData;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.NycRefreshableResources;
 import org.onebusaway.nyc.transit_data_federation.model.nyc.BaseLocationRecord;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
+import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -56,6 +61,8 @@ class BaseLocationServiceImpl implements BaseLocationService {
   private STRtree _baseLocationTree;
 
   private STRtree _terminalLocationTree;
+  
+  private Map<AgencyAndId, List<NonRevenueStopData>> _nonRevenueStopDataByTripId = new HashMap<AgencyAndId, List<NonRevenueStopData>>();
 
   private NycFederatedTransitDataBundle _bundle;
 
@@ -65,10 +72,13 @@ class BaseLocationServiceImpl implements BaseLocationService {
   }
 
   @PostConstruct
-  @Refreshable(dependsOn = NycRefreshableResources.TERMINAL_DATA)
-  public void setup() throws CsvEntityIOException, IOException {
+  @Refreshable(dependsOn = {NycRefreshableResources.TERMINAL_DATA, NycRefreshableResources.NON_REVENUE_STOP_DATA})
+  public void setup() throws CsvEntityIOException, IOException, ClassNotFoundException {
     _baseLocationTree = readRecordsIntoTree(_bundle.getBaseLocationsPath());
     _terminalLocationTree = readRecordsIntoTree(_bundle.getTerminalLocationsPath());
+    File nonRevenueStopsFile = _bundle.getNonRevenueStopsPath();
+    if (nonRevenueStopsFile.exists())
+      _nonRevenueStopDataByTripId = ObjectSerializationLibrary.readObject(nonRevenueStopsFile);
   }
 
   /****
@@ -82,6 +92,13 @@ class BaseLocationServiceImpl implements BaseLocationService {
   @Override
   public String getTerminalNameForLocation(CoordinatePoint location) {
     return findNameForLocation(_terminalLocationTree, location);
+  }
+  
+  @Override
+  public List<NonRevenueStopData> getNonRevenueStopsForTripId(AgencyAndId tripId) {
+    // Returns null if there are not any non revenue stops for the trip.
+    // Could return an empty list instead?
+    return _nonRevenueStopDataByTripId.get(tripId);
   }
 
   /****

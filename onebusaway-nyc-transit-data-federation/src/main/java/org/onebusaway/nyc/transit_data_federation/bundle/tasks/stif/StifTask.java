@@ -145,6 +145,9 @@ public class StifTask implements Runnable {
     
     // non revenue moves
     serializeNonRevenueMoveData(loader.getRawStifData(), loader.getGeographyRecordsByBoxId());
+    
+    // non revenue stops
+    serializeNonRevenueStopData(loader.getNonRevenueStopDataByTripId());
 
     // dsc to trip map
     Map<String, List<AgencyAndId>> dscToTripMap = loader.getTripMapping();
@@ -230,6 +233,15 @@ public class StifTask implements Runnable {
 	  } catch (IOException e) {
 		  throw new IllegalStateException("error serializing non-revenue move/STIF data", e);
 	  }	  
+  }
+  
+  private void serializeNonRevenueStopData(Map<AgencyAndId, List<NonRevenueStopData>> nonRevenueStopDataByTripId) {
+    try {
+      ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueStopsPath(), 
+          nonRevenueStopDataByTripId);
+    } catch (IOException e) {
+      throw new IllegalStateException("error serializing non-revenue move/STIF data", e);
+    }
   }
   
   private void serializeDSCData(Map<String, List<AgencyAndId>> dscToTripMap,

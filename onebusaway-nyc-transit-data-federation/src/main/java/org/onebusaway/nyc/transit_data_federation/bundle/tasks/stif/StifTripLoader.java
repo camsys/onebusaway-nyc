@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
@@ -42,6 +43,9 @@ import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * Create a mapping from Destination Sign Code (DSC) to GTFS Trip objects using
@@ -66,6 +70,8 @@ public class StifTripLoader {
   private Map<Trip, RawRunData> rawRunDataByTrip = new HashMap<Trip, RawRunData>();
 
   private Map<ServiceCode, List<StifTrip>> rawData = new HashMap<ServiceCode, List<StifTrip>>();
+  
+  private Map<AgencyAndId, List<NonRevenueStopData>> nonRevenueStopDataByTripId = new HashMap<AgencyAndId, List<NonRevenueStopData>>();
 
   private MultiCSVLogger csvLogger;
 
@@ -134,6 +140,8 @@ public class StifTripLoader {
     TripRecord tripRecord = null;
     EventRecord eventRecord = null;
     EventRecord firstEventRecord = null;
+    EventRecord firstNonRevEventRecord = null;
+    EventRecord lastNonRevEventRecord = null;
     try {
       reader = new StifRecordReader(stream);
       ServiceCode serviceCode = null;
@@ -176,7 +184,12 @@ public class StifTripLoader {
             //yet another new kind of bogus record
             continue;
           if (!possibleEventRecord.isRevenue()) {
-            // skip non-revenue stops
+            // Keep track of the first and last non-revenue stop events
+            lastNonRevEventRecord = possibleEventRecord;
+            if (firstNonRevEventRecord == null && firstEventRecord == null) {
+              firstNonRevEventRecord = lastNonRevEventRecord;
+              lastNonRevEventRecord = null;
+            }
             continue;
           }
           eventRecord = possibleEventRecord;
@@ -198,6 +211,7 @@ public class StifTripLoader {
               // prepare for next trip
               tripLineNumber = lineNumber;
               tripRecord = (TripRecord) record;
+              firstNonRevEventRecord = lastNonRevEventRecord = null;
               eventRecord = firstEventRecord = null;
             } else {
               tripRecord = null;
@@ -246,6 +260,7 @@ public class StifTripLoader {
             if (record instanceof TripRecord) {
               tripLineNumber = lineNumber;
               tripRecord = (TripRecord) record;
+              firstNonRevEventRecord = lastNonRevEventRecord = null;
               eventRecord = firstEventRecord = null;
             } else {
               tripRecord = null;
@@ -325,6 +340,7 @@ public class StifTripLoader {
               // prepare for next trip
               tripLineNumber = lineNumber;
               tripRecord = (TripRecord) record;
+              firstNonRevEventRecord = lastNonRevEventRecord = null;
               eventRecord = firstEventRecord = null;
             } else {
               tripRecord = null;
@@ -399,13 +415,44 @@ public class StifTripLoader {
             sctrips = new ArrayList<AgencyAndId>();
             tripIdsBySignCode.put(destSignCode, sctrips);
           }
-          for (Trip trip : filtered)
+          for (Trip trip : filtered) {
             sctrips.add(trip.getId());
+            
+            // Insert non revenue stop data into a map that can be serialized later
+            if (firstNonRevEventRecord != null || lastNonRevEventRecord != null) {
+              if (!nonRevenueStopDataByTripId.containsKey(trip.getId())) {
+                nonRevenueStopDataByTripId.put(trip.getId(), new ArrayList<NonRevenueStopData>());
+              }
+              if (firstNonRevEventRecord != null) {
+                NonRevenueStopData firstNonRevenueStopData = new NonRevenueStopData();
+                firstNonRevenueStopData.setNonRevenueStopOrder(NonRevenueStopOrder.FIRST);
+                firstNonRevenueStopData.setScheduleTime(firstNonRevEventRecord.getTime());
+                String stopId = support.getStopIdForLocation(firstNonRevEventRecord.getLocation());
+                AgencyAndId stopAgencyAndId = new AgencyAndId(agencyId, stopId);
+                GeographyRecord geographyRecord = geographyRecordsByBoxId.get(stopAgencyAndId);
+                Coordinate c = new Coordinate(geographyRecord.getLongitude(), geographyRecord.getLatitude());
+                firstNonRevenueStopData.setLocation(c);
+                nonRevenueStopDataByTripId.get(trip.getId()).add(firstNonRevenueStopData);
+              }
+              if (lastNonRevEventRecord != null) {
+                NonRevenueStopData lastNonRevenueStopData = new NonRevenueStopData();
+                lastNonRevenueStopData.setNonRevenueStopOrder(NonRevenueStopOrder.LAST);
+                lastNonRevenueStopData.setScheduleTime(lastNonRevEventRecord.getTime());
+                String stopId = support.getStopIdForLocation(lastNonRevEventRecord.getLocation());
+                AgencyAndId stopAgencyAndId = new AgencyAndId(agencyId, stopId);
+                GeographyRecord geographyRecord = geographyRecordsByBoxId.get(stopAgencyAndId);
+                Coordinate c = new Coordinate(geographyRecord.getLongitude(), geographyRecord.getLatitude());
+                lastNonRevenueStopData.setLocation(c);
+                nonRevenueStopDataByTripId.get(trip.getId()).add(lastNonRevenueStopData);
+              }
+            }
+          }
           tripRecord = null; // we are done processing this trip record
         }
         if (record instanceof TripRecord) {
           tripLineNumber = lineNumber;
           tripRecord = (TripRecord) record;
+          firstNonRevEventRecord = lastNonRevEventRecord = null;
           eventRecord = firstEventRecord = null;
         }
       }
@@ -448,6 +495,10 @@ public class StifTripLoader {
 
   public Map<ServiceCode, List<StifTrip>> getRawStifData() {
     return rawData;
+  }
+  
+  public Map<AgencyAndId, List<NonRevenueStopData>> getNonRevenueStopDataByTripId() {
+    return nonRevenueStopDataByTripId;
   }
 
   public void setLogger(MultiCSVLogger csvLogger) {

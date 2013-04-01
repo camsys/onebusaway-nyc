@@ -312,6 +312,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_refreshService.refresh(NycRefreshableResources.TERMINAL_DATA);
 			_refreshService.refresh(NycRefreshableResources.RUN_DATA);
 			_refreshService.refresh(NycRefreshableResources.NON_REVENUE_MOVES_DATA);
+			_refreshService.refresh(NycRefreshableResources.NON_REVENUE_STOP_DATA);
 		} catch(Exception e) {
 			_log.error("Bundle " + bundleId + " failed to load. Disabling for this session...");
 			_applicableBundles.remove(bundleId);
