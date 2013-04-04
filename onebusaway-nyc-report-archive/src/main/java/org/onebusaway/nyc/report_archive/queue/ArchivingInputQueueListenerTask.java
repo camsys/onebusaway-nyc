@@ -94,16 +94,20 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
     Integer port = getQueuePort();
 
     if (host == null || queueName == null || port == null) {
-      _log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
+      _log.error("Inference input queue is not attached; input hostname was not available via configuration service.");
       return;
     }
 
-    _log.info("realtime archive listening on " + host + ":" + port + ", queue="
+    _log.warn("realtime archive listening on " + host + ":" + port + ", queue="
         + queueName);
     try {
       initializeQueue(host, queueName, port);
+      _log.warn("queue config:" + queueName + " COMPLETE");
     } catch (InterruptedException ie) {
+      _log.error("queue " + queueName + " interrupted");
       return;
+    } catch (Throwable t) {
+      _log.error("queue " + queueName + " init failed:", t);
     }
   }
 
@@ -136,7 +140,7 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
     RealtimeEnvelope envelope = null;
     CcLocationReportRecord record = null;
     try {
-      
+
       envelope = deserializeMessage(contents);
 
       if (envelope == null || envelope.getCcLocationReport() == null) {
@@ -173,6 +177,7 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
       if (System.currentTimeMillis() - zoneOffsetWindow > 60 * 60 * 1000) {
         // reset zoneoffset once an hour
         _zoneOffset = null;
+        zoneOffsetWindow = System.currentTimeMillis();
       }
     } catch (Throwable t) {
       _log.error("Exception processing contents= " + contents, t);

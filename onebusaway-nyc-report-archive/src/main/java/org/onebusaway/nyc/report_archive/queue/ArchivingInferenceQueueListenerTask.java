@@ -58,15 +58,19 @@ public class ArchivingInferenceQueueListenerTask extends
     Integer port = getQueuePort();
 
     if (host == null || queueName == null || port == null) {
-      _log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
+      _log.error("Inference input queue is not attached; input hostname was not available via configuration service.");
       return;
     }
     _log.info("inference archive listening on " + host + ":" + port
         + ", queue=" + queueName);
     try {
       initializeQueue(host, queueName, port);
+      _log.warn("queue config:" + queueName + " COMPLETE");
     } catch (InterruptedException ie) {
+      _log.error("queue " + queueName + " interrupted");
       return;
+    } catch (Throwable t) {
+      _log.error("queue " + queueName + " init failed:", t);
     }
   }
 
