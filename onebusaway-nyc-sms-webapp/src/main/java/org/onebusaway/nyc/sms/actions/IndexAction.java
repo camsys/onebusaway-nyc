@@ -104,7 +104,13 @@ public class IndexAction extends SessionedIndexAction {
       _searchResults = _searchService.getSearchResults(queryString, _resultFactory);
     } else if (commandString != null && commandString.equals("R") && _lastQuery != null && !_lastQuery.isEmpty()) {
       _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
-    } else if (queryString == null || queryString.isEmpty()) {
+    } else if(_searchResults != null &&_searchResults.getResultType().equals("StopResult") && commandString != null && getRoutesInSearchResults().contains(commandString)) {
+      // We are all set, let the existing stop results be processed given the route command string
+    } else if(_searchResults != null && _searchResults.getResultType().equals("StopResult") && commandString != null && StringUtils.isNumeric(commandString)) {
+      // We are all set, let the existing stop results be processed given the number (which is the users choice of stop) command string
+    } else if (queryString == null || queryString.isEmpty() && commandString != null && _searchResults != null && _searchResults.getSuggestions().size() > 0) {
+      // We have suggestions with a command string for picking one of them or paginating
+    } else if ((queryString == null || queryString.isEmpty())) {
       _response = errorResponse("No results.");
       return SUCCESS;
     }
