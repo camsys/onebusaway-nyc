@@ -89,14 +89,19 @@ public abstract class QueueListenerTask {
 
 		@Override
 		public void run() {
+		  _log.warn("ReadThread for queue " + getQueueName() + " starting");
+		  
 			while (!Thread.currentThread().isInterrupted()) {
-				_zmqPoller.poll();
+			  _zmqPoller.poll(1000 * 1000); // microseconds for 2.2, milliseconds for 3.0
 				if (_zmqPoller.pollin(0)) {
+
 					String address = new String(_zmqSocket.recv(0));
 					String contents = new String(_zmqSocket.recv(0));
 
 					try {
 						processMessage(address, contents);
+						processedCount++;
+
 					} catch(Exception ex) {
 						_log.error("#####>>>>> processMessage() failed, exception was: " + ex.getMessage());
 					}
@@ -116,8 +121,9 @@ public abstract class QueueListenerTask {
 					processedCount = 0;
 				}
 
-				processedCount++;
+				
 			}
+			_log.error("Thread loop Interrupted, exiting");
 		}
 	}
 
@@ -126,6 +132,7 @@ public abstract class QueueListenerTask {
 		_executorService = Executors.newFixedThreadPool(1);
 		startListenerThread();
 		startDNSCheckThread();
+		_log.warn("threads started for queue " + getQueueName());
 	}
 
 	@PreDestroy
@@ -162,13 +169,13 @@ public abstract class QueueListenerTask {
 		_socket = _context.socket(ZMQ.SUB);
 		_poller = _context.poller(2);
 		_poller.register(_socket, ZMQ.Poller.POLLIN);
-
+		
 		_socket.connect(bind);
 		_socket.subscribe(queueName.getBytes());
 
 		_executorService.execute(new ReadThread(_socket, _poller));
 
-		_log.debug("queue is listening on " + bind);
+		_log.warn("queue " + queueName + " is listening on " + bind);
 		_initialized = true;
 
 	}
