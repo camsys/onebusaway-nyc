@@ -19,6 +19,7 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
@@ -76,7 +77,9 @@ public class Observation extends GpsObservation implements Comparable<Observatio
       RunResults runResults) throws TransformException {
     
     super(record.getDeviceId(), record.getTimeAsDate(), new Coordinate(record.getLatitude(), record.getLongitude()),
-        (double)record.getSpeed(), (double)record.getBearing(), null, (int)record.getId(), previousObservation, 
+        (double)record.getSpeed(), (double)record.getBearing(), null, 
+        (int)record.getId(), 
+        previousObservation, 
         GeoUtils.convertToEuclidean(new Coordinate(record.getLatitude(), record.getLongitude())));
     
     _timestamp = new Date(timestamp);

@@ -126,8 +126,8 @@ public class VehicleInferenceInstance {
       new VehicleStateInitialParameters(
           null,
           VectorFactory.getDefault().createVector2D(100d, 100d), Integer.MAX_VALUE,
-          VectorFactory.getDefault().createVector1D(0.0625), Integer.MAX_VALUE,
-          VectorFactory.getDefault().createVector2D(0.0625, 0.0625), Integer.MAX_VALUE,
+          VectorFactory.getDefault().createVector1D(6.25e-4), Integer.MAX_VALUE,
+          VectorFactory.getDefault().createVector2D(6.25e-4, 6.25e-4), Integer.MAX_VALUE,
           VectorFactory.getDefault().createVector2D(15d, 95d),
           VectorFactory.getDefault().createVector2D(95d, 15d), 
           25, 30, 0l);
@@ -339,8 +339,20 @@ public class VehicleInferenceInstance {
         lastValidDestinationSignCode, atBase, atTerminal, outOfService,
         hasValidDsc, _previousObservation, routeIds, runResults);
 
-    if (_previousObservation != null)
+    final boolean hasPrevPrevObs;
+    /*
+     * Make sure we don't hold on to all of the data we see.
+     */
+    if (_previousObservation != null) {
+      if (_previousObservation.getPreviousObservation() != null) {
+        hasPrevPrevObs = true;
+      } else {;
+        hasPrevPrevObs = false; 
+      }
       _previousObservation.clearPreviousObservation();
+    } else {
+      hasPrevPrevObs = false; 
+    }
 
     _previousObservation = observation;
     _nycTestInferredLocationRecord = null;
@@ -356,12 +368,24 @@ public class VehicleInferenceInstance {
     }
     
     currentAvgVehicleState = null;
-    if (_particles == null || _particles.isEmpty()) {
-      _particles = _particleFilter.createInitialLearnedObject();
+    /*
+     * Wait until we have two observation.  That way we can
+     * make valid initial states and comparisons.
+     */
+    if (observation.getPreviousObservation() != null) {
+      if (_particles == null || _particles.isEmpty() || !hasPrevPrevObs) {
+        _particleFilter.getUpdater().setInitialObservation(observation);
+        _particles = _particleFilter.createInitialLearnedObject();
+      } else {
+        _particleFilter.update(_particles, observation);
+      }
     } else {
-      _particleFilter.update(_particles, observation);
+      /*
+       * Just create dummy initial states, then reinitialize later.
+       */
+      _particles = _particleFilter.createInitialLearnedObject();
     }
-
+    
     return true;
   }
 
@@ -420,7 +444,7 @@ public class VehicleInferenceInstance {
       }
       MutableDoubleCount value = (MutableDoubleCount) entry.getValue();
       try {
-        particle.setLogWeight(value.doubleValue());
+        particle.setLogWeight(value.doubleValue() - distribution.getTotal());
       } catch (BadProbabilityParticleFilterException e) {
         e.printStackTrace();
       }

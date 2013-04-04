@@ -10,10 +10,12 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 
 import gov.sandia.cognition.util.AbstractCloneableSerializable;
+import gov.sandia.cognition.util.CloneableSerializable;
 
+import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class RunState {
+public class RunState extends AbstractCloneableSerializable implements Comparable<RunState> {
 
   public static class RunStateEdgePredictiveResults extends AbstractCloneableSerializable {
 
@@ -123,17 +125,20 @@ public class RunState {
   }
 
   protected BlockStateObservation blockStateObs;
-  final protected NycTrackingGraph graph;
-  final protected boolean vehicleHasNotMoved;
-  final protected VehicleState oldTypeParent;
+  protected NycTrackingGraph graph;
+  protected boolean vehicleHasNotMoved;
+  protected VehicleState oldTypeParent;
+  protected NycVehicleStateDistribution nycVehicleState;
   protected VehicleState oldTypeVehicleState;
   protected Observation obs;
   protected JourneyState journeyState;
   protected RunStateEdgePredictiveResults likelihoodInfo;
 
   public RunState(NycTrackingGraph graph, Observation obs,
+      NycVehicleStateDistribution nycVehicleState,
       BlockStateObservation blockStateObs, boolean vehicleHasNotMoved,
       VehicleState oldTypeParent) {
+    this.nycVehicleState = nycVehicleState;
     this.blockStateObs = blockStateObs;
     this.obs = obs;
     this.graph = graph;
@@ -161,6 +166,7 @@ public class RunState {
       this.oldTypeVehicleState = new org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState(
           motionState, this.blockStateObs, this.getJourneyState(), null,
           this.obs);
+      this.oldTypeVehicleState.setDistribution(nycVehicleState);
     }
     return this.oldTypeVehicleState;
   }
@@ -220,46 +226,6 @@ public class RunState {
     return builder.toString();
   }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result
-        + ((oldTypeParent == null) ? 0 : oldTypeParent.hashCode());
-    result = prime * result
-        + ((getVehicleState() == null) ? 0 : oldTypeVehicleState.hashCode());
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (!(obj instanceof RunState)) {
-      return false;
-    }
-    final RunState other = (RunState) obj;
-    if (oldTypeParent == null) {
-      if (other.oldTypeParent != null) {
-        return false;
-      }
-    } else if (!oldTypeParent.equals(other.oldTypeParent)) {
-      return false;
-    }
-    if (getVehicleState() == null) {
-      if (other.oldTypeVehicleState != null) {
-        return false;
-      }
-    } else if (!oldTypeVehicleState.equals(other.oldTypeVehicleState)) {
-      return false;
-    }
-    return true;
-  }
-
   public VehicleState getParentVehicleState() {
     return oldTypeParent;
   }
@@ -289,5 +255,73 @@ public class RunState {
     this.blockStateObs = blockStateObs;
     this.journeyState = null;
     this.oldTypeVehicleState = null;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result
+        + ((blockStateObs == null) ? 0 : blockStateObs.hashCode());
+    result = prime * result
+        + ((getJourneyState() == null) ? 0 : getJourneyState().hashCode());
+    result = prime * result + (vehicleHasNotMoved ? 1231 : 1237);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (!(obj instanceof RunState)) {
+      return false;
+    }
+    RunState other = (RunState) obj;
+    if (blockStateObs == null) {
+      if (other.blockStateObs != null) {
+        return false;
+      }
+    } else if (!blockStateObs.equals(other.blockStateObs)) {
+      return false;
+    }
+    if (getJourneyState() == null) {
+      if (other.getJourneyState() != null) {
+        return false;
+      }
+    } else if (!getJourneyState().equals(other.getJourneyState())) {
+      return false;
+    }
+    if (vehicleHasNotMoved != other.vehicleHasNotMoved) {
+      return false;
+    }
+    return true;
+  }
+
+  @Override
+  public int compareTo(RunState o) {
+    final CompareToBuilder comparator = new CompareToBuilder();
+    comparator.append(this.blockStateObs, o.blockStateObs); 
+    comparator.append(this.vehicleHasNotMoved, o.vehicleHasNotMoved); 
+    comparator.append(this.getJourneyState().getPhase(), o.getJourneyState().getPhase()); 
+    return comparator.toComparison();
+  }
+
+  @Override
+  public RunState clone() {
+    RunState clone = (RunState) super.clone();
+    clone.blockStateObs = this.blockStateObs;
+    clone.graph = this.graph;
+    clone.journeyState = this.journeyState;
+    clone.likelihoodInfo = this.likelihoodInfo;
+    clone.nycVehicleState = this.nycVehicleState;
+    clone.obs = this.obs;
+    clone.oldTypeParent = this.oldTypeParent;
+    clone.oldTypeVehicleState = this.oldTypeVehicleState;
+    clone.vehicleHasNotMoved = this.vehicleHasNotMoved;
+    return clone;
   }
 }

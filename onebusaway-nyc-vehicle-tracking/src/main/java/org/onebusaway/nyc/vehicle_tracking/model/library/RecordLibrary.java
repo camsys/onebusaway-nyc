@@ -95,6 +95,7 @@ public class RecordLibrary {
     vlr.setTimeReceived(record.getTimestamp());
     vlr.setVehicleId(record.getVehicleId());
     vlr.setOperatorId(record.getOperatorId());
+    vlr.setId(record.getRecordNumber());
     final String[] runInfo = StringUtils.splitByWholeSeparator(
         record.getReportedRunId(), "-");
     if (runInfo != null && runInfo.length > 0) {

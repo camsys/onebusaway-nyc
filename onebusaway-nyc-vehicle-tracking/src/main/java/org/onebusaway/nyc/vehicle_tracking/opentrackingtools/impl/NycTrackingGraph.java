@@ -37,12 +37,14 @@ import gov.sandia.cognition.util.DefaultPair;
 import gov.sandia.cognition.util.Pair;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateArrays;
@@ -55,6 +57,8 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.index.strtree.SIRtree;
 import com.vividsolutions.jts.index.strtree.STRtree;
+import com.vividsolutions.jts.linearref.LengthIndexedLine;
+import com.vividsolutions.jts.linearref.LocationIndexedLine;
 import com.vividsolutions.jts.noding.IntersectionAdder;
 import com.vividsolutions.jts.noding.MCIndexNoder;
 import com.vividsolutions.jts.noding.NodedSegmentString;
@@ -81,6 +85,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -214,6 +219,8 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
   private Random rng;
 
+  private Table<AgencyAndId, LineString, double[]> lengthsAlongShapeMap = HashBasedTable.create();
+
   private void buildGraph() {
     try {
       _shapeIdToGeo.clear();
@@ -222,7 +229,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
       final GeometryFactory gf = JTSFactoryFinder.getGeometryFactory();
 
-      final Map<AgencyAndId, PreparedGeometry> shapeIdToPrepedGeom = Maps.newHashMap();
+      final Map<AgencyAndId, LineString> shapeIdToLines = Maps.newHashMap();
       final Map<LineString, NodedSegmentString> lineToSegments = Maps.newHashMap();
       for (final TripEntry trip : _transitGraphDao.getAllTrips()) {
         final AgencyAndId shapeId = trip.getShapeId();
@@ -248,14 +255,14 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
         Geometry euclidGeo = JTS.transform(lineGeo,
             GeoUtils.getTransform(lineGeo.getCoordinate()));
-        euclidGeo = DouglasPeuckerSimplifier.simplify(euclidGeo, 5);
+//        euclidGeo = DouglasPeuckerSimplifier.simplify(euclidGeo, 5);
 
         final NodedSegmentString segments = new NodedSegmentString(
             euclidGeo.getCoordinates(), Lists.newArrayList(DefaultPair.create(
                 shapeId, true)));
 
         lineToSegments.put((LineString) euclidGeo, segments);
-        shapeIdToPrepedGeom.put(shapeId, PreparedGeometryFactory.prepare(lineGeo));
+        shapeIdToLines.put(shapeId, (LineString)euclidGeo);
       }
       _log.info("\tshapePoints=" + lineToSegments.size());
 
@@ -285,15 +292,6 @@ public class NycTrackingGraph extends GenericJTSGraph {
             newPairs.add(DefaultPair.create(pair.getFirst(), pair.getSecond().equals(new Boolean(isSameOrientation))));
           }
           newPairs.addAll((List<Pair<AgencyAndId, Boolean>>) mergeTarget.getData());
-//          for (final Pair<AgencyAndId, Boolean> pair : 
-//              Iterables.concat((List<Pair<AgencyAndId, Boolean>>) ssToMerge.getData(),
-//              (List<Pair<AgencyAndId, Boolean>>) mergeTarget.getData())) {
-//            PreparedGeometry prepGeom = shapeIdToPrepedGeom.get(pair.getFirst());
-//            LineString lineGeo = gf.createLineString(mergeTarget.getCoordinates());
-//            Geometry int1 = lineGeo.intersection(prepGeom.getGeometry());
-//            Geometry int2 = prepGeom.getGeometry().intersection(lineGeo);
-//            newPairs.add(DefaultPair.create(pair.getFirst(), int1.equalsExact(int2)));
-//          }
           mergeTarget.setData(newPairs);
         }
       };
@@ -317,6 +315,11 @@ public class NycTrackingGraph extends GenericJTSGraph {
           } else {
             actualLine = line;
           }
+          LineString shape = shapeIdToLines.get(pair.getFirst());
+          LengthIndexedLine lil = new LengthIndexedLine(shape);
+          double[] lengthIndices = Preconditions.checkNotNull(lil.indicesOf(actualLine));
+          lengthsAlongShapeMap.put(pair.getFirst(), actualLine, lengthIndices);
+          
           _geoToShapeId.put(actualLine, pair.getFirst());
           _shapeIdToGeo.put(pair.getFirst(), actualLine);
         }
@@ -490,12 +493,27 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
       Preconditions.checkNotNull(blockTripEntry);
 
-      final double distanceAlongBlock = blockTripEntry.getDistanceAlongBlock()
-          + pathState.getMotionState().getElement(0);
+      BlockTripEntry newBlockTripEntry = blockTripEntry;
+      double[] lengthAlongShape = this.lengthsAlongShapeMap.get(blockTripEntry.getTrip().getShapeId(),
+          pathState.getEdge().getInferenceGraphEdge().getGeometry());
+      /*
+       * Fix this.  We should know exactly which trip/shape before this, right?
+       */
+      if (lengthAlongShape == null) {
+        newBlockTripEntry = Preconditions.checkNotNull(blockTripEntry.getNextTrip());
+        lengthAlongShape = this.lengthsAlongShapeMap.get(
+            newBlockTripEntry.getTrip().getShapeId(), 
+            pathState.getEdge().getInferenceGraphEdge().getGeometry());
+      }
+      
+      final double distanceAlongBlock = newBlockTripEntry.getDistanceAlongBlock()
+          + lengthAlongShape[0] 
+          + pathState.getEdge().getDistToFromStartOfGraphEdge()
+          + pathState.getEdgeState().getElement(0);
 
       final InstanceState instState = new InstanceState(serviceDate);
       final BlockInstance instance = new BlockInstance(
-          blockTripEntry.getBlockConfiguration(), instState);
+          newBlockTripEntry.getBlockConfiguration(), instState);
       // _blockCalendarService.getBlockInstance(
       // blockTripEntry.getBlockConfiguration().getBlock().getId(),
       // serviceDate);

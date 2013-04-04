@@ -2,6 +2,8 @@ package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 
+import com.google.common.base.Preconditions;
+
 import gov.sandia.cognition.math.matrix.Matrix;
 import gov.sandia.cognition.math.matrix.Vector;
 import gov.sandia.cognition.statistics.DataDistribution;
@@ -42,7 +44,7 @@ public class NycVehicleStateDistribution extends
           new NycVehicleStateDistribution(super.createInitialVehicleState(parameters, graph, obs, rng, pathEdge));
       
       RunStateEstimator runStateEstimator = new RunStateEstimator(graph, obs, 
-          nycVehicleStateDist.getPathStateParam().getParameterPrior(), null, rng);
+          nycVehicleStateDist, null, rng);
       
       CountedDataDistribution<RunState> newRunStateDist = runStateEstimator.createInitialLearnedObject();
       
@@ -139,7 +141,8 @@ public class NycVehicleStateDistribution extends
     final CompareToBuilder comparator = new CompareToBuilder();
     comparator.appendSuper(super.compareTo(arg0));
     if (arg0 instanceof NycVehicleStateDistribution)
-      comparator.append(this.runStateParam, ((NycVehicleStateDistribution)arg0).runStateParam);
+      comparator.append(this.runStateParam.getValue(), 
+          ((NycVehicleStateDistribution)arg0).runStateParam.getValue());
     return comparator.toComparison();
   }
 

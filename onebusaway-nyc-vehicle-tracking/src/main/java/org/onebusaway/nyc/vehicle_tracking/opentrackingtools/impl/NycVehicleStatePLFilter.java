@@ -49,7 +49,7 @@ public class NycVehicleStatePLFilter extends VehicleStatePLFilter<Observation, N
     final NycVehicleStateDistribution newVehicleStateDist = (NycVehicleStateDistribution) super.internalUpdate(state, obs);
     
     RunStateEstimator runStateEstimator = new RunStateEstimator(this.inferredGraph, obs, 
-        newVehicleStateDist.getPathStateParam().getParameterPrior(), 
+        newVehicleStateDist, 
         newVehicleStateDist.getRunStateParam().getValue().getParentVehicleState(), this.random);
     
     DataDistribution<RunState> newRunStateDist = 
@@ -91,7 +91,7 @@ public class NycVehicleStatePLFilter extends VehicleStatePLFilter<Observation, N
       NycVehicleStateDistribution nycVehicleStateDist = (NycVehicleStateDistribution)vehicleStateEntry.getKey();
       
       RunStateEstimator runStateEstimator = new RunStateEstimator(this.inferredGraph, obs, 
-          nycVehicleStateDist.getPathStateParam().getParameterPrior(), 
+          nycVehicleStateDist, 
           nycVehicleStateDist.getRunStateParam().getValue().getParentVehicleState(), 
           this.random);
       

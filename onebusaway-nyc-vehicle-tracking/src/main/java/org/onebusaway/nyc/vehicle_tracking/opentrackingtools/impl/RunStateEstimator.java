@@ -60,7 +60,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
   private static final long serialVersionUID = -1461026886038720233L;
   
   private final NycTrackingGraph nycGraph;
-  private final PathStateDistribution pathStateDistribution;
+  private final NycVehicleStateDistribution nycVehicleStateDist;
   private final VehicleState prevOldTypeVehicleState;
   private final Observation obs;
   private final Random rng;
@@ -77,10 +77,10 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
   }
 
   public RunStateEstimator(NycTrackingGraph graph, Observation obs, 
-      PathStateDistribution pathStateBelief, VehicleState prevOldTypeVehicleState, Random rng) {
+      NycVehicleStateDistribution nycVehicleStateDist, VehicleState prevOldTypeVehicleState, Random rng) {
     this.obs = obs;
     this.nycGraph = graph;
-    this.pathStateDistribution = pathStateBelief;
+    this.nycVehicleStateDist = nycVehicleStateDist;
     this.prevOldTypeVehicleState = prevOldTypeVehicleState;
     this.rng = rng;
   }
@@ -98,9 +98,9 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     final Date timeFrom = new Date(time - _tripSearchTimeAfterLastStop);
     final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
     
-    final PathEdge pathEdge = pathStateDistribution.getPathState().getEdge();
+    final PathEdge pathEdge = nycVehicleStateDist.getPathStateParam().getParameterPrior().getPathState().getEdge();
     final TripInfo tripInfo = nycGraph.getTripInfo(pathEdge.getInferenceGraphEdge());
-    final double likelihoodHasNotMoved = likelihoodOfNotMovedState(this.pathStateDistribution);
+    final double likelihoodHasNotMoved = likelihoodOfNotMovedState(nycVehicleStateDist.getPathStateParam().getParameterPrior());
     double nonNullTotalLikelihood = Double.NEGATIVE_INFINITY;
     
     Map<RunState, MutableDoubleCount> resultDist = Maps.newIdentityHashMap();
@@ -119,9 +119,10 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         long serviceDate = blockTripEntryAndDate.getServiceDate().getTime();
         
         final BlockStateObservation blockStateObs = this.nycGraph.getBlockStateObs(obs, 
-            pathStateDistribution.getPathState(), blockTripEntry, serviceDate);
+            nycVehicleStateDist.getPathStateParam().getParameterPrior().getPathState(), blockTripEntry, serviceDate);
         
-        final RunState runStateMoved = new RunState(nycGraph, obs, blockStateObs, false, this.prevOldTypeVehicleState);
+        final RunState runStateMoved = new RunState(nycGraph, obs, nycVehicleStateDist, 
+            blockStateObs, false, this.prevOldTypeVehicleState);
         
         
         final RunState.RunStateEdgePredictiveResults mtaEdgeResultsMoved = runStateMoved.
@@ -133,7 +134,8 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
           resultDist.put(runStateMoved, new MutableDoubleCount(mtaEdgeResultsMoved.getTotalLogLik(), 1));
         }
         
-        final RunState runStateNotMoved = new RunState(nycGraph, obs, blockStateObs, true, this.prevOldTypeVehicleState);
+        final RunState runStateNotMoved = new RunState(nycGraph, obs, nycVehicleStateDist, 
+            blockStateObs, true, this.prevOldTypeVehicleState);
         
         final RunState.RunStateEdgePredictiveResults mtaEdgeResultsNotMoved = runStateNotMoved.
             computeAnnotatedLogLikelihood();
@@ -164,10 +166,11 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
        */
       if (blockStateObs != null 
           && (JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState())
-              || pathStateDistribution.getPathState().isOnRoad()))
+              || nycVehicleStateDist.getPathStateParam().getParameterPrior().getPathState().isOnRoad()))
         continue;
       
-      final RunState runStateMoved = new RunState(nycGraph, obs, blockStateObs, false, this.prevOldTypeVehicleState);
+      final RunState runStateMoved = new RunState(nycGraph, obs, nycVehicleStateDist, blockStateObs, 
+          false, this.prevOldTypeVehicleState);
       Preconditions.checkState(runStateMoved.getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS);
       
       Preconditions.checkState(!pathEdge.isNullEdge() 
@@ -183,7 +186,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         resultDist.put(runStateMoved, new MutableDoubleCount(mtaEdgeResultsMoved.getTotalLogLik(), 1));
       }
       
-      final RunState runStateNotMoved = new RunState(nycGraph, obs, blockStateObs, true, this.prevOldTypeVehicleState);
+      final RunState runStateNotMoved = new RunState(nycGraph, obs, nycVehicleStateDist, blockStateObs, true, this.prevOldTypeVehicleState);
       Preconditions.checkState(runStateNotMoved.getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS);
       
       Preconditions.checkState(!pathEdge.isNullEdge() 
@@ -209,17 +212,14 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         new CountedDataDistribution<RunState>(true);
     for (Entry<RunState, MutableDoubleCount> entry : resultDist.entrySet()) {
       if (entry.getKey().getBlockStateObs() != null) {
-        final double newValue = entry.getValue().doubleValue() + entry.getValue().count - nonNullTotalLikelihood;
-        result.increment(entry.getKey(), newValue);
+        final double newValue = entry.getValue().doubleValue() - nonNullTotalLikelihood;
+        result.increment(entry.getKey(), newValue, entry.getValue().count);
       } else {
-        result.increment(entry.getKey(), entry.getValue().doubleValue() + entry.getValue().count);
+        result.increment(entry.getKey(), entry.getValue().doubleValue(), entry.getValue().count);
       }
     }
     
     Preconditions.checkState(!result.isEmpty());
-    // TODO debug. remove.
-    if (this.pathStateDistribution.getPathState().isOnRoad() && result.getMaxValueKey().getBlockStateObs() == null)
-        Preconditions.checkState(true);
     return result;
   }
 
@@ -228,10 +228,13 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
       PathStateDistribution posteriorPathStateDist) {
     
     Preconditions.checkArgument(priorPredRunStateDist instanceof DeterministicDataDistribution<?>);
+    
+    DeterministicDataDistribution<RunState> priorRunDist = (DeterministicDataDistribution<RunState>) priorPredRunStateDist;
+    
     /*
      * We must update update the run state, since the path belief gets updated. 
      */
-    RunState priorPredRunState = priorPredRunStateDist.getMaxValueKey();
+    RunState priorPredRunState = priorPredRunStateDist.getMaxValueKey().clone();
     if (priorPredRunState.getBlockStateObs() != null) {
       final ScheduledBlockLocation priorSchedLoc = priorPredRunState.getBlockStateObs().getBlockState().getBlockLocation();
       final BlockStateObservation newBlockStateObs = nycGraph.getBlockStateObs(obs, 
@@ -240,6 +243,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
           priorPredRunState.getBlockStateObs().getBlockState().getBlockInstance().getServiceDate());
       priorPredRunState.setBlockStateObs(newBlockStateObs);
     } 
+    priorRunDist.setElement(priorPredRunState);
   }
 
   /**
