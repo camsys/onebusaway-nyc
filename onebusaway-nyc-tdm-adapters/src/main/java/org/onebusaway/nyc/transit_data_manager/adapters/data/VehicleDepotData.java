@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.data;
 
+import java.util.Date;
 import java.util.List;
 
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
@@ -39,4 +40,14 @@ public interface VehicleDepotData {
    * @return A list of all depot groups
    */
   List<CPTFleetSubsetGroup> getAllDepotGroups();
+  
+  /**
+   * When the underlying data source was last updated
+   */
+  Date getLastUpdatedDate();
+
+  /**
+   * When the underlying data source was last updated
+   */
+  void setLastUpdatedDate(Date date);
 }

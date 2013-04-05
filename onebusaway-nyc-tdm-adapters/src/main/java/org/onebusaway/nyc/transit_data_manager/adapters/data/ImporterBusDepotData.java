@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.data;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -8,6 +9,8 @@ import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 import tcip_final_3_0_5_1.CPTVehicleIden;
 
 public class ImporterBusDepotData implements VehicleDepotData {
+
+  private Date lastUpdated;
 
   private List<CPTFleetSubsetGroup> depotGroups = null;
 
@@ -38,14 +41,14 @@ public class ImporterBusDepotData implements VehicleDepotData {
     // that have our depotNameStr
     // (There should really only be one if my other part was right, but I guess
     // I don't want to count on that!)
-    
+
     List<CPTFleetSubsetGroup> fleetSubGroupsMatchingDepotStr = getGroupsWithDepotNameStr(depotNameStr);
-    
+
     // And second to put all the vehicles in each matching CPTFleetSubsetGroup
     // into the same
     // list for output.
     CPTFleetSubsetGroup subGroup = null;
-    
+
     Iterator<CPTFleetSubsetGroup> matchDGroupsIt = fleetSubGroupsMatchingDepotStr.iterator();
     while (matchDGroupsIt.hasNext()) {
       subGroup = matchDGroupsIt.next();
@@ -55,26 +58,26 @@ public class ImporterBusDepotData implements VehicleDepotData {
 
     return vehicles;
   }
-  
+
   public List<CPTFleetSubsetGroup> getGroupsWithDepotNameStr(String depotNameStr) {
     List<CPTFleetSubsetGroup> fleetSubGroupsMatchingDepotStr = new ArrayList<CPTFleetSubsetGroup>();
-    
+
     Iterator<CPTFleetSubsetGroup> depGroupsIt = depotGroups.iterator();
     while (depGroupsIt.hasNext()) {
       CPTFleetSubsetGroup group = depGroupsIt.next();
-      
+
       if (getDepotNameStrFromSubsetGroup(group).equals(depotNameStr)) {
         fleetSubGroupsMatchingDepotStr.add(group);
       }
     }
-    
+
     return fleetSubGroupsMatchingDepotStr;
   }
-  
+
   public List<CPTFleetSubsetGroup> getAllDepotGroups() {
-		return depotGroups;
-	}
-  
+    return depotGroups;
+  }
+
   /**
    * Grab the depotNameStr from the "official" property of CPTFleetSubsetGroup.
    * 
@@ -85,6 +88,11 @@ public class ImporterBusDepotData implements VehicleDepotData {
     return subGroup.getGroupGarage().getFacilityName();
   }
 
-
-
+  public Date getLastUpdatedDate() {
+    return this.lastUpdated;
+  }
+  
+  public void setLastUpdatedDate(Date updateDate) {
+    this.lastUpdated = updateDate;
+  }
 }

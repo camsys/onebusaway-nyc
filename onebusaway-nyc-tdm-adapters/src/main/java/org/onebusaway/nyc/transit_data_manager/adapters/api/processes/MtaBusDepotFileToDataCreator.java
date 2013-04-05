@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 
 import java.io.IOException;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,14 @@ public class MtaBusDepotFileToDataCreator {
     // object to hold/manage it.
     VehicleDepotData data = new ImporterBusDepotData(fleetSSGroups);
 
+    setLastModifiedDate(data, inputFile);
     return data;
+  }
+
+  private void setLastModifiedDate(VehicleDepotData data, File inputFile) {
+    
+    data.setLastUpdatedDate(new Date(inputFile.lastModified()));
+    
   }
 
   public List<MtaBusDepotAssignment> loadDepotAssignments() throws IOException {
