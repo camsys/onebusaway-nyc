@@ -9,8 +9,11 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.CsvSignCodeToDataCreator;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.SignCodeData;
+import org.onebusaway.nyc.transit_data_manager.adapters.output.json.SignMessageFromTcip;
+import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.DestinationSign;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tcip_final_3_0_5_1.CCDestinationSignMessage;
@@ -88,5 +91,23 @@ public class DscResourceTest extends ResourceTest {
     CCDestinationSignMessage msg2 = msgs.get(1);
     assertEquals("WASHINGTON HEIGHTS BROADWAY-168 ST via MADISON AV", msg2.getMessageText());
     assertEquals("MTA NYCT", msg2.getRouteID().getAgencydesignator());
+  }
+  
+  @Test
+  public void testNewLine() throws Exception {
+ 
+    List<CCDestinationSignMessage> msgs = data.getDisplayForCode(3133l);
+    assertNotNull(msgs);
+    assertEquals(1, msgs.size());
+    
+    // verify input has a new line char
+    CCDestinationSignMessage msg1 = msgs.get(0);
+    assertEquals("PLIMPTON\nE.L. GRANT HWY", msg1.getMessageText());
+    assertEquals("MTA NYCT", msg1.getRouteID().getAgencydesignator());
+    
+    // verify TCIP parsing removes it
+    ModelCounterpartConverter<CCDestinationSignMessage, DestinationSign> tcipToJsonConverter = new SignMessageFromTcip();
+    DestinationSign dsc = tcipToJsonConverter.convert(msg1);
+    assertEquals("PLIMPTON E.L. GRANT HWY", dsc.getMessageText());
   }
 }

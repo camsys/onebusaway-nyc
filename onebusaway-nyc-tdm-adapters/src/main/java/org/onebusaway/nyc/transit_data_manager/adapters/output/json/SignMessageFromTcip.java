@@ -13,7 +13,13 @@ public class SignMessageFromTcip implements
 
     sign.setRouteName(input.getRouteID().getRouteName());
     sign.setMessageId(input.getMessageID().getMsgID());
-    sign.setMessageText(input.getMessageText());
+    String msg = input.getMessageText();
+    if (msg != null) {
+    	msg = msg.replace('\n', ' ');
+    	msg = msg.replace('\r', ' ');
+    	msg = msg.replace('\t', ' ');
+    }
+    sign.setMessageText(msg);
     sign.setAgency(input.getRouteID().getAgencydesignator());
 
     return sign;
