@@ -104,13 +104,13 @@ public class IndexAction extends SessionedIndexAction {
       _searchResults = _searchService.getSearchResults(queryString, _resultFactory);
     } else if (commandString != null && commandString.equals("R") && _lastQuery != null && !_lastQuery.isEmpty()) {
       _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
-    } else if(_searchResults != null &&_searchResults.getResultType().equals("StopResult") && commandString != null && getRoutesInSearchResults().contains(commandString)) {
+    } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && getRoutesInSearchResults().contains(commandString)) {
       // We are all set, let the existing stop results be processed given the route command string
-    } else if(_searchResults != null && _searchResults.getResultType().equals("StopResult") && commandString != null && StringUtils.isNumeric(commandString)) {
+    } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && StringUtils.isNumeric(commandString)) {
       // We are all set, let the existing stop results be processed given the number (which is the users choice of stop) command string
-    } else if (queryString == null || queryString.isEmpty() && commandString != null && _searchResults != null && _searchResults.getSuggestions().size() > 0) {
+    } else if ((queryString == null || queryString.isEmpty()) && commandString != null && _searchResults != null && _searchResults.getSuggestions().size() > 0) {
       // We have suggestions with a command string for picking one of them or paginating
-    } else if ((queryString == null || queryString.isEmpty())) {
+    } else if (queryString == null || queryString.isEmpty()) {
       _response = errorResponse("No results.");
       return SUCCESS;
     }
@@ -118,7 +118,7 @@ public class IndexAction extends SessionedIndexAction {
     while(true) {
       if(_searchResults.getMatches().size() > 0) {
         // route identifier search
-        if(_searchResults.getMatches().size() == 1 && _searchResults.getResultType().equals("RouteResult")) {
+        if(_searchResults.getMatches().size() == 1 && "RouteResult".equals(_searchResults.getResultType())) {
           RouteResult route = (RouteResult)_searchResults.getMatches().get(0);
 
           // If we get a route back, but there is no direction information in it,
@@ -158,7 +158,7 @@ public class IndexAction extends SessionedIndexAction {
           }
           
         // paginated service alerts
-        } else if(_searchResults.getResultType().equals("ServiceAlertResult")) {
+        } else if("ServiceAlertResult".equals(_searchResults.getResultType())) {
           if(commandString != null && commandString.equals("N")) {
             _response = serviceAlertResponse(_searchResultsCursor);
           } else {
@@ -167,7 +167,7 @@ public class IndexAction extends SessionedIndexAction {
           break;
           
         // one or more paginated stops
-        } else if(_searchResults.getResultType().equals("StopResult")) {
+        } else if("StopResult".equals(_searchResults.getResultType())) {
           if (commandString != null && commandString.equals("N")) {
             
             _response = directionDisambiguationResponse();
@@ -292,7 +292,7 @@ public class IndexAction extends SessionedIndexAction {
           break;
           
         // an exact match for a location--i.e. location isn't ambiguous
-        } else if(_searchResults.getMatches().size() == 1 && _searchResults.getResultType().equals("GeocodeResult")) {
+        } else if(_searchResults.getMatches().size() == 1 && "GeocodeResult".equals(_searchResults.getResultType())) {
           GeocodeResult geocodeResult = (GeocodeResult)_searchResults.getMatches().get(0);
 
           // we don't do anything with regions--too much information to show via SMS.
@@ -315,13 +315,13 @@ public class IndexAction extends SessionedIndexAction {
       // process suggestions: suggestions can be ambiguous locations, or 
       // multiple routes--e.g. X17 -> X17A,C,J
       if(_searchResults.getSuggestions().size() > 0) {
-        if(_searchResults.getResultType().equals("RouteResult")) {
+        if("RouteResult".equals(_searchResults.getResultType())) {
           _response = didYouMeanResponse();
 
         // if we get a geocode result, the user is choosing among multiple
         // ambiguous addresses. we also recognize a numeric input that
         // represents which ambiguous location number the user wants to use.
-        } else if(_searchResults.getResultType().equals("GeocodeResult")) {
+        } else if("GeocodeResult".equals(_searchResults.getResultType())) {
           if(commandString != null) {
             if(commandString.equals("M")) {
               _response = locationDisambiguationResponse(_searchResultsCursor);
