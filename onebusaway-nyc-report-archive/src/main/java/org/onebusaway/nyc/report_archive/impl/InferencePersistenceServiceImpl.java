@@ -79,13 +79,12 @@ public class InferencePersistenceServiceImpl implements
 
   @Override
   public void persist(ArchivedInferredLocationRecord record, String contents) {
-    try {
       ArchivedInferredLocationRecordAndContents message = new ArchivedInferredLocationRecordAndContents(
           record, contents);
-      preMessages.put(message);
-    } catch (InterruptedException e) {
-      _log.error("interrupted put=", e);
-    }
+      boolean accepted = preMessages.offer(message);
+      if (!accepted) {
+        _log.error("inf record " + record.getUUID() + " dropped, local buffer full!");
+      }      
   }
 
   private void discardRecord(Integer vehicleId, String contents) {

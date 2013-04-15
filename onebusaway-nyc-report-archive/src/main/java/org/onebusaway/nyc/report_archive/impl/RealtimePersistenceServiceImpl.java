@@ -50,10 +50,9 @@ public class RealtimePersistenceServiceImpl implements
   }
 
   public void persist(CcLocationReportRecord record) {
-    try {
-      messages.put(record);
-    } catch (InterruptedException e) {
-      _log.error("interrupted put=", e);
+    boolean accepted = messages.offer(record);
+    if (!accepted) {
+      _log.error("archive record " + record.getUUID() + " dropped, local buffer full!");
     }
   }
 
