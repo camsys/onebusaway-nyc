@@ -161,4 +161,12 @@ public class EmergencyStatusNotificationServiceImpl implements EmergencyStatusNo
     
   }
 
+  public void setInitialized(boolean isInitialized) {
+    this.initialized = isInitialized;
+  }
+  
+  public boolean getInitialized() {
+    return this.initialized;
+  }
+  
 }

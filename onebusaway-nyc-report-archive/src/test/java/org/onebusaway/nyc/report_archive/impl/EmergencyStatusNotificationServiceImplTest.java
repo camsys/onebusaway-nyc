@@ -44,6 +44,7 @@ public class EmergencyStatusNotificationServiceImplTest {
 		
 		service = new EmergencyStatusNotificationServiceImpl();
 		service.setSnsEventPublisher(snsEventPublisher);
+		service.setInitialized(true);
 	}
 	
 	@Test
