@@ -74,6 +74,14 @@ public class RecordValidationServiceImpl implements RecordValidationService {
 				  (!isValueWithinRange(inferredLongitude, -999.999999, 999.999999))) {
 			  isValid =  false;
 		  }
+
+		  //Check inferred trip id
+		  if(StringUtils.isNotBlank(inferredRecord.getTripId())) {
+		    if (inferredRecord.getTripId().length() >= 64) {
+		      log.error("Inferred trip id too long : {}", id);
+		      isValid = false;
+		    }
+		  }
 		  
 		  return isValid;
 	}

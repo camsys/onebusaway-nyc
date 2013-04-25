@@ -100,7 +100,7 @@ public class ArchivingInferenceQueueListenerTask extends
   private void discardRecord(String vehicleId, String contents) {
     _log.error(
         "Discarding inferred record for vehicle : {} as inferred latitude or inferred longitude "
-            + "values are out of range", vehicleId);
+            + "values are out of range, or tripID is too long", vehicleId);
     Exception e = new Exception("Inference record for vehile : " + vehicleId
         + " failed validation." + "Discarding");
     _locationDao.handleException(contents, e, new Date());
