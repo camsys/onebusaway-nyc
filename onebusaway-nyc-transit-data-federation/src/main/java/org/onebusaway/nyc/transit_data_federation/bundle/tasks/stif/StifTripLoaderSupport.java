@@ -174,13 +174,13 @@ public class StifTripLoaderSupport {
     }
     String run = null;
     String[] parts = trip.getId().getId().toUpperCase().split("_");
-    if (parts.length >= 6) {
+    if (parts.length >= 2) {
       //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
       //their current trip id format.
       //for MTA Bus Co, this is not necessary, we hope
       //also works for new NYCT GTFS format.
-      String runRoute = parts[4];
-      String runNumber = parts[5];
+      String runRoute = parts[parts.length-2];
+      String runNumber = parts[parts.length-1];
       run = runRoute + "-" + runNumber;
     }
     routeName = routeName.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
