@@ -174,7 +174,7 @@ public class StifTripLoaderSupport {
     }
     String run = null;
     String[] parts = trip.getId().getId().toUpperCase().split("_");
-    if (parts.length >= 2) {
+    if (parts.length > 2) {
       //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
       //their current trip id format.
       //for MTA Bus Co, this is not necessary, we hope
