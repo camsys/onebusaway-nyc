@@ -104,6 +104,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   }
 
   public synchronized void refreshData() {
+	_log.info("refreshData starting...");
     Set<ServiceDate> keySet = new HashSet<ServiceDate>(_serviceDateToOperatorListMap.keySet());
     for (ServiceDate serviceDate : keySet) {
       HashMap<String, OperatorAssignmentItem> operatorIdToAssignmentItemMap = getOperatorMapForServiceDate(serviceDate);
@@ -111,6 +112,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
         _serviceDateToOperatorListMap.put(serviceDate, operatorIdToAssignmentItemMap);
       }
     }
+    _log.info("refreshData complete");
   }
 
   private class UpdateThread implements Runnable {
@@ -134,6 +136,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     if (_updateTask != null) {
       _updateTask.cancel(true);
     }
+    _log.info("operator assignment refresh interval=" + seconds + "s");
     _updateTask = _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), seconds * 1000);
   }
 
