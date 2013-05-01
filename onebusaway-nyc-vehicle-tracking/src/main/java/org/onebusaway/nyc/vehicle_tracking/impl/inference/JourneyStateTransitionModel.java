@@ -54,7 +54,7 @@ public class JourneyStateTransitionModel {
   }
 
   public static boolean isDetour(BlockStateObservation newState,
-      boolean hasSnappedStates, boolean hasNotMoved, VehicleState parentState) {
+      Boolean hasSnappedStates, boolean hasNotMoved, VehicleState parentState) {
 
     /*
      * We only give detour to states that are supposed to be in-progress,
@@ -62,7 +62,7 @@ public class JourneyStateTransitionModel {
      * 
      */
     if (parentState == null || parentState.getBlockStateObservation() == null
-        || newState.isSnapped() != Boolean.FALSE || hasSnappedStates
+        || newState.isSnapped() != Boolean.FALSE || (hasSnappedStates == Boolean.TRUE)
         || newState.isOnTrip() == Boolean.FALSE
         || MotionModelImpl.hasRunChanged(parentState.getBlockStateObservation(), newState))
       return false;
@@ -117,19 +117,26 @@ public class JourneyStateTransitionModel {
 
     return false;
   }
+  
+  public JourneyState getJourneyState(BlockStateObservation blockState,
+      VehicleState parentState, Observation obs, boolean vehicleNotMoved) {
+    final boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
+    final boolean isDetour = isDetour(blockState,
+        hasSnappedStates, vehicleNotMoved, parentState);
+    return this.getJourneyState(blockState, parentState, obs, vehicleNotMoved, isDetour);
+  }
 
   /*
    * A deterministic journey state logic.<br>
    */
   public JourneyState getJourneyState(BlockStateObservation blockState,
-      VehicleState parentState, Observation obs, boolean vehicleNotMoved) {
+      VehicleState parentState, Observation obs, boolean vehicleNotMoved, boolean isDetour) {
 
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       return JourneyState.atBase();
 
     final boolean isLayoverStopped = isLayoverStopped(vehicleNotMoved, obs,
         parentState);
-    final boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
 
     if (blockState != null) {
       final double distanceAlong = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock();
@@ -150,8 +157,6 @@ public class JourneyStateTransitionModel {
         /*
          * In the middle of a block.
          */
-        final boolean isDetour = isDetour(blockState,
-            hasSnappedStates, vehicleNotMoved, parentState);
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
           return JourneyState.layoverDuring(isDetour);
         } else {

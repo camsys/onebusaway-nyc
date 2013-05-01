@@ -26,6 +26,7 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarServi
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.InstanceState;
+import org.onebusaway.transit_data_federation.services.otp.OTPConfigurationService;
 import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
@@ -45,6 +46,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.vividsolutions.jcs.precision.GeometryPrecisionReducer;
+import com.vividsolutions.jcs.precision.NumberPrecisionReducer;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateArrays;
@@ -53,8 +56,12 @@ import com.vividsolutions.jts.geom.CoordinateSequences;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import com.vividsolutions.jts.index.chain.MonotoneChain;
+import com.vividsolutions.jts.index.chain.MonotoneChainBuilder;
 import com.vividsolutions.jts.index.strtree.SIRtree;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
@@ -62,20 +69,25 @@ import com.vividsolutions.jts.linearref.LocationIndexedLine;
 import com.vividsolutions.jts.noding.IntersectionAdder;
 import com.vividsolutions.jts.noding.MCIndexNoder;
 import com.vividsolutions.jts.noding.NodedSegmentString;
-import com.vividsolutions.jts.noding.SegmentString;
 import com.vividsolutions.jts.noding.SegmentStringDissolver;
 import com.vividsolutions.jts.noding.SegmentStringDissolver.SegmentStringMerger;
 import com.vividsolutions.jts.noding.SegmentStringUtil;
+import com.vividsolutions.jts.noding.snapround.GeometryNoder;
+import com.vividsolutions.jts.noding.snapround.MCIndexSnapRounder;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
+import com.vividsolutions.jts.util.AssertionFailedException;
 
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.graph.build.line.DirectedLineStringGraphGenerator;
+import org.geotools.graph.structure.DirectedEdge;
 import org.geotools.graph.structure.basic.BasicDirectedEdge;
+import org.opengis.referencing.operation.TransformException;
 import org.opentrackingtools.graph.GenericJTSGraph;
 import org.opentrackingtools.graph.InferenceGraphEdge;
 import org.opentrackingtools.paths.PathState;
 import org.opentrackingtools.util.GeoUtils;
+import org.opentripplanner.routing.services.GraphService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +110,39 @@ import javax.annotation.PostConstruct;
 
 @Component
 public class NycTrackingGraph extends GenericJTSGraph {
+
+  /**
+   * A little helper class that holds info about the trip geometries
+   * after they're broken down into non-overlapping/intersecting lines 
+   * (noded lines).
+   * @author bwillard
+   *
+   */
+  public static class SegmentInfo {
+    
+    final private Boolean isSameOrientation;
+    final private AgencyAndId shapeId;
+    final private int geomNum;
+
+    public SegmentInfo(AgencyAndId shapeId, int geomNum, boolean isSameOrientation) {
+      this.shapeId = shapeId;
+      this.isSameOrientation = isSameOrientation;
+      this.geomNum = geomNum;
+    }
+
+    public AgencyAndId getShapeId() {
+      return this.shapeId;
+    }
+
+    public Boolean getIsSameOrientation() {
+      return this.isSameOrientation;
+    }
+
+    public int getGeomNum() {
+      return geomNum;
+    }
+
+  }
 
   public class BlockTripEntryAndDate {
 
@@ -127,8 +172,11 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
   public RunLikelihood runLikelihood = new RunLikelihood();
 
-  // @Autowired
-  // public OBAGraphServiceImpl obaGraph;
+  @Autowired
+  private GraphService _graphService;
+
+  @Autowired
+  private OTPConfigurationService _otpConfigurationService;
 
   @Autowired
   public FederatedTransitDataBundle _bundle;
@@ -168,10 +216,10 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
   public static class TripInfo {
     final private Collection<SIRtree> _entries;
-    final private AgencyAndId _shapeId;
+    final private Set<AgencyAndId> _shapeIds;
 
-    public TripInfo(AgencyAndId shapeId, Collection<SIRtree> entries) {
-      _shapeId = shapeId;
+    public TripInfo(Set<AgencyAndId> geomShapeIds, Collection<SIRtree> entries) {
+      _shapeIds = geomShapeIds;
       _entries = entries;
     }
 
@@ -179,8 +227,8 @@ public class NycTrackingGraph extends GenericJTSGraph {
       return _entries;
     }
 
-    public AgencyAndId getShapeId() {
-      return _shapeId;
+    public Collection<AgencyAndId> getShapeIds() {
+      return _shapeIds;
     }
 
     public Set<BlockTripEntryAndDate> getActiveTrips(double timeFrom,
@@ -203,36 +251,36 @@ public class NycTrackingGraph extends GenericJTSGraph {
     buildGraph();
   }
 
-  // final private Multimap<LineString, AgencyAndId> _geoToShapeId =
-  // HashMultimap.create();
-  //
-  // final private Multimap<AgencyAndId, LineString> _shapeIdToGeo =
-  // HashMultimap.create();
-  //
-  // final private Map<LineString, TripInfo> _geometryToTripInfo =
-  // Maps.newHashMap();
-  final private Multimap<LineString, AgencyAndId> _geoToShapeId = HashMultimap.create();
-
   final private Multimap<AgencyAndId, LineString> _shapeIdToGeo = HashMultimap.create();
 
   final private Map<LineString, TripInfo> _geometryToTripInfo = Maps.newHashMap();
 
   private Random rng;
 
-  private Table<AgencyAndId, LineString, double[]> lengthsAlongShapeMap = HashBasedTable.create();
+  private Table<AgencyAndId, LineString, double[]> _lengthsAlongShapeMap = HashBasedTable.create();
 
   private void buildGraph() {
     try {
       _shapeIdToGeo.clear();
-      _geoToShapeId.clear();
       _geometryToTripInfo.clear();
+      _lengthsAlongShapeMap.clear();
 
-      final GeometryFactory gf = JTSFactoryFinder.getGeometryFactory();
+      final double scale = 1d/7d;  // work within a 7m grid
+      final GeometryFactory gf = //JTSFactoryFinder.getGeometryFactory();
+        new GeometryFactory(new PrecisionModel(scale));
+      final GeometryPrecisionReducer reducer = new GeometryPrecisionReducer(
+          new NumberPrecisionReducer(scale));
+//      final GeometryNoder gn = new GeometryNoder(gf.getPrecisionModel());
 
-      final Map<AgencyAndId, LineString> shapeIdToLines = Maps.newHashMap();
-      final Map<LineString, NodedSegmentString> lineToSegments = Maps.newHashMap();
+      final Map<String, Geometry> shapeIdToLines = Maps.newHashMap();
+      final Map<Geometry, NodedSegmentString> lineToSegments = Maps.newHashMap();
+      // TODO is there an easier/better way to get all these?
+      final Set<AgencyAndId> shapeIds = Sets.newHashSet(); 
       for (final TripEntry trip : _transitGraphDao.getAllTrips()) {
         final AgencyAndId shapeId = trip.getShapeId();
+        shapeIds.add(shapeId);
+      }
+      for (final AgencyAndId shapeId : shapeIds) {
         final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapeId);
         if (shapePoints == null || shapePoints.isEmpty()) {
           _log.debug("shape with no shapepoints: " + shapeId);
@@ -251,24 +299,50 @@ public class NycTrackingGraph extends GenericJTSGraph {
           continue;
         }
 
-        final Geometry lineGeo = gf.createLineString(coords.toCoordinateArray());
+        final Geometry lineGeo = JTSFactoryFinder.getGeometryFactory()
+            .createLineString(coords.toCoordinateArray());
 
         Geometry euclidGeo = JTS.transform(lineGeo,
             GeoUtils.getTransform(lineGeo.getCoordinate()));
-//        euclidGeo = DouglasPeuckerSimplifier.simplify(euclidGeo, 5);
+        euclidGeo = gf.createGeometry(reducer.reduce(euclidGeo));
+        euclidGeo = DouglasPeuckerSimplifier.simplify(euclidGeo, 8);
+        
+        /*
+         * These shapes can overlap themselves (i.e. not simple), so
+         * we need to node them.
+         */
+        int geomNum = 0;
+        double currentLength = 0d;
+        
+        final MCIndexNoder gn = new MCIndexNoder();
+        gn.setSegmentIntersector(new IntersectionAdder(new RobustLineIntersector()));
+        gn.computeNodes(Collections.singletonList(new NodedSegmentString(euclidGeo.getCoordinates(), null)));
+        Coordinate prevCoord = null;
+        for (Object obj: gn.getNodedSubstrings()) {
+          
+          NodedSegmentString nodedSubLine = (NodedSegmentString) obj;
+          
+          if (prevCoord != null)
+            Preconditions.checkState(nodedSubLine.getCoordinate(0).equals(prevCoord));
+          
+          LineString subLine = gf.createLineString(nodedSubLine.getCoordinates());
+          
+          subLine.setUserData(currentLength);
+          
+          nodedSubLine.setData(Lists.newArrayList(new SegmentInfo(shapeId, geomNum, true)));
+          lineToSegments.put(subLine, nodedSubLine);
+          shapeIdToLines.put(shapeId.toString() + "_" + geomNum, subLine);
+          geomNum++;
+          currentLength += subLine.getLength();
+          prevCoord = nodedSubLine.getCoordinates()[nodedSubLine.size() - 1];
+        }
 
-        final NodedSegmentString segments = new NodedSegmentString(
-            euclidGeo.getCoordinates(), Lists.newArrayList(DefaultPair.create(
-                shapeId, true)));
-
-        lineToSegments.put((LineString) euclidGeo, segments);
-        shapeIdToLines.put(shapeId, (LineString)euclidGeo);
       }
-      _log.info("\tshapePoints=" + lineToSegments.size());
+      _log.info("\tnoded ShapePoints=" + lineToSegments.size());
 
+//      final MCIndexSnapRounder noder = new MCIndexSnapRounder(new PrecisionModel(1d));
       final MCIndexNoder noder = new MCIndexNoder();
-      noder.setSegmentIntersector(new IntersectionAdder(
-          new RobustLineIntersector()));
+      noder.setSegmentIntersector(new NycCustomIntersectionAdder(new RobustLineIntersector()));
 
       _log.info("\tcomputing nodes");
       noder.computeNodes(lineToSegments.values());
@@ -281,20 +355,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
        * shape ids as well.  Additionally, we need to know which direction
        * each segment is for each shape id.  
        */
-      final SegmentStringMerger merger = new SegmentStringMerger() {
-        @Override
-        public void merge(SegmentString mergeTarget, SegmentString ssToMerge,
-            boolean isSameOrientation) {
-
-          final List<Pair<AgencyAndId, Boolean>> newPairs = Lists.newArrayList();
-          
-          for (final Pair<AgencyAndId, Boolean> pair : (List<Pair<AgencyAndId, Boolean>>) ssToMerge.getData()) {
-            newPairs.add(DefaultPair.create(pair.getFirst(), pair.getSecond().equals(new Boolean(isSameOrientation))));
-          }
-          newPairs.addAll((List<Pair<AgencyAndId, Boolean>>) mergeTarget.getData());
-          mergeTarget.setData(newPairs);
-        }
-      };
+      final SegmentStringMerger merger = new NycCustomIntersectionAdder.NycCustomSegmentStringMerger();
 
       _log.info("\tdissolving nodes");
       final SegmentStringDissolver dissolver = new SegmentStringDissolver(
@@ -304,28 +365,41 @@ public class NycTrackingGraph extends GenericJTSGraph {
       _log.info("\tdissolved lines=" + dissolver.getDissolved().size());
       for (final Object obj : dissolver.getDissolved()) {
         final NodedSegmentString segments = (NodedSegmentString) obj;
-        final LineString line = gf.createLineString(segments.getCoordinates());
-        for (final Pair<AgencyAndId, Boolean> pair : (List<Pair<AgencyAndId, Boolean>>) segments.getData()) {
-          /*
-           * Mark line as having a reverse
-           */
-          final LineString actualLine;
-          if (!pair.getSecond()) {
-            actualLine = (LineString) line.reverse();
+        if (segments.size() <= 1)
+          continue;
+        LineString line = gf.createLineString(segments.getCoordinates());
+//        line = (LineString) DouglasPeuckerSimplifier.simplify(line, 2);
+        LineString lineReverse = null;
+        if (line.getLength() < 1d)
+          continue;
+        for (final SegmentInfo si : (List<SegmentInfo>) segments.getData()) {
+          LineString orientedSubLine;
+          if (!si.getIsSameOrientation()) {
+            if (lineReverse == null)
+              lineReverse = (LineString) line.reverse();
+            
+            orientedSubLine = lineReverse;
           } else {
-            actualLine = line;
+            orientedSubLine = line;
           }
-          LineString shape = shapeIdToLines.get(pair.getFirst());
-          LengthIndexedLine lil = new LengthIndexedLine(shape);
-          double[] lengthIndices = Preconditions.checkNotNull(lil.indicesOf(actualLine));
-          lengthsAlongShapeMap.put(pair.getFirst(), actualLine, lengthIndices);
+          Geometry sourceLine = shapeIdToLines.get(si.getShapeId() + "_" + si.getGeomNum());
+          LengthIndexedLine lil = new LengthIndexedLine(sourceLine);
+          double[] lengthIndices =  
+              sourceLine.equalsExact(orientedSubLine) ?
+                  new double[] {0d, orientedSubLine.getLength()} : 
+                    Preconditions.checkNotNull(lil.indicesOf(orientedSubLine)); 
+          /*
+           * Adjust for the original segments start length along the shape.
+           */
+          final double distanceToStartOfShape = (Double)sourceLine.getUserData();
+          lengthIndices[0] += distanceToStartOfShape;
+          lengthIndices[1] += distanceToStartOfShape;
           
-          _geoToShapeId.put(actualLine, pair.getFirst());
-          _shapeIdToGeo.put(pair.getFirst(), actualLine);
+          _lengthsAlongShapeMap.put(si.getShapeId(), orientedSubLine, lengthIndices);
+          _shapeIdToGeo.put(si.getShapeId(), orientedSubLine);
         }
       }
-      _log.info("\tresult shapes=" + _geoToShapeId.keySet().size());
-      _log.info("\tresult shapeIds=" + _geoToShapeId.size());
+      _log.info("\tresult shapeIds=" + _shapeIdToGeo.keySet().size());
 
       final Set<AgencyAndId> missingShapeGeoms = Sets.newHashSet();
       _log.info("generating shapeId & blockConfig to block trips map...");
@@ -354,11 +428,16 @@ public class NycTrackingGraph extends GenericJTSGraph {
                 final TripInfo tripInfo = _geometryToTripInfo.get(lineGeo);
                 if (tripInfo == null) {
                   final List<SIRtree> entries = Lists.newArrayList(tree);
-                  _geometryToTripInfo.put(lineGeo, new TripInfo(shapeId,
+                  final Set<AgencyAndId> geomShapeIds = Sets.newHashSet(shapeId);
+                  _geometryToTripInfo.put(lineGeo, new TripInfo(geomShapeIds,
                       entries));
                 } else {
                   tripInfo.getEntries().add(tree);
+                  tripInfo.getShapeIds().add(shapeId);
                 }
+                
+                // DEBUG
+                Preconditions.checkState(this._lengthsAlongShapeMap.contains(shapeId, lineGeo));
               }
             }
           }
@@ -374,111 +453,13 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
       this.createGraphFromLineStrings(_geometryToTripInfo.keySet(), false);
 
-    } catch (final Exception ex) {
+    } catch (final TransformException ex) {
       ex.printStackTrace();
     }
 
     _log.info("done.");
   }
-
-  /*
-   * private void buildGraphTest() { try { _shapeIdToGeo.clear();
-   * _geoToShapeId.clear(); _geometryToTripInfo.clear();
-   * 
-   * final GeometryFactory gf = JTSFactoryFinder.getGeometryFactory();
-   * 
-   * Map<Geometry, Pair<Edge, AgencyAndId>> geoEdgePairMap = Maps.newHashMap();
-   * Map<Geometry, Edge> geoEdgeMap = Maps.newHashMap(); for (TripEntry trip:
-   * _transitGraphDao.getAllTrips()) { AgencyAndId shapeId = trip.getShapeId();
-   * final ShapePoints shapePoints =
-   * _shapePointService.getShapePointsForShapeId(shapeId); if (shapePoints ==
-   * null || shapePoints.isEmpty()) { // _log.warn("shape with no shapepoints: "
-   * + shapeId); continue; }
-   * 
-   * final CoordinateList coords = new CoordinateList(); for (int i = 0; i <
-   * shapePoints.getSize(); ++i) { final Coordinate nextCoord = new
-   * Coordinate(shapePoints.getLats()[i], shapePoints.getLons()[i]);
-   * coords.add(nextCoord, false); }
-   * 
-   * if (coords.isEmpty()) { // _log.warn("shape with no length found: " +
-   * shapeId); continue; }
-   * 
-   * final LineString lineGeo = gf.createLineString(coords.toCoordinateArray());
-   * final Edge edge = new Edge(coords.toCoordinateArray(), new Label(0));
-   * geoEdgeMap.put(lineGeo, edge); geoEdgePairMap.put(lineGeo,
-   * DefaultPair.create(edge, shapeId)); } _log.info("\tshapes=" +
-   * geoEdgeMap.size());
-   * 
-   * LineIntersector li = new RobustLineIntersector(); EdgeSetIntersector esi =
-   * new SimpleMCSweepLineIntersector(); SegmentIntersector si = new
-   * SegmentIntersector(li, true, false);
-   * esi.computeIntersections(Lists.newArrayList(geoEdgeMap.values()), si,
-   * false);
-   * 
-   * for (Pair<Edge, AgencyAndId> edgePair: geoEdgePairMap.values()) {
-   * List<Edge> splitEdges = Lists.newArrayList();
-   * edgePair.getFirst().getEdgeIntersectionList().addSplitEdges(splitEdges);
-   * AgencyAndId shapeId = edgePair.getSecond();
-   * 
-   * Preconditions.checkState(!splitEdges.isEmpty());
-   * 
-   * for (Edge sedge : splitEdges) { final LineString lineGeo =
-   * gf.createLineString(sedge.getCoordinates()); _geoToShapeId.put(lineGeo,
-   * shapeId); } }
-   * 
-   * // Now create the unique exploded geometries to shape map. for
-   * (Entry<LineString, AgencyAndId> entry : _geoToShapeId.entries()) {
-   * _shapeIdToGeo.put(entry.getValue(), entry.getKey()); }
-   * 
-   * geoEdgePairMap = null; geoEdgeMap = null; _log.info("\tnodedShapes=" +
-   * _geoToShapeId.keySet().size());
-   * 
-   * Set<AgencyAndId> missingShapeGeoms = Sets.newHashSet();
-   * _log.info("generating shapeId & blockConfig to block trips map...");
-   * Set<TripInfo> allTripInfo = Sets.newHashSet(); Map<AgencyAndId, TripInfo>
-   * shapeToTripInfo = Maps.newHashMap(); for (final BlockEntry blockEntry :
-   * _transitGraphDao.getAllBlocks()) { for (final BlockConfigurationEntry
-   * blockConfig : blockEntry.getConfigurations()) { for (final BlockTripEntry
-   * blockTrip : blockConfig.getTrips()) { final TripEntry trip =
-   * blockTrip.getTrip(); final AgencyAndId shapeId = trip.getShapeId(); final
-   * AgencyAndId blockId = blockEntry.getId();
-   * 
-   * if (shapeId != null) { // if (shapeId.toString().equals("MTA_BXM20075")) {
-   * // System.out.println(trip.toString() + ", " + blockId.toString()); // } if
-   * (!blockId.hasValues()) { // _log.warn("trip with null block id: " +
-   * blockId); continue; }
-   * 
-   * TripInfo tripInfo = shapeToTripInfo.get(shapeId); if (tripInfo == null) {
-   * List<BlockTripEntry> entries = Lists.newArrayList(blockTrip); tripInfo =
-   * new TripInfo(shapeId, entries); shapeToTripInfo.put(shapeId, tripInfo);
-   * allTripInfo.add(tripInfo); } else { tripInfo.getEntries().add(blockTrip); }
-   * 
-   * for (LineString line : _shapeIdToGeo.get(shapeId)) {
-   * _geometryToTripInfo.put(line, tripInfo); } } } } } shapeToTripInfo = null;
-   * 
-   * if (missingShapeGeoms.size() > 0) { _log.warn(missingShapeGeoms.size() +
-   * " shape(s) with no geom mapping: " + missingShapeGeoms); }
-   * missingShapeGeoms = null;
-   * 
-   * _log.info("\ttripInfo=" + allTripInfo.size());
-   * 
-   * _log.info("\tbuilding trip time indices...");
-   * 
-   * int i = 0; for (TripInfo info : allTripInfo) { if (i % 100 == 0)
-   * _log.info("\t" + i + "/" + allTripInfo.size());
-   * info.setTimeIndex(buildTimeIndex(info.getEntries())); i++; } allTripInfo =
-   * null;
-   * 
-   * final List<LineString> geoms =
-   * Lists.newArrayList(_geometryToTripInfo.keySet());
-   * 
-   * _log.info("\tcreating graph..."); this.createGraphFromLineStrings(geoms);
-   * 
-   * } catch (final Exception ex) { ex.printStackTrace(); }
-   * 
-   * _log.info("done."); }
-   */
-
+  
   private NycTrackingGraph() {
   }
 
@@ -494,22 +475,34 @@ public class NycTrackingGraph extends GenericJTSGraph {
       Preconditions.checkNotNull(blockTripEntry);
 
       BlockTripEntry newBlockTripEntry = blockTripEntry;
-      double[] lengthAlongShape = this.lengthsAlongShapeMap.get(blockTripEntry.getTrip().getShapeId(),
-          pathState.getEdge().getInferenceGraphEdge().getGeometry());
+      AgencyAndId shapeId = blockTripEntry.getTrip().getShapeId();
+      InferenceGraphEdge edge = pathState.getEdge().getInferenceGraphEdge();
+      double[] lengthAlongShape = this._lengthsAlongShapeMap.get(shapeId, edge.getGeometry());
       /*
        * Fix this.  We should know exactly which trip/shape before this, right?
        */
       if (lengthAlongShape == null) {
         newBlockTripEntry = Preconditions.checkNotNull(blockTripEntry.getNextTrip());
-        lengthAlongShape = this.lengthsAlongShapeMap.get(
+        lengthAlongShape = this._lengthsAlongShapeMap.get(
             newBlockTripEntry.getTrip().getShapeId(), 
             pathState.getEdge().getInferenceGraphEdge().getGeometry());
       }
       
-      final double distanceAlongBlock = newBlockTripEntry.getDistanceAlongBlock()
+      double distanceAlongBlock = newBlockTripEntry.getDistanceAlongBlock()
           + lengthAlongShape[0] 
-          + pathState.getEdge().getDistToFromStartOfGraphEdge()
+          + pathState.getEdge().getDistFromStartOfGraphEdge()
           + pathState.getEdgeState().getElement(0);
+      
+      /*
+       * If we simplified the shapes, then distance along block will no longer
+       * be exact, so we need to snap to the shape we intend to be on.
+       */
+      final double totalDistanceAlongBlockForShape = newBlockTripEntry.getDistanceAlongBlock() 
+          + newBlockTripEntry.getTrip().getTotalTripDistance() - 1d;
+      if (distanceAlongBlock > totalDistanceAlongBlockForShape)
+        distanceAlongBlock = totalDistanceAlongBlockForShape;
+      
+      Preconditions.checkState(distanceAlongBlock >= 0d);
 
       final InstanceState instState = new InstanceState(serviceDate);
       final BlockInstance instance = new BlockInstance(
@@ -543,7 +536,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
     final LineString edgeGeom = (LineString) edge.getObject();
     // TODO this null check is temporary. remove when non-route streets are
     // included.
-    final TripInfo tripInfo = Preconditions.checkNotNull(this._geometryToTripInfo.get(edgeGeom.getUserData()));
+    final TripInfo tripInfo = Preconditions.checkNotNull(this._geometryToTripInfo.get(edgeGeom));
     return tripInfo;
   }
 
@@ -628,18 +621,6 @@ public class NycTrackingGraph extends GenericJTSGraph {
     return _extCalendarService;
   }
 
-  // public Map<LineString, TripInfo> getGeometryToTripInfo() {
-  // return _geometryToTripInfo;
-  // }
-  //
-  // public Multimap<LineString, AgencyAndId> getGeoToShapeId() {
-  // return _geoToShapeId;
-  // }
-  //
-  // public Multimap<AgencyAndId, LineString> getShapeIdToGeo() {
-  // return _shapeIdToGeo;
-  // }
-
   public org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState createOldTypeVehicleState(
       @Nonnull
       Observation mtaObs,
@@ -659,7 +640,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
         vehicleHasNotMoved);
 
     final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
-        blockStateObs, oldTypeParent, mtaObs, vehicleHasNotMoved);
+        blockStateObs, oldTypeParent, mtaObs, vehicleHasNotMoved, false);
 
     final org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState newOldTypeState = new org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState(
         motionState, blockStateObs, journeyState, null, mtaObs);
@@ -670,5 +651,43 @@ public class NycTrackingGraph extends GenericJTSGraph {
   public JourneyStateTransitionModel getJourneyStateTransitionModel() {
     return _journeyStateTransitionModel;
   }
+
+  public ShapePointService getShapePointService() {
+    return _shapePointService;
+  }
+
+  public Multimap<AgencyAndId, LineString> getShapeIdToGeo() {
+    return _shapeIdToGeo;
+  }
+
+  public Table<AgencyAndId, LineString, double[]> getLengthsAlongShapeMap() {
+    return _lengthsAlongShapeMap;
+  }
+
+//  @Override
+//  public Collection<InferenceGraphEdge> getOutgoingTransferableEdges(
+//      InferenceGraphEdge infEdge) {
+//    Collection<InferenceGraphEdge> result = Lists.newArrayList();
+//    /*
+//     * Since the intersections aren't known, i.e. the noding is wrong, we use the
+//     * simply disallow looping back on the source unless it's at the end of the original shape.
+//     * FIXME this is a temporary work-around.
+//     */
+//    Map<String, Object> sourceProperties = (Map<String, Object>) ((Geometry)(infEdge.getGeometry().getUserData())).getUserData();
+//    final boolean sourceEdgeAtEnd = (Boolean) sourceProperties.get("isAtEndOfShape");
+//    AgencyAndId shapeId = (AgencyAndId) sourceProperties.get("shapeId");
+//    for (InferenceGraphEdge transferEdge : super.getOutgoingTransferableEdges(infEdge)) {
+//      
+//      Map<String, Object> transferProperties = (Map<String, Object>) ((Geometry)(transferEdge.getGeometry().getUserData())).getUserData();
+//      AgencyAndId transferShapeId = (AgencyAndId) transferProperties.get("shapeId");
+//      if (!sourceEdgeAtEnd 
+//          && shapeId.equals(transferShapeId) 
+//          && transferEdge.getGeometry().reverse().equalsExact(infEdge.getGeometry()))
+//        continue;
+//      else
+//        result.add(transferEdge);
+//    }
+//    return result;
+//  }
 
 }

@@ -159,21 +159,15 @@ public class BlocksFromObservationServiceImpl implements
     synchronized(observation) {
       final Set<BlockStateObservation> potentialBlockStates;
   
-      Set<BlockStateObservation> inProgressStates = _observationCache.getValueForObservation(
-          observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK);
       final Set<BlockStateObservation> notInProgressStates = _observationCache.getValueForObservation(
           observation, EObservationCacheKey.JOURNEY_START_BLOCK);
   
-      if (inProgressStates == null || notInProgressStates == null) {
+      if (notInProgressStates == null) {
         potentialBlockStates = unCachedDeterminePotentialBlockStatesForObservation(observation);
-        inProgressStates = _observationCache.getValueForObservation(observation,
-            EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK);
       } else {
-        potentialBlockStates = Sets.newHashSet(Iterables.concat(inProgressStates,
-            notInProgressStates));
+        potentialBlockStates = Sets.newHashSet(notInProgressStates);
       }
-      if (inProgressStates == null || inProgressStates.isEmpty()
-          || potentialBlockStates.isEmpty())
+      if (potentialBlockStates.isEmpty())
         potentialBlockStates.add(null);
   
       return potentialBlockStates;
@@ -186,22 +180,22 @@ public class BlocksFromObservationServiceImpl implements
     synchronized (observation) {
       final Set<BlockStateObservation> potentialBlockStatesInProgress = Sets.newHashSet();
       final Set<BlockStateObservation> potentialBlockStatesNotInProgress = Sets.newHashSet();
-      final Set<BlockInstance> snappedBlocks = Sets.newHashSet();
-  
-      if (observation.getRunResults().hasRunResults()
-          || observation.hasValidDsc()) {
-        for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
-          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-              bs, observation);
-          potentialBlockStatesInProgress.add(new BlockStateObservation(bs,
-              observation, isAtPotentialLayoverSpot, true));
-          snappedBlocks.add(bs.getBlockInstance());
-        }
-  
-        _observationCache.putValueForObservation(observation,
-            EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK,
-            potentialBlockStatesInProgress);
-      }
+//      final Set<BlockInstance> snappedBlocks = Sets.newHashSet();
+//  
+//      if (observation.getRunResults().hasRunResults()
+//          || observation.hasValidDsc()) {
+//        for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
+//          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+//              bs, observation);
+//          potentialBlockStatesInProgress.add(new BlockStateObservation(bs,
+//              observation, isAtPotentialLayoverSpot, true));
+//          snappedBlocks.add(bs.getBlockInstance());
+//        }
+//  
+//        _observationCache.putValueForObservation(observation,
+//            EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK,
+//            potentialBlockStatesInProgress);
+//      }
   
       /*
        * now, use dsc, run-id and whatnot to determine blocks potentially being
@@ -211,18 +205,22 @@ public class BlocksFromObservationServiceImpl implements
       determinePotentialBlocksForObservation(observation, notSnappedBlocks);
 
       for (final BlockInstance thisBIS : notSnappedBlocks) {
-        final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
+//        final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
         try {
-          final BlockState bs = _blockStateService.getAsState(thisBIS, 0.0);
+          final double schedTime = (observation.getTime() - thisBIS.getServiceDate())/1000d;
+          final BlockState bs = _blockStateService.getScheduledTimeAsState(thisBIS, (int)schedTime);
           final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
               bs, observation);
-          states.add(new BlockStateObservation(bs, observation,
-              isAtPotentialLayoverSpot, false));
+//          states.add(new BlockStateObservation(bs, observation,
+//              isAtPotentialLayoverSpot, false));
+          final BlockStateObservation blockStateObs = new BlockStateObservation(bs, observation,
+              isAtPotentialLayoverSpot, false);
+          potentialBlockStatesNotInProgress.add(blockStateObs);
         } catch (final Exception e) {
           _log.warn(e.getMessage());
           continue;
         }
-        potentialBlockStatesNotInProgress.addAll(states);
+//        potentialBlockStatesNotInProgress.addAll(states);
       }
   
       _observationCache.putValueForObservation(observation,

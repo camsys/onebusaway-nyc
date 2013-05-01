@@ -18,6 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
+import org.onebusaway.geospatial.services.PolylineEncoder;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ReliefState;
@@ -28,6 +29,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
+import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycTrackingGraph;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -57,7 +59,14 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
+import org.geotools.geometry.jts.JTS;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.operation.TransformException;
+import org.opentrackingtools.graph.InferenceGraphEdge;
+import org.opentrackingtools.util.GeoUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
@@ -120,6 +129,9 @@ public class VehicleLocationSimulationController {
   private BlockStatusBeanService _blockStatusBeanService;
   
   private ExtendedCalendarService extCalendarService;
+  
+  @Autowired
+  private NycTrackingGraph _nycTrackingGraph;
   
   public ExtendedCalendarService getCalendarService() {
     return extCalendarService;
@@ -455,8 +467,36 @@ public class VehicleLocationSimulationController {
   
   @RequestMapping(value = "/vehicle-location-simulation!points-for-trip-id.do", method = RequestMethod.GET)
   public ModelAndView pointsForTripJson(@RequestParam(required=true) String tripId) {
-    TripBean trip = _nycTransitDataService.getTrip(tripId);
-    EncodedPolylineBean polyline = _nycTransitDataService.getShapeForId(trip.getShapeId());
+    EncodedPolylineBean polyline;
+    if (tripId.indexOf(AgencyAndIdLibrary.ID_SEPARATOR) < 0) {
+      InferenceGraphEdge edge = _nycTrackingGraph.getInferenceGraphEdge(tripId);
+      if (edge != null) {
+        
+        Geometry geom;
+        try {
+          geom = JTS.transform(edge.getGeometry(), 
+              GeoUtils.getTransform(new Coordinate(40.766069, -73.97721)).inverse());
+          double[] lats = new double[geom.getNumPoints()];
+          double[] lons = new double[geom.getNumPoints()];
+          for (int i = 0; i < lons.length; i++) {
+            lats[i] = geom.getCoordinates()[i].x;
+            lons[i] = geom.getCoordinates()[i].y;
+          }
+          polyline = PolylineEncoder.createEncodings(lats, lons, -1);
+        } catch (MismatchedDimensionException e) {
+          e.printStackTrace();
+          return null;
+        } catch (TransformException e) {
+          e.printStackTrace();
+          return null;
+        }
+      } else {
+        return null;
+      }
+    } else {
+      TripBean trip = _nycTransitDataService.getTrip(tripId);
+      polyline = _nycTransitDataService.getShapeForId(trip.getShapeId());
+    }
     
     return new ModelAndView("json", "points", polyline.getPoints());
   }
@@ -464,6 +504,8 @@ public class VehicleLocationSimulationController {
   @RequestMapping(value = "/vehicle-location-simulation!stops-for-trip-id.do", method = RequestMethod.GET)
   public ModelAndView stopsForTripJson(@RequestParam(required=true) String tripId) {
     
+    if (tripId.indexOf(AgencyAndIdLibrary.ID_SEPARATOR) < 0)
+      return null;
     TripDetailsQueryBean query = new TripDetailsQueryBean();
     query.setTripId(tripId);
     TripDetailsBean trip = _nycTransitDataService.getSingleTripDetails(query);

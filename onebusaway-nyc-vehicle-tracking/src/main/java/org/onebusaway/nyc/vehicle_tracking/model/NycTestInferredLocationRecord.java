@@ -62,6 +62,24 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   @CsvField(optional = true)
   private String dsc;
+  
+  @CsvField(optional = true)
+  private String nmeaGga;
+  
+  @CsvField(optional = true)
+  private String nmeaRmc;
+  
+  @CsvField(optional = true)
+  private String directionDeg;
+  
+  @CsvField(optional = true)
+  private String speed;
+  
+  @CsvField(optional = true)
+  private Double adjLat;
+  
+  @CsvField(optional = true)
+  private Double adjLon;
 
   /*
    * FIXME Important/most useful data to see first
@@ -161,13 +179,16 @@ public class NycTestInferredLocationRecord implements Serializable {
   private String inferredStateCovariance = null;
   
   @CsvField(optional = true, ignore=true)
-  private String inferredEdge = null;
+  private String inferredEdges = null;
 
   @CsvField(optional = true, ignore=true)
   private Coordinate[] inferredPathEdgeGeom;
 
   @CsvField(optional = true, ignore=true)
   private Coordinate[] inferredEdgeGeom;
+
+  @CsvField(optional = true, ignore=true)
+  private String inferredObsCovariance = null;
 
 
   // **************
@@ -548,12 +569,12 @@ public class NycTestInferredLocationRecord implements Serializable {
     this.inferredStateCovariance = stateCovariance;
   }
 
-  public String getInferredEdge() {
-    return inferredEdge;
+  public String getInferredEdges() {
+    return inferredEdges;
   }
 
-  public void setInferredEdge(String inferredEdge) {
-    this.inferredEdge = inferredEdge;
+  public void setInferredEdges(String inferredEdge) {
+    this.inferredEdges = inferredEdge;
   }
 
   public void setInferredPathEdgeGeom(Coordinate[] coordinates) {
@@ -570,5 +591,61 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public Coordinate[] getInferredEdgeGeom() {
     return inferredEdgeGeom;
+  }
+
+  public void setInferredObsCovariance(String inferredObsCovariance) {
+    this.inferredObsCovariance = inferredObsCovariance;
+  }
+
+  public String getInferredObsCovariance() {
+    return inferredObsCovariance;
+  }
+
+  public String getNmeaGga() {
+    return nmeaGga;
+  }
+
+  public void setNmeaGga(String nmeaGga) {
+    this.nmeaGga = nmeaGga;
+  }
+
+  public String getNmeaRmc() {
+    return nmeaRmc;
+  }
+
+  public void setNmeaRmc(String nmeaRmc) {
+    this.nmeaRmc = nmeaRmc;
+  }
+
+  public String getDirectionDeg() {
+    return directionDeg;
+  }
+
+  public void setDirectionDeg(String directionDeg) {
+    this.directionDeg = directionDeg;
+  }
+
+  public String getSpeed() {
+    return speed;
+  }
+
+  public void setSpeed(String speed) {
+    this.speed = speed;
+  }
+
+  public Double getAdjLat() {
+    return adjLat;
+  }
+
+  public void setAdjLat(Double adjLat) {
+    this.adjLat = adjLat;
+  }
+
+  public Double getAdjLon() {
+    return adjLon;
+  }
+
+  public void setAdjLon(Double adjLon) {
+    this.adjLon = adjLon;
   }
 }

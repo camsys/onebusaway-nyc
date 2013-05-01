@@ -278,12 +278,14 @@ OBA.Debug = function() {
           	schedDeviation: "NA",
           	other: "",
           	inferredLatLon: "",
+          	adjLatLon: "",
           	timestamp: "",
           	inferredSchedTime: "",
           	inferredDAB: "",
-          	inferredMean: "",
-          	inferredCov: "",
-          	inferredEdge: "",
+          	inferredStateMean: "",
+          	inferredStateCov: "",
+          	inferredObsCov: "",
+          	inferredEdges: "",
           	toString: function () {
           		return "record #: " + this.recordNum + "<br/>"
           		 + "timestamp:" + this.timestampAsDate + "<br/>"
@@ -296,10 +298,12 @@ OBA.Debug = function() {
           		 + "inferredSchedTime: " + this.inferredSchedTime + "<br/>"
           		 + "schedDeviation: " + Math.round(this.schedDeviation) + " (mins)<br/>"
           		 + "inferredLatLon: " + this.inferredLatLon + "<br/>"
+          		 + "adjLatLon: " + this.adjLatLon + "<br/>"
           		 + "inferredDAB: " + this.inferredDAB + "<br/>"
-          		 + "inferredMean: " + this.inferredMean + "<br/>"
-          		 + "inferredCov: " + this.inferredCov + "<br/>"
-          		 + "inferredEdge: " + this.inferredEdge + "<br/>"
+          		 + "inferredStateMean: " + this.inferredStateMean + "<br/>"
+          		 + "inferredStateCov: " + this.inferredStateCov + "<br/>"
+          		 + "inferredObsCov: " + this.inferredObsCov + "<br/>"
+          		 + "inferredEdges: " + this.inferredEdges + "<br/>"
           		 + this.other;
           	}
           };
@@ -309,6 +313,8 @@ OBA.Debug = function() {
           var serviceDate = null;
           var inferredLat = null;
           var inferredLon = null;
+          var adjLat = null;
+          var adjLon = null;
           var infEdgeGeom = null;
           var pathEdgeGeom = null;
           
@@ -337,7 +343,7 @@ OBA.Debug = function() {
 							} else if (property === "inferredStatus") {
 								markerText.status = value;
 								if (value.indexOf("deviated") != -1) {
-									icon_url = 'http://query.mtabuscis.net/tools/img/marker-red-center.png';
+									icon_url = 'http://steeplemedia.com/images/markers/markerAqua.png';
 								}
 							} else if (property === "inferredDsc") {
 								markerText.inferredDsc = value;
@@ -346,11 +352,17 @@ OBA.Debug = function() {
 							} else if (property === "inferredRunId") {
 								markerText.inferredRunId = value;
 							} else if (property === "inferredStateMean") {
-								markerText.inferredMean = value;
+								markerText.inferredStateMean = value;
 							} else if (property === "inferredStateCovariance") {
-								markerText.inferredCov = value;
-							} else if (property === "inferredEdge") {
-								markerText.inferredEdge = "<a name='edge' href='#'>" + value + "</a>";
+								markerText.inferredStateCov = value;
+							} else if (property === "inferredObsCovariance") {
+								markerText.inferredObsCov = value;
+							} else if (property === "adjLat") {
+								adjLat = value;
+							} else if (property === "adjLon") {
+								adjLon = value;
+							} else if (property === "inferredEdges") {
+								markerText.inferredEdges = "<a name='edge' href='#'>" + value + "</a>";
 							} else if (property === "inferredEdgeGeom") {
 								infEdgeGeom = value;
 							} else if (property === "inferredPathEdgeGeom") {
@@ -394,6 +406,19 @@ OBA.Debug = function() {
 	          markerText.inferredLatLon = "<a name='inferredLoc' href='#'>" + inferredLat + "," + inferredLon + "</a>";
 	          inferredMarker.display(false);
 			      inferredMarker.displayed = false;
+          } 
+          
+	        var adjMarker = null; 
+          if (adjLon !== null && adjLat !== null) {
+	          var adjPoint = new OpenLayers.LonLat(adjLon, adjLat);
+		        var adjProj = new OpenLayers.Projection("EPSG:4326");
+	          adjPoint.transform(adjProj, map.getProjectionObject());
+	          var adjIcon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker-gold.png',size,offset);
+	          adjMarker = new OpenLayers.Marker(adjPoint, adjIcon);
+	          inferredMarkers.addMarker(adjMarker);
+	          markerText.adjLatLon = "<a name='adjLoc' href='#'>" + adjLat + "," + adjLon + "</a>";
+	          adjMarker.display(false);
+			      adjMarker.displayed = false;
           } 
           
           
@@ -458,15 +483,21 @@ OBA.Debug = function() {
 		          	}
 							}
 	          });
+	          
+	          var adjLink = jQuery(popup.contentDiv).find("a[name='adjLoc']");
+	          adjLink.click(function(e) {
+	          	e.preventDefault();
+							if (adjMarker !== null) {
+		          	if (adjMarker.displayed) {
+			          	adjMarker.display(false);
+			          	adjMarker.displayed = false;
+		          	} else {
+			          	adjMarker.display(true);
+			          	adjMarker.displayed = true;
+		          	}
+							}
+	          });
 	
-// if (marker.inferredMarker !== null) {
-// if (marker.inferredMarker.onScreen()) {
-// marker.inferredMarker.display(false);
-// } else {
-// marker.inferredMarker.display(true);
-// }
-// }
-          	
             OpenLayers.Event.stop(event);
 	        });
 		            

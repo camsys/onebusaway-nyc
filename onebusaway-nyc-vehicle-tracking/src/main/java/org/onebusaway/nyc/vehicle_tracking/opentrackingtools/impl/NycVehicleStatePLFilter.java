@@ -6,18 +6,25 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 
 import com.google.common.base.Preconditions;
 
+import gov.sandia.cognition.learning.algorithm.IncrementalLearner;
 import gov.sandia.cognition.math.MutableDouble;
+import gov.sandia.cognition.statistics.ClosedFormComputableDistribution;
 import gov.sandia.cognition.statistics.DataDistribution;
 
 import org.opentrackingtools.VehicleStateInitialParameters;
 import org.opentrackingtools.VehicleStatePLFilter;
 import org.opentrackingtools.distributions.CountedDataDistribution;
 import org.opentrackingtools.distributions.DeterministicDataDistribution;
+import org.opentrackingtools.distributions.OnOffEdgeTransDistribution;
+import org.opentrackingtools.estimators.OnOffEdgeTransitionEstimatorPredictor;
 import org.opentrackingtools.graph.InferenceGraph;
+import org.opentrackingtools.graph.InferenceGraphEdge;
 import org.opentrackingtools.model.SimpleBayesianParameter;
 import org.opentrackingtools.model.VehicleStateDistribution;
+import org.opentrackingtools.updater.VehicleStatePLPathGeneratingUpdater;
 import org.opentrackingtools.updater.VehicleStatePLUpdater;
 import org.opentrackingtools.util.model.MutableDoubleCount;
+import org.opentrackingtools.util.model.TransitionProbMatrix;
 
 import java.util.Map.Entry;
 import java.util.Random;
@@ -30,9 +37,11 @@ public class NycVehicleStatePLFilter extends VehicleStatePLFilter<Observation, N
   public NycVehicleStatePLFilter(Observation observation,
       NycTrackingGraph trackingGraph,
       VehicleStateInitialParameters initialParams, Boolean isDebug, Random rng) {
-    super(observation, trackingGraph, 
-        new NycVehicleStateDistribution.NycVehicleStateDistributionFactory()
-        , initialParams, isDebug, rng);
+    super(observation, trackingGraph, new NycVehicleStateDistribution.NycVehicleStateDistributionFactory(),
+        initialParams, isDebug, rng);
+    this.setUpdater(new VehicleStatePLPathGeneratingUpdater<Observation, NycTrackingGraph>(observation, inferredGraph, 
+        vehicleStateFactory,
+        initialParams, rng));
   }
 
   public Long getLastProcessedTime() {
@@ -112,6 +121,21 @@ public class NycVehicleStatePLFilter extends VehicleStatePLFilter<Observation, N
     }
     
     return updatedPriorPredictiveDist;
+  }
+
+  public void setInitialObservation(Observation observation) {
+    ((VehicleStatePLPathGeneratingUpdater<Observation, NycTrackingGraph>) this.updater).setInitialObservation(observation);
+  }
+
+  /**
+   * We expect to be "off-road" quite a bit, so we can get rid of 
+   * updates on the transitions.
+   */
+  @Override
+  protected OnOffEdgeTransitionEstimatorPredictor getEdgeTransitionEstimatorPredictor(
+      VehicleStateDistribution<Observation> updatedState,
+      InferenceGraphEdge graphEdge) {
+    return new NycEdgeTransitionEstimatorPredictor(updatedState, graphEdge);
   }
 
 }

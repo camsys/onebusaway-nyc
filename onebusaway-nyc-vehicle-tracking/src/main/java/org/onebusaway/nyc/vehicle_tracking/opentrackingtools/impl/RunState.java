@@ -133,11 +133,13 @@ public class RunState extends AbstractCloneableSerializable implements Comparabl
   protected Observation obs;
   protected JourneyState journeyState;
   protected RunStateEdgePredictiveResults likelihoodInfo;
+  protected boolean isDetoured;
 
   public RunState(NycTrackingGraph graph, Observation obs,
       NycVehicleStateDistribution nycVehicleState,
       BlockStateObservation blockStateObs, boolean vehicleHasNotMoved,
-      VehicleState oldTypeParent) {
+      VehicleState oldTypeParent, boolean isDetoured) {
+    this.isDetoured = isDetoured;
     this.nycVehicleState = nycVehicleState;
     this.blockStateObs = blockStateObs;
     this.obs = obs;
@@ -153,16 +155,22 @@ public class RunState extends AbstractCloneableSerializable implements Comparabl
   public VehicleState getVehicleState() {
     if (this.oldTypeVehicleState == null) {
 
-      final CoordinatePoint point;
-      if (this.blockStateObs != null) {
-        point = this.blockStateObs.getBlockState().getBlockLocation().getLocation();
+      final long lastInMotionTime; 
+      final CoordinatePoint lastInMotionLoc;
+      if (this.vehicleHasNotMoved && this.oldTypeParent != null) {
+        lastInMotionTime = this.oldTypeParent.getMotionState().getLastInMotionTime();
+        lastInMotionLoc = this.oldTypeParent.getMotionState().getLastInMotionLocation(); 
       } else {
-        point = this.obs.getLocation();
+        lastInMotionTime = this.obs.getTime();
+        if (this.blockStateObs != null) {
+          lastInMotionLoc = this.blockStateObs.getBlockState().getBlockLocation().getLocation();
+        } else {
+          lastInMotionLoc = this.obs.getLocation(); 
+        }
       }
 
-      final MotionState motionState = new MotionState(this.obs.getTime(),
-          point, this.vehicleHasNotMoved);
-
+      final MotionState motionState = new MotionState(lastInMotionTime,
+          lastInMotionLoc, this.vehicleHasNotMoved);
       this.oldTypeVehicleState = new org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState(
           motionState, this.blockStateObs, this.getJourneyState(), null,
           this.obs);
@@ -200,8 +208,11 @@ public class RunState extends AbstractCloneableSerializable implements Comparabl
         return result;
       nullStateLogLikelihood = graph.getNullStateLikelihood().likelihood(
           context).getLogProbability();
+      if (this.isDetoured)
+        nullStateLogLikelihood += Math.log(0.05);
+      else
+        nullStateLogLikelihood += Math.log(0.95);
       result.setNullStateLogLikelihood(nullStateLogLikelihood);
-      // result.setNullStateLogLikelihood(0d);
     } catch (final BadProbabilityParticleFilterException e) {
       e.printStackTrace();
     }
@@ -213,7 +224,7 @@ public class RunState extends AbstractCloneableSerializable implements Comparabl
     if (this.journeyState == null) {
       this.journeyState = graph.getJourneyStateTransitionModel().getJourneyState(
           this.blockStateObs, this.oldTypeParent, this.obs,
-          this.vehicleHasNotMoved);
+          this.vehicleHasNotMoved, this.isDetoured);
     }
     return this.journeyState;
   }
@@ -323,5 +334,11 @@ public class RunState extends AbstractCloneableSerializable implements Comparabl
     clone.oldTypeVehicleState = this.oldTypeVehicleState;
     clone.vehicleHasNotMoved = this.vehicleHasNotMoved;
     return clone;
+  }
+
+  public void setVehicleHasNotMoved(boolean b) {
+    this.vehicleHasNotMoved = b;
+    this.journeyState = null;
+    this.oldTypeVehicleState = null;
   }
 }

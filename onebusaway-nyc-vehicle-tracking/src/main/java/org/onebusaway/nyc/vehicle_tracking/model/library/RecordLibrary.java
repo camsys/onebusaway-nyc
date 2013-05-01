@@ -22,6 +22,8 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
+import com.google.common.base.Strings;
+
 import org.apache.commons.lang.StringUtils;
 
 public class RecordLibrary {
@@ -103,6 +105,12 @@ public class RecordLibrary {
       if (runInfo.length > 1)
         vlr.setRunNumber(runInfo[1]);
     }
+    vlr.setGga(record.getNmeaGga());
+    vlr.setRmc(record.getNmeaRmc());
+    if (!Strings.isNullOrEmpty(record.getDirectionDeg()))
+      vlr.setBearing(Double.parseDouble(record.getDirectionDeg()));
+    if (!Strings.isNullOrEmpty(record.getSpeed()))
+      vlr.setSpeed(Short.parseShort(record.getSpeed()));
 
     return vlr;
   }

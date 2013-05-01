@@ -73,11 +73,13 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 			for (int i = 0; i < length; i++) {
 				String key = part.substring(0, i+1).toLowerCase();
 				List<String> suggestion = suggestions.get(key);
-				if (suggestion == null) {
-					suggestion = new ArrayList<String>();
+				synchronized(suggestions) {
+  				if (suggestion == null) {
+  					suggestion = new ArrayList<String>();
+  				}
+  				suggestion.add(string);
+  				Collections.sort(suggestion);
 				}
-				suggestion.add(string);
-				Collections.sort(suggestion);
 				suggestions.put(key, suggestion);
 			}
 		}

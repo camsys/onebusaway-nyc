@@ -403,7 +403,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       newEdge = sampleEdgeFromProposal(newParentBlockStateObs, proposalEdge,
           obs, parentState.getJourneyState().getPhase(), vehicleNotMoved);
       journeyState = _journeyStateTransitionModel.getJourneyState(
-          newEdge.getValue(), parentState, obs, vehicleNotMoved);
+          newEdge.getValue(), parentState, obs, vehicleNotMoved, false);
 
       final VehicleState newState = new VehicleState(motionState,
           newEdge.getValue(), journeyState, null, obs);
@@ -453,7 +453,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       final MotionState motionState = updateMotionState(parentState, obs,
           vehicleNotMoved);
       final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
-          null, null, obs, vehicleNotMoved);
+          null, null, obs, vehicleNotMoved, false);
       final VehicleState nullState = new VehicleState(motionState, null,
           journeyState, null, obs);
       final Context context = new Context(parentState, nullState, obs);

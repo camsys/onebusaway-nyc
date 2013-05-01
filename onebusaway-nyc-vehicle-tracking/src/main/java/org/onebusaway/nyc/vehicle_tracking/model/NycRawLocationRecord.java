@@ -50,7 +50,8 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
 
   private double longitude;
 
-  private double bearing;
+  @CsvField(name = "bearing", optional = true)
+  private Double bearing = null;
 
   @CsvField(name = "destinationsigncode")
   private String destinationSignCode;
@@ -84,8 +85,8 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
   @CsvField(name = "rawdata", optional = true)
   private String rawData;
 
-  @CsvField(name = "speed")
-  private short speed;
+  @CsvField(name = "speed", optional = true)
+  private Short speed = null;
 
   public void setId(long id) {
     this.id = id;
@@ -131,11 +132,11 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
     return longitude;
   }
 
-  public void setBearing(double bearing) {
+  public void setBearing(Double bearing) {
     this.bearing = bearing;
   }
 
-  public double getBearing() {
+  public Double getBearing() {
     return bearing;
   }
 
@@ -240,11 +241,11 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
         new Date(timeReceived)).toString();
   }
 
-  public void setSpeed(short speed) {
+  public void setSpeed(Short speed) {
     this.speed = speed;
   }
 
-  public short getSpeed() {
+  public Short getSpeed() {
     return speed;
   }
 
@@ -260,15 +261,14 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    long temp;
-    temp = Double.doubleToLongBits(bearing);
-    result = prime * result + (int) (temp ^ (temp >>> 32));
+    result = prime * result + ((bearing == null) ? 0 : bearing.hashCode());
     result = prime * result
         + ((destinationSignCode == null) ? 0 : destinationSignCode.hashCode());
     result = prime * result + ((deviceId == null) ? 0 : deviceId.hashCode());
     result = prime * result + (emergencyFlag ? 1231 : 1237);
     result = prime * result + ((gga == null) ? 0 : gga.hashCode());
     result = prime * result + (int) (id ^ (id >>> 32));
+    long temp;
     temp = Double.doubleToLongBits(latitude);
     result = prime * result + (int) (temp ^ (temp >>> 32));
     temp = Double.doubleToLongBits(longitude);
@@ -280,7 +280,7 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
     result = prime * result + ((runNumber == null) ? 0 : runNumber.hashCode());
     result = prime * result
         + ((runRouteId == null) ? 0 : runRouteId.hashCode());
-    result = prime * result + speed;
+    result = prime * result + ((speed == null) ? 0 : speed.hashCode());
     result = prime * result + (int) (time ^ (time >>> 32));
     result = prime * result + (int) (timeReceived ^ (timeReceived >>> 32));
     result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
@@ -299,27 +299,12 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
     if (!(obj instanceof NycRawLocationRecord)) {
       return false;
     }
-    final NycRawLocationRecord other = (NycRawLocationRecord) obj;
-    if (time != other.time) {
-      return false;
-    }
-    if (timeReceived != other.timeReceived) {
-      return false;
-    }
-    if (vehicleId == null) {
-      if (other.vehicleId != null) {
+    NycRawLocationRecord other = (NycRawLocationRecord) obj;
+    if (bearing == null) {
+      if (other.bearing != null) {
         return false;
       }
-    } else if (!vehicleId.equals(other.vehicleId)) {
-      return false;
-    }
-    if (Double.doubleToLongBits(latitude) != Double.doubleToLongBits(other.latitude)) {
-      return false;
-    }
-    if (Double.doubleToLongBits(longitude) != Double.doubleToLongBits(other.longitude)) {
-      return false;
-    }
-    if (Double.doubleToLongBits(bearing) != Double.doubleToLongBits(other.bearing)) {
+    } else if (!bearing.equals(other.bearing)) {
       return false;
     }
     if (destinationSignCode == null) {
@@ -347,6 +332,12 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
       return false;
     }
     if (id != other.id) {
+      return false;
+    }
+    if (Double.doubleToLongBits(latitude) != Double.doubleToLongBits(other.latitude)) {
+      return false;
+    }
+    if (Double.doubleToLongBits(longitude) != Double.doubleToLongBits(other.longitude)) {
       return false;
     }
     if (operatorId == null) {
@@ -384,7 +375,17 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
     } else if (!runRouteId.equals(other.runRouteId)) {
       return false;
     }
-    if (speed != other.speed) {
+    if (speed == null) {
+      if (other.speed != null) {
+        return false;
+      }
+    } else if (!speed.equals(other.speed)) {
+      return false;
+    }
+    if (time != other.time) {
+      return false;
+    }
+    if (timeReceived != other.timeReceived) {
       return false;
     }
     if (uuid == null) {
@@ -392,6 +393,13 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
         return false;
       }
     } else if (!uuid.equals(other.uuid)) {
+      return false;
+    }
+    if (vehicleId == null) {
+      if (other.vehicleId != null) {
+        return false;
+      }
+    } else if (!vehicleId.equals(other.vehicleId)) {
       return false;
     }
     return true;
@@ -413,9 +421,9 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
         arg0.rawData, Ordering.natural().nullsLast()).compare(operatorId,
         arg0.operatorId, Ordering.natural().nullsLast()).compare(id, arg0.id).compare(
         gga, arg0.gga, Ordering.natural().nullsLast()).compare(emergencyFlag,
-        arg0.emergencyFlag).compare(bearing, arg0.bearing).compare(deviceId,
+        arg0.emergencyFlag).compare(bearing, arg0.bearing, Ordering.natural().nullsLast()).compare(deviceId,
         arg0.deviceId, Ordering.natural().nullsLast()).compare(uuid, arg0.uuid,
-        Ordering.natural().nullsLast()).compare(speed, arg0.speed).result();
+        Ordering.natural().nullsLast()).compare(speed, arg0.speed, Ordering.natural().nullsLast()).result();
 
     return res;
   }

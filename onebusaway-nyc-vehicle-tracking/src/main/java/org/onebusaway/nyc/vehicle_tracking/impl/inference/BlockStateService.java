@@ -158,7 +158,7 @@ public class BlockStateService {
       RefreshableResources.TRANSIT_GRAPH, 
       RefreshableResources.NARRATIVE_DATA})
   public void setup() throws IOException, ClassNotFoundException {
-    buildShapeSpatialIndex();
+//    buildShapeSpatialIndex();
   }
 
   @Autowired

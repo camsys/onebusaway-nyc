@@ -93,6 +93,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
@@ -125,11 +126,11 @@ public class VehicleInferenceInstance {
   private VehicleStateInitialParameters _initialParams =
       new VehicleStateInitialParameters(
           null,
-          VectorFactory.getDefault().createVector2D(100d, 100d), Integer.MAX_VALUE,
-          VectorFactory.getDefault().createVector1D(6.25e-4), Integer.MAX_VALUE,
-          VectorFactory.getDefault().createVector2D(6.25e-4, 6.25e-4), Integer.MAX_VALUE,
-          VectorFactory.getDefault().createVector2D(15d, 95d),
-          VectorFactory.getDefault().createVector2D(95d, 15d), 
+          VectorFactory.getDefault().createVector2D(500d, 500d), 20,
+          VectorFactory.getDefault().createVector1D(6.25e-3), Integer.MAX_VALUE,
+          VectorFactory.getDefault().createVector2D(6.25e-3, 6.25e-3), Integer.MAX_VALUE,
+          VectorFactory.getDefault().createVector2D(1d, 1d),
+          VectorFactory.getDefault().createVector2D(1d, 1d), 
           25, 30, 0l);
   
   private DestinationSignCodeService _destinationSignCodeService;
@@ -374,7 +375,7 @@ public class VehicleInferenceInstance {
      */
     if (observation.getPreviousObservation() != null) {
       if (_particles == null || _particles.isEmpty() || !hasPrevPrevObs) {
-        _particleFilter.getUpdater().setInitialObservation(observation);
+        _particleFilter.setInitialObservation(observation);
         _particles = _particleFilter.createInitialLearnedObject();
       } else {
         _particleFilter.update(_particles, observation);
@@ -479,7 +480,7 @@ public class VehicleInferenceInstance {
 
     if (_particles == null)
       return null;
-    final NycVehicleStateDistribution state = getAverageVehicleState();
+    final NycVehicleStateDistribution state = getAverageVehicleState().clone();
     final RunState runState = state.getRunStateParam().getValue();
     final Observation obs = state.getObservation();
     final BlockStateObservation blockState = runState.getBlockStateObs();
@@ -503,19 +504,26 @@ public class VehicleInferenceInstance {
       // distance along trip
       final BlockTripEntry activeTrip = blockLocation.getActiveTrip();
       final double distanceAlongTrip = blockLocation.getDistanceAlongBlock() - activeTrip.getDistanceAlongBlock();
+      Preconditions.checkState(distanceAlongTrip >= 0d);
       record.setDistanceAlongTrip(distanceAlongTrip);
     }
 
     return record;
   }
+  
 
+  /**
+   * To obtain our reported inference state, we choose the mode of the marginal runs,
+   * then the mode of the marginal states for that run.
+   * @return
+   */
   private NycVehicleStateDistribution getAverageVehicleState() {
     
     if (currentAvgVehicleState != null)
       return currentAvgVehicleState;
     
     prevAvgVehicleState = currentAvgVehicleState;
-    Multimap<String, NycVehicleStateDistribution> runToStates = HashMultimap.create();
+    Map<String, DataDistribution<NycVehicleStateDistribution>> runToStates = Maps.newHashMap();
     DataDistribution<String> runDist = new DefaultDataDistribution<String>();
     for (java.util.Map.Entry<VehicleStateDistribution<Observation>, ? extends Number> entry : _particles.asMap().entrySet()) {
       MutableDoubleCount countEntry = (MutableDoubleCount) entry.getValue();
@@ -526,17 +534,18 @@ public class VehicleInferenceInstance {
       } else {
         runId = "none";
       }
-      runToStates.put(runId, vehicleState);
+      DataDistribution<NycVehicleStateDistribution> marginalDist = runToStates.get(runId);
+      if (marginalDist == null) {
+        marginalDist = new DefaultDataDistribution<NycVehicleStateDistribution>();
+        runToStates.put(runId, marginalDist);
+      }
+      marginalDist.increment(vehicleState, countEntry.count);
       runDist.increment(runId, countEntry.count);
     }
     
     final String sampledRun = runDist.getMaxValueKey();//.sample(this._particleFilter.getRandom());
-    Collection<NycVehicleStateDistribution> states = runToStates.get(sampledRun);
-    if (states.size() == 1)
-      currentAvgVehicleState = Iterables.getOnlyElement(states);
-    else
-      currentAvgVehicleState = Iterables.get(states, this._particleFilter.getRandom().nextInt(
-          states.size() - 1));
+    DataDistribution<NycVehicleStateDistribution> marginalRunDist = runToStates.get(sampledRun);
+    currentAvgVehicleState = marginalRunDist.getMaxValueKey();
     
 //    final NycVehicleStateDistribution naiveBestState = (NycVehicleStateDistribution)_particles.getMaxValueKey();
     
@@ -548,7 +557,7 @@ public class VehicleInferenceInstance {
 
     if (_particles == null)
       return null;
-    final NycVehicleStateDistribution state = getAverageVehicleState();;
+    final NycVehicleStateDistribution state = getAverageVehicleState().clone();
     final RunState runState = state.getRunStateParam().getValue();
     final Observation obs = (Observation) state.getObservation();
     final BlockStateObservation blockState = runState.getBlockStateObs();
@@ -732,7 +741,7 @@ public class VehicleInferenceInstance {
     if (_particles == null)
       return null;
     
-    final NycVehicleStateDistribution state = getAverageVehicleState();;
+    final NycVehicleStateDistribution state = getAverageVehicleState().clone();
     final RunState runState = state.getRunStateParam().getValue();
     final Observation obs = (Observation) state.getObservation();
     final BlockStateObservation blockState = runState.getBlockStateObs();
@@ -742,6 +751,10 @@ public class VehicleInferenceInstance {
     final NycRawLocationRecord nycRecord = obs.getRecord();
 
     final NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
+    if (state.getObservation().getAdjustedGps() != null) {
+      record.setAdjLat(state.getObservation().getAdjustedGps().getLat());
+      record.setAdjLon(state.getObservation().getAdjustedGps().getLon());
+    }
     record.setLat(location.getLat());
     record.setLon(location.getLon());
     record.setTimestamp(obs.getTime());
@@ -771,11 +784,12 @@ public class VehicleInferenceInstance {
           obs.getObsProjected().getTransform());
       record.setInferredBlockLat(stateMeanGps.x);
       record.setInferredBlockLon(stateMeanGps.y);
-      record.setInferredStateMean(pathStateDistribution.getMotionDistribution().toString());
+      record.setInferredStateMean(pathStateDistribution.getMotionDistribution().getMean().toString());
       record.setInferredStateCovariance(pathStateDistribution.getCovariance().toString());
-      record.setInferredEdge(pathStateDistribution.getPathState().getEdge().getInferenceGraphEdge()
-          .getEdgeId());
+      record.setInferredObsCovariance(state.getObservationCovarianceParam().getValue().toString());
+      record.setInferredEdges("none");
       if (pathStateDistribution.getPathState().isOnRoad()) {
+        record.setInferredEdges(pathStateDistribution.getPathState().getPath().getEdgeIds().toString());
         MathTransform transform = state.getObservation().getObsProjected().getTransform();
         Geometry infEdgeGeom = JTS.transform(pathStateDistribution.getPathState().getEdge().getInferenceGraphEdge()
             .getGeometry(), transform.inverse());

@@ -118,7 +118,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private int _skippedUpdateLogCounter = 0;
 
-  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 5);
+  private int _numberOfProcessingThreads = 1;//2 + (Runtime.getRuntime().availableProcessors() * 5);
 
   private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = 
 		  new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
@@ -240,7 +240,7 @@ public class VehicleLocationInferenceServiceImpl implements
     if (bearing != null) {
       final Integer degrees = bearing.getCdeg();
       if (degrees != null)
-        r.setBearing(degrees);
+        r.setBearing(new Double(degrees));
     }
 
     r.setSpeed(message.getSpeed());
@@ -598,7 +598,7 @@ public class VehicleLocationInferenceServiceImpl implements
     			}
     		}
     	} catch (final ProjectionException e) {
-    		// discard this one
+    		_log.warn("Error processing new location record for inference on vehicle " + _vehicleId + ": ", e);        
     	} catch (SecurityException e) {
     		_log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", e);        
     		resetVehicleLocation(_vehicleId);

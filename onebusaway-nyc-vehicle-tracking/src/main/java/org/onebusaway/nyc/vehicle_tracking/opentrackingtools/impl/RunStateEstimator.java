@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
@@ -18,6 +19,7 @@ import gov.sandia.cognition.learning.algorithm.AbstractBatchAndIncrementalLearne
 import gov.sandia.cognition.learning.algorithm.IncrementalLearner;
 import gov.sandia.cognition.math.LogMath;
 import gov.sandia.cognition.math.MutableDouble;
+import gov.sandia.cognition.math.matrix.Vector;
 import gov.sandia.cognition.statistics.ComputableDistribution;
 import gov.sandia.cognition.statistics.DataDistribution;
 import gov.sandia.cognition.statistics.bayesian.BayesianEstimatorPredictor;
@@ -61,7 +63,6 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
   
   private final NycTrackingGraph nycGraph;
   private final NycVehicleStateDistribution nycVehicleStateDist;
-  private final VehicleState prevOldTypeVehicleState;
   private final Observation obs;
   private final Random rng;
   
@@ -81,7 +82,6 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     this.obs = obs;
     this.nycGraph = graph;
     this.nycVehicleStateDist = nycVehicleStateDist;
-    this.prevOldTypeVehicleState = prevOldTypeVehicleState;
     this.rng = rng;
   }
 
@@ -105,6 +105,10 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     
     Map<RunState, MutableDoubleCount> resultDist = Maps.newIdentityHashMap();
     
+    final RunState currentRunState = nycVehicleStateDist.getRunStateParam() != null ? 
+        nycVehicleStateDist.getRunStateParam().getValue() : null;
+    final VehicleState currentOldTypeVehicleState = currentRunState != null ? currentRunState.getVehicleState() : null;
+    
     if (tripInfo != null) {
       
       /*
@@ -121,9 +125,15 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         final BlockStateObservation blockStateObs = this.nycGraph.getBlockStateObs(obs, 
             nycVehicleStateDist.getPathStateParam().getParameterPrior().getPathState(), blockTripEntry, serviceDate);
         
-        final RunState runStateMoved = new RunState(nycGraph, obs, nycVehicleStateDist, 
-            blockStateObs, false, this.prevOldTypeVehicleState);
+        /*
+         * DEBUG check that the shape/edge geom has a valid mapping
+         */
+        AgencyAndId shapeId = blockTripEntry.getTrip().getShapeId();
+        Preconditions.checkState(this.nycGraph.getLengthsAlongShapeMap().contains(shapeId, 
+            pathEdge.getInferenceGraphEdge().getGeometry()));
         
+        final RunState runStateMoved = new RunState(nycGraph, obs, nycVehicleStateDist, 
+            blockStateObs, false, currentOldTypeVehicleState, false);
         
         final RunState.RunStateEdgePredictiveResults mtaEdgeResultsMoved = runStateMoved.
             computeAnnotatedLogLikelihood();
@@ -135,7 +145,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         }
         
         final RunState runStateNotMoved = new RunState(nycGraph, obs, nycVehicleStateDist, 
-            blockStateObs, true, this.prevOldTypeVehicleState);
+            blockStateObs, true, currentOldTypeVehicleState, false);
         
         final RunState.RunStateEdgePredictiveResults mtaEdgeResultsNotMoved = runStateNotMoved.
             computeAnnotatedLogLikelihood();
@@ -155,53 +165,83 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
      */
     Collection<BlockStateObservation> blockStates = nycGraph.getBlockStatesFromObservation((Observation)obs);
     blockStates.add(null);
+    
+    /*
+     * Now add the state that simply moves forward along the block distance
+     * according to the projected distance moved.
+     */
+    if (currentRunState != null) {
+      if (currentRunState.getBlockStateObs() != null) {
+        final double distProjected = MotionStateEstimatorPredictor.Og.times(
+            nycVehicleStateDist.getPathStateParam().getParameterPrior().getGroundDistribution()
+            .getMean().minus(nycVehicleStateDist.getParentState().getPathStateParam().getParameterPrior()
+                .getGroundDistribution().getMean())).norm2();
+        blockStates.add(nycGraph.getBlocksFromObservationService().getBlockStateObservationFromDist(this.obs, 
+            currentRunState.getBlockStateObs().getBlockState().getBlockInstance(), 
+            currentRunState.getBlockStateObs().getBlockState().getBlockLocation().getDistanceAlongBlock()
+            + distProjected));
+      }
+    }
+    
     for (BlockStateObservation blockStateObs : blockStates) {
       
       /*
-       * We don't want to infer a run with road location when the state
-       * isn't on one.
-       * We do allow a null run for an on-road state, though.  This comes in 
-       * handy when we add more streets to the graph (ones that don't correspond
-       * to routes).
+       * Also, above we handled "snapped" states, so ignore them if they show
+       * up again here. 
        */
-      if (blockStateObs != null 
-          && (JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState())
-              || nycVehicleStateDist.getPathStateParam().getParameterPrior().getPathState().isOnRoad()))
+      final boolean isInService = blockStateObs != null
+          && JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState());
+      if (blockStateObs != null  && isInService && tripInfo != null
+          && tripInfo.getShapeIds().contains(
+              blockStateObs.getBlockState().getRunTripEntry().getTripEntry().getShapeId())) {
         continue;
-      
-      final RunState runStateMoved = new RunState(nycGraph, obs, nycVehicleStateDist, blockStateObs, 
-          false, this.prevOldTypeVehicleState);
-      Preconditions.checkState(runStateMoved.getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS);
-      
-      Preconditions.checkState(!pathEdge.isNullEdge() 
-          || (runStateMoved.getJourneyState() != JourneyState.inProgress()));
-      
-      final RunState.RunStateEdgePredictiveResults mtaEdgeResultsMoved = runStateMoved.
-          computeAnnotatedLogLikelihood();
-      runStateMoved.setLikelihoodInfo(mtaEdgeResultsMoved);
-      mtaEdgeResultsMoved.setMovedLogLikelihood(Math.log(1d-likelihoodHasNotMoved));
-      if (mtaEdgeResultsMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-        if (blockStateObs != null)
-          nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood, mtaEdgeResultsMoved.schedLogLikelihood);
-        resultDist.put(runStateMoved, new MutableDoubleCount(mtaEdgeResultsMoved.getTotalLogLik(), 1));
       }
       
-      final RunState runStateNotMoved = new RunState(nycGraph, obs, nycVehicleStateDist, blockStateObs, true, this.prevOldTypeVehicleState);
-      Preconditions.checkState(runStateNotMoved.getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS);
+      final boolean movedIsDetoured =
+          blockStateObs != null ? 
+          JourneyStateTransitionModel.isDetour(blockStateObs, null, true, currentOldTypeVehicleState) :
+            false;
+          
+      /*
+       * Only consider in-progress states when we've determined they're detours.
+       */
+      if (!isInService || movedIsDetoured) {
       
-      Preconditions.checkState(!pathEdge.isNullEdge() 
-          || (runStateNotMoved.getJourneyState() != JourneyState.inProgress()));
-      
-      final RunState.RunStateEdgePredictiveResults mtaEdgeResultsNotMoved = runStateNotMoved.
-          computeAnnotatedLogLikelihood();
-      runStateNotMoved.setLikelihoodInfo(mtaEdgeResultsNotMoved);
-      mtaEdgeResultsNotMoved.setMovedLogLikelihood(Math.log(likelihoodHasNotMoved));
-      if (mtaEdgeResultsNotMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-        if (blockStateObs != null)
-          nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood, mtaEdgeResultsNotMoved.schedLogLikelihood);
-        resultDist.put(runStateNotMoved, new MutableDoubleCount(mtaEdgeResultsNotMoved.getTotalLogLik(), 1));
+        final RunState runStateMoved = new RunState(nycGraph, obs, nycVehicleStateDist, blockStateObs, 
+            false, currentOldTypeVehicleState, movedIsDetoured);
+        
+        Preconditions.checkState(runStateMoved.getJourneyState().getPhase() != EVehiclePhase.IN_PROGRESS);
+        
+        final RunState.RunStateEdgePredictiveResults mtaEdgeResultsMoved = runStateMoved.
+            computeAnnotatedLogLikelihood();
+        runStateMoved.setLikelihoodInfo(mtaEdgeResultsMoved);
+        mtaEdgeResultsMoved.setMovedLogLikelihood(Math.log(1d-likelihoodHasNotMoved));
+        if (mtaEdgeResultsMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
+          if (blockStateObs != null)
+            nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood, mtaEdgeResultsMoved.schedLogLikelihood);
+          resultDist.put(runStateMoved, new MutableDoubleCount(mtaEdgeResultsMoved.getTotalLogLik(), 1));
+        }
       }
       
+      final boolean notMovedIsDetoured = 
+          blockStateObs != null ? 
+          JourneyStateTransitionModel.isDetour(blockStateObs, null, false, currentOldTypeVehicleState) :
+            false;
+          
+      if (!isInService || notMovedIsDetoured) {
+        final RunState runStateNotMoved = new RunState(nycGraph, obs, nycVehicleStateDist, blockStateObs, true, 
+            currentOldTypeVehicleState, notMovedIsDetoured);
+        
+        final RunState.RunStateEdgePredictiveResults mtaEdgeResultsNotMoved = runStateNotMoved.
+            computeAnnotatedLogLikelihood();
+        runStateNotMoved.setLikelihoodInfo(mtaEdgeResultsNotMoved);
+        mtaEdgeResultsNotMoved.setMovedLogLikelihood(Math.log(likelihoodHasNotMoved));
+        if (mtaEdgeResultsNotMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
+          if (blockStateObs != null)
+            nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood, mtaEdgeResultsNotMoved.schedLogLikelihood);
+          resultDist.put(runStateNotMoved, new MutableDoubleCount(mtaEdgeResultsNotMoved.getTotalLogLik(), 1));
+        }
+      }
     }
     
     /*
@@ -231,19 +271,48 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     
     DeterministicDataDistribution<RunState> priorRunDist = (DeterministicDataDistribution<RunState>) priorPredRunStateDist;
     
+    RunState priorPredRunState = priorPredRunStateDist.getMaxValueKey();
     /*
      * We must update update the run state, since the path belief gets updated. 
      */
-    RunState priorPredRunState = priorPredRunStateDist.getMaxValueKey().clone();
-    if (priorPredRunState.getBlockStateObs() != null) {
-      final ScheduledBlockLocation priorSchedLoc = priorPredRunState.getBlockStateObs().getBlockState().getBlockLocation();
-      final BlockStateObservation newBlockStateObs = nycGraph.getBlockStateObs(obs, 
-          posteriorPathStateDist.getPathState(), 
-          priorSchedLoc.getActiveTrip(), 
-          priorPredRunState.getBlockStateObs().getBlockState().getBlockInstance().getServiceDate());
-      priorPredRunState.setBlockStateObs(newBlockStateObs);
+    RunState posteriorRunState = priorPredRunState.clone();
+    /*
+     * The update might've changed our estimated motion status.  Also, since
+     * we're using a MAP-like final estimate, go with the max likelihood.
+     */
+    final double likelihoodHasNotMoved = likelihoodOfNotMovedState(posteriorPathStateDist);
+    if (likelihoodHasNotMoved > 0.5d) {
+      posteriorRunState.setVehicleHasNotMoved(true);
+    } else {
+      posteriorRunState.setVehicleHasNotMoved(false);
+    }
+      
+    if (posteriorRunState.getBlockStateObs() != null) {
+      
+      final boolean predictedInProgress = posteriorRunState.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS;
+      if (predictedInProgress && !posteriorRunState.getJourneyState().getIsDetour()) {
+        final ScheduledBlockLocation priorSchedLoc = posteriorRunState.getBlockStateObs().getBlockState().getBlockLocation();
+        
+        final BlockStateObservation newBlockStateObs = nycGraph.getBlockStateObs(obs, 
+            posteriorPathStateDist.getPathState(), 
+            priorSchedLoc.getActiveTrip(), 
+            posteriorRunState.getBlockStateObs().getBlockState().getBlockInstance().getServiceDate());
+        
+        posteriorRunState.setBlockStateObs(newBlockStateObs);
+      } else {
+//        if (predictedInProgress) {
+//          /*
+//           * TODO should we propagate states?  how?
+//           */
+//         
+//        } else {
+//          /*
+//           * TODO should we propagate states?  how?
+//           */
+//        }
+      }
     } 
-    priorRunDist.setElement(priorPredRunState);
+    priorRunDist.setElement(posteriorRunState);
   }
 
   /**

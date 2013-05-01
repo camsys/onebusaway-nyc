@@ -25,6 +25,7 @@ import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 
 import gov.sandia.cognition.math.matrix.Vector;
+import gov.sandia.cognition.math.matrix.VectorFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -32,6 +33,7 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 
 import org.geotools.geometry.jts.JTS;
@@ -70,6 +72,10 @@ public class Observation extends GpsObservation implements Comparable<Observatio
 
   private final Set<AgencyAndId> _impliedRouteCollections;
 
+  private final ProjectedPoint _adjustedGps;
+
+  private Vector _adjustedVector;
+
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
       boolean outOfService, boolean hasValidDsc,
@@ -99,26 +105,43 @@ public class Observation extends GpsObservation implements Comparable<Observatio
     if (previousObservation == null) {
       this._timeDelta = null;
       this._distanceMoved = 0d;
-      this._orientation = Double.NaN;
+      this._orientation = record.getBearing();
+      this._adjustedGps = this._point;
     } else {
       this._timeDelta = (timestamp - previousObservation.getTime()) / 1000d;
       this._distanceMoved = TurboButton.distance(
           previousObservation.getLocation(),
           _point.toCoordinatePoint());
-      if (_distanceMoved == 0d) {
-        this._orientation = previousObservation.getOrientation();
+      if (record.getBearing() != null) {
+        this._orientation = record.getBearing();
+        final double bearingInRadians = -Angle.toRadians(record.getBearing())
+            + Math.PI/2d;
+        final Vector pointOnUnitCircle = VectorFactory.getDefault().copyArray(
+            new double[] {Math.cos(bearingInRadians), Math.sin(bearingInRadians)});
+        final double drSpeed = 0.514444d * record.getSpeed() * this._timeDelta;
+        this._adjustedVector = this.getProjectedPoint().minus(
+            pointOnUnitCircle.scale(drSpeed));
+        Coordinate adjLatLon = GeoUtils.convertToLatLon(this._adjustedVector, 
+            GeoUtils.getTransform(this.coordsLatLon));
+        this._adjustedGps = new ProjectedPoint(adjLatLon.x, adjLatLon.y, 
+            this._adjustedVector.getElement(0), this._adjustedVector.getElement(1), 0);
       } else {
-        this._orientation = SphericalGeometryLibrary.getOrientation(
-            previousObservation.getLocation().getLat(),
-            previousObservation.getLocation().getLon(),
-            record.getLatitude(),
-            record.getLongitude()
-            );
+        if (_distanceMoved == 0d) {
+          this._orientation = previousObservation.getOrientation();
+        } else {
+          this._orientation = SphericalGeometryLibrary.getOrientation(
+              previousObservation.getLocation().getLat(),
+              previousObservation.getLocation().getLon(),
+              record.getLatitude(),
+              record.getLongitude()
+              );
+        }
+        this._adjustedGps = this._point;
       }
+      
       
     }
 
-    
     _previousObservation = previousObservation;
   }
 
@@ -230,11 +253,9 @@ public class Observation extends GpsObservation implements Comparable<Observatio
 
   private final Double _timeDelta;
 
-  private final double _orientation;
+  private final Double _orientation;
 
-  private final double _distanceMoved;
-
-  private Coordinate _gpsCoord;
+  private final Double _distanceMoved;
 
   private MathTransform _transform;
 
@@ -334,12 +355,20 @@ public class Observation extends GpsObservation implements Comparable<Observatio
     return _timeDelta;
   }
 
-  public double getDistanceMoved() {
+  public Double getDistanceMoved() {
     return _distanceMoved;
   }
 
-  public double getOrientation() {
+  public Double getOrientation() {
     return _orientation;
+  }
+
+  public ProjectedPoint getAdjustedGps() {
+    return _adjustedGps;
+  }
+
+  public Vector getAdjustedVector() {
+    return _adjustedVector;
   }
 
 }
