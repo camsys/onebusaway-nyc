@@ -38,6 +38,8 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -54,7 +56,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   implements ServletRequestAware, ServletResponseAware {
 
   private static final long serialVersionUID = 1L;
-
+  private static Logger _log = LoggerFactory.getLogger(StopMonitoringAction.class);
+  
   @Autowired
   public NycTransitDataService _nycTransitDataService;
 
@@ -87,7 +90,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
     
     _realtimeService.setTime(getTime());
-    
+    _log.error("using Time=" + getTime());
     String directionId = _request.getParameter("DirectionRef");
     
     // We need to support the user providing no agency id which means 'all agencies'.

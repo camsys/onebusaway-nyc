@@ -38,6 +38,8 @@ import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.org.siri.siri.BlockRefStructure;
 import uk.org.siri.siri.DataFrameRefStructure;
@@ -63,6 +65,8 @@ import uk.org.siri.siri.VehicleRefStructure;
 
 public final class SiriSupport {
 
+	private static Logger _log = LoggerFactory.getLogger(SiriSupport.class);
+			
 	public enum OnwardCallsMode {
 		VEHICLE_MONITORING,
 		STOP_MONITORING
@@ -490,8 +494,17 @@ public final class SiriSupport {
 		monitoredCallStructure.setStopPointName(stopPoint);
 
 		if(prediction != null) {
-			monitoredCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictedTime()));
-			monitoredCallStructure.setExpectedDepartureTime(new Date(prediction.getTimepointPredictedTime()));
+			// do not allow predicted times to be less than ResponseTimestamp
+			if (prediction.getTimepointPredictedTime() < presentationService.getTime()) {
+				_log.error("resetting" + prediction.getTimepointPredictedTime() + " to " + presentationService.getTime());
+				monitoredCallStructure.setExpectedArrivalTime(new Date(presentationService.getTime()));
+				monitoredCallStructure.setExpectedDepartureTime(new Date(presentationService.getTime()));
+			} else {
+				_log.error("keeping" + prediction.getTimepointPredictedTime() + " against " + presentationService.getTime());
+				monitoredCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictedTime()));
+				monitoredCallStructure.setExpectedDepartureTime(new Date(prediction.getTimepointPredictedTime()));
+			}
+			
 		}
 		
 		// siri extensions

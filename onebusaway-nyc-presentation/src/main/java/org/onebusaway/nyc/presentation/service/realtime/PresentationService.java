@@ -7,6 +7,8 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 public interface PresentationService {
 
   public void setTime(long time);
+  
+  public long getTime();
 
   public Boolean useTimePredictionsIfAvailable();
 

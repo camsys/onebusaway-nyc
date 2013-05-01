@@ -27,10 +27,17 @@ public class PresentationServiceImpl implements PresentationService {
   private Long _now = null;
   
   @Override
+  /**
+   * set the time of the request for consistent date handling.
+   */
   public void setTime(long time) {
     _now = time;
   }
 
+  @Override
+  /**
+   * Make the time of the request available to callers of this service.  Defaults to now if not set.
+   */
   public long getTime() {
     if(_now != null)
       return _now;
