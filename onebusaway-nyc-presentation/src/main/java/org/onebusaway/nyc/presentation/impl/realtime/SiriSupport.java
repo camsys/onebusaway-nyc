@@ -505,7 +505,7 @@ public final class SiriSupport {
 			if (prediction.getTimepointPredictedTime() < responseTimestamp) {
 				_log.debug("resetting (" + stopBean.getId() + ": " + prediction.getTimepointPredictedTime() + ", " + responseTimestamp + ") now=" + System.currentTimeMillis());
 				monitoredCallStructure.setExpectedArrivalTime(new Date(responseTimestamp)); 
-				monitoredCallStructure.setExpectedDepartureTime(new Date(responseTimestamp);
+				monitoredCallStructure.setExpectedDepartureTime(new Date(responseTimestamp));
 			} else {
 				monitoredCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictedTime()));
 				monitoredCallStructure.setExpectedDepartureTime(new Date(prediction.getTimepointPredictedTime()));
