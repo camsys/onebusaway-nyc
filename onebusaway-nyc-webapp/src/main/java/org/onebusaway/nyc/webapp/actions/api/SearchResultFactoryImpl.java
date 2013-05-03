@@ -102,7 +102,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
         // if there are buses on route, always have "scheduled service"
         Boolean routeHasVehiclesInService = 
-      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId());
+      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
 
         if(routeHasVehiclesInService) {
       	  hasUpcomingScheduledService = true;
@@ -149,7 +149,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
             // if there are buses on route, always have "scheduled service"
             Boolean routeHasVehiclesInService = 
-                _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId());
+                _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId(), System.currentTimeMillis());
 
             if(routeHasVehiclesInService) {
               hasUpcomingScheduledService = true;

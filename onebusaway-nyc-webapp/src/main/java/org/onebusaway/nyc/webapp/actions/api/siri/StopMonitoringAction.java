@@ -86,11 +86,12 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
   @Override
   public String execute() {
-    
+  
+	long responseTimestamp = getTime();
     _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
-    
-    _realtimeService.setTime(getTime());
-    _log.error("using Time=" + getTime());
+  
+    _realtimeService.setTime(responseTimestamp);
+
     String directionId = _request.getParameter("DirectionRef");
     
     // We need to support the user providing no agency id which means 'all agencies'.
@@ -202,7 +203,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       if (!stopId.hasValues()) continue;
       
       // Stop ids can only be valid here because we only added valid ones to stopIds.
-      List<MonitoredStopVisitStructure> visitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(), maximumOnwardCalls);
+      List<MonitoredStopVisitStructure> visitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(), maximumOnwardCalls, responseTimestamp);
       if (visitsForStop != null) visits.addAll(visitsForStop); 
     }
     
@@ -254,7 +255,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       error = new Exception(errorString);
     }
     
-    _response = generateSiriResponse(visits, stopIds, error);
+    _response = generateSiriResponse(visits, stopIds, error, responseTimestamp);
     
     try {
       this._servletResponse.getWriter().write(getStopMonitoring());
@@ -282,13 +283,13 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     return false;
   }
   
-  private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits, List<AgencyAndId> stopIds, Exception error) {
+  private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits, List<AgencyAndId> stopIds, Exception error, long responseTimestamp) {
     
     StopMonitoringDeliveryStructure stopMonitoringDelivery = new StopMonitoringDeliveryStructure();
-    stopMonitoringDelivery.setResponseTimestamp(new Date(getTime()));
+    stopMonitoringDelivery.setResponseTimestamp(new Date(responseTimestamp));
     
     ServiceDelivery serviceDelivery = new ServiceDelivery();
-    serviceDelivery.setResponseTimestamp(new Date(getTime()));
+    serviceDelivery.setResponseTimestamp(new Date(responseTimestamp));
     serviceDelivery.getStopMonitoringDelivery().add(stopMonitoringDelivery);
     
     if (error != null) {
@@ -306,13 +307,13 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       stopMonitoringDelivery.setErrorCondition(errorConditionStructure);
     } else {
       Calendar gregorianCalendar = new GregorianCalendar();
-      gregorianCalendar.setTimeInMillis(getTime());
+      gregorianCalendar.setTimeInMillis(responseTimestamp);
       gregorianCalendar.add(Calendar.MINUTE, 1);
       stopMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
 
       stopMonitoringDelivery.getMonitoredStopVisit().addAll(visits);
 
-      serviceDelivery.setResponseTimestamp(new Date(getTime()));
+      serviceDelivery.setResponseTimestamp(new Date(responseTimestamp));
       
       _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _nycTransitDataService, stopIds);
       _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(serviceDelivery, _realtimeService);

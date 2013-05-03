@@ -275,7 +275,7 @@ OBA.Popups = (function() {
 					html += '<span>';
 						
 					if(typeof onwardCall.ExpectedArrivalTime !== 'undefined' && onwardCall.ExpectedArrivalTime !== null) {
-						html += OBA.Util.getArrivalEstimateForISOString(onwardCall.ExpectedArrivalTime, updateTimestampReference);
+						html += '(' + OBA.Util.ISO8601StringToDate(onwardCall.ExpectedArrivalTime).getTime() + ', ' + updateTimestampReference + ') ' + OBA.Util.getArrivalEstimateForISOString(onwardCall.ExpectedArrivalTime, updateTimestampReference);
 						html += ", " + onwardCall.Extensions.Distances.PresentableDistance;
 					} else {
 						html += onwardCall.Extensions.Distances.PresentableDistance;
@@ -493,7 +493,12 @@ OBA.Popups = (function() {
 						// time mode
 						if(timePrediction != null && stalled === false) {
 							if(wrapped === false) {
-								timePrediction += ", " + distance;
+								timePrediction = '(' /*+ OBA.Util.ISO8601StringToDate(monitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime).getTime() + ":"*/ 
+									+ OBA.Util.ISO8601StringToTime(monitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime) /*monitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime*/ 
+									+ ', ' /*+ updateTimestampReference + ":" + siri.Siri.ServiceDelivery.ResponseTimestamp*/
+									+ OBA.Util.ISO8601StringToTime(siri.Siri.ServiceDelivery.ResponseTimestamp)
+									+ ') ' 
+									+ timePrediction + ", " + distance;
 							}
 							
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
