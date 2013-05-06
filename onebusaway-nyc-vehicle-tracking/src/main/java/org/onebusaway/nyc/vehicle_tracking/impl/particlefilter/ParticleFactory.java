@@ -32,7 +32,8 @@ public interface ParticleFactory<OBS> {
    * @param timestamp time of the initial observation
    * @param observation the initial observation
    * @return the initial list of particles
-   * @throws ParticleFilterException 
+   * @throws ParticleFilterException
    */
-  public Multiset<Particle> createParticles(double timestamp, OBS observation) throws ParticleFilterException;
+  public Multiset<Particle> createParticles(double timestamp, OBS observation)
+      throws ParticleFilterException;
 }

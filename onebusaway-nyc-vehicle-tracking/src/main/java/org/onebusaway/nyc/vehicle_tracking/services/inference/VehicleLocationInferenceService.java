@@ -18,15 +18,11 @@ package org.onebusaway.nyc.vehicle_tracking.services.inference;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 
 import gov.sandia.cognition.statistics.DataDistribution;
-
-import com.google.common.collect.Multiset;
 
 import org.opentrackingtools.model.VehicleStateDistribution;
 
@@ -59,5 +55,6 @@ public interface VehicleLocationInferenceService {
 
   public void setSeeds(long cdfSeed, long factorySeed);
 
-  public DataDistribution<VehicleStateDistribution<Observation>> getCurrentParticlesForVehicleId(AgencyAndId vehicleId);
+  public DataDistribution<VehicleStateDistribution<Observation>> getCurrentParticlesForVehicleId(
+      AgencyAndId vehicleId);
 }

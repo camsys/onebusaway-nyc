@@ -299,7 +299,7 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
     if (!(obj instanceof NycRawLocationRecord)) {
       return false;
     }
-    NycRawLocationRecord other = (NycRawLocationRecord) obj;
+    final NycRawLocationRecord other = (NycRawLocationRecord) obj;
     if (bearing == null) {
       if (other.bearing != null) {
         return false;
@@ -421,9 +421,11 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
         arg0.rawData, Ordering.natural().nullsLast()).compare(operatorId,
         arg0.operatorId, Ordering.natural().nullsLast()).compare(id, arg0.id).compare(
         gga, arg0.gga, Ordering.natural().nullsLast()).compare(emergencyFlag,
-        arg0.emergencyFlag).compare(bearing, arg0.bearing, Ordering.natural().nullsLast()).compare(deviceId,
-        arg0.deviceId, Ordering.natural().nullsLast()).compare(uuid, arg0.uuid,
-        Ordering.natural().nullsLast()).compare(speed, arg0.speed, Ordering.natural().nullsLast()).result();
+        arg0.emergencyFlag).compare(bearing, arg0.bearing,
+        Ordering.natural().nullsLast()).compare(deviceId, arg0.deviceId,
+        Ordering.natural().nullsLast()).compare(uuid, arg0.uuid,
+        Ordering.natural().nullsLast()).compare(speed, arg0.speed,
+        Ordering.natural().nullsLast()).result();
 
     return res;
   }

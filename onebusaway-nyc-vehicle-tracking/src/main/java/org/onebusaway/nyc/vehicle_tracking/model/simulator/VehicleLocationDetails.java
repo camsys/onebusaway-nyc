@@ -109,7 +109,7 @@ public class VehicleLocationDetails {
   public double getEffectiveSampleSize() {
     try {
       return ParticleFilter.getEffectiveSampleSize(particles);
-    } catch (ParticleFilterException e) {
+    } catch (final ParticleFilterException e) {
       e.printStackTrace();
     }
     return Double.NaN;

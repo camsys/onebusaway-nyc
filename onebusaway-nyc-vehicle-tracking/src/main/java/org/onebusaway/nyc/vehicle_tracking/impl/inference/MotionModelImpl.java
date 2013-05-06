@@ -15,13 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import gov.sandia.cognition.math.LogMath;
-
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.math.util.FastMath;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.Context;
@@ -46,7 +39,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.realtime.api.EVehiclePhase;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import gov.sandia.cognition.math.LogMath;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -56,6 +50,13 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Sets;
 
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.math.util.FastMath;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Motion model implementation for vehicle location inference. Determine if the
  * vehicle is in motion, and propagate the particles' positions or states.
@@ -63,7 +64,7 @@ import com.google.common.collect.Sets;
  * @author bdferris, bwillard
  */
 public class MotionModelImpl implements MotionModel<Observation> {
- 
+
   /**
    * Effective sample size thresholds that trigger resampling.
    */
@@ -157,28 +158,27 @@ public class MotionModelImpl implements MotionModel<Observation> {
       return true;
 
     if (parentBlockState != null) {
-      
+
       /*
-       * When a bus is waiting to start a block within the snapping distance
-       * and then it starts moving, we want to make sure that  
+       * When a bus is waiting to start a block within the snapping distance and
+       * then it starts moving, we want to make sure that
        */
       if (EVehiclePhase.isActiveBeforeBlock(parentState.getJourneyState().getPhase())
-          && parentBlockState.isSnapped() 
+          && parentBlockState.isSnapped()
           && _blocksFromObservationService.hasSnappedBlockStates(obs)) {
         return true;
       }
-      
-      if (!parentBlockState.isRunFormal()
-          && obs.hasValidDsc()) {
-        
+
+      if (!parentBlockState.isRunFormal() && obs.hasValidDsc()) {
+
         /*
-         * Always expect that we can go off from a detour when
-         * the run-info is bad.
+         * Always expect that we can go off from a detour when the run-info is
+         * bad.
          */
         if (parentState.getJourneyState().getIsDetour()) {
           return true;
         }
-        
+
         /*
          * We have no good run information, but a valid DSC, so we will allow a
          * run transition when there are snapped states and it's not in
@@ -190,7 +190,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
             return true;
           }
         }
-        
+
         /*
          * If we have no good run info and we're near/at the end of trip and our
          * observations moved a distance past the end of the trip.
@@ -198,21 +198,22 @@ public class MotionModelImpl implements MotionModel<Observation> {
         if (JourneyStateTransitionModel.isLocationOnATrip(parentBlockState.getBlockState())) {
           final double tripDab = parentBlockState.getBlockState().getBlockLocation().getDistanceAlongBlock()
               - parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock();
-          final double distanceMoved = TurboButton.distance(obs.getLocation(), 
+          final double distanceMoved = TurboButton.distance(obs.getLocation(),
               obs.getPreviousObservation().getLocation());
-          if (tripDab + distanceMoved + _distancePastEndMargin >= 
-              parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getTrip().getTotalTripDistance()) {
+          if (tripDab + distanceMoved + _distancePastEndMargin >= parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getTrip().getTotalTripDistance()) {
             return true;
           }
         }
       }
-      
+
       /*
        * If we've finished a run/block and changed our dsc to a valid one, then
        * keep checking for new states.
        */
-      if (parentState.getJourneyState().getPhase().equals(EVehiclePhase.DEADHEAD_AFTER)
-          && obs.hasValidDsc() && !Objects.equal(obs.getLastValidDestinationSignCode(), 
+      if (parentState.getJourneyState().getPhase().equals(
+          EVehiclePhase.DEADHEAD_AFTER)
+          && obs.hasValidDsc()
+          && !Objects.equal(obs.getLastValidDestinationSignCode(),
               parentState.getBlockState().getDestinationSignCode()))
         return true;
     }
@@ -243,7 +244,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     return !ObjectUtils.equals(previouslyObservedDsc, observedDsc);
   }
-  
+
   private boolean allowGeneralBlockTransition(Observation obs, double ess,
       boolean previouslyResampled, boolean anySnapped) {
 
@@ -262,11 +263,11 @@ public class MotionModelImpl implements MotionModel<Observation> {
         && ess / ParticleFactoryImpl.getInitialNumberOfParticles() <= essResampleThreshold) {
       return true;
     }
-    
+
     /*
-     * If none of our current particles are snapped, yet there were snapped states and there are
-     * currently snapped states, then resample, since there's usually a problem when nothing is snapped
-     * in these cases.
+     * If none of our current particles are snapped, yet there were snapped
+     * states and there are currently snapped states, then resample, since
+     * there's usually a problem when nothing is snapped in these cases.
      */
     if (obs.getPreviousObservation() != null) {
       final boolean hadSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs.getPreviousObservation());
@@ -292,7 +293,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
      */
     for (final Multiset.Entry<Particle> parent : particles.entrySet()) {
       final VehicleState state = parent.getElement().getData();
-      if (state.getBlockStateObservation() != null 
+      if (state.getBlockStateObservation() != null
           && state.getBlockStateObservation().isSnapped()) {
         anySnapped = true;
         break;
@@ -318,11 +319,11 @@ public class MotionModelImpl implements MotionModel<Observation> {
       } else if (parentBlockStateObs != null) {
 
         /*
-         * Only the snapped blocks.
-         * We are also allowing changes to snapped in-progress states when
-         * they were sampled well outside of allowed backward search distance.
+         * Only the snapped blocks. We are also allowing changes to snapped
+         * in-progress states when they were sampled well outside of allowed
+         * backward search distance.
          */
-        final double backwardDistance = Double.NEGATIVE_INFINITY;        
+        final double backwardDistance = Double.NEGATIVE_INFINITY;
         transitions.addAll(_blocksFromObservationService.advanceState(obs,
             parentState.getBlockState(), backwardDistance,
             Double.POSITIVE_INFINITY));
@@ -361,7 +362,8 @@ public class MotionModelImpl implements MotionModel<Observation> {
      * Normalize
      */
     for (final Entry<Particle> p : results.entrySet()) {
-      final double thisTotalWeight = p.getElement().getLogWeight() + FastMath.log(p.getCount());
+      final double thisTotalWeight = p.getElement().getLogWeight()
+          + FastMath.log(p.getCount());
       double logNormed = thisTotalWeight - normOffset;
       if (logNormed > 0d)
         logNormed = 0d;
@@ -480,7 +482,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return newParticle;
   }
 
-
   public static enum BlockSampleType {
     NOT_SAMPLED, SCHEDULE_STATE_SAMPLE, EDGE_MOVEMENT_SAMPLE
   };
@@ -523,11 +524,13 @@ public class MotionModelImpl implements MotionModel<Observation> {
             newEdge = Maps.immutableEntry(BlockSampleType.EDGE_MOVEMENT_SAMPLE,
                 _blockStateSamplingStrategy.sampleTransitionDistanceState(
                     parentBlockStateObs, obs, vehicleNotMoved, parentPhase));
-          } else if (EVehiclePhase.isActiveBeforeBlock(parentPhase) && FastMath.abs(currentScheduleDev) > 0.0) {
+          } else if (EVehiclePhase.isActiveBeforeBlock(parentPhase)
+              && FastMath.abs(currentScheduleDev) > 0.0) {
             /*
              * Continue sampling mid-trip joins for this block...
              */
-            newEdge = Maps.immutableEntry(BlockSampleType.SCHEDULE_STATE_SAMPLE,
+            newEdge = Maps.immutableEntry(
+                BlockSampleType.SCHEDULE_STATE_SAMPLE,
                 _blockStateSamplingStrategy.samplePriorScheduleState(
                     parentBlockStateObs.getBlockState().getBlockInstance(), obs));
           } else {
@@ -556,10 +559,10 @@ public class MotionModelImpl implements MotionModel<Observation> {
       BlockStateObservation proposalEdge) {
     if (proposalEdge != null) {
       if (parentEdge != null) {
-        if (proposalEdge.getBlockState().getRunId() != null &&
-            parentEdge.getBlockState().getRunId() != null &&
-            !proposalEdge.getBlockState().getRunId().equals(
-            parentEdge.getBlockState().getRunId())) {
+        if (proposalEdge.getBlockState().getRunId() != null
+            && parentEdge.getBlockState().getRunId() != null
+            && !proposalEdge.getBlockState().getRunId().equals(
+                parentEdge.getBlockState().getRunId())) {
           return true;
         } else {
           return false;
@@ -593,8 +596,8 @@ public class MotionModelImpl implements MotionModel<Observation> {
           motionState.getLastInMotionLocation(), obs.getLocation());
 
       /*
-       * FIXME there's an inconsistency here (with having sampled
-       * whether we moved or not).
+       * FIXME there's an inconsistency here (with having sampled whether we
+       * moved or not).
        */
       if (d <= _motionThreshold) {
         lastInMotionTime = motionState.getLastInMotionTime();

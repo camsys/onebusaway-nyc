@@ -15,15 +15,16 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
-import java.io.Serializable;
-
-import org.apache.commons.math.util.FastMath;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
+
+import org.apache.commons.math.util.FastMath;
+
+import java.io.Serializable;
 
 /**
  * Particle object has information about time, weight, the parent particle, and
@@ -81,7 +82,7 @@ public class Particle implements Serializable, Comparable<Particle> {
     if (parent != null) {
       if (!ParticleFilter.getDebugEnabled()) {
         parent.clearParent();
-      } 
+      }
     }
   }
 
@@ -109,15 +110,19 @@ public class Particle implements Serializable, Comparable<Particle> {
     return FastMath.exp(_logWeight);
   }
 
-  public void setWeight(double weight) throws BadProbabilityParticleFilterException {
+  public void setWeight(double weight)
+      throws BadProbabilityParticleFilterException {
     if (Double.isNaN(weight) || weight < 0d || weight > 1d)
-      throw new BadProbabilityParticleFilterException("invalid weight assignment: weight=" + weight);
+      throw new BadProbabilityParticleFilterException(
+          "invalid weight assignment: weight=" + weight);
     _logWeight = FastMath.log(weight);
   }
 
-  public void setLogWeight(double logWeight) throws BadProbabilityParticleFilterException {
+  public void setLogWeight(double logWeight)
+      throws BadProbabilityParticleFilterException {
     if (Double.isNaN(logWeight) || logWeight > 0d)
-      throw new BadProbabilityParticleFilterException("invalid weight assignment: logWeight=" + logWeight);
+      throw new BadProbabilityParticleFilterException(
+          "invalid weight assignment: logWeight=" + logWeight);
     _logWeight = logWeight;
   }
 
@@ -196,13 +201,13 @@ public class Particle implements Serializable, Comparable<Particle> {
     } else if (o == null) {
       return 1;
     } else {
-      final int particleComp = ComparisonChain.start().compare(t.getTimestamp(),
-          o.getTimestamp(), Ordering.natural().reverse()).compare(
+      final int particleComp = ComparisonChain.start().compare(
+          t.getTimestamp(), o.getTimestamp(), Ordering.natural().reverse()).compare(
           t.getLogWeight(), o.getLogWeight(), Ordering.natural().reverse()).compare(
           t.getData(), o.getData(), _particleDataOrdering.nullsLast()).result();
       return particleComp;
     }
-    
+
     throw new IllegalStateException("Illegal particle comparison");
   }
 
@@ -283,18 +288,18 @@ public class Particle implements Serializable, Comparable<Particle> {
         if (thisObj._data instanceof VehicleState) {
           final VehicleState vdata = (VehicleState) thisObj._data;
           final VehicleState vother = (VehicleState) other._data;
-  
+
           if (!vdata.equals(vother)) {
             return false;
           }
         } else if (!thisObj._data.equals(other._data)) {
           return false;
         }
-  
+
       } else {
         return false;
       }
-      
+
       return true;
     }
 
@@ -339,9 +344,11 @@ public class Particle implements Serializable, Comparable<Particle> {
     _transitions = transitions;
   }
 
-  public void setLogNormedWeight(double d) throws BadProbabilityParticleFilterException {
+  public void setLogNormedWeight(double d)
+      throws BadProbabilityParticleFilterException {
     if (Double.isNaN(d) || d > 0d)
-      throw new BadProbabilityParticleFilterException("invalid weight assignment: logWeight=" + d);
+      throw new BadProbabilityParticleFilterException(
+          "invalid weight assignment: logWeight=" + d);
     _logNormedWeight = d;
   }
 

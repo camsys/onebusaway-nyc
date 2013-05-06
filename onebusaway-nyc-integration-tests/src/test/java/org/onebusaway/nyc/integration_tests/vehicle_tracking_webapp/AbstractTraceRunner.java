@@ -75,7 +75,7 @@ public class AbstractTraceRunner {
 
   public void setBundle(String bundleId, Date date) throws Exception {
     String port = System.getProperty(
-        "org.onebusaway.transit_data_federation_webapp.port", "9905");
+        "org.onebusaway.transit_data_federation_webapp.port", "8080");
     String url = "http://localhost:" + port
         + "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId="
         + bundleId + "&time=" + DateLibrary.getTimeAsIso8601String(date);
@@ -96,7 +96,7 @@ public class AbstractTraceRunner {
 
   public void setSeeds() throws Exception {
     String port = System.getProperty(
-        "org.onebusaway.transit_data_federation_webapp.port", "9905");
+        "org.onebusaway.transit_data_federation_webapp.port", "8080");
 
     String urlStr = "http://localhost:"
         + port

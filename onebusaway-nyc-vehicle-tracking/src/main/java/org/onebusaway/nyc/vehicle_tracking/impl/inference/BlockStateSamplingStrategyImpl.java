@@ -15,9 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
-
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.GpsLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -28,16 +25,19 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
+import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
 
 import com.google.common.collect.Iterables;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   private ScheduledBlockLocationService _scheduledBlockLocationService;
-  
+
   private BlocksFromObservationService _blocksFromObservationService;
 
   @Autowired
@@ -57,7 +57,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       BlockStateObservation parentBlockStateObs, Observation obs,
       boolean vehicleNotMoved, EVehiclePhase parentPhase) {
 
-	double distAlongSample;
+    double distAlongSample;
     final BlockState parentBlockState = parentBlockStateObs.getBlockState();
     final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
 
@@ -66,7 +66,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       /*
        * Check if we're deadheading between trips.
        */
-      if (EVehiclePhase.DEADHEAD_DURING == parentPhase 
+      if (EVehiclePhase.DEADHEAD_DURING == parentPhase
           && !parentBlockStateObs.isOnTrip()) {
         /*
          * We use the observed distance moved in the direction of the next stop.
@@ -79,7 +79,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
            * When we're at the end of the block, sample movement as normal.
            * Basically, this should hit the distance-along limit and put us into
            * deadhead-after, or go the other way and keep us sitting around in
-           * deadhead-during.  Either way, we want to allow both those possibilities.
+           * deadhead-during. Either way, we want to allow both those
+           * possibilities.
            */
           final double distAlongPrior = obs.getDistanceMoved();
           final double distAlongErrorSample = ParticleFactoryImpl.getLocalRng().nextGaussian()
@@ -103,9 +104,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
           distAlongSample = distAlongPrior;
         }
       } else if (EVehiclePhase.DEADHEAD_AFTER == parentPhase
-          || ((EVehiclePhase.DEADHEAD_BEFORE == parentPhase 
-            || EVehiclePhase.LAYOVER_BEFORE == parentPhase) 
-            && parentBlockStateObs.getScheduleDeviation() == 0d)) {
+          || ((EVehiclePhase.DEADHEAD_BEFORE == parentPhase || EVehiclePhase.LAYOVER_BEFORE == parentPhase) && parentBlockStateObs.getScheduleDeviation() == 0d)) {
         /*
          * Only start moving if it's supposed to be
          */
@@ -119,7 +118,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       }
 
       distAlongSample += parentDistAlong;
-      
+
     } else {
       return new BlockStateObservation(parentBlockStateObs, obs);
     }
@@ -146,53 +145,52 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
      * after the block's start.
      */
     final double currentTime = (obs.getTime() - blockInstance.getServiceDate()) / 1000;
-    
+
     /*
-     * Get the location at for the current time, then sample a location
-     * based on that time and the travel time to that location (for when
-     * we're not anywhere nearby).
+     * Get the location at for the current time, then sample a location based on
+     * that time and the travel time to that location (for when we're not
+     * anywhere nearby).
      */
     final int startSchedTime = Iterables.getFirst(
         blockInstance.getBlock().getStopTimes(), null).getStopTime().getArrivalTime();
     final int endSchedTime = Iterables.getLast(
         blockInstance.getBlock().getStopTimes(), null).getStopTime().getDepartureTime();
-    
+
     final double timeToGetToCurrentTimeLoc;
-    if (currentTime > startSchedTime
-        && currentTime < endSchedTime
+    if (currentTime > startSchedTime && currentTime < endSchedTime
         && obs.getPreviousObservation() != null) {
       final ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
-          blockInstance.getBlock(), (int)currentTime);
-      
+          blockInstance.getBlock(), (int) currentTime);
+
       /*
-       * If the current time puts us in deadhead-during between trips, then
-       * it's possible that the block location will be at the start
-       * of the previous trip (potentially very far away), so we skip
-       * these situations.
+       * If the current time puts us in deadhead-during between trips, then it's
+       * possible that the block location will be at the start of the previous
+       * trip (potentially very far away), so we skip these situations.
        */
       if (JourneyStateTransitionModel.isLocationOnATrip(blockLocation)) {
-        final double impliedVelocity = obs.getDistanceMoved() / obs.getTimeDelta();
-        timeToGetToCurrentTimeLoc = TurboButton.distance(blockLocation.getLocation(),
-            obs.getLocation()) / impliedVelocity;
+        final double impliedVelocity = obs.getDistanceMoved()
+            / obs.getTimeDelta();
+        timeToGetToCurrentTimeLoc = TurboButton.distance(
+            blockLocation.getLocation(), obs.getLocation())
+            / impliedVelocity;
       } else {
         timeToGetToCurrentTimeLoc = 0d;
       }
     } else {
       timeToGetToCurrentTimeLoc = 0d;
     }
-  
+
     /*
      * TODO Note that we're using the non-run-matching prior distribution.
      * Should we?
      */
     final StudentTDistribution schedDist = ScheduleLikelihood.getSchedDevNonRunDist();
     final double schedTimeError = 60d * schedDist.sample(ParticleFactoryImpl.getLocalRng());
-    double newSchedTime = currentTime + timeToGetToCurrentTimeLoc 
-        + Math.max(schedTimeError, -timeToGetToCurrentTimeLoc/3d);
-    
+    final double newSchedTime = currentTime + timeToGetToCurrentTimeLoc
+        + Math.max(schedTimeError, -timeToGetToCurrentTimeLoc / 3d);
+
     if (Double.isInfinite(newSchedTime))
       return null;
-
 
     BlockStateObservation schedState;
     if (newSchedTime < startSchedTime) {
@@ -264,10 +262,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       if (Double.isNaN(obsOrientation)) {
         obsOrientation = blockStateObs.getBlockState().getBlockLocation().getOrientation();
       }
-      
+
       final double orientDiff = Math.abs(obsOrientation
           - blockStateObs.getBlockState().getBlockLocation().getOrientation());
-      
+
       if (orientDiff >= 140d && orientDiff <= 225d
           && distMoved >= BlockStateService.getOppositeDirMoveCutoff()) {
         /*

@@ -123,19 +123,18 @@ public class VehicleLocationSimulationServiceImpl implements
   private final RandomStream streamArr = new MRG32k3a();
 
   private ObservationCache _observationCache;
-  
+
   @Autowired
   private VehicleLocationListener _vehicleLocationListener;
-  
+
   // TODO consistent?
   private final UniformGen ung = new UniformGen(streamArr);
-
 
   @Autowired
   public void setObservationCache(ObservationCache observationCache) {
     _observationCache = observationCache;
   }
-  
+
   @Autowired
   public void setCalendarService(CalendarService calendarService) {
     _calendarService = calendarService;
@@ -332,11 +331,11 @@ public class VehicleLocationSimulationServiceImpl implements
   public void cancelAllSimulations() {
     final List<Integer> taskIds = new ArrayList<Integer>(_tasks.keySet());
     for (final int taskId : taskIds) {
-    	SimulatorTask task = _tasks.get(taskId);
-    	_vehicleLocationListener.resetVehicleLocation(task.getVehicleId());
-    	cancelSimulation(taskId);
+      final SimulatorTask task = _tasks.get(taskId);
+      _vehicleLocationListener.resetVehicleLocation(task.getVehicleId());
+      cancelSimulation(taskId);
     }
-    		
+
   }
 
   @Override

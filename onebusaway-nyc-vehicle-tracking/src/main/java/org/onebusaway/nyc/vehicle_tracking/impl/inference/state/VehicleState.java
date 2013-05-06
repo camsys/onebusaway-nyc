@@ -20,8 +20,6 @@ import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycVehicleStat
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.Ordering;
 
 import java.util.List;
 
@@ -35,7 +33,7 @@ import java.util.List;
 public final class VehicleState implements Comparable<VehicleState> {
 
   private NycVehicleStateDistribution distribution;
-  
+
   private final MotionState motionState;
 
   private final BlockStateObservation blockStateObservation;
@@ -102,85 +100,85 @@ public final class VehicleState implements Comparable<VehicleState> {
   @Override
   public int compareTo(VehicleState rightState) {
     return this.distribution.compareTo(rightState.distribution);
-//    if (this == rightState)
-//      return 0;
-//
-//    final int compRes = ComparisonChain.start().compare(
-//        this.journeyState.getPhase(), rightState.getJourneyState().getPhase()).compare(
-//        this.blockStateObservation, rightState.getBlockStateObservation(),
-//        Ordering.natural().nullsLast()).compare(this.motionState,
-//        rightState.getMotionState()).compare(this.observation,
-//        rightState.getObservation()).result();
-//
-//    return compRes;
+    // if (this == rightState)
+    // return 0;
+    //
+    // final int compRes = ComparisonChain.start().compare(
+    // this.journeyState.getPhase(),
+    // rightState.getJourneyState().getPhase()).compare(
+    // this.blockStateObservation, rightState.getBlockStateObservation(),
+    // Ordering.natural().nullsLast()).compare(this.motionState,
+    // rightState.getMotionState()).compare(this.observation,
+    // rightState.getObservation()).result();
+    //
+    // return compRes;
   }
-
-  private int _hash = 0;
 
   @Override
   public int hashCode() {
     return this.distribution.hashCode();
-//    if (_hash != 0)
-//      return _hash;
-//
-//    final int prime = 31;
-//    int result = 1;
-//    result = prime
-//        * result
-//        + ((blockStateObservation == null) ? 0
-//            : blockStateObservation.hashCode());
-//    // XXX we're only concerned with phase here
-//    result = prime * result
-//        + ((journeyState == null) ? 0 : journeyState.getPhase().hashCode());
-//    // result = prime * result
-//    // + ((journeySummaries == null) ? 0 : journeySummaries.hashCode());
-//    result = prime * result
-//        + ((motionState == null) ? 0 : motionState.hashCode());
-//    result = prime * result
-//        + ((observation == null) ? 0 : observation.hashCode());
-//    _hash = result;
-//    return result;
+    // if (_hash != 0)
+    // return _hash;
+    //
+    // final int prime = 31;
+    // int result = 1;
+    // result = prime
+    // * result
+    // + ((blockStateObservation == null) ? 0
+    // : blockStateObservation.hashCode());
+    // // XXX we're only concerned with phase here
+    // result = prime * result
+    // + ((journeyState == null) ? 0 : journeyState.getPhase().hashCode());
+    // // result = prime * result
+    // // + ((journeySummaries == null) ? 0 : journeySummaries.hashCode());
+    // result = prime * result
+    // + ((motionState == null) ? 0 : motionState.hashCode());
+    // result = prime * result
+    // + ((observation == null) ? 0 : observation.hashCode());
+    // _hash = result;
+    // return result;
   }
 
   @Override
   public boolean equals(Object obj) {
     return this.distribution.equals(obj);
-//    if (this == obj)
-//      return true;
-//    if (obj == null)
-//      return false;
-//    if (!(obj instanceof VehicleState))
-//      return false;
-//    final VehicleState other = (VehicleState) obj;
-//    if (blockStateObservation == null) {
-//      if (other.blockStateObservation != null)
-//        return false;
-//    } else if (!blockStateObservation.equals(other.blockStateObservation))
-//      return false;
-//    // XXX we're only concerned with phase here
-//    if (journeyState == null) {
-//      if (other.journeyState != null)
-//        return false;
-//    } else if (other.journeyState == null) {
-//      return false;
-//    } else if (!journeyState.getPhase().equals(other.journeyState.getPhase()))
-//      return false;
-//    // if (journeySummaries == null) {
-//    // if (other.journeySummaries != null)
-//    // return false;
-//    // } else if (!journeySummaries.equals(other.journeySummaries))
-//    // return false;
-//    if (motionState == null) {
-//      if (other.motionState != null)
-//        return false;
-//    } else if (!motionState.equals(other.motionState))
-//      return false;
-//    if (observation == null) {
-//      if (other.observation != null)
-//        return false;
-//    } else if (!observation.equals(other.observation))
-//      return false;
-//    return true;
+    // if (this == obj)
+    // return true;
+    // if (obj == null)
+    // return false;
+    // if (!(obj instanceof VehicleState))
+    // return false;
+    // final VehicleState other = (VehicleState) obj;
+    // if (blockStateObservation == null) {
+    // if (other.blockStateObservation != null)
+    // return false;
+    // } else if (!blockStateObservation.equals(other.blockStateObservation))
+    // return false;
+    // // XXX we're only concerned with phase here
+    // if (journeyState == null) {
+    // if (other.journeyState != null)
+    // return false;
+    // } else if (other.journeyState == null) {
+    // return false;
+    // } else if
+    // (!journeyState.getPhase().equals(other.journeyState.getPhase()))
+    // return false;
+    // // if (journeySummaries == null) {
+    // // if (other.journeySummaries != null)
+    // // return false;
+    // // } else if (!journeySummaries.equals(other.journeySummaries))
+    // // return false;
+    // if (motionState == null) {
+    // if (other.motionState != null)
+    // return false;
+    // } else if (!motionState.equals(other.motionState))
+    // return false;
+    // if (observation == null) {
+    // if (other.observation != null)
+    // return false;
+    // } else if (!observation.equals(other.observation))
+    // return false;
+    // return true;
   }
 
   public NycVehicleStateDistribution getDistribution() {

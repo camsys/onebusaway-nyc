@@ -1,10 +1,10 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.sort;
 
-import java.util.Comparator;
-
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
 import com.google.common.collect.ComparisonChain;
+
+import java.util.Comparator;
 
 public final class ScheduledBlockLocationComparator implements
     Comparator<ScheduledBlockLocation> {

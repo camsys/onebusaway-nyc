@@ -19,11 +19,11 @@ import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 
 /**
- * Listen for vehicles assigned to one or more depots and inject them into the inference
- * process
+ * Listen for vehicles assigned to one or more depots and inject them into the
+ * inference process
  * 
  * @author jmaki
- *
+ * 
  */
 public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
     implements PartitionedInputQueueListener, ServletContextAware {
@@ -57,7 +57,7 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
     if (servletContext != null) {
       final String key = servletContext.getInitParameter("depot.partition.key");
       _log.info("servlet context provied depot.partition.key=" + key);
-      
+
       if (key != null) {
         setDepotPartitionKey(key);
       }
@@ -82,10 +82,10 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
 
     final CcLocationReport message = envelope.getCcLocationReport();
     final ArrayList<AgencyAndId> vehicleList = new ArrayList<AgencyAndId>();
-    
-    if(_depotPartitionKeys == null)
-    	return false;
-    
+
+    if (_depotPartitionKeys == null)
+      return false;
+
     for (final String key : _depotPartitionKeys) {
       try {
         vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));

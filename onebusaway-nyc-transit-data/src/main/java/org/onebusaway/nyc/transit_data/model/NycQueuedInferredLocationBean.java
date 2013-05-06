@@ -194,7 +194,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 		return routeId;
 	}
 
-	public void setBearing(double bearing) {
+	public void setBearing(Double bearing) {
 		this.bearing = bearing;
 	}
 

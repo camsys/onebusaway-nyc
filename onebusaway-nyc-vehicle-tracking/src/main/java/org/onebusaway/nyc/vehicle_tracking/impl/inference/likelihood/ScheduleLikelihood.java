@@ -40,9 +40,9 @@ public class ScheduleLikelihood implements SensorModelRule {
       2, 0d, 1d / (2d * 40d));
   final static private StudentTDistribution schedDevFormalRunDist = new StudentTDistribution(
       1, 0d, 1d / (2d * 290d));
-  
+
   final static private double pFormal = 0.95d;
-  
+
   /*
    * In minutes, as well
    */
@@ -54,7 +54,8 @@ public class ScheduleLikelihood implements SensorModelRule {
   }
 
   @Override
-  public SensorModelResult likelihood(Context context) throws BadProbabilityParticleFilterException {
+  public SensorModelResult likelihood(Context context)
+      throws BadProbabilityParticleFilterException {
 
     final VehicleState state = context.getState();
     final Observation obs = context.getObservation();
@@ -78,7 +79,7 @@ public class ScheduleLikelihood implements SensorModelRule {
     } else {
       final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation());
       final double x = state.getBlockStateObservation().getScheduleDeviation();
-      
+
       if (EVehiclePhase.DEADHEAD_AFTER == phase) {
 
         if (FastMath.abs(x) > 0d) {
@@ -107,7 +108,7 @@ public class ScheduleLikelihood implements SensorModelRule {
         }
 
       } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
-        
+
         final double pSched = getScheduleDevLogProb(x, schedDist);
         result.addLogResultAsAnd("deadhead during", pSched);
 
@@ -126,24 +127,26 @@ public class ScheduleLikelihood implements SensorModelRule {
   }
 
   /**
-   * Manual truncation (when using the formal run distribution)
-   * We shouldn't have to worry about normalization, yet.
+   * Manual truncation (when using the formal run distribution) We shouldn't
+   * have to worry about normalization, yet.
    */
-  public static double getScheduleDevLogProb(final double x, StudentTDistribution schedDist) {
-    final double pSched; 
+  public static double getScheduleDevLogProb(final double x,
+      StudentTDistribution schedDist) {
+    final double pSched;
     final boolean isFormal = schedDist == schedDevFormalRunDist;
-    if ( !isFormal || 
-        (x <= POS_SCHED_DEV_CUTOFF && x >= NEG_SCHED_DEV_CUTOFF)) {
-      pSched = (isFormal ? FastMath.log(pFormal) : FastMath.log1p(-pFormal)) + schedDist.getProbabilityFunction().logEvaluate(x);
+    if (!isFormal || (x <= POS_SCHED_DEV_CUTOFF && x >= NEG_SCHED_DEV_CUTOFF)) {
+      pSched = (isFormal ? FastMath.log(pFormal) : FastMath.log1p(-pFormal))
+          + schedDist.getProbabilityFunction().logEvaluate(x);
     } else {
       pSched = Double.NEGATIVE_INFINITY;
-    }    
+    }
     return pSched;
   }
-  
+
   public static StudentTDistribution getSchedDistForBlockState(
       BlockStateObservation blockState) {
-    return blockState.isRunFormal() ? schedDevFormalRunDist : schedDevInformalRunDist;
+    return blockState.isRunFormal() ? schedDevFormalRunDist
+        : schedDevInformalRunDist;
   }
 
   public static StudentTDistribution getSchedDevNonRunDist() {
@@ -154,7 +157,7 @@ public class ScheduleLikelihood implements SensorModelRule {
     if (!isFormal) {
       if (d > POS_SCHED_DEV_CUTOFF) {
         return Double.POSITIVE_INFINITY;
-      } else if (d < NEG_SCHED_DEV_CUTOFF){
+      } else if (d < NEG_SCHED_DEV_CUTOFF) {
         return -Double.NEGATIVE_INFINITY;
       }
     }

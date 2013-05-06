@@ -20,5 +20,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult
 
 public interface SensorModelRule {
 
-  public SensorModelResult likelihood(Context context) throws BadProbabilityParticleFilterException;
+  public SensorModelResult likelihood(Context context)
+      throws BadProbabilityParticleFilterException;
 }

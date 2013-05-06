@@ -15,15 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
-
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.springframework.stereotype.Component;
 
 import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
@@ -32,6 +25,14 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.MinMaxPriorityQueue;
 import com.google.common.primitives.Longs;
+
+import org.springframework.stereotype.Component;
+
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
 
 @Component
 public class ObservationCache {
@@ -50,16 +51,19 @@ public class ObservationCache {
       new CacheLoader<AgencyAndId, MinMaxPriorityQueue<ObservationContents>>() {
 
         @Override
-        public MinMaxPriorityQueue<ObservationContents> load(
-            AgencyAndId key) throws Exception {
-          
-          return MinMaxPriorityQueue.orderedBy(new Comparator<ObservationContents>() {
-            @Override
-            public int compare(ObservationContents o1, ObservationContents o2) {
-              return -Longs.compare(o1.getObservation().getTime(), o2.getObservation().getTime());
-            }
-            
-          }).maximumSize(2).create();
+        public MinMaxPriorityQueue<ObservationContents> load(AgencyAndId key)
+            throws Exception {
+
+          return MinMaxPriorityQueue.orderedBy(
+              new Comparator<ObservationContents>() {
+                @Override
+                public int compare(ObservationContents o1,
+                    ObservationContents o2) {
+                  return -Longs.compare(o1.getObservation().getTime(),
+                      o2.getObservation().getTime());
+                }
+
+              }).maximumSize(2).create();
         }
 
       });
@@ -68,18 +72,18 @@ public class ObservationCache {
   public <T> T getValueForObservation(Observation observation,
       EObservationCacheKey key) {
     final NycRawLocationRecord record = observation.getRecord();
-    final MinMaxPriorityQueue<ObservationContents> contentsCache =  _contentsByVehicleId.getUnchecked(record.getVehicleId());
+    final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
     /*
      * Synchronize for integration tests, which can do crazy things.
      */
     final ObservationContents contents;
     synchronized (contentsCache) {
       contents = Iterables.find(contentsCache, new ObsSearch(observation), null);
-      
+
       if (contents == null) {
         /*
-         *  Add this new observation content, which, if it's truly a new obs, 
-         *  will be added later
+         * Add this new observation content, which, if it's truly a new obs,
+         * will be added later
          */
         if (!contentsCache.offer(new ObservationContents(observation))) {
           return null;
@@ -102,17 +106,17 @@ public class ObservationCache {
     ObservationContents contents;
     synchronized (contentsCache) {
       contents = Iterables.find(contentsCache, new ObsSearch(observation), null);
-      
+
       if (contents == null) {
         contents = new ObservationContents(observation);
         /*
-         * If we attempt to add observations that are behind our current, 
-         * then just return
+         * If we attempt to add observations that are behind our current, then
+         * just return
          */
         if (!contentsCache.offer(contents)) {
           return;
         }
-      } 
+      }
     }
 
     contents.putValueForValueType(key, value);
@@ -121,26 +125,27 @@ public class ObservationCache {
   private static class ObsSearch implements Predicate<ObservationContents> {
 
     private final Observation obsToFind;
-    
+
     public ObsSearch(Observation obsToFind) {
       this.obsToFind = obsToFind;
     }
-    
+
     @Override
-    public boolean apply(@Nonnull ObservationContents input) {
+    public boolean apply(@Nonnull
+    ObservationContents input) {
       return input.getObservation().getTime() == obsToFind.getTime();
     }
-    
+
   }
-  
+
   private static class ObservationContents {
 
     private final Observation observation;
-    
+
     public ObservationContents(Observation observation) {
       this.observation = observation;
     }
-    
+
     private final EnumMap<EObservationCacheKey, Object> _contents = new EnumMap<EObservationCacheKey, Object>(
         EObservationCacheKey.class);
 
@@ -155,7 +160,8 @@ public class ObservationCache {
 
     @Override
     public String toString() {
-      return "ObservationContents [obsTime=" + observation.getTime() + ", _contents=" + _contents.keySet() + "]";
+      return "ObservationContents [obsTime=" + observation.getTime()
+          + ", _contents=" + _contents.keySet() + "]";
     }
 
     public Observation getObservation() {

@@ -15,17 +15,17 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Date;
-
 import org.onebusaway.csv_entities.CsvEntityReader;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Date;
 
 public class PausesMain {
   public static void main(String[] args) throws CsvEntityIOException,

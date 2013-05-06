@@ -41,7 +41,7 @@ public class RunTransitionLikelihood implements SensorModelRule {
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
   }
-  
+
   final private static double pAcceptibleOrNoChangeLik = 0.88;
 
   public static enum RUN_TRANSITION_STATE {
@@ -49,29 +49,37 @@ public class RunTransitionLikelihood implements SensorModelRule {
   }
 
   @Override
-  public SensorModelResult likelihood(Context context) throws BadProbabilityParticleFilterException {
-    final SensorModelResult result = new SensorModelResult("pRunTransition", 1.0);
+  public SensorModelResult likelihood(Context context)
+      throws BadProbabilityParticleFilterException {
+    final SensorModelResult result = new SensorModelResult("pRunTransition",
+        1.0);
 
     final RUN_TRANSITION_STATE state = getRunTransitionState(context);
 
     switch (state) {
       case RUN_CHANGE_INFO_DIFF:
-        result.addResultAsAnd("changed reported run or operator id", pAcceptibleOrNoChangeLik * (1d / 3d));
+        result.addResultAsAnd("changed reported run or operator id",
+            pAcceptibleOrNoChangeLik * (1d / 3d));
         return result;
       case RUN_CHANGE_FROM_OOS_TO_OSS:
-        result.addResultAsAnd("change from o.o.s. to o.o.s", pAcceptibleOrNoChangeLik * (1d / 4d) * (1d / 4d));
+        result.addResultAsAnd("change from o.o.s. to o.o.s",
+            pAcceptibleOrNoChangeLik * (1d / 4d) * (1d / 4d));
         return result;
       case RUN_CHANGE_FROM_OOS_TO_IN:
-        result.addResultAsAnd("change from o.o.s. to i.s.", pAcceptibleOrNoChangeLik * (1d / 4d) * (3d / 4d));
+        result.addResultAsAnd("change from o.o.s. to i.s.",
+            pAcceptibleOrNoChangeLik * (1d / 4d) * (3d / 4d));
         return result;
       case RUN_CHANGE_FROM_OOS_NORUN_TO_IN:
-        result.addResultAsAnd("change from o.o.s. no run-info to i.s.", pAcceptibleOrNoChangeLik * (1d / 4d));
+        result.addResultAsAnd("change from o.o.s. no run-info to i.s.",
+            pAcceptibleOrNoChangeLik * (1d / 4d));
         return result;
       case RUN_CHANGE_FROM_IS:
-        result.addResultAsAnd("change not from o.o.s.", (1d-pAcceptibleOrNoChangeLik));
+        result.addResultAsAnd("change not from o.o.s.",
+            (1d - pAcceptibleOrNoChangeLik));
         return result;
       case RUN_NOT_CHANGED:
-        result.addResultAsAnd("not-changed run", pAcceptibleOrNoChangeLik * (1d / 4d));
+        result.addResultAsAnd("not-changed run", pAcceptibleOrNoChangeLik
+            * (1d / 4d));
         return result;
       default:
         return null;
@@ -113,7 +121,7 @@ public class RunTransitionLikelihood implements SensorModelRule {
             || EVehiclePhase.DEADHEAD_BEFORE == parentPhase
             || EVehiclePhase.DEADHEAD_DURING == parentPhase) {
           if (parentState.getBlockStateObservation() != null
-              && !parentState.getBlockStateObservation().isRunFormal() 
+              && !parentState.getBlockStateObservation().isRunFormal()
               && state.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS)
             return RUN_TRANSITION_STATE.RUN_CHANGE_FROM_OOS_NORUN_TO_IN;
           else if (state.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS)
@@ -125,8 +133,7 @@ public class RunTransitionLikelihood implements SensorModelRule {
         }
       }
     } else {
-      if (blockStateObs == null 
-          && parentState != null
+      if (blockStateObs == null && parentState != null
           && parentState.getBlockStateObservation() == null)
         return RUN_TRANSITION_STATE.RUN_CHANGE_FROM_OOS_TO_OSS;
       else

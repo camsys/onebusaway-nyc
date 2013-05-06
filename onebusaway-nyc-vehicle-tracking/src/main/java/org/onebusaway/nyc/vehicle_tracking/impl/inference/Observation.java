@@ -19,7 +19,6 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
@@ -36,17 +35,15 @@ import com.google.common.collect.Sets;
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 
-import org.geotools.geometry.jts.JTS;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opentrackingtools.model.GpsObservation;
-import org.opentrackingtools.model.ProjectedCoordinate;
 import org.opentrackingtools.util.GeoUtils;
 
 import java.util.Date;
 import java.util.Set;
 
-public class Observation extends GpsObservation implements Comparable<Observation> {
+public class Observation extends GpsObservation implements
+    Comparable<Observation> {
 
   private final Date _timestamp;
 
@@ -76,18 +73,23 @@ public class Observation extends GpsObservation implements Comparable<Observatio
 
   private Vector _adjustedVector;
 
+  private Vector _deadReckoningPoint;
+
+  private int _quality;
+
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
       boolean outOfService, boolean hasValidDsc,
       Observation previousObservation, Set<AgencyAndId> dscImpliedRoutes,
       RunResults runResults) throws TransformException {
-    
-    super(record.getDeviceId(), record.getTimeAsDate(), new Coordinate(record.getLatitude(), record.getLongitude()),
-        (double)record.getSpeed(), (double)record.getBearing(), null, 
-        (int)record.getId(), 
-        previousObservation, 
-        GeoUtils.convertToEuclidean(new Coordinate(record.getLatitude(), record.getLongitude())));
-    
+
+    super(record.getDeviceId(), record.getTimeAsDate(), new Coordinate(
+        record.getLatitude(), record.getLongitude()),
+        record.getSpeed() != null ? new Double(record.getSpeed()) : null, 
+        record.getBearing(), null, (int) record.getId(), previousObservation,
+        GeoUtils.convertToEuclidean(new Coordinate(record.getLatitude(),
+            record.getLongitude())));
+
     _timestamp = new Date(timestamp);
     _record = record;
     _point = ProjectedPointFactory.forward(record.getLatitude(),
@@ -106,40 +108,57 @@ public class Observation extends GpsObservation implements Comparable<Observatio
       this._timeDelta = null;
       this._distanceMoved = 0d;
       this._orientation = record.getBearing();
+      this._deadReckoningPoint = this.projPoint;
       this._adjustedGps = this._point;
     } else {
       this._timeDelta = (timestamp - previousObservation.getTime()) / 1000d;
       this._distanceMoved = TurboButton.distance(
-          previousObservation.getLocation(),
-          _point.toCoordinatePoint());
-      if (record.getBearing() != null) {
-        this._orientation = record.getBearing();
-        final double bearingInRadians = -Angle.toRadians(record.getBearing())
-            + Math.PI/2d;
+          previousObservation.getLocation(), _point.toCoordinatePoint());
+      final NycRawLocationRecord previousRecord = previousObservation.getRecord();
+      if (previousRecord.getBearing() != null) {
+        
+        String[] splits = record.getGga().split("\\|");
+        this._quality = Integer.parseInt(splits[6]);
+        
+//        final Coordinate rmcLatLon = new Coordinate(
+//            Double.parseDouble(splits[2])*10e-3, -Double.parseDouble(splits[4])*10e-3);        
+        
+        this._orientation = previousRecord.getBearing();
+        final double bearingInRadians = -Angle.toRadians(previousRecord.getBearing())
+            + Math.PI / 2d;
         final Vector pointOnUnitCircle = VectorFactory.getDefault().copyArray(
-            new double[] {Math.cos(bearingInRadians), Math.sin(bearingInRadians)});
-        final double drSpeed = 0.514444d * record.getSpeed() * this._timeDelta;
+            new double[] {
+                Math.cos(bearingInRadians), Math.sin(bearingInRadians)});
+        final double instDistMoved = 0.514444d * previousRecord.getSpeed() * this._timeDelta;
+        final Vector relativeNewLocation = pointOnUnitCircle.scale(instDistMoved);
+
+        this._deadReckoningPoint = 
+            previousObservation.getProjectedPoint()
+            //previousObservation._deadReckoningPoint
+            .plus(relativeNewLocation);
+
         this._adjustedVector = this.getProjectedPoint().minus(
-            pointOnUnitCircle.scale(drSpeed));
-        Coordinate adjLatLon = GeoUtils.convertToLatLon(this._adjustedVector, 
-            GeoUtils.getTransform(this.coordsLatLon));
-        this._adjustedGps = new ProjectedPoint(adjLatLon.x, adjLatLon.y, 
-            this._adjustedVector.getElement(0), this._adjustedVector.getElement(1), 0);
+            this._deadReckoningPoint.scale(1d - _alpha)).scale(1d / _alpha);
+
+        final Coordinate adjLatLon = GeoUtils.convertToLatLon(
+            this._adjustedVector, GeoUtils.getTransform(this.coordsLatLon));
+
+        this._adjustedGps = 
+            new ProjectedPoint(adjLatLon.x, adjLatLon.y,
+              this._adjustedVector.getElement(0),
+              this._adjustedVector.getElement(1), 0);
       } else {
         if (_distanceMoved == 0d) {
           this._orientation = previousObservation.getOrientation();
         } else {
           this._orientation = SphericalGeometryLibrary.getOrientation(
               previousObservation.getLocation().getLat(),
-              previousObservation.getLocation().getLon(),
-              record.getLatitude(),
-              record.getLongitude()
-              );
+              previousObservation.getLocation().getLon(), record.getLatitude(),
+              record.getLongitude());
         }
         this._adjustedGps = this._point;
       }
-      
-      
+
     }
 
     _previousObservation = previousObservation;
@@ -177,6 +196,7 @@ public class Observation extends GpsObservation implements Comparable<Observatio
     return _point.toCoordinatePoint();
   }
 
+  @Override
   public Observation getPreviousObservation() {
     return _previousObservation;
   }
@@ -233,17 +253,18 @@ public class Observation extends GpsObservation implements Comparable<Observatio
 
     if (this == o2)
       return 0;
-    
+
     int res = 0;
     if (o2 instanceof Observation) {
-      
-      final Observation o2Obs = (Observation) o2;
+
+      final Observation o2Obs = o2;
       res = ComparisonChain.start().compare(_timestamp, o2Obs._timestamp).compare(
-        _point, o2Obs._point, _orderByXandY).compare(
-        _lastValidDestinationSignCode, o2Obs._lastValidDestinationSignCode,
-        Ordering.natural().nullsLast()).compare(_record, o2Obs._record).compare(
-        outOfService, o2Obs.outOfService).compare(atTerminal, o2Obs.atTerminal).compare(
-        atBase, o2Obs.atBase).compare(_runResults, o2Obs._runResults).result();
+          _point, o2Obs._point, _orderByXandY).compare(
+          _lastValidDestinationSignCode, o2Obs._lastValidDestinationSignCode,
+          Ordering.natural().nullsLast()).compare(_record, o2Obs._record).compare(
+          outOfService, o2Obs.outOfService).compare(atTerminal,
+          o2Obs.atTerminal).compare(atBase, o2Obs.atBase).compare(_runResults,
+          o2Obs._runResults).result();
     }
 
     return res;
@@ -257,9 +278,11 @@ public class Observation extends GpsObservation implements Comparable<Observatio
 
   private final Double _distanceMoved;
 
-  private MathTransform _transform;
-
-  private ProjectedCoordinate _projCoord;
+  /*
+   * This constant determines the expected mixing between the raw GPS location
+   * and a tracked dead-reckoning location.
+   */
+  protected static final double _alpha = 0.5d;
 
   @Override
   public int hashCode() {
@@ -277,7 +300,8 @@ public class Observation extends GpsObservation implements Comparable<Observatio
             : _lastValidDestinationSignCode.hashCode());
     result = prime * result + ((_point == null) ? 0 : _point.hashCode());
     result = prime * result + ((_record == null) ? 0 : _record.hashCode());
-    result = prime * result + (int) (_timestamp.getTime() ^ (_timestamp.getTime() >>> 32));
+    result = prime * result
+        + (int) (_timestamp.getTime() ^ (_timestamp.getTime() >>> 32));
     result = prime * result + (atBase ? 1231 : 1237);
     result = prime * result + (atTerminal ? 1231 : 1237);
     result = prime * result + (outOfService ? 1231 : 1237);
@@ -369,6 +393,14 @@ public class Observation extends GpsObservation implements Comparable<Observatio
 
   public Vector getAdjustedVector() {
     return _adjustedVector;
+  }
+
+  public Vector getDeadReckoningPoint() {
+    return _deadReckoningPoint;
+  }
+
+  public int getQuality() {
+    return _quality;
   }
 
 }

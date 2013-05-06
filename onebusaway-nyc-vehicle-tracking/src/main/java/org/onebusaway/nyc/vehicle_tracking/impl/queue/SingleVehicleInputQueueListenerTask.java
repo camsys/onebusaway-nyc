@@ -14,7 +14,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 /**
- * Listens to the real time queue for one vehicle and injects it into the inference process.
+ * Listens to the real time queue for one vehicle and injects it into the
+ * inference process.
  * 
  * @author jmaki
  */

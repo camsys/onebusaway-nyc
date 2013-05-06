@@ -748,6 +748,9 @@ OBA.Debug = function() {
       map.addLayer(dirLayer);
       
 			map.addLayers([road, routes, obslines, stopMarkers, inferredMarkers, addedMarkers, markers]);
+			map.setLayerIndex(markers, 90);
+			map.setLayerIndex(inferredMarkers, 91);
+			map.setLayerIndex(addedMarkers, 92);
 			map.addControl(new OpenLayers.Control.LayerSwitcher());
 			
 			map.setCenter(new OpenLayers.LonLat(-74.081154, 40.639228).transform(
@@ -761,13 +764,21 @@ OBA.Debug = function() {
 			
 			jQuery("#latlon_clear_button").click(function(e) {
 				e.preventDefault();
-				
 				addedMarkers.clearMarkers();
+			});
+			
+			jQuery("#clear_inferredMarkers").click(function(e) {
+				e.preventDefault();
+				jQuery.each(inferredMarkers.markers, function(_, m) {
+					  m.display(false);
+			      m.displayed = false;
+				});
 			});
 			
 			jQuery("#clear_trips").click(function(e) {
 				e.preventDefault();
 				routes.removeAllFeatures();
+				trips.removeAllFeatures();
 				stopMarkers.clearMarkers();
 			});
 			
@@ -851,7 +862,8 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 	<input type="submit" value="Clear" id="latlon_clear_button"/>
 	<br/>
 	<br/>
-	<input type="submit" value="Clear trips" id="clear_trips"/>
+	<input type="submit" value="Clear Trips" id="clear_trips"/>
+	<input type="submit" value="Clear Inferred Locations" id="clear_inferredMarkers"/>
 	
 </td>
 <td>

@@ -20,6 +20,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityPar
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
+
 import org.springframework.stereotype.Component;
 
 import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
@@ -28,46 +29,47 @@ import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 public class MovedLikelihood implements SensorModelRule {
 
   @Override
-  public SensorModelResult likelihood(Context context) throws BadProbabilityParticleFilterException {
+  public SensorModelResult likelihood(Context context)
+      throws BadProbabilityParticleFilterException {
     final SensorModelResult result = new SensorModelResult("pMoved", 1.0);
     final Observation obs = context.getObservation();
-    
+
     final double prob = computeVehicleHasNotMovedProbability(obs);
     if (context.getState().getMotionState().hasVehicleNotMoved()) {
       result.addResultAsAnd("not-moved", prob);
     } else {
       result.addResultAsAnd("moved", Math.min(1d, Math.max(0d, 1d - prob)));
     }
-    
+
     return result;
   }
-  
+
   /**
-   * Computes the probability that the vehicle has not moved, relative
-   * to the previous observation.
-   * TODO: this used to involve the time between observations, and it should
-   * probably refer to the last in motion location...
+   * Computes the probability that the vehicle has not moved, relative to the
+   * previous observation. TODO: this used to involve the time between
+   * observations, and it should probably refer to the last in motion
+   * location...
    */
   static public double computeVehicleHasNotMovedProbability(Observation obs) {
-    
+
     final NycRawLocationRecord prevRecord = obs.getPreviousRecord();
-    
+
     if (prevRecord == null) {
       return 0.5d;
     }
 
-    final double d = TurboButton.distance(
-        prevRecord.getLatitude(), prevRecord.getLongitude(),
-        obs.getLocation().getLat(), obs.getLocation().getLon());
+    final double d = TurboButton.distance(prevRecord.getLatitude(),
+        prevRecord.getLongitude(), obs.getLocation().getLat(),
+        obs.getLocation().getLon());
 
     /*
      * Although the gps std. dev is reasonable for having not moved, we also
      * have dead-reckoning, which is much more accurate in this regard, so we
-     * shrink the gps std. dev.
-     * Also, we suspect some numerical issues here, so truncate...
-     * TODO: use log results
+     * shrink the gps std. dev. Also, we suspect some numerical issues here, so
+     * truncate... TODO: use log results
      */
-    final double prob = Math.min(1d, Math.max(0d, 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev, d)));
+    final double prob = Math.min(1d,
+        Math.max(0d, 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev, d)));
     return prob;
   }
 }

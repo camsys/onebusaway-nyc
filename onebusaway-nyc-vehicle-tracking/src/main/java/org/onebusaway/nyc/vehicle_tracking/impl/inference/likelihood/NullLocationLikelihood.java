@@ -33,7 +33,8 @@ public class NullLocationLikelihood implements SensorModelRule {
   static private double nullLocProb = 5e-3;
 
   @Override
-  public SensorModelResult likelihood(Context context) throws BadProbabilityParticleFilterException {
+  public SensorModelResult likelihood(Context context)
+      throws BadProbabilityParticleFilterException {
     final SensorModelResult result = new SensorModelResult(
         "pNullLocationState", 1.0);
 
@@ -52,7 +53,7 @@ public class NullLocationLikelihood implements SensorModelRule {
   public static NullLocationStates getNullLocationState(Context context) {
     final VehicleState state = context.getState();
     final BlockStateObservation blockStateObs = state.getBlockStateObservation();
-    EVehiclePhase phase = state.getJourneyState().getPhase();
+    final EVehiclePhase phase = state.getJourneyState().getPhase();
 
     if (blockStateObs == null) {
       return NullLocationStates.NULL_STATE;

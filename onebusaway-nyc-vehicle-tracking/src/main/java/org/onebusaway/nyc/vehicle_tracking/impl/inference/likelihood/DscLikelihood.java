@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood;
 
-import java.util.Set;
-
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
@@ -28,10 +26,13 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityPar
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+
+import com.google.common.collect.Sets;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Sets;
+import java.util.Set;
 
 @Component
 public class DscLikelihood implements SensorModelRule {
@@ -53,7 +54,8 @@ public class DscLikelihood implements SensorModelRule {
   }
 
   @Override
-  public SensorModelResult likelihood(Context context) throws BadProbabilityParticleFilterException {
+  public SensorModelResult likelihood(Context context)
+      throws BadProbabilityParticleFilterException {
 
     final SensorModelResult result = new SensorModelResult(
         "pDestinationSignCode");
@@ -72,16 +74,17 @@ public class DscLikelihood implements SensorModelRule {
         result.addResultAsAnd("!i.p. o.o.s. dsc", 1d);
         return result;
       case DSC_MATCH:
-        result.addResultAsAnd("i.s. matching DSC", (13d/30d));
+        result.addResultAsAnd("i.s. matching DSC", (13d / 30d));
         return result;
       case DSC_DEADHEAD_MATCH:
-        result.addResultAsAnd("i.s. deadhead matching DSC", (8d/30d));
+        result.addResultAsAnd("i.s. deadhead matching DSC", (8d / 30d));
         return result;
       case DSC_ROUTE_MATCH:
-        result.addResultAsAnd("i.s. route-matching/deadhead-before/after", (8d/30d));
+        result.addResultAsAnd("i.s. route-matching/deadhead-before/after",
+            (8d / 30d));
         return result;
       case DSC_IS_NO_BLOCK:
-        result.addResultAsAnd("!o.o.s. dsc null-block", (1d/30d));
+        result.addResultAsAnd("!o.o.s. dsc null-block", (1d / 30d));
         return result;
       case DSC_NO_ROUTE_MATCH:
         result.addResultAsAnd("i.s. non-route-matching DSC", 0d);
@@ -97,7 +100,7 @@ public class DscLikelihood implements SensorModelRule {
     final Observation obs = context.getObservation();
 
     final JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
+    final EVehiclePhase phase = js.getPhase();
 
     final String observedDsc = obs.getLastValidDestinationSignCode();
 
@@ -141,13 +144,13 @@ public class DscLikelihood implements SensorModelRule {
         }
 
         /*
-         * Check if it's active, since deadhead-after/before's
-         * can/should have o.o.s. dsc's, although they often don't.
-         * TODO perhaps check the last non-o.o.s. dsc to give
-         * higher weight to deadhead-after's that match (when
-         * we have good run-info, perhaps).
+         * Check if it's active, since deadhead-after/before's can/should have
+         * o.o.s. dsc's, although they often don't. TODO perhaps check the last
+         * non-o.o.s. dsc to give higher weight to deadhead-after's that match
+         * (when we have good run-info, perhaps).
          */
-        if (!EVehiclePhase.isActiveAfterBlock(phase) && !EVehiclePhase.isActiveBeforeBlock(phase)
+        if (!EVehiclePhase.isActiveAfterBlock(phase)
+            && !EVehiclePhase.isActiveBeforeBlock(phase)
             && dscs.contains(observedDsc)) {
           if (EVehiclePhase.IN_PROGRESS == phase)
             return DSC_STATE.DSC_MATCH;

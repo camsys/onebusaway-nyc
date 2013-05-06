@@ -53,7 +53,7 @@ public class SensorModelImpl implements SensorModel<Observation> {
   public SensorModelResult likelihood(Particle particle,
       Observation observation,
       Map<Entry<VehicleState, VehicleState>, SensorModelResult> cache)
-          throws BadProbabilityParticleFilterException {
+      throws BadProbabilityParticleFilterException {
 
     final VehicleState state = particle.getData();
     VehicleState parentState = null;
@@ -75,7 +75,8 @@ public class SensorModelImpl implements SensorModel<Observation> {
   }
 
   @Override
-  public SensorModelResult likelihood(Particle particle, Observation observation) throws BadProbabilityParticleFilterException {
+  public SensorModelResult likelihood(Particle particle, Observation observation)
+      throws BadProbabilityParticleFilterException {
 
     final VehicleState state = particle.getData();
     VehicleState parentState = null;
@@ -96,11 +97,13 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
   /****
    * {@link SensorModelImpl} Interface
+   * 
    * @throws BadProbabilityParticleFilterException TODO
    ****/
 
   public SensorModelResult likelihood(VehicleState parentState,
-      VehicleState state, Observation obs) throws BadProbabilityParticleFilterException {
+      VehicleState state, Observation obs)
+      throws BadProbabilityParticleFilterException {
 
     final SensorModelResult result = new SensorModelResult("pTotal", 1.0);
     final Context context = new Context(parentState, state, obs);

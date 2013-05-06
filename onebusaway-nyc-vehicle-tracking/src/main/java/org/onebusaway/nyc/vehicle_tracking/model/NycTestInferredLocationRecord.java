@@ -32,7 +32,7 @@ public class NycTestInferredLocationRecord implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private static final int MISSING_VALUE = -999;
-  
+
   /****
    * Raw Observation Values
    ****/
@@ -62,22 +62,22 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   @CsvField(optional = true)
   private String dsc;
-  
+
   @CsvField(optional = true)
   private String nmeaGga;
-  
+
   @CsvField(optional = true)
   private String nmeaRmc;
-  
+
   @CsvField(optional = true)
   private String directionDeg;
-  
+
   @CsvField(optional = true)
   private String speed;
-  
+
   @CsvField(optional = true)
   private Double adjLat;
-  
+
   @CsvField(optional = true)
   private Double adjLon;
 
@@ -171,25 +171,24 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   @CsvField(optional = true)
   private Boolean inferredIsRunFormal;
-  
-  @CsvField(optional = true, ignore=true)
+
+  @CsvField(optional = true, ignore = true)
   private String inferredStateMean = null;
-  
-  @CsvField(optional = true, ignore=true)
+
+  @CsvField(optional = true, ignore = true)
   private String inferredStateCovariance = null;
-  
-  @CsvField(optional = true, ignore=true)
+
+  @CsvField(optional = true, ignore = true)
   private String inferredEdges = null;
 
-  @CsvField(optional = true, ignore=true)
+  @CsvField(optional = true, ignore = true)
   private Coordinate[] inferredPathEdgeGeom;
 
-  @CsvField(optional = true, ignore=true)
+  @CsvField(optional = true, ignore = true)
   private Coordinate[] inferredEdgeGeom;
 
-  @CsvField(optional = true, ignore=true)
+  @CsvField(optional = true, ignore = true)
   private String inferredObsCovariance = null;
-
 
   // **************
 

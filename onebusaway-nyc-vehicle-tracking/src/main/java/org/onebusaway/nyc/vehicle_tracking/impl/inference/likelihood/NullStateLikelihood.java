@@ -34,13 +34,14 @@ public class NullStateLikelihood implements SensorModelRule {
   }
 
   private static final double nonNullLik = 0.9999d;
-  
+
   static public enum NullStates {
     NULL_STATE, NON_NULL_STATE
   }
 
   @Override
-  public SensorModelResult likelihood(Context context) throws BadProbabilityParticleFilterException {
+  public SensorModelResult likelihood(Context context)
+      throws BadProbabilityParticleFilterException {
     final SensorModelResult result = new SensorModelResult("pNullState", 1.0);
 
     final NullStates state = getNullState(context);
@@ -59,7 +60,7 @@ public class NullStateLikelihood implements SensorModelRule {
     final VehicleState state = context.getState();
     // final Observation obs = context.getObservation();
     final BlockStateObservation blockStateObs = state.getBlockStateObservation();
-    EVehiclePhase phase = state.getJourneyState().getPhase();
+    final EVehiclePhase phase = state.getJourneyState().getPhase();
 
     if (blockStateObs == null) {
       return NullStates.NULL_STATE;

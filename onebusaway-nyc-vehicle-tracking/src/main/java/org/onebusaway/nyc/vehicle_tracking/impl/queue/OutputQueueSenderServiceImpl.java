@@ -48,7 +48,7 @@ import javax.servlet.ServletContext;
  * Sends inference output to the inference output queue.
  * 
  * @author sheldonabrown
- *
+ * 
  */
 public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
     ServletContextAware {
@@ -125,7 +125,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
         String r = null;
         try {
           r = _outputBuffer.poll(250, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ie) {
+        } catch (final InterruptedException ie) {
           _log.error("SendThread interrupted", ie);
           return;
         }
@@ -146,7 +146,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
           }
         }
 
-        if (r == null){
+        if (r == null) {
           // skip output message below if no queue content
           continue;
         }

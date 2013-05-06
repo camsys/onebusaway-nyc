@@ -22,14 +22,15 @@ import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * An output service for debugging--sends inference output to the VTW-embedded TDS instead
- * of to an inference output queue.
+ * An output service for debugging--sends inference output to the VTW-embedded
+ * TDS instead of to an inference output queue.
  * 
  * @author jmaki
- *
+ * 
  */
 public class DummyOutputQueueSenderServiceImpl implements
     OutputQueueSenderService {
@@ -40,15 +41,16 @@ public class DummyOutputQueueSenderServiceImpl implements
 
   @Autowired
   private ConfigurationService _configurationService;
-  
+
   @Autowired
   private PredictionIntegrationService _predictionIntegrationService;
-  
+
   @Autowired
   private VehicleLocationListener _vehicleLocationListener;
 
   private Boolean useTimePredictionsIfAvailable() {
-    return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
+    return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString(
+        "display.useTimePredictions", "false"));
   }
 
   @Override
@@ -56,8 +58,8 @@ public class DummyOutputQueueSenderServiceImpl implements
     final VehicleLocationRecord vlr = RecordLibrary.getNycQueuedInferredLocationBeanAsVehicleLocationRecord(r);
     _vehicleLocationListener.handleVehicleLocationRecord(vlr);
 
-    if(useTimePredictionsIfAvailable())
-    	_predictionIntegrationService.updatePredictionsForVehicle(vlr.getVehicleId());
+    if (useTimePredictionsIfAvailable())
+      _predictionIntegrationService.updatePredictionsForVehicle(vlr.getVehicleId());
   }
 
   @Override

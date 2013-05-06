@@ -15,12 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import gov.sandia.cognition.math.LogMath;
-
-import java.util.Random;
-import java.util.Set;
-
-import org.apache.commons.math.util.FastMath;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -31,14 +25,21 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
+
+import gov.sandia.cognition.math.LogMath;
+
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
+
+import org.apache.commons.math.util.FastMath;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import umontreal.iro.lecuyer.rng.MRG32k3a;
 import umontreal.iro.lecuyer.rng.RandomStream;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Multiset.Entry;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Create particles from an observation.
@@ -157,7 +158,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   @Override
-  public Multiset<Particle> createParticles(double timestamp, Observation obs) throws ParticleFilterException {
+  public Multiset<Particle> createParticles(double timestamp, Observation obs)
+      throws ParticleFilterException {
 
     final Set<BlockStateObservation> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(obs);
 
@@ -196,9 +198,12 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
             journeyState, obs);
         final Context context = new Context(null, state, obs);
 
-        transProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(context));
-        transProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(context));
-        transProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(context));
+        transProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(
+            context));
+        transProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(
+            context));
+        transProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(
+            context));
         transProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(context));
         transProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(context));
         transProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(context));
@@ -228,9 +233,12 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         final Context context = new Context(null, nullState, obs);
         final SensorModelResult priorProb = new SensorModelResult(
             "prior creation");
-        priorProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(context));
-        priorProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(context));
-        priorProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(context));
+        priorProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(
+            context));
+        priorProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(
+            context));
+        priorProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(
+            context));
         priorProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(context));
         priorProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(context));
         priorProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(context));
@@ -262,8 +270,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       BlockStateObservation blockState, JourneyState journeyState,
       Observation obs) {
 
-    return new VehicleState(motionState, blockState, journeyState, null,
-        obs);
+    return new VehicleState(motionState, blockState, journeyState, null, obs);
   }
 
 }

@@ -15,9 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -36,10 +33,14 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEn
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+
+import com.google.common.collect.Iterables;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Iterables;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class VehicleStateLibrary {
@@ -47,7 +48,8 @@ public class VehicleStateLibrary {
   private BaseLocationService _baseLocationService;
 
   /**
-   * How close a vehicle needs to be to the terminal to be considered eligible for layover.
+   * How close a vehicle needs to be to the terminal to be considered eligible
+   * for layover.
    */
   private final static double _layoverStopDistance = 400;
 
@@ -91,7 +93,8 @@ public class VehicleStateLibrary {
     return isAtBase;
   }
 
-  public static boolean isAtPotentialLayoverSpot(VehicleState state, Observation obs) {
+  public static boolean isAtPotentialLayoverSpot(VehicleState state,
+      Observation obs) {
     return isAtPotentialLayoverSpot(state.getBlockState(), obs);
   }
 
@@ -266,15 +269,15 @@ public class VehicleStateLibrary {
       return closestStop;
 
     final BlockStopTimeEntry nextStop = location.getNextStop();
-    
+
     /**
-     * If we're at the first or last stop of a trip in our run, then
-     * we're at a potential layover spot.
+     * If we're at the first or last stop of a trip in our run, then we're at a
+     * potential layover spot.
      */
     final BlockStopTimeEntry tripFirstStop = Iterables.getLast(location.getActiveTrip().getStopTimes());
-    final BlockStopTimeEntry tripLastStop = Iterables.getFirst(location.getActiveTrip().getStopTimes(), null);
-    if (tripFirstStop.equals(closestStop)
-        || tripLastStop.equals(closestStop))
+    final BlockStopTimeEntry tripLastStop = Iterables.getFirst(
+        location.getActiveTrip().getStopTimes(), null);
+    if (tripFirstStop.equals(closestStop) || tripLastStop.equals(closestStop))
       return closestStop;
 
     /**

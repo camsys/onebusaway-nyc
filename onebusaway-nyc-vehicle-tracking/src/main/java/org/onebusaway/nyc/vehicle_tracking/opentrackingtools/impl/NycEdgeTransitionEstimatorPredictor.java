@@ -18,20 +18,20 @@ public class NycEdgeTransitionEstimatorPredictor extends
   @Override
   public OnOffEdgeTransPriorDistribution learn(
       Collection<? extends InferenceGraphEdge> data) {
-//    return super.learn(data);
+    // return super.learn(data);
     return null;
   }
 
   @Override
   public void update(OnOffEdgeTransPriorDistribution prior,
       InferenceGraphEdge toEdge) {
-//    super.update(prior, toEdge);
+    // super.update(prior, toEdge);
   }
 
   @Override
   public void update(OnOffEdgeTransPriorDistribution target,
       Iterable<? extends InferenceGraphEdge> to) {
-//    super.update(target, to);
+    // super.update(target, to);
   }
 
 }

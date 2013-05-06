@@ -3,12 +3,12 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
 
 /**
- * A no-op implementation for simulations with the inference engine--
- * we want to receive no actual real time queue input in that case.
+ * A no-op implementation for simulations with the inference engine-- we want to
+ * receive no actual real time queue input in that case.
  * 
  */
-public class DummyPartitionedInputQueueListenerTask extends InputQueueListenerTask
-     implements PartitionedInputQueueListener {
+public class DummyPartitionedInputQueueListenerTask extends
+    InputQueueListenerTask implements PartitionedInputQueueListener {
 
   @Override
   public String getDepotPartitionKey() {
@@ -25,24 +25,28 @@ public class DummyPartitionedInputQueueListenerTask extends InputQueueListenerTa
     return true;
   }
 
-	public void startListenerThread() {
+  @Override
+  public void startListenerThread() {
   }
 
-	public String getQueueHost() {
+  @Override
+  public String getQueueHost() {
     return null;
   }
 
-	public String getQueueName() {
-    return null;
-  }
-	
-	public String getQueueDisplayName() {
+  @Override
+  public String getQueueName() {
     return null;
   }
 
-	public Integer getQueuePort() {
+  @Override
+  public String getQueueDisplayName() {
+    return null;
+  }
+
+  @Override
+  public Integer getQueuePort() {
     return -1;
   }
-
 
 }

@@ -39,9 +39,10 @@ public interface MotionModel<OBS> {
    * @param results
    * @param cache
    * @return
-   * @throws ParticleFilterException 
+   * @throws ParticleFilterException
    */
   Multiset<Particle> move(Multiset<Particle> particles, double timestamp,
-      double timeElapsed, OBS obs, boolean previouslyResampled) throws ParticleFilterException;
+      double timeElapsed, OBS obs, boolean previouslyResampled)
+      throws ParticleFilterException;
 
 }

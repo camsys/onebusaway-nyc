@@ -15,6 +15,25 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.simulator;
 
+import org.onebusaway.csv_entities.EntityHandler;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.TreeMultiset;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,33 +43,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.onebusaway.csv_entities.EntityHandler;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
-import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
-import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycVehicleStateDistribution;
-import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
-
-import gov.sandia.cognition.collection.ScalarMap.Entry;
-
-import org.opentrackingtools.model.VehicleStateDistribution;
-import org.opentrackingtools.util.model.MutableDoubleCount;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.TreeMultiset;
 
 public class SimulatorTask implements Runnable, EntityHandler {
 
@@ -71,7 +63,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
   private NycTestInferredLocationRecord _mostRecentRecord = null;
 
   private VehicleLocationInferenceService _vehicleLocationInferenceService;
-  
+
   private int _id;
 
   private Future<?> _future;
@@ -109,7 +101,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
   private String _filename = null;
 
   private int _particleParentSize = 2;
-  
+
   private final long creationTime = System.currentTimeMillis();
 
   public SimulatorTask() {
@@ -195,12 +187,13 @@ public class SimulatorTask implements Runnable, EntityHandler {
     record.setRecordNumber(_records.size() - 1);
 
     /*
-     * We add this time so that multiple traces for the 
-     * same vehicle id can be run without conflict.
+     * We add this time so that multiple traces for the same vehicle id can be
+     * run without conflict.
      */
-    final String adjId = record.getVehicleId().getId() + "_" + this.creationTime;
+    final String adjId = record.getVehicleId().getId() + "_"
+        + this.creationTime;
     record.getVehicleId().setId(adjId);
-    
+
     final AgencyAndId vid = record.getVehicleId();
     if (_vehicleId != null) {
       if (!_vehicleId.equals(vid))
@@ -345,14 +338,14 @@ public class SimulatorTask implements Runnable, EntityHandler {
       if (_bypassInference) {
         _vehicleLocationInferenceService.handleBypassUpdateForNycTestInferredLocationRecord(record);
       } else {
-        Future<?> taskFuture = _vehicleLocationInferenceService.handleNycTestInferredLocationRecord(record);
+        final Future<?> taskFuture = _vehicleLocationInferenceService.handleNycTestInferredLocationRecord(record);
         taskFuture.get();
       }
-      
+
       processResultRecord(record);
 
-//      if (shouldExitAfterWaitingForInferenceToComplete(record))
-//       return;
+      // if (shouldExitAfterWaitingForInferenceToComplete(record))
+      // return;
 
       _mostRecentRecord = record;
       _recordsProcessed.incrementAndGet();
@@ -441,25 +434,6 @@ public class SimulatorTask implements Runnable, EntityHandler {
     }
   }
 
-  private boolean shouldExitAfterWaitingForInferenceToComplete(
-      NycTestInferredLocationRecord record) {
-
-    for (int i = 0; i < 20; i++) {
-
-      if (processResultRecord(record))
-        return false;
-
-      try {
-        Thread.sleep(10 * i);
-      } catch (final InterruptedException ex) {
-        return true;
-      }
-    }
-
-    _log.warn("vehicle location inference never completed");
-    return true;
-  }
-
   private boolean processResultRecord(NycTestInferredLocationRecord record) {
 
     final NycTestInferredLocationRecord rr = _vehicleLocationInferenceService.getNycTestInferredLocationRecordForVehicle(record.getVehicleId());
@@ -505,15 +479,15 @@ public class SimulatorTask implements Runnable, EntityHandler {
     }
 
     final VehicleLocationDetails details = _vehicleLocationInferenceService.getDetailsForVehicleId(_vehicleId);
-//    final VehicleLocationDetails details = new VehicleLocationDetails();
+    // final VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
     details.setVehicleId(_vehicleId);
-//    details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record));
-//
-//    if (!weightedParticles.isEmpty()) {
-//      details.setParticles(weightedParticles);
-//      details.setSampledParticles(weightedParticles);
-//    }
+    // details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record));
+    //
+    // if (!weightedParticles.isEmpty()) {
+    // details.setParticles(weightedParticles);
+    // details.setSampledParticles(weightedParticles);
+    // }
 
     if (_details.size() < _maxParticleHistorySize)
       _details.add(details);
@@ -548,11 +522,12 @@ public class SimulatorTask implements Runnable, EntityHandler {
   public AgencyAndId getVehicleId() {
     return this._vehicleId;
   }
+
   public VehicleLocationDetails getTransitionParticleDetails(
-          int parentParticleId, int transParticleNumber, int recordIndex) {
+      int parentParticleId, int transParticleNumber, int recordIndex) {
     final VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
-    
+
     final VehicleLocationDetails sourceDetails;
 
     final Collection<Multiset.Entry<Particle>> particles;
@@ -579,17 +554,18 @@ public class SimulatorTask implements Runnable, EntityHandler {
     }
     return details;
   }
-  
+
   public VehicleLocationDetails getParticleDetails(int particleId,
-            int recordIndex) {
+      int recordIndex) {
     final VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
 
     final Collection<Multiset.Entry<Particle>> particles;
     if (recordIndex < 0) {
-//      details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(_mostRecentRecord));
-//      particles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(
-//          _vehicleId).entrySet();
+      // details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(_mostRecentRecord));
+      // particles =
+      // _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(
+      // _vehicleId).entrySet();
       return null;
     } else {
       details.setLastObservation(getDetails(recordIndex).getLastObservation());

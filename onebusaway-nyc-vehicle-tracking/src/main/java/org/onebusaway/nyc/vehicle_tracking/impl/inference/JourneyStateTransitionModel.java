@@ -22,6 +22,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,12 +30,14 @@ import org.springframework.stereotype.Component;
 public class JourneyStateTransitionModel {
 
   /*
-   * Time (seconds) that the vehicle needs to be not moving in order to be a layover.
+   * Time (seconds) that the vehicle needs to be not moving in order to be a
+   * layover.
    */
   private static final double LAYOVER_WAIT_TIME = 120d;
-  
+
   /*
-   * The minimum-required distance left on the trip to be eligible for detour state.
+   * The minimum-required distance left on the trip to be eligible for detour
+   * state.
    */
   private static final double _remainingTripDistanceDetourCutoff = 280d;
 
@@ -58,27 +61,26 @@ public class JourneyStateTransitionModel {
 
     /*
      * We only give detour to states that are supposed to be in-progress,
-     * haven't just changed their run, and don't have snapped states. 
-     * 
+     * haven't just changed their run, and don't have snapped states.
      */
-    if (parentState == null || parentState.getBlockStateObservation() == null
-        || newState.isSnapped() != Boolean.FALSE || (hasSnappedStates == Boolean.TRUE)
+    if (parentState == null
+        || parentState.getBlockStateObservation() == null
+        || newState.isSnapped() != Boolean.FALSE
+        || (hasSnappedStates == Boolean.TRUE)
         || newState.isOnTrip() == Boolean.FALSE
-        || MotionModelImpl.hasRunChanged(parentState.getBlockStateObservation(), newState))
+        || MotionModelImpl.hasRunChanged(
+            parentState.getBlockStateObservation(), newState))
       return false;
-    
+
     /*
-     * Also, some weird edge case came up (see trace 
-     * Trace_7564_20101202T034909) where perpendicular movement was
-     * occurring just at the end of a block, so that detour was possible
-     * for the remaining < 50m.  Now we make sure that there's some 
-     * trip remaining to consider detour.
-     */ 
-    final double remainingDistanceOnTrip = 
-        newState.getBlockState().getBlockLocation().getActiveTrip().getTrip().getTotalTripDistance() - (
-        newState.getBlockState().getBlockLocation().getDistanceAlongBlock() -
-        newState.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock()); 
-    
+     * Also, some weird edge case came up (see trace Trace_7564_20101202T034909)
+     * where perpendicular movement was occurring just at the end of a block, so
+     * that detour was possible for the remaining < 50m. Now we make sure that
+     * there's some trip remaining to consider detour.
+     */
+    final double remainingDistanceOnTrip = newState.getBlockState().getBlockLocation().getActiveTrip().getTrip().getTotalTripDistance()
+        - (newState.getBlockState().getBlockLocation().getDistanceAlongBlock() - newState.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock());
+
     if (remainingDistanceOnTrip < _remainingTripDistanceDetourCutoff)
       return false;
 
@@ -89,9 +91,8 @@ public class JourneyStateTransitionModel {
      */
     if (parentState.getJourneyState().getIsDetour()
         || (parentState.getBlockStateObservation().isSnapped()
-            && parentState.getBlockStateObservation().isOnTrip() 
-            && parentState.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS
-            && !hasNotMoved)) {
+            && parentState.getBlockStateObservation().isOnTrip()
+            && parentState.getJourneyState().getPhase() == EVehiclePhase.IN_PROGRESS && !hasNotMoved)) {
       return true;
     }
 
@@ -117,20 +118,22 @@ public class JourneyStateTransitionModel {
 
     return false;
   }
-  
+
   public JourneyState getJourneyState(BlockStateObservation blockState,
       VehicleState parentState, Observation obs, boolean vehicleNotMoved) {
     final boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
-    final boolean isDetour = isDetour(blockState,
-        hasSnappedStates, vehicleNotMoved, parentState);
-    return this.getJourneyState(blockState, parentState, obs, vehicleNotMoved, isDetour);
+    final boolean isDetour = isDetour(blockState, hasSnappedStates,
+        vehicleNotMoved, parentState);
+    return this.getJourneyState(blockState, parentState, obs, vehicleNotMoved,
+        isDetour);
   }
 
   /*
    * A deterministic journey state logic.<br>
    */
   public JourneyState getJourneyState(BlockStateObservation blockState,
-      VehicleState parentState, Observation obs, boolean vehicleNotMoved, boolean isDetour) {
+      VehicleState parentState, Observation obs, boolean vehicleNotMoved,
+      boolean isDetour) {
 
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       return JourneyState.atBase();
@@ -148,11 +151,11 @@ public class JourneyStateTransitionModel {
         }
       } else if (distanceAlong > blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
         /*
-         * Note: we changed this from >= because snapped deadhead-after states could be more
-         * likely than in-progress at/near the end.
+         * Note: we changed this from >= because snapped deadhead-after states
+         * could be more likely than in-progress at/near the end.
          */
-         return JourneyState.deadheadAfter();
-        
+        return JourneyState.deadheadAfter();
+
       } else {
         /*
          * In the middle of a block.
@@ -166,7 +169,8 @@ public class JourneyStateTransitionModel {
             else if (obs.hasOutOfServiceDsc())
               return JourneyState.deadheadDuring(isDetour);
             else
-              return adjustInProgressTransition(parentState != null ? parentState.getJourneyState().getPhase() : null, 
+              return adjustInProgressTransition(parentState != null
+                  ? parentState.getJourneyState().getPhase() : null,
                   blockState, isDetour, isLayoverStopped);
           } else {
             return JourneyState.deadheadDuring(false);
@@ -182,9 +186,8 @@ public class JourneyStateTransitionModel {
    * The strict schedule-time based journey state assignment doesn't work for
    * late/early transitions to in-progess, since in-progress states that are
    * produced will be judged harshly if they're not exactly on the geometry.
-   * This method works around that by assigning deadhead-before to some
-   * states that would otherwise be in-progress.  Also helps for mid-trip
-   * joins.
+   * This method works around that by assigning deadhead-before to some states
+   * that would otherwise be in-progress. Also helps for mid-trip joins.
    * 
    * @param parentState
    * @param newEdge
@@ -192,11 +195,11 @@ public class JourneyStateTransitionModel {
    * @return
    */
   private JourneyState adjustInProgressTransition(EVehiclePhase parentPhase,
-      BlockStateObservation newBlockState, boolean isDetour, boolean isLayoverStopped) {
+      BlockStateObservation newBlockState, boolean isDetour,
+      boolean isLayoverStopped) {
 
     if (parentPhase != null
-        && (!parentPhase.equals(EVehiclePhase.IN_PROGRESS)
-          && !parentPhase.equals(EVehiclePhase.DEADHEAD_AFTER))
+        && (!parentPhase.equals(EVehiclePhase.IN_PROGRESS) && !parentPhase.equals(EVehiclePhase.DEADHEAD_AFTER))
         && !newBlockState.isSnapped()) {
       final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(parentPhase);
       /*
@@ -204,16 +207,14 @@ public class JourneyStateTransitionModel {
        */
       if (EVehiclePhase.isLayover(parentPhase)
           && !(isLayoverStopped && newBlockState.isAtPotentialLayoverSpot())) {
-        return wasPrevStateDuring
-            ? JourneyState.deadheadDuring(isDetour)
+        return wasPrevStateDuring ? JourneyState.deadheadDuring(isDetour)
             : JourneyState.deadheadBefore(null);
-      /*
-       * If it wasn't a layover and now it is, become one
-       */
+        /*
+         * If it wasn't a layover and now it is, become one
+         */
       } else if (!EVehiclePhase.isLayover(parentPhase)
           && (isLayoverStopped && newBlockState.isAtPotentialLayoverSpot())) {
-        return wasPrevStateDuring
-            ? JourneyState.layoverDuring(isDetour)
+        return wasPrevStateDuring ? JourneyState.layoverDuring(isDetour)
             : JourneyState.layoverBefore();
       } else {
         return JourneyState.getStateForPhase(parentPhase, isDetour, null);
@@ -222,7 +223,7 @@ public class JourneyStateTransitionModel {
       return JourneyState.inProgress();
     }
   }
-  
+
   static public boolean isLocationOnATrip(BlockState blockState) {
     return isLocationOnATrip(blockState.getBlockLocation());
   }

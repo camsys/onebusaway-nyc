@@ -41,7 +41,7 @@ public final class BlockStateObservation implements
   private final boolean _isOnTrip;
 
   public BlockStateObservation(BlockStateObservation state, Observation obs) {
-    
+
     final String runId = state.getBlockState().getRunId();
     _blockState = state._blockState;
     _isOpAssigned = obs.getOpAssignedRunId() != null
@@ -51,18 +51,20 @@ public final class BlockStateObservation implements
     _isRunFormal = _isOpAssigned == Boolean.TRUE
         || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0)
         ? true : false;
-    _isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);
+    _isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+        _blockState, obs);
     _isSnapped = state._isSnapped;
     _obs = obs;
     _isOnTrip = state._isOnTrip;
     _scheduleDeviation = computeScheduleDeviation(obs, _blockState);
-    
+
     /*
-     * We now recompute these, since some of this info could change simply with time.
+     * We now recompute these, since some of this info could change simply with
+     * time.
      */
-//    this(state._blockState, state._isRunReported, state._isOpAssigned,
-//        state._isRunFormal, state._isAtPotentialLayoverSpot, state._isSnapped,
-//        obs, state._isOnTrip);
+    // this(state._blockState, state._isRunReported, state._isOpAssigned,
+    // state._isRunFormal, state._isAtPotentialLayoverSpot, state._isSnapped,
+    // obs, state._isOnTrip);
   }
 
   public BlockStateObservation(BlockState blockState, Observation obs,
@@ -87,8 +89,9 @@ public final class BlockStateObservation implements
   }
 
   /**
-   * Computes the schedule deviation in minutes (obs.time - sched.time).
-   * Note: for states that haven't started, or that have ended, the value returned is zero.
+   * Computes the schedule deviation in minutes (obs.time - sched.time). Note:
+   * for states that haven't started, or that have ended, the value returned is
+   * zero.
    * 
    * @param obs
    * @param blockState

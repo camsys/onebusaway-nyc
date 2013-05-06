@@ -33,8 +33,10 @@ public interface SensorModel<OBS> {
    * @return likelihood probability on the interval [0.0,1.0]
    * @throws BadProbabilityParticleFilterException TODO
    */
-  public SensorModelResult likelihood(Particle particle, OBS observation) throws BadProbabilityParticleFilterException;
+  public SensorModelResult likelihood(Particle particle, OBS observation)
+      throws BadProbabilityParticleFilterException;
 
   public SensorModelResult likelihood(Particle particle, OBS observation,
-      Map<Entry<VehicleState, VehicleState>, SensorModelResult> cache) throws BadProbabilityParticleFilterException;
+      Map<Entry<VehicleState, VehicleState>, SensorModelResult> cache)
+      throws BadProbabilityParticleFilterException;
 }

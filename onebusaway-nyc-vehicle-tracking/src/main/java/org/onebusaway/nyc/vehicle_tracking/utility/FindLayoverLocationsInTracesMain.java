@@ -15,11 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.utility;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
 import org.onebusaway.csv_entities.CsvEntityReader;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
@@ -27,6 +22,11 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
 import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * This utility examines vehicle trace data to identify all layover locations
@@ -124,8 +124,7 @@ public class FindLayoverLocationsInTracesMain {
       final CoordinatePoint location = new CoordinatePoint(
           record.getLatitude(), record.getLongitude());
 
-      final double d = TurboButton.distance(_dwellLocation,
-          location);
+      final double d = TurboButton.distance(_dwellLocation, location);
 
       if (d > 10)
         return false;

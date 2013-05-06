@@ -15,20 +15,12 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gov.sandia.cognition.math.LogMath;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.apache.commons.math.util.FastMath;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
@@ -36,6 +28,15 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
+
+import org.apache.commons.math.util.FastMath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Core particle filter implementation.<br>
@@ -73,7 +74,8 @@ public class ParticleFilter<OBS> {
 
   /**
    * Flag for option to use the maximum likelihood particle as reported result.
-   *  (as opposed to the most likely particle within the most likely phase/trip pair)
+   * (as opposed to the most likely particle within the most likely phase/trip
+   * pair)
    */
   final private static boolean _maxLikelihoodParticle = false;
 
@@ -197,7 +199,7 @@ public class ParticleFilter<OBS> {
     return _particleFactory.createParticles(timestamp, observation);
   }
 
-  public static double getEffectiveSampleSize(Multiset<Particle> particles) 
+  public static double getEffectiveSampleSize(Multiset<Particle> particles)
       throws BadProbabilityParticleFilterException {
     double Wnorm = 0.0;
     for (final Multiset.Entry<Particle> p : particles.entrySet()) {
@@ -215,16 +217,18 @@ public class ParticleFilter<OBS> {
     }
 
     if (Double.isInfinite(Wvar) || Double.isNaN(Wvar))
-      throw new BadProbabilityParticleFilterException("effective sample size numerical error: Wvar=" + Wvar);
-    
+      throw new BadProbabilityParticleFilterException(
+          "effective sample size numerical error: Wvar=" + Wvar);
+
     return 1 / Wvar;
   }
 
   /**
    * @return true if this is the initial entry for these particles
-   * @throws ParticleFilterException 
+   * @throws ParticleFilterException
    */
-  private boolean checkFirst(double timestamp, OBS observation) throws ParticleFilterException {
+  private boolean checkFirst(double timestamp, OBS observation)
+      throws ParticleFilterException {
 
     if (!_seenFirst) {
       _particles.addAll(createInitialParticlesFromObservation(timestamp,
@@ -305,11 +309,6 @@ public class ParticleFilter<OBS> {
 
   }
 
-  @SuppressWarnings("unused")
-  private SensorModelResult getParticleLikelihood(Particle particle, OBS obs) throws BadProbabilityParticleFilterException {
-    return _sensorModel.likelihood(particle, obs);
-  }
-
   /**
    * This runs a single time-step of the particle filter, given a single
    * timestep's worth of sensor readings.
@@ -369,10 +368,12 @@ public class ParticleFilter<OBS> {
 
   /**
    * Low variance sampler. Follows Thrun's example in Probabilistic Robots.
-   * @throws ParticleFilterException 
+   * 
+   * @throws ParticleFilterException
    */
   public static Multiset<Particle> lowVarianceSampler(
-      Multiset<Particle> particles, double M) throws BadProbabilityParticleFilterException {
+      Multiset<Particle> particles, double M)
+      throws BadProbabilityParticleFilterException {
     Preconditions.checkArgument(particles.size() > 0);
     Preconditions.checkArgument(M > 0);
 
@@ -392,8 +393,9 @@ public class ParticleFilter<OBS> {
     }
 
     if (resampled.size() != M)
-      throw new BadProbabilityParticleFilterException("low variance sampler did not return a valid sample");
-    
+      throw new BadProbabilityParticleFilterException(
+          "low variance sampler did not return a valid sample");
+
     return resampled;
   }
 

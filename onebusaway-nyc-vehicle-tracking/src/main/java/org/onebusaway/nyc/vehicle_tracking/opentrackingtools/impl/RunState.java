@@ -10,14 +10,15 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 
 import gov.sandia.cognition.util.AbstractCloneableSerializable;
-import gov.sandia.cognition.util.CloneableSerializable;
 
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class RunState extends AbstractCloneableSerializable implements Comparable<RunState> {
+public class RunState extends AbstractCloneableSerializable implements
+    Comparable<RunState> {
 
-  public static class RunStateEdgePredictiveResults extends AbstractCloneableSerializable {
+  public static class RunStateEdgePredictiveResults extends
+      AbstractCloneableSerializable {
 
     protected double nullStateLogLikelihood;
     protected double runTransitionLogLikelihood;
@@ -32,9 +33,9 @@ public class RunState extends AbstractCloneableSerializable implements Comparabl
 
     public double getTotalLogLik() {
       if (total == null) {
-        total = nullStateLogLikelihood
-            + runTransitionLogLikelihood + runLogLikelihood
-            + schedLogLikelihood + dscLogLikelihood + movedLogLikelihood;
+        total = nullStateLogLikelihood + runTransitionLogLikelihood
+            + runLogLikelihood + schedLogLikelihood + dscLogLikelihood
+            + movedLogLikelihood;
       }
 
       return total;
@@ -155,17 +156,17 @@ public class RunState extends AbstractCloneableSerializable implements Comparabl
   public VehicleState getVehicleState() {
     if (this.oldTypeVehicleState == null) {
 
-      final long lastInMotionTime; 
+      final long lastInMotionTime;
       final CoordinatePoint lastInMotionLoc;
       if (this.vehicleHasNotMoved && this.oldTypeParent != null) {
         lastInMotionTime = this.oldTypeParent.getMotionState().getLastInMotionTime();
-        lastInMotionLoc = this.oldTypeParent.getMotionState().getLastInMotionLocation(); 
+        lastInMotionLoc = this.oldTypeParent.getMotionState().getLastInMotionLocation();
       } else {
         lastInMotionTime = this.obs.getTime();
         if (this.blockStateObs != null) {
           lastInMotionLoc = this.blockStateObs.getBlockState().getBlockLocation().getLocation();
         } else {
-          lastInMotionLoc = this.obs.getLocation(); 
+          lastInMotionLoc = this.obs.getLocation();
         }
       }
 
@@ -291,7 +292,7 @@ public class RunState extends AbstractCloneableSerializable implements Comparabl
     if (!(obj instanceof RunState)) {
       return false;
     }
-    RunState other = (RunState) obj;
+    final RunState other = (RunState) obj;
     if (blockStateObs == null) {
       if (other.blockStateObs != null) {
         return false;
@@ -315,15 +316,16 @@ public class RunState extends AbstractCloneableSerializable implements Comparabl
   @Override
   public int compareTo(RunState o) {
     final CompareToBuilder comparator = new CompareToBuilder();
-    comparator.append(this.blockStateObs, o.blockStateObs); 
-    comparator.append(this.vehicleHasNotMoved, o.vehicleHasNotMoved); 
-    comparator.append(this.getJourneyState().getPhase(), o.getJourneyState().getPhase()); 
+    comparator.append(this.blockStateObs, o.blockStateObs);
+    comparator.append(this.vehicleHasNotMoved, o.vehicleHasNotMoved);
+    comparator.append(this.getJourneyState().getPhase(),
+        o.getJourneyState().getPhase());
     return comparator.toComparison();
   }
 
   @Override
   public RunState clone() {
-    RunState clone = (RunState) super.clone();
+    final RunState clone = (RunState) super.clone();
     clone.blockStateObs = this.blockStateObs;
     clone.graph = this.graph;
     clone.journeyState = this.journeyState;
