@@ -84,10 +84,11 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   @Override
   public String execute() {
-    
+
+	long currentTimestamp = getTime();
     _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
     
-    _realtimeService.setTime(getTime());
+    _realtimeService.setTime(currentTimestamp);
     
     String directionId = _request.getParameter("DirectionRef");
     
@@ -170,7 +171,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       for (AgencyAndId vehicleId : vehicleIds) {
         VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-            vehicleId.toString(), maximumOnwardCalls);
+            vehicleId.toString(), maximumOnwardCalls, currentTimestamp);
 
         if (activity != null) {
           activities.add(activity);
@@ -178,7 +179,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       }
       
       // No vehicle id validation, so we pass null for error
-      _response = generateSiriResponse(activities, null, null);
+      _response = generateSiriResponse(activities, null, null, currentTimestamp);
 
       // *** CASE 2: by route, using direction id, if provided
     } else if (_request.getParameter("LineRef") != null) {
@@ -190,7 +191,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       for (AgencyAndId routeId : routeIds) {
         
         List<VehicleActivityStructure> activitiesForRoute = _realtimeService.getVehicleActivityForRoute(
-            routeId.toString(), directionId, maximumOnwardCalls);
+            routeId.toString(), directionId, maximumOnwardCalls, currentTimestamp);
         if (activitiesForRoute != null) {
           activities.addAll(activitiesForRoute);
         }
@@ -218,7 +219,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         error = new Exception(routeIdErrorString.trim());
       }
 
-      _response = generateSiriResponse(activities, routeIds, error);
+      _response = generateSiriResponse(activities, routeIds, error, currentTimestamp);
       
       // *** CASE 3: all vehicles
     } else {
@@ -229,11 +230,11 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       for (String agency : agencyIds) {
         ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
-            agency, getTime());
+            agency, currentTimestamp);
 
         for (VehicleStatusBean v : vehicles.getList()) {
           VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-              v.getVehicleId(), maximumOnwardCalls);
+              v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
 
           if (activity != null) {
             activities.add(activity);
@@ -242,7 +243,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       }
       
       // There is no input (route id) to validate, so pass null error
-      _response = generateSiriResponse(activities, null, null);
+      _response = generateSiriResponse(activities, null, null, currentTimestamp);
     }
     
     _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
@@ -262,13 +263,13 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
    * @param routeId
    */
   private Siri generateSiriResponse(List<VehicleActivityStructure> activities,
-      List<AgencyAndId> routeIds, Exception error) {
+      List<AgencyAndId> routeIds, Exception error, long currentTimestamp) {
     
     VehicleMonitoringDeliveryStructure vehicleMonitoringDelivery = new VehicleMonitoringDeliveryStructure();
-    vehicleMonitoringDelivery.setResponseTimestamp(new Date(getTime()));
+    vehicleMonitoringDelivery.setResponseTimestamp(new Date(currentTimestamp));
     
     ServiceDelivery serviceDelivery = new ServiceDelivery();
-    serviceDelivery.setResponseTimestamp(new Date(getTime()));
+    serviceDelivery.setResponseTimestamp(new Date(currentTimestamp));
     serviceDelivery.getVehicleMonitoringDelivery().add(vehicleMonitoringDelivery);
     
     if (error != null) {
@@ -286,7 +287,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       vehicleMonitoringDelivery.setErrorCondition(errorConditionStructure);
     } else {
       Calendar gregorianCalendar = new GregorianCalendar();
-      gregorianCalendar.setTimeInMillis(getTime());
+      gregorianCalendar.setTimeInMillis(currentTimestamp);
       gregorianCalendar.add(Calendar.MINUTE, 1);
       vehicleMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
 

@@ -21,18 +21,18 @@ public interface RealtimeService {
   
   
   public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, 
-      int maximumOnwardCalls);
+      int maximumOnwardCalls, long currentTime);
   
   public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, 
-	      String directionId, int maximumOnwardCalls);
+	      String directionId, int maximumOnwardCalls, long currentTime);
 	    
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, 
-      int maximumOnwardCalls);  
+      int maximumOnwardCalls, long currentTime);  
 
   
-  public boolean getVehiclesInServiceForRoute(String routeId, String directionId);
+  public boolean getVehiclesInServiceForRoute(String routeId, String directionId, long currentTime);
 
-  public boolean getVehiclesInServiceForStopAndRoute(String stopId, String routeId);
+  public boolean getVehiclesInServiceForStopAndRoute(String stopId, String routeId, long currentTime);
 
   
   // FIXME TODO: refactor these to receive a passed in collection of MonitoredStopVisits or VehicleActivities?

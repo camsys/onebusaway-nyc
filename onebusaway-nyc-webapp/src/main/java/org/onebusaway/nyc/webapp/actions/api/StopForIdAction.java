@@ -105,7 +105,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
 
           // if there are buses on route, always have "scheduled service"
           Boolean routeHasVehiclesInService = 
-        		  _realtimeService.getVehiclesInServiceForStopAndRoute(stop.getId(), routeBean.getId());
+        		  _realtimeService.getVehiclesInServiceForStopAndRoute(stop.getId(), routeBean.getId(), System.currentTimeMillis());
 
           if(routeHasVehiclesInService) {
         	  hasUpcomingScheduledService = true;
@@ -122,7 +122,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
     _result = new StopResult(stop, routesAtStop);
 
     List<MonitoredStopVisitStructure> visits = 
-        _realtimeService.getMonitoredStopVisitsForStop(_stopId, 0);
+        _realtimeService.getMonitoredStopVisitsForStop(_stopId, 0, System.currentTimeMillis());
 
     _response = generateSiriResponse(visits, AgencyAndIdLibrary.convertFromString(_stopId));
     

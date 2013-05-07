@@ -115,7 +115,7 @@
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
 -->
                 <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
-                <service.alerts.subscription.path>/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
