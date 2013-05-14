@@ -25,6 +25,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.Relief
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
@@ -54,6 +55,8 @@ import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdAc
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+
+import gov.sandia.cognition.math.matrix.VectorFactory;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -217,13 +220,45 @@ public class VehicleLocationSimulationController {
     return new ModelAndView("redirect:/vehicle-location-simulation.do");
   }
   
-  // for integration testing
   @RequestMapping(value = "/vehicle-location-simulation!set-seeds.do", method = RequestMethod.GET)
   public ModelAndView setSeeds(HttpSession session,
       @RequestParam(value = "cdfSeed", required = false, defaultValue = "0") long cdfSeed,
       @RequestParam(value = "factorySeed", required = false, defaultValue = "0") long factorySeed) {
     
     _vehicleLocationInferenceService.setSeeds(cdfSeed, factorySeed);
+
+    return new ModelAndView("vehicle-location-simulation-set-seeds.jspx");
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!set-obs-cov-prior.do", method = RequestMethod.GET)
+  public ModelAndView setObsCovPrior(HttpSession session,
+      @RequestParam(value = "vehicleId", required = true, defaultValue = "0") String vehicleId,
+      @RequestParam(value = "obsCovScale", required = true, defaultValue = "0") double obsCovScale,
+      @RequestParam(value = "obsCovShape", required = true, defaultValue = "0") int obsCovShape) {
+    
+    AgencyAndId vehicle = AgencyAndId.convertFromString(vehicleId);
+    VehicleInferenceInstance instance = _vehicleLocationInferenceService.getInstanceForVehicle(vehicle);
+    instance.getInitialParameters().setObsCov(VectorFactory.getDefault().createVector1D(
+        obsCovScale));
+    instance.getInitialParameters().setObsCovDof(obsCovShape);
+
+    return new ModelAndView("vehicle-location-simulation-set-seeds.jspx");
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!set-state-cov-prior.do", method = RequestMethod.GET)
+  public ModelAndView setStateCovPrior(HttpSession session,
+      @RequestParam(value = "vehicleId", required = true, defaultValue = "0") String vehicleId,
+      @RequestParam(value = "stateCovScale", required = true, defaultValue = "0") double stateCovScale,
+      @RequestParam(value = "stateCovShape", required = true, defaultValue = "0") int stateCovShape) {
+    
+    AgencyAndId vehicle = AgencyAndId.convertFromString(vehicleId);
+    VehicleInferenceInstance instance = _vehicleLocationInferenceService.getInstanceForVehicle(vehicle);
+    instance.getInitialParameters().setOffRoadStateCov(VectorFactory.getDefault().createVector1D(
+        stateCovScale));
+    instance.getInitialParameters().setOnRoadStateCov(VectorFactory.getDefault().createVector1D(
+        stateCovScale));
+    instance.getInitialParameters().setOffRoadCovDof(stateCovShape);
+    instance.getInitialParameters().setOnRoadCovDof(stateCovShape);
 
     return new ModelAndView("vehicle-location-simulation-set-seeds.jspx");
   }

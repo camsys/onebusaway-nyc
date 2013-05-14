@@ -45,6 +45,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.vividsolutions.jcs.precision.GeometryPrecisionReducer;
 import com.vividsolutions.jcs.precision.NumberPrecisionReducer;
+import com.vividsolutions.jts.algorithm.LineIntersector;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
@@ -298,8 +299,9 @@ public class NycTrackingGraph extends GenericJTSGraph {
         double currentLength = 0d;
 
         final MCIndexNoder gn = new MCIndexNoder();
-        gn.setSegmentIntersector(new IntersectionAdder(
-            new RobustLineIntersector()));
+        LineIntersector li = new RobustLineIntersector();
+        li.setPrecisionModel(gf.getPrecisionModel());
+        gn.setSegmentIntersector(new IntersectionAdder(li));
         gn.computeNodes(Collections.singletonList(new NodedSegmentString(
             euclidGeo.getCoordinates(), null)));
         Coordinate prevCoord = null;
@@ -330,8 +332,9 @@ public class NycTrackingGraph extends GenericJTSGraph {
       // final MCIndexSnapRounder noder = new MCIndexSnapRounder(new
       // PrecisionModel(1d));
       final MCIndexNoder noder = new MCIndexNoder();
-      noder.setSegmentIntersector(new NycCustomIntersectionAdder(
-          new RobustLineIntersector()));
+      final LineIntersector li = new RobustLineIntersector();
+      li.setPrecisionModel(gf.getPrecisionModel());
+      noder.setSegmentIntersector(new NycCustomIntersectionAdder(li));
 
       _log.info("\tcomputing nodes");
       noder.computeNodes(lineToSegments.values());
@@ -343,11 +346,10 @@ public class NycTrackingGraph extends GenericJTSGraph {
        * associated shape ids as well. Additionally, we need to know which
        * direction each segment is for each shape id.
        */
-      final SegmentStringMerger merger = new NycCustomIntersectionAdder.NycCustomSegmentStringMerger();
+      final SegmentStringMerger merger = new NycCustomSegmentStringDissolver.NycCustomSegmentStringMerger();
 
       _log.info("\tdissolving nodes");
-      final SegmentStringDissolver dissolver = new SegmentStringDissolver(
-          merger);
+      final NycCustomSegmentStringDissolver dissolver = new NycCustomSegmentStringDissolver(scale, merger);
       dissolver.dissolve(noder.getNodedSubstrings());
 
       _log.info("\tdissolved lines=" + dissolver.getDissolved().size());
@@ -466,7 +468,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
       BlockTripEntry newBlockTripEntry = blockTripEntry;
       final AgencyAndId shapeId = blockTripEntry.getTrip().getShapeId();
-      final InferenceGraphEdge edge = pathState.getEdge().getInferenceGraphEdge();
+      final InferenceGraphEdge edge = pathState.getEdge().getInferenceGraphSegment();
       double[] lengthAlongShape = this._lengthsAlongShapeMap.get(shapeId,
           edge.getGeometry());
       /*
@@ -476,7 +478,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
         newBlockTripEntry = Preconditions.checkNotNull(blockTripEntry.getNextTrip());
         lengthAlongShape = this._lengthsAlongShapeMap.get(
             newBlockTripEntry.getTrip().getShapeId(),
-            pathState.getEdge().getInferenceGraphEdge().getGeometry());
+            pathState.getEdge().getInferenceGraphSegment().getGeometry());
       }
 
       double distanceAlongBlock = newBlockTripEntry.getDistanceAlongBlock()

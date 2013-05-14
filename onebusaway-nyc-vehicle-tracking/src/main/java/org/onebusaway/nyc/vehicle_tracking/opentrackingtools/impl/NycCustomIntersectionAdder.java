@@ -1,15 +1,15 @@
 package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 
-import com.google.common.collect.Lists;
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.algorithm.LineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.LineSegment;
+import com.vividsolutions.jts.noding.BasicSegmentString;
 import com.vividsolutions.jts.noding.NodedSegmentString;
 import com.vividsolutions.jts.noding.SegmentIntersector;
 import com.vividsolutions.jts.noding.SegmentString;
-import com.vividsolutions.jts.noding.SegmentStringDissolver.SegmentStringMerger;
 
-import java.util.List;
+import org.codehaus.jackson.io.SegmentedStringWriter;
 
 /**
  * Taken from JTS's IntersectionAdder. Modified to only add proper (interior)
@@ -18,24 +18,6 @@ import java.util.List;
  * @version 1.7
  */
 public class NycCustomIntersectionAdder implements SegmentIntersector {
-
-  public static final class NycCustomSegmentStringMerger implements
-      SegmentStringMerger {
-    @Override
-    public void merge(SegmentString mergeTarget, SegmentString ssToMerge,
-        boolean isSameOrientation) {
-
-      final List<NycTrackingGraph.SegmentInfo> newSegmentInfos = Lists.newArrayList();
-
-      for (final NycTrackingGraph.SegmentInfo si : (List<NycTrackingGraph.SegmentInfo>) ssToMerge.getData()) {
-        newSegmentInfos.add(new NycTrackingGraph.SegmentInfo(si.getShapeId(),
-            si.getGeomNum(), si.getIsSameOrientation().equals(
-                new Boolean(isSameOrientation))));
-      }
-      newSegmentInfos.addAll((List<NycTrackingGraph.SegmentInfo>) mergeTarget.getData());
-      mergeTarget.setData(newSegmentInfos);
-    }
-  }
 
   public static boolean isAdjacentSegments(int i1, int i2) {
     return Math.abs(i1 - i2) == 1;
@@ -160,17 +142,27 @@ public class NycCustomIntersectionAdder implements SegmentIntersector {
       if (!isTrivialIntersection(e0, segIndex0, e1, segIndex1)) {
         hasIntersection = true;
 
-        final double sAngle1 = Angle.angle(p00, p01);
-        final double sAngle2 = Angle.angle(p10, p11);
-        if (li.isInteriorIntersection() && Angle.diff(sAngle1, sAngle2) < 1e-4) {
+        LineSegment s1 = new LineSegment(p00, p01);
+        LineSegment s2 = new LineSegment(p10, p11);
+        LineSegment proj1on2 = s2.project(s1);
+        
+        if (proj1on2 == null
+            || proj1on2.getLength() <= 1e-7
+            || s2.segmentFraction(proj1on2.p0) > s2.segmentFraction(proj1on2.p1))
+          return;
+        
+        final double projStartDistTo1 = s1.distancePerpendicular(proj1on2.p0);
+//        final Coordinate projEndOn1 = s1.project(proj1on2.p1);
+        final double projEndDistTo1 = s1.distancePerpendicular(proj1on2.p1);
+        
+        if (projStartDistTo1 <= 1e-7 && projEndDistTo1 <= 1e-7) {
           /*
            * the segments aren't equal, but overlap, and are in the same
            * direction.
            */
           ((NodedSegmentString) e0).addIntersections(li, segIndex0, 0);
           ((NodedSegmentString) e1).addIntersections(li, segIndex1, 1);
-        } else if (segIndex0 > 0 && segIndex1 > 0
-            && (p00.equals(p10) && !p01.equals(p11))) {
+        } else if (projStartDistTo1 <= 1e-7 && segIndex0 > 0 && segIndex1 > 0){
           /*
            * if the start points are the same but the ends are not, we check for
            * a split along the same prior path. we confirm the same prior path
@@ -178,13 +170,21 @@ public class NycCustomIntersectionAdder implements SegmentIntersector {
            */
           final Coordinate p00b = e0.getCoordinates()[segIndex0 - 1];
           final Coordinate p10b = e1.getCoordinates()[segIndex1 - 1];
-          final double angle1 = Angle.angle(p00b, p00);
-          final double angle2 = Angle.angle(p10b, p10);
-
-          if (Angle.diff(angle1, angle2) < 1e-4) {
+          LineSegment prior1 = new LineSegment(p00b, p00);
+          LineSegment prior2 = new LineSegment(p10b, p10);
+          LineSegment priorProj1on2 = prior2.project(prior1);
+          if (priorProj1on2 == null
+              || priorProj1on2.getLength() <= 1e-7)
+            return;
+          
+          final double distPriorProjStart = prior1.distancePerpendicular(priorProj1on2.p0);
+          final double distPriorProjEnd = prior1.distancePerpendicular(priorProj1on2.p1);
+          
+          if (distPriorProjStart <= 1e-7 && distPriorProjEnd <= 1e-7) {
             ((NodedSegmentString) e0).addIntersections(li, segIndex0, 0);
             ((NodedSegmentString) e1).addIntersections(li, segIndex1, 1);
           }
+          
         }
 
         if (li.isProper()) {

@@ -75,8 +75,6 @@ public class Observation extends GpsObservation implements
 
   private Vector _deadReckoningPoint;
 
-  private int _quality;
-
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
       boolean outOfService, boolean hasValidDsc,
@@ -118,7 +116,7 @@ public class Observation extends GpsObservation implements
       if (previousRecord.getBearing() != null) {
         
         String[] splits = record.getGga().split("\\|");
-        this._quality = Integer.parseInt(splits[6]);
+        this.fixQuality = Double.parseDouble(splits[6]);
         
 //        final Coordinate rmcLatLon = new Coordinate(
 //            Double.parseDouble(splits[2])*10e-3, -Double.parseDouble(splits[4])*10e-3);        
@@ -397,10 +395,6 @@ public class Observation extends GpsObservation implements
 
   public Vector getDeadReckoningPoint() {
     return _deadReckoningPoint;
-  }
-
-  public int getQuality() {
-    return _quality;
   }
 
 }

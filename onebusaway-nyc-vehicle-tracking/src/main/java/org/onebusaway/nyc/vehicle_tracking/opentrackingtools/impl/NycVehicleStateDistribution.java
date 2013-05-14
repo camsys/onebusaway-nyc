@@ -9,6 +9,8 @@ import gov.sandia.cognition.statistics.DistributionWithMean;
 import gov.sandia.cognition.statistics.distribution.MultivariateGaussian;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.opentrackingtools.VehicleStateInitialParameters;
 import org.opentrackingtools.distributions.CountedDataDistribution;
 import org.opentrackingtools.distributions.DeterministicDataDistribution;
@@ -54,6 +56,12 @@ public class NycVehicleStateDistribution extends
           newRunStateDist.getMaxValueKey(),
           (DataDistribution<RunState>) newRunStateDist,
           (DataDistribution<RunState>) initialPriorDist));
+      
+      /*
+       * FIXME this is a bit of a hack, but not entirely unreasonable
+       */
+      nycVehicleStateDist.setPathStateDistLogLikelihood(
+          newRunStateDist.getMaxValueKey().getLikelihoodInfo().getTotalLogLik());
 
       return nycVehicleStateDist;
     }
@@ -152,6 +160,17 @@ public class NycVehicleStateDistribution extends
   @Override
   public NycVehicleStateDistribution getParentState() {
     return (NycVehicleStateDistribution) super.getParentState();
+  }
+
+  @Override
+  public String toString() {
+    final ToStringBuilder builder =
+        new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    builder.append("pathState",
+        this.pathStateParam.getParameterPrior());
+    builder.append("observation", this.observation);
+    builder.append("runState", this.runStateParam.getValue().blockStateObs);
+    return builder.toString();
   }
 
 }

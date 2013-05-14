@@ -64,6 +64,9 @@ public class NycTestInferredLocationRecord implements Serializable {
   private String dsc;
 
   @CsvField(optional = true)
+  private Double fixQuality;
+  
+  @CsvField(optional = true)
   private String nmeaGga;
 
   @CsvField(optional = true)
@@ -646,5 +649,13 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public void setAdjLon(Double adjLon) {
     this.adjLon = adjLon;
+  }
+
+  public Double getFixQuality() {
+    return fixQuality;
+  }
+
+  public void setFixQuality(Double quality) {
+    this.fixQuality = quality;
   }
 }

@@ -162,7 +162,7 @@ public class VehicleLocationInferenceServiceImpl implements
     verifyVehicleResultMappingToCurrentBundle();
     final Future<?> result;
     synchronized (_vehicleInstancesByVehicleId) {
-      final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());
+      final VehicleInferenceInstance i = getAndCreateInstanceForVehicle(record.getVehicleId());
       result = _executorService.submit(new ProcessingTask(i, record, true,
           false));
       _bundleManagementService.registerInferenceProcessingThread(result);
@@ -180,7 +180,7 @@ public class VehicleLocationInferenceServiceImpl implements
     verifyVehicleResultMappingToCurrentBundle();
 
     synchronized (_vehicleInstancesByVehicleId) {
-      final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());
+      final VehicleInferenceInstance i = getAndCreateInstanceForVehicle(record.getVehicleId());
       final Future<?> result = _executorService.submit(new ProcessingTask(i,
           record, true, true));
       _bundleManagementService.registerInferenceProcessingThread(result);
@@ -197,7 +197,7 @@ public class VehicleLocationInferenceServiceImpl implements
     verifyVehicleResultMappingToCurrentBundle();
 
     synchronized (_vehicleInstancesByVehicleId) {
-      final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());
+      final VehicleInferenceInstance i = getAndCreateInstanceForVehicle(record.getVehicleId());
       final Future<?> result = _executorService.submit(new ProcessingTask(i,
           record, false, false));
       _bundleManagementService.registerInferenceProcessingThread(result);
@@ -318,7 +318,7 @@ public class VehicleLocationInferenceServiceImpl implements
     }
 
     synchronized (_vehicleInstancesByVehicleId) {
-      final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId);
+      final VehicleInferenceInstance i = getAndCreateInstanceForVehicle(vehicleId);
       final Future<?> result = _executorService.submit(new ProcessingTask(i, r,
           false, false));
       _bundleManagementService.registerInferenceProcessingThread(result);
@@ -383,7 +383,7 @@ public class VehicleLocationInferenceServiceImpl implements
   /****
    * Private Methods
    ****/
-  private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
+  private VehicleInferenceInstance getAndCreateInstanceForVehicle(AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null) {
       final VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
@@ -635,6 +635,12 @@ public class VehicleLocationInferenceServiceImpl implements
   public void setSeeds(long cdfSeed, long factorySeed) {
     ParticleFactoryImpl.setSeed(factorySeed);
     CategoricalDist.setSeed(cdfSeed);
+  }
+  
+  @Override
+  public VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    return instance;
   }
 
   @Override

@@ -108,7 +108,7 @@ public class VehicleInferenceInstance {
   private NycTrackingGraph _trackingGraph;
 
   private final VehicleStateInitialParameters _initialParams = new VehicleStateInitialParameters(
-      null, VectorFactory.getDefault().createVector2D(1000d, 1000d), 10,
+      null, VectorFactory.getDefault().createVector2D(600d, 600d), 10,
       VectorFactory.getDefault().createVector1D(6.25e-3), 20,
       VectorFactory.getDefault().createVector2D(6.25e-3, 6.25e-3), 20, 
       VectorFactory.getDefault().createVector2D(1d, 1d),
@@ -522,19 +522,20 @@ public class VehicleInferenceInstance {
     for (final java.util.Map.Entry<VehicleStateDistribution<Observation>, ? extends Number> entry : _particles.asMap().entrySet()) {
       final MutableDoubleCount countEntry = (MutableDoubleCount) entry.getValue();
       final NycVehicleStateDistribution vehicleState = (NycVehicleStateDistribution) entry.getKey();
-      final String runId;
+      final String tripId;
       if (vehicleState.getRunStateParam().getValue().getVehicleState().getBlockState() != null) {
-        runId = vehicleState.getRunStateParam().getValue().getVehicleState().getBlockState().getRunId();
+        tripId = vehicleState.getRunStateParam().getValue().getVehicleState()
+            .getBlockState().getBlockLocation().getActiveTrip().toString();
       } else {
-        runId = "none";
+        tripId = "none";
       }
-      DataDistribution<NycVehicleStateDistribution> marginalDist = runToStates.get(runId);
+      DataDistribution<NycVehicleStateDistribution> marginalDist = runToStates.get(tripId);
       if (marginalDist == null) {
         marginalDist = new DefaultDataDistribution<NycVehicleStateDistribution>();
-        runToStates.put(runId, marginalDist);
+        runToStates.put(tripId, marginalDist);
       }
       marginalDist.increment(vehicleState, countEntry.count);
-      runDist.increment(runId, countEntry.count);
+      runDist.increment(tripId, countEntry.count);
     }
 
     final String sampledRun = runDist.getMaxValueKey();// .sample(this._particleFilter.getRandom());
@@ -759,6 +760,7 @@ public class VehicleInferenceInstance {
     record.setOperatorId(nycRecord.getOperatorId());
     record.setReportedRunId(RunTripEntry.createId(nycRecord.getRunRouteId(),
         nycRecord.getRunNumber()));
+    record.setFixQuality(obs.getFixQuality());
 
     final EVehiclePhase phase = journeyState.getPhase();
     if (phase != null)
@@ -789,7 +791,7 @@ public class VehicleInferenceInstance {
         record.setInferredEdges(pathStateDistribution.getPathState().getPath().getEdgeIds().toString());
         final MathTransform transform = state.getObservation().getObsProjected().getTransform();
         final Geometry infEdgeGeom = JTS.transform(
-            pathStateDistribution.getPathState().getEdge().getInferenceGraphEdge().getGeometry(),
+            pathStateDistribution.getPathState().getEdge().getInferenceGraphSegment().getGeometry(),
             transform.inverse());
         final Geometry pathEdgeGeom = JTS.transform(
             pathStateDistribution.getPathState().getEdge().getLine().toGeometry(
@@ -882,7 +884,7 @@ public class VehicleInferenceInstance {
       result.addLogResultAsAnd("edgeTrans",
           nycVehicleState.getEdgeTransitionLogLikelihood());
       result.addLogResultAsAnd("priorPredObs",
-          nycVehicleState.getPredictiveLogLikelihood());
+          nycVehicleState.getObsLogLikelihood());
       result.addLogResultAsAnd("pathState",
           nycVehicleState.getPathStateDistLogLikelihood());
       final RunStateEdgePredictiveResults runLikelihoodInfo = nycVehicleState.getRunStateParam().getValue().getLikelihoodInfo();
@@ -901,6 +903,10 @@ public class VehicleInferenceInstance {
       e.printStackTrace();
     }
     return particle;
+  }
+
+  public VehicleStateInitialParameters getInitialParameters() {
+    return this._initialParams;
   }
 
 }

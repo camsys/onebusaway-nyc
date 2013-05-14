@@ -18,6 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.services.inference;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
@@ -57,4 +58,6 @@ public interface VehicleLocationInferenceService {
 
   public DataDistribution<VehicleStateDistribution<Observation>> getCurrentParticlesForVehicleId(
       AgencyAndId vehicleId);
+
+  public VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId);
 }

@@ -180,26 +180,7 @@ public class BlocksFromObservationServiceImpl implements
       Observation observation) {
 
     synchronized (observation) {
-      final Set<BlockStateObservation> potentialBlockStatesInProgress = Sets.newHashSet();
       final Set<BlockStateObservation> potentialBlockStatesNotInProgress = Sets.newHashSet();
-      // final Set<BlockInstance> snappedBlocks = Sets.newHashSet();
-      //
-      // if (observation.getRunResults().hasRunResults()
-      // || observation.hasValidDsc()) {
-      // for (final BlockState bs :
-      // _blockStateService.getBlockStatesForObservation(observation)) {
-      // final boolean isAtPotentialLayoverSpot =
-      // VehicleStateLibrary.isAtPotentialLayoverSpot(
-      // bs, observation);
-      // potentialBlockStatesInProgress.add(new BlockStateObservation(bs,
-      // observation, isAtPotentialLayoverSpot, true));
-      // snappedBlocks.add(bs.getBlockInstance());
-      // }
-      //
-      // _observationCache.putValueForObservation(observation,
-      // EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK,
-      // potentialBlockStatesInProgress);
-      // }
 
       /*
        * now, use dsc, run-id and whatnot to determine blocks potentially being
@@ -209,32 +190,26 @@ public class BlocksFromObservationServiceImpl implements
       determinePotentialBlocksForObservation(observation, notSnappedBlocks);
 
       for (final BlockInstance thisBIS : notSnappedBlocks) {
-        // final Set<BlockStateObservation> states = new
-        // HashSet<BlockStateObservation>();
-        try {
-          final double schedTime = (observation.getTime() - thisBIS.getServiceDate()) / 1000d;
-          final BlockState bs = _blockStateService.getScheduledTimeAsState(
-              thisBIS, (int) schedTime);
-          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-              bs, observation);
-          // states.add(new BlockStateObservation(bs, observation,
-          // isAtPotentialLayoverSpot, false));
-          final BlockStateObservation blockStateObs = new BlockStateObservation(
-              bs, observation, isAtPotentialLayoverSpot, false);
-          potentialBlockStatesNotInProgress.add(blockStateObs);
-        } catch (final Exception e) {
-          _log.warn(e.getMessage());
+        final double schedTime = (observation.getTime() - thisBIS.getServiceDate()) / 1000d;
+        if (schedTime >=
+            Iterables.getLast(thisBIS.getBlock().getStopTimes()).getStopTime().getDepartureTime())
           continue;
-        }
-        // potentialBlockStatesNotInProgress.addAll(states);
+        
+        final BlockState bs = _blockStateService.getScheduledTimeAsState(
+            thisBIS, (int) schedTime);
+        
+        final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+            bs, observation);
+        final BlockStateObservation blockStateObs = new BlockStateObservation(
+            bs, observation, isAtPotentialLayoverSpot, false);
+        potentialBlockStatesNotInProgress.add(blockStateObs);
       }
 
       _observationCache.putValueForObservation(observation,
           EObservationCacheKey.JOURNEY_START_BLOCK,
           potentialBlockStatesNotInProgress);
 
-      return Sets.newHashSet(Iterables.concat(potentialBlockStatesInProgress,
-          potentialBlockStatesNotInProgress));
+      return potentialBlockStatesNotInProgress;
     }
 
   }

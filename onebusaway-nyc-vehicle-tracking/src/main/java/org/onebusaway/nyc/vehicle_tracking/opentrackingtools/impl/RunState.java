@@ -207,8 +207,7 @@ public class RunState extends AbstractCloneableSerializable implements
       result.setRunTransitionLogLikelihood(runTransitionLogLikelihood);
       if (runTransitionLogLikelihood <= Double.NEGATIVE_INFINITY)
         return result;
-      nullStateLogLikelihood = graph.getNullStateLikelihood().likelihood(
-          context).getLogProbability();
+      nullStateLogLikelihood = graph.getNullStateLikelihood().likelihood(context).getLogProbability();
       if (this.isDetoured)
         nullStateLogLikelihood += Math.log(0.05);
       else

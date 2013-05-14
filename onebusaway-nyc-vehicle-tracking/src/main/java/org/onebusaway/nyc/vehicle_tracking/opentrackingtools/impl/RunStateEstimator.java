@@ -2,7 +2,9 @@ package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.MovedLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl.NycTrackingGraph.BlockTripEntryAndDate;
@@ -19,6 +21,7 @@ import gov.sandia.cognition.util.AbstractCloneableSerializable;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import org.opentrackingtools.distributions.CountedDataDistribution;
 import org.opentrackingtools.distributions.DeterministicDataDistribution;
@@ -34,6 +37,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * An estimator/predictor that allows for predictive sampling of a run/block
@@ -86,9 +90,8 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
 
     final PathEdge pathEdge = nycVehicleStateDist.getPathStateParam().getParameterPrior().getPathState().getEdge();
-    final TripInfo tripInfo = nycGraph.getTripInfo(pathEdge.getInferenceGraphEdge());
+    final TripInfo tripInfo = nycGraph.getTripInfo(pathEdge.getInferenceGraphSegment());
     final double likelihoodHasNotMoved = likelihoodOfNotMovedState(nycVehicleStateDist.getPathStateParam().getParameterPrior());
-    double nonNullTotalLikelihood = Double.NEGATIVE_INFINITY;
 
     final Map<RunState, MutableDoubleCount> resultDist = Maps.newIdentityHashMap();
 
@@ -121,7 +124,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
          */
         final AgencyAndId shapeId = blockTripEntry.getTrip().getShapeId();
         Preconditions.checkState(this.nycGraph.getLengthsAlongShapeMap().contains(
-            shapeId, pathEdge.getInferenceGraphEdge().getGeometry()));
+            shapeId, pathEdge.getInferenceGraphSegment().getGeometry()));
 
         final RunState runStateMoved = new RunState(nycGraph, obs,
             nycVehicleStateDist, blockStateObs, false,
@@ -131,8 +134,6 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         runStateMoved.setLikelihoodInfo(mtaEdgeResultsMoved);
         mtaEdgeResultsMoved.setMovedLogLikelihood(Math.log(1d - likelihoodHasNotMoved));
         if (mtaEdgeResultsMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-          nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood,
-              mtaEdgeResultsMoved.schedLogLikelihood);
           resultDist.put(runStateMoved, new MutableDoubleCount(
               mtaEdgeResultsMoved.getTotalLogLik(), 1));
         }
@@ -145,8 +146,6 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         runStateNotMoved.setLikelihoodInfo(mtaEdgeResultsNotMoved);
         mtaEdgeResultsNotMoved.setMovedLogLikelihood(Math.log(likelihoodHasNotMoved));
         if (mtaEdgeResultsNotMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-          nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood,
-              mtaEdgeResultsNotMoved.schedLogLikelihood);
           resultDist.put(runStateNotMoved, new MutableDoubleCount(
               mtaEdgeResultsNotMoved.getTotalLogLik(), 1));
         }
@@ -184,7 +183,9 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
        * again here.
        */
       final boolean isInService = blockStateObs != null
-          && JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState());
+          && JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState())
+          && !obs.hasOutOfServiceDsc();
+      
       if (blockStateObs != null
           && isInService
           && tripInfo != null
@@ -211,10 +212,8 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         final RunState.RunStateEdgePredictiveResults mtaEdgeResultsMoved = runStateMoved.computeAnnotatedLogLikelihood();
         runStateMoved.setLikelihoodInfo(mtaEdgeResultsMoved);
         mtaEdgeResultsMoved.setMovedLogLikelihood(Math.log(1d - likelihoodHasNotMoved));
+        
         if (mtaEdgeResultsMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-          if (blockStateObs != null)
-            nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood,
-                mtaEdgeResultsMoved.schedLogLikelihood);
           resultDist.put(runStateMoved, new MutableDoubleCount(
               mtaEdgeResultsMoved.getTotalLogLik(), 1));
         }
@@ -233,30 +232,17 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         runStateNotMoved.setLikelihoodInfo(mtaEdgeResultsNotMoved);
         mtaEdgeResultsNotMoved.setMovedLogLikelihood(Math.log(likelihoodHasNotMoved));
         if (mtaEdgeResultsNotMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
-          if (blockStateObs != null)
-            nonNullTotalLikelihood = LogMath.add(nonNullTotalLikelihood,
-                mtaEdgeResultsNotMoved.schedLogLikelihood);
           resultDist.put(runStateNotMoved, new MutableDoubleCount(
               mtaEdgeResultsNotMoved.getTotalLogLik(), 1));
         }
       }
     }
 
-    /*
-     * Now, normalize the non-null block states, so that comparisons with null
-     * block states will be valid.
-     */
     final CountedDataDistribution<RunState> result = new CountedDataDistribution<RunState>(
         true);
     for (final Entry<RunState, MutableDoubleCount> entry : resultDist.entrySet()) {
-      if (entry.getKey().getBlockStateObs() != null) {
-        final double newValue = entry.getValue().doubleValue()
-            - nonNullTotalLikelihood;
-        result.increment(entry.getKey(), newValue, entry.getValue().count);
-      } else {
         result.increment(entry.getKey(), entry.getValue().doubleValue(),
             entry.getValue().count);
-      }
     }
 
     Preconditions.checkState(!result.isEmpty());
@@ -327,18 +313,19 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
    * @return
    */
   public double likelihoodOfNotMovedState(PathStateDistribution pathStateBelief) {
-    final double velocityAvg = MotionStateEstimatorPredictor.getVg().times(
-        pathStateBelief.getGroundDistribution().getMean()).norm2();
-    final double velocityVar = MotionStateEstimatorPredictor.getVg().times(
-        pathStateBelief.getGroundDistribution().getCovariance()).times(
-        MotionStateEstimatorPredictor.getVg().transpose()).normFrobenius();
-
-    final double likelihood = Math.min(
-        1d,
-        Math.max(0d,
-            1d - FoldedNormalDist.cdf(0d, Math.sqrt(velocityVar), velocityAvg)));
-
-    return likelihood;
+    return MovedLikelihood.computeVehicleHasNotMovedProbability(obs);
+//    final double velocityAvg = MotionStateEstimatorPredictor.getVg().times(
+//        pathStateBelief.getGroundDistribution().getMean()).norm2();
+//    final double velocityVar = MotionStateEstimatorPredictor.getVg().times(
+//        pathStateBelief.getGroundDistribution().getCovariance()).times(
+//        MotionStateEstimatorPredictor.getVg().transpose()).normFrobenius();
+//
+//    final double likelihood = Math.min(
+//        1d,
+//        Math.max(0d,
+//            1d - FoldedNormalDist.cdf(0d, Math.sqrt(velocityVar), velocityAvg)));
+//
+//    return likelihood;
   }
 
   @Override

@@ -217,7 +217,7 @@ public class ThroughputHarness {
     r.setManagementRecord(createManagementRecord(uuid, vehicleCount+3, timeStamp));
     r.setRunId("" + distributeInt(MIN_RUN, MAX_RUN));
     r.setRouteId("" + distributeInt(MIN_ROUTE, MAX_ROUTE));
-    r.setBearing(distributeInt(0, 360));
+    r.setBearing(distributeDouble(0, 360));
 
     try {
       return _imapper.writeValueAsString(r).getBytes();
