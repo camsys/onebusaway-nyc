@@ -37,7 +37,8 @@ public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
   }
 
   @Override
-  public boolean processMessage(String address, String contents) {
+  public boolean processMessage(String address, byte[] buff) {
+    final String contents = new String(buff);
     final RealtimeEnvelope envelope = deserializeMessage(contents);
 
     if (acceptMessage(envelope)) {

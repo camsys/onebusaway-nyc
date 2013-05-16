@@ -28,6 +28,8 @@ import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,14 +40,17 @@ import org.springframework.stereotype.Component;
  * @author jmaki
  *
  */
-@Component
+
 class DummyScheduleBasedPredictionGenerationServiceImpl implements PredictionGenerationService {
 
+  protected static Logger _log = LoggerFactory.getLogger(DummyScheduleBasedPredictionGenerationServiceImpl.class);
+  
   @Autowired
   private NycTransitDataService _transitDataService;
 
   @Override
-  public List<TimepointPredictionRecord> getPredictionsForVehicle(AgencyAndId vehicleId) {    
+  public List<TimepointPredictionRecord> getPredictionsForVehicle(AgencyAndId vehicleId) {
+    _log.error("getPredictionsForVehicle");
     List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
 
     VehicleStatusBean vehicleStatus = _transitDataService.getVehicleForAgency(AgencyAndId.convertToString(vehicleId), System.currentTimeMillis());

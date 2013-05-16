@@ -65,7 +65,8 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   }
 
   @Override
-  public boolean processMessage(String address, String contents) {
+  public boolean processMessage(String address, byte[] buff) {
+    String contents = new String(buff);
     final RealtimeEnvelope message = deserializeMessage(contents);
 
     if (acceptMessage(message)) {

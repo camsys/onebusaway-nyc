@@ -136,7 +136,8 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   @Override
   // this method can't throw exceptions or it will stop the queue
   // listening
-  public boolean processMessage(String address, String contents) {
+  public boolean processMessage(String address, byte[] buff) {
+    String contents = new String(buff);
     RealtimeEnvelope envelope = null;
     CcLocationReportRecord record = null;
     try {
