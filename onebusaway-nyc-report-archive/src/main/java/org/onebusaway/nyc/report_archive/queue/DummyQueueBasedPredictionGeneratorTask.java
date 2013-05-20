@@ -35,7 +35,13 @@ import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
 import com.google.transit.realtime.GtfsRealtimeConstants;
 
 
-
+/**
+ * Test component to place dummy time predictions on time queue for retrieval by TDS and display by UIs.
+ * This should not be used in production.
+ * 
+ * @author sheldonabrown
+ *
+ */
 public class DummyQueueBasedPredictionGeneratorTask extends InferenceQueueListenerTask {
 
   private static Logger _log = LoggerFactory.getLogger(DummyQueueBasedPredictionGeneratorTask.class);
@@ -161,8 +167,7 @@ public class DummyQueueBasedPredictionGeneratorTask extends InferenceQueueListen
       for(BlockStopTimeBean blockStopTime : blockTrip.getBlockStopTimes()) {
         stopSequence++;
         if(blockStopTime.getDistanceAlongBlock() < distanceOfVehicleAlongBlock) {
-          // we can't take this optimization, all stopSequences need to be included
-          //continue;
+          continue;
         }
    
         long arrivalTime = tripStatus.getServiceDate() + blockStopTime.getStopTime().getArrivalTime();
@@ -184,7 +189,6 @@ public class DummyQueueBasedPredictionGeneratorTask extends InferenceQueueListen
     if (!feedMessageBuilder.isInitialized()) {
       _log.error("msg missing fields!");
     }
-    
     return feedMessageBuilder.build();
   }
   
@@ -196,8 +200,7 @@ public class DummyQueueBasedPredictionGeneratorTask extends InferenceQueueListen
   private void fillEntity(FeedMessage.Builder feedMessageBuilder, String vehicleId, String tripId, String routeId, int stopSequence, String stopId, long arrivalTime, long departureTime, long timeReported) {
     FeedEntity.Builder entity = FeedEntity.newBuilder();
     entity.setId(vehicleId);
-    entity.build();
-    feedMessageBuilder.addEntity(entity);
+    
     
     GtfsRealtime.TripUpdate.Builder tripUpdateBuilder = TripUpdate.newBuilder();
 
@@ -206,16 +209,13 @@ public class DummyQueueBasedPredictionGeneratorTask extends InferenceQueueListen
     tripDescriptor.setTripId(tripId);
     tripDescriptor.setRouteId(routeId);
     tripDescriptor.setScheduleRelationship(ScheduleRelationship.SCHEDULED);
-    tripDescriptor.build();  // TODO remove this
     tripUpdateBuilder.setTrip(tripDescriptor);
-    entity.setTripUpdate(tripUpdateBuilder);
     
        
     //vehicle
     VehicleDescriptor.Builder vehicleDescriptor = VehicleDescriptor.newBuilder();
     vehicleDescriptor.setId(vehicleId);
     vehicleDescriptor.setLabel(AgencyAndIdLibrary.convertFromString(vehicleId).getId());
-    vehicleDescriptor.build(); // TODO remove this
     tripUpdateBuilder.setVehicle(vehicleDescriptor);
     
     
@@ -231,8 +231,9 @@ public class DummyQueueBasedPredictionGeneratorTask extends InferenceQueueListen
     departure.setTime(departureTime);
     stopTimeUpdateBuilder.setDeparture(departure);
     
-    stopTimeUpdateBuilder.build(); // TODO remove this
     tripUpdateBuilder.addStopTimeUpdate(stopTimeUpdateBuilder);
+    entity.setTripUpdate(tripUpdateBuilder);
+    feedMessageBuilder.addEntity(entity);
     // TODO timeReported -- I can't find it
   }
 }

@@ -18,6 +18,7 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.transit.realtime.GtfsRealtime;
+import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
@@ -44,7 +45,7 @@ public class QueueBasedPredictionGenerationServiceImpl extends
 	  for (GtfsRealtime.FeedEntity entity : message.getEntityList()) {
 	    List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();  
 	    TripUpdate tu = entity.getTripUpdate();
-	    String vehicleId = entity.getVehicle().getVehicle().getId();
+	    String vehicleId = tu.getVehicle().getId();
 
 	    for (StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
 	      TimepointPredictionRecord tpr = new TimepointPredictionRecord();
