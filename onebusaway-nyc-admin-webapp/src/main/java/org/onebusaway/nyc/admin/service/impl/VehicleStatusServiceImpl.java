@@ -322,6 +322,10 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		  String headSignContent = remoteConnectionService.getContent(url);
 		  if (headSignContent == null) { return null;}
 		  String json = extractJsonObjectString(headSignContent);
+		  if (json == null) {
+		    log.error("missing headSign for url=" + url);
+		    return null;
+		  }
 		  DestinationSignCode headSign = null;
 		  headSign = convertToObject("{" + json + "}", DestinationSignCode.class);
 		
@@ -338,6 +342,7 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 	private <T> T convertToObject(String content, Class<T> objectType) {
 		T object = null;
 		try {
+		  log.error("objectType=" + objectType.toString() + ":CONTENT:" + content);
 			object = mapper.readValue(content, objectType);
 
 		} catch (JsonParseException e) {
