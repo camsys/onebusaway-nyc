@@ -52,7 +52,8 @@ public class RealtimePersistenceServiceImpl implements
   public void persist(CcLocationReportRecord record) {
     boolean accepted = messages.offer(record);
     if (!accepted) {
-      _log.error("archive record " + record.getUUID() + " dropped, local buffer full!");
+      _log.error("archive record " + record.getUUID() + " dropped, local buffer full!  Clearing");
+      messages.clear();
     }
   }
 

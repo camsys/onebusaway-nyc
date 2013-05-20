@@ -83,7 +83,8 @@ public class InferencePersistenceServiceImpl implements
           record, contents);
       boolean accepted = preMessages.offer(message);
       if (!accepted) {
-        _log.error("inf record " + record.getUUID() + " dropped, local buffer full!");
+        _log.error("inf record " + record.getUUID() + " dropped, local buffer full!  Clearing!");
+        preMessages.clear();
       }      
   }
 
