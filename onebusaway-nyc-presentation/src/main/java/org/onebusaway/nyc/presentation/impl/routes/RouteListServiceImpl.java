@@ -41,12 +41,12 @@ public class RouteListServiceImpl implements RouteListService {
 
     @Override
     public boolean getShowAgencyNames() {
-        return _configurationService.getConfigurationValueAsString("display.showAgencyNames", "false").equals("true");
+        return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.showAgencyNames", "false"));
     }
 
     @Override
     public boolean getUseAgencyId() {
-        return _configurationService.getConfigurationValueAsString("display.useAgencyId", "false").equals("true");
+        return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useAgencyId", "false"));
     }
 
     @Override
