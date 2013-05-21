@@ -196,7 +196,7 @@
         <profile>
             <id>local-ie</id> <!-- aka services-vtw-as-tds --> <!-- single port, aka development -->
             <properties>
-            	<bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
+            	<bundle.location>/var/lib/obanyc/oba-bundle-archive</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
                 <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>

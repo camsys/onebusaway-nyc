@@ -12,13 +12,13 @@ import org.onebusaway.nyc.transit_data_federation.services.predictions.Predictio
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
+import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.transit.realtime.GtfsRealtime;
-import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
@@ -41,44 +41,50 @@ public class QueueBasedPredictionGenerationServiceImpl extends
 
 	@Override
 	protected void processResult(FeedMessage message) {
+	  List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();  
+	  String vehicleId = null;
+	  
 	  // convert FeedMessage to TimepointPredictionRecord
 	  for (GtfsRealtime.FeedEntity entity : message.getEntityList()) {
-	    List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();  
+	    
 	    TripUpdate tu = entity.getTripUpdate();
-	    String vehicleId = tu.getVehicle().getId();
+	    vehicleId = tu.getVehicle().getId();
 
 	    for (StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
 	      TimepointPredictionRecord tpr = new TimepointPredictionRecord();
 	      tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId()));
+	      // should be serviceDate + arrivalTime * 1000
 	      tpr.setTimepointPredictedTime(stu.getArrival().getTime() * 1000);
-	      Long scheduledTime = lookupScheduledTime(vehicleId, entity.getTripUpdate().getTrip().getTripId(), stu.getStopSequence());
+	      Long scheduledTime = lookupScheduledTime(vehicleId, entity.getTripUpdate().getTrip().getTripId(), stu.getStopId());
 	      
 	      if (scheduledTime != null) {
-	        tpr.setTimepointScheduledTime(scheduledTime);
+	        tpr.setTimepointScheduledTime(scheduledTime );
 	        predictionRecords.add(tpr);
 	      }
 	    }
-	    // place in cache
-	    this.cache.put(vehicleId, predictionRecords);
+	    
 	  }
-	  
+    // place in cache
+	  this.cache.put(vehicleId, predictionRecords);
 	}
 
-	
-	private Long lookupScheduledTime(String vehicleId, String tripId, int stopSequence) {
-
+	// TODO this is proof of concept code, really inefficient!
+	private Long lookupScheduledTime(String vehicleId, String tripId, String stopId) {
 	  VehicleStatusBean vehicleStatus = _transitDataService.getVehicleForAgency(vehicleId, System.currentTimeMillis());
 	  
-	  if(vehicleStatus == null)
+	  if(vehicleStatus == null) {
       return null;
+	  }
 
     TripStatusBean tripStatus = vehicleStatus.getTripStatus();    
-    if(tripStatus == null)
+    if(tripStatus == null) {
       return null;
+    }
     
     BlockInstanceBean blockInstance = _transitDataService.getBlockInstance(tripStatus.getActiveTrip().getBlockId(), tripStatus.getServiceDate());
-    if(blockInstance == null)
+    if(blockInstance == null) {
       return null;
+    }
     
     // we need to match the given trip to the active trip
     List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
@@ -86,8 +92,11 @@ public class QueueBasedPredictionGenerationServiceImpl extends
     for (BlockTripBean blockTrip : blockTrips) {
       if (!foundActiveTrip) {
         if(tripId.equals(blockTrip.getTrip().getId())) {
-          if (blockTrip.getBlockStopTimes().size() > stopSequence) {
-            return tripStatus.getServiceDate() + blockTrip.getBlockStopTimes().get(stopSequence).getStopTime().getArrivalTime() * 1000l;
+          for (BlockStopTimeBean bst : blockTrip.getBlockStopTimes()) {
+            if (stopId.equals(bst.getStopTime().getStop().getId())) {
+              // should be serviceDate + arrivalTime * 1000
+              return tripStatus.getServiceDate() + (bst.getStopTime().getArrivalTime() * 1000);
+            }
           }
           foundActiveTrip = true;
         }

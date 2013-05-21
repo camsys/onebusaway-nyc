@@ -170,7 +170,10 @@
 <!--
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 -->
+                <!-- 
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
+                 -->
+                <ie.listener>SingleVehicleInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
