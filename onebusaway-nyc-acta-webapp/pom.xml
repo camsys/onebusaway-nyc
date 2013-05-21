@@ -4,7 +4,7 @@
   <parent>
     <artifactId>onebusaway-nyc</artifactId>
     <groupId>org.onebusaway</groupId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>2.6.0-SNAPSHOT</version>
   </parent>
   <artifactId>onebusaway-nyc-acta-webapp</artifactId>
   <packaging>war</packaging>
@@ -28,7 +28,7 @@
     <dependency>
 		<groupId>org.onebusaway</groupId>
 		<artifactId>onebusaway-nyc-webapp</artifactId>
-		<version>2.2.0-SNAPSHOT</version>
+		<version>2.6.0-SNAPSHOT</version>
 		<type>war</type>
 	</dependency>
   </dependencies>
@@ -67,9 +67,9 @@
 		<profile>
 			<id>local-single-port</id><!-- aka services-tdf-as-tds --> <!-- aka staging, production -->
 			<properties>
-				<tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
-				<vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
-				<config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+				<tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+				<vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+				<config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
 				<archive.path>http://localhost:8080/onebusaway-nyc-report-archive</archive.path>
 				<tdm.host>tdm.dev.obanyc.com</tdm.host>
 				<webapp.api.url />
@@ -112,13 +112,13 @@
 				<dependency>
 					<groupId>org.onebusaway</groupId>
 					<artifactId>onebusaway-nyc-presentation</artifactId>
-					<version>2.2.0-SNAPSHOT</version>
+					<version>2.6.0-SNAPSHOT</version>
 				</dependency>
 		
 				<dependency>
 					<groupId>org.onebusaway</groupId>
 					<artifactId>onebusaway-nyc-transit-data</artifactId>
-					<version>2.2.0-SNAPSHOT</version>
+					<version>2.6.0-SNAPSHOT</version>
 				</dependency>
 				<dependency>
 					<groupId>org.onebusaway</groupId>
@@ -129,12 +129,12 @@
 				<dependency>
 					<groupId>org.onebusaway</groupId>
 					<artifactId>onebusaway-nyc-api-core</artifactId>
-					<version>2.2.0-SNAPSHOT</version>
+					<version>2.6.0-SNAPSHOT</version>
 				</dependency>
 				<dependency>
 					<groupId>org.onebusaway</groupId>
 					<artifactId>onebusaway-nyc-util</artifactId>
-					<version>2.2.0-SNAPSHOT</version>
+					<version>2.6.0-SNAPSHOT</version>
 				</dependency>
 				<dependency>
 					<groupId>commons-beanutils</groupId>

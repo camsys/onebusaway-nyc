@@ -103,6 +103,8 @@ public class MtaUtsCrewAssignment extends MtaUtsObject {
   }
 
   public String getRoute() {
+    if (routeField != null)
+      return routeField.toUpperCase();
     return routeField;
   }
 

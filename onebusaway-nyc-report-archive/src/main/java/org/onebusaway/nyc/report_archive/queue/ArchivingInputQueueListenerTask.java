@@ -1,11 +1,7 @@
 package org.onebusaway.nyc.report_archive.queue;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -20,6 +16,7 @@ import org.onebusaway.nyc.report_archive.impl.CcLocationCache;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
 import org.onebusaway.nyc.report_archive.services.EmergencyStatusNotificationService;
+import org.onebusaway.nyc.report_archive.services.RealtimePersistenceService;
 import org.onebusaway.nyc.report_archive.services.RecordValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,19 +25,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 
   public static final int DELAY_THRESHOLD = 10 * 1000;
+
   protected static Logger _log = LoggerFactory.getLogger(ArchivingInputQueueListenerTask.class);
-  
+
   private RecordValidationService validationService;
 
-  /**
-   * number of inserts to batch together
-   */
-  private int _batchSize;
-
-  public void setBatchSize(String batchSizeStr) {
-    _batchSize = Integer.decode(batchSizeStr);
-  }
-  
   private EmergencyStatusNotificationService emergencyStatusNotificationService;
 
   private CcLocationCache _ccLocationCache;
@@ -49,32 +38,22 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   public void setCcLocationCache(CcLocationCache cache) {
     _ccLocationCache = cache;
   }
-  
+
   @Autowired
   public void setValidationService(RecordValidationService validationService) {
-	  this.validationService = validationService;
-  }
-
-  private long _lastCommitTime = System.currentTimeMillis();
-  private long _commitTimeout = 1 * 1000; // 1 second by default
-
-  /**
-   * Time in milliseconds to give up waiting for data and commit current batch.
-   * 
-   * @param commitTimeout number of milliseconds to wait
-   */
-  public void setCommitTimeout(String commitTimeout) {
-    _commitTimeout = Integer.decode(commitTimeout);
+    this.validationService = validationService;
   }
 
   @Autowired
   private CcLocationReportDao _dao;
-  
+
   // offset of timezone (-04:00 or -05:00)
   private String _zoneOffset = null;
   private String _systemTimeZone = null;
-  private int _batchCount = 0;
-  private List<CcLocationReportRecord> reports = Collections.synchronizedList(new ArrayList<CcLocationReportRecord>());
+  private long zoneOffsetWindow = System.currentTimeMillis();
+
+  @Autowired
+  RealtimePersistenceService persistor;
 
   public ArchivingInputQueueListenerTask() {
     /*
@@ -115,16 +94,20 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
     Integer port = getQueuePort();
 
     if (host == null || queueName == null || port == null) {
-      _log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
+      _log.error("Inference input queue is not attached; input hostname was not available via configuration service.");
       return;
     }
 
-    _log.info("realtime archive listening on " + host + ":" + port + ", queue="
+    _log.warn("realtime archive listening on " + host + ":" + port + ", queue="
         + queueName);
     try {
       initializeQueue(host, queueName, port);
+      _log.warn("queue config:" + queueName + " COMPLETE");
     } catch (InterruptedException ie) {
+      _log.error("queue " + queueName + " interrupted");
       return;
+    } catch (Throwable t) {
+      _log.error("queue " + queueName + " init failed:", t);
     }
   }
 
@@ -154,85 +137,65 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   // this method can't throw exceptions or it will stop the queue
   // listening
   public boolean processMessage(String address, String contents) {
-	  RealtimeEnvelope envelope = null;
-	  CcLocationReportRecord record = null;
-	  try {
-		  envelope = deserializeMessage(contents);
+    RealtimeEnvelope envelope = null;
+    CcLocationReportRecord record = null;
+    try {
 
-		  if (envelope == null || envelope.getCcLocationReport() == null) {
-			  _log.error("Message discarded, probably corrupted, contents= "
-					  + contents);
-			  Exception e = new Exception(
-					  "deserializeMessage failed, possible corrupted message.");
-			  _dao.handleException(contents, e, null);
-			  return false;
-		  }
+      envelope = deserializeMessage(contents);
 
-		  boolean validEnvelope = validationService.validateRealTimeRecord(envelope);
-		  if(validEnvelope) {
-			  record = new CcLocationReportRecord(envelope, contents, getZoneOffset());
-			  _ccLocationCache.put(record);
-		  } else {
-			  long vehicleId = envelope.getCcLocationReport().getVehicle().getVehicleId();
-			  _log.error("Discarding real time record for vehicle : {} as it does not meet the " +
-				  		"required database constraints", vehicleId);
-			  Exception e = new Exception("Real time record for vehile : " +vehicleId + " failed validation." +
-			  		"Discarding");
-			  _dao.handleException(contents, e, new Date());
-		  }
-		  if (record != null) {
-			  _batchCount++;
-			  // update cache for operational API
-			  reports.add(record);
+      if (envelope == null || envelope.getCcLocationReport() == null) {
+        _log.error("Message discarded, probably corrupted, contents= "
+            + contents);
+        Exception e = new Exception(
+            "deserializeMessage failed, possible corrupted message.");
+        _dao.handleException(contents, e, null);
+        return false;
+      }
 
-			  //Process record for emergency status
-			  emergencyStatusNotificationService.process(record);
+      boolean validEnvelope = validationService.validateRealTimeRecord(envelope);
+      if (validEnvelope) {
+        record = new CcLocationReportRecord(envelope, contents, getZoneOffset());
+        // update cache for operational API
+        _ccLocationCache.put(record);
+        
+      } else {
+        long vehicleId = envelope.getCcLocationReport().getVehicle().getVehicleId();
+        _log.error(
+            "Discarding real time record for vehicle : {} as it does not meet the "
+                + "required database constraints", vehicleId);
+        Exception e = new Exception("Real time record for vehile : "
+            + vehicleId + " failed validation." + "Discarding");
+        _dao.handleException(contents, e, new Date());
+      }
+      
+      if (record != null) {
+        // Process record for emergency status
+        emergencyStatusNotificationService.process(record);
+        persistor.persist(record);
+      }
+      
+      if (System.currentTimeMillis() - zoneOffsetWindow > 60 * 60 * 1000) {
+        // reset zoneoffset once an hour
+        _zoneOffset = null;
+        zoneOffsetWindow = System.currentTimeMillis();
+      }
+    } catch (Throwable t) {
+      _log.error("Exception processing contents= " + contents, t);
+      try {
+        Date timeReceived = null;
+        if (envelope != null)
+          timeReceived = new Date(envelope.getTimeReceived());
+        _dao.handleException(contents, t, timeReceived);
+      } catch (Throwable tt) {
+        // we tried
+        _log.error("Exception handling exception= " + tt);
+      }
+    }
 
-			  long batchWindow = System.currentTimeMillis() - _lastCommitTime;
-			  if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
-				  try {
-					  // unfortunately save needs to be called here to allow transactional
-					  // semantics to work
-					  _dao.saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
-				  } finally {
-					  reports.clear();
-					  _batchCount = 0;
-					  _lastCommitTime = System.currentTimeMillis();
-				  }
-			  }
-
-		  }
-		  // re-calculate zoneOffset periodically
-		  if (_batchCount == 0) {
-			  _zoneOffset = null;
-			  if (record != null) {
-				  long delta = System.currentTimeMillis()
-						  - record.getTimeReceived().getTime();
-				  if (delta > DELAY_THRESHOLD) {
-					  _log.warn("realtime queue is " + (delta / 1000) 
-							  + " seconds behind with cache_size=" + _ccLocationCache.size());
-				  }
-			  }
-		  }
-	  } catch (Throwable t) {
-		  _log.error("Exception processing contents= " + contents, t);
-		  try {
-			  Date timeReceived = null;
-			  if (envelope != null)
-				  timeReceived = new Date(envelope.getTimeReceived());
-			  _dao.handleException(contents, t, timeReceived);
-		  } catch (Throwable tt) {
-			  // we tried
-			  _log.error("Exception handling exception= " + tt);
-		  }
-	  }
-
-	  return true;
+    return true;
   }
 
- 
-
-@PostConstruct
+  @PostConstruct
   public void setup() {
     super.setup();
     // make parsing lenient
@@ -293,12 +256,13 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   }
 
   /**
-	* @param emergencyStatusNotificationService the emergencyStatusNotificationService to set
-	*/
+   * @param emergencyStatusNotificationService the
+   *          emergencyStatusNotificationService to set
+   */
   @Autowired
   public void setEmergencyStatusNotificationService(
-		  EmergencyStatusNotificationService emergencyStatusNotificationService) {
-	this.emergencyStatusNotificationService = emergencyStatusNotificationService;
- }
+      EmergencyStatusNotificationService emergencyStatusNotificationService) {
+    this.emergencyStatusNotificationService = emergencyStatusNotificationService;
+  }
 
 }

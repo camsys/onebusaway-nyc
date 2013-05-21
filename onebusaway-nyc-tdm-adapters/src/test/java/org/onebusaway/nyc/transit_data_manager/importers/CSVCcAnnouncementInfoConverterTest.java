@@ -58,6 +58,12 @@ public class CSVCcAnnouncementInfoConverterTest {
     compare(msg, "M1", 1010, "HARLEM 147 ST via MADISON AV", "N");
     msg = destinations.getDestination().get(8);
     compare(msg, "M1", 1011, "EAST VILLAGE 8 ST via 5 AV", "S");
+    
+    // this one has a newline that is filtered out later by SignMessageFromTcip
+    msg = destinations.getDestination().get(352);
+    compare(msg, "BX13", 3133, "PLIMPTON\nEL GRANT HWY", "");
+    
+    
     int size = destinations.getDestination().size() - 1;
     msg = destinations.getDestination().get(size);
     // make sure last row is captures
@@ -69,7 +75,8 @@ public class CSVCcAnnouncementInfoConverterTest {
     assertNotNull(msg);
     assertNotNull(msg.getMessageText());
     assertEquals(messageText, msg.getMessageText());
-    assertEquals(direction, msg.getDirection());
+    // direction semantics have changed, its now null (not collected even if present)
+    assertEquals(null, msg.getDirection());
     SCHRouteIden rId = msg.getRouteID();
     assertNotNull(rId);
     assertEquals(0, rId.getRouteId());

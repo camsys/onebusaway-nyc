@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.onebusaway</groupId>
         <artifactId>onebusaway-nyc</artifactId>
-        <version>2.2.0-SNAPSHOT</version>
+        <version>2.6.0-SNAPSHOT</version>
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-transit-data-federation-webapp</artifactId>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
-            <version>2.2.0-SNAPSHOT</version>
+            <version>2.6.0-SNAPSHOT</version>
         </dependency>
 
         <!-- RMI-like service for wiring up services between VMs -->
@@ -72,7 +72,7 @@
         <dependency>
           <groupId>org.onebusaway</groupId>
           <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
-          <version>2.2.0-SNAPSHOT</version>
+          <version>2.6.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -115,7 +115,7 @@
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
 -->
                 <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
-                <service.alerts.subscription.path>/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>

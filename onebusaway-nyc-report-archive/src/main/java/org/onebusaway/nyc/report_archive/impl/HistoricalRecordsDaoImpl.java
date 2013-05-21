@@ -41,6 +41,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	
 	private static final String SPACE = " ";
 	private static final int MAX_RECORD_LIMIT = 3000;
+	private static final boolean IS_MYSQL = true;
 	
 	@Override
 	public List<HistoricalRecord> getHistoricalRecords(
@@ -57,8 +58,22 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 				"inf.inferred_route_id, inf.inferred_direction_id, inf.inferred_dest_sign_code, inf.inferred_latitude, " +
 				"inf.inferred_longitude, inf.inferred_phase, inf.inferred_status, inf.inference_is_formal, " +
 				"inf.distance_along_block, inf.distance_along_trip, inf.next_scheduled_stop_id, inf.next_scheduled_stop_distance, " +
-				"inf.schedule_deviation from obanyc_cclocationreport cc LEFT OUTER JOIN obanyc_inferredlocation inf " +
-				"ON cc.uuid = inf.uuid ");
+				"inf.schedule_deviation from obanyc_cclocationreport cc ");
+		
+  	/* 
+  	 * here we expect vehicle_id_2 index to be present. On mysql, create it via
+  	 * alter table `obanyc_cclocationreport` add index `vehicle_id_2` (`vehicle_id`,`time_received`);
+  	 */
+		
+		if (filter.containsKey(CcAndInferredLocationFilter.VEHICLE_ID) && IS_MYSQL) {
+				sql.append("force index (vehicle_id_2) ");  
+		}
+		
+		/*
+		 * for the historical query, the vehicle and time join out performs the uuid join
+		 */
+    sql.append("LEFT OUTER JOIN obanyc_inferredlocation inf " +
+        "ON cc.vehicle_id = inf.vehicle_id AND cc.time_reported = inf.time_reported ");
 		
 		//add parameters to the query
 		sql = addDateBoundary(sql, "cc.time_received", filter.get(CcAndInferredLocationFilter.START_DATE));
@@ -67,7 +82,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 
 		sql = order(sql, "cc.time_received", "desc");
 		
-		addRecordLimit(filter.get(CcAndInferredLocationFilter.RECORDS));
+		sql = addRecordLimit(sql, filter.get(CcAndInferredLocationFilter.RECORDS));
 
 		final String sqlQuery = sql.toString();
 		
@@ -130,7 +145,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		
 		sql = addQueryParam(sql, ccLocationAlias +".vehicle_id", CcAndInferredLocationFilter.VEHICLE_ID, 
 				filter.get(CcAndInferredLocationFilter.VEHICLE_ID));
-		
+    
 		sql = addQueryParam(sql, ccLocationAlias +".vehicle_agency_designator", CcAndInferredLocationFilter.VEHICLE_AGENCY_ID,
 				filter.get(CcAndInferredLocationFilter.VEHICLE_AGENCY_ID));
 		
@@ -167,21 +182,27 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		return sql;
 	}
 	
-	private void addRecordLimit(Object maxRecords) {
+	private StringBuilder addRecordLimit(StringBuilder sql, Object maxRecords) {
 		Integer recordLimit = configurationService.getConfigurationValueAsInteger(
 				"operational-api.historicalRecordLimit", MAX_RECORD_LIMIT);
+		Integer limitValue = recordLimit;
 		
 		if(maxRecords != null) {
 			Integer recordLimitFromParameter = (Integer) maxRecords;
-			if(recordLimitFromParameter.intValue() > recordLimit) {
-				hibernateTemplate.setMaxResults(recordLimit);
-			} else {
-				hibernateTemplate.setMaxResults(recordLimitFromParameter);
+			// enforce record limit to protect database
+			if(recordLimitFromParameter.intValue() < recordLimit) {
+				limitValue = recordLimitFromParameter;
 			}
-		} else {
-			//set the number to max record limit if record limit is not specified
-			hibernateTemplate.setMaxResults(recordLimit);
 		}
+		
+		// MYSQL prefers the SQL syntax to the hibernateTemplate
+		if (IS_MYSQL) {
+		  sql.append(" limit ").append(limitValue).append(" ");
+		} else {
+		  hibernateTemplate.setMaxResults(limitValue);
+		}
+		
+		return sql;
 	}
 	
 	private StringBuilder addInferredPhase(StringBuilder sql, String field,

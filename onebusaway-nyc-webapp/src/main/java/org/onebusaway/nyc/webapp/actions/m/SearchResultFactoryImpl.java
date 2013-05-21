@@ -106,7 +106,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
         // if there are buses on route, always have "scheduled service"
         Boolean routeHasVehiclesInService = 
-      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId());
+      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
 
         if(routeHasVehiclesInService) {
       	  hasUpcomingScheduledService = true;
@@ -138,7 +138,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   @Override
-  public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
+  public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
     List<RouteAtStop> routesWithArrivals = new ArrayList<RouteAtStop>();
     List<RouteAtStop> routesWithNoVehiclesEnRoute = new ArrayList<RouteAtStop>();
     List<RouteAtStop> routesWithNoScheduledService = new ArrayList<RouteAtStop>();
@@ -147,8 +147,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     Set<String> serviceAlertDescriptions = new HashSet<String>();
 
     for (RouteBean routeBean : stopBean.getRoutes()) {
-      if (routeIdFilter != null && !routeIdFilter.isEmpty()
-          && !routeIdFilter.contains(routeBean.getId())) {
+      if (routeFilter != null && !routeFilter.isEmpty()
+          && !routeFilter.contains(routeBean)) {
         filteredRoutes.add(routeBean);
         continue;
       }
@@ -226,8 +226,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult,
-      Set<String> routeShortNameFilter) {
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeFilter) {
     return new GeocodeResult(geocodeResult);
   }
 
@@ -239,7 +238,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
-        stopBean.getId(), 0);
+        stopBean.getId(), 0, System.currentTimeMillis());
 
     for (MonitoredStopVisitStructure visit : visitList) {
       String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
@@ -284,7 +283,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     // stop visits
     List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(
-        routeBean.getId(), null, 0);
+        routeBean.getId(), null, 0, System.currentTimeMillis());
 
     // build map of stop IDs to list of distance strings
     for (VehicleActivityStructure journey : journeyList) {

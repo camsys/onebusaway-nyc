@@ -110,10 +110,8 @@ public class CrewResourceTest extends ResourceTest {
         data.getOperatorAssignmentsByServiceDate(serviceDate));
     assertNotNull(jsonOpAssigns);
     
-    int i = 0;
     boolean found = false;
     for (OperatorAssignment oa : jsonOpAssigns) {
-      i++;
       String passNumber = oa.getPassId();
       
       if (passNumber.matches("^[A-Z].*")) {
@@ -123,6 +121,15 @@ public class CrewResourceTest extends ResourceTest {
     }
     assertFalse(found);
 
+    for (OperatorAssignment oa : jsonOpAssigns) {
+      String route = oa.getRunRoute();
+      
+      if (route.matches("^[A-Z][a-z].*")) {
+        _log.error("found lowercase route=" + route);
+        found = true;
+      }
+    }
+    assertFalse(found);
   }
   
   public HashMap<String, OperatorAssignment> testDuplicateAssignments(String filename, String serviceDateStr) throws Exception {

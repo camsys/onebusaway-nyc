@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.data;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -20,14 +21,14 @@ public class ImporterSignCodeData implements SignCodeData {
   }
 
   /*
-   * This basically loops over the set of sign codes searching for the first one
+   * This basically loops over the set of sign codes searching for each DSC
    * with the given messageID.msgID (non-Javadoc)
    * 
    * @see org.onebusaway.nyc.transit_data_manager.adapters.data.SignCodeData#
    * getDisplayForCode(java.lang.String)
    */
-  public CCDestinationSignMessage getDisplayForCode(Long code) {
-    CCDestinationSignMessage result = null;
+  public List<CCDestinationSignMessage> getDisplayForCode(Long code) {
+    List<CCDestinationSignMessage> result = new ArrayList<CCDestinationSignMessage>();
 
     // iterate over the list of destinations so we can check the codes.
     Iterator<CCDestinationSignMessage> destIt = destinations.iterator();
@@ -40,8 +41,7 @@ public class ImporterSignCodeData implements SignCodeData {
       if (code == destSign.getMessageID().getMsgID()) { // if we match by sign
                                                         // code id, then this is
                                                         // our result.
-        result = destSign;
-        break;
+        result.add(destSign);
       }
     }
 

@@ -63,7 +63,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       new FieldDef(53 - 41, "path code", null),
       new FieldDef(59 - 53, "primary run route", new TripFieldSetter() {
         public void setField(TripRecord record) {
-          record.setRunRoute(getStringData());
+          record.setRunRoute(getStringDataUppercased());
         }
       }),
       new FieldDef(65 - 59, "relief run number", new TripFieldSetter() {
@@ -73,7 +73,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
           }),
       new FieldDef(71 - 65, "relief run route", new TripFieldSetter() {
         public void setField(TripRecord record) {
-          record.setReliefRunRoute(getStringData());
+          record.setReliefRunRoute(getStringDataUppercased());
         }
       }),
       new FieldDef(79 - 71, "relief time", new TripFieldSetter() {
@@ -127,7 +127,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       new FieldDef(134 - 133, "empty", null),
       new FieldDef(140 - 134, "next trip operator route", new TripFieldSetter() {
         public void setField(TripRecord record) {
-          record.setNextTripOperatorRunRoute(getStringData());
+          record.setNextTripOperatorRunRoute(getStringDataUppercased());
         }
       }),
       new FieldDef(141 - 140, "empty", null),
@@ -153,7 +153,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       new FieldDef(169 - 168, "empty", null),
       new FieldDef(175 - 169, "previous trip operator route", new TripFieldSetter() {
         public void setField(TripRecord record) {
-          record.setPreviousRunRoute(getStringData());
+          record.setPreviousRunRoute(getStringDataUppercased());
         }
       }),
       new FieldDef(176 - 175, "empty", null),

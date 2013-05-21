@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -69,6 +70,37 @@ public class DepotResource {
 	}
 
 
+	@Path("/updated")
+	@GET
+	@Produces("application/json")
+	/**
+	 * Return the date when the underlying data feed was last updated.
+	 * @return long as a string, the milliseconds since epoch
+	 */
+	public String getLastUpdated() {
+	  VehicleDepotData data = depotDataProviderService.getVehicleDepotData(depotIdTranslator);
+	  String outputJson;
+	  try {
+	    StringWriter stringWriter = new StringWriter();
+	    if (data == null || data.getLastUpdatedDate() == null) {
+	      // return the epoch if there are any issues
+	      jsonTool.writeJson(stringWriter, new Date(0l));
+	    } else {
+	      jsonTool.writeJson(stringWriter, data.getLastUpdatedDate().getTime());
+	    }
+	    outputJson = stringWriter.toString();
+	    stringWriter.close();
+	  } catch (IOException e) {
+	     // This is unlikely.
+      _log.info("Exception writing json output at DepotResource.getDepotList.");
+      _log.debug(e.getMessage());
+
+      throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+	  }
+	  
+	  return outputJson;
+	}
+	
 	@Path("/list")
 	@GET
 	@Produces("application/json")

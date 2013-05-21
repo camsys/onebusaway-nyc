@@ -102,7 +102,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
         // if there are buses on route, always have "scheduled service"
         Boolean routeHasVehiclesInService = 
-      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId());
+      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
 
         if(routeHasVehiclesInService) {
       	  hasUpcomingScheduledService = true;
@@ -116,7 +116,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   }
 
   @Override
-  public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
+  public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     
     for(RouteBean routeBean : stopBean.getRoutes()) {
@@ -149,7 +149,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
             // if there are buses on route, always have "scheduled service"
             Boolean routeHasVehiclesInService = 
-                _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId());
+                _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId(), System.currentTimeMillis());
 
             if(routeHasVehiclesInService) {
               hasUpcomingScheduledService = true;
@@ -168,7 +168,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<String> routeIdFilter) {
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeBean) {
     List<SearchResult> routesNearby = null;
     
     if(geocodeResult.isRegion()) {

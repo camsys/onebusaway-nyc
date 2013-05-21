@@ -123,9 +123,9 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 		try {
 			_credentials = new BasicAWSCredentials(_username, _password);
 			_s3 = new AmazonS3Client(_credentials);
-		} catch (Exception ioe) {
-			_log.error(ioe.toString());
-			throw new RuntimeException(ioe);
+		} catch (Throwable t) {
+		  _log.error("FileServiceImpl setup failed, likely due to missing or invalid credentials");
+			_log.error(t.toString());
 		}
 
 	}

@@ -46,45 +46,9 @@
 	</c:choose>
 </c:if>
 
-<div class="welcome">
-	<h3>Try these example searches:</h3>
+<!-- Include the welcome div with example searches -->
+<c:import url="includes/welcome.jspx" />
 
-	<ul class="examples">
-		<s:url var="B63url" namespace="/m" action="index">
-			<s:param name="q">B63</s:param>
-		</s:url>
-		<s:url var="S62url" namespace="/m" action="index">
-			<s:param name="q">S62</s:param>
-		</s:url>
-		<s:url var="X1url" namespace="/m" action="index">
-			<s:param name="q">X1</s:param>
-		</s:url>
-		<li>Route: <a href="${B63url}">B63</a> &amp;nbsp; <a href="${S62url}">S62</a> &amp;nbsp; <a href="${X1url}">X1</a>
-		</li>
-
-		<s:url var="url" namespace="/m" action="index">
-			<s:param name="q">Main St and Craig Rd</s:param>
-		</s:url>
-		<li>Intersection: <a href="${url}">Main St and Craig Rd</a>
-		</li>
-
-		<s:url var="url" namespace="/m" action="index">
-			<s:param name="q">200884</s:param>
-		</s:url>
-		<li>Stop Code: <a href="${url}">200884</a>
-		</li>
-
-		<s:url var="zipCodeUrl" namespace="/m" action="index">
-			<s:param name="q">10304</s:param>
-		</s:url>
-		<s:url var="streetUrl" namespace="/m" action="index">
-			<s:param name="q">Hylan Blvd</s:param>
-		</s:url>
-		<li>Location: <a href="${zipCodeUrl}">10304</a>  &amp;nbsp; <a href="${streetUrl}">Hylan Blvd</a>
-		</li>
-		<li>(Add route for best results)</li>
-	</ul>
-</div>
 <c:choose>
 	<c:when test="${!queryIsEmpty}">
 		<div id="cant-find">

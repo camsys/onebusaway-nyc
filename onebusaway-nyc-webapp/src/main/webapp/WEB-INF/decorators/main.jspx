@@ -33,9 +33,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=8" />
   
-  <link rel="shortcut icon" href="http://mta.info/siteimages/favicon.ico" type="image/x-icon"/>
-
-  <script type="text/javascript" src="http://mta.info/js/csshorizontalmenu.js"><!-- //prevent jspx minimization --></script>
+  <s:set var="favicon" value="getText('favicon.url')" />
+  <link rel="shortcut icon" href="${favicon}" type="image/x-icon"/>
 
   <s:url var="url" value="/css/reset.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
@@ -95,67 +94,10 @@
 				</c:if>			
 			</ul>
 		</div>
-
-		<div id="horizontalcssmenu" style="clear: both;">	
-			<ul id="cssmenu1">
-				<s:set var="link" value="getText('main.agency.link')" />
-				<li style="width:7%; border-left: none;"><a href="${link}">Home</a>
-					<ul>
-						<s:set var="link" value="getText('main.agency.link')" />
-						<li><a href="${link}"><s:property value="getText('main.agency.home')" /></a></li>
-						<s:set var="link" value="getText('main.subway.link')" />
-						<li><a href="${link}">NYC Subways and Buses</a></li>
-						<s:set var="link" value="getText('main.lirr.link')" />
-						<li><a href="${link}">Long Island Rail Road</a></li>						
-						<s:set var="link" value="getText('main.libus.link')" />
-						<li><a href="${link}">Long Island Bus</a></li>
-						<s:set var="link" value="getText('main.mnr.link')" />
-						<li><a href="${link}">Metro-North Railroad</a></li>
-						<s:set var="link" value="getText('main.bandt.link')" />
-						<li><a href="${link}">Bridges and Tunnels</a></li>
-						<s:set var="link" value="getText('main.capital.link')" />
-						<li><a href="${link}"><s:property value="getText('main.capital.text')" /></a></li>
-					</ul> 
-				</li>
-
-				<s:set var="link" value="getText('main.schedules.link')" />
-				<li style="width: 9%;"><a href="${link}">Schedules</a></li>
-				<s:set var="link" value="getText('main.fares.link')" />
-				<li style="width: 12%;"><a href="${link}">Fares &amp;amp; Tolls</a></li>
-				<s:set var="link" value="getText('main.maps.link')" />
-				<li style="width: 7%;"><a href="${link}">Maps</a></li>
-				<s:set var="link" value="getText('main.service.link')" />
-				<li style="width: 19%;"><a href="${link}">Planned Service Changes</a></li>
-				<s:set var="link" value="getText('main.about.link')" />
-				<li style="width: 13%;"><a href="${link}"><s:property value="getText('main.agency.about')" /></a></li>
-				<s:set var="link" value="getText('main.business.link')" />
-				<li style="width: 19%;"><a href="${link}">Doing Business With Us</a></li>
-				<s:set var="link" value="getText('main.accountability.link')" />
-				<li style="width: 14%; position: absolute; margin-left:-1px;"><a href="${link}">Transparency</a>
-
-					<ul>
-						<s:set var="link" value="getText('main.accountability.link')" />
-						<li><a href="${link}">Main Page</a></li>
-						<s:set var="link" value="getText('main.beardmaterials.link')" />
-						<li><a href="${link}">Board Materials</a></li>
-						<s:set var="link" value="getText('main.budget.link')" />
-						<li><a href="${link}">Budget Info</a></li>
-						<s:set var="link" value="getText('main.capital.link')" />
-						<li><a href="${link}">Capital Program Info</a></li>
-						<s:set var="link" value="getText('main.capitaldashboard.link')" />
-						<li><a href="${link}">Capital Program Dashboard</a></li>
-						<s:set var="link" value="getText('main.leadership.link')" />
-						<li><a href="${link}"></a><s:property value="getText('main.leadership.text')" /></li>
-						<s:set var="link" value="getText('main.performind.link')" />
-						<li><a href="${link}">Performance Indicators</a></li>				
-						<s:set var="link" value="getText('main.news.link')" />
-						<li><a href="${link}">Press Releases and News</a></li>
-						<s:set var="link" value="getText('main.hearings.link')" />
-						<li><a href="${link}">Public Hearings</a></li>
-					</ul>
-				</li>
-			</ul>
-		</div>
+		
+		<!-- Include the tabs.jspx that provides branded links -->
+		<c:import url="/WEB-INF/decorators/includes/tabs.jspx" />
+		
 	</div> <!-- close topbar -->
 	
 	<div id="contentbox">

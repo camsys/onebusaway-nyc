@@ -197,7 +197,7 @@ public class SearchResultFactoryImplTest {
     when(monCall.getExtensions()).thenReturn(extensions);
     when(monVehJourney.getMonitoredCall()).thenReturn(monCall);
 
-    when(_realtimeService.getMonitoredStopVisitsForStop(TEST_STOP_ID, 0)).thenReturn(
+    when(_realtimeService.getMonitoredStopVisitsForStop(TEST_STOP_ID, 0, System.currentTimeMillis())).thenReturn(
         monitoredStopVisits);
 
     when(
@@ -214,7 +214,7 @@ public class SearchResultFactoryImplTest {
         presentationService);
     SearchResultFactoryImpl srf = new SearchResultFactoryImpl(
         _nycTransitDataService, _realtimeService, _configurationService);
-    Set<String> routeIdFilter = new HashSet<String>();
+    Set<RouteBean> routeIdFilter = new HashSet<RouteBean>();
     StopResult result = (StopResult) srf.getStopResult(stopBean, routeIdFilter);
     return result;
   }

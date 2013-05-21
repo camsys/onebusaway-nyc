@@ -92,7 +92,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
         // if there are buses on route, always have "scheduled service"
         Boolean routeHasVehiclesInService = 
-      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId());
+      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
 
         if(routeHasVehiclesInService) {
       	  hasUpcomingScheduledService = true;
@@ -111,7 +111,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
   }
 
   @Override
-  public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
+  public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     boolean matchesRouteIdFilter = false;
     
@@ -119,7 +119,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
         getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(stopBean);
     
     for(RouteBean routeBean : stopBean.getRoutes()) {
-      if((routeIdFilter == null || routeIdFilter.isEmpty()) || routeIdFilter != null && routeIdFilter.contains(routeBean.getId())) {
+      if((routeFilter == null || routeFilter.isEmpty()) || routeFilter != null && routeFilter.contains(routeBean)) {
         matchesRouteIdFilter = true;
       }
       
@@ -167,7 +167,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<String> routeIdFilter) {
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeFilter) {
     return new GeocodeResult(geocodeResult);   
   }
 
@@ -179,7 +179,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = 
-      _realtimeService.getMonitoredStopVisitsForStop(stopBean.getId(), 0);  
+      _realtimeService.getMonitoredStopVisitsForStop(stopBean.getId(), 0, System.currentTimeMillis());  
     
     for(MonitoredStopVisitStructure visit : visitList) {
       // on detour? don't show it. 

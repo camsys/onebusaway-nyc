@@ -11,7 +11,6 @@
 
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
     License for the specific language governing permissions and limitations under
     the License.
 
@@ -64,25 +63,25 @@
 								<div id="crewAssignments" class="propertyHolder">
 									<label class="propertyHeader">Crew Assignment Refresh Interval</label>
 									<div class="propertyDescription">
-										<p>Number of minutes after which crew assignments
+										<p>Number of seconds after which crew assignments
 										are refreshed.</p>
 									</div>
 									<div>
 										<input type="hidden" id="crewAssignmentKey" value="tdmCrewAssignmentRefreshKey" />
 										<input type="text" id="crewAssignmentValue" class="propertyValue positiveInteger" />
-										<label id="propertyUnit">minutes</label>
+										<label id="propertyUnit">seconds</label>
 									</div>
 								</div>
 								<div id="vehicleAssignments" class="propertyHolder rightProperty">
 									<label class="propertyHeader">Vehicle Assignment Refresh Interval</label>
 									<div class="propertyDescription">
-										<p>Number of minutes after which vehicle assignments
+										<p>Number of seconds after which vehicle assignments
 										are refreshed.</p>
 									</div>
 									<div>
 										<input type="hidden" id="vehicleAssignmentKey" value="tdmVehicleAssignmentRefreshKey" />
 										<input type="text" id="vehicleAssignmentValue" class="propertyValue positiveInteger" />
-										<label>minutes</label>
+										<label>seconds</label>
 									</div>
 								</div>
 								

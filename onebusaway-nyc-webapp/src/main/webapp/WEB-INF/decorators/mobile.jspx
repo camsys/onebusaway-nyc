@@ -25,9 +25,10 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 	<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes"/>
 
-	<title><s:property value="getText('main.title')"/></title>
+	<title><s:property value="getText('main.title')"/><s:property value="title" /></title>
 	
-  	<link rel="shortcut icon" href="http://mta.info/siteimages/favicon.ico" type="image/x-icon"/>
+  	<s:set var="favicon" value="getText('favicon.url')" />
+  	<link rel="shortcut icon" href="${favicon}" type="image/x-icon"/>
 
   	<s:url var="url" value="/css/mobile/mobile.css">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>

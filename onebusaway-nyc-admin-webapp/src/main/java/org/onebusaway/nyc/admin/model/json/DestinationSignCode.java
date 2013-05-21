@@ -6,6 +6,7 @@ public class DestinationSignCode {
   private String messageId;
   private String routeName;
   private String messageText;
+  private String agency;
 
   public DestinationSignCode() {
     
@@ -36,6 +37,15 @@ public class DestinationSignCode {
 
   public void setMessageText(String messageText) {
     this.messageText = messageText;
+  }
+
+  @JsonProperty("agency")
+  public String getAgency() {
+    return agency;
+  }
+
+  public void setAgency(String agency) {
+    this.agency = agency;
   }
   
 }

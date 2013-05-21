@@ -41,6 +41,12 @@ public class NycTestInferredLocationRecord implements Serializable {
   @CsvField(optional = true)
   private Integer recordNumber;
 
+  /**
+   * Time record was received by us.
+   */
+  @CsvField(name = "timestamp", mapping = DateTimeFieldMappingFactory.class)
+  private long timestamp;
+  
   @CsvField(optional = true)
   private double lat;
 
@@ -53,105 +59,101 @@ public class NycTestInferredLocationRecord implements Serializable {
   @CsvField(optional = true)
   private String reportedRunId;
 
-  /**
-   * Time record was received by us.
-   */
-  @CsvField(name = "timestamp", mapping = DateTimeFieldMappingFactory.class)
-  private long timestamp;
-
-  @CsvField(optional = true)
-  private String dsc;
-
-  /*
-   * FIXME Important/most useful data to see first
-   */
-
-  @CsvField(optional = true)
-  private String inferredPhase = null;
-
-  @CsvField(optional = true)
-  private String inferredTripId;
-
-  @CsvField(optional = true)
-  private String inferredDsc;
-
-  @CsvField(optional = true)
-  private double inferredDistanceAlongBlock = Double.NaN;
-
-  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
-  private int inferredScheduleTime = MISSING_VALUE;
-
-  @CsvField(optional = true)
-  private double inferredScheduleDeviation;
-
-  @CsvField(optional = true)
-  private String actualPhase = null;
-
-  @CsvField(optional = true)
-  private String actualTripId;
-
-  @CsvField(optional = true)
-  private String actualDsc;
-
-  @CsvField(optional = true)
-  private double actualDistanceAlongBlock = Double.NaN;
-
-  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
-  private int actualScheduleTime = MISSING_VALUE;
-
-  @CsvField(optional = true)
-  private double actualScheduleDeviation;
-
-  /****
-   * Inferred Values
-   ****/
-  @CsvField(optional = true)
-  private String inferredRunId;
-
-  @CsvField(optional = true)
-  private String inferredBlockId;
-
-  @CsvField(optional = true)
-  private long inferredServiceDate;
-
-  @CsvField(optional = true)
-  private double inferredBlockLat = Double.NaN;
-
-  @CsvField(optional = true)
-  private double inferredBlockLon = Double.NaN;
-
-  @CsvField(optional = true)
-  private String inferredStatus = null;
-
   @CsvField(optional = true)
   private String assignedRunId;
 
-  /****
-   * Ground Truth Information
-   ****/
   @CsvField(optional = true)
-  private String actualRunId;
-
-  @CsvField(optional = true)
-  private String actualBlockId;
-
-  @CsvField(optional = true)
-  private long actualServiceDate;
-
-  @CsvField(optional = true)
-  private double actualBlockLat = Double.NaN;
-
-  @CsvField(optional = true)
-  private double actualBlockLon = Double.NaN;
-
-  @CsvField(optional = true)
-  private String actualStatus = null;
+  private String dsc;
 
   @CsvField(optional = true)
   private Boolean actualIsRunFormal;
 
   @CsvField(optional = true)
   private Boolean inferredIsRunFormal;
+  
+  @CsvField(optional = true)
+  private String actualPhase = null;
+
+  @CsvField(optional = true)
+  private String inferredPhase = null;
+
+  @CsvField(optional = true)
+  private String actualDsc;
+
+  @CsvField(optional = true)
+  private String inferredDsc;
+
+  @CsvField(optional = true)
+  private String actualStatus = null;
+
+  @CsvField(optional = true)
+  private String inferredStatus = null;
+
+  @CsvField(optional = true)
+  private String actualRunId;
+
+  @CsvField(optional = true)
+  private String inferredRunId;
+
+  @CsvField(optional = true)
+  private String actualTripId;
+  
+  @CsvField(optional = true)
+  private String inferredTripId;
+
+  @CsvField(optional = true)
+  private String actualBlockId;
+
+  @CsvField(optional = true)
+  private String inferredBlockId;
+
+  @CsvField(optional = true)
+  private double actualScheduleDeviation;
+
+  @CsvField(optional = true)
+  private double inferredScheduleDeviation;
+
+  @CsvField(optional = true)
+  private double actualDistanceAlongBlock = Double.NaN;
+  
+  @CsvField(optional = true)
+  private double inferredDistanceAlongBlock = Double.NaN;
+
+  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
+  private int actualScheduleTime = MISSING_VALUE;
+
+  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
+  private int inferredScheduleTime = MISSING_VALUE;
+
+  @CsvField(optional = true)
+  private long actualServiceDate;
+
+  @CsvField(optional = true)
+  private long inferredServiceDate;
+
+  @CsvField(optional = true)
+  private double actualBlockLat = Double.NaN; 
+  
+  @CsvField(optional = true)
+  private double inferredBlockLat = Double.NaN;
+
+  @CsvField(optional = true)
+  private double actualBlockLon = Double.NaN;
+
+  @CsvField(optional = true)
+  private double inferredBlockLon = Double.NaN;
+
+  /****
+   * Stats debugging information
+   ****/
+  @CsvField(optional = true, ignore=true)
+  private String inferredStateMean = null;
+  
+  @CsvField(optional = true, ignore=true)
+  private String inferredStateCovariance = null;
+  
+  @CsvField(optional = true, ignore=true)
+  private String inferredEdge = null;
 
   // **************
 

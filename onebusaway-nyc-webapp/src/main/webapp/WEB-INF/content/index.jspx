@@ -180,16 +180,8 @@
 		   		</div>
 		   </div>
 	
-		   <div id="welcome">
-			 <h2>Try these example searches:</h2>
-			 
-			 <ul>
-			 	<li>Route: &amp;nbsp; <a href="#B63">B63</a> &amp;nbsp; <a href="#S62">S62</a> &amp;nbsp; <a href="#X1">X1</a></li>
-			 	<li>Intersection: &amp;nbsp; <a href="#Main%20St%20and%20Craig%20Ave">Main St and Craig Ave</a></li>
-			 	<li>Stop Code: &amp;nbsp; <a href="#200884">200884</a></li>
-			 	<li>Location: &amp;nbsp; <a href="#10304">10304</a> &amp;nbsp; <a href="#Hylan%20Blvd">Hylan Blvd</a></li>
-			 </ul>
-		   </div>
+			<!-- Include the welcome div with example searches -->
+			<c:import url="includes/welcome.jspx" />
 		   
 			<s:url var="url" namespace="/wiki/Help" action="Routes"/>
 			<div id="available-routes"><a href="${url}">Click here</a> for a list of available routes.</div>
@@ -210,17 +202,9 @@
 			 </div>
 			</s:if>
 	
-			<div id="ad">
-			 <script type="text/javascript">&lt;!-- 
-				google_ad_client = "<s:property value="googleAdClientId" />"; 
-				/* MTA BusTime Page Ads */ 
-				google_ad_slot = "4760132359"; 
-				google_ad_width = 300; 
-				google_ad_height = 250; 
-				//--&gt;
-			 </script> 
-			 <script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"> <!-- //prevent jspx minimization --></script> 		
-			</div>
+			<!-- Include the Google ad -->
+			<c:import url="includes/ad.jspx" />
+		
 		</div>
 		<div class="container clear"><!-- jspx --></div>
 	  	<s:url var="url" value="/css/img/google_logo.png"></s:url>

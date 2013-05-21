@@ -61,9 +61,9 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 		try {
 			_credentials = new BasicAWSCredentials(_username, _password);
 			_ec2 = new AmazonEC2Client(_credentials);
-		} catch (Exception ioe) {
-			_log.error("BundleServerService setup failed:", ioe);
-			throw new RuntimeException(ioe);
+		} catch (Throwable t) {
+		  _log.error("BundleServerServiceImpl setup failed, likely due to missing or invalid credentials");
+			_log.error("BundleServerService setup failed:", t);
 		}
 
   }

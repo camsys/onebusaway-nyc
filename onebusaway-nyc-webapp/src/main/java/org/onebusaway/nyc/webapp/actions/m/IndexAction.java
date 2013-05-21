@@ -24,7 +24,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.xwork.StringEscapeUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
@@ -37,8 +36,8 @@ import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.m.model.StopResult;
+import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class IndexAction extends OneBusAwayNYCActionSupport {
@@ -98,7 +97,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     if (_location != null && _q.isEmpty()) {
       if (_type.equals("stops")) {
         _results = _searchService.findStopsNearPoint(_location.getLat(),
-            _location.getLon(), factory, _results.getRouteIdFilter());
+            _location.getLon(), factory, _results.getRouteFilter());
       } else {
         _results = _searchService.findRoutesStoppingNearPoint(
             _location.getLat(), _location.getLon(), factory);
@@ -128,7 +127,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
           // if we got a location (point) back, find stops nearby
         } else {
           _results = _searchService.findStopsNearPoint(result.getLatitude(),
-              result.getLongitude(), factory, _results.getRouteIdFilter());
+              result.getLongitude(), factory, _results.getRouteFilter());
         }
       }
     }
@@ -184,7 +183,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
           }
         }
       } else {
-        if (getQueryIsEmpty()) {
+        if (getQueryIsEmpty() && _location == null) {
           action = "Home";
         } else {
           action = "No Search Results";
@@ -227,7 +226,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   public boolean getQueryIsEmpty() {
-    return (_q == null || _q.isEmpty()) && _location == null;
+    return (_q == null || _q.isEmpty());
   }
 
   public String getLastUpdateTime() {
@@ -266,22 +265,30 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   public String getTitle() {
-    if (!getQueryIsEmpty()) {
-      if (this._q != null && !this._q.isEmpty())
-        return ": " + this._q;
-      else
-        return "";
-    } else {
+    if (_location != null && getQueryIsEmpty()) {
       return "";
     }
+    if (_results.getMatches().size() == 1) {
+      SearchResult result = _results.getMatches().get(0);
+      if (_results.getResultType().equals("StopResult")) {
+        StopResult stopResult = (StopResult)result;
+        return ": Stop " + stopResult.getCode() + " " + stopResult.getName();
+      } else if (_results.getResultType().equals("RouteResult")) {
+        RouteResult routeResult = (RouteResult)result;
+        return ": Route " + routeResult.getShortName();
+      }
+    }
+    if (!getQueryIsEmpty()) {
+      return ": " + _q;
+    }
+    return "";
   }
 
-  public String getRouteIdFilterShortName() {
-    Object[] idsWithAgency = _results.getRouteIdFilter().toArray();
-    if (idsWithAgency.length > 0) {
-      String idWithAgency = (String)idsWithAgency[0];
-      AgencyAndId id = AgencyAndIdLibrary.convertFromString(idWithAgency);
-      return id.getId();
+  public String getRouteFilterShortName() {
+    Object[] routeBeans = _results.getRouteFilter().toArray();
+    if (routeBeans.length > 0) {
+      RouteBean routeBean = (RouteBean)routeBeans[0];
+      return routeBean.getShortName();
     } else {
       return null;
     }
