@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.report_archive.services.DummyPredictionOutputQueueSenderService;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
@@ -29,9 +28,9 @@ import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripDescriptor;
 import com.google.transit.realtime.GtfsRealtime.TripDescriptor.ScheduleRelationship;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
-import com.google.transit.realtime.GtfsRealtime.VehicleDescriptor;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeEvent;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
+import com.google.transit.realtime.GtfsRealtime.VehicleDescriptor;
 import com.google.transit.realtime.GtfsRealtimeConstants;
 
 
@@ -74,7 +73,6 @@ public class DummyQueueBasedPredictionGeneratorTask extends InferenceQueueListen
       return;
     }
     
-    // TODO check if test predictions are turned on!
     if (host == null || queueName == null || port == null ) {
       _log.error("Prediction inference input queue is not attached; input hostname was not available via configuration service or service was not configured to run.");
       return;
@@ -111,7 +109,6 @@ public class DummyQueueBasedPredictionGeneratorTask extends InferenceQueueListen
   }
 
   private FeedMessage generatePredictionsForVehicle(String vehicleId) {
-    
     FeedHeader.Builder header = FeedHeader.newBuilder();
     header.setTimestamp(System.currentTimeMillis()/1000);
     header.setIncrementality(Incrementality.DIFFERENTIAL);
@@ -170,8 +167,8 @@ public class DummyQueueBasedPredictionGeneratorTask extends InferenceQueueListen
           continue;
         }
    
-        long arrivalTime = tripStatus.getServiceDate() + blockStopTime.getStopTime().getArrivalTime();
-        long departureTime = tripStatus.getServiceDate() + blockStopTime.getStopTime().getDepartureTime();
+        long arrivalTime = Math.round(tripStatus.getServiceDate() + (blockStopTime.getStopTime().getDepartureTime() * 1000) + (tripStatus.getScheduleDeviation() * 1000));
+        long departureTime = arrivalTime;
         fillEntity(feedMessageBuilder, 
             vehicleStatus.getVehicleId(), 
             blockTrip.getTrip().getId(),blockTrip.getTrip().getRoute().getId(), 

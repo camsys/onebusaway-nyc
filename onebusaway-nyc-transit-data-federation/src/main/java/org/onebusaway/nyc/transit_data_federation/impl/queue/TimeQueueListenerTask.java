@@ -12,13 +12,14 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 	@Override
 	public boolean processMessage(String address, byte[] buff) {
 		try {
-			if (address == null || !address.equals(getQueueName()) || !useTimePredictionsIfAvailable()) {
+			if (address == null || buff == null || !address.equals(getQueueName()) || !useTimePredictionsIfAvailable()) {
 				return false;
 			}
 			
 			processResult(FeedMessage.parseFrom(buff));
 			return true;
 		} catch (Exception e) {
+		  _log.warn("exception:", e);
 			_log.warn("Received corrupted message from queue; discarding: " + e.getMessage());
 			return false;
 		}

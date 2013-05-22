@@ -53,19 +53,21 @@ public class QueueBasedPredictionGenerationServiceImpl extends
 	    for (StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
 	      TimepointPredictionRecord tpr = new TimepointPredictionRecord();
 	      tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId()));
-	      // should be serviceDate + arrivalTime * 1000
-	      tpr.setTimepointPredictedTime(stu.getArrival().getTime() * 1000);
+	      tpr.setTimepointPredictedTime(stu.getArrival().getTime());
 	      Long scheduledTime = lookupScheduledTime(vehicleId, entity.getTripUpdate().getTrip().getTripId(), stu.getStopId());
 	      
 	      if (scheduledTime != null) {
-	        tpr.setTimepointScheduledTime(scheduledTime );
+	        tpr.setTimepointScheduledTime(scheduledTime);
 	        predictionRecords.add(tpr);
 	      }
 	    }
 	    
 	  }
-    // place in cache
-	  this.cache.put(vehicleId, predictionRecords);
+    
+	  if (vehicleId != null) {
+	    // place in cache if we were able to extract a vehicle id
+	    this.cache.put(vehicleId, predictionRecords);
+	  }
 	}
 
 	// TODO this is proof of concept code, really inefficient!
