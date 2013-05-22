@@ -22,6 +22,8 @@ import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -34,6 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DummyOutputQueueSenderServiceImpl implements
     OutputQueueSenderService {
 
+  private static Logger _log = LoggerFactory.getLogger(DummyOutputQueueSenderServiceImpl.class);
+      
   public boolean _isPrimaryInferenceInstance = true;
 
   public String _primaryHostname = null;
@@ -56,8 +60,9 @@ public class DummyOutputQueueSenderServiceImpl implements
     final VehicleLocationRecord vlr = RecordLibrary.getNycQueuedInferredLocationBeanAsVehicleLocationRecord(r);
     _vehicleLocationListener.handleVehicleLocationRecord(vlr);
 
-    if(useTimePredictionsIfAvailable())
+    if(useTimePredictionsIfAvailable()) {
     	_predictionIntegrationService.updatePredictionsForVehicle(vlr.getVehicleId());
+    }
   }
 
   @Override

@@ -63,11 +63,15 @@
   <profiles>
     <profile>
       <id>cloud</id>
+      <activation>
+         <activeByDefault>true</activeByDefault>
+      </activation>
       <build>
         <finalName>onebusaway-nyc-queue-subscriber</finalName>
         <plugins>
           <plugin>
             <artifactId>maven-jar-plugin</artifactId>
+            
             <configuration>
               <archive>
                 <manifest>

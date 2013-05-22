@@ -39,12 +39,15 @@ import org.springframework.stereotype.Component;
  * @author jmaki
  *
  */
-@Component
 class StopBasedPredictionIntegrationService implements PredictionIntegrationService {
 
   @Autowired
   private PredictionGenerationService _predictionGenerationService;
 
+  public void setPredictionGenerationService(PredictionGenerationService predictionGenerationService) {
+    _predictionGenerationService = predictionGenerationService;
+  }
+  
   private Map<String, List<TimepointPredictionRecord>> _predictionRecordsByVehicle =
       new HashMap<String, List<TimepointPredictionRecord>>();
   

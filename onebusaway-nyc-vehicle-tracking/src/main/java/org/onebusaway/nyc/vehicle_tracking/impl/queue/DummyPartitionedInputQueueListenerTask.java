@@ -21,7 +21,7 @@ public class DummyPartitionedInputQueueListenerTask extends InputQueueListenerTa
   }
 
   @Override
-  public boolean processMessage(String address, String contents) {
+  public boolean processMessage(String address, byte[] buff) {
     return true;
   }
 

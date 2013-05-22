@@ -23,7 +23,7 @@ import org.zeromq.ZMQ;
 
 /**
  * Base class for listeners that subscribe to ZeroMQ. Provides a simple
- * re-connection mechanism is the IP changes.
+ * re-connection mechanism if the IP changes.
  */
 public abstract class QueueListenerTask {
 
@@ -43,7 +43,7 @@ public abstract class QueueListenerTask {
 	protected ZMQ.Poller _poller = null;
 	protected int _countInterval = 10000;
 
-	public abstract boolean processMessage(String address, String contents);
+	public abstract boolean processMessage(String address, byte[] buff);
 
 	public abstract void startListenerThread();
 
@@ -96,10 +96,10 @@ public abstract class QueueListenerTask {
 				if (_zmqPoller.pollin(0)) {
 
 					String address = new String(_zmqSocket.recv(0));
-					String contents = new String(_zmqSocket.recv(0));
+					byte[] buff = _zmqSocket.recv(0);
 
 					try {
-						processMessage(address, contents);
+						processMessage(address, buff);
 						processedCount++;
 
 					} catch(Exception ex) {

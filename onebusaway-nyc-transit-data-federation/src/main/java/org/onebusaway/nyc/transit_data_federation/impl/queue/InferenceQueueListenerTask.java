@@ -30,19 +30,21 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 	protected abstract void processResult(NycQueuedInferredLocationBean inferredResult, String contents);
 
 	@Override
-	public boolean processMessage(String address, String contents) {
+	public boolean processMessage(String address, byte[] buff) {
+	  String contents = new String(buff);
 		try {
 			if (address == null || !address.equals(getQueueName())) {
 				return false;
 			}
 
+			
 			NycQueuedInferredLocationBean inferredResult = _mapper.readValue(contents, NycQueuedInferredLocationBean.class);
 			processResult(inferredResult, contents);
 			
 			return true;
 		} catch (Exception e) {
-			_log.warn("Received corrupted message from queue; discarding: " + e.getMessage());
-			_log.warn("Contents: " + contents);
+			_log.warn("Received corrupted message from queue; discarding: " + e.getMessage(), e);
+			_log.warn("Contents=" + contents);
 			return false;
 		}
 	}
