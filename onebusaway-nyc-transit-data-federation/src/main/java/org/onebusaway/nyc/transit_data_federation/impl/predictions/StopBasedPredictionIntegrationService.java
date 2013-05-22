@@ -39,7 +39,6 @@ import org.springframework.stereotype.Component;
  * @author jmaki
  *
  */
-@Component
 class StopBasedPredictionIntegrationService implements PredictionIntegrationService {
 
   @Autowired

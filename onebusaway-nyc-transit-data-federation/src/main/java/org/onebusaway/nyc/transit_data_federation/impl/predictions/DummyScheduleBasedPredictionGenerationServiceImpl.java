@@ -50,7 +50,6 @@ class DummyScheduleBasedPredictionGenerationServiceImpl implements PredictionGen
 
   @Override
   public List<TimepointPredictionRecord> getPredictionsForVehicle(AgencyAndId vehicleId) {
-    _log.error("getPredictionsForVehicle");
     List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
 
     VehicleStatusBean vehicleStatus = _transitDataService.getVehicleForAgency(AgencyAndId.convertToString(vehicleId), System.currentTimeMillis());

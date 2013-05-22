@@ -19,6 +19,10 @@ import org.zeromq.ZMQ;
 
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 
+/**
+ * Given a ProtcolBuffer message, place it on the prediction queue.  For testing purposes. 
+ *
+ */
 public class DummyPredictionOutputQueueSenderServiceImpl implements DummyPredictionOutputQueueSenderService {
 
   private static Logger _log = LoggerFactory.getLogger(DummyPredictionOutputQueueSenderServiceImpl.class);

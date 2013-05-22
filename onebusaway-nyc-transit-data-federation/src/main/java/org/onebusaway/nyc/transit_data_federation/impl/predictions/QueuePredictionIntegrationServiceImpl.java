@@ -4,57 +4,63 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.TimeQueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionGenerationService;
+import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
 
 
-public class QueueBasedPredictionGenerationServiceImpl extends
-		TimeQueueListenerTask implements PredictionGenerationService {
+public class QueuePredictionIntegrationServiceImpl extends
+		TimeQueueListenerTask implements PredictionIntegrationService {
 
   @Autowired
   private NycTransitDataService _transitDataService;
   
-	private ConcurrentMap<String, List<TimepointPredictionRecord>> cache 
-		= new ConcurrentHashMap<String, List<TimepointPredictionRecord>>();
-	
-	@Override
-	public List<TimepointPredictionRecord> getPredictionsForVehicle(
-			AgencyAndId vehicleId) {
-		return cache.get(vehicleId.toString());
-	}
+  
+  private Cache<String, List<TimepointPredictionRecord>> cache = CacheBuilder.newBuilder()
+      .expireAfterWrite(2, TimeUnit.MINUTES)
+      .build();
 
 	@Override
 	protected void processResult(FeedMessage message) {
 	  List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();  
+	  String tripId = null;
 	  String vehicleId = null;
 	  
 	  // convert FeedMessage to TimepointPredictionRecord
 	  for (GtfsRealtime.FeedEntity entity : message.getEntityList()) {
 	    
 	    TripUpdate tu = entity.getTripUpdate();
+	    tripId = tu.getTrip().getTripId();
 	    vehicleId = tu.getVehicle().getId();
 
 	    for (StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
 	      TimepointPredictionRecord tpr = new TimepointPredictionRecord();
 	      tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId()));
 	      tpr.setTimepointPredictedTime(stu.getArrival().getTime());
-	      Long scheduledTime = lookupScheduledTime(vehicleId, entity.getTripUpdate().getTrip().getTripId(), stu.getStopId());
+	      Long scheduledTime = lookupScheduledTime(vehicleId, tripId, stu.getStopId());
 	      
 	      if (scheduledTime != null) {
 	        tpr.setTimepointScheduledTime(scheduledTime);
@@ -78,7 +84,7 @@ public class QueueBasedPredictionGenerationServiceImpl extends
       return null;
 	  }
 
-    TripStatusBean tripStatus = vehicleStatus.getTripStatus();    
+    TripStatusBean tripStatus = vehicleStatus.getTripStatus();
     if(tripStatus == null) {
       return null;
     }
@@ -106,6 +112,17 @@ public class QueueBasedPredictionGenerationServiceImpl extends
       
     }
     return null;
+  }
+
+  @Override
+  public void updatePredictionsForVehicle(AgencyAndId vehicleId) {
+    // no op, messages come in from queue
+  }
+
+  @Override
+  public List<TimepointPredictionRecord> getPredictionsForTrip(
+      TripStatusBean tripStatus) {
+    return this.cache.getIfPresent(tripStatus.getVehicleId());
   }
 
 }
