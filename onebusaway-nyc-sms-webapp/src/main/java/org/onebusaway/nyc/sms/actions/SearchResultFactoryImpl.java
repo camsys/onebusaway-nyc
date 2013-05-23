@@ -245,7 +245,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 		  String distance = distanceExtension.getPresentableDistance();
 		  
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
-		  String timeString = minutes + " min" + ((Math.abs(minutes) != 1) ? "s." : ".");
+		  String timeString = Math.round(minutes) + " min" + ((Math.abs(minutes) != 1) ? "s." : ".");
 				  
 		  // if wrapped, only show prediction, if not wrapped, show both
 		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
