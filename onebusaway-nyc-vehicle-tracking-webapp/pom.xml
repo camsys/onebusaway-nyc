@@ -189,7 +189,7 @@
                  <depot.partition.key />
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
-                 <timePredictions.disable>true</timePredictions.disable>
+                 <timePredictions.disable>false</timePredictions.disable>
           </properties>
         </profile>
         <profile>

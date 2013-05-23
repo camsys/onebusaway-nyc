@@ -1,7 +1,9 @@
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +33,11 @@ import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
 
-
+/**
+ * Listen for (queue), cache, and return time predictions. 
+ * @author sheldonabrown
+ *
+ */
 public class QueuePredictionIntegrationServiceImpl extends
 		TimeQueueListenerTask implements PredictionIntegrationService {
 
@@ -48,19 +54,24 @@ public class QueuePredictionIntegrationServiceImpl extends
 	  List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();  
 	  String tripId = null;
 	  String vehicleId = null;
-	  
+	  Map<String, Long> stopTimeMap = new HashMap<String, Long>();
 	  // convert FeedMessage to TimepointPredictionRecord
 	  for (GtfsRealtime.FeedEntity entity : message.getEntityList()) {
 	    
 	    TripUpdate tu = entity.getTripUpdate();
+	    if (!tu.getVehicle().getId().equals(vehicleId)
+	        || !tu.getTrip().getTripId().equals(tripId)) {
+	      stopTimeMap = loadScheduledTimes(tu.getVehicle().getId(), tu.getTrip().getTripId());
+	    }
 	    tripId = tu.getTrip().getTripId();
 	    vehicleId = tu.getVehicle().getId();
 
 	    for (StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
 	      TimepointPredictionRecord tpr = new TimepointPredictionRecord();
-	      tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId()));
+	      // this validates the Agency_StopID convention
+	      tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId())); 
 	      tpr.setTimepointPredictedTime(stu.getArrival().getTime());
-	      Long scheduledTime = lookupScheduledTime(vehicleId, tripId, stu.getStopId());
+	      Long scheduledTime = stopTimeMap.get(stu.getStopId());
 	      
 	      if (scheduledTime != null) {
 	        tpr.setTimepointScheduledTime(scheduledTime);
@@ -75,23 +86,23 @@ public class QueuePredictionIntegrationServiceImpl extends
 	    this.cache.put(vehicleId, predictionRecords);
 	  }
 	}
-
-	// TODO this is proof of concept code, really inefficient!
-	private Long lookupScheduledTime(String vehicleId, String tripId, String stopId) {
-	  VehicleStatusBean vehicleStatus = _transitDataService.getVehicleForAgency(vehicleId, System.currentTimeMillis());
-	  
-	  if(vehicleStatus == null) {
-      return null;
-	  }
+	
+	private Map<String, Long> loadScheduledTimes(String vehicleId, String tripId) {
+	  Map<String, Long> map = new HashMap<String, Long>();
+    VehicleStatusBean vehicleStatus = _transitDataService.getVehicleForAgency(vehicleId, System.currentTimeMillis());
+    
+    if(vehicleStatus == null) {
+      return map;
+    }
 
     TripStatusBean tripStatus = vehicleStatus.getTripStatus();
     if(tripStatus == null) {
-      return null;
+      return map;
     }
     
     BlockInstanceBean blockInstance = _transitDataService.getBlockInstance(tripStatus.getActiveTrip().getBlockId(), tripStatus.getServiceDate());
     if(blockInstance == null) {
-      return null;
+      return map;
     }
     
     // we need to match the given trip to the active trip
@@ -101,18 +112,13 @@ public class QueuePredictionIntegrationServiceImpl extends
       if (!foundActiveTrip) {
         if(tripId.equals(blockTrip.getTrip().getId())) {
           for (BlockStopTimeBean bst : blockTrip.getBlockStopTimes()) {
-            if (stopId.equals(bst.getStopTime().getStop().getId())) {
-              // should be serviceDate + arrivalTime * 1000
-              return tripStatus.getServiceDate() + (bst.getStopTime().getArrivalTime() * 1000);
-            }
+            map.put(bst.getStopTime().getStop().getId(), tripStatus.getServiceDate() + (bst.getStopTime().getArrivalTime() * 1000));
           }
-          foundActiveTrip = true;
         }
       }
-      
     }
-    return null;
-  }
+    return map;
+	}
 
   @Override
   public void updatePredictionsForVehicle(AgencyAndId vehicleId) {
