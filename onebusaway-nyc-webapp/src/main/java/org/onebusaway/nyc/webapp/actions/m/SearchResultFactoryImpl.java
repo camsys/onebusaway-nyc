@@ -335,7 +335,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  String distance = distanceExtension.getPresentableDistance();
 		  
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
-		  String timeString = minutes + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
+		  String timeString = Math.round(minutes) + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
 				  
 		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
 		    	return timeString;
