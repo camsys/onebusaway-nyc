@@ -77,7 +77,9 @@
 
 	<!--  Time Queue Configuration -->
 	<!--  This option integrates with an external time prediction queue -->
-	<bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl"/>
+	<bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
+		<property name="disable" value="${timePredictions.disable}"/>
+	</bean>
 	
 	<!-- 
 	<bean id="predictionService" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.StopBasedPredictionIntegrationService">
