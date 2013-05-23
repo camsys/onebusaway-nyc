@@ -32,7 +32,13 @@
           <level value="info" />
           <appender-ref ref="${log4j.appender}" />
         </logger>
-	
+	<!-- quiet hessian exceptions -->
+	<logger
+		name="org.springframework.remoting.support.RemoteInvocationTraceInterceptor"
+		additivity="false">
+		<level value="error" />
+		<appender-ref ref="${log4j.appender}" />
+	</logger>
 	<!-- 0 or 1 root elements -->
 
 	<root>

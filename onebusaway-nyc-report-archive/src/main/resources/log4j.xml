@@ -17,9 +17,9 @@
 			<param name="ConversionPattern" value="%d{ISO8601} %-5p [%F:%L] : %m%n" />
 		</layout>
 	</appender>
-	
+
 	<appender name="stdout" class="org.apache.log4j.ConsoleAppender">
-		
+
 		<layout class="org.apache.log4j.PatternLayout">
 			<!-- The log message pattern -->
 			<param name="ConversionPattern" value="%d{ISO8601} %-5p [%F:%L] : %m%n" />
@@ -27,14 +27,20 @@
 	</appender>
 
 	<!-- 0 or more logger/category elements -->
-	
-    <logger name="org.hibernate.SQL">
-        <level value="${log4j.hibernate.sql}"/> <!-- DEBUG or OFF -->
-    </logger>
-    <logger name="org.hibernate.type">
-        <level value="${log4j.hibernate.type}"/> <!-- TRACE or OFF -->
-    </logger>
 
+	<logger name="org.hibernate.SQL">
+		<level value="${log4j.hibernate.sql}" /> <!-- DEBUG or OFF -->
+	</logger>
+	<logger name="org.hibernate.type">
+		<level value="${log4j.hibernate.type}" /> <!-- TRACE or OFF -->
+	</logger>
+	<!-- quiet hessian exceptions -->
+	<logger
+		name="org.springframework.remoting.support.RemoteInvocationTraceInterceptor"
+		additivity="false">
+		<level value="error" />
+		<appender-ref ref="${log4j.appender}" />
+	</logger>
 	<!-- 0 or 1 root elements -->
 
 	<root>
