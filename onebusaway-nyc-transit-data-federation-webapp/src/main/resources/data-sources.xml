@@ -60,6 +60,10 @@
 	<!-- Input Queue Configuration -->
   	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
 
+	<!--  Time Queue Configuration -->
+	<!--  This option integrates with an external time prediction queue -->
+	<bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
+	</bean>
 
 	<!-- Other Stuff: -->
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
