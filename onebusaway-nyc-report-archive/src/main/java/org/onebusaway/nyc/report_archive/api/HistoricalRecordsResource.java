@@ -2,6 +2,9 @@ package org.onebusaway.nyc.report_archive.api;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +31,7 @@ import org.springframework.stereotype.Component;
 public class HistoricalRecordsResource {
 
 	private static Logger log = LoggerFactory.getLogger(HistoricalRecordsResource.class);
-	
+	private static DateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private JsonTool jsonTool;
 	private HistoricalRecordsDao historicalRecordsDao;
 	
@@ -76,19 +79,31 @@ public class HistoricalRecordsResource {
 		
 		Map<CcAndInferredLocationFilter, Object> filter = 
 				new HashMap<CcAndInferredLocationFilter, Object>();
-		
-		filter.put(CcAndInferredLocationFilter.DEPOT_ID, depotId);
-		filter.put(CcAndInferredLocationFilter.INFERRED_ROUTEID, inferredRouteId);
-		filter.put(CcAndInferredLocationFilter.INFERRED_PHASE, inferredPhase);
-		filter.put(CcAndInferredLocationFilter.BOUNDING_BOX, boundingBox);
-		filter.put(CcAndInferredLocationFilter.VEHICLE_ID, vehicleId);
-		filter.put(CcAndInferredLocationFilter.VEHICLE_AGENCY_ID, vehicleAgencyId);
-		filter.put(CcAndInferredLocationFilter.START_DATE, startDate);
-		filter.put(CcAndInferredLocationFilter.END_DATE, endDate);
+		boolean nonEmptyFilter = false;
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.DEPOT_ID, depotId);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.INFERRED_ROUTEID, inferredRouteId);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.INFERRED_PHASE, inferredPhase);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.BOUNDING_BOX, boundingBox);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.VEHICLE_ID, vehicleId);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.VEHICLE_AGENCY_ID, vehicleAgencyId);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.START_DATE, startDate);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.END_DATE, endDate);
+		if (!nonEmptyFilter) {
+		  addToFilter(filter, CcAndInferredLocationFilter.START_DATE, getTodaysDate());
+		}
 		filter.put(CcAndInferredLocationFilter.RECORDS, records);
 		
-		
 		return filter;
+	}
+	
+	private String getTodaysDate() {
+    return FORMATTER.format(new Date());
+  }
+
+  private boolean addToFilter(Map<CcAndInferredLocationFilter, Object> filter, CcAndInferredLocationFilter key, Object value) {
+	  if (key == null || value == null) return false;
+	  filter.put(key, value);
+	  return true;
 	}
 	
 	private String getObjectAsJsonString(Object object) throws IOException {

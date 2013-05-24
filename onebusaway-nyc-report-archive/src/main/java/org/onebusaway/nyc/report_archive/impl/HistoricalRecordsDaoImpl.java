@@ -66,11 +66,11 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
   	 */
 		
 		if (filter.containsKey(CcAndInferredLocationFilter.VEHICLE_ID) && IS_MYSQL) {
-				sql.append("force index (vehicle_id_2) ");  
-		}
+			sql.append("force index (vehicle_id_2) ");  
+		} 
 		
 		/*
-		 * for the historical query, the vehicle and time join out performs the uuid join
+		 * for the historical query, the vehicle and time join out performs the equivalent of the uuid join
 		 */
     sql.append("LEFT OUTER JOIN obanyc_inferredlocation inf " +
         "ON cc.vehicle_id = inf.vehicle_id AND cc.time_reported = inf.time_reported ");
