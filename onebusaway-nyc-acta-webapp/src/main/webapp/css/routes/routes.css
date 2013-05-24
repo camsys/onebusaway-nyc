@@ -14,9 +14,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
- 
+
 ul.routeList li {
-    width: 30%;
+    width: 45%;
     display: inline-block;
     vertical-align: bottom;
     margin: 5px 10px 10px 10px;
@@ -25,19 +25,19 @@ ul.routeList li {
 #routes {
     font-size: 16px;
 }
-.description {
+#routes .routeList .description {
     margin-bottom: 5px;
     font-size: 14px;
     font-weight: normal;
 }
-.name {
+#routes .routeList .name {
     margin-bottom: 5px;
     font-weight: bold;
     cursor: pointer;
     border-bottom-width: 5px;
-    border-bottom-style: solid; 
+    border-bottom-style: solid;
 }
-.name a {
+#routes .routeList .name a {
     text-decoration: none;
-    color: #000;   
+    color: #000;
 }
