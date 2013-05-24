@@ -66,7 +66,7 @@
                                 </a>
                             </p>
                             <s:if test="description != null">
-                                <br /><p class="description"><s:property value="description" /></p>
+                                <p class="description"><s:property value="description" /></p>
                             </s:if>
                         </li>
                     </s:iterator>
