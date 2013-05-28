@@ -66,7 +66,10 @@ public class NullStateLikelihood implements SensorModelRule {
       return NullStates.NULL_STATE;
     } else {
 
-      final boolean hasScheduledTime = FastMath.abs(state.getBlockStateObservation().getScheduleDeviation()) > 0d;
+      final boolean hasScheduledTime = 
+          !(EVehiclePhase.isActiveBeforeBlock(state.getJourneyState().getPhase()) 
+            || EVehiclePhase.isActiveAfterBlock(state.getJourneyState().getPhase()))
+            || FastMath.abs(state.getBlockStateObservation().getScheduleDeviation()) > 0d;
 
       if (!hasScheduledTime) {
         return NullStates.NULL_STATE;

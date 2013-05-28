@@ -69,8 +69,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
   }
 
   public RunStateEstimator(NycTrackingGraph graph, Observation obs,
-      NycVehicleStateDistribution nycVehicleStateDist,
-      VehicleState prevOldTypeVehicleState, Random rng) {
+      NycVehicleStateDistribution nycVehicleStateDist) {
     this.obs = obs;
     this.nycGraph = graph;
     this.nycVehicleStateDist = nycVehicleStateDist;
@@ -113,18 +112,16 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
 
         final BlockTripEntry blockTripEntry = blockTripEntryAndDate.getBlockTripEntry();
         final long serviceDate = blockTripEntryAndDate.getServiceDate().getTime();
+        Preconditions.checkState(tripInfo.getShapeIds().contains(blockTripEntry.getTrip().getShapeId()));
 
         final BlockStateObservation blockStateObs = this.nycGraph.getBlockStateObs(
             obs,
             nycVehicleStateDist.getPathStateParam().getParameterPrior().getPathState(),
             blockTripEntry, serviceDate);
-
-        /*
-         * DEBUG check that the shape/edge geom has a valid mapping
-         */
-        final AgencyAndId shapeId = blockTripEntry.getTrip().getShapeId();
-        Preconditions.checkState(this.nycGraph.getLengthsAlongShapeMap().contains(
-            shapeId, pathEdge.getInferenceGraphSegment().getGeometry()));
+        
+        final AgencyAndId blockStateShapeId = blockStateObs.getBlockState().getBlockLocation()
+            .getActiveTrip().getTrip().getShapeId();
+        Preconditions.checkState(tripInfo.getShapeIds().contains(blockStateShapeId));
 
         final RunState runStateMoved = new RunState(nycGraph, obs,
             nycVehicleStateDist, blockStateObs, false,
@@ -177,7 +174,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     }
 
     for (final BlockStateObservation blockStateObs : blockStates) {
-
+      
       /*
        * Also, above we handled "snapped" states, so ignore them if they show up
        * again here.
@@ -241,8 +238,20 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     final CountedDataDistribution<RunState> result = new CountedDataDistribution<RunState>(
         true);
     for (final Entry<RunState, MutableDoubleCount> entry : resultDist.entrySet()) {
-        result.increment(entry.getKey(), entry.getValue().doubleValue(),
-            entry.getValue().count);
+      
+      /*
+       * DEBUG check that the shape/edge geom has a valid mapping
+       */
+      final BlockStateObservation blockStateObs = entry.getKey().getBlockStateObs();
+      if (blockStateObs != null && blockStateObs.isSnapped()) {
+        final AgencyAndId shapeId = blockStateObs.getBlockState()
+            .getBlockLocation().getActiveTrip().getTrip().getShapeId();
+        Preconditions.checkState(this.nycGraph.getLengthsAlongShapeMap().contains(
+            shapeId, pathEdge.getInferenceGraphSegment().getGeometry()));
+      }
+
+      result.increment(entry.getKey(), entry.getValue().doubleValue(),
+          entry.getValue().count);
     }
 
     Preconditions.checkState(!result.isEmpty());

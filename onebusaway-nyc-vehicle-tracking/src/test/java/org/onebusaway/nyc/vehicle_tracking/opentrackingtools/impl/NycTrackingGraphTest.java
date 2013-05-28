@@ -3,8 +3,11 @@ package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.algorithm.LineIntersector;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.PrecisionModel;
@@ -14,6 +17,8 @@ import com.vividsolutions.jts.noding.NodedSegmentString;
 import com.vividsolutions.jts.noding.SegmentStringDissolver;
 import com.vividsolutions.jts.noding.snapround.MCIndexSnapRounder;
 import com.vividsolutions.jts.noding.snapround.SimpleSnapRounder;
+import com.vividsolutions.jts.operation.overlay.snap.GeometrySnapper;
+import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
 import org.geotools.factory.Hints;
 import org.geotools.geometry.GeometryBuilder;
@@ -104,44 +109,62 @@ public class NycTrackingGraphTest {
 
   @Test
   public void testIntersector2() throws FactoryException, ParseException, com.vividsolutions.jts.io.ParseException {
-    final MCIndexNoder noder = new MCIndexNoder();
-    noder.setSegmentIntersector(new NycCustomIntersectionAdder(
-        new RobustLineIntersector()));
     
-//    final double scale = 1d / 7d; // work within a 7m grid
-//    final GeometryFactory gf = new GeometryFactory(new PrecisionModel(scale));
-    WKTReader parser = new WKTReader();//gf);
+//    final PrecisionModel pm = new PrecisionModel(1d/15d);
+//    final MCIndexSnapRounder noder = new MCIndexSnapRounder(pm);
+//    LineIntersector li = new RobustLineIntersector();
+//    li.setPrecisionModel(pm);
+//    noder.setSegmentIntersector(new NycCustomIntersectionAdder(li));
     
-    final String line1 = "LINESTRING (564991 4484291, 564823 4484221, 563444 4483843, 563430 4483843, 563346 4484151, 563367 4484333, 563360 4484368, 563444 4484389, 564074 4484641, 564368 4484823, 564452 4484886, 564571 4485005, 564753 4485131, 564949 4485306, 565096 4485481, 565166 4485600, 565222 4485649, 565327 4485670, 565502 4485670, 565600 4485600, 565726 4485565, 565782 4485572, 565894 4485628, 566293 4485873, 566356 4486062, 566440 4486209, 566433 4486454, 566363 4486650, 566825 4486825, 566818 4486916, 566622 4486839, 566412 4486727, 565969.8 4486559.1)";
-    final String line2 = "LINESTRING (566344.8 4486701.5, 566412 4486727)";
+    WKTReader parser = new WKTReader();//new GeometryFactory(pm));
+    
+    final String line1 = "LINESTRING (7 1, 101 103)";
+    final String line2 = "LINESTRING (2 5, 52 50)";
+    final String line3 = "LINESTRING (50 51, 0 0)";
+    final String line4 = "LINESTRING (0 105, 95 3, 1 100)";
+    final String line5 = "LINESTRING (20 21, 30 35, 42 21)";
     
     final LineString l1 = (LineString) parser.read(line1); 
     final LineString l2 = (LineString) parser.read(line2); 
-    List<NodedSegmentString> segmentStrings = Lists.newArrayList(
-        new NodedSegmentString(l1.getCoordinates(), null),
-        new NodedSegmentString(l2.getCoordinates(), null)
-        );
-    noder.computeNodes(segmentStrings);
+    final LineString l3 = (LineString) parser.read(line3); 
+    final LineString l4 = (LineString) parser.read(line4); 
+    final LineString l5 = (LineString) parser.read(line5); 
+//    List<NodedSegmentString> segmentStrings = Lists.newArrayList(
+//        new NodedSegmentString(l1.getCoordinates(), null),
+//        new NodedSegmentString(l2.getCoordinates(), null),
+//        new NodedSegmentString(l3.getCoordinates(), null),
+//        new NodedSegmentString(l4.getCoordinates(), null)
+//        );
+//    noder.computeNodes(segmentStrings);
     
-    final NycCustomSegmentStringDissolver dissolver = new NycCustomSegmentStringDissolver(1d);
-    dissolver.dissolve(noder.getNodedSubstrings());
-    final List<LineString> result = Lists.newArrayList();
-    for (final Object obj : dissolver.getDissolved()) {
-      final NodedSegmentString ns1 = (NodedSegmentString) obj;
-      System.out.println(ns1);
-      if (!ns1.isClosed())
-        result.add(JTSFactoryFinder.getGeometryFactory().createLineString(ns1.getCoordinates()));
+    GeometryCollection gc = JTSFactoryFinder.getGeometryFactory().createGeometryCollection(
+        new Geometry[] {l1, l2, l3, l4, l5});
+    Geometry snappedGeoms = GeometrySnapper.snapToSelf(gc, 10d, true);
+    Geometry simpleGeoms = DouglasPeuckerSimplifier.simplify(snappedGeoms, 10d);
+    
+    for (int i = 0; i < simpleGeoms.getNumGeometries(); i++) {
+      System.out.println(simpleGeoms.getGeometryN(i));
     }
+    
+//    final NycCustomSegmentStringDissolver dissolver = new NycCustomSegmentStringDissolver();
+//    dissolver.dissolve(noder.getNodedSubstrings());
+//    final List<LineString> result = Lists.newArrayList();
+//    for (final Object obj : dissolver.getDissolved()) {
+//      final NodedSegmentString ns1 = (NodedSegmentString) obj;
+//      System.out.println(ns1);
+//      if (!ns1.isClosed())
+//        result.add(JTSFactoryFinder.getGeometryFactory().createLineString(ns1.getCoordinates()));
+//    }
+//
+//    final Set<LineString> expectedResult = Sets.newHashSet();
+//    expectedResult.addAll(Lists.newArrayList(    
+//        JTSFactoryFinder.getGeometryFactory().createLineString(
+//        new Coordinate[] {new Coordinate(0, 0), new Coordinate(0, 100)}),
+//        JTSFactoryFinder.getGeometryFactory().createLineString(
+//        new Coordinate[] {new Coordinate(0, 100), new Coordinate(0, 200)})
+//        ));
 
-    final Set<LineString> expectedResult = Sets.newHashSet();
-    expectedResult.addAll(Lists.newArrayList(    
-        JTSFactoryFinder.getGeometryFactory().createLineString(
-        new Coordinate[] {new Coordinate(0, 0), new Coordinate(0, 100)}),
-        JTSFactoryFinder.getGeometryFactory().createLineString(
-        new Coordinate[] {new Coordinate(0, 100), new Coordinate(0, 200)})
-        ));
-
-    Set<LineString> diff = Sets.symmetricDifference(expectedResult, Sets.newHashSet(result));
-    assertTrue(diff.isEmpty());
+//    Set<LineString> diff = Sets.symmetricDifference(expectedResult, Sets.newHashSet(result));
+//    assertTrue(diff.isEmpty());
   }
 }

@@ -42,7 +42,7 @@ public class NycVehicleStateDistribution extends
           super.createInitialVehicleState(parameters, graph, obs, rng, pathEdge));
 
       final RunStateEstimator runStateEstimator = new RunStateEstimator(graph,
-          obs, nycVehicleStateDist, null, rng);
+          obs, nycVehicleStateDist);
 
       final CountedDataDistribution<RunState> newRunStateDist = runStateEstimator.createInitialLearnedObject();
 

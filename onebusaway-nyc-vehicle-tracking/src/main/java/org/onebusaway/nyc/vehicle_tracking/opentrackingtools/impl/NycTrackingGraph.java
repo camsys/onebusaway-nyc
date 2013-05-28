@@ -50,17 +50,22 @@ import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.index.strtree.SIRtree;
 import com.vividsolutions.jts.index.strtree.STRtree;
+import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
 import com.vividsolutions.jts.noding.IntersectionAdder;
 import com.vividsolutions.jts.noding.MCIndexNoder;
 import com.vividsolutions.jts.noding.NodedSegmentString;
 import com.vividsolutions.jts.noding.SegmentStringDissolver;
 import com.vividsolutions.jts.noding.SegmentStringDissolver.SegmentStringMerger;
+import com.vividsolutions.jts.operation.overlay.snap.GeometrySnapper;
+import com.vividsolutions.jts.operation.overlay.snap.LineStringSnapper;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
 import org.geotools.geometry.jts.JTS;
@@ -78,6 +83,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -243,18 +251,13 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
   private final Table<AgencyAndId, LineString, double[]> _lengthsAlongShapeMap = HashBasedTable.create();
 
-  private void buildGraph() {
+  private void buildGraph() throws IOException {
     try {
       _shapeIdToGeo.clear();
       _geometryToTripInfo.clear();
       _lengthsAlongShapeMap.clear();
 
-      final double scale = 1d / 7d; // work within a 7m grid
-      final GeometryFactory gf = // JTSFactoryFinder.getGeometryFactory();
-      new GeometryFactory(new PrecisionModel(scale));
-      final GeometryPrecisionReducer reducer = new GeometryPrecisionReducer(
-          new NumberPrecisionReducer(scale));
-      // final GeometryNoder gn = new GeometryNoder(gf.getPrecisionModel());
+      final GeometryFactory gf = JTSFactoryFinder.getGeometryFactory();
 
       final Map<String, Geometry> shapeIdToLines = Maps.newHashMap();
       final Map<Geometry, NodedSegmentString> lineToSegments = Maps.newHashMap();
@@ -264,6 +267,12 @@ public class NycTrackingGraph extends GenericJTSGraph {
         final AgencyAndId shapeId = trip.getShapeId();
         shapeIds.add(shapeId);
       }
+      
+      if (shapeIds.isEmpty())
+        return;
+      
+      List<LineString> allRawGeoms = Lists.newArrayList();
+      
       for (final AgencyAndId shapeId : shapeIds) {
         final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapeId);
         if (shapePoints == null || shapePoints.isEmpty()) {
@@ -283,14 +292,52 @@ public class NycTrackingGraph extends GenericJTSGraph {
           continue;
         }
 
-        final Geometry lineGeo = JTSFactoryFinder.getGeometryFactory().createLineString(
+        final LineString lineGeo = JTSFactoryFinder.getGeometryFactory().createLineString(
             coords.toCoordinateArray());
 
-        Geometry euclidGeo = JTS.transform(lineGeo,
+        LineString euclidGeo = (LineString) JTS.transform(lineGeo,
             GeoUtils.getTransform(lineGeo.getCoordinate()));
-        euclidGeo = gf.createGeometry(reducer.reduce(euclidGeo));
-        euclidGeo = DouglasPeuckerSimplifier.simplify(euclidGeo, 8);
+//        euclidGeo = (LineString) DouglasPeuckerSimplifier.simplify(euclidGeo, 5d);
+        if (!allRawGeoms.isEmpty()) {
+          GeometrySnapper snapper = new GeometrySnapper(euclidGeo);
+          MultiLineString currGeomCollection = gf.createMultiLineString(
+              allRawGeoms.toArray(new LineString[allRawGeoms.size()]));
+          euclidGeo = (LineString) snapper.snapTo(currGeomCollection , 10d);
+        } 
+          
+        euclidGeo.setUserData(shapeId);
+        allRawGeoms.add(euclidGeo);
+      }
+      
+      if (allRawGeoms.isEmpty())
+        return;
 
+      GeometryCollection allGeomsCollection = gf.createGeometryCollection(
+          allRawGeoms.toArray(new Geometry[allRawGeoms.size()]));
+      
+      allGeomsCollection = (GeometryCollection) DouglasPeuckerSimplifier.simplify(allGeomsCollection, 2d);
+      
+//      /*
+//       * DEBUG REMOVE
+//       */
+//      WKTWriter writer = new WKTWriter();
+//      
+//      File file = new File("/tmp/geoms_" + this._bundle.getPath().getName() + ".xml");
+//      
+//      if (!file.exists()) {
+//        file.createNewFile();
+//      }
+//      String output = "<run>\n<precisionModel type=\"FLOATING\"/>\n<case>\n<desc> m/ </desc>\n<a>"
+//          + writer.write(allGeomsCollection) + "</a></case></run>";
+//      FileWriter fw = new FileWriter(file.getAbsoluteFile());
+//      BufferedWriter bw = new BufferedWriter(fw);
+//      bw.write(output);
+//      bw.close(); 
+      
+      for (int i = 0; i < allGeomsCollection.getNumGeometries(); i++) {
+        LineString euclidGeo = (LineString) allGeomsCollection.getGeometryN(i);
+        AgencyAndId shapeId = (AgencyAndId) allRawGeoms.get(i).getUserData();
+        
         /*
          * These shapes can overlap themselves (i.e. not simple), so we need to
          * node them.
@@ -307,36 +354,37 @@ public class NycTrackingGraph extends GenericJTSGraph {
         Coordinate prevCoord = null;
         for (final Object obj : gn.getNodedSubstrings()) {
 
-          final NodedSegmentString nodedSubLine = (NodedSegmentString) obj;
+          final NodedSegmentString rawNodedSubLine = (NodedSegmentString) obj;
 
+          if (rawNodedSubLine.getCoordinates().length <= 1)
+            continue;
+          
+          final LineString subLine = gf.createLineString(rawNodedSubLine.getCoordinates());
+          subLine.setUserData(currentLength);
+          
+          final NodedSegmentString nodedSubline = new NodedSegmentString(subLine.getCoordinates(), 
+              Lists.newArrayList(new SegmentInfo(shapeId, geomNum, true)));
+          
           if (prevCoord != null)
-            Preconditions.checkState(nodedSubLine.getCoordinate(0).equals(
+            Preconditions.checkState(nodedSubline.getCoordinate(0).equals(
                 prevCoord));
 
-          final LineString subLine = gf.createLineString(nodedSubLine.getCoordinates());
-
-          subLine.setUserData(currentLength);
-
-          nodedSubLine.setData(Lists.newArrayList(new SegmentInfo(shapeId,
-              geomNum, true)));
-          lineToSegments.put(subLine, nodedSubLine);
+          lineToSegments.put(subLine, nodedSubline);
           shapeIdToLines.put(shapeId.toString() + "_" + geomNum, subLine);
           geomNum++;
           currentLength += subLine.getLength();
-          prevCoord = nodedSubLine.getCoordinates()[nodedSubLine.size() - 1];
+          prevCoord = nodedSubline.getCoordinates()[nodedSubline.size() - 1];
         }
 
       }
       _log.info("\tnoded ShapePoints=" + lineToSegments.size());
 
-      // final MCIndexSnapRounder noder = new MCIndexSnapRounder(new
-      // PrecisionModel(1d));
       final MCIndexNoder noder = new MCIndexNoder();
       final LineIntersector li = new RobustLineIntersector();
       li.setPrecisionModel(gf.getPrecisionModel());
       noder.setSegmentIntersector(new NycCustomIntersectionAdder(li));
 
-      _log.info("\tcomputing nodes");
+      _log.info("\tcomputing cross-shape nodes");
       noder.computeNodes(lineToSegments.values());
 
       /*
@@ -347,10 +395,12 @@ public class NycTrackingGraph extends GenericJTSGraph {
        * direction each segment is for each shape id.
        */
       final SegmentStringMerger merger = new NycCustomSegmentStringDissolver.NycCustomSegmentStringMerger();
+      final NycCustomSegmentStringDissolver dissolver = new NycCustomSegmentStringDissolver(merger);
+      
+      Collection<NodedSegmentString> nodedBundleGeoms = noder.getNodedSubstrings();
 
       _log.info("\tdissolving nodes");
-      final NycCustomSegmentStringDissolver dissolver = new NycCustomSegmentStringDissolver(scale, merger);
-      dissolver.dissolve(noder.getNodedSubstrings());
+      dissolver.dissolve(nodedBundleGeoms);
 
       _log.info("\tdissolved lines=" + dissolver.getDissolved().size());
       for (final Object obj : dissolver.getDissolved()) {
@@ -481,19 +531,24 @@ public class NycTrackingGraph extends GenericJTSGraph {
             pathState.getEdge().getInferenceGraphSegment().getGeometry());
       }
 
-      double distanceAlongBlock = newBlockTripEntry.getDistanceAlongBlock()
-          + lengthAlongShape[0]
-          + pathState.getEdge().getDistFromStartOfGraphEdge()
+      final double distanceAlongPathEdge = pathState.getEdge().getDistFromStartOfGraphEdge()
           + pathState.getEdgeState().getElement(0);
+      final double distanceOfStartOfEdgeOnBlock = newBlockTripEntry.getDistanceAlongBlock()
+          + lengthAlongShape[0] + 1e-1;
+      double distanceAlongBlock = distanceOfStartOfEdgeOnBlock + distanceAlongPathEdge;
 
       /*
        * If we simplified the shapes, then distance along block will no longer
        * be exact, so we need to snap to the shape we intend to be on.
+       * Also, the method that gets the blockState will return a blockState
+       * at the end of the previous trip if the distance-along is exactly at the
+       * beginning of a block trip.
        */
       final double totalDistanceAlongBlockForShape = newBlockTripEntry.getDistanceAlongBlock()
           + newBlockTripEntry.getTrip().getTotalTripDistance() - 1d;
-      if (distanceAlongBlock > totalDistanceAlongBlockForShape)
+      if (distanceAlongBlock > totalDistanceAlongBlockForShape) {
         distanceAlongBlock = totalDistanceAlongBlockForShape;
+      } 
 
       Preconditions.checkState(distanceAlongBlock >= 0d);
 

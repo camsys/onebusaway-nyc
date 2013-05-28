@@ -38,16 +38,13 @@ public class NycCustomSegmentStringDissolver extends SegmentStringDissolver {
   }
 
   private SegmentStringMerger merger;
-  private TreeMap<ScaledOrientedCoordinateArray, SegmentString> ocaMap = Maps.newTreeMap(); 
-  private double scale;
+  private TreeMap<OrientedCoordinateArray, SegmentString> ocaMap = Maps.newTreeMap(); 
   
-  public NycCustomSegmentStringDissolver(double scale) {
-    this.scale = scale;
+  public NycCustomSegmentStringDissolver() {
     this.merger = null;
   }
   
-  public NycCustomSegmentStringDissolver(double scale, SegmentStringMerger merger) {
-    this.scale = scale;
+  public NycCustomSegmentStringDissolver(SegmentStringMerger merger) {
     this.merger = merger;
   }
 
@@ -60,7 +57,7 @@ public class NycCustomSegmentStringDissolver extends SegmentStringDissolver {
 
   @Override
   public void dissolve(SegmentString segString) {
-    ScaledOrientedCoordinateArray oca = new ScaledOrientedCoordinateArray(segString.getCoordinates(), scale);
+    OrientedCoordinateArray oca = new OrientedCoordinateArray(segString.getCoordinates());
     SegmentString existing = this.ocaMap.get(oca);
     if (existing == null) {
       this.ocaMap.put(oca, segString);

@@ -340,7 +340,6 @@ public class VehicleInferenceInstance {
       if (_previousObservation.getPreviousObservation() != null) {
         hasPrevPrevObs = true;
       } else {
-        ;
         hasPrevPrevObs = false;
       }
       _previousObservation.clearPreviousObservation();
@@ -508,7 +507,7 @@ public class VehicleInferenceInstance {
 
   /**
    * To obtain our reported inference state, we choose the mode of the marginal
-   * runs, then the mode of the marginal states for that run.
+   * runs + phase, then the mode of the marginal states for that combo.
    * 
    * @return
    */
@@ -517,29 +516,31 @@ public class VehicleInferenceInstance {
     if (currentAvgVehicleState != null)
       return currentAvgVehicleState;
 
-    final Map<String, DataDistribution<NycVehicleStateDistribution>> runToStates = Maps.newHashMap();
-    final DataDistribution<String> runDist = new DefaultDataDistribution<String>();
+    final Map<String, DataDistribution<NycVehicleStateDistribution>> idToStates = Maps.newHashMap();
+    final DataDistribution<String> idDist = new DefaultDataDistribution<String>();
     for (final java.util.Map.Entry<VehicleStateDistribution<Observation>, ? extends Number> entry : _particles.asMap().entrySet()) {
       final MutableDoubleCount countEntry = (MutableDoubleCount) entry.getValue();
       final NycVehicleStateDistribution vehicleState = (NycVehicleStateDistribution) entry.getKey();
-      final String tripId;
-      if (vehicleState.getRunStateParam().getValue().getVehicleState().getBlockState() != null) {
-        tripId = vehicleState.getRunStateParam().getValue().getVehicleState()
-            .getBlockState().getBlockLocation().getActiveTrip().toString();
+      final String idString;
+      final RunState runState = vehicleState.getRunStateParam().getValue();
+      if (runState.getVehicleState().getBlockState() != null) {
+        idString = runState.getVehicleState()
+            .getBlockState().getBlockLocation().getActiveTrip().toString()
+            + "_" + runState.getJourneyState().getPhase();
       } else {
-        tripId = "none";
+        idString = "none";
       }
-      DataDistribution<NycVehicleStateDistribution> marginalDist = runToStates.get(tripId);
+      DataDistribution<NycVehicleStateDistribution> marginalDist = idToStates.get(idString);
       if (marginalDist == null) {
         marginalDist = new DefaultDataDistribution<NycVehicleStateDistribution>();
-        runToStates.put(tripId, marginalDist);
+        idToStates.put(idString, marginalDist);
       }
       marginalDist.increment(vehicleState, countEntry.count);
-      runDist.increment(tripId, countEntry.count);
+      idDist.increment(idString, countEntry.count);
     }
 
-    final String sampledRun = runDist.getMaxValueKey();// .sample(this._particleFilter.getRandom());
-    final DataDistribution<NycVehicleStateDistribution> marginalRunDist = runToStates.get(sampledRun);
+    final String sampledId = idDist.getMaxValueKey();// .sample(this._particleFilter.getRandom());
+    final DataDistribution<NycVehicleStateDistribution> marginalRunDist = idToStates.get(sampledId);
     currentAvgVehicleState = marginalRunDist.getMaxValueKey();
 
     // final NycVehicleStateDistribution naiveBestState =

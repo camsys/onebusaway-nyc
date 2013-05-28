@@ -452,15 +452,8 @@ OBA.Debug = function() {
 	          tripLink.click(function(e) {
 	          	e.preventDefault();
 					    var infEdge = createLineString(infEdgeGeom);
-					    var infEdgeArrow = createDirection(infEdge.geometry, "end", false).pop();
-					    dirLayer.addFeatures([infEdgeArrow]);
-					    
 					    var pathEdge = createLineString(pathEdgeGeom);
 					    pathEdge.style.strokeColor = "#8FD8D8";
-// 					    var pathEdgeArrow = createDirection(pathEdge.geometry, "end", false).pop();
-// 					    dirLayer.addFeatures([pathEdgeArrow]);
-// 					    pathEdgeArrow.style.strokeColor = pathEdge.style.strokeColor;
-					    
 				      routes.addFeatures([infEdge, pathEdge]);
 	          });
 	          
@@ -557,6 +550,10 @@ OBA.Debug = function() {
 
     var polyline = new OpenLayers.Geometry.LineString(points);
     var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
+    
+    var infEdgeArrow = createDirection(lineFeature.geometry, "end", false).pop();
+    dirLayer.addFeatures([infEdgeArrow]);
+					    
     return lineFeature;
 	}
 	
@@ -778,7 +775,8 @@ OBA.Debug = function() {
 			jQuery("#clear_trips").click(function(e) {
 				e.preventDefault();
 				routes.removeAllFeatures();
-				trips.removeAllFeatures();
+				dirLayer.removeAllFeatures();
+// 				trips.removeAllFeatures();
 				stopMarkers.clearMarkers();
 			});
 			
@@ -822,28 +820,28 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 <table>
 <tr>
 <td style="width: 410px;">
-	All Routes:
-	<br/>
-	<select size="10" style="width: 450px;" id="routes">
-		<option value="">Loading...</option>
-	</select>
+<!-- 	All Routes: -->
+<!-- 	<br/> -->
+<!-- 	<select size="10" style="width: 450px;" id="routes"> -->
+<!-- 		<option value="">Loading...</option> -->
+<!-- 	</select> -->
 
-	Active Blocks For Selected Route:
-	<br/>
-	<select size="10" style="width: 450px;" id="blocks">
-		<option value="">Select a route first.</option>
-	</select>
+<!-- 	Active Blocks For Selected Route: -->
+<!-- 	<br/> -->
+<!-- 	<select size="10" style="width: 450px;" id="blocks"> -->
+<!-- 		<option value="">Select a route first.</option> -->
+<!-- 	</select> -->
 
-	Trips In Selected Block:
-	<br/>
-	<select size="10" style="width: 450px;" id="trips">
-		<option value="">Select a block first.</option>
-	</select>
-	<br/>
-	Show trips active for this time:
-	<br/>
-	<input type="text" id="trip_time" size="25"/> 
-	<br/>
+<!-- 	Trips In Selected Block: -->
+<!-- 	<br/> -->
+<!-- 	<select size="10" style="width: 450px;" id="trips"> -->
+<!-- 		<option value="">Select a block first.</option> -->
+<!-- 	</select> -->
+<!-- 	<br/> -->
+<!-- 	Show trips active for this time: -->
+<!-- 	<br/> -->
+<!-- 	<input type="text" id="trip_time" size="25"/>  -->
+<!-- 	<br/> -->
 	Show Records Between:
 	<br/>
 	<input type="text" id="filter_start" size="10"/> (record #) and <input type="text" id="filter_end" size="10"/> (record #)

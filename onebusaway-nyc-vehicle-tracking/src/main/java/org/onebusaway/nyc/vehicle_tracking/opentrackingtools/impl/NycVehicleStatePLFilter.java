@@ -7,6 +7,7 @@ import gov.sandia.cognition.statistics.DataDistribution;
 
 import org.opentrackingtools.VehicleStateInitialParameters;
 import org.opentrackingtools.VehicleStatePLFilter;
+import org.opentrackingtools.VehicleStatePLPathSamplingFilter;
 import org.opentrackingtools.distributions.CountedDataDistribution;
 import org.opentrackingtools.distributions.DeterministicDataDistribution;
 import org.opentrackingtools.estimators.OnOffEdgeTransitionEstimatorPredictor;
@@ -20,7 +21,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 public class NycVehicleStatePLFilter extends
-    VehicleStatePLFilter<Observation, NycTrackingGraph> {
+    VehicleStatePLPathSamplingFilter<Observation, NycTrackingGraph> {
 
   private static final long serialVersionUID = 8476483703841751419L;
   protected Long lastProcessedTime = null;
@@ -51,11 +52,7 @@ public class NycVehicleStatePLFilter extends
         state, obs);
 
     final RunStateEstimator runStateEstimator = new RunStateEstimator(
-        this.inferredGraph,
-        obs,
-        newVehicleStateDist,
-        newVehicleStateDist.getRunStateParam().getValue().getParentVehicleState(),
-        this.random);
+        this.inferredGraph, obs, newVehicleStateDist);
 
     final DataDistribution<RunState> newRunStateDist = newVehicleStateDist.getRunStateParam().getParameterPrior().clone();
     runStateEstimator.update(newRunStateDist,
@@ -97,11 +94,7 @@ public class NycVehicleStatePLFilter extends
       final NycVehicleStateDistribution nycVehicleStateDist = (NycVehicleStateDistribution) vehicleStateEntry.getKey();
 
       final RunStateEstimator runStateEstimator = new RunStateEstimator(
-          this.inferredGraph,
-          obs,
-          nycVehicleStateDist,
-          nycVehicleStateDist.getRunStateParam().getValue().getParentVehicleState(),
-          this.random);
+          this.inferredGraph, obs, nycVehicleStateDist);
 
       final DataDistribution<RunState> predictedRunStateDist = runStateEstimator.createPredictiveDistribution(nycVehicleStateDist.getRunStateParam().getParameterPrior());
 

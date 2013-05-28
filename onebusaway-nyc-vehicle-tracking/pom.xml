@@ -11,16 +11,16 @@
 	<packaging>jar</packaging>
 	<name>onebusaway-nyc-vehicle-tracking</name>
     
-  <repositories>
-    <repository>
-      <id>sonatype-nexus-releases</id>
-      <name>Sonatype Nexus Releases</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
+<!--   <repositories> -->
+<!--     <repository> -->
+<!--       <id>sonatype-nexus-releases</id> -->
+<!--       <name>Sonatype Nexus Releases</name> -->
+<!--       <url>https://oss.sonatype.org/content/repositories/snapshots</url> -->
+<!--       <snapshots> -->
+<!--         <enabled>true</enabled> -->
+<!--       </snapshots> -->
+<!--     </repository> -->
+<!--   </repositories> -->
   
 	<dependencies>
 		<dependency>
@@ -79,12 +79,12 @@
 		<dependency>
 			<groupId>gov.sandia.foundry</groupId>
 			<artifactId>gov-sandia-cognition-common-core</artifactId>
-			<version>3.3.3-SNAPSHOT</version>
+			<version>3.3.3</version>
 		</dependency>
 		<dependency>
 			<groupId>gov.sandia.foundry</groupId>
 			<artifactId>gov-sandia-cognition-learning-core</artifactId>
-			<version>3.3.3-SNAPSHOT</version>
+			<version>3.3.3</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
