@@ -57,6 +57,12 @@
 
     <bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyPartitionedInputQueueListenerTask"/>     
 
+	<!--  Time Queue Configuration -->
+	<!--  This option integrates with an external time prediction queue -->
+	<bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
+		<property name="disable" value="true"/>
+	</bean>
+	
   	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyOutputQueueSenderServiceImpl">
   		<property name="isPrimaryInferenceInstance" value="true"/>
 	</bean>
