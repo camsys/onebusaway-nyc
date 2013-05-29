@@ -96,6 +96,11 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	@Autowired
 	private RefreshService _refreshService;
 
+  private boolean _disableBundleSwitchThread = false;
+  public void setDisableBundleSwitchThread(boolean disable) {
+    _disableBundleSwitchThread = disable;
+  }
+
 	/******
 	 * Getters / Setters
 	 ******/
@@ -200,9 +205,12 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			BundleDiscoveryUpdateThread discoveryThread = new BundleDiscoveryUpdateThread();
 			_taskScheduler.schedule(discoveryThread, discoveryThread);
 
-			// XXX local debug change.  remove.
-//			BundleSwitchUpdateThread switchThread = new BundleSwitchUpdateThread();
-//			_taskScheduler.schedule(switchThread, switchThread);
+			if (_disableBundleSwitchThread) {
+			  _log.error("disabling bundle switching.  Operating in testing mode.");
+			} else {
+			  BundleSwitchUpdateThread switchThread = new BundleSwitchUpdateThread();
+			  _taskScheduler.schedule(switchThread, switchThread);
+			}
 		}
 	}	
 

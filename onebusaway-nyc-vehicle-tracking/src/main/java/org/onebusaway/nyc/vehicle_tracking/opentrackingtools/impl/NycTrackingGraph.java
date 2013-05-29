@@ -253,6 +253,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
   private void buildGraph() throws IOException {
     try {
+      _log.info("Bulding tracking graph. This could take some time...");
       _shapeIdToGeo.clear();
       _geometryToTripInfo.clear();
       _lengthsAlongShapeMap.clear();
@@ -499,7 +500,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
       ex.printStackTrace();
     }
 
-    _log.info("done.");
+    _log.info("Building tracking graph finished.");
   }
 
   private NycTrackingGraph() {

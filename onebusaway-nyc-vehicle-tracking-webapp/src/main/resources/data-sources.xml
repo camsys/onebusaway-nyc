@@ -87,6 +87,7 @@
                 <prop key="blockLocationServiceImpl.locationInterpolation">false</prop>
 
                 <prop key="cacheManager.cacheManagerName">org.onebusaway.transit_data_federation_webapp.cacheManager</prop>
+                <prop key="vehicleLocationInferenceServiceImpl.numberOfProcessingThreads">${vtw.threadpool.size}</prop>
             </props>
         </property>
     </bean>
@@ -98,6 +99,7 @@
     <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
         <property name="bundleStoreRoot" value="${bundle.location}" />
         <property name="standaloneMode" value="${bundle.mode.standalone}" />
+        <property name="disableBundleSwitchThread" value="${bundle.switch.disable}" />
     </bean>
 
     <import resource="${siri.service.config}"/>

@@ -274,7 +274,7 @@ public class RunServiceImpl implements RunService {
       }
 
       if (runIdsToTry.isEmpty()) {
-        _log.error("bundle-data runId does not have the required format:"
+        _log.debug("bundle-data runId does not have the required format:"
             + runId);
         continue;
       }
