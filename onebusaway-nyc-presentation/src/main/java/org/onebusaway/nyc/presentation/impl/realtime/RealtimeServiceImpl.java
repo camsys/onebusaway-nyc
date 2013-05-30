@@ -57,6 +57,7 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Override
   public void setTime(long time) {
     _now = time;
+    _presentationService.setTime(time);
   }
 
   public long getTime() {
