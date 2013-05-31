@@ -39,6 +39,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
+
+import javax.annotation.Nullable;
 
 /**
  * An estimator/predictor that allows for predictive sampling of a run/block
@@ -82,6 +85,19 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     return createInitialLearnedObject();
   }
 
+  // workaround for openJDK bug with guava syntax
+  // http://code.google.com/p/guava-libraries/issues/detail?id=635
+  private static <C, K extends C, V> TreeMap<K, V> newTreeMap(
+      @Nullable Comparator<C> comparator) {
+    // Ideally, the extra type parameter "C" shouldn't be necessary. It is a
+    // work-around of a compiler type inference quirk that prevents the
+    // following code from being compiled:
+    // Comparator<Class<?>> comparator = null;
+    // Map<Class<? extends Throwable>, String> map = newTreeMap(comparator);
+    return new TreeMap<K, V>(comparator);
+  }
+  
+  
   @Override
   public CountedDataDistribution<RunState> createInitialLearnedObject() {
 
@@ -93,14 +109,16 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     final TripInfo tripInfo = nycGraph.getTripInfo(pathEdge.getInferenceGraphSegment());
     final double likelihoodHasNotMoved = likelihoodOfNotMovedState(nycVehicleStateDist.getPathStateParam().getParameterPrior());
 
-    // DEBUG REMOVE ordering
-    final Map<RunState, MutableDoubleCount> resultDist = Maps.newTreeMap(new Comparator<RunState>() {
+    Comparator<RunState> comparator = new Comparator<RunState>() {
       @Override
       public int compare(RunState o1, RunState o2) {
         return Double.compare(o1.getLikelihoodInfo().getTotalLogLik(), 
             o2.getLikelihoodInfo().getTotalLogLik());
       }
-    });
+    };
+    
+    // DEBUG REMOVE ordering
+    final Map<RunState, MutableDoubleCount> resultDist = newTreeMap(comparator);
     
 
     final RunState currentRunState = nycVehicleStateDist.getRunStateParam() != null
