@@ -510,30 +510,20 @@ public class NycTrackingGraph extends GenericJTSGraph {
   PathState pathState, @Nullable
   BlockTripEntry blockTripEntry, long serviceDate) {
 
-    final BlockState blockState;
+    BlockState blockState;
 
     if (pathState.isOnRoad()) {
 
       Preconditions.checkNotNull(blockTripEntry);
 
-      BlockTripEntry newBlockTripEntry = blockTripEntry;
       final AgencyAndId shapeId = blockTripEntry.getTrip().getShapeId();
       final InferenceGraphEdge edge = pathState.getEdge().getInferenceGraphSegment();
-      double[] lengthAlongShape = this._lengthsAlongShapeMap.get(shapeId,
-          edge.getGeometry());
-      /*
-       * Fix this. We should know exactly which trip/shape before this, right?
-       */
-      if (lengthAlongShape == null) {
-        newBlockTripEntry = Preconditions.checkNotNull(blockTripEntry.getNextTrip());
-        lengthAlongShape = this._lengthsAlongShapeMap.get(
-            newBlockTripEntry.getTrip().getShapeId(),
-            pathState.getEdge().getInferenceGraphSegment().getGeometry());
-      }
+      double[] lengthAlongShape = Preconditions.checkNotNull(this._lengthsAlongShapeMap.get(shapeId,
+          edge.getGeometry()));
 
       final double distanceAlongPathEdge = pathState.getEdge().getDistFromStartOfGraphEdge()
           + pathState.getEdgeState().getElement(0);
-      final double distanceOfStartOfEdgeOnBlock = newBlockTripEntry.getDistanceAlongBlock()
+      final double distanceOfStartOfEdgeOnBlock = blockTripEntry.getDistanceAlongBlock()
           + lengthAlongShape[0] + 1e-1;
       double distanceAlongBlock = distanceOfStartOfEdgeOnBlock + distanceAlongPathEdge;
 
@@ -544,8 +534,8 @@ public class NycTrackingGraph extends GenericJTSGraph {
        * at the end of the previous trip if the distance-along is exactly at the
        * beginning of a block trip.
        */
-      final double totalDistanceAlongBlockForShape = newBlockTripEntry.getDistanceAlongBlock()
-          + newBlockTripEntry.getTrip().getTotalTripDistance() - 1d;
+      final double totalDistanceAlongBlockForShape = blockTripEntry.getDistanceAlongBlock()
+          + blockTripEntry.getTrip().getTotalTripDistance() - 1d;
       if (distanceAlongBlock > totalDistanceAlongBlockForShape) {
         distanceAlongBlock = totalDistanceAlongBlockForShape;
       } 
@@ -554,12 +544,21 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
       final InstanceState instState = new InstanceState(serviceDate);
       final BlockInstance instance = new BlockInstance(
-          newBlockTripEntry.getBlockConfiguration(), instState);
+          blockTripEntry.getBlockConfiguration(), instState);
       // _blockCalendarService.getBlockInstance(
       // blockTripEntry.getBlockConfiguration().getBlock().getId(),
       // serviceDate);
 
       blockState = _blockStateService.getAsState(instance, distanceAlongBlock);
+      
+      // FIXME a terrible hack...
+      final BlockTripEntry stateBlockTrip = blockState.getBlockLocation().getActiveTrip();
+      if (!stateBlockTrip.equals(blockTripEntry)) {
+        Preconditions.checkState(stateBlockTrip.getNextTrip().equals(blockTripEntry));
+        blockState = _blockStateService.getAsState(instance, 
+            distanceAlongBlock + 1d);
+        Preconditions.checkState(blockState.getBlockLocation().getActiveTrip().equals(blockTripEntry));
+      }
     } else {
       blockState = null;
     }

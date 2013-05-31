@@ -232,7 +232,10 @@ public class RunState extends AbstractCloneableSerializable implements
   @Override
   public String toString() {
     final ToStringBuilder builder = new ToStringBuilder(this);
-    builder.append("oldTypeVehicleState", oldTypeVehicleState);
+    builder.append("journeyState", this.journeyState);
+    builder.append("blockState", this.blockStateObs);
+    builder.append("notMoved", this.vehicleHasNotMoved);
+    builder.append("detour", this.isDetoured);
     builder.append("oldTypeParent", oldTypeParent);
     return builder.toString();
   }

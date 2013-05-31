@@ -14,7 +14,7 @@ import org.opentrackingtools.estimators.OnOffEdgeTransitionEstimatorPredictor;
 import org.opentrackingtools.graph.InferenceGraphEdge;
 import org.opentrackingtools.model.SimpleBayesianParameter;
 import org.opentrackingtools.model.VehicleStateDistribution;
-import org.opentrackingtools.updater.VehicleStatePLPathGeneratingUpdater;
+import org.opentrackingtools.updater.VehicleStatePLPathSamplingUpdater;
 import org.opentrackingtools.util.model.MutableDoubleCount;
 
 import java.util.Map.Entry;
@@ -32,7 +32,7 @@ public class NycVehicleStatePLFilter extends
     super(observation, trackingGraph,
         new NycVehicleStateDistribution.NycVehicleStateDistributionFactory(),
         initialParams, isDebug, rng);
-    this.setUpdater(new VehicleStatePLPathGeneratingUpdater<Observation, NycTrackingGraph>(
+    this.setUpdater(new VehicleStatePLPathSamplingUpdater<Observation, NycTrackingGraph>(
         observation, inferredGraph, vehicleStateFactory, initialParams, rng));
   }
 
@@ -52,7 +52,7 @@ public class NycVehicleStatePLFilter extends
         state, obs);
 
     final RunStateEstimator runStateEstimator = new RunStateEstimator(
-        this.inferredGraph, obs, newVehicleStateDist);
+        this.inferredGraph, obs, (NycVehicleStateDistribution) state);
 
     final DataDistribution<RunState> newRunStateDist = newVehicleStateDist.getRunStateParam().getParameterPrior().clone();
     runStateEstimator.update(newRunStateDist,
@@ -117,7 +117,7 @@ public class NycVehicleStatePLFilter extends
   }
 
   public void setInitialObservation(Observation observation) {
-    ((VehicleStatePLPathGeneratingUpdater<Observation, NycTrackingGraph>) this.updater).setInitialObservation(observation);
+    ((VehicleStatePLPathSamplingUpdater<Observation, NycTrackingGraph>) this.updater).setInitialObservation(observation);
   }
 
   /**

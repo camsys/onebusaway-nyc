@@ -220,7 +220,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       BlockStateObservation parentBlockStateObs, Observation obs) {
     final BlockState parentBlockState = parentBlockStateObs.getBlockState();
 
-    final StudentTDistribution schedDist = ScheduleLikelihood.getSchedDistForBlockState(parentBlockStateObs);
+    final StudentTDistribution schedDist = ScheduleLikelihood.getSchedDistForBlockState(parentBlockStateObs,
+        false);
     final double newSchedDev = schedDist.sample(ParticleFactoryImpl.getLocalRng());
 
     final int currentTime = (int) (obs.getTime() - parentBlockState.getBlockInstance().getServiceDate()) / 1000;

@@ -40,8 +40,13 @@ public class ScheduleLikelihood implements SensorModelRule {
       2, 0d, 1d / (2d * 40d));
   final static private StudentTDistribution schedDevFormalRunDist = new StudentTDistribution(
       1, 0d, 1d / (2d * 290d));
+  final static private StudentTDistribution schedDevDeadheadInformalRunDist = new StudentTDistribution(
+      1, 0d, 1d / (2d * 2000d));
+  final static private StudentTDistribution schedDevDeadheadFormalRunDist = new StudentTDistribution(
+      1, 0d, 1d / (2d * 3900d));
 
   final static private double pFormal = 0.95d;
+  final static private double pDeadhead = 0.1d;
 
   /*
    * In minutes, as well
@@ -77,13 +82,14 @@ public class ScheduleLikelihood implements SensorModelRule {
       result.addLogResultAsAnd("null state", 0.0);
 
     } else {
-      final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation());
       final double x = state.getBlockStateObservation().getScheduleDeviation();
 
       if (EVehiclePhase.DEADHEAD_AFTER == phase) {
 
         if (FastMath.abs(x) > 0d) {
-          final double pSched = getScheduleDevLogProb(x, schedDist);
+          final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), true);
+          final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
+              true, schedDist);
           result.addLogResultAsAnd("deadhead after", pSched);
         } else {
           result.addLogResultAsAnd("deadhead after", 0.0);
@@ -92,7 +98,9 @@ public class ScheduleLikelihood implements SensorModelRule {
       } else if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
 
         if (FastMath.abs(x) > 0d) {
-          final double pSched = getScheduleDevLogProb(x, schedDist);
+          final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), true);
+          final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
+              true, schedDist);
           result.addLogResultAsAnd("deadhead before", pSched);
         } else {
           result.addLogResultAsAnd("deadhead before", 0.0);
@@ -101,7 +109,9 @@ public class ScheduleLikelihood implements SensorModelRule {
       } else if (EVehiclePhase.LAYOVER_BEFORE == phase) {
 
         if (FastMath.abs(x) > 0d) {
-          final double pSched = getScheduleDevLogProb(x, schedDist);
+          final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), true);
+          final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
+              true, schedDist);
           result.addLogResultAsAnd("layover before", pSched);
         } else {
           result.addLogResultAsAnd("layover before", 0.0);
@@ -109,16 +119,22 @@ public class ScheduleLikelihood implements SensorModelRule {
 
       } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
 
-        final double pSched = getScheduleDevLogProb(x, schedDist);
+        final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), true);
+        final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
+            true, schedDist);
         result.addLogResultAsAnd("deadhead during", pSched);
 
       } else if (EVehiclePhase.LAYOVER_DURING == phase) {
 
-        final double pSched = getScheduleDevLogProb(x, schedDist);
+        final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), true);
+        final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
+            true, schedDist);
         result.addLogResultAsAnd("layover during", pSched);
 
       } else if (EVehiclePhase.IN_PROGRESS == phase) {
-        final double pSched = getScheduleDevLogProb(x, schedDist);
+        final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), false);
+        final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
+            false, schedDist);
         result.addLogResultAsAnd("in progress", pSched);
       }
     }
@@ -130,13 +146,23 @@ public class ScheduleLikelihood implements SensorModelRule {
    * Manual truncation (when using the formal run distribution) We shouldn't
    * have to worry about normalization, yet.
    */
-  public static double getScheduleDevLogProb(final double x,
+  public static double getScheduleDevLogProb(final double x, final boolean isFormal, final boolean isDeadhead,
       StudentTDistribution schedDist) {
     final double pSched;
-    final boolean isFormal = schedDist == schedDevFormalRunDist;
     if (!isFormal || (x <= POS_SCHED_DEV_CUTOFF && x >= NEG_SCHED_DEV_CUTOFF)) {
-      pSched = (isFormal ? FastMath.log(pFormal) : FastMath.log1p(-pFormal))
-          + schedDist.getProbabilityFunction().logEvaluate(x);
+        
+      double mixLogWeight = 0d;
+      if (isFormal)
+        mixLogWeight += FastMath.log(pFormal);
+      else 
+        mixLogWeight += FastMath.log1p(-pFormal);
+      
+      if (isDeadhead)
+        mixLogWeight += FastMath.log(pDeadhead);
+      else
+        mixLogWeight += FastMath.log1p(-pDeadhead);
+        
+      pSched = mixLogWeight + schedDist.getProbabilityFunction().logEvaluate(x);
     } else {
       pSched = Double.NEGATIVE_INFINITY;
     }
@@ -144,9 +170,18 @@ public class ScheduleLikelihood implements SensorModelRule {
   }
 
   public static StudentTDistribution getSchedDistForBlockState(
-      BlockStateObservation blockState) {
-    return blockState.isRunFormal() ? schedDevFormalRunDist
-        : schedDevInformalRunDist;
+      BlockStateObservation blockState, final boolean isDeadhead) {
+    if (blockState.isRunFormal()) { 
+      if (isDeadhead)
+        return schedDevDeadheadFormalRunDist;
+      else
+        return schedDevFormalRunDist;
+    } else {
+      if (isDeadhead)
+        return schedDevDeadheadInformalRunDist;
+      else
+        return schedDevInformalRunDist;
+    }
   }
 
   public static StudentTDistribution getSchedDevNonRunDist() {

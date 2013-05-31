@@ -169,7 +169,8 @@ public class NycVehicleStateDistribution extends
     builder.append("pathState",
         this.pathStateParam.getParameterPrior());
     builder.append("observation", this.observation);
-    builder.append("runState", this.runStateParam.getValue().blockStateObs);
+    builder.append("runState", this.runStateParam.getValue().journeyState 
+        + ", " + this.runStateParam.getValue().blockStateObs);
     return builder.toString();
   }
 

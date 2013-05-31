@@ -33,6 +33,7 @@ import org.opentrackingtools.util.model.MutableDoubleCount;
 import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -92,7 +93,15 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     final TripInfo tripInfo = nycGraph.getTripInfo(pathEdge.getInferenceGraphSegment());
     final double likelihoodHasNotMoved = likelihoodOfNotMovedState(nycVehicleStateDist.getPathStateParam().getParameterPrior());
 
-    final Map<RunState, MutableDoubleCount> resultDist = Maps.newIdentityHashMap();
+    // DEBUG REMOVE ordering
+    final Map<RunState, MutableDoubleCount> resultDist = Maps.newTreeMap(new Comparator<RunState>() {
+      @Override
+      public int compare(RunState o1, RunState o2) {
+        return Double.compare(o1.getLikelihoodInfo().getTotalLogLik(), 
+            o2.getLikelihoodInfo().getTotalLogLik());
+      }
+    });
+    
 
     final RunState currentRunState = nycVehicleStateDist.getRunStateParam() != null
         ? nycVehicleStateDist.getRunStateParam().getValue() : null;
@@ -266,6 +275,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
 
     final DeterministicDataDistribution<RunState> priorRunDist = (DeterministicDataDistribution<RunState>) priorPredRunStateDist;
 
+    final PathStateDistribution priorPathStateDist = this.nycVehicleStateDist.getPathStateParam().getParameterPrior();
     final RunState priorPredRunState = priorPredRunStateDist.getMaxValueKey();
     /*
      * We must update update the run state, since the path belief gets updated.
