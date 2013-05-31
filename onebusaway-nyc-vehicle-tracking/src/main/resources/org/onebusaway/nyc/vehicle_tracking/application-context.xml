@@ -55,6 +55,7 @@
   	class="org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance"
     scope="prototype">    
     <property name="model" ref="particleFilterModel" />
+    <property name="debug" value="${particle-filter-debug}" />
   </bean>
 
 </beans>

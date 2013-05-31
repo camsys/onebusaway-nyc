@@ -10,18 +10,6 @@
 	<artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
 	<packaging>jar</packaging>
 	<name>onebusaway-nyc-vehicle-tracking</name>
-    
-<!--   <repositories> -->
-<!--     <repository> -->
-<!--       <id>sonatype-nexus-releases</id> -->
-<!--       <name>Sonatype Nexus Releases</name> -->
-<!--       <url>https://oss.sonatype.org/content/repositories/snapshots</url> -->
-<!--       <snapshots> -->
-<!--         <enabled>true</enabled> -->
-<!--       </snapshots> -->
-<!--     </repository> -->
-<!--   </repositories> -->
-  
 	<dependencies>
 		<dependency>
 			<groupId>org.geotools</groupId>
@@ -141,5 +129,33 @@
         <version>9.0-M0</version>
     </dependency>
 	</dependencies>
-
+	<build>
+	<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.properties</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+    <profiles>
+        <profile>
+            <id>cloud</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+            	<particle-filter-debug>false</particle-filter-debug>
+			</properties>
+		</profile>
+		<profile>
+          	<id>local-ie</id>
+          	<properties>
+          		<particle-filter-debug>true</particle-filter-debug>
+			</properties>
+		</profile>
+	</profiles>
 </project>
