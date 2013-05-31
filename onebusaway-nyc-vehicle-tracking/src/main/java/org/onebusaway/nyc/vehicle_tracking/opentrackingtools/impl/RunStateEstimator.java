@@ -85,19 +85,6 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     return createInitialLearnedObject();
   }
 
-  // workaround for openJDK bug with guava syntax
-  // http://code.google.com/p/guava-libraries/issues/detail?id=635
-  private static <C, K extends C, V> TreeMap<K, V> newTreeMap(
-      @Nullable Comparator<C> comparator) {
-    // Ideally, the extra type parameter "C" shouldn't be necessary. It is a
-    // work-around of a compiler type inference quirk that prevents the
-    // following code from being compiled:
-    // Comparator<Class<?>> comparator = null;
-    // Map<Class<? extends Throwable>, String> map = newTreeMap(comparator);
-    return new TreeMap<K, V>(comparator);
-  }
-  
-  
   @Override
   public CountedDataDistribution<RunState> createInitialLearnedObject() {
 
@@ -118,8 +105,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     };
     
     // DEBUG REMOVE ordering
-    final Map<RunState, MutableDoubleCount> resultDist = newTreeMap(comparator);
-    
+    final Map<RunState, MutableDoubleCount> resultDist = new TreeMap<RunState, MutableDoubleCount>(comparator);
 
     final RunState currentRunState = nycVehicleStateDist.getRunStateParam() != null
         ? nycVehicleStateDist.getRunStateParam().getValue() : null;
