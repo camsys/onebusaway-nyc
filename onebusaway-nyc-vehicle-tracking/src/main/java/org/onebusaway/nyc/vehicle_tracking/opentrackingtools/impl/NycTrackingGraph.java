@@ -206,6 +206,15 @@ public class NycTrackingGraph extends GenericJTSGraph {
   @Autowired
   private ShapePointService _shapePointService;
 
+  private boolean isDebug = false;
+  public boolean isDebug() { return isDebug; }
+  public void setDebug(boolean debug) {
+    if (debug) {
+    _log.error("Debug mode is ON");
+    }
+    this.isDebug = debug;
+  }
+  
   public static class TripInfo {
     final private Collection<SIRtree> _entries;
     final private Set<AgencyAndId> _shapeIds;
