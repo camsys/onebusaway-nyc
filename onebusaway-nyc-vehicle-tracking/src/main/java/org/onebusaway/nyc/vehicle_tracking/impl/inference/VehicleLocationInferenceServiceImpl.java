@@ -23,6 +23,7 @@ import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignme
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
@@ -110,15 +111,18 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private int _skippedUpdateLogCounter = 0;
 
-  private int _numberOfProcessingThreads = 1;// 2 +
-                                             // (Runtime.getRuntime().availableProcessors()
-                                             // * 5);
+  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 5);
 
   private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
 
   public void setNumberOfProcessingThreads(int numberOfProcessingThreads) {
+    if (numberOfProcessingThreads < 1) {
+      _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 5);
+      return;
+    }
+    _log.error("overriding number of processingThreads: threads=" + numberOfProcessingThreads);
     _numberOfProcessingThreads = numberOfProcessingThreads;
   }
 
@@ -383,7 +387,8 @@ public class VehicleLocationInferenceServiceImpl implements
   /****
    * Private Methods
    ****/
-  private VehicleInferenceInstance getAndCreateInstanceForVehicle(AgencyAndId vehicleId) {
+  private VehicleInferenceInstance getAndCreateInstanceForVehicle(
+      AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null) {
       final VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
@@ -626,7 +631,7 @@ public class VehicleLocationInferenceServiceImpl implements
                 + _vehicleId + ": ", e);
         resetVehicleLocation(_vehicleId);
         _observationCache.purge(_vehicleId);
-        
+
       }
     }
   }
@@ -636,7 +641,7 @@ public class VehicleLocationInferenceServiceImpl implements
     ParticleFactoryImpl.setSeed(factorySeed);
     CategoricalDist.setSeed(cdfSeed);
   }
-  
+
   @Override
   public VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);

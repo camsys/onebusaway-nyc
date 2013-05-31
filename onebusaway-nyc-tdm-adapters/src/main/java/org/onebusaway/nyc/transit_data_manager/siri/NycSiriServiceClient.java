@@ -13,6 +13,7 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 public class NycSiriServiceClient extends NycSiriService {
 
+  
   @Override
   void setupForMode() throws Exception, JAXBException {
     boolean setupDone = false;
@@ -26,7 +27,7 @@ public class NycSiriServiceClient extends NycSiriService {
       } catch (Exception e) {
         _log.error("Setup for client failed, exception is: " + e.getMessage());
         _log.error("Retrying in 60 seconds.");
-//        Thread.sleep(60 * 1000);
+          Thread.sleep(60 * 1000);
       }
     } while (!setupDone && attempts <= 4);
     if (setupDone) {

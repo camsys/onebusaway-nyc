@@ -22,6 +22,7 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 
 import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -257,6 +258,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   @PostConstruct
   public void setup() {
+    this._mapper.getSerializationConfig().addMixInAnnotations(NycQueuedInferredLocationBean.class, IgnorePropertyMixins.class);
     _outputQueueResolver = new DNSResolver(getQueueHost());
     final OutputQueueCheckThread outputQueueCheckThread = new OutputQueueCheckThread();
     // every 10 seconds
@@ -377,4 +379,8 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
     return _primaryHostname;
   }
 
+  
+  private abstract class IgnorePropertyMixins {
+    @JsonIgnore Double bearing;
+  }
 }

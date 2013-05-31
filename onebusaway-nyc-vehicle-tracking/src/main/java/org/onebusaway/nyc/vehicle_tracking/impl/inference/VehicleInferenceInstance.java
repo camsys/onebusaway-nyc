@@ -139,6 +139,11 @@ public class VehicleInferenceInstance {
   private NycVehicleStatePLFilter _particleFilter;
 
   private NycVehicleStateDistribution currentAvgVehicleState;
+  
+  private boolean _debug = true;
+  public void setDebug(String debug) {
+    this._debug = Boolean.TRUE == Boolean.parseBoolean(debug);
+  }
 
   public void setModel(ParticleFilterModel<Observation> model) {
     // TODO remove.
@@ -357,7 +362,7 @@ public class VehicleInferenceInstance {
     if (_particleFilter == null) {
       final Random rng = new Random();
       _particleFilter = new NycVehicleStatePLFilter(observation,
-          _trackingGraph, _initialParams, true, rng);
+          _trackingGraph, _initialParams, _debug, rng);
       _trackingGraph.setRng(rng);
     }
 
