@@ -253,7 +253,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
   private void buildGraph() throws IOException {
     try {
-      _log.info("Bulding tracking graph. This could take some time...");
+      _log.info("Building tracking graph. This could take some time...");
       _shapeIdToGeo.clear();
       _geometryToTripInfo.clear();
       _lengthsAlongShapeMap.clear();
@@ -543,23 +543,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
 
       Preconditions.checkState(distanceAlongBlock >= 0d);
 
-      final InstanceState instState = new InstanceState(serviceDate);
-      final BlockInstance instance = new BlockInstance(
-          blockTripEntry.getBlockConfiguration(), instState);
-      // _blockCalendarService.getBlockInstance(
-      // blockTripEntry.getBlockConfiguration().getBlock().getId(),
-      // serviceDate);
-
-      blockState = _blockStateService.getAsState(instance, distanceAlongBlock);
-      
-      // FIXME a terrible hack...
-      final BlockTripEntry stateBlockTrip = blockState.getBlockLocation().getActiveTrip();
-      if (!stateBlockTrip.equals(blockTripEntry)) {
-        Preconditions.checkState(stateBlockTrip.getNextTrip().equals(blockTripEntry));
-        blockState = _blockStateService.getAsState(instance, 
-            distanceAlongBlock + 1d);
-        Preconditions.checkState(blockState.getBlockLocation().getActiveTrip().equals(blockTripEntry));
-      }
+      blockState = _blockStateService.getAsState(blockTripEntry, serviceDate, distanceAlongBlock);
     } else {
       blockState = null;
     }

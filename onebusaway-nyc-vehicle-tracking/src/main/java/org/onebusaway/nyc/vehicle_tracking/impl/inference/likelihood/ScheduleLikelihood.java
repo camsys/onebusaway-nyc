@@ -126,9 +126,9 @@ public class ScheduleLikelihood implements SensorModelRule {
 
       } else if (EVehiclePhase.LAYOVER_DURING == phase) {
 
-        final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), true);
+        final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), false);
         final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
-            true, schedDist);
+            false, schedDist);
         result.addLogResultAsAnd("layover during", pSched);
 
       } else if (EVehiclePhase.IN_PROGRESS == phase) {
