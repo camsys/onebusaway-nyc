@@ -90,7 +90,11 @@
                       <fmt:formatNumber var="schedDev" value="${p.data.blockStateObservation.scheduleDeviation}" maxFractionDigits="2"/>
                     <td bgcolor='#cdc9c9'><c:out value="${schedDev} mins" /></td>
                     <td><c:out value="${p.data.blockStateObservation.snapped}" /></td>
-                    <td><c:out value="${p.data.distribution.pathStateParam.parameterPrior}" /></td>
+                    <td><c:out value="${p.data.distribution.pathStateParam.parameterPrior}" /><br/>
+		                    <c:out value="[${p.data.distribution.observationCovarianceParam.parameterPrior.mean}]" /><br/>
+		                    <c:out value="[${p.data.distribution.onRoadModelCovarianceParam.parameterPrior.mean}]" />,
+		                    <c:out value="[${p.data.distribution.offRoadModelCovarianceParam.parameterPrior.mean}]" /><br/>
+		                </td>
                 </tr>
             </c:forEach>
         </tbody>

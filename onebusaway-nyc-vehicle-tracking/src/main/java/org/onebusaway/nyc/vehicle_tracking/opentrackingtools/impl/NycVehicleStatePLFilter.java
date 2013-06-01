@@ -2,8 +2,11 @@ package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 
+import com.google.common.base.Preconditions;
+
 import gov.sandia.cognition.math.MutableDouble;
 import gov.sandia.cognition.statistics.DataDistribution;
+import gov.sandia.cognition.statistics.distribution.MultivariateGaussian;
 
 import org.opentrackingtools.VehicleStateInitialParameters;
 import org.opentrackingtools.VehicleStatePLFilter;
@@ -12,12 +15,16 @@ import org.opentrackingtools.distributions.CountedDataDistribution;
 import org.opentrackingtools.distributions.DeterministicDataDistribution;
 import org.opentrackingtools.estimators.OnOffEdgeTransitionEstimatorPredictor;
 import org.opentrackingtools.graph.InferenceGraphEdge;
+import org.opentrackingtools.graph.InferenceGraphSegment;
 import org.opentrackingtools.model.SimpleBayesianParameter;
 import org.opentrackingtools.model.VehicleStateDistribution;
+import org.opentrackingtools.model.VehicleStateDistribution.VehicleStateDistributionFactory;
+import org.opentrackingtools.paths.PathEdge;
 import org.opentrackingtools.updater.VehicleStatePLPathSamplingUpdater;
 import org.opentrackingtools.util.model.MutableDoubleCount;
 
 import java.util.Map.Entry;
+import java.util.Collection;
 import java.util.Random;
 
 public class NycVehicleStatePLFilter extends
@@ -25,6 +32,110 @@ public class NycVehicleStatePLFilter extends
 
   private static final long serialVersionUID = 8476483703841751419L;
   protected Long lastProcessedTime = null;
+  
+  public static class NycVehicleStatePLUpdater extends VehicleStatePLPathSamplingUpdater<Observation, NycTrackingGraph> {
+    
+    public NycVehicleStatePLUpdater(
+        Observation obs,
+        NycTrackingGraph inferencedGraph,
+        VehicleStateDistributionFactory<Observation, NycTrackingGraph> vehicleStateFactory,
+        VehicleStateInitialParameters parameters, boolean isDebug, Random rng) {
+      super(obs, inferencedGraph, vehicleStateFactory, parameters, isDebug, rng);
+    }
+
+    @Override
+    public DataDistribution<VehicleStateDistribution<Observation>>
+        createInitialParticles(int numParticles) {
+      final DataDistribution<VehicleStateDistribution<Observation>> retDist =
+          new CountedDataDistribution<VehicleStateDistribution<Observation>>(true);
+
+      /*
+       * Start by creating an off-road vehicle state with which we can obtain the surrounding
+       * edges.
+       */
+      final NycVehicleStateDistribution nullState =
+          (NycVehicleStateDistribution) this.vehicleStateFactory.createInitialVehicleState(
+          this.parameters, this.inferenceGraph,
+          this.initialObservation, this.random,
+          PathEdge.nullPathEdge);
+      final MultivariateGaussian initialMotionStateDist =
+          nullState.getMotionStateParam().getParameterPrior();
+      final Collection<InferenceGraphSegment> edges =
+          this.inferenceGraph.getNearbyEdges(initialMotionStateDist,
+              initialMotionStateDist.getCovariance());
+
+      for (int i = 0; i < numParticles; i++) {
+        /*
+         * From the surrounding edges, we create states on those edges.
+         */
+        final CountedDataDistribution<VehicleStateDistribution<Observation>> statesOnEdgeDistribution =
+            new CountedDataDistribution<VehicleStateDistribution<Observation>>(
+                true);
+
+        final double nullEdgeLogLikelihood =
+            nullState.getEdgeTransitionParam()
+                .getConditionalDistribution().getProbabilityFunction()
+                .logEvaluate(InferenceGraphEdge.nullGraphEdge);
+        final double nullObsLogLikelihood = this.computeLogLikelihood(nullState,
+                    this.initialObservation);
+        nullState.setEdgeTransitionLogLikelihood(nullEdgeLogLikelihood);
+        nullState.setObsLogLikelihood(nullObsLogLikelihood);
+        final double nullTotalLogLikelihood = nullState.getEdgeTransitionLogLikelihood()
+            + nullState.getPathStateDistLogLikelihood()
+            + nullState.getObsLogLikelihood()
+            + nullState.getRunStateParam().getValue().getLikelihoodInfo().getTotalLogLik();
+
+        statesOnEdgeDistribution
+            .increment(nullState, nullTotalLogLikelihood);
+        
+        /*
+         * Make sure we're fair about the sampled initial location and
+         * set it here.  Otherwise, if we don't do this, each call
+         * to createInitialVehicleState will sample a new location.
+         */
+        VehicleStateInitialParameters newParams = new VehicleStateInitialParameters(this.parameters);
+        newParams.setInitialMotionState(initialMotionStateDist.sample(this.random));
+
+        for (final InferenceGraphSegment segment : edges) {
+
+          final PathEdge pathEdge = new PathEdge(segment, 0d, false);
+
+          final NycVehicleStateDistribution stateOnEdge =
+              (NycVehicleStateDistribution) this.vehicleStateFactory.createInitialVehicleState(
+              newParams, this.inferenceGraph,
+              this.initialObservation, this.random, pathEdge);
+
+          final double edgeLikelihood =
+              stateOnEdge.getEdgeTransitionParam()
+                  .getConditionalDistribution()
+                  .getProbabilityFunction()
+                  .logEvaluate(pathEdge.getInferenceGraphSegment());
+          final double obsLikelihood =
+                  this.computeLogLikelihood(stateOnEdge,
+                      this.initialObservation);
+          
+          stateOnEdge.setEdgeTransitionLogLikelihood(edgeLikelihood);
+          stateOnEdge.setObsLogLikelihood(obsLikelihood);
+          
+          final double logLikelihood = stateOnEdge.getEdgeTransitionLogLikelihood()
+              + stateOnEdge.getPathStateDistLogLikelihood() 
+              + stateOnEdge.getObsLogLikelihood()
+              + stateOnEdge.getRunStateParam().getValue().getLikelihoodInfo().getTotalLogLik();
+
+          statesOnEdgeDistribution
+              .increment(stateOnEdge, logLikelihood);
+        }
+
+        VehicleStateDistribution<Observation> sampledDist = statesOnEdgeDistribution.sample(this.random);
+        if (this.isDebug)
+          sampledDist.setTransitionStateDistribution(statesOnEdgeDistribution);
+        retDist.increment(sampledDist);
+      }
+
+      Preconditions.checkState(retDist.getDomainSize() > 0);
+      return retDist;
+    } 
+  }
 
   public NycVehicleStatePLFilter(Observation observation,
       NycTrackingGraph trackingGraph,
@@ -32,8 +143,8 @@ public class NycVehicleStatePLFilter extends
     super(observation, trackingGraph,
         new NycVehicleStateDistribution.NycVehicleStateDistributionFactory(),
         initialParams, isDebug, rng);
-    this.setUpdater(new VehicleStatePLPathSamplingUpdater<Observation, NycTrackingGraph>(
-        observation, inferredGraph, vehicleStateFactory, initialParams, rng));
+    this.setUpdater(new NycVehicleStatePLUpdater(
+        observation, inferredGraph, vehicleStateFactory, initialParams, isDebug == Boolean.TRUE, rng));
   }
 
   public Long getLastProcessedTime() {

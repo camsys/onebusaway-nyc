@@ -256,7 +256,7 @@ OBA.Debug = function() {
           var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
           
 	        var point = new OpenLayers.LonLat(record.lon, record.lat);
-          var icon_url = 'http://www.openlayers.org/dev/img/marker.png';
+          var icon_url = 'img/marker.png';
           var proj = new OpenLayers.Projection("EPSG:4326");
           point.transform(proj, map.getProjectionObject());
           
@@ -334,16 +334,16 @@ OBA.Debug = function() {
 								markerText.inferredPhase = value;
 								
 								if (value.indexOf("PROGRESS") != -1) {
-									icon_url = 'http://www.openlayers.org/dev/img/marker-green.png';
+									icon_url = 'img/marker-green.png';
 								} else if (value.indexOf("LAYOVER") != -1) {
-									icon_url = 'http://www.openlayers.org/dev/img/marker-blue.png';
+									icon_url = 'img/marker-blue.png';
 								} 
 							} else if (property === "dsc") {
 								markerText.dsc = value;
 							} else if (property === "inferredStatus") {
 								markerText.status = value;
 								if (value.indexOf("deviated") != -1) {
-									icon_url = 'http://steeplemedia.com/images/markers/markerAqua.png';
+									icon_url = 'img/markerAqua.png';
 								}
 							} else if (property === "inferredDsc") {
 								markerText.inferredDsc = value;
@@ -400,7 +400,7 @@ OBA.Debug = function() {
 	          var inferredPoint = new OpenLayers.LonLat(inferredLon, inferredLat);
 		        var inferredProj = new OpenLayers.Projection("EPSG:4326");
 	          inferredPoint.transform(inferredProj, map.getProjectionObject());
-	          var inferredIcon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker-gold.png',size,offset);
+	          var inferredIcon = new OpenLayers.Icon('img/marker-gold.png',size,offset);
 	          inferredMarker = new OpenLayers.Marker(inferredPoint, inferredIcon);
 	          inferredMarkers.addMarker(inferredMarker);
 	          markerText.inferredLatLon = "<a name='inferredLoc' href='#'>" + inferredLat + "," + inferredLon + "</a>";
@@ -413,7 +413,7 @@ OBA.Debug = function() {
 	          var adjPoint = new OpenLayers.LonLat(adjLon, adjLat);
 		        var adjProj = new OpenLayers.Projection("EPSG:4326");
 	          adjPoint.transform(adjProj, map.getProjectionObject());
-	          var adjIcon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker-gold.png',size,offset);
+	          var adjIcon = new OpenLayers.Icon('img/marker-gold.png',size,offset);
 	          adjMarker = new OpenLayers.Marker(adjPoint, adjIcon);
 	          inferredMarkers.addMarker(adjMarker);
 	          markerText.adjLatLon = "<a name='adjLoc' href='#'>" + adjLat + "," + adjLon + "</a>";
@@ -519,7 +519,7 @@ OBA.Debug = function() {
      var point = new OpenLayers.LonLat(lon, lat);
      var proj = new OpenLayers.Projection("EPSG:4326");
      point.transform(proj, map.getProjectionObject());
-     var icon = new OpenLayers.Icon('http://maps.google.com/mapfiles/ms/icons/orange-dot.png',size,offset);
+     var icon = new OpenLayers.Icon('img/orange-dot.png',size,offset);
      addedMarker = new OpenLayers.Marker(point, icon);
      addedMarkers.addMarker(addedMarker);
 	}

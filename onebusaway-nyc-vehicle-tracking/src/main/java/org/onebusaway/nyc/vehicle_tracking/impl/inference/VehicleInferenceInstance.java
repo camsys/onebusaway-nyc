@@ -108,9 +108,9 @@ public class VehicleInferenceInstance {
   private NycTrackingGraph _trackingGraph;
 
   private final VehicleStateInitialParameters _initialParams = new VehicleStateInitialParameters(
-      null, VectorFactory.getDefault().createVector2D(600d, 600d), 10,
-      VectorFactory.getDefault().createVector1D(6.25e-3), 20,
-      VectorFactory.getDefault().createVector2D(6.25e-3, 6.25e-3), 20, 
+      null, VectorFactory.getDefault().createVector2D(100d, 100d), 10,
+      VectorFactory.getDefault().createVector1D(6.25e-3), 5,
+      VectorFactory.getDefault().createVector2D(6.25e-3, 6.25e-3), 5, 
       VectorFactory.getDefault().createVector2D(1d, 1d),
       VectorFactory.getDefault().createVector2D(1d, 1d), 25, 30, 0l);
 
