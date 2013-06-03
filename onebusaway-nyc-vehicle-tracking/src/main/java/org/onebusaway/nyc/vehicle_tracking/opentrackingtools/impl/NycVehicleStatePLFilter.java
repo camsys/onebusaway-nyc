@@ -16,6 +16,8 @@ import org.opentrackingtools.model.SimpleBayesianParameter;
 import org.opentrackingtools.model.VehicleStateDistribution;
 import org.opentrackingtools.updater.VehicleStatePLPathSamplingUpdater;
 import org.opentrackingtools.util.model.MutableDoubleCount;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map.Entry;
 import java.util.Random;
@@ -24,6 +26,10 @@ public class NycVehicleStatePLFilter extends
     VehicleStatePLPathSamplingFilter<Observation, NycTrackingGraph> {
 
   private static final long serialVersionUID = 8476483703841751419L;
+  private static final double MAX_COVARIANCE = 2000d;
+
+  protected static Logger _log = LoggerFactory
+			.getLogger(NycVehicleStatePLFilter.class);
   protected Long lastProcessedTime = null;
 
   public NycVehicleStatePLFilter(Observation observation,
@@ -57,6 +63,14 @@ public class NycVehicleStatePLFilter extends
     final DataDistribution<RunState> newRunStateDist = newVehicleStateDist.getRunStateParam().getParameterPrior().clone();
     runStateEstimator.update(newRunStateDist,
         newVehicleStateDist.getPathStateParam().getParameterPrior());
+    
+    if (newVehicleStateDist.getPathStateParam().getParameterPrior().getCovariance().getElement(0, 0) > MAX_COVARIANCE) {
+			_log.error("covariance["
+					+ obs.getRecord().getVehicleId()
+					+ "]:"
+					+ newVehicleStateDist.getPathStateParam()
+							.getParameterPrior().getCovariance().toString());
+		}
 
     /*
      * Again, we use the max weight run state.
