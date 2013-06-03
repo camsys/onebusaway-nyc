@@ -11,11 +11,11 @@ public enum BarcodeImageType {
   /**
    * Bitmap/BMP files.
    */
-  BMP ("BMP", "image/x-ms-bmp"),
+  BMP ("bmp", "image/x-ms-bmp"),
   /**
    * PNG files.
    */
-  PNG ("PNG", "image/png");
+  PNG ("png", "image/png");
   
   private final String formatName;
   private final String mimeType;
