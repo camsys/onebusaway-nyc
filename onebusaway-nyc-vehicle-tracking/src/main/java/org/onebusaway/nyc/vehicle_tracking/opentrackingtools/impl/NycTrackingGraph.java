@@ -210,7 +210,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
   public boolean isDebug() { return isDebug; }
   public void setDebug(boolean debug) {
     if (debug) {
-    _log.error("Debug mode is ON");
+    _log.warn("Debug mode is ON");
     }
     this.isDebug = debug;
   }
@@ -487,9 +487,10 @@ public class NycTrackingGraph extends GenericJTSGraph {
                   tripInfo.getShapeIds().add(shapeId);
                 }
 
-                // DEBUG
+                if (this.isDebug) { 
                 Preconditions.checkState(this._lengthsAlongShapeMap.contains(
                     shapeId, lineGeo));
+                }
               }
             }
           }
