@@ -33,7 +33,7 @@ public class NycVehicleStatePLFilter extends
         new NycVehicleStateDistribution.NycVehicleStateDistributionFactory(),
         initialParams, isDebug, rng);
     this.setUpdater(new VehicleStatePLPathSamplingUpdater<Observation, NycTrackingGraph>(
-        observation, inferredGraph, vehicleStateFactory, initialParams, rng));
+        observation, inferredGraph, vehicleStateFactory, initialParams, isDebug, rng));
   }
 
   public Long getLastProcessedTime() {
