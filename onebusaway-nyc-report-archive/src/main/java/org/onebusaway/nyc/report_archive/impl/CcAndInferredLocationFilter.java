@@ -32,7 +32,9 @@ public enum CcAndInferredLocationFilter {
 	END_DATE("end-date"),
 	
 	/** Number of records to be returned by the query **/
-	RECORDS("records");
+	RECORDS("records"), 
+	/** How long to wait for a response **/
+	TIMEOUT("timeout");
 	
 	private String field;
 	

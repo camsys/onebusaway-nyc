@@ -42,6 +42,8 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	private static final String SPACE = " ";
 	private static final int MAX_RECORD_LIMIT = 3000;
 	private static final boolean IS_MYSQL = true;
+
+  protected static final int DEFAULT_QUERY_TIMEOUT = 10 * 60; // 10 minutes
 	
 	@Override
 	public List<HistoricalRecord> getHistoricalRecords(
@@ -86,6 +88,8 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 
 		final String sqlQuery = sql.toString();
 		
+		final Integer timeout = (Integer) (filter.get(CcAndInferredLocationFilter.TIMEOUT) == null? DEFAULT_QUERY_TIMEOUT: filter.get(CcAndInferredLocationFilter.TIMEOUT));
+		
 		List<HistoricalRecord> results = hibernateTemplate.execute(
 				new HibernateCallback<List<HistoricalRecord>>() {
 
@@ -96,8 +100,8 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 				
 				Query query = buildQuery(filter, sqlQuery, session);
 
-				log.debug("Executing query : " + sqlQuery);
-				
+				log.debug("Executing query(" + timeout + ") : " + sqlQuery);
+				query.setTimeout(timeout); // in seconds
 				return query.list();
 			}
 
@@ -290,7 +294,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 			sql.append("<").append(SPACE);
 			sql.append(":endDate").append(")").append(SPACE);
 			
-		}
+		} 
 		
 		return sql;
 	}

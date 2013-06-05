@@ -46,13 +46,14 @@ public class HistoricalRecordsResource {
 			@QueryParam(value="bbox") final String boundingBox,
 			@QueryParam(value="start-date") final String startDate, 
 			@QueryParam(value="end-date") final String endDate,
-			@QueryParam(value="records") final Integer records) {
+			@QueryParam(value="records") final Integer records,
+			@QueryParam(value="timeout") final Integer timeout) {
 		
 		log.info("Starting getHistoricalRecords");
 		
 		Map<CcAndInferredLocationFilter, Object> filters = addFilterParameters(depotId, 
 				inferredRouteId, inferredPhase, vehicleId, vehicleAgencyId, boundingBox, 
-				startDate, endDate, records);
+				startDate, endDate, records, timeout);
 		
 		List<HistoricalRecord> historicalRecords = historicalRecordsDao.getHistoricalRecords(filters);
 		
@@ -75,7 +76,7 @@ public class HistoricalRecordsResource {
 	
 	private Map<CcAndInferredLocationFilter, Object> addFilterParameters(String depotId, 
 			String inferredRouteId, String inferredPhase, Integer vehicleId, String vehicleAgencyId,
-			String boundingBox, String startDate, String endDate, Integer records) {
+			String boundingBox, String startDate, String endDate, Integer records, Integer timeout) {
 		
 		Map<CcAndInferredLocationFilter, Object> filter = 
 				new HashMap<CcAndInferredLocationFilter, Object>();
@@ -88,18 +89,15 @@ public class HistoricalRecordsResource {
 		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.VEHICLE_AGENCY_ID, vehicleAgencyId);
 		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.START_DATE, startDate);
 		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.END_DATE, endDate);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.TIMEOUT, timeout);
 		if (!nonEmptyFilter) {
-		  addToFilter(filter, CcAndInferredLocationFilter.START_DATE, getTodaysDate());
+		  log.debug("empty filter");
 		}
 		filter.put(CcAndInferredLocationFilter.RECORDS, records);
 		
 		return filter;
 	}
 	
-	private String getTodaysDate() {
-    return FORMATTER.format(new Date());
-  }
-
   private boolean addToFilter(Map<CcAndInferredLocationFilter, Object> filter, CcAndInferredLocationFilter key, Object value) {
 	  if (key == null || value == null) return false;
 	  filter.put(key, value);
