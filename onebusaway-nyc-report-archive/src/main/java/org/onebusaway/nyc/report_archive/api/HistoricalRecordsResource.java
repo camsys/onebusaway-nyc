@@ -24,6 +24,7 @@ import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.stereotype.Component;
 
 @Path("/history/record/last-known")
@@ -55,11 +56,20 @@ public class HistoricalRecordsResource {
 				inferredRouteId, inferredPhase, vehicleId, vehicleAgencyId, boundingBox, 
 				startDate, endDate, records, timeout);
 		
-		List<HistoricalRecord> historicalRecords = historicalRecordsDao.getHistoricalRecords(filters);
-		
+		List<HistoricalRecord> historicalRecords = null; 
 		HistoricalRecordsMessage historicalRecordMessage = new HistoricalRecordsMessage();
-		historicalRecordMessage.setRecords(historicalRecords);
-		historicalRecordMessage.setStatus("OK");
+		try {
+		  historicalRecords = historicalRecordsDao.getHistoricalRecords(filters);
+	    historicalRecordMessage.setRecords(historicalRecords);
+	    historicalRecordMessage.setStatus("OK");
+
+		} catch (UncategorizedSQLException sql) {
+		  // here we make the assumption that an exception means query timeout
+      historicalRecordMessage.setRecords(null);
+      historicalRecordMessage.setStatus("QUERY_TIMEOUT");
+		  
+		}
+		
 		
 		String outputJson;
 		try {
