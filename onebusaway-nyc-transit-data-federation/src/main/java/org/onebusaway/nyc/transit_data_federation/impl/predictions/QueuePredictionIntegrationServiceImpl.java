@@ -4,15 +4,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.TimeQueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionGenerationService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
@@ -41,14 +44,46 @@ import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
 public class QueuePredictionIntegrationServiceImpl extends
 		TimeQueueListenerTask implements PredictionIntegrationService {
 
+  private static final int DEFAULT_CACHE_TIMEOUT = 2 * 60; // seconds
+  private static final String CACHE_TIMEOUT_KEY = "tds.prediction.expiry";
+  
   @Autowired
   private NycTransitDataService _transitDataService;
   
+  @Autowired
+  private ConfigurationService _configurationService;
   
-  private Cache<String, List<TimepointPredictionRecord>> cache = CacheBuilder.newBuilder()
-      .expireAfterWrite(2, TimeUnit.MINUTES)
-      .build();
+  
+  private Cache<String, List<TimepointPredictionRecord>> _cache = null;
+  
+  private synchronized Cache<String, List<TimepointPredictionRecord>> getCache() {
+    if (_cache == null) {
+      
+      int timeout = _configurationService.getConfigurationValueAsInteger(CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
+      _log.info("creating initial prediction cache with timeout " + timeout + "...");
+      _cache = CacheBuilder.newBuilder()
+          .expireAfterWrite(timeout, TimeUnit.SECONDS)
+          .build();
+      _log.info("done");
+    }
+    return _cache;
+  }
 
+  @Refreshable(dependsOn = {CACHE_TIMEOUT_KEY})
+  private synchronized void refreshCache() {
+    if (_cache == null) return; // nothing to do
+    int timeout = _configurationService.getConfigurationValueAsInteger(CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
+    _log.info("rebuilding prediction cache with " + _cache.size() + " entries after refresh with timeout=" + timeout + "...");
+    ConcurrentMap<String, List<TimepointPredictionRecord>> map = _cache.asMap();
+    _cache = CacheBuilder.newBuilder()
+        .expireAfterWrite(timeout, TimeUnit.SECONDS)
+        .build();
+    for (Entry<String, List<TimepointPredictionRecord>> entry : map.entrySet()) {
+      _cache.put(entry.getKey(), entry.getValue());
+    }
+    _log.info("done");
+  }
+  
 	@Override
 	protected void processResult(FeedMessage message) {
 	  List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();  
@@ -83,8 +118,12 @@ public class QueuePredictionIntegrationServiceImpl extends
     
 	  if (vehicleId != null) {
 	    // place in cache if we were able to extract a vehicle id
-	    this.cache.put(vehicleId, predictionRecords);
+	    getCache().put(hash(vehicleId, tripId), predictionRecords);
 	  }
+	}
+	
+	private String hash(String vehicleId, String tripId) {
+	  return vehicleId + "-" + tripId;
 	}
 	
 	private Map<String, Long> loadScheduledTimes(String vehicleId, String tripId) {
@@ -128,7 +167,7 @@ public class QueuePredictionIntegrationServiceImpl extends
   @Override
   public List<TimepointPredictionRecord> getPredictionsForTrip(
       TripStatusBean tripStatus) {
-    return this.cache.getIfPresent(tripStatus.getVehicleId());
+    return getCache().getIfPresent(hash(tripStatus.getVehicleId(), tripStatus.getActiveTrip().getId()));
   }
 
 }
