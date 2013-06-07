@@ -214,7 +214,7 @@ public class FileUtils {
     try {
       String[] cmds = {
           "unzip",
-          "-o",
+          "-f -o",
           zipFileName,
           "-d",
           outputDirectory
