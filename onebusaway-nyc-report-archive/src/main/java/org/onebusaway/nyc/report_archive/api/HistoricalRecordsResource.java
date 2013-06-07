@@ -2,9 +2,6 @@ package org.onebusaway.nyc.report_archive.api;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +29,6 @@ import org.springframework.stereotype.Component;
 public class HistoricalRecordsResource {
 
 	private static Logger log = LoggerFactory.getLogger(HistoricalRecordsResource.class);
-	private static DateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private JsonTool jsonTool;
 	private HistoricalRecordsDao historicalRecordsDao;
 	
@@ -101,6 +97,7 @@ public class HistoricalRecordsResource {
 		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.END_DATE, endDate);
 		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.TIMEOUT, timeout);
 		if (!nonEmptyFilter) {
+		  // this clause allows for the possibility of adding a default filter should none be present
 		  log.debug("empty filter");
 		}
 		filter.put(CcAndInferredLocationFilter.RECORDS, records);
