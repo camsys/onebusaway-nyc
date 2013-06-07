@@ -24,6 +24,8 @@ import org.opentrackingtools.distributions.PathStateDistribution;
 import org.opentrackingtools.estimators.MotionStateEstimatorPredictor;
 import org.opentrackingtools.paths.PathEdge;
 import org.opentrackingtools.util.model.MutableDoubleCount;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -47,7 +49,9 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     BayesianEstimatorPredictor<RunState, RunState, DataDistribution<RunState>> {
 
   private static final long serialVersionUID = -1461026886038720233L;
-
+  protected static Logger _log = LoggerFactory
+      .getLogger(RunStateEstimator.class);
+  
   private final NycTrackingGraph nycGraph;
   private final NycVehicleStateDistribution nycVehicleStateDist;
   private final Observation obs;
@@ -56,6 +60,8 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
   private boolean debug = false;
   public void setDebug(boolean debug) {
     this.debug = debug;
+    if (this.debug)
+      _log.warn("Debugging is ON!");
   }
   
   public static long getTripSearchTimeAfterLastStop() {
@@ -280,7 +286,8 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
 
     final DeterministicDataDistribution<RunState> priorRunDist = (DeterministicDataDistribution<RunState>) priorPredRunStateDist;
 
-    final PathStateDistribution priorPathStateDist = this.nycVehicleStateDist.getPathStateParam().getParameterPrior();
+    //TODO can this be removed?
+    //final PathStateDistribution priorPathStateDist = this.nycVehicleStateDist.getPathStateParam().getParameterPrior();
     final RunState priorPredRunState = priorPredRunStateDist.getMaxValueKey();
     /*
      * We must update update the run state, since the path belief gets updated.
