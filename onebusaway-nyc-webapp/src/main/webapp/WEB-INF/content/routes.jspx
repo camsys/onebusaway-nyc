@@ -27,6 +27,11 @@
             <s:param name="v"><s:property value="frontEndVersion" /></s:param>
         </s:url>
         <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+        
+        <s:url var="url" value="/js/oba/Routes.js">
+            <s:param name="v"><s:property value="frontEndVersion" /></s:param>
+        </s:url>
+        <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
         <title><s:property value="getText('routes.title')"/></title>
     </head>
@@ -73,22 +78,5 @@
                 </ul>
             </div>
         </div>
-        <!--  Enable Text Color change on Hover (for route names) -->
-    	<script type="text/javascript">
-    
-    	$(document).ready(function() {
-    	
-    		$('p.name > a').hover(
-     	   		function() {
-        			var parentTag = $(this).parent().css('border-bottom-color');
-        			$(this).css('color', parentTag);
-        		}, function() {
-        			$(this).css('color', '#000');
-        		}
-        	);
-    	
-    	});
-    
-    	</script>
     </body>
 </html>
