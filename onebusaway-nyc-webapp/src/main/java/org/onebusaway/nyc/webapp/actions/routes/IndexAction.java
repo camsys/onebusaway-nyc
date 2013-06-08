@@ -14,19 +14,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.webapp.actions;
+package org.onebusaway.nyc.webapp.actions.routes;
 
 import java.util.List;
 
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.nyc.presentation.service.routes.RouteListService;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Action for route index page
  *
  */
-public class RoutesAction extends OneBusAwayNYCActionSupport {
+public class IndexAction extends OneBusAwayNYCActionSupport {
 
     private static final long serialVersionUID = 1L;
     @Autowired
