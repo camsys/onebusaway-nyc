@@ -157,5 +157,11 @@
           		<particle-filter-debug>true</particle-filter-debug>
 			</properties>
 		</profile>
+		<profile>
+          	<id>local-ie-testing</id>
+          	<properties>
+          		<particle-filter-debug>true</particle-filter-debug>
+			</properties>
+		</profile>
 	</profiles>
 </project>

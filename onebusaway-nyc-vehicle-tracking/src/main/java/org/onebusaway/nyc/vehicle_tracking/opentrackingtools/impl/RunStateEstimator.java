@@ -2,7 +2,6 @@ package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.MovedLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
@@ -14,31 +13,27 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 
 import gov.sandia.cognition.learning.algorithm.IncrementalLearner;
-import gov.sandia.cognition.math.LogMath;
 import gov.sandia.cognition.statistics.DataDistribution;
 import gov.sandia.cognition.statistics.bayesian.BayesianEstimatorPredictor;
 import gov.sandia.cognition.util.AbstractCloneableSerializable;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
 import org.opentrackingtools.distributions.CountedDataDistribution;
 import org.opentrackingtools.distributions.DeterministicDataDistribution;
 import org.opentrackingtools.distributions.PathStateDistribution;
 import org.opentrackingtools.estimators.MotionStateEstimatorPredictor;
 import org.opentrackingtools.paths.PathEdge;
 import org.opentrackingtools.util.model.MutableDoubleCount;
-
-import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * An estimator/predictor that allows for predictive sampling of a run/block
@@ -54,13 +49,21 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     BayesianEstimatorPredictor<RunState, RunState, DataDistribution<RunState>> {
 
   private static final long serialVersionUID = -1461026886038720233L;
-
+  protected static Logger _log = LoggerFactory
+      .getLogger(RunStateEstimator.class);
+  
   private final NycTrackingGraph nycGraph;
   private final NycVehicleStateDistribution nycVehicleStateDist;
   private final Observation obs;
   private static final long _tripSearchTimeAfterLastStop = 5 * 60 * 60 * 1000;
   private static final long _tripSearchTimeBeforeFirstStop = 5 * 60 * 60 * 1000;
-
+  private boolean debug = false;
+  public void setDebug(boolean debug) {
+    this.debug = debug;
+    if (this.debug)
+      _log.warn("Debugging is ON!");
+  }
+  
   public static long getTripSearchTimeAfterLastStop() {
     return _tripSearchTimeAfterLastStop;
   }
@@ -73,6 +76,9 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
       NycVehicleStateDistribution nycVehicleStateDist) {
     this.obs = obs;
     this.nycGraph = graph;
+    if (graph != null) {
+      this.debug = graph.isDebug();
+    }
     this.nycVehicleStateDist = nycVehicleStateDist;
   }
 
@@ -93,15 +99,20 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
     final TripInfo tripInfo = nycGraph.getTripInfo(pathEdge.getInferenceGraphSegment());
     final double likelihoodHasNotMoved = likelihoodOfNotMovedState(nycVehicleStateDist.getPathStateParam().getParameterPrior());
 
-    // DEBUG REMOVE ordering
-    final Map<RunState, MutableDoubleCount> resultDist = Maps.newTreeMap(new Comparator<RunState>() {
+    Comparator<RunState> comparator = new Comparator<RunState>() {
       @Override
       public int compare(RunState o1, RunState o2) {
         return Double.compare(o1.getLikelihoodInfo().getTotalLogLik(), 
             o2.getLikelihoodInfo().getTotalLogLik());
       }
-    });
+    };
     
+    Map<RunState, MutableDoubleCount> resultDist = null;
+    if (debug) {
+      resultDist = new TreeMap<RunState, MutableDoubleCount>(comparator);
+    } else {
+      resultDist = new HashMap<RunState, MutableDoubleCount>();
+    }
 
     final RunState currentRunState = nycVehicleStateDist.getRunStateParam() != null
         ? nycVehicleStateDist.getRunStateParam().getValue() : null;
@@ -275,7 +286,8 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
 
     final DeterministicDataDistribution<RunState> priorRunDist = (DeterministicDataDistribution<RunState>) priorPredRunStateDist;
 
-    final PathStateDistribution priorPathStateDist = this.nycVehicleStateDist.getPathStateParam().getParameterPrior();
+    //TODO can this be removed?
+    //final PathStateDistribution priorPathStateDist = this.nycVehicleStateDist.getPathStateParam().getParameterPrior();
     final RunState priorPredRunState = priorPredRunStateDist.getMaxValueKey();
     /*
      * We must update update the run state, since the path belief gets updated.

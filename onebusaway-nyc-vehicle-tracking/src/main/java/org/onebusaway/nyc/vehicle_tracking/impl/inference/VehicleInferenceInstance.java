@@ -143,6 +143,9 @@ public class VehicleInferenceInstance {
   private boolean _debug = true;
   public void setDebug(String debug) {
     this._debug = Boolean.TRUE == Boolean.parseBoolean(debug);
+    if (this._debug) {
+      _log.warn("debugging is enabled!");
+    }
   }
 
   public void setModel(ParticleFilterModel<Observation> model) {

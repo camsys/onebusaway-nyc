@@ -424,20 +424,22 @@ public class MotionModelImpl implements MotionModel<Observation> {
       /*
        * TODO: this is mainly for debug and can/should be removed.
        */
-      transProb.addLogResultAsAnd(newEdge.getKey().name(), 0);
+      if (ParticleFilter.getDebugEnabled()) {
+        transProb.addLogResultAsAnd(newEdge.getKey().name(), 0);
 
-      final Particle newParticle = new Particle(timestamp, parent.getElement(),
-          0.0, newState);
-      newParticle.setResult(transProb);
+        final Particle newParticle = new Particle(timestamp,
+            parent.getElement(), 0.0, newState);
+        newParticle.setResult(transProb);
 
-      if (debugTransitions != null) {
-        final double logWeight = parent.getElement().getLogWeight()
-            + newParticle.getResult().getLogProbability();
-        newParticle.setLogWeight(logWeight);
-        debugTransitions.add(newParticle);
+        if (debugTransitions != null) {
+          final double logWeight = parent.getElement().getLogWeight()
+              + newParticle.getResult().getLogProbability();
+          newParticle.setLogWeight(logWeight);
+          debugTransitions.add(newParticle);
+        }
+
+        transitionDist.logPut(transProb.getLogProbability(), newParticle);
       }
-
-      transitionDist.logPut(transProb.getLogProbability(), newParticle);
     }
 
     final Particle newParticle;

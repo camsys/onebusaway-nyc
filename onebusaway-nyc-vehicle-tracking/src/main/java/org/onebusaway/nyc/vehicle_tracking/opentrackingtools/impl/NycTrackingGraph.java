@@ -206,6 +206,15 @@ public class NycTrackingGraph extends GenericJTSGraph {
   @Autowired
   private ShapePointService _shapePointService;
 
+  private boolean isDebug = false;
+  public boolean isDebug() { return isDebug; }
+  public void setDebug(boolean debug) {
+    if (debug) {
+    _log.warn("Debug mode is ON");
+    }
+    this.isDebug = debug;
+  }
+  
   public static class TripInfo {
     final private Collection<SIRtree> _entries;
     final private Set<AgencyAndId> _shapeIds;
@@ -238,6 +247,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
   @Refreshable(dependsOn = {
       RefreshableResources.TRANSIT_GRAPH, RefreshableResources.NARRATIVE_DATA})
   public void setup() throws IOException, ClassNotFoundException {
+	_log.warn("in setup");
     this.edgeIndex = new STRtree();
     this.graphGenerator = new DirectedLineStringGraphGenerator();
     buildGraph();
@@ -478,9 +488,10 @@ public class NycTrackingGraph extends GenericJTSGraph {
                   tripInfo.getShapeIds().add(shapeId);
                 }
 
-                // DEBUG
+                if (this.isDebug) { 
                 Preconditions.checkState(this._lengthsAlongShapeMap.contains(
                     shapeId, lineGeo));
+                }
               }
             }
           }
@@ -504,6 +515,7 @@ public class NycTrackingGraph extends GenericJTSGraph {
   }
 
   private NycTrackingGraph() {
+	  _log.warn("private constructor:" + this);
   }
 
   public BlockStateObservation getBlockStateObs(@Nonnull

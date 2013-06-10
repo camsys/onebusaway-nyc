@@ -58,4 +58,11 @@
     <property name="debug" value="${particle-filter-debug}" />
   </bean>
 
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="nycTrackingGraph.debug">${particle-filter-debug}</prop>
+            </props>
+        </property>
+    </bean>
 </beans>

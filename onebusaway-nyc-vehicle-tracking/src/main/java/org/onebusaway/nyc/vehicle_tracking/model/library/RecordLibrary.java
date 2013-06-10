@@ -110,7 +110,11 @@ public class RecordLibrary {
     if (!Strings.isNullOrEmpty(record.getDirectionDeg()))
       vlr.setBearing(Double.parseDouble(record.getDirectionDeg()));
     if (!Strings.isNullOrEmpty(record.getSpeed()))
-      vlr.setSpeed(Short.parseShort(record.getSpeed()));
+    	try {
+    		vlr.setSpeed(Short.parseShort(record.getSpeed()));
+    	} catch (NumberFormatException nfe) {
+    		vlr.setSpeed((short)Math.round(Double.parseDouble(record.getSpeed())));
+    	}
 
     return vlr;
   }
