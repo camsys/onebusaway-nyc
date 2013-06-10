@@ -69,7 +69,7 @@ public class Observation extends GpsObservation implements
 
   private final Set<AgencyAndId> _impliedRouteCollections;
 
-  private final ProjectedPoint _adjustedGps;
+  private ProjectedPoint _adjustedGps;
 
   private Vector _adjustedVector;
 
@@ -115,36 +115,39 @@ public class Observation extends GpsObservation implements
       final NycRawLocationRecord previousRecord = previousObservation.getRecord();
       if (previousRecord.getBearing() != null) {
         
+        this._orientation = previousRecord.getBearing();
+        
         String[] splits = record.getGga().split("\\|");
         this.fixQuality = Double.parseDouble(splits[6]);
         
 //        final Coordinate rmcLatLon = new Coordinate(
 //            Double.parseDouble(splits[2])*10e-3, -Double.parseDouble(splits[4])*10e-3);        
         
-        this._orientation = previousRecord.getBearing();
-        final double bearingInRadians = -Angle.toRadians(previousRecord.getBearing())
-            + Math.PI / 2d;
-        final Vector pointOnUnitCircle = VectorFactory.getDefault().copyArray(
-            new double[] {
-                Math.cos(bearingInRadians), Math.sin(bearingInRadians)});
-        final double instDistMoved = 0.514444d * previousRecord.getSpeed() * this._timeDelta;
-        final Vector relativeNewLocation = pointOnUnitCircle.scale(instDistMoved);
-
-        this._deadReckoningPoint = 
-            previousObservation.getProjectedPoint()
-            //previousObservation._deadReckoningPoint
-            .plus(relativeNewLocation);
-
-        this._adjustedVector = this.getProjectedPoint().minus(
-            this._deadReckoningPoint.scale(1d - _alpha)).scale(1d / _alpha);
-
-        final Coordinate adjLatLon = GeoUtils.convertToLatLon(
-            this._adjustedVector, GeoUtils.getTransform(this.coordsLatLon));
-
-        this._adjustedGps = 
-            new ProjectedPoint(adjLatLon.x, adjLatLon.y,
-              this._adjustedVector.getElement(0),
-              this._adjustedVector.getElement(1), 0);
+//        if (previousRecord.getSpeed() != null) {
+//          final double bearingInRadians = -Angle.toRadians(previousRecord.getBearing())
+//              + Math.PI / 2d;
+//          final Vector pointOnUnitCircle = VectorFactory.getDefault().copyArray(
+//              new double[] {
+//                  Math.cos(bearingInRadians), Math.sin(bearingInRadians)});
+//          final double instDistMoved = 0.514444d * previousRecord.getSpeed() * this._timeDelta;
+//          final Vector relativeNewLocation = pointOnUnitCircle.scale(instDistMoved);
+//  
+//          this._deadReckoningPoint = 
+//              previousObservation.getProjectedPoint()
+//              //previousObservation._deadReckoningPoint
+//              .plus(relativeNewLocation);
+//  
+//          this._adjustedVector = this.getProjectedPoint().minus(
+//              this._deadReckoningPoint.scale(1d - _alpha)).scale(1d / _alpha);
+//  
+//          final Coordinate adjLatLon = GeoUtils.convertToLatLon(
+//              this._adjustedVector, GeoUtils.getTransform(this.coordsLatLon));
+//  
+//          this._adjustedGps = 
+//              new ProjectedPoint(adjLatLon.x, adjLatLon.y,
+//                this._adjustedVector.getElement(0),
+//                this._adjustedVector.getElement(1), 0);
+//        }
       } else {
         if (_distanceMoved == 0d) {
           this._orientation = previousObservation.getOrientation();

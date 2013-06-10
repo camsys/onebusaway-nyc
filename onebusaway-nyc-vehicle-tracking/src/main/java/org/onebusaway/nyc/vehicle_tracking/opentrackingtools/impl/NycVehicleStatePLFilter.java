@@ -5,7 +5,11 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import com.google.common.base.Preconditions;
 
 import gov.sandia.cognition.math.MutableDouble;
+import gov.sandia.cognition.math.matrix.Matrix;
+import gov.sandia.cognition.math.matrix.MatrixFactory;
+import gov.sandia.cognition.math.matrix.VectorFactory;
 import gov.sandia.cognition.statistics.DataDistribution;
+import gov.sandia.cognition.statistics.DistributionWithMean;
 import gov.sandia.cognition.statistics.distribution.MultivariateGaussian;
 
 import org.opentrackingtools.VehicleStateInitialParameters;
@@ -13,6 +17,7 @@ import org.opentrackingtools.VehicleStatePLFilter;
 import org.opentrackingtools.VehicleStatePLPathSamplingFilter;
 import org.opentrackingtools.distributions.CountedDataDistribution;
 import org.opentrackingtools.distributions.DeterministicDataDistribution;
+import org.opentrackingtools.distributions.ScaledInverseGammaCovDistribution;
 import org.opentrackingtools.estimators.OnOffEdgeTransitionEstimatorPredictor;
 import org.opentrackingtools.graph.InferenceGraphEdge;
 import org.opentrackingtools.graph.InferenceGraphSegment;
@@ -161,6 +166,82 @@ public class NycVehicleStatePLFilter extends
 
     final NycVehicleStateDistribution newVehicleStateDist = (NycVehicleStateDistribution) super.internalUpdate(
         state, obs);
+    
+    final ScaledInverseGammaCovDistribution currentModelCovDistribution =
+        (ScaledInverseGammaCovDistribution) (newVehicleStateDist.getPathStateParam().getValue().isOnRoad()
+        ? newVehicleStateDist.getOnRoadModelCovarianceParam()
+            .getParameterPrior().clone() : newVehicleStateDist
+            .getOffRoadModelCovarianceParam()
+            .getParameterPrior().clone());
+    
+    /**
+     *  If the on or off road state covariance is outside its threshold,
+     *  then reset both the their priors.
+     */
+    if (this.parameters.getStateCovarianceThreshold() != null
+        && currentModelCovDistribution.getInverseGammaDist().getMean() > this.parameters.getStateCovarianceThreshold()) {
+      _log.warn("Estimated state covariance mean (" + 
+        currentModelCovDistribution.getInverseGammaDist().getMean() + ") exceeds threshold ("
+        + this.parameters.getStateCovarianceThreshold() + ").");
+      final int onRoadInitialDof = parameters.getOnRoadCovDof() - 1; 
+      final DistributionWithMean<Matrix> onRoadCovDistribution =
+          new ScaledInverseGammaCovDistribution(1, 
+              parameters.getOnRoadCovDof(), 
+              MatrixFactory.getDefault()
+              .createDiagonal(parameters.getOnRoadStateCov())
+              .scale(onRoadInitialDof).getElement(0, 0) );
+      final SimpleBayesianParameter<Matrix, MultivariateGaussian, DistributionWithMean<Matrix>> onRoadCovParam =
+          SimpleBayesianParameter
+              .create(
+                  onRoadCovDistribution.getMean(),
+                  new MultivariateGaussian(VectorFactory.getDefault()
+                      .createVector1D(), onRoadCovDistribution
+                      .getMean()), onRoadCovDistribution);
+      newVehicleStateDist.setOnRoadModelCovarianceParam(onRoadCovParam);
+      
+      final int offRoadInitialDof = parameters.getOffRoadCovDof() - 1;
+      final DistributionWithMean<Matrix> offRoadCovDistribution =
+          new ScaledInverseGammaCovDistribution(2, 
+              parameters.getOffRoadCovDof(),
+              MatrixFactory.getDefault().createDiagonal(parameters.getOffRoadStateCov())
+              .scale(offRoadInitialDof).getElement(0, 0));
+      final SimpleBayesianParameter<Matrix, MultivariateGaussian, DistributionWithMean<Matrix>> offRoadCovParam =
+          SimpleBayesianParameter
+              .create(
+                  offRoadCovDistribution.getMean(),
+                  new MultivariateGaussian(VectorFactory.getDefault()
+                      .createVector1D(), offRoadCovDistribution
+                      .getMean()), offRoadCovDistribution);
+      newVehicleStateDist.setOffRoadModelCovarianceParam(offRoadCovParam);
+    }
+    
+    final ScaledInverseGammaCovDistribution currentObsCovDistribution = (ScaledInverseGammaCovDistribution) 
+        newVehicleStateDist.getObservationCovarianceParam().getParameterPrior();
+    
+    /**
+     * If the tracked observation covariance goes out of
+     * range, reset it to its prior.
+     */
+    if (this.parameters.getObsCovarianceThreshold() != null
+        && currentObsCovDistribution.getInverseGammaDist().getMean() > this.parameters.getObsCovarianceThreshold()) {
+      _log.warn("Estimated observation covariance mean (" + 
+        currentObsCovDistribution.getInverseGammaDist().getMean() + ") exceeds threshold ("
+        + this.parameters.getObsCovarianceThreshold() + ").");
+      final int obsInitialDof =
+          parameters.getObsCovDof() - 1;
+      final DistributionWithMean<Matrix> obsCovDistribution =
+          new ScaledInverseGammaCovDistribution(2,
+              parameters.getObsCovDof(),
+              MatrixFactory.getDefault()
+              .createDiagonal(parameters.getObsCov())
+              .scale(obsInitialDof).getElement(0, 0));
+      final SimpleBayesianParameter<Matrix, MultivariateGaussian, DistributionWithMean<Matrix>> observationCovParam =
+          SimpleBayesianParameter.create(
+              obsCovDistribution.getMean(), new MultivariateGaussian(
+                  VectorFactory.getDefault().createVector2D(),
+                  obsCovDistribution.getMean()), obsCovDistribution);
+      newVehicleStateDist.setObservationCovarianceParam(observationCovParam);
+    }
 
     final RunStateEstimator runStateEstimator = new RunStateEstimator(
         this.inferredGraph, obs, (NycVehicleStateDistribution) state);

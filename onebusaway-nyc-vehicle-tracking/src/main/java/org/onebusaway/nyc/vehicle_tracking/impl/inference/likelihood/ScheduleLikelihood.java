@@ -87,9 +87,9 @@ public class ScheduleLikelihood implements SensorModelRule {
       if (EVehiclePhase.DEADHEAD_AFTER == phase) {
 
         if (FastMath.abs(x) > 0d) {
-          final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), true);
+          final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), false);
           final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
-              true, schedDist);
+              false, schedDist);
           result.addLogResultAsAnd("deadhead after", pSched);
         } else {
           result.addLogResultAsAnd("deadhead after", 0.0);
@@ -98,9 +98,9 @@ public class ScheduleLikelihood implements SensorModelRule {
       } else if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
 
         if (FastMath.abs(x) > 0d) {
-          final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), true);
+          final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), false);
           final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
-              true, schedDist);
+              false, schedDist);
           result.addLogResultAsAnd("deadhead before", pSched);
         } else {
           result.addLogResultAsAnd("deadhead before", 0.0);
@@ -109,9 +109,9 @@ public class ScheduleLikelihood implements SensorModelRule {
       } else if (EVehiclePhase.LAYOVER_BEFORE == phase) {
 
         if (FastMath.abs(x) > 0d) {
-          final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), true);
+          final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), false);
           final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
-              true, schedDist);
+              false, schedDist);
           result.addLogResultAsAnd("layover before", pSched);
         } else {
           result.addLogResultAsAnd("layover before", 0.0);
@@ -119,9 +119,9 @@ public class ScheduleLikelihood implements SensorModelRule {
 
       } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
 
-        final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), true);
+        final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation(), false);
         final double pSched = getScheduleDevLogProb(x, state.getBlockStateObservation().isRunFormal(), 
-            true, schedDist);
+            false, schedDist);
         result.addLogResultAsAnd("deadhead during", pSched);
 
       } else if (EVehiclePhase.LAYOVER_DURING == phase) {
