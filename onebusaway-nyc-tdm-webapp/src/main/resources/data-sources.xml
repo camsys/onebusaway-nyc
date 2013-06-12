@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2011 Metropolitan Transportation Authority Licensed under 
+	the Apache License, Version 2.0 (the "License"); you may not use this file 
+	except in compliance with the License. You may obtain a copy of the License 
+	at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable 
+	law or agreed to in writing, software distributed under the License is distributed 
+	on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
+	express or implied. See the License for the specific language governing permissions 
+	and limitations under the License. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- never define nycTransitDataService here -->
+	<!-- it should be autowired natively -->
+	<!-- if you need to define it in spring you have done something wrong -->
+
+
+	<!-- Database Connection Configuration -->
+
+	<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiName" value="java:comp/env/jdbc/appDB" />
+		<property name="lookupOnStartup" value="true" />
+		<property name="cache" value="true" />
+		<property name="proxyInterface" value="javax.sql.DataSource" />
+		<property name="resourceRef" value="true" />
+	</bean>
+
+	<bean id="archiveDataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiName" value="java:comp/env/jdbc/archiveDB" />
+		<property name="lookupOnStartup" value="true" />
+		<property name="cache" value="true" />
+		<property name="proxyInterface" value="javax.sql.DataSource" />
+		<property name="resourceRef" value="true" />
+	</bean>
+
+	<bean id="webappHibernateProperties"
+		class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+		<property name="target" value="hibernateProperties" />
+		<property name="properties">
+			<props>
+				<prop key="bundle.location">${bundle.location}</prop>
+			</props>
+		</property>
+	</bean>
+
+	<alias name="dataSource" alias="mutableDataSource" />
+ 
+ 	<!--  Time Queue Configuration -->
+	<!--  This option integrates with an external time prediction queue -->
+	<bean id="timeInputQueueDisable" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
+	  <property name="disable" value="true"/>
+	</bean>
+	<!-- Other Stuff: -->
+	<bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+		<property name="properties">
+			<props>
+				<prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
+				<prop key="blockLocationServiceImpl.locationInterpolation">false</prop>
+				<prop key="cacheManager.cacheManagerName">org.onebusaway.tdm_bundle_webapp.cacheManager</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="bundleManagementService"
+		class="org.onebusaway.nyc.transit_data_manager.bundle.TDMBundleManagementServiceImpl">
+		<property name="bundleStoreRoot" value="${bundle.location}" />
+		<property name="standaloneMode" value="${bundle.mode.standalone}" />
+	</bean>
+
+	<bean id="appSessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="annotatedClasses">
+			<list>
+				<value>org.onebusaway.nyc.transit_data_manager.siri.ServiceAlertRecord
+				</value>
+				<value>org.onebusaway.nyc.transit_data_manager.siri.ServiceAlertSubscription
+				</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.connection.pool_size">1</prop>
+				<prop key="hibernate.current_session_context_class">thread</prop>
+				<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.hbm2ddl.auto">validate</prop>
+				<prop key="hibernate.jdbc.batch_size">1000</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="archiveSessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="archiveDataSource" />
+		<property name="annotatedClasses">
+			<list>
+				<value>org.onebusaway.nyc.transit_data_manager.persistence.model.VehiclePipoRecord</value>
+				<value>org.onebusaway.nyc.transit_data_manager.persistence.model.CrewAssignmentRecord</value>
+				<value>org.onebusaway.nyc.transit_data_manager.persistence.model.DepotRecord</value>
+				<value>org.onebusaway.nyc.transit_data_manager.logging.SystemLogRecord</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.connection.pool_size">1</prop>
+				<prop key="hibernate.current_session_context_class">thread</prop>
+				<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.hbm2ddl.auto">validate</prop>
+				<prop key="hibernate.jdbc.batch_size">1000</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- quartz scheduling for persistence of webservice data -->
+	<bean name="persistJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="org.onebusaway.nyc.transit_data_manager.job.TDMDataPersisterJob" />
+		<property name="jobDataAsMap">
+			<map>
+      			<entry key="vehicleAndCrewDataPersistenceService" value-ref="vehicleAndCrewDataPersistenceService"/>
+      			<entry key="depotDataPersistenceService" value-ref="depotDataPersistenceService"/>
+     		</map>
+		</property>
+	</bean>
+	
+	<bean id="persistTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="persistJob" />
+		<property name="cronExpression" value="0 10 4 * * ?" />
+	</bean>
+	
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="persistTrigger" />
+			</list>
+		</property>
+	</bean>
+</beans>

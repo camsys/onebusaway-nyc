@@ -33,6 +33,7 @@
 	<decorator name="wiki" page="wiki.jspx">
 		<pattern>/wiki/*</pattern>
 		<pattern>/error/*</pattern>
+		<pattern>/routes/*</pattern>
 	</decorator>
 	
 	<decorator name="mobile" page="mobile.jspx">

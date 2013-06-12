@@ -26,11 +26,8 @@ import org.apache.commons.httpclient.HttpException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 
 @SuppressWarnings("unchecked")
-@RunWith(RunUntilSuccess.class)
 public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase {
 	
   private boolean _isSetUp = false;
@@ -174,7 +171,10 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 assertEquals(fvjr.get("DatedVehicleJourneyRef"), "MTA NYCT_20120108EE_086000_X1_0291_X0109_19");	 
   }  
   
-  // distances
+  // distances: these are ignored for now since there is some jitter in terms of where the simulator
+  // snaps the observed bus to the route line, resulting in some variance of the distances we need to find
+  // a way to handle in this test environment.
+  
   @Test
   @Ignore
   public void testDistancesOnCurrentTrip() throws HttpException, IOException {

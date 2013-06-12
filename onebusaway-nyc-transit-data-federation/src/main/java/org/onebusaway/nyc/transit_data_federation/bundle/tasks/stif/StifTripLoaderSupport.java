@@ -68,7 +68,7 @@ public class StifTripLoaderSupport {
     stopIdsByLocation.put(location, stopId);
   }
 
-  public TripIdentifier getIdentifierForStifTrip(TripRecord tripRecord, RawTrip rawTrip) {
+  public TripIdentifier getIdentifierForStifTrip(TripRecord tripRecord, StifTrip rawTrip) {
     String routeName = tripRecord.getSignCodeRoute();
     if (routeName == null || routeName.trim().length() == 0) {
       routeName = tripRecord.getRunRoute();
@@ -173,14 +173,15 @@ public class StifTripLoaderSupport {
       endTime = endStopTime.getArrivalTime();
     }
     String run = null;
-    String[] parts = trip.getId().getId().split("_");
-    if (parts.length >= 6) {
+    String[] parts = trip.getId().getId().toUpperCase().split("_");
+    if (parts.length > 2) {
       //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
       //their current trip id format.
       //for MTA Bus Co, this is not necessary, we hope
-      String runRoute = parts[4];
-      String runId = parts[5];
-      run = runRoute + "-" + runId;
+      //also works for new NYCT GTFS format.
+      String runRoute = parts[parts.length-2];
+      String runNumber = parts[parts.length-1];
+      run = runRoute + "-" + runNumber;
     }
     routeName = routeName.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
     return new TripIdentifier(routeName, startTime, endTime, startStop, run, trip.getBlockId());

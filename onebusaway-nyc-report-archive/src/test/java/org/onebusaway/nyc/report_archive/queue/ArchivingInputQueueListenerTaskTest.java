@@ -24,7 +24,7 @@ public class ArchivingInputQueueListenerTaskTest {
   public void testProcessMessage() throws IOException {
     String contents = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("sample-message.json"))).readLine();
     // This is a no-op test for now.
-    t.processMessage("this is the address", contents);
+    t.processMessage("this is the address", contents.getBytes());
   }
 
 }

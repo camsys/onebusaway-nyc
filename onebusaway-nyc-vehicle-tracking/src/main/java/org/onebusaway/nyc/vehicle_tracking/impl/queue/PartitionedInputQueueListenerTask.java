@@ -18,6 +18,13 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 
+/**
+ * Listen for vehicles assigned to one or more depots and inject them into the inference
+ * process
+ * 
+ * @author jmaki
+ *
+ */
 public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
     implements PartitionedInputQueueListener, ServletContextAware {
 
@@ -50,6 +57,7 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
     if (servletContext != null) {
       final String key = servletContext.getInitParameter("depot.partition.key");
       _log.info("servlet context provied depot.partition.key=" + key);
+      
       if (key != null) {
         setDepotPartitionKey(key);
       }
@@ -57,7 +65,8 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   }
 
   @Override
-  public boolean processMessage(String address, String contents) {
+  public boolean processMessage(String address, byte[] buff) {
+    String contents = new String(buff);
     final RealtimeEnvelope message = deserializeMessage(contents);
 
     if (acceptMessage(message)) {
@@ -118,8 +127,6 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   @Override
   @PostConstruct
   public void setup() {
-    // test is depotPartitionKeys is overridden in context
-    // XXXX
     super.setup();
   }
 

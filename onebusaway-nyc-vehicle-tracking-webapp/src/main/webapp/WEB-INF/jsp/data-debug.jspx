@@ -28,7 +28,23 @@
 <h2>Trips with NULL DSCs</h2>
 
 <ul>
-  <c:forEach var="tripId" items="${nullTrips}">
+  <c:forEach var="tripId" items="${data.tripsWithNullDSCs}">
+  	<li><c:out value="${tripId}" /></li>
+  </c:forEach>
+</ul>
+
+<h2>Trips with NULL Run ID</h2>
+
+<ul>
+  <c:forEach var="tripId" items="${data.tripsWithNullRunId}">
+  	<li><c:out value="${tripId}" /></li>
+  </c:forEach>
+</ul>
+
+<h2>Trips with No Shape</h2>
+
+<ul>
+  <c:forEach var="tripId" items="${data.tripsWithNoShape}">
   	<li><c:out value="${tripId}" /></li>
   </c:forEach>
 </ul>

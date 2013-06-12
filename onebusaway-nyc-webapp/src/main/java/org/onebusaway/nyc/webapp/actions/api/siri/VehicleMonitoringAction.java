@@ -13,34 +13,6 @@
  */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
-import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
-import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.model.VehicleStatusBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-
-import com.dmurph.tracking.AnalyticsConfigData;
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
-import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
-
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.org.siri.siri.ErrorDescriptionStructure;
-import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
-import uk.org.siri.siri.OtherErrorStructure;
-import uk.org.siri.siri.ServiceDelivery;
-import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
-import uk.org.siri.siri.Siri;
-import uk.org.siri.siri.VehicleActivityStructure;
-import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,6 +24,32 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.struts2.convention.annotation.ParentPackage;
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
+import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.org.siri.siri.ErrorDescriptionStructure;
+import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.OtherErrorStructure;
+import uk.org.siri.siri.ServiceDelivery;
+import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
+import uk.org.siri.siri.Siri;
+import uk.org.siri.siri.VehicleActivityStructure;
+import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
+
+
+@ParentPackage("onebusaway-webapp-api")
 public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     implements ServletRequestAware, ServletResponseAware {
 
@@ -62,42 +60,35 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   @Autowired
   private RealtimeService _realtimeService;
-  
-  @Autowired
-  private ConfigurationService _configurationService;
 
+  @Autowired
+  protected ConfigurationService _configurationService;
+  
   private Siri _response;
 
   private ServiceAlertsHelper _serviceAlertsHelper = new ServiceAlertsHelper();
 
-  private HttpServletRequest _request;
+  HttpServletRequest _request;
   
   private HttpServletResponse _servletResponse;
 
+  // See urlrewrite.xml as to how this is set. Which means this action doesn't
+  // respect an HTTP Accept: header.
   private String _type = "xml";
-  
-  private JGoogleAnalyticsTracker _googleAnalytics = null;
 
+  private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
+  
   public void setType(String type) {
     _type = type;
   }
 
   @Override
   public String execute() {
+
+	long currentTimestamp = getTime();
+    _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
     
-    String googleAnalyticsSiteId = 
-        _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);
-    
-    try {
-      if(googleAnalyticsSiteId != null) {    
-        AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, null);
-        _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
-      }
-    } catch(Exception e) {
-      // discard
-    }
-    
-    _realtimeService.setTime(getTime());
+    _realtimeService.setTime(currentTimestamp);
     
     String directionId = _request.getParameter("DirectionRef");
     
@@ -180,7 +171,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       for (AgencyAndId vehicleId : vehicleIds) {
         VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-            vehicleId.toString(), maximumOnwardCalls);
+            vehicleId.toString(), maximumOnwardCalls, currentTimestamp);
 
         if (activity != null) {
           activities.add(activity);
@@ -188,7 +179,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       }
       
       // No vehicle id validation, so we pass null for error
-      _response = generateSiriResponse(activities, null, null);
+      _response = generateSiriResponse(activities, null, null, currentTimestamp);
 
       // *** CASE 2: by route, using direction id, if provided
     } else if (_request.getParameter("LineRef") != null) {
@@ -200,7 +191,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       for (AgencyAndId routeId : routeIds) {
         
         List<VehicleActivityStructure> activitiesForRoute = _realtimeService.getVehicleActivityForRoute(
-            routeId.toString(), directionId, maximumOnwardCalls);
+            routeId.toString(), directionId, maximumOnwardCalls, currentTimestamp);
         if (activitiesForRoute != null) {
           activities.addAll(activitiesForRoute);
         }
@@ -228,7 +219,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         error = new Exception(routeIdErrorString.trim());
       }
 
-      _response = generateSiriResponse(activities, routeIds, error);
+      _response = generateSiriResponse(activities, routeIds, error, currentTimestamp);
       
       // *** CASE 3: all vehicles
     } else {
@@ -239,11 +230,11 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       for (String agency : agencyIds) {
         ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
-            agency, getTime());
+            agency, currentTimestamp);
 
         for (VehicleStatusBean v : vehicles.getList()) {
           VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-              v.getVehicleId(), maximumOnwardCalls);
+              v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
 
           if (activity != null) {
             activities.add(activity);
@@ -252,16 +243,10 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       }
       
       // There is no input (route id) to validate, so pass null error
-      _response = generateSiriResponse(activities, null, null);
+      _response = generateSiriResponse(activities, null, null, currentTimestamp);
     }
     
-    if(_googleAnalytics != null && _request.getParameter("key") != null && !_request.getParameter("key").isEmpty()) {
-      try {
-      _googleAnalytics.trackEvent("API", "Vehicle Monitoring", gaLabel);
-      } catch(Exception e) {
-        //discard
-      }
-    }
+    _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
     
     try {
       this._servletResponse.getWriter().write(getVehicleMonitoring());
@@ -278,13 +263,13 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
    * @param routeId
    */
   private Siri generateSiriResponse(List<VehicleActivityStructure> activities,
-      List<AgencyAndId> routeIds, Exception error) {
+      List<AgencyAndId> routeIds, Exception error, long currentTimestamp) {
     
     VehicleMonitoringDeliveryStructure vehicleMonitoringDelivery = new VehicleMonitoringDeliveryStructure();
-    vehicleMonitoringDelivery.setResponseTimestamp(new Date(getTime()));
+    vehicleMonitoringDelivery.setResponseTimestamp(new Date(currentTimestamp));
     
     ServiceDelivery serviceDelivery = new ServiceDelivery();
-    serviceDelivery.setResponseTimestamp(new Date(getTime()));
+    serviceDelivery.setResponseTimestamp(new Date(currentTimestamp));
     serviceDelivery.getVehicleMonitoringDelivery().add(vehicleMonitoringDelivery);
     
     if (error != null) {
@@ -302,7 +287,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       vehicleMonitoringDelivery.setErrorCondition(errorConditionStructure);
     } else {
       Calendar gregorianCalendar = new GregorianCalendar();
-      gregorianCalendar.setTimeInMillis(getTime());
+      gregorianCalendar.setTimeInMillis(currentTimestamp);
       gregorianCalendar.add(Calendar.MINUTE, 1);
       vehicleMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
 

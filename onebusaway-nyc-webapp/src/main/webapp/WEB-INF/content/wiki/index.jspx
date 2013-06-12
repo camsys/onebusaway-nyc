@@ -20,7 +20,7 @@
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>MTA Bus Time: <s:property value="title" /></title>
+<title><s:property value="getText('main.title')"/></title>
 
 <s:url var="url" value="/api/config">
 	<s:param name="v"><s:property value="cacheBreaker" /></s:param>
@@ -47,11 +47,6 @@
 			<s:property value="content" escape="false"/>
 
 		  	<p class="meta">
-				<span>
-					Last Updated: 
-					<s:property value="lastModifiedTimestamp"/>
-				</span>
-
 				<s:if test="admin">
 				  	<s:a href="%{editLink}">Edit This Page</s:a>
 				</s:if>
@@ -60,16 +55,11 @@
 	</div>
 </s:if>
 <s:else>
-	<div id="content">
+	<div id="content" class="wiki_content">
 		<div id="text">
 			<s:property value="content" escape="false"/>
 
 		  	<p class="meta">
-				<span>
-					Last Updated: 
-					<s:property value="lastModifiedTimestamp"/>
-				</span>
-
 				<s:if test="admin">
 				  	<s:a href="%{editLink}">Edit This Page</s:a>
 				</s:if>

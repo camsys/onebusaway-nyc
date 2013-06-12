@@ -28,13 +28,15 @@
   <import resource="classpath:org/onebusaway/transit_data_federation/application-context-services.xml" />
 
   <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
-<!-- 
     <property name="properties">
       <props>
+
+        <prop key="cacheManager.cacheManagerName">org.onebusaway.nyc.admin.bundle.cacheManager</prop>
+<!--
         <prop key="ehCacheConfiguration.diskStorePath">${bundleCacheDir}</prop>
+-->
       </props>
     </property>
- -->
     <property name="order" value="50" />
   </bean>
  

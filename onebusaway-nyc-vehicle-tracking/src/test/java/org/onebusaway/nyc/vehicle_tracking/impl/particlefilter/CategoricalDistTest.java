@@ -18,7 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 import static org.junit.Assert.assertEquals;
 
 import org.onebusaway.collections.Counter;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.CategoricalDist;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;

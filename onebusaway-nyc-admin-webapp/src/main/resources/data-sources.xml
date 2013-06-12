@@ -18,11 +18,6 @@
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
     </bean>
 
-    <bean id="vehicleTrackingManagementService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="${vtms.path}/remoting/vehicle-tracking-management-service" />
-        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
-    </bean>
-
 	<!-- Database Configuration -->
 
     <bean id="dataSource"
@@ -85,6 +80,30 @@
             </props> 
         </property> 
     </bean>
+    
+	<!-- quartz scheduling for PingJob -->
+	<bean name="pingJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="org.onebusaway.nyc.admin.job.PingJob" />
+		<property name="jobDataAsMap">
+			<map>
+      			<entry key="userManagementService" value-ref="userManagementServiceImpl"/>
+     		</map>
+		</property>
+		
+	</bean>
+	
+	<bean id="pingTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="pingJob" />
+		<property name="cronExpression" value="0 * * * * ?" /><!--  every minute -->
+	</bean>
+	
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="pingTrigger" />
+			</list>
+		</property>
+	</bean>
     
 
 </beans>

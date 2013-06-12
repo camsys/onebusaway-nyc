@@ -17,6 +17,7 @@ package org.onebusaway.nyc.webapp.actions.m;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -105,7 +106,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
         // if there are buses on route, always have "scheduled service"
         Boolean routeHasVehiclesInService = 
-      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId());
+      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
 
         if(routeHasVehiclesInService) {
       	  hasUpcomingScheduledService = true;
@@ -137,17 +138,17 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   @Override
-  public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
+  public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
     List<RouteAtStop> routesWithArrivals = new ArrayList<RouteAtStop>();
     List<RouteAtStop> routesWithNoVehiclesEnRoute = new ArrayList<RouteAtStop>();
     List<RouteAtStop> routesWithNoScheduledService = new ArrayList<RouteAtStop>();
     List<RouteBean> filteredRoutes = new ArrayList<RouteBean>();
-
+    
     Set<String> serviceAlertDescriptions = new HashSet<String>();
 
     for (RouteBean routeBean : stopBean.getRoutes()) {
-      if (routeIdFilter != null && !routeIdFilter.isEmpty()
-          && !routeIdFilter.contains(routeBean.getId())) {
+      if (routeFilter != null && !routeFilter.isEmpty()
+          && !routeFilter.contains(routeBean)) {
         filteredRoutes.add(routeBean);
         continue;
       }
@@ -187,9 +188,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
             hasUpcomingScheduledService = true;
           }
 
-          for (Map.Entry<String,List<String>> entry : arrivalsForRouteAndDirection.entrySet()) {
-            directions.add(new RouteDirection(entry.getKey(), stopGroupBean, null, 
-                hasUpcomingScheduledService, entry.getValue()));
+          if(arrivalsForRouteAndDirection.isEmpty()) {
+            directions.add(new RouteDirection(stopGroupBean.getName().getName(), stopGroupBean, null, 
+                hasUpcomingScheduledService, Collections.<String>emptyList()));
+          } else {          
+            for (Map.Entry<String,List<String>> entry : arrivalsForRouteAndDirection.entrySet()) {
+              directions.add(new RouteDirection(entry.getKey(), stopGroupBean, null, 
+                 hasUpcomingScheduledService, entry.getValue()));
+            }
           }
         }
       }
@@ -197,9 +203,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions,
           serviceAlertDescriptions);
 
+      // Keep track of service and no service per route. If at least one
+      // direction per route meets some criteria, break because that route is handled.
       for (RouteDirection direction : routeAtStop.getDirections()) {
-        if (direction.getHasUpcomingScheduledService() == false
-            && direction.getDistanceAways().isEmpty()) {
+        if (direction.getHasUpcomingScheduledService() == false && direction.getDistanceAways().isEmpty()) {
           routesWithNoScheduledService.add(routeAtStop);
           break;
         } else {
@@ -215,12 +222,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     }
 
     return new StopResult(stopBean, routesWithArrivals,
-        routesWithNoVehiclesEnRoute, routesWithNoScheduledService, filteredRoutes);
+        routesWithNoVehiclesEnRoute, routesWithNoScheduledService, filteredRoutes, serviceAlertDescriptions);
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult,
-      Set<String> routeShortNameFilter) {
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeFilter) {
     return new GeocodeResult(geocodeResult);
   }
 
@@ -232,7 +238,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
-        stopBean.getId(), 0);
+        stopBean.getId(), 0, System.currentTimeMillis());
 
     for (MonitoredStopVisitStructure visit : visitList) {
       String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
@@ -248,7 +254,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       if (monitoredCall == null)
         continue;
 
-      if (!results.containsKey(visit.getMonitoredVehicleJourney().getDestinationName()))
+      if (!results.containsKey(visit.getMonitoredVehicleJourney().getDestinationName().getValue()))
         results.put(visit.getMonitoredVehicleJourney().getDestinationName().getValue(), new ArrayList<String>());
       
       if(results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).size() >= 3)
@@ -277,7 +283,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     // stop visits
     List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(
-        routeBean.getId(), null, 0);
+        routeBean.getId(), null, 0, System.currentTimeMillis());
 
     // build map of stop IDs to list of distance strings
     for (VehicleActivityStructure journey : journeyList) {
@@ -329,7 +335,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  String distance = distanceExtension.getPresentableDistance();
 		  
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
-		  String timeString = minutes + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
+		  String timeString = Math.round(minutes) + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
 				  
 		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
 		    	return timeString;

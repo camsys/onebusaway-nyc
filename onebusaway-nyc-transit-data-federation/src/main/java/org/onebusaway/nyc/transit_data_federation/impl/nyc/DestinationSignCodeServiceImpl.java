@@ -34,17 +34,30 @@ import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollec
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * A service that maps between DSCs and trip IDs.
+ * 
+ * @author jmaki
+ *
+ */
 @Component
 class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
+
+  private Logger _log = LoggerFactory.getLogger(DestinationSignCodeServiceImpl.class);
 
   private Map<String, List<AgencyAndId>> _dscToTripMap;
 
   private Map<AgencyAndId, String> _tripToDscMap;
   
   private Set<String> _notInServiceDscs;
+  
+  @Autowired
+  private NycFederatedTransitDataBundle _bundle;
   
   private TransitGraphDao _transitGraphDao;
 
@@ -53,9 +66,6 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
     _transitGraphDao = transitGraphDao;
   }
 
-  @Autowired
-  private NycFederatedTransitDataBundle _bundle;
-  
   @PostConstruct
   @Refreshable(dependsOn = NycRefreshableResources.DESTINATION_SIGN_CODE_DATA)
   public void setup() throws IOException, ClassNotFoundException {
@@ -98,6 +108,11 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
       
       if (dscTripIds != null && !dscTripIds.isEmpty()) {
           TripEntry trip = _transitGraphDao.getTripEntryForId(dscTripIds.get(0));
+          if(trip == null) {
+            _log.warn("No route collection found for trip ID " + dscTripIds.get(0));
+            return routeIds;
+          }
+          
           RouteCollectionEntry route = trip.getRouteCollection();
           routeIds.add(route.getId());
       }

@@ -99,8 +99,7 @@ public class VehicleLocationSimulationController {
 
   private static final Pattern CALENDAR_OFFSET_PATTERN = Pattern.compile("^(-{0,1}\\d+)(\\w+)$");
 
-  private static final String CALENDAR_OFFSET_KEY = VehicleLocationSimulationController.class
-      + ".calendarOffset";
+  private static final String CALENDAR_OFFSET_KEY = VehicleLocationSimulationController.class + ".calendarOffset";
 
   private VehicleLocationSimulationService _vehicleLocationSimulationService;
   
@@ -690,10 +689,8 @@ public class VehicleLocationSimulationController {
           trip.put("reliefTime", serviceDate.getTime()/1000 + reliefTime);
           
           StopEntry reliefStop = null;
-          for (int i = 0; i < entry.getTripEntry().getStopTimes().size() - 1; i++) {
-            
+          for (int i = 0; i < entry.getTripEntry().getStopTimes().size() - 1; i++) {            
             StopEntry currentStop = entry.getTripEntry().getStopTimes().get(i).getStop();
-            int currentStopArrivalTime = entry.getTripEntry().getStopTimes().get(i).getArrivalTime();
             int currentStopDepartureTime = entry.getTripEntry().getStopTimes().get(i).getDepartureTime();
             
             StopEntry nextStop = entry.getTripEntry().getStopTimes().get(i + 1).getStop();

@@ -9,6 +9,10 @@ import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.nyc.admin.util.ProcessUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.CheckShapeIdTask;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.ClearCSVTask;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.SummarizeCSVTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.logging.LoggingService;
@@ -128,8 +132,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
    */
   @Override
   public void prepare(BundleBuildRequest request, BundleBuildResponse response) {
-    response.addStatusMessage("preparing for build");
+
+	response.addStatusMessage("preparing for build");
     FileUtils fs = new FileUtils();
+    
     // copy source data to inputs
     String rootPath = request.getTmpDirectory() + File.separator + request.getBundleName();
     response.setBundleRootDirectory(rootPath);
@@ -141,6 +147,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setBundleInputDirectory(inputsPath);
     File inputsDir = new File(inputsPath);
     inputsDir.mkdirs();
+    
     String outputsPath = request.getTmpDirectory() + File.separator + request.getBundleName()
         + File.separator + OUTPUT_DIR;
     response.setBundleOutputDirectory(outputsPath);
@@ -159,7 +166,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     File dataDir = new File(dataPath);
     response.setBundleDataDirectory(dataPath);
     dataDir.mkdirs();
-
     
     for (String gtfs : response.getGtfsList()) {
       String outputFilename = inputsPath + File.separator + fs.parseFileName(gtfs); 
@@ -173,9 +179,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     for (String stifZip : response.getStifZipList()) {
       _log.info("stif copying " + stifZip + " to " + request.getTmpDirectory() + File.separator
           + "stif");
+        _log.info("unzipping " + stifZip);
       new FileUtils().unzip(stifZip, request.getTmpDirectory() + File.separator
           + "stif");
     }
+
+    _log.info("stip unzip complete ");
     
     // stage baseLocations
     InputStream baseLocationsStream = this.getClass().getResourceAsStream("/BaseLocations.txt");
@@ -253,17 +262,19 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
      */
     PrintStream stdOut = System.out;
     PrintStream logFile = null;
+    
     // pass a mini spring context to the bundle builder so we can cleanup
     ConfigurableApplicationContext context = null;
     try {
-      
       File outputPath = new File(response.getBundleDataDirectory());
-
+      File loggingPath = new File(response.getBundleOutputDirectory());
+      
       // beans assume bundlePath is set -- this will be where files are written!
       System.setProperty("bundlePath", outputPath.getAbsolutePath());
       
       String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
       logFile = new PrintStream(new FileOutputStream(new File(logFilename)));
+
       // swap standard out for logging
       System.setOut(logFile);
       configureLogging(System.out);
@@ -284,6 +295,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       bean = BeanDefinitionBuilder.genericBeanDefinition(GtfsRelationalDaoImpl.class);
       beans.put("gtfsRelationalDaoImpl", bean.getBeanDefinition());
 
+      BeanDefinitionBuilder multiCSVLogger = BeanDefinitionBuilder.genericBeanDefinition(MultiCSVLogger.class);
+      multiCSVLogger.addPropertyValue("basePath", loggingPath);
+      beans.put("multiCSVLogger", multiCSVLogger.getBeanDefinition());
+            
       // configure for NYC specifics
       BeanDefinitionBuilder bundle = BeanDefinitionBuilder.genericBeanDefinition(FederatedTransitDataBundle.class);
       bundle.addPropertyValue("path", outputPath);
@@ -293,9 +308,36 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       nycBundle.addPropertyValue("path", outputPath);
       beans.put("nycBundle", nycBundle.getBeanDefinition());
 
+      // STEP 1
+      BeanDefinitionBuilder clearCSVTask = BeanDefinitionBuilder.genericBeanDefinition(ClearCSVTask.class);
+      clearCSVTask.addPropertyReference("logger", "multiCSVLogger");
+      beans.put("clearCSVTask", clearCSVTask.getBeanDefinition());
+      
+      BeanDefinitionBuilder task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "clearCSVTask");
+      task.addPropertyValue("afterTaskName", "gtfs");
+      task.addPropertyValue("beforeTaskName", "transit_graph");
+      task.addPropertyReference("task", "clearCSVTask");
+      beans.put("clearCSVTaskDef", task.getBeanDefinition());
+
+      // STEP 2
+      BeanDefinitionBuilder checkShapesTask = BeanDefinitionBuilder.genericBeanDefinition(CheckShapeIdTask.class);
+      checkShapesTask.addPropertyReference("logger", "multiCSVLogger");
+      beans.put("checkShapeIdTask", checkShapesTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "checkShapeIdTask");
+      task.addPropertyValue("afterTaskName", "clearCSVTask");
+      task.addPropertyValue("beforeTaskName", "transit_graph");
+      task.addPropertyReference("task", "checkShapeIdTask");
+      beans.put("checkShapeIdTaskDef", task.getBeanDefinition());
+
+      // STEP 3
       BeanDefinitionBuilder stifLoaderTask = BeanDefinitionBuilder.genericBeanDefinition(StifTask.class);
-      stifLoaderTask.addPropertyValue("stifPath", request.getTmpDirectory()
-          + File.separator + "stif");// TODO this is a convention, pull out into config?
+      stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
+      stifLoaderTask.addPropertyReference("logger", "multiCSVLogger");
+      // TODO this is a convention, pull out into config?
+      stifLoaderTask.addPropertyValue("stifPath", request.getTmpDirectory() + File.separator + "stif"); 
       String notInServiceFilename = request.getTmpDirectory() + File.separator
           + "NotInServiceDSCs.txt";
 
@@ -303,8 +345,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           listToFile(request.getNotInServiceDSCList()));
       stifLoaderTask.addPropertyValue("notInServiceDscPath",
           notInServiceFilename);
-      stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
-      stifLoaderTask.addPropertyValue("logPath", response.getBundleOutputDirectory());
+      
       String dscMapPath = response.getBundleInputDirectory() + File.separator + "config" + File.separator 
           + getTripToDSCFilename();
       _log.info("looking for configuration at " + dscMapPath);
@@ -318,14 +359,25 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       }
       beans.put("stifLoaderTask", stifLoaderTask.getBeanDefinition());
 
-      BeanDefinitionBuilder task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
-      task.addPropertyValue("taskName", "stif");
-      task.addPropertyValue("afterTaskName", "gtfs");
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "stifLoaderTask");
+      task.addPropertyValue("afterTaskName", "checkShapeIdTask");
       task.addPropertyValue("beforeTaskName", "transit_graph");
       task.addPropertyReference("task", "stifLoaderTask");
-      // this name is not significant, its loaded by type
-      beans.put("nycStifTask", task.getBeanDefinition());
+      beans.put("stifLoaderTaskDef", task.getBeanDefinition());
 
+      // STEP 4
+      BeanDefinitionBuilder summarizeCSVTask = BeanDefinitionBuilder.genericBeanDefinition(SummarizeCSVTask.class);
+      summarizeCSVTask.addPropertyReference("logger", "multiCSVLogger");
+      beans.put("summarizeCSVTask", summarizeCSVTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "summarizeCSVTask");
+      task.addPropertyValue("afterTaskName", "stifLoaderTask");
+      task.addPropertyValue("beforeTaskName", "transit_graph");
+      task.addPropertyReference("task", "summarizeCSVTask");
+      beans.put("summarizeCSVTaskDef", task.getBeanDefinition());      
+      
       _log.debug("setting outputPath=" + outputPath);
       creator.setOutputPath(outputPath);
       creator.setContextPaths(contextPaths);
@@ -458,7 +510,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     File outputPath = new File(response.getBundleDataDirectory());
     String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
     fs.copyFiles(new File(logFilename), new File(response.getBundleOutputDirectory() + File.separator + "bundleBuilder.out.txt"));
-
+    response.addOutputFile("bundleBuilder.out.txt");
+    
     // copy the rest of the bundle content to outputs directory
     File outputsDir = new File(response.getBundleOutputDirectory());
     File[] outputFiles = outputsDir.listFiles();

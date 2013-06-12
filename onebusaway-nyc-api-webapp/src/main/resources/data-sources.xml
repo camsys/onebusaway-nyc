@@ -21,6 +21,7 @@
     </bean>
 
 
+
     <!-- Database Configuration -->
     <bean id="dataSource"
           class="org.springframework.jndi.JndiObjectFactoryBean">
@@ -36,17 +37,8 @@
                 value="true" />
     </bean>
     
-<!--    
-    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-        <property name="target" value="hibernateProperties" />
-        <property name="properties">
-            <props>
-                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
-            </props> 
-        </property> 
-    </bean> 
--->
     <alias name="dataSource" alias="mutableDataSource" />
+
   
 
 	<!-- Other Stuff: -->

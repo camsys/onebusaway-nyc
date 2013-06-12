@@ -15,68 +15,35 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
+
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
-import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.GpsLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.ScheduleLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.GpsLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
-import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
-
-import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
-
-import com.google.common.collect.Iterables;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import umontreal.iro.lecuyer.randvar.FoldedNormalGen;
+import com.google.common.collect.Iterables;
 
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
-
-  private static Logger _log = LoggerFactory.getLogger(BlockStateSamplingStrategyImpl.class);
-
-  /**
-   * We need some way of scoring nearby trips
-   */
-  static public DeviationModel _nearbyTripSigma = new DeviationModel(400.0);
-
-  static public DeviationModel _scheduleDeviationSigma = new DeviationModel(
-      32 * 60);
 
   private ScheduledBlockLocationService _scheduledBlockLocationService;
   
   private BlocksFromObservationService _blocksFromObservationService;
 
   @Autowired
-  public void setRunService(RunService runService) {
-  }
-
-  @Autowired
   public void setScheduledBlockService(
       ScheduledBlockLocationService scheduledBlockLocationService) {
     _scheduledBlockLocationService = scheduledBlockLocationService;
-  }
-  
-  @Autowired
-  public void setDestinationSignCodeService(
-      DestinationSignCodeService destinationSignCodeService) {
-  }
-
-  @Autowired
-  public void setBlocksStateTransitionModel(
-      BlockStateTransitionModel blockStateTransitionModel) {
   }
 
   @Autowired
@@ -85,58 +52,12 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     _blocksFromObservationService = blocksFromObservationService;
   }
 
-  @Autowired
-  public void setOperatorAssignmentService(
-      OperatorAssignmentService operatorAssignmentService) {
-  }
-
-  @Autowired
-  public void setObservationCache(ObservationCache observationCache) {
-  }
-
-  @Autowired
-  public void setJourneyStateTransitionModel(
-      JourneyStateTransitionModel journeyStateTransitionModel) {
-  }
-
-  /**
-   * 
-   * @param scheduleDeviationSigma time, in seconds
-   */
-  static public void setScheduleDeviationSigma(int scheduleDeviationSigma) {
-    _scheduleDeviationSigma = new DeviationModel(scheduleDeviationSigma);
-  }
-
-  /*
-   * @Override public BlockStateObservation sampleGpsObservationState(
-   * BlockStateObservation parentBlockStateObs, Observation obs) {
-   * 
-   * double distAlongSample; final BlockState parentBlockState =
-   * parentBlockStateObs.getBlockState(); final double parentDistAlong =
-   * parentBlockState.getBlockLocation().getDistanceAlongBlock();
-   * distAlongSample = NormalGen.nextDouble(
-   * ParticleFactoryImpl.getThreadLocalRng().get(), parentDistAlong,
-   * GpsLikelihood.gpsStdDev / 2);
-   * 
-   * if (distAlongSample >
-   * parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance()) {
-   * // distAlongSample =
-   * parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance();
-   * return null; } else if (distAlongSample < 0.0) { distAlongSample = 0.0; }
-   * 
-   * final BlockStateObservation distState =
-   * _blocksFromObservationService.getBlockStateObservationFromDist( obs,
-   * parentBlockState.getBlockInstance(), distAlongSample); return
-   * orientationCheck(parentBlockState, distState, obs);
-   * 
-   * }
-   */
-
   @Override
   public BlockStateObservation sampleTransitionDistanceState(
       BlockStateObservation parentBlockStateObs, Observation obs,
       boolean vehicleNotMoved, EVehiclePhase parentPhase) {
-    double distAlongSample;
+
+	double distAlongSample;
     final BlockState parentBlockState = parentBlockStateObs.getBlockState();
     final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
 
@@ -165,13 +86,12 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
               * GpsLikelihood.gpsStdDev;
           distAlongSample = distAlongPrior
               + Math.max(distAlongErrorSample, -distAlongPrior);
-//          distAlongSample = 0d;
         } else {
 
-          final double prevDistToNextStop = SphericalGeometryLibrary.distance(
+          final double prevDistToNextStop = TurboButton.distance(
               obs.getPreviousObservation().getLocation(),
               nextStop.getStopTime().getStop().getStopLocation());
-          final double currentDistToNextStop = SphericalGeometryLibrary.distance(
+          final double currentDistToNextStop = TurboButton.distance(
               obs.getLocation(),
               nextStop.getStopTime().getStop().getStopLocation());
 
@@ -179,9 +99,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
           if (distAlongPrior <= 0d)
             distAlongPrior = 0d;
-          
-          // distAlongSample =
-          // EdgeLikelihood.deadDuringEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
+
           distAlongSample = distAlongPrior;
         }
       } else if (EVehiclePhase.DEADHEAD_AFTER == parentPhase
@@ -254,7 +172,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
        */
       if (JourneyStateTransitionModel.isLocationOnATrip(blockLocation)) {
         final double impliedVelocity = obs.getDistanceMoved() / obs.getTimeDelta();
-        timeToGetToCurrentTimeLoc = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
+        timeToGetToCurrentTimeLoc = TurboButton.distance(blockLocation.getLocation(),
             obs.getLocation()) / impliedVelocity;
       } else {
         timeToGetToCurrentTimeLoc = 0d;
@@ -281,9 +199,6 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
           obs, blockInstance, 0.0);
     } else if (endSchedTime < newSchedTime) {
-      // schedState =
-      // _blocksFromObservationService.getBlockStateObservationFromDist(
-      // obs, blockInstance, blockInstance.getBlock().getTotalBlockDistance());
       return null;
     } else {
       /**
@@ -322,11 +237,6 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
           obs, parentBlockState.getBlockInstance(), 0.0);
     } else if (endSchedTime < newSchedTime) {
-      // schedState =
-      // _blocksFromObservationService.getBlockStateObservationFromDist(
-      // obs,
-      // parentBlockState.getBlockInstance(),
-      // parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance());
       return null;
     } else {
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
@@ -357,6 +267,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       
       final double orientDiff = Math.abs(obsOrientation
           - blockStateObs.getBlockState().getBlockLocation().getOrientation());
+      
       if (orientDiff >= 140d && orientDiff <= 225d
           && distMoved >= BlockStateService.getOppositeDirMoveCutoff()) {
         /*

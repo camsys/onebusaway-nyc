@@ -12,20 +12,19 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * This class is used for playback. With it we can test operator-assigned
- * results.
+ * This class is used for simulated playback. With it we can test operator-assigned
+ * results given a truth value from a trace.
  * 
  * @author bwillard
  * 
  */
-public class DummyOperatorAssignmentServiceImpl implements
-    OperatorAssignmentService {
+public class DummyOperatorAssignmentServiceImpl implements OperatorAssignmentService {
 
   Map<AgencyAndId, OperatorAssignmentItem> assignmentMap = Maps.newHashMap();
 
   @Override
   public Collection<OperatorAssignmentItem> getOperatorsForServiceDate(
-      ServiceDate serviceDate) throws Exception {
+		  ServiceDate serviceDate) throws Exception {
     return Collections.emptyList();
   }
 

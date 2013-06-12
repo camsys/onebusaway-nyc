@@ -15,81 +15,87 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A bundle source backed by an on-disk directory.
+ * 
+ * @author jmaki
+ *
+ */
 public class LocalBundleStoreImpl implements BundleStoreService {
 
-  private static Logger _log = LoggerFactory.getLogger(LocalBundleStoreImpl.class);
-  
-  private String _bundleRootPath = null;
-  
-  public LocalBundleStoreImpl(String bundleRootPath) {
-    _bundleRootPath = bundleRootPath;
-  }
-  
-  @Override
-  public List<BundleItem> getBundles() {
-    ArrayList<BundleItem> output = new ArrayList<BundleItem>();
+	private static Logger _log = LoggerFactory.getLogger(LocalBundleStoreImpl.class);
 
-    File bundleRoot = new File(_bundleRootPath);
+	private String _bundleRootPath = null;
 
-    if(!bundleRoot.isDirectory()) {    
-      return output;
-    }
-    
-    for(String filename : bundleRoot.list()) {
-      File possibleBundle = new File(bundleRoot, filename);
-      
-      if(possibleBundle.isDirectory()) {
-        File calendarServiceObjectFile = new File(possibleBundle, "CalendarServiceData.obj");
+	public LocalBundleStoreImpl(String bundleRootPath) {
+		_bundleRootPath = bundleRootPath;
+	}
 
-        if(!calendarServiceObjectFile.exists()) {
-          _log.info("Could not find CalendarServiceData.obj in local bundle '" + filename + "'; skipping. Not a bundle?");
-          continue;
-        }
+	@Override
+	public List<BundleItem> getBundles() {
+		ArrayList<BundleItem> output = new ArrayList<BundleItem>();
 
-        // get data to fill in the BundleItem for this bundle.
-        ServiceDate minServiceDate = null;
-        ServiceDate maxServiceDate = null;
-        
-        try {
-          CalendarServiceData data = 
-              ObjectSerializationLibrary.readObject(calendarServiceObjectFile);
+		File bundleRoot = new File(_bundleRootPath);
 
-          // loop through all service IDs and find the minimum and max--most likely they'll all
-          // be the same range, but not necessarily...
-          for(AgencyAndId serviceId : data.getServiceIds()) {
-            for(ServiceDate serviceDate : data.getServiceDatesForServiceId(serviceId)) {
-              if(minServiceDate == null || serviceDate.compareTo(minServiceDate) <= 0) {
-                minServiceDate = serviceDate;
-              }
+		if(!bundleRoot.isDirectory()) {    
+			return output;
+		}
 
-              if(maxServiceDate == null || serviceDate.compareTo(maxServiceDate) >= 0) {
-                maxServiceDate = serviceDate;
-              }
-            }
-          }             
-        } catch(Exception e) {
-          _log.info("Deserialization of CalendarServiceData.obj in local bundle " + filename + "; skipping.");
-          continue;
-        }        
+		for(String filename : bundleRoot.list()) {
+			File possibleBundle = new File(bundleRoot, filename);
 
-        BundleItem validLocalBundle = new BundleItem();
-        validLocalBundle.setId(filename);
-        validLocalBundle.setName(filename);
+			if(possibleBundle.isDirectory()) {
+				File calendarServiceObjectFile = new File(possibleBundle, "CalendarServiceData.obj");
 
-        validLocalBundle.setServiceDateFrom(minServiceDate);
-        validLocalBundle.setServiceDateTo(maxServiceDate);  
+				if(!calendarServiceObjectFile.exists()) {
+					_log.info("Could not find CalendarServiceData.obj in local bundle '" + filename + "'; skipping. Not a bundle?");
+					continue;
+				}
 
-        validLocalBundle.setCreated(new DateTime());
-        validLocalBundle.setUpdated(new DateTime());
-        
-        output.add(validLocalBundle);
+				// get data to fill in the BundleItem for this bundle.
+				ServiceDate minServiceDate = null;
+				ServiceDate maxServiceDate = null;
 
-        _log.info("Found local bundle " + filename + " with service range " + 
-            minServiceDate + " => " + maxServiceDate);
-      }
-    }
-    
-    return output;
+				try {
+					CalendarServiceData data = 
+							ObjectSerializationLibrary.readObject(calendarServiceObjectFile);
+
+					// loop through all service IDs and find the minimum and max--most likely they'll all
+					// be the same range, but not necessarily...
+					for(AgencyAndId serviceId : data.getServiceIds()) {
+						for(ServiceDate serviceDate : data.getServiceDatesForServiceId(serviceId)) {
+							if(minServiceDate == null || serviceDate.compareTo(minServiceDate) <= 0) {
+								minServiceDate = serviceDate;
+							}
+
+							if(maxServiceDate == null || serviceDate.compareTo(maxServiceDate) >= 0) {
+								maxServiceDate = serviceDate;
+							}
+						}
+					}             
+				} catch(Exception e) {
+					_log.info("Deserialization of CalendarServiceData.obj in local bundle " + filename + "; skipping.");
+					continue;
+				}        
+
+				BundleItem validLocalBundle = new BundleItem();
+				validLocalBundle.setId(filename);
+				validLocalBundle.setName(filename);
+
+				validLocalBundle.setServiceDateFrom(minServiceDate);
+				validLocalBundle.setServiceDateTo(maxServiceDate);  
+
+				validLocalBundle.setCreated(new DateTime());
+				validLocalBundle.setUpdated(new DateTime());
+
+				output.add(validLocalBundle);
+
+				_log.info("Found local bundle " + filename + " with service range " + 
+						minServiceDate + " => " + maxServiceDate);
+			}
+		}
+
+		return output;
 	}
 
 }

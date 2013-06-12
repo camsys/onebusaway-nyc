@@ -15,6 +15,9 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -22,7 +25,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationServi
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
@@ -33,20 +36,19 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEn
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
-
-import com.google.common.collect.Iterables;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.collect.Iterables;
 
 @Component
 public class VehicleStateLibrary {
 
   private BaseLocationService _baseLocationService;
 
+  /**
+   * How close a vehicle needs to be to the terminal to be considered eligible for layover.
+   */
   private final static double _layoverStopDistance = 400;
 
   /**
@@ -55,6 +57,9 @@ public class VehicleStateLibrary {
    */
   private final double _offBlockDistance = 1000;
 
+  /**
+   * Distance from first/last stop to be considered at a terminal.
+   */
   private final static double _terminalSearchRadius = 150;
 
   private TransitGraphDao _transitGraphDao;
@@ -82,21 +87,11 @@ public class VehicleStateLibrary {
 
   public boolean isAtBase(CoordinatePoint location) {
     final String baseName = _baseLocationService.getBaseNameForLocation(location);
-
     final boolean isAtBase = (baseName != null);
     return isAtBase;
   }
 
-  public boolean isAtPotentialLayoverSpot(VehicleState state, Observation obs) {
-//    if (_baseLocationService.getTerminalNameForLocation(obs.getLocation()) != null)
-//      return true;
-//
-//    /**
-//     * For now, we assume that if we're at the base, we're NOT in a layover
-//     */
-//    if (_baseLocationService.getBaseNameForLocation(obs.getLocation()) != null)
-//      return false;
-
+  public static boolean isAtPotentialLayoverSpot(VehicleState state, Observation obs) {
     return isAtPotentialLayoverSpot(state.getBlockState(), obs);
   }
 
@@ -108,7 +103,6 @@ public class VehicleStateLibrary {
      * layover spot the terminals of all blocks.
      */
     if (blockState == null) {
-//      return obs.isAtTerminal();
       return false;
     }
 
@@ -128,7 +122,7 @@ public class VehicleStateLibrary {
     if (layoverSpot == null)
       return false;
 
-    final double dist = SphericalGeometryLibrary.distance(obs.getLocation(),
+    final double dist = TurboButton.distance(obs.getLocation(),
         layoverSpot.getStopTime().getStop().getStopLocation());
     return dist <= _layoverStopDistance;
   }
@@ -150,14 +144,14 @@ public class VehicleStateLibrary {
 
     final StopEntry firstStop = blockInstance.getBlock().getStopTimes().get(0).getStopTime().getStop();
 
-    final double firstStopDist = SphericalGeometryLibrary.distance(loc,
+    final double firstStopDist = TurboButton.distance(loc,
         firstStop.getStopLocation());
 
     final int lastStopIdx = blockInstance.getBlock().getStopTimes().size() - 1;
 
     final StopEntry lastStop = blockInstance.getBlock().getStopTimes().get(
         lastStopIdx).getStopTime().getStop();
-    final double lastStopDist = SphericalGeometryLibrary.distance(loc,
+    final double lastStopDist = TurboButton.distance(loc,
         lastStop.getStopLocation());
 
     if (firstStopDist <= _terminalSearchRadius
@@ -196,13 +190,13 @@ public class VehicleStateLibrary {
 
       final StopEntry firstStop = block.getStopTimes().get(0).getStopTime().getStop();
 
-      final double firstStopDist = SphericalGeometryLibrary.distance(loc,
+      final double firstStopDist = TurboButton.distance(loc,
           firstStop.getStopLocation());
 
       final int lastStopIdx = block.getStopTimes().size() - 1;
 
       final StopEntry lastStop = block.getStopTimes().get(lastStopIdx).getStopTime().getStop();
-      final double lastStopDist = SphericalGeometryLibrary.distance(loc,
+      final double lastStopDist = TurboButton.distance(loc,
           lastStop.getStopLocation());
 
       if (firstStopDist <= _terminalSearchRadius
@@ -339,7 +333,7 @@ public class VehicleStateLibrary {
     final CoordinatePoint blockStart = blockLocation.getLocation();
     final CoordinatePoint currentLocation = obs.getLocation();
 
-    return SphericalGeometryLibrary.distance(currentLocation, blockStart);
+    return TurboButton.distance(currentLocation, blockStart);
   }
 
   public boolean isOffBlock(Observation obs, BlockState blockState) {
@@ -349,7 +343,6 @@ public class VehicleStateLibrary {
   /****
    * Private Methods
    ****/
-
   static private boolean tripChangesBetweenPrevAndNextStop(
       List<BlockStopTimeEntry> stopTimes, BlockStopTimeEntry nextStop,
       ScheduledBlockLocation location) {

@@ -21,10 +21,28 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
+/**
+ * A service that integrates predictions from a third-party source (as defined in PredictionGenerationService)
+ * into the response of API calls.
+ * 
+ * @author jmaki
+ *
+ */
 public interface PredictionIntegrationService {
 
+  /**
+   * Tell the integration service to refresh the records in cache for the given vehicle.
+   * @param vehicleId
+   */
   public void updatePredictionsForVehicle(AgencyAndId vehicleId);
 
+  /**
+   * A method to return predictions in a format suitable for injection into the TDS for the given
+   * vehicle status.
+   * 
+   * @param tripStatus
+   * @return
+   */
   public List<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus);
 
 }

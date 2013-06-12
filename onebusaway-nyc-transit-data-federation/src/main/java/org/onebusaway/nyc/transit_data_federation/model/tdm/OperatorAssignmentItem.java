@@ -8,7 +8,7 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 
 public class OperatorAssignmentItem implements Serializable {
-	
+
 	private static final long serialVersionUID = -2435563339750796076L;
 
 	private String agencyId;
@@ -21,70 +21,70 @@ public class OperatorAssignmentItem implements Serializable {
 
 	private DateTime updated;
 
-  private String runNumber;
-  
-  private String depot;
-	
+	private String runNumber;
+
+	private String depot;
+
 	public OperatorAssignmentItem() {}
 
-  public String getAgencyId() {
-    return agencyId;
-  }
+	public String getAgencyId() {
+		return agencyId;
+	}
 
-  public void setAgencyId(String agencyId) {
-    this.agencyId = agencyId;
-  }
+	public void setAgencyId(String agencyId) {
+		this.agencyId = agencyId;
+	}
 
-  public String getPassId() {
-    return passId;
-  }
+	public String getPassId() {
+		return passId;
+	}
 
-  public void setPassId(String passId) {
-    this.passId = passId;
-  }
+	public void setPassId(String passId) {
+		this.passId = passId;
+	}
 
-  public String getRunRoute() {
-    return runRoute;
-  }
+	public String getRunRoute() {
+		return runRoute;
+	}
 
-  public void setRunRoute(String runRoute) {
-    this.runRoute = runRoute;
-  }
+	public void setRunRoute(String runRoute) {
+		this.runRoute = runRoute;
+	}
 
-  public String getRunNumber() {
-    return runNumber;
-  }
-  
-  public void setRunNumber(String runNumber) {
-    this.runNumber = runNumber;
-  }
+	public String getRunNumber() {
+		return runNumber;
+	}
 
-  public String getRunId() {
-    return RunTripEntry.createId(runRoute, runNumber);
-  }
+	public void setRunNumber(String runNumber) {
+		this.runNumber = runNumber;
+	}
 
-  public ServiceDate getServiceDate() {
-    return serviceDate;
-  }
+	public String getRunId() {
+		return RunTripEntry.createId(runRoute, runNumber);
+	}
 
-  public void setServiceDate(ServiceDate serviceDate) {
-    this.serviceDate = serviceDate;
-  }
+	public ServiceDate getServiceDate() {
+		return serviceDate;
+	}
 
-  public DateTime getUpdated() {
-    return updated;
-  }
+	public void setServiceDate(ServiceDate serviceDate) {
+		this.serviceDate = serviceDate;
+	}
 
-  public void setUpdated(DateTime updated) {
-    this.updated = updated;
-  }
+	public DateTime getUpdated() {
+		return updated;
+	}
 
-  public void setDepot(String depot) {
-    this.depot = depot;
-  }
-  
-  public String getDepot() {
-    return depot;
-  }
-  
+	public void setUpdated(DateTime updated) {
+		this.updated = updated;
+	}
+
+	public void setDepot(String depot) {
+		this.depot = depot;
+	}
+
+	public String getDepot() {
+		return depot;
+	}
+
 }

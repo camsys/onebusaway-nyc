@@ -179,14 +179,14 @@ OBA.Popups = (function() {
 			var idParts = element.attr("id").split("|");
 			var stopId = idParts[1];
 			var routeId = idParts[2];
-			var routeIdWithoutAgency = routeId.split("_")[1];
+			var routeShortName = idParts[3];
 			
 			element.click(function(e) {
 				e.preventDefault();
-				var alertElement = jQuery('#alerts-' + routeId.replace(" ","_"));
+				var alertElement = jQuery('#alerts-' + routeId.hashCode());
 				if (alertElement.length === 0) {
 					expandAlerts = true;
-					jQuery.history.load(stopId + " " + routeIdWithoutAgency);
+					jQuery.history.load(stopId + " " + routeShortName);
 				} else {
 					$("#searchbar").animate({
 						scrollTop: alertElement.parent().offset().top - jQuery("#searchbar").offset().top + jQuery("#searchbar").scrollTop()
@@ -249,9 +249,12 @@ OBA.Popups = (function() {
 		html += '</div>';
 		
 		// service available at stop
-		if(typeof activity.MonitoredVehicleJourney.MonitoredCall === 'undefined' 
-			&& (typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined'
-			|| typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall === 'undefined')) {
+		if(typeof activity.MonitoredVehicleJourney.MonitoredCall === 'undefined' && (
+			(typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined'
+				|| typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall === 'undefined') 
+			|| (typeof activity.MonitoredVehicleJourney.OnwardCalls !== 'undefined' 
+				&& activity.MonitoredVehicleJourney.OnwardCalls.length === 0)
+			)) {
 
 			html += '<p class="service">Next stops are not known for this vehicle.</p>';
 		} else {
@@ -369,15 +372,11 @@ OBA.Popups = (function() {
 	    var routeAndDirectionWithoutSerivce = {};
 	    var routeAndDirectionWithoutSerivceCount = 0;
 	    var totalRouteCount = 0;
-	    
-	    if (!routeFilter) {
-	    	routeFilter = [];
-	    }
 		
 		var filterExistsInResults = false;
 		
 		jQuery.each(stopResult.routesAvailable, function(_, routeResult) {
-			if (jQuery.inArray(routeResult.id, routeFilter) > -1) {
+			if (routeResult.shortName === routeFilter) {
 				filterExistsInResults = true;
 				return false;
 			}
@@ -391,7 +390,7 @@ OBA.Popups = (function() {
 		filteredMatchesData.append("<ul></ul>");
 	    
 		jQuery.each(stopResult.routesAvailable, function(_, route) {
-	    	if (filterExistsInResults && jQuery.inArray(route.id, routeFilter) < 0) {
+	    	if (filterExistsInResults && route.shortName !== routeFilter) {
 	    		var filteredMatch = jQuery("<li></li>").addClass("filtered-match");
 	    		var link = jQuery('<a href="#' + stopResult.id.match(/\d*$/) + '%20' + route.shortName + '"><span class="route-name">' + route.shortName + '</span></a>');
 	    		link.appendTo(filteredMatch);
@@ -404,7 +403,7 @@ OBA.Popups = (function() {
 	    			routeAndDirectionWithoutSerivce[route.id + "_" + direction.directionId] = { "id":route.id, "shortName":route.shortName, "destination":direction.destination };
 	    			routeAndDirectionWithoutSerivceCount++;
 	    		} else {
-	    			routeAndDirectionWithoutArrivals[route.id + "_" + direction.directionId] = { "id":route.id, "shortName":route.shortName, "destination":direction.destination };
+	    			routeAndDirectionWithoutArrivals[route.id + "_" + direction.directionId + "_" + direction.destination.hashCode()] = { "id":route.id, "shortName":route.shortName, "destination":direction.destination };
 	    			routeAndDirectionWithoutArrivalsCount++;
 	    		}
 	    	});
@@ -415,8 +414,9 @@ OBA.Popups = (function() {
 	    var visits = siri.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
 	    jQuery.each(visits, function(_, monitoredJourney) {
 			var routeId = monitoredJourney.MonitoredVehicleJourney.LineRef;
+			var routeShortName = monitoredJourney.MonitoredVehicleJourney.PublishedLineName;
 			
-			if (filterExistsInResults && jQuery.inArray(routeId, routeFilter) < 0) {
+			if (filterExistsInResults && routeShortName !== routeFilter) {
 				return true; //continue
 			}
 			
@@ -452,7 +452,7 @@ OBA.Popups = (function() {
 				html += '<li class="route">';
 				html += '<a href="#' + stopIdWithoutAgency + '%20' + mvj.PublishedLineName + '"><span class="route-name">' + mvj.PublishedLineName + "</span>&nbsp;&nbsp; " + mvj.DestinationName + '</a>';
 				if (mvj.LineRef in alertData) {
-					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + mvj.LineRef + '" class="alert-link" href="#">Alert</a>';
+					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + mvj.LineRef + '|' + mvj.PublishedLineName + '" class="alert-link" href="#">Alert</a>';
 				}
 				html += '</li>';
 
@@ -532,9 +532,9 @@ OBA.Popups = (function() {
 			var i = 0;
 			jQuery.each(routeAndDirectionWithoutArrivals, function(_, d) {
 				html += '<li class="route">';
-				html += '<a class="muted" href="#' + stopIdWithoutAgency + "%20" + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; to " + d.destination + '</a>';
+				html += '<a class="muted" href="#' + stopIdWithoutAgency + "%20" + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; " + d.destination + '</a>';
 				if (d.id in alertData) {
-					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + d.id + '" class="alert-link" href="#">Alert</a>';
+					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + d.id + '|' + d.shortName + '" class="alert-link" href="#">Alert</a>';
 				}
 				html += '</li>';
 				
@@ -585,6 +585,8 @@ OBA.Popups = (function() {
 			map.setCenter(marker.getPosition());
 			map.setZoom(16);
 		});
+		
+		marker.setVisible(true);
 		
 		activateAlertLinks(content);
 		

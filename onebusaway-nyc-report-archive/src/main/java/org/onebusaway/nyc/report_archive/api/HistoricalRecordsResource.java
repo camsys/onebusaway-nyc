@@ -21,6 +21,7 @@ import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.stereotype.Component;
 
 @Path("/history/record/last-known")
@@ -28,7 +29,6 @@ import org.springframework.stereotype.Component;
 public class HistoricalRecordsResource {
 
 	private static Logger log = LoggerFactory.getLogger(HistoricalRecordsResource.class);
-	
 	private JsonTool jsonTool;
 	private HistoricalRecordsDao historicalRecordsDao;
 	
@@ -43,19 +43,29 @@ public class HistoricalRecordsResource {
 			@QueryParam(value="bbox") final String boundingBox,
 			@QueryParam(value="start-date") final String startDate, 
 			@QueryParam(value="end-date") final String endDate,
-			@QueryParam(value="records") final Integer records) {
+			@QueryParam(value="records") final Integer records,
+			@QueryParam(value="timeout") final Integer timeout) {
 		
 		log.info("Starting getHistoricalRecords");
 		
 		Map<CcAndInferredLocationFilter, Object> filters = addFilterParameters(depotId, 
 				inferredRouteId, inferredPhase, vehicleId, vehicleAgencyId, boundingBox, 
-				startDate, endDate, records);
+				startDate, endDate, records, timeout);
 		
-		List<HistoricalRecord> historicalRecords = historicalRecordsDao.getHistoricalRecords(filters);
-		
+		List<HistoricalRecord> historicalRecords = null; 
 		HistoricalRecordsMessage historicalRecordMessage = new HistoricalRecordsMessage();
-		historicalRecordMessage.setRecords(historicalRecords);
-		historicalRecordMessage.setStatus("OK");
+		try {
+		  historicalRecords = historicalRecordsDao.getHistoricalRecords(filters);
+	    historicalRecordMessage.setRecords(historicalRecords);
+	    historicalRecordMessage.setStatus("OK");
+
+		} catch (UncategorizedSQLException sql) {
+		  // here we make the assumption that an exception means query timeout
+      historicalRecordMessage.setRecords(null);
+      historicalRecordMessage.setStatus("QUERY_TIMEOUT");
+		  
+		}
+		
 		
 		String outputJson;
 		try {
@@ -72,23 +82,33 @@ public class HistoricalRecordsResource {
 	
 	private Map<CcAndInferredLocationFilter, Object> addFilterParameters(String depotId, 
 			String inferredRouteId, String inferredPhase, Integer vehicleId, String vehicleAgencyId,
-			String boundingBox, String startDate, String endDate, Integer records) {
+			String boundingBox, String startDate, String endDate, Integer records, Integer timeout) {
 		
 		Map<CcAndInferredLocationFilter, Object> filter = 
 				new HashMap<CcAndInferredLocationFilter, Object>();
-		
-		filter.put(CcAndInferredLocationFilter.DEPOT_ID, depotId);
-		filter.put(CcAndInferredLocationFilter.INFERRED_ROUTEID, inferredRouteId);
-		filter.put(CcAndInferredLocationFilter.INFERRED_PHASE, inferredPhase);
-		filter.put(CcAndInferredLocationFilter.BOUNDING_BOX, boundingBox);
-		filter.put(CcAndInferredLocationFilter.VEHICLE_ID, vehicleId);
-		filter.put(CcAndInferredLocationFilter.VEHICLE_AGENCY_ID, vehicleAgencyId);
-		filter.put(CcAndInferredLocationFilter.START_DATE, startDate);
-		filter.put(CcAndInferredLocationFilter.END_DATE, endDate);
+		boolean nonEmptyFilter = false;
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.DEPOT_ID, depotId);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.INFERRED_ROUTEID, inferredRouteId);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.INFERRED_PHASE, inferredPhase);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.BOUNDING_BOX, boundingBox);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.VEHICLE_ID, vehicleId);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.VEHICLE_AGENCY_ID, vehicleAgencyId);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.START_DATE, startDate);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.END_DATE, endDate);
+		nonEmptyFilter |= addToFilter(filter, CcAndInferredLocationFilter.TIMEOUT, timeout);
+		if (!nonEmptyFilter) {
+		  // this clause allows for the possibility of adding a default filter should none be present
+		  log.debug("empty filter");
+		}
 		filter.put(CcAndInferredLocationFilter.RECORDS, records);
 		
-		
 		return filter;
+	}
+	
+  private boolean addToFilter(Map<CcAndInferredLocationFilter, Object> filter, CcAndInferredLocationFilter key, Object value) {
+	  if (key == null || value == null) return false;
+	  filter.put(key, value);
+	  return true;
 	}
 	
 	private String getObjectAsJsonString(Object object) throws IOException {

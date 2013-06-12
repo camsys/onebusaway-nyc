@@ -15,21 +15,25 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import gov.sandia.cognition.math.LogMath;
+
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.math.util.FastMath;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.DscLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.EdgeLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.GpsLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.NullLocationLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.NullStateLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.RunLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.RunTransitionLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.ScheduleLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.disabled.PriorRule;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.Context;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.DscLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.EdgeLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.GpsLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.MovedLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.NullLocationLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.NullStateLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.RunLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.RunTransitionLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -39,9 +43,10 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.realtime.api.EVehiclePhase;
-
-import gov.sandia.cognition.math.LogMath;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -51,12 +56,6 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Sets;
 
-import org.apache.commons.math.util.FastMath;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Motion model implementation for vehicle location inference. Determine if the
  * vehicle is in motion, and propagate the particles' positions or states.
@@ -64,12 +63,14 @@ import java.util.Set;
  * @author bdferris, bwillard
  */
 public class MotionModelImpl implements MotionModel<Observation> {
-
+ 
+  /**
+   * Effective sample size thresholds that trigger resampling.
+   */
   private static final double _essNoRunInfoTransitionThreshold = 0.60;
   private static final double _essRunInfoTransitionThreshold = 0.65;
 
   private BlocksFromObservationService _blocksFromObservationService;
-  private SensorModelSupportLibrary _sensorModelLibrary;
 
   /**
    * Distance, in meters, that a bus has to travel to be considered "in motion"
@@ -87,19 +88,9 @@ public class MotionModelImpl implements MotionModel<Observation> {
   }
 
   @Autowired
-  public void setSensorModelLibrary(SensorModelSupportLibrary sensorModelLibrary) {
-    _sensorModelLibrary = sensorModelLibrary;
-  }
-
-  @Autowired
   public void setBlocksFromObservationService(
       BlocksFromObservationService blocksFromObservationService) {
     _blocksFromObservationService = blocksFromObservationService;
-  }
-
-  @Autowired
-  public void setBlocksStateTransitionModel(
-      BlockStateTransitionModel blockStateTransitionModel) {
   }
 
   static public void setMotionThreshold(double motionThreshold) {
@@ -114,8 +105,11 @@ public class MotionModelImpl implements MotionModel<Observation> {
   public ScheduleLikelihood schedLikelihood = new ScheduleLikelihood();
   public RunTransitionLikelihood runTransitionLikelihood = new RunTransitionLikelihood();
   public GpsLikelihood gpsLikelihood = new GpsLikelihood();
-  public PriorRule priorLikelihood = new PriorRule();
   public RunLikelihood runLikelihood = new RunLikelihood();
+  public MovedLikelihood movedLikelihood = new MovedLikelihood();
+  /*
+   * Some of these likelihoods need services attached.
+   */
   public DscLikelihood dscLikelihood;
   public NullStateLikelihood nullStateLikelihood;
   public NullLocationLikelihood nullLocationLikelihood;
@@ -163,6 +157,17 @@ public class MotionModelImpl implements MotionModel<Observation> {
       return true;
 
     if (parentBlockState != null) {
+      
+      /*
+       * When a bus is waiting to start a block within the snapping distance
+       * and then it starts moving, we want to make sure that  
+       */
+      if (EVehiclePhase.isActiveBeforeBlock(parentState.getJourneyState().getPhase())
+          && parentBlockState.isSnapped() 
+          && _blocksFromObservationService.hasSnappedBlockStates(obs)) {
+        return true;
+      }
+      
       if (!parentBlockState.isRunFormal()
           && obs.hasValidDsc()) {
         
@@ -193,7 +198,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
         if (JourneyStateTransitionModel.isLocationOnATrip(parentBlockState.getBlockState())) {
           final double tripDab = parentBlockState.getBlockState().getBlockLocation().getDistanceAlongBlock()
               - parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock();
-          final double distanceMoved = SphericalGeometryLibrary.distance(obs.getLocation(), 
+          final double distanceMoved = TurboButton.distance(obs.getLocation(), 
               obs.getPreviousObservation().getLocation());
           if (tripDab + distanceMoved + _distancePastEndMargin >= 
               parentBlockState.getBlockState().getBlockLocation().getActiveTrip().getTrip().getTotalTripDistance()) {
@@ -225,10 +230,24 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return false;
   }
 
-  private boolean allowGeneralBlockTransition(Observation obs, double ess,
-      boolean previouslyResampled) {
+  public static boolean hasDestinationSignCodeChangedBetweenObservations(
+      Observation obs) {
 
-    if (BlockStateTransitionModel.hasDestinationSignCodeChangedBetweenObservations(obs))
+    String previouslyObservedDsc = null;
+    final NycRawLocationRecord previousRecord = obs.getPreviousRecord();
+    if (previousRecord != null)
+      previouslyObservedDsc = previousRecord.getDestinationSignCode();
+
+    final NycRawLocationRecord record = obs.getRecord();
+    final String observedDsc = record.getDestinationSignCode();
+
+    return !ObjectUtils.equals(previouslyObservedDsc, observedDsc);
+  }
+  
+  private boolean allowGeneralBlockTransition(Observation obs, double ess,
+      boolean previouslyResampled, boolean anySnapped) {
+
+    if (hasDestinationSignCodeChangedBetweenObservations(obs))
       return true;
 
     final double essResampleThreshold;
@@ -243,6 +262,19 @@ public class MotionModelImpl implements MotionModel<Observation> {
         && ess / ParticleFactoryImpl.getInitialNumberOfParticles() <= essResampleThreshold) {
       return true;
     }
+    
+    /*
+     * If none of our current particles are snapped, yet there were snapped states and there are
+     * currently snapped states, then resample, since there's usually a problem when nothing is snapped
+     * in these cases.
+     */
+    if (obs.getPreviousObservation() != null) {
+      final boolean hadSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs.getPreviousObservation());
+      final boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
+      if (hasSnappedStates && hadSnappedStates && !anySnapped) {
+        return true;
+      }
+    }
 
     return false;
   }
@@ -254,14 +286,25 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     final Multiset<Particle> results = HashMultiset.create();
 
+    boolean anySnapped = false;
+    /*
+     * TODO FIXME could keep a particle-set-info record...
+     */
+    for (final Multiset.Entry<Particle> parent : particles.entrySet()) {
+      final VehicleState state = parent.getElement().getData();
+      if (state.getBlockStateObservation() != null 
+          && state.getBlockStateObservation().isSnapped()) {
+        anySnapped = true;
+        break;
+      }
+    }
     final double ess = ParticleFilter.getEffectiveSampleSize(particles);
     final boolean generalBlockTransition = allowGeneralBlockTransition(obs,
-        ess, previouslyResampled);
+        ess, previouslyResampled, anySnapped);
     double normOffset = Double.NEGATIVE_INFINITY;
 
     for (final Multiset.Entry<Particle> parent : particles.entrySet()) {
       final VehicleState parentState = parent.getElement().getData();
-      final MotionState motionState = parentState.getMotionState();
       final BlockStateObservation parentBlockStateObs = parentState.getBlockStateObservation();
 
       final Set<BlockStateObservation> transitions = Sets.newHashSet();
@@ -279,13 +322,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
          * We are also allowing changes to snapped in-progress states when
          * they were sampled well outside of allowed backward search distance.
          */
-        final double backwardDistance = Double.NEGATIVE_INFINITY;
-//        if (parentState.getBlockStateObservation().isSnapped() 
-//            && !EVehiclePhase.IN_PROGRESS.equals(parentState.getJourneyState().getPhase()))
-//          backwardDistance = Double.NEGATIVE_INFINITY;
-//        else 
-//          backwardDistance = -1.98 * GpsLikelihood.gpsStdDev;
-        
+        final double backwardDistance = Double.NEGATIVE_INFINITY;        
         transitions.addAll(_blocksFromObservationService.advanceState(obs,
             parentState.getBlockState(), backwardDistance,
             Double.POSITIVE_INFINITY));
@@ -310,8 +347,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
        * pointer equality.
        */
 
-      final double vehicleHasNotMovedProb = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
-          motionState, obs);
+      final double vehicleHasNotMovedProb = MovedLikelihood.computeVehicleHasNotMovedProbability(obs);
 
       for (int i = 0; i < parent.getCount(); ++i) {
         final Particle sampledParticle = sampleTransitionParticle(parent,
@@ -335,7 +371,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return results;
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes", "null"})
   private Particle sampleTransitionParticle(Entry<Particle> parent,
       BlockStateObservation newParentBlockStateObs, Observation obs,
       final double vehicleHasNotMovedProb,
@@ -374,60 +409,19 @@ public class MotionModelImpl implements MotionModel<Observation> {
           newEdge.getValue(), journeyState, null, obs);
       final Context context = new Context(parentState, newState, obs);
 
-      /*
-       * Edge movement
-       */
-      transProb.addResultAsAnd(edgeLikelihood.likelihood(_sensorModelLibrary,
-          context));
+      transProb.addResultAsAnd(edgeLikelihood.likelihood(context));
+      transProb.addResultAsAnd(gpsLikelihood.likelihood(context));
+      transProb.addResultAsAnd(dscLikelihood.likelihood(context));
+      transProb.addResultAsAnd(runLikelihood.likelihood(context));
+      transProb.addResultAsAnd(schedLikelihood.likelihood(context));
+      transProb.addResultAsAnd(runTransitionLikelihood.likelihood(context));
+      transProb.addResultAsAnd(nullStateLikelihood.likelihood(context));
+      transProb.addResultAsAnd(nullLocationLikelihood.likelihood(context));
+      transProb.addResultAsAnd(movedLikelihood.likelihood(context));
 
       /*
-       * Gps
+       * TODO: this is mainly for debug and can/should be removed.
        */
-      transProb.addResultAsAnd(gpsLikelihood.likelihood(null, context));
-
-      /*
-       * Dsc
-       */
-      transProb.addResultAsAnd(dscLikelihood.likelihood(null, context));
-
-      /*
-       * Run
-       */
-      transProb.addResultAsAnd(runLikelihood.likelihood(null, context));
-
-      /*
-       * Schedule Dev
-       */
-      transProb.addResultAsAnd(schedLikelihood.likelihood(null, context));
-
-      /*
-       * Run Transition
-       */
-      transProb.addResultAsAnd(runTransitionLikelihood.likelihood(null, context));
-
-      /*
-       * Null-state's Prior
-       */
-      transProb.addResultAsAnd(nullStateLikelihood.likelihood(null, context));
-
-      /*
-       * Null-location's Prior
-       */
-      transProb.addResultAsAnd(nullLocationLikelihood.likelihood(null, context));
-
-      /*
-       * Vehicle movement prob.
-       */
-      final SensorModelResult movementResult = new SensorModelResult("movement");
-      if (vehicleNotMoved) {
-        movementResult.addResultAsAnd(new SensorModelResult("not-moved",
-            vehicleHasNotMovedProb));
-      } else {
-        movementResult.addResultAsAnd(new SensorModelResult("moved",
-            1d - vehicleHasNotMovedProb));
-      }
-      transProb.addResultAsAnd(movementResult);
-
       transProb.addLogResultAsAnd(newEdge.getKey().name(), 0);
 
       final Particle newParticle = new Particle(timestamp, parent.getElement(),
@@ -463,17 +457,15 @@ public class MotionModelImpl implements MotionModel<Observation> {
       final VehicleState nullState = new VehicleState(motionState, null,
           journeyState, null, obs);
       final Context context = new Context(parentState, nullState, obs);
-      transProb.addResultAsAnd(edgeLikelihood.likelihood(null, context));
-      transProb.addResultAsAnd(gpsLikelihood.likelihood(null, context));
-      transProb.addResultAsAnd(dscLikelihood.likelihood(null, context));
-      transProb.addResultAsAnd(runLikelihood.likelihood(null, context));
-      transProb.addResultAsAnd(schedLikelihood.likelihood(null, context));
-      transProb.addResultAsAnd(runTransitionLikelihood.likelihood(null, context));
-      transProb.addResultAsAnd(nullStateLikelihood.likelihood(null, context));
-      transProb.addResultAsAnd(nullLocationLikelihood.likelihood(null, context));
-      transProb.addResultAsAnd( vehicleNotMoved ? 
-          new SensorModelResult("not-moved", vehicleHasNotMovedProb)
-              : new SensorModelResult("moved", 1d - vehicleHasNotMovedProb));
+      transProb.addResultAsAnd(edgeLikelihood.likelihood(context));
+      transProb.addResultAsAnd(gpsLikelihood.likelihood(context));
+      transProb.addResultAsAnd(dscLikelihood.likelihood(context));
+      transProb.addResultAsAnd(runLikelihood.likelihood(context));
+      transProb.addResultAsAnd(schedLikelihood.likelihood(context));
+      transProb.addResultAsAnd(runTransitionLikelihood.likelihood(context));
+      transProb.addResultAsAnd(nullStateLikelihood.likelihood(context));
+      transProb.addResultAsAnd(nullLocationLikelihood.likelihood(context));
+      transProb.addResultAsAnd(movedLikelihood.likelihood(context));
       newParticle = new Particle(timestamp, parent.getElement(), 0.0, nullState);
       newParticle.setResult(transProb);
       final double logWeight = parent.getElement().getLogWeight()
@@ -503,7 +495,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
         /*
          * When a state is transitioning we need to consider whether the
          * proposal edge is snapped or not, since that leads to different
-         * sampling procedures. Also, we propogate non-snapped states
+         * sampling procedures. Also, we propagate non-snapped states
          * differently.
          */
         final double currentScheduleDev = BlockStateObservation.computeScheduleDeviation(
@@ -512,9 +504,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
             proposalEdge);
 
         if (proposalEdge.isSnapped()) {
-          // newEdge =
-          // _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge,
-          // obs);
           newEdge = Maps.immutableEntry(BlockSampleType.NOT_SAMPLED,
               proposalEdge);
         } else if (runChanged) {
@@ -548,9 +537,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
         }
       } else {
         if (proposalEdge.isSnapped()) {
-          // newEdge =
-          // _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge,
-          // obs);
           newEdge = Maps.immutableEntry(BlockSampleType.NOT_SAMPLED,
               proposalEdge);
         } else {
@@ -565,26 +551,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     return newEdge;
   }
-
-  // @Override
-  // public void move(Entry<Particle> parent, double timestamp, double
-  // timeElapsed,
-  // Observation obs, Multiset<Particle> results,
-  // Multimap<VehicleState, VehicleState> cache) {
-  //
-  // final VehicleState parentState = parent.getElement().getData();
-  // final MotionState motionState = updateMotionState(parentState, obs);
-  //
-  // final Collection<VehicleState> vehicleStates = cache.get(parentState);
-  //
-  // if (vehicleStates.isEmpty()) {
-  // _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
-  // for (final VehicleState vs : vehicleStates)
-  // results.add(new Particle(timestamp, parent.getElement(), 1.0, vs),
-  // parent.getCount());
-  // }
-  //
-  // }
 
   public static boolean hasRunChanged(BlockStateObservation parentEdge,
       BlockStateObservation proposalEdge) {
@@ -608,21 +574,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
     }
   }
 
-  // @Override
-  // public void move(Particle parent, double timestamp, double timeElapsed,
-  // Observation obs, Collection<Particle> results) {
-  //
-  // final VehicleState parentState = parent.getData();
-  //
-  // final MotionState motionState = updateMotionState(parentState, obs, false);
-  //
-  // final List<VehicleState> vehicleStates = new ArrayList<VehicleState>();
-  // _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
-  //
-  // for (final VehicleState vs : vehicleStates)
-  // results.add(new Particle(timestamp, parent, 0.0, vs));
-  // }
-
   public MotionState updateMotionState(Observation obs,
       boolean vehicleHasNotMoved) {
     return updateMotionState(null, obs, vehicleHasNotMoved);
@@ -638,9 +589,13 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
       final MotionState motionState = parentState.getMotionState();
 
-      final double d = SphericalGeometryLibrary.distance(
+      final double d = TurboButton.distance(
           motionState.getLastInMotionLocation(), obs.getLocation());
 
+      /*
+       * FIXME there's an inconsistency here (with having sampled
+       * whether we moved or not).
+       */
       if (d <= _motionThreshold) {
         lastInMotionTime = motionState.getLastInMotionTime();
         lastInMotionLocation = motionState.getLastInMotionLocation();

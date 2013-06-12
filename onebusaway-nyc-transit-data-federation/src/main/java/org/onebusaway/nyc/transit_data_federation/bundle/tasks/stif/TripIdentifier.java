@@ -15,9 +15,12 @@
  */
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
+import java.io.Serializable;
 import java.util.Formatter;
 
-public class TripIdentifier {
+public class TripIdentifier implements Serializable {
+  private static final long serialVersionUID = 1L;
+  
   public int startTime;
   public String routeName;
   public String startStop;

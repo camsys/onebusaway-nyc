@@ -13,8 +13,8 @@ public interface SearchResultFactory {
 
   public SearchResult getRouteResultForRegion(RouteBean routeBean);
 
-  public SearchResult getStopResult(StopBean stopBean, Set<String> routeShortNameFilter);
+  public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter);
 
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<String> routeShortNameFilter);
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeFilter);
 
 }

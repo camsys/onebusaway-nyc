@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 
 /**
@@ -214,11 +216,16 @@ public class FileUtils {
     try {
       String[] cmds = {
           "unzip",
+          "-o",
           zipFileName,
           "-d",
           outputDirectory
       };
       process = Runtime.getRuntime().exec(cmds);
+      StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), "ERROR");
+      StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), "OUTPUT");
+      errorGobbler.start();
+      outputGobbler.start();
       return process.waitFor();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -290,4 +297,36 @@ public class FileUtils {
     _log.info(sb.toString());
   }
 
+
+  /**
+   * debug sub shells, from http://www.javaworld.com/javaworld/jw-12-2000/jw-1229-traps.htm
+   *
+   */
+  class StreamGobbler extends Thread
+  {
+      InputStream is;
+      String type;
+      
+      StreamGobbler(InputStream is, String type)
+      {
+          this.is = is;
+          this.type = type;
+      }
+      
+      public void run()
+      {
+          try
+          {
+              InputStreamReader isr = new InputStreamReader(is);
+              BufferedReader br = new BufferedReader(isr);
+              String line=null;
+              while ( (line = br.readLine()) != null)
+                _log.info(type + ">" + line);
+              } catch (IOException ioe)
+                {
+                  ioe.printStackTrace();  
+                }
+      }
+  }
+  
 }

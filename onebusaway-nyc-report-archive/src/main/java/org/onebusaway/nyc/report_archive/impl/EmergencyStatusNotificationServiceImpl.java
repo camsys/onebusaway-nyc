@@ -14,6 +14,8 @@ import org.onebusaway.nyc.report_archive.services.EmergencyStatusNotificationSer
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.web.context.ServletContextAware;
 
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -24,22 +26,27 @@ import com.amazonaws.services.sns.AmazonSNSClient;
  * @author abelsare
  *
  */
-public class EmergencyStatusNotificationServiceImpl implements EmergencyStatusNotificationService, ServletContextAware {
+public class EmergencyStatusNotificationServiceImpl implements EmergencyStatusNotificationService, ServletContextAware, ApplicationListener<ContextRefreshedEvent> {
 
+  protected static Logger _log = LoggerFactory.getLogger(EmergencyStatusNotificationServiceImpl.class);
+  
 	private SNSApplicationEventPublisher snsEventPublisher;
 	private AmazonSNSClient snsClient;
 	private String emergencyTopicArn;
 	private String nonEmergencyTopicArn;
 	private boolean sendNotification;
+	private boolean initialized = false;
 	
 	private Map<Integer, Boolean> emergencyState = Collections.synchronizedMap(new HashMap<Integer, Boolean>());
 
 	private static Logger log = LoggerFactory.getLogger(EmergencyStatusNotificationServiceImpl.class);
 	
+	
+	
 	@Override
 	public void process(CcLocationReportRecord record) {
 		//Dont bother doing anything if sendNotification is turned off
-		if(sendNotification) {
+		if(sendNotification && initialized) {
 			Boolean emergencyStatusChange = Boolean.FALSE;
 			Boolean isEmergency = Boolean.FALSE;
 			Integer vehicleId = record.getVehicleId();
@@ -70,6 +77,9 @@ public class EmergencyStatusNotificationServiceImpl implements EmergencyStatusNo
 				snsEventPublisher.setData(eventData);
 				snsEventPublisher.run();
 			}
+		} else if (!initialized) {
+		  // this will be caught on the next message after the context has initialized
+		  _log.debug("dropping emergency status notification (" + record.getVehicleId() + ")=" + record.getEmergencyCode() + " as service is not ready");
 		}
 	}
 	
@@ -105,7 +115,7 @@ public class EmergencyStatusNotificationServiceImpl implements EmergencyStatusNo
 			if(StringUtils.isNotBlank(user) && StringUtils.isNotBlank(password)) {
 				snsClient = new AmazonSNSClient(new BasicAWSCredentials(user, password));
 			} else {
-				throw new RuntimeException("Cannot create Amazon SNS client. Either user name or" +
+				log.error("Cannot create Amazon SNS client. Either user name or" +
 						"password is not set.");
 			}
 			
@@ -143,4 +153,20 @@ public class EmergencyStatusNotificationServiceImpl implements EmergencyStatusNo
 		this.emergencyState = emergencyState;
 	}
 
+  @Override
+  public void onApplicationEvent(ContextRefreshedEvent event) {
+    // don't attempt to send event messages until context is initialized; deadlock will ensue
+    _log.warn("Emergency Status Initialized");
+    this.initialized = true;
+    
+  }
+
+  public void setInitialized(boolean isInitialized) {
+    this.initialized = isInitialized;
+  }
+  
+  public boolean getInitialized() {
+    return this.initialized;
+  }
+  
 }

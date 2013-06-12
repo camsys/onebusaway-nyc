@@ -27,14 +27,14 @@
 <jsp:directive.page contentType="text/html" />
 
 <head>
-  <title><decorator:title default="MTA Bus Time" /></title>
+  <s:set var="title" value="getText('main.title')" /> 	
+  <title><decorator:title default="${title}" /></title>
 
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=8" />
   
-  <link rel="shortcut icon" href="http://mta.info/siteimages/favicon.ico" type="image/x-icon"/>
-
-  <script type="text/javascript" src="http://mta.info/js/csshorizontalmenu.js"><!-- //prevent jspx minimization --></script>
+  <s:set var="favicon" value="getText('favicon.url')" />
+  <link rel="shortcut icon" href="${favicon}" type="image/x-icon"/>
 
   <s:url var="url" value="/css/reset.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
@@ -79,67 +79,25 @@
 <div id="mainbox">
 	<div id="topbar">
 		<div id="branding">
-			<a href="http://mta.info/default.html">
-				<img src="http://mta.info/template/images/mta_info.gif" alt="MTA.info logo" />
+			<s:set var="link" value="getText('main.agency.link')" />
+			<a href="${link}">
+			  	<s:url var="url" value="/css/img/agency_logo.gif"></s:url>
+				<img src="${url}" alt="Agency logo" />
 			</a>
 		</div>
 		
 		<div id="search">
 			<ul id="topbar-links">
 				<c:if test="${showWeekender}">
-					<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/weekender.html">The Weekender</a></li>
+					<s:set var="link" value="getText('main.weekender.link')" />
+					<li class="list_h" style="margin-left:4px;"><a href="${link}">The Weekender</a></li>
 				</c:if>			
-				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/accessibility">Accessibility</a></li>
-				<li class="list_h" style="margin-left:4px;"><a href="http://assistive.usablenet.com/tt/http://mta.info/index.html">Text-only</a></li>
-				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/faqs.htm">FAQs/Contact Us</a></li>
-			</ul>
-			<br />
-	
-			<form id="searchform" method="get" action="http://search.mta.info/search">
-				<input type="hidden" name="site" value="my_collection"/>
-				<input type="hidden" name="client" value="my_collection"/>
-				<input type="hidden" name="proxystylesheet" value="my_collection"/>
-				<input type="hidden" name="output" value="xml_no_dtd"/>				
-				
-				<input type="submit" name="btnG" value="search" id="searchbutton" style="padding: 1px 8px;"/>
-				<input type="text" name="q" id="searchinputbox" alt="searchinputbox" size="12" maxlength="255" value=""/>
-			</form>		
-		</div>
-
-		<div id="horizontalcssmenu" style="clear: both;">	
-			<ul id="cssmenu1">
-				<li style="width:7%; border-left: none;"><a href="http://mta.info/default.html">Home</a>
-					<ul>
-						<li><a href="http://mta.info/default.html">MTA Home</a></li>
-						<li><a href="http://mta.info/nyct">NYC Subways and Buses</a></li>
-						<li><a href="http://mta.info/lirr">Long Island Rail Road</a></li>						
-						<li><a href="http://mta.info/libus">Long Island Bus</a></li>
-						<li><a href="http://mta.info/mnr">Metro-North Railroad</a></li>
-						<li><a href="http://mta.info/bandt">Bridges and Tunnels</a></li>
-						<li><a href="http://mta.info/capital">MTA Capital Program</a></li>
-					</ul> 
-				</li>
-				<li style="width: 9%;"><a href="http://mta.info/schedules">Schedules</a></li>
-				<li style="width: 12%;"><a href="http://mta.info/fares">Fares &amp;amp; Tolls</a></li>
-				<li style="width: 7%;"><a href="http://mta.info/maps">Maps</a></li>
-				<li style="width: 19%;"><a href="http://mta.info/service">Planned Service Changes</a></li>
-				<li style="width: 13%;"><a href="http://mta.info/about">About the MTA</a></li>
-				<li style="width: 19%;"><a href="http://mta.info/business">Doing Business With Us</a></li>
-				<li style="width: 14%; position: absolute; margin-left:-1px;"><a href="http://mta.info/accountability/">Transparency</a>
-					<ul>
-						<li><a href="http://mta.info/accountability">Main Page</a></li>
-						<li><a href="http://mta.info/mta/boardmaterials.html">Board Materials</a></li>
-						<li><a href="http://mta.info/mta/budget/">Budget Info</a></li>
-						<li><a href="http://mta.info/capital">Capital Program Info</a></li>
-						<li><a href="http://mta.info/capitaldashboard/index.html">Capital Program Dashboard</a></li>
-						<li><a href="http://mta.info/mta/leadership/">MTA Leadership</a></li>
-						<li><a href="http://mta.info/mta/ind-perform/">Performance Indicators</a></li>				
-						<li><a href="http://mta.info/news/">Press Releases and News</a></li>
-						<li><a href="http://mta.info/mta/news/hearings">Public Hearings</a></li>
-					</ul>
-				</li>
 			</ul>
 		</div>
+		
+		<!-- Include the tabs.jspx that provides branded links -->
+		<c:import url="/WEB-INF/decorators/includes/tabs.jspx" />
+		
 	</div> <!-- close topbar -->
 	
 	<div id="contentbox">

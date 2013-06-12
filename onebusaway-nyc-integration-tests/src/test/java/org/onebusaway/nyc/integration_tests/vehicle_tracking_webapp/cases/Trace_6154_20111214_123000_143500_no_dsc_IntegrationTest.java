@@ -16,8 +16,6 @@
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
 import org.junit.Ignore;
-import org.junit.runner.RunWith;
-import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
 /**
@@ -27,7 +25,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTrac
 
 // disabled per Mike, for now.
 @Ignore
-@RunWith(RunUntilSuccess.class)
 public class Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest() throws Exception {

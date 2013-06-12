@@ -17,11 +17,6 @@
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
     </bean>
  
-    <bean id="vehicleTrackingManagementService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-       <property name="serviceUrl" value="${vtms.path}/remoting/vehicle-tracking-management-service" />
-       <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
-    </bean>
- 
     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
        <property name="serviceUrl" value="${config.path}/remoting/configuration-service" />
        <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
@@ -44,16 +39,6 @@
                 value="true" />
     </bean>
 
-<!--
-    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-        <property name="target" value="hibernateProperties" />
-        <property name="properties">
-            <props>
-                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
-            </props>
-        </property>
-    </bean>
--->
     <alias name="dataSource" alias="mutableDataSource" />
 
 

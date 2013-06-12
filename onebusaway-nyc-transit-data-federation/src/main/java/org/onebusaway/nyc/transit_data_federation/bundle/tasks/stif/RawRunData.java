@@ -1,53 +1,39 @@
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
-
 public class RawRunData {
 
-  private String run1;
-  private String run2;
-  private ServiceCode serviceCode;
-  private String nextRun;
-  private String serviceId;
+  private String runId;
+  private String reliefRunId;
+  private String nextOperatorRunId;
   private String block;
   private String depotCode;
 
-  public RawRunData(String run1, String run2, String nextRun, String serviceId, ServiceCode serviceCode, String block, String depotCode) {
-    this.run1 = run1;
-    this.run2 = run2;
-    this.nextRun = nextRun;
-    this.serviceId = serviceId;
-    this.serviceCode = serviceCode;
+  public RawRunData(String runId, String reliefRunId, String nextOperatorRunId, String block, String depotCode) {
+    this.runId = runId;
+    this.reliefRunId = reliefRunId;
+    this.nextOperatorRunId = nextOperatorRunId;
     this.block = block;
     this.depotCode = depotCode;
   }
 
-  public String getRun1() {
-    return run1;
+  public String getRunId() {
+    return runId;
   }
 
-  public void setRun1(String run1) {
-    this.run1 = run1;
+  public void setRunId(String run) {
+    this.runId = run;
   }
 
-  public String getRun2() {
-    return run2;
+  public String getReliefRunId() {
+    return reliefRunId;
   }
 
-  public void setRun2(String run2) {
-    this.run2 = run2;
-  }
-
-  public ServiceCode getServiceCode() {
-    return serviceCode;
+  public void setReliefRunId(String run) {
+    this.reliefRunId = run;
   }
 
   public String getNextRun() {
-    return nextRun;
-  }
-
-  public String getServiceId() {
-    return serviceId;
+    return nextOperatorRunId;
   }
 
   public String getBlock() {

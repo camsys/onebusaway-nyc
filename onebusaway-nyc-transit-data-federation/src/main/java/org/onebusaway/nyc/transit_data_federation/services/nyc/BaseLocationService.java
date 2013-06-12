@@ -15,11 +15,23 @@
  */
 package org.onebusaway.nyc.transit_data_federation.services.nyc;
 
-import org.onebusaway.geospatial.model.CoordinatePoint;
+import java.util.List;
 
+import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.NonRevenueStopData;
+
+/**
+ * Locations of bases/depots.
+ * @author jmaki
+ *
+ */
 public interface BaseLocationService {
 
   public String getBaseNameForLocation(CoordinatePoint location);
 
   public String getTerminalNameForLocation(CoordinatePoint location);
+  
+  public List<NonRevenueStopData> getNonRevenueStopsForTripId(AgencyAndId tripId);
+
 }

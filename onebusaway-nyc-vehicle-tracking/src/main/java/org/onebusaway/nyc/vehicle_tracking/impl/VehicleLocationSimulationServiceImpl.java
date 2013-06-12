@@ -90,8 +90,6 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private static final String ARG_VEHICLE_ID = "vehicle_id";
 
-  private static final String ARG_RUN_TRANSITION_PARAMS = "run_transition_params";
-
   private static final String ARG_SHIFT_START_TIME = "shift_start_time";
 
   private static final String ARG_LOCATION_SIGMA = "location_sigma";

@@ -161,6 +161,11 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
   public ArchivedInferredLocationRecord(NycQueuedInferredLocationBean message,
       String contents) {
+    this(message, contents, System.currentTimeMillis());
+  }
+  
+  public ArchivedInferredLocationRecord(NycQueuedInferredLocationBean message,
+      String contents, long timeReceived) {
     super();
 
     Double possibleNaN;
@@ -176,7 +181,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setVehicleId(vehicleId);
     setAgencyId(agency);
 
-    setArchiveTimeReceived(new Date(System.currentTimeMillis()));
+    setArchiveTimeReceived(new Date(timeReceived));
 
     setServiceDate(new Date(message.getServiceDate()));
     setScheduleDeviation(message.getScheduleDeviation());
@@ -197,6 +202,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
       setInferredLongitude(null);
     else
       setInferredLongitude(new BigDecimal(message.getInferredLongitude()));
+   
     setInferredPhase(message.getPhase());
     setInferredStatus(message.getStatus());
     setInferredRouteId(message.getRouteId());

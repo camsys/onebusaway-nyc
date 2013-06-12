@@ -66,8 +66,10 @@ public class EmailServiceImpl implements EmailService, ServletContextAware {
     
 
     } catch (Exception ioe) {
+      // log this heavily, but don't let it prevent context startup
+      _log.error("EmailServiceImpl setup failed, likely due to missing or invalid credentials.");
       _log.error(ioe.toString());
-      throw new RuntimeException(ioe);
+      
     }
 
   }

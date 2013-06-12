@@ -120,115 +120,95 @@
 </s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<meta name="google-translate-customization" content="ea3490d1ee5252ce-b5ce8e118c6dc2b1-gca0b8e88b1c76aea-10"></meta>
+<script type="text/javascript" src="http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"><!-- jspx --></script>
 
 </head>
 <body>
 <div id="content" class="map">
     <div id="searchbar">
-    
-    	<div id="map_header">
-		  	<div class="title">
-	   			<s:url var="url" value="/"></s:url>
-				<h1><a href="${url}">MTA Bus Time</a></h1>
-	  		</div>	  	
-	  			
-	   	  	<ul>
-	   	  		<s:url var="url" namespace="/m" action="index"/>
-				<li id="link_mobile" aria-label="Text only version"><a href="${url}">Text / Mobile</a></li>
-	    	  	
-				<s:url var="url" namespace="/wiki" action="About"/>
-				<li id="link_about"><a href="${url}">About</a></li>
-	
-				<s:url var="url" namespace="/wiki" action="ContactUs"/>
-				<li id="link_contact"><a href="${url}">Contact</a></li>
-	 			    
-	 			<s:url var="url" namespace="/wiki/Developers" action="Index"/>
-	 			<li id="link_developers"><a href="${url}">Developers</a></li>
-	 			
-	 			<s:url var="url" namespace="/wiki/Help" action="Index"/>
-	 			<li id="link_help"><a href="${url}">Help</a></li>
-		   	</ul>
-	   </div>
-    
-       <form action="search.action">
-         <input type="text" name="q" value=""/>
-         <input type="submit" value="Find" class="submit"/>
-         <p id="tip">TIP: Enter an intersection, bus route or bus stop code.</p>
-       </form>
-       
-       <div id="matches">
-       	 <h2>Results:</h2>
-       	 <ul><!-- //prevent jspx minimization --></ul>
-	   </div>
-	   
-	   <div id="filtered-matches">
-	   	<h2>Other routes here:</h2>
-	   	<ul><!-- //prevent jspx minimization --></ul>
-	   </div>
-
-       <div id="suggestions">
-       	 <h2>Did You Mean?</h2>
-       	 <ul></ul>
-	   </div>
-	            
-	   <div id="no-results">&amp;nbsp;</div>
-
-	   <div id="loading">
-		   	<div class="loading">
-		   		<span>Loading...</span>
-	   		</div>
-	   </div>
-
-	   <div id="welcome">
-		 <h2>Try these example searches:</h2>
-		 
-		 <ul>
-		 	<li>Route: &amp;nbsp; <a href="#B63">B63</a> &amp;nbsp; <a href="#S62">S62</a> &amp;nbsp; <a href="#X1">X1</a></li>
-		 	<li>Intersection: &amp;nbsp; <a href="#Main%20St%20and%20Craig%20Ave">Main St and Craig Ave</a></li>
-		 	<li>Stop Code: &amp;nbsp; <a href="#200884">200884</a></li>
-		 	<li>Location: &amp;nbsp; <a href="#10304">10304</a> &amp;nbsp; <a href="#Hylan%20Blvd">Hylan Blvd</a></li>
-		 </ul>
-	   </div>
-	   
-		<s:url var="url" namespace="/wiki/Help" action="Routes"/>
-		<div id="available-routes"><a href="${url}">Click here</a> for a list of available routes.</div>
-	   
-		<div id="cant-find">
-			<h2>Can't find your bus route?</h2>
-			<s:url var="url" namespace="/wiki/Help" action="Routes" />
-			<p>MTA Bus Time will be available NYC-wide by the end of 2013. <a href="${url}">Click here</a> to see which routes are currently available.</p>
-		</div>
+    	<div class="sidebar">
+	    	<div id="map_header">
+			  	<div class="title">
+		   			<s:url var="url" value="/"></s:url>
+					<h1><a href="${url}"><s:property value="getText('main.title')" /></a></h1>
+		  		</div>	  	
+		  			
+		   	  	<ul>
+		   	  		<s:url var="url" namespace="/m" action="index"/>
+					<li id="link_mobile" aria-label="Text only version"><a href="${url}">Text / Mobile</a></li>
+		    	  	
+					<s:url var="url" namespace="/wiki" action="About"/>
+					<li id="link_about"><a href="${url}">About</a></li>
 		
-		<s:if test="globalServiceAlerts!=null">
-		 <div id="global-alerts" class="global-alerts">
-			<s:iterator value="globalServiceAlerts">
-				<s:iterator value="descriptions">
-					<p class="global-alert-content"><strong>Service Notice: </strong><s:property value="value" /></p>
+					<s:url var="url" namespace="/wiki" action="ContactUs"/>
+					<li id="link_contact"><a href="${url}">Contact</a></li>
+		 			    
+		 			<s:url var="url" namespace="/wiki/Developers" action="Index"/>
+		 			<li id="link_developers"><a href="${url}">Developers</a></li>
+		 			
+		 			<s:url var="url" namespace="/wiki/Help" action="Index"/>
+		 			<li id="link_help"><a href="${url}">Help</a></li>
+			   	</ul>
+		   </div>
+	    
+	       <form action="search.action">
+	         <input type="text" name="q" value=""/>
+	         <input type="submit" value="Find" class="submit"/>
+	         <p id="tip">TIP: Enter an intersection, bus route or bus stop code.</p>
+	       </form>
+	       
+	       <div id="matches">
+	       	 <h2>Results:</h2>
+	       	 <ul><!-- //prevent jspx minimization --></ul>
+		   </div>
+		   
+		   <div id="filtered-matches">
+		   	<h2>Other routes here:</h2>
+		   	<ul><!-- //prevent jspx minimization --></ul>
+		   </div>
+	
+	       <div id="suggestions">
+	       	 <h2>Did You Mean?</h2>
+	       	 <ul></ul>
+		   </div>
+		            
+		   <div id="no-results">&amp;nbsp;</div>
+	
+		   <div id="loading">
+			   	<div class="loading">
+			   		<span>Loading...</span>
+		   		</div>
+		   </div>
+	
+			<!-- Include the welcome div with example searches -->
+			<c:import url="includes/welcome.jspx" />
+		   
+			<s:url var="url" namespace="/" action="routes"/>
+			<div id="available-routes"><a href="${url}">Click here</a> for a list of available routes.</div>
+		   
+			<div id="cant-find">
+				<h2>Can't find your bus route?</h2>
+				<s:url var="url" namespace="/" action="routes" />
+				<p><s:property value="getText('main.cantfindroute.text')" /> <a href="${url}">Click here</a> to see which routes are currently available.</p>
+			</div>
+			
+			<s:if test="globalServiceAlerts!=null">
+			 <div id="global-alerts" class="global-alerts">
+				<s:iterator value="globalServiceAlerts">
+					<s:iterator value="descriptions">
+						<p class="global-alert-content"><strong>Service Notice: </strong><s:property value="value" /></p>
+					</s:iterator>
 				</s:iterator>
-			</s:iterator>
-		 </div>
-		</s:if>
-
-		<div id="ad">
-		 <script type="text/javascript">&lt;!-- 
-			google_ad_client = "<s:property value="googleAdClientId" />"; 
-			/* MTA BusTime Page Ads */ 
-			google_ad_slot = "4760132359"; 
-			google_ad_width = 300; 
-			google_ad_height = 250; 
-			//--&gt;
-		 </script> 
-		 <script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"> <!-- //prevent jspx minimization --></script> 		
+			 </div>
+			</s:if>
+	
+			<!-- Include the Google ad -->
+			<c:import url="includes/ad.jspx" />
+		
 		</div>
-	   
-		<div id="google_translate_element"><!-- jspx --></div>
-		<script type="text/javascript">
-			function googleTranslateElementInit() {
-  				new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
-			}
-		</script>
-		<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"><!-- jspx --></script>
+		<div class="container clear"><!-- jspx --></div>
+	  	<s:url var="url" value="/css/img/google_logo.png"></s:url>
+		<div id="google_translate_element">Google Translate <img id="icon" src="${url}" /></div>
     </div>
 
 	<div id="map"><!-- //prevent jspx minimization --></div>
@@ -239,7 +219,7 @@
 	   			<li id="wizard-col1">
 	   				<a data-placement="right" class="wizard_panel" rel="popover">
 	    				<div id="inner-col1">
-	    					<h2>New to Bus Time?</h2>
+	    					<h2>New to <s:property value="getText('main.application.name')" />?</h2>
 	    					<p>Click here for instructions:</p>
 	    					<p>Just a few easy steps!</p>
 	    				</div>
@@ -278,13 +258,17 @@
 		</div>
 		<div id="wizard_finaltip">
 			<div>
-				<p><span style="font-weight: bold;">Tips:</span> <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a> Bus Time is also available via <a id="wizard_mobile" rel="popover">Mobile Web</a> or <a id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
+				<p><span style="font-weight: bold;">Tips:</span> <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a> <s:property value="getText('main.application.name')" /> is also available via <a id="wizard_mobile" rel="popover">Mobile Web</a> or <a id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
 				<p>Remember your 6-digit Stopcode from the pop-ups or find it on a <a id="tips_code_popup" rel="popover" data-placement="above">bus stop pole box</a>.</p>
-				<p id="sharelinks"><a id="wizard_share" rel="popover">Share</a> this link and tell others about Bus Time!
-					<a href="http://twitter.com/MTAInsider" target="_new"><span class="ui-icon ui-icon-twitter"> &amp;nbsp; </span></a>
-					<a href="http://www.facebook.com/MTA.info" target="_new"><span class="ui-icon ui-icon-facebook"> &amp;nbsp; </span></a>
-					<a href="http://www.youtube.com/playlist?list=PL70B2273F7B23A5F3" target="_new"><span class="ui-icon ui-icon-youtube"> &amp;nbsp; </span></a>
-					<a href="http://www.flickr.com/photos/mtaphotos" target="_new"><span class="ui-icon ui-icon-flickr"> &amp;nbsp; </span></a>
+				<p id="sharelinks"><a id="wizard_share" rel="popover">Share</a> this link and tell others about <s:property value="getText('main.application.name')" />!
+					<s:set var="link" value="getText('main.agency.twitter.link')" />
+					<a href="${link}" target="_new"><span class="ui-icon ui-icon-twitter"> &amp;nbsp; </span></a>
+					<s:set var="link" value="getText('main.agency.facebook.link')" />
+					<a href="${link}" target="_new"><span class="ui-icon ui-icon-facebook"> &amp;nbsp; </span></a>
+					<s:set var="link" value="getText('main.agency.youtube.link')" />
+					<a href="${link}" target="_new"><span class="ui-icon ui-icon-youtube"> &amp;nbsp; </span></a>
+					<s:set var="link" value="getText('main.agency.flickr.link')" />
+					<a href="${link}" target="_new"><span class="ui-icon ui-icon-flickr"> &amp;nbsp; </span></a>
 				</p>
 			</div>
 			<a class="close"><span class="close_txt">Close</span> ×</a>

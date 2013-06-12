@@ -1,7 +1,9 @@
 package org.onebusaway.nyc.webapp.actions.m;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,6 +52,7 @@ public class SearchResultFactoryImplTest {
   private static final String TEST_DESTINATION_NAME = "destination name";
   private static final String TEST_STOP_ID = "test stop id";
   private static final String TEST_PRESENTABLE_DISTANCE = "test presentable distance";
+  private static final long TEST_TIME = System.currentTimeMillis();
 
   @Mock
   private ConfigurationService _configurationService;
@@ -110,6 +113,7 @@ public class SearchResultFactoryImplTest {
   public void testGetStopResultServiceAlertWithNoDescriptionsOrSummaries() {
     StopResult result = runGetStopResult(createServiceAlerts(new String[] {},
         new String[] {}));
+    assertEquals(1, result.getAllRoutesAvailable().size());
     Set<String> alerts = result.getAllRoutesAvailable().get(0).getServiceAlerts();
     assertEquals(1, alerts.size());
     assertEquals("(no description)", alerts.toArray()[0]);
@@ -120,6 +124,7 @@ public class SearchResultFactoryImplTest {
   public void testGetStopResultServiceAlertWithDescriptionsOnly() {
     StopResult result = runGetStopResult(createServiceAlerts(new String[] {
         TEST_DESCRIPTION, TEST_DESCRIPTION2}, new String[] {TEST_SUMMARY}));
+    assertEquals(1, result.getAllRoutesAvailable().size());
     Set<String> alerts = result.getAllRoutesAvailable().get(0).getServiceAlerts();
     assertEquals(2, alerts.size());
     String[] array = alerts.toArray(new String[] {});
@@ -132,6 +137,7 @@ public class SearchResultFactoryImplTest {
   public void testGetStopResultServiceAlertWithSummariesOnly() {
     StopResult result = runGetStopResult(createServiceAlerts(new String[] {},
         new String[] {TEST_SUMMARY}));
+    assertEquals(1, result.getAllRoutesAvailable().size());
     Set<String> alerts = result.getAllRoutesAvailable().get(0).getServiceAlerts();
     assertEquals(1, alerts.size());
     assertEquals(TEST_SUMMARY, alerts.toArray()[0]);
@@ -142,6 +148,7 @@ public class SearchResultFactoryImplTest {
   public void testGetStopResultServiceAlertWithDescriptionsAndSummaries() {
     StopResult result = runGetStopResult(createServiceAlerts(
         new String[] {TEST_DESCRIPTION}, new String[] {TEST_SUMMARY}));
+    assertEquals(1, result.getAllRoutesAvailable().size());
     Set<String> alerts = result.getAllRoutesAvailable().get(0).getServiceAlerts();
     assertEquals(1, alerts.size());
     assertEquals(TEST_DESCRIPTION, alerts.toArray()[0]);
@@ -188,7 +195,7 @@ public class SearchResultFactoryImplTest {
     
     MonitoredVehicleJourneyStructure monVehJourney = mock(MonitoredVehicleJourneyStructure.class);
     when(monitoredStopVisitStructure.getMonitoredVehicleJourney()).thenReturn(monVehJourney);
-    when(monitoredStopVisitStructure.getRecordedAtTime()).thenReturn(new Date());
+    when(monitoredStopVisitStructure.getRecordedAtTime()).thenReturn(new Date(TEST_TIME));
     
     LineRefStructure lineRefStructure = mock(LineRefStructure.class);
     when(monVehJourney.getLineRef()).thenReturn(lineRefStructure );
@@ -212,7 +219,7 @@ public class SearchResultFactoryImplTest {
     when(monCall.getExtensions()).thenReturn(extensions );
     when(monVehJourney.getMonitoredCall()).thenReturn(monCall );
     
-    when(_realtimeService.getMonitoredStopVisitsForStop(TEST_STOP_ID, 0)).thenReturn(monitoredStopVisits );
+    when(_realtimeService.getMonitoredStopVisitsForStop(eq(TEST_STOP_ID), eq(0), anyLong())).thenReturn(monitoredStopVisits );
 
     when(_nycTransitDataService.getStopsForRoute(anyString())).thenReturn(
         stopsForRouteBean);
@@ -220,8 +227,8 @@ public class SearchResultFactoryImplTest {
         serviceAlerts);
     SearchResultFactoryImpl srf = new SearchResultFactoryImpl(
         _nycTransitDataService, _realtimeService, _configurationService);
-    Set<String> routeIdFilter = new HashSet<String>();
-    StopResult result = (StopResult) srf.getStopResult(stopBean, routeIdFilter);
+    Set<RouteBean> routeFilter = new HashSet<RouteBean>();
+    StopResult result = (StopResult) srf.getStopResult(stopBean, routeFilter);
     return result;
   }
 

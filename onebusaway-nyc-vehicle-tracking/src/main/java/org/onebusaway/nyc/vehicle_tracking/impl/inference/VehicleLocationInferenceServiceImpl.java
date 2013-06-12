@@ -15,48 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
-import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
-import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
-import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
-import org.onebusaway.transit_data.model.blocks.BlockBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMultiset;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Multiset.Entry;
-import com.google.common.collect.TreeMultiset;
-import com.jhlabs.map.proj.ProjectionException;
-
-import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
-
-import tcip_3_0_5_local.NMEA;
-import tcip_final_3_0_5_1.CcLocationReport;
-import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -79,6 +37,52 @@ import javax.annotation.PreDestroy;
 
 import lrms_final_09_07.Angle;
 
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
+import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+
+import tcip_3_0_5_local.NMEA;
+import tcip_final_3_0_5_1.CcLocationReport;
+import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
+import com.google.common.collect.TreeMultiset;
+import com.jhlabs.map.proj.ProjectionException;
+
 @Component
 public class VehicleLocationInferenceServiceImpl implements
     VehicleLocationInferenceService {
@@ -97,25 +101,28 @@ public class VehicleLocationInferenceServiceImpl implements
   private VehicleAssignmentService _vehicleAssignmentService;
 
   @Autowired
-  private BundleManagementService _bundleManagementService;
+  private TransitGraphDao _transitGraphDao;
 
   @Autowired
-  private NycTransitDataService _nycTransitDataService;
+  private BundleManagementService _bundleManagementService;
 
   private BundleItem _lastBundle = null;
 
   private ExecutorService _executorService;
 
-  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 2);
-
   private int _skippedUpdateLogCounter = 0;
 
-  private boolean _bypassInference = false;
+  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 5);
 
-  private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
+  private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = 
+		  new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
-
+	
+  public void setNumberOfProcessingThreads(int numberOfProcessingThreads) {
+    _numberOfProcessingThreads = numberOfProcessingThreads;
+  }
+  
   /**
    * Usually, we shoudn't ever have a reference to ApplicationContext, but we
    * need it for the prototype
@@ -127,18 +134,13 @@ public class VehicleLocationInferenceServiceImpl implements
     _applicationContext = applicationContext;
   }
 
-  public void setNumberOfProcessingThreads(int numberOfProcessingThreads) {
-    _numberOfProcessingThreads = numberOfProcessingThreads;
-  }
-
   @PostConstruct
   public void start() {
-    if (_numberOfProcessingThreads <= 0)
-      throw new IllegalArgumentException(
-          "numberOfProcessingThreads must be positive");
-    _log.info("creating threadpool of size=" + _numberOfProcessingThreads);
-    System.out.println("threadpool size=" +  _numberOfProcessingThreads);
-    _executorService = Executors.newFixedThreadPool(_numberOfProcessingThreads);
+	if (_numberOfProcessingThreads <= 0)
+	  throw new IllegalArgumentException("numberOfProcessingThreads must be positive");
+	
+	_log.info("Creating thread pool of size=" + _numberOfProcessingThreads);
+	_executorService = Executors.newFixedThreadPool(_numberOfProcessingThreads);
   }
 
   @PreDestroy
@@ -150,30 +152,58 @@ public class VehicleLocationInferenceServiceImpl implements
    * Service Methods
    ****/
 
-  @Override
-  public void handleNycRawLocationRecord(NycRawLocationRecord record) {
-    verifyVehicleResultMappingToCurrentBundle();
-    _bypassInference = false;
-
-    _executorService.execute(new ProcessingTask(record));
-  }
-
+  /**
+   * This method is used by the simulator to inject a trace into the inference process.
+   */
   @Override
   public void handleNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
-    _bypassInference = false;
 
-    _executorService.execute(new ProcessingTask(record));
+    synchronized(_vehicleInstancesByVehicleId) {
+    	final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
+    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record, true, false));
+    	_bundleManagementService.registerInferenceProcessingThread(result);
+    }
   }
-
+  
+  /**
+   * This method is used by the simulator to inject a trace into the inference PIPELINE, but not through
+   * the inference algorithm itself. 
+   */
   @Override
   public void handleBypassUpdateForNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
-    _bypassInference = true;
-    _executorService.execute(new ProcessingTask(record));
+	verifyVehicleResultMappingToCurrentBundle();
+
+	synchronized(_vehicleInstancesByVehicleId) {
+		final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
+    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record, true, true));
+    	_bundleManagementService.registerInferenceProcessingThread(result);
+    }
   }
 
+  /**
+   * This method is used by the simulator to inject real time records into the inference
+   * process. This is used as a replacement to the queue infrastructure by some users, so
+   * we don't handle this as a simulation.
+   */
+  @Override
+  public void handleNycRawLocationRecord(NycRawLocationRecord record) {
+    verifyVehicleResultMappingToCurrentBundle();
+
+	synchronized(_vehicleInstancesByVehicleId) {
+		final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
+    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record, false, false));
+    	_bundleManagementService.registerInferenceProcessingThread(result);
+    }
+  }
+
+  /**
+   * This method is used by the queue listener to process raw messages from the message queue. 
+   *
+   * ***This is the main entry point for data in the MTA project.***
+   */
   @Override
   public void handleRealtimeEnvelopeRecord(RealtimeEnvelope envelope) {
     final CcLocationReport message = envelope.getCcLocationReport();
@@ -212,10 +242,10 @@ public class VehicleLocationInferenceServiceImpl implements
     r.setDeviceId(message.getManufacturerData());
 
     final AgencyAndId vehicleId = new AgencyAndId(
-        message.getVehicle().getAgencydesignator(),
-        Long.toString(message.getVehicle().getVehicleId()));
+	        message.getVehicle().getAgencydesignator(),
+	        Long.toString(message.getVehicle().getVehicleId()));
     r.setVehicleId(vehicleId);
-
+    
     if (!StringUtils.isEmpty(message.getOperatorID().getDesignator()))
       r.setOperatorId(message.getOperatorID().getDesignator());
 
@@ -232,7 +262,7 @@ public class VehicleLocationInferenceServiceImpl implements
       r.setEmergencyFlag(false);
 
     final tcip_3_0_5_local.CcLocationReport gpsData = message.getLocalCcLocationReport();
-    if (gpsData != null) {
+    if (gpsData != null && gpsData.getNMEA() != null) {
       final NMEA nemaSentences = gpsData.getNMEA();
       final List<String> sentenceStrings = nemaSentences.getSentence();
 
@@ -281,8 +311,11 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
 
-    final Future result = _executorService.submit(new ProcessingTask(r));
-    _bundleManagementService.registerInferenceProcessingThread(result);
+	synchronized(_vehicleInstancesByVehicleId) {
+		final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId);    
+		final Future<?> result = _executorService.submit(new ProcessingTask(i, r, false, false));
+		_bundleManagementService.registerInferenceProcessingThread(result);
+	}
   }
 
   @Override
@@ -291,9 +324,11 @@ public class VehicleLocationInferenceServiceImpl implements
     final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
     if (instance == null)
       return null;
+
     final NycTestInferredLocationRecord record = instance.getCurrentState();
     if (record != null)
       record.setVehicleId(vid);
+    
     return record;
   }
 
@@ -303,21 +338,12 @@ public class VehicleLocationInferenceServiceImpl implements
     _observationCache.purge(vid);
   }
 
-  @Override
-  public void setVehicleStatus(AgencyAndId vid, boolean enabled) {
-    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
-    if (instance == null)
-      return;
-    instance.setVehicleStatus(enabled);
-  }
-
   /****
    * Debugging Methods
    ****/
 
   @Override
   public List<NycTestInferredLocationRecord> getLatestProcessedVehicleLocationRecords() {
-
     final List<NycTestInferredLocationRecord> records = new ArrayList<NycTestInferredLocationRecord>();
 
     for (final Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
@@ -406,7 +432,17 @@ public class VehicleLocationInferenceServiceImpl implements
   /****
    * Private Methods
    ****/
-
+  private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
+	  VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+      if (instance == null) {
+        final VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
+        instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
+        if (instance == null)
+          instance = newInstance;
+      }	
+      return instance;
+  }
+  
   /**
    * Has the bundle changed since the last time we returned a result?
    * 
@@ -440,7 +476,7 @@ public class VehicleLocationInferenceServiceImpl implements
       return;
 
     for (final AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
-      try {
+     try {
         final VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
         final NycTestInferredLocationRecord state = vehicleInstance.getCurrentState();
 
@@ -454,8 +490,8 @@ public class VehicleLocationInferenceServiceImpl implements
         }
 
         // no match to any trip
-        if (state.getInferredBlockId() == null
-            || state.getInferredTripId() == null) {
+        if (_transitGraphDao.getBlockEntryForId(AgencyAndIdLibrary.convertFromString(state.getInferredBlockId())) == null
+            || _transitGraphDao.getTripEntryForId(AgencyAndIdLibrary.convertFromString(state.getInferredTripId())) == null) {
           _log.info("Vehicle " + vehicleId
               + " reset on bundle change: no matched trip/block.");
 
@@ -463,18 +499,35 @@ public class VehicleLocationInferenceServiceImpl implements
           continue;
         }
 
-        // trip or block matched have disappeared!
-        final TripBean trip = _nycTransitDataService.getTrip(state.getInferredTripId());
-        final BlockBean block = _nycTransitDataService.getBlockForId(state.getInferredBlockId());
+        // make sure none of the current journey summaries contain blocks we no longer have
+        boolean vehicleStateResetVehicle = false;
+        for(Particle particle : getCurrentSampledParticlesForVehicleId(vehicleId)) {
+        	final VehicleState particleState = particle.getData();
+        	final BlockStateObservation particleBlockState = particleState.getBlockStateObservation();
+        	if(particleBlockState == null)
+        		continue;
+        	
+            final BlockInstance blockInstance = particleBlockState.getBlockState().getBlockInstance();
+            final BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+            final BlockEntry block = blockConfig.getBlock();
 
-        if (trip == null || block == null) {
-          _log.info("Vehicle "
-              + vehicleId
-              + " reset on bundle change: trip/block is no longer present in new bundle.");
+            final ScheduledBlockLocation blockLocation = particleBlockState.getBlockState().getBlockLocation();
+            final BlockTripEntry activeTrip = blockLocation.getActiveTrip();
+            
+            if (_transitGraphDao.getBlockEntryForId(block.getId()) == null
+                    || _transitGraphDao.getTripEntryForId(activeTrip.getTrip().getId()) == null) {
+                  _log.info("Vehicle " + vehicleId
+                      + " reset on bundle change: particle had no matched trip/block.");
 
-          this.resetVehicleLocation(vehicleId);
-          continue;
+                  this.resetVehicleLocation(vehicleId);
+                  vehicleStateResetVehicle = true;
+                  break;
+            }
         }
+        if(vehicleStateResetVehicle) 
+            continue;
+        
+        _log.info("NOT resetting vehicle ID " + vehicleId);
       } catch (final Exception e) {
         // if something goes wrong, reset inference state
         _log.info("Vehicle " + vehicleId
@@ -510,131 +563,123 @@ public class VehicleLocationInferenceServiceImpl implements
 
     private final AgencyAndId _vehicleId;
 
-    private final NycRawLocationRecord _inferenceRecord;
+    private final NycRawLocationRecord _nycRawLocationRecord;
 
     private NycTestInferredLocationRecord _nycTestInferredLocationRecord;
 
+    private final VehicleInferenceInstance _inferenceInstance;
+
+    private boolean _bypass = false;
+    
     private boolean _simulation = false;
-
-    public ProcessingTask(NycRawLocationRecord record) {
+    
+    public ProcessingTask(VehicleInferenceInstance inferenceInstance, NycRawLocationRecord record, 
+    		boolean simulation, boolean bypass) {
+      _inferenceInstance = inferenceInstance;
       _vehicleId = record.getVehicleId();
-      _inferenceRecord = record;
+
+      _nycRawLocationRecord = record;
+      
+      _simulation = simulation;
+      _bypass = bypass;
     }
 
-    public ProcessingTask(NycTestInferredLocationRecord record) {
-      _vehicleId = record.getVehicleId();
+    public ProcessingTask(VehicleInferenceInstance inferenceInstance, NycTestInferredLocationRecord record, 
+    		boolean simulation, boolean bypass) {
+      _inferenceInstance = inferenceInstance;
+      _vehicleId = record.getVehicleId();      
+      
       _nycTestInferredLocationRecord = record;
-      _inferenceRecord = RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record);
-      _simulation = true;
-    }
+      _nycRawLocationRecord = RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record);
 
-    private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
-      VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
-
-      if (instance == null) {
-        final VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
-
-        instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId,
-            newInstance);
-
-        if (instance == null)
-          instance = newInstance;
-
-        if (_simulation) {
-          final DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
-          newInstance.setOperatorAssignmentService(opSvc);
-          _log.warn("Set operator assignment service to dummy!");
-        }
-      }
-
-      return instance;
+      _simulation = simulation;
+      _bypass = bypass;
     }
 
     @Override
     public void run() {
-      try {
-        final VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
+    	try {
+    		// operator assignment service in simulation case: returns a 1:1 result to what the trace indicates is the 
+    		// true operator assignment.
+    		if (_simulation) {
+    			final DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
 
-        if (_simulation) {
-          final String assignedRun = _nycTestInferredLocationRecord.getAssignedRunId();
-          final String operatorId = _nycTestInferredLocationRecord.getOperatorId();
-          if (!Strings.isNullOrEmpty(assignedRun)
-              && !Strings.isNullOrEmpty(operatorId)) {
-            DummyOperatorAssignmentServiceImpl opSvc;
-            if ((existing.getOperatorAssignmentService() instanceof DummyOperatorAssignmentServiceImpl)) {
-              opSvc = (DummyOperatorAssignmentServiceImpl) existing.getOperatorAssignmentService();
-              final String[] runParts = assignedRun.split("-");
+    			final String assignedRun = _nycTestInferredLocationRecord.getAssignedRunId();
+    			final String operatorId = _nycTestInferredLocationRecord.getOperatorId();
+    			if (!Strings.isNullOrEmpty(assignedRun) && !Strings.isNullOrEmpty(operatorId)) {
+    				final String[] runParts = assignedRun.split("-");
+    				opSvc.setOperatorAssignment(new AgencyAndId(
+    						_nycRawLocationRecord.getVehicleId().getAgencyId(), operatorId),
+    						runParts[1], runParts[0]);
+    			}
 
-              opSvc.setOperatorAssignment(new AgencyAndId(
-                  _inferenceRecord.getVehicleId().getAgencyId(), operatorId),
-                  runParts[1], runParts[0]);
-            }
-          }
-        }
+    			_inferenceInstance.setOperatorAssignmentService(opSvc);
+    			_log.warn("Set operator assignment service to dummy for debugging!");
+    		}
 
-        final boolean passOnRecord = sendRecord(existing);
-        if (passOnRecord) {
+    		// bypass/process record through inference
+    		boolean inferenceSuccess = false;
+    		synchronized(_inferenceInstance) {
+    			if (_nycRawLocationRecord != null) {
+    				if (_bypass == true) {
+    					inferenceSuccess = _inferenceInstance.handleBypassUpdate(_nycTestInferredLocationRecord);
+    				} else {
+    					inferenceSuccess = _inferenceInstance.handleUpdate(_nycRawLocationRecord);
+    				}
+    			}
+    		}
 
-          if (_bypassInference == true) {
-            final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(_nycTestInferredLocationRecord);
-            record.setVehicleId(_vehicleId.toString());
+    		if (inferenceSuccess) {
+    			// send input "actuals" as inferred result to output queue to bypass inference process
+    			if (_bypass == true) {
+    				final NycQueuedInferredLocationBean record = 
+    						RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(_nycTestInferredLocationRecord);
+    				record.setVehicleId(_vehicleId.toString());
 
-            if(record.getServiceDate() == 0) {
-            	final GregorianCalendar gc = new GregorianCalendar();
-            	gc.setTime(_nycTestInferredLocationRecord.getTimestampAsDate());
-            	gc.set(Calendar.HOUR_OF_DAY, 0);
-            	gc.set(Calendar.MINUTE, 0);
-            	gc.set(Calendar.SECOND, 0);
-            	record.setServiceDate(gc.getTimeInMillis());
-            }
-            
-            _outputQueueSenderService.enqueue(record);
+    				// fix up the service date if we're shifting the dates of the record to now, since
+    				// the wrong service date will make the TDS not match the trip properly.
+    				if(record.getServiceDate() == 0) {
+    					final GregorianCalendar gc = new GregorianCalendar();
+    					gc.setTime(_nycTestInferredLocationRecord.getTimestampAsDate());
+    					gc.set(Calendar.HOUR_OF_DAY, 0);
+    					gc.set(Calendar.MINUTE, 0);
+    					gc.set(Calendar.SECOND, 0);
+    					record.setServiceDate(gc.getTimeInMillis());
+    				}
 
-          } else {
-            // management bean (becomes part of inference bean)
-            final NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
-            managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
-            managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
+    				_outputQueueSenderService.enqueue(record);
 
-            final BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
-            if (currentBundle != null) {
-              managementRecord.setActiveBundleId(currentBundle.getId());
-            }
+    				// send inferred result to output queue
+    			} else {
+    				final NycVehicleManagementStatusBean managementRecord = _inferenceInstance.getCurrentManagementState();
+    				managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
+    				managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
 
-            // inference result bean
-            final NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
-            record.setVehicleId(_vehicleId.toString());
-            record.setManagementRecord(managementRecord);
+    				final BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
+    				if (currentBundle != null) {
+    					managementRecord.setActiveBundleId(currentBundle.getId());
+    				}
 
-            _outputQueueSenderService.enqueue(record);
-          }
-        }
-      } catch (final ProjectionException e) {
-        // discard
-      } catch (final Throwable ex) {
-        _log.error(
-            "Error processing new location record for inference on vehicle "
-                + _vehicleId + ": ", ex);
-      }
-    }
+    				final NycQueuedInferredLocationBean record = _inferenceInstance.getCurrentStateAsNycQueuedInferredLocationBean();
+    				record.setVehicleId(_vehicleId.toString());
+    				record.setManagementRecord(managementRecord);
 
-    private boolean sendRecord(VehicleInferenceInstance existing) {
-      if (_inferenceRecord != null) {
-        if (_bypassInference == true) {
-          return existing.handleBypassUpdate(_nycTestInferredLocationRecord);
-        } else {
-          return existing.handleUpdate(_inferenceRecord);
-        }
-      }
-
-      return false;
+    				_outputQueueSenderService.enqueue(record);
+    			}
+    		}
+    	} catch (final ProjectionException e) {
+    		// discard this one
+    	} catch (final Throwable ex) {
+    		_log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", ex);        
+    		resetVehicleLocation(_vehicleId);
+    		_observationCache.purge(_vehicleId);    	  
+    	}
     }
   }
 
   @Override
   public void setSeeds(long cdfSeed, long factorySeed) {
     ParticleFactoryImpl.setSeed(factorySeed);
-    BlockStateTransitionModel.setSeed(factorySeed);
     CategoricalDist.setSeed(cdfSeed);
   }
 }

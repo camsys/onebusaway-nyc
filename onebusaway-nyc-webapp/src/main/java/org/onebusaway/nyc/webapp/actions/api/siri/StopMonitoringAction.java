@@ -13,34 +13,6 @@
  */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
-import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
-import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-
-import com.dmurph.tracking.AnalyticsConfigData;
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
-import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.org.siri.siri.ErrorDescriptionStructure;
-import uk.org.siri.siri.MonitoredStopVisitStructure;
-import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
-import uk.org.siri.siri.OtherErrorStructure;
-import uk.org.siri.siri.ServiceDelivery;
-import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
-import uk.org.siri.siri.Siri;
-import uk.org.siri.siri.StopMonitoringDeliveryStructure;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,6 +25,31 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.struts2.convention.annotation.ParentPackage;
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
+import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.org.siri.siri.ErrorDescriptionStructure;
+import uk.org.siri.siri.MonitoredStopVisitStructure;
+import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.OtherErrorStructure;
+import uk.org.siri.siri.ServiceDelivery;
+import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
+import uk.org.siri.siri.Siri;
+import uk.org.siri.siri.StopMonitoringDeliveryStructure;
+
+@ParentPackage("onebusaway-webapp-api")
 public class StopMonitoringAction extends OneBusAwayNYCActionSupport 
   implements ServletRequestAware, ServletResponseAware {
 
@@ -75,9 +72,10 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
   private HttpServletResponse _servletResponse;
   
+  // See urlrewrite.xml as to how this is set.  Which means this action doesn't respect an HTTP Accept: header.
   private String _type = "xml";
-  
-  private JGoogleAnalyticsTracker _googleAnalytics = null;
+
+  private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
   
   public void setType(String type) {
     _type = type;
@@ -85,21 +83,12 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
   @Override
   public String execute() {
-    
-    String googleAnalyticsSiteId = 
-        _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);
-    
-    try {
-      if(googleAnalyticsSiteId != null) {    
-        AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, null);
-        _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
-      }
-    } catch(Exception e) {
-      // discard
-    }
-    
-    _realtimeService.setTime(getTime());
-    
+  
+	long responseTimestamp = getTime();
+    _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
+  
+    _realtimeService.setTime(responseTimestamp);
+
     String directionId = _request.getParameter("DirectionRef");
     
     // We need to support the user providing no agency id which means 'all agencies'.
@@ -202,13 +191,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       minimumStopVisitsPerLine = null;
     }
     
-    if(_googleAnalytics != null && _request.getParameter("key") != null && !_request.getParameter("key").isEmpty()) {
-      try {
-      _googleAnalytics.trackEvent("API", "Stop Monitoring", StringUtils.join(stopIds, ","));
-      } catch(Exception e) {
-        //discard
-      }
-    }
+    _monitoringActionSupport.reportToGoogleAnalytics(_request, "Stop Monitoring", StringUtils.join(stopIds, ","), _configurationService);
 
     List<MonitoredStopVisitStructure> visits = new ArrayList<MonitoredStopVisitStructure>();
 
@@ -217,7 +200,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       if (!stopId.hasValues()) continue;
       
       // Stop ids can only be valid here because we only added valid ones to stopIds.
-      List<MonitoredStopVisitStructure> visitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(), maximumOnwardCalls);
+      List<MonitoredStopVisitStructure> visitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(), maximumOnwardCalls, responseTimestamp);
       if (visitsForStop != null) visits.addAll(visitsForStop); 
     }
     
@@ -269,7 +252,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       error = new Exception(errorString);
     }
     
-    _response = generateSiriResponse(visits, stopIds, error);
+    _response = generateSiriResponse(visits, stopIds, error, responseTimestamp);
     
     try {
       this._servletResponse.getWriter().write(getStopMonitoring());
@@ -297,13 +280,13 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     return false;
   }
   
-  private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits, List<AgencyAndId> stopIds, Exception error) {
+  private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits, List<AgencyAndId> stopIds, Exception error, long responseTimestamp) {
     
     StopMonitoringDeliveryStructure stopMonitoringDelivery = new StopMonitoringDeliveryStructure();
-    stopMonitoringDelivery.setResponseTimestamp(new Date(getTime()));
+    stopMonitoringDelivery.setResponseTimestamp(new Date(responseTimestamp));
     
     ServiceDelivery serviceDelivery = new ServiceDelivery();
-    serviceDelivery.setResponseTimestamp(new Date(getTime()));
+    serviceDelivery.setResponseTimestamp(new Date(responseTimestamp));
     serviceDelivery.getStopMonitoringDelivery().add(stopMonitoringDelivery);
     
     if (error != null) {
@@ -321,13 +304,13 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       stopMonitoringDelivery.setErrorCondition(errorConditionStructure);
     } else {
       Calendar gregorianCalendar = new GregorianCalendar();
-      gregorianCalendar.setTimeInMillis(getTime());
+      gregorianCalendar.setTimeInMillis(responseTimestamp);
       gregorianCalendar.add(Calendar.MINUTE, 1);
       stopMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
 
       stopMonitoringDelivery.getMonitoredStopVisit().addAll(visits);
 
-      serviceDelivery.setResponseTimestamp(new Date(getTime()));
+      serviceDelivery.setResponseTimestamp(new Date(responseTimestamp));
       
       _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _nycTransitDataService, stopIds);
       _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(serviceDelivery, _realtimeService);

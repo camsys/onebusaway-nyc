@@ -24,6 +24,8 @@
 	<li><a href="bundles.do">Bundle Status</a></li>
 	<li><a href="vehicle-location-simulation.do">Vehicle Simulator/Logged Data Playback</a></li>
 	<li><a href="data-debug.do">Data Debug/Sanity Checks</a></li>
+	<li><a href="release.do">Version Information</a></li>
+	<li><a href="status.do">Configuration Information</a></li>
 </ul>
 </body>
 </html>

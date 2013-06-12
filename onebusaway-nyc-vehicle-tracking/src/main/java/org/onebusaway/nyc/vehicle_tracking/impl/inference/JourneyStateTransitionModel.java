@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.RunLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -24,7 +22,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,17 +29,17 @@ import org.springframework.stereotype.Component;
 public class JourneyStateTransitionModel {
 
   /*
-   * Time that the vehicle needs to be not moving in order to be a layover.
+   * Time (seconds) that the vehicle needs to be not moving in order to be a layover.
    */
   private static final double LAYOVER_WAIT_TIME = 120d;
-  private static final double _remainingTripDistanceDetourCutoff = 80d;
-
-  @Autowired
-  public void setBlockStateTransitionModel(
-      BlockStateTransitionModel blockStateTransitionModel) {
-  }
+  
+  /*
+   * The minimum-required distance left on the trip to be eligible for detour state.
+   */
+  private static final double _remainingTripDistanceDetourCutoff = 280d;
 
   private VehicleStateLibrary _vehicleStateLibrary;
+
   private BlocksFromObservationService _blocksFromObservationService;
 
   @Autowired
@@ -84,8 +81,6 @@ public class JourneyStateTransitionModel {
     
     if (remainingDistanceOnTrip < _remainingTripDistanceDetourCutoff)
       return false;
-        
-    
 
     /*
      * If it was previously snapped, in-service and in the middle of a block
@@ -144,14 +139,12 @@ public class JourneyStateTransitionModel {
         } else {
           return JourneyState.deadheadBefore(null);
         }
-      } else if (distanceAlong >= blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
-        
-//        if (!MotionModelImpl.hasRunChanged(parentStateObservation,
-//              blockState)) {
-          return JourneyState.deadheadAfter();
-//        } else {
-//          return JourneyState.deadheadBefore(null);
-//        }
+      } else if (distanceAlong > blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
+        /*
+         * Note: we changed this from >= because snapped deadhead-after states could be more
+         * likely than in-progress at/near the end.
+         */
+         return JourneyState.deadheadAfter();
         
       } else {
         /*

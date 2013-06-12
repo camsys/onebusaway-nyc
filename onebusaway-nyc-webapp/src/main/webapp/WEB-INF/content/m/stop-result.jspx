@@ -30,8 +30,8 @@
 		</div>
 						
 		<s:if test="%{routesWithArrivals.size+routesWithNoVehiclesEnRoute.size+routesWithNoScheduledService.size==0}">
-			<s:if test="%{results.routeIdFilter.size&gt;0}">
-				<p class="noService">No <s:property value="routeIdFilterShortName" /> service available at this stop.</p>
+			<s:if test="%{results.routeFilter.size&gt;0}">
+				<p class="noService">No <s:property value="routeFilterShortName" /> service available at this stop.</p>
 			</s:if>
 			<s:else>
 				<p class="noService">No service is available at this stop.</p>
@@ -108,7 +108,7 @@
 		<s:if test="%{uniqueServiceAlertsForResults.size&gt;0}">
 			<div class="alerts">
 				<p>
-					<strong>Service Change:</strong>
+					<strong>Service Alert:</strong>
 				</p>
 				<ul class="alerts">
 					<c:forEach var="uniqueServiceAlert" items="${uniqueServiceAlertsForResults}">
@@ -119,7 +119,7 @@
 		</s:if>
 	</div>
 	
-	<s:if test="%{results.routeIdFilter.size>0 and filteredRoutes.size>0}">
+	<s:if test="%{results.routeFilter.size>0 and filteredRoutes.size>0}">
 		<p class="stopResultGroupHeader">
 			Other routes here:
 		</p>

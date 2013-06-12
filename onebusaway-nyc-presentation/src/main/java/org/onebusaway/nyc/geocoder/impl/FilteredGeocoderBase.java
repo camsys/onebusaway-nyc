@@ -32,6 +32,11 @@ import org.geotools.geometry.jts.JTSFactoryFinder;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An implementation of OBA's geocoder class to plug into front-end apps that require it.
+ * @author jmaki
+ *
+ */
 public abstract class FilteredGeocoderBase implements NycGeocoderService, GeocoderService {
 
   private static GeometryFactory _geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
@@ -43,7 +48,10 @@ public abstract class FilteredGeocoderBase implements NycGeocoderService, Geocod
     _wktFilterPolygon = (Polygon)reader.read(wkt);
   }
 
-  // (method to make legacy OBA components that use the geocoder happy...)
+  /**
+   * This method does nothing--it's only required to implement GeocoderService which 
+   * classic OBA components require to exist in the Spring container to work.
+   */
   public GeocoderResults geocode(String location) {
     return null;
   }

@@ -54,15 +54,15 @@
             </props>
         </property>
     </bean>
-    
-<!--   <bean id="particleFilterModel" class="org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel"> -->
-<!--     <property name="particleFactory" ref="particleFactory" /> -->
-<!--     <property name="motionModel" ref="motionModel" /> -->
-<!--     <property name="sensorModel" ref="sensorModel" /> -->
-<!-- <property name="testingEnabled"><value type="java.lang.Boolean">true</value></property>  -->
-<!--     <property name="threads" value="1" /> -->
-<!--   </bean> -->
-  
+
+    <bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyPartitionedInputQueueListenerTask"/>     
+
+	<!--  Time Queue Configuration -->
+	<!--  This option integrates with an external time prediction queue -->
+	<bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
+		<property name="disable" value="true"/>
+	</bean>
+	
   	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyOutputQueueSenderServiceImpl">
   		<property name="isPrimaryInferenceInstance" value="true"/>
 	</bean>

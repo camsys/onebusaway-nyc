@@ -15,7 +15,20 @@
  */
 package org.onebusaway.nyc.sms.actions;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
@@ -32,27 +45,11 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dmurph.tracking.AnalyticsConfigData;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 public class IndexAction extends SessionedIndexAction {
   
@@ -107,12 +104,21 @@ public class IndexAction extends SessionedIndexAction {
       _searchResults = _searchService.getSearchResults(queryString, _resultFactory);
     } else if (commandString != null && commandString.equals("R") && _lastQuery != null && !_lastQuery.isEmpty()) {
       _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
+    } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && getRoutesInSearchResults().contains(commandString)) {
+      // We are all set, let the existing stop results be processed given the route command string
+    } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && StringUtils.isNumeric(commandString)) {
+      // We are all set, let the existing stop results be processed given the number (which is the users choice of stop) command string
+    } else if ((queryString == null || queryString.isEmpty()) && commandString != null && _searchResults != null && _searchResults.getSuggestions().size() > 0) {
+      // We have suggestions with a command string for picking one of them or paginating
+    } else if (queryString == null || queryString.isEmpty()) {
+      _response = errorResponse("No results.");
+      return SUCCESS;
     }
           
     while(true) {
       if(_searchResults.getMatches().size() > 0) {
         // route identifier search
-        if(_searchResults.getMatches().size() == 1 && _searchResults.getResultType().equals("RouteResult")) {
+        if(_searchResults.getMatches().size() == 1 && "RouteResult".equals(_searchResults.getResultType())) {
           RouteResult route = (RouteResult)_searchResults.getMatches().get(0);
 
           // If we get a route back, but there is no direction information in it,
@@ -152,7 +158,7 @@ public class IndexAction extends SessionedIndexAction {
           }
           
         // paginated service alerts
-        } else if(_searchResults.getResultType().equals("ServiceAlertResult")) {
+        } else if("ServiceAlertResult".equals(_searchResults.getResultType())) {
           if(commandString != null && commandString.equals("N")) {
             _response = serviceAlertResponse(_searchResultsCursor);
           } else {
@@ -161,7 +167,7 @@ public class IndexAction extends SessionedIndexAction {
           break;
           
         // one or more paginated stops
-        } else if(_searchResults.getResultType().equals("StopResult")) {
+        } else if("StopResult".equals(_searchResults.getResultType())) {
           if (commandString != null && commandString.equals("N")) {
             
             _response = directionDisambiguationResponse();
@@ -174,8 +180,8 @@ public class IndexAction extends SessionedIndexAction {
             // Filter the result set to only the ones containing the chosen route in each direction
             // might have to do a quick fake search to get a filter object
             SearchResultCollection justToGetAFilter = _searchService.getSearchResults("00000 " + commandString, _resultFactory);
-            _searchResults.getRouteIdFilter().clear();
-            _searchResults.addRouteIdFilters(justToGetAFilter.getRouteIdFilter());
+            _searchResults.getRouteFilter().clear();
+            _searchResults.addRouteFilters(justToGetAFilter.getRouteFilter());
             
             // Filter the stop results down to the provided route for only up to one stop in each direction
             filterStopSearchResultsToRouteFilterAndDirection();
@@ -194,9 +200,13 @@ public class IndexAction extends SessionedIndexAction {
             _searchResults.getMatches().clear();
             _searchResults.getMatches().add(selectedStop);
             
-            AgencyAndId id = AgencyAndIdLibrary.convertFromString((String)_searchResults.getRouteIdFilter().toArray()[0]);
-            
-            _lastQuery = selectedStop.getIdWithoutAgency() + " " + id.getId();
+            if (_searchResults.getRouteFilter().size() > 0) {
+              RouteBean routeBean = (RouteBean)_searchResults.getRouteFilter().toArray()[0];
+              _lastQuery = selectedStop.getIdWithoutAgency() + " " + routeBean.getShortName();
+            } else {
+              _lastQuery = selectedStop.getIdWithoutAgency();
+            }
+           
             _response = singleStopResponse(null);
             _searchResults = null;
             
@@ -217,7 +227,7 @@ public class IndexAction extends SessionedIndexAction {
             
             // If there is a stop matching our route id filter and there is a route id filter (if filter is empty or null, everything in
             // search results 'matches' the filter) present the direction disambiguation view.
-            if (aStopServingRouteInFilter != null && _searchResults.getRouteIdFilter() != null && _searchResults.getRouteIdFilter().size() > 0) {
+            if (aStopServingRouteInFilter != null && _searchResults.getRouteFilter() != null && _searchResults.getRouteFilter().size() > 0) {
               _response = directionDisambiguationResponse();
               
               // If there is only one route served by the stops in our search results, set the command
@@ -243,7 +253,7 @@ public class IndexAction extends SessionedIndexAction {
               
               // Search for nearby stops
               SearchResultCollection nearbyStops = _searchService.
-                  findStopsNearPoint(stopResult.getStop().getLat(), stopResult.getStop().getLon(), _resultFactory, _searchResults.getRouteIdFilter());
+                  findStopsNearPoint(stopResult.getStop().getLat(), stopResult.getStop().getLon(), _resultFactory, _searchResults.getRouteFilter());
               
               // See if there is at least one stop of the nearby stops that serves the route in the filter
               StopResult aNearbyStopServingRouteInFilter = (StopResult)CollectionUtils.find(nearbyStops.getMatches(), new Predicate() {
@@ -268,10 +278,10 @@ public class IndexAction extends SessionedIndexAction {
                 // We can't find nearby stops that service the route in the filter
                 // so call the method that lets the user know that.
               } else {
-                AgencyAndId id = AgencyAndIdLibrary.convertFromString((String)_searchResults.getRouteIdFilter().toArray()[0]);
+                RouteBean routeBean = (RouteBean)_searchResults.getRouteFilter().toArray()[0];
                 _searchResults = _searchService.getSearchResults(stopResult.getIdWithoutAgency(), _resultFactory);
                 _lastQuery = stopResult.getIdWithoutAgency();
-                _response = singleStopResponse("No " + id.getId() + " stops nearby");
+                _response = singleStopResponse("No " + routeBean.getShortName() + " stops nearby");
                 _searchResults = null;
               }
             } else {
@@ -282,7 +292,7 @@ public class IndexAction extends SessionedIndexAction {
           break;
           
         // an exact match for a location--i.e. location isn't ambiguous
-        } else if(_searchResults.getMatches().size() == 1 && _searchResults.getResultType().equals("GeocodeResult")) {
+        } else if(_searchResults.getMatches().size() == 1 && "GeocodeResult".equals(_searchResults.getResultType())) {
           GeocodeResult geocodeResult = (GeocodeResult)_searchResults.getMatches().get(0);
 
           // we don't do anything with regions--too much information to show via SMS.
@@ -293,7 +303,7 @@ public class IndexAction extends SessionedIndexAction {
           // find stops near the point/address/intersection the user provided
           } else {
             _searchResults = _searchService.findStopsNearPoint(geocodeResult.getLatitude(), geocodeResult.getLongitude(), 
-                _resultFactory, _searchResults.getRouteIdFilter());
+                _resultFactory, _searchResults.getRouteFilter());
             _searchResults.setQueryLat(geocodeResult.getLatitude());
             _searchResults.setQueryLon(geocodeResult.getLongitude());
             continue;
@@ -305,13 +315,13 @@ public class IndexAction extends SessionedIndexAction {
       // process suggestions: suggestions can be ambiguous locations, or 
       // multiple routes--e.g. X17 -> X17A,C,J
       if(_searchResults.getSuggestions().size() > 0) {
-        if(_searchResults.getResultType().equals("RouteResult")) {
+        if("RouteResult".equals(_searchResults.getResultType())) {
           _response = didYouMeanResponse();
 
         // if we get a geocode result, the user is choosing among multiple
         // ambiguous addresses. we also recognize a numeric input that
         // represents which ambiguous location number the user wants to use.
-        } else if(_searchResults.getResultType().equals("GeocodeResult")) {
+        } else if("GeocodeResult".equals(_searchResults.getResultType())) {
           if(commandString != null) {
             if(commandString.equals("M")) {
               _response = locationDisambiguationResponse(_searchResultsCursor);
@@ -323,7 +333,7 @@ public class IndexAction extends SessionedIndexAction {
 
               if(chosenLocation != null) {
                 _searchResults = _searchService.findStopsNearPoint(chosenLocation.getLatitude(), chosenLocation.getLongitude(), 
-                    _resultFactory, _searchResults.getRouteIdFilter());
+                    _resultFactory, _searchResults.getRouteFilter());
                 _searchResults.setQueryLat(chosenLocation.getLatitude());
                 _searchResults.setQueryLon(chosenLocation.getLongitude());
                 commandString = null;
@@ -530,13 +540,13 @@ public class IndexAction extends SessionedIndexAction {
     
     String b = "";
     
-    AgencyAndId id = null;
-    if (_searchResults.getRouteIdFilter() != null && _searchResults.getRouteIdFilter().size() > 0) {
-      id = AgencyAndIdLibrary.convertFromString((String)_searchResults.getRouteIdFilter().toArray()[0]);
+    RouteBean routeBean = null;
+    if (_searchResults.getRouteFilter() != null && _searchResults.getRouteFilter().size() > 0) {
+      routeBean = (RouteBean)_searchResults.getRouteFilter().toArray()[0];
     }
     
-    if (id != null && !getRoutesInSearchResults().contains(id.getId())) {
-      b += "No " + id.getId() + " stops nearby\n\n";
+    if (routeBean != null && !getRoutesInSearchResults().contains(routeBean.getShortName())) {
+      b += "No " + routeBean.getShortName() + " stops nearby\n\n";
       b += "Routes nearby:\n\n";
     } else {
       b += _searchResults.getMatches().size() + " stops nearby\n\n";
@@ -565,16 +575,16 @@ public class IndexAction extends SessionedIndexAction {
     
     filterStopSearchResultsToRouteFilterAndDirection();
     
-    AgencyAndId id = AgencyAndIdLibrary.convertFromString((String)_searchResults.getRouteIdFilter().toArray()[0]);
+    RouteBean routeBean = (RouteBean)_searchResults.getRouteFilter().toArray()[0];
     
     String a = null;
-    if (id.getId().toUpperCase().matches("^(A|E|I|O|U).*$")) {
+    if (routeBean.getShortName().toUpperCase().matches("^(A|E|I|O|U).*$")) {
       a = "an";
     } else {
       a = "a";
     }
     
-    String header = "Pick " + a + " " + id.getId() + " direction:\n\n";
+    String header = "Pick " + a + " " + routeBean.getShortName() + " direction:\n\n";
     
     List<String> choices = new ArrayList<String>();
     List<String> choiceNumbers = new ArrayList<String>();
@@ -587,7 +597,7 @@ public class IndexAction extends SessionedIndexAction {
         @Override
         public boolean evaluate(Object object) {
           RouteAtStop routeAtStop = (RouteAtStop)object;
-          if (routeAtStop.getRoute().getId().equals(_searchResults.getRouteIdFilter().toArray()[0])) {
+          if (routeAtStop.getRoute().equals(_searchResults.getRouteFilter().toArray()[0])) {
             return true;
           }
           return false;
@@ -633,7 +643,7 @@ public class IndexAction extends SessionedIndexAction {
     
     if(_googleAnalytics != null) {
       try {
-        _googleAnalytics.trackEvent("SMS", "Direction Disambiguation Response", _searchResults.getRouteIdFilter().toArray()[0].toString());
+        _googleAnalytics.trackEvent("SMS", "Direction Disambiguation Response", ((RouteBean)(_searchResults.getRouteFilter().toArray()[0])).getShortName());
       } catch(Exception e) {
         //discard
       }
@@ -658,7 +668,7 @@ public class IndexAction extends SessionedIndexAction {
 
     String footer = "\nSend:\n";
     footer += "R for refresh\n";
-    if (_searchResults.getRouteIdFilter().isEmpty() && stopResult.getStop().getRoutes().size() > 1) {
+    if (_searchResults.getRouteFilter().isEmpty() && stopResult.getStop().getRoutes().size() > 1) {
       footer += stopResult.getIdWithoutAgency() + "+ROUTE for bus info\n";
     }
 
@@ -670,7 +680,7 @@ public class IndexAction extends SessionedIndexAction {
     if(stopResult.getRoutesAvailable().size() == 0) {
       // if we found a stop with no routes because of a stop+route filter, 
       // indicate that specifically
-      if(_searchResults.getRouteIdFilter().size() > 0) {
+      if(_searchResults.getRouteFilter().size() > 0) {
         body += "No filter matches\n";
       } else {
         body += "No routes\n";
@@ -685,7 +695,7 @@ public class IndexAction extends SessionedIndexAction {
       
       for(RouteAtStop routeHere : stopResult.getRoutesAvailable()) {
         
-        if (_searchResults.getRouteIdFilter() != null && !_searchResults.getRouteIdFilter().isEmpty() && !_searchResults.getRouteIdFilter().contains(routeHere.getRoute().getId())) {
+        if (_searchResults.getRouteFilter() != null && !_searchResults.getRouteFilter().isEmpty() && !_searchResults.getRouteFilter().contains(routeHere.getRoute())) {
           continue;
         }
         
@@ -760,11 +770,11 @@ public class IndexAction extends SessionedIndexAction {
     
     body += StringUtils.join(searchedForStopRoutes, " ") + "\n\n";
     
-    AgencyAndId id = AgencyAndIdLibrary.convertFromString((String)_searchResults.getRouteIdFilter().toArray()[0]);
-    body += "No " + id.getId() + " at this stop\n\n";
+    RouteBean routeBean = (RouteBean)_searchResults.getRouteFilter().toArray()[0];
+    body += "No " + routeBean.getShortName() + " at this stop\n\n";
     
     body += "Send:\n";
-    body += "N for nearby " + id.getId() + " stops\n";
+    body += "N for nearby " + routeBean.getShortName() + " stops\n";
     body += searchedForStop.getIdWithoutAgency() + "+ROUTE for bus info";
     
     if(_googleAnalytics != null) {
@@ -811,10 +821,10 @@ public class IndexAction extends SessionedIndexAction {
     staticStuff += "Add ROUTE for best results\n\n";
     
     staticStuff += "Examples:\n";
-    staticStuff += "'PARK AV AND 21 ST X1'\n";
+    staticStuff += "'PARK AV & 21 ST X1'\n";
     staticStuff += "'400145 X1'\n\n";
     
-    staticStuff += "Find 6-digit stopcode on bus stop pole";
+    staticStuff += "Find 6-digit stopcode on stop pole";
 
     if(_googleAnalytics != null) {
       try {
@@ -870,7 +880,7 @@ public class IndexAction extends SessionedIndexAction {
       return "R";
     }
 
-    if (query.toUpperCase().equals("M")) {
+    if (query.toUpperCase().equals("M") && _searchResults != null && "GeocodeResult".equals(_searchResults.getResultType())) {
       return "M";
     }
 
@@ -879,7 +889,8 @@ public class IndexAction extends SessionedIndexAction {
     }
     
     // if we have nearby stops and the user wants to see them
-    if (query.toUpperCase().equals("N") && (_searchResults.getResultType().equals("StopResult") || _searchResults.getResultType().equals("ServiceAlertResult"))) {
+    if (query.toUpperCase().equals("N") && _searchResults != null && 
+        ("StopResult".equals(_searchResults.getResultType()) || "ServiceAlertResult".equals(_searchResults.getResultType()))) {
       return "N";
     }
     
@@ -896,7 +907,7 @@ public class IndexAction extends SessionedIndexAction {
       }
       
       // a list of things other than location results can't be a pick from ambiguous locations.
-      if (!(_searchResults.getResultType().equals("GeocodeResult")) && !(_searchResults.getResultType().equals("StopResult"))) {
+      if (!("GeocodeResult".equals(_searchResults.getResultType())) && !("StopResult".equals(_searchResults.getResultType()))) {
         return null;
       }
       
@@ -935,7 +946,7 @@ public class IndexAction extends SessionedIndexAction {
       public boolean evaluate(Object arg0) {
         StopResult stopResult = (StopResult)arg0;
         for (RouteAtStop routeAtStop : stopResult.getRoutesAvailable()) {
-          if (_searchResults.getRouteIdFilter().contains(routeAtStop.getRoute().getId()) && !directionsInResults.contains(routeAtStop.getDirections().get(0).getDestination())) {
+          if (_searchResults.getRouteFilter().contains(routeAtStop.getRoute()) && !directionsInResults.contains(routeAtStop.getDirections().get(0).getDestination())) {
             directionsInResults.add(routeAtStop.getDirections().get(0).getDestination());
             return true;
           }

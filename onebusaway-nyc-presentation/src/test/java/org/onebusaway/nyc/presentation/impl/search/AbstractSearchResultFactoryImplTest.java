@@ -69,14 +69,14 @@ public class AbstractSearchResultFactoryImplTest extends AbstractSearchResultFac
 
   @Override
   public SearchResult getStopResult(StopBean stopBean,
-      Set<String> routeShortNameFilter) {
+      Set<RouteBean> routeFilter) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult,
-      Set<String> routeShortNameFilter) {
+      Set<RouteBean> routeFilter) {
     // TODO Auto-generated method stub
     return null;
   }

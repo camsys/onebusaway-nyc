@@ -20,6 +20,14 @@ import java.util.List;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 
+/**
+ * A service that is designed to be an external source of time predictions--the PredictionIntegrationService
+ * caches the results of this service across prediction updates for integration as necessary into Bus Time API
+ * call results.
+ * 
+ * @author jmaki
+ *
+ */
 public interface PredictionGenerationService {
 
   public List<TimepointPredictionRecord> getPredictionsForVehicle(AgencyAndId vehicleId);

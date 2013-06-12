@@ -41,8 +41,6 @@ public interface VehicleLocationInferenceService {
 
   public void resetVehicleLocation(AgencyAndId vid);
 
-  public void setVehicleStatus(AgencyAndId vid, boolean enabled);
-
   /**
    * Used by the simulator
    */

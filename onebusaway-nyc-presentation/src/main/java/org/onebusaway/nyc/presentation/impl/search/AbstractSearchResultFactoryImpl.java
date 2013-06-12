@@ -44,7 +44,6 @@ public abstract class AbstractSearchResultFactoryImpl implements SearchResultFac
     }
   }
 
-
   // TODO This a problem, assumes English
   protected void populateServiceAlerts(List<NaturalLanguageStringBean> serviceAlertDescriptions, List<ServiceAlertBean> serviceAlertBeans) {
     populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, true);

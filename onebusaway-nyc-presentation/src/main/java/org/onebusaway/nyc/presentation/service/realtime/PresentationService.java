@@ -21,9 +21,8 @@ public interface PresentationService {
       String oneStopWord, String multipleStopsWord, String oneMileWord, String multipleMilesWord, String awayWord);
 
   public String getPresentableDistance(SiriDistanceExtension distances);
- 
-  
-  /* filter logic */
+   
+  /* filter logic: */
 
   // for stops only
   public boolean include(ArrivalAndDepartureBean adBean, TripStatusBean status);

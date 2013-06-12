@@ -111,7 +111,6 @@ public class SensorModelResult {
   }
 
   public SensorModelResult addResult(SensorModelResult result) {
-
     if (results == null)
       results = new ArrayList<SensorModelResult>();
     results.add(result);

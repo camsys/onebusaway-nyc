@@ -27,9 +27,8 @@ OBA.Config = {
 		stopsWithinBoundsUrl: "api/stops-within-bounds",
 		stopsOnRouteForDirection: "api/stops-on-route-for-direction",
 		stopForId: "api/stop-for-id",
-		
-		siriSMUrl: "api/siri/stop-monitoring.json",
-		siriVMUrl: "api/siri/vehicle-monitoring.json",
+
+		// siriSMUrl and siriVMUrl now moved to config.jspx
 		
 		refreshInterval: 15000,
 		
@@ -51,37 +50,6 @@ OBA.Config = {
 		// Called by UI functions that want to send events to GA
 		analyticsFunction: function(type, value) {
 			_gaq.push(['_trackEvent', "Desktop Web", type, value]);
-		},
-		
-		infoBubbleFooterFunction: function(type, query) {
-			var html = '';
-
-			if(type === "stop")	{
-				html += '<div class="footer">';
-				html += '<span class="header">While at the bus stop... </strong></span>';
-				html += '<br/>';
-
-				html += 'Send stop code <strong>' + query + '</strong> as a text to <strong>511123</strong>';
-				html += '<br/>';
-				html += 'or check <a href="m/?q=' + query + '">this stop</a> on your smartphone.';
-
-				html += '</div>';
-
-			} else if(type === "route") {
-				html += '<div class="footer">';
-				html += '<span class="header">While at the bus stop... </strong></span>';
-				html += '<br/>';
-				
-				html += 'Check <a href="m/?q=' + query + '">this route</a> on your smartphone.';
-
-				html += '</div>';				
-
-			} else if(type === "sign") {
-				html += 'Text <strong> ' + query + '</strong> to <strong>511123</strong> ';
-				html += 'or check this stop on your smartphone at <strong>http://' + window.location.hostname + ((window.location.port !== '') ? ':' + window.location.port : '') + '/m/?q=' + query + '</strong>';
-			}
-
-			return html;
 		},
 		
 		loadLocationIcons: function() {

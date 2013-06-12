@@ -15,11 +15,14 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
+import gov.sandia.cognition.math.LogMath;
+
+import java.util.Random;
+import java.util.Set;
+
+import org.apache.commons.math.util.FastMath;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -28,24 +31,14 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
-
-import gov.sandia.cognition.math.LogMath;
-
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Multiset.Entry;
-
-import org.apache.commons.math.util.FastMath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import umontreal.iro.lecuyer.rng.MRG32k3a;
 import umontreal.iro.lecuyer.rng.RandomStream;
 
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 
 /**
  * Create particles from an observation.
@@ -65,17 +58,12 @@ import java.util.Set;
  */
 public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
-  private static Logger _log = LoggerFactory.getLogger(ParticleFactoryImpl.class);
   private static int _initialNumberOfParticles = 200;
 
-  private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
-
   private MotionModelImpl _motionModel;
-
   private BlocksFromObservationService _blocksFromObservationService;
   private JourneyStateTransitionModel _journeyStateTransitionModel;
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
-  private SensorModelSupportLibrary _sensorModelLibrary;
 
   static class LocalRandom extends ThreadLocal<RandomStream> {
     long _seed = 0;
@@ -139,11 +127,6 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   public static int getInitialNumberOfParticles() {
     return _initialNumberOfParticles;
-  }
-
-  @Autowired
-  public void setSensorModelLibrary(SensorModelSupportLibrary sensorModelLibrary) {
-    _sensorModelLibrary = sensorModelLibrary;
   }
 
   @Autowired
@@ -213,22 +196,14 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
             journeyState, obs);
         final Context context = new Context(null, state, obs);
 
-        transProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(
-            _sensorModelLibrary, context));
-        transProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(
-            null, context));
-        transProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(
-            null, context));
-        transProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(null,
-            context));
-        transProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(null,
-            context));
-        transProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(
-            null, context));
-        transProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(
-            null, context));
-        transProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(
-            null, context));
+        transProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(context));
+        transProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(context));
+        transProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(context));
+        transProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(context));
+        transProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(context));
+        transProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(context));
+        transProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(context));
+        transProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(context));
 
         final Particle newParticle = new Particle(timestamp, null, 0.0, state);
         newParticle.setResult(transProb);
@@ -253,22 +228,14 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         final Context context = new Context(null, nullState, obs);
         final SensorModelResult priorProb = new SensorModelResult(
             "prior creation");
-        priorProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(
-            null, context));
-        priorProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(
-            null, context));
-        priorProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(
-            null, context));
-        priorProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(null,
-            context));
-        priorProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(null,
-            context));
-        priorProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(
-            null, context));
-        priorProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(
-            null, context));
-        priorProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(
-            null, context));
+        priorProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(context));
+        priorProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(context));
+        priorProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(context));
+        priorProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(context));
+        priorProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(context));
+        priorProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(context));
+        priorProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(context));
+        priorProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(context));
 
         newSample = new Particle(timestamp, null, 0.0, nullState);
         newSample.setResult(priorProb);
@@ -295,13 +262,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       BlockStateObservation blockState, JourneyState journeyState,
       Observation obs) {
 
-    final List<JourneyPhaseSummary> summaries = null;
-    // if (ParticleFilter.getDebugEnabled()) {
-    // summaries = _journeyStatePhaseLibrary.extendSummaries(null, blockState,
-    // journeyState, obs);
-    // }
-
-    return new VehicleState(motionState, blockState, journeyState, summaries,
+    return new VehicleState(motionState, blockState, journeyState, null,
         obs);
   }
 

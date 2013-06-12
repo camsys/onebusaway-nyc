@@ -11,6 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * A class to encapsulate agency-specific front-end configurations and display conventions.
+ * @author jmaki
+ *
+ */
 @Component
 public class PresentationServiceImpl implements PresentationService {
   
@@ -32,7 +37,13 @@ public class PresentationServiceImpl implements PresentationService {
     else
       return System.currentTimeMillis();
   }
-  
+
+  /**
+   * Display time predictions if available from a third-party source. 
+   *  
+   * NB: If you're hardcoding any return value here for testing, also see InferenceInputQueueListenerTask in the TDF package
+   * to get the full lifecycle of predictions working.
+   */
   @Override
   public Boolean useTimePredictionsIfAvailable() {
 	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
@@ -137,8 +148,13 @@ public class PresentationServiceImpl implements PresentationService {
     return r;
   }
   
+  /**
+   * Filter logic: these methods determine which buses are shown in different request contexts. By 
+   * default, OBA reports all vehicles both scheduled and tracked, which one may or may not want.
+   */
+  
   /***
-   * These rules are common to vehicles coming to both SM and VM calls. 
+   * These rules are common to vehicles coming to both SIRI SM and VM calls. 
    */
   @Override
   public boolean include(TripStatusBean statusBean) {
@@ -198,7 +214,7 @@ public class PresentationServiceImpl implements PresentationService {
   }
   
   /***
-   * These rules are just for SM calls. 
+   * These rules are just for SIRI SM calls. 
    */
   @Override
   public boolean include(ArrivalAndDepartureBean adBean, TripStatusBean status) {

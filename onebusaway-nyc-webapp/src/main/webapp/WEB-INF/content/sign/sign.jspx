@@ -22,7 +22,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 
-	<title>MTA Bus Time Sign</title>
+	<title><s:property value="getText('sign.title')"/></title>
 
   	<link rel="shortcut icon" href="../favicon.ico" type="image/x-icon"/>
 
@@ -55,6 +55,11 @@
  		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
  	</s:url>
   	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+  	
+  	<s:url var="url" value="/api/config">
+		<s:param name="v"><s:property value="cacheBreaker" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
 	<s:url var="url" value="/js/oba/Util.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
@@ -74,12 +79,12 @@
     <div id="branding"><!-- //prevent jspx minimization --></div>
 	<div id="instructions">
 		<ul>
-			<li class="fixed_width_instruction">Try MTA Bus Time:</li>
+			<li class="fixed_width_instruction"><s:property value="getText('sign.first.instruction')"/></li>
 			<li class="instructions_number">1</li>
 			<li>TEXT</li>
 			<li id="text1"><!-- //prevent jspx minimization --></li>
 			<li class="instructions_number">2</li>
-			<li class="fixed_width_instruction">ONLINE at bustime.mta.info</li>
+			<li class="fixed_width_instruction"><s:property value="getText('sign.second.instruction')"/></li>
 		</ul>
 	</div>
 	<div id="clock">

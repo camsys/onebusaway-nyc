@@ -15,7 +15,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTrans
 public class BaseLocationServiceImplTest {
 
   @Test
-  public void test() throws CsvEntityIOException, IOException {
+  public void test() throws CsvEntityIOException, IOException, ClassNotFoundException {
 
     NycFederatedTransitDataBundle bundle = new NycFederatedTransitDataBundle();
     File path = new File("src/test/resources/example-bundle");

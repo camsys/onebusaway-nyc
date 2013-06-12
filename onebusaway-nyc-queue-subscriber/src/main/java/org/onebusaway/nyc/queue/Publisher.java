@@ -1,16 +1,15 @@
 package org.onebusaway.nyc.queue;
 
-import com.eaio.uuid.UUID;
+import java.util.Date;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
 
-import java.util.Date;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import com.eaio.uuid.UUID;
 
 /**
  * Encapsulate ZeroMQ queue operations. ZeroMQ prefers to be on its own thread
@@ -122,28 +121,31 @@ public class Publisher implements IPublisher {
 		Date markTimestamp = new Date();
 		private ZMQ.Socket zmqSocket = null;
 		private byte[] topicName = null;
+		//private String topic;
 
 		public SendThread(ZMQ.Socket socket, String topicName) {
 			zmqSocket = socket;
+			//topic = topicName;
 			this.topicName = topicName.getBytes();
 		}
 
 		public void run() {
+			boolean error = false;
+			int errorCount = 0;
 			while (!Thread.currentThread().isInterrupted()) {
 				try {
-					String r = outputBuffer.poll(100, TimeUnit.MILLISECONDS);
-					if (r == null) {
-						Thread.yield();
-						continue;
+					String r = outputBuffer.take();
+					boolean success = zmqSocket.send(topicName, ZMQ.SNDMORE);
+					if (success) {
+						zmqSocket.send(r.getBytes(), 0);
+					} else {
+						error = true;
+						errorCount++;
 					}
-					zmqSocket.send(topicName, ZMQ.SNDMORE);
-					zmqSocket.send(r.getBytes(), 0);
 
 				} catch (InterruptedException ie) {
 					return;
 				}
-
-				Thread.yield();
 
 				if (processedCount > 1000) {
 					_log.warn("HTTP Proxy output queue: processed 1000 messages in "
@@ -152,6 +154,10 @@ public class Publisher implements IPublisher {
 							+ " seconds; current queue length is "
 							+ outputBuffer.size());
 
+					if(error) {
+						_log.info("Send error condition occured " +errorCount + " times" );
+						errorCount = 0;
+					}
 					markTimestamp = new Date();
 					processedCount = 0;
 				}

@@ -15,17 +15,12 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.junit.Ignore;
-import org.junit.runner.RunWith;
-import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
 /** 
  * Detour case
  * 
  */
-//@Ignore
-@RunWith(RunUntilSuccess.class)
 public class Trace_7564_20101202T114909_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_7564_20101202T114909_IntegrationTest() throws Exception {

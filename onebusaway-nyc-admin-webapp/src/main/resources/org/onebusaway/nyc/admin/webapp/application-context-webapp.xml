@@ -35,21 +35,12 @@
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
     <context:component-scan base-package="org.onebusaway.nyc.admin.service.bundle.api" />
     <context:component-scan base-package="org.onebusaway.nyc.admin.service.api" />
-     <context:component-scan base-package="org.onebusaway.nyc.admin.service.impl" />
+    <context:component-scan base-package="org.onebusaway.nyc.admin.service.impl" />
+    <context:component-scan base-package="org.onebusaway.nyc.admin.job" />
     
     
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
 
-    <!-- bean id="createAdmin" class="org.onebusaway.users.impl.CreateUserAction">
-      <property name="username" value="admin"/>
-      <property name="password" value="admin"/>
-      <property name="admin" value="true"/>
-    </bean>
-    
-    <bean id="createOperator" class="org.onebusaway.users.impl.CreateUserAction">
-      <property name="username" value="operator"/>
-      <property name="password" value="operator"/>
-    </bean-->
     
     <bean id="createAdmin" class="org.onebusaway.nyc.webapp.actions.admin.usermanagement.RegisterUserAction"
      	  init-method="init">

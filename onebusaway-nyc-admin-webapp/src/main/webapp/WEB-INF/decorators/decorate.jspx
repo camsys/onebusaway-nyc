@@ -28,7 +28,7 @@
 	<jsp:directive.page contentType="text/html" />
 	
 	<head>
-	  <title><decorator:title default="MTA Admin" /></title>
+	  <title><decorator:title default="Admin Console" /></title>
 	  
 	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   	  <meta http-equiv="X-UA-Compatible" content="IE=8" />
@@ -45,8 +45,10 @@
 		<div id="mainbox">
 			<div id="topbar">
 				<div id="branding">
-					<a href="http://mta.info/default.html">
-						<img src="http://mta.info/template/images/mta_info.gif" alt="MTA.info logo" />
+					<s:set var="link" value="#" />
+					<a href="${link}">
+		  				<s:url var="url" value="/css/img/onebusaway-nyc.png"></s:url>
+						<img src="${url}" alt="OneBusAway Enterprise" />
 					</a>
 				</div>
 				<s:if test="!anonymousUser">

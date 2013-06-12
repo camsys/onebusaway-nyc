@@ -68,37 +68,55 @@ public enum ServiceCode {
 		mapServiceCode("Y", NEW_YEARS_DAY);
 		mapServiceCode("Z", NEW_YEARS_DAY_OBSERVED);
 	}
-	
 
 	public static ServiceCode getServiceCodeForId(String id) {
 		return serviceCodeForGtfsId.get(id);
 	}
 
-	private static void mapServiceCode(String string,
-			ServiceCode serviceCode) {
+	private static void mapServiceCode(String string, ServiceCode serviceCode) {
 		serviceCodeForGtfsId.put(string, serviceCode);
 		if (Character.isLetter(string.charAt(0))) {
 		  letterCodeForServiceCode.put(serviceCode, string);
 		}
 	}
 
-	public static ServiceCode getServiceCodeForBusCoGTFS(String id) {
-	  if (id.contains("Weekday")) {
-	    if (id.contains("SDon")) {
-	      return WEEKDAY_SCHOOL_OPEN;
-	    } else {
-	      return WEEKDAY_SCHOOL_CLOSED;
-	    }
-	  } else if (id.contains("Saturday")) {
-	    return SATURDAY;
-	  } else if (id.contains("Sunday")) {
-	    return SUNDAY;
-	  } else
-	    return null;
-	}
+	public static ServiceCode getServiceCodeForMTAHastusGTFS(String id) {
+		String[] serviceIdParts = id.split("_");
+		if(serviceIdParts.length != 2)
+			return null;
+		String[] serviceIdSubparts = serviceIdParts[1].split("-");
+		if(serviceIdParts.length < 2)
+			return null;
+		
+		String pickCode = serviceIdSubparts[0].toUpperCase();
 
+		char pickCodeWithoutYear = pickCode.toCharArray()[0];
+		if(pickCodeWithoutYear <= 'G') {
+			if (id.contains("Weekday")) {
+			    if (id.contains("SDon")) {
+			      return WEEKDAY_SCHOOL_OPEN;
+			    } else {
+			      return WEEKDAY_SCHOOL_CLOSED;
+			    }
+			} else if (id.contains("Saturday")) {
+			    return SATURDAY;
+			} else if (id.contains("Sunday")) {
+			    return SUNDAY;
+			} else
+			    return null;
+		} else {
+			// holiday code
+			return serviceCodeForGtfsId.get(Character.toString(pickCodeWithoutYear));
+		}
+	}
+	
 	public String getLetterCode() {
 	  return letterCodeForServiceCode.get(this);
+	}
+
+	public boolean isHoliday() {
+    return !(this == WEEKDAY_SCHOOL_OPEN || this == WEEKDAY_SCHOOL_CLOSED
+        || this == SATURDAY || this == SUNDAY);
 	}
 
 }

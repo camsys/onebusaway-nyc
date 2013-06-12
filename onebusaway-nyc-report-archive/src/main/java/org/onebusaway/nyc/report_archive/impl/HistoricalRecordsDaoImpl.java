@@ -17,7 +17,6 @@ import org.hibernate.SessionFactory;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecord;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecordResultTransformer;
 import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
-import org.onebusaway.nyc.report_archive.util.HQLBuilder;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,41 +41,54 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	
 	private static final String SPACE = " ";
 	private static final int MAX_RECORD_LIMIT = 3000;
+	private static final boolean IS_MYSQL = true;
+
+  protected static final int DEFAULT_QUERY_TIMEOUT = 10 * 60; // 10 minutes
 	
 	@Override
 	public List<HistoricalRecord> getHistoricalRecords(
 			final Map<CcAndInferredLocationFilter, Object> filter) {
-		HQLBuilder queryBuilder = new HQLBuilder();
 		
 		String ccLocationAlias = "cc";
 		String inferredLocationAlias = "inf";
 		
-		StringBuilder hql = new StringBuilder("select cc.vehicleAgencyDesignator, cc.timeReported, " +
-				"cc.timeReceived, cc.operatorIdDesignator, cc.routeIdDesignator, cc.runIdDesignator, " +
-				"cc.destSignCode, cc.emergencyCode, cc.latitude, cc.longitude, cc.nmeaSentenceGPRMC, " +
-				"cc.nmeaSentenceGPGGA, cc.speed, cc.directionDeg, cc.vehicleId, cc.manufacturerData, " +
-				"cc.requestId, inf.depotId, inf.serviceDate, inf.inferredRunId, inf.assignedRunId, " +
-				"inf.inferredBlockId, inf.inferredTripId, inf.inferredRouteId, inf.inferredDirectionId, " +
-				"inf.inferredDestSignCode, inf.inferredLatitude, inf.inferredLongitude, inf.inferredPhase, " +
-				"inf.inferredStatus, inf.inferenceIsFormal, inf.distanceAlongBlock, inf.distanceAlongTrip, " +
-				"inf.nextScheduledStopId, inf.nextScheduledStopDistance, inf.scheduleDeviation ");
+		StringBuilder sql = new StringBuilder("select cc.vehicle_agency_designator, cc.time_reported, cc.time_received, " +
+				"cc.operator_id_designator, cc.route_id_designator, cc.run_id_designator, cc.dest_sign_code, " +
+				"cc.emergency_code, cc.latitude, cc.longitude, cc.nmea_sentence_gprmc, cc.nmea_sentence_gpgga, " +
+				"cc.speed, cc.direction_deg, cc.vehicle_id, cc.manufacturer_data, cc.request_id, inf.depot_id, inf.service_date, " +
+				"inf.inferred_run_id, inf.assigned_run_id, inf.inferred_block_id, inf.inferred_trip_id, " +
+				"inf.inferred_route_id, inf.inferred_direction_id, inf.inferred_dest_sign_code, inf.inferred_latitude, " +
+				"inf.inferred_longitude, inf.inferred_phase, inf.inferred_status, inf.inference_is_formal, " +
+				"inf.distance_along_block, inf.distance_along_trip, inf.next_scheduled_stop_id, inf.next_scheduled_stop_distance, " +
+				"inf.schedule_deviation from obanyc_cclocationreport cc ");
 		
-		hql = queryBuilder.from(hql, "CcLocationReportRecord", ccLocationAlias);
-		hql = queryBuilder.from(hql, "ArchivedInferredLocationRecord", inferredLocationAlias);
+  	/* 
+  	 * here we expect vehicle_id_2 index to be present. On mysql, create it via
+  	 * alter table `obanyc_cclocationreport` add index `vehicle_id_2` (`vehicle_id`,`time_received`);
+  	 */
 		
-		Object startDateObj = filter.get(CcAndInferredLocationFilter.START_DATE);
-		hql = addDateBoundary(queryBuilder, hql, ccLocationAlias, inferredLocationAlias, startDateObj);
+		if (filter.containsKey(CcAndInferredLocationFilter.VEHICLE_ID) && IS_MYSQL) {
+			sql.append("force index (vehicle_id_2) ");  
+		} 
 		
-		hql = queryBuilder.join(hql, ccLocationAlias, inferredLocationAlias, "uuid", "=");
+		/*
+		 * for the historical query, the vehicle and time join out performs the equivalent of the uuid join
+		 */
+    sql.append("LEFT OUTER JOIN obanyc_inferredlocation inf " +
+        "ON cc.vehicle_id = inf.vehicle_id AND cc.time_reported = inf.time_reported ");
+		
+		//add parameters to the query
+		sql = addDateBoundary(sql, "cc.time_received", filter.get(CcAndInferredLocationFilter.START_DATE));
+		
+		sql = addQueryParams(filter, ccLocationAlias, inferredLocationAlias, sql);
 
-		hql = addQueryParams(filter, queryBuilder, ccLocationAlias,	inferredLocationAlias, hql);
+		sql = order(sql, "cc.time_received", "desc");
 		
-		hql = queryBuilder.order(hql, inferredLocationAlias, "timeReported", "desc");
+		sql = addRecordLimit(sql, filter.get(CcAndInferredLocationFilter.RECORDS));
+
+		final String sqlQuery = sql.toString();
 		
-		addRecordLimit(filter.get(CcAndInferredLocationFilter.RECORDS));
-		
-		
-		final StringBuilder hqlQuery = hql;
+		final Integer timeout = (Integer) (filter.get(CcAndInferredLocationFilter.TIMEOUT) == null? DEFAULT_QUERY_TIMEOUT: filter.get(CcAndInferredLocationFilter.TIMEOUT));
 		
 		List<HistoricalRecord> results = hibernateTemplate.execute(
 				new HibernateCallback<List<HistoricalRecord>>() {
@@ -86,10 +98,10 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 			public List<HistoricalRecord> doInHibernate(Session session) throws HibernateException,
 					SQLException {
 				
-				Query query = buildQuery(filter, hqlQuery, session);
+				Query query = buildQuery(filter, sqlQuery, session);
 
-				log.debug("Executing query : " + hqlQuery.toString());
-				
+				log.debug("Executing query(" + timeout + ") : " + sqlQuery);
+				query.setTimeout(timeout); // in seconds
 				return query.list();
 			}
 
@@ -99,8 +111,8 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	}
 	
 	private Query buildQuery(final Map<CcAndInferredLocationFilter, Object> filter,
-			final StringBuilder hqlQuery, Session session) {
-		Query query = session.createQuery(hqlQuery.toString());
+			final String sqlQuery, Session session) {
+		Query query = session.createSQLQuery(sqlQuery);
 
 		setDateParameters(query, filter);
 		
@@ -125,92 +137,115 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		return query;
 	}
 
-	private StringBuilder addQueryParams(Map<CcAndInferredLocationFilter, Object> filter,
-			HQLBuilder queryBuilder, String ccLocationAlias, String inferredLocationAlias, 
-			StringBuilder hql) {
+	private StringBuilder addQueryParams(Map<CcAndInferredLocationFilter, Object> filter, 	String ccLocationAlias, 
+			String inferredLocationAlias, StringBuilder sql) {
 		
-		hql = addQueryParam(queryBuilder, hql, inferredLocationAlias, 
-				CcAndInferredLocationFilter.DEPOT_ID, filter.get(CcAndInferredLocationFilter.DEPOT_ID));
+		sql = addQueryParam(sql, inferredLocationAlias +".depot_id", CcAndInferredLocationFilter.DEPOT_ID, 
+				filter.get(CcAndInferredLocationFilter.DEPOT_ID));
 		
-		hql = addQueryParam(queryBuilder, hql, inferredLocationAlias, 
-				CcAndInferredLocationFilter.INFERRED_ROUTEID, filter.get(CcAndInferredLocationFilter.INFERRED_ROUTEID));
+		sql = addQueryParam(sql, inferredLocationAlias +".inferred_route_id", CcAndInferredLocationFilter.INFERRED_ROUTEID,
+				filter.get(CcAndInferredLocationFilter.INFERRED_ROUTEID));
 		
 		
-		hql = addQueryParam(queryBuilder, hql, ccLocationAlias, 
-				CcAndInferredLocationFilter.VEHICLE_ID, filter.get(CcAndInferredLocationFilter.VEHICLE_ID));
-		
-		hql = addQueryParam(queryBuilder, hql, ccLocationAlias, 
-				CcAndInferredLocationFilter.VEHICLE_AGENCY_ID, filter.get(CcAndInferredLocationFilter.VEHICLE_AGENCY_ID));
+		sql = addQueryParam(sql, ccLocationAlias +".vehicle_id", CcAndInferredLocationFilter.VEHICLE_ID, 
+				filter.get(CcAndInferredLocationFilter.VEHICLE_ID));
+    
+		sql = addQueryParam(sql, ccLocationAlias +".vehicle_agency_designator", CcAndInferredLocationFilter.VEHICLE_AGENCY_ID,
+				filter.get(CcAndInferredLocationFilter.VEHICLE_AGENCY_ID));
 		
 		String inferredPhases = (String) filter.get(CcAndInferredLocationFilter.INFERRED_PHASE);
-		if(StringUtils.isNotBlank(inferredPhases)) {
-			hql = addInferredPhase(queryBuilder, hql, inferredLocationAlias, 
-					CcAndInferredLocationFilter.INFERRED_PHASE, inferredPhases);
-		}
+		
+		sql = addInferredPhase(sql, inferredLocationAlias + ".inferred_phase", CcAndInferredLocationFilter.INFERRED_PHASE, 
+					inferredPhases);
+		
 		
 		String boundingBox = (String) filter.get(CcAndInferredLocationFilter.BOUNDING_BOX);
-		if(StringUtils.isNotBlank(boundingBox)) {
-			hql = addBoundingBoxParam(hql, ccLocationAlias, inferredLocationAlias);
-		}
 		
-		return hql;
+		sql = addBoundingBoxParam(sql, ccLocationAlias, inferredLocationAlias, boundingBox);
+		
+		return sql;
 	}
 	
-	private StringBuilder addQueryParam(HQLBuilder queryBuilder, StringBuilder hql, String alias,
-			CcAndInferredLocationFilter param, Object value) {
+	private StringBuilder addQueryParam(StringBuilder sql, String field, CcAndInferredLocationFilter param,
+			Object value) {
 		if(value != null) {
-			hql = queryBuilder.where(hql, alias, param.getValue(), ":" +param.getValue());
+			sql = where(sql, field, ":" +param.getValue());
 		}
-		return hql;
+		return sql;
 	}
 	
-	private void addRecordLimit(Object maxRecords) {
+	private StringBuilder where(StringBuilder sql, String field, String value) {
+		if(sql.toString().contains("where")) {
+			sql.append("and " +field + " = " +value);
+		} else {
+			sql.append("where " +field + " = " +value);
+		}
+
+		sql.append(SPACE);
+
+		return sql;
+	}
+	
+	private StringBuilder addRecordLimit(StringBuilder sql, Object maxRecords) {
 		Integer recordLimit = configurationService.getConfigurationValueAsInteger(
 				"operational-api.historicalRecordLimit", MAX_RECORD_LIMIT);
+		Integer limitValue = recordLimit;
 		
 		if(maxRecords != null) {
 			Integer recordLimitFromParameter = (Integer) maxRecords;
-			if(recordLimitFromParameter.intValue() > recordLimit) {
-				hibernateTemplate.setMaxResults(recordLimit);
-			} else {
-				hibernateTemplate.setMaxResults(recordLimitFromParameter);
-			}
-		} else {
-			//set the number to max record limit if record limit is not specified
-			hibernateTemplate.setMaxResults(recordLimit);
-		}
-	}
-	
-	private StringBuilder addInferredPhase(HQLBuilder queryBuilder, StringBuilder hql, String alias,
-			CcAndInferredLocationFilter param, String value) {
-		String [] inferredPhases = value.split(",");
-		//There should be atleast one inferred phase value if we are here
-		if(hql.toString().contains("where")) {
-			hql.append("and(" +alias + "." +param.getValue() + "= " +":inferredPhase0");
-		} else {
-			hql.append("where(" +alias + "." +param.getValue() + "= " +":inferredPhase0");
-		}
-		hql.append(SPACE);
-		if(inferredPhases.length > 1) {
-			for(int i=1;i<inferredPhases.length; i++) {
-				hql.append("or ").append(alias + "." +param.getValue() + "= " +":inferredPhase" +i);
+			// enforce record limit to protect database
+			if(recordLimitFromParameter.intValue() < recordLimit) {
+				limitValue = recordLimitFromParameter;
 			}
 		}
-		hql.append(")");
-		hql.append(SPACE);
-		return hql;
-	}
-	
-	private StringBuilder addBoundingBoxParam(StringBuilder hql, String ccLocationAlias, 
-			String inferredLocationAlias) {
-		if(hql.toString().contains("where")) {
-			hql.append("and(" + buildCoordinatesQueryString(ccLocationAlias, inferredLocationAlias) +")");
-		} else {
-			hql.append("where(" + buildCoordinatesQueryString(ccLocationAlias, inferredLocationAlias) +")");
-		}
-		hql.append(SPACE);
 		
-		return hql;
+		// MYSQL prefers the SQL syntax to the hibernateTemplate
+		if (IS_MYSQL) {
+		  sql.append(" limit ").append(limitValue).append(" ");
+		} else {
+		  hibernateTemplate.setMaxResults(limitValue);
+		}
+		
+		return sql;
+	}
+	
+	private StringBuilder addInferredPhase(StringBuilder sql, String field,
+			CcAndInferredLocationFilter param, String value) {
+		
+		if(StringUtils.isNotBlank(value)) {
+			String [] inferredPhases = value.split(",");
+			//There should be atleast one inferred phase value if we are here
+			if(sql.toString().contains("where")) {
+				sql.append("and(" + field + "= " +":" + param.getValue() + "0");
+			} else {
+				sql.append("where(" + field + "= " +":" + param.getValue() + "0");
+			}
+			sql.append(SPACE);
+			if(inferredPhases.length > 1) {
+				for(int i=1;i<inferredPhases.length; i++) {
+					sql.append("or ").append(field + "= " +":" + param.getValue() +i);
+				}
+			}
+			sql.append(")");
+			sql.append(SPACE);
+		}
+		
+		return sql;
+	}
+	
+	private StringBuilder addBoundingBoxParam(StringBuilder sql, String ccLocationAlias, 
+			String inferredLocationAlias, String value) {
+		
+		if(StringUtils.isNotBlank(value)) {
+			if(sql.toString().contains("where")) {
+				sql.append("and(" + buildCoordinatesQueryString(ccLocationAlias, inferredLocationAlias) +")");
+			} else {
+				sql.append("where(" + buildCoordinatesQueryString(ccLocationAlias, inferredLocationAlias) +")");
+			}
+			sql.append(SPACE);
+		}
+		
+		return sql;
 	}
 
 	private String buildCoordinatesQueryString(String ccLocationAlias, 	String inferredLocationAlias) {
@@ -227,30 +262,52 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		query.append(ccLocationAlias +".longitude <").append(SPACE);
 		query.append(":maxLongitude").append(")").append(SPACE);
 		query.append("or").append(SPACE);
-		query.append("(" +inferredLocationAlias + ".inferredLatitude >=").append(SPACE);
+		query.append("(" +inferredLocationAlias + ".inferred_latitude >=").append(SPACE);
 		query.append(":minLatitude").append(SPACE);
 		query.append("and").append(SPACE);
-		query.append(inferredLocationAlias + ".inferredLatitude <").append(SPACE);
+		query.append(inferredLocationAlias + ".inferred_latitude <").append(SPACE);
 		query.append(":maxLatitude").append(SPACE);
 		query.append("and").append(SPACE);
-		query.append(inferredLocationAlias +".inferredLongitude >=").append(SPACE);
+		query.append(inferredLocationAlias +".inferred_longitude >=").append(SPACE);
 		query.append(":minLongitude").append(SPACE);
 		query.append("and").append(SPACE);
-		query.append(inferredLocationAlias +".inferredLongitude <").append(SPACE);
+		query.append(inferredLocationAlias +".inferred_longitude <").append(SPACE);
 		query.append(":maxLongitude").append(")");
 		
 		return query.toString();
 	}
 	
-	private StringBuilder addDateBoundary(HQLBuilder queryBuilder, StringBuilder hql, String ccLocationAlias,
-			String inferredLocationAlias, Object startDateObj) {
+	private StringBuilder addDateBoundary(StringBuilder sql, String field, Object startDateObj) {
 
 		//Check if start date is set. Do not append date boundary if start date is not set
 		if(startDateObj != null) {
-			hql = queryBuilder.dateBoundary(hql, inferredLocationAlias, "timeReported", 
-					":startDate", ":endDate");
+			if(sql.toString().contains("where")) {
+				sql.append("and(");
+			} else {
+				sql.append("where(");
+			}
+			sql.append(field).append(SPACE);
+			sql.append(">=").append(SPACE);
+			sql.append(":startDate").append(SPACE);
+			sql.append("and").append(SPACE);
+			sql.append(field).append(SPACE);
+			sql.append("<").append(SPACE);
+			sql.append(":endDate").append(")").append(SPACE);
+			
+		} 
+		
+		return sql;
+	}
+	
+	private StringBuilder order(StringBuilder sql, String field, String order) {
+		sql.append("order by " +field);
+		sql.append(SPACE);
+		if(StringUtils.isNotBlank(order)) {
+			sql.append(order);
+			sql.append(SPACE);
 		}
-		return hql;
+		
+		return sql;
 	}
 	
 	private void setDateParameters(Query query, Map<CcAndInferredLocationFilter, Object> filter) {

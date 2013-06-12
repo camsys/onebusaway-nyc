@@ -15,20 +15,15 @@
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.xwork.StringEscapeUtils;
-import org.apache.struts2.ServletActionContext;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
@@ -41,8 +36,8 @@ import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.m.model.StopResult;
+import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class IndexAction extends OneBusAwayNYCActionSupport {
@@ -102,7 +97,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     if (_location != null && _q.isEmpty()) {
       if (_type.equals("stops")) {
         _results = _searchService.findStopsNearPoint(_location.getLat(),
-            _location.getLon(), factory, _results.getRouteIdFilter());
+            _location.getLon(), factory, _results.getRouteFilter());
       } else {
         _results = _searchService.findRoutesStoppingNearPoint(
             _location.getLat(), _location.getLon(), factory);
@@ -132,7 +127,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
           // if we got a location (point) back, find stops nearby
         } else {
           _results = _searchService.findStopsNearPoint(result.getLatitude(),
-              result.getLongitude(), factory, _results.getRouteIdFilter());
+              result.getLongitude(), factory, _results.getRouteFilter());
         }
       }
     }
@@ -148,26 +143,12 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return (results != null && results.size() > 0) ? results : null;
   }
 
-  // Adapted from http://code.google.com/mobile/analytics/docs/web/#jsp
-  public String getGoogleAnalyticsTrackingUrl() {
-    try {
-      StringBuilder url = new StringBuilder();
-      url.append("ga?");
-      url.append("guid=ON");
-      url.append("&utmn=").append(
-          Integer.toString((int) (Math.random() * 0x7fffffff)));
-      url.append("&utmac=").append(
-          _configurationService.getConfigurationValueAsString(
-              "display.googleAnalyticsSiteId", null));
-
-      // referrer
-      HttpServletRequest request = ServletActionContext.getRequest();
-      String referer = request.getHeader("referer");
-      if (referer == null || referer.isEmpty()) {
-        referer = "-";
-      }
-      url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
-
+  public String getGoogleAnalyticsSiteId() {
+	  return _configurationService.getConfigurationValueAsString(
+              "display.googleAnalyticsSiteId", null);
+  }
+  
+  public String getGoogleAnalyticsValue() {
       // event tracking
       String label = getQ();
       if (label == null) {
@@ -176,7 +157,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       label += " [M: " + _results.getMatches().size() + " S: "
           + _results.getSuggestions().size() + "]";
       label = label.trim();
-
+      return label;
+  }
+  
+  public String getGoogleAnalyticsLabel() {
       String action = "Unknown";
       if (_results != null && !_results.isEmpty()) {
         if (_results.getResultType().equals("RouteInRegionResult")) {
@@ -199,21 +183,13 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
           }
         }
       } else {
-        if (getQueryIsEmpty()) {
+        if (getQueryIsEmpty() && _location == null) {
           action = "Home";
         } else {
           action = "No Search Results";
         }
       }
-
-      // url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label +
-      // ")");
-      url.append("&utmp=/m/index/" + action + "/" + label);
-
-      return url.toString().replace("&", "&amp;");
-    } catch (Exception e) {
-      return null;
-    }
+      return action;
   }
 
   public String getQ() {
@@ -250,7 +226,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   public boolean getQueryIsEmpty() {
-    return (_q == null || _q.isEmpty()) && _location == null;
+    return (_q == null || _q.isEmpty());
   }
 
   public String getLastUpdateTime() {
@@ -289,22 +265,30 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   public String getTitle() {
-    if (!getQueryIsEmpty()) {
-      if (this._q != null && !this._q.isEmpty())
-        return ": " + this._q;
-      else
-        return "";
-    } else {
+    if (_location != null && getQueryIsEmpty()) {
       return "";
     }
+    if (_results.getMatches().size() == 1) {
+      SearchResult result = _results.getMatches().get(0);
+      if (_results.getResultType().equals("StopResult")) {
+        StopResult stopResult = (StopResult)result;
+        return ": Stop " + stopResult.getCode() + " " + stopResult.getName();
+      } else if (_results.getResultType().equals("RouteResult")) {
+        RouteResult routeResult = (RouteResult)result;
+        return ": Route " + routeResult.getShortName();
+      }
+    }
+    if (!getQueryIsEmpty()) {
+      return ": " + _q;
+    }
+    return "";
   }
 
-  public String getRouteIdFilterShortName() {
-    Object[] idsWithAgency = _results.getRouteIdFilter().toArray();
-    if (idsWithAgency.length > 0) {
-      String idWithAgency = (String)idsWithAgency[0];
-      AgencyAndId id = AgencyAndIdLibrary.convertFromString(idWithAgency);
-      return id.getId();
+  public String getRouteFilterShortName() {
+    Object[] routeBeans = _results.getRouteFilter().toArray();
+    if (routeBeans.length > 0) {
+      RouteBean routeBean = (RouteBean)routeBeans[0];
+      return routeBean.getShortName();
     } else {
       return null;
     }

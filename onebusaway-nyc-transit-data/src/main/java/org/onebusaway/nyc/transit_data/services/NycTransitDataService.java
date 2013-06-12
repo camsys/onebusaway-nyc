@@ -21,6 +21,14 @@ import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
+/**
+ * Extensions to the OBA TransitDataService that power NYC-specific UI features.
+ * 
+ * TODO: Merge these into the OBA TDS inferface, and then eliminate this class (or keep it empty). 
+ * 
+ * @author jmaki
+ *
+ */
 public interface NycTransitDataService extends TransitDataService {
 
    public String getActiveBundleId();

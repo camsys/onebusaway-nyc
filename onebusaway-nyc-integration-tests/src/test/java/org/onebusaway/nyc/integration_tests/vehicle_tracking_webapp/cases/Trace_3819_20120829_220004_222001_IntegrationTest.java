@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.junit.runner.RunWith;
-import org.onebusaway.nyc.integration_tests.RunUntilSuccess;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
 /**
@@ -26,7 +24,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTrac
  *
  */
 
-@RunWith(RunUntilSuccess.class)
 public class Trace_3819_20120829_220004_222001_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_3819_20120829_220004_222001_IntegrationTest() throws Exception {

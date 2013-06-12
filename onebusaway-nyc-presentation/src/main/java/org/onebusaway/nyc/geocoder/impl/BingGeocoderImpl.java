@@ -32,6 +32,11 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A geocoder that works against Bing's REST-ful API. 
+ * @author jmaki
+ *
+ */
 public class BingGeocoderImpl extends FilteredGeocoderBase {
 
   private static Logger _log = LoggerFactory.getLogger(BingGeocoderImpl.class);

@@ -62,7 +62,6 @@ public class SearchResultFactoryImplTest {
   private static final String TEST_STOP_ID = "test stop id";
   private static final String TEST_PRESENTABLE_DISTANCE = "test presentable distance";
   private static final String TEST_LONG_DESCRIPTION = StringUtils.join(STRINGS_FOR_LONG_DESCRIPTION, "\n");
-  private static final String TEST_LONG_DESCRIPTION_WITH_BRS = StringUtils.join(STRINGS_FOR_LONG_DESCRIPTION, "<br/>");
 
   @Mock
   private ConfigurationService _configurationService;
@@ -198,7 +197,7 @@ public class SearchResultFactoryImplTest {
     when(monCall.getExtensions()).thenReturn(extensions);
     when(monVehJourney.getMonitoredCall()).thenReturn(monCall);
 
-    when(_realtimeService.getMonitoredStopVisitsForStop(TEST_STOP_ID, 0)).thenReturn(
+    when(_realtimeService.getMonitoredStopVisitsForStop(TEST_STOP_ID, 0, System.currentTimeMillis())).thenReturn(
         monitoredStopVisits);
 
     when(
@@ -215,7 +214,7 @@ public class SearchResultFactoryImplTest {
         presentationService);
     SearchResultFactoryImpl srf = new SearchResultFactoryImpl(
         _nycTransitDataService, _realtimeService, _configurationService);
-    Set<String> routeIdFilter = new HashSet<String>();
+    Set<RouteBean> routeIdFilter = new HashSet<RouteBean>();
     StopResult result = (StopResult) srf.getStopResult(stopBean, routeIdFilter);
     return result;
   }

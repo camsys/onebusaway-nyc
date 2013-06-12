@@ -1,7 +1,23 @@
 package org.onebusaway.nyc.transit_data_federation.impl.bundle;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.concurrent.Future;
+
+import javax.annotation.PostConstruct;
+
+import net.sf.ehcache.CacheManager;
+
 import org.onebusaway.container.refresh.RefreshService;
-import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -18,10 +34,6 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
-
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,31 +41,25 @@ import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.concurrent.Future;
-
-import javax.annotation.PostConstruct;
-
+/**
+ * A component that manages what bundles are loaded and available, and changes them
+ * at command or when the currently loaded one expires.
+ * 
+ * @author jmaki
+ *
+ */
 @SuppressWarnings("rawtypes")
 public class BundleManagementServiceImpl implements BundleManagementService {
 
+	// how long to wait for inference threads to exit before forcefully stopping them
+	// when the command to change the bundle has been received.
 	private static final int INFERENCE_PROCESSING_THREAD_WAIT_TIMEOUT_IN_SECONDS = 60;
 
 	private static Logger _log = LoggerFactory.getLogger(BundleManagementServiceImpl.class);
 
 	private List<BundleItem> _allBundles = new ArrayList<BundleItem>();
 
-	private HashMap<String, BundleItem> _applicableBundles = new HashMap<String, BundleItem>();
+	protected HashMap<String, BundleItem> _applicableBundles = new HashMap<String, BundleItem>();
 
 	private volatile List<Future> _inferenceProcessingThreads = new ArrayList<Future>();
 
@@ -71,9 +77,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	@Autowired
 	private NycTransitDataService _nycTransitDataService;
-
-	@Autowired
-	private CacheManager _cacheManager;
 
 	@Autowired
 	private TransitGraphDao _transitGraphDao;
@@ -226,7 +229,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		return _bundleIsReady;
 	}
 
-	// register inference processing thread 
+	// register inference processing thread with the bundle manager--
+	// bundles cannot be changed as long as threads are actively using it.
 	@Override
 	public void registerInferenceProcessingThread(Future thread) {
 		_inferenceProcessingThreads.add(thread);
@@ -287,6 +291,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 		try {
 			_refreshService.refresh(RefreshableResources.TRANSIT_GRAPH);
+			
+			// Not sure why this is here?
+			timingHook();
+			
 			_refreshService.refresh(RefreshableResources.CALENDAR_DATA);
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTIONS_DATA);
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTION_SEARCH_DATA);
@@ -303,8 +311,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_refreshService.refresh(NycRefreshableResources.DESTINATION_SIGN_CODE_DATA);
 			_refreshService.refresh(NycRefreshableResources.TERMINAL_DATA);
 			_refreshService.refresh(NycRefreshableResources.RUN_DATA);
+			_refreshService.refresh(NycRefreshableResources.NON_REVENUE_MOVES_DATA);
+			_refreshService.refresh(NycRefreshableResources.NON_REVENUE_STOP_DATA);
 		} catch(Exception e) {
-      _log.error("Bundle " + bundleId + " failed to load. Disabling for this session...");
+			_log.error("Bundle " + bundleId + " failed to load. Disabling for this session...");
 			_applicableBundles.remove(bundleId);
 			reevaluateBundleAssignment();
 
@@ -331,23 +341,35 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		return;
 	}
 
+	// some kind of event notification system camsys setup? 
+	protected void timingHook() {}
+	
 	/*****
 	 * Private helper things
 	 *****/
-	private void removeAndRebuildCache() {
-		// Clear all existing cache elements
-		for (String cacheName : _cacheManager.getCacheNames()) {
-			_log.info("Clearing cache with ID " + cacheName);
-			Cache cache = _cacheManager.getCache(cacheName);
-			cache.removeAll();
-		}
 
+	private void removeAndRebuildCache() {
+		// Not sure why this is here?
+		timingHook();
+
+		_log.info("Clearing all caches...");
+		for(CacheManager cacheManager : CacheManager.ALL_CACHE_MANAGERS) { 
+			_log.info("Found " + cacheManager.getName());
+			
+			for(String cacheName : cacheManager.getCacheNames()) {
+				_log.info(" > Cache: " + cacheName);
+				cacheManager.getCache(cacheName).flush();
+				cacheManager.clearAllStartingWith(cacheName);
+			}
+			
+			cacheManager.clearAll(); // why not?
+		}
+		
 		// Rebuild cache
 		try {
 			List<AgencyWithCoverageBean> agenciesWithCoverage = _nycTransitDataService.getAgenciesWithCoverage();
 
 			for (AgencyWithCoverageBean agencyWithCoverage : agenciesWithCoverage) {
-
 				AgencyBean agency = agencyWithCoverage.getAgency();
 
 				ListBean<String> stopIds = _nycTransitDataService.getStopIdsForAgencyId(agency.getId());
@@ -399,12 +421,12 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	}
 
 	protected class BundleSwitchUpdateThread extends TimerTask implements Trigger {
-	  // required for subclass
-		public BundleSwitchUpdateThread() {
-		  
-    }
 
-    @Override
+		// required for subclass
+		public BundleSwitchUpdateThread() {
+		}
+
+		@Override
 		public void run() {     
 			try {
 				refreshApplicableBundles();
@@ -446,11 +468,11 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	protected class BundleDiscoveryUpdateThread extends TimerTask implements Trigger {
 
-	  // required for subclass
+		// required for subclass
 		public BundleDiscoveryUpdateThread() {
-    }
+		}
 
-    @Override
+		@Override
 		public void run() {     
 			try {       
 				discoverBundles();
@@ -478,5 +500,4 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			return calendar.getTime();
 		}  
 	}
-
 }

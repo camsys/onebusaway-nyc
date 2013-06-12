@@ -61,9 +61,9 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 		try {
 			_credentials = new BasicAWSCredentials(_username, _password);
 			_ec2 = new AmazonEC2Client(_credentials);
-		} catch (Exception ioe) {
-			_log.error("BundleServerService setup failed:", ioe);
-			throw new RuntimeException(ioe);
+		} catch (Throwable t) {
+		  _log.error("BundleServerServiceImpl setup failed, likely due to missing or invalid credentials");
+			_log.error("BundleServerService setup failed:", t);
 		}
 
   }
@@ -102,16 +102,22 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   }
 
   private Instance getInstance(String instanceId) {
-    DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
-    List<String> list = new ArrayList<String>();
-    list.add(instanceId);
-    describeInstancesRequest.setInstanceIds(list);
-    DescribeInstancesResult result = _ec2.describeInstances(describeInstancesRequest);
-    if (!result.getReservations().isEmpty()) {
-      if (!result.getReservations().get(0).getInstances().isEmpty()) {
-        Instance i = result.getReservations().get(0).getInstances().get(0);
-        return i;
+    try {
+      DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
+      List<String> list = new ArrayList<String>();
+      list.add(instanceId);
+      describeInstancesRequest.setInstanceIds(list);
+      // this call can timeout and throw AmazonClientException if AWS is having
+      // a bad day
+      DescribeInstancesResult result = _ec2.describeInstances(describeInstancesRequest);
+      if (!result.getReservations().isEmpty()) {
+        if (!result.getReservations().get(0).getInstances().isEmpty()) {
+          Instance i = result.getReservations().get(0).getInstances().get(0);
+          return i;
+        }
       }
+    } catch (Exception e) {
+      _log.error("Call to AWS threw exception", e);
     }
     return null;
   }

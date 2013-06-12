@@ -36,8 +36,6 @@ OBA.Sign = function() {
 	var obaApiBaseUrlPosition = url.indexOf("/", hostnamePosition);
 	var obaApiBaseUrl = url.substring(0, obaApiBaseUrlPosition);
 	
-	var agencyId = "MTA";
-	
 	var setupUITimeout = null;
 	
 	function getParameterByName(name, defaultValue) {
@@ -134,7 +132,12 @@ OBA.Sign = function() {
 		if(stopIds !== null && stopIds.length > 0) {
 			stopIdsToRequest = [];
 			jQuery.each(stopIds.split(","), function(_, o) {
-				stopIdsToRequest.push(o);
+				var stopIdParts = o.split("_");
+				if(stopIdParts.length === 2) {
+					stopIdsToRequest.push({ agency : stopIdParts[0], id : stopIdParts[1] });
+				} else {
+					stopIdsToRequest.push({ agency : OBA.Config.signDefaultAgencyId, id : o });
+				}
 			});
 		} else {
 			showError("No stops are configured for display.");
@@ -152,7 +155,7 @@ OBA.Sign = function() {
 		};
 		
 		jQuery.each(stopIdsToRequest, function(_, stopId) {
-			jQuery("#pager").append('<span id="' + stopId + '" class="dot"></span>');
+			jQuery("#pager").append('<span id="' + stopId.id + '" class="dot"></span>');
 			initStop(stopId, initMonitor);
 		});
 
@@ -173,7 +176,7 @@ OBA.Sign = function() {
 	}
 	
 	function initStop(stopId, initMonitor) {
-		var params = { stopId: 'MTA_' + stopId };
+		var params = { stopId: stopId.agency + "_" + stopId.id };
 		jQuery.getJSON(baseUrl + "/" + OBA.Config.stopForId, params, function(json) {
 			stopInfo[stopId] = json.stop;
 			jQuery.each(json.stop.routesAvailable, function(_, route) {
@@ -198,13 +201,13 @@ OBA.Sign = function() {
 				'<div class="error"></div>' +
 				'<div class="header">' + 
 					'<div class="name"><h1>' + stopInfo[stopId].name + '</h1></div>' + 
-					' <div class="stop-id"><h2>Stop #' + stopId + '</h2></div>' +
+					' <div class="stop-id"><h2>Stop #' + stopId.id + '</h2></div>' +
 				'</div>' + 
 				'<div class="arrivals"><table></table></div>' +
-				'<div class="alerts"><div class="alerts_header"><h2>Service Change Notices</h2></div><div id="stop' + stopId + '" class="scroller"></div></div>' +
+				'<div class="alerts"><div class="alerts_header"><h2>Service Change Notices</h2></div><div id="stop' + stopId.id + '" class="scroller"></div></div>' +
 			'</div>').addClass("slide");
 		
-		_gaq.push(['_trackEvent', "DIY Sign", "Add Stop", stopId]);
+		_gaq.push(['_trackEvent', "DIY Sign", "Add Stop", stopId.id]);
 		
 		return newElement;
 	}
@@ -300,7 +303,7 @@ OBA.Sign = function() {
 		if(r === 0) {
 			jQuery('<tr class="last">' + 
 					'<td colspan="3">' + 
-						'MTA Bus Time is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
+						'No buses en-route to this stop. Please check back shortly for an update.</li>' +
 					'</td>' +
 				   '</tr>')
 				   .appendTo(tableBody);
@@ -350,21 +353,13 @@ OBA.Sign = function() {
 	function update(stopId) {
 
 		var carousel = jQuery('.jcarousel ul');	
-		if(stopId === null || stopId === "") {
+		if(stopId === null) {
 			return;
 		}
 
-		var stopIdWithoutAgency = stopId;
+		var stopElement = getNewElementForStop(stopId);
 
-		var stopIdParts = stopId.split("_");
-		if(stopIdParts.length === 2) {
-			agencyId = stopIdParts[0];
-			stopIdWithoutAgency = stopIdParts[1];
-		}
-
-		var stopElement = getNewElementForStop(stopIdWithoutAgency);
-
-		var params = { OperatorRef: agencyId, MonitoringRef: stopIdWithoutAgency, StopMonitoringDetailLevel: "normal" };
+		var params = { OperatorRef: stopId.agency, MonitoringRef: stopId.id, StopMonitoringDetailLevel: "normal" };
 		jQuery.getJSON(baseUrl + "/" + OBA.Config.siriSMUrl, params, function(json) {	
 			//updateTimestamp(OBA.Util.ISO8601StringToDate(json.Siri.ServiceDelivery.ResponseTimestamp));
 			//hideError();
@@ -440,7 +435,7 @@ OBA.Sign = function() {
 			oldContent.animate({left: contentWidth}, animationSpeed, function() {
 				oldContent.html("").empty().remove();
 				jQuery("span.dot").css('background-color', 'rgb(90,90,90)');
-				jQuery("span#" + stopId + ".dot").css('background-color', 'white');
+				jQuery("span#" + stopId.id + ".dot").css('background-color', 'white');
 				
 				var alerts = stopElement.find(".alert");
 				var totalHeight = 0;

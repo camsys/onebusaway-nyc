@@ -238,12 +238,10 @@ OBA.Sidebar = function() {
 	
 	function addRoutesToLegend(routeResults, title, filter, stopId) {
 		
-		if (filter === null) filter = [];
-		
 		var filterExistsInResults = false;
 		
 		jQuery.each(routeResults, function(_, routeResult) {
-			if (jQuery.inArray(routeResult.id, filter) > -1) {
+			if (routeResult.shortName === filter) {
 				filterExistsInResults = true;
 				return false;
 			}
@@ -257,7 +255,7 @@ OBA.Sidebar = function() {
 
 		jQuery.each(routeResults, function(_, routeResult) {				
 			
-			if (filter.length === 0 || jQuery.inArray(routeResult.id, filter) > -1 || !filterExistsInResults) {
+			if (!filter || routeResult.shortName === filter || !filterExistsInResults) {
 			
 				// service alerts
 				var serviceAlertList = jQuery("<ul></ul>")
@@ -267,7 +265,7 @@ OBA.Sidebar = function() {
 												.append(jQuery("<span class='click_info'> + Click for info</span>"));
 				
 				var serviceAlertContainer = jQuery("<div></div>")
-												.attr("id", "alerts-" + routeResult.id.replace(" ", "_"))
+												.attr("id", "alerts-" + routeResult.id.hashCode())
 												.addClass("serviceAlertContainer")
 												.append(serviceAlertHeader)
 												.append(serviceAlertList);
@@ -375,7 +373,7 @@ OBA.Sidebar = function() {
 				routeMap.addRoute(routeResult);
 			}
 			
-			if (filter.length !== 0 && jQuery.inArray(routeResult.id, filter) < 0 && filterExistsInResults) {
+			if (filter && routeResult.shortName !== filter && filterExistsInResults) {
 				
 				var filteredMatch = jQuery("<li></li>").addClass("filtered-match");
 				var link = jQuery('<a href="#' + stopId.match(/\d*$/) + '%20' + routeResult.shortName + '">' + routeResult.shortName + '</a>');
@@ -525,7 +523,11 @@ OBA.Sidebar = function() {
 			var matches = json.searchResults.matches;
 			var suggestions = json.searchResults.suggestions;
 			
-			var routeIdFilter = json.searchResults.routeIdFilter;
+			var routeFilter = json.searchResults.routeFilter;
+			var routeFilterShortName;
+			if (routeFilter.length > 0) {
+				routeFilterShortName = routeFilter[0].shortName;
+			}
 
 			OBA.Config.analyticsFunction("Search", q + " [M:" + matches.length + " S:" + suggestions.length + "]");
 			
@@ -582,11 +584,11 @@ OBA.Sidebar = function() {
 						break;
 					
 					case "StopResult":
-						addRoutesToLegend(matches[0].routesAvailable, "Routes available:", routeIdFilter, matches[0].id);
+						addRoutesToLegend(matches[0].routesAvailable, "Routes available:", routeFilterShortName, matches[0].id);
 
 						var latlng = new google.maps.LatLng(matches[0].latitude, matches[0].longitude);
 						routeMap.addStop(matches[0], function(marker) {
-							routeMap.showPopupForStopId(matches[0].id, routeIdFilter);						
+							routeMap.showPopupForStopId(matches[0].id, routeFilterShortName);						
 						});
 						
 						routeMap.showLocation(latlng);
@@ -614,10 +616,24 @@ OBA.Sidebar = function() {
 		});
 	}
 	
+	function googleTranslateElementInit() {
+		
+		var translate_element = jQuery("#google_translate_element");		
+		translate_element.click(function (e) {
+			e.preventDefault();
+			translate_element.html(' ')
+							 .attr('src','//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit');
+			new google.translate.TranslateElement({pageLanguage: 'en', 
+				layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+			translate_element.unbind('click');
+		});						
+	}
+	
 	return {
 		initialize: function() {
 			addSearchBehavior();
 			addResizeBehavior();
+			googleTranslateElementInit();
 			
 			// Add behavior to the close link in the global alert dialog under the map
 			// so it closes when the link is clicked.
@@ -646,7 +662,7 @@ OBA.Sidebar = function() {
 					}
 				});
 			}, function(routeId, serviceAlerts) { // service alert notification handler
-				var serviceAlertsContainer = jQuery("#alerts-" + routeId.replace(" ", "_"));
+				var serviceAlertsContainer = jQuery("#alerts-" + routeId.hashCode());
 				if(serviceAlertsContainer.length === 0) {
 					return;
 				}
