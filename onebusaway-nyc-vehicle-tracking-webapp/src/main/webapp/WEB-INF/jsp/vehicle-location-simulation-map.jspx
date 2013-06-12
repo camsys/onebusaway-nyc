@@ -513,6 +513,18 @@ OBA.Debug = function() {
 		});
 	}
 	
+	function showEdgeOnMap(edgeId) {
+		alert("edgeId=" + edgeId);
+    	 jQuery.ajax({
+ 			url: "vehicle-location-simulation!edge-detail-json.do?edgeId=" + edgeId,
+ 			dataType: "json",
+ 			success: function(data) {
+ 				OBA.Debug.createLineString(data.edgeCoordinates);
+ 			}
+ 		});
+	}
+	
+	
 	function addPoint(lat, lon) {
      var size = new OpenLayers.Size(40,40);
      var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
@@ -720,31 +732,17 @@ OBA.Debug = function() {
 		}
 		var html = "";
 		for (var i=0; i<edgeIds.length; i++) {
-			html += "<a href='#' onclick='showEdgeId(" + edgeIds[i] + ");' >" + edgeIds[i] + "</a> : ";
+			html += "<div id='#edge_link'>" + edgeIds[i] + "</div>";
+			jQuery("#edge_link" + edgeIds[i]).click(function(e) {
+				showEdgeIdOnMap(edgeIds[i]);
+				});
+				//"<a href='#' onclick='showEdgeId(" + edgeIds[i] + ");' >" + edgeIds[i] + "</a> : ";
 		}
 		return html;
+		
 	}
 	
-    function showEdgeId(value) {
-		alert("edgeId=" + value);
-    	 jQuery.ajax({
- 			url: "vehicle-location-simulation!edge-detail-json.do?edgeId=" + value,
- 			dataType: "json",
- 			success: function(data) {
-
- 				OBA.Debug.createLineString(data.edgeCoordinates);
- 				//jQuery.each(data, function(_, egde) {
- 					// render geometry
- 					//var option = jQuery("<option>" + routeId + "</option>");
- 					//option.attr("value", routeId);
- 					//routeList.append(option);
- 				//});
-
- 				//routeList.change(initBlockList);				
- 			}
- 		});
-	}
-	
+    
     // MAIN
 	return {
 		initialize: function() {
