@@ -500,6 +500,15 @@ public class VehicleLocationSimulationController {
     return new ModelAndView("json", "blocks", m);
   }
   
+  @RequestMapping(value = "/vehicle-location-simulation!edge-detail-json.do", method = RequestMethod.GET)
+  public ModelAndView edgeDetailsJson(HttpSession session,
+		  @RequestParam(required=true) String edgeId) {
+	  Map<String, ArrayList<String>> m = new HashMap<String, ArrayList<String>>();
+	  // lookup this edge id and return the geometry
+	  InferenceGraphEdge ige = this._nycTrackingGraph.getInferenceGraphEdge(edgeId);
+	  return new ModelAndView("json", "edgeCoordinates", ige.getGeometry().getCoordinates());
+  }
+  
   @RequestMapping(value = "/vehicle-location-simulation!points-for-trip-id.do", method = RequestMethod.GET)
   public ModelAndView pointsForTripJson(@RequestParam(required=true) String tripId) {
     EncodedPolylineBean polyline;

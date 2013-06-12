@@ -362,7 +362,7 @@ OBA.Debug = function() {
 							} else if (property === "adjLon") {
 								adjLon = value;
 							} else if (property === "inferredEdges") {
-								markerText.inferredEdges = "<a name='edge' href='#'>" + value + "</a>";
+								markerText.inferredEdges = "<a name='edge' href='#'>" + value + "</a><b>" + linkifyInferredEdges(value) + "</b>"
 							} else if (property === "inferredEdgeGeom") {
 								infEdgeGeom = value;
 							} else if (property === "inferredPathEdgeGeom") {
@@ -524,39 +524,39 @@ OBA.Debug = function() {
      addedMarkers.addMarker(addedMarker);
 	}
 	
-	function createLineString(rawPoints) {
-    var points = [];
-    var proj = new OpenLayers.Projection("EPSG:4326");
-    for(var i = 0; i < rawPoints.length; i++) {
-    	var rawPoint = rawPoints[i];
-    	var wgsPoint = null;
-    	if (rawPoint.x) 
-	      wgsPoint = new OpenLayers.Geometry.Point(rawPoint.y, rawPoint.x);
-    	else
-    		wgsPoint = new OpenLayers.Geometry.Point(rawPoint[1], rawPoint[0]);
-      var point = wgsPoint.transform(proj, map.getProjectionObject());
-      points.push(point);
-    }
+	 function createLineString (rawPoints) {
+	    var points = [];
+	    var proj = new OpenLayers.Projection("EPSG:4326");
+	    for(var i = 0; i < rawPoints.length; i++) {
+	    	var rawPoint = rawPoints[i];
+	    	var wgsPoint = null;
+	    	if (rawPoint.x) 
+		      wgsPoint = new OpenLayers.Geometry.Point(rawPoint.y, rawPoint.x);
+	    	else
+	    		wgsPoint = new OpenLayers.Geometry.Point(rawPoint[1], rawPoint[0]);
+	      var point = wgsPoint.transform(proj, map.getProjectionObject());
+	      points.push(point);
+	    }
 
-    if(points.length === 0) {
-        return;
-    }
+	    if(points.length === 0) {
+	        return;
+	    }
 
-    var style = {
-        strokeColor: "#00FF00",
-        strokeOpacity: 0.80,
-        strokeWidth: 5
-    };
+	    var style = {
+	        strokeColor: "#00FF00",
+	        strokeOpacity: 0.80,
+	        strokeWidth: 5
+	    };
 
-    var polyline = new OpenLayers.Geometry.LineString(points);
-    var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
-    
-    var infEdgeArrow = createDirection(lineFeature.geometry, "end", false).pop();
-    dirLayer.addFeatures([infEdgeArrow]);
-					    
-    return lineFeature;
-	}
-	
+	    var polyline = new OpenLayers.Geometry.LineString(points);
+	    var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
+	    
+	    var infEdgeArrow = createDirection(lineFeature.geometry, "end", false).pop();
+	    dirLayer.addFeatures([infEdgeArrow]);
+						    
+	    return lineFeature;
+		}
+
 	function selectTrip(selectedTripId, serviceDate) {
 		if(typeof selectedTripId === 'undefined' 
 				|| typeof selectedTripId === 'object') {
@@ -711,6 +711,41 @@ OBA.Debug = function() {
 		});
 	}
 	
+	function linkifyInferredEdges(value) {
+		var edgeIds = new Array()
+		if (value.indexOf(',') < 1) {
+			edgeIds[0] = value.replace('[', '').replace(']', '');
+		} else {
+			edgeIds = value.replace('[', '').replace(']', '').split(",");
+		}
+		var html = "";
+		for (var i=0; i<edgeIds.length; i++) {
+			html += "<a href='#' onclick='showEdgeId(" + edgeIds[i] + ");' >" + edgeIds[i] + "</a> : ";
+		}
+		return html;
+	}
+	
+    function showEdgeId(value) {
+		alert("edgeId=" + value);
+    	 jQuery.ajax({
+ 			url: "vehicle-location-simulation!edge-detail-json.do?edgeId=" + value,
+ 			dataType: "json",
+ 			success: function(data) {
+
+ 				OBA.Debug.createLineString(data.edgeCoordinates);
+ 				//jQuery.each(data, function(_, egde) {
+ 					// render geometry
+ 					//var option = jQuery("<option>" + routeId + "</option>");
+ 					//option.attr("value", routeId);
+ 					//routeList.append(option);
+ 				//});
+
+ 				//routeList.change(initBlockList);				
+ 			}
+ 		});
+	}
+	
+    // MAIN
 	return {
 		initialize: function() {
 			
@@ -808,6 +843,13 @@ OBA.Debug = function() {
 };
 
 jQuery(document).ready(function() { new OBA.Debug().initialize(); });
+/* ]]> */
+</script>
+<!--  todo extract to file -->
+<script type="text/javascript">
+/* <![CDATA[ */
+
+
 /* ]]> */
 </script>
 </head>

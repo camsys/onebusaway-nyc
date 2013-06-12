@@ -707,6 +707,25 @@ public class NycTrackingGraph extends GenericJTSGraph {
   public Table<AgencyAndId, LineString, double[]> getLengthsAlongShapeMap() {
     return _lengthsAlongShapeMap;
   }
+  
+  @Override
+  public Collection<InferenceGraphEdge> getOutgoingTransferableEdges(
+		   InferenceGraphEdge infEdge) {
+		   
+	  Collection<InferenceGraphEdge> result = Lists.newArrayList();
+		   
+	   for (InferenceGraphEdge transferEdge :
+	   super.getOutgoingTransferableEdges(infEdge)) {
+		   log.error("considering edge=" + infEdge.getEdgeId());
+		   if (transferEdge.getGeometry().reverse().equalsExact(infEdge.getGeometry())) {
+			   log.error("including u-turn edge=" + transferEdge.getEdgeId() + " for out edge=" + infEdge);
+		   } /*else {*/
+			   result.add(transferEdge);
+			   /*}*/
+	   }
+	   log.error("getEdges(" + infEdge + ")=" + result.size() + "{" + result + "]");
+	  return result;
+  }
 
   // @Override
   // public Collection<InferenceGraphEdge> getOutgoingTransferableEdges(
