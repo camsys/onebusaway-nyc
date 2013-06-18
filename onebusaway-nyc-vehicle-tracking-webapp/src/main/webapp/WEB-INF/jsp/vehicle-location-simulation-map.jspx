@@ -256,7 +256,7 @@ OBA.Debug = function() {
           var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
           
 	        var point = new OpenLayers.LonLat(record.lon, record.lat);
-          var icon_url = 'img/marker.png';
+          var icon_url = 'http://www.openlayers.org/dev/img/marker.png';
           var proj = new OpenLayers.Projection("EPSG:4326");
           point.transform(proj, map.getProjectionObject());
           
@@ -316,6 +316,7 @@ OBA.Debug = function() {
           var adjLat = null;
           var adjLon = null;
           var infEdgeGeom = null;
+          var edgeIds = new Array();
           var pathEdgeGeom = null;
           
 					jQuery.each(record, function(property, value) {
@@ -362,7 +363,8 @@ OBA.Debug = function() {
 							} else if (property === "adjLon") {
 								adjLon = value;
 							} else if (property === "inferredEdges") {
-								markerText.inferredEdges = "<a name='edge' href='#'>" + value + "</a>";
+								edgeIds = parseInferredEdges(value);
+								markerText.inferredEdges = "<!--<a name='edge' href='#'>" + value + "</a>--><b>" + linkifyInferredEdges(edgeIds) + "</b>"
 							} else if (property === "inferredEdgeGeom") {
 								infEdgeGeom = value;
 							} else if (property === "inferredPathEdgeGeom") {
@@ -457,6 +459,14 @@ OBA.Debug = function() {
 				      routes.addFeatures([infEdge, pathEdge]);
 	          });
 	          
+	  		for (var i=0; i<edgeIds.length; i++) {
+		          var edgeLink = jQuery(popup.contentDiv).find("a[name='edge_link_" + edgeIds[i] + "']");
+		          edgeLink.click(function(e) {
+		        	  e.preventDefault();
+		        	  showEdgeOnMap(this);
+		          });
+	  		}
+	  		
 	          var tripTimeLink = jQuery(popup.contentDiv).find("a[name='trip_time_select']");
 	          tripTimeLink.click(function(e) {
 	          	e.preventDefault();
@@ -513,6 +523,21 @@ OBA.Debug = function() {
 		});
 	}
 	
+	function showEdgeOnMap(object) {
+		if (object == undefined) { alert ("undefined edge, ignorning"); return; }
+		var edgeId = object.name.split('_')[2];
+    	 jQuery.ajax({
+ 			url: "vehicle-location-simulation!edge-detail-json.do?taskId=" + getParameterByName("taskId") + "&edgeId=" + edgeId,
+ 			dataType: "json",
+ 			success: function(data) {
+ 				var rawPoints = decodePolyline(data.points);
+ 				var lineFeature = createLineString(rawPoints);
+  		        routes.addFeatures([lineFeature]);
+ 			}
+ 		});
+	}
+	
+	
 	function addPoint(lat, lon) {
      var size = new OpenLayers.Size(40,40);
      var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
@@ -524,39 +549,39 @@ OBA.Debug = function() {
      addedMarkers.addMarker(addedMarker);
 	}
 	
-	function createLineString(rawPoints) {
-    var points = [];
-    var proj = new OpenLayers.Projection("EPSG:4326");
-    for(var i = 0; i < rawPoints.length; i++) {
-    	var rawPoint = rawPoints[i];
-    	var wgsPoint = null;
-    	if (rawPoint.x) 
-	      wgsPoint = new OpenLayers.Geometry.Point(rawPoint.y, rawPoint.x);
-    	else
-    		wgsPoint = new OpenLayers.Geometry.Point(rawPoint[1], rawPoint[0]);
-      var point = wgsPoint.transform(proj, map.getProjectionObject());
-      points.push(point);
-    }
+	 function createLineString (rawPoints) {
+	    var points = [];
+	    var proj = new OpenLayers.Projection("EPSG:4326");
+	    for(var i = 0; i < rawPoints.length; i++) {
+	    	var rawPoint = rawPoints[i];
+	    	var wgsPoint = null;
+	    	if (rawPoint.x) 
+		      wgsPoint = new OpenLayers.Geometry.Point(rawPoint.y, rawPoint.x);
+	    	else
+	    		wgsPoint = new OpenLayers.Geometry.Point(rawPoint[1], rawPoint[0]);
+	      var point = wgsPoint.transform(proj, map.getProjectionObject());
+	      points.push(point);
+	    }
 
-    if(points.length === 0) {
-        return;
-    }
+	    if(points.length === 0) {
+	        return;
+	    }
 
-    var style = {
-        strokeColor: "#00FF00",
-        strokeOpacity: 0.80,
-        strokeWidth: 5
-    };
+	    var style = {
+	        strokeColor: "#00FF00",
+	        strokeOpacity: 0.80,
+	        strokeWidth: 5
+	    };
 
-    var polyline = new OpenLayers.Geometry.LineString(points);
-    var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
-    
-    var infEdgeArrow = createDirection(lineFeature.geometry, "end", false).pop();
-    dirLayer.addFeatures([infEdgeArrow]);
-					    
-    return lineFeature;
-	}
-	
+	    var polyline = new OpenLayers.Geometry.LineString(points);
+	    var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
+	    
+	    var infEdgeArrow = createDirection(lineFeature.geometry, "end", false).pop();
+	    dirLayer.addFeatures([infEdgeArrow]);
+						    
+	    return lineFeature;
+		}
+
 	function selectTrip(selectedTripId, serviceDate) {
 		if(typeof selectedTripId === 'undefined' 
 				|| typeof selectedTripId === 'object') {
@@ -711,6 +736,27 @@ OBA.Debug = function() {
 		});
 	}
 	
+	function parseInferredEdges(value) {
+		var edgeIds = new Array()
+		if (value.indexOf(',') < 1) {
+			edgeIds[0] = value.replace('[', '').replace(']', '').replace(' ', '');
+		} else {
+			edgeIds = value.replace('[', '').replace(']', '').replace(' ', '').split(",");
+		}
+		return edgeIds;
+	}
+	
+	function linkifyInferredEdges(edgeIds) {
+		var html = "&nbsp;";
+		for (var i=0; i<edgeIds.length; i++) {
+			html += "<a href='#' name='edge_link_" + edgeIds[i] + "'>" + edgeIds[i] + "</a>&nbsp;";
+		}
+		return html;
+		
+	}
+	
+    
+    // MAIN
 	return {
 		initialize: function() {
 			
@@ -808,6 +854,13 @@ OBA.Debug = function() {
 };
 
 jQuery(document).ready(function() { new OBA.Debug().initialize(); });
+/* ]]> */
+</script>
+<!--  todo extract to file -->
+<script type="text/javascript">
+/* <![CDATA[ */
+
+
 /* ]]> */
 </script>
 </head>

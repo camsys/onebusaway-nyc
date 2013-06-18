@@ -29,7 +29,7 @@ table td {
 </style>
 </head>
 <body>
-
+<jsp:include page="header.jspx" />
 <h2>Vehicles</h2>
 
 <table>

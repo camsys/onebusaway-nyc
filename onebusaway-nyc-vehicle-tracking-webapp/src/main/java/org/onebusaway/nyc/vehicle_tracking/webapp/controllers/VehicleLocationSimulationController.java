@@ -67,9 +67,12 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import org.geotools.geometry.jts.JTS;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opentrackingtools.graph.InferenceGraphEdge;
 import org.opentrackingtools.util.GeoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
@@ -109,6 +112,8 @@ import javax.servlet.http.HttpSession;
 @Controller
 public class VehicleLocationSimulationController {
 
+  private static Logger _log = LoggerFactory.getLogger(VehicleLocationSimulationController.class);
+  
   private static final Pattern CALENDAR_OFFSET_PATTERN = Pattern.compile("^(-{0,1}\\d+)(\\w+)$");
 
   private static final String CALENDAR_OFFSET_KEY = VehicleLocationSimulationController.class + ".calendarOffset";
@@ -498,6 +503,34 @@ public class VehicleLocationSimulationController {
     }
 
     return new ModelAndView("json", "blocks", m);
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!edge-detail-json.do", method = RequestMethod.GET)
+  public ModelAndView edgeDetailsJson(HttpSession session,
+      @RequestParam(required=true) int taskId,
+		  @RequestParam(required=true) String edgeId) throws Exception {
+	  Map<String, ArrayList<String>> m = new HashMap<String, ArrayList<String>>();
+	  
+	  // lookup this edge id and return the geometry
+	  InferenceGraphEdge ige = this._nycTrackingGraph.getInferenceGraphEdge(edgeId.trim());
+	  if (ige == null) {
+	    _log.warn("no edge for edgeId=" + edgeId);
+	    return null;
+	  }
+	  if (ige.getGeometry() == null) {
+	    _log.warn("no geometry for edgeId=" + edgeId);
+	    return null;
+	  }
+	  Geometry geom = JTS.transform(ige.getGeometry(),
+        GeoUtils.getTransform(new Coordinate(40.766069, -73.97721)).inverse());
+    double[] lats = new double[geom.getNumPoints()];
+    double[] lons = new double[geom.getNumPoints()];
+    for (int i = 0; i < lons.length; i++) {
+      lats[i] = geom.getCoordinates()[i].x;
+      lons[i] = geom.getCoordinates()[i].y;
+    }
+    EncodedPolylineBean polyline = PolylineEncoder.createEncodings(lats, lons, -1);
+	  return new ModelAndView("json", "points", polyline.getPoints());
   }
   
   @RequestMapping(value = "/vehicle-location-simulation!points-for-trip-id.do", method = RequestMethod.GET)

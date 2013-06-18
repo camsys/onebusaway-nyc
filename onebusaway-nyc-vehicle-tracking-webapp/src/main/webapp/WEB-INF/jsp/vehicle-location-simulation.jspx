@@ -29,7 +29,7 @@
 </style>
 </head>
 <body>
-
+<jsp:include page="header.jspx" />
 <h2>Active Simulations</h2>
 <p><a href="vehicle-location-simulation!cancelAll.do">Cancel All Simulations</a></p>
 <jsp:include page="vehicle-location-simulation-summaries-snippet.jspx" />
