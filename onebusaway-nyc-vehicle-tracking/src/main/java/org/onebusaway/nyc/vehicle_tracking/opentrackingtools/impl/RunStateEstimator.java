@@ -18,14 +18,17 @@ import gov.sandia.cognition.statistics.bayesian.BayesianEstimatorPredictor;
 import gov.sandia.cognition.util.AbstractCloneableSerializable;
 
 import com.google.common.base.Preconditions;
+
 import org.opentrackingtools.distributions.CountedDataDistribution;
 import org.opentrackingtools.distributions.DeterministicDataDistribution;
 import org.opentrackingtools.distributions.PathStateDistribution;
 import org.opentrackingtools.estimators.MotionStateEstimatorPredictor;
+import org.opentrackingtools.graph.InferenceGraphEdge;
 import org.opentrackingtools.paths.PathEdge;
 import org.opentrackingtools.util.model.MutableDoubleCount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.internal.annotations.Sets;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -33,6 +36,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -118,9 +122,15 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         ? nycVehicleStateDist.getRunStateParam().getValue() : null;
     final VehicleState currentOldTypeVehicleState = currentRunState != null
         ? currentRunState.getVehicleState() : null;
+    /*
+     * Track the on-road dscs so that we can avoid them as deadhead-durings
+     * later down the line.  (If we don't, then we'll constantly be in a
+     * difficult situation with in-progress states.)
+     */
+    final Set<String> onRoadDscs = Sets.newHashSet();
 
     if (tripInfo != null) {
-
+      
       /*
        * In this case our previous state was snapped to particular road segment
        * for run/block set, so find all the active ones in our time window,
@@ -151,6 +161,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         runStateMoved.setLikelihoodInfo(mtaEdgeResultsMoved);
         mtaEdgeResultsMoved.setMovedLogLikelihood(Math.log(1d - likelihoodHasNotMoved));
         if (mtaEdgeResultsMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
+          onRoadDscs.add(runStateMoved.blockStateObs.getBlockState().getDestinationSignCode());
           resultDist.put(runStateMoved, new MutableDoubleCount(
               mtaEdgeResultsMoved.getTotalLogLik(), 1));
         }
@@ -163,6 +174,7 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
         runStateNotMoved.setLikelihoodInfo(mtaEdgeResultsNotMoved);
         mtaEdgeResultsNotMoved.setMovedLogLikelihood(Math.log(likelihoodHasNotMoved));
         if (mtaEdgeResultsNotMoved.getTotalLogLik() > Double.NEGATIVE_INFINITY) {
+          onRoadDscs.add(runStateMoved.blockStateObs.getBlockState().getDestinationSignCode());
           resultDist.put(runStateNotMoved, new MutableDoubleCount(
               mtaEdgeResultsNotMoved.getTotalLogLik(), 1));
         }
@@ -191,24 +203,40 @@ public class RunStateEstimator extends AbstractCloneableSerializable implements
             currentRunState.getBlockStateObs().getBlockState().getBlockLocation().getDistanceAlongBlock()
                 + distProjected));
       }
+      
     }
+    
 
     for (final BlockStateObservation blockStateObs : blockStates) {
       
       /*
-       * Also, above we handled "snapped" states, so ignore them if they show up
-       * again here.
+       * We want to avoid certain deadhead-durings when we're already considering
+       * the related in-progresses, and detours when we're actually on the trip.
        */
       final boolean isInService = blockStateObs != null
           && JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState())
           && !obs.hasOutOfServiceDsc();
       
-      if (blockStateObs != null
-          && isInService
-          && tripInfo != null
+      final boolean isDeadheadDuring = blockStateObs != null
+          && !JourneyStateTransitionModel.isLocationOnATrip(blockStateObs.getBlockState())
+          && !obs.hasOutOfServiceDsc()
+          && blockStateObs.getBlockState().getBlockLocation().getDistanceAlongBlock() > 0d
+          && blockStateObs.getBlockState().getBlockLocation().getDistanceAlongBlock() < 
+             blockStateObs.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance();
+      
+      if (blockStateObs != null) {
+        /*
+         * The first condition avoids creating detours for geometries that
+         * we know we're on.
+         * The last condition is the deadhead check mentioned above.
+         */
+        if((isInService && tripInfo != null
           && tripInfo.getShapeIds().contains(
-              blockStateObs.getBlockState().getRunTripEntry().getTripEntry().getShapeId())) {
-        continue;
+              blockStateObs.getBlockState().getRunTripEntry().getTripEntry().getShapeId()))
+          || (isDeadheadDuring 
+              && onRoadDscs.contains(blockStateObs.getBlockState().getDestinationSignCode())) ) {
+          continue;
+        }
       }
 
       final boolean movedIsDetoured = blockStateObs != null

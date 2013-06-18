@@ -255,14 +255,6 @@ public class NycVehicleStatePLFilter extends
     final DataDistribution<RunState> newRunStateDist = newVehicleStateDist.getRunStateParam().getParameterPrior().clone();
     runStateEstimator.update(newRunStateDist,
         newVehicleStateDist.getPathStateParam().getParameterPrior());
-    
-    if (newVehicleStateDist.getPathStateParam().getParameterPrior().getCovariance().getElement(0, 0) > MAX_COVARIANCE) {
-			_log.error("covariance["
-					+ obs.getRecord().getVehicleId()
-					+ "]:"
-					+ newVehicleStateDist.getPathStateParam()
-							.getParameterPrior().getCovariance().toString());
-		}
 
     /*
      * Again, we use the max weight run state.

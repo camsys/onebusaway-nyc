@@ -80,13 +80,15 @@ Location Simulation Console</a></p>
 
 <h2>Particles</h2>
 
-<c:if test="${showSampledParticles}">
-    <c:set var="particles" value="${details.sampledParticles}" scope="request" />
-
-</c:if>
-<c:if test="${! showSampledParticles}">
-    <c:set var="particles" value="${details.particles}" scope="request" />
-</c:if>
+<c:choose>
+	<c:when test="${empty details.sampledParticles}">
+	    <c:set var="particles" value="${details.particles}" scope="request" />
+	</c:when>
+	<c:otherwise>
+	    <c:out value="using resample dist"/>
+	    <c:set var="particles" value="${details.sampledParticles}" scope="request" />
+	</c:otherwise>
+</c:choose>
 
 <jsp:include page="particles-snippet.jspx" />
 
