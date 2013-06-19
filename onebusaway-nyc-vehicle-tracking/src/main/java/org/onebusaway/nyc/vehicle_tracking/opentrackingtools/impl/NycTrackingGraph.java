@@ -507,7 +507,10 @@ public class NycTrackingGraph extends GenericJTSGraph {
       this.createGraphFromLineStrings(_geometryToTripInfo.keySet(), false);
 
     } catch (final TransformException ex) {
-      ex.printStackTrace();
+      _log.error("tranformer exception building graph:", ex);
+    } catch (Throwable t) {
+    	_log.error("excpetion building graph:", t);
+    	throw new RuntimeException(t);
     }
 
     _log.info("Building tracking graph finished.");
