@@ -174,4 +174,9 @@ public class NycVehicleStateDistribution extends
     return builder.toString();
   }
 
+  @Override
+  public CountedDataDistribution<NycVehicleStateDistribution> getTransitionStateDistribution() {
+    return (CountedDataDistribution<NycVehicleStateDistribution>) super.getTransitionStateDistribution();
+  }
+
 }

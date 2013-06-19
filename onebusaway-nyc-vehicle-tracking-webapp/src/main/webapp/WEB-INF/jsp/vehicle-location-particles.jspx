@@ -57,6 +57,7 @@ table td {
 <h2>Particles</h2>
 
 <c:set var="details" value="${details}" scope="request" />
+<c:set var="particles" value="${details.particles}" scope="request" />
 
 <jsp:include page="particles-snippet.jspx" />
 

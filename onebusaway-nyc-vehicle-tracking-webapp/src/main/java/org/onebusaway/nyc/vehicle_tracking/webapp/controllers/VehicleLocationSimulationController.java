@@ -358,8 +358,8 @@ public class VehicleLocationSimulationController {
     Map<String, Object> m = new HashMap<String, Object>();
     m.put("details", details);
     m.put("recordNumber", recordNumber);
-    m.put("showSampledParticles", showSampledParticles);
-    m.put("showTransitionParticles", false);
+    m.put("showSampledParticles", true);
+    m.put("showTransitionParticles", true);
     return new ModelAndView("vehicle-location-simulation-task-details.jspx", m);
   }
 

@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 
+import java.util.Collections;
 import java.util.List;
 
 public class VehicleLocationDetails {
@@ -99,7 +100,7 @@ public class VehicleLocationDetails {
   }
 
   public List<Entry<Particle>> getSampledParticles() {
-    return Lists.newArrayList(sampledParticles.entrySet());
+    return sampledParticles == null ? Collections.<Entry<Particle>>emptyList() : Lists.newArrayList(sampledParticles.entrySet());
   }
 
   public double getSampleSize() {

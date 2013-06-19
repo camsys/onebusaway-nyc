@@ -12,11 +12,15 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.noding.IntersectionAdder;
 import com.vividsolutions.jts.noding.MCIndexNoder;
 import com.vividsolutions.jts.noding.NodedSegmentString;
 import com.vividsolutions.jts.noding.SegmentStringDissolver;
 import com.vividsolutions.jts.noding.snapround.MCIndexSnapRounder;
 import com.vividsolutions.jts.noding.snapround.SimpleSnapRounder;
+import com.vividsolutions.jts.operation.linemerge.LineMergeGraph;
+import com.vividsolutions.jts.operation.linemerge.LineMerger;
+import com.vividsolutions.jts.operation.linemerge.LineSequencer;
 import com.vividsolutions.jts.operation.overlay.snap.GeometrySnapper;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
@@ -110,52 +114,60 @@ public class NycTrackingGraphTest {
   @Test
   public void testIntersector2() throws FactoryException, ParseException, com.vividsolutions.jts.io.ParseException {
     
-//    final PrecisionModel pm = new PrecisionModel(1d/15d);
-//    final MCIndexSnapRounder noder = new MCIndexSnapRounder(pm);
-//    LineIntersector li = new RobustLineIntersector();
-//    li.setPrecisionModel(pm);
-//    noder.setSegmentIntersector(new NycCustomIntersectionAdder(li));
-    
     WKTReader parser = new WKTReader();//new GeometryFactory(pm));
     
-    final String line1 = "LINESTRING (7 1, 101 103)";
-    final String line2 = "LINESTRING (2 5, 52 50)";
-    final String line3 = "LINESTRING (50 51, 0 0)";
-    final String line4 = "LINESTRING (0 105, 95 3, 1 100)";
-    final String line5 = "LINESTRING (20 21, 30 35, 42 21)";
+    final String line1 = "LINESTRING (0 3, 50 51, 100 102.5, 100 200, 100 102.5)";
+    final String line2 = "LINESTRING (0 0, 100 100, 200 100)";
+    final String line3 = "LINESTRING (100 200, 100 100, 0 0)";
     
     final LineString l1 = (LineString) parser.read(line1); 
     final LineString l2 = (LineString) parser.read(line2); 
     final LineString l3 = (LineString) parser.read(line3); 
-    final LineString l4 = (LineString) parser.read(line4); 
-    final LineString l5 = (LineString) parser.read(line5); 
-//    List<NodedSegmentString> segmentStrings = Lists.newArrayList(
-//        new NodedSegmentString(l1.getCoordinates(), null),
-//        new NodedSegmentString(l2.getCoordinates(), null),
-//        new NodedSegmentString(l3.getCoordinates(), null),
-//        new NodedSegmentString(l4.getCoordinates(), null)
-//        );
-//    noder.computeNodes(segmentStrings);
+    List<NodedSegmentString> segmentStrings = Lists.newArrayList(
+        new NodedSegmentString(l1.getCoordinates(), null),
+        new NodedSegmentString(l2.getCoordinates(), null),
+        new NodedSegmentString(l3.getCoordinates(), null)
+        );
     
-    GeometryCollection gc = JTSFactoryFinder.getGeometryFactory().createGeometryCollection(
-        new Geometry[] {l1, l2, l3, l4, l5});
-    Geometry snappedGeoms = GeometrySnapper.snapToSelf(gc, 10d, true);
-    Geometry simpleGeoms = DouglasPeuckerSimplifier.simplify(snappedGeoms, 10d);
+//    GeometryCollection gc = JTSFactoryFinder.getGeometryFactory().createGeometryCollection(
+//        new Geometry[] {l1, l2, l3});
+//    Geometry snappedGeoms = GeometrySnapper.snapToSelf(gc, 10d, true);
+//    Geometry simpleGeoms = DouglasPeuckerSimplifier.simplify(snappedGeoms, 10d);
     
-    for (int i = 0; i < simpleGeoms.getNumGeometries(); i++) {
-      System.out.println(simpleGeoms.getGeometryN(i));
+//    final MCIndexNoder gn = new MCIndexNoder();
+//    LineIntersector li = new RobustLineIntersector();
+//    li.setPrecisionModel(JTSFactoryFinder.getGeometryFactory().getPrecisionModel());
+//    gn.setSegmentIntersector(new IntersectionAdder(li));
+//    gn.computeNodes(segmentStrings);
+    SimpleSnapRounder gn = new SimpleSnapRounder(new PrecisionModel(1d/5d));
+    gn.computeNodes(segmentStrings);
+    
+    final List<LineString> result = Lists.newArrayList();
+    for (final Object obj : gn.getNodedSubstrings()) {
+      final NodedSegmentString ns1 = (NodedSegmentString) obj;
+      result.add(JTSFactoryFinder.getGeometryFactory().createLineString(ns1.getCoordinates()));
     }
     
-//    final NycCustomSegmentStringDissolver dissolver = new NycCustomSegmentStringDissolver();
-//    dissolver.dissolve(noder.getNodedSubstrings());
-//    final List<LineString> result = Lists.newArrayList();
-//    for (final Object obj : dissolver.getDissolved()) {
-//      final NodedSegmentString ns1 = (NodedSegmentString) obj;
-//      System.out.println(ns1);
-//      if (!ns1.isClosed())
-//        result.add(JTSFactoryFinder.getGeometryFactory().createLineString(ns1.getCoordinates()));
-//    }
-//
+    GeometrySnapper gs = new GeometrySnapper(JTSFactoryFinder.getGeometryFactory().createGeometryCollection(
+        result.toArray(new Geometry[result.size()])));
+    Geometry snappedResult = gs.snapToSelf(7d, true);
+    List<NodedSegmentString> snappedSegmentStrings = Lists.newArrayList();
+    for (int i = 0; i < snappedResult.getNumGeometries(); i++) {
+      snappedSegmentStrings.add(new NodedSegmentString(snappedResult.getGeometryN(i).getCoordinates(), null));
+    }
+    
+    final NycCustomSegmentStringDissolver dissolver = new NycCustomSegmentStringDissolver();
+    dissolver.dissolve(snappedSegmentStrings);
+    
+    SegmentStringDissolver ssd = new SegmentStringDissolver();
+    ssd.dissolve(snappedSegmentStrings);
+    for (final Object obj : ssd.getDissolved()) {
+      final NodedSegmentString ns1 = (NodedSegmentString) obj;
+      System.out.println("snappedDissolved:" + ns1);
+    }
+    
+    
+
 //    final Set<LineString> expectedResult = Sets.newHashSet();
 //    expectedResult.addAll(Lists.newArrayList(    
 //        JTSFactoryFinder.getGeometryFactory().createLineString(
