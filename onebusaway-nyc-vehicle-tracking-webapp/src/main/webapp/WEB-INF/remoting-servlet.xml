@@ -19,11 +19,14 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context" xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:tx="http://www.springframework.org/schema/tx" xmlns:sec="http://www.springframework.org/schema/security"
+ 	xmlns:mvc="http://www.springframework.org/schema/mvc"    
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
-           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
+           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd
+        	http://www.springframework.org/schema/mvc
+        	http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
 
     <bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping" />
     <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
@@ -61,4 +64,10 @@
         <property name="service" ref="vehicleStatusServiceImpl" />
         <property name="serviceInterface" value="org.onebusaway.realtime.api.VehicleLocationListener" />
     </bean>
+    
+    <!-- 
+    <mvc:resources mapping="/assets/css/**" location="/assets/css/" />
+    <mvc:resources mapping="/assets/images/**" location="/assets/images/" />
+    <mvc:resources mapping="/assets/js/**" location="/assets/js/" />  
+    -->
 </beans>

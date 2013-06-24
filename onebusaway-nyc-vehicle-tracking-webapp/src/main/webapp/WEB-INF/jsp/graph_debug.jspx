@@ -56,7 +56,12 @@
 	
 	// Initializes the map
 	function init_map(div) {
-		map = new OpenLayers.Map(div);
+		var map_projection = new OpenLayers.Projection("EPSG:32618");
+		var map_options = {
+				displayProjection: map_projection,
+				units: "m"
+		};
+		map = new OpenLayers.Map(div, map_options);
 		// Use the Bing map service for roads
     	var road = new OpenLayers.Layer.Bing({
     		key: apiKey, 
@@ -74,9 +79,11 @@
     	map.addLayer(raw_shapes_layer);
     	map.addLayer(processed_shapes_layer);
     	map.addLayer(simplified_shapes_layer);
+    	alert(map.getProjectionObject());
     	
     	// Center the map on Manhattan
     	var map_center = new OpenLayers.LonLat(-74.081154, 40.639228);
+    	
     	var projection = new OpenLayers.Projection("EPSG:4326");
     	map_center.transform(projection, map.getProjectionObject());
 		map.setCenter(map_center, 11);
@@ -107,8 +114,8 @@
 			headers: {'Accept':'application/json'},
 			success: function(req) {
 				var g = new OpenLayers.Format.GeoJSON({
-					'externalProjection' : new OpenLayers.Projection("EPSG:32618"),
-					'internalProjection' : map.getProjectionObject()					
+					//'externalProjection' : new OpenLayers.Projection("EPSG:32618"),
+					//'internalProjection' : map.getProjectionObject()					
 				});
 				var feature_collection = g.read(req.responseText);
 				processed_shapes_layer.destroyFeatures();
@@ -124,8 +131,8 @@
 			headers: {'Accept':'application/json'},
 			success: function(req) {
 				var g = new OpenLayers.Format.GeoJSON({
-					'externalProjection' : new OpenLayers.Projection("EPSG:32618"),
-					'internalProjection' : map.getProjectionObject()					
+					//'externalProjection' : new OpenLayers.Projection("EPSG:32618"),
+					//'i/nternalProjection' : map.getProjectionObject()					
 				});
 				var feature_collection = g.read(req.responseText);
 				simplified_shapes_layer.destroyFeatures();

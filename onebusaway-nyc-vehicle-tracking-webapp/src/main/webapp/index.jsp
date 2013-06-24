@@ -26,7 +26,7 @@
 	<li><a href="data-debug.do">Data Debug/Sanity Checks</a></li>
 	<li><a href="release.do">Version Information</a></li>
 	<li><a href="status.do">Configuration Information</a></li>
-	<li><a href="graph-debug.do">Graph Debugging</a></li>
+	<li><a href="map.do">Graph Debugging</a></li>
 </ul>
 </body>
 </html>
