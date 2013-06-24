@@ -236,7 +236,6 @@ public class NycTrackingGraph extends GenericJTSGraph {
   @Refreshable(dependsOn = {
       RefreshableResources.TRANSIT_GRAPH, RefreshableResources.NARRATIVE_DATA})
   public void setup() throws IOException, ClassNotFoundException {
-	_log.warn("in setup");
     this.edgeIndex = new STRtree();
     this.graphGenerator = new DirectedLineStringGraphGenerator();
     buildGraph();
@@ -504,7 +503,6 @@ public class NycTrackingGraph extends GenericJTSGraph {
   }
 
   private NycTrackingGraph() {
-	  _log.warn("private constructor:" + this);
   }
 
   public BlockStateObservation getBlockStateObs(@Nonnull

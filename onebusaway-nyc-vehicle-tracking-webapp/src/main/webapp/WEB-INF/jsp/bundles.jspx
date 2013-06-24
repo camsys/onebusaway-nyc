@@ -30,14 +30,13 @@ table.data td {
 </head>
 <body>
 
+<jsp:include page="header.jspx" />
 <h2>Bundles</h2>
-
 	<p>
 		Standalone mode: <c:out value="${bms.standaloneMode}" />
 		<br/>
 		Current bundle ID: <c:out value="${bms.currentBundleMetadata.id}" />
 	</p>
-	
 	<table>
 		<tr>
 			<td>
