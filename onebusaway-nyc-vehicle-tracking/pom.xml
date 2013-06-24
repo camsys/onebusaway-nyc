@@ -12,11 +12,6 @@
 	<name>onebusaway-nyc-vehicle-tracking</name>
 	<dependencies>
 		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-graph</artifactId>
-			<version>9.0-M0</version>
-		</dependency>
-		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-queue-realtime</artifactId>
 			<version>2.4.0-SNAPSHOT</version>
@@ -30,11 +25,32 @@
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-transit-data-federation</artifactId>
 			<version>2.4.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>hsqldb</artifactId>
+					<groupId>org.hsqldb</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>gt-epsg-hsql</artifactId>
+					<groupId>org.geotools</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<artifactId>gt-epsg-hsql</artifactId>
+			<groupId>org.geotools</groupId>
+			<version>10.0.1-SNAPSHOT</version>		
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-util</artifactId>
 			<version>2.4.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>hsqldb</artifactId>
+					<groupId>org.hsqldb</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -117,16 +133,17 @@
 	    <groupId>org.opentrackingtools</groupId>
 	    <artifactId>open-tracking-tools-api</artifactId>
 	    <version>0.0.1-SNAPSHOT</version>
+	    <exclusions>
+	    	<exclusion>
+	    		<artifactId>hsqldb</artifactId>
+	    		<groupId>org.hsqldb</groupId>
+	    	</exclusion>
+	    </exclusions>
 		</dependency>
     <dependency>
       <groupId>com.vividsolutions</groupId>
       <artifactId>jcs</artifactId>
       <version>1.0.1</version>
-    </dependency>
-    <dependency>
-        <groupId>org.geotools</groupId>
-        <artifactId>gt-main</artifactId>
-        <version>9.0-M0</version>
     </dependency>
 	</dependencies>
 	<build>

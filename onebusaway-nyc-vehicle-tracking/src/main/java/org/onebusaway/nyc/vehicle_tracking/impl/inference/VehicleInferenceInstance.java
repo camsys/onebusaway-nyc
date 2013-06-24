@@ -58,8 +58,10 @@ import gov.sandia.cognition.statistics.DataDistribution;
 import gov.sandia.cognition.statistics.distribution.DefaultDataDistribution;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
@@ -427,6 +429,14 @@ public class VehicleInferenceInstance {
     return _particleFilter;
   }
 
+  public synchronized Multiset<Particle> getResampleDistributionOld() {
+    final Multiset<Particle> particles = 
+      (this._particleFilter.getLastResampleDistribution() != null) ?
+        getParticleSet(this._particleFilter.getLastResampleDistribution(), 
+        true) : HashMultiset.<Particle>create();
+    return particles;
+  }
+  
   public synchronized Multiset<Particle> getCurrentParticlesOld() {
     final Multiset<Particle> particles = getParticleSet(this._particles, true);
     return particles;
@@ -469,6 +479,10 @@ public class VehicleInferenceInstance {
     final Multiset<Particle> particles = TreeMultiset.create();
     particles.addAll(getCurrentParticlesOld());
     details.setParticles(particles);
+    
+    final Multiset<Particle> resampleParticles = TreeMultiset.create();
+    resampleParticles.addAll(getResampleDistributionOld());
+    details.setSampledParticles(resampleParticles);
 
     return details;
   }

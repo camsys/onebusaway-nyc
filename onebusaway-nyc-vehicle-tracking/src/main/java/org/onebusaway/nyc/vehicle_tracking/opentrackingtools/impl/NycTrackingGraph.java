@@ -496,7 +496,10 @@ public class NycTrackingGraph extends GenericJTSGraph {
       this.createGraphFromLineStrings(_geometryToTripInfo.keySet(), false);
 
     } catch (final TransformException ex) {
-      ex.printStackTrace();
+      _log.error("tranformer exception building graph:", ex);
+    } catch (Throwable t) {
+    	_log.error("excpetion building graph:", t);
+    	throw new RuntimeException(t);
     }
 
     _log.info("Building tracking graph finished.");
@@ -694,38 +697,38 @@ public class NycTrackingGraph extends GenericJTSGraph {
   public Table<AgencyAndId, LineString, double[]> getLengthsAlongShapeMap() {
     return _lengthsAlongShapeMap;
   }
+  
+//  /**
+//   * This method adds to the generic topo-equivalent edges by including
+//   * a brute force search over nearby edges.
+//   * 
+//   */
+//  @Override
+//  public Set<InferenceGraphEdge> getTopoEquivEdges(InferenceGraphEdge edge) {
+//    Set<InferenceGraphEdge> result = Sets.newHashSet();
+//    result.addAll(super.getTopoEquivEdges(edge));
+//    
+//    
+//    return result;
+//  }
 
-  // @Override
-  // public Collection<InferenceGraphEdge> getOutgoingTransferableEdges(
-  // InferenceGraphEdge infEdge) {
-  // Collection<InferenceGraphEdge> result = Lists.newArrayList();
-  // /*
-  // * Since the intersections aren't known, i.e. the noding is wrong, we use
-  // the
-  // * simply disallow looping back on the source unless it's at the end of the
-  // original shape.
-  // * FIXME this is a temporary work-around.
-  // */
-  // Map<String, Object> sourceProperties = (Map<String, Object>)
-  // ((Geometry)(infEdge.getGeometry().getUserData())).getUserData();
-  // final boolean sourceEdgeAtEnd = (Boolean)
-  // sourceProperties.get("isAtEndOfShape");
-  // AgencyAndId shapeId = (AgencyAndId) sourceProperties.get("shapeId");
-  // for (InferenceGraphEdge transferEdge :
-  // super.getOutgoingTransferableEdges(infEdge)) {
-  //
-  // Map<String, Object> transferProperties = (Map<String, Object>)
-  // ((Geometry)(transferEdge.getGeometry().getUserData())).getUserData();
-  // AgencyAndId transferShapeId = (AgencyAndId)
-  // transferProperties.get("shapeId");
-  // if (!sourceEdgeAtEnd
-  // && shapeId.equals(transferShapeId)
-  // && transferEdge.getGeometry().reverse().equalsExact(infEdge.getGeometry()))
-  // continue;
-  // else
-  // result.add(transferEdge);
-  // }
-  // return result;
-  // }
+//   @Override
+//   public Collection<InferenceGraphSegment> getOutgoingTransferableEdges(
+//     InferenceGraphSegment fromSegment) {
+//     Collection<InferenceGraphSegment> result = Lists.newArrayList();
+//     for (InferenceGraphSegment toSegment: super.getOutgoingTransferableEdges(fromSegment)) {
+//       final double angle = Angle.angleBetween(fromSegment.getLine().p0, fromSegment.getLine().p1, 
+//           toSegment.getLine().p1);
+//       final double distanceApart = angle < Math.PI/2d ?
+//           Math.min(fromSegment.getLength(), toSegment.getLength()) * Math.sin(angle) : Double.POSITIVE_INFINITY;
+//       final double localLogUTurnProb;
+//       if (!fromSegment.getSegments().contains(toSegment)
+//           && distanceApart < 15d) {
+//       } else {
+//         result.add(toSegment);
+//       }
+//     }
+//     return result;
+//   }
 
 }
