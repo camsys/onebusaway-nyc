@@ -19,7 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +44,9 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   private static Logger _log = LoggerFactory.getLogger(VehicleAssignmentServiceImpl.class);
 
   private static final DateTimeFormatter _updatedDateFormatter = ISODateTimeFormat.dateTimeNoMillis();
+
+  // the range of service dates to consider
+  private static final long MAX_SERVICE_DATE_DELTA = 1000 * 60 * 60 * 24 * 2;
 
   // map structure: service date -> (operator pass ID->operator assignment item)
   private volatile Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> _serviceDateToOperatorListMap = 
@@ -103,18 +108,52 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     }
   }
 
-  public synchronized void refreshData() {
-	_log.info("refreshData starting...");
-    Set<ServiceDate> keySet = new HashSet<ServiceDate>(_serviceDateToOperatorListMap.keySet());
+  public void refreshData() {
+    _log.info("refreshData starting...");
+    /*
+     * update a copy of the data, to reduce the synchronization interval
+     */
+    Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> serviceDateMapCopy = new HashMap<ServiceDate, HashMap<String, OperatorAssignmentItem>>();
+    for (ServiceDate serviceDate: _serviceDateToOperatorListMap.keySet()) {
+      if (isApplicable(serviceDate)) {
+        serviceDateMapCopy.put(serviceDate, _serviceDateToOperatorListMap.get(serviceDate));
+      }
+    }
+
+    Set<ServiceDate> keySet = new HashSet<ServiceDate>(serviceDateMapCopy.keySet());
     for (ServiceDate serviceDate : keySet) {
       HashMap<String, OperatorAssignmentItem> operatorIdToAssignmentItemMap = getOperatorMapForServiceDate(serviceDate);
       if (operatorIdToAssignmentItemMap != null) {
-        _serviceDateToOperatorListMap.put(serviceDate, operatorIdToAssignmentItemMap);
+        serviceDateMapCopy.put(serviceDate, operatorIdToAssignmentItemMap);
       }
     }
+    
+    
+    // the actual sync takes place in this method
+    updateData(serviceDateMapCopy);
     _log.info("refreshData complete");
   }
 
+  /**
+   * lock the underlying map to update with refreshed values. 
+   */
+  private synchronized void updateData(Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> serviceDateMapCopy) {
+    _log.info("updateData starting...");
+    for (ServiceDate serviceDate: serviceDateMapCopy.keySet()) {
+      _serviceDateToOperatorListMap.put(serviceDate, serviceDateMapCopy.get(serviceDate));
+    }
+    _log.info("updateData complete");
+  }
+  
+  // cap service dates to within a range of days from now
+  boolean isApplicable(ServiceDate serviceDate) {
+    if (serviceDate == null) return false;
+    
+    Calendar cal = Calendar.getInstance();
+    ServiceDate now = new ServiceDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH));
+    return Math.abs(now.getAsDate().getTime() - serviceDate.getAsDate().getTime()) < MAX_SERVICE_DATE_DELTA; 
+  }
+  
   private class UpdateThread implements Runnable {
     @Override
     public void run() {

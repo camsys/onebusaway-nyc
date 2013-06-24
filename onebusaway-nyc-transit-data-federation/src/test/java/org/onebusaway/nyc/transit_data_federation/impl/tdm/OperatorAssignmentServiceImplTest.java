@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -18,7 +20,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OperatorAssignmentServiceImplTest {
@@ -69,4 +73,20 @@ public class OperatorAssignmentServiceImplTest {
     assertEquals(item.getDepot(), "JG");
   }
 
+  @Test
+  public void isApplicable() {
+    Calendar cal = Calendar.getInstance();
+    ServiceDate now = new ServiceDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH));
+    
+    assertTrue(service.isApplicable(new ServiceDate(now)));
+    Date stillValid1 = new Date(now.getAsDate().getTime() - (1 * 24 * 60 * 60 * 1000));
+    assertTrue(service.isApplicable(new ServiceDate(stillValid1)));
+    Date longAgo = new Date(now.getAsDate().getTime() - (2 * 24 * 60 * 60 * 1000));
+    assertFalse(service.isApplicable(new ServiceDate(longAgo)));
+    Date stillValid2 = new Date(now.getAsDate().getTime() + (1 * 24 * 60 * 60 * 1000));
+    assertTrue(service.isApplicable(new ServiceDate(stillValid2)));
+    Date aWaysOff = new Date(now.getAsDate().getTime() + (2 * 24 * 60 * 60 * 1000));
+    assertFalse(service.isApplicable(new ServiceDate(aWaysOff)));
+    
+  }
 }
