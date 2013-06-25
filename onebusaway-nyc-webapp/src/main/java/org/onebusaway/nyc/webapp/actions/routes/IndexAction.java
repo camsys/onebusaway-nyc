@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.nyc.presentation.service.routes.RouteListService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,7 +33,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     private static final long serialVersionUID = 1L;
     @Autowired
     private RouteListService _routeListService;
-
+    @Autowired
+    private ConfigurationService _configurationService;
+    
     public boolean getShowAgencyNames() {
         return _routeListService.getShowAgencyNames();
     }
@@ -44,5 +47,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     public List<RouteBean> getRoutes() {
         return _routeListService.getRoutes();
 
+    }
+    
+    public String getGoogleAdClientId() {
+      return _configurationService.getConfigurationValueAsString("display.googleAdsClientId", "");    
     }
 }
