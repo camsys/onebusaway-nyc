@@ -3,16 +3,37 @@
 var apiKey = "AqTGBsziZHIJYYxgivLBf0hVdrAk9mWO5cQcb8Yux8sW5M8c8opEC2lZqKR1ZZXf";
     
 var map;
-var filter;
+var shapeFilter;
 var filterStrategy;
 var feature_layers = new Array();
+var map_center;
 
+// Resets map to initial extent and removes any selections or filters
+function resetMap() {
+
+	map.setCenter(map_center, 14);
+	filterStrategy.cache.length = 0;
+	updateNav(null);
+}
 //
+// Updates the nav list to identify the selected shape
 //
+function updateNav(shapeId) {
+	// Unmark any selected shape ids
+	$(".shapes li").removeClass('active');
+	
+	// Mark the matching selector as being active
+	if (null != shapeId) {
+		$(".shapes li[data-tag='" + shapeId + "']").addClass('active');		
+	}
+}
 //
-function selectShape(shapeId) {
-	filter.value = shapeId;
-	filterStrategy.setFilter(filter);	
+// Filters the shape on the map so only the selected shape is active
+//
+function filterShape(shapeId) {
+	shapeFilter.value = shapeId;
+	filterStrategy.setFilter(shapeFilter);	
+	updateNav(shapeId);
 }
 //
 //Loads a GeoJSON layer using an AJAX callback
@@ -33,6 +54,7 @@ function addMapLayerFromGeoJSON(url, layer, fromProjection, toProjection) {
 		}
 	});
 }
+// Returns the location of the last mouse click on the map
 function getLastXY() {
 	var control = map.getControlsByClass("OpenLayers.Control.MousePosition")[0];
 	var xy = control.lastXy;
@@ -88,15 +110,17 @@ function activatePopups(layer) {
 //
 //
 //
-function createMap(divname, mapcenter_x, mapcenter_y) {
+function createMap(divname, mapcenter_x, mapcenter_y, use_custom_noder) {
 
-	filter = new OpenLayers.Filter.Comparison({
+	alert(use_custom_noder);
+	
+	shapeFilter = new OpenLayers.Filter.Comparison({
         type: OpenLayers.Filter.Comparison.LIKE,
         property: "SHAPE_ID",
         value: "*"
     });
 
-    filterStrategy = new OpenLayers.Strategy.Filter({filter: filter});
+    filterStrategy = new OpenLayers.Strategy.Filter({filter: shapeFilter});
 	
 	map = new OpenLayers.Map(divname, {
 	    controls: [
@@ -174,15 +198,20 @@ function createMap(divname, mapcenter_x, mapcenter_y) {
     selectControl.activate();
     
 	// Center the map on Manhattan
-	var map_center = new OpenLayers.LonLat(mapcenter_y, mapcenter_x);
+	map_center = new OpenLayers.LonLat(mapcenter_y, mapcenter_x);
 	map_center.transform(geoProjection, mapProjection);
 	map.setCenter(map_center, 14);
 	
 	// Load the raw shapes using call backs
 	addMapLayerFromGeoJSON('raw-shapes.do', shapes_layer, geoProjection, mapProjection);
 	addMapLayerFromGeoJSON('raw-nodes.do', nodes_layer, geoProjection, mapProjection);
-	addMapLayerFromGeoJSON('final-shapes.do', final_shapes_layer, geoProjection, mapProjection);
-	addMapLayerFromGeoJSON('final-nodes.do', final_nodes_layer, geoProjection, mapProjection);
+	if (use_custom_noder) {
+		addMapLayerFromGeoJSON('final-shapes.do?useCustomNoder=true', final_shapes_layer, geoProjection, mapProjection);
+		addMapLayerFromGeoJSON('final-nodes.do?useCustomNoder=true', final_nodes_layer, geoProjection, mapProjection);
+	} else {
+		addMapLayerFromGeoJSON('final-shapes.do?useCustomNoder=false', final_shapes_layer, geoProjection, mapProjection);
+		addMapLayerFromGeoJSON('final-nodes.do?useCustomNoder=false', final_nodes_layer, geoProjection, mapProjection);		
+	}
 
 	// Activate popups for each layer
 	activatePopups(shapes_layer);

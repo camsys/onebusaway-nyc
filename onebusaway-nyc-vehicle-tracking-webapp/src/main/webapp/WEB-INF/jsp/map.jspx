@@ -28,16 +28,24 @@
   </head>
  
   <body>
-
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container-fluid">
           <a class="brand" href="#">GTFS Network Viewer</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li><a href="#" onclick="selectShape('*');">Reset</a></li>
-              <li><a href="#about">Raw</a></li>
-              <li><a href="#contact">Processed</a></li>
+              <li onclick="resetMap();"><a href="#">Reset Map</a></li>
+              <li><a href="#">Map Layers</a>
+	              <div class="dropdown">
+	           		<ul class="dropdown-menu pull-right" role="menu" aria-labelledby="dLabel">
+	           			<li><a tabindex="-1" href="#">Raw Shapes</a></li>
+	           			<li><a tabindex="-1" href="#">Raw Nodes</a></li>
+	           			<li class="divider"></li>
+	           			<li><a tabindex="-1" href="#">Final Shapes</a></li>
+	           			<li><a tabindex="-1" href="#">Final Nodes</a></li>
+	           		</ul>
+	           	</div>
+              </li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -48,9 +56,9 @@
 		<div class="row-fluid">
 			<div class="span3">
 				<h2>Shapes</h2>
-				<ul>
+				<ul class="nav nav-list shapes">
             		<c:forEach var="shape" items="${shapes}">
-						<li onclick="selectShape('${shape}');">${shape}</li>
+						<li data-tag='${shape}' onclick="filterShape('${shape}');"><a href="#">${shape}</a></li>
 					</c:forEach>				
 				</ul>
 			</div>
@@ -67,7 +75,7 @@
 
 	<script type="text/javascript">
 	$(document).ready(function() {
-		createMap('map', ${map_center_x}, ${map_center_y});
+		createMap('map', ${map_center_x}, ${map_center_y}, ${use_custom_noder});
 		});
 	</script>
   </body>

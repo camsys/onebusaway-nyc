@@ -15,6 +15,8 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.TransformService;
 import org.onebusaway.nyc.vehicle_tracking.model.UserData;
 import org.onebusaway.nyc.vehicle_tracking.utility.GeoJsonBuilder;
+import org.onebusaway.nyc.vehicle_tracking.webapp.utils.CustomIntersectionAdder;
+import org.onebusaway.nyc.vehicle_tracking.webapp.utils.CustomSegmentStringDissolver;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
@@ -22,6 +24,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -41,6 +44,7 @@ import com.vividsolutions.jts.noding.IntersectionAdder;
 import com.vividsolutions.jts.noding.MCIndexNoder;
 import com.vividsolutions.jts.noding.NodedSegmentString;
 import com.vividsolutions.jts.noding.SegmentStringDissolver;
+import com.vividsolutions.jts.noding.SegmentStringDissolver.SegmentStringMerger;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
 @Controller
@@ -61,8 +65,8 @@ public class GtfsController {
 	private GeometryFactory geometryFactory = new GeometryFactory(geographicPrecisionModel);
 	
 	@RequestMapping("/map.do")
-	public ModelAndView getMap() {
-		logger.debug("In getMap");
+	public ModelAndView getMap(@RequestParam(required = false, defaultValue = "false") boolean useCustomNoder) {
+		logger.info("In getMap useCustomNoder = " + useCustomNoder);
 		
 		List<String> shapeIds = new ArrayList<String>();
 		for (LineString shape : getShapeList()) {
@@ -72,6 +76,7 @@ public class GtfsController {
 	    Map<String, Object> model = new HashMap<String, Object>();
 	    model.put("map_center_x", 40.639228);
 	    model.put("map_center_y", -74.081154);
+	    model.put("use_custom_noder", useCustomNoder);
 	    model.put("shapes", shapeIds);
 	    return new ModelAndView("map.jspx", model);		
 	}
@@ -113,11 +118,10 @@ public class GtfsController {
 		return json;
 	}
 	@RequestMapping("/final-shapes.do")
-	public @JsonRawValue @ResponseBody String getFinalShapes() {
+	public @JsonRawValue @ResponseBody String getFinalShapes(@RequestParam(required = false, defaultValue = "false") boolean useCustomNoder) {
+		logger.info("In getFinalShapes() useCustomNoder = " + useCustomNoder);
 
-		logger.debug("in getFinalShapes()");
-
-		List<LineString> finalShapes = transformService.unprojectShapes(rationalizeShapes(simplifyShapes(getShapeList())));
+		List<LineString> finalShapes = transformService.unprojectShapes(rationalizeShapes(simplifyShapes(getShapeList()), useCustomNoder));
 		// Node them
 		getNodes(finalShapes);
 		
@@ -126,26 +130,31 @@ public class GtfsController {
 		return json;
 	}
 	@RequestMapping("/final-nodes.do")
-	public @JsonRawValue @ResponseBody String getFinalNodes() {
+	public @JsonRawValue @ResponseBody String getFinalNodes(@RequestParam(required = false, defaultValue = "false") boolean useCustomNoder) {
 
-		logger.debug("in getFinalNodes()");
+		logger.info("In getFinalNodes() useCustomNoder = " + useCustomNoder);
 
-		List<LineString> finalShapes = transformService.unprojectShapes(rationalizeShapes(simplifyShapes(getShapeList())));
+		List<LineString> finalShapes = transformService.unprojectShapes(rationalizeShapes(simplifyShapes(getShapeList()),useCustomNoder));
 
 		// Convert the raw geoms to GeoJson
 		String json = GeoJsonBuilder.convertPoints(getNodes(finalShapes));
 		return json;
 	}
-	private List<LineString> rationalizeShapes(List<LineString> projectedShapeList) {
+	private List<LineString> rationalizeShapes(List<LineString> projectedShapeList, boolean useCustomNoder) {
 
 		//List<LineString> shapes = transformService.unprojectShapes(projectedShapeList);
+		logger.info("UseCustomNoder = " + useCustomNoder);
 		
 		final LineIntersector li = new RobustLineIntersector();
 	    li.setPrecisionModel(geometryFactory.getPrecisionModel());
 
 	    final MCIndexNoder noder = new MCIndexNoder();
-	    noder.setSegmentIntersector(new IntersectionAdder(li));
-
+	    if (useCustomNoder) {
+	    	noder.setSegmentIntersector(new CustomIntersectionAdder(li));
+	    } else {
+	    	noder.setSegmentIntersector(new IntersectionAdder(li));
+	    }
+	    
 	    // Convert the line strings to noded segment strings so the noder can do its work
 	    List<NodedSegmentString> nodedSegmentStringList = new ArrayList<NodedSegmentString>();
 	    for (LineString geom : projectedShapeList) {
@@ -157,8 +166,14 @@ public class GtfsController {
 	    logger.debug("Calculating nodes");
 	    noder.computeNodes(nodedSegmentStringList);
 		
-	    final SegmentStringDissolver dissolver = new SegmentStringDissolver();
-	      
+	    SegmentStringDissolver dissolver = null;
+	    if (useCustomNoder) {
+	    	final SegmentStringMerger merger = new CustomSegmentStringDissolver.CustomSegmentStringMerger();
+	    	dissolver = new CustomSegmentStringDissolver(merger);
+	    } else {
+	    	dissolver = new SegmentStringDissolver();
+	    }
+	    
 	    Collection nodedSegments = noder.getNodedSubstrings();
 
 	    logger.debug("dissolving nodes");
