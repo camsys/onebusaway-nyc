@@ -145,11 +145,15 @@ public class InferencePersistenceServiceImpl implements
           return;
         }
 
-        boolean postProcessSuccess = postProcess(record.getRecord());
-        if (postProcessSuccess) {
-          postMessages.add(record.getRecord());
-        } else {
-          discardRecord(record.getRecord().getVehicleId(), record.getContents());
+        try {
+        	boolean postProcessSuccess = postProcess(record.getRecord());
+        	if (postProcessSuccess) {
+        	postMessages.add(record.getRecord());
+        	} else {
+        	discardRecord(record.getRecord().getVehicleId(), record.getContents());
+        	}
+        } catch (Throwable t) {
+        	_log.error("caught postProcess error:", t);
         }
       }
     }
