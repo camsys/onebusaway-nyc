@@ -124,6 +124,12 @@ public class RecordValidationServiceImpl implements RecordValidationService {
 			(!isValueWithinRange(longitude.doubleValue(), -999.999999, 999.999999))) {
 			isValid =  false;
 		}
+		
+		BigDecimal speed = this.convertSpeed(ccLocationReport.getSpeed());
+		if (!isValueWithinRange(speed.doubleValue(), -99.9, 99.9)) {
+			isValid = false;
+			log.error("Invalid speed for real time record : {} with value {}", vehicleId, ccLocationReport.getSpeed());
+		}
 
 		//Check direction degree
 		BigDecimal directionDegree = ccLocationReport.getDirection().getDeg();
@@ -150,4 +156,10 @@ public class RecordValidationServiceImpl implements RecordValidationService {
 		return new BigDecimal(latlong * Math.pow(10.0, -6));
 	}
 	
+	// this comes from CcLocationReportRecord
+	private BigDecimal convertSpeed(short saeSpeed) {
+	    BigDecimal noOffsetSaeSpeed = new BigDecimal(saeSpeed - 30);
+
+	    return noOffsetSaeSpeed.divide(new BigDecimal(2));
+	  }
 }
