@@ -126,7 +126,7 @@ public class RecordValidationServiceImpl implements RecordValidationService {
 		}
 		
 		BigDecimal speed = this.convertSpeed(ccLocationReport.getSpeed());
-		if (!isValueWithinRange(speed.doubleValue(), -99.9, 99.9)) {
+		if (!isValueWithinRange(speed.doubleValue(), -999.9, 999.9)) {
 			isValid = false;
 			log.error("Invalid speed for real time record : {} with value {}", vehicleId, ccLocationReport.getSpeed());
 		}
