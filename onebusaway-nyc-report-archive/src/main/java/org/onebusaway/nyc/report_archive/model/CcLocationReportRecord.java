@@ -232,6 +232,7 @@ public class CcLocationReportRecord implements Serializable {
    * speed = (Speed * 2) + 30
    * 
    * For this method, we want the first of those equations.
+   * This method is also implemented in RecordValidationServiceImpl.
    */
   private BigDecimal convertSpeed(short saeSpeed) {
     BigDecimal noOffsetSaeSpeed = new BigDecimal(saeSpeed - 30);
