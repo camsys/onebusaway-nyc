@@ -58,11 +58,15 @@
 
     
 	<!-- Input Queue Configuration -->
+	<!-- 
   	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
+  	 -->
+  	<bean id="fileInput" class="org.onebusaway.nyc.transit_data_federation.impl.queue.FileInputTask" />
 
 	<!--  Time Queue Configuration -->
 	<!--  This option integrates with an external time prediction queue -->
 	<bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
+	<property name="disable" value="true"/>
 	</bean>
 
 	<!-- Other Stuff: -->
