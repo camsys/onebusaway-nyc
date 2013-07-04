@@ -40,29 +40,31 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 		Runnable initThread = new Runnable() {
 			@Override
 			public void run() {
-				suggestions.clear();
+				Map<String,List<String>> tmpSuggestions = Collections.synchronizedMap(new HashMap<String, List<String>>());
+				
 
 				Map<String, List<CoordinateBounds>> agencies = _transitDataService.getAgencyIdsWithCoverageArea();
 				for (String agency : agencies.keySet()) {
 					ListBean<RouteBean> routes = _transitDataService.getRoutesForAgencyId(agency);
 					for (RouteBean route : routes.getList()) {
 						String shortName = route.getShortName();
-						generateInputsForString(shortName, "\\s+");
+						generateInputsForString(tmpSuggestions, shortName, "\\s+");
 					}
 
 					ListBean<String> stopIds = _transitDataService.getStopIdsForAgencyId(agency);
 					for (String stopId : stopIds.getList()) {
 						AgencyAndId agencyAndId = AgencyAndIdLibrary.convertFromString(stopId);
-						generateInputsForString(agencyAndId.getId(), null);
+						generateInputsForString(tmpSuggestions, agencyAndId.getId(), null);
 					}
 				}
+				suggestions = tmpSuggestions;
 			}
 		};
 
 		new Thread(initThread).start();
 	}
 
-	private void generateInputsForString(String string, String splitRegex) {
+	private void generateInputsForString(Map<String,List<String>> tmpSuggestions, String string, String splitRegex) {
 		String[] parts;
 		if (splitRegex != null)
 			parts = string.split(splitRegex);
@@ -72,24 +74,24 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 			int length = part.length();
 			for (int i = 0; i < length; i++) {
 				String key = part.substring(0, i+1).toLowerCase();
-				List<String> suggestion = suggestions.get(key);
+				List<String> suggestion = tmpSuggestions.get(key);
 				if (suggestion == null) {
 					suggestion = new ArrayList<String>();
 				}
 				suggestion.add(string);
 				Collections.sort(suggestion);
-				suggestions.put(key, suggestion);
+				tmpSuggestions.put(key, suggestion);
 			}
 		}
 	}
 
 	@Override
 	public List<String> getSuggestions(String input) {
-		List<String> suggestions = this.suggestions.get(input);
-		if (suggestions == null)
-			suggestions = new ArrayList<String>();
-		if (suggestions.size() > 10)
-			suggestions = suggestions.subList(0, 10);
-		return suggestions;
+		List<String> tmpSuggestions = this.suggestions.get(input);
+		if (tmpSuggestions == null)
+			tmpSuggestions = new ArrayList<String>();
+		if (tmpSuggestions.size() > 10)
+			tmpSuggestions = tmpSuggestions.subList(0, 10);
+		return tmpSuggestions;
 	}
 }
