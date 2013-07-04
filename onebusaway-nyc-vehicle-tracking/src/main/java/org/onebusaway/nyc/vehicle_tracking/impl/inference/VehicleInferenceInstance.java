@@ -596,7 +596,7 @@ public class VehicleInferenceInstance {
               + reportedRunId);
         } else {
           bestFuzzyDistance = fuzzyReportedMatches.keySet().first();
-          if (bestFuzzyDistance <= 1) {
+          if (bestFuzzyDistance <= 0) {
             fuzzyMatches = fuzzyReportedMatches.get(bestFuzzyDistance);
             for (final String runId : fuzzyMatches) {
               routeIds.addAll(_runService.getRoutesForRunId(runId));
