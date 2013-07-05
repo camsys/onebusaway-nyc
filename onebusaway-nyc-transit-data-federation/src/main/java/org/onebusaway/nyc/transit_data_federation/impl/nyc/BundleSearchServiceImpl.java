@@ -35,7 +35,9 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 	private Map<String,List<String>> suggestions = Collections.synchronizedMap(new HashMap<String, List<String>>());
 
 	@PostConstruct
-	@Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
+	@Refreshable(dependsOn = { 
+		      RefreshableResources.ROUTE_COLLECTIONS_DATA, 
+		      RefreshableResources.TRANSIT_GRAPH })
 	public void init() {
 		Runnable initThread = new Runnable() {
 			@Override

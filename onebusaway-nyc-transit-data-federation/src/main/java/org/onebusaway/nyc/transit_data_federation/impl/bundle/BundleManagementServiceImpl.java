@@ -393,6 +393,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			for (AgencyAndId shapeId : shapeIds) {
 				_nycTransitDataService.getShapeForId(AgencyAndIdLibrary.convertToString(shapeId));
 			}
+			_log.info("cache clearing complete!");
 		} catch (Exception e) {
 			_log.error("Exception during cache rebuild: ", e.getMessage());
 		}
