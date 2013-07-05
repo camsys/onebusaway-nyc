@@ -191,17 +191,17 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		}
 
 		discoverBundles();
-//		refreshApplicableBundles();
-//		reevaluateBundleAssignment();
+		refreshApplicableBundles();
+		reevaluateBundleAssignment();
 
 		if(_taskScheduler != null) {
 			_log.info("Starting bundle discovery and switch threads...");
 
-//			BundleDiscoveryUpdateThread discoveryThread = new BundleDiscoveryUpdateThread();
-//			_taskScheduler.schedule(discoveryThread, discoveryThread);
-//
-//			BundleSwitchUpdateThread switchThread = new BundleSwitchUpdateThread();
-//			_taskScheduler.schedule(switchThread, switchThread);
+			BundleDiscoveryUpdateThread discoveryThread = new BundleDiscoveryUpdateThread();
+			_taskScheduler.schedule(discoveryThread, discoveryThread);
+
+			BundleSwitchUpdateThread switchThread = new BundleSwitchUpdateThread();
+			_taskScheduler.schedule(switchThread, switchThread);
 		}
 	}	
 
