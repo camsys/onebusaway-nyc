@@ -61,10 +61,11 @@
   	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
 
 	<!--  for debugging purposes, the TDS can be populated via a JSON file -->
+<!--
   	<bean id="fileInput" class="org.onebusaway.nyc.transit_data_federation.impl.queue.FileInputTask" >
   		<property name="filename" value="/tmp/queue_log.json" />
   	</bean>
-
+-->
 	<!--  Time Queue Configuration -->
 	<!--  This option integrates with an external time prediction queue -->
 	<bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
