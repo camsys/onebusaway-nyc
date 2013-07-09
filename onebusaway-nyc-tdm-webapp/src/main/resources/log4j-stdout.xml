@@ -19,7 +19,7 @@
         <!-- 0 or 1 root elements -->
 
         <root>
-                <priority value="info" />
+                <priority value="debug" />
                 <appender-ref ref="stdout" />
         </root>
 

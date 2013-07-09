@@ -27,7 +27,7 @@ public class MtaBusDepotFileToDataCreatorTest  {
     assertTrue(assignments.size() > 0);
     MtaBusDepotAssignment assignment = assignments.get(0);
     assertEquals(new Long(2008), assignment.getAgencyId());
-    assertEquals(1009, assignment.getBusNumber());
+    assertEquals(1, assignment.getBusNumber());
     assertEquals("GH", assignment.getDepot());
   }
 

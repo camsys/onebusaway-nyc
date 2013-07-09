@@ -79,19 +79,17 @@ public class XMLBusDepotAssignsInputConverter implements
     MtaBusDepotAssignment depAssign = null;
     while (tableIt.hasNext()) {
       Table tableDepotAssign = tableIt.next();
-
       depAssign = new MtaBusDepotAssignment();
       depAssign.setAgencyId(mappingTool.getAgencyIdFromAgency(tableDepotAssign.getAGENCY()));
-      try {
-        depAssign.setBusNumber(Integer.decode(stripLeadingZeros(tableDepotAssign.getBUSNUMBER())));
-      } catch (NumberFormatException nfe) {
-        _log.warn("invalid bus number=" + tableDepotAssign.getBUSNUMBER());
+      if (tableDepotAssign.getBUSNUMBER().matches("[0-9]*")){
+    	  depAssign.setBusNumber(Integer.decode(stripLeadingZeros(tableDepotAssign.getBUSNUMBER())));
+          depAssign.setDepot(tableDepotAssign.getDEPOT());
+          assignments.add(depAssign);
       }
-      depAssign.setDepot(tableDepotAssign.getDEPOT());
-
-      assignments.add(depAssign);
+      else{
+    	  _log.warn("found non-numeric bus number: "+tableDepotAssign.getBUSNUMBER());
+      }
     }
-
     return assignments;
   }
 
