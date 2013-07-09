@@ -66,9 +66,6 @@ public class EmergencyStatusNotificationServiceImpl implements EmergencyStatusNo
 				}
 			} else {
 				emergencyState.put(vehicleId, isEmergency);
-				if(isEmergency) {
-					emergencyStatusChange = Boolean.TRUE;
-				}
 			}
 
 			//Publish sns application event if emergency state has changed
