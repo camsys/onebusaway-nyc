@@ -53,6 +53,9 @@ public class EmergencyStatusNotificationServiceImplTest {
 		emergencyState.put(1, false);
 		emergencyState.put(2, false);
 		emergencyState.put(3, false);
+		// this has changed, we need to see at least two records from a bus
+		// before we decide it has changed status
+		emergencyState.put(4, false);
 		
 		service.setEmergencyState(emergencyState);
 		
