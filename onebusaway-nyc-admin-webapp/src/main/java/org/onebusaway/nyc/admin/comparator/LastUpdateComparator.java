@@ -33,7 +33,6 @@ public class LastUpdateComparator implements Comparator<VehicleStatus>{
 		
 		DateTime time1 = formatter.parseDateTime(o1.getTimeReported());
 		DateTime time2 = formatter.parseDateTime(o2.getTimeReported());
-		
-		return timeComparator.compare(time1, time2);
+		return timeComparator.compare(time2, time1);
 	}
 }

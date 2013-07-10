@@ -24,9 +24,4 @@ public class TimeComparator implements Comparator<DateTime>{
 		}
 		return time1.compareTo(time2);
 	}
-
-	
-
-	
-
 }

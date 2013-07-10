@@ -173,17 +173,17 @@ public class VehicleStatusBuilder {
 	private String getLastUpdate(String timeReported) {
 		String lastUpdate;
 		BigDecimal difference = getTimeDifference(timeReported);
-		if(difference.compareTo(new BigDecimal(86400)) > 0) {
+		if(difference.abs().compareTo(new BigDecimal(86400)) > 0) {
 			//Calculate the difference in days
 			BigDecimal days = difference.divide(new BigDecimal(86400), BigDecimal.ROUND_HALF_UP);
 			lastUpdate = days.toPlainString() + " days";
 		} else {
-			if(difference.compareTo(new BigDecimal(3600)) > 0) {
+			if(difference.abs().compareTo(new BigDecimal(3600)) > 0) {
 				//Calculate the difference in hours
 				BigDecimal hours = difference.divide(new BigDecimal(3600), BigDecimal.ROUND_HALF_UP);
 				lastUpdate = hours.toPlainString() + " hours";
 			} else {
-				if(difference.compareTo(new BigDecimal(60)) > 0) {
+				if(difference.abs().compareTo(new BigDecimal(60)) > 0) {
 					//Calculate the difference in minutes
 					BigDecimal minutes = difference.divide(new BigDecimal(60), BigDecimal.ROUND_UP);
 					lastUpdate = minutes.toPlainString() + " mins";
@@ -199,14 +199,8 @@ public class VehicleStatusBuilder {
 		DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
 		DateTime lastReportedTime = formatter.parseDateTime(timeReported);
 		DateTime now = new DateTime();
-		int seconds;
-		if(lastReportedTime.isAfter(now)) {
-			seconds= Seconds.secondsBetween(now, lastReportedTime).getSeconds();
-		} else {
-			seconds= Seconds.secondsBetween(lastReportedTime, now).getSeconds();
-		}
+		int seconds = Seconds.secondsBetween(lastReportedTime, now).getSeconds();
 		BigDecimal difference = new BigDecimal(seconds);
-		
 		return difference;
 	}
 
