@@ -15,18 +15,23 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
-import org.junit.Ignore;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.AbstractTraceRunner;
 
 /**
- * This trace has a "correct" reported run, a sizable deadhead between trips,
- * and a bad/detoured start, as well as no DSC!
+ * This trace has a "wrong" reported run, no DSC, a sizable deadhead between trips,
+ * and a bad/detoured start (etc).  This confirms that the lev distance of run
+ * ids is 0 by failing to match to a run-id of 999-485 that is one character off.
+ * 
+ * This trace is a copy of Trace_6152_20111214_123000_143500_no_dsc to guard against 
+ * false positives caused by a lev distance greater than 0.  It is not that interesting,
+ * in that what used to be a partially inferred run is now completely DEADHEAD.
  */
 
-public class Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest extends AbstractTraceRunner {
 
-  public Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest() throws Exception {
-    super("6154_20111214_123000_143500_no-dsc.csv");
+public class Trace_6152_20111214_123000_143500_no_dsc_levdist_IntegrationTest extends AbstractTraceRunner {
+
+  public Trace_6152_20111214_123000_143500_no_dsc_levdist_IntegrationTest() throws Exception {
+    super("6154_20111214_123000_143500_no-dsc_levdist.csv");
     setBundle("si", "2011-12-07T00:00:00EDT");
   }
 }
