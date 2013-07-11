@@ -35,6 +35,7 @@ import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeImageType;
 import org.onebusaway.nyc.transit_data_manager.barcode.GoogleChartBarcodeGenerator;
 import org.onebusaway.nyc.transit_data_manager.barcode.QRErrorCorrectionLevel;
 import org.onebusaway.nyc.transit_data_manager.barcode.QrCodeGenerator;
+import org.onebusaway.nyc.transit_data_manager.barcode.ZXingCodeGenerator;
 import org.onebusaway.nyc.transit_data_manager.barcode.model.MtaBarcode;
 import org.onebusaway.nyc.transit_data_manager.util.ZipFileBuilder;
 import org.slf4j.Logger;
@@ -53,7 +54,10 @@ public class QrCodeGeneratorResource {
     super();
 
     setContentConv(new BarcodeContentsConverterImpl());
-    setBarcodeGen(new GoogleChartBarcodeGenerator());
+    
+    //setBarcodeGen(new GoogleChartBarcodeGenerator());
+    setBarcodeGen(new ZXingCodeGenerator());
+    
     barcodeGen.setEcLevel(QRErrorCorrectionLevel.Q);
   }
 
