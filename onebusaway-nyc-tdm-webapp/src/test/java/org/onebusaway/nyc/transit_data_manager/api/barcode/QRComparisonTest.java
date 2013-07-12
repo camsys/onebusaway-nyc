@@ -28,19 +28,27 @@ public class QRComparisonTest extends QrCodeGeneratorResource {
 		MtaBarcode bcTwo = new MtaBarcode("HTTP://BT.MTA.INFO/S/20");
 		bcTwo.setStopIdStr("20");
 		bcList.add(bcTwo);
+		
+		MtaBarcode bcThree = new MtaBarcode("HTTP://BT.MTA.INFO/S/325");
+		bcTwo.setStopIdStr("325");
+		bcList.add(bcTwo);
 
 		BufferedImage result1a = (BufferedImage) google.generateCode(bcOne.getContents(), 100, 100);
 		BufferedImage result1b = (BufferedImage) zxing.generateCode(bcOne.getContents(), 100, 100);
 		BufferedImage result2a = (BufferedImage) google.generateCode(bcTwo.getContents(), 100, 100);
 		BufferedImage result2b = (BufferedImage) zxing.generateCode(bcTwo.getContents(), 100, 100);
 		BufferedImage result2c = (BufferedImage) zxing.generateCode(bcTwo.getContents(), 200, 200);
-
+		BufferedImage result3a = (BufferedImage) google.generateCode(bcThree.getContents(), 333, 444);
+		BufferedImage result3b = (BufferedImage) zxing.generateCode(bcThree.getContents(), 333, 444);
+		
 		assertTrue(bufferedImagesEqual(result1a,result1b));
 		assertTrue(bufferedImagesEqual(result2a,result2b));
+		assertTrue(bufferedImagesEqual(result3a,result3b));
 		assertFalse(bufferedImagesEqual(result1a,result2a));
 		assertFalse(bufferedImagesEqual(result1b,result2b));
 		assertFalse(bufferedImagesEqual(result2b,result2c));
-
+		assertFalse(bufferedImagesEqual(result2c,result3a));
+		assertFalse(bufferedImagesEqual(result1b,result3b));
 	}
 
 	boolean bufferedImagesEqual(BufferedImage img1, BufferedImage img2) {
