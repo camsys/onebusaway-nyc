@@ -19,19 +19,9 @@ public class QRComparisonTest extends QrCodeGeneratorResource {
 		QrCodeGenerator google = new GoogleChartBarcodeGenerator();
 		QrCodeGenerator zxing = new ZXingCodeGenerator();
 
-		Set<MtaBarcode> bcList = new HashSet<MtaBarcode>();
-
 		MtaBarcode bcOne = new MtaBarcode("HTTP://BT.MTA.INFO/S/10");
-		bcOne.setStopIdStr("10");
-		bcList.add(bcOne);
-
 		MtaBarcode bcTwo = new MtaBarcode("HTTP://BT.MTA.INFO/S/20");
-		bcTwo.setStopIdStr("20");
-		bcList.add(bcTwo);
-		
 		MtaBarcode bcThree = new MtaBarcode("HTTP://BT.MTA.INFO/S/325");
-		bcTwo.setStopIdStr("325");
-		bcList.add(bcTwo);
 
 		BufferedImage result1a = (BufferedImage) google.generateCode(bcOne.getContents(), 100, 100);
 		BufferedImage result1b = (BufferedImage) zxing.generateCode(bcOne.getContents(), 100, 100);
