@@ -1,11 +1,11 @@
 package org.onebusaway.nyc.transit_data_manager.barcode;
 
 import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
+import java.awt.image.*;
 import java.util.Hashtable;
 import com.google.zxing.*;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 /**
  * 
@@ -30,13 +30,14 @@ public class ZXingCodeGenerator extends QrCodeGenerator {
 		BitMatrix matrix = null;
 		Writer writer = new MultiFormatWriter();
 		try {
-			Hashtable<EncodeHintType, String> hints = new Hashtable<EncodeHintType, String>();
+			Hashtable<EncodeHintType, Object> hints = new Hashtable<EncodeHintType, Object>();
 			hints.put(EncodeHintType.CHARACTER_SET, ENCODING_NAME);
+			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.valueOf(getEcLevel().toString()));	
+			hints.put(EncodeHintType.MARGIN, quietZoneRows);
 			matrix = writer.encode(text, BarcodeFormat.QR_CODE, width, height, hints);
-		} catch (WriterException e) {
-			System.out.println(e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		System.out.println(matrix);
 		RenderedImage image = toBufferedImage(matrix);
 		return image;
 	}
