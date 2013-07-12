@@ -342,9 +342,7 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 	private <T> T convertToObject(String content, Class<T> objectType) {
 		T object = null;
 		try {
-		  log.error("objectType=" + objectType.toString() + ":CONTENT:" + content);
 			object = mapper.readValue(content, objectType);
-
 		} catch (JsonParseException e) {
 			log.error("Error parsing json content : " +e);
 			e.printStackTrace();
