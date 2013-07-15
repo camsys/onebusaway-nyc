@@ -1,11 +1,11 @@
 package org.onebusaway.nyc.admin.model.ui;
 
 /**
- * Holds vehicle inferred state values
+ * Holds vehicle inferred phase values
  * @author abelsare
  *
  */
-public enum InferredState {
+public enum InferredPhase {
 
 	IN_PROGRESS("IN_PROGRESS"),
 	DEADHEAD_BEFORE("DEADHEAD_BEFORE"),
@@ -17,7 +17,7 @@ public enum InferredState {
 	
 	private String state;
 	
-	private InferredState(String state) {
+	private InferredPhase(String state) {
 		this.state = state;
 	}
 	

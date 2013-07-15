@@ -17,7 +17,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import org.onebusaway.nyc.admin.comparator.InferredStateComparator;
+import org.onebusaway.nyc.admin.comparator.InferredPhaseComparator;
 import org.onebusaway.nyc.admin.comparator.LastUpdateComparator;
 import org.onebusaway.nyc.admin.comparator.ObservedDSCComparator;
 import org.onebusaway.nyc.admin.comparator.PullinTimeComparator;
@@ -194,8 +194,8 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 				fieldComparator = new LastUpdateComparator(order);
 				break;
 			
-			case INFERREDSTATE :
-				fieldComparator = new InferredStateComparator(order);
+			case INFERREDPHASE :
+				fieldComparator = new InferredPhaseComparator(order);
 				break;
 				
 			case OBSERVEDDSC :

@@ -9,7 +9,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.admin.model.json.VehicleLastKnownRecord;
 import org.onebusaway.nyc.admin.model.json.VehiclePullout;
-import org.onebusaway.nyc.admin.model.ui.InferredState;
+import org.onebusaway.nyc.admin.model.ui.InferredPhase;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 
 /**
@@ -65,8 +65,8 @@ public class VehicleStatusBuilder {
 		String imageSrc = null;
 		BigDecimal difference  = getTimeDifference(timeReported);
 		
-		if((inferredPhase.equals(InferredState.IN_PROGRESS.getState()) || 
-				inferredPhase.equals(InferredState.DEADHEAD_DURING.getState()) ||
+		if((inferredPhase.equals(InferredPhase.IN_PROGRESS.getState()) || 
+				inferredPhase.equals(InferredPhase.DEADHEAD_DURING.getState()) ||
 				inferredPhase.startsWith("LAY")) && (difference.compareTo(new BigDecimal(120)) < 0)) {
 			imageSrc = getStatusImage(emergencyCode, "green");
 		} else {

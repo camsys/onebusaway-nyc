@@ -9,7 +9,7 @@ public enum VehicleSortFields {
 	
 	VEHICLEID("vehicleId"),
 	LASTUPDATE("lastUpdate"),
-	INFERREDSTATE("inferredState"),
+	INFERREDPHASE("inferredPhase"),
 	OBSERVEDDSC("observedDSC"),
 	PULLOUTTIME("pulloutTime"),
 	PULLINTIME("pullinTime");

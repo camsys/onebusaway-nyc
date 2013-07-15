@@ -6,15 +6,15 @@ import org.apache.commons.lang.xwork.StringUtils;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 
 /**
- * Compares vehicles by their inferred state nulls last
+ * Compares vehicles by their inferred phase nulls last
  * @author abelsare
  *
  */
-public class InferredStateComparator implements Comparator<VehicleStatus>{
+public class InferredPhaseComparator implements Comparator<VehicleStatus>{
 	
 	private String order;
 	
-	public InferredStateComparator(String order) {
+	public InferredPhaseComparator(String order) {
 		this.order = order;
 	}
 
