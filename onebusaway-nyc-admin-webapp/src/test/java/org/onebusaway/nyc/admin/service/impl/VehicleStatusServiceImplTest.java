@@ -87,7 +87,7 @@ public class VehicleStatusServiceImplTest {
 		VehicleStatus vehicleStatus = vehicleStatusRecords.get(0);
 		
 		assertEquals("Mismatched vehicle id", vehicleStatus.getVehicleId(), "5638");
-		assertEquals("Mismatched inferred state", vehicleStatus.getInferredPhase(), "IN PROGRESS");
+		assertEquals("Mismatched inferred state", vehicleStatus.getInferredState(), "IN PROGRESS");
 		assertEquals("Mismatched observed DSC", vehicleStatus.getObservedDSC(), "4611");
 		assertEquals("Mismatched pull in time", vehicleStatus.getFormattedPullinTime(), "00:23 +1 day");
 		assertEquals("Mismatched pull out time", vehicleStatus.getFormattedPulloutTime(), "05:51");
@@ -157,7 +157,7 @@ public class VehicleStatusServiceImplTest {
 		VehicleStatus vehicleStatus = vehicleStatusRecords.get(0);
 		
 		assertEquals("Mismatched vehicle id", vehicleStatus.getVehicleId(), "344");
-		assertEquals("Mismatched inferred state", vehicleStatus.getInferredPhase(), "IN PROGRESS");
+		assertEquals("Mismatched inferred state", vehicleStatus.getInferredState(), "IN PROGRESS");
 		assertEquals("Mismatched observed DSC", vehicleStatus.getObservedDSC(), "4611");
 		assertNull("No pull in time", vehicleStatus.getPullinTime());
 		assertNull("No pull out time", vehicleStatus.getPulloutTime());
@@ -169,7 +169,7 @@ public class VehicleStatusServiceImplTest {
 	public void testVehicleSort() {
 		VehicleStatus vehicle1 = new VehicleStatus();
 		vehicle1.setVehicleId("1");
-		vehicle1.setInferredPhase("IN PROGRESS");
+		vehicle1.setInferredState("IN PROGRESS");
 		vehicle1.setLastUpdate("2012-07-19T13:48:20.030Z");
 		vehicle1.setObservedDSC("4411");
 		vehicle1.setPulloutTime("2012-07-18T05:51:00-04:00");
@@ -177,7 +177,7 @@ public class VehicleStatusServiceImplTest {
 		
 		VehicleStatus vehicle2 = new VehicleStatus();
 		vehicle2.setVehicleId("2");
-		vehicle2.setInferredPhase("LAYOVER");
+		vehicle2.setInferredState("LAYOVER");
 		vehicle2.setLastUpdate("2012-07-19T13:50:20.030Z");
 		vehicle2.setObservedDSC("4412");
 		vehicle2.setPulloutTime("2012-07-18T05:54:00-04:00");
@@ -198,9 +198,9 @@ public class VehicleStatusServiceImplTest {
 		assertEquals("2012-07-19T13:50:20.030Z", vehicleStatusRecords.get(0).getLastUpdate());
 		
 		service.sort(vehicleStatusRecords, "inferredState", "asc");
-		assertEquals("IN PROGRESS", vehicleStatusRecords.get(0).getInferredPhase());
+		assertEquals("IN PROGRESS", vehicleStatusRecords.get(0).getInferredState());
 		service.sort(vehicleStatusRecords, "inferredState", "desc");
-		assertEquals("LAYOVER", vehicleStatusRecords.get(0).getInferredPhase());
+		assertEquals("LAYOVER", vehicleStatusRecords.get(0).getInferredState());
 		
 		service.sort(vehicleStatusRecords, "observedDSC", "asc");
 		assertEquals("4411", vehicleStatusRecords.get(0).getObservedDSC());
@@ -222,7 +222,7 @@ public class VehicleStatusServiceImplTest {
 	public void testSortBlankPulloutFields() {
 		VehicleStatus vehicle1 = new VehicleStatus();
 		vehicle1.setVehicleId("1");
-		vehicle1.setInferredPhase("IN PROGRESS");
+		vehicle1.setInferredState("IN PROGRESS");
 		vehicle1.setLastUpdate("2012-07-19T13:48:20.030Z");
 		vehicle1.setObservedDSC("4411");
 		vehicle1.setPulloutTime("");
@@ -230,7 +230,7 @@ public class VehicleStatusServiceImplTest {
 		
 		VehicleStatus vehicle2 = new VehicleStatus();
 		vehicle2.setVehicleId("2");
-		vehicle2.setInferredPhase("LAYOVER");
+		vehicle2.setInferredState("LAYOVER");
 		vehicle2.setLastUpdate("2012-07-19T13:50:20.030Z");
 		vehicle2.setObservedDSC("4412");
 		vehicle2.setPulloutTime("2012-07-18T05:54:00-04:00");

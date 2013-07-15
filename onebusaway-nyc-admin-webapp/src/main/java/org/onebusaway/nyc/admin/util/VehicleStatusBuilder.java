@@ -34,7 +34,7 @@ public class VehicleStatusBuilder {
 		String inferredDestination = getInferredDestination(lastknownRecord);
 		vehicleStatus.setInferredDestination(inferredDestination);
 
-		vehicleStatus.setInferredPhase(getInferredPhase(lastknownRecord));
+		vehicleStatus.setInferredState(getInferredState(lastknownRecord));
 		
 		vehicleStatus.setObservedDSC(lastknownRecord.getDestinationSignCode());
 		
@@ -91,22 +91,22 @@ public class VehicleStatusBuilder {
 		return imageSrc;
 	}
 
-	private String getInferredPhase(VehicleLastKnownRecord lastknownRecord) {
-		String lastInferredPhase = lastknownRecord.getInferredPhase();
-		String inferredPhase = lastInferredPhase;
-		if(lastInferredPhase.startsWith("IN")) {
-			inferredPhase = "IN PROGRESS";
+	private String getInferredState(VehicleLastKnownRecord lastknownRecord) {
+		String inferredPhase = lastknownRecord.getInferredPhase();
+		String inferredState = inferredPhase;
+		if(inferredPhase.startsWith("IN")) {
+			inferredState = "IN PROGRESS";
 		} else {
-			if(lastInferredPhase.startsWith("DEAD")) {
-				inferredPhase = "DEADHEAD";
+			if(inferredPhase.startsWith("DEAD")) {
+				inferredState = "DEADHEAD";
 			} else {
-				if(lastInferredPhase.startsWith("LAY")) {
-					inferredPhase = "LAYOVER";
+				if(inferredPhase.startsWith("LAY")) {
+					inferredState = "LAYOVER";
 				}
 			}
 		}
 
-		return inferredPhase;
+		return inferredState;
 	}
 
 	private String getInferredDestination(

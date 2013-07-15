@@ -10,7 +10,7 @@ public class VehicleStatus {
 	private String status;
 	private String vehicleId;
 	private String lastUpdate;
-	private String inferredPhase;
+	private String inferredState;
 	private String inferredDSC;
 	private String inferredDestination;
 	private String observedDSC;
@@ -49,16 +49,16 @@ public class VehicleStatus {
 		this.lastUpdate = lastUpdate;
 	}
 	/**
-	 * @return the inferredPhase
+	 * @return the inferredState
 	 */
-	public String getInferredPhase() {
-		return inferredPhase;
+	public String getInferredState() {
+		return inferredState;
 	}
 	/**
-	 * @param inferredState the inferredPhase to set
+	 * @param inferredState the inferredState to set
 	 */
-	public void setInferredPhase(String inferredState) {
-		this.inferredPhase = inferredState;
+	public void setInferredState(String inferredState) {
+		this.inferredState = inferredState;
 	}
 	/**
 	 * @return the observedDSC

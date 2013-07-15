@@ -144,29 +144,15 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 			url: "vehicle-status!getVehicleData.action?ts=" + new Date().getTime(),
 			datatype: "json",
 			mType: "GET",
-			colNames: ["Health","Vehicle Id", "Last Update", "Inferred Phase", "Inferred DSC, Route + Direction", "Observed DSC", "Pull-out", "Pull-in", "Details"],
+			colNames: ["Status","Vehicle Id", "Last Update", "Inferred State", "Inferred DSC, Route + Direction", "Observed DSC", "Pull-out", "Pull-in", "Details"],
 			colModel:[ {name:'status',index:'status', width:70, sortable:false,
 						formatter: function(cellValue, options) {
-							var cellImg="error";
-							
-							if (cellValue.startsWith("circle_green")){
-								cellImg = "<a class=\"tooltip\" href=\"#\"><img src='../../css/img/" +cellValue +"' alt='Not Found' />"+
-									"<span class=\"boxData\">GREEN: This bus is currently generating revenue: It is either in progress, deadhead, or experiencing a layover less than 2 minutes</span></a>";
-							}
-							if (cellValue.startsWith("circle_red")){
-								cellImg = "<a class=\"tooltip\" href=\"#\"><img src='../../css/img/" +cellValue +"' alt='Not Found' />"+
-									"<span class=\"boxData\">RED: This bus is off track and has no inferred direction or route</span></a>";
-							}							
-							if (cellValue.startsWith("circle_orange")){
-								cellImg = "<a class=\"tooltip\" href=\"#\"><img src='../../css/img/" +cellValue +"' alt='Not Found' />"+
-									"<span class=\"\">ORANGE: This bus is off track, but has an inferred direction or route</span></a>";
-							}
-
+							var cellImg = "<img src='../../css/img/" +cellValue +"' alt='Not Found' />";
 							return cellImg;
 						}}, 
 			           {name:'vehicleId',index:'vehicleId', width:80}, 
 			           {name:'lastUpdate',index:'lastUpdate', width:80}, 
-			           {name:'inferredPhase',index:'inferredPhase', width:110}, 
+			           {name:'inferredState',index:'inferredState', width:110}, 
 			           {name:'inferredDestination',index:'inferredDestination', width:170, sortable:false}, 
 			           {name:'observedDSC',index:'observedDSC', width:80}, 
 			           {name:'formattedPulloutTime',index:'pulloutTime', width:80},
@@ -247,7 +233,7 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 				route: function() {return $("#filters #route").val();},
 				depot: function() {return $("#filters #depot option:selected").val();},
 				dsc: function() {return $("#filters #dsc").val();},
-				inferredPhase: function() {return $("#filters #inferredPhase option:selected").val();},
+				inferredState: function() {return $("#filters #inferredState option:selected").val();},
 				pulloutStatus: function() {return $("#filters #pulloutStatus option:selected").val();},
 				emergencyStatus: function() {return $("#checkFilters #emergencyCheck").is(':checked');},
 				formalInferrence: function() {return $("#checkFilters #formalInferrenceCheck").is(':checked');}
@@ -269,8 +255,8 @@ VehicleStatus.FiltersController = Ember.ArrayController.create({
 					$("#depot").append("<option value=\"" +$(this).text() + "\"" + ">" +$(this).text() + "</option>");
 				});
 				//Add inferred state options
-				$(xml).find("InferredPhase").each(function(){
-					$("#inferredPhase").append("<option value=\"" +$(this).text() + "\"" + ">" +$(this).text() + "</option>");
+				$(xml).find("InferredState").each(function(){
+					$("#inferredState").append("<option value=\"" +$(this).text() + "\"" + ">" +$(this).text() + "</option>");
 				});
 				//Add pullout options
 				$(xml).find("PulloutStatus").each(function(){
