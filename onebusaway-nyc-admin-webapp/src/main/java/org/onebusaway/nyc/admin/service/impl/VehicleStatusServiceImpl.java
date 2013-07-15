@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.stereotype.Component;
 
+
 /**
  * Default implementation of {@link VehicleStatusService}
  * @author abelsare
@@ -62,12 +64,12 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 	private final VehicleStatusCache cache = new VehicleStatusCache();
 	
 	private int lastJsonHash;
-	private Map<String, VehiclePullout> pullouts = new HashMap<String, VehiclePullout>();
+	private Map<String, VehiclePullout> pullouts = new ConcurrentHashMap<String, VehiclePullout>();
 
 	private class UpdateThread implements Runnable {
 		String json;
 		public UpdateThread(String json){
-			System.out.println("Update thread running!");
+			log.debug("Update thread running!");
 			this.json=json;
 		}
 	    @Override
@@ -223,18 +225,16 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 		String vehiclePipocontent = remoteConnectionService.getContent(url);
 
 		String json = extractJsonArrayString(vehiclePipocontent);
-		if(json.hashCode()!=lastJsonHash){
+		if(json!=null && json.hashCode()!=lastJsonHash){
 			lastJsonHash=json.hashCode();
 			new UpdateThread(json).run();
 		}
-		else System.out.println("Constructing pullout map was skipped!");
+		else log.debug("Constructing pullout map was skipped!");
 		return pullouts;
 	}
 
 	private VehiclePullout getPulloutData(String vehicleId) {
-		
 		return pullouts.get(vehicleId);
-		
 	}
 
 	private List<VehicleLastKnownRecord> getLastKnownRecordData() {
