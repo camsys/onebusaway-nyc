@@ -20,16 +20,16 @@ public class InferredStateComparator implements Comparator<VehicleStatus>{
 
 	@Override
 	public int compare(VehicleStatus o1, VehicleStatus o2) {
-		if(StringUtils.isBlank(o1.getInferredState())) {
+		if(StringUtils.isBlank(o1.getInferredPhase())) {
 			return 1;
 		}
-		if(StringUtils.isBlank(o2.getInferredState())) {
+		if(StringUtils.isBlank(o2.getInferredPhase())) {
 			return -1;
 		}
 		if(order.equalsIgnoreCase("desc")) {
-			return o2.getInferredState().compareToIgnoreCase(o1.getInferredState());
+			return o2.getInferredPhase().compareToIgnoreCase(o1.getInferredPhase());
 		}
-		return o1.getInferredState().compareToIgnoreCase(o2.getInferredState());
+		return o1.getInferredPhase().compareToIgnoreCase(o2.getInferredPhase());
 	}
 
 }

@@ -5,20 +5,22 @@ import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 import org.onebusaway.nyc.admin.search.Filter;
 
 /**
- * Filters vehicles that are inferred in revenue service i.e whose inferred state is either
- * IN PROGRESS or LAYOVER_*
+ * Filters vehicles by given inferred phase
  * @author abelsare
  *
  */
-public class RevenueServiceFilter implements Filter<VehicleStatus> {
+public class InferredPhaseFilter implements Filter<VehicleStatus> {
+	
+	private String inferredPhase;
+	
+	public InferredPhaseFilter(String inferredPhase) {
+		this.inferredPhase = inferredPhase;
+	}
 
 	@Override
 	public boolean apply(VehicleStatus type) {
 		if(StringUtils.isNotBlank(type.getInferredPhase())) {
-			if(type.getInferredPhase().equalsIgnoreCase("IN PROGRESS") ||
-					type.getInferredPhase().startsWith("LAY")) {
-				return true;
-			}
+			return type.getInferredPhase().equalsIgnoreCase(inferredPhase);
 		}
 		return false;
 	}

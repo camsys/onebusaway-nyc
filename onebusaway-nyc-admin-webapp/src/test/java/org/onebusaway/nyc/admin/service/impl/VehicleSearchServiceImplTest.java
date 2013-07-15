@@ -137,7 +137,7 @@ public class VehicleSearchServiceImplTest {
 		VehicleStatus vehicle1 = mock(VehicleStatus.class);
 		when(vehicle1.getVehicleId()).thenReturn("242");
 		when(vehicle1.getRoute()).thenReturn("B63");
-		when(vehicle1.getInferredState()).thenReturn("IN PROGRESS");
+		when(vehicle1.getInferredPhase()).thenReturn("IN PROGRESS");
 		when(vehicle1.getObservedDSC()).thenReturn("436");
 		when(vehicle1.getEmergencyStatus()).thenReturn("");
 		when(vehicle1.isInferrenceFormal()).thenReturn(false);
@@ -145,7 +145,7 @@ public class VehicleSearchServiceImplTest {
 		VehicleStatus vehicle2 = mock(VehicleStatus.class);
 		when(vehicle2.getVehicleId()).thenReturn("243");
 		when(vehicle2.getRoute()).thenReturn("B62");
-		when(vehicle2.getInferredState()).thenReturn("IN PROGRESS");
+		when(vehicle2.getInferredPhase()).thenReturn("IN PROGRESS");
 		when(vehicle2.getObservedDSC()).thenReturn("437");
 		when(vehicle2.getEmergencyStatus()).thenReturn(" ");
 		when(vehicle2.isInferrenceFormal()).thenReturn(true);
@@ -153,7 +153,7 @@ public class VehicleSearchServiceImplTest {
 		VehicleStatus vehicle3 = mock(VehicleStatus.class);
 		when(vehicle3.getVehicleId()).thenReturn("244");
 		when(vehicle3.getRoute()).thenReturn("B63");
-		when(vehicle3.getInferredState()).thenReturn("DEADHEAD");
+		when(vehicle3.getInferredPhase()).thenReturn("DEADHEAD");
 		when(vehicle3.getObservedDSC()).thenReturn("437");
 		when(vehicle3.getEmergencyStatus()).thenReturn("1");
 		when(vehicle3.isInferrenceFormal()).thenReturn(true);
