@@ -1,15 +1,12 @@
 package org.onebusaway.nyc.vehicle_tracking.opentrackingtools.impl;
 
-import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.algorithm.LineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
-import com.vividsolutions.jts.noding.BasicSegmentString;
+import com.vividsolutions.jts.geomgraph.index.MonotoneChain;
 import com.vividsolutions.jts.noding.NodedSegmentString;
 import com.vividsolutions.jts.noding.SegmentIntersector;
 import com.vividsolutions.jts.noding.SegmentString;
-
-import org.codehaus.jackson.io.SegmentedStringWriter;
 
 /**
  * Taken from JTS's IntersectionAdder. Modified to only add proper (interior)
@@ -22,6 +19,7 @@ public class NycCustomIntersectionAdder implements SegmentIntersector {
   public static boolean isAdjacentSegments(int i1, int i2) {
     return Math.abs(i1 - i2) == 1;
   }
+
 
   /**
    * These variables keep track of what types of intersections were found during

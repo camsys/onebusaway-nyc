@@ -205,25 +205,26 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
-<!--                 <tdm.host>tdm.dev.obanyc.com</tdm.host> -->
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
+<!--                 
                 <tdm.host />
                 <tdm.port>80</tdm.port>
                 <tdm.url>/api/</tdm.url>
-                
+-->                
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
 <!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
                  <siri.service.config>empty.xml</siri.service.config>
                  <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
-                 <bundle.mode.standalone>true</bundle.mode.standalone>
+                 <bundle.mode.standalone>false</bundle.mode.standalone>
 <!--                  <bundle.mode.standalone>false</bundle.mode.standalone> -->
                  <depot.partition.key />
                  <log4j.appender>stdout</log4j.appender>
 <!--                  <particle.filter.debug>false</particle.filter.debug> -->
                  <particle.filter.debug>true</particle.filter.debug>
                  <vtw.threadpool.size>1</vtw.threadpool.size>
-                 <bundle.switch.disable>true</bundle.switch.disable>
+                 <bundle.switch.disable>false</bundle.switch.disable>
           </properties>
         </profile>
         <profile>

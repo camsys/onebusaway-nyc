@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:form="http://www.springframework.org/tags/form">
+<jsp:directive.page contentType="text/html" />
+
+<head>
+	<title>Graph Debugging</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.min.js"><!-- // prevent
+	// jspx
+	// minimization
+	// --></script>
+	<script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"><!-- // prevent
+	// jspx
+	// minimization
+	// --></script>
+</head>
+
+<body>
+	<p>
+		<a href="/">Back to Main Index</a>
+	</p>
+
+	<div id="map" style="width: 1500px; height: 1000px;"></div>
+
+<script type="text/javascript">
+	var apiKey = "AqTGBsziZHIJYYxgivLBf0hVdrAk9mWO5cQcb8Yux8sW5M8c8opEC2lZqKR1ZZXf";
+	var divname = "map";
+	var map = null;
+	var raw_shapes_layer = null;
+	var processed_shapes_layer = null;
+	
+	// Loads the map when its ready
+	$(document).ready(function() { 
+		//alert('Loading');
+		init_map(divname); 
+	});
+	
+	// Initializes the map
+	function init_map(div) {
+		var map_projection = new OpenLayers.Projection("EPSG:32618");
+		var map_options = {
+				displayProjection: map_projection,
+				units: "m"
+		};
+		map = new OpenLayers.Map(div, map_options);
+		// Use the Bing map service for roads
+    	var road = new OpenLayers.Layer.Bing({
+    		key: apiKey, 
+    		type: "Road"
+    		});
+    	map.addLayers([road]);
+    	    	
+    	// Add the GeoJson shapes in
+    	var raw_stylemap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults({strokeColor: 'blue', strokeWidth: 6}, OpenLayers.Feature.Vector.style['default']));
+    	var processed_stylemap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults({strokeColor: 'black', strokeWidth: 4}, OpenLayers.Feature.Vector.style['default']));
+    	var simplified_stylemap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults({strokeColor: 'yellow', strokeWidth: 2}, OpenLayers.Feature.Vector.style['default']));
+    	var raw_shapes_layer = new OpenLayers.Layer.Vector('Raw Shapes', {styleMap : raw_stylemap});
+    	var processed_shapes_layer = new OpenLayers.Layer.Vector('Processed Shapes', {styleMap : processed_stylemap});
+    	var simplified_shapes_layer = new OpenLayers.Layer.Vector('Simplified Shapes', {styleMap : simplified_stylemap});
+    	map.addLayer(raw_shapes_layer);
+    	map.addLayer(processed_shapes_layer);
+    	map.addLayer(simplified_shapes_layer);
+    	alert(map.getProjectionObject());
+    	
+    	// Center the map on Manhattan
+    	var map_center = new OpenLayers.LonLat(-74.081154, 40.639228);
+    	
+    	var projection = new OpenLayers.Projection("EPSG:4326");
+    	map_center.transform(projection, map.getProjectionObject());
+		map.setCenter(map_center, 11);
+
+		scale = new OpenLayers.Control.ScaleLine();
+		scale.geodesic = true;
+		map.addControl(scale);
+		
+		// Load the raw shapes using a call back
+		OpenLayers.Request.GET({
+			url: "graph-raw-shapes.do",
+			headers: {'Accept':'application/json'},
+			success: function(req) {
+				var g = new OpenLayers.Format.GeoJSON({
+					'externalProjection' : new OpenLayers.Projection("EPSG:4326"),
+					'internalProjection' : map.getProjectionObject()					
+				});
+				var feature_collection = g.read(req.responseText);
+				raw_shapes_layer.destroyFeatures();
+				raw_shapes_layer.addFeatures(feature_collection);
+				//map.zoomToExtent(raw_shapes_layer.getDataExtent());
+			}
+		});
+
+		// Load the processed shapes using a call back
+		OpenLayers.Request.GET({
+			url: "graph-processed-shapes.do",
+			headers: {'Accept':'application/json'},
+			success: function(req) {
+				var g = new OpenLayers.Format.GeoJSON({
+					//'externalProjection' : new OpenLayers.Projection("EPSG:32618"),
+					//'internalProjection' : map.getProjectionObject()					
+				});
+				var feature_collection = g.read(req.responseText);
+				processed_shapes_layer.destroyFeatures();
+				processed_shapes_layer.addFeatures(feature_collection);
+				//alert(processed_shapes_layer.getDataExtent());
+				map.zoomToExtent(processed_shapes_layer.getDataExtent());
+			}
+		});
+
+		// Load the simplified shapes using a call back
+		OpenLayers.Request.GET({
+			url: "graph-simplified-shapes.do",
+			headers: {'Accept':'application/json'},
+			success: function(req) {
+				var g = new OpenLayers.Format.GeoJSON({
+					//'externalProjection' : new OpenLayers.Projection("EPSG:32618"),
+					//'i/nternalProjection' : map.getProjectionObject()					
+				});
+				var feature_collection = g.read(req.responseText);
+				simplified_shapes_layer.destroyFeatures();
+				simplified_shapes_layer.addFeatures(feature_collection);
+				//map.zoomToExtent(simplified_shapes_layer.getDataExtent());
+			}
+		});
+
+	};
+
+</script>
+
+</body>
+</html>
