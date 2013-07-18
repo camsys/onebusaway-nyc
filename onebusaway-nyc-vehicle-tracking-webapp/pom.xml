@@ -205,9 +205,11 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
+                <!-- 
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
-<!--                 
+                -->  
                 <tdm.host />
+<!-- 
                 <tdm.port>80</tdm.port>
                 <tdm.url>/api/</tdm.url>
 -->                
@@ -217,7 +219,7 @@
 <!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
                  <siri.service.config>empty.xml</siri.service.config>
                  <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
-                 <bundle.mode.standalone>false</bundle.mode.standalone>
+                 <bundle.mode.standalone>true</bundle.mode.standalone>
 <!--                  <bundle.mode.standalone>false</bundle.mode.standalone> -->
                  <depot.partition.key />
                  <log4j.appender>stdout</log4j.appender>

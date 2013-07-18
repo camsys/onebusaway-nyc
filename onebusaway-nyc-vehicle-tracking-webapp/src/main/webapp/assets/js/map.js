@@ -112,8 +112,6 @@ function activatePopups(layer) {
 //
 function createMap(divname, mapcenter_x, mapcenter_y, use_custom_noder) {
 
-	alert(use_custom_noder);
-	
 	shapeFilter = new OpenLayers.Filter.Comparison({
         type: OpenLayers.Filter.Comparison.LIKE,
         property: "SHAPE_ID",
@@ -133,11 +131,8 @@ function createMap(divname, mapcenter_x, mapcenter_y, use_custom_noder) {
 	});
 		
 	// Use the Bing map service for roads
-	var road = new OpenLayers.Layer.Bing({
-		key: apiKey, 
-		type: "Road"
-		});
-	map.addLayers([road]);
+	var road = new OpenLayers.Layer.OSM();
+	map.addLayer(road);
 
 	// Define some basic styles
 	//var yellow_line = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults({strokeColor: 'yellow', strokeWidth: 4}, OpenLayers.Feature.Vector.style['default']));

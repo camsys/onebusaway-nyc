@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.annotate.JsonRawValue;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.Noder;
 import org.onebusaway.nyc.vehicle_tracking.impl.TransformService;
 import org.onebusaway.nyc.vehicle_tracking.model.UserData;
 import org.onebusaway.nyc.vehicle_tracking.utility.GeoJsonBuilder;
@@ -35,7 +36,6 @@ import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
@@ -45,13 +45,15 @@ import com.vividsolutions.jts.noding.MCIndexNoder;
 import com.vividsolutions.jts.noding.NodedSegmentString;
 import com.vividsolutions.jts.noding.SegmentStringDissolver;
 import com.vividsolutions.jts.noding.SegmentStringDissolver.SegmentStringMerger;
-import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
 @Controller
 public class GtfsController {
 
 	private static final Logger logger = Logger.getLogger(GtfsController.class.getName());
 
+	private PrecisionModel geographicPrecisionModel = new PrecisionModel(PrecisionModel.FLOATING);
+	private PrecisionModel projectedPrecisionModel = new PrecisionModel(0.1);
+	
 	@Autowired
 	private TransitGraphDao _transitGraphDao;
 
@@ -60,9 +62,51 @@ public class GtfsController {
 	
 	@Autowired
 	private TransformService transformService;
-
-	private PrecisionModel geographicPrecisionModel = new PrecisionModel();
-	private GeometryFactory geometryFactory = new GeometryFactory(geographicPrecisionModel);
+	
+	private String[] shapes_failing_validation = {
+	               "M020153",
+	               "M040216",
+	               "M040217",
+	               "M040218",
+	               "M040224",
+	               "M040226",
+	               "M040229",
+	               "M040230",
+	               "M040232",
+	               "M040233",
+	               "M040235",
+	               "M050188",
+	               "M050203",
+	               "M050204",
+	               "M050205",
+	               "M050206",
+	               "M050207",
+	               "M050208",
+	               "M050209",
+	               "M050210",
+	               "M070073",
+	               "M090081",
+	               "M090083",
+	               "M100056",
+	               "M100057",
+	               "M1040069",
+	               "M1040070",
+	               "M110108",
+	               "M1160054",
+	               "M14A0003",
+	               "M200063",
+	               "M200064",
+	               "M230016",
+	               "M340054",
+	               "M350054",
+	               "M350055",
+	               "M600073",
+	               "M860079",
+	               "M860080",
+	               "M980150",
+	               "M980155"
+		};
+			
 	
 	@RequestMapping("/map.do")
 	public ModelAndView getMap(@RequestParam(required = false, defaultValue = "false") boolean useCustomNoder) {
@@ -96,7 +140,7 @@ public class GtfsController {
 		logger.debug("in getRawShapeNodes()");
 
 		// Convert the raw geoms to GeoJson
-		String json = GeoJsonBuilder.convertPoints(getNodes(getShapeList()));
+		String json = GeoJsonBuilder.convertPoints(getNodes(getShapeList(), geographicPrecisionModel));
 		return json;
 	}
 	@RequestMapping("/intersected-nodes.do")
@@ -105,7 +149,7 @@ public class GtfsController {
 		logger.debug("in getRawShapeNodes()");
 
 		// Convert the raw geoms to GeoJson
-		String json = GeoJsonBuilder.convertPoints(getNodes(transformService.unprojectShapes(simplifyShapes(getShapeList()))));
+		String json = GeoJsonBuilder.convertPoints(getNodes(transformService.unprojectShapes(simplifyShapes(getShapeList())), geographicPrecisionModel));
 		return json;
 	}
 	@RequestMapping("/intersected-shapes.do")
@@ -123,7 +167,7 @@ public class GtfsController {
 
 		List<LineString> finalShapes = transformService.unprojectShapes(rationalizeShapes(simplifyShapes(getShapeList()), useCustomNoder));
 		// Node them
-		getNodes(finalShapes);
+		getNodes(finalShapes, geographicPrecisionModel);
 		
 		// Convert the raw geoms to GeoJson
 		String json = GeoJsonBuilder.convertLineStrings(finalShapes);
@@ -137,64 +181,37 @@ public class GtfsController {
 		List<LineString> finalShapes = transformService.unprojectShapes(rationalizeShapes(simplifyShapes(getShapeList()),useCustomNoder));
 
 		// Convert the raw geoms to GeoJson
-		String json = GeoJsonBuilder.convertPoints(getNodes(finalShapes));
+		String json = GeoJsonBuilder.convertPoints(getNodes(finalShapes, geographicPrecisionModel));
 		return json;
 	}
 	private List<LineString> rationalizeShapes(List<LineString> projectedShapeList, boolean useCustomNoder) {
 
+		GeometryFactory geometryFactory = new GeometryFactory(projectedPrecisionModel);
+		
 		//List<LineString> shapes = transformService.unprojectShapes(projectedShapeList);
 		logger.info("UseCustomNoder = " + useCustomNoder);
-		
-		final LineIntersector li = new RobustLineIntersector();
-	    li.setPrecisionModel(geometryFactory.getPrecisionModel());
 
-	    final MCIndexNoder noder = new MCIndexNoder();
+		final LineIntersector li = new RobustLineIntersector();
+	    li.setPrecisionModel(projectedPrecisionModel);
+
+	    Noder noder = new Noder(projectedShapeList, geometryFactory);
 	    if (useCustomNoder) {
 	    	noder.setSegmentIntersector(new CustomIntersectionAdder(li));
-	    } else {
-	    	noder.setSegmentIntersector(new IntersectionAdder(li));
+	    	noder.setSegmentStringMerger(new CustomSegmentStringDissolver.CustomSegmentStringMerger());
 	    }
 	    
-	    // Convert the line strings to noded segment strings so the noder can do its work
-	    List<NodedSegmentString> nodedSegmentStringList = new ArrayList<NodedSegmentString>();
-	    for (LineString geom : projectedShapeList) {
-	    	final NodedSegmentString nodedSegmentString = new NodedSegmentString(geom.getCoordinates(), null); 
-	    	nodedSegmentString.setData(geom.getUserData());
-	    	nodedSegmentStringList.add(nodedSegmentString);
-	    }
-	    // Compute all nodes
-	    logger.debug("Calculating nodes");
-	    noder.computeNodes(nodedSegmentStringList);
-		
-	    SegmentStringDissolver dissolver = null;
-	    if (useCustomNoder) {
-	    	final SegmentStringMerger merger = new CustomSegmentStringDissolver.CustomSegmentStringMerger();
-	    	dissolver = new CustomSegmentStringDissolver(merger);
-	    } else {
-	    	dissolver = new SegmentStringDissolver();
-	    }
-	    
-	    Collection nodedSegments = noder.getNodedSubstrings();
-
-	    logger.debug("dissolving nodes");
-	    dissolver.dissolve(nodedSegments);
-
-	    logger.debug("dissolved lines=" + dissolver.getDissolved().size());
 	    List<LineString> finalShapes = new ArrayList<LineString>();
 	    
 	    int edgeId = 0;
-	    for (final Object obj : dissolver.getDissolved()) {
-	    	final NodedSegmentString segment = (NodedSegmentString) obj;
-	        if (segment.size() <= 1) {
-	        	continue;
-	        }
-	        final LineString lineString = geometryFactory.createLineString(segment.getCoordinates());
+	    for (final Geometry rawNodedLineString : noder.getNodedLineStrings(true)) {
+
+	    	final LineString lineString = geometryFactory.createLineString(rawNodedLineString.getCoordinates());
 	        UserData userData = new UserData();
-	        userData.addProperty(UserData.SHAPE_ID, ((UserData) segment.getData()).getValue(UserData.SHAPE_ID));
-	        userData.addProperty(UserData.LENGTH, ((UserData) segment.getData()).getValue(UserData.LENGTH));
-	        userData.addProperty(UserData.SEGMENT_ID, edgeId++);
-	        userData.addProperty(UserData.SEGMENT_LENGTH, lineString.getLength());
-	        lineString.setUserData(userData);
+	        //userData.addProperty(UserData.SHAPE_ID, ((UserData) lineString.getUserData()).getValue(UserData.SHAPE_ID));
+	        //userData.addProperty(UserData.LENGTH, ((UserData) lineString.getUserData()).getValue(UserData.LENGTH));
+	        //userData.addProperty(UserData.SEGMENT_ID, edgeId++);
+	        //userData.addProperty(UserData.SEGMENT_LENGTH, lineString.getLength());
+	        //lineString.setUserData(userData);
 	        finalShapes.add(lineString);
 	    }
 	    
@@ -203,44 +220,36 @@ public class GtfsController {
 	
 	private List<LineString> simplifyShapes(List<LineString> shapeList) {
 		
-		// Project the raw shapes
+		// Project the raw shapes to UTMs so all precision is now w/r/t meters.
 		List<LineString> projectedGeoms = transformService.projectShapes(shapeList);
 		List<LineString> simpleGeoms = new ArrayList<LineString>();
 		
-		logger.debug("Before simplfyShape there are " + shapeList.size() + " line strings and " + getNodes(shapeList).size() + " nodes.");
+		logger.info("Before simplfyShape there are " + shapeList.size() + " line strings and " + getNodes(shapeList, projectedPrecisionModel).size() + " nodes.");
 
-		GeometryCollection geomCollection = geometryFactory.createGeometryCollection(projectedGeoms.toArray(new Geometry[projectedGeoms.size()]));
-		geomCollection = (GeometryCollection) DouglasPeuckerSimplifier.simplify(geomCollection, 5d);	
+		GeometryFactory geometryFactory = new GeometryFactory(projectedPrecisionModel);
+		//GeometryCollection geomCollection = geometryFactory.createGeometryCollection(projectedGeoms.toArray(new Geometry[projectedGeoms.size()]));
+		//geomCollection = (GeometryCollection) DouglasPeuckerSimplifier.simplify(geomCollection, 5d);	
 
-		List<LineString> simplifiedGeoms = new ArrayList<LineString>();  
-		for (int i = 0; i < geomCollection.getNumGeometries(); i++) {
-	          LineString euclidGeo = (LineString) geomCollection.getGeometryN(i);
-	          euclidGeo.setUserData(projectedGeoms.get(i).getUserData());
-	          simplifiedGeoms.add(euclidGeo);
-		}
+		//List<LineString> simplifiedGeoms = new ArrayList<LineString>();  
+		//for (int i = 0; i < geomCollection.getNumGeometries(); i++) {
+	    //      LineString euclidGeo = (LineString) geomCollection.getGeometryN(i);
+	    //      euclidGeo.setUserData(projectedGeoms.get(i).getUserData());
+	    //      simplifiedGeoms.add(euclidGeo);
+		//}
 
-		for (LineString geom : simplifiedGeoms) {
+		ArrayList<LineString> elemList = new ArrayList<LineString>();
+		for (LineString geom : projectedGeoms) {
+			elemList.clear();
+			elemList.add(geom);
+			Noder noder = new Noder(elemList, geometryFactory);
+			
 	        double cumulativeLength = 0d;
 	        int segmentNumber = 0;
-
-	        final MCIndexNoder gn = new MCIndexNoder();
-	        LineIntersector li = new RobustLineIntersector();
-	        li.setPrecisionModel(geometryFactory.getPrecisionModel());
-	        gn.setSegmentIntersector(new IntersectionAdder(li));
-
-	        gn.computeNodes(Collections.singletonList(new NodedSegmentString(geom.getCoordinates(), null)));
-          
-	        for (final Object obj : gn.getNodedSubstrings()) {
-
-	            final NodedSegmentString rawNodedSubLine = (NodedSegmentString) obj;
-
-	            if (rawNodedSubLine.getCoordinates().length <= 1) {
-	            	continue;
-	            }
-	            
+	        for (Geometry rawNodedSubLine : noder.getNodedLineStrings(true)) {
+	        	
 	            final LineString subLine = geometryFactory.createLineString(rawNodedSubLine.getCoordinates());
 	            cumulativeLength += subLine.getLength();
-
+				
 	            UserData userData = new UserData();
 	            userData.addProperty(UserData.SHAPE_ID, ((UserData) geom.getUserData()).getValue(UserData.SHAPE_ID));
 	            userData.addProperty(UserData.LENGTH, geom.getLength()); // This will now be in meters as it has been projected
@@ -248,10 +257,10 @@ public class GtfsController {
 	            userData.addProperty(UserData.SEGMENT_LENGTH, subLine.getLength());
 	            userData.addProperty(UserData.CUMULATIVE_LENGTH, cumulativeLength);
 	            subLine.setUserData(userData);
-	            simpleGeoms.add(subLine);	            
-	        }
+	            simpleGeoms.add(subLine);	            	
+			}
 	    }
-		logger.debug("After simplfyShape there are " + simpleGeoms.size() + " line strings and " + getNodes(simpleGeoms).size() + " nodes.");
+		logger.info("After simplfyShape there are " + simpleGeoms.size() + " line strings and " + getNodes(simpleGeoms, projectedPrecisionModel).size() + " nodes.");
 		return simpleGeoms;
 	}
 	/***
@@ -259,8 +268,10 @@ public class GtfsController {
 	 * @param shapeList
 	 * @return
 	 */
-	private List<Point> getNodes(List<LineString> shapeList) {
+	private List<Point> getNodes(List<LineString> shapeList, PrecisionModel precisionModel) {
 
+		GeometryFactory geometryFactory = new GeometryFactory(precisionModel);
+		
 		// Get the set of unique end points for all the line strings
 		Set<Coordinate> end_points = new HashSet<Coordinate>();
 		
@@ -287,6 +298,10 @@ public class GtfsController {
 			Point fromNode = findNode(nodes, lineString.getStartPoint().getCoordinate());
 			Point toNode = findNode(nodes, lineString.getEndPoint().getCoordinate());
 			UserData userData = (UserData) lineString.getUserData();
+			if (userData == null) {
+				userData = new UserData();
+				lineString.setUserData(userData);
+			}
 			userData.addProperty(UserData.FROM_NODE, ((UserData) fromNode.getUserData()).getValue(UserData.NODE_ID)); 
 			userData.addProperty(UserData.TO_NODE, ((UserData) toNode.getUserData()).getValue(UserData.NODE_ID)); 
 		}
@@ -301,8 +316,14 @@ public class GtfsController {
 		}
 		return null;
 	}
+	/**
+	 * 
+	 * @return
+	 */
 	private List<LineString> getShapeList() {
 
+		GeometryFactory geometryFactory = new GeometryFactory(geographicPrecisionModel);
+		
 		// Get the set of unique agency and ids
 		final Set<AgencyAndId> shapeIds = Sets.newHashSet();
 		for (final TripEntry trip : _transitGraphDao.getAllTrips()) {
@@ -317,11 +338,17 @@ public class GtfsController {
 		int limit = 0;
 		// Get the shape for each agency and id
 		for (final AgencyAndId shapeId : shapeIds) {
-			
-			if (limit++ == 10) {
+			if (shapeId == null) {
+				continue;
+			}
+			if (! is_valid_shape(shapeId.getId())) {
+				continue;
+			}
+			/*
+			if (limit++ == 300) {
 				break;
 			}
-			
+			*/
 			final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapeId);
 			if (shapePoints == null || shapePoints.isEmpty()) {
 				logger.info("shape with no shapepoints: " + shapeId);
@@ -350,5 +377,14 @@ public class GtfsController {
 		logger.info("Found " + geometryList.size() + " unique line strings");
 
 		return geometryList;
+	}
+	
+	private boolean is_valid_shape(String shapeId) {
+		for (String s : shapes_failing_validation) {
+			if (shapeId.equals(s)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
