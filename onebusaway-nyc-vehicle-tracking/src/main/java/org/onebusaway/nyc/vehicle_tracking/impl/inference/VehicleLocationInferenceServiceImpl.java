@@ -122,7 +122,8 @@ public class VehicleLocationInferenceServiceImpl implements
       _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 5);
       return;
     }
-    _log.error("overriding number of processingThreads: threads=" + numberOfProcessingThreads);
+    _log.error("overriding number of processingThreads: threads="
+        + numberOfProcessingThreads);
     _numberOfProcessingThreads = numberOfProcessingThreads;
   }
 
@@ -274,14 +275,16 @@ public class VehicleLocationInferenceServiceImpl implements
     final tcip_3_0_5_local.CcLocationReport gpsData = message.getLocalCcLocationReport();
     if (gpsData != null) {
       final NMEA nemaSentences = gpsData.getNMEA();
-      final List<String> sentenceStrings = nemaSentences.getSentence();
+      if (nemaSentences != null) {
+        final List<String> sentenceStrings = nemaSentences.getSentence();
 
-      for (final String sentence : sentenceStrings) {
-        if (sentence.startsWith("$GPGGA"))
-          r.setGga(sentence);
+        for (final String sentence : sentenceStrings) {
+          if (sentence.startsWith("$GPGGA"))
+            r.setGga(sentence);
 
-        if (sentence.startsWith("$GPRMC"))
-          r.setRmc(sentence);
+          if (sentence.startsWith("$GPRMC"))
+            r.setRmc(sentence);
+        }
       }
     }
 
