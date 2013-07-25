@@ -153,7 +153,16 @@ public class JourneyStateTransitionModel {
         final boolean isDetour = isDetour(blockState,
             hasSnappedStates, vehicleNotMoved, parentState);
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
-          return JourneyState.layoverDuring(isDetour);
+          if ((obs.hasOutOfServiceDsc())) {
+            if (blockState.isRunFormal()) {
+              return JourneyState.layoverDuring(isDetour);
+            }
+            // we don't have confidence in this being a layover
+            return JourneyState.deadheadDuring(isDetour); 
+          } else {
+            // in service DSC
+            return JourneyState.layoverDuring(isDetour);
+          }
         } else {
           if (blockState.isOnTrip()) {
             if (isDetour)
