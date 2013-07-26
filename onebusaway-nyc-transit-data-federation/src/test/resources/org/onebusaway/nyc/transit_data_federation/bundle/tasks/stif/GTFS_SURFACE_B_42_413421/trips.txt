@@ -1,0 +1,3 @@
+route_id,trip_id,service_id,trip_headsign,direction_id,shape_id
+B42,EN_C3-Saturday-000000_B42_1,EN_C3-Saturday,CANRSE PIER,1,B420027
+B42,EN_C3-Saturday-001000_B42_1,EN_C3-Saturday,ROCK PKY STA,0,B420026
