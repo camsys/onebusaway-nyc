@@ -1,0 +1,2 @@
+agency_id,route_id,route_short_name,route_long_name,route_type,route_desc,route_url,route_color,route_text_color
+MTA NYCT,B42,B42,Carnarsie Pier - Rockaway Parkway Station,3,via Rockaway Pkwy,http://www.mta.info/nyct/bus/schedule/bkln/b042cur.pdf,006CB7,FFFFFF
