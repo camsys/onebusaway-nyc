@@ -100,8 +100,8 @@ public class TestStifTripLoaderTest {
     // it should result in the following GTFS trip ids being mapped:
     //MTA NYCT_20130106EA_001800_Q04_0146_Q4_1
     //MTA NYCT_20130106EE_001800_Q04_0146_Q4_1
-    assertTrue(
-        loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_EN_C3-Saturday-002000_B42_1"))
-        && loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_EN_C3-Saturday-000000_B42_1")));
+    assertTrue(loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_EN_C3-Saturday-000000_B42_1")));
+    assertTrue(loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_EN_C3-Saturday-001000_B42_1")));
+    
   }
 }
