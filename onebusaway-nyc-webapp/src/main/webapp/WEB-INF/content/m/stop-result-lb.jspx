@@ -91,7 +91,7 @@
 					<p class="not-scheduled-routes">
 						<s:iterator value="routesWithNoScheduledService">
 							<s:iterator value="directions">
-								<s:url var="url" namespace="/m" action="index" anchor="%{directionId}">
+								<s:url var="url" namespace="/m" action="index" anchor="%{directionId}-%{q}">
 									<s:param name="q">
 										<s:property value="shortName" />
 									</s:param>

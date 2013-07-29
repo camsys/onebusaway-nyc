@@ -44,7 +44,7 @@
 					<s:iterator value="directions">
 						<div class="directionAtStop">
 							<p>
-								<s:url var="url" namespace="/m" action="index" anchor="%{directionId}">
+								<s:url var="url" namespace="/m" action="index" anchor="%{directionId}-%{q}">
 									<s:param name="q">
 										<s:property value="shortName" />
 									</s:param>
