@@ -80,4 +80,28 @@ public class TestStifTripLoaderTest {
         loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_20130106EA_001800_Q04_0146_Q4_1"))
         && loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_20130106EE_001800_Q04_0146_Q4_1")));
   }
+  @Test
+  public void testNonRevStopParsingB42EdgeCase() throws IOException {
+    InputStream in = getClass().getResourceAsStream("stif.b_0042__.413422.sat");
+    String gtfs = getClass().getResource("GTFS_SURFACE_B_42_413421").getFile();
+
+    GtfsReader reader = new GtfsReader();
+    GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
+    reader.setEntityStore(dao);
+    reader.setInputLocation(new File(gtfs));
+    reader.run();
+
+    StifTripLoader loader = new StifTripLoader();
+    loader.setLogger(new MultiCSVLogger());
+    loader.setGtfsDao(dao);
+    loader.run(in, new File("stif.b_0042__.413422.sat"));
+    
+    // After parsing the STIF trip containing a non-revenue stop,
+    // it should result in the following GTFS trip ids being mapped:
+    //MTA NYCT_20130106EA_001800_Q04_0146_Q4_1
+    //MTA NYCT_20130106EE_001800_Q04_0146_Q4_1
+    assertTrue(
+        loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_EN_C3-Saturday-002000_B42_1"))
+        && loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_EN_C3-Saturday-000000_B42_1")));
+  }
 }
