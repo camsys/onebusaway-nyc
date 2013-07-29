@@ -53,11 +53,6 @@ public abstract class StifFieldSetter<T extends StifRecord> {
     }
   }
 
-  public int getTimeFromCentiminutes() {
-    int centiminutes = getInteger();
-    return (centiminutes * 60) / 100;
-  }
-
   public int getTimeFromCentiminutesSafe() {
     // function modified to round centiminute values with fractional seconds appropriately. 
     float centiminutes = (float)getIntegerSafe();

@@ -35,7 +35,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       }),
       new FieldDef(15 - 7, "origin time", new TripFieldSetter() {
         public void setField(TripRecord record) {
-          record.setOriginTime(getTimeFromCentiminutes());
+          record.setOriginTime(getTimeFromCentiminutesSafe());
         }
       }),
       new FieldDef(17 - 15, "direction", null),
@@ -51,7 +51,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       }),
       new FieldDef(31 - 23, "destination time", new TripFieldSetter() {
         public void setField(TripRecord record) {
-          record.setDestinationTime(getTimeFromCentiminutes());
+          record.setDestinationTime(getTimeFromCentiminutesSafe());
         }
       }),
       new FieldDef(35 - 31, "pick code", null),
