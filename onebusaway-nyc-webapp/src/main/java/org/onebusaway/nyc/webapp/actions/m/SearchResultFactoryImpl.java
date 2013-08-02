@@ -340,7 +340,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
 		    	return timeString;
 		  } else {
-		    	return timeString + ", " + distance;
+		    	return "<strong>" + distance + "</strong> (" + timeString + ")";
 		  }
 	  }
 	  
