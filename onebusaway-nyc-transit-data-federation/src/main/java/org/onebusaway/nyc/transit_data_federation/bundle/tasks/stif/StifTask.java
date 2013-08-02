@@ -207,7 +207,8 @@ public class StifTask implements Runnable {
     serializeDSCData(dscToTripMap, tripToDscMap, inServiceDscs);
   }
 
-  private void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,
+  // package private for unit testing
+  void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,
       Map<AgencyAndId, String> tripToDscMap) {
     csvLogger.header("dsc_statistics.csv", "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs");
     for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {
