@@ -206,25 +206,23 @@ public class StifTask implements Runnable {
     readNotInServiceDscs();
     serializeDSCData(dscToTripMap, tripToDscMap, inServiceDscs);
   }
-  
+
   private void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,
-		  Map<AgencyAndId, String> tripToDscMap) {
-	  csvLogger
-	  .header("dsc_statistics.csv",
-			  "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs");
-	  for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap
-			  .entrySet()) {
-		  String destinationSignCode = entry.getKey();
-		  List<AgencyAndId> tripIds = entry.getValue();
-		  Set<AgencyAndId> routeIds = routeIdsByDsc.get(destinationSignCode);
-		  HashSet<String> set = new HashSet<String>();
-		  for (AgencyAndId aaid : tripIds)
-			  if (aaid != null)
-				  set.add(aaid.getAgencyId());
-		  for (String agencyId : set)
-			  csvLogger.log("dsc_statistics.csv", destinationSignCode,
-					  agencyId, tripIds.size(),
-					  (routeIds != null ? routeIds.size() : 0));
+      Map<AgencyAndId, String> tripToDscMap) {
+    csvLogger.header("dsc_statistics.csv", "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs");
+    for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {
+      String destinationSignCode = entry.getKey();
+      List<AgencyAndId> tripIds = entry.getValue();
+
+      Set<AgencyAndId> routeIds = routeIdsByDsc.get(destinationSignCode);
+      HashSet<String> set = new HashSet<String>();
+	  for (AgencyAndId aaid : tripIds){
+		  if (aaid != null){
+			  set.add(aaid.getAgencyId());
+		  }
+	  }
+	  for (String agencyId : set){
+		  csvLogger.log("dsc_statistics.csv", destinationSignCode,agencyId, tripIds.size(),(routeIds != null ? routeIds.size() : 0));
 	  }
   }
 
