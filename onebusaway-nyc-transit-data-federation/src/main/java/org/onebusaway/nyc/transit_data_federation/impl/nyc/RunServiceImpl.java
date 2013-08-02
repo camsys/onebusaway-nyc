@@ -228,11 +228,11 @@ public class RunServiceImpl implements RunService {
 
   @Override
   public TreeMultimap<Integer, String> getBestRunIdsForFuzzyId(
-      String runAgencyAndId)
+      String reportedRunId)
       throws IllegalArgumentException {
     
     TreeMultimap<Integer, String> matchedRTEs = TreeMultimap.create();
-    Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId);
+    Matcher reportedIdMatcher = reportedRunIdPattern.matcher(reportedRunId);
 
     if (!reportedIdMatcher.matches()) {
       throw new IllegalArgumentException(
@@ -247,9 +247,8 @@ public class RunServiceImpl implements RunService {
     
     /*
      * In the following we strip the runEntry's id down to the format of the
-     * reported id's, as best we can. We allow matching to double-route
-     * route-id's, e.g. X0109 (match either 01 or 09 routes). Also, for MISC
-     * routes, we guess that they enter 00 or the route number of the trip.
+     * reported id's, as best we can.  For MISC routes, we use the 
+     * convention that they enter 999 as the run route.
      */
     for (String runId : entriesByRun.keySet()) {
       String[] runPieces= runId.split("-");
