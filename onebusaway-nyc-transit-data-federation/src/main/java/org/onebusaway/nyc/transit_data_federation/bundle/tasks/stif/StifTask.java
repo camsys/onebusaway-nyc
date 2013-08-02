@@ -224,6 +224,7 @@ public class StifTask implements Runnable {
 	  for (String agencyId : set){
 		  csvLogger.log("dsc_statistics.csv", destinationSignCode,agencyId, tripIds.size(),(routeIds != null ? routeIds.size() : 0));
 	  }
+    }
   }
 
   private void serializeNonRevenueMoveData(Map<ServiceCode, List<StifTrip>> nonRevenueMovesByServiceCode, 
