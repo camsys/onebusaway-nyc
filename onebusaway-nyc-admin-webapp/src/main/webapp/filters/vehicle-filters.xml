@@ -16,7 +16,7 @@
 		<Depot>FB</Depot>
 		<Depot>JK</Depot>
 		<Depot>MV</Depot>
- 		<Depot>YO</Depot>
+		<Depot>YO</Depot>
 		<Depot>QV</Depot>
 		<Depot>GA</Depot>
 		<Depot>EN</Depot>
@@ -55,9 +55,9 @@
 	<Pullouts>
 		<PulloutStatus>Active</PulloutStatus>
 	</Pullouts>
-	<InferredStates>
-		<InferredState>IN PROGRESS</InferredState>
-		<InferredState>DEADHEAD</InferredState>
-		<InferredState>LAYOVER</InferredState>
-	</InferredStates>
+	<InferredPhases>
+		<InferredPhase>IN PROGRESS</InferredPhase>
+		<InferredPhase>DEADHEAD</InferredPhase>
+		<InferredPhase>LAYOVER</InferredPhase>
+	</InferredPhases>
 </Filters>

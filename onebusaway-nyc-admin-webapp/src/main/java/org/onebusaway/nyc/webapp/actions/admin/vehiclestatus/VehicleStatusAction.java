@@ -50,7 +50,7 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	private String route;
 	private String depot;
 	private String dsc;
-	private String inferredState;
+	private String inferredPhase;
 	private String pulloutStatus;
 	private String emergencyStatus;
 	private String formalInferrence;
@@ -155,7 +155,7 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 		searchParameters.put(VehicleSearchParameters.ROUTE, route);
 		searchParameters.put(VehicleSearchParameters.DEPOT, depot);
 		searchParameters.put(VehicleSearchParameters.DSC, dsc);
-		searchParameters.put(VehicleSearchParameters.INFERRED_STATE, inferredState);
+		searchParameters.put(VehicleSearchParameters.INFERRED_PHASE, inferredPhase);
 		searchParameters.put(VehicleSearchParameters.PULLOUT_STATUS, pulloutStatus);
 		searchParameters.put(VehicleSearchParameters.EMERGENCY_STATUS, emergencyStatus);
 		searchParameters.put(VehicleSearchParameters.FORMAL_INFERRENCE, formalInferrence);
@@ -283,17 +283,17 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 	}
 
 	/**
-	 * @return the inferredState
+	 * @return the inferredPhase
 	 */
-	public String getInferredState() {
-		return inferredState;
+	public String getInferrePhase() {
+		return inferredPhase;
 	}
 
 	/**
-	 * @param inferredState the inferredState to set
+	 * @param inferredPhase the inferredPhase to set
 	 */
-	public void setInferredState(String inferredState) {
-		this.inferredState = inferredState;
+	public void setInferredPhase(String inferredPhase) {
+		this.inferredPhase = inferredPhase;
 	}
 
 	/**

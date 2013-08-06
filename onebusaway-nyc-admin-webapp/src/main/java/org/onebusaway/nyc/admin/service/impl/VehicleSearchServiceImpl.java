@@ -128,9 +128,9 @@ public class VehicleSearchServiceImpl implements VehicleSearchService {
 		if(StringUtils.isNotBlank(route)) {
 			filters.add(new RouteFilter(route));
 		}
-		String inferredState = searchParameters.get(VehicleSearchParameters.INFERRED_STATE);
-		if(!inferredState.equalsIgnoreCase("All")) {
-			filters.add(new InferredPhaseFilter(inferredState));
+		String inferredPhase = searchParameters.get(VehicleSearchParameters.INFERRED_PHASE);
+		if(!inferredPhase.equalsIgnoreCase("All")) {
+			filters.add(new InferredPhaseFilter(inferredPhase));
 		}
 		String dsc = searchParameters.get(VehicleSearchParameters.DSC);
 		if(StringUtils.isNotBlank(dsc)) {

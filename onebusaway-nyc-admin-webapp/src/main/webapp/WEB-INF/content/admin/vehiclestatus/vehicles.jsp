@@ -62,8 +62,8 @@
 					<input type="text" id="dsc" />
 				</li>
 				<li>
-					<label class="vehicleLabel">Inferred State:</label>
-					<select name="inferredState" id="inferredState">
+					<label class="vehicleLabel">Inferred Phase:</label>
+					<select name="inferredPhase" id="inferredPhase">
 						<option selected="selected" value="all">All</option>
 					</select>
 				</li>

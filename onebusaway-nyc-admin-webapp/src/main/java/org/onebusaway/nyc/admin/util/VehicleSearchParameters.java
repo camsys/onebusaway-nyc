@@ -11,7 +11,7 @@ public enum VehicleSearchParameters {
 	ROUTE("route"),
 	DEPOT("depot"),
 	DSC("dsc"),
-	INFERRED_STATE("inferredState"),
+	INFERRED_PHASE("inferredPhase"),
 	PULLOUT_STATUS("pulloutStatus"),
 	EMERGENCY_STATUS("emergencyStatus"),
 	FORMAL_INFERRENCE("formalInferrence");

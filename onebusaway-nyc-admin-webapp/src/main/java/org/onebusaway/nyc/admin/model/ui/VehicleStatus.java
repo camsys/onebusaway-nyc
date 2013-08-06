@@ -55,10 +55,10 @@ public class VehicleStatus {
 		return inferredPhase;
 	}
 	/**
-	 * @param inferredState the inferredPhase to set
+	 * @param inferredPhase the inferredPhase to set
 	 */
-	public void setInferredPhase(String inferredState) {
-		this.inferredPhase = inferredState;
+	public void setInferredPhase(String inferredPhase) {
+		this.inferredPhase = inferredPhase;
 	}
 	/**
 	 * @return the observedDSC
