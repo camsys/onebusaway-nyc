@@ -361,6 +361,7 @@ small {
 
 .stopsOnRoute {
 	margin-left: .25em;
+	position: relative;
 }
 
 .stopsOnRoute li {
@@ -369,6 +370,18 @@ small {
 	padding: .3em;
 	padding-left: 20px;
 	line-height: 1.3em;
+	position: relative;
+}
+
+.anchor{
+	display: block;
+	position: absolute;
+	width: 0;
+	height: 0;
+	z-index: -1;
+	top: -3.6em;
+	left: 0;
+	visibility: hidden;
 }
 
 .arrivalsOnRoute li {
