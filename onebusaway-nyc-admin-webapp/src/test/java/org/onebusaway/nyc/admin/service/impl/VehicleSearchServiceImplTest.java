@@ -115,7 +115,7 @@ public class VehicleSearchServiceImplTest {
 	}
 	
 	private Map<VehicleSearchParameters, String> buildSearchParameters(String vehicleId, String route,
-			String dsc, String depot, String inferredState, String pulloutStatus, 
+			String dsc, String depot, String inferredPhase, String pulloutStatus, 
 			String emergencyStatus, String formalInferrence) {
 		Map<VehicleSearchParameters, String> parameters = new HashMap<VehicleSearchParameters, String>();
 		
@@ -123,7 +123,7 @@ public class VehicleSearchServiceImplTest {
 		parameters.put(VehicleSearchParameters.ROUTE, route);
 		parameters.put(VehicleSearchParameters.DSC, dsc);
 		parameters.put(VehicleSearchParameters.DEPOT, depot);
-		parameters.put(VehicleSearchParameters.INFERRED_STATE, inferredState);
+		parameters.put(VehicleSearchParameters.INFERRED_PHASE, inferredPhase);
 		parameters.put(VehicleSearchParameters.PULLOUT_STATUS, pulloutStatus);
 		parameters.put(VehicleSearchParameters.EMERGENCY_STATUS, emergencyStatus);
 		parameters.put(VehicleSearchParameters.FORMAL_INFERRENCE, formalInferrence);
