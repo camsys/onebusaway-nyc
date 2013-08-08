@@ -149,15 +149,15 @@ VehicleStatus.VehiclesController = Ember.ArrayController.create({
 						formatter: function(cellValue, options) {
 							var cellImg="error";
 							
-							if (cellValue.startsWith("circle_green")){
+							if (!cellValue.indexOf("circle_green")){
 								cellImg = "<a class=\"tooltip\" href=\"#\"><img src='../../css/img/" +cellValue +"' alt='Not Found' />"+
 									"<span class=\"boxData\">GREEN: This bus is currently generating revenue: It is either in progress, deadhead, or experiencing a layover less than 2 minutes</span></a>";
 							}
-							if (cellValue.startsWith("circle_red")){
+							if (!cellValue.indexOf("circle_red")){
 								cellImg = "<a class=\"tooltip\" href=\"#\"><img src='../../css/img/" +cellValue +"' alt='Not Found' />"+
 									"<span class=\"boxData\">RED: This bus is off track and has no inferred direction or route</span></a>";
 							}							
-							if (cellValue.startsWith("circle_orange")){
+							if (!cellValue.indexOf("circle_orange")){
 								cellImg = "<a class=\"tooltip\" href=\"#\"><img src='../../css/img/" +cellValue +"' alt='Not Found' />"+
 									"<span class=\"\">ORANGE: This bus is off track, but has an inferred direction or route</span></a>";
 							}
