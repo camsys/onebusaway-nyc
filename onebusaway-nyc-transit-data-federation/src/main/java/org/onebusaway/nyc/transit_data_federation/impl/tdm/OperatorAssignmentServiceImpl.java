@@ -64,6 +64,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   @Autowired
   public void setConfigurationService(ConfigurationService configurationService) {
     this._configurationService = configurationService;
+    configChanged();
   }
 
   @Autowired

@@ -48,6 +48,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   @Autowired
   public void setConfigurationService(ConfigurationService configurationService) {
     this._configurationService = configurationService;
+    configChanged();
   }
 
   public void setTransitDataManagerApiLibrary(
