@@ -314,11 +314,12 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 	}
 
   private String getHeadSign(String dsc) {
+	    if (dsc==null) {
+	      return null;
+	    }
 		String tdmHost = System.getProperty("tdm.host");
-		
 		String url = buildURL(tdmHost, "/dsc/" +  dsc + "/sign");
 		log.debug("making request for : " +url);
-
 		try {
 		  String headSignContent = remoteConnectionService.getContent(url);
 		  if (headSignContent == null) { return null;}
