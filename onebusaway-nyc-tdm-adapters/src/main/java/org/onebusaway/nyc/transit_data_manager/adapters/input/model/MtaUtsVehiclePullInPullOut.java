@@ -112,10 +112,7 @@ public class MtaUtsVehiclePullInPullOut extends MtaUtsObject {
     try {
 	  String numStr = busNumStr.trim();
 	  for (int i=0; i < numStr.length(); i++){
-	    if(Character.isDigit(numStr.charAt(i))){
-	      continue;
-	    }
-        else{
+	    if(!Character.isDigit(numStr.charAt(i))){
 	      numStr=numStr.substring(0, i);
 	      break;
 	    }
