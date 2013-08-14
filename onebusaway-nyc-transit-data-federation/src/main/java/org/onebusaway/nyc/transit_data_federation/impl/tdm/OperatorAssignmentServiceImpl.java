@@ -183,7 +183,9 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   @SuppressWarnings("unused")
   @PostConstruct
   private void startUpdateProcess() {
-    setUpdateFrequency(30 * 60); // 30m
+    if (_updateTask==null) {
+      setUpdateFrequency(30 * 60); // 30m
+    }
   }
 
   @Override

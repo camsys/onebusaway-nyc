@@ -135,9 +135,11 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   @SuppressWarnings("unused")
   @PostConstruct
   private void startUpdateProcess() {
-    setUpdateFrequency(1 * 60 * 60); // 1h
+    if (_updateTask==null) {
+      setUpdateFrequency(1 * 60 * 60); // 1h
+    }
   }
-
+  
   @Override
   public synchronized ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(
       String depotId) throws Exception {
