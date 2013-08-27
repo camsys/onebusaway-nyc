@@ -49,7 +49,7 @@ public class VehicleStateLibrary {
   /**
    * How close a vehicle needs to be to the terminal to be considered eligible for layover.
    */
-  private final static double _layoverStopDistance = 400;
+  private final static double _layoverStopDistance = 250;
 
   /**
    * If we're more than X meters off our block, then we really don't think we're
