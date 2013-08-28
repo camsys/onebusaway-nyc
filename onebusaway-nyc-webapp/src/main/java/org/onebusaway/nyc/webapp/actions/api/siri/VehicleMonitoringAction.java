@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,6 +77,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   // respect an HTTP Accept: header.
   private String _type = "xml";
 
+  private HashMap<Integer, Siri> cache = new HashMap<Integer, Siri>();
+  
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
   
   public void setType(String type) {
@@ -228,22 +231,33 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
       
-      for (String agency : agencyIds) {
-        ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
-            agency, currentTimestamp);
+      System.out.println("_request:	"+_request);
+      System.out.println("_request.getQueryString():	"+_request.getQueryString());
+      System.out.println("_request.getRemoteUser():	"+_request.getRemoteUser());
+      System.out.println("_request.getSession():	"+_request.getSession());
+      System.out.println("_request._request.getRequestURL():	"+_request.getRequestURL());
+      int hashKey = maximumOnwardCalls+(_request.getQueryString()+_request.getRemoteUser()+_request.getSession()+_request.getRequestURL()).hashCode();
+      if (!cache.containsKey(hashKey)){
+        for (String agency : agencyIds) {
+          ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
+              agency, currentTimestamp);
 
-        for (VehicleStatusBean v : vehicles.getList()) {
-          VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-              v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
+          for (VehicleStatusBean v : vehicles.getList()) {
+            VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
+                v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
 
-          if (activity != null) {
-            activities.add(activity);
+            if (activity != null) {
+              activities.add(activity);
+            }
           }
         }
+        // There is no input (route id) to validate, so pass null error
+        _response = generateSiriResponse(activities, null, null, currentTimestamp);
+        cache.put(hashKey, _response);
       }
-      
-      // There is no input (route id) to validate, so pass null error
-      _response = generateSiriResponse(activities, null, null, currentTimestamp);
+      else {
+    	  _response = cache.get(hashKey);
+      }
     }
     
     _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
