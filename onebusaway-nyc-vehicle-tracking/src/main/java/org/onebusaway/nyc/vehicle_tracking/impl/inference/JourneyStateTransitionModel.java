@@ -137,6 +137,7 @@ public class JourneyStateTransitionModel {
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
           return JourneyState.layoverBefore();
         } else {
+          // TODO: handle layover-in-motion here (possibly) to allow a moving layover_before
           return JourneyState.deadheadBefore(null);
         }
       } else if (distanceAlong > blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
@@ -152,6 +153,11 @@ public class JourneyStateTransitionModel {
          */
         final boolean isDetour = isDetour(blockState,
             hasSnappedStates, vehicleNotMoved, parentState);
+        /*
+         * It may help to remember here that if parentState == null then isLayoverStopped === null
+         * That is, the below condition will always be false if parentState == null  
+         */
+        
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
           if ((obs.hasOutOfServiceDsc())) {
             if (blockState.isRunFormal()) {
@@ -173,6 +179,11 @@ public class JourneyStateTransitionModel {
               return adjustInProgressTransition(parentState != null ? parentState.getJourneyState().getPhase() : null, 
                   blockState, isDetour, isLayoverStopped);
           } else {
+        	/* 
+        	 * TODO: this is one place to handle layover-in-motion (following a stationary layover)
+        	 * We don't need it in the above conditions because we don't want a layover-in-motion when
+        	 * isOnTrip() (or isDetour or hasOutOfServiceDsc).
+        	 */
             return JourneyState.deadheadDuring(false);
           }
         }
@@ -205,6 +216,7 @@ public class JourneyStateTransitionModel {
       final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(parentPhase);
       /*
        * If it was a layover, and now it's not, then change to deadhead
+       * TODO: handle layover-in-motion transition from stationary layover to a moving one
        */
       if (EVehiclePhase.isLayover(parentPhase)
           && !(isLayoverStopped && newBlockState.isAtPotentialLayoverSpot())) {
