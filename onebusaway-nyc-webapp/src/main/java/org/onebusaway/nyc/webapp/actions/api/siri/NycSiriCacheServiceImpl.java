@@ -12,11 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.sun.tools.javac.util.Pair;
 
 import uk.org.siri.siri.Siri;
 
-public class NycSiriCacheServiceImpl<K extends Integer, V extends Siri> extends NycSiriCacheService<Integer, Siri> {
+public class NycSiriCacheServiceImpl extends NycSiriCacheService<Integer, Siri> {
 
 	private static final int DEFAULT_CACHE_TIMEOUT = 2 * 60;
 	private static final String SIRI_CACHE_TIMEOUT_KEY = "cache.expiry.siri";
