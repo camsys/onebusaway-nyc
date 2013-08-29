@@ -130,7 +130,8 @@ public class JourneyStateTransitionModel {
     final boolean isLayoverStopped = isLayoverStopped(vehicleNotMoved, obs,
         parentState);
     final boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
-
+    EVehiclePhase parentPhase = parentState != null ? parentState.getJourneyState().getPhase() : null;
+    
     if (blockState != null) {
       final double distanceAlong = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock();
       if (distanceAlong <= 0.0) {
@@ -176,15 +177,22 @@ public class JourneyStateTransitionModel {
             else if (obs.hasOutOfServiceDsc())
               return JourneyState.deadheadDuring(isDetour);
             else
-              return adjustInProgressTransition(parentState != null ? parentState.getJourneyState().getPhase() : null, 
-                  blockState, isDetour, isLayoverStopped);
+              return adjustInProgressTransition(parentPhase, blockState, isDetour, isLayoverStopped);
           } else {
         	/* 
-        	 * TODO: this is one place to handle layover-in-motion (following a stationary layover)
+        	 * This is one place we handle layover-in-motion (following a stationary layover).
+        	 * If the previous state was a layover_during and we are (a) at a layover spot and 
+        	 * (b) formal inference, then we stay layover_during whereas would otherwise be a deadhead_during.
+        	 * 
         	 * We don't need it in the above conditions because we don't want a layover-in-motion when
         	 * isOnTrip() (or isDetour or hasOutOfServiceDsc).
         	 */
-            return JourneyState.deadheadDuring(false);
+            if(parentPhase != null && parentPhase.equals(EVehiclePhase.LAYOVER_DURING)
+            		&& blockState.isAtPotentialLayoverSpot() && blockState.isRunFormal()) {
+            	return JourneyState.layoverDuring(false);
+            } else {
+            	return JourneyState.deadheadDuring(false);
+            }
           }
         }
       }
@@ -215,16 +223,37 @@ public class JourneyStateTransitionModel {
         && !newBlockState.isSnapped()) {
       final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(parentPhase);
       /*
-       * If it was a layover, and now it's not, then change to deadhead
-       * TODO: handle layover-in-motion transition from stationary layover to a moving one
+       * If it was a layover, and now it's moving, then we may need to change to deadhead.
+       * This is one place where we are now handling the transition from traditional layover (stationary)
+       * to a layover-in-motion.       * 
        */
       if (EVehiclePhase.isLayover(parentPhase)
           && !(isLayoverStopped && newBlockState.isAtPotentialLayoverSpot())) {
-        return wasPrevStateDuring
-            ? JourneyState.deadheadDuring(isDetour)
-            : JourneyState.deadheadBefore(null);
+
+    	  if(wasPrevStateDuring) {
+    		  /*
+    		   * Right now we are only doing layover-in-motion after a layover_during.
+    		   * In the future, we may want it after a layover_before, and possibly
+    		   * not even requiring a stationary layover first. 
+    		   */
+    		  
+    		  if(parentPhase.equals(EVehiclePhase.LAYOVER_DURING)
+    				  && newBlockState.isAtPotentialLayoverSpot()) {
+    			  return JourneyState.layoverDuring(isDetour);
+    		  }
+    		  else {
+    			  return JourneyState.deadheadDuring(isDetour);
+    		  }
+    	  }
+    	  else {           
+            return JourneyState.deadheadBefore(null);
+    	  }
+
       /*
-       * If it wasn't a layover and now it is, become one
+       * If it wasn't a layover and now it is, become one.
+       * This still requires the vehicle to stop to become a layover.
+       * That may change later, if we want to allow layovers-in-motion without 
+       * a stationary period first.
        */
       } else if (!EVehiclePhase.isLayover(parentPhase)
           && (isLayoverStopped && newBlockState.isAtPotentialLayoverSpot())) {
