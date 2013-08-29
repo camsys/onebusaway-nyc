@@ -191,10 +191,8 @@ public class BlocksFromObservationServiceImpl implements
       if (observation.getRunResults().hasRunResults()
           || observation.hasValidDsc()) {
         for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
-          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-              bs, observation);
           potentialBlockStatesInProgress.add(new BlockStateObservation(bs,
-              observation, isAtPotentialLayoverSpot, true));
+              observation, true));
           snappedBlocks.add(bs.getBlockInstance());
         }
   
@@ -214,10 +212,7 @@ public class BlocksFromObservationServiceImpl implements
         final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
         try {
           final BlockState bs = _blockStateService.getAsState(thisBIS, 0.0);
-          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-              bs, observation);
-          states.add(new BlockStateObservation(bs, observation,
-              isAtPotentialLayoverSpot, false));
+          states.add(new BlockStateObservation(bs, observation, false));
         } catch (final Exception e) {
           _log.warn(e.getMessage());
           continue;
@@ -240,9 +235,7 @@ public class BlocksFromObservationServiceImpl implements
       Observation obs, BlockInstance blockInstance, double distanceAlong) {
     final BlockState bs = _blockStateService.getAsState(blockInstance,
         distanceAlong);
-    final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-        bs, obs);
-    return new BlockStateObservation(bs, obs, isAtPotentialLayoverSpot, false);
+    return new BlockStateObservation(bs, obs, false);
   }
 
   /****
@@ -288,10 +281,7 @@ public class BlocksFromObservationServiceImpl implements
       for (final BlockState bs : foundStates.getAllStates()) {
         final double dab = bs.getBlockLocation().getDistanceAlongBlock();
         if (dab < maxDab && dab > minDab) {
-          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-              bs, observation);
-          resStates.add(new BlockStateObservation(bs, observation,
-              isAtPotentialLayoverSpot, true));
+          resStates.add(new BlockStateObservation(bs, observation, true));
         }
       }
     } else {
@@ -323,10 +313,7 @@ public class BlocksFromObservationServiceImpl implements
     }
     if (foundStates != null) {
       for (final BlockState bs : foundStates.getAllStates()) {
-        final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-            bs, observation);
-        resStates.add(new BlockStateObservation(bs, observation,
-            isAtPotentialLayoverSpot, true));
+        resStates.add(new BlockStateObservation(bs, observation, true));
       }
     }
     return Sets.newHashSet(resStates);
@@ -417,10 +404,7 @@ public class BlocksFromObservationServiceImpl implements
     final Set<BlockState> blockStates = _blockStateService.getBlockStatesForObservation(obs);
     final Set<BlockStateObservation> results = Sets.newHashSet();
     for (final BlockState blockState : blockStates) {
-      final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-          blockState, obs);
-      results.add(new BlockStateObservation(blockState, obs,
-          isAtPotentialLayoverSpot, true));
+      results.add(new BlockStateObservation(blockState, obs, true));
     }
     return results;
   }
@@ -430,10 +414,7 @@ public class BlocksFromObservationServiceImpl implements
       Observation obs, BlockInstance blockInstance, int newSchedTime) {
     final BlockState blockState = _blockStateService.getScheduledTimeAsState(
         blockInstance, newSchedTime);
-    final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-        blockState, obs);
-    return new BlockStateObservation(blockState, obs, isAtPotentialLayoverSpot,
-        false);
+    return new BlockStateObservation(blockState, obs, false);
   }
 
 }
