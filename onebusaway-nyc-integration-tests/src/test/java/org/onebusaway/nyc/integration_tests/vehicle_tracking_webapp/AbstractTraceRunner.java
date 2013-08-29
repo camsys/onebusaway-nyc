@@ -156,7 +156,7 @@ public class AbstractTraceRunner {
 
         if (t + _maxTimeout < System.currentTimeMillis()) {
           fail("waited but never received enough records: expected="
-              + expectedResults.size() + " actual=" + expectedResults.size());
+              + expectedResults.size() + " actual=" + ourResults.size());
         }
 
         // We reset our timeout if the record count is growing
