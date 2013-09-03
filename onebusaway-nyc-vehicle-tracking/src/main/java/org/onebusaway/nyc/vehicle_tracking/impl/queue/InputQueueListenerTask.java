@@ -45,7 +45,7 @@ public abstract class InputQueueListenerTask extends QueueListenerTask {
           JsonNode.class);
       final String ccLocationReportString = wrappedMessage.get(
           "RealtimeEnvelope").toString();
-
+      ccLocationReportString.replace("vehiclepowerstate", "vehiclePowerState");
       message = _mapper.readValue(ccLocationReportString,
           RealtimeEnvelope.class);
     } catch (final Exception e) {
