@@ -97,6 +97,8 @@
                 <prop key="blockLocationServiceImpl.locationInterpolation">false</prop>
 
                 <prop key="cacheManager.cacheManagerName">org.onebusaway.transit_data_federation_webapp.cacheManager</prop>
+                <prop key="ehCacheConfiguration.configLocation">classpath:org/onebusaway/nyc/vehicle_tracking/webapp/ehcache.xml</prop>
+                
             </props>
         </property>
     </bean>
