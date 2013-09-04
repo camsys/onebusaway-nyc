@@ -8,25 +8,34 @@ import com.google.common.cache.Cache;
 
 public abstract class NycSiriCacheService<K, V> {
 
-	static Logger _log = LoggerFactory.getLogger(QueueListenerTask.class);
-	protected Cache<K, V> _cache;  
+  static Logger _log = LoggerFactory.getLogger(QueueListenerTask.class);
+  protected Cache<K, V> _cache;  
 
-	public Cache<K, V> getCache(){
-		return _cache;
-	}
+  protected abstract void refreshCache();
 
-	protected V retrieve(K key){
-		return getCache().getIfPresent(key);
-	}
+  protected abstract K hash(Object...factors);
 
-	protected void store(K key, V value) {
-		getCache().put(key, value);
-	}
+  protected Cache<K, V> getCache(){
+    return _cache;
+  }
 
-	protected boolean containsKey(K key){
-		return getCache().asMap().containsKey(key);
-	}
+  protected V retrieve(K key){
+    return getCache().getIfPresent(key);
+  }
 
-	protected abstract void refreshCache();
+  protected void store(K key, V value) {
+    getCache().put(key, value);
+  }
 
+  protected boolean containsKey(K key){
+    return getCache().asMap().containsKey(key);
+  }
+
+  protected boolean hashContainsKey(Object...factors){
+    return containsKey(hash(factors));
+  }
+
+  protected void hashStore(V value, Object...factors){
+    getCache().put(hash(factors), value);
+  }
 }

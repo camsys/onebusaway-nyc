@@ -230,7 +230,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       gaLabel = "All Vehicles";
       
       @SuppressWarnings("unchecked")
-	  int hashKey = ((NycSiriCacheServiceImpl)_cacheService).hash(maximumOnwardCalls, agencyIds);
+	  int hashKey = _cacheService.hash(maximumOnwardCalls, agencyIds);
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
       if (!_cacheService.containsKey(hashKey)){
