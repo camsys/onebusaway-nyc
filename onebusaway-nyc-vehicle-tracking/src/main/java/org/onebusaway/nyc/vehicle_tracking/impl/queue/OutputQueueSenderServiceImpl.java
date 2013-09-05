@@ -85,6 +85,8 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   protected ZMQ.Socket _socket = null;
 
+  protected int _countInterval = 10000;
+  
   @Autowired
   private ConfigurationService _configurationService;
 
@@ -102,6 +104,10 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
     if (hostname != null) {
       setPrimaryHostname(hostname);
     }
+  }
+  
+  public void setCountInterval(int countInterval) {
+    this._countInterval = countInterval;  
   }
 
   private class SendThread implements Runnable {
@@ -151,11 +157,13 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
           continue;
         }
 
-        if (processedCount > 50) {
+        if (processedCount > _countInterval) {
+          long timeInterval = (new Date().getTime() - markTimestamp.getTime());
           _log.warn("Inference output queue(primary="
-              + _isPrimaryInferenceInstance + "): processed 50 messages in "
-              + (new Date().getTime() - markTimestamp.getTime()) / 1000
-              + " seconds; current queue length is " + _outputBuffer.size());
+              + _isPrimaryInferenceInstance + "): processed " + _countInterval + " messages in "
+              + (timeInterval / 1000)
+              + " seconds; (" + (1000.0 * processedCount/timeInterval) + ") records/second.  "
+              + "current queue length is " + _outputBuffer.size());
 
           markTimestamp = new Date();
           processedCount = 0;

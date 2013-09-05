@@ -45,8 +45,7 @@ public abstract class InputQueueListenerTask extends QueueListenerTask {
           JsonNode.class);
       final String ccLocationReportString = wrappedMessage.get(
           "RealtimeEnvelope").toString();
-
-      message = _mapper.readValue(ccLocationReportString,
+      message = _mapper.readValue(ccLocationReportString.replace("vehiclepowerstate", "vehiclePowerState"),
           RealtimeEnvelope.class);
     } catch (final Exception e) {
       _log.warn("Received corrupted message from queue; discarding: "
