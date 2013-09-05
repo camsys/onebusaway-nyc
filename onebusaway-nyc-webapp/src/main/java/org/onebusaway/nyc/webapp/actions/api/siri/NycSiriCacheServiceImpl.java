@@ -1,8 +1,8 @@
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -52,18 +52,14 @@ public class NycSiriCacheServiceImpl extends NycSiriCacheService<Integer, Siri> 
   }
 
   protected Integer hash(int maximumOnwardCalls, List<String> agencies){
-    String[] agencyArray = (String[]) agencies.toArray();
-    Arrays.sort(agencyArray);
-    return maximumOnwardCalls + Arrays.toString(agencyArray).hashCode();
+    TreeSet<String> set = new TreeSet<String>(agencies);
+    return maximumOnwardCalls + set.toString().hashCode();
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
   protected Integer hash(Object...factors){
-    try {
-      return hash(factors[0], factors[1]);
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-      return -1;
-    }
+    return hash((Integer)factors[0], (List<String>)factors[1]);
   }
+
 }
