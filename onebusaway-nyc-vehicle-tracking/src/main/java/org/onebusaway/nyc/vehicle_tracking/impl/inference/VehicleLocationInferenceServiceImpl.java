@@ -159,13 +159,9 @@ public class VehicleLocationInferenceServiceImpl implements
   public void handleNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
-
-    synchronized(_vehicleInstancesByVehicleId) {
-    	final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
-    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record, true, false));
-    	_bundleManagementService.registerInferenceProcessingThread(result);
-    }
+    createOrUpdateVehicleInstance(record);
   }
+  
   
   /**
    * This method is used by the simulator to inject a trace into the inference PIPELINE, but not through
@@ -174,13 +170,8 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public void handleBypassUpdateForNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
-	verifyVehicleResultMappingToCurrentBundle();
-
-	synchronized(_vehicleInstancesByVehicleId) {
-		final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
-    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record, true, true));
-    	_bundleManagementService.registerInferenceProcessingThread(result);
-    }
+    verifyVehicleResultMappingToCurrentBundle();
+    createOrUpdateVehicleInstance(record);
   }
 
   /**
@@ -191,12 +182,7 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public void handleNycRawLocationRecord(NycRawLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
-
-	synchronized(_vehicleInstancesByVehicleId) {
-		final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
-    	final Future<?> result = _executorService.submit(new ProcessingTask(i, record, false, false));
-    	_bundleManagementService.registerInferenceProcessingThread(result);
-    }
+    createOrUpdateVehicleInstance(record);
   }
 
   /**
@@ -311,11 +297,7 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
 
-	synchronized(_vehicleInstancesByVehicleId) {
-		final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId);    
-		final Future<?> result = _executorService.submit(new ProcessingTask(i, r, false, false));
-		_bundleManagementService.registerInferenceProcessingThread(result);
-	}
+    createOrUpdateVehicleInstance(r);
   }
 
   @Override
@@ -432,16 +414,35 @@ public class VehicleLocationInferenceServiceImpl implements
   /****
    * Private Methods
    ****/
-  private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
-	  VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+  private void createOrUpdateVehicleInstance(
+      NycTestInferredLocationRecord record) {
+    VehicleInferenceInstance instance = null;
+    synchronized (_vehicleInstancesByVehicleId) {
+      instance = _vehicleInstancesByVehicleId.get(record.getVehicleId());
       if (instance == null) {
-        final VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
-        instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
-        if (instance == null)
-          instance = newInstance;
-      }	
-      return instance;
+        // new vehicle id
+        instance = _vehicleInstancesByVehicleId.putIfAbsent(record.getVehicleId(), _applicationContext.getBean(VehicleInferenceInstance.class));
+      }
+    }
+    
+    final Future<?> result = _executorService.submit(new ProcessingTask(instance, record, true, false));
+    _bundleManagementService.registerInferenceProcessingThread(result);
   }
+
+  private void createOrUpdateVehicleInstance(NycRawLocationRecord record) {
+    VehicleInferenceInstance instance = null;
+    synchronized (_vehicleInstancesByVehicleId) {
+      instance = _vehicleInstancesByVehicleId.get(record.getVehicleId());
+      if (instance == null) {
+        // new vehicle id
+        instance = _vehicleInstancesByVehicleId.putIfAbsent(record.getVehicleId(), _applicationContext.getBean(VehicleInferenceInstance.class));
+      }
+    }
+    
+    final Future<?> result = _executorService.submit(new ProcessingTask(instance, record, true, false));
+    _bundleManagementService.registerInferenceProcessingThread(result);
+  }
+  
   
   /**
    * Has the bundle changed since the last time we returned a result?
@@ -559,6 +560,7 @@ public class VehicleLocationInferenceServiceImpl implements
     return null;
   }
 
+  
   public class ProcessingTask implements Runnable {
 
     private final AgencyAndId _vehicleId;
