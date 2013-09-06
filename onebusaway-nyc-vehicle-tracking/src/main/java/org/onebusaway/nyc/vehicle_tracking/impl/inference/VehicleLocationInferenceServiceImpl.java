@@ -159,7 +159,7 @@ public class VehicleLocationInferenceServiceImpl implements
   public void handleNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
-    createOrUpdateVehicleInstance(record, true, false);
+    createOrUpdateVehicleInstance(record);
   }
   
   
@@ -171,7 +171,7 @@ public class VehicleLocationInferenceServiceImpl implements
   public void handleBypassUpdateForNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
-    createOrUpdateVehicleInstance(record, true, true);
+    createOrUpdateVehicleInstance(record);
   }
 
   /**
@@ -182,7 +182,7 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public void handleNycRawLocationRecord(NycRawLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
-    createOrUpdateVehicleInstance(record, false, false);
+    createOrUpdateVehicleInstance(record);
   }
 
   /**
@@ -297,7 +297,7 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
 
-    createOrUpdateVehicleInstance(r, false, false);
+    createOrUpdateVehicleInstance(r);
   }
 
   @Override
@@ -415,7 +415,7 @@ public class VehicleLocationInferenceServiceImpl implements
    * Private Methods
    ****/
   private void createOrUpdateVehicleInstance(
-      NycTestInferredLocationRecord record, boolean simulation, boolean bypass) {
+      NycTestInferredLocationRecord record) {
     VehicleInferenceInstance instance = null;
     synchronized (_vehicleInstancesByVehicleId) {
       instance = _vehicleInstancesByVehicleId.get(record.getVehicleId());
@@ -425,11 +425,11 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
     
-    final Future<?> result = _executorService.submit(new ProcessingTask(instance, record, simulation, bypass));
+    final Future<?> result = _executorService.submit(new ProcessingTask(instance, record, true, false));
     _bundleManagementService.registerInferenceProcessingThread(result);
   }
 
-  private void createOrUpdateVehicleInstance(NycRawLocationRecord record, boolean simulation, boolean bypass) {
+  private void createOrUpdateVehicleInstance(NycRawLocationRecord record) {
     VehicleInferenceInstance instance = null;
     synchronized (_vehicleInstancesByVehicleId) {
       instance = _vehicleInstancesByVehicleId.get(record.getVehicleId());
@@ -439,7 +439,7 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
     
-    final Future<?> result = _executorService.submit(new ProcessingTask(instance, record, simulation, bypass));
+    final Future<?> result = _executorService.submit(new ProcessingTask(instance, record, true, false));
     _bundleManagementService.registerInferenceProcessingThread(result);
   }
   
