@@ -108,7 +108,7 @@
         <property name="wikiAttachmentUrl" ref="xwikiAttachmentUrlBean" />
     </bean>
     
-    <bean id="siriCacheService" class="org.onebusaway.nyc.webapp.actions.api.siri.NycSiriCacheServiceImpl">
+    <bean id="siriCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycSiriCacheServiceImpl">
     </bean>
     
 </beans>

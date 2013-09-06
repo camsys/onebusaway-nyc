@@ -37,6 +37,7 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.nyc.presentation.service.cache.NycCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -47,7 +48,6 @@ import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
-
 
 @ParentPackage("onebusaway-webapp-api")
 public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
@@ -77,7 +77,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   private String _type = "xml";
 
   @Autowired
-  private NycSiriCacheService<Integer, Siri> _cacheService;
+  private NycCacheService<Integer, Siri> _cacheService;
   
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
   
