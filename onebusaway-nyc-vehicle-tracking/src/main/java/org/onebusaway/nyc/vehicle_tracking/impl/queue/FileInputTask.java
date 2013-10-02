@@ -8,7 +8,9 @@ import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
@@ -28,7 +30,13 @@ public class FileInputTask implements ServletContextAware {
   private VehicleLocationInferenceService _vehicleLocationService;
   private VehicleAssignmentService _vehicleAssignmentService;
   
-  private String filename = "/tmp/queue_log.json";
+  /*
+   * Obtain dump_raw.sql via:
+   *  mysql -u username -ppassword -h database.host.com 
+   *  -e "select raw_message from obanyc_cclocationreport where time_received > subtime(now(), '1:00:00') 
+   *  order by time_received" onebusaway_nyc >dump_raw.sql
+   */
+  private String filename = "/tmp/dump_raw.sql";
   private String[] _depotPartitionKeys = null;
   
   @Autowired
@@ -93,6 +101,8 @@ public class FileInputTask implements ServletContextAware {
       this.vehicleAssignmentService = vas;
       this.depotPartitionKeys = depotPartitionKeys;
       this.filename = filename;
+      final AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
+      mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
     }
     
     public void run() {
@@ -109,6 +119,8 @@ public class FileInputTask implements ServletContextAware {
     }
 
     private void postProcessResult(RealtimeEnvelope record) throws Exception {
+      if (record == null)
+    	return;
       // startTime -- program boot
       // now -- right now
       long now = System.currentTimeMillis();
@@ -118,10 +130,13 @@ public class FileInputTask implements ServletContextAware {
       if (firstRecordTime == 0) {
         firstRecordTime = record.getTimeReceived();
       }
-      long dataOffset = now  - firstRecordTime;
+      long dataOffset = record.getTimeReceived()- firstRecordTime;
       while (dataOffset > localOffset) {
-        Thread.sleep(250);
+    	Thread.sleep(250);
+        now = System.currentTimeMillis();
+        localOffset = now - startTime;
       }
+      
       record.setTimeReceived(now);
     }
 
@@ -167,11 +182,16 @@ public class FileInputTask implements ServletContextAware {
     public RealtimeEnvelope deserializeMessage(String contents) {
       RealtimeEnvelope message = null;
       try {
+    	  contents = "{" + contents + "}";
+    	  contents = contents.replaceFirst("UUID.*UUID", "UUID");
+
         final JsonNode wrappedMessage = mapper.readValue(contents,
             JsonNode.class);
         final String ccLocationReportString = wrappedMessage.get(
             "RealtimeEnvelope").toString();
-        message = mapper.readValue(ccLocationReportString.replace("vehiclepowerstate", "vehiclePowerState"),
+        String msg = ccLocationReportString.replace("vehiclepowerstate", "vehiclePowerState");
+
+        message = mapper.readValue(msg,
             RealtimeEnvelope.class);
       } catch (final Exception e) {
         _log.warn("Received corrupted message from queue; discarding: "
@@ -191,7 +211,6 @@ public class FileInputTask implements ServletContextAware {
           currentRecord.append(c);
           // read last space
           inputReader.read();
-          _log.debug("currentRecord=|" + currentRecord + "|");
           return true;
         } else {
           currentRecord.append(c);
@@ -201,8 +220,8 @@ public class FileInputTask implements ServletContextAware {
     }
 
     private void open() throws Exception {
-      inputReader = new FileReader(filename);
-      
+    	inputReader = new FileReader(filename);
+ 
     }
   }
 }
