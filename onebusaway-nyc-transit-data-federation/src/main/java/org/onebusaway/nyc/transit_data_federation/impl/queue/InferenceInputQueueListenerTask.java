@@ -72,7 +72,8 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 	@Refreshable(dependsOn = {"display.checkAge", "display.useTimePredictions", "display.ageLimit"})
 	protected void refreshCache() {
 		checkAge = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.checkAge", "false"));
-		useTimePredictions = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
+		useTimePredictions = true;
+		//useTimePredictions = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
 		ageLimit = Integer.parseInt(_configurationService.getConfigurationValueAsString("display.ageLimit", "300"));
 	}
 	 

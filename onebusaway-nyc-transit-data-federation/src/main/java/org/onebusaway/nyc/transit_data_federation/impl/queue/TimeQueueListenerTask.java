@@ -50,23 +50,25 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
     this.disable = disable;
   }
   
-  @Refreshable(dependsOn = { "display.useTimePredictions" })
+  //@Refreshable(dependsOn = { "display.useTimePredictions" })
   public Boolean useTimePredictionsIfAvailable() {
-    if (Boolean.TRUE.equals(Boolean.parseBoolean(disable))) return false;
-    return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
+      return true;
+//    if (Boolean.TRUE.equals(Boolean.parseBoolean(disable))) return false;
+//    return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
   }
   
 	@Refreshable(dependsOn = { "tds.timePredictionQueueHost", "tds.timePredictionQueuePort", "tds.timePredictionQueueName" })
 	public void startListenerThread() {
+	  _log.error("Phil's custom time version");
 		if (_initialized == true) {
 			_log.warn("Configuration service tried to reconfigure prediction input queue reader; this service is not reconfigurable once started.");
 			return;
 		}
 
-		if (!useTimePredictionsIfAvailable()) {
-		  _log.error("time predictions disabled -- exiting");
-		  return;
-		}
+//		if (!useTimePredictionsIfAvailable()) {
+//		  _log.error("time predictions disabled -- exiting");
+//		  return;
+//		}
 		
 		String host = getQueueHost();
 		String queueName = getQueueName();
@@ -86,6 +88,7 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 		}
 
 		_initialized = true;
+		_log.error("using time predictions!");
 	}
 
 }
