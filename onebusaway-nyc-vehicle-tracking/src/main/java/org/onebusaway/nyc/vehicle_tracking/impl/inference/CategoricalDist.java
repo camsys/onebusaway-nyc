@@ -76,7 +76,7 @@ public class CategoricalDist<T extends Comparable<T>> {
     }
 
     @Override
-    synchronized public Random get() {
+    public Random get() {
       return rng;
     }
   }
