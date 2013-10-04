@@ -91,7 +91,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     }
 
     @Override
-    synchronized public RandomStream get() {
+    public RandomStream get() {
       return rng;
     }
   }
