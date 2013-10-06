@@ -69,10 +69,11 @@
    	</bean>
 
 	<!--  for debugging purposes, the TDS can be populated via a JSON file -->
+	<!-- 
    	<bean id="fileInput" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.FileInputTask" >
-  		<property name="filename" value="/home/ubuntu/src/dump_raw.sql" />
+  		<property name="filename" value="${user.home}/src/dump_raw.sql" />
   	</bean>
- 
+    -->
 	<!-- Output Queue Configuration -->
 	<!-- This option sends inference output to a TDM configured queue for pickup by an external TDF/TDS -->
 	<!-- This option sends inference output to a local running TDF/TDS -->

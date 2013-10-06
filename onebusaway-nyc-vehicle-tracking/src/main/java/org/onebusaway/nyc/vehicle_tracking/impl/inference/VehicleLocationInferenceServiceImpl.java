@@ -612,19 +612,19 @@ public class VehicleLocationInferenceServiceImpl implements
 
     		// bypass/process record through inference
     		boolean inferenceSuccess = false;
+    		NycQueuedInferredLocationBean record = null;
     		if (_nycRawLocationRecord != null) {
-  		    if (_bypass == true) {
-  		      inferenceSuccess = _inferenceInstance.handleBypassUpdate(_nycTestInferredLocationRecord);
+    		  if (_bypass == true) {
+    			record = _inferenceInstance.handleBypassUpdateWithResults(_nycTestInferredLocationRecord);
   		    } else {
-  		      inferenceSuccess = _inferenceInstance.handleUpdate(_nycRawLocationRecord);
-  		    }   
+  		    	record = _inferenceInstance.handleUpdateWithResults(_nycRawLocationRecord);
+  		    	}   
     		}  
+	    	if (record != null) inferenceSuccess = true;
 
     		if (inferenceSuccess) {
     			// send input "actuals" as inferred result to output queue to bypass inference process
     			if (_bypass == true) {
-    				final NycQueuedInferredLocationBean record = 
-    						RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(_nycTestInferredLocationRecord);
     				record.setVehicleId(_vehicleId.toString());
 
     				// fix up the service date if we're shifting the dates of the record to now, since
@@ -642,19 +642,16 @@ public class VehicleLocationInferenceServiceImpl implements
 
     				// send inferred result to output queue
     			} else {
-    				final NycVehicleManagementStatusBean managementRecord = _inferenceInstance.getCurrentManagementState();
-    				managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
-    				managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
+    				// add some more properties to the record before sending off
+    				record.getManagementRecord().setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
+    				record.getManagementRecord().setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
 
     				final BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
     				if (currentBundle != null) {
-    					managementRecord.setActiveBundleId(currentBundle.getId());
+    					record.getManagementRecord().setActiveBundleId(currentBundle.getId());
     				}
 
-    				final NycQueuedInferredLocationBean record = _inferenceInstance.getCurrentStateAsNycQueuedInferredLocationBean();
     				record.setVehicleId(_vehicleId.toString());
-    				record.setManagementRecord(managementRecord);
-
     				_outputQueueSenderService.enqueue(record);
     			}
     		}
