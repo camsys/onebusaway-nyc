@@ -72,6 +72,20 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     this._transitDataManagerApiLibrary = apiLibrary;
   }
 
+  private void preCache() {
+	  _log.info("pre-cache start");
+	  ServiceDate today = new ServiceDate(Calendar.getInstance().getTime());
+	  getOperatorMapForServiceDate(today);
+	  Calendar c1 = Calendar.getInstance();
+	  c1.add(Calendar.DAY_OF_YEAR, -1);
+	  ServiceDate yesterday = new ServiceDate(c1);
+	  getOperatorMapForServiceDate(yesterday);
+	  c1.add(Calendar.DAY_OF_YEAR, 2);
+	  ServiceDate tomorrow = new ServiceDate(c1);
+	  getOperatorMapForServiceDate(tomorrow);
+	  _log.info("pre-cache end");
+  }
+  
   private final Pattern operatorIdPattern = Pattern.compile("^0*[a-zA-Z]*0*(\\d+)$");
 
   private HashMap<String, OperatorAssignmentItem> getOperatorMapForServiceDate(ServiceDate serviceDate) {
@@ -138,10 +152,12 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   /**
    * lock the underlying map to update with refreshed values. 
    */
-  private synchronized void updateData(Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> serviceDateMapCopy) {
+  private  void updateData(Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> serviceDateMapCopy) {
     _log.info("updateData starting...");
-    for (ServiceDate serviceDate: serviceDateMapCopy.keySet()) {
-      _serviceDateToOperatorListMap.put(serviceDate, serviceDateMapCopy.get(serviceDate));
+    synchronized (_serviceDateToOperatorListMap) {
+    	for (ServiceDate serviceDate: serviceDateMapCopy.keySet()) {
+    		_serviceDateToOperatorListMap.put(serviceDate, serviceDateMapCopy.get(serviceDate));
+    	}
     }
     _log.info("updateData complete");
   }
@@ -183,13 +199,14 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   @SuppressWarnings("unused")
   @PostConstruct
   private void startUpdateProcess() {
+	preCache();
     if (_updateTask==null) {
       setUpdateFrequency(30 * 60); // 30m
     }
   }
 
   @Override
-  public synchronized Collection<OperatorAssignmentItem> getOperatorsForServiceDate(
+  public  Collection<OperatorAssignmentItem> getOperatorsForServiceDate(
       ServiceDate serviceDate) throws Exception {
 
     if (serviceDate == null) {
@@ -197,8 +214,13 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     }
 
     HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDate);
-
-    if (list == null) {
+    if (list != null) return list.values();
+    
+    synchronized(this._serviceDateToOperatorListMap) {
+      // check once more, in case the thread ahead of us did our job for us
+      list = _serviceDateToOperatorListMap.get(serviceDate);
+      if (list != null) return list.values();
+      
       list = getOperatorMapForServiceDate(serviceDate);
       if (list == null) {
         throw new Exception("Operator service is temporarily not available.");
@@ -218,7 +240,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   }
 
   @Override
-  public synchronized OperatorAssignmentItem getOperatorAssignmentItemForServiceDate(
+  public  OperatorAssignmentItem getOperatorAssignmentItemForServiceDate(
       ServiceDate serviceDate, AgencyAndId operatorId) throws Exception {
 
     if (serviceDate == null) {
@@ -226,8 +248,12 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     }
 
     HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDate);
-
-    if (list == null) {
+    if (list != null) return list.get(operatorId.toString());
+    synchronized (_serviceDateToOperatorListMap) {
+      // check once more in case the thread ahead of us did the work 
+      list = _serviceDateToOperatorListMap.get(serviceDate);
+      if (list != null) return list.get(operatorId.toString());
+      
       list = getOperatorMapForServiceDate(serviceDate);
       if (list == null) {
         throw new Exception("Operator service is temporarily not available.");
