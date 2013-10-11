@@ -133,6 +133,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
           r = _outputBuffer.poll(250, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ie) {
           _log.error("SendThread interrupted", ie);
+          _outputQueueResolver.reset(); // force re-connect
           return;
         }
 
@@ -319,6 +320,8 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
     try {
       initializeQueue(getQueueHost(), getQueueName(), getQueuePort());
     } catch (final InterruptedException ie) {
+      _log.error("reinitialize failed:", ie);
+      _outputQueueResolver.reset();
       return;
     }
   }
@@ -346,7 +349,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
     _executorService.execute(new SendThread(_socket, queueName));
     _heartbeatService.execute(new HeartbeatThread(HEARTBEAT_INTERVAL));
 
-    _log.debug("Inference output queue is sending to " + bind);
+    _log.info("Inference output queue is sending to " + bind);
     _initialized = true;
   }
 
