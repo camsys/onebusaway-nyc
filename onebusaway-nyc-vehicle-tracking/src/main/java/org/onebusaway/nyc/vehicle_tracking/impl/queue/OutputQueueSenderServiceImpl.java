@@ -127,13 +127,12 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
     @Override
     public void run() {
-      while (!Thread.currentThread().isInterrupted()) {
+      while (true) {
         String r = null;
         try {
           r = _outputBuffer.poll(250, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ie) {
           _log.error("SendThread interrupted", ie);
-          _outputQueueResolver.reset(); // force re-connect
           return;
         }
 
