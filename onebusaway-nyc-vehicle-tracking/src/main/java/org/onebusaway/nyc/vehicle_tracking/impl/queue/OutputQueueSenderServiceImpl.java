@@ -133,7 +133,6 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
           r = _outputBuffer.poll(250, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ie) {
           _log.error("SendThread interrupted", ie);
-          return;
         }
 
         if (r != null) {
