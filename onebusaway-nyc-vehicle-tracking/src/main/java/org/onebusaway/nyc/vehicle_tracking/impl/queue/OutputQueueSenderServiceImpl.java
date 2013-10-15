@@ -132,8 +132,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
         try {
           r = _outputBuffer.poll(250, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ie) {
-          _log.error("SendThread interrupted", ie);
-          _outputQueueResolver.reset(); // force re-connect
+          _log.error("SendThread interrupted (queue change?)", ie);
           return;
         }
 
@@ -344,6 +343,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
       _heartbeatService = Executors.newFixedThreadPool(1);
     }
 
+    _log.info("binding to " + bind);
     _socket = _context.socket(ZMQ.PUB);
     _socket.connect(bind);
     _executorService.execute(new SendThread(_socket, queueName));
