@@ -26,11 +26,13 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -44,7 +46,6 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
@@ -112,11 +113,14 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private int _skippedUpdateLogCounter = 0;
 
-  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 20);
+  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 1);
 
   private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = 
 		  new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
+  private final ConcurrentMap<AgencyAndId, VehicleInferenceInstanceThread> _vehicleThreadsByVehicleId =
+      new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstanceThread>();
+  
   private ApplicationContext _applicationContext;
 	
   public void setNumberOfProcessingThreads(int numberOfProcessingThreads) {
@@ -305,9 +309,13 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
 
-    final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId);    
-		final Future<?> result = _executorService.submit(new ProcessingTask(i, r, false, false));
-		_bundleManagementService.registerInferenceProcessingThread(result);
+//    final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId);    
+//		final Future<?> result = _executorService.submit(new ProcessingTask(i, r, false, false));
+//		_bundleManagementService.registerInferenceProcessingThread(result);
+    final VehicleInferenceInstanceThread t = getThreadForVehicle(vehicleId);
+    t.enqueue(r, false, false);
+    // TODO -- add and implement bundle management integration to allow bundle swaps!
+    
   }
 
   @Override
@@ -425,15 +433,38 @@ public class VehicleLocationInferenceServiceImpl implements
    * Private Methods
    ****/
   private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);;
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance != null) return instance;
     synchronized (_vehicleInstancesByVehicleId) {
-        final VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
-        instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
-        if (instance == null)
-          instance = newInstance;
+      // check to see if someone else beat us in
+      instance = _vehicleInstancesByVehicleId.get(vehicleId);
+      if (instance != null) return instance;
+      
+      final VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
+      instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
+      if (instance == null)
+        instance = newInstance;
       }	
       return instance;
+  }
+  
+  private VehicleInferenceInstanceThread getThreadForVehicle(AgencyAndId vehicleId) {
+    VehicleInferenceInstanceThread thread = _vehicleThreadsByVehicleId.get(vehicleId);
+    if (thread != null && thread.accepting) return thread;
+    // here we share the synch lock used above to prevent deadlock
+    synchronized (_vehicleInstancesByVehicleId) {
+      // check to see if someone else beat us
+      thread = _vehicleThreadsByVehicleId.get(vehicleId);
+      if (thread != null && thread.accepting) return thread;
+      
+      VehicleInferenceInstance instance = getInstanceForVehicle(vehicleId);
+      VehicleInferenceInstanceThread newThread = new VehicleInferenceInstanceThread(instance);
+      Thread t = new Thread(newThread);
+      t.start();
+      _vehicleThreadsByVehicleId.putIfAbsent(vehicleId, newThread);
+      _log.info("adding thread for vehicle " + vehicleId, " total threadCount=" + _vehicleThreadsByVehicleId.size());
+      return newThread;
+    }
   }
   
   /**
@@ -665,6 +696,93 @@ public class VehicleLocationInferenceServiceImpl implements
     }
   }
 
+  private class RecordWrapper {
+    private NycTestInferredLocationRecord testRecord;
+    private NycRawLocationRecord rawRecord;
+    private boolean simulation = false;
+    private boolean bypass = false;
+    public RecordWrapper(NycTestInferredLocationRecord record, boolean simulation, boolean bypass) {
+      this.testRecord = record;
+      this.simulation = simulation;
+      this.bypass = bypass;
+    }
+    public RecordWrapper(NycRawLocationRecord record, boolean simulation, boolean bypass) {
+      this.rawRecord = record;
+      this.simulation = simulation;
+      this.bypass = bypass;
+    }
+    
+    public NycTestInferredLocationRecord getTestRecord() {
+      return testRecord;
+    }
+    public NycRawLocationRecord getRawRecord() {
+      return rawRecord;
+    }
+    public boolean getSimulation() {
+      return simulation;
+    }
+    public boolean getBypass() {
+      return bypass;
+    }
+  }
+  
+  public class VehicleInferenceInstanceThread implements Runnable {
+    private VehicleInferenceInstance _instance = null;
+    private ArrayBlockingQueue<RecordWrapper> backlog = new ArrayBlockingQueue<RecordWrapper>(10);
+    private boolean accepting = true;
+    
+    public VehicleInferenceInstanceThread(VehicleInferenceInstance i) {
+      this._instance = i;
+    }
+    
+    public void enqueue(NycTestInferredLocationRecord record, boolean simulation, boolean bypass) {
+      if (accepting) {
+        RecordWrapper rw = new RecordWrapper(record, simulation, bypass);
+        // place into thread safe queue
+        backlog.add(rw);
+
+      }
+    }
+    
+    public void enqueue(NycRawLocationRecord record, boolean simulation, boolean bypass) {
+      if (accepting) {
+        RecordWrapper rw = new RecordWrapper(record, simulation, bypass);
+        // place into thread safe queue
+        backlog.add(rw);
+
+      }
+    }
+    
+    public void shutdown() {
+      accepting = false;
+    }
+
+    @Override
+    public void run() {
+      while (accepting) {
+        try {
+          RecordWrapper rw = backlog.poll(30, TimeUnit.SECONDS);
+          ProcessingTask pt = null;
+          if (rw != null) {
+            if (rw.getRawRecord() != null) {
+              pt = new ProcessingTask(_instance, rw.getRawRecord(), rw.getSimulation(), rw.getBypass());
+            } else {
+              pt = new ProcessingTask(_instance, rw.getTestRecord(), rw.getSimulation(), rw.getBypass());
+            }
+            if (pt != null) {
+              pt.run();
+            }
+          }
+        } catch (InterruptedException ie) {
+          _log.error("interrupted! ", ie);
+          accepting = false;
+        } catch (Throwable t) {
+          _log.error("broke! ", t);
+        }
+      }
+    }
+    
+  }  
   @Override
   public void setSeeds(long cdfSeed, long factorySeed) {
     ParticleFactoryImpl.setSeed(factorySeed);

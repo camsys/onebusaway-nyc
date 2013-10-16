@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -84,6 +85,9 @@ public class RunServiceImpl implements RunService {
   private ScheduledBlockLocationService scheduledBlockLocationService;
 
   private ExtendedCalendarService extCalendarService;
+  
+  //Collection<RunTripEntry> getRunTripEntriesForRun(String runId) 
+  private Map<String, TreeMultimap<Integer, String>>runTripEntriesForRunIdMap = new HashMap<String, TreeMultimap<Integer, String>>();
 
   public ExtendedCalendarService getCalendarService() {
     return extCalendarService;
@@ -127,6 +131,7 @@ public class RunServiceImpl implements RunService {
     } else
       return;
 
+    runTripEntriesForRunIdMap.clear();
     transformRunData();
   }
 
@@ -231,6 +236,9 @@ public class RunServiceImpl implements RunService {
       String reportedRunId)
       throws IllegalArgumentException {
     
+    if (runTripEntriesForRunIdMap.containsKey(reportedRunId)) return runTripEntriesForRunIdMap.get(reportedRunId);
+    _log.info("cache run miss for " + reportedRunId);
+    
     TreeMultimap<Integer, String> matchedRTEs = TreeMultimap.create();
     Matcher reportedIdMatcher = reportedRunIdPattern.matcher(reportedRunId);
 
@@ -289,6 +297,7 @@ public class RunServiceImpl implements RunService {
       matchedRTEs.put(bestDist, runId);
     }
     
+    runTripEntriesForRunIdMap.put(reportedRunId, matchedRTEs);
     return matchedRTEs;
   }
 

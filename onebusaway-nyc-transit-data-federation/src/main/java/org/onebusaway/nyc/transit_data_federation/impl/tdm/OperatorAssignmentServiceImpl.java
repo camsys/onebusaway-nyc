@@ -253,7 +253,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
       // check once more in case the thread ahead of us did the work 
       list = _serviceDateToOperatorListMap.get(serviceDate);
       if (list != null) return list.get(operatorId.toString());
-      
+      _log.info("cache miss for service date" + serviceDate);
       list = getOperatorMapForServiceDate(serviceDate);
       if (list == null) {
         throw new Exception("Operator service is temporarily not available.");
