@@ -55,6 +55,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	// when the command to change the bundle has been received.
 	private static final int INFERENCE_PROCESSING_THREAD_WAIT_TIMEOUT_IN_SECONDS = 60;
 
+  private static final int MAX_EXPECTED_THREADS = 3000;
+
 	private static Logger _log = LoggerFactory.getLogger(BundleManagementServiceImpl.class);
 
 	private List<BundleItem> _allBundles = new ArrayList<BundleItem>();
@@ -236,7 +238,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		_inferenceProcessingThreads.add(thread);
 
 		// keep our thread list from getting /too/ big unnecessarily
-		if(_inferenceProcessingThreads.size() > 500) {
+		if(_inferenceProcessingThreads.size() > MAX_EXPECTED_THREADS) {
 			removeDeadInferenceThreads();
 		}
 	}
