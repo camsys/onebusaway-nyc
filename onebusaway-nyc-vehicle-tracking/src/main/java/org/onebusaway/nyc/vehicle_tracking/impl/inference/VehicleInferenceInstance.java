@@ -110,7 +110,8 @@ public class VehicleInferenceInstance {
   }
 
   @Autowired
-  public void setOperatorAssignmentService(OperatorAssignmentService operatorAssignmentService) {
+  public void setOperatorAssignmentService(
+      OperatorAssignmentService operatorAssignmentService) {
     _operatorAssignmentService = operatorAssignmentService;
   }
 
@@ -119,7 +120,8 @@ public class VehicleInferenceInstance {
   }
 
   @Autowired
-  public void setDestinationSignCodeService(DestinationSignCodeService destinationSignCodeService) {
+  public void setDestinationSignCodeService(
+      DestinationSignCodeService destinationSignCodeService) {
     _destinationSignCodeService = destinationSignCodeService;
   }
 
@@ -142,8 +144,8 @@ public class VehicleInferenceInstance {
    * Process a NycRawLocationRecord, usually from a bus or the simulator.
    * 
    * @param record
-   * @return true if the resulting inferred location record was successfully processed,
-   *         otherwise false
+   * @return true if the resulting inferred location record was successfully
+   *         processed, otherwise false
    */
   public synchronized boolean handleUpdate(NycRawLocationRecord record) {
 
@@ -151,12 +153,13 @@ public class VehicleInferenceInstance {
      * Choose the best timestamp based on device timestamp and received
      * timestamp
      */
-    final long timestamp = RecordLibrary.getBestTimestamp(record.getTime(),record.getTimeReceived());
+    final long timestamp = RecordLibrary.getBestTimestamp(record.getTime(),
+        record.getTimeReceived());
     _lastUpdateTime = timestamp;
 
     /**
-     * If this record occurs BEFORE, or at the same time as, the most recent update, 
-     * we take special action
+     * If this record occurs BEFORE, or at the same time as, the most recent
+     * update, we take special action
      */
     if (timestamp <= _particleFilter.getTimeOfLastUpdated()) {
       final long backInTime = (long) (_particleFilter.getTimeOfLastUpdated() - timestamp);
@@ -190,8 +193,10 @@ public class VehicleInferenceInstance {
       final long delta = Math.abs(timestamp - _previousObservation.getTime());
       final NycRawLocationRecord lastRecord = _previousObservation.getRecord();
 
-      reportedRunIdChange = !StringUtils.equals(lastRecord.getRunId(), record.getRunId());
-      operatorIdChange = !StringUtils.equals(lastRecord.getOperatorId(), record.getOperatorId());
+      reportedRunIdChange = !StringUtils.equals(lastRecord.getRunId(),
+          record.getRunId());
+      operatorIdChange = !StringUtils.equals(lastRecord.getOperatorId(),
+          record.getOperatorId());
 
       if (delta > _automaticResetWindow) {
         _log.info("resetting inference for vid=" + record.getVehicleId()
@@ -223,7 +228,8 @@ public class VehicleInferenceInstance {
       record.setLongitude(previousRecord.getLongitude());
     }
 
-    final CoordinatePoint location = new CoordinatePoint(record.getLatitude(), record.getLongitude());
+    final CoordinatePoint location = new CoordinatePoint(record.getLatitude(),
+        record.getLongitude());
 
     /**
      * Sometimes, DSCs take the form "  11", where there is whitespace in there.
@@ -237,7 +243,8 @@ public class VehicleInferenceInstance {
 
     String lastValidDestinationSignCode = null;
 
-    if (dsc != null && !_destinationSignCodeService.isMissingDestinationSignCode(dsc)) {
+    if (dsc != null
+        && !_destinationSignCodeService.isMissingDestinationSignCode(dsc)) {
       lastValidDestinationSignCode = dsc;
     } else if (_previousObservation != null) {
       lastValidDestinationSignCode = _lastValidDestinationSignCode;
@@ -250,17 +257,21 @@ public class VehicleInferenceInstance {
         && !_destinationSignCodeService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
 
     Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
-    if (_previousObservation == null || !StringUtils.equals(_lastValidDestinationSignCode, lastValidDestinationSignCode)) {
+    if (_previousObservation == null
+        || !StringUtils.equals(_lastValidDestinationSignCode,
+            lastValidDestinationSignCode)) {
       routeIds = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(lastValidDestinationSignCode);
     } else {
       routeIds = _previousObservation.getDscImpliedRouteCollections();
     }
 
     RunResults runResults = null;
-    if (_previousObservation == null || operatorIdChange == Boolean.TRUE || reportedRunIdChange == Boolean.TRUE) {
+    if (_previousObservation == null || operatorIdChange == Boolean.TRUE
+        || reportedRunIdChange == Boolean.TRUE) {
       runResults = findRunIdMatches(record);
     } else {
-      runResults = updateRunIdMatches(record, _previousObservation.getRunResults());
+      runResults = updateRunIdMatches(record,
+          _previousObservation.getRunResults());
     }
 
     final Observation observation = new Observation(timestamp, record,
@@ -287,7 +298,7 @@ public class VehicleInferenceInstance {
       _log.warn("particle filter crashed for record - attempting reset: time="
           + record.getTime() + " timeReceived=" + record.getTimeReceived()
           + " vehicleId=" + record.getVehicleId() + " cause=" + ex.getMessage());
-      
+
       if (_badParticles == null)
         _badParticles = _particleFilter.getWeightedParticles();
 
@@ -410,15 +421,14 @@ public class VehicleInferenceInstance {
     final Observation obs = state.getObservation();
     final NycRawLocationRecord nycRawRecord = obs.getRecord();
     record.setBearing(nycRawRecord.getBearing());
-    
+
     if (blockState != null) {
       final ScheduledBlockLocation blockLocation = blockState.getBlockState().getBlockLocation();
 
       // set sched. dev. if we have a match in UTS and are therefore comfortable
       // saying that this schedule deviation is a true match to the schedule.
       if (blockState.isRunFormal()) {
-        final int deviation = 
-        		(int)((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
+        final int deviation = (int) ((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
 
         record.setScheduleDeviation(deviation);
       } else {
@@ -427,7 +437,8 @@ public class VehicleInferenceInstance {
 
       // distance along trip
       final BlockTripEntry activeTrip = blockLocation.getActiveTrip();
-      final double distanceAlongTrip = blockLocation.getDistanceAlongBlock() - activeTrip.getDistanceAlongBlock();
+      final double distanceAlongTrip = blockLocation.getDistanceAlongBlock()
+          - activeTrip.getDistanceAlongBlock();
       record.setDistanceAlongTrip(distanceAlongTrip);
     }
 
@@ -613,7 +624,9 @@ public class VehicleInferenceInstance {
   }
 
   /**
-   * Returns the most recent inference result as an NycTestInferredLocationRecord, i.e. simulator output.
+   * Returns the most recent inference result as an
+   * NycTestInferredLocationRecord, i.e. simulator output.
+   * 
    * @return
    */
   private NycTestInferredLocationRecord getMostRecentParticleAsNycTestInferredLocationRecord() {
@@ -658,7 +671,7 @@ public class VehicleInferenceInstance {
       record.setInferredIsRunFormal(blockState.isRunFormal());
 
       // formality match exposed to TDS
-      if(blockState.isRunFormal()) {
+      if (blockState.isRunFormal()) {
         statusFields.add("blockInf");
       }
 
@@ -680,24 +693,25 @@ public class VehicleInferenceInstance {
       }
 
       final CoordinatePoint locationAlongBlock = blockLocation.getLocation();
-      if (locationAlongBlock != null && 
-    		  (EVehiclePhase.IN_PROGRESS.equals(phase) || phase.toLabel().toUpperCase().startsWith("LAYOVER_"))) {
+      if (locationAlongBlock != null
+          && (EVehiclePhase.IN_PROGRESS.equals(phase) || phase.toLabel().toUpperCase().startsWith(
+              "LAYOVER_"))) {
         record.setInferredBlockLat(locationAlongBlock.getLat());
         record.setInferredBlockLon(locationAlongBlock.getLon());
       }
 
-      if (EVehiclePhase.IN_PROGRESS.equals(phase)) {    	  
+      if (EVehiclePhase.IN_PROGRESS.equals(phase)) {
         final int secondsSinceLastMotion = (int) ((particle.getTimestamp() - motionState.getLastInMotionTime()) / 1000);
-        if (secondsSinceLastMotion > 
-        	_configurationService.getConfigurationValueAsInteger("display.stalledTimeout", 900))
+        if (secondsSinceLastMotion > _configurationService.getConfigurationValueAsInteger(
+            "display.stalledTimeout", 900))
           statusFields.add("stalled");
       } else {
-        final boolean vehicleIsDetourEligible = 
-        		_blockStateService.locationIsEligibleForDetour(activeTrip, location);
-        		
-        // vehicles on detour should be in_progress with status=deviated 
+        final boolean vehicleIsDetourEligible = _blockStateService.locationIsEligibleForDetour(
+            activeTrip, location);
+
+        // vehicles on detour should be in_progress with status=deviated
         if (state.getJourneyState().getIsDetour() && vehicleIsDetourEligible) {
-          // remap this journey state/phase to IN_PROGRESS to conform to 
+          // remap this journey state/phase to IN_PROGRESS to conform to
           // previous pilot project semantics.
           if (EVehiclePhase.DEADHEAD_DURING.equals(phase)) {
             record.setInferredPhase(EVehiclePhase.IN_PROGRESS.name());
@@ -723,31 +737,32 @@ public class VehicleInferenceInstance {
   }
 
   /**
-   * handleUpdate and return the results of the particle filter in a thread
-   * safe manner.  After calling this method, the particle filter is not safe
-   * to call directly.
+   * handleUpdate and return the results of the particle filter in a thread safe
+   * manner. After calling this method, the containedparticle filter nor this
+   * class is not safe to call in a multi-threaded manner.
    */
-public synchronized NycQueuedInferredLocationBean handleUpdateWithResults(
-		NycRawLocationRecord nycRawLocationRecord) {
-	boolean success = handleUpdate(nycRawLocationRecord);
-	if (!success) return null;
-	final NycVehicleManagementStatusBean managementRecord = getCurrentManagementState();
-	final NycQueuedInferredLocationBean record = getCurrentStateAsNycQueuedInferredLocationBean();
-	record.setManagementRecord(managementRecord);
-	return record;
-}
+  public synchronized NycQueuedInferredLocationBean handleUpdateWithResults(
+      NycRawLocationRecord nycRawLocationRecord) {
+    boolean success = handleUpdate(nycRawLocationRecord);
+    if (!success)
+      return null;
+    final NycVehicleManagementStatusBean managementRecord = getCurrentManagementState();
+    final NycQueuedInferredLocationBean record = getCurrentStateAsNycQueuedInferredLocationBean();
+    record.setManagementRecord(managementRecord);
+    return record;
+  }
 
-/**
- * hand update of the test record, which merely converts the input record to
- *  an output record.
- */
-public synchronized NycQueuedInferredLocationBean handleBypassUpdateWithResults(
-		NycTestInferredLocationRecord nycTestInferredLocationRecord) {
-	boolean success = handleBypassUpdate(nycTestInferredLocationRecord);
-	if (!success) return null;
-	final NycQueuedInferredLocationBean record = 
-			RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(nycTestInferredLocationRecord);
-	return record;
-}
+  /**
+   * hand update of the test record, which merely converts the input record to
+   * an output record.
+   */
+  public synchronized NycQueuedInferredLocationBean handleBypassUpdateWithResults(
+      NycTestInferredLocationRecord nycTestInferredLocationRecord) {
+    boolean success = handleBypassUpdate(nycTestInferredLocationRecord);
+    if (!success)
+      return null;
+    final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(nycTestInferredLocationRecord);
+    return record;
+  }
 
 }
