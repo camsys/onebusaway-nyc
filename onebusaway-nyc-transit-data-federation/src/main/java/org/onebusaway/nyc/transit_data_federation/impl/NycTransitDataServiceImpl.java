@@ -140,7 +140,7 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
 	 ****/
 
 	@Override
-	public List<TimepointPredictionRecord> getPredictionRecordsForTrip(
+	public List<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
 			TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
 		return _predictionIntegrationService.getPredictionsForTrip(tripStatus);
@@ -160,19 +160,19 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
 	}
 
 	@Override
-	public Boolean routeHasUpcomingScheduledService(long time, String routeId, String directionId)  {
+	public Boolean routeHasUpcomingScheduledService(String agencyId, long time, String routeId, String directionId)  {
 		blockUntilBundleIsReady();
 		return _scheduledServiceService.routeHasUpcomingScheduledService(time, routeId, directionId);
 	}
 
 	@Override
-	public Boolean stopHasUpcomingScheduledService(long time, String stopId, String routeId, String directionId) {
+	public Boolean stopHasUpcomingScheduledService(String agencyId, long time, String stopId, String routeId, String directionId) {
 		blockUntilBundleIsReady();
 		return _scheduledServiceService.stopHasUpcomingScheduledService(time, stopId, routeId, directionId);
 	}
 
 	@Override
-	public List<String> getSearchSuggestions(String input) {
+	public List<String> getSearchSuggestions(String agencyId, String input) {
 		List<String> result = this._bundleSearchService.getSuggestions(input);
 
 		return result;

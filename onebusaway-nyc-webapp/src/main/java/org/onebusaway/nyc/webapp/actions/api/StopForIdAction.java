@@ -100,7 +100,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
             continue;
           
           Boolean hasUpcomingScheduledService = 
-        		  _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stop.getId(), 
+        		  _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stop.getId(), 
         				  routeBean.getId(), stopGroupBean.getId());
 
           // if there are buses on route, always have "scheduled service"

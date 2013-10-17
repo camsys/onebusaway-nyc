@@ -103,6 +103,8 @@
    
    <bean id="bundleServerService" class="org.onebusaway.nyc.admin.service.server.impl.BundleServerServiceImpl" />
    
+   <bean id="bundeManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl" />
+   
    <bean id="keyTranslator" class="org.onebusaway.nyc.admin.util.ConfigurationKeyTranslator" />
    
    <bean id="loginEventListener" class="org.onebusaway.nyc.admin.event.handler.LoginEventListener" />

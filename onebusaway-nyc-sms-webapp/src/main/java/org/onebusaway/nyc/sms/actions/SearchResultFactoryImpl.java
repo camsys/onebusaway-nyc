@@ -88,7 +88,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
           continue;
         
         Boolean hasUpcomingScheduledService = 
-            _nycTransitDataService.routeHasUpcomingScheduledService(System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
+            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
         // if there are buses on route, always have "scheduled service"
         Boolean routeHasVehiclesInService = 
@@ -143,7 +143,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
               distanceAwayStringsByDistanceFromStopAndRouteAndDirection.get(routeBean.getId() + "_" + stopGroupBean.getId());
           
           Boolean hasUpcomingScheduledService = 
-              _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
+              _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
 
           // if there are buses on route, always have "scheduled service"
           if(distanceAwayStringsByDistanceFromStop != null && !distanceAwayStringsByDistanceFromStop.isEmpty()) {

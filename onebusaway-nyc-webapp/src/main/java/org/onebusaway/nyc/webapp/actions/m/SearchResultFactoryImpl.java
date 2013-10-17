@@ -101,6 +101,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
         // service in this direction
         Boolean hasUpcomingScheduledService = _nycTransitDataService.routeHasUpcomingScheduledService(
+        	(routeBean.getAgency()!=null?routeBean.getAgency().getId():null),	
             System.currentTimeMillis(), routeBean.getId(),
             stopGroupBean.getId());
 
@@ -177,9 +178,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
           List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(
               routeBean.getId(), stopGroupBean.getId());
           populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans);
-
+          
           // service in this direction
           Boolean hasUpcomingScheduledService = _nycTransitDataService.stopHasUpcomingScheduledService(
+        	  (routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
               System.currentTimeMillis(), stopBean.getId(), routeBean.getId(),
               stopGroupBean.getId());
 
