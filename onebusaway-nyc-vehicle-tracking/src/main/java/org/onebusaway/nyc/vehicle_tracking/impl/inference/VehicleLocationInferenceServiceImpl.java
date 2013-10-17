@@ -428,6 +428,10 @@ public class VehicleLocationInferenceServiceImpl implements
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);;
     if (instance != null) return instance;
     synchronized (_vehicleInstancesByVehicleId) {
+        // check to see if a thread ahead of us won
+        instance = _vehicleInstancesByVehicleId.get(vehicleId);;
+        if (instance != null) return instance;
+        
         final VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
         instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
         if (instance == null)
