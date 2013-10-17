@@ -23,6 +23,16 @@ import org.springframework.web.context.ServletContextAware;
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CcLocationReport;
 
+/**
+ * Test/Debug Class for loading realtime data from the archive database 
+ * as if it came from the queue.
+ * 
+ *  This class alters timestamps of the realtime data to make them appear as if they are
+ *  current, and meters the flow of data to mimic the original flow.
+ *  
+ *  To enable this uncomment the bean definition in data-sources.xml.
+ *
+ */
 public class FileInputTask implements ServletContextAware {
 
   protected static Logger _log = LoggerFactory.getLogger(FileInputTask.class);
@@ -124,7 +134,6 @@ public class FileInputTask implements ServletContextAware {
       // startTime -- program boot
       // now -- right now
       long now = System.currentTimeMillis();
-      // localOffset: now - startTime
       long localOffset = now - startTime;
       // firstRecordTime: lazy init to first record received time
       if (firstRecordTime == 0) {
