@@ -38,150 +38,150 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  */
 public class BHSListenerServlet extends HttpServlet {
 
-	private static final long serialVersionUID = 245140554274414196L;
-    private static Logger _log = LoggerFactory.getLogger(BHSListenerServlet.class);
-    protected DNSResolver _resolver = null;
-    @Autowired
-	private ThreadPoolTaskScheduler _taskScheduler;
-    public static final String PUBLISHER_KEY = "bhs_publisher";
-	public static final String DEFAULT_BHS_QUEUE = "bhs_queue";
-	private static final int CHUNK_SIZE = 4096;
-	private static final String DEFAULT_PROTOCOL = "tcp";
-	private static final String DEFAULT_HOST = "*";
-	private static final int DEFAULT_PORT = 5563;
+  private static final long serialVersionUID = 245140554274414196L;
+  private static Logger _log = LoggerFactory.getLogger(BHSListenerServlet.class);
+  protected DNSResolver _resolver = null;
+  
+  @Autowired
+  private ThreadPoolTaskScheduler _taskScheduler;
+  public static final String PUBLISHER_KEY = "bhs_publisher";
+  public static final String DEFAULT_BHS_QUEUE = "bhs_queue";
+  private static final int CHUNK_SIZE = 4096;
+  private static final String DEFAULT_PROTOCOL = "tcp";
+  private static final String DEFAULT_HOST = "*";
+  private static final int DEFAULT_PORT = 5563;
 
-	public void startDNSCheckThread() {
-		String host = getHost();
-		_log.info("listening on interface " + host);
-		_resolver = new DNSResolver(host);
-		
-		if (_taskScheduler != null) {
-			DNSCheckThread dnsCheckThread = new DNSCheckThread();
-			// ever 10 seconds
-			_taskScheduler.scheduleWithFixedDelay(dnsCheckThread, 10 * 1000);
-		}
-	}
-	private String getHost() {
-		try {
-			return InetAddress.getLocalHost().toString();
-		} catch (Exception e) {
-			_log.error("getHost Exception:", e);
-		}
-		return "localhost";
-	}
-	public synchronized void init() throws ServletException {
-		startDNSCheckThread();
-		
-		IPublisher publisher = (IPublisher) getServletConfig()
-				.getServletContext().getAttribute(PUBLISHER_KEY);
-		// don't assume we are first invocation, according to Servlet spec
-		if (publisher != null) {
-			publisher.close();
-			getServletConfig().getServletContext().removeAttribute(
-					PUBLISHER_KEY);
-			publisher = null;
-		}
-		
-		if (publisher == null) {
-			String topic = getInitParameter("queue_topic", DEFAULT_BHS_QUEUE);
-			if (topic == null) {
-				topic = DEFAULT_BHS_QUEUE;
-			}
-			String protocol = getInitParameter("queue_protocol",
-					DEFAULT_PROTOCOL);
-			String host = getInitParameter("queue_host", DEFAULT_HOST);
-			int port = getInitParameter("queue_port", DEFAULT_PORT);
+  public void startDNSCheckThread() {
+    String host = getHost();
+    _log.info("listening on interface " + host);
+    _resolver = new DNSResolver(host);
 
-			publisher = new Publisher(topic);
-			publisher.open(protocol, host, port); 
-									
-			getServletConfig().getServletContext().setAttribute(PUBLISHER_KEY,
-					publisher);
-		}
-	}
+    if (_taskScheduler != null) {
+      DNSCheckThread dnsCheckThread = new DNSCheckThread();
+      // ever 10 seconds
+      _taskScheduler.scheduleWithFixedDelay(dnsCheckThread, 10 * 1000);
+    }
+  }
 
-	/**
-	 * Politely clean up.
-	 */
-	public synchronized void destroy() {
-		IPublisher publisher = (IPublisher) getServletConfig()
-				.getServletContext().getAttribute(PUBLISHER_KEY);
-		if (publisher != null) {
-			publisher.close();
-			getServletConfig().getServletContext().removeAttribute(
-					PUBLISHER_KEY);
-		}
-	}
+  private String getHost() {
+    try {
+      return InetAddress.getLocalHost().toString();
+    } catch (Exception e) {
+      _log.error("getHost Exception:", e);
+    }
+    return "localhost";
+  }
 
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		service(request.getInputStream());
-	}
+  public synchronized void init() throws ServletException {
+    startDNSCheckThread();
 
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		// do not respond to get requests
-	}
+    IPublisher publisher = (IPublisher) getServletConfig().getServletContext().getAttribute(
+        PUBLISHER_KEY);
+    // don't assume we are first invocation, according to Servlet spec
+    if (publisher != null) {
+      publisher.close();
+      getServletConfig().getServletContext().removeAttribute(PUBLISHER_KEY);
+      publisher = null;
+    }
 
-	private void service(ServletInputStream stream) throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream(CHUNK_SIZE);
-		IOUtils.copy(stream, baos);
+    if (publisher == null) {
+      String topic = getInitParameter("queue_topic", DEFAULT_BHS_QUEUE);
+      if (topic == null) {
+        topic = DEFAULT_BHS_QUEUE;
+      }
+      String protocol = getInitParameter("queue_protocol", DEFAULT_PROTOCOL);
+      String host = getInitParameter("queue_host", DEFAULT_HOST);
+      int port = getInitParameter("queue_port", DEFAULT_PORT);
 
-		enqueue(baos.toByteArray());
-	}
+      publisher = new Publisher(topic);
+      publisher.open(protocol, host, port);
 
-	private void enqueue(byte[] message) {
-		IPublisher publisher = (IPublisher) getServletConfig()
-				.getServletContext().getAttribute(PUBLISHER_KEY);
-		publisher.send(message);
-	}
+      getServletConfig().getServletContext().setAttribute(PUBLISHER_KEY,
+          publisher);
+    }
+  }
 
-	/**
-	 * convenience method to retrieve and init parameter or return the default
-	 * value otherwise.
-	 */
-	private String getInitParameter(String key, String defaultValue) {
-		ServletContext context = getServletConfig().getServletContext();
-		String value = context.getInitParameter(key);
-		if (key == null) {
-			value = defaultValue;
-		}
-		_log.info("getInitParameter(" + key + ")=" + value);
-		return value;
-	}
+  /**
+   * Politely clean up.
+   */
+  public synchronized void destroy() {
+    IPublisher publisher = (IPublisher) getServletConfig().getServletContext().getAttribute(
+        PUBLISHER_KEY);
+    if (publisher != null) {
+      publisher.close();
+      getServletConfig().getServletContext().removeAttribute(PUBLISHER_KEY);
+    }
+  }
 
-	/**
-	 * convenience method to retrieve and init parameter or return the default
-	 * value otherwise. This method overrides based on type.
-	 */
-	private int getInitParameter(String key, int defaultValue) {
-		ServletContext context = getServletConfig().getServletContext();
-		String value = context.getInitParameter(key);
-		int valueAsInt = defaultValue;
-		if (key != null) {
-			try {
-				valueAsInt = Integer.parseInt(value);
-			} catch (NumberFormatException nfe) {
-				valueAsInt = defaultValue;
-			}
-		}
-		_log.info("getInitParameter(" + key + ")=" + valueAsInt);
-		return valueAsInt;
-	}
+  public void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    service(request.getInputStream());
+  }
 
-	private class DNSCheckThread extends TimerTask {
+  public void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    // do not respond to get requests
+  }
 
-		@Override
-		public void run() {
-			try {
-				if (_resolver.hasAddressChanged()) {
-					_log.warn("Resolver Changed -- re-binding queue connection");
-					init();
-				}
-			} catch (Exception e) {
-				_log.error(e.toString());
-				_resolver.reset();
-			}
-		}
-	}
+  private void service(ServletInputStream stream) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(CHUNK_SIZE);
+    IOUtils.copy(stream, baos);
+
+    enqueue(baos.toByteArray());
+  }
+
+  private void enqueue(byte[] message) {
+    IPublisher publisher = (IPublisher) getServletConfig().getServletContext().getAttribute(
+        PUBLISHER_KEY);
+    publisher.send(message);
+  }
+
+  /**
+   * convenience method to retrieve and init parameter or return the default
+   * value otherwise.
+   */
+  private String getInitParameter(String key, String defaultValue) {
+    ServletContext context = getServletConfig().getServletContext();
+    String value = context.getInitParameter(key);
+    if (key == null) {
+      value = defaultValue;
+    }
+    _log.info("getInitParameter(" + key + ")=" + value);
+    return value;
+  }
+
+  /**
+   * convenience method to retrieve and init parameter or return the default
+   * value otherwise. This method overrides based on type.
+   */
+  private int getInitParameter(String key, int defaultValue) {
+    ServletContext context = getServletConfig().getServletContext();
+    String value = context.getInitParameter(key);
+    int valueAsInt = defaultValue;
+    if (key != null) {
+      try {
+        valueAsInt = Integer.parseInt(value);
+      } catch (NumberFormatException nfe) {
+        valueAsInt = defaultValue;
+      }
+    }
+    _log.info("getInitParameter(" + key + ")=" + valueAsInt);
+    return valueAsInt;
+  }
+
+  private class DNSCheckThread extends TimerTask {
+
+    @Override
+    public void run() {
+      try {
+        if (_resolver.hasAddressChanged()) {
+          _log.warn("Resolver Changed -- re-binding queue connection");
+          init();
+        }
+      } catch (Exception e) {
+        _log.error(e.toString());
+        _resolver.reset();
+      }
+    }
+  }
 }
