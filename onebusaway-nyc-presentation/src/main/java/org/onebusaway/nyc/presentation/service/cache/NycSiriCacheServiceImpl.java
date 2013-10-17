@@ -22,7 +22,12 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
 
   @Autowired
   private ConfigurationService _configurationService;
+  private boolean _disabled;
 
+  public synchronized void setDisabled(boolean disable) {
+	  this._disabled = true;
+  }
+  
   public synchronized Cache<Integer, Siri> getCache() {
     if (_cache == null) {
       int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
@@ -32,6 +37,7 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
           .build();
       _log.info("done");
     }
+    if (_disabled) _cache.invalidateAll(); 
     return _cache;
   }
 
