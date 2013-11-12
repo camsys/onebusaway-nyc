@@ -111,7 +111,7 @@ public class XMLConfigurationDatastore implements
   }
 
   private void saveConfiguration() throws JAXBException {
-    _log.debug("writing configuration to file.");
+    _log.info("writing configuration to file=" + configFile);
 
     JAXBContext jc = JAXBContext.newInstance(ConfigurationStore.class);
     Marshaller m = jc.createMarshaller();
