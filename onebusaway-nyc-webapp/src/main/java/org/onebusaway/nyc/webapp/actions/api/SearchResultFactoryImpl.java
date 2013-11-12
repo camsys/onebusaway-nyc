@@ -98,7 +98,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         }
 
         Boolean hasUpcomingScheduledService = 
-            _nycTransitDataService.routeHasUpcomingScheduledService(System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
+            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
         // if there are buses on route, always have "scheduled service"
         Boolean routeHasVehiclesInService = 
@@ -144,7 +144,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           // We do this to prevent checking if there is service in a direction that does not even serve this stop.
           if (stopGroupBean.getStopIds().contains(stopBean.getId())) {
             hasUpcomingScheduledService = 
-                _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stopBean.getId(), 
+                _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(), 
                     routeBean.getId(), stopGroupBean.getId());
 
             // if there are buses on route, always have "scheduled service"

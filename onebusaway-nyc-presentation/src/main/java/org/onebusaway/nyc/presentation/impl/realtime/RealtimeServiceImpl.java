@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupport.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
@@ -120,7 +121,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       List<TimepointPredictionRecord> timePredictionRecords = null;
       if(useTimePredictionsIfAvailable == true) {
-    	  timePredictionRecords = _nycTransitDataService.getPredictionRecordsForTrip(tripDetails.getStatus());
+    	  timePredictionRecords = _nycTransitDataService.getPredictionRecordsForTrip(AgencyAndId.convertFromString(routeId).getAgencyId(), tripDetails.getStatus());
       }
       
       activity.setMonitoredVehicleJourney(new MonitoredVehicleJourney());  
@@ -172,7 +173,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       List<TimepointPredictionRecord> timePredictionRecords = null;
       if(useTimePredictionsIfAvailable == true) {
-    	  timePredictionRecords = _nycTransitDataService.getPredictionRecordsForTrip(tripDetailsForCurrentTrip.getStatus());
+    	  timePredictionRecords = _nycTransitDataService.getPredictionRecordsForTrip(AgencyAndId.convertFromString(vehicleId).getAgencyId(), tripDetailsForCurrentTrip.getStatus());
       }
 
       output.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
@@ -209,7 +210,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         
       List<TimepointPredictionRecord> timePredictionRecords = null;
       if(useTimePredictionsIfAvailable == true) {
-    	  timePredictionRecords = _nycTransitDataService.getPredictionRecordsForTrip(statusBeanForCurrentTrip);
+    	  timePredictionRecords = _nycTransitDataService.getPredictionRecordsForTrip(AgencyAndId.convertFromString(stopId).getAgencyId(), statusBeanForCurrentTrip);
       }
 
       stopVisit.setMonitoredVehicleJourney(new MonitoredVehicleJourneyStructure());

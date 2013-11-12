@@ -52,7 +52,7 @@ public class AutocompleteAction extends OneBusAwayNYCActionSupport {
     if(_term == null || _term.isEmpty())
       return SUCCESS;
     
-    suggestions = _nycTransitDataService.getSearchSuggestions(_term.toLowerCase());
+    suggestions = _nycTransitDataService.getSearchSuggestions(null, _term.toLowerCase());
     
     if (suggestions.size() == 0 && _term.length() > 2) {
     	List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(_term);
