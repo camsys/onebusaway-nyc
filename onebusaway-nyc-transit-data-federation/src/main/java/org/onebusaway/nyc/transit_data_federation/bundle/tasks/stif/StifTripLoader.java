@@ -469,7 +469,7 @@ public class StifTripLoader {
 
     int reliefTime = tripRecord.getReliefTime();
     String block = tripRecord.getBlockNumber();
-    String depotCode = tripRecord.getDepotCode();
+    String depotCode = tripRecord.getDepotCode(); // todo!  obanyc-1987
     RawRunData rawRunData = new RawRunData(runId, reliefRunId, nextOperatorRunId,
         block, depotCode);
 

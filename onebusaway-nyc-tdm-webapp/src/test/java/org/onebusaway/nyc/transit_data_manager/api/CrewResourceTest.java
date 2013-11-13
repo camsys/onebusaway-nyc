@@ -132,6 +132,54 @@ public class CrewResourceTest extends ResourceTest {
     assertFalse(found);
   }
   
+  @Test
+  public void testMiscRunIds() throws Exception {
+
+    File tmpInFile = getCISFile("CIS_20120727.txt");
+    UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(tmpInFile);
+    // no need to set depotIdTranslater
+    OperatorAssignmentData data = process.generateDataObject();
+    assertNotNull(data);
+    DateMidnight serviceDate = new DateMidnight("2012-07-27");
+    List<SCHOperatorAssignment> list = data.getOperatorAssignmentsByServiceDate(serviceDate);
+    assertNotNull(list);
+    assertTrue(list.size() > 0);
+    ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> tcipToJsonConverter = new OperatorAssignmentFromTcip();    
+    List<OperatorAssignment> jsonOpAssigns = new UTSUtil().listConvertOpAssignTcipToJson(tcipToJsonConverter,
+        data.getOperatorAssignmentsByServiceDate(serviceDate));
+    assertNotNull(jsonOpAssigns);
+    assertTrue(jsonOpAssigns.size() > 0);
+    
+    boolean foundOne = false;
+    boolean found = false;
+    for (OperatorAssignment oa : jsonOpAssigns) {
+    	String runRoute = oa.getRunRoute();
+    	foundOne = true;
+    	if ("MISC".equals(runRoute)) {
+    		String runId = oa.getRunId();
+    	      if (runId.matches("^MISC-[A-Z]{2}-\\d{3}$")) {
+    	          _log.error("found invalid runId=" + runId);
+    	          System.err.println("found invalid runId=" + runId);
+    	          found = true;
+    	        } else {
+    	        	System.err.println("valid runId=" + runId);
+    	        }
+    	}
+    }
+    assertTrue(foundOne);
+    assertFalse(found);
+
+    for (OperatorAssignment oa : jsonOpAssigns) {
+      String route = oa.getRunRoute();
+      
+      if (route.matches("^[A-Z][a-z].*")) {
+        _log.error("found lowercase route=" + route);
+        found = true;
+      }
+    }
+    assertFalse(found);
+  }
+  
   public HashMap<String, OperatorAssignment> testDuplicateAssignments(String filename, String serviceDateStr) throws Exception {
     File tmpInFile = getCISFile(filename);
     UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(tmpInFile);
