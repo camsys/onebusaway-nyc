@@ -31,6 +31,7 @@ public class TripRecord implements StifRecord {
   private String runRoute;
   private String nextTripOperatorRunNumber;
   private String nextTripOperatorRunRoute;
+  private String nextTripOperatorDepotCode;
   private String previousRunRoute;
   private String destinationLocation;
   private int recoveryTime;
@@ -235,4 +236,13 @@ public class TripRecord implements StifRecord {
   public String getGtfsTripId() {
     return gtfsTripId;
   }
+
+  public String getNextTripOperatorDepotCode() {
+    return nextTripOperatorDepotCode;
+  }
+  
+  public void setNextTripOperatorDepotCode(String depotCode) {
+    this.nextTripOperatorDepotCode = depotCode;
+  }
+
 }

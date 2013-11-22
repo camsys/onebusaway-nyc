@@ -242,6 +242,11 @@ public class StifTripLoader {
             stifTrip.agencyId = agencyId;
             stifTrip.serviceCode = serviceCode;
             stifTrip.depot = tripRecord.getDepotCode();
+            if (tripRecord.getNextTripOperatorDepotCode() != null) {
+              stifTrip.nextOperatorDepot = tripRecord.getNextTripOperatorDepotCode();
+            } else {
+              stifTrip.nextOperatorDepot = tripRecord.getDepotCode(); 
+            }
             stifTrip.firstStopTime = tripRecord.getOriginTime();
             stifTrip.lastStopTime = tripRecord.getDestinationTime();
             stifTrip.listedFirstStopTime = tripRecord.getOriginTime();

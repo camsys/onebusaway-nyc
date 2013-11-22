@@ -104,4 +104,31 @@ public class TestStifTripLoaderTest {
     assertTrue(loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_EN_C3-Saturday-001000_B42_1")));
     
   }
+
+  @Test
+  public void testNextOperatorDepot() throws IOException {
+    InputStream in = getClass().getResourceAsStream("stif.q_0058o__.413663.wkd.open");
+    String gtfs = getClass().getResource("m14.zip").getFile();
+
+    GtfsReader reader = new GtfsReader();
+    GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
+    reader.setEntityStore(dao);
+    reader.setInputLocation(new File(gtfs));
+    reader.run();
+
+    StifTripLoader loader = new StifTripLoader();
+    loader.setLogger(new MultiCSVLogger());
+    loader.setGtfsDao(dao);
+    loader.run(in, new File("stif.q_0058o__.413663.wkd.open"));
+    Map<String, List<AgencyAndId>> mapping = loader.getTripMapping();
+    
+    
+    assertTrue(mapping.containsKey("5588"));
+    List<AgencyAndId> trips = mapping.get("5588");
+    for (AgencyAndId tripId : trips) {
+      RawRunData rrd = loader.getRawRunDataByTrip().get(tripId);
+      assertEquals("FP", rrd.getDepotCode());
+    }
+  }
+
 }

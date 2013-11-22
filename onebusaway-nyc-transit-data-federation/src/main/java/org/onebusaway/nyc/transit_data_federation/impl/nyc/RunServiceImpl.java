@@ -222,9 +222,9 @@ public class RunServiceImpl implements RunService {
     return entriesByRun.get(runId);
   }
 
-  private final Pattern realRunRouteIdPattern = Pattern.compile("[a-zA-Z]+0*(\\d+)[a-zA-Z]*");
-  private final Pattern realRunNumberPattern = Pattern.compile("[a-zA-Z]*0*(\\d+)");
-  private final Pattern reportedRunIdPattern = Pattern.compile("0*([0-9]+)-0*(\\d+)");
+  private final Pattern realRunRouteIdPattern = Pattern.compile("[a-zA-Z]+0*(\\d+)[a-zA-Z]*"); // X0102D
+  private final Pattern realRunNumberPattern = Pattern.compile("[a-zA-Z]*0*(\\d+)"); // X0102
+  private final Pattern reportedRunIdPattern = Pattern.compile("0*([0-9]+)(-[a-zA-Z]{2})?-0*(\\d+)"); // 003-001 or 999-YU-02
 
   @Override
   public TreeMultimap<Integer, String> getBestRunIdsForFuzzyId(
@@ -236,14 +236,24 @@ public class RunServiceImpl implements RunService {
 
     if (!reportedIdMatcher.matches()) {
       throw new IllegalArgumentException(
-          "reported-id does not have required format");
+          "reported-id does not have required format:" + reportedRunId);
     }
 
     /*
      * Get run-trips for nearby runTrips
      */
-    String fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
-        reportedIdMatcher.group(2));
+    String fuzzyRunId = null;
+    if (StringUtils.isNotEmpty(reportedIdMatcher.group(2))) {
+      System.err.println("group2=|" + reportedIdMatcher.group(2) + "|");
+      System.err.println("group3=|" + reportedIdMatcher.group(3) + "|");
+      System.err.println("fuzzy1(" + reportedIdMatcher.group(1) + "-" + reportedIdMatcher.group(2) + "-" + reportedIdMatcher.group(3) + ")");
+      fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
+          reportedIdMatcher.group(2) + "-" + reportedIdMatcher.group(3));
+    } else {
+      System.err.println("fuzzy2(" + reportedIdMatcher.group(1) + "-" + reportedIdMatcher.group(3) + ")");
+      fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
+          reportedIdMatcher.group(2));
+    }
     
     /*
      * In the following we strip the runEntry's id down to the format of the
@@ -253,14 +263,26 @@ public class RunServiceImpl implements RunService {
     for (String runId : entriesByRun.keySet()) {
       String[] runPieces= runId.split("-");
       String runRoute = runPieces[0];
-      String runNumber = runPieces[1];
+      String runDepot = null; 
+      String runNumber = null;
+      if (runPieces.length == 3) {
+    	  runDepot = runPieces[1];
+    	  runNumber = runPieces[2];
+      } else {
+    	  runNumber = runPieces[1];
+      }
       Matcher runNumberMatcher = realRunNumberPattern.matcher(runNumber);
       if (runNumberMatcher.matches()) {
         runNumber = runNumberMatcher.group(1);
       }
       List<String> runIdsToTry = Lists.newArrayList();
       if (runRoute.equals("MISC")) {
-        String runIdToTry = RunTripEntry.createId("999", runNumber);
+    	  String runIdToTry = null;
+    	  if (runDepot == null) {
+    	     runIdToTry = RunTripEntry.createId("999", runNumber);
+    	  } else {
+    	    runIdToTry = RunTripEntry.createId("999", runDepot + "-" + runNumber);
+    	  }
         runIdsToTry.add(runIdToTry);
       } else {
         Matcher routeIdMatcher = realRunRouteIdPattern.matcher(runRoute);

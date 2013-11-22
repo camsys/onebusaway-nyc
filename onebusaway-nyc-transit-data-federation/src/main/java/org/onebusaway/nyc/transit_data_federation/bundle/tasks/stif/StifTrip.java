@@ -39,6 +39,7 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
   public int lineNumber;
   public TripIdentifier id;
   public String depot;
+  public String nextOperatorDepot;
   public String agencyId;
 
 
@@ -91,7 +92,8 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
     return runId + "-" + depot;
   }
 
+  // This considers next OperatorDepot, falls back on depot of pullout
   public String getNextRunIdWithDepot() {
-    return nextRun + "-" + depot;
+    return nextRun + "-" + nextOperatorDepot;
   }
 }
