@@ -243,16 +243,13 @@ public class RunServiceImpl implements RunService {
      * Get run-trips for nearby runTrips
      */
     String fuzzyRunId = null;
+    // if we matched a depot (999-YU-12)
     if (StringUtils.isNotEmpty(reportedIdMatcher.group(2))) {
-      System.err.println("group2=|" + reportedIdMatcher.group(2) + "|");
-      System.err.println("group3=|" + reportedIdMatcher.group(3) + "|");
-      System.err.println("fuzzy1(" + reportedIdMatcher.group(1) + "-" + reportedIdMatcher.group(2) + "-" + reportedIdMatcher.group(3) + ")");
       fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
-          reportedIdMatcher.group(2) + "-" + reportedIdMatcher.group(3));
+          reportedIdMatcher.group(2).substring(1) + "-" + reportedIdMatcher.group(3));
     } else {
-      System.err.println("fuzzy2(" + reportedIdMatcher.group(1) + "-" + reportedIdMatcher.group(3) + ")");
       fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
-          reportedIdMatcher.group(2));
+          reportedIdMatcher.group(3));
     }
     
     /*
@@ -265,6 +262,7 @@ public class RunServiceImpl implements RunService {
       String runRoute = runPieces[0];
       String runDepot = null; 
       String runNumber = null;
+      // if we matched a depot (999-YU-12)
       if (runPieces.length == 3) {
     	  runDepot = runPieces[1];
     	  runNumber = runPieces[2];
@@ -279,6 +277,7 @@ public class RunServiceImpl implements RunService {
       if (runRoute.equals("MISC")) {
     	  String runIdToTry = null;
     	  if (runDepot == null) {
+    	    // this shouldn't happen, but try to support old 999-12 format
     	     runIdToTry = RunTripEntry.createId("999", runNumber);
     	  } else {
     	    runIdToTry = RunTripEntry.createId("999", runDepot + "-" + runNumber);
