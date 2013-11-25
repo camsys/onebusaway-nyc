@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -30,6 +31,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 
 public class TestStifTripLoaderTest {
   @Test
@@ -107,9 +109,10 @@ public class TestStifTripLoaderTest {
 
   @Test
   public void testNextOperatorDepot() throws IOException {
-    InputStream in = getClass().getResourceAsStream("stif.q_0058o__.413663.wkd.open");
-    String gtfs = getClass().getResource("m14.zip").getFile();
-
+    InputStream in = getClass().getResourceAsStream("stif.q_0058o_.413663.wkd.open");
+    assertNotNull(in);
+    String gtfs = getClass().getResource("q58_test_gtfs.zip").getFile();
+    assertNotNull(gtfs);
     GtfsReader reader = new GtfsReader();
     GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
     reader.setEntityStore(dao);
@@ -119,16 +122,19 @@ public class TestStifTripLoaderTest {
     StifTripLoader loader = new StifTripLoader();
     loader.setLogger(new MultiCSVLogger());
     loader.setGtfsDao(dao);
-    loader.run(in, new File("stif.q_0058o__.413663.wkd.open"));
-    Map<String, List<AgencyAndId>> mapping = loader.getTripMapping();
-    
-    
-    assertTrue(mapping.containsKey("5588"));
-    List<AgencyAndId> trips = mapping.get("5588");
-    for (AgencyAndId tripId : trips) {
-      RawRunData rrd = loader.getRawRunDataByTrip().get(tripId);
-      assertEquals("FP", rrd.getDepotCode());
+    loader.run(in, new File("stif.q_0058o_.413663.wkd.open"));
+    assertTrue(loader.getTripsCount() > 0);
+    List<StifTrip> strips = null;
+    for (ServiceCode sc : loader.getRawStifData().keySet()) {
+      strips = loader.getRawStifData().get(sc);
     }
+    
+    assertEquals("FP", strips.get(0).depot);
+    assertEquals("FP", strips.get(0).nextTripOperatorDepot);
+    assertEquals("CS", strips.get(1).depot);
+    assertEquals("CS", strips.get(1).nextTripOperatorDepot);
+    assertEquals("FP", strips.get(2).depot);
+    assertEquals("FP", strips.get(2).nextTripOperatorDepot);
   }
 
 }

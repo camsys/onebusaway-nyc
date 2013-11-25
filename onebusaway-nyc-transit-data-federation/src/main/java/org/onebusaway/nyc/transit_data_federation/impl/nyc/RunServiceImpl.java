@@ -278,6 +278,7 @@ public class RunServiceImpl implements RunService {
     	  String runIdToTry = null;
     	  if (runDepot == null) {
     	    // this shouldn't happen, but try to support old 999-12 format
+    	    // so legacy bundles will still load/match properly
     	     runIdToTry = RunTripEntry.createId("999", runNumber);
     	  } else {
     	    runIdToTry = RunTripEntry.createId("999", runDepot + "-" + runNumber);

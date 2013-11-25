@@ -158,7 +158,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       }),
       new FieldDef(176 - 175, "empty", null),
       new FieldDef(183 - 176, "previous trip origin time", null),
-      new FieldDef(214 - 183, "(many fields skipped)", null),
+      new FieldDef(212 - 183, "(many fields skipped)", null),
       new FieldDef(214 - 212, "next trip operator depot", new TripFieldSetter() {
         public void setField(TripRecord record) {
           record.setNextTripOperatorDepotCode(getStringData());
