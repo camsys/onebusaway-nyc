@@ -61,6 +61,8 @@ public class StifTask implements Runnable {
   private Logger _log = LoggerFactory.getLogger(StifTask.class);
 
   private GtfsMutableRelationalDao _gtfsMutableRelationalDao;
+  
+  private StifTripLoader _loader = null;
 
   private List<File> _stifPaths = new ArrayList<File>();
   
@@ -75,7 +77,7 @@ public class StifTask implements Runnable {
 
   private boolean fallBackToStifBlocks = false;
 
-  private MultiCSVLogger csvLogger;
+  private MultiCSVLogger csvLogger = null;
   
   private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>();
 
@@ -119,38 +121,43 @@ public class StifTask implements Runnable {
 
   public void run() {
 
-    StifTripLoader loader = new StifTripLoader();
-    loader.setGtfsDao(_gtfsMutableRelationalDao);
-    loader.setLogger(csvLogger);
+    if (_loader == null) {
+      // we let the unit tests inject a custom loader
+      _loader = new StifTripLoader();
+      _loader.setGtfsDao(_gtfsMutableRelationalDao);
+      _loader.setLogger(csvLogger);
 
-    for (File path : _stifPaths) {
-      loadStif(path, loader);
+      for (File path : _stifPaths) {
+        loadStif(path, _loader);
+      }
+
     }
     
-    computeBlocksFromRuns(loader);
+    computeBlocksFromRuns(_loader);
     warnOnMissingTrips();
 
     if (fallBackToStifBlocks) {
-      loadStifBlocks(loader);
+      loadStifBlocks(_loader);
     }
 
     //store trip-run mapping in bundle
-    Map<AgencyAndId, RunData> runsForTrip = loader.getRunsForTrip();
+    Map<AgencyAndId, RunData> runsForTrip = _loader.getRunsForTrip();
     try {
-      ObjectSerializationLibrary.writeObject(_bundle.getTripRunDataPath(),
-          runsForTrip);
+      if (_bundle != null) // for unit tests
+        ObjectSerializationLibrary.writeObject(_bundle.getTripRunDataPath(),
+            runsForTrip);
     } catch (IOException e) {
           throw new IllegalStateException(e);
     }
     
     // non revenue moves
-    serializeNonRevenueMoveData(loader.getRawStifData(), loader.getGeographyRecordsByBoxId());
+    serializeNonRevenueMoveData(_loader.getRawStifData(), _loader.getGeographyRecordsByBoxId());
     
     // non revenue stops
-    serializeNonRevenueStopData(loader.getNonRevenueStopDataByTripId());
+    serializeNonRevenueStopData(_loader.getNonRevenueStopDataByTripId());
 
     // dsc to trip map
-    Map<String, List<AgencyAndId>> dscToTripMap = loader.getTripMapping();
+    Map<String, List<AgencyAndId>> dscToTripMap = _loader.getTripMapping();
     
     // Read in trip to dsc overrides if they exist
     if (_tripToDSCOverridePath != null) {
@@ -198,8 +205,8 @@ public class StifTask implements Runnable {
     Set<String> inServiceDscs = new HashSet<String>();
     logDSCStatistics(dscToTripMap, tripToDscMap);
 
-    int withoutMatch = loader.getTripsWithoutMatchCount();
-    int total = loader.getTripsCount();
+    int withoutMatch = _loader.getTripsWithoutMatchCount();
+    int total = _loader.getTripsCount();
 
     _log.info("stif trips without match: " + withoutMatch + " / " + total);
 
@@ -231,10 +238,12 @@ public class StifTask implements Runnable {
   private void serializeNonRevenueMoveData(Map<ServiceCode, List<StifTrip>> nonRevenueMovesByServiceCode, 
 		  Map<AgencyAndId, GeographyRecord> nonRevenueMoveLocationsByBoxId) {
 	  try {
-		  ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueMovePath(), 
-				  nonRevenueMovesByServiceCode);
-		  ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueMoveLocationsPath(), 
-				  nonRevenueMoveLocationsByBoxId);
+	    if (_bundle != null) { // for unit tests
+	      ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueMovePath(), 
+	          nonRevenueMovesByServiceCode);
+	      ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueMoveLocationsPath(), 
+	          nonRevenueMoveLocationsByBoxId);
+	    }
 	  } catch (IOException e) {
 		  throw new IllegalStateException("error serializing non-revenue move/STIF data", e);
 	  }	  
@@ -242,8 +251,9 @@ public class StifTask implements Runnable {
   
   private void serializeNonRevenueStopData(Map<AgencyAndId, List<NonRevenueStopData>> nonRevenueStopDataByTripId) {
     try {
-      ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueStopsPath(), 
-          nonRevenueStopDataByTripId);
+      if (_bundle != null) // for unit tests
+        ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueStopsPath(), 
+            nonRevenueStopDataByTripId);
     } catch (IOException e) {
       throw new IllegalStateException("error serializing non-revenue move/STIF data", e);
     }
@@ -261,14 +271,16 @@ public class StifTask implements Runnable {
     }
 
     try {
-        ObjectSerializationLibrary.writeObject(_bundle.getNotInServiceDSCs(), 
-        		_notInServiceDscs);
+      if (_bundle != null) { // for unit tests
+          ObjectSerializationLibrary.writeObject(_bundle.getNotInServiceDSCs(), 
+              _notInServiceDscs);
 
-        ObjectSerializationLibrary.writeObject(_bundle.getTripsForDSCIndex(), 
-        		tripToDscMap);
+          ObjectSerializationLibrary.writeObject(_bundle.getTripsForDSCIndex(), 
+              tripToDscMap);
 
-      ObjectSerializationLibrary.writeObject(_bundle.getDSCForTripIndex(),
-          dscToTripMap);
+          ObjectSerializationLibrary.writeObject(_bundle.getDSCForTripIndex(),
+              dscToTripMap);
+      }
     } catch (IOException e) {
       throw new IllegalStateException("error serializing DSC/STIF data", e);
     }
@@ -285,6 +297,7 @@ public class StifTask implements Runnable {
         // so I assume it will be overwritten or ignored in the run-tracing cases
         // Note that this depot code may be wrong if its a midtrip relief.  TODO!
         trip.setBlockId(trip.getServiceId().getId() + "_STIF_" + data.getDepotCode() + "_" + data.getBlock());
+        System.err.println("loadStifBlocks found trip=" + trip.getBlockId());
         _gtfsMutableRelationalDao.updateEntity(trip);
       }
     }
@@ -362,6 +375,7 @@ public class StifTask implements Runnable {
       ArrayList<StifTrip> pullouts = new ArrayList<StifTrip>();
       for (StifTrip trip : rawTrips) {
         String runId = trip.getRunIdWithDepot();
+        System.err.println("runId=" + runId + " for trip=" + trip);
         List<StifTrip> byRun = tripsByRun.get(runId);
         if (byRun == null) {
           byRun = new ArrayList<StifTrip>();
@@ -479,6 +493,7 @@ public class StifTask implements Runnable {
             blockId = blockId.intern();
             blockIds.add(new P2<String>(blockId, gtfsTrip.getServiceId().getId()));
             gtfsTrip.setBlockId(blockId);
+            System.err.println("created blockId=" + blockId);
             _gtfsMutableRelationalDao.updateEntity(gtfsTrip);
 
             AgencyAndId routeId = gtfsTrip.getRoute().getId();
@@ -509,6 +524,10 @@ public class StifTask implements Runnable {
         _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey()
             + " trip type " + trip.type
             + " must not have an associated pullout");
+        System.err.println("STIF trip: " + trip + " on schedule " + entry.getKey()
+            + " trip type " + trip.type
+            + " must not have an associated pullout");
+
         for (Trip gtfsTrip : trip.getGtfsTrips()) {
           blockNo++;
           String blockId = gtfsTrip.getServiceId().getId() + "_"
@@ -516,6 +535,8 @@ public class StifTask implements Runnable {
               + trip.firstStopTime + "_" + trip.runId.replace("-", "_")
               + "_orphan_" + blockNo;
           _log.warn("Generating single-trip block id for GTFS trip: "
+              + gtfsTrip.getId() + " : " + blockId);
+          System.err.println("Generating single-trip block id for GTFS trip: "
               + gtfsTrip.getId() + " : " + blockId);
           gtfsTrip.setBlockId(blockId);
           dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
@@ -532,6 +553,7 @@ public class StifTask implements Runnable {
     Collection<Trip> allTrips = _gtfsMutableRelationalDao.getAllTrips();
     for (Trip trip : allTrips) {
       if (usedGtfsTrips.contains(trip)) {
+        System.err.println("found route=" + trip.getRoute());
         routesWithTrips.add(trip.getRoute());
       } else {
         csvLogger.log("gtfs_trips_with_no_stif_match.csv", trip.getId(), loader.getSupport().getTripAsIdentifier(trip));
@@ -664,5 +686,15 @@ public class StifTask implements Runnable {
 
   public void setFallBackToStifBlocks(boolean fallBackToStifBlocks) {
     this.fallBackToStifBlocks = fallBackToStifBlocks;
+  }
+
+  // for unit tests
+  public void setStifTripLoader(StifTripLoader loader) {
+    _loader = loader;
+  }
+  
+  // for unit tests
+  public void setCSVLogger(MultiCSVLogger logger) {
+    this.csvLogger = logger;
   }
 }

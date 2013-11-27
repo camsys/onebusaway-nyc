@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -111,13 +112,25 @@ public class TestStifTripLoaderTest {
   public void testNextOperatorDepot() throws IOException {
     InputStream in = getClass().getResourceAsStream("stif.q_0058o_.413663.wkd.open");
     assertNotNull(in);
-    String gtfs = getClass().getResource("q58_test_gtfs.zip").getFile();
+    String gtfs = getClass().getResource("q58.zip").getFile();
     assertNotNull(gtfs);
     GtfsReader reader = new GtfsReader();
     GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
     reader.setEntityStore(dao);
     reader.setInputLocation(new File(gtfs));
     reader.run();
+    
+    // verify gtfs loaded
+    Collection<Trip> allTrips = dao.getAllTrips();
+    assertTrue(allTrips.size() > 0);
+    Collection<Trip> gTrips = dao.getAllTrips();
+    System.err.println("found " + allTrips.size() + " trips");
+    for (Trip t1 : gTrips) {
+      System.err.println("blockId=" + t1.getBlockId() 
+          + ", headsign=" + t1.getTripHeadsign() 
+          + ", route=" + t1.getRouteShortName()
+          + "; {" + t1.toString() + "}");
+    }
 
     StifTripLoader loader = new StifTripLoader();
     loader.setLogger(new MultiCSVLogger());
@@ -135,6 +148,31 @@ public class TestStifTripLoaderTest {
     assertEquals("CS", strips.get(1).nextTripOperatorDepot);
     assertEquals("FP", strips.get(2).depot);
     assertEquals("FP", strips.get(2).nextTripOperatorDepot);
+    
+    MultiCSVLogger mlog = new MultiCSVLogger() {
+      public void log(String file, Object... args) {
+        return;
+      }
+      public void header(String file, String header) {
+        return;
+      }
+      public void summarize() {
+        return;
+      }
+      public void clear() {
+        return;
+      }
+    };
+    
+    StifTask st = new StifTask();
+    st.setGtfsMutableRelationalDao(dao);
+    st.setStifTripLoader(loader);
+    st.setCSVLogger(mlog);
+    st.run();
+    
+    
+    System.err.println("WAIT FOR IT");
+    assertTrue(loader.getTripMapping().size() > 0);
   }
 
 }
