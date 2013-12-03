@@ -123,6 +123,7 @@ public class StifTask implements Runnable {
 
     if (_loader == null) {
       // we let the unit tests inject a custom loader
+      _log.warn("creating loader with gtfs= " + _gtfsMutableRelationalDao + " and logger=" + csvLogger);
       _loader = new StifTripLoader();
       _loader.setGtfsDao(_gtfsMutableRelationalDao);
       _loader.setLogger(csvLogger);
@@ -600,8 +601,11 @@ public class StifTask implements Runnable {
     for (Trip t : _gtfsMutableRelationalDao.getAllTrips()) {
       String blockId = t.getBlockId();
       if (blockId == null || blockId.equals("")) {
-        _log.warn("When matching GTFS to STIF, failed to find block in STIF for "
-            + t.getId());
+        final String msg ="When matching GTFS to STIF, failed to find block in STIF for "
+            + t.getId(); 
+        _log.warn(msg);
+        // todo this is temporary
+        throw new RuntimeException(msg);
       }
     }
   }

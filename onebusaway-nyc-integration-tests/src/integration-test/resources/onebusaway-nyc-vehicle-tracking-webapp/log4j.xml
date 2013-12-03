@@ -24,7 +24,7 @@
 
 	<root>
 		<priority value="ERROR" />
-		<appender-ref ref="ROLL}" />
+		<appender-ref ref="ROLL" />
 	</root>
 
 	<!-- 0 or 1 categoryFactory elements -->
