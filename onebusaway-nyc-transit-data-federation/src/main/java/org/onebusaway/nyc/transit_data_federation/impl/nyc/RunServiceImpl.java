@@ -163,14 +163,19 @@ public class RunServiceImpl implements RunService {
     String[] runInfo = StringUtils.splitByWholeSeparator(runId, "-");
     String runNumber = null;
     String runRoute = null;
+    String runDepot = null;
 
     if (runInfo != null && runInfo.length > 0) {
       runRoute = runInfo[0];
-      if (runInfo.length > 1)
+      if (runInfo.length > 2) {
+        runNumber = runInfo[2];
+        runDepot = runInfo[1];
+      } else if (runInfo.length > 1) {
         runNumber = runInfo[1];
+      }
     }
 
-    RunTripEntry rte = new RunTripEntry(trip, runNumber, runRoute, reliefTime,
+    RunTripEntry rte = new RunTripEntry(trip, runNumber, runRoute, runDepot, reliefTime,
         relief);
     entriesByRun.put(runId, rte);
     entriesByRunNumber.put(runNumber, rte);
@@ -242,15 +247,8 @@ public class RunServiceImpl implements RunService {
     /*
      * Get run-trips for nearby runTrips
      */
-    String fuzzyRunId = null;
-    // if we matched a depot (999-YU-12)
-    if (StringUtils.isNotEmpty(reportedIdMatcher.group(2))) {
-      fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
-          reportedIdMatcher.group(2).substring(1) + "-" + reportedIdMatcher.group(3));
-    } else {
-      fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
-          reportedIdMatcher.group(3));
-    }
+    String fuzzyRunId  = RunTripEntry.createId(reportedIdMatcher.group(1),
+          reportedIdMatcher.group(2));
     
     /*
      * In the following we strip the runEntry's id down to the format of the

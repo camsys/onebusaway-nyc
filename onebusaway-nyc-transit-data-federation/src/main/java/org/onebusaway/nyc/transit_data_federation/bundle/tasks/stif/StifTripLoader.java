@@ -274,9 +274,9 @@ public class StifTripLoader {
 
           }
 
-          String runId = tripRecord.getRunId();
+          String runId = tripRecord.getRunIdWithDepot();
           String reliefRunId = tripRecord.getReliefRunId();
-          String nextOperatorRunId = tripRecord.getNextTripOperatorRunId();
+          String nextOperatorRunId = tripRecord.getNextTripOperatorRunIdWithDepot();
 
           StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
               tripRecord.getReliefRunId(),

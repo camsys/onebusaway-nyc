@@ -89,11 +89,19 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
   }
 
   public String getRunIdWithDepot() {
+    if (runId != null && runId.contains("-") && runId.startsWith("MISC")) {
+      String[] runParts = runId.split("-");
+      return runParts[0] + "-" + depot + "-" + runParts[1];
+    }
     return runId + "-" + depot;
   }
 
   // This considers next OperatorDepot, falls back on depot of pullout
   public String getNextRunIdWithDepot() {
+    if (nextRun != null && nextRun.contains("-") && nextRun.startsWith("MISC")) {
+      String[] runParts = nextRun.split("-");
+      return runParts[0] + "-" + nextTripOperatorDepot + "-" + runParts[1];
+    }
     return nextRun + "-" + nextTripOperatorDepot;
   }
 }

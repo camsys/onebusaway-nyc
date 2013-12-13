@@ -21,6 +21,7 @@
             <list>
                 <ref bean="GTFS_MTABC_E2" />
                 <ref bean="google_transit_bronx" />
+                <ref bean="google_transit_queens" />
                 <ref bean="google_transit_staten_island" />
                 <ref bean="google_transit_mta_agency" />
                 <ref bean="google_transit_manhattan" />
@@ -35,6 +36,12 @@
         <property name="path" 
         	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2013Sept_AllCity_r15_b02/google_transit_brooklyn.zip" />
     </bean>
+        <bean id="google_transit_queens" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="defaultAgencyId" value="MTA" />
+        <property name="path" 
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2013Sept_AllCity_r15_b02/google_transit_queens.zip" />
+    </bean>
+    
     <bean id="google_transit_manhattan" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
 		<property name="defaultAgencyId" value="MTA" /> 
         <property name="path" 

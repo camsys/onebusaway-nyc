@@ -19,6 +19,7 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
   private String runId;
   private String runRoute;
   private String runNumber;
+  private String runDepot;
   /**
    * For trips that switch runs mid way through, this is the time of the switch.
    * If this is -1, then this trip has no relief
@@ -34,11 +35,12 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
   }
   
   public RunTripEntry(TripEntry entry, String runNumber, String runRoute,
-      int reliefTime, ReliefState relief) {
+      String runDepot, int reliefTime, ReliefState relief) {
     this.entry = entry;
     this.runNumber = runNumber;
     this.runRoute = runRoute;
-    this.runId = RunTripEntry.createId(runRoute, runNumber);
+    this.runDepot = runDepot;
+    this.runId = (runDepot ==null ? RunTripEntry.createId(runRoute, runNumber) : RunTripEntry.createId(runRoute + "-" + runDepot, runNumber));
     this.reliefTime = reliefTime;
     this.relief = relief;
   }

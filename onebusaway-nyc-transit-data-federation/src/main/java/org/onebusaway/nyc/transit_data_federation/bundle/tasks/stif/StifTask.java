@@ -298,7 +298,6 @@ public class StifTask implements Runnable {
         // so I assume it will be overwritten or ignored in the run-tracing cases
         // Note that this depot code may be wrong if its a midtrip relief.  TODO!
         trip.setBlockId(trip.getServiceId().getId() + "_STIF_" + data.getDepotCode() + "_" + data.getBlock());
-        System.err.println("loadStifBlocks found trip=" + trip.getBlockId());
         _gtfsMutableRelationalDao.updateEntity(trip);
       }
     }
@@ -376,7 +375,6 @@ public class StifTask implements Runnable {
       ArrayList<StifTrip> pullouts = new ArrayList<StifTrip>();
       for (StifTrip trip : rawTrips) {
         String runId = trip.getRunIdWithDepot();
-        System.err.println("runId=" + runId + " for trip=" + trip);
         List<StifTrip> byRun = tripsByRun.get(runId);
         if (byRun == null) {
           byRun = new ArrayList<StifTrip>();
@@ -494,7 +492,6 @@ public class StifTask implements Runnable {
             blockId = blockId.intern();
             blockIds.add(new P2<String>(blockId, gtfsTrip.getServiceId().getId()));
             gtfsTrip.setBlockId(blockId);
-            System.err.println("created blockId=" + blockId);
             _gtfsMutableRelationalDao.updateEntity(gtfsTrip);
 
             AgencyAndId routeId = gtfsTrip.getRoute().getId();
@@ -525,9 +522,6 @@ public class StifTask implements Runnable {
         _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey()
             + " trip type " + trip.type
             + " must not have an associated pullout");
-        System.err.println("STIF trip: " + trip + " on schedule " + entry.getKey()
-            + " trip type " + trip.type
-            + " must not have an associated pullout");
 
         for (Trip gtfsTrip : trip.getGtfsTrips()) {
           blockNo++;
@@ -536,8 +530,6 @@ public class StifTask implements Runnable {
               + trip.firstStopTime + "_" + trip.runId.replace("-", "_")
               + "_orphan_" + blockNo;
           _log.warn("Generating single-trip block id for GTFS trip: "
-              + gtfsTrip.getId() + " : " + blockId);
-          System.err.println("Generating single-trip block id for GTFS trip: "
               + gtfsTrip.getId() + " : " + blockId);
           gtfsTrip.setBlockId(blockId);
           dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
@@ -554,7 +546,6 @@ public class StifTask implements Runnable {
     Collection<Trip> allTrips = _gtfsMutableRelationalDao.getAllTrips();
     for (Trip trip : allTrips) {
       if (usedGtfsTrips.contains(trip)) {
-        System.err.println("found route=" + trip.getRoute());
         routesWithTrips.add(trip.getRoute());
       } else {
         csvLogger.log("gtfs_trips_with_no_stif_match.csv", trip.getId(), loader.getSupport().getTripAsIdentifier(trip));
@@ -604,8 +595,6 @@ public class StifTask implements Runnable {
         final String msg ="When matching GTFS to STIF, failed to find block in STIF for "
             + t.getId(); 
         _log.warn(msg);
-        // todo this is temporary
-        throw new RuntimeException(msg);
       }
     }
   }
