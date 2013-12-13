@@ -208,7 +208,6 @@
                             </arguments>
                         </configuration>
                     </execution>
-<!--
                     <execution>
                         <id>graph-builder-execution-2012September_Bronx_r10_b03</id>
                         <phase>pre-integration-test</phase>
@@ -370,7 +369,6 @@
                             </arguments>
                         </configuration>
                     </execution>
--->
 		</executions>
             </plugin>
             <!-- Start up an embedded database for sharing the user database between webapps -->

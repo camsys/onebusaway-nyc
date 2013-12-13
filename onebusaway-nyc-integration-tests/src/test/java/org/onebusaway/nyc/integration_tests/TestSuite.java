@@ -66,10 +66,9 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	 */
 
 	// 2013Sept_AllCity_r15_b02
-	Trace_9527_Q_MISC_IntegrationTest.class
+	Trace_9527_Q_MISC_IntegrationTest.class,
 	
 	// September_Bronx_r10_b03
-	    /*
 	Trace_324_20121004_IntegrationTest.class,
 	Trace_5799_20121011_IntegrationTest.class,
 	Trace_7659_20121010_IntegrationTest.class,
@@ -113,16 +112,13 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	// paired down (SI) version of 2013June_Prod_r03_b02
 	Trace_7040_layover_oosdsc_formal_IntegrationTest.class,
 	Trace_7040_layover_oosdsc_informal_IntegrationTest.class,
-	    */
 	/*
 	 * Wrapping logic tests
 	 */
-	    /*
 	SiriBlockInference_IntegrationTest.class,
 	SiriBlockLayoverInference_IntegrationTest.class,
 
 	SiriTripInference_IntegrationTest.class,
 	SiriTripLayoverInference_IntegrationTest.class
-	    */
 })
 public class TestSuite {}

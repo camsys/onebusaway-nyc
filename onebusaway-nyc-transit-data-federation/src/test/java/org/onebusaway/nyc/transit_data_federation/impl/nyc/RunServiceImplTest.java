@@ -137,7 +137,7 @@ public class RunServiceImplTest {
     assertEquals("fuzzy matches size", 2, fuzzyMatches.size());
     assertEquals("best fuzzy distance not zero: " + bestFuzzyDistance, 0, bestFuzzyDistance.intValue());
     
-    matches = _service.getBestRunIdsForFuzzyId("999-YU-75");
+    matches = _service.getBestRunIdsForFuzzyId("999-75");
     
     bestFuzzyDistance = matches.keySet().first();
     fuzzyMatches = matches.get(bestFuzzyDistance);

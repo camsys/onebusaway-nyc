@@ -294,9 +294,6 @@ public class StifTask implements Runnable {
       Trip trip = entry.getKey();
       if (trip.getBlockId() == null || trip.getBlockId().length() == 0) {
         RawRunData data = entry.getValue();
-        // we mark this as a STIF block ID.  This format isn't documented in Generated Blocks from STIF
-        // so I assume it will be overwritten or ignored in the run-tracing cases
-        // Note that this depot code may be wrong if its a midtrip relief.  TODO!
         trip.setBlockId(trip.getServiceId().getId() + "_STIF_" + data.getDepotCode() + "_" + data.getBlock());
         _gtfsMutableRelationalDao.updateEntity(trip);
       }
@@ -414,7 +411,6 @@ public class StifTask implements Runnable {
                 + " at " + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
             break;
           }
-          // this value may change due to obanyc-1987
           // the depot may differ from the pullout depot
           String nextRunId = lastTrip.getNextRunIdWithDepot();
           if (nextRunId == null) {
@@ -477,9 +473,6 @@ public class StifTask implements Runnable {
             RawRunData rawRunData = loader.getRawRunDataByTrip().get(gtfsTrip);
             String blockId;
             if (trip.agencyId.equals("MTA NYCT")) {
-              // this is the run-tracing case as documented in Generated Blocks from STIF
-              // the depot code here should be the depot of the pullout, so its not affected
-              // by midtrip relief or next operator changes
               blockId = gtfsTrip.getServiceId().getId() + "_" +
                   trip.serviceCode.getLetterCode() + "_" +
                   rawRunData.getDepotCode() + "_" +
@@ -522,7 +515,6 @@ public class StifTask implements Runnable {
         _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey()
             + " trip type " + trip.type
             + " must not have an associated pullout");
-
         for (Trip gtfsTrip : trip.getGtfsTrips()) {
           blockNo++;
           String blockId = gtfsTrip.getServiceId().getId() + "_"
@@ -592,9 +584,8 @@ public class StifTask implements Runnable {
     for (Trip t : _gtfsMutableRelationalDao.getAllTrips()) {
       String blockId = t.getBlockId();
       if (blockId == null || blockId.equals("")) {
-        final String msg ="When matching GTFS to STIF, failed to find block in STIF for "
-            + t.getId(); 
-        _log.warn(msg);
+        _log.warn("When matching GTFS to STIF, failed to find block in STIF for "
+            + t.getId());
       }
     }
   }

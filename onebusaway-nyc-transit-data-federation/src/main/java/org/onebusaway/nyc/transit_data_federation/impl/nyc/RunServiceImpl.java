@@ -227,9 +227,9 @@ public class RunServiceImpl implements RunService {
     return entriesByRun.get(runId);
   }
 
-  private final Pattern realRunRouteIdPattern = Pattern.compile("[a-zA-Z]+0*(\\d+)[a-zA-Z]*"); // X0102D
-  private final Pattern realRunNumberPattern = Pattern.compile("[a-zA-Z]*0*(\\d+)"); // X0102
-  private final Pattern reportedRunIdPattern = Pattern.compile("0*([0-9]+)(-[a-zA-Z]{2})?-0*(\\d+)"); // 003-001 or 999-YU-02
+  private final Pattern realRunRouteIdPattern = Pattern.compile("[a-zA-Z]+0*(\\d+)[a-zA-Z]*");
+  private final Pattern realRunNumberPattern = Pattern.compile("[a-zA-Z]*0*(\\d+)");
+  private final Pattern reportedRunIdPattern = Pattern.compile("0*([0-9]+)-0*(\\d+)");
 
   @Override
   public TreeMultimap<Integer, String> getBestRunIdsForFuzzyId(
@@ -247,8 +247,8 @@ public class RunServiceImpl implements RunService {
     /*
      * Get run-trips for nearby runTrips
      */
-    String fuzzyRunId  = RunTripEntry.createId(reportedIdMatcher.group(1),
-          reportedIdMatcher.group(2));
+    String fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
+        reportedIdMatcher.group(2));
     
     /*
      * In the following we strip the runEntry's id down to the format of the
@@ -258,29 +258,21 @@ public class RunServiceImpl implements RunService {
     for (String runId : entriesByRun.keySet()) {
       String[] runPieces= runId.split("-");
       String runRoute = runPieces[0];
-      String runDepot = null; 
+      // must support MISC convention of MISC-YU-101
       String runNumber = null;
-      // if we matched a depot (999-YU-12)
-      if (runPieces.length == 3) {
-    	  runDepot = runPieces[1];
-    	  runNumber = runPieces[2];
+      if (runPieces.length > 2) {
+        runNumber = runPieces[2];
       } else {
-    	  runNumber = runPieces[1];
+        runNumber = runPieces[1];
       }
+      
       Matcher runNumberMatcher = realRunNumberPattern.matcher(runNumber);
       if (runNumberMatcher.matches()) {
         runNumber = runNumberMatcher.group(1);
       }
       List<String> runIdsToTry = Lists.newArrayList();
       if (runRoute.equals("MISC")) {
-    	  String runIdToTry = null;
-    	  if (runDepot == null) {
-    	    // this shouldn't happen, but try to support old 999-12 format
-    	    // so legacy bundles will still load/match properly
-    	     runIdToTry = RunTripEntry.createId("999", runNumber);
-    	  } else {
-    	    runIdToTry = RunTripEntry.createId("999", runDepot + "-" + runNumber);
-    	  }
+        String runIdToTry = RunTripEntry.createId("999", runNumber);
         runIdsToTry.add(runIdToTry);
       } else {
         Matcher routeIdMatcher = realRunRouteIdPattern.matcher(runRoute);
