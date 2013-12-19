@@ -22,11 +22,6 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
 
   @Autowired
   private ConfigurationService _configurationService;
-  private boolean _disabled;
-
-  public synchronized void setDisabled(boolean disable) {
-	  this._disabled = true;
-  }
   
   public synchronized Cache<Integer, Siri> getCache() {
     if (_cache == null) {

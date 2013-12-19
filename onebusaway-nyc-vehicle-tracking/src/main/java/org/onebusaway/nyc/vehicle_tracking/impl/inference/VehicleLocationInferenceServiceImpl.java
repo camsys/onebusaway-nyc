@@ -605,9 +605,16 @@ public class VehicleLocationInferenceServiceImpl implements
     			final String operatorId = _nycTestInferredLocationRecord.getOperatorId();
     			if (!Strings.isNullOrEmpty(assignedRun) && !Strings.isNullOrEmpty(operatorId)) {
     				final String[] runParts = assignedRun.split("-");
-    				opSvc.setOperatorAssignment(new AgencyAndId(
-    						_nycRawLocationRecord.getVehicleId().getAgencyId(), operatorId),
-    						runParts[1], runParts[0]);
+    				if (runParts.length > 2) {
+              opSvc.setOperatorAssignment(new AgencyAndId(
+                  _nycRawLocationRecord.getVehicleId().getAgencyId(), operatorId),
+                  runParts[1] + "-" + runParts[2], runParts[0]);
+    				  
+    				} else {
+    				  opSvc.setOperatorAssignment(new AgencyAndId(
+    				      _nycRawLocationRecord.getVehicleId().getAgencyId(), operatorId),
+    				      runParts[1], runParts[0]);
+    				}
     			}
 
     			_inferenceInstance.setOperatorAssignmentService(opSvc);
