@@ -1,9 +1,18 @@
 package org.onebusaway.nyc.presentation.service.cache;
 
+import net.spy.memcached.AddrUtil;
+import net.spy.memcached.ConnectionFactoryBuilder;
+import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
+import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.auth.PlainCallbackHandler;
+
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.cache.Cache;
@@ -12,15 +21,35 @@ import com.google.common.cache.CacheBuilder;
 public abstract class NycCacheService<K, V> {
 
   protected static Logger _log = LoggerFactory.getLogger(QueueListenerTask.class);
-  protected Cache<K, V> _cache;  
+  protected Cache<K, V> _cache;
+
+  InetSocketAddress addr = new InetSocketAddress("127.0.0.1",11211);
+  MemcachedClient memcache;
+  boolean useMemcached = false;
 
   protected abstract void refreshCache();
 
   // proxy to the actual hashing algorithm 
   public abstract K hash(Object...factors);
 
+  protected boolean useMemcached(){
+	  if (memcache==null)
+	  {
+		try {
+			memcache = new MemcachedClient(addr);
+			useMemcached= true;
+			System.out.println("useMemcached has been set to TRUE");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			useMemcached= false;
+			System.out.println("useMemcached has been set to FALSE");
+		}
+	  }
+	  System.out.println("all available servers: "+memcache.getAvailableServers());
+      return useMemcached;
+  }
   public Cache<K, V> getCache(){
-    if (_cache == null) {
+    if (!useMemcached() && _cache == null) {
       int timeout = 15;
       _log.info("creating initial GENERIC cache with timeout " + timeout + "...");
       _cache = CacheBuilder.newBuilder()
@@ -32,15 +61,38 @@ public abstract class NycCacheService<K, V> {
   }
 
   public V retrieve(K key){
-    return getCache().getIfPresent(key);
+	  System.out.println("Retrieving! K:"+key);
+          if (useMemcached){
+                  return (V) memcache.get(key.toString());
+          }
+          else{
+        	  return getCache().getIfPresent(key);
+          }
   }
 
   public void store(K key, V value) {
-    getCache().put(key, value);
+	  System.out.println("Storing! K:"+key+" V:"+value);
+          if (useMemcached){
+        	  memcache.set(key.toString(), 0, value);
+              return;
+          }
+          else{
+              getCache().put(key, value);
+          }
   }
 
   public boolean containsKey(K key){
-    return getCache().asMap().containsKey(key);
+  	Cache<K, V> cache = getCache();
+    if (useMemcached){
+    	System.out.println("A");
+    	System.out.println("using memcached in contains key: "+memcache.get(key.toString()));
+        return memcache.get(key.toString()) != null;
+    }
+    else{
+    	System.out.println("B");
+    	System.out.println("not using memcached containskey:"+cache.asMap().containsKey(key));
+        return cache.asMap().containsKey(key);
+    }
   }
 
   public boolean hashContainsKey(Object...factors){

@@ -110,5 +110,6 @@
     
     <bean id="siriCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycSiriCacheServiceImpl">
     </bean>
+
     
 </beans>

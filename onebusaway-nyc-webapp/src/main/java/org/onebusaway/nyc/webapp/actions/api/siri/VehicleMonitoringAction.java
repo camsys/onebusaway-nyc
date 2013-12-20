@@ -306,7 +306,6 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
           activities, _nycTransitDataService, routeIds);
       _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(serviceDelivery, _realtimeService);
     }
-
     Siri siri = new Siri();
     siri.setServiceDelivery(serviceDelivery);
 
@@ -327,6 +326,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         return _realtimeService.getSiriXmlSerializer().getXml(_response);
       } else {
         this._servletResponse.setContentType("application/json");
+        System.out.println("request callback: "+ _request.getParameter("callback"));
         return _realtimeService.getSiriJsonSerializer().getJson(_response,
             _request.getParameter("callback"));
       }

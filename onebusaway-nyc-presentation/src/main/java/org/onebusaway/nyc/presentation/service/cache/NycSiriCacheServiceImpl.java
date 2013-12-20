@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,6 +23,10 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
 
   @Autowired
   private ConfigurationService _configurationService;
+  
+  @Autowired
+  private RealtimeService _realtimeService;
+  
   private boolean _disabled;
 
   public synchronized void setDisabled(boolean disable) {
@@ -29,7 +34,7 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
   }
   
   public synchronized Cache<Integer, Siri> getCache() {
-    if (_cache == null) {
+    if (!useMemcached() && _cache == null) {
       int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
       _log.info("creating initial SIRI cache with timeout " + timeout + "...");
       _cache = CacheBuilder.newBuilder()
@@ -57,6 +62,7 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
     _log.info("done");
   }
 
+  // Hash Function: Sort the list of agencies via properties of a TreeSet
   private Integer hash(int maximumOnwardCalls, List<String> agencies){
     TreeSet<String> set = new TreeSet<String>(agencies);
     return maximumOnwardCalls + set.toString().hashCode();
@@ -65,7 +71,31 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
   @SuppressWarnings("unchecked")
   @Override
   public Integer hash(Object...factors){
-    return hash((Integer)factors[0], (List<String>)factors[1]);
-  }
+    return hash((Integer)factors[0], (List<String>)factors[1]);  
+  }  
+  
+  public Siri retrieve(Integer key){
+	  System.out.println("Retrieving! K:"+key);
+      if (useMemcached){
+    	  System.out.println("THE ITEM RETRIEVED FROM THE MEMCACHE WAS: "+memcache.get(key.toString()));
+    	  return  ((SiriWrapper) memcache.get(key.toString()));
+      }
+      else{
+    	  System.out.println("THE ITEM RETRIEVED FROM THE LOCAL CACHE WAS: "+memcache.get(key.toString()));
+    	  return (getCache()!=null?getCache().getIfPresent(key):null);
+      }
+}
 
+  public void store(Integer key, Siri value) {
+      if (useMemcached){
+    	  int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
+    	  System.out.println("Storing via MEMCACHE, K:"+key+" V:"+value);
+    	  memcache.set(key.toString(), timeout, new SiriWrapper(value));
+          return;
+      }
+      else{
+    	  System.out.println("Storing via LOCAL CACHE, K:"+key+" V:"+value);
+          getCache().put(key, value);
+      }
+  }
 }
