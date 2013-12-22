@@ -294,7 +294,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		try {
 			_refreshService.refresh(RefreshableResources.TRANSIT_GRAPH);
 			
-			// Not sure why this is here?
+			// give child classes a chance to do work here 
 			timingHook();
 			
 			_refreshService.refresh(RefreshableResources.CALENDAR_DATA);
@@ -351,8 +351,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	 *****/
 
 	private void removeAndRebuildCache() {
-		// Not sure why this is here?
-		timingHook();
+	  // give subclasses a chance to do work
+	  timingHook();
 
 		_log.info("Clearing all caches...");
 		for(CacheManager cacheManager : CacheManager.ALL_CACHE_MANAGERS) { 
