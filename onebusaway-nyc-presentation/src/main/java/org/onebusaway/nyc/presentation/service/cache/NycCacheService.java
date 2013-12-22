@@ -13,6 +13,11 @@ public abstract class NycCacheService<K, V> {
 
   protected static Logger _log = LoggerFactory.getLogger(QueueListenerTask.class);
   protected Cache<K, V> _cache;  
+  protected boolean _disabled;
+
+  public synchronized void setDisabled(boolean disable) {
+    this._disabled = true;
+  }
 
   protected abstract void refreshCache();
 
@@ -32,22 +37,27 @@ public abstract class NycCacheService<K, V> {
   }
 
   public V retrieve(K key){
+    if (_disabled)return null;
     return getCache().getIfPresent(key);
   }
 
   public void store(K key, V value) {
+    if (_disabled) return;
     getCache().put(key, value);
   }
 
   public boolean containsKey(K key){
+    if (_disabled) return false;
     return getCache().asMap().containsKey(key);
   }
 
   public boolean hashContainsKey(Object...factors){
+    if (_disabled) return false;
     return containsKey(hash(factors));
   }
 
   public void hashStore(V value, Object...factors){
+    if (_disabled) return;
     getCache().put(hash(factors), value);
   }
 }

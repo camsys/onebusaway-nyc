@@ -54,6 +54,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7564_20101202T114909_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7659_20121010_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7726_20121010_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_9527_Q_MISC_IntegrationTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ 
@@ -64,6 +65,9 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	 * Inference tests
 	 */
 
+	// 2013Sept_AllCity_r15_b02
+	Trace_9527_Q_MISC_IntegrationTest.class,
+	
 	// September_Bronx_r10_b03
 	Trace_324_20121004_IntegrationTest.class,
 	Trace_5799_20121011_IntegrationTest.class,

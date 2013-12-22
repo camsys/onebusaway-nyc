@@ -28,7 +28,16 @@ public class OperatorAssignmentFromTcip implements ModelCounterpartConverter<SCH
 
 		opAssign.setRunRoute(input.getLocalSCHOperatorAssignment().getRunRoute());
 		opAssign.setRunNumber(mappingTool.cutRunNumberFromTcipRunDesignator(input.getRun().getDesignator()));
-
+		// obanyc-1278
+		if ("MISC".equals(opAssign.getRunRoute())) {
+			opAssign.setRunId(input.getLocalSCHOperatorAssignment().getRunRoute() 
+					+ "-" + input.getOperatorBase().getFacilityName()
+					+ "-" + mappingTool.cutRunNumberFromTcipRunDesignator(input.getRun().getDesignator()));
+		} else {
+			opAssign.setRunId(input.getLocalSCHOperatorAssignment().getRunRoute() 
+					+ "-" + mappingTool.cutRunNumberFromTcipRunDesignator(input.getRun().getDesignator()));
+		}
+		
 		opAssign.setDepot(input.getOperatorBase().getFacilityName());
 
 		DateTimeFormatter xmlDTF = TcipMappingTool.TCIP_DATETIME_FORMATTER;

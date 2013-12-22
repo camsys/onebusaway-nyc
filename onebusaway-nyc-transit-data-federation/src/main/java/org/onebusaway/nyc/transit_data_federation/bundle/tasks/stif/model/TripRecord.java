@@ -31,6 +31,7 @@ public class TripRecord implements StifRecord {
   private String runRoute;
   private String nextTripOperatorRunNumber;
   private String nextTripOperatorRunRoute;
+  private String nextTripOperatorDepotCode;
   private String previousRunRoute;
   private String destinationLocation;
   private int recoveryTime;
@@ -151,6 +152,13 @@ public class TripRecord implements StifRecord {
     return RunTripEntry.createId(getRunRoute(), getRunNumber());
   }
 
+  public String getRunIdWithDepot() {
+    if ("MISC".equals(getRunRoute())) {
+      return RunTripEntry.createId(getRunRoute() + "-" + getDepotCode(), getRunNumber());
+    }
+    return RunTripEntry.createId(getRunRoute(), getRunNumber());
+  }
+  
   public String getReliefRunId() {
     return RunTripEntry.createId(getReliefRunRoute(), getReliefRunNumber());
   }
@@ -172,6 +180,14 @@ public class TripRecord implements StifRecord {
         getNextTripOperatorRunNumber());
   }
 
+  public String getNextTripOperatorRunIdWithDepot() {
+    if ("MISC".equals(getNextTripOperatorRunRoute())) {
+      return RunTripEntry.createId(getNextTripOperatorRunRoute() + "-" + getDepotCode(), getNextTripOperatorRunNumber());
+    }
+    return RunTripEntry.createId(getNextTripOperatorRunRoute(), getNextTripOperatorRunNumber());
+  }
+
+  
   public String getNextTripOperatorRunNumber() {
     return nextTripOperatorRunNumber;
   }
@@ -235,4 +251,13 @@ public class TripRecord implements StifRecord {
   public String getGtfsTripId() {
     return gtfsTripId;
   }
+
+  public String getNextTripOperatorDepotCode() {
+    return nextTripOperatorDepotCode;
+  }
+  
+  public void setNextTripOperatorDepotCode(String depotCode) {
+    this.nextTripOperatorDepotCode = depotCode;
+  }
+
 }
