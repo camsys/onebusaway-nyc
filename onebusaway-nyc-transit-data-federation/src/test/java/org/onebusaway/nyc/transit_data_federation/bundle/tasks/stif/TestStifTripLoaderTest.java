@@ -126,13 +126,6 @@ public class TestStifTripLoaderTest {
     Collection<Trip> allTrips = dao.getAllTrips();
     assertTrue(allTrips.size() > 0);
     Collection<Trip> gTrips = dao.getAllTrips();
-    System.err.println("found " + allTrips.size() + " trips");
-    for (Trip t1 : gTrips) {
-      System.err.println("blockId=" + t1.getBlockId() 
-          + ", headsign=" + t1.getTripHeadsign() 
-          + ", route=" + t1.getRouteShortName()
-          + "; {" + t1.toString() + "}");
-    }
 
     StifTripLoader loader = new StifTripLoader();
     loader.setLogger(new MultiCSVLogger());
@@ -150,27 +143,6 @@ public class TestStifTripLoaderTest {
     assertEquals("CS", strips.get(1).nextTripOperatorDepot);
     assertEquals("FP", strips.get(2).depot);
     assertEquals("FP", strips.get(2).nextTripOperatorDepot);
-    
-    // MultiCSVLogger mlog = new MultiCSVLogger() {
-    //   public void log(String file, Object... args) {
-    //     return;
-    //   }
-    //   public void header(String file, String header) {
-    //     return;
-    //   }
-    //   public void summarize() {
-    //     return;
-    //   }
-    //   public void clear() {
-    //     return;
-    //   }
-    // };
-    
-    // StifTask st = new StifTask();
-    // st.setGtfsMutableRelationalDao(dao);
-    // st.setStifTripLoader(loader);
-    // st.setCSVLogger(mlog);
-    // st.run();
  
   }
 
