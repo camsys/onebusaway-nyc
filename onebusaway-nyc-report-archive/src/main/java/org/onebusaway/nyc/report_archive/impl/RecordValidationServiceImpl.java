@@ -82,6 +82,15 @@ public class RecordValidationServiceImpl implements RecordValidationService {
 		      isValid = false;
 		    }
 		  }
+
+      //Check inferred block id
+      if(StringUtils.isNotBlank(inferredRecord.getBlockId())) {
+        if (inferredRecord.getBlockId().length() >= 64) {
+          log.error("Inferred block id too long : {}", id);
+          isValid = false;
+        }
+      }
+		  
 		  
 		  return isValid;
 	}
