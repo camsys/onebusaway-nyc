@@ -226,7 +226,6 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       // *** CASE 3: all vehicles
     } else {
-      
       gaLabel = "All Vehicles";
       
       int hashKey = _cacheService.hash(maximumOnwardCalls, agencyIds);

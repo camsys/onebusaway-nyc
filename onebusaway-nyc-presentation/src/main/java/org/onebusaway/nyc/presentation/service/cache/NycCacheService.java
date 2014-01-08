@@ -1,11 +1,6 @@
 package org.onebusaway.nyc.presentation.service.cache;
 
-import net.spy.memcached.AddrUtil;
-import net.spy.memcached.ConnectionFactoryBuilder;
-import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.auth.AuthDescriptor;
-import net.spy.memcached.auth.PlainCallbackHandler;
 
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.slf4j.Logger;
@@ -72,27 +67,32 @@ public abstract class NycCacheService<K, V> {
 
   public void store(K key, V value) {
 	  System.out.println("Storing! K:"+key+" V:"+value);
-          if (useMemcached){
+      if (useMemcached){
+    	  try{
         	  memcache.set(key.toString(), 0, value);
               return;
-          }
-          else{
-              getCache().put(key, value);
-          }
+    	  }
+    	  catch(Exception e){
+    		  e.printStackTrace();
+    	  }
+      }
+      getCache().put(key, value);
   }
 
   public boolean containsKey(K key){
   	Cache<K, V> cache = getCache();
     if (useMemcached){
-    	System.out.println("A");
-    	System.out.println("using memcached in contains key: "+memcache.get(key.toString()));
-        return memcache.get(key.toString()) != null;
+    	try{
+    		System.out.println("key: "+key);
+	    	System.out.println("Memcached contains key "+key+"?: "+memcache.get(key.toString()) != null);
+	        return memcache.get(key.toString()) != null;
+	    }
+    	catch(Exception e){
+    		e.printStackTrace();
+    	}
     }
-    else{
-    	System.out.println("B");
-    	System.out.println("not using memcached containskey:"+cache.asMap().containsKey(key));
-        return cache.asMap().containsKey(key);
-    }
+	System.out.println("Local cache contains key "+key+"?: "+cache.asMap().containsKey(key));
+    return cache.asMap().containsKey(key);
   }
 
   public boolean hashContainsKey(Object...factors){

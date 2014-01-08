@@ -18,7 +18,7 @@ import uk.org.siri.siri.Siri;
 
 public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
 
-  private static final int DEFAULT_CACHE_TIMEOUT = 15;
+  private static final int DEFAULT_CACHE_TIMEOUT = 60;
   private static final String SIRI_CACHE_TIMEOUT_KEY = "cache.expiry.siri";
 
   @Autowired
@@ -77,25 +77,27 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
   public Siri retrieve(Integer key){
 	  System.out.println("Retrieving! K:"+key);
       if (useMemcached){
-    	  System.out.println("THE ITEM RETRIEVED FROM THE MEMCACHE WAS: "+memcache.get(key.toString()));
-    	  return  ((SiriWrapper) memcache.get(key.toString()));
+    	  //System.out.println("THE ITEM RETRIEVED FROM THE MEMCACHE WAS: "+memcache.get(key.toString()));
+    	  try{return  ((SiriWrapper) memcache.get(key.toString()));}
+    	  catch(Exception e){e.printStackTrace();}
       }
-      else{
-    	  System.out.println("THE ITEM RETRIEVED FROM THE LOCAL CACHE WAS: "+memcache.get(key.toString()));
-    	  return (getCache()!=null?getCache().getIfPresent(key):null);
-      }
-}
+	  //System.out.println("THE ITEM RETRIEVED FROM THE LOCAL CACHE WAS: "+memcache.get(key.toString()));
+      useMemcached=false;
+	  return (getCache()!=null?getCache().getIfPresent(key):null);
+  }
 
   public void store(Integer key, Siri value) {
-      if (useMemcached){
-    	  int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
-    	  System.out.println("Storing via MEMCACHE, K:"+key+" V:"+value);
-    	  memcache.set(key.toString(), timeout, new SiriWrapper(value));
-          return;
-      }
-      else{
-    	  System.out.println("Storing via LOCAL CACHE, K:"+key+" V:"+value);
-          getCache().put(key, value);
-      }
+	  if (useMemcached){
+		  try{
+			  int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
+			  System.out.println("Storing via MEMCACHE, K:"+key+" V:"+value);
+			  memcache.set(key.toString(), timeout, new SiriWrapper(value, _realtimeService));
+		      return;
+		  }
+    	  catch(Exception e){e.printStackTrace();}
+	  }
+	  System.out.println("Storing via LOCAL CACHE, K:"+key+" V:"+value);
+	  useMemcached=false;
+      getCache().put(key, value);
   }
 }
