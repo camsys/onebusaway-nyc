@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,17 +24,11 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
   @Autowired
   private ConfigurationService _configurationService;
   
+  @Autowired
+  private RealtimeService _realtimeService;
+  
   public synchronized Cache<Integer, Siri> getCache() {
-    if (_cache == null) {
-      int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
-      _log.info("creating initial SIRI cache with timeout " + timeout + "...");
-      _cache = CacheBuilder.newBuilder()
-          .expireAfterWrite(timeout, TimeUnit.SECONDS)
-          .build();
-      _log.info("done");
-    }
-    if (_disabled) _cache.invalidateAll(); 
-    return _cache;
+	return getCache(_configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT), "SIRI");
   }
 
   @Override
@@ -53,6 +48,7 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
   }
 
   private Integer hash(int maximumOnwardCalls, List<String> agencies){
+	// Use properties of a TreeSet to obtain consistent ordering of like combinations of agencies
     TreeSet<String> set = new TreeSet<String>(agencies);
     return maximumOnwardCalls + set.toString().hashCode();
   }
@@ -60,7 +56,21 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
   @SuppressWarnings("unchecked")
   @Override
   public Integer hash(Object...factors){
-    return hash((Integer)factors[0], (List<String>)factors[1]);
+    return hash((Integer)factors[0], (List<String>)factors[1]);  
   }
 
+  public void store(Integer key, Siri value) {
+    if (useMemcached){
+	  try{
+	    int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
+	    memcache.set(key.toString(), timeout, new SiriWrapper(value, _realtimeService));
+	    return;
+      }
+      catch(Exception e){
+        e.printStackTrace();
+      }
+    }
+    useMemcached=false;
+    getCache().put(key, value);
+  }
 }

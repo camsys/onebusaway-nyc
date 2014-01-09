@@ -88,7 +88,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   @Override
   public String execute() {
 
-	long currentTimestamp = getTime();
+    long currentTimestamp = getTime();
     _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
     
     _realtimeService.setTime(currentTimestamp);
@@ -226,7 +226,6 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       // *** CASE 3: all vehicles
     } else {
-      
       gaLabel = "All Vehicles";
       
       int hashKey = _cacheService.hash(maximumOnwardCalls, agencyIds);
@@ -306,7 +305,6 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
           activities, _nycTransitDataService, routeIds);
       _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(serviceDelivery, _realtimeService);
     }
-
     Siri siri = new Siri();
     siri.setServiceDelivery(serviceDelivery);
 
