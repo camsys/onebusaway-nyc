@@ -88,7 +88,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   @Override
   public String execute() {
 
-	long currentTimestamp = getTime();
+    long currentTimestamp = getTime();
     _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
     
     _realtimeService.setTime(currentTimestamp);
@@ -325,7 +325,6 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         return _realtimeService.getSiriXmlSerializer().getXml(_response);
       } else {
         this._servletResponse.setContentType("application/json");
-        System.out.println("request callback: "+ _request.getParameter("callback"));
         return _realtimeService.getSiriJsonSerializer().getJson(_response,
             _request.getParameter("callback"));
       }
