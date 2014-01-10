@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.presentation.service.cache;
 
+import net.spy.memcached.AddrUtil;
+import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 
 import org.onebusaway.nyc.queue.QueueListenerTask;
@@ -7,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.cache.Cache;
@@ -18,7 +19,7 @@ public abstract class NycCacheService<K, V> {
   protected static Logger _log = LoggerFactory.getLogger(QueueListenerTask.class);
   protected Cache<K, V> _cache;
 
-  InetSocketAddress addr = new InetSocketAddress("sessions-memcache",11211);
+  String addr = "sessions-memcache:11211";
   MemcachedClient memcache;
   boolean useMemcached = false;
 
@@ -37,7 +38,9 @@ public abstract class NycCacheService<K, V> {
     if (memcache==null)
     {
       try {
-        memcache = new MemcachedClient(addr);
+        memcache = new MemcachedClient(
+          new BinaryConnectionFactory(),
+          AddrUtil.getAddresses(addr));
 		useMemcached= true;
 	  } 
       catch (IOException e1) {
