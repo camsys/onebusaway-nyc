@@ -18,8 +18,7 @@ public abstract class NycCacheService<K, V> {
   protected static Logger _log = LoggerFactory.getLogger(QueueListenerTask.class);
   protected Cache<K, V> _cache;
 
-  //InetSocketAddress addr = new InetSocketAddress("dev.voyyno.cfg.use1.cache.amazonaws.com", 11211);
-  InetSocketAddress addr = new InetSocketAddress("127.0.0.1",11211);
+  InetSocketAddress addr = new InetSocketAddress("sessions-memcache",11211);
   MemcachedClient memcache;
   boolean useMemcached = false;
 
