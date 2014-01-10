@@ -43,8 +43,7 @@ public abstract class NycCacheService<K, V> {
           AddrUtil.getAddresses(addr));
 		useMemcached= true;
 	  } 
-      catch (IOException e1) {
-		e1.printStackTrace();
+      catch (Exception e) {
 		useMemcached= false;
 	  }
 	}
