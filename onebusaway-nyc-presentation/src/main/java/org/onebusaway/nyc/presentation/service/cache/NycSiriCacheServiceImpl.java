@@ -2,35 +2,25 @@ package org.onebusaway.nyc.presentation.service.cache;
 
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import uk.org.siri.siri.Siri;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
-import uk.org.siri.siri.Siri;
 
 public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
 
   private static final int DEFAULT_CACHE_TIMEOUT = 60;
   private static final String SIRI_CACHE_TIMEOUT_KEY = "cache.expiry.siri";
-  private static final int STATUS_INTERVAL_MINUTES = 1;
-
-  private ScheduledFuture<NycSiriCacheServiceImpl.StatusThread> _statusTask = null;
-
-  @Autowired
-  private ThreadPoolTaskScheduler _taskScheduler;
+  
 
   
   @Autowired
@@ -86,22 +76,5 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
     getCache().put(key, value);
   }
   
-  @SuppressWarnings("unchecked")
-  @PostConstruct
-  private void startStatusTask() {
-    if (_statusTask == null) {
-      _statusTask = _taskScheduler.scheduleWithFixedDelay(new StatusThread(), STATUS_INTERVAL_MINUTES * 60 * 1000);
-    }
-  }
-  
-  public void logStatus() {
-    _log.info(getCache().stats().toString() + "; Size=" + getCache().size());
-  }
-  
-  private class StatusThread extends TimerTask {
-    @Override
-    public void run() {
-      logStatus();
-    }
-  }
+
 }
