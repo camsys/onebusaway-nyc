@@ -70,6 +70,7 @@ public abstract class NycCacheService<K, V> {
 
   @SuppressWarnings("unchecked")
   public V retrieve(K key){
+	if (_disabled) return null;
     if (useMemcached){
       try{
         return (V) memcache.get(key.toString());
@@ -83,6 +84,7 @@ public abstract class NycCacheService<K, V> {
   }
 
   public void store(K key, V value) {
+	if (_disabled) return;
     if (useMemcached){
       try{
         memcache.set(key.toString(), 0, value);
@@ -96,6 +98,7 @@ public abstract class NycCacheService<K, V> {
   }
 
   public boolean containsKey(K key){
+	if (_disabled) return false;
   	Cache<K, V> cache = getCache();
     if (useMemcached){
       try{
