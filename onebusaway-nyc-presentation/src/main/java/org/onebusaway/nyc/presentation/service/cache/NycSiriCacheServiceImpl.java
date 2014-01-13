@@ -23,7 +23,7 @@ import uk.org.siri.siri.Siri;
 
 public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
 
-  private static final int DEFAULT_CACHE_TIMEOUT = 15;
+  private static final int DEFAULT_CACHE_TIMEOUT = 60;
   private static final String SIRI_CACHE_TIMEOUT_KEY = "cache.expiry.siri";
   private static final int STATUS_INTERVAL_MINUTES = 1;
 
