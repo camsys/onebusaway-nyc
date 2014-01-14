@@ -20,17 +20,15 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
 
   private static final int DEFAULT_CACHE_TIMEOUT = 60;
   private static final String SIRI_CACHE_TIMEOUT_KEY = "cache.expiry.siri";
-  
 
-  
   @Autowired
   private ConfigurationService _configurationService;
-  
+
   @Autowired
   private RealtimeService _realtimeService;
-  
+
   public synchronized Cache<Integer, Siri> getCache() {
-	return getCache(_configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT), "SIRI");
+    return getCache(_configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT), "SIRI");
   }
 
   @Override
@@ -50,7 +48,7 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
   }
 
   private Integer hash(int maximumOnwardCalls, List<String> agencies){
-	// Use properties of a TreeSet to obtain consistent ordering of like combinations of agencies
+    // Use properties of a TreeSet to obtain consistent ordering of like combinations of agencies
     TreeSet<String> set = new TreeSet<String>(agencies);
     return maximumOnwardCalls + set.toString().hashCode();
   }
@@ -62,19 +60,8 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
   }
 
   public void store(Integer key, Siri value) {
-    if (useMemcached){
-	  try{
-	    int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
-	    memcache.set(key.toString(), timeout, new SiriWrapper(value, _realtimeService));
-	    return;
-      }
-      catch(Exception e){
-        e.printStackTrace();
-      }
-    }
-    useMemcached=false;
-    getCache().put(key, value);
+    int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
+    super.store(key, new SiriWrapper(value, _realtimeService), timeout);
   }
   
-
 }

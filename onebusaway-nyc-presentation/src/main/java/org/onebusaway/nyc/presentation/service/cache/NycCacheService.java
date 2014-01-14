@@ -1,7 +1,5 @@
 package org.onebusaway.nyc.presentation.service.cache;
 
-import net.spy.memcached.AddrUtil;
-import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 
 import org.slf4j.Logger;
@@ -9,7 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import java.io.IOException;
+
+import java.net.InetSocketAddress;
 import java.util.TimerTask;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +20,8 @@ import com.google.common.cache.CacheBuilder;
 
 public abstract class NycCacheService<K, V> {
 
+  private static final int DEFAULT_CACHE_TIMEOUT = 60;
+
   private static final int STATUS_INTERVAL_MINUTES = 1;
   protected static Logger _log = LoggerFactory.getLogger(NycCacheService.class);
   protected Cache<K, V> _cache;
@@ -30,9 +31,9 @@ public abstract class NycCacheService<K, V> {
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
 
-  String addr = "sessions-memcache:11211";
+  InetSocketAddress addr = new InetSocketAddress("sessions-memcache",11211);
   MemcachedClient memcache;
-  boolean useMemcached = false;
+  boolean useMemcached;
 
   protected abstract void refreshCache();
 
@@ -45,30 +46,25 @@ public abstract class NycCacheService<K, V> {
     this._disabled = disable;
   }
 
-  protected boolean useMemcached() {
-    try {
-      memcache = new MemcachedClient(new BinaryConnectionFactory(),
-          AddrUtil.getAddresses(addr));
-      useMemcached = true;
-    } catch (Exception e) {
-      useMemcached = false;
-    }
-    return useMemcached;
-  }
-
   public Cache<K, V> getCache() {
-    int timeout = 60;
-    return getCache(timeout, "GENERIC");
+    return getCache(DEFAULT_CACHE_TIMEOUT, "GENERIC");
   }
 
   public Cache<K, V> getCache(int timeout, String type) {
-    useMemcached();
     if (_cache == null) {
       _log.info("creating initial " + type + " cache with timeout " + timeout
           + "...");
       _cache = CacheBuilder.newBuilder().expireAfterWrite(timeout,
           TimeUnit.SECONDS).build();
       _log.info("done");
+    }
+    if (memcache==null)
+    {
+      try {
+        memcache = new MemcachedClient(addr);
+      } 
+      catch (Exception e) {
+      }
     }
     if (_disabled)
       _cache.invalidateAll();
@@ -83,7 +79,6 @@ public abstract class NycCacheService<K, V> {
       try {
         return (V) memcache.get(key.toString());
       } catch (Exception e) {
-        e.printStackTrace();
       }
     }
     useMemcached = false;
@@ -91,16 +86,20 @@ public abstract class NycCacheService<K, V> {
   }
 
   public void store(K key, V value) {
+    store(key, value, DEFAULT_CACHE_TIMEOUT);
+  }
+
+  public void store(K key, V value, int timeout) {
     if (_disabled)
       return;
     if (useMemcached) {
       try {
-        memcache.set(key.toString(), 0, value);
+        memcache.set(key.toString(), timeout, value);
         return;
       } catch (Exception e) {
-        e.printStackTrace();
       }
     }
+    useMemcached = false;
     getCache().put(key, value);
   }
 
@@ -112,10 +111,15 @@ public abstract class NycCacheService<K, V> {
       try {
         return memcache.get(key.toString()) != null;
       } catch (Exception e) {
-        e.printStackTrace();
       }
     }
-    return cache.asMap().containsKey(key);
+    if (!cache.asMap().containsKey(key)){
+      // only attempt to switch to memcached if there is a miss in local cache
+      // to minimize memcached connection attempts, saving time per local cache usage
+      useMemcached=!memcache.getAvailableServers().isEmpty();
+      return false;
+    }
+    return true;
   }
 
   public boolean hashContainsKey(Object... factors) {
@@ -143,7 +147,8 @@ public abstract class NycCacheService<K, V> {
          * _configurationService.getConfigurationValueAsInteger
          * (SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT)
          */
-        + "; Size=" + getCache().size());
+        + "; Local Size=" + _cache.size()
+        + "; Memcached Size=" + memcache.getStats("sizes"));
   }
 
   private class StatusThread extends TimerTask {
