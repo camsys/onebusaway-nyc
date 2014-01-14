@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-
-import java.net.InetSocketAddress;
 import java.util.TimerTask;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -83,9 +81,9 @@ public abstract class NycCacheService<K, V> {
       try {
         return (V) memcache.get(key.toString());
       } catch (Exception e) {
+        toggleCache(false);
       }
     }
-    useMemcached = false;
     return (getCache() != null ? getCache().getIfPresent(key) : null);
   }
 
@@ -101,9 +99,9 @@ public abstract class NycCacheService<K, V> {
         memcache.set(key.toString(), timeout, value);
         return;
       } catch (Exception e) {
+        toggleCache(false);
       }
     }
-    useMemcached = false;
     getCache().put(key, value);
   }
 
@@ -115,12 +113,15 @@ public abstract class NycCacheService<K, V> {
       try {
         return memcache.get(key.toString()) != null;
       } catch (Exception e) {
+        toggleCache(false);
       }
     }
     if (!cache.asMap().containsKey(key)){
       // only attempt to switch to memcached if there is a miss in local cache
       // to minimize memcached connection attempts, saving time per local cache usage
-      useMemcached=(memcache==null?false:!memcache.getAvailableServers().isEmpty());
+      if (!memcache.getAvailableServers().isEmpty()){
+        toggleCache(true);
+      }
       return false;
     }
     return true;
@@ -160,5 +161,10 @@ public abstract class NycCacheService<K, V> {
     public void run() {
       logStatus();
     }
+  }
+  
+  private void toggleCache(boolean useMemcached){
+    this.useMemcached = useMemcached;
+    _log.info("Caching with " + (useMemcached?"Memcached":"Local Cache"));
   }
 }
