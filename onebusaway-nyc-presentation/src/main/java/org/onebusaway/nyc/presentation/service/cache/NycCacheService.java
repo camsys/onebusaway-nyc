@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.presentation.service.cache;
 
+import net.spy.memcached.AddrUtil;
+import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 
 import org.slf4j.Logger;
@@ -31,7 +33,7 @@ public abstract class NycCacheService<K, V> {
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
 
-  InetSocketAddress addr = new InetSocketAddress("sessions-memcache",11211);
+  String addr = "sessions-memcache:11211";
   MemcachedClient memcache;
   boolean useMemcached;
 
@@ -61,7 +63,9 @@ public abstract class NycCacheService<K, V> {
     if (memcache==null)
     {
       try {
-        memcache = new MemcachedClient(addr);
+        memcache = new MemcachedClient(
+            new BinaryConnectionFactory(),
+            AddrUtil.getAddresses(addr));
       } 
       catch (Exception e) {
       }
@@ -116,7 +120,7 @@ public abstract class NycCacheService<K, V> {
     if (!cache.asMap().containsKey(key)){
       // only attempt to switch to memcached if there is a miss in local cache
       // to minimize memcached connection attempts, saving time per local cache usage
-      useMemcached=!memcache.getAvailableServers().isEmpty();
+      useMemcached=(memcache==null?false:!memcache.getAvailableServers().isEmpty());
       return false;
     }
     return true;
@@ -148,7 +152,7 @@ public abstract class NycCacheService<K, V> {
          * (SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT)
          */
         + "; Local Size=" + _cache.size()
-        + "; Memcached Size=" + memcache.getStats("sizes"));
+        + "; Memcached Size=" + (memcache==null?"[null]":memcache.getStats("sizes")));
   }
 
   private class StatusThread extends TimerTask {
