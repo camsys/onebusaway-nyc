@@ -147,11 +147,6 @@ public abstract class NycCacheService<K, V> {
   public void logStatus() {
     _log.info(getCache().stats().toString() + "; disabled=" + _disabled
         + "; useMemcached=" + useMemcached
-        /*
-         * + "; interval=" +
-         * _configurationService.getConfigurationValueAsInteger
-         * (SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT)
-         */
         + "; Local Size=" + _cache.size()
         + "; Memcached Size=" + (memcache==null?"[null]":memcache.getStats("sizes")));
   }
