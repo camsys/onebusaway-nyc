@@ -58,6 +58,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
     _cache = new CcLocationCache(10);
     
     _dao = new NycQueuedInferredLocationDaoImpl();
+    _dao.setValidationService(new RecordValidationServiceImpl());
     _dao.setSessionFactory(_sessionFactory);
     _dao.setCcLocationCache(_cache);
     
