@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.RecordValidationService;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.slf4j.Logger;
@@ -153,6 +154,47 @@ public class RecordValidationServiceImpl implements RecordValidationService {
 
 	
 	@Override
+	public boolean validateLastKnownRecord(CcAndInferredLocationRecord record) {
+	  boolean isValid = true;
+	  
+    //Check inferred latitude and inferred longitude
+    BigDecimal inferredLatitude = record.getInferredLatitude();
+    BigDecimal inferredLongitude = record.getInferredLongitude(); 
+    if((!isValueWithinRange(inferredLatitude, -999.999999, 999.999999)) ||
+        (!isValueWithinRange(inferredLongitude, -999.999999, 999.999999))) {
+      isValid =  false;
+    }
+
+    //Check inferred trip id
+    if(StringUtils.isNotBlank(record.getInferredTripId())) {
+      if (record.getInferredTripId().length() >= 64) {
+        log.error("Inferred trip id too long : {}", record.getVehicleId());
+        isValid = false;
+      }
+    }
+
+    //Check inferred block id
+    if(StringUtils.isNotBlank(record.getInferredBlockId())) {
+      if (record.getInferredBlockId().length() >= 64) {
+        log.error("Inferred block id too long : {}", record.getVehicleId());
+        isValid = false;
+      }
+    }
+	  
+	  return isValid;
+	}
+	
+	private boolean isValueWithinRange(BigDecimal value, double lowerBound, double upperBound) {
+    //Check for null and the valid range
+    if(value == null) {
+      return false;
+    }
+	
+	  return isValueWithinRange(value.doubleValue(), lowerBound, upperBound);
+  }
+
+
+  @Override
 	public boolean isValueWithinRange(Double value, double lowerBound, double upperBound) {
 		//Check for null and the valid range
 		if(value == null || Double.isNaN(value) || value < lowerBound || value > upperBound) {

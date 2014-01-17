@@ -18,6 +18,7 @@ import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.model.InvalidLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
+import org.onebusaway.nyc.report_archive.services.RecordValidationService;
 import org.onebusaway.nyc.report_archive.util.HQLBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,13 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 
 	@Autowired
 	private CcLocationCache _ccLocationCache;
+	
+	private RecordValidationService validationService;
+	
+  @Autowired
+  public void setValidationService(RecordValidationService validationService) {
+    this.validationService = validationService;
+  }
 
 	public void setCcLocationCache(CcLocationCache cache) {
 		_ccLocationCache = cache;
@@ -88,7 +96,11 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 			if (cc != null) {
 				CcAndInferredLocationRecord lastKnown = new CcAndInferredLocationRecord(
 						record, cc);
-				lastKnownRecords.put(lastKnown.getVehicleId(), lastKnown);
+				if (validationService.validateLastKnownRecord(lastKnown)) {
+				  lastKnownRecords.put(lastKnown.getVehicleId(), lastKnown);
+				} else {
+				  discardRecord(lastKnown);
+				}
 			}
 		}
 		_template.saveOrUpdateAll(lastKnownRecords.values());
@@ -263,4 +275,9 @@ public class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocati
 		return query.toString();
 	}
 
+	private void discardRecord(CcAndInferredLocationRecord record) {
+    _log.error(
+        "Discarding inferred record for vehicle : {} as inferred latitude or inferred longitude "
+            + "values are out of range, or tripID/blockID is too long", record.getVehicleId());
+	}
 }
