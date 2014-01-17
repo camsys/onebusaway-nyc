@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 
@@ -116,6 +117,42 @@ public class RecordValidationServiceImplTest {
 		
 		valid = validationService.validateInferenceRecord(inferredResult);
 		assertFalse("Expecting invalid inference record", valid);
+		
+		// test block_id
+    when(inferredResult.getVehicleId()).thenReturn("MTANYCT_4123");
+    when(inferredResult.getServiceDate()).thenReturn(1L);
+    when(inferredResult.getRecordTimestamp()).thenReturn(1L);
+    when(inferredResult.getManagementRecord()).thenReturn(managementBean);
+    when(managementBean.getUUID()).thenReturn("123");
+    when(inferredResult.getInferredLatitude()).thenReturn(1D);
+    when(inferredResult.getInferredLongitude()).thenReturn(-1D);
+    when(inferredResult.getBlockId()).thenReturn("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450392_70200_QM4_454_orphan_15394");
+    valid = validationService.validateInferenceRecord(inferredResult);
+    assertFalse("Expecting invalid inference record", valid);
+		
+
+    when(inferredResult.getVehicleId()).thenReturn("MTANYCT_4123");
+    when(inferredResult.getServiceDate()).thenReturn(1L);
+    when(inferredResult.getRecordTimestamp()).thenReturn(1L);
+    when(inferredResult.getManagementRecord()).thenReturn(managementBean);
+    when(managementBean.getUUID()).thenReturn("123");
+    when(inferredResult.getInferredLatitude()).thenReturn(1D);
+    when(inferredResult.getInferredLongitude()).thenReturn(-1D);
+    when(inferredResult.getBlockId()).thenReturn("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450392_70200_QM4_454_orphan");
+    valid = validationService.validateInferenceRecord(inferredResult);
+    assertFalse("Expecting invalid inference record", valid);
+    
+    when(inferredResult.getVehicleId()).thenReturn("MTANYCT_4123");
+    when(inferredResult.getServiceDate()).thenReturn(1L);
+    when(inferredResult.getRecordTimestamp()).thenReturn(1L);
+    when(inferredResult.getManagementRecord()).thenReturn(managementBean);
+    when(managementBean.getUUID()).thenReturn("123");
+    when(inferredResult.getInferredLatitude()).thenReturn(1D);
+    when(inferredResult.getInferredLongitude()).thenReturn(-1D);
+    when(inferredResult.getBlockId()).thenReturn("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450392_70200_QM4_454_orpha");//63 chars, should fit
+    valid = validationService.validateInferenceRecord(inferredResult);
+    assertTrue("Expecting invalid inference record", valid);
+
 	}
 	
 	@Test 
@@ -250,4 +287,34 @@ public class RecordValidationServiceImplTest {
 		
 	}
 
+	@Test
+	public void testInvalidLastKnownRecord() {
+
+	  CcAndInferredLocationRecord record = mock(CcAndInferredLocationRecord.class);
+	  when(record.getVehicleId()).thenReturn(4123);
+	  when(record.getInferredLatitude()).thenReturn(BigDecimal.valueOf(1D));
+	  when(record.getInferredLongitude()).thenReturn(BigDecimal.valueOf(-1D));
+	  when(record.getInferredTripId()).thenReturn("MTABC_5006371-CPPA4-CP_A4-Weekday-10-SDon");
+    when(record.getInferredBlockId()).thenReturn("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450011_58800_Q66_614_orpha");
+	  boolean valid = validationService.validateLastKnownRecord(record);
+	  assertTrue("valid record", valid);
+	  
+    when(record.getVehicleId()).thenReturn(4123);
+    when(record.getInferredLatitude()).thenReturn(BigDecimal.valueOf(1D));
+    when(record.getInferredLongitude()).thenReturn(BigDecimal.valueOf(-1D));
+    when(record.getInferredTripId()).thenReturn("MTABC_5006371-CPPA4-CP_A4-Weekday-10-SDon");
+    when(record.getInferredBlockId()).thenReturn("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450011_58800_Q66_614_orphan_15390");
+    valid = validationService.validateLastKnownRecord(record);
+    assertFalse("Expecting invalid record", valid);
+
+    when(record.getVehicleId()).thenReturn(4123);
+    when(record.getInferredLatitude()).thenReturn(BigDecimal.valueOf(1D));
+    when(record.getInferredLongitude()).thenReturn(BigDecimal.valueOf(-1D));
+    when(record.getInferredTripId()).thenReturn("MTABC_5006371-CPPA4-CP_A4-Weekday-10-SDon 450011_58800_Q66_614_orphan");
+    when(record.getInferredBlockId()).thenReturn("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450011_58800_Q66_614_orpha");
+    valid = validationService.validateLastKnownRecord(record);
+    assertFalse("Expecting invalid record", valid);
+
+	}
+	
 }
