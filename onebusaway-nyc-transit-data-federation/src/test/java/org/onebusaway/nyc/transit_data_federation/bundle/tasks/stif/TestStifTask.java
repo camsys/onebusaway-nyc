@@ -156,6 +156,15 @@ public class TestStifTask {
 		assertEquals("43", column[2]);
 	}
 	
+	@Test
+	public void testTruncateId() {
+	  assertNull(task.truncateId(null));
+	  assertEquals("", task.truncateId(""));
+	  assertEquals("", task.truncateId(" aeiouy"));
+	  assertEquals("MTABC_CPPA4-CP_A4-Wkd-10-SDn_E_450082_61200_QM5_805_rphn_39918", task.truncateId("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450082_61200_QM5_805_orphan_39918"));
+	  assertTrue(task.truncateId("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450082_61200_QM5_805_orphan_39918").length() < 64);
+	}
+	
 	//@Test
 	public void compareAgainstOldMethod() throws IOException{
 		assignAgency("MTA_NYCT", 0, 49);
