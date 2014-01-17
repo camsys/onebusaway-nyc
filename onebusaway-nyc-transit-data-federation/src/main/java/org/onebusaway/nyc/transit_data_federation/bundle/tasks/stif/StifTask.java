@@ -58,6 +58,8 @@ import java.util.Set;
  */
 public class StifTask implements Runnable {
 
+  private static final int MAX_BLOCK_ID_LENGTH = 64;
+
   private Logger _log = LoggerFactory.getLogger(StifTask.class);
 
   private GtfsMutableRelationalDao _gtfsMutableRelationalDao;
@@ -518,9 +520,12 @@ public class StifTask implements Runnable {
         for (Trip gtfsTrip : trip.getGtfsTrips()) {
           blockNo++;
           String blockId = gtfsTrip.getServiceId().getId() + "_"
-              + trip.serviceCode.getLetterCode() + "_ " + trip.firstStop + "_"
+              + trip.serviceCode.getLetterCode() + "_" + trip.firstStop + "_"
               + trip.firstStopTime + "_" + trip.runId.replace("-", "_")
-              + "_orphan_" + blockNo;
+              + blockNo + "_orphn";
+          if (blockId.length() > MAX_BLOCK_ID_LENGTH) {
+            blockId = truncateId(blockId);
+          }
           _log.warn("Generating single-trip block id for GTFS trip: "
               + gtfsTrip.getId() + " : " + blockId);
           gtfsTrip.setBlockId(blockId);
@@ -680,5 +685,11 @@ public class StifTask implements Runnable {
   // for unit tests
   public void setCSVLogger(MultiCSVLogger logger) {
     this.csvLogger = logger;
+  }
+  
+  // package private for unit tests
+  String truncateId(String id) {
+    if (id == null) return null;
+    return id.replaceAll("[aeiouy\\s]", "");
   }
 }
