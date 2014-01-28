@@ -40,6 +40,7 @@ public class DummyOperatorAssignmentServiceImpl implements OperatorAssignmentSer
     item.setAgencyId(operatorId.getAgencyId());
     item.setRunNumber(runNumber);
     item.setRunRoute(runRoute);
+    item.setRunId(runRoute + "-" + runNumber);
 
     assignmentMap.put(operatorId, item);
   }
