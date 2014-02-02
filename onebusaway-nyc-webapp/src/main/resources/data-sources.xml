@@ -109,7 +109,7 @@
     </bean>
     
     <bean id="siriCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycSiriCacheServiceImpl">
-    <property name="disabled" value="${siri.cache.disabled}" />
+    <property name="disabled" value="true" />
     </bean>
 
     
