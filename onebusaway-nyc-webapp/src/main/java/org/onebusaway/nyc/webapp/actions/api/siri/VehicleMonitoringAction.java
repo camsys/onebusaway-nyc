@@ -65,6 +65,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   protected ConfigurationService _configurationService;
   
   private Siri _response;
+  
+  private String _cachedResponse = null;
 
   private ServiceAlertsHelper _serviceAlertsHelper = new ServiceAlertsHelper();
 
@@ -77,7 +79,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   private String _type = "xml";
 
   @Autowired
-  private NycCacheService<Integer, Siri> _cacheService;
+  private NycCacheService<Integer, String> _cacheService;
   
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
   
@@ -228,30 +230,30 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     } else {
       gaLabel = "All Vehicles";
       
-      int hashKey = _cacheService.hash(maximumOnwardCalls, agencyIds);
+      int hashKey = _cacheService.hash(maximumOnwardCalls, agencyIds, _type);
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-      if (!_cacheService.containsKey(hashKey)){
-	    for (String agency : agencyIds) {
-	      ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
-	          agency, currentTimestamp);
-	
-	      for (VehicleStatusBean v : vehicles.getList()) {
-	        VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-	            v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
-	
-	        if (activity != null) {
-	          activities.add(activity);
-	        }
-	      }
-	    }
-	    // There is no input (route id) to validate, so pass null error
-	    _response = generateSiriResponse(activities, null, null, currentTimestamp);
-	    _cacheService.store(hashKey, _response);
-	  }
-	  else {
-		  _response = _cacheService.retrieve(hashKey);
-	  }
+      if (!_cacheService.containsKey(hashKey)) {
+        for (String agency : agencyIds) {
+          ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
+              agency, currentTimestamp);
+
+          for (VehicleStatusBean v : vehicles.getList()) {
+            VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
+                v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
+
+            if (activity != null) {
+              activities.add(activity);
+            }
+          }
+        }
+        // There is no input (route id) to validate, so pass null error
+        _response = generateSiriResponse(activities, null, null,
+            currentTimestamp);
+        _cacheService.store(hashKey, getVehicleMonitoring());
+      } else {
+        _cachedResponse = _cacheService.retrieve(hashKey);
+      }
     }
     
     _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
@@ -319,6 +321,11 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   }
 
   public String getVehicleMonitoring() {
+    if (_cachedResponse != null) {
+      // check the cache first
+      return _cachedResponse;
+    }
+    
     try {
       if (_type.equals("xml")) {
         this._servletResponse.setContentType("application/xml");
