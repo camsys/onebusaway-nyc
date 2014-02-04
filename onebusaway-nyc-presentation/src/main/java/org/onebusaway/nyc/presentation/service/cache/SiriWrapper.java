@@ -4,26 +4,34 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.org.siri.siri.Siri;
 
 public class SiriWrapper extends Siri implements Serializable{
 
-	String json;
+  protected static Logger _log = LoggerFactory.getLogger(SiriWrapper.class);
+  String xml;
 	
 	private static final long serialVersionUID = 427237182212038317L;
 
 	public SiriWrapper(Siri siriObject, RealtimeService realtimeService){
 		try {
-			json=realtimeService.getSiriJsonSerializer().getJson(siriObject);
+		  xml = realtimeService.getSiriXmlSerializer().getXml(siriObject);
 		} catch (Exception e) {
-			e.printStackTrace();
+			_log.error("exception serializing siri", e);
 		}
 	}
 
+	public String getXml() {
+	    return xml;
+	}
+	
 	public String toString(){
-		return json;
+		return xml;
 	}
 	
 	private void writeObject(ObjectOutputStream stream) throws IOException{
@@ -31,6 +39,7 @@ public class SiriWrapper extends Siri implements Serializable{
 	}
 	
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException{
-		  json = (String) stream.readObject();
+		  xml = (String) stream.readObject();
 	}
+	
 }

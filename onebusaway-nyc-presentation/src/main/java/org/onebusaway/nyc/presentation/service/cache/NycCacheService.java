@@ -113,13 +113,14 @@ public abstract class NycCacheService<K, V> {
       try {
         return memcache.get(key.toString()) != null;
       } catch (Exception e) {
+        _log.info("memcache failed:", e);
         toggleCache(false);
       }
     }
     if (!cache.asMap().containsKey(key)){
       // only attempt to switch to memcached if there is a miss in local cache
       // to minimize memcached connection attempts, saving time per local cache usage
-      if (!memcache.getAvailableServers().isEmpty()){
+      if (memcache != null && !memcache.getAvailableServers().isEmpty()){
         toggleCache(true);
       }
       return false;
@@ -158,7 +159,7 @@ public abstract class NycCacheService<K, V> {
     }
   }
   
-  private void toggleCache(boolean useMemcached){
+  protected void toggleCache(boolean useMemcached){
     this.useMemcached = useMemcached;
     _log.info("Caching with " + (useMemcached?"Memcached":"Local Cache"));
   }

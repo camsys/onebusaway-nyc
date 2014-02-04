@@ -64,4 +64,43 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
     super.store(key, new SiriWrapper(value, _realtimeService), timeout);
   }
   
+  
+  /** 
+   * override base impl so we can unwrap the siri properly.
+   */
+  @Override
+  public Siri retrieve(Integer key) {
+    try {
+      if (_disabled) {
+        return null;
+      }
+      if (useMemcached) {
+        Siri s = (Siri) memcache.get(key.toString());
+        if (s != null) {
+          if (s instanceof SiriWrapper) {
+            SiriWrapper sw = (SiriWrapper) s;
+            return _realtimeService.getSiriXmlSerializer().fromXml(sw.getXml());
+          } else {
+            // we have s, but its not SiriWrapper, return as is
+            return s;
+          }
+        }
+      }
+      if (getCache() == null) {
+        return null;
+      }
+      Siri s = getCache().getIfPresent(key);
+      if (s != null) {
+        if (s instanceof SiriWrapper) {
+          SiriWrapper sw = (SiriWrapper) s;
+          return _realtimeService.getSiriXmlSerializer().fromXml(sw.getXml());
+        }
+      }
+      return null;
+    } catch (Exception e) {
+      _log.error("retrieve broke:", e);
+      return null;
+    }
+  }
+
 }

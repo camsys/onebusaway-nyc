@@ -38,6 +38,8 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.nyc.presentation.service.cache.NycCacheService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -54,6 +56,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     implements ServletRequestAware, ServletResponseAware {
 
   private static final long serialVersionUID = 1L;
+  protected static Logger _log = LoggerFactory.getLogger(VehicleMonitoringAction.class);
 
   @Autowired
   public NycTransitDataService _nycTransitDataService;
@@ -226,33 +229,38 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       // *** CASE 3: all vehicles
     } else {
-      gaLabel = "All Vehicles";
-      
-      int hashKey = _cacheService.hash(maximumOnwardCalls, agencyIds);
-      
-      List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-      if (!_cacheService.containsKey(hashKey)){
-	    for (String agency : agencyIds) {
-	      ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
-	          agency, currentTimestamp);
-	
-	      for (VehicleStatusBean v : vehicles.getList()) {
-	        VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-	            v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
-	
-	        if (activity != null) {
-	          activities.add(activity);
-	        }
-	      }
-	    }
-	    // There is no input (route id) to validate, so pass null error
-	    _response = generateSiriResponse(activities, null, null, currentTimestamp);
-	    _cacheService.store(hashKey, _response);
-	  }
-	  else {
-		  _response = _cacheService.retrieve(hashKey);
-	  }
-    }
+      try {
+        gaLabel = "All Vehicles";
+
+        int hashKey = _cacheService.hash(maximumOnwardCalls, agencyIds);
+
+        List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
+        if (!_cacheService.containsKey(hashKey)) {
+          for (String agency : agencyIds) {
+            ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
+                agency, currentTimestamp);
+
+            for (VehicleStatusBean v : vehicles.getList()) {
+              VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
+                  v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
+
+              if (activity != null) {
+                activities.add(activity);
+              }
+            }
+          }
+          // There is no input (route id) to validate, so pass null error
+          _response = generateSiriResponse(activities, null, null,
+              currentTimestamp);
+          _cacheService.store(hashKey, _response);
+        } else {
+          _response = _cacheService.retrieve(hashKey);
+        }
+      } catch (Throwable e) {
+        _log.error("all vehicle call died with:", e);
+        throw new RuntimeException(e); //force HTTP 500 
+      }
+    } // all vehicles
     
     _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
     
