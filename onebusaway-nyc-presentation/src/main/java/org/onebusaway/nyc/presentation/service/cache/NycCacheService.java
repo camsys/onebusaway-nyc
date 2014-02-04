@@ -119,7 +119,7 @@ public abstract class NycCacheService<K, V> {
     if (!cache.asMap().containsKey(key)){
       // only attempt to switch to memcached if there is a miss in local cache
       // to minimize memcached connection attempts, saving time per local cache usage
-      if (!memcache.getAvailableServers().isEmpty()){
+      if (memcache != null && !memcache.getAvailableServers().isEmpty()){
         toggleCache(true);
       }
       return false;
