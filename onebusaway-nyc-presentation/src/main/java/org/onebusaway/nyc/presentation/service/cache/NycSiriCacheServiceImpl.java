@@ -11,12 +11,10 @@ import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import uk.org.siri.siri.Siri;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
+public class NycSiriCacheServiceImpl extends NycCacheService<Integer, String> {
 
   private static final int DEFAULT_CACHE_TIMEOUT = 60;
   private static final String SIRI_CACHE_TIMEOUT_KEY = "cache.expiry.siri";
@@ -24,10 +22,7 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
   @Autowired
   private ConfigurationService _configurationService;
 
-  @Autowired
-  private RealtimeService _realtimeService;
-
-  public synchronized Cache<Integer, Siri> getCache() {
+  public synchronized Cache<Integer, String> getCache() {
     return getCache(_configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT), "SIRI");
   }
 
@@ -37,31 +32,31 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, Siri> {
     if (_cache == null) return;
     int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
     _log.info("rebuilding siri cache with " + _cache.size() + " entries after refresh with timeout=" + timeout + "...");
-    ConcurrentMap<Integer, Siri> map = _cache.asMap();
+    ConcurrentMap<Integer, String> map = _cache.asMap();
     _cache = CacheBuilder.newBuilder()
         .expireAfterWrite(timeout, TimeUnit.SECONDS)
         .build();
-    for (Entry<Integer, Siri> entry : map.entrySet()) {
+    for (Entry<Integer, String> entry : map.entrySet()) {
       _cache.put(entry.getKey(), entry.getValue());
     }
     _log.info("done");
   }
 
-  private Integer hash(int maximumOnwardCalls, List<String> agencies){
+  private Integer hash(int maximumOnwardCalls, List<String> agencies, String outputType){
     // Use properties of a TreeSet to obtain consistent ordering of like combinations of agencies
     TreeSet<String> set = new TreeSet<String>(agencies);
-    return maximumOnwardCalls + set.toString().hashCode();
+    return maximumOnwardCalls + set.toString().hashCode() + outputType.hashCode();
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public Integer hash(Object...factors){
-    return hash((Integer)factors[0], (List<String>)factors[1]);  
+    return hash((Integer)factors[0], (List<String>)factors[1], (String)factors[2]);  
   }
 
-  public void store(Integer key, Siri value) {
+  public void store(Integer key, String value) {
     int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
-    super.store(key, new SiriWrapper(value, _realtimeService), timeout);
+    super.store(key, value, timeout);
   }
   
 }
