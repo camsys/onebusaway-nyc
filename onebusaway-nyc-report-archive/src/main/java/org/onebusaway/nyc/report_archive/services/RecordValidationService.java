@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.report_archive.services;
 
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
@@ -33,6 +34,13 @@ public interface RecordValidationService {
 	 * @return true if the record satisfies the require constraints, false otherwise
 	 */
 	boolean validateLastKnownRecord(CcAndInferredLocationRecord record);
+
+	/**
+   * Validates that given post processed inferred record satisfies the database constraints set
+   * @param inferredRecord inferred record to validate
+   * @return true if the record satisfies the required constraints, false otherwise
+   */
+	boolean validateArchiveInferenceRecord(ArchivedInferredLocationRecord record);
 	
 	/**
 	 * Checks if the given value is within allowed range of numbers
