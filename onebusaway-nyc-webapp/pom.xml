@@ -206,7 +206,7 @@
 				<webapp.api.url>http://localhost:8080</webapp.api.url>
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>
-				<siri.cache.disabled>true</siri.cache.disabled>
+				<siri.cache.disabled>false</siri.cache.disabled>
 			</properties>
 		</profile>
 		<profile>

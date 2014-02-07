@@ -201,7 +201,8 @@
                 <db.username>sa</db.username>
                 <db.password />
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
-                <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
+                <ie.listener>DummyPartitionedInputQueueListenerTask</ie.listener>
+                <!-- <ie.listener>PartitionedInputQueueListenerTask</ie.listener> -->
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host> 
 <!-- 

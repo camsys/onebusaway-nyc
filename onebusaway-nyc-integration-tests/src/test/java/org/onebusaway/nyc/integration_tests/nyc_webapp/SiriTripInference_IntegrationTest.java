@@ -63,7 +63,8 @@ public class SiriTripInference_IntegrationTest extends SiriIntegrationTestBase {
   }
   
   @Test
-  public void testBlockNotSetOnVM() throws HttpException, IOException {
+  public void testBlockNotSetOnVM() throws HttpException, IOException, InterruptedException {
+   Thread.sleep(60 * 1000); // break cache
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2437");
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)vmResponse.get("Siri");

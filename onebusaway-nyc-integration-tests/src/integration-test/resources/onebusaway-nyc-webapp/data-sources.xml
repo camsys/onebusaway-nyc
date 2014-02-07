@@ -87,6 +87,6 @@
 	</bean>
 
 	<bean id="siriCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycSiriCacheServiceImpl">
-		<property name="disabled" value="true" />
+		<property name="disabled" value="false" />
     </bean>
 </beans>

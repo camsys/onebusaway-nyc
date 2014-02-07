@@ -91,7 +91,13 @@ public class SiriIntegrationTestBase {
 
 	  HttpClient client = new HttpClient();
 	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
-	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel=calls&MonitoringRef=" + vId + "&time=" + _time;
+	  String url = null;
+	  if (operatorId == null && vId == null) {
+	    // open ended call
+	    url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&VehicleMonitoringDetailLevel=calls&time=" + _time;
+	  } else {
+	    url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel=calls&MonitoringRef=" + vId + "&time=" + _time;
+	  }
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);
 
