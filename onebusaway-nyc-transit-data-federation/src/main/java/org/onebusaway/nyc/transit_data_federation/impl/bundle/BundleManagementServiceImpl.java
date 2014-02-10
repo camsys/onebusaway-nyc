@@ -25,7 +25,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTrans
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
-import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
@@ -84,7 +84,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	private TransitGraphDao _transitGraphDao;
 
 	@Autowired
-	private TransitDataManagerApiLibrary _apiLibrary;
+	private ConfigurationServiceClient _apiLibrary;
 
 	@Autowired
 	private NycFederatedTransitDataBundle _nycBundle;

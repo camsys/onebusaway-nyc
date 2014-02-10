@@ -32,7 +32,7 @@
     <bean id="configService" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl">
     	<property name="refreshService" ref="refreshService"/>
     	<property name="taskScheduler" ref="taskScheduler"/>
-    	<property name="transitDataManagerApiLibrary" ref="transitDataManagerApiLibrary" />
+    	<property name="configurationServiceClient" ref="configurationServiceClient" />
     </bean>
     
     <bean id="refreshService" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
@@ -40,7 +40,7 @@
     <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
     
      <!-- define which TDM to use -->
-    <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
+    <bean id="configurationServiceClient" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientTDMImpl" >
       <constructor-arg type="java.lang.String" value="${tdm.host}"/>
       <constructor-arg type="java.lang.Integer" value="80" />
       <constructor-arg type="java.lang.String" value="/api/" />

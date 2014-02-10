@@ -5,7 +5,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   private ConfigurationService _configurationService;
 
   @Autowired
-  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
+  private ConfigurationServiceClient _configurationServiceClient = null;
 
   @Autowired
   public void setConfigurationService(ConfigurationService configurationService) {
@@ -51,14 +51,14 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
     configChanged();
   }
 
-  public void setTransitDataManagerApiLibrary(
-      TransitDataManagerApiLibrary apiLibrary) {
-    this._transitDataManagerApiLibrary = apiLibrary;
+  public void setConfigurationServiceClient(
+      ConfigurationServiceClient apiLibrary) {
+    this._configurationServiceClient = apiLibrary;
   }
 
   private ArrayList<AgencyAndId> getVehicleListForDepot(String depotId) {
     try {
-      List<Map<String, String>> vehicleAssignments = _transitDataManagerApiLibrary.getItems("depot", depotId, "vehicles", "list");
+      List<Map<String, String>> vehicleAssignments = _configurationServiceClient.getItems("depot", depotId, "vehicles", "list");
 
       ArrayList<AgencyAndId> vehiclesForThisDepot = new ArrayList<AgencyAndId>();
       for (Map<String, String> depotVehicleAssignment : vehicleAssignments) {

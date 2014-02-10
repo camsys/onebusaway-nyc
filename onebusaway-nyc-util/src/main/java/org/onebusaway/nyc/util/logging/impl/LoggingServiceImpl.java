@@ -2,7 +2,7 @@ package org.onebusaway.nyc.util.logging.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
-import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LoggingServiceImpl implements LoggingService {
 
-	private TransitDataManagerApiLibrary transitDataManagerApiLibrary;
+	private ConfigurationServiceClient configurationServiceClient;
 	
 	private static final Logger log = LoggerFactory.getLogger(LoggingServiceImpl.class);
 	
@@ -27,7 +27,7 @@ public class LoggingServiceImpl implements LoggingService {
 			throw new IllegalArgumentException("Message to log cannot be blank");
 		}
 		
-		String responseText = transitDataManagerApiLibrary.log("log", component, priority.toInt(), message);
+		String responseText = configurationServiceClient.log("log", component, priority.toInt(), message);
 		
 		log.info("Returning response from server");
 		
@@ -35,13 +35,13 @@ public class LoggingServiceImpl implements LoggingService {
 	}
 
 	/**
-	 * Injects {@link TransitDataManagerApiLibrary}
-	 * @param transitDataManagerApiLibrary the transitDataManagerApiLibrary to set
+	 * Injects {@link ConfigurationServiceClient}
+	 * @param configurationServiceClient the configurationServiceClient to set
 	 */
 	@Autowired
-	public void setTransitDataManagerApiLibrary(
-			TransitDataManagerApiLibrary transitDataManagerApiLibrary) {
-		this.transitDataManagerApiLibrary = transitDataManagerApiLibrary;
+	public void setConfigurationServiceClient(
+			ConfigurationServiceClient configurationServiceClient) {
+		this.configurationServiceClient = configurationServiceClient;
 	}
 
 }

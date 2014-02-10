@@ -5,7 +5,7 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleFileItem;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
-import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -41,9 +41,9 @@ public class TDMBundleStoreImpl implements BundleStoreService {
 
 	private String _bundleRootPath = null;
 
-	private TransitDataManagerApiLibrary _apiLibrary;
+	private ConfigurationServiceClient _apiLibrary;
 
-	public TDMBundleStoreImpl(String bundleRootPath, TransitDataManagerApiLibrary apiLibrary) {
+	public TDMBundleStoreImpl(String bundleRootPath, ConfigurationServiceClient apiLibrary) {
 		_bundleRootPath = bundleRootPath;
 		_apiLibrary = apiLibrary;
 	}

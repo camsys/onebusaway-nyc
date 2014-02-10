@@ -17,25 +17,51 @@ public class NycEnvironment {
 
   private static final String ENVIRONMENT_UNKNOWN = "unknown";
   static final Logger _log = LoggerFactory.getLogger(NycEnvironment.class);
+  private HashMap<String, Object> _config = null;
   private String _environment = null;
+  private String _configServiceClientClassName = null;
+  
+  private HashMap<String, Object> getConfig() {
+	  if (_config != null) {
+		  return _config;
+	  }
+	  
+	    try {
+	        String config = FileUtils.readFileToString(new File(
+	            "/var/lib/obanyc/config.json"));
+	        HashMap<String, Object> o = new ObjectMapper(new JsonFactory()).readValue(
+	            config, new TypeReference<HashMap<String, Object>>() {
+	            });
+	        _config = o;
+	      } catch (Exception e) {
+	        _log.info("Failed to get an environment out of /var/lib/obanyc/config.json, continuing without it.");
+	      }
+	      return _config;
+
+  }
   
   @SuppressWarnings("unchecked")
   public String getEnvironment() {
     if (_environment != null)
       return _environment;
     
-    try {
-      String config = FileUtils.readFileToString(new File(
-          "/var/lib/obanyc/config.json"));
-      HashMap<String, Object> o = new ObjectMapper(new JsonFactory()).readValue(
-          config, new TypeReference<HashMap<String, Object>>() {
-          });
-      _environment = (String) ((HashMap<String, Object>) o.get("oba")).get("env");
-    } catch (Exception e) {
-      _log.info("Failed to get an environment out of /var/lib/obanyc/config.json, continuing without it.");
-      _environment = ENVIRONMENT_UNKNOWN;
+    if (_config == null) {
+    	_environment = ENVIRONMENT_UNKNOWN;
+    } else {
+    	_environment = (String) ((HashMap<String, Object>) _config.get("oba")).get("env");
     }
     return _environment;
+  }
+  
+  public String getConfigServiceClientClassName() {
+	  if (_configServiceClientClassName != null) {
+		  return _configServiceClientClassName;
+	  }
+	  if (_config == null) {
+		  return null;
+	  }
+	  _configServiceClientClassName = (String) ((HashMap<String, Object>) _config.get("oba")).get("configServiceClient");
+	  return _configServiceClientClassName;
   }
   
   public ParticipantRefStructure getParticipant() {

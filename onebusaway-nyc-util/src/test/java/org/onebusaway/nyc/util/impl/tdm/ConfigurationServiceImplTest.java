@@ -23,7 +23,7 @@ public class ConfigurationServiceImplTest {
   private RefreshService refreshService;
 
   @Mock
-  private TransitDataManagerApiLibrary mockApiLibrary;
+  private ConfigurationServiceClient mockApiLibrary;
 
   @Mock
   private RestApiLibrary mockRestApiLibrary;
@@ -38,7 +38,7 @@ public class ConfigurationServiceImplTest {
     when(mockApiLibrary.getItemsForRequest("config", "list"))
       .thenReturn(ral.getJsonObjectsForString(json));
 
-    TransitDataManagerApiLibrary tdmal = new TransitDataManagerApiLibrary("tdm.staging.obanyc.com", 80, "/api");
+    ConfigurationServiceClient tdmal = new ConfigurationServiceClientTDMImpl("tdm.staging.obanyc.com", 80, "/api");
     URL setUrl = tdmal.buildUrl("config", "testComponent", "test123", "set");
     when(mockRestApiLibrary.setContents(setUrl, "testValue"))
       .thenReturn(true);

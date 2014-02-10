@@ -7,7 +7,7 @@
 
     <import resource="classpath:org/onebusaway/nyc/vehicle_tracking/webapp/application-context-webapp.xml" />
 
-    <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
+    <bean id="configurationServiceClient" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientTDMImpl" >
       <constructor-arg type="java.lang.String" value=""/>
       <constructor-arg type="java.lang.Integer" value="80" />
       <constructor-arg type="java.lang.String" value="/api/" />

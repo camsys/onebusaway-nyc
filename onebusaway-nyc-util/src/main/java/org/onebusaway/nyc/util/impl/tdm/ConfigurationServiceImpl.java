@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.util.impl.tdm;
 
+import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -7,7 +9,11 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
@@ -26,18 +32,20 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	private RefreshService _refreshService = null;
 
-	private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
+	private ConfigurationServiceClient _configurationServiceClient = null;
 
 	private ConcurrentMap<String, String> _configurationKeyToValueMap = new ConcurrentHashMap<String,String>();
-
+	
+	private HashMap<String, Object> _localConfiguration = null;
+	
 	@Autowired
 	public void setRefreshService(RefreshService refreshService) {
 		this._refreshService = refreshService;
 	}
 
 	@Autowired
-	public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
-		this._transitDataManagerApiLibrary = apiLibrary;
+	public void setConfigurationServiceClient(ConfigurationServiceClient apiLibrary) {
+		this._configurationServiceClient = apiLibrary;
 	}
 
 	@Autowired
@@ -58,8 +66,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	public void refreshConfiguration() throws Exception {
 		List<JsonObject> configurationItems = 
-				_transitDataManagerApiLibrary.getItemsForRequest("config", "list");
-
+				_configurationServiceClient.getItemsForRequest("config", "list");
+		if (configurationItems == null) {
+			_log.info("no config values present!");
+			return;
+		}
 		for(JsonObject configItem : configurationItems) {
 			String configKey = configItem.get("key").getAsString();
 			String configValue = configItem.get("value").getAsString();           
@@ -83,6 +94,17 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@SuppressWarnings("unused")
 	@PostConstruct
 	private void startUpdateProcess() {
+		if (this.getLocalConfiguration() != null) {
+			_log.info("found oba configuration");
+			// look for local override
+			if ("local".equals((String) ((HashMap<String, Object>) _localConfiguration.get("oba")).get("config"))) {
+				_log.info("creating local file config service client");
+				this._configurationServiceClient = new ConfigurationSerivceClientFileImpl();
+			}
+		} else {
+			_log.info("using tdm configuration");
+		}
+			
 		_taskScheduler.scheduleWithFixedDelay(new UpdateThread(), 5 * 60 * 1000); // 5m
 	}
 
@@ -144,7 +166,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			return;
 		}
 
-		_transitDataManagerApiLibrary.setConfigItem("config", component, configurationItemKey, value);		  
+		_configurationServiceClient.setConfigItem("config", component, configurationItemKey, value);		  
 		updateConfigurationMap(configurationItemKey, value);
 	}
 
@@ -158,4 +180,24 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		}
 		return _configurationKeyToValueMap;
 	}
+	
+	private HashMap<String, Object> getLocalConfiguration() {
+		  if (_localConfiguration != null) {
+			  return _localConfiguration;
+		  }
+		  
+		    try {
+		        String config = FileUtils.readFileToString(new File(
+		            "/var/lib/obanyc/config.json"));
+		        HashMap<String, Object> o = new ObjectMapper(new JsonFactory()).readValue(
+		            config, new TypeReference<HashMap<String, Object>>() {
+		            });
+		        _localConfiguration = o;
+		      } catch (Exception e) {
+		        _log.info("Failed to get configuration out of /var/lib/obanyc/config.json, continuing without it.");
+		        _log.info("exception:", e);
+		      }
+		      return _localConfiguration;
+
+	  }
 }

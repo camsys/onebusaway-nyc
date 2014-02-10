@@ -42,8 +42,8 @@
   </bean>
 
   <!-- define which TDM to use -->
-	<bean id="transitDataManagerApiLibrary"
-		class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary">
+	<bean id="configurationServiceClient"
+		class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientTDMImpl">
 		<constructor-arg type="java.lang.String" value="${tdm.host}" />
 		<constructor-arg type="java.lang.Integer" value="${tdm.port}" />
 		<constructor-arg type="java.lang.String" value="${tdm.url}" />

@@ -17,8 +17,9 @@ import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueue
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 
 import org.onebusaway.nyc.util.impl.RestApiLibrary;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientTDMImpl;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
-import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 
@@ -33,7 +34,7 @@ public class InferenceInputQueueListenerTaskTest {
 	private RefreshService refreshService;
 
 	@Mock
-	private TransitDataManagerApiLibrary mockApiLibrary;
+	private ConfigurationServiceClient mockApiLibrary;
 
 	@Mock
 	private RestApiLibrary mockRestApiLibrary;
@@ -77,7 +78,7 @@ public class InferenceInputQueueListenerTaskTest {
 		RestApiLibrary ral = new RestApiLibrary("localhost", null, "api");
 		String json = new String("{\"config\":[{\"value\":\"20\",\"key\":\"tdm.crewAssignmentRefreshInterval\",\"description\":null,\"value-type\":\"String\",\"units\":\"minutes\",\"component\":\"tdm\",\"updated\":null}],\"status\":\"OK\"}");
 		when(mockApiLibrary.getItemsForRequest("config", "list")).thenReturn(ral.getJsonObjectsForString(json));
-		TransitDataManagerApiLibrary tdmal = new TransitDataManagerApiLibrary("tdm.staging.obanyc.com", 80, "/api");
+		ConfigurationServiceClient tdmal = new ConfigurationServiceClientTDMImpl("tdm.staging.obanyc.com", 80, "/api");
 		URL setUrl = tdmal.buildUrl("config", "testComponent", "test123", "set");
 		when(mockRestApiLibrary.setContents(setUrl, "testValue")).thenReturn(true);
 		service.refreshConfiguration();

@@ -7,7 +7,7 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
 
 import com.google.gson.JsonObject;
 
@@ -59,7 +59,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 
   private ConfigurationService _configurationService;
 
-  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
+  private ConfigurationServiceClient _configServiceClient = null;
 
   @Autowired
   public void setConfigurationService(ConfigurationService configurationService) {
@@ -68,8 +68,8 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   }
 
   @Autowired
-  public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
-    this._transitDataManagerApiLibrary = apiLibrary;
+  public void setConfigServiceClient(ConfigurationServiceClient apiLibrary) {
+    this._configServiceClient = apiLibrary;
   }
 
   private void preCache() {
@@ -91,7 +91,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   private HashMap<String, OperatorAssignmentItem> getOperatorMapForServiceDate(ServiceDate serviceDate) {
     try {
       String serviceDateUrlParameter = serviceDate.getYear() + "-" + serviceDate.getMonth() + "-" + serviceDate.getDay();
-      List<JsonObject> operatorAssignments = _transitDataManagerApiLibrary.getItemsForRequest(
+      List<JsonObject> operatorAssignments = _configServiceClient.getItemsForRequest(
           "crew", serviceDateUrlParameter, "list");
 
       HashMap<String, OperatorAssignmentItem> output = new HashMap<String, OperatorAssignmentItem>();

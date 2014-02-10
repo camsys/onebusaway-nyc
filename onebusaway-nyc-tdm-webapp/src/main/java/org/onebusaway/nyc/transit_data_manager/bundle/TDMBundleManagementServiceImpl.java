@@ -3,7 +3,7 @@ package org.onebusaway.nyc.transit_data_manager.bundle;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.LocalBundleStoreImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.TDMBundleStoreImpl;
-import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +18,7 @@ public class TDMBundleManagementServiceImpl extends BundleManagementServiceImpl 
   private static Logger _log = LoggerFactory.getLogger(TDMBundleManagementServiceImpl.class);
 
   @Autowired
-  private TransitDataManagerApiLibrary _apiLibrary;
+  private ConfigurationServiceClient _apiLibrary;
 
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
