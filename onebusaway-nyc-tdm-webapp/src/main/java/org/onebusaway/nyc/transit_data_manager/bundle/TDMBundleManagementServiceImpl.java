@@ -3,7 +3,7 @@ package org.onebusaway.nyc.transit_data_manager.bundle;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.LocalBundleStoreImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.TDMBundleStoreImpl;
-import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
+import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

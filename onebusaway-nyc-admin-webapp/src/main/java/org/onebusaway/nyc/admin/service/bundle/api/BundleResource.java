@@ -1,6 +1,9 @@
 package org.onebusaway.nyc.admin.service.bundle.api;
 
+
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
+import org.onebusaway.nyc.admin.service.impl.RemoteConnectionServiceLocalImpl;
+import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +23,11 @@ public class BundleResource implements ServletContextAware {
   private static final String DEFAULT_TDM_URL = "http://tdm";
   private static Logger _log = LoggerFactory.getLogger(BundleResource.class);
   @Autowired
+  private ConfigurationServiceClient _configClient;
+  @Autowired
   private RemoteConnectionService _remoteConnectionService;
+  
+  private RemoteConnectionServiceLocalImpl _localConnectionService;
 
   /*
    * override of default TDM location:  for local testing use 
@@ -28,6 +35,9 @@ public class BundleResource implements ServletContextAware {
    * This should be set in context.xml
    */
   private String tdmURL;
+  
+  private Boolean isTdm = null;
+  
   @Path("/deploy/list/{environment}")
   @GET
   /**
@@ -35,17 +45,44 @@ public class BundleResource implements ServletContextAware {
    */
   public Response list(@PathParam("environment") String environment) {
     try {
-    String url = getTDMURL() + "/api/bundle/deploy/list/" + environment;
-    _log.debug("requesting:" + url);
-    String json = _remoteConnectionService.getContent(url);
-    _log.debug("response:" + json);
-    return Response.ok(json).build();
+    	_log.info("list with tdm url=" + getTDMURL() + " and isTdm()=" + isTdm());
+    	if (isTdm()) {
+		String url = getTDMURL() + "/api/bundle/deploy/list/" + environment;
+		_log.debug("requesting:" + url);
+		String json = _remoteConnectionService.getContent(url);
+		_log.debug("response:" + json);
+		return Response.ok(json).build();
+    	} else {
+    		String json = _localConnectionService.getList(environment);
+    		if (json != null) {
+    			return Response.ok(json).build();
+    		}
+    		return Response.serverError().build();
+    	}
     } catch (Exception e) {
+    	_log.info("bundle list failed:", e);
       return Response.serverError().build();
     }
   }  
   
-  @Path("/deploy/from/{environment}")
+  private boolean isTdm() {
+	  if (isTdm != null) return isTdm;
+	  try {
+		String useTdm = _configClient.getItem("admin", "useTdm");
+		if ("false".equalsIgnoreCase(useTdm)) {
+			_localConnectionService = new RemoteConnectionServiceLocalImpl();
+			_localConnectionService.setConfigurationServiceClient(_configClient);
+			isTdm = false;
+		} else {
+			isTdm = true;
+		}
+	} catch (Exception e) {
+		_log.error("isTdm caugh e:", e);
+	}
+	  return isTdm;
+}
+
+@Path("/deploy/from/{environment}")
   @GET
   /**
    * request bundles at s3://obanyc-bundle-data/activebundes/{environment} be deployed

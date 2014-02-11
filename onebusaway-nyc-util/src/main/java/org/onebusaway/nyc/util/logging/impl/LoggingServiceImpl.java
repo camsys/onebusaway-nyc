@@ -2,7 +2,7 @@ package org.onebusaway.nyc.util.logging.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
-import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
+import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

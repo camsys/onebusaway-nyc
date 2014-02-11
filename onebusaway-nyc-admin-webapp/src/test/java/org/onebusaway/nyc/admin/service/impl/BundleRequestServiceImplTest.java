@@ -31,7 +31,7 @@ public class BundleRequestServiceImplTest {
     service.setInstanceId("localhost");
     service.setup();
 
-    FileService fileService = new FileServiceImpl() {
+    FileService fileService = new S3FileServiceImpl() {
       @Override
       public void setup() {};
       @Override

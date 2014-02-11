@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.util.impl.tdm;
+package org.onebusaway.nyc.util.configuration;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -31,5 +31,7 @@ public interface ConfigurationServiceClient {
    * Convenience method. Note this assumes all values coming back from the service are strings.
    */
   List<Map<String, String>> getItems(String baseObject, String... params) throws Exception;
+  
+  String getItem(String baseObject, String key) throws Exception;
 
 }

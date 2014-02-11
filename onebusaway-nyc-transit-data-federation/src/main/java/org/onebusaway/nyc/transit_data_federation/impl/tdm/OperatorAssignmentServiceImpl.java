@@ -7,7 +7,7 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
+import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 
 import com.google.gson.JsonObject;
 

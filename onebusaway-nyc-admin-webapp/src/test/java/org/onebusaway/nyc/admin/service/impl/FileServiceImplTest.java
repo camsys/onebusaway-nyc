@@ -13,11 +13,11 @@ import org.junit.Test;
 
 public class FileServiceImplTest {
 
-  private FileServiceImpl fileService;
+  private S3FileServiceImpl fileService;
 
   @Before
   public void setup() {
-    fileService = new FileServiceImpl() {
+    fileService = new S3FileServiceImpl() {
       @Override
       public void setup() {
       };

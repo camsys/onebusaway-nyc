@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.nyc.util.impl.RestApiLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +106,18 @@ public class ConfigurationServiceClientTDMImpl implements
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public String getItem(String baseObject, String key) throws Exception {
+		List<Map<String, String>> items = getItems("config", "list");
+		if (items == null) return null;
+		for (Map<String, String> component : items) {
+			if (component.containsKey("key") && key.equals(component.get("key"))) {
+				return component.get("value");
+			}
+		}
+		return null;
 	}
 
 }

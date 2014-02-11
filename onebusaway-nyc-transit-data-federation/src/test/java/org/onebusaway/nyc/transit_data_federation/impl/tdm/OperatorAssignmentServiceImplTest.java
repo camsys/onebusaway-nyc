@@ -9,9 +9,9 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
+import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.nyc.util.impl.RestApiLibrary;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
-import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
 
 import org.junit.Before;
 import org.junit.Test;

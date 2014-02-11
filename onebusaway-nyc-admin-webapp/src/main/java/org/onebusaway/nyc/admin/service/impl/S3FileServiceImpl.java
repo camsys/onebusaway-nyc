@@ -38,9 +38,9 @@ import javax.servlet.ServletContext;
  * Implements File operations over Amazon S3.
  * 
  */
-public class FileServiceImpl implements FileService, ServletContextAware {
+public class S3FileServiceImpl implements FileService, ServletContextAware {
 
-	private static Logger _log = LoggerFactory.getLogger(FileServiceImpl.class);
+	private static Logger _log = LoggerFactory.getLogger(S3FileServiceImpl.class);
 	private static int MAX_RESULTS = -1;
 
 	private AWSCredentials _credentials;
@@ -60,11 +60,11 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 	private String _password;
 
 	@Override
-	public void setS3User(String user) {
+	public void setUser(String user) {
 		_username = user;
 	}
 	@Override
-	public void setS3Password(String password) {
+	public void setPassword(String password) {
 		_password = password;
 	}
 
@@ -136,11 +136,11 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 			String user = servletContext.getInitParameter("s3.user");
 			_log.info("servlet context provided s3.user=" + user);
 			if (user != null) {
-				setS3User(user);
+				setUser(user);
 			}
 			String password = servletContext.getInitParameter("s3.password");
 			if (password != null) {
-				setS3Password(password);
+				setPassword(password);
 			}
 			String bucketName = servletContext.getInitParameter("s3.bundle.bucketName");
 			if (bucketName != null) {

@@ -45,6 +45,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   
  	private String _username;
 	private String _password;
+	private boolean _isAws = false;
 
 	@Override
 	public void setEc2User(String user) {
@@ -59,8 +60,12 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 	@Override
   public void setup() {
 		try {
-			_credentials = new BasicAWSCredentials(_username, _password);
-			_ec2 = new AmazonEC2Client(_credentials);
+			if (_isAws) {
+				_credentials = new BasicAWSCredentials(_username, _password);
+				_ec2 = new AmazonEC2Client(_credentials);
+			} else {
+				_log.info("setup preferring local config");
+			}
 		} catch (Throwable t) {
 		  _log.error("BundleServerServiceImpl setup failed, likely due to missing or invalid credentials");
 			_log.error("BundleServerService setup failed:", t);
@@ -73,10 +78,12 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 		if (servletContext != null) {
 			String user = servletContext.getInitParameter("ec2.user");
 			if (user != null) {
+				_isAws = true;
 				setEc2User(user);
 			}
 			String password = servletContext.getInitParameter("ec2.password");
 			if (password != null) {
+				_isAws = true;
 				setEc2Password(password);
 			}
 		}
@@ -84,6 +91,10 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 
   @Override
   public String start(String instanceId) {
+	if (!_isAws) {
+		return LOCAL_HOST;
+	}
+	
     if (LOCAL_HOST.equalsIgnoreCase(instanceId)) {
       return instanceId;
     }
@@ -175,6 +186,9 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   
   @Override
   public String stop(String instanceId) {
+	if (!_isAws) {
+		return LOCAL_HOST;
+	}
     if (LOCAL_HOST.equalsIgnoreCase(instanceId)) {
       return instanceId;
     }

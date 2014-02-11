@@ -268,6 +268,15 @@ public class FileUtils {
 
   }
 
+  public static void copyFile(File srcFile, File destFile) {
+		try {
+			org.apache.commons.io.FileUtils.copyFile(srcFile, destFile);
+		} catch (IOException e) {
+			_log.error("copyFile failed:", e);
+			throw new RuntimeException(e);
+		}
+  }
+	  
 
   public InputStream read(String filename) {
     File file = new File(filename);
@@ -328,5 +337,6 @@ public class FileUtils {
                 }
       }
   }
-  
+
+
 }

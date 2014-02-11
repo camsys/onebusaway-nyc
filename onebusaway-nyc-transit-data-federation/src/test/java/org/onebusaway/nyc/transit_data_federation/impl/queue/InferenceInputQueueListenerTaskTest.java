@@ -16,10 +16,11 @@ import org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredicti
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 
+import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.nyc.util.impl.RestApiLibrary;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientBridge;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientTDMImpl;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
-import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClient;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 

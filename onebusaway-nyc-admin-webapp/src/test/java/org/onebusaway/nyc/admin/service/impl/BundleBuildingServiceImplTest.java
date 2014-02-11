@@ -33,7 +33,7 @@ public class BundleBuildingServiceImplTest {
     };
     
     FileService fileService;
-    fileService = new FileServiceImpl() {
+    fileService = new S3FileServiceImpl() {
       @Override
       public void setup() {
       };
