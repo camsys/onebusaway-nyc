@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String BUNDLE_RESOURCE = "classpath:org/onebusaway/transit_data_federation/bundle/application-context-bundle-admin.xml";
@@ -272,6 +273,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // beans assume bundlePath is set -- this will be where files are written!
       System.setProperty("bundlePath", outputPath.getAbsolutePath());
       
+      //System.setProperty("tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException", "false");
+      
       String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
       logFile = new PrintStream(new FileOutputStream(new File(logFilename)));
 
@@ -280,7 +283,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       configureLogging(System.out);
       
       FederatedTransitDataBundleCreator creator = new FederatedTransitDataBundleCreator();
-
+      Properties cmdOverrides = new Properties();
+      cmdOverrides.setProperty("tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException", "false");
+      creator.setAdditionalBeanPropertyOverrides(cmdOverrides);
       Map<String, BeanDefinition> beans = new HashMap<String, BeanDefinition>();
       creator.setContextBeans(beans);
 
@@ -540,6 +545,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     
     List<GtfsBundle> bundles = new ArrayList<GtfsBundle>(gtfsList.size());
     String defaultAgencyId = getDefaultAgencyId();
+ 
     response.addStatusMessage("default agency configured to be |" + defaultAgencyId + "|");
     for (String path : gtfsList) {
       GtfsBundle gtfsBundle = new GtfsBundle();
@@ -557,8 +563,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   @Override
   public String getDefaultAgencyId() {
-    return configurationService.getConfigurationValueAsString("admin.default_agency", DEFAULT_AGENCY);
-
+    String noDefaultAgency = configurationService.getConfigurationValueAsString("admin._nodefault_agency", null);
+    if ("true".equalsIgnoreCase(noDefaultAgency)) return null;
+    String agencyId = configurationService.getConfigurationValueAsString("admin.default_agency", DEFAULT_AGENCY);
+    if (agencyId == null) _log.info("null agencyId!");
+    return agencyId;
   }
 
   @Override
