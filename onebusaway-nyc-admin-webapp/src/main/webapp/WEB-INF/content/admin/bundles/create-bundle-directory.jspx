@@ -64,6 +64,8 @@
 					</s:iterator>
 				</div>
 			</div>
+			<!--  TBD  This is not hooked up so hiding it -->
+			<!-- 
 			<div id="advancedOptions">
 				<s:url var="url" value="/css/img/arrow-right-3.png" />
 				<img src="${url}" alt="Not found" id="expand" /> <label
@@ -80,6 +82,7 @@
 					<input type="button" value="Add Comment" id="create_comments" />
 				</div>
 			</div>
+			 -->
 			<div class="submitForm">
 				<fieldset>
 					<s:url var="url" action="index.action" namespace="/admin" />

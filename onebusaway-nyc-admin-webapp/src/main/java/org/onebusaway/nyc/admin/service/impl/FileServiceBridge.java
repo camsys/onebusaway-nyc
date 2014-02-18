@@ -13,7 +13,8 @@ import org.springframework.web.context.ServletContextAware;
 
 public class FileServiceBridge implements FileService, ServletContextAware {
 
-	private static Logger _log = LoggerFactory.getLogger(FileServiceBridge.class);
+	private static final String AUX_PATH = "aux_latest";
+  private static Logger _log = LoggerFactory.getLogger(FileServiceBridge.class);
 	private FileService _s3;
 	private FileService _disk;
 	private String _user;
@@ -44,7 +45,7 @@ public class FileServiceBridge implements FileService, ServletContextAware {
 			_disk = new DiskFileServiceImpl();
 			_disk.setBucketName(_bucketName);
 			_disk.setGtfsPath(_gtfsPath);
-			_disk.setStifPath(_stifPath);
+			_disk.setStifPath(AUX_PATH);
 			_disk.setBuildPath(_buildPath);
 			_disk.setConfigPath(_configPath);
 			_disk.setup();

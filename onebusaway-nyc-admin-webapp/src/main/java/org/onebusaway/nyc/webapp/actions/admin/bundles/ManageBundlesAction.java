@@ -360,8 +360,14 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	    if (context != null) {
 	      String obanycEnv = context.getInitParameter("obanyc.environment");
 	      if (obanycEnv != null && obanycEnv.length() > 0) {
+	        String rootDir = context.getInitParameter("s3.bundle.bucketName");
+	        if (rootDir == null  || rootDir.length() == 0) {
+	          rootDir = context.getInitParameter("file.bundle.bucketName");
+	        } else {
+	          rootDir = "s3://" + rootDir;
+	        }
 	        environment = obanycEnv;
-	        s3Path = "s3://" + context.getInitParameter("s3.bundle.bucketName")
+	        s3Path = rootDir
 	          + "/activebundles/" + environment
 	          + "/";
 	        _log.info("injecting env=" + environment + ", s3Path=" + s3Path);

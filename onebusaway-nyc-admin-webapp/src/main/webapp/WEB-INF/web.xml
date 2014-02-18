@@ -106,6 +106,10 @@
    <listener>
 	 <listener-class>org.springframework.security.ui.session.HttpSessionEventPublisher</listener-class>
   </listener>
+   <listener>
+	 <listener-class>org.onebusaway.nyc.admin.util.LocalizationListener</listener-class>
+  </listener>
+
 
   <servlet>
     <servlet-name>Jersey Spring Web Application</servlet-name>
