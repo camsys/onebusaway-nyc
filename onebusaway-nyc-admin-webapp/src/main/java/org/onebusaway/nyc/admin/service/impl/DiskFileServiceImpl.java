@@ -123,7 +123,7 @@ public class DiskFileServiceImpl implements FileService {
 		FileUtils fs = new FileUtils();
 		File destFile = new File(tmpDir, fs.parseFileName(s3path));
 		FileUtils.copyFile(srcFile, destFile);
-		return null;
+		return tmpDir + File.separator + fs.parseFileName(s3path);
 	}
 
 	@Override
@@ -140,16 +140,42 @@ public class DiskFileServiceImpl implements FileService {
 	}
 
 	@Override
+  // this method supports multiple syntaxes: 
+  // copy dir to dir
+  // copy file to file
+  // copy file to dir
 	public String put(String key, String directory) {
-		// TODO
-		_log.error("empty put(" + key + ", " + directory + "):  please implement");
+		_log.info("put(" + key + ", " + directory + ")");
+		FileUtils fs = new FileUtils();
+		String baseDirectoryName = _basePath + File.separator + fs.parseDirectory(key);
+		File baseDirectory = new File(baseDirectoryName);
+		if (!baseDirectory.exists()) {
+		  baseDirectory.mkdirs();
+		}
+		String destFileName = _basePath + File.separator + key;
+		File destLocation = new File(destFileName);
+		File srcLocation = new File(directory);
+		
+		try {
+      fs.copyFiles(srcLocation, destLocation);
+		} catch (Exception e) {
+		  _log.error("put failed(" + key + ", " + directory + "):", e);
+		}
+		
 		return null;
 	}
 
 	@Override
 	public List<String> list(String directory, int maxResults) {
 		File dir = new File(_basePath, directory);
-		return Arrays.asList(dir.list());
+		if (dir.list() == null) {
+		  return new ArrayList<String>();
+		}
+		ArrayList<String> fullPaths = new ArrayList<String>();
+		for (String file : dir.list()) {
+		  fullPaths.add(directory + File.separator + file);
+		}
+		return fullPaths;
 	}
 
 	@Override

@@ -141,6 +141,7 @@ public class FileServiceBridge implements FileService, ServletContextAware {
 		if (_isS3) {
 			return _s3.get(basePath, tmpDir);
 		}
+		_log.debug("get(" + basePath + ", " + tmpDir + ")");
 		return _disk.get(basePath, tmpDir);
 	}
 

@@ -112,14 +112,27 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public String getConfigurationValueAsString(String configurationItemKey,
 			String defaultValue) {
-
+	  String value = null;
+	  if (_localConfiguration != null) {
+	    _log.info("using localConfiguration=" + _localConfiguration);
+	    try {
+        value = getLocalConfigurationValue(configurationItemKey);
+      } catch (Exception e) {
+        _log.error("lookup up local config failed:", e);
+      }
+	    _log.info("for key=" + configurationItemKey + " found " + value);
+	    if (value == null) {
+	      return defaultValue;
+	    }
+	  }
+	  
 		if(_configurationKeyToValueMap.size() == 0) {
 			_log.warn("No configuration values are present!");
 		} else {        
 			_log.debug("Have " + _configurationKeyToValueMap.size() + " configuration parameters.");
 		}
 
-		String value = _configurationKeyToValueMap.get(configurationItemKey);
+		value = _configurationKeyToValueMap.get(configurationItemKey);
 
 		if(value == null) {
 			return defaultValue;
@@ -128,7 +141,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		}
 	}
 
-	@Override
+	private String getLocalConfigurationValue(String configurationItemKey) throws Exception {
+	  return _configurationServiceClient.getItem(null, configurationItemKey);
+  }
+
+  @Override
 	public Float getConfigurationValueAsFloat(String configurationItemKey, Float defaultValue) {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
@@ -167,6 +184,12 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			return;
 		}
 
+    if (_localConfiguration != null) {
+      _log.error("setConfigurationValue not supported for _localConfiguration!");
+      throw new UnsupportedOperationException();
+    }
+
+		
 		_configurationServiceClient.setConfigItem("config", component, configurationItemKey, value);		  
 		updateConfigurationMap(configurationItemKey, value);
 	}

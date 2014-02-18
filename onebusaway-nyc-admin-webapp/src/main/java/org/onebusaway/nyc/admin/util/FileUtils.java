@@ -94,6 +94,16 @@ public class FileUtils {
     return urlString;
   }
 
+  public String parseDirectory(String urlString) {
+    if (urlString == null) return null;
+    int i = urlString.lastIndexOf("/");
+    if (i+1 < urlString.length()) {
+      return urlString.substring(0, i);
+    }
+    return urlString;
+  }
+
+
   public String parseBucket(String s3path) {
     if (s3path.indexOf("s3://") == -1) {
       throw new RuntimeException(
@@ -269,6 +279,7 @@ public class FileUtils {
   }
 
   public static void copyFile(File srcFile, File destFile) {
+    _log.debug("copyFile(" + srcFile + "=>" + destFile);
 		try {
 			org.apache.commons.io.FileUtils.copyFile(srcFile, destFile);
 		} catch (IOException e) {

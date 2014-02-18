@@ -61,6 +61,7 @@ public class ValidateRemoteResource extends AuthenticatedResource {
     }
 
     BundleRequest bundleRequest = new BundleRequest();
+    _log.debug("bundleName=" + bundleName + ", bundleDirectory=" + bundleDirectory);
     bundleRequest.setBundleBuildName(bundleName);
     bundleRequest.setBundleDirectory(bundleDirectory);
     bundleRequest.setId(id);

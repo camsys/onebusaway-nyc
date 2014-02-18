@@ -154,10 +154,12 @@ public class BundleValidationServiceImpl implements BundleValidationService {
     int returnCode = -1;
     try {
       returnCode = validateGtfs(gtfsZipFileName, outputFile);
+      _log.debug("returnCode=" + returnCode);
     } catch (RuntimeException e) {
-      _log.error(e.toString());
+      _log.error(e.toString(), e);
       return -1;
     }
+    _log.debug("returnCode=" + returnCode);
     // 2 is the return code if process not found/file not found on exec
     if (returnCode == 2) {
       // try installing if that failed
@@ -166,10 +168,14 @@ public class BundleValidationServiceImpl implements BundleValidationService {
       
       try {
         // try again after install
-        return validateGtfs(gtfsZipFileName, outputFile);
+        returnCode = validateGtfs(gtfsZipFileName, outputFile);
+        if (returnCode == 2) {
+          _log.error("Error setting up feedvalidator.py!");
+          _log.error("It either could not be retrieved or your system needs a softlink to /usr/bin/python2.5");
+        }
       } catch (RuntimeException e) {
         _log.error(e.toString());
-        return -1;
+        return returnCode;
       }
     }
     return returnCode;
@@ -228,7 +234,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
       process = Runtime.getRuntime().exec(cmds);
       return process.waitFor();
     } catch (Exception e) {
-      _log.error(e.toString());
+      _log.error(e.toString(), e);
       String msg = e.getMessage();
       if (msg != null && e.getMessage().indexOf("error=2,") > 0) {
         return 2; // File Not Found
