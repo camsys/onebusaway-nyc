@@ -124,6 +124,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	    if (value == null) {
 	      return defaultValue;
 	    }
+	    return value;
 	  }
 	  
 		if(_configurationKeyToValueMap.size() == 0) {

@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.admin.service.bundle.impl;
 
 import org.onebusaway.container.ContainerLibrary;
+import org.onebusaway.container.spring.PropertyOverrideConfigurer;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
@@ -53,6 +54,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String OUTPUT_DIR = "outputs";
   private static final String INPUTS_DIR = "inputs";
   private static final String DEFAULT_TRIP_TO_DSC_FILE = "tripToDSCMap.txt";
+  private static final String ARG_THROW_EXCEPTION_INVALID_STOPS = "tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException";
 
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImpl.class);
   private FileService _fileService;
@@ -273,8 +275,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // beans assume bundlePath is set -- this will be where files are written!
       System.setProperty("bundlePath", outputPath.getAbsolutePath());
       
-      //System.setProperty("tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException", "false");
-      
       String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
       logFile = new PrintStream(new FileOutputStream(new File(logFilename)));
 
@@ -283,12 +283,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       configureLogging(System.out);
       
       FederatedTransitDataBundleCreator creator = new FederatedTransitDataBundleCreator();
-      Properties cmdOverrides = new Properties();
-      cmdOverrides.setProperty("tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException", "false");
-      creator.setAdditionalBeanPropertyOverrides(cmdOverrides);
+
       Map<String, BeanDefinition> beans = new HashMap<String, BeanDefinition>();
       creator.setContextBeans(beans);
-
+      
       List<GtfsBundle> gtfsBundles = createGtfsBundles(response);
       List<String> contextPaths = new ArrayList<String>();
       contextPaths.add(BUNDLE_RESOURCE);
@@ -387,12 +385,22 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       creator.setOutputPath(outputPath);
       creator.setContextPaths(contextPaths);
 
+      // manage our own overrides, as we use our own context
+      Properties cmdOverrides = new Properties();
+      cmdOverrides.setProperty(ARG_THROW_EXCEPTION_INVALID_STOPS, "false");
+      creator.setAdditionalBeanPropertyOverrides(cmdOverrides);
+
+
+      BeanDefinitionBuilder propertyOverrides = BeanDefinitionBuilder.genericBeanDefinition(PropertyOverrideConfigurer.class);
+      propertyOverrides.addPropertyValue("properties", cmdOverrides);
+      beans.put("myCustomPropertyOverrides",
+          propertyOverrides.getBeanDefinition());
+
       // manage our own context to recover from exceptions
       Map<String, BeanDefinition> contextBeans = new HashMap<String, BeanDefinition>();
       contextBeans.putAll(beans);
       context = ContainerLibrary.createContext(contextPaths, contextBeans);
       creator.setContext(context);
-      
       
       response.addStatusMessage("building bundle");
       creator.run();
@@ -563,10 +571,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   @Override
   public String getDefaultAgencyId() {
-    String noDefaultAgency = configurationService.getConfigurationValueAsString("admin._nodefault_agency", null);
+    String noDefaultAgency = configurationService.getConfigurationValueAsString("no_default_agency", null);
     if ("true".equalsIgnoreCase(noDefaultAgency)) return null;
     String agencyId = configurationService.getConfigurationValueAsString("admin.default_agency", DEFAULT_AGENCY);
-    if (agencyId == null) _log.info("null agencyId!");
     return agencyId;
   }
 
