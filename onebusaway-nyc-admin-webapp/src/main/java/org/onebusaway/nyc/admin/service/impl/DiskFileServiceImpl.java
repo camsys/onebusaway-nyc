@@ -119,10 +119,10 @@ public class DiskFileServiceImpl implements FileService {
 
 	@Override
 	public String get(String s3path, String tmpDir) {
-		File srcFile = new File(_basePath, s3path);
 		FileUtils fs = new FileUtils();
-		File destFile = new File(tmpDir, fs.parseFileName(s3path));
-		FileUtils.copyFile(srcFile, destFile);
+		File srcFile = new File(_basePath, s3path);
+		File destFile = new File(tmpDir);
+		fs.copyFiles(srcFile, destFile);
 		return tmpDir + File.separator + fs.parseFileName(s3path);
 	}
 

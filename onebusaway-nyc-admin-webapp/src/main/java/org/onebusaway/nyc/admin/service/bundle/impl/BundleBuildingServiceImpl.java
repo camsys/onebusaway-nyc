@@ -7,6 +7,7 @@ import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
+import org.onebusaway.nyc.admin.service.bundle.task.GtfsModTask;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.nyc.admin.util.ProcessUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
@@ -311,6 +312,19 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       nycBundle.addPropertyValue("path", outputPath);
       beans.put("nycBundle", nycBundle.getBeanDefinition());
 
+      // STEP 0 optional config
+      if (isModTaskApplicable()) {
+        BeanDefinitionBuilder modTask = BeanDefinitionBuilder.genericBeanDefinition(GtfsModTask.class);
+        beans.put("modTask", modTask.getBeanDefinition());
+        
+        BeanDefinitionBuilder modTaskDef = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+        modTaskDef.addPropertyValue("taskName", "modTask");
+        modTaskDef.addPropertyValue("afterTaskName", "start");
+        modTaskDef.addPropertyValue("beforeTaskName", "gtfs");
+        modTaskDef.addPropertyReference("task", "modTask");
+        beans.put("modTaskDef", modTaskDef.getBeanDefinition());
+      }
+      
       // STEP 1
       BeanDefinitionBuilder clearCSVTask = BeanDefinitionBuilder.genericBeanDefinition(ClearCSVTask.class);
       clearCSVTask.addPropertyReference("logger", "multiCSVLogger");
@@ -438,6 +452,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
   
+  private boolean isModTaskApplicable() {
+    // TODO lookup if this should be run
+    return true;
+  }
+
   private String getTripToDSCFilename() {
     String dscFilename = null;
     try {

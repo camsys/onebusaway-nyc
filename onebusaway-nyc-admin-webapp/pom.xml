@@ -95,6 +95,17 @@
 			<artifactId>onebusaway-gtfs</artifactId>
 			<version>${onebusaway.gtfs.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-gtfs-transformer</artifactId>
+			<version>${onebusaway.gtfs-modules.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-collections</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+		
 		<!-- s3 integration -->
 		<dependency>
 			<groupId>com.amazonaws</groupId>
