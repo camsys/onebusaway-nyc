@@ -167,14 +167,24 @@ public class DiskFileServiceImpl implements FileService {
 
 	@Override
 	public List<String> list(String directory, int maxResults) {
+	  _log.info("list(" + directory + ")");
 		File dir = new File(_basePath, directory);
 		if (dir.list() == null) {
 		  return new ArrayList<String>();
 		}
 		ArrayList<String> fullPaths = new ArrayList<String>();
 		for (String file : dir.list()) {
-		  fullPaths.add(directory + File.separator + file);
+		  File checkFile = new File(_basePath + File.separator + directory, file);
+		  
+		  if (checkFile.isDirectory()) {
+		    // recurse
+		    fullPaths.addAll(list(directory + File.separator + file, -1));
+		  } else {
+		    // TODO add a switch or param for this?
+		    fullPaths.add(directory + File.separator + file);
+		  }
 		}
+		_log.debug("list(" + directory + ")=" + fullPaths);
 		return fullPaths;
 	}
 

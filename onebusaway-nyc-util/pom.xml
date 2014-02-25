@@ -37,7 +37,7 @@
 		<groupId>commons-io</groupId>
 		<artifactId>commons-io</artifactId>
 		<version>1.4</version>
-		<scope>provided</scope>
+		<!-- <scope>provided</scope> -->
 	</dependency>
 	<dependency>
 		<groupId>org.codehaus.jackson</groupId>

@@ -5,6 +5,7 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.FileUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,6 +177,11 @@ public class FileUtility {
     out.close();
 
     return outputFile;
+  }
+
+  public void moveFile(String srcFileName, String destFileName) throws Exception {
+    FileUtils.moveFile(new File(srcFileName),
+        new File(destFileName));
   }
 
 }

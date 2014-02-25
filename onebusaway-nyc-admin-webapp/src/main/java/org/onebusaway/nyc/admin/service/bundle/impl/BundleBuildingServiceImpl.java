@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String BUNDLE_RESOURCE = "classpath:org/onebusaway/transit_data_federation/bundle/application-context-bundle-admin.xml";
@@ -98,7 +100,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
    */
   @Override
   public void download(BundleBuildRequest request, BundleBuildResponse response) {
-
     String bundleDir = request.getBundleDirectory();
     String tmpDirectory = request.getTmpDirectory();
     if (tmpDirectory == null) { 
@@ -111,24 +112,53 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     List<String> gtfs = _fileService.list(
         bundleDir + "/" + _fileService.getGtfsPath(), -1);
     for (String file : gtfs) {
+      _log.debug("downloading gtfs:" + file);
       response.addStatusMessage("downloading gtfs " + file);
-      response.addGtfsFile(_fileService.get(file, tmpDirectory));
+      // write some meta_data into the file name for later use
+      String agencyDir = parseAgencyDir(file);
+      
+      String gtfsFileName = _fileService.get(file, tmpDirectory);
+      
+      // if we have metadata, rename file to encode metadata
+      if (agencyDir != null) {
+        FileUtils fs = new FileUtils();
+        File toRename = new File(gtfsFileName);
+        String newNameStr = fs.parseDirectory(gtfsFileName) + File.separator + agencyDir
+              + "_" + toRename.getName();
+        try {
+          fs.moveFile(gtfsFileName, newNameStr);
+          response.addGtfsFile(newNameStr);
+          _log.debug("gtfs file " + gtfsFileName + " renamed to " + newNameStr);
+        } catch (Exception e) {
+          _log.error("exception moving GTFS file:", e);
+          // use the old one and carry on
+          response.addGtfsFile(gtfsFileName);
+        }
+        
+      } else {
+        response.addGtfsFile(gtfsFileName);  
+      }
     }
+    _log.debug("finished download gtfs");
     // download stifs
     List<String> stif = _fileService.list(
         bundleDir + "/" + _fileService.getStifPath(), -1);
     for (String file : stif) {
+      _log.debug("downloading stif:" + stif);
       response.addStatusMessage("downloading stif " + file);
       response.addStifZipFile(_fileService.get(file, tmpDirectory));
     }
-
+    _log.debug("finished download stif");
     // download optional configuration files
     List<String> config = _fileService.list(
         bundleDir + "/" + _fileService.getConfigPath(), -1);
     for (String file : config) {
+      _log.debug("downloading config:" + config);
       response.addStatusMessage("downloading config file " + file);
       response.addConfigFile(_fileService.get(file, tmpDirectory));
     }
+    _log.debug("download complete");
+    response.addStatusMessage("download complete");
   }
 
   /**
@@ -167,28 +197,38 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     _log.info("creating stif directory=" + stifPath);
     stifDir.mkdirs();
     
+    
     File dataDir = new File(dataPath);
     response.setBundleDataDirectory(dataPath);
     dataDir.mkdirs();
     
     for (String gtfs : response.getGtfsList()) {
-      String outputFilename = inputsPath + File.separator + fs.parseFileName(gtfs); 
-      fs.copyFiles(new File(gtfs), new File(outputFilename));
+      String outputFilename = null;
+      if (!gtfs.endsWith(".zip")) {
+        _log.error("ignoring gtfs path that is not a zip:" + gtfs);
+        response.addStatusMessage("ignoring gtfs path that is not a zip:" + gtfs);
+      } else {
+        outputFilename = inputsPath + File.separator + fs.parseFileName(gtfs);
+        _log.debug("prepping gtfs:" + gtfs + " to " + outputFilename);
+        fs.copyFiles(new File(gtfs), new File(outputFilename));
+      }
     }
+    _log.debug("finished prepping gtfs!");
+    
     for (String stif: response.getStifZipList()) {
+      _log.debug("prepping stif:" + stif);
       String outputFilename = inputsPath + File.separator + fs.parseFileName(stif); 
       fs.copyFiles(new File(stif), new File(outputFilename));
     }
     
     for (String stifZip : response.getStifZipList()) {
-      _log.info("stif copying " + stifZip + " to " + request.getTmpDirectory() + File.separator
+      _log.debug("stif copying " + stifZip + " to " + request.getTmpDirectory() + File.separator
           + "stif");
-        _log.info("unzipping " + stifZip);
       new FileUtils().unzip(stifZip, request.getTmpDirectory() + File.separator
           + "stif");
     }
 
-    _log.info("stip unzip complete ");
+    _log.debug("stip unzip complete ");
     
     // stage baseLocations
     InputStream baseLocationsStream = this.getClass().getResourceAsStream("/BaseLocations.txt");
@@ -199,7 +239,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     
     // stage any configuration files
     for (String config : response.getConfigList()) {
-      _log.info("config copying " + config + " to " + inputsPath + File.separator + "config");
+      _log.debug("config copying " + config + " to " + inputsPath + File.separator + "config");
       response.addStatusMessage("found additional configuration file=" + config);
       String outputFilename = inputsPath + File.separator + "config" + File.separator + fs.parseFileName(config);
       fs.copyFiles(new File(config), new File(outputFilename));
@@ -242,6 +282,16 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     } catch (Exception any) {
       response.setException(any);
     }
+  }
+
+  private String parseAgencyDir(String path) {
+    
+    Pattern pattern = Pattern.compile("/(\\d{1,2})/");
+    Matcher matcher = pattern.matcher(path);
+    if (matcher.find()) {
+      return matcher.group(0).replace(File.separator, "");
+    }
+    return null;
   }
 
   private String getStifCleanupUrl() {
@@ -349,40 +399,44 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       task.addPropertyReference("task", "checkShapeIdTask");
       beans.put("checkShapeIdTaskDef", task.getBeanDefinition());
 
-      // STEP 3
-      BeanDefinitionBuilder stifLoaderTask = BeanDefinitionBuilder.genericBeanDefinition(StifTask.class);
-      stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
-      stifLoaderTask.addPropertyReference("logger", "multiCSVLogger");
-      // TODO this is a convention, pull out into config?
-      stifLoaderTask.addPropertyValue("stifPath", request.getTmpDirectory() + File.separator + "stif"); 
-      String notInServiceFilename = request.getTmpDirectory() + File.separator
-          + "NotInServiceDSCs.txt";
+      if (isStifTaskApplicable()) {
+        // STEP 3
+        BeanDefinitionBuilder stifLoaderTask = BeanDefinitionBuilder.genericBeanDefinition(StifTask.class);
+        stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
+        stifLoaderTask.addPropertyReference("logger", "multiCSVLogger");
+        // TODO this is a convention, pull out into config?
+        stifLoaderTask.addPropertyValue("stifPath", request.getTmpDirectory()
+            + File.separator + "stif");
+        String notInServiceFilename = request.getTmpDirectory()
+            + File.separator + "NotInServiceDSCs.txt";
 
-      new FileUtils().createFile(notInServiceFilename,
-          listToFile(request.getNotInServiceDSCList()));
-      stifLoaderTask.addPropertyValue("notInServiceDscPath",
-          notInServiceFilename);
-      
-      String dscMapPath = response.getBundleInputDirectory() + File.separator + "config" + File.separator 
-          + getTripToDSCFilename();
-      _log.info("looking for configuration at " + dscMapPath);
-      File dscMapFile = new File(dscMapPath);
-      if (dscMapFile.exists()) {
-        _log.info("loading tripToDSCMap at" + dscMapPath);
-        response.addStatusMessage("loading tripToDSCMap at" + dscMapPath);
-        stifLoaderTask.addPropertyValue("tripToDSCOverridePath", dscMapPath);
-      } else {
-        response.addStatusMessage(getTripToDSCFilename() + " not found, override ignored");
+        new FileUtils().createFile(notInServiceFilename,
+            listToFile(request.getNotInServiceDSCList()));
+        stifLoaderTask.addPropertyValue("notInServiceDscPath",
+            notInServiceFilename);
+
+        String dscMapPath = response.getBundleInputDirectory() + File.separator
+            + "config" + File.separator + getTripToDSCFilename();
+        _log.info("looking for configuration at " + dscMapPath);
+        File dscMapFile = new File(dscMapPath);
+        if (dscMapFile.exists()) {
+          _log.info("loading tripToDSCMap at" + dscMapPath);
+          response.addStatusMessage("loading tripToDSCMap at" + dscMapPath);
+          stifLoaderTask.addPropertyValue("tripToDSCOverridePath", dscMapPath);
+        } else {
+          response.addStatusMessage(getTripToDSCFilename()
+              + " not found, override ignored");
+        }
+        beans.put("stifLoaderTask", stifLoaderTask.getBeanDefinition());
+
+        task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+        task.addPropertyValue("taskName", "stifLoaderTask");
+        task.addPropertyValue("afterTaskName", "checkShapeIdTask");
+        task.addPropertyValue("beforeTaskName", "transit_graph");
+        task.addPropertyReference("task", "stifLoaderTask");
+        beans.put("stifLoaderTaskDef", task.getBeanDefinition());
       }
-      beans.put("stifLoaderTask", stifLoaderTask.getBeanDefinition());
-
-      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
-      task.addPropertyValue("taskName", "stifLoaderTask");
-      task.addPropertyValue("afterTaskName", "checkShapeIdTask");
-      task.addPropertyValue("beforeTaskName", "transit_graph");
-      task.addPropertyReference("task", "stifLoaderTask");
-      beans.put("stifLoaderTaskDef", task.getBeanDefinition());
-
+      
       // STEP 4
       BeanDefinitionBuilder summarizeCSVTask = BeanDefinitionBuilder.genericBeanDefinition(SummarizeCSVTask.class);
       summarizeCSVTask.addPropertyReference("logger", "multiCSVLogger");
@@ -390,7 +444,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "summarizeCSVTask");
-      task.addPropertyValue("afterTaskName", "stifLoaderTask");
+      if (this.isStifTaskApplicable()) {
+        task.addPropertyValue("afterTaskName", "stifLoaderTask");  
+      } else {
+        task.addPropertyValue("afterTaskName", "checkShapeIdTask");
+      }
       task.addPropertyValue("beforeTaskName", "transit_graph");
       task.addPropertyReference("task", "summarizeCSVTask");
       beans.put("summarizeCSVTaskDef", task.getBeanDefinition());      
@@ -452,6 +510,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
   
+  private boolean isStifTaskApplicable() {
+    // TODO lookup this 
+    return false;
+  }
+
   private boolean isModTaskApplicable() {
     // TODO lookup if this should be run
     return true;
@@ -526,13 +589,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     inputsDestDir.mkdir();
     File inputsDir = new File(response.getBundleInputDirectory());
     
+    _log.debug("copying input");
     File[] inputFiles = inputsDir.listFiles();
     if (inputFiles != null) {
       for (File input : inputFiles) {
+        _log.debug("copying " + input + " to " + inputsPath + File.separator + input.getName());
         fs.copyFiles(input, new File(inputsPath + File.separator + input.getName()));
       }
     }
 
+    _log.debug("copying output");
+    
     // outputs
     String outputsPath = request.getTmpDirectory() + File.separator + OUTPUT_DIR;
     File outputsDestDir = new File(outputsPath);
@@ -577,15 +644,65 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     for (String path : gtfsList) {
       GtfsBundle gtfsBundle = new GtfsBundle();
       gtfsBundle.setPath(new File(path));
-      if (defaultAgencyId != null && defaultAgencyId.length() > 0) {
-        final String msg = "for bundle " + path + " setting defaultAgencyId='" + defaultAgencyId + "'";
-        response.addStatusMessage(msg);
-        _log.info(msg);
-        gtfsBundle.setDefaultAgencyId(defaultAgencyId);
+      if (getAgencySpecificId(path) != null) {
+        _log.debug("using agency specific id");
+        gtfsBundle.setDefaultAgencyId(getAgencySpecificId(path));
+      } else {
+        if (defaultAgencyId != null && defaultAgencyId.length() > 0) {
+          final String msg = "for bundle " + path + " setting defaultAgencyId='" + defaultAgencyId + "'";
+          response.addStatusMessage(msg);
+          _log.info(msg);
+          gtfsBundle.setDefaultAgencyId(defaultAgencyId);
+        }
+      }
+      if (getAgencyIdMappings(path) != null) { 
+        _log.debug("using agency specific mappings");
+        gtfsBundle.setAgencyIdMappings(getAgencyIdMappings(path));
       }
       bundles.add(gtfsBundle);
     }
     return bundles;
+  }
+
+  // TODO move this to configuration
+  // TODO test this as a single map, instead of seperate results per agency
+  private Map<String, String> getAgencyIdMappings(String path) {
+    String agencyId = parseAgencyFromPath(path);
+    if (agencyId == null) return null;
+    Map<String, String> map = new HashMap<String, String>();
+    if ("1".equals(agencyId)) {
+      map.put("KCM", "1");
+      map.put("EOS", "23");
+      map.put("ST", "40");
+    }
+    if ("3".equals(agencyId)) {
+      map.put("PT", "3");
+      map.put("Pierce Transit", "3");
+      map.put("ST", "40");
+    }
+    if ("19".equals(agencyId)) {
+      map.put("IntercityTransit", "19");
+    }
+    if ("40".equals(agencyId)) {
+      map.put("SoundTransit", "40");
+    }
+    return map;
+  }
+
+  private String parseAgencyFromPath(String path) {
+    int lastSlash = path.lastIndexOf(File.separatorChar);
+    if (lastSlash < 1) return null;
+    int firstBar = path.indexOf("_", lastSlash);
+    if (firstBar < 1) return null;
+    
+    return path.substring(lastSlash+1, firstBar);
+  }
+
+  private String getAgencySpecificId(String path) {
+    String agencyId = parseAgencyFromPath(path);
+    _log.info("getAgencySpecificId(" + path + ")=" + agencyId);
+    return agencyId;
+    
   }
 
   @Override

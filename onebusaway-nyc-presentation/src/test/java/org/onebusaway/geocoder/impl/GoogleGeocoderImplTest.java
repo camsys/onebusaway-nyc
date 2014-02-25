@@ -81,7 +81,7 @@ public class GoogleGeocoderImplTest {
     assertTrue(records.size() > 1);
   }
   
-  @Test
+    //@Test
   public void testUnAmbiguousIntersectionSearch() {
 
     GoogleGeocoderImpl geocoder = new GoogleGeocoderImpl();

@@ -166,11 +166,20 @@ public class FileUtils {
   }
 
   public void copyFiles(File from, File to) {
+    _log.debug("copying " + from + " to " + to);
     try {
       if (!from.exists())
         return;
       if (from.equals(to) || to.getParent().equals(from))
         return;
+      if (to.exists() && to.isDirectory()) {
+        if (from.exists() && from.isDirectory()) {
+          org.apache.commons.io.FileUtils.copyDirectory(from, to);
+        }
+        String file = this.parseFileName(from.toString());
+        to = new File(to.toString() + File.separator + file);
+        _log.debug("constructed new destination=" + to.toString());
+      }
 
       if (from.isDirectory()) {
         to.mkdirs();
@@ -258,6 +267,10 @@ public class FileUtils {
       _log.error(ioe.toString(), ioe);
       throw new RuntimeException(ioe);
     }
+  }
+
+  public void moveFile(String srcFileName, String destFileName) throws Exception {
+    _fileUtil.moveFile(srcFileName, destFileName);
   }
 
   public int tarcvf(String baseDir, String[] paths, String filename) {
