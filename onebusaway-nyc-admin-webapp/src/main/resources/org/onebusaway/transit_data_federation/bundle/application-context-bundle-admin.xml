@@ -69,14 +69,16 @@
     <property name="afterTaskName" value="gtfs"/>
     <property name="task" ref="gtfsStatisticsTask" />
   </bean>
-  <bean id="gtfsStatisticsTask" class="org.onebusaway.nyc.admin.service.bundle.task.GtfsStatisticsTask" >
-<!-- 
-  	<property name="logger" ref="multiCSVLogger" />
-  	<property name="gtfsDao" ref="" />
-  	<property name="bundle" ref="" />
-  	 -->
+  <bean id="gtfsStatisticsTask" class="org.onebusaway.nyc.admin.service.bundle.task.GtfsStatisticsTask" />
+  
+  
+  <bean id="task_validation" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="gtfs_validation" />
+    <property name="afterTaskName" value="gtfs"/>
+    <property name="task" ref="gtfsValidationTask" />
   </bean>
-
+  <bean id="gtfsValidationTask" class="org.onebusaway.nyc.admin.service.bundle.task.GtfsValidationTask" />
+ 
 
   <!-- End of validation routines -->
   

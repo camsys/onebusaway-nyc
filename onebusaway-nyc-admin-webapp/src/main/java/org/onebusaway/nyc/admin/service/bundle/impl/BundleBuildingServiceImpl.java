@@ -448,7 +448,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       // TODO ideally this would be the last task before the transit_grap to report
       // on issues the transit_graph can't deal with
-      task.addPropertyValue("afterTaskName", "transit_graph");
+      task.addPropertyValue("afterTaskName", "pre_cache");
       task.addPropertyReference("task", "summarizeCSVTask");
       beans.put("summarizeCSVTaskDef", task.getBeanDefinition());      
       

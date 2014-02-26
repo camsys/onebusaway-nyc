@@ -129,6 +129,18 @@
 			<artifactId>onebusaway-collections</artifactId>
 			<version>1.2.0</version>
 		</dependency>
+		<!--  gtfs validation -->
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-api</artifactId>
+		<version>11-beta</version>
+	</dependency>
+
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-epsg-hsql</artifactId>
+		<version>11-beta</version>
+	</dependency>
 		<!-- s3 integration -->
 		<dependency>
 			<groupId>com.amazonaws</groupId>
