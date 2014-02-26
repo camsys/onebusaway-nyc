@@ -362,19 +362,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       nycBundle.addPropertyValue("path", outputPath);
       beans.put("nycBundle", nycBundle.getBeanDefinition());
 
-      // STEP 0 optional config
-      if (isModTaskApplicable()) {
-        BeanDefinitionBuilder modTask = BeanDefinitionBuilder.genericBeanDefinition(GtfsModTask.class);
-        beans.put("modTask", modTask.getBeanDefinition());
-        
-        BeanDefinitionBuilder modTaskDef = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
-        modTaskDef.addPropertyValue("taskName", "modTask");
-        modTaskDef.addPropertyValue("afterTaskName", "start");
-        modTaskDef.addPropertyValue("beforeTaskName", "gtfs");
-        modTaskDef.addPropertyReference("task", "modTask");
-        beans.put("modTaskDef", modTaskDef.getBeanDefinition());
-      }
-      
       // STEP 1
       BeanDefinitionBuilder clearCSVTask = BeanDefinitionBuilder.genericBeanDefinition(ClearCSVTask.class);
       clearCSVTask.addPropertyReference("logger", "multiCSVLogger");
@@ -382,10 +369,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       
       BeanDefinitionBuilder task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "clearCSVTask");
-      task.addPropertyValue("afterTaskName", "gtfs");
-      task.addPropertyValue("beforeTaskName", "transit_graph");
+      task.addPropertyValue("afterTaskName", "start");
+      task.addPropertyValue("beforeTaskName", "modTask");
       task.addPropertyReference("task", "clearCSVTask");
       beans.put("clearCSVTaskDef", task.getBeanDefinition());
+
+      // STEP 1a optional config
+      if (isModTaskApplicable()) {
+        BeanDefinitionBuilder modTask = BeanDefinitionBuilder.genericBeanDefinition(GtfsModTask.class);
+        modTask.addPropertyReference("logger", "multiCSVLogger");
+        beans.put("modTask", modTask.getBeanDefinition());
+        
+        BeanDefinitionBuilder modTaskDef = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+        modTaskDef.addPropertyValue("taskName", "modTask");
+        modTaskDef.addPropertyValue("afterTaskName", "clearCSVTask");
+        modTaskDef.addPropertyValue("beforeTaskName", "gtfs");
+        modTaskDef.addPropertyReference("task", "modTask");
+        beans.put("modTaskDef", modTaskDef.getBeanDefinition());
+      }
 
       // STEP 2
       BeanDefinitionBuilder checkShapesTask = BeanDefinitionBuilder.genericBeanDefinition(CheckShapeIdTask.class);
@@ -437,19 +438,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         beans.put("stifLoaderTaskDef", task.getBeanDefinition());
       }
       
-      // STEP 4
+      // STEP 4 SUMMARIZE SHOULD BE THE LAST TASK CALLED!!!!!
       BeanDefinitionBuilder summarizeCSVTask = BeanDefinitionBuilder.genericBeanDefinition(SummarizeCSVTask.class);
       summarizeCSVTask.addPropertyReference("logger", "multiCSVLogger");
       beans.put("summarizeCSVTask", summarizeCSVTask.getBeanDefinition());
 
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "summarizeCSVTask");
-      if (this.isStifTaskApplicable()) {
-        task.addPropertyValue("afterTaskName", "stifLoaderTask");  
-      } else {
-        task.addPropertyValue("afterTaskName", "checkShapeIdTask");
-      }
-      task.addPropertyValue("beforeTaskName", "transit_graph");
+
+      // TODO ideally this would be the last task before the transit_grap to report
+      // on issues the transit_graph can't deal with
+      task.addPropertyValue("afterTaskName", "transit_graph");
       task.addPropertyReference("task", "summarizeCSVTask");
       beans.put("summarizeCSVTaskDef", task.getBeanDefinition());      
       

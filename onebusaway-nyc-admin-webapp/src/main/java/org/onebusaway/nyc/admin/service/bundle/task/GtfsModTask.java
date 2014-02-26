@@ -7,6 +7,7 @@ import java.util.List;
 import org.onebusaway.gtfs_transformer.GtfsTransformer;
 import org.onebusaway.gtfs_transformer.GtfsTransformerLibrary;
 import org.onebusaway.gtfs_transformer.factory.TransformFactory;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
 import org.slf4j.Logger;
@@ -24,10 +25,19 @@ public class GtfsModTask implements Runnable {
     _applicationContext = applicationContext;
   }
 
+  @Autowired
+  private MultiCSVLogger logger;
+
+  
+  public void setLogger(MultiCSVLogger logger) {
+    this.logger = logger;
+  }
+
   @Override
   public void run() {
     try {
       _log.info("GtfsModTask Starting");
+      logger.changelogHeader();
       GtfsBundles gtfsBundles = getGtfsBundles(_applicationContext);
       for (GtfsBundle gtfsBundle : gtfsBundles.getBundles()) {
         String agencyId = parseAgencyDir(gtfsBundle.getPath().getPath());
@@ -69,6 +79,7 @@ public class GtfsModTask implements Runnable {
       _log.info("running...");
       mod.run();
       _log.info("done!");
+      logger.changelog("Transformed " + gtfsBundle.getPath() + " according to url " + getModUrl(agencyId));
       // cleanup
       _log.info("gtfsBundle.getPath=" + gtfsBundle.getPath());
       

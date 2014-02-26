@@ -19,6 +19,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,7 +39,9 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class MultiCSVLogger {
+  private static final String CHANGE_LOG = "change_log.csv";
   private Logger _log = LoggerFactory.getLogger(MultiCSVLogger.class);
+  private static DateFormat SIMPLE_DATE = new SimpleDateFormat();
 
   private HashMap<String, Log> logs;
   
@@ -98,7 +103,6 @@ public class MultiCSVLogger {
   }
 
   public void header(String file, String header) {
-  
     Log log = logs.get(file);
     if (log == null) {
       log = new Log(file);
@@ -109,6 +113,19 @@ public class MultiCSVLogger {
     log.stream.print(header + "\n");
   }
 
+  public void changelogHeader() {
+    String file = CHANGE_LOG;
+    Log log = logs.get(file);
+    if (log == null) {
+      header(file, "date,message");  
+    }
+    
+  }
+  
+  public void changelog(String s) {
+    log(CHANGE_LOG, SIMPLE_DATE.format(new Date()), s);
+  }
+  
   public void summarize() {
     FileOutputStream outputStream;
     try {
@@ -128,7 +145,7 @@ public class MultiCSVLogger {
   
   public void clear() {
     for (File file : basePath.listFiles()) {
-      if (file.getName().endsWith(".csv")) {
+      if (file.getName().endsWith(".csv") && !CHANGE_LOG.equals(file.getName())) {
         file.delete();
       }
     }
