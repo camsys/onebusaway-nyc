@@ -16,11 +16,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
 
-public class ConfigurationSerivceClientFileImpl implements
+public class ConfigurationServiceClientFileImpl implements
 		ConfigurationServiceClient {
 
 	private static Logger _log = LoggerFactory
-			.getLogger(ConfigurationSerivceClientFileImpl.class);
+			.getLogger(ConfigurationServiceClientFileImpl.class);
 	private HashMap<String, Object> _config = null;
 	
 	@Override

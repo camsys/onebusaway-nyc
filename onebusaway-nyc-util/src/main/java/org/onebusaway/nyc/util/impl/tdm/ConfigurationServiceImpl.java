@@ -100,7 +100,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			// look for local override
 			if ("local".equals((String) ((HashMap<String, Object>) _localConfiguration.get("oba")).get("config"))) {
 				_log.info("creating local file config service client");
-				this._configurationServiceClient = new ConfigurationSerivceClientFileImpl();
+				this._configurationServiceClient = new ConfigurationServiceClientFileImpl();
 			}
 		} else {
 			_log.info("using tdm configuration");

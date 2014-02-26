@@ -45,7 +45,7 @@ public class ConfigurationServiceClientBridge implements ConfigurationServiceCli
 				String localConfig = (String) ((HashMap<String, Object>) _config.get("oba")).get("config");
 				if ("local".equals(localConfig)) {
 					_log.info("using File Based Config");
-					_fileClient = new ConfigurationSerivceClientFileImpl();
+					_fileClient = new ConfigurationServiceClientFileImpl();
 				} else {
 					_log.info("local config disabled");
 				}
