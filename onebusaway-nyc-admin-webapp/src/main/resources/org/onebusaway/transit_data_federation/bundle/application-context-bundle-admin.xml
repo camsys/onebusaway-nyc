@@ -63,6 +63,24 @@
 
   <bean id="loadGtfsTask" class="org.onebusaway.transit_data_federation.bundle.tasks.LoadGtfsTask" />
 
+  <!-- Start of validation routines -->
+  <bean id="task_stats" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="gtfs_stastics" />
+    <property name="afterTaskName" value="gtfs"/>
+    <property name="task" ref="gtfsStatisticsTask" />
+  </bean>
+  <bean id="gtfsStatisticsTask" class="org.onebusaway.nyc.admin.service.bundle.task.GtfsStatisticsTask" >
+<!-- 
+  	<property name="logger" ref="multiCSVLogger" />
+  	<property name="gtfsDao" ref="" />
+  	<property name="bundle" ref="" />
+  	 -->
+  </bean>
+
+
+  <!-- End of validation routines -->
+  
+  
   <!--  here we insert a custom task to modify the service dates to ease bundle changes -->
   <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="modify_start_date_gtfs" />

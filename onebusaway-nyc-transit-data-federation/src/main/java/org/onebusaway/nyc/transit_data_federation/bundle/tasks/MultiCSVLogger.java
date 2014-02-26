@@ -82,6 +82,16 @@ public class MultiCSVLogger {
     }
   }
 
+  public void logCSV(String file, String csv) {
+   Log log = logs.get(file);
+   if (log == null) {
+     throw new RuntimeException("log called before header for file " + file);
+   }
+   log.lines += 1;
+   log.stream.print(csv);
+   log.stream.print("\n");
+  }
+  
   public void log(String file, Object... args) {
     Log log = logs.get(file);
     if (log == null) {
