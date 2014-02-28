@@ -12,15 +12,19 @@ import org.slf4j.LoggerFactory;
 
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * convenience class for file handling functions across OBA-NYC.
@@ -182,6 +186,67 @@ public class FileUtility {
   public void moveFile(String srcFileName, String destFileName) throws Exception {
     FileUtils.moveFile(new File(srcFileName),
         new File(destFileName));
+  }
+
+  /**
+   * Zip up the files in basePath according to the globbing includeExpression.  Similar to
+   * command line syntax except expecting java regex syntax (or a filename).
+   * @param filename the created zip file including full path
+   * @param basePath the directory to look for files in; not recursively however
+   * @param includeExpression the java regex to apply to the basePath.
+   * @throws Exception should the zip fail, or should the includeExression not match any files
+   */
+  public void zip(String filename, String basePath, final String includeExpression) throws Exception {
+    _log.info("creating zip file " + filename);
+    FileOutputStream fos = new FileOutputStream(filename);
+    ZipOutputStream zos = new ZipOutputStream(fos);
+    File basePathDir = new File(basePath);
+    String[] files = basePathDir.list(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        return name.matches(includeExpression);
+      }
+    });
+    
+    if (files == null) {
+      throw new FileNotFoundException("no files selected for basePath=" + basePath 
+        + " and includeExpression=" + includeExpression);
+    }
+    
+    for (String file : files) {
+      _log.info("compressing " + file);
+      ZipEntry ze = new ZipEntry(file);
+      zos.putNextEntry(ze);
+      FileInputStream in = new FileInputStream(new File(basePath, file));
+      IOUtils.copy(in, zos);
+      in.close();
+      zos.closeEntry();
+    }
+    zos.close();
+  }
+
+  /**
+   * delete the files in basePath that match the given expression.
+   * @param basePath the directory to examine; not recursive
+   * @param includeExpression the java regular expression to consider
+   * @return the number of files deleted.
+   */
+  public int deleteFilesInFolder(String basePath, final String includeExpression) {
+    String[] files = new File(basePath).list(new FilenameFilter() {
+
+      @Override
+      public boolean accept(File dir, String name) {
+        return name.matches(includeExpression);
+      }
+      
+    });
+    if (files == null) return 0;
+    int count = 0;
+    for (String file: files) {
+      File toDelete = new File(basePath, file);
+      toDelete.delete();
+      count++;
+    }
+    return count;
   }
 
 }

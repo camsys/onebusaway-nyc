@@ -378,6 +378,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       if (isModTaskApplicable()) {
         BeanDefinitionBuilder modTask = BeanDefinitionBuilder.genericBeanDefinition(GtfsModTask.class);
         modTask.addPropertyReference("logger", "multiCSVLogger");
+        modTask.addPropertyValue("outputDirectory", response.getBundleOutputDirectory());
         beans.put("modTask", modTask.getBeanDefinition());
         
         BeanDefinitionBuilder modTaskDef = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);

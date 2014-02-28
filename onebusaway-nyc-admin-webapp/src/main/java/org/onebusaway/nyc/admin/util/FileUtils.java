@@ -85,12 +85,16 @@ public class FileUtils {
   public String parseFileName(String urlString) {
     if (urlString == null) return null;
     int i = urlString.lastIndexOf("/");
-    if (i+1 < urlString.length()) {
+    // check to see we don't have a trailing slash
+    if (i > 0 && i+1 < urlString.length()) {
+      
       return urlString.substring(i+1, urlString.length());
     }
+    // we have a trailing slash, recurse removing trailing slash
     if (i >= 0) {
-      return urlString.substring(i, urlString.length());
+      return parseFileName(urlString.substring(0, urlString.length()-1));
     }
+    // did not find a slash, return filename as is
     return urlString;
   }
 
@@ -102,6 +106,21 @@ public class FileUtils {
     }
     return urlString;
   }
+  
+  public String parseFileNameMinusExtension(String urlString) {
+    if (urlString == null) return null;
+    int i = urlString.lastIndexOf("/");
+    if (i > 0 && i+1 < urlString.length()) {
+      urlString = urlString.substring(i+1, urlString.length());
+    }    
+    i = urlString.lastIndexOf(".");
+    if (i > 0) {
+      urlString = urlString.substring(0, i);
+    }
+    return urlString;
+  }
+
+
 
 
   public String parseBucket(String s3path) {
