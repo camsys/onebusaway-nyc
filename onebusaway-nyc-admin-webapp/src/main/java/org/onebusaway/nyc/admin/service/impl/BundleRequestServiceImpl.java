@@ -338,7 +338,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     @Override
     public void run() {
       String serverId = getInstanceId();
-      _response.addStatusMessage("starting server...");
+      _response.addStatusMessage("starting server " + serverId + "...");
       try {
         serverId = _bundleServer.start(getInstanceId());
         int pingCount = 0;

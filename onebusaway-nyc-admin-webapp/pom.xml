@@ -115,7 +115,7 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-gtfs</artifactId>
-			<version>1.3.4-SNAPSHOT</version>
+			<version>1.3.4-st-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>onebusaway-csv-entities</artifactId>
@@ -127,12 +127,12 @@
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-gtfs-transformer</artifactId>
 			<!-- <version>${onebusaway.gtfs-modules.version}</version> -->
-			<version>1.3.4-SNAPSHOT</version>
+			<version>1.3.4-st-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<artifactId>onebusaway-csv-entities</artifactId>
 			<groupId>org.onebusaway</groupId>
-			<version>1.1.3-SNAPSHOT</version>
+			<version>1.1.3-st-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>

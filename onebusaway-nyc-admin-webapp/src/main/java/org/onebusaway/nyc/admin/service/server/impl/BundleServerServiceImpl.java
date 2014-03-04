@@ -37,6 +37,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   private static Logger _log = LoggerFactory.getLogger(BundleServerServiceImpl.class);
   private static final String PING_API = "/ping/remote";
   private static final String LOCAL_HOST = "localhost";
+  private static final String DEFAULT_CONTEXT = "onebusaway-nyc-admin-webapp/api";
   private RemoteConnectionService remoteConnectionService;
 
   private AWSCredentials _credentials;
@@ -45,6 +46,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   
  	private String _username;
 	private String _password;
+	private String _context = DEFAULT_CONTEXT;
 	private boolean _isAws = false;
 
 	@Override
@@ -85,6 +87,11 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 			if (password != null) {
 				_isAws = true;
 				setEc2Password(password);
+			}
+			String context = servletContext.getInitParameter("admin.context");
+			if (context != null) {
+			  _log.info("using context=" + context);
+			  _context = context;
 			}
 		}
 	}
@@ -215,8 +222,11 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   }
 
    private String generateUrl(String host, String apiCall) {
-     if (LOCAL_HOST.equalsIgnoreCase(host)) 
-       return "http://" + host + ":8080/onebusaway-nyc-admin-webapp/api" + apiCall;
+     if (LOCAL_HOST.equalsIgnoreCase(host)) { 
+       String url = "http://" + host + ":8080/" + _context + apiCall;
+       _log.info("generateUrl=" + url + " (use admin.context to override)");
+       return url;
+     }
      return "http://" + host + ":8080/api" + apiCall;
    }
    
