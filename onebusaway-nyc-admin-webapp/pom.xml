@@ -138,7 +138,7 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-king-county-metro-gtfs</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>0.0.2-st-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
