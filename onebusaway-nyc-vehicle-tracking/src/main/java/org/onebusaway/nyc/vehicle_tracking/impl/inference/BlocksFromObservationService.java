@@ -32,9 +32,6 @@ public interface BlocksFromObservationService {
   public Set<BlockStateObservation> determinePotentialBlockStatesForObservation(
       Observation observation, boolean bestBlockLocation);
 
-  public BlockStateObservation advanceLayoverState(Observation obs,
-      BlockStateObservation blockState);
-
   public Set<BlockStateObservation> advanceState(Observation observation,
       BlockState blockState, double minDistanceToTravel,
       double maxDistanceToTravel);
