@@ -115,8 +115,10 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
     long vmTime2 = (end - start);
     _log.info("call 2 took " + vmTime2);
     assert(vmTime2 < vmTime1);
+
+    final int MAX_VM_TIME = 75;
     // caching will still be faster than the small data set
-    assert(vmTime2 < 50);
+    assertTrue("vmTime2=" + vmTime2 + " not less than " + MAX_VM_TIME, vmTime2 < MAX_VM_TIME);
     
     // compare the responses -- they should be identical
     assert(vmResponse1.equals(vmResponse2));
