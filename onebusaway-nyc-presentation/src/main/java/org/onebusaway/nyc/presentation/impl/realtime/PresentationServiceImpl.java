@@ -19,11 +19,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class PresentationServiceImpl implements PresentationService {
   
+  private static final float DEFAULT_MAX_SCHEDULE_DEVIATION = 30 * 60; // minutes
+
+  private static final String MAX_DEVIATION_KEY = "display.max_deviation_in_api";
+
   private static Logger _log = LoggerFactory.getLogger(PresentationServiceImpl.class);
 
   @Autowired
   private ConfigurationService _configurationService;
 
+  private Float _maxScheduleDeviation = null;
+  
   private Long _now = null;
   
   @Override
@@ -229,6 +235,12 @@ public class PresentationServiceImpl implements PresentationService {
     if(isOnDetour(status))
       return false;
 
+    if (Math.abs(status.getScheduleDeviation()) > getMaxScheduleDeviation()) {
+      _log.debug("filtering vehicleId=" + status.getVehicleId() + " because of scheduleDevation=" + status.getScheduleDeviation());
+      return false;
+    }
+
+    
     // wrap-around logic
     String phase = status.getPhase();
     TripBean activeTrip = status.getActiveTrip();
@@ -325,5 +337,12 @@ public class PresentationServiceImpl implements PresentationService {
     }
     
     return true;
+  }
+
+  private double getMaxScheduleDeviation() {
+    if (this._maxScheduleDeviation == null) {
+      _maxScheduleDeviation = _configurationService.getConfigurationValueAsFloat(MAX_DEVIATION_KEY, DEFAULT_MAX_SCHEDULE_DEVIATION);
+    }
+    return _maxScheduleDeviation;
   }
 }
