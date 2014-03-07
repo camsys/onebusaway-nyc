@@ -273,5 +273,11 @@
   </bean>
 
   <bean id="preCacheTask" class="org.onebusaway.transit_data_federation.bundle.tasks.PreCacheTask" />
+  
+  <bean id="configurationServiceClient" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientBridge" >
+    <constructor-arg type="java.lang.String" value="${tdm.host}"/>
+    <constructor-arg type="java.lang.Integer" value="80" />
+    <constructor-arg type="java.lang.String" value="/api/" />
+  </bean>
 
 </beans>

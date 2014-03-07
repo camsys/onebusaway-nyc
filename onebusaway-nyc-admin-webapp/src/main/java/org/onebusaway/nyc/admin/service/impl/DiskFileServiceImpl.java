@@ -167,7 +167,7 @@ public class DiskFileServiceImpl implements FileService {
 
 	@Override
 	public List<String> list(String directory, int maxResults) {
-	  _log.info("list(" + directory + ")");
+	  _log.info("list(" + _basePath +"/"+ directory + ")");
 		File dir = new File(_basePath, directory);
 		if (dir.list() == null) {
 		  return new ArrayList<String>();

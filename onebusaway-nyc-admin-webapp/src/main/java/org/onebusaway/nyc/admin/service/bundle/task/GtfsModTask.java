@@ -9,6 +9,7 @@ import org.onebusaway.gtfs_transformer.GtfsTransformerLibrary;
 import org.onebusaway.gtfs_transformer.factory.TransformFactory;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
+import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.nyc.util.impl.FileUtility;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
@@ -31,11 +32,22 @@ public class GtfsModTask implements Runnable {
   @Autowired
   private MultiCSVLogger logger;
 
-  
-  public void setLogger(MultiCSVLogger logger) {
+  @Autowired
+  private ConfigurationServiceClient configurationServiceClient;
+
+  public ConfigurationServiceClient getConfigurationServiceClient() {
+	return configurationServiceClient;
+	}
+	
+	public void setConfigurationServiceClient(
+			ConfigurationServiceClient configurationServiceClient) {
+		this.configurationServiceClient = configurationServiceClient;
+	}
+	
+	public void setLogger(MultiCSVLogger logger) {
     this.logger = logger;
   }
-
+  
   public void setOutputDirectory(String outputDirectory) {
     _outputDirectory = outputDirectory;
   }
@@ -68,8 +80,6 @@ public class GtfsModTask implements Runnable {
       _log.info("GtfsModTask Exiting");
     }
   }
-
-  
 
   private String runModifications(GtfsBundle gtfsBundle, String agencyId) throws Exception {
       GtfsTransformer mod = new GtfsTransformer();
@@ -135,26 +145,16 @@ public class GtfsModTask implements Runnable {
   }
 
   private String getTransform(String agencyId, String path) {
-    // TODO pull this from configuration
-    if ("1".equals(agencyId)) { 
-      return "{\"op\":\"transform\",\"class\":\"org.onebusaway.king_county_metro_gtfs.transformations.KingCountyMetroStrategy\","
-          + "\"base_url\":\"https://raw.github.com/wiki/camsys/onebusaway-application-modules\","
-          + "\"path\":\"" + path + "\"}";
-    }
-
+    try {
+		return configurationServiceClient.getItem("admin", agencyId+"_transform")+",\"path\":\""+path+"\"}";
+	} catch (Exception e) {}
     return null;
   }
 
   private String getModUrl(String agencyId) {
-    // TODO pull this from configuration
-    if ("1".equals(agencyId))
-      return "https://raw.github.com/wiki/camsys/onebusaway-application-modules/KingCountyMetroModifications.mediawiki";
-    if ("3".equals(agencyId))
-      return "https://raw.github.com/wiki/camsys/onebusaway-application-modules/PierceTransitModifications.mediawiki";
-    if ("19".equals(agencyId))
-      return "https://raw.github.com/wiki/camsys/onebusaway-application-modules/IntercityTransitModifications.mediawiki";
-    if ("40".equals(agencyId))
-      return "https://raw.github.com/wiki/camsys/onebusaway-application-modules/SoundTransitModifications.mediawiki";
+    try {
+		return configurationServiceClient.getItem("admin", agencyId+"_modurl");
+	} catch (Exception e) {}
     return null;
   }
 

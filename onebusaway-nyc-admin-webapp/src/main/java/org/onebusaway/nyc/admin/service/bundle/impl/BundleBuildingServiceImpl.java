@@ -17,6 +17,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.SummarizeCSVTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
@@ -63,6 +64,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private FileService _fileService;
   private ConfigurationService configurationService;
   private LoggingService loggingService;
+  
+  @Autowired
+  private ConfigurationServiceClient configurationServiceClient;
   
   @Autowired
   public void setFileService(FileService service) {
@@ -377,6 +381,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // STEP 1a optional config
       if (isModTaskApplicable()) {
         BeanDefinitionBuilder modTask = BeanDefinitionBuilder.genericBeanDefinition(GtfsModTask.class);
+        modTask.addPropertyReference("configurationServiceClient","configurationServiceClient");
         modTask.addPropertyReference("logger", "multiCSVLogger");
         modTask.addPropertyValue("outputDirectory", response.getBundleOutputDirectory());
         beans.put("modTask", modTask.getBeanDefinition());
