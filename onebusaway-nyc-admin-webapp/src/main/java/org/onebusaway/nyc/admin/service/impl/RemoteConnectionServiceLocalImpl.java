@@ -53,7 +53,7 @@ public class RemoteConnectionServiceLocalImpl implements
 				}
 				json = json + bundle;
 			}
-			return json;
+			return json+"]";
 		}
 		return null;
 	}
