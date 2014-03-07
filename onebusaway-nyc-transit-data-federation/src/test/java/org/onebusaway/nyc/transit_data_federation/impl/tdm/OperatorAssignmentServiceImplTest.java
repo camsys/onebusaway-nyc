@@ -87,7 +87,7 @@ public class OperatorAssignmentServiceImplTest {
     assertFalse(service.isApplicable(new ServiceDate(longAgo)));
     Date stillValid2 = new Date(now.getAsDate().getTime() + (1 * 24 * 60 * 60 * 1000));
     assertTrue(service.isApplicable(new ServiceDate(stillValid2)));
-    Date aWaysOff = new Date(now.getAsDate().getTime() + (2 * 24 * 60 * 60 * 1000));
+    Date aWaysOff = new Date(now.getAsDate().getTime() + (3 * 24 * 60 * 60 * 1000));
     assertFalse(service.isApplicable(new ServiceDate(aWaysOff)));
     
   }
