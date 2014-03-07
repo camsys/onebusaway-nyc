@@ -58,7 +58,7 @@ public class VehicleStateLibrary {
   private final double _offBlockDistance = 1000;
 
   /**
-   * Distance from first/last stop on a block to be considered at a terminal.
+   * Distance from first/last stop to be considered at a terminal.
    */
   private final static double _terminalSearchRadius = 150;
 
@@ -108,7 +108,9 @@ public class VehicleStateLibrary {
 
     /**
      * Otherwise, if there is a block assigned, then we need to be more specific
-     * and check only terminals for trips on this block.
+     * and check only terminals for trips on this block. if
+     * (isAtPotentialTerminal(obs.getRecord(), blockState.getBlockInstance()))
+     * return true;
      */
 
     final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
@@ -134,7 +136,7 @@ public class VehicleStateLibrary {
    * @param blockInstance
    * @return whether the observation is within the search radius
    */
-  public static boolean isAtPotentialBlockTerminal(NycRawLocationRecord record,
+  public static boolean isAtPotentialTerminal(NycRawLocationRecord record,
       BlockInstance blockInstance) {
 
     final CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),

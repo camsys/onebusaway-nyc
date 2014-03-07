@@ -65,7 +65,8 @@ public final class BlockStateObservation implements
 //        obs, state._isOnTrip);
   }
 
-  public BlockStateObservation(BlockState blockState, Observation obs, boolean isSnapped) {
+  public BlockStateObservation(BlockState blockState, Observation obs,
+      boolean isAtPotentialLayoverSpot, boolean isSnapped) {
     Preconditions.checkNotNull(obs);
     _blockState = Preconditions.checkNotNull(blockState);
 
@@ -77,7 +78,7 @@ public final class BlockStateObservation implements
     _isRunFormal = _isOpAssigned == Boolean.TRUE
         || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0)
         ? true : false;
-    _isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);;
+    _isAtPotentialLayoverSpot = isAtPotentialLayoverSpot;
     _isSnapped = isSnapped;
     _scheduleDeviation = computeScheduleDeviation(obs, blockState);
     _obs = obs;
