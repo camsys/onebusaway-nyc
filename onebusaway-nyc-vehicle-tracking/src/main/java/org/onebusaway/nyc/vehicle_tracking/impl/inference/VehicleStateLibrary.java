@@ -36,6 +36,8 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEn
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +46,8 @@ import com.google.common.collect.Iterables;
 @Component
 public class VehicleStateLibrary {
 
+  private static final Logger _log = LoggerFactory.getLogger(VehicleStateLibrary.class);
+  
   private BaseLocationService _baseLocationService;
 
   /**
@@ -97,6 +101,11 @@ public class VehicleStateLibrary {
 
   public static boolean isAtPotentialLayoverSpot(BlockState blockState,
       Observation obs) {
+    return isAtPotentialLayoverSpot(blockState, obs, false);
+  }
+  
+  public static boolean isAtPotentialLayoverSpot(BlockState blockState,
+      Observation obs, boolean optimistic) {
 
     /**
      * If there is no block assigned to this vehicle state, then we allow a
@@ -116,7 +125,7 @@ public class VehicleStateLibrary {
     if (blockLocation == null)
       return false;
 
-    final BlockStopTimeEntry layoverSpot = getPotentialLayoverSpot(blockLocation);
+    final BlockStopTimeEntry layoverSpot = getPotentialLayoverSpot(blockLocation, optimistic);
     if (layoverSpot == null)
       return false;
 
@@ -246,9 +255,22 @@ public class VehicleStateLibrary {
 
     return false;
   }
-
-  static public BlockStopTimeEntry getPotentialLayoverSpot(
+  private static BlockStopTimeEntry getPotentialLayoverSpot(
       ScheduledBlockLocation location) {
+    return getPotentialLayoverSpot(location, false);
+  }
+  
+  /**
+   * Suggest a stop that may be a potential layover spot given the current location.
+   * Note that this mostly guesses, and may give non-sensical answers.  Always compare
+   * location of stop to current observation to evaluate likelihood.
+   * 
+   * @param location current location in block
+   * @param optimistic be wildly optimistic about what stops could be a layover.
+   * @return a stop on that block to consider for layovers
+   */
+  private static BlockStopTimeEntry getPotentialLayoverSpot(
+      ScheduledBlockLocation location, boolean optimistic) {
 
     final int time = location.getScheduledTime();
 
@@ -319,6 +341,17 @@ public class VehicleStateLibrary {
       if (tripChangesBetweenPrevAndNextStop(stopTimes, nextNextStop, location))
         return nextNextStop;
     }
+
+    if (optimistic) {
+      // if closestStop doesn't make sense, look to previous trip
+      // we may have just switched to a new trip and the distance along block
+      // may not make sense -- the proximity to the stop needs to be considered
+      // for this to work
+      if (location.getActiveTrip().getPreviousTrip() != null) {
+        final BlockStopTimeEntry lastTripLastStop = Iterables.getLast(location.getActiveTrip().getPreviousTrip().getStopTimes());
+        return lastTripLastStop;
+      }
+    }    
 
     return null;
   }

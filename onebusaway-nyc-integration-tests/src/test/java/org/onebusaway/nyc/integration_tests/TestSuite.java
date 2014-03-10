@@ -37,6 +37,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4255_20111215_183433_183932_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4257_20120907_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4264_20120907T162054_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4399_20131225_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5318_20101202T172138_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5799_20121011_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5725_20120919T101417_IntegrationTest;
@@ -64,6 +65,8 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	/*
 	 * Inference tests
 	 */
+  // 2013Sept_Prod_r08_b04
+	Trace_4399_20131225_IntegrationTest.class,
 
 	// 2013Sept_AllCity_r15_b02
 	Trace_9527_Q_MISC_IntegrationTest.class,
