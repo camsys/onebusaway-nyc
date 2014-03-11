@@ -32,6 +32,10 @@ public class GtfsModTask implements Runnable {
   @Autowired
   private MultiCSVLogger logger;
 
+  public void setLogger(MultiCSVLogger logger) {
+	this.logger = logger;
+  }
+	
   @Autowired
   private ConfigurationServiceClient configurationServiceClient;
 
@@ -39,13 +43,8 @@ public class GtfsModTask implements Runnable {
 	return configurationServiceClient;
 	}
 	
-	public void setConfigurationServiceClient(
-			ConfigurationServiceClient configurationServiceClient) {
-		this.configurationServiceClient = configurationServiceClient;
-	}
-	
-	public void setLogger(MultiCSVLogger logger) {
-    this.logger = logger;
+  public void setConfigurationServiceClient(ConfigurationServiceClient configurationServiceClient) {
+    this.configurationServiceClient = configurationServiceClient;
   }
   
   public void setOutputDirectory(String outputDirectory) {
@@ -106,8 +105,6 @@ public class GtfsModTask implements Runnable {
       _log.info("done!");
       // cleanup
       return cleanup(gtfsBundle);
-      
-
   }
 
   private String cleanup(GtfsBundle gtfsBundle) throws Exception {
@@ -146,7 +143,7 @@ public class GtfsModTask implements Runnable {
 
   private String getTransform(String agencyId, String path) {
     try {
-		return configurationServiceClient.getItem("admin", agencyId+"_transform")+",\"path\":\""+path+"\"}";
+		return configurationServiceClient.getItem("admin", agencyId+"_transform").replaceAll(":path", path);
 	} catch (Exception e) {}
     return null;
   }
