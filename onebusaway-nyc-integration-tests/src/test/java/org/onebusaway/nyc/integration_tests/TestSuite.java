@@ -29,6 +29,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2433_20120723_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2711_20111208_054046_102329_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2782_20111202_211038_222038_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2782_deadhead_nyct_bus_as_mta_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_3088_in_progress_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_324_20121004_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_3649_20101125T121801_IntegrationTest;
@@ -67,6 +68,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	 */
 	// 2014Jan_AllCity_r09_b3
 	Trace_3088_in_progress_IntegrationTest.class,
+	Trace_2782_deadhead_nyct_bus_as_mta_IntegrationTest.class,
   // 2013June_Prod_r04_b03
 	Trace_5558_layover_in_motion_IntegrationTest.class,
 	
