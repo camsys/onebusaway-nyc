@@ -21,6 +21,7 @@
             <list>
                 <ref bean="GTFS_MTABC" />
                 <ref bean="google_transit_queens" />
+                <ref bean="google_transit_staten_island" />
                 <ref bean="gtfs_mta_stub" />
             </list>
         </property>
