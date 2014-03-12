@@ -406,6 +406,11 @@ public class BlocksFromObservationServiceImpl implements
       Observation observation, Set<BlockInstance> potentialBlocks) {
 
     final long time = observation.getTime();
+    String agencyId = null;
+    if (observation.getRecord() != null 
+        && observation.getRecord().getVehicleId() != null) {
+      agencyId = observation.getRecord().getVehicleId().getAgencyId();
+    }
 
     /**
      * We use the last valid DSC, which will be the current DSC if it's not 0000
@@ -419,9 +424,10 @@ public class BlocksFromObservationServiceImpl implements
      */
     final List<AgencyAndId> tripIds = Lists.newArrayList();
     if (observation.getLastValidDestinationSignCode() != null
-        && !observation.hasOutOfServiceDsc() && observation.hasValidDsc())
-      tripIds.addAll(_destinationSignCodeService.getTripIdsForDestinationSignCode(dsc));
-
+        && !observation.hasOutOfServiceDsc() && observation.hasValidDsc()) {
+      tripIds.addAll(_destinationSignCodeService.getTripIdsForDestinationSignCode(dsc, agencyId));
+    }
+    
     final List<String> runIds = Lists.newArrayList();
     runIds.add(observation.getOpAssignedRunId());
     runIds.addAll(observation.getBestFuzzyRunIds());

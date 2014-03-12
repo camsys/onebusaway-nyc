@@ -260,7 +260,7 @@ public class VehicleInferenceInstance {
     if (_previousObservation == null
         || !StringUtils.equals(_lastValidDestinationSignCode,
             lastValidDestinationSignCode)) {
-      routeIds = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(lastValidDestinationSignCode);
+      routeIds = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(lastValidDestinationSignCode, record.getVehicleId().getAgencyId());
     } else {
       routeIds = _previousObservation.getDscImpliedRouteCollections();
     }
