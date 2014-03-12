@@ -17,6 +17,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -92,19 +93,28 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   }	
 	
   @Override
-  public List<AgencyAndId> getTripIdsForDestinationSignCode(String destinationSignCode) {
-	  return _dscToTripMap.get(destinationSignCode);
+  public List<AgencyAndId> getTripIdsForDestinationSignCode(String dsc,
+      String agencyId) {
+    if (agencyId == null) return _dscToTripMap.get(dsc);
+    List<AgencyAndId> filtered = new ArrayList<AgencyAndId>();
+    for (AgencyAndId agency : _dscToTripMap.get(dsc)) {
+      if (agencyId.equals(agency.getAgencyId())) {
+        filtered.add(agency);
+      }
+    }
+    return filtered;
   }
+
   
   @Override
-  public Set<AgencyAndId> getRouteCollectionIdsForDestinationSignCode(String destinationSignCode) {
+  public Set<AgencyAndId> getRouteCollectionIdsForDestinationSignCode(String destinationSignCode, String agencyId) {
     /*
      * For now we just assume that the mapping is consistent in
      * that a dsc maps to one route-collection-id. 
      */
     Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
     if (StringUtils.isNotBlank(destinationSignCode)) {
-      List<AgencyAndId> dscTripIds = getTripIdsForDestinationSignCode(destinationSignCode);
+      List<AgencyAndId> dscTripIds = getTripIdsForDestinationSignCode(destinationSignCode, agencyId);
       
       if (dscTripIds != null && !dscTripIds.isEmpty()) {
           TripEntry trip = _transitGraphDao.getTripEntryForId(dscTripIds.get(0));
