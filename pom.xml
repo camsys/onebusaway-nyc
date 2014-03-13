@@ -130,6 +130,7 @@
         <module>onebusaway-nyc-sms-webapp</module>
         <module>onebusaway-nyc-transit-data</module>
         <module>onebusaway-nyc-tdm-adapters</module>
+        <module>onebusaway-nyc-tdm</module>
         <module>onebusaway-nyc-tdm-webapp</module>
         <module>onebusaway-nyc-transit-data-federation</module>
         <module>onebusaway-nyc-transit-data-federation-webapp</module>

@@ -221,7 +221,25 @@ public class DirectoryBundleSource implements BundleSource {
     return file;
   }
 
+  @Override
+  public File getBundleFile(String bundleDirectory, String bundleId, String relativeFilePath)
+      throws FileNotFoundException {
+
+    File file = new File(bundleDirectory, getFilePath(bundleId,
+        relativeFilePath));
+
+    if (!file.exists()) {
+      _log.info("A requested file in bundle " + bundleId + " does not exist at path: " + file.getPath());
+      throw new FileNotFoundException("File " + file.getPath() + " not found.");
+    }
+    return file;
+  }
+
+  
   private String getFilePath(String bundleId, String relativeFilePath) {
+    if (bundleId == null && relativeFilePath == null) return "";
+    if (bundleId == null) return relativeFilePath;
+    
     String fileSep = System.getProperty("file.separator");
 
     String relPath = bundleId + fileSep + BUNDLE_DATA_DIRNAME + fileSep

@@ -5,6 +5,8 @@ import java.io.File;
 import javax.ws.rs.core.Response;
 
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
+import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
+import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleMetadata;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,11 @@ public class RemoteConnectionServiceLocalImpl implements
     private ConfigurationServiceClient _configClient;
     public void setConfigurationServiceClient(ConfigurationServiceClient configClient) {
     	_configClient = configClient;
+    }
+    
+    private BundleProvider _bundleProvider;
+    public void setBundleProvider(BundleProvider bundleProvider) {
+      _bundleProvider = bundleProvider;
     }
 
 	@Override
@@ -57,5 +64,25 @@ public class RemoteConnectionServiceLocalImpl implements
 		}
 		return null;
 	}
+
+  public BundleMetadata getStagedBundleMetadata() throws Exception {
+    String bundleStagingProp = null;
+    try {
+      bundleStagingProp = _configClient.getItem("admin", "bundleStagingDir");
+    } catch (Exception e) {
+      _log.error("error looking up bundleStagingDir:", e);
+    }
+    if (bundleStagingProp == null) {
+      _log.error("expecting bundleStagingDir property from config, Failing");
+      return null;
+    }
+    File stagingDirectory = new File(bundleStagingProp);
+    if (!stagingDirectory.exists() || !stagingDirectory.isDirectory()) {
+      _log.error("expecting bundleStagingDir directory to exist: " + stagingDirectory);
+      return null;
+    }
+    
+    return _bundleProvider.getMetadata(stagingDirectory.toString());
+  }
 
 }
