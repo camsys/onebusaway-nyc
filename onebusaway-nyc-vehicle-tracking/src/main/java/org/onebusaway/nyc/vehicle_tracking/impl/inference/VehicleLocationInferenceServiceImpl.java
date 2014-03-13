@@ -311,7 +311,7 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public  NycTestInferredLocationRecord getNycTestInferredLocationRecordForVehicle(
+  public NycTestInferredLocationRecord getNycTestInferredLocationRecordForVehicle(
       AgencyAndId vid) {
     final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
     if (instance == null)
