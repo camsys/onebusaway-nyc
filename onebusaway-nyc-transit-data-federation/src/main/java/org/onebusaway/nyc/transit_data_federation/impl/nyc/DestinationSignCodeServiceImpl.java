@@ -97,7 +97,9 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
       String agencyId) {
     if (agencyId == null) return _dscToTripMap.get(dsc);
     List<AgencyAndId> filtered = new ArrayList<AgencyAndId>();
-    for (AgencyAndId agency : _dscToTripMap.get(dsc)) {
+    List<AgencyAndId> dscs =  _dscToTripMap.get(dsc);
+    if (dscs == null) return filtered;
+    for (AgencyAndId agency : dscs) {
       if (agencyId.equals(agency.getAgencyId())) {
         filtered.add(agency);
       }
