@@ -21,7 +21,7 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 
-	<title>OneBusAway NYC: QR Barcode Generator</title>
+	<title>OneBusAway ST: QR Barcode Generator</title>
 
 	<s:url var="url" value="/js/lib/jquery.js" />	
 	<script type="text/javascript" src="${url}">
