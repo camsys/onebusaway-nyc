@@ -76,7 +76,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	
   // 2013Sept_Prod_r08_b04
 	Trace_4399_20131225_IntegrationTest.class,
-
 	// 2013Sept_AllCity_r15_b02
 	Trace_9527_Q_MISC_IntegrationTest.class,
 	
