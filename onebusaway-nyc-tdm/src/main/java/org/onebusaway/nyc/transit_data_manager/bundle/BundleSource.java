@@ -28,4 +28,7 @@ public interface BundleSource {
    * @return
    */
   File getBundleFile(String bundleId, String relativeFilePath) throws FileNotFoundException;
+
+  File getBundleFile(String bundleDirectory, String bundleId,
+      String relativeFilePath) throws FileNotFoundException;
 }

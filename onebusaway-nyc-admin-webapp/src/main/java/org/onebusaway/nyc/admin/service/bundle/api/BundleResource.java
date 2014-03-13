@@ -1,8 +1,11 @@
 package org.onebusaway.nyc.admin.service.bundle.api;
 
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 import org.onebusaway.nyc.admin.service.impl.RemoteConnectionServiceLocalImpl;
+import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
+import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleMetadata;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +29,11 @@ public class BundleResource implements ServletContextAware {
   private ConfigurationServiceClient _configClient;
   @Autowired
   private RemoteConnectionService _remoteConnectionService;
+  @Autowired
+  private BundleProvider _bundleProvider;
   
   private RemoteConnectionServiceLocalImpl _localConnectionService;
-
+  private ObjectMapper _mapper = new ObjectMapper();
   /*
    * override of default TDM location:  for local testing use 
    * http://localhost:8080/onebusaway-nyc-tdm-webapp
@@ -45,22 +50,22 @@ public class BundleResource implements ServletContextAware {
    */
   public Response list(@PathParam("environment") String environment) {
     try {
-    	_log.info("list with tdm url=" + getTDMURL() + " and isTdm()=" + isTdm());
-    	if (isTdm()) {
-		String url = getTDMURL() + "/api/bundle/deploy/list/" + environment;
-		_log.debug("requesting:" + url);
-		String json = _remoteConnectionService.getContent(url);
-		_log.debug("response:" + json);
-		return Response.ok(json).build();
-    	} else {
-    		String json = _localConnectionService.getList(environment);
-    		if (json != null) {
-    			return Response.ok(json).build();
-    		}
-    		return Response.serverError().build();
-    	}
+      _log.info("list with tdm url=" + getTDMURL() + " and isTdm()=" + isTdm());
+      if (isTdm()) {
+        String url = getTDMURL() + "/api/bundle/deploy/list/" + environment;
+        _log.debug("requesting:" + url);
+        String json = _remoteConnectionService.getContent(url);
+        _log.debug("response:" + json);
+        return Response.ok(json).build();
+      } else {
+        String json = _localConnectionService.getList(environment);
+        if (json != null) {
+          return Response.ok(json).build();
+        }
+        return Response.serverError().build();
+      }
     } catch (Exception e) {
-    	_log.info("bundle list failed:", e);
+      _log.info("bundle list failed:", e);
       return Response.serverError().build();
     }
   }  
@@ -72,6 +77,7 @@ public class BundleResource implements ServletContextAware {
 		if ("false".equalsIgnoreCase(useTdm)) {
 			_localConnectionService = new RemoteConnectionServiceLocalImpl();
 			_localConnectionService.setConfigurationServiceClient(_configClient);
+			_localConnectionService.setBundleProvider(_bundleProvider);
 			isTdm = false;
 		} else {
 			isTdm = true;
@@ -124,6 +130,31 @@ public class BundleResource implements ServletContextAware {
     }
   }
 
+  @Path("/staged")
+  @GET
+  public Response getStagedBundleMetadata() {
+    
+    if (isTdm()) {
+      // not implemented
+      _log.error("getStagedBundleMetadata not implemented");
+      return Response.serverError().build();
+    } else {
+      String json = null;
+      try {
+        BundleMetadata meta = _localConnectionService.getStagedBundleMetadata();
+        if (meta == null) {
+          return Response.serverError().build();
+        }
+
+        json = _mapper.writeValueAsString(meta);
+      } catch (Exception e) {
+        _log.error("exception writing json:", e);
+        return Response.serverError().build();
+      }
+      return Response.ok(json).build();
+    }
+    
+  }
   @Override
   public void setServletContext(ServletContext context) {
       if (context != null) {

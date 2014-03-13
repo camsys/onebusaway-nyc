@@ -111,4 +111,19 @@
    
    <bean id="jsonTool" class="com.google.gson.Gson" />
    
+   <bean id="gsonTool"
+    class="org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool">
+    <property name="prettyPrintOutput" value="false" />
+    </bean>
+   
+  <bean id="bundleSource"
+    class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryBundleSource">
+    <constructor-arg type="java.lang.String" value="/var/lib/obanyc" />
+    <constructor-arg ref="gsonTool" />
+  </bean>
+  
+  <bean class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
+    <constructor-arg ref="bundleSource" />
+  </bean>
+   
 </beans>

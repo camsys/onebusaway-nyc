@@ -7,11 +7,11 @@
         <version>2.10.0-st-SNAPSHOT</version>
     </parent>
     <groupId>org.onebusaway</groupId>
-    <artifactId>onebusaway-nyc-tdm-webapp</artifactId>
+    <artifactId>onebusaway-nyc-tdm</artifactId>
     <version>2.10.0-st-SNAPSHOT</version>
-    <name>onebusaway-nyc-tdm-webapp</name>
+    <name>onebusaway-nyc-tdm</name>
     <description>TDM API</description>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -32,11 +32,6 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
-            <version>2.10.0-st-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-nyc-tdm</artifactId>
             <version>2.10.0-st-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -359,7 +354,7 @@
     </profiles>
 
     <build>
-        <finalName>onebusaway-nyc-tdm-webapp</finalName>
+        <finalName>onebusaway-nyc-tdm</finalName>
         <plugins>
 			<plugin>
 				<groupId>pl.project13.maven</groupId>
