@@ -388,8 +388,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         
         BeanDefinitionBuilder modTaskDef = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
         modTaskDef.addPropertyValue("taskName", "modTask");
+        //modTaskDef.addPropertyValue("afterTaskName", "gtfs_validation_pretransform");
+        //modTaskDef.addPropertyValue("beforeTaskName", "gtfs_validation_posttransform");
         modTaskDef.addPropertyValue("afterTaskName", "clearCSVTask");
-        modTaskDef.addPropertyValue("beforeTaskName", "gtfs");
+        modTaskDef.addPropertyValue("beforeTaskName", "gtfs_post");
         modTaskDef.addPropertyReference("task", "modTask");
         beans.put("modTaskDef", modTaskDef.getBeanDefinition());
       }
