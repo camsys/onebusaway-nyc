@@ -70,8 +70,6 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	Trace_3088_in_progress_IntegrationTest.class,
 	Trace_2782_deadhead_nyct_bus_as_mta_IntegrationTest.class,
 	
-  // 2013Sept_Prod_r08_b04
-	Trace_4399_20131225_IntegrationTest.class,
 	// 2013Sept_AllCity_r15_b02
 	Trace_9527_Q_MISC_IntegrationTest.class,
 	
