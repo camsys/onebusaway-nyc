@@ -5,6 +5,7 @@ import org.onebusaway.container.spring.PropertyOverrideConfigurer;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
+import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.bundle.task.GtfsModTask;
@@ -33,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.remoting.RemoteConnectFailureException;
@@ -356,7 +358,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       BeanDefinitionBuilder multiCSVLogger = BeanDefinitionBuilder.genericBeanDefinition(MultiCSVLogger.class);
       multiCSVLogger.addPropertyValue("basePath", loggingPath);
       beans.put("multiCSVLogger", multiCSVLogger.getBeanDefinition());
-            
+
+      BeanDefinitionBuilder requestDef = BeanDefinitionBuilder.genericBeanDefinition(BundleRequestResponse.class);
+      requestDef.addPropertyValue("request", request);
+      requestDef.addPropertyValue("response", response);
+      beans.put("bundleRequestResponse", requestDef.getBeanDefinition());
+      
       // configure for NYC specifics
       BeanDefinitionBuilder bundle = BeanDefinitionBuilder.genericBeanDefinition(FederatedTransitDataBundle.class);
       bundle.addPropertyValue("path", outputPath);
@@ -366,48 +373,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       nycBundle.addPropertyValue("path", outputPath);
       beans.put("nycBundle", nycBundle.getBeanDefinition());
 
-      // STEP 1
-      BeanDefinitionBuilder clearCSVTask = BeanDefinitionBuilder.genericBeanDefinition(ClearCSVTask.class);
-      clearCSVTask.addPropertyReference("logger", "multiCSVLogger");
-      beans.put("clearCSVTask", clearCSVTask.getBeanDefinition());
+      BeanDefinitionBuilder outputDirectoryReference = BeanDefinitionBuilder.genericBeanDefinition(String.class);
+      outputDirectoryReference.addPropertyValue("", response.getBundleOutputDirectory());
+
       
-      BeanDefinitionBuilder task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
-      task.addPropertyValue("taskName", "clearCSVTask");
-      task.addPropertyValue("afterTaskName", "start");
-      task.addPropertyValue("beforeTaskName", "modTask");
-      task.addPropertyReference("task", "clearCSVTask");
-      beans.put("clearCSVTaskDef", task.getBeanDefinition());
+      // TODO move this to application-context-bunlde-admin.xml and have it look for config to turn on/off
 
-      // STEP 1a optional config
-      if (isModTaskApplicable()) {
-        BeanDefinitionBuilder modTask = BeanDefinitionBuilder.genericBeanDefinition(GtfsModTask.class);
-        modTask.addPropertyReference("configurationServiceClient","configurationServiceClient");
-        modTask.addPropertyReference("logger", "multiCSVLogger");
-        modTask.addPropertyValue("outputDirectory", response.getBundleOutputDirectory());
-        beans.put("modTask", modTask.getBeanDefinition());
-        
-        BeanDefinitionBuilder modTaskDef = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
-        modTaskDef.addPropertyValue("taskName", "modTask");
-        //modTaskDef.addPropertyValue("afterTaskName", "gtfs_validation_pretransform");
-        //modTaskDef.addPropertyValue("beforeTaskName", "gtfs_validation_posttransform");
-        modTaskDef.addPropertyValue("afterTaskName", "clearCSVTask");
-        modTaskDef.addPropertyValue("beforeTaskName", "gtfs_post");
-        modTaskDef.addPropertyReference("task", "modTask");
-        beans.put("modTaskDef", modTaskDef.getBeanDefinition());
-      }
-
-      // STEP 2
-      BeanDefinitionBuilder checkShapesTask = BeanDefinitionBuilder.genericBeanDefinition(CheckShapeIdTask.class);
-      checkShapesTask.addPropertyReference("logger", "multiCSVLogger");
-      beans.put("checkShapeIdTask", checkShapesTask.getBeanDefinition());
-
-      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
-      task.addPropertyValue("taskName", "checkShapeIdTask");
-      task.addPropertyValue("afterTaskName", "clearCSVTask");
-      task.addPropertyValue("beforeTaskName", "transit_graph");
-      task.addPropertyReference("task", "checkShapeIdTask");
-      beans.put("checkShapeIdTaskDef", task.getBeanDefinition());
-
+      BeanDefinitionBuilder task = null;
       if (isStifTaskApplicable()) {
         // STEP 3
         BeanDefinitionBuilder stifLoaderTask = BeanDefinitionBuilder.genericBeanDefinition(StifTask.class);
@@ -440,25 +412,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
         task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
         task.addPropertyValue("taskName", "stifLoaderTask");
-        task.addPropertyValue("afterTaskName", "checkShapeIdTask");
+        task.addPropertyValue("afterTaskName", "check_shapes");
         task.addPropertyValue("beforeTaskName", "transit_graph");
         task.addPropertyReference("task", "stifLoaderTask");
         beans.put("stifLoaderTaskDef", task.getBeanDefinition());
       }
-      
-      // STEP 4 SUMMARIZE SHOULD BE THE LAST TASK CALLED!!!!!
-      BeanDefinitionBuilder summarizeCSVTask = BeanDefinitionBuilder.genericBeanDefinition(SummarizeCSVTask.class);
-      summarizeCSVTask.addPropertyReference("logger", "multiCSVLogger");
-      beans.put("summarizeCSVTask", summarizeCSVTask.getBeanDefinition());
-
-      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
-      task.addPropertyValue("taskName", "summarizeCSVTask");
-
-      // TODO ideally this would be the last task before the transit_grap to report
-      // on issues the transit_graph can't deal with
-      task.addPropertyValue("afterTaskName", "pre_cache");
-      task.addPropertyReference("task", "summarizeCSVTask");
-      beans.put("summarizeCSVTaskDef", task.getBeanDefinition());      
       
       _log.debug("setting outputPath=" + outputPath);
       creator.setOutputPath(outputPath);
@@ -520,11 +478,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private boolean isStifTaskApplicable() {
     // TODO lookup this 
     return false;
-  }
-
-  private boolean isModTaskApplicable() {
-    // TODO lookup if this should be run
-    return true;
   }
 
   private String getTripToDSCFilename() {
@@ -651,9 +604,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     for (String path : gtfsList) {
       GtfsBundle gtfsBundle = new GtfsBundle();
       gtfsBundle.setPath(new File(path));
-      if (getAgencySpecificId(path) != null) {
-        _log.debug("using agency specific id");
-        gtfsBundle.setDefaultAgencyId(getAgencySpecificId(path));
+      String agencySpecificId = getAgencySpecificId(path);
+      if (agencySpecificId != null) {
+        _log.info("using agency specific id=" + agencySpecificId);
+        gtfsBundle.setDefaultAgencyId(agencySpecificId);
       } else {
         if (defaultAgencyId != null && defaultAgencyId.length() > 0) {
           final String msg = "for bundle " + path + " setting defaultAgencyId='" + defaultAgencyId + "'";
@@ -662,9 +616,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           gtfsBundle.setDefaultAgencyId(defaultAgencyId);
         }
       }
-      if (getAgencyIdMappings(path) != null) { 
-        _log.debug("using agency specific mappings");
-        gtfsBundle.setAgencyIdMappings(getAgencyIdMappings(path));
+      Map<String, String> mappings = getAgencyIdMappings(path); 
+      if (mappings != null) { 
+        _log.info("using agency specific mappings=" + mappings);
+        gtfsBundle.setAgencyIdMappings(mappings);
       }
       bundles.add(gtfsBundle);
     }
