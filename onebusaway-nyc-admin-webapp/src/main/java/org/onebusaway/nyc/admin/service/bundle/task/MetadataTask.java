@@ -41,7 +41,7 @@ public class MetadataTask implements Runnable {
     data.setServiceDateFrom(requestResponse.getRequest().getBundleStartDate().toDate());
     data.setServiceDataTo(requestResponse.getRequest().getBundleEndDate().toDate());
     logger.changelog("generated metadata for bundle " + data.getName());
-    String outputDirectory = requestResponse.getResponse().getBundleOutputDirectory();
+    String outputDirectory = requestResponse.getResponse().getBundleDataDirectory();
     String outputFile = outputDirectory + File.separator + "metadata.json";
     try {
       mapper.writeValue(new File(outputFile), data);
