@@ -15,10 +15,16 @@ import com.conveyal.gtfs.model.ValidationResult;
 import com.conveyal.gtfs.service.GtfsValidationService;
 
 public class GtfsValidationTask implements Runnable {
-  private static final String FILENAME = "gtfs_validation.csv";
   private Logger _log = LoggerFactory.getLogger(GtfsStatisticsTask.class);
   private GtfsMutableRelationalDao _dao;
   private FederatedTransitDataBundle _bundle;
+  private String filename;
+  
+  @Autowired
+  public void setFilename(String filename) {
+	this.filename = filename;
+  }
+
   @Autowired
   private MultiCSVLogger logger;
 
@@ -41,16 +47,16 @@ public class GtfsValidationTask implements Runnable {
   public void run() {
     File basePath = _bundle.getPath();
     _log.info("Starting GTFS valdiation to basePath=" + basePath);
-    logger.header(FILENAME, InvalidValueHelper.getCsvHeader());
+    logger.header(filename, InvalidValueHelper.getCsvHeader());
     GtfsValidationService service = new GtfsValidationService(_dao);
     ValidationResult vr = service.validateRoutes();
-    log(vr, FILENAME);
+    log(vr, filename);
     vr = service.validateTrips();
-    log(vr, FILENAME);
+    log(vr, filename);
     vr = service.duplicateStops();
-    log(vr, FILENAME);
+    log(vr, filename);
     vr = service.listReversedTripShapes();
-    log(vr, FILENAME);
+    log(vr, filename);
     _log.info("Exiting");
   }
 
