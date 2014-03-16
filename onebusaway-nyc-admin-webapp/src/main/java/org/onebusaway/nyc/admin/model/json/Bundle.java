@@ -2,6 +2,7 @@ package org.onebusaway.nyc.admin.model.json;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleFile;
 
 import java.util.List;
 

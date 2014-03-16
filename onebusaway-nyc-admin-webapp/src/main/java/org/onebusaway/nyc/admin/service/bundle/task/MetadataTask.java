@@ -9,6 +9,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
+import org.onebusaway.nyc.admin.service.bundle.impl.BundleBuildingUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleMetadata;
 import org.slf4j.Logger;
@@ -35,15 +36,21 @@ public class MetadataTask implements Runnable {
   
   @Override
   public void run() {
+	BundleBuildingUtil util = new BundleBuildingUtil();
     BundleMetadata data = new BundleMetadata(); 
-    data.setId(generateId());
-    data.setName(requestResponse.getRequest().getBundleName());
-    data.setServiceDateFrom(requestResponse.getRequest().getBundleStartDate().toDate());
-    data.setServiceDataTo(requestResponse.getRequest().getBundleEndDate().toDate());
-    logger.changelog("generated metadata for bundle " + data.getName());
-    String outputDirectory = requestResponse.getResponse().getBundleDataDirectory();
-    String outputFile = outputDirectory + File.separator + "metadata.json";
     try {
+      String outputDirectory = requestResponse.getResponse().getBundleDataDirectory();
+      String sourceDirectory = requestResponse.getResponse().getBundleOutputDirectory();
+      data.setId(generateId());
+      data.setName(requestResponse.getRequest().getBundleName());
+      data.setServiceDateFrom(requestResponse.getRequest().getBundleStartDate().toDate());
+      data.setServiceDataTo(requestResponse.getRequest().getBundleEndDate().toDate());
+
+      data.setOutputFiles(util.getBundleFilesWithSumsForDirectory(new File(outputDirectory), new File(outputDirectory)));
+      data.setSourceData(util.getSourceFilesWithSumsForDirectory(new File(sourceDirectory), new File(sourceDirectory)));
+      logger.changelog("generated metadata for bundle " + data.getName());
+    
+      String outputFile = outputDirectory + File.separator + "metadata.json";
       mapper.writeValue(new File(outputFile), data);
     } catch (Exception e) {
       _log.error("json serialization failed:", e);
