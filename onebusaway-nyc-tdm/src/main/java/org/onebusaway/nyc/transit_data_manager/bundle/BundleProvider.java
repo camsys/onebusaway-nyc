@@ -31,6 +31,10 @@ public class BundleProvider {
     return bundleSource.getBundleFile(bundleId, relativeFilePath);
   }
   
+  public File getStagedBundleFile(String bundleDirectory, String relativeFilePath) throws FileNotFoundException {
+    
+    return bundleSource.getBundleFile(bundleDirectory, ENV, relativeFilePath);
+  }
   public boolean checkIsValidBundleFile (String bundleId, String relativeFilePath) {
     return bundleSource.checkIsValidBundleFile(bundleId, relativeFilePath);
   }

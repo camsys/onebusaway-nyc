@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.admin.service.impl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 import javax.ws.rs.core.Response;
 
@@ -85,4 +86,23 @@ public class RemoteConnectionServiceLocalImpl implements
     return _bundleProvider.getMetadata(stagingDirectory.toString());
   }
 
+  public File getStagedBundleFile(String relativeFilePath) {
+    String bundleStagingProp = null;
+    try {
+      bundleStagingProp = _configClient.getItem("admin", "bundleStagingDir");
+    } catch (Exception e) {
+      _log.error("error looking up bundleStagingDir:", e);
+    }
+    if (bundleStagingProp == null) {
+      _log.error("expecting bundleStagingDir property from config, Failing");
+      return null;
+    }
+    try {
+      return _bundleProvider.getStagedBundleFile(bundleStagingProp, relativeFilePath);
+    } catch (FileNotFoundException e) {
+      _log.error("error retrieving file " + bundleStagingProp + File.separator + relativeFilePath);
+      return null;
+    }
+  }
+  
 }
