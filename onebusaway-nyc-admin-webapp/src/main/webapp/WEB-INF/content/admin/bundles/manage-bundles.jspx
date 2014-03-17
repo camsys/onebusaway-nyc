@@ -60,14 +60,10 @@
 			<h2>Transit Data Bundle Utility</h2>
 			<div id="tabs">
 				<ul id="breadcrumb">
-					<li><a href="#Create" title="Create Directory"><span>1. Create
-								Directory</span></a></li>
-					<li><a href="#Upload" title="Upload Files"><span>2. Upload 
-								Files</span></a></li>
-					<li><a href="#Validate" title="Pre-validate inputs"><span>3. Pre-validate
-								inputs</span></a></li>
-					<li><a href="#Build" title="Build And Validate"><span>4. Build
-								And Validate</span></a></li>
+					<li><a href="#Create" title="Create Directory"><span>1. <s:text name="manage-bundles.createTitle"/></span></a></li>
+					<li><a href="#Upload" title="Upload Files"><span>2. <s:text name="manage-bundles.uploadTitle"/></span></a></li>
+					<li><a href="#Validate" title="Pre-validate inputs"><span>3. <s:text name="manage-bundles.validateTitle"/></span></a></li>
+					<li><a href="#Build" title="Build And Validate"><span>4. <s:text name="manage-bundles.buildTitle"/></span></a></li>
 					<li><a href="#Stage" title="Stage Bundle"><span>5. <s:text name="manage-bundles.stageTitle"/></span></a></li>
 					<li><a href="#Deploy" title="Deploy Bundle"><span>6. <s:text name="manage-bundles.deployTitle"/></span></a></li>
 				</ul>

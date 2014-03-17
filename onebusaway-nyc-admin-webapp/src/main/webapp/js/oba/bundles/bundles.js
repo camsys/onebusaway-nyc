@@ -207,6 +207,8 @@ jQuery(function() {
 	
 	jQuery("#upload_continue").click(onUploadContinueClick);
 	
+	jQuery("#build_continue").click(onBuildContinueClick);
+	
 	// hookup ajax call to select
 	jQuery("#directoryButton").click(onSelectClick);
 	
@@ -276,6 +278,16 @@ function onUploadContinueClick() {
 function onPrevalidateContinueClick() {
 	var $tabs = jQuery("#tabs");
 	$tabs.tabs('select', 3);
+}
+
+function onBuildContinueClick() {
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 4);
+}
+
+function onStageContinueClick() {
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 5);
 }
 
 function onSelectClick() {
