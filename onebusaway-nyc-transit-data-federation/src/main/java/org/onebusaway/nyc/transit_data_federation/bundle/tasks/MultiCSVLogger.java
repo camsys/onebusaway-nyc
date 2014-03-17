@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MultiCSVLogger {
   private static final String CHANGE_LOG = "change_log.csv";
+  private String diff_log_filename = "diff_log.csv";
   private Logger _log = LoggerFactory.getLogger(MultiCSVLogger.class);
   private static DateFormat SIMPLE_DATE = new SimpleDateFormat();
 
@@ -136,6 +137,18 @@ public class MultiCSVLogger {
     log(CHANGE_LOG, SIMPLE_DATE.format(new Date()), s);
   }
   
+  public void difflogHeader(String filename) {
+	    diff_log_filename = filename;
+	    Log log = logs.get(diff_log_filename);
+	    if (log == null) {
+	      header(diff_log_filename, "line,diff");  
+	    }
+	  }
+		  
+  public void difflog(int linenum, String content) {
+    log(diff_log_filename, linenum, content);
+  }
+	  
   public void summarize() {
     FileOutputStream outputStream;
     try {
