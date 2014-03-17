@@ -1,6 +1,9 @@
 package org.onebusaway.nyc.admin.service.bundle.api;
 
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 import org.onebusaway.nyc.admin.service.impl.RemoteConnectionServiceLocalImpl;
@@ -13,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -34,6 +38,7 @@ public class BundleResource implements ServletContextAware {
   
   private RemoteConnectionServiceLocalImpl _localConnectionService;
   private ObjectMapper _mapper = new ObjectMapper();
+  private ObjectMapper _dateMapper = new ObjectMapper();
   /*
    * override of default TDM location:  for local testing use 
    * http://localhost:8080/onebusaway-nyc-tdm-webapp
@@ -42,6 +47,12 @@ public class BundleResource implements ServletContextAware {
   private String tdmURL;
   
   private Boolean isTdm = null;
+  
+  @PostConstruct
+  public void setup() {
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    _dateMapper.setDateFormat(df);
+  }
   
   @Path("/deploy/list/{environment}")
   @GET
@@ -146,7 +157,7 @@ public class BundleResource implements ServletContextAware {
           return Response.serverError().build();
         }
 
-        json = _mapper.writeValueAsString(meta);
+        json = _dateMapper.writeValueAsString(meta);
       } catch (Exception e) {
         _log.error("exception writing json:", e);
         return Response.serverError().build();

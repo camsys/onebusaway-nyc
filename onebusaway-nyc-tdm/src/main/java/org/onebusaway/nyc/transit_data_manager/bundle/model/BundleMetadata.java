@@ -12,6 +12,9 @@ public class BundleMetadata {
   private Date serviceDataTo;
   private List<BundleFile> outputFiles;
   private List<SourceFile> sourceData;
+  private String changeLogUri;
+  private String statisticsUri;
+  private String validationUri;
   
   public String getId() {
     return id;
@@ -48,6 +51,24 @@ public class BundleMetadata {
   }
   public void setSourceData(List<SourceFile> sourceFilesWithSumsForDirectory) {
     this.sourceData = sourceFilesWithSumsForDirectory;
+  }
+  public String getChangeLogUri() {
+    return changeLogUri;
+  }
+  public void setChangeLogUri(String uri) {
+    this.changeLogUri = uri;
+  }
+  public String getStatisticsUri() {
+    return statisticsUri;
+  }
+  public void setStatisticsUri(String uri) {
+    this.statisticsUri = uri;
+  }
+  public String getValidaitonUri() {
+    return validationUri;
+  }
+  public void setValidationUri(String uri) {
+    this.validationUri = uri;
   }
   
 }

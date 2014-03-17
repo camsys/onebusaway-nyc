@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
@@ -89,6 +90,10 @@ public class BundleBuildingUtil {
   }
   
   public List<BundleFile> getBundleFilesWithSumsForDirectory(File baseDir, File dir) throws IllegalArgumentException {
+    return getBundleFilesWithSumsForDirectory(baseDir, dir, null);
+  }
+  
+  public List<BundleFile> getBundleFilesWithSumsForDirectory(File baseDir, File dir, File rootDir) throws IllegalArgumentException {
     List<BundleFile> files = new ArrayList<BundleFile>();
     
     if (!dir.isDirectory()) {
@@ -108,9 +113,15 @@ public class BundleBuildingUtil {
             && !listEntryFilename.endsWith(".lck")) {
           BundleFile file = new BundleFile();
           
-          String relPathToBase = baseDir.toURI().relativize(listEntry.toURI()).getPath();
-          
-          file.setFilename(relPathToBase);
+          String relPathToBase = null;
+          if (rootDir == null) {
+            _log.debug("baseDir=" + baseDir + "; listEntry=" + listEntry);
+            relPathToBase = baseDir.toURI().relativize(listEntry.toURI()).getPath();
+            file.setFilename(relPathToBase);
+          } else {
+            relPathToBase = rootDir.toURI().relativize(listEntry.toURI()).getPath();
+            file.setFilename(relPathToBase);
+          }
           
           String sum = getMd5ForFile(listEntry);
           file.setMd5(sum);
@@ -118,7 +129,7 @@ public class BundleBuildingUtil {
           files.add(file);
           _log.debug("file:" + listEntry + " has Md5=" + sum);
         } else if (listEntry.isDirectory()) {
-          files.addAll(getBundleFilesWithSumsForDirectory(baseDir, listEntry));
+          files.addAll(getBundleFilesWithSumsForDirectory(baseDir, listEntry, rootDir));
         }
       }
     }
@@ -126,7 +137,7 @@ public class BundleBuildingUtil {
     return files;
   }
 
-  public List<SourceFile> getSourceFilesWithSumsForDirectory(File baseDir, File dir) throws IllegalArgumentException {
+  public List<SourceFile> getSourceFilesWithSumsForDirectory(File baseDir, File dir, File rootDir) throws IllegalArgumentException {
     List<SourceFile> files = new ArrayList<SourceFile>();
     if (!dir.isDirectory()) {
       throw new IllegalArgumentException(dir.getPath() + " is not a directory");
@@ -144,9 +155,9 @@ public class BundleBuildingUtil {
             && listEntryFilename != null 
             && !listEntryFilename.endsWith(".lck")) {
           SourceFile file = new SourceFile();
-          file.setCreatedDate(getCreatedDate(dir, listEntry));
+          file.setCreatedDate(getCreatedDate(listEntry));
           
-          String relPathToBase = baseDir.toURI().relativize(listEntry.toURI()).getPath();
+          String relPathToBase = rootDir.toURI().relativize(listEntry.toURI()).getPath();
           file.setUri(relPathToBase);
           file.setFilename(relPathToBase);
           
@@ -154,9 +165,9 @@ public class BundleBuildingUtil {
           file.setMd5(sum);
           
           files.add(file);
-          _log.debug("file:" + listEntry + " has Md5=" + sum);
+          _log.debug("file:" + listEntry + " has Md5=" + sum + " and createdDate=" + file.getCreatedDate());
         } else if (listEntry.isDirectory()) {
-          files.addAll(getSourceFilesWithSumsForDirectory(baseDir, listEntry));
+          files.addAll(getSourceFilesWithSumsForDirectory(baseDir, listEntry, rootDir));
         }
       }
     }
@@ -164,8 +175,10 @@ public class BundleBuildingUtil {
     return files;
   }
   
-  private Date getCreatedDate(File basePath, File listEntry) {
-    File file = new File(basePath, listEntry.toString());
+  private Date getCreatedDate(File file) {
+    if (!file.exists()) {
+      _log.error("file " + file + File.separator + file + " does not exist: cannot guess date!");
+    }
     return new Date(file.lastModified());
   }
 
@@ -226,6 +239,57 @@ public class BundleBuildingUtil {
       }
       return result;
     }
+  }
+
+  public String getUri(final File baseDir, final String endsWithName) {
+    List<File> matches = findFiles(baseDir, endsWithName);
+    if (matches != null && !matches.isEmpty()) {
+      return baseDir.toURI().relativize(matches.get(0).toURI()).getPath();
+    }
+    return null;
+  }
+  private  ArrayList<File> findFiles(final File baseDir, final String endsWithName) {
+    final ArrayList<File> matches = new ArrayList<File>();
+    
+    if (!baseDir.exists() || !baseDir.isDirectory()) {
+      _log.error("getUri called with illegal baseDir=" + baseDir);
+      return matches;
+    }
+    
+    File[] matchingFiles = baseDir.listFiles(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        // check files
+        return name.endsWith(endsWithName);
+      }
+    });
+    
+    if (matchingFiles != null && matchingFiles.length > 0) {
+      for (File f : matchingFiles) {
+        matches.add(f);
+      }
+    }
+
+    // not found, recurse on dirs
+    File[] matchingSubDirs = baseDir.listFiles(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        File subDir = new File(dir, name);
+        if (subDir.isDirectory() && !subDir.equals(baseDir)) {
+          // recurse on directories, preserving rootDir
+          return true;
+        }
+        return false;
+      }
+    });
+
+
+    if (matchingSubDirs != null && matchingSubDirs.length > 0) {
+      for (File f : matchingSubDirs) {
+        matches.addAll(findFiles(f, endsWithName));
+      }
+    }
+    
+    _log.debug("getUri(" + baseDir + ", " + endsWithName + ") found " + matches);
+    return matches;
   } 
 }
 

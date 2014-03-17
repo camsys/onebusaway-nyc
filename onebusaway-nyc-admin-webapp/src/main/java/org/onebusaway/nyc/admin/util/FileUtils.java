@@ -193,7 +193,7 @@ public class FileUtils {
         return;
       if (to.exists() && to.isDirectory()) {
         if (from.exists() && from.isDirectory()) {
-          org.apache.commons.io.FileUtils.copyDirectory(from, to);
+          org.apache.commons.io.FileUtils.copyDirectory(from, to, true);
         }
         String file = this.parseFileName(from.toString());
         to = new File(to.toString() + File.separator + file);
@@ -210,19 +210,7 @@ public class FileUtils {
           copyFiles(fromChild, toChild);
         }
       } else {
-        FileInputStream in = null;
-        FileOutputStream out = null;
-
-        try {
-          in = new FileInputStream(from);
-          out = new FileOutputStream(to);
-          IOUtils.copy(in, out);
-        } finally {
-          if (in != null)
-            in.close();
-          if (out != null)
-            out.close();
-        }
+          org.apache.commons.io.FileUtils.copyFile(from, to, true/*preserve date*/);
       }
     } catch (IOException ioe) {
       throw new RuntimeException(ioe);

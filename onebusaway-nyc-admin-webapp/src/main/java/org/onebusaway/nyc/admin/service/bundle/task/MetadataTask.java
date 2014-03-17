@@ -41,13 +41,17 @@ public class MetadataTask implements Runnable {
     try {
       String outputDirectory = requestResponse.getResponse().getBundleDataDirectory();
       String sourceDirectory = requestResponse.getResponse().getBundleOutputDirectory();
+      String rootDirectory = requestResponse.getResponse().getBundleRootDirectory();
       data.setId(generateId());
       data.setName(requestResponse.getRequest().getBundleName());
       data.setServiceDateFrom(requestResponse.getRequest().getBundleStartDate().toDate());
       data.setServiceDataTo(requestResponse.getRequest().getBundleEndDate().toDate());
 
-      data.setOutputFiles(util.getBundleFilesWithSumsForDirectory(new File(outputDirectory), new File(outputDirectory)));
-      data.setSourceData(util.getSourceFilesWithSumsForDirectory(new File(sourceDirectory), new File(sourceDirectory)));
+      data.setOutputFiles(util.getBundleFilesWithSumsForDirectory(new File(outputDirectory), new File(outputDirectory), new File(rootDirectory)));
+      data.setSourceData(util.getSourceFilesWithSumsForDirectory(new File(sourceDirectory), new File(sourceDirectory), new File(rootDirectory)));
+      data.setChangeLogUri(util.getUri(new File(rootDirectory), "change_log.csv"));
+      data.setStatisticsUri(util.getUri(new File(rootDirectory), "gtfs_stats.csv"));
+      data.setValidationUri(util.getUri(new File(rootDirectory), "gtfs_validation_post.csv"));
       logger.changelog("generated metadata for bundle " + data.getName());
     
       String outputFile = outputDirectory + File.separator + "metadata.json";

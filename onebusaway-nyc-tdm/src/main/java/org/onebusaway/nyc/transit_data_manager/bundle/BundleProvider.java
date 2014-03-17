@@ -14,6 +14,7 @@ import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleMetadata;
 public class BundleProvider {
 
   private static final String META_DATA_LOCATION = "metadata.json";
+  private static final String ENV = "prod";
   private BundleSource bundleSource;
   
   public BundleProvider(BundleSource bundleSource) {
@@ -35,7 +36,7 @@ public class BundleProvider {
   }
 
   public BundleMetadata getMetadata(String stagingDirectory) throws Exception {
-    File file = bundleSource.getBundleFile(stagingDirectory, null, META_DATA_LOCATION);
+    File file = bundleSource.getBundleFile(stagingDirectory, ENV, META_DATA_LOCATION);
     ObjectMapper mapper = new ObjectMapper();
     BundleMetadata meta = mapper.readValue(file, BundleMetadata.class);
     return meta;

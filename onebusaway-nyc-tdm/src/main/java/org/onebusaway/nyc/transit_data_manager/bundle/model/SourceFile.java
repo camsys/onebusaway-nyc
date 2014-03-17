@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.bundle.model;
 
-import java.sql.Date;
+import java.util.Date;
 
 public class SourceFile extends BundleFile {
 
