@@ -4,6 +4,7 @@ import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 
@@ -95,6 +96,25 @@ public class FileUtility {
       // if file, then delete it
       file.delete();
     }
+  }
+
+  // TODO convert this to java appropriate
+  public void unTargz(final File inputFile, final File outputDir) throws FileNotFoundException, IOException, ArchiveException {
+      Process process = null;
+      try {
+        String[] cmds = {
+            "tar",
+            "zxC",
+            outputDir.toString(),
+            "-f",
+            inputFile.toString()
+        };
+        process = Runtime.getRuntime().exec(cmds);
+        process.waitFor();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+
   }
 
   /**
@@ -248,5 +268,6 @@ public class FileUtility {
     }
     return count;
   }
+
 
 }

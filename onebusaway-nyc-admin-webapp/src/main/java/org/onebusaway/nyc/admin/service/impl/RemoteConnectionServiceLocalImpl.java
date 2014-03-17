@@ -58,7 +58,7 @@ public class RemoteConnectionServiceLocalImpl implements
 				if (!"[".equals(json)) {
 					json = json + ", ";
 				}
-				json = json + bundle;
+				json = json + "\"" + bundle + "\"";
 			}
 			return json+"]";
 		}

@@ -243,6 +243,15 @@ jQuery(function() {
 			disableContinueButton(jQuery("#create_continue"));
 		}
 	});
+
+	//toggle bundle staging progress list
+	jQuery("#stageBundle #stageBundle_progress #expand").bind({
+			'click' : toggleStageBundleResultList});
+
+	
+	//Handle stage button click event
+	jQuery("#stageBundle_stageButton").click(onStageClick);
+
 	
 	//toggle bundle deploy progress list
 	jQuery("#deployBundle #deployBundle_progress #expand").bind({
@@ -357,6 +366,13 @@ function toggleDeployBundleResultList() {
 	changeImageSrc($image);
 	//Toggle progress result list
 	jQuery("#deployBundle #deployBundle_resultList").toggle();
+}
+
+function toggleStageBundleResultList() {
+	var $image = jQuery("#stageBundle #stageBundle_progress #expand");
+	changeImageSrc($image);
+	//Toggle progress result list
+	jQuery("#stageBundle #stageBundle_resultList").toggle();
 }
 
 
@@ -752,6 +768,45 @@ function updateBuildList(id) {
 			}, 10000);
 		}
 	});	
+}
+
+function onStageClick() {
+	stageClick();
+}
+
+function stageClick() {
+	var bundleDir = jQuery("#createDirectory #directoryName").val();
+	var bundleName = jQuery("#buildBundle_bundleName").val();
+	jQuery.ajax({
+		url: "../../api/bundle/stagerequest/" + bundleDir + "/" + bundleName + "?ts=" +new Date().getTime(), 
+		type: "GET",
+		async: false,
+		success: function(response) {
+				var bundleResponse = response;
+				if (bundleResponse != undefined) {
+					if (typeof response=="string") {
+						if (bundleResponse.match(/SUCCESS/)) {
+							toggleStageBundleResultList();
+							jQuery("#bundleResultsHolder #bundleResults #stageBundle_progress").show().css("display","block");
+							jQuery("#bundleResultsHolder #bundleResults #stageBundle_resultList").show().css("display","block");
+							jQuery("#stageBundle_resultList").html(bundleName);
+							jQuery("#stageContentsHolder #stageBox #staging #stagingProgress").attr("src","../../css/img/dialog-accept-2.png");
+							jQuery("#stageBundle_stageProgress").text("Staging Complete!");
+						} else {
+							jQuery("#stageBundle_id").text("Failed to Stage requested Bundle!");
+							jQuery("#stageBundle_resultList").html("error");
+						}
+					}
+				} else {
+					jQuery("#stageBundle_id").text(error);
+					jQuery("#stageBundle_resultList").html("error");
+				}
+		},
+		error: function(request) {
+			alert("There was an error processing your request. Please try again");
+		}
+	});
+	
 }
 
 

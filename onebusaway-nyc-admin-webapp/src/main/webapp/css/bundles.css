@@ -526,6 +526,37 @@
 	padding-top : 10px;
 }
 
+
+#stageContentsHolder #stageBox #staging {
+	display: none;
+	background-color: #F0F0F0;
+}
+
+#stageBundle #requestLabels {
+	padding-top : 20px;
+	display:none;
+}
+
+#stagepage_info {
+	display:none;
+}
+
+#helpfulMessage {
+	padding-top : 20px;
+}
+
+#stageBundle #listButton {
+	padding-left: 20px;
+	display: inline;
+	align: right;
+}
+
+#stageBundle_bundleList {
+	display: block;
+	padding-top : 10px;
+}
+
+
 #deployContentsHolder #deployBox #deploying {
 	display: none;
 	background-color: #F0F0F0;

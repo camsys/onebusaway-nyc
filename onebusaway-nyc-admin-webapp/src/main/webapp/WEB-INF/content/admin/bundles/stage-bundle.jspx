@@ -21,49 +21,51 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
 		<div class="tabHeader">
-			<label class="headerLabel">Deploy Bundle(s)</label>
+			<label class="headerLabel">Stage Bundle</label>
 		</div>
-		<div id="deploypage_info">
-  			<label id="deploy_environment" class="adminLabel directoryLabel">
+		<div id="stagepage_info">
+		<!-- 
+  			<label id="stage_environment" class="adminLabel directoryLabel">
 				<s:property value="environment" ></s:property>
 			</label>
+		 -->
 		</div>
 		<div id="helpfulMessage">
-		Please copy the bundle created in Build And Validate to the <b><s:property value="s3Path" ></s:property></b> directory via the S3 Management Console. 
+		Staging a bundle marks the bundle as then next bundle suitable for production. 
 		</div>
-		<div id="deployBundle">
-			<label class="bundleHeader">Bundle(s) Available to Push to TDM</label>  
+		<div id="stageBundle">
+			<label class="bundleHeader">Stage this Bundle</label>  
 			<div id="listButton">
-				<input type="button" id="deployBundle_listButton" value="Refresh" />
+				<!-- <input type="button" id="stageBundle_listButton" value="Refresh" /> -->
 			</div>
-			<input type="button" id="deployBundle_deployButton" value="Deploy Bundle(s)" />
-			<div id="deployBundle_bundleList">
+			<input type="button" id="stageBundle_stageButton" value="Stage Bundle" />
+			<div id="stageBundle_bundleList">
 			<!--  space -->
 			</div>
 			
 			<div id="requestLabels">
 				<label class="adminLabel directoryLabel">Request
-					Id :</label> <label id="deployBundle_id" class="adminLabel directoryLabel"></label>
+					Id :</label> <label id="stageBundle_id" class="adminLabel directoryLabel"></label>
 			</div>
-			<div id="deployContentsHolder">					
-				<div id="deployBox">
-					<div id="deploying">
+			<div id="stageContentsHolder">					
+				<div id="stageBox">
+					<div id="staging">
 						<s:url var="url" value="/css/img/ajax-loader.gif" />
-						<img id="deployingProgress" src="${url}" alt="Ajax loader"
-							class="progress" /> <label id="deployBundle_deployProgress"
-							class="adminLabel">Deploying ... </label>
+						<img id="stagingProgress" src="${url}" alt="Ajax loader"
+							class="progress" /> <label id="stageBundle_stageProgress"
+							class="adminLabel">Staging ... </label>
 					</div>
 					
 				</div>
 			</div>
 			<div id="bundleResultsHolder">
 				<div id="bundleResults">
-					<div id="deployBundle_progress">
+					<div id="stageBundle_progress">
 						<s:url var="url" value="/css/img/arrow-right-3.png" />
 						<img src="${url}" alt="Not found" id="expand" /> <label
 							class="adminLabel">Bundles Staged:</label>
 					</div>
-					<div id="deployBundle_resultList">
+					<div id="stageBundle_resultList">
 						<!--  space -->
 					</div>
 				</div>

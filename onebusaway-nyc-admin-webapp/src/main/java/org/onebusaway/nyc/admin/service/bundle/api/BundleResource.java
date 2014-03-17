@@ -115,6 +115,27 @@ public class BundleResource implements ServletContextAware {
     return Response.ok(json).build();
   }
   
+
+@Path("/stagerequest/{bundleDir}/{bundleName}")
+@GET
+/**
+ * request just-built bundle is staged for deployment
+ * @return status object with id for querying status
+ */
+public Response stage(@PathParam("bundleDir") String bundleDir,
+      @PathParam("bundleName") String bundleName) {
+  // TODO this should follow the deployer pattern with an async response object
+  String json = "{ERROR}";
+  try {
+    String stagingDir = _configClient.getItem("admin", "bundleStagingDir");
+    this._bundleProvider.stage(stagingDir, bundleDir, bundleName);
+    json = "{SUCCESS}";
+  } catch (Exception any) {
+    _log.error("stage failed:", any);
+  }
+  return Response.ok(json).build();
+}
+
   private String getTDMURL() {
     if (tdmURL != null && tdmURL.length() > 0) {
       return tdmURL;

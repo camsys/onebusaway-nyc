@@ -31,4 +31,6 @@ public interface BundleSource {
 
   File getBundleFile(String bundleDirectory, String bundleId,
       String relativeFilePath) throws FileNotFoundException;
+
+  void stage(String stagingDirectory, String env, String bundleDir, String bundleName) throws Exception;
 }

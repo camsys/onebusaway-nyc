@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.Bundle;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
+import org.onebusaway.nyc.util.impl.FileUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +18,6 @@ import org.slf4j.LoggerFactory;
  * Represents a bundle source where each bundle is saved as a set of files
  * within a directory. The constructor takes a directory which contains multiple
  * subdirectories, one for each bundle.
- * 
- * @author sclark
  * 
  */
 public class DirectoryBundleSource implements BundleSource {
@@ -95,6 +95,39 @@ public class DirectoryBundleSource implements BundleSource {
     return bundles;
   }
 
+  @Override
+  public void stage(String stagingDirectory, String env, String bundleDir, String bundleName) throws Exception {
+    File srcDir = new File(this.getMasterBundleDirectory().toString()
+        + File.separator
+        + "st_bundles" /*TODO where does this come from?*/
+        + File.separator
+        + bundleDir
+        + File.separator
+        + "builds"
+        + File.separator
+        + bundleName);
+    File srcFile = new File(srcDir, bundleName + ".tar.gz");
+    File destDir = new File(stagingDirectory);
+    _log.info("deleting " + destDir);
+    // cleanup from past run
+    try {
+      FileUtils.deleteDirectory(destDir);
+    } catch (Exception any) {
+      _log.info("deleteDir failed with :", any);
+    }
+    
+    FileUtility fu = new FileUtility();
+    _log.info("making directory" + destDir);
+    destDir.mkdir();
+    
+    _log.info("expanding " + srcFile + " to " + destDir);
+    fu.unTargz(srcFile, destDir);
+    File oldDir = new File(destDir + File.separator + bundleName);
+    File newDir = new File(destDir + File.separator + env);
+    _log.info("moving " + oldDir + " to " + newDir);
+    FileUtils.moveDirectory(oldDir, newDir);
+  }
+  
   private List<String> getSubDirectoryNamesOfBundleDirectory() {
     List<String> subDirectories = new ArrayList<String>();
 
@@ -231,6 +264,8 @@ public class DirectoryBundleSource implements BundleSource {
     if (!file.exists()) {
       _log.info("A requested file in bundle " + bundleId + " does not exist at path: " + file.getPath());
       throw new FileNotFoundException("File " + file.getPath() + " not found.");
+    } else {
+      _log.info("getBundleFile(" + file + ")");
     }
     return file;
   }

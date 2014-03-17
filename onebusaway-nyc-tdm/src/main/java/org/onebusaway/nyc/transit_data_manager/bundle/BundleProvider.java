@@ -41,4 +41,9 @@ public class BundleProvider {
     BundleMetadata meta = mapper.readValue(file, BundleMetadata.class);
     return meta;
   }
+
+  public void stage(String stagingDirectory, String bundleDir, String bundleName) throws Exception {
+    bundleSource.stage(stagingDirectory, ENV, bundleDir, bundleName);
+    
+  }
 }

@@ -64,7 +64,7 @@ public class BundleMetadata {
   public void setStatisticsUri(String uri) {
     this.statisticsUri = uri;
   }
-  public String getValidaitonUri() {
+  public String getValidationUri() {
     return validationUri;
   }
   public void setValidationUri(String uri) {
