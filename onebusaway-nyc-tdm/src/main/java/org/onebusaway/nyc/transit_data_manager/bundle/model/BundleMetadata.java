@@ -9,7 +9,7 @@ public class BundleMetadata {
   private String id;
   private String name;
   private Date serviceDateFrom;
-  private Date serviceDataTo;
+  private Date serviceDateTo;
   private List<BundleFile> outputFiles;
   private List<SourceFile> sourceData;
   private String changeLogUri;
@@ -34,11 +34,11 @@ public class BundleMetadata {
   public void setServiceDateFrom(Date serviceDateFrom) {
     this.serviceDateFrom = serviceDateFrom;
   }
-  public Date getServiceDataTo() {
-    return serviceDataTo;
+  public Date getServiceDateTo() {
+    return serviceDateTo;
   }
-  public void setServiceDataTo(Date serviceDataTo) {
-    this.serviceDataTo = serviceDataTo;
+  public void setServiceDateTo(Date serviceDateTo) {
+    this.serviceDateTo = serviceDateTo;
   }
   public List<BundleFile> getOutputFiles() {
 	  return outputFiles;
