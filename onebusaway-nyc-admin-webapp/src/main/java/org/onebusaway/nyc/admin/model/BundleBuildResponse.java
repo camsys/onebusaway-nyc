@@ -225,7 +225,7 @@ public class BundleBuildResponse {
 	 * @param bundleResultLink the bundleResultLink to set
 	 */
 	 public void setBundleResultLink(String bundleResultLink) {
-		 this.bundleResultLink = bundleResultLink;
+		 this.bundleResultLink = (bundleResultLink!=null?bundleResultLink:"");
 	 }
 
 	 public String getBundleBuildName() {
