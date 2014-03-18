@@ -44,13 +44,14 @@ public class GtfsStatisticsTask implements Runnable {
       _log.info("Starting GTFS stats to basePath=" + basePath);
       GtfsStatisticsService service = new GtfsStatisticsService(_dao);
       
-      logger.header(FILENAME, "agency,route_count,trip_count,stop_count,stop_times_count,calendar_service_start,calendar_service_end,calendar_start_date,calendar_end_date");
+      logger.header(FILENAME, "id,name,route_count,trip_count,stop_count,stop_times_count,calendar_service_start,calendar_service_end,calendar_start_date,calendar_end_date");
       
       // per agency status
       Collection<Agency> agencies = service.getAllAgencies();
       for (Agency agency:agencies) {
         _log.info("processing stats for agency: " + agency.getId() + " (" + agency.getName() + ")");
-        logger.logCSV(FILENAME, service.getStatisticAsCSV(agency.getId()));
+        String stats = insertAgencyName(service.getStatisticAsCSV(agency.getId()),agency.getName()); 
+        logger.logCSV(FILENAME, stats);
       }
 
       // overall stats/totals
@@ -64,8 +65,13 @@ public class GtfsStatisticsTask implements Runnable {
       all.setStopTimeCount(service.getStopTimesCount());
       all.setCalendarStartDate(service.getCalendarServiceRangeStart());
       all.setCalendarEndDate(service.getCalendarServiceRangeEnd());
-
-      logger.logCSV(FILENAME, GtfsStatisticsService.formatStatisticAsCSV(all));
+      String stats = insertAgencyName(GtfsStatisticsService.formatStatisticAsCSV(all), ""); 
+      logger.logCSV(FILENAME, stats);
       _log.info("exiting");
+    }
+    
+    private String insertAgencyName(String originalStr, String agencyName){
+        int commaIndex = originalStr.indexOf(",");
+        return originalStr.substring(0,commaIndex) + ","+ agencyName + originalStr.substring(commaIndex);  
     }
 }
