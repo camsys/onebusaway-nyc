@@ -33,28 +33,35 @@ public abstract class DiffTask implements Runnable {
 	public void run() {
 		initFilename();
 		_log.info("Starting DiffTask between (" + _filename1 + ") and (" + _filename2 + ")");
-		logger.changelogHeader();
-        List<String> original = fileToLines(_filename1);
-        List<String> revised  = fileToLines(_filename2);
-        Patch patch = DiffUtils.diff(original, revised);
-        logger.difflogHeader(_diff_log_filename);
-        
-        int offset;
-        for (Delta delta: patch.getDeltas()) {
-        	offset=0;
-        	for (Object line: delta.getOriginal().getLines()){
-        		logger.difflog((delta.getOriginal().getPosition()+offset),"-" + line);
-        		offset++;
-        	}
-        	offset=0;
-        	for (Object line: delta.getRevised().getLines()){
-        		logger.difflog((delta.getRevised().getPosition()+offset),"+" + line);
-        		offset++;
-        	}
-        }
+		try {
+      diff();
+    } catch (Exception e) {
+      _log.error("diff failed:", e);
+    }
 		_log.info("exiting difftask");
 	}
 
+	protected void diff() throws Exception {
+	   logger.changelogHeader();
+     List<String> original = fileToLines(_filename1);
+     List<String> revised  = fileToLines(_filename2);
+     Patch patch = DiffUtils.diff(original, revised);
+     logger.difflogHeader(_diff_log_filename);
+     
+     int offset;
+     for (Delta delta: patch.getDeltas()) {
+       offset=0;
+       for (Object line: delta.getOriginal().getLines()){
+         logger.difflog((delta.getOriginal().getPosition()+offset),"-" + line);
+         offset++;
+       }
+       offset=0;
+       for (Object line: delta.getRevised().getLines()){
+         logger.difflog((delta.getRevised().getPosition()+offset),"+" + line);
+         offset++;
+       }
+     }
+	}
 	private List<String> fileToLines(String filename) {
 		List<String> lines = new LinkedList<String>();
 		String line = "";
