@@ -23,21 +23,21 @@ public abstract class DiffTask implements Runnable {
 		this.logger = logger;
 	}
 
-	protected String diff_log_filename;
-	protected String filename1;
-	protected String filename2;
+	protected String _diff_log_filename;
+	protected String _filename1;
+	protected String _filename2;
 	
 	public abstract void initFilename();
 	
 	@Override
 	public void run() {
 		initFilename();
-		_log.info("Starting DiffTask between (" + filename1 + ") and (" + filename2 + ")");
+		_log.info("Starting DiffTask between (" + _filename1 + ") and (" + _filename2 + ")");
 		logger.changelogHeader();
-        List<String> original = fileToLines(filename1);
-        List<String> revised  = fileToLines(filename2);
+        List<String> original = fileToLines(_filename1);
+        List<String> revised  = fileToLines(_filename2);
         Patch patch = DiffUtils.diff(original, revised);
-        logger.difflogHeader(diff_log_filename);
+        logger.difflogHeader(_diff_log_filename);
         
         int offset;
         for (Delta delta: patch.getDeltas()) {

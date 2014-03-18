@@ -131,7 +131,7 @@
   </bean>
   
 
-  <bean id="diffValidationTask" class="org.onebusaway.nyc.admin.service.bundle.task.ValidationTask" >
+  <bean id="diffValidationTask" class="org.onebusaway.nyc.admin.service.bundle.task.ValidationDiffTask" >
     <property name="logger" ref="multiCSVLogger" />
     <property name="configurationServiceClient" ref="configurationServiceClient" />
     <property name="bundleRequestResponse" ref="bundleRequestResponse" />

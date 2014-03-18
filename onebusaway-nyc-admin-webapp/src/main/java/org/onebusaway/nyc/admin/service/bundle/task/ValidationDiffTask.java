@@ -1,11 +1,13 @@
 package org.onebusaway.nyc.admin.service.bundle.task;
 
+import java.io.File;
+
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
-public class ValidationTask extends DiffTask {
+public class ValidationDiffTask extends DiffTask {
 	BundleRequestResponse bundleRequestResponse;
 	ConfigurationServiceClient configurationServiceClient;
 	
@@ -24,9 +26,15 @@ public class ValidationTask extends DiffTask {
 	@Override
 	public void initFilename(){
 		try{
-			diff_log_filename = "diff_log.csv";
-			filename1 = configurationServiceClient.getItem("admin", "bundleStagingDir")+"/"+FILENAME;
-			filename2 = bundleRequestResponse.getResponse().getBundleOutputDirectory()+"/"+FILENAME;
+			_diff_log_filename = "diff_log.csv";
+			_filename1 = configurationServiceClient.getItem("admin", "bundleStagingDir") 
+			    + File.separator
+			    + "prod"
+			    + File.separator
+			    + "outputs"
+			    + File.separator
+			    + FILENAME;
+			_filename2 = bundleRequestResponse.getResponse().getBundleOutputDirectory() + File.separator + FILENAME;
 		} catch(Exception e){
 			_log.error(e.toString());
 		}
