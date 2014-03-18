@@ -572,9 +572,13 @@ function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
 	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
 		errors += "missing bundle directory" + "\n";
 		valid = false;
-	}
+	} 
 	if (bundleName == undefined || bundleName == null || bundleName == "") {
 		errors += "missing bundle build name" + "\n";
+		valid = false;
+	} 
+	else if(~bundleName.indexOf(" ")){
+		errors += "bundle build name cannot contain spaces" + "\n";
 		valid = false;
 	}
 	if (startDate == undefined || startDate == null || startDate == "") {
