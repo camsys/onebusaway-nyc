@@ -449,6 +449,7 @@ function onValidateClick() {
 		alert("bundle build name cannot contain spaces");
 		return;
 	}
+	
 	else {
 		jQuery("#buildBundle_bundleName").val(bundleName);
 	}
@@ -611,10 +612,6 @@ function bundleUrl() {
 		async: false,
 		success: function(response) {
 				var bundleResponse = response;
-				console.log("A:"+bundleResponse);
-				console.log("B:"+bundleResponse.bundleResultLink);
-				console.log("C:");
-				console.log(bundleResponse);
 				if(bundleResponse.exception !=null) {
 					jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
 							.text("(exception)")
@@ -651,8 +648,6 @@ function buildBundle(bundleName, startDate, endDate){
 		async: false,
 		success: function(response) {
 				var bundleResponse = response;
-				console.log("D: ");
-				console.log(bundleResponse);
 				if (bundleResponse != undefined) {
 					//display exception message if there is any
 					if(bundleResponse.exception !=null) {
@@ -661,18 +656,15 @@ function buildBundle(bundleName, startDate, endDate){
 						jQuery("#buildBundle_resultList").html("calling...");
 						jQuery("#buildBundle_id").text(bundleResponse.id);
 						window.setTimeout(updateBuildStatus, 5000);
-						console.log("building url");
 						bundleUrl();
 					}
 				} else {
 					jQuery("#buildBundle_id").text(error);
 					jQuery("#buildBundle_resultList").html("error");
-					console.log("Error1");
 				}
 		},
 		error: function(request) {
 			alert("There was an error processing your request. Please try again");
-			console.log("Error2");
 		}
 	});
 }
