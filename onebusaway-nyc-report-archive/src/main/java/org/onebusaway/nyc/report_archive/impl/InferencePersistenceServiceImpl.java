@@ -111,19 +111,9 @@ public class InferencePersistenceServiceImpl implements
     VehicleLocationRecordBean vehicleLocation = _nycTransitDataService.getVehicleLocationRecordForVehicleId(
         vehicleId, locationRecord.getTimeReported().getTime());
 
-    if (vehicleLocation != null && vehicleLocation.getCurrentLocation() != null) {
-      if (validationService.isValueWithinRange(
-          vehicleLocation.getCurrentLocation().getLat(), -999.999999,
-          999.999999)
-          && validationService.isValueWithinRange(
-              vehicleLocation.getCurrentLocation().getLon(), -999.999999,
-              999.999999)) {
-        locationRecord.setVehicleLocationRecordBean(vehicleLocation);
-      } else {
-        postProcessSuccess = false;
-      }
-    }
+    locationRecord.setVehicleLocationRecordBean(vehicleLocation);
 
+    postProcessSuccess = validationService.validateArchiveInferenceRecord(locationRecord);
     return postProcessSuccess;
   }
 
@@ -148,9 +138,9 @@ public class InferencePersistenceServiceImpl implements
         try {
         	boolean postProcessSuccess = postProcess(record.getRecord());
         	if (postProcessSuccess) {
-        	postMessages.add(record.getRecord());
+        	  postMessages.add(record.getRecord());
         	} else {
-        	discardRecord(record.getRecord().getVehicleId(), record.getContents());
+        	  discardRecord(record.getRecord().getVehicleId(), record.getContents());
         	}
         } catch (Throwable t) {
         	_log.error("caught postProcess error:", t);

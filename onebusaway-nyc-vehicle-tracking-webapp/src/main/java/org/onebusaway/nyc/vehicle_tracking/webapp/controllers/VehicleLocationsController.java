@@ -102,7 +102,7 @@ public class VehicleLocationsController {
   public ModelAndView linesForDSC(@RequestParam() String dsc) throws IOException {
     Map<String, List<String>> routes = new HashMap<String, List<String>>();
 
-    List<AgencyAndId> trips = _dscService.getTripIdsForDestinationSignCode(dsc);    
+    List<AgencyAndId> trips = _dscService.getTripIdsForDestinationSignCode(dsc, null);    
     for(AgencyAndId tripId : trips) {
       TripBean tripBean = _nycTransitDataService.getTrip(tripId.toString());
       String routeId = tripBean.getRoute().getId();

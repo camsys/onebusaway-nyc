@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PresentationServiceImpl implements PresentationService {
   
+
   private static Logger _log = LoggerFactory.getLogger(PresentationServiceImpl.class);
 
   @Autowired
@@ -326,4 +327,5 @@ public class PresentationServiceImpl implements PresentationService {
     
     return true;
   }
+
 }

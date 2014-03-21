@@ -260,7 +260,7 @@ public class VehicleInferenceInstance {
     if (_previousObservation == null
         || !StringUtils.equals(_lastValidDestinationSignCode,
             lastValidDestinationSignCode)) {
-      routeIds = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(lastValidDestinationSignCode);
+      routeIds = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(lastValidDestinationSignCode, record.getVehicleId().getAgencyId());
     } else {
       routeIds = _previousObservation.getDscImpliedRouteCollections();
     }
@@ -629,7 +629,7 @@ public class VehicleInferenceInstance {
    * 
    * @return
    */
-  private NycTestInferredLocationRecord getMostRecentParticleAsNycTestInferredLocationRecord() {
+  private synchronized NycTestInferredLocationRecord getMostRecentParticleAsNycTestInferredLocationRecord() {
     final Particle particle = _particleFilter.getMostLikelyParticle();
     if (particle == null)
       return null;
@@ -709,8 +709,10 @@ public class VehicleInferenceInstance {
         final boolean vehicleIsDetourEligible = _blockStateService.locationIsEligibleForDetour(
             activeTrip, location);
 
-        // vehicles on detour should be in_progress with status=deviated
-        if (state.getJourneyState().getIsDetour() && vehicleIsDetourEligible) {
+        final boolean isLayoverEligible = VehicleStateLibrary.isAtPotentialLayoverSpot(blockState.getBlockState(), obs, true);
+        
+        // vehicles on detour (but not layover) should be in_progress with status=deviated
+        if (state.getJourneyState().getIsDetour() && vehicleIsDetourEligible  && !isLayoverEligible) {
           // remap this journey state/phase to IN_PROGRESS to conform to
           // previous pilot project semantics.
           if (EVehiclePhase.DEADHEAD_DURING.equals(phase)) {

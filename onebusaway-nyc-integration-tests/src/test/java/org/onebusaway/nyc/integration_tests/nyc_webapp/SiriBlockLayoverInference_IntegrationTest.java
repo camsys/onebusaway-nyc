@@ -64,7 +64,8 @@ public class SiriBlockLayoverInference_IntegrationTest extends SiriIntegrationTe
   }
   
   @Test
-  public void testDepartureTimeSetOnVM() throws HttpException, IOException {
+  public void testDepartureTimeSetOnVM() throws HttpException, IOException, InterruptedException {
+   Thread.sleep(60 * 1000); // break cache
 	 HashMap<String,Object> vmResponse = getVmResponse("MTA%20NYCT", "2436");
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)vmResponse.get("Siri");
