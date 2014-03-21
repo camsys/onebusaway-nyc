@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -33,9 +34,12 @@ import org.onebusaway.nyc.integration_tests.TraceSupport;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.utility.DateLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SiriIntegrationTestBase {
 	  
+  protected static Logger _log = LoggerFactory.getLogger(SiriIntegrationTestBase.class);
   private static TraceSupport _traceSupport = new TraceSupport();
 
   protected VehicleLocationListener _vehicleLocationListener;
@@ -43,6 +47,8 @@ public class SiriIntegrationTestBase {
   private long _maxTimeout = 40 * 1000;
 
   private String _time = "1330626960000";
+  
+  private Date _date = null;
   
   private String _trace;
 
@@ -55,10 +61,15 @@ public class SiriIntegrationTestBase {
   }
 
   public void setBundle(String bundleId, String date) throws Exception {
-    setBundle(bundleId, DateLibrary.getIso8601StringAsTime(date));
+    // TODO this appears to have a timezone issue
+    Date javaDate = DateLibrary.getIso8601StringAsTime(date);
+    _date = javaDate;
+    setBundle(bundleId, javaDate);
   }
 
   public void setBundle(String bundleId, Date date) throws Exception {
+    _date = date;
+
     String port = System.getProperty(
         "org.onebusaway.transit_data_federation_webapp.port", "9905");
 
@@ -87,6 +98,49 @@ public class SiriIntegrationTestBase {
 	  client.executeMethod(get);
   }
   
+  protected HashMap<String,Object> getVmResponse(Map<String, String> params) throws IOException {
+    HttpClient client = new HttpClient();
+    String port = System.getProperty("org.onebusaway.webapp.port", "9000");
+    String url = null;
+    url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?";
+    if (!params.containsKey(("key"))) {
+        params.put("key", "TEST");
+    }
+    if (!params.containsKey(("time"))) {
+      // TODO this appears to have a timezone issue
+      params.put("time", "" + _date.getTime());
+  }
+
+    url = appendParamsToUrl(url, params);
+    System.out.println(url);
+    
+    GetMethod get = new GetMethod(url);
+    _log.debug(url);
+    client.executeMethod(get);
+
+    String response = get.getResponseBodyAsString();
+    _log.debug(response);
+    JsonFactory factory = new JsonFactory(); 
+    ObjectMapper mapper = new ObjectMapper(factory); 
+    TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {}; 
+    HashMap<String,Object> o = mapper.readValue(response, typeRef); 
+
+    return o;
+
+  }
+  
+  private String appendParamsToUrl(String url, Map<String, String> params) {
+    if (params == null) return url;
+    StringBuffer result = new StringBuffer();
+    result.append(url);
+    
+    for (String key : params.keySet()) {
+      result.append(key).append("=").append(params.get(key)).append("&");
+    }
+    
+    return result.substring(0, result.length()-1); // truncate trailing "&"
+  }
+
   protected HashMap<String,Object> getVmResponse(String operatorId, String vId) throws IOException, HttpException {
 
 	  HttpClient client = new HttpClient();
@@ -100,9 +154,9 @@ public class SiriIntegrationTestBase {
 	  }
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);
-
+	  _log.debug(url);
 	  String response = get.getResponseBodyAsString();
-
+	  _log.debug(response);
 	  JsonFactory factory = new JsonFactory(); 
 	  ObjectMapper mapper = new ObjectMapper(factory); 
 	  TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {}; 
@@ -118,9 +172,9 @@ public class SiriIntegrationTestBase {
 	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?key=TEST&StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);
-
+	  _log.debug(url);
 	  String response = get.getResponseBodyAsString();
-
+	  _log.debug(response);
 	  JsonFactory factory = new JsonFactory(); 
 	  ObjectMapper mapper = new ObjectMapper(factory); 
 	  TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {}; 

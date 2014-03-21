@@ -38,6 +38,8 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.nyc.presentation.service.cache.NycCacheService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -54,7 +56,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     implements ServletRequestAware, ServletResponseAware {
 
   private static final long serialVersionUID = 1L;
-
+  protected static Logger _log = LoggerFactory.getLogger(VehicleMonitoringAction.class);
+  
   @Autowired
   public NycTransitDataService _nycTransitDataService;
 
@@ -228,6 +231,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       // *** CASE 3: all vehicles
     } else {
+      try {
       gaLabel = "All Vehicles";
       
       int hashKey = _cacheService.hash(maximumOnwardCalls, agencyIds, _type);
@@ -253,6 +257,10 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         _cacheService.store(hashKey, getVehicleMonitoring());
       } else {
         _cachedResponse = _cacheService.retrieve(hashKey);
+      }
+      } catch (Exception e) {
+        _log.error("vm all broke:", e);
+        throw new RuntimeException(e);
       }
     }
     

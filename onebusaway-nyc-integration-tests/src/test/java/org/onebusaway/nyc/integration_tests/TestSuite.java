@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriBlockInference_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriBlockLayoverInference_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriScheduleDeviation_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriTripInference_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriTripLayoverInference_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_0927_20101209T124742_IntegrationTest;
@@ -76,6 +77,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	
   // 2013Sept_Prod_r08_b04
 	Trace_4399_20131225_IntegrationTest.class,
+	SiriScheduleDeviation_IntegrationTest.class,
 
 	// 2013Sept_AllCity_r15_b02
 	Trace_9527_Q_MISC_IntegrationTest.class,

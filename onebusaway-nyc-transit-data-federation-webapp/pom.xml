@@ -138,6 +138,8 @@
                 <bundle.location>/tmp/oba-bundle</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <log4j.appender>stdout</log4j.appender>
+                <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
             </properties>
         </profile>
         <profile>
