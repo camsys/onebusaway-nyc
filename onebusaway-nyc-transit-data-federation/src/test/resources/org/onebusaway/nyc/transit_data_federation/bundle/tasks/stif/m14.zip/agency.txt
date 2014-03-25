@@ -1,2 +1,2 @@
 agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone
-MTA NYCT,MTA New York City Transit,http://www.web.mta.info,America/New_York,en,718-330-1234
+MTA NYCT,MTA New York City Transit,http://web.mta.info,America/New_York,en,718-330-1234
