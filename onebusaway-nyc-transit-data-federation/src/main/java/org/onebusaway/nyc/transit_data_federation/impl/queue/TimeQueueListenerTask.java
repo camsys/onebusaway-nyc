@@ -27,7 +27,10 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 	
 	@Override
 	public String getQueueHost() {
-		return _configurationService.getConfigurationValueAsString("tds.timePredictionQueueHost", null);
+	  String queueHost = "queue.dev.obanyc.com";
+		//return _configurationService.getConfigurationValueAsString("tds.timePredictionQueueHost", null);
+	  _log.warn("returning phils queueHost=" + queueHost);
+	  return queueHost;
 	}
 
 	@Override
