@@ -49,7 +49,7 @@ public class BuildRemoteResource extends AuthenticatedResource {
         _executorService = Executors.newFixedThreadPool(1);
   }
 
-  @Path("/{bundleDirectory}/{bundleName}/{email}/{id}/{bundleStartDate}/{bundleEndDate}/create")
+  @Path("/{bundleDirectory}/{bundleName}/{email}/{id}/{bundleStartDate}/{bundleEndDate}/{bundleComment}/create")
   @GET
   @Produces("application/json")
   public Response build(@PathParam("bundleDirectory") String bundleDirectory,
@@ -57,13 +57,13 @@ public class BuildRemoteResource extends AuthenticatedResource {
       @PathParam("email") String email,
       @PathParam("id") String id,
       @PathParam("bundleStartDate") String bundleStartDate,
-      @PathParam("bundleEndDate") String bundleEndDate) {
+      @PathParam("bundleEndDate") String bundleEndDate,
+      @PathParam("bundleComment") String bundleComment) {
     Response response = null;
     if (!isAuthorized()) {
       return Response.noContent().build();
     }
     _log.info("in build(local)");
-
     
     BundleBuildRequest bundleRequest = new BundleBuildRequest();
     bundleRequest.setBundleDirectory(bundleDirectory);
@@ -73,6 +73,7 @@ public class BuildRemoteResource extends AuthenticatedResource {
     bundleRequest.setId(id);
     bundleRequest.setBundleStartDate(bundleStartDate);
     bundleRequest.setBundleEndDate(bundleEndDate);
+    bundleRequest.setBundleComment(bundleComment);
     
     BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
     

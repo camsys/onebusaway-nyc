@@ -15,6 +15,7 @@ public class BundleBuildRequest {
 	private String _emailAddress;
 	private String _bundleStartDate;
 	private String _bundleEndDate;
+	private String _bundleComment;
 
 	public String getBundleDirectory() {
 		return _bundleDirectory;
@@ -78,6 +79,14 @@ public class BundleBuildRequest {
 		return _bundleEndDate;
 	}
 
+	public String getBundleComment() {
+		return _bundleComment;
+	}
+
+	public void setBundleComment(String bundleComment) {
+		_bundleComment = bundleComment.replaceAll(" ", "");
+	}
+	
 	public String getEmailAddress() {
 		return _emailAddress;
 	}

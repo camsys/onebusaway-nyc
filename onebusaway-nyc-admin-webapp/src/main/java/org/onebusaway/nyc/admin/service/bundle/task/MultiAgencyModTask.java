@@ -14,7 +14,7 @@ public class MultiAgencyModTask extends BaseModTask implements Runnable {
   public void run() {
     try {
       _log.info("GtfsModTask Starting");
-      logger.changelogHeader();
+      logger.changelogHeader(requestResponse.getRequest().getBundleComment());
       GtfsBundles gtfsBundles = getGtfsBundles(_applicationContext);
       for (GtfsBundle gtfsBundle : gtfsBundles.getBundles()) {
         String agencyId = parseAgencyDir(gtfsBundle.getPath().getPath());

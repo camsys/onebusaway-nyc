@@ -40,14 +40,15 @@ public class BuildResource extends AuthenticatedResource {
 	private final ObjectMapper _mapper = new ObjectMapper();
 	private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
 
-	@Path("/{bundleDirectory}/{bundleName}/{email}/{bundleStartDate}/{bundleEndDate}/create")
+	@Path("/{bundleDirectory}/{bundleName}/{email}/{bundleStartDate}/{bundleEndDate}/{bundleComment}/create")
 	@GET
 	@Produces("application/json")
 	public Response build(@PathParam("bundleDirectory") String bundleDirectory,
 			@PathParam("bundleName") String bundleName,
 			@PathParam("email") String email,
 			@PathParam("bundleStartDate") String bundleStartDate,
-			@PathParam("bundleEndDate") String bundleEndDate) {
+			@PathParam("bundleEndDate") String bundleEndDate,
+			@PathParam("bundleComment") String bundleComment) {
 		Response response = null;
 		if (!isAuthorized()) {
 			return Response.noContent().build();
@@ -76,21 +77,28 @@ public class BuildResource extends AuthenticatedResource {
 			buildRequest.setEmailAddress(email);
 			buildRequest.setBundleStartDate(bundleStartDate);
 			buildRequest.setBundleEndDate(bundleEndDate);
+			buildRequest.setBundleComment(bundleComment);
 			
 			
 			try {
 				String message = "Starting bundle building process for bundle '" + buildRequest.getBundleName()
 						+ "' initiated by user : " + _currentUserService.getCurrentUserDetails().getUsername();
 				String component = System.getProperty("admin.chefRole");
+				_log.info("BUNDLEBUILDRESPONSE1: ");
 				loggingService.log(component, Level.INFO, message);
+				_log.info("BUNDLEBUILDRESPONSE2: ");
 				buildResponse =_bundleService.build(buildRequest);
+				_log.info("BUNDLEBUILDRESPONSE3: "+buildResponse.toString());
 				buildResponse = _bundleService.buildBundleResultURL(buildResponse.getId());
+				_log.info("BUNDLEBUILDRESPONSE4: "+buildResponse.toString());
 				response = constructResponse(buildResponse);
+				_log.info("BUNDLEBUILDRESPONSE5: "+response.toString());
 			} catch (Exception any) {
 				_log.error("exception in build:", any);
 				response = Response.serverError().build();
 			}
 		}
+		else {_log.info("BUNDLEBUILDRESPONSE2:"+buildResponse.toString());}
 
 		return response;
 	}
