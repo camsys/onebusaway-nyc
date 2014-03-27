@@ -16,9 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.web.context.ServletContextAware;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -124,7 +121,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     	StringBuffer msg = new StringBuffer();
     	msg.append("Your Build Results are available at ");
     	msg.append(getResultLink(request.getBundleName(), response.getId(),
-    			request.getBundleStartDateString(), request.getBundleEndDateString(), request.getBundleComment()));
+    			request.getBundleStartDateString(), request.getBundleEndDateString()));
     	String subject = "Bundle Build " + response.getId() + " complete";
     	_emailService.send(request.getEmailAddress(), from, subject, msg);
     }
@@ -134,13 +131,13 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   public BundleBuildResponse buildBundleResultURL(String id) {
 	  BundleBuildResponse bundleResponse = this.lookupBuildRequest(id);
 	  bundleResponse.setBundleResultLink(getResultLink(bundleResponse.getBundleBuildName(), bundleResponse.getId(),
-			  bundleResponse.getBundleStartDate(), bundleResponse.getBundleEndDate(), bundleResponse.getBundleComment()));
+			  bundleResponse.getBundleStartDate(), bundleResponse.getBundleEndDate()));
 	  return bundleResponse;
   }
   
   
   private String getResultLink(String bundleName, String responseId, String bundleStartDate,
-		  String bundleEndDate, String bundleComment) {
+		  String bundleEndDate) {
 	  StringBuffer resultLink = new StringBuffer();
 	  resultLink.append(getServerURL());
 	  resultLink.append("/admin/bundles/manage-bundles.action#Build");
@@ -148,10 +145,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
 	  resultLink.append("&name=" + bundleName);
 	  resultLink.append("&startDate=" + bundleStartDate);
 	  resultLink.append("&endDate=" + bundleEndDate);
-	  try {
-		resultLink.append(new URI("&bundleComment=" + bundleComment).toString());
-	} catch (URISyntaxException e) {
-	}
 	  return resultLink.toString();
   }
 
@@ -211,7 +204,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     bundleResponse.setBundleBuildName(bundleRequest.getBundleName());
     bundleResponse.setBundleStartDate(bundleRequest.getBundleStartDateString());
     bundleResponse.setBundleEndDate(bundleRequest.getBundleEndDateString());
-    bundleResponse.setBundleComment(bundleRequest.getBundleComment());
     
 	_buildMap.put(bundleResponse.getId(), bundleResponse);
 	bundleResponse.addStatusMessage("queueing...");
@@ -367,9 +359,9 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
             + _request.getEmailAddress() + "/" 
             + _request.getId() + "/" 
             + _request.getBundleStartDate() + "/" 
-            + _request.getBundleEndDate() + "/" 
-            + _request.getBundleComment() + "/create";
+            + _request.getBundleEndDate() + "/create";
         _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
+
           if (_response != null && _response.getId() != null) {
           String id = _response.getId();
           // put response in map
@@ -378,7 +370,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           // should this response look ok, query until it completes
           while (!isComplete(_response)) {
             url = "/build/remote/" + id + "/list";
-            
             _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
             if (_response != null) {
               _buildMap.put(id, _response);
@@ -387,7 +378,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
             Thread.sleep(5 * 1000);
           }
         }
-          _log.debug("AA: "+_response.toString());
+
           /*
            * either the server didn't start or crashed mid way; abort either way.
            */
@@ -397,7 +388,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           _response.setException(new RuntimeException("no response from server"));
           _buildMap.put(_request.getId(), _response);
         }
-        _log.debug("BB: " + _response.toString());
+
         _response.addStatusMessage("version=" + _response.getVersionString());
         _response.addStatusMessage("complete");
       } catch (Exception any) {

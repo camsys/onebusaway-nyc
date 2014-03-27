@@ -1,6 +1,5 @@
 package org.onebusaway.nyc.admin.service.bundle.task;
 
-import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
@@ -15,6 +14,11 @@ public class GtfsModTask extends BaseModTask implements Runnable {
 
   @Autowired
   private ConfigurationServiceClient configurationServiceClient;
+
+  public ConfigurationServiceClient getConfigurationServiceClient() {
+	return configurationServiceClient;
+	}
+	
   public void setConfigurationServiceClient(ConfigurationServiceClient configurationServiceClient) {
     this.configurationServiceClient = configurationServiceClient;
   }
@@ -23,7 +27,7 @@ public class GtfsModTask extends BaseModTask implements Runnable {
   public void run() {
     try {
       _log.info("GtfsModTask Starting");
-      logger.changelogHeader(requestResponse.getRequest().getBundleComment());
+      logger.changelogHeader();
       GtfsBundles gtfsBundles = getGtfsBundles(_applicationContext);
       for (GtfsBundle gtfsBundle : gtfsBundles.getBundles()) {
         String agencyId = parseAgencyDir(gtfsBundle.getPath().getPath());

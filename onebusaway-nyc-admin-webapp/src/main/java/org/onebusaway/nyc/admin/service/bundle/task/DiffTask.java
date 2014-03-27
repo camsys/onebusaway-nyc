@@ -42,7 +42,7 @@ public abstract class DiffTask implements Runnable {
 	}
 
 	protected void diff() throws Exception {
-	 logger.changelogHeader(null);
+	   logger.changelogHeader();
      List<String> original = fileToLines(_filename1);
      List<String> revised  = fileToLines(_filename2);
      Patch patch = DiffUtils.diff(original, revised);

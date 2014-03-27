@@ -113,11 +113,7 @@ public class MultiCSVLogger {
     log.stream.print("\n");
   }
 
-  public void header(String file, String header){
-    header(file, header, null);
-  }
-  
-  public void header(String file, String header, String comment) {
+  public void header(String file, String header) {
     Log log = logs.get(file);
     if (log == null) {
       log = new Log(file);
@@ -125,20 +121,16 @@ public class MultiCSVLogger {
     } else {
       throw new RuntimeException("header called more than once for file " + file);
     }
-    _log.info("BUNDLECOMMENT IS: "+comment);
-    if (comment!=null) {
-      log.stream.println(comment);
-      log.stream.println("-----");
-    }
     log.stream.print(header + "\n");
   }
 
-  public void changelogHeader(String comment) {
+  public void changelogHeader() {
     String file = CHANGE_LOG;
     Log log = logs.get(file);
     if (log == null) {
-      header(file, "date,message", comment);  
+      header(file, "date,message");  
     }
+    
   }
   
   public void changelog(String s) {
