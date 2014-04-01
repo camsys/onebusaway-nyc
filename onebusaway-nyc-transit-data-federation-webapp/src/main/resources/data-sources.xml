@@ -56,9 +56,18 @@
 
     <alias name="dataSource" alias="mutableDataSource" />
 
-    
+<!-- GTFS RT sources -->
+    <bean id="mbta_avl" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+      <property name="tripUpdatesUrl" value="http://developer.mbta.com/lib/gtrtfs/Passages.pb" />
+      <property name="vehiclePositionsUrl" value="http://developer.mbta.com/lib/gtrtfs/Vehicles.pb" />
+      <property name="refreshInterval" value="60" />
+    </bean>
+    <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean">   
+    </bean>
 	<!-- Input Queue Configuration -->
+<!--
   	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
+-->
 	<!--  for debugging purposes, the TDS can be populated via a JSON file -->
 
 <!--
@@ -68,17 +77,18 @@
 -->
 	<!--  Time Queue Configuration -->
 	<!--  This option integrates with an external time prediction queue -->
+<!--
 	<bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
 	<property name="disable" value="false"/>
 	</bean>
-
+-->
 	<!-- Other Stuff: -->
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
                 <prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
                 <prop key="blockLocationServiceImpl.locationInterpolation">false</prop>
-                <prop key="cacheManager.cacheManagerName">org.onebusaway.transit_data_federation_webapp.cacheManager</prop>
+                <prop key="cacheManager.cacheManagerName">org.onebusaway.nyc.transit_data_federation_webapp.cacheManager</prop>
                 <prop key="blockStatusServiceImpl.runningLateWindow">3600</prop>
             </props>
         </property>

@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -98,8 +99,8 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
 	@Autowired
 	private BundleManagementService _bundleManagementService;
 
-	@Autowired
-	private PredictionIntegrationService _predictionIntegrationService;
+//	@Autowired
+//	private PredictionIntegrationService _predictionIntegrationService;
 
 	@Autowired
 	private ScheduledServiceService _scheduledServiceService;
@@ -143,7 +144,8 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
 	public List<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
 			TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
-		return _predictionIntegrationService.getPredictionsForTrip(tripStatus);
+		//return _predictionIntegrationService.getPredictionsForTrip(tripStatus);
+		return new ArrayList<TimepointPredictionRecord>();
 	}
 
 	@Override

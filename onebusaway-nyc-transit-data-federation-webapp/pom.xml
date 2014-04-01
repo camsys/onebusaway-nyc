@@ -124,7 +124,19 @@
             <properties>
                 <tdm.host />
 <!--                 <tdm.host>tdm.dev.obanyc.com</tdm.host> -->
-                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
+                <bundle.location>/var/lib/obanyc/mvta</bundle.location>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
+                <service.alerts.url />
+                <service.alerts.subscription.path />
+                <log4j.appender>stdout</log4j.appender>
+            </properties>
+        </profile>
+        <profile>
+            <id>local-rt</id>
+            <properties>
+                <tdm.host />
+<!--                 <tdm.host>tdm.dev.obanyc.com</tdm.host> -->
+                <bundle.location>/var/lib/obanyc/mbta</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <service.alerts.url />
                 <service.alerts.subscription.path />

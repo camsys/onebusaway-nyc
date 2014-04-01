@@ -15,7 +15,7 @@ public class NycSiriServiceClient extends NycSiriService {
 
   @Override
   void setupForMode() throws Exception, JAXBException {
-    boolean setupDone = false;
+    boolean setupDone = true;
     int attempts = 0;
     do {
       attempts += 1;
@@ -25,8 +25,8 @@ public class NycSiriServiceClient extends NycSiriService {
         setupDone = true;
       } catch (Exception e) {
         _log.error("Setup for client failed, exception is: " + e.getMessage());
-        _log.error("Retrying in 60 seconds.");
-        Thread.sleep(60 * 1000);
+        _log.error("Retrying in 5 seconds.");
+        Thread.sleep(5 * 1000);
       }
     } while (!setupDone && attempts <= 4);
     if (setupDone) {

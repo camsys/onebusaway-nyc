@@ -144,6 +144,17 @@
             </properties>
         </profile>
         <profile>
+            <id>local-rt</id>
+            <properties>
+                <tds.path>http://developer.onebusaway.org/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://developer.onebusaway.org/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://developer.onebusaway.org/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
+                <dummy.permissions />
+                <log4j.appender>stdout</log4j.appender>
+            </properties>
+        </profile>
+        <profile>
             <!-- Vehicle tracking webapp offers the TDS -->
             <id>local-ie</id> <!-- aka services-vtw-as-tds --><!-- single port, aka development -->
             <properties>

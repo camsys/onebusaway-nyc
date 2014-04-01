@@ -26,6 +26,9 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,6 +50,8 @@ import java.util.regex.Pattern;
 @Component
 public class SearchServiceImpl implements SearchService {
 
+
+    protected static Logger _log = LoggerFactory.getLogger(SearchServiceImpl.class);
 	// the pattern of what can be leftover after prefix/suffix matching for a
 	// route to be a "suggestion" for a given search
 	private static final Pattern leftOverMatchPattern = Pattern.compile("^([A-Z]|-)+$");
@@ -96,7 +101,13 @@ public class SearchServiceImpl implements SearchService {
 
 		for (AgencyWithCoverageBean agency : _nycTransitDataService.getAgenciesWithCoverage()) {
 			for (RouteBean routeBean : _nycTransitDataService.getRoutesForAgencyId(agency.getAgency().getId()).getList()) {
-				_routeShortNameToRouteBeanMap.put(routeBean.getShortName().toUpperCase(), routeBean);
+			  if (routeBean == null) continue;
+			  String shortName = routeBean.getShortName();
+			  if (shortName == null)
+			    shortName = routeBean.getLongName();
+			  if (shortName == null)
+			    shortName = routeBean.getId();
+				_routeShortNameToRouteBeanMap.put(shortName.toUpperCase(), routeBean);
 				_routeLongNameToRouteBeanMap.put(routeBean.getLongName(), routeBean);
 			}
 		}
@@ -374,6 +385,7 @@ public class SearchServiceImpl implements SearchService {
 			Matcher matcher = leftOverMatchPattern.matcher(leftOvers);
 			Boolean leftOversAreDiscardable = matcher.find();
 
+			if (routeShortName == null) continue;
 			if (!routeQuery.equals(routeShortName)
 					&& ((routeShortName.startsWith(routeQuery) && leftOversAreDiscardable) || (routeShortName.endsWith(routeQuery) && leftOversAreDiscardable))) {
 				RouteBean routeBean = _routeShortNameToRouteBeanMap.get(routeShortName);
@@ -383,14 +395,16 @@ public class SearchServiceImpl implements SearchService {
 		}
 
 		// long name matching
+		if (_routeLongNameToRouteBeanMap != null && !_routeLongNameToRouteBeanMap.keySet().isEmpty()) {
 		for (String routeLongName : _routeLongNameToRouteBeanMap.keySet()) {
-			if (routeLongName.contains(routeQuery + " ") || routeLongName.contains(" " + routeQuery)) {
+		    if (routeLongName == null) continue;
+		    if (routeLongName.contains(routeQuery + " ") || routeLongName.contains(" " + routeQuery)) {
 				RouteBean routeBean = _routeLongNameToRouteBeanMap.get(routeLongName);
 				results.addSuggestion(resultFactory.getRouteResult(routeBean));
 				continue;
 			}
 		}
-
+		}
 	}
 
 	private void tryAsStop(SearchResultCollection results, String stopQuery, SearchResultFactory resultFactory) {

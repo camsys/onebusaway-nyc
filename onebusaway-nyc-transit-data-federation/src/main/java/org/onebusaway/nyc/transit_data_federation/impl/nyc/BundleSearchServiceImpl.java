@@ -50,6 +50,10 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 					ListBean<RouteBean> routes = _transitDataService.getRoutesForAgencyId(agency);
 					for (RouteBean route : routes.getList()) {
 						String shortName = route.getShortName();
+						if (shortName == null)
+						  shortName = route.getLongName();
+						if (shortName == null)
+						  shortName = route.getId();
 						generateInputsForString(tmpSuggestions, shortName, "\\s+");
 					}
 

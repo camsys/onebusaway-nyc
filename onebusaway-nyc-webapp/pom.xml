@@ -210,6 +210,20 @@
 			</properties>
 		</profile>
 		<profile>
+			<id>local-rt</id>
+			<properties>
+				<tds.path>http://developer.onebusaway.org/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+				<vtms.path>http://developer.onebusaway.org/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+				<config.path>http://developer.onebusaway.org/onebusaway-nyc-transit-data-federation-webapp</config.path>
+				<archive.path>http://localhost:9090/onebusaway-nyc-report-archive</archive.path>
+				<tdm.host>tdm.dev.obanyc.com</tdm.host>
+				<webapp.api.url>http://developer.onebusaway.org/onebusaway-nyc-webapp</webapp.api.url>
+				<log4j.appender>stdout</log4j.appender>
+				<create-apikey>true</create-apikey>
+				<siri.cache.disabled>true</siri.cache.disabled>
+			</properties>
+		</profile>
+		<profile>
 			<id>local-multi-port</id> <!-- services-vtw-as-tds-multiport --><!-- multi port, also for development -->
 			<!-- assumes we're running on 8080, and vtw and api are on different ports -->
 			<properties>
