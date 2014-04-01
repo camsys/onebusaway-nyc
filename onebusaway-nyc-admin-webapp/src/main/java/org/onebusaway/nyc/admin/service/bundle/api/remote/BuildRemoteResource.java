@@ -7,7 +7,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -49,30 +51,32 @@ public class BuildRemoteResource extends AuthenticatedResource {
         _executorService = Executors.newFixedThreadPool(1);
   }
 
-  @Path("/{bundleDirectory}/{bundleName}/{email}/{id}/{bundleStartDate}/{bundleEndDate}/create")
-  @GET
+  @Path("/create")
+  @POST
   @Produces("application/json")
-  public Response build(@PathParam("bundleDirectory") String bundleDirectory,
-      @PathParam("bundleName") String bundleName,
-      @PathParam("email") String email,
-      @PathParam("id") String id,
-      @PathParam("bundleStartDate") String bundleStartDate,
-      @PathParam("bundleEndDate") String bundleEndDate) {
+  public Response build(
+	  @FormParam("bundleDirectory") String bundleDirectory,
+      @FormParam("bundleBuildName") String bundleName,
+      @FormParam("email") String email,
+      @FormParam("id") String id,
+      @FormParam("bundleStartDate") String bundleStartDate,
+      @FormParam("bundleEndDate") String bundleEndDate,
+      @FormParam("bundleComment") String bundleComment
+      ) {
     Response response = null;
     if (!isAuthorized()) {
       return Response.noContent().build();
     }
     _log.info("in build(local)");
-
     
     BundleBuildRequest bundleRequest = new BundleBuildRequest();
     bundleRequest.setBundleDirectory(bundleDirectory);
     bundleRequest.setBundleName(bundleName);
-    bundleRequest.setBundleDirectory(bundleDirectory);
     bundleRequest.setEmailAddress(email);
     bundleRequest.setId(id);
     bundleRequest.setBundleStartDate(bundleStartDate);
     bundleRequest.setBundleEndDate(bundleEndDate);
+    bundleRequest.setBundleComment(bundleComment);
     
     BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
     

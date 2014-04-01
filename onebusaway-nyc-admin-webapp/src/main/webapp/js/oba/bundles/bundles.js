@@ -170,6 +170,7 @@ jQuery(function() {
 		jQuery("#buildBundle_bundleName").val(qs["name"]);
 		jQuery("#buildBox #bundleStartDateHolder #startDatePicker").val(qs["startDate"]);
 		jQuery("#buildBox #bundleEndDateHolder #endDatePicker").val(qs["endDate"]);
+		jQuery("#comments").val(qs["bundleComment"]);
 		//hide the result link when reentering from email
 		jQuery("#buildBundle_resultLink").hide();
 		// just in case set the tab
@@ -564,12 +565,13 @@ function onBuildClick() {
 	var bundleName = jQuery("#buildBundle_bundleName").val();
 	var startDate = jQuery("#startDate").val();
 	var endDate = jQuery("#endDate").val();
+	var bundleComment = jQuery("#bundleComment").val();
 	
 	var valid = validateBundleBuildFields(bundleDir, bundleName, startDate, endDate);
 	if(valid == false) {
 		return;
 	}
-	buildBundle(bundleName, startDate, endDate);
+	buildBundle(bundleName, startDate, endDate, bundleComment);
 }
 
 function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
@@ -638,14 +640,22 @@ function bundleUrl() {
 		window.setTimeout(bundleUrl, 5000);
 	}
 }
-function buildBundle(bundleName, startDate, endDate){
+function buildBundle(bundleName, startDate, endDate, bundleComment){
 	var bundleDirectory = jQuery("#buildBundle_bundleDirectory").text();
 	var email = jQuery("#buildBundle_email").val();
 	if (email == "") { email = "null"; }
 	jQuery.ajax({
-		url: "../../api/build/" + bundleDirectory + "/" + bundleName + "/" + email + "/" + startDate + "/" + endDate + "/create?ts=" +new Date().getTime(),
-		type: "GET",
+		url: "../../api/build/create?ts=" +new Date().getTime(),
+		type: "POST",
 		async: false,
+		data: {
+			bundleDirectory: bundleDirectory,
+			bundleName: bundleName,
+			email: email,
+			bundleStartDate: startDate,
+			bundleEndDate: endDate,
+			bundleComment: bundleComment
+		},
 		success: function(response) {
 				var bundleResponse = response;
 				if (bundleResponse != undefined) {
@@ -655,6 +665,7 @@ function buildBundle(bundleName, startDate, endDate){
 					} else {
 						jQuery("#buildBundle_resultList").html("calling...");
 						jQuery("#buildBundle_id").text(bundleResponse.id);
+						console.log(bundleResponse);
 						window.setTimeout(updateBuildStatus, 5000);
 						bundleUrl();
 					}

@@ -3,7 +3,9 @@ package org.onebusaway.nyc.admin.service.bundle.api;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -40,14 +42,16 @@ public class BuildResource extends AuthenticatedResource {
 	private final ObjectMapper _mapper = new ObjectMapper();
 	private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
 
-	@Path("/{bundleDirectory}/{bundleName}/{email}/{bundleStartDate}/{bundleEndDate}/create")
-	@GET
+	@Path("create")
+	@POST
 	@Produces("application/json")
-	public Response build(@PathParam("bundleDirectory") String bundleDirectory,
-			@PathParam("bundleName") String bundleName,
-			@PathParam("email") String email,
-			@PathParam("bundleStartDate") String bundleStartDate,
-			@PathParam("bundleEndDate") String bundleEndDate) {
+	public Response build(
+			@FormParam("bundleDirectory") String bundleDirectory,
+			@FormParam("bundleName") String bundleName,
+			@FormParam("email") String email,
+			@FormParam("bundleStartDate") String bundleStartDate,
+			@FormParam("bundleEndDate") String bundleEndDate,
+			@FormParam("bundleComment") String bundleComment) {
 		Response response = null;
 		if (!isAuthorized()) {
 			return Response.noContent().build();
@@ -76,6 +80,7 @@ public class BuildResource extends AuthenticatedResource {
 			buildRequest.setEmailAddress(email);
 			buildRequest.setBundleStartDate(bundleStartDate);
 			buildRequest.setBundleEndDate(bundleEndDate);
+			buildRequest.setBundleComment(bundleComment);
 			
 			
 			try {

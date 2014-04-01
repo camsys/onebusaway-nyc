@@ -232,10 +232,10 @@
 	padding-left: 50px;
 }
 
-#commentBox #comments {
-	width: 400px;
+#commentBox #bundleComment {
+	width: 500px;
 	margin-right: 50px;
-	height: 50px;
+	height: 100px;
 	float: left;
 	margin-top: 7px;
 	color: "#999";

@@ -3,7 +3,9 @@ package org.onebusaway.nyc.admin.service.server.impl;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
@@ -13,6 +15,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 import org.onebusaway.nyc.admin.service.server.BundleServerService;
 import org.slf4j.Logger;
@@ -230,8 +233,11 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
      return "http://" + host + ":8080/api" + apiCall;
    }
    
-   @SuppressWarnings("unchecked")
-   protected <T> T  makeRequestInternal(String instanceId, String apiCall, String jsonPayload, Class<T> returnType) {
+   protected <T> T makeRequestInternal(String instanceId, String apiCall, String jsonPayload, Class<T> returnType) {
+	   return makeRequestInternal(instanceId, apiCall, jsonPayload, returnType, null);
+   }
+   
+   protected <T> T makeRequestInternal(String instanceId, String apiCall, String jsonPayload, Class<T> returnType, Map<String, String> params) {
 	   _log.info("makeRequestInternal(" + instanceId + ", " + apiCall + ")");
 	   String host = this.findPublicDns(instanceId);
 	   if (host == null || host.length() == 0) {
@@ -240,11 +246,12 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 	   }
 	
 	   String url = generateUrl(host, apiCall);
-	   _log.debug("making request for " + url);
+	   _log.info("making request for " + url);
 
 	   // copy stream into String
-	   String content = remoteConnectionService.getContent(url);
+	   String content = (params==null?remoteConnectionService.getContent(url):remoteConnectionService.postContent(url, params));
 	   if (content == null) return null;
+	   
 	   // parse content to appropriate return type
 	   T t = null;
 	   if (returnType == String.class) {
@@ -270,31 +277,36 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
    }
    
    @Override
-   public <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds) {
-     try {
-       // serialize payload
-       String jsonPayload = toJson(payload);
-       
-       // wait for it to answer pings
-       int count = 0;
-       boolean isAlive= ping(instanceId);
-       while (!isAlive && count < waitTimeInSeconds) {
-         count++;
-         Thread.sleep(5 * 1000);
-         isAlive = ping(instanceId);
-       }
+   public <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds, Map params) {
+	   try {
+	       // serialize payload
+	       String jsonPayload = toJson(payload);
+	       
+	       // wait for it to answer pings
+	       int count = 0;
+	       boolean isAlive= ping(instanceId);
+	       while (!isAlive && count < waitTimeInSeconds) {
+	         count++;
+	         Thread.sleep(5 * 1000);
+	         isAlive = ping(instanceId);
+	       }
 
-       if (!isAlive) {
-         _log.error("instanceId=" + instanceId + " failed to start");
-         return null;
-       }
-       // make our request
-       return makeRequestInternal(instanceId, apiCall, jsonPayload, returnType);
-     } catch (InterruptedException ie) {
-       return null;
-     } finally {
-       _log.debug("exiting makeRequest");
-     }
+	       if (!isAlive) {
+	         _log.error("instanceId=" + instanceId + " failed to start");
+	         return null;
+	       }
+	       // make our request
+	       return (T) makeRequestInternal(instanceId, apiCall, jsonPayload, returnType, params);
+	     } catch (InterruptedException ie) {
+	       return null;
+	     } finally {
+	       _log.debug("exiting makeRequest");
+	     }
+   }
+   
+   @Override
+   public <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds) {
+     return makeRequest(instanceId, apiCall, payload, returnType, waitTimeInSeconds, null);
    }
    
   private String toJson(Object payload) {

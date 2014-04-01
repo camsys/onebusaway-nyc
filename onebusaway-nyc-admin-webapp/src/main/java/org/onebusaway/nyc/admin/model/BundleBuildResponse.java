@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.admin.model;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +26,7 @@ public class BundleBuildResponse {
 	private String _bundleBuildName;
 	private String bundleStartDate;
 	private String bundleEndDate;
+	private String bundleComment;
 
 
 	private String _id = null;
@@ -225,7 +227,7 @@ public class BundleBuildResponse {
 	 * @param bundleResultLink the bundleResultLink to set
 	 */
 	 public void setBundleResultLink(String bundleResultLink) {
-		 this.bundleResultLink = (bundleResultLink!=null?bundleResultLink:"");
+		 this.bundleResultLink = bundleResultLink;
 	 }
 
 	 public String getBundleBuildName() {
@@ -259,7 +261,18 @@ public class BundleBuildResponse {
 	 public void setBundleEndDate(String bundleEndDate) {
 		 this.bundleEndDate = bundleEndDate;
 	 }
-
+	 /**
+	  * @return the bundleComment
+	  */
+	 public String getBundleComment() {
+		 return bundleComment;
+	 }
+	 /**
+	  * @param bundleComment the bundleComment to set
+	  */
+	 public void setBundleComment(String bundleComment) {
+		 this.bundleComment = bundleComment;
+	 }
 	 
 	 private static class SerializableException extends Exception implements Serializable {
 		 private String _msg = "";

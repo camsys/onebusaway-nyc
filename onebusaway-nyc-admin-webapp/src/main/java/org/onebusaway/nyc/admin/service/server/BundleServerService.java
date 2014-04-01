@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.admin.service.server;
 
+import java.util.Map;
+
 public interface BundleServerService {
 
   String start(String instanceId);
@@ -17,6 +19,8 @@ public interface BundleServerService {
   String findPublicIp(String instanceId);
 
   <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds);
+  
+  <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds, Map params);
 
   void setup();
   

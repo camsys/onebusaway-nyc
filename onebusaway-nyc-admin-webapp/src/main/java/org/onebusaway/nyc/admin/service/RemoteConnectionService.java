@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.admin.service;
 
 import java.io.File;
+import java.util.Map;
 
 
 /**
@@ -17,6 +18,7 @@ public interface RemoteConnectionService {
 	 * @return the required content as string
 	 */
 	String getContent(String url);
+	String postContent(String url, Map<String,String> params);
 	
 	/**
 	 * Posts binary data to the given url and returns response of the given type

@@ -1,6 +1,5 @@
 package org.onebusaway.nyc.admin.service.impl;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,9 +8,18 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.h2.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +35,56 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 public class RemoteConnectionServiceImpl implements RemoteConnectionService {
 
 	private static Logger log = LoggerFactory.getLogger(RemoteConnectionServiceImpl.class);
+	
+
+	@Override
+	public String postContent(String url, Map<String, String> params) {
+		HttpURLConnection connection = null;
+		String content = null;
+		
+		try {
+			StringBuilder postData = new StringBuilder();
+	        for (Entry<String, String> param : params.entrySet()) {
+	            if (postData.length() != 0) postData.append('&');
+	            postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+	            postData.append('=');
+	            postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+	        }
+	        byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+
+			connection = (HttpURLConnection) new URL(url).openConnection();
+	        connection.setRequestMethod("POST");
+	        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+	        connection.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+	        connection.setDoOutput(true);
+	        connection.getOutputStream().write(postDataBytes);
+			content = fromJson(connection);
+			
+		} catch (MalformedURLException e) {
+			log.error("Exception connecting to " +url + ". The url might be malformed");
+			e.printStackTrace();
+		} catch (IOException e) {
+			log.error("Exception connecting to " +url + ". Exception : " +e);
+			e.printStackTrace();
+		} finally {
+			if (connection != null) {
+				connection.disconnect();
+			}
+		}
+		return content;
+		/*
+		String getResponse = getContent(url);
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			//HashMap<String,Object> contentMap = mapper.readValue( getResponse, HashMap.class);
+			HashMap<String,Object> contentMap = new HashMap<String,Object>();
+		    for (String s : params.keySet()){
+			   contentMap.put(s, params.get(s));
+		    }
+		    return mapper.writeValueAsString(contentMap);
+		} catch (Exception e) {}
+		return null;*/
+	}
 	
 	@Override
 	public String getContent(String url) {

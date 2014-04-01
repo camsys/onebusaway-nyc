@@ -15,6 +15,7 @@ public class BundleBuildRequest {
 	private String _emailAddress;
 	private String _bundleStartDate;
 	private String _bundleEndDate;
+	private String _bundleComment;
 
 	public String getBundleDirectory() {
 		return _bundleDirectory;
@@ -54,7 +55,7 @@ public class BundleBuildRequest {
 
 	public LocalDate getBundleStartDate() {
 		DateTimeFormatter dtf = ISODateTimeFormat.date();
-		return new LocalDate(dtf.parseLocalDate(_bundleStartDate));
+		return (_bundleStartDate==null?null: new LocalDate(dtf.parseLocalDate(_bundleStartDate)));
 	}
 
 	public String getBundleStartDateString() {
@@ -67,7 +68,7 @@ public class BundleBuildRequest {
 
 	public LocalDate getBundleEndDate() {
 		DateTimeFormatter dtf = ISODateTimeFormat.date();
-		return new LocalDate(dtf.parseLocalDate(_bundleEndDate));
+		return (_bundleEndDate==null?null: new LocalDate(dtf.parseLocalDate(_bundleEndDate)));
 	}
 
 	public void setBundleEndDate(String bundleEndDate) {
@@ -78,6 +79,14 @@ public class BundleBuildRequest {
 		return _bundleEndDate;
 	}
 
+	public String getBundleComment() {
+		return _bundleComment;
+	}
+
+	public void setBundleComment(String bundleComment) {
+		_bundleComment = bundleComment;
+	}
+	
 	public String getEmailAddress() {
 		return _emailAddress;
 	}

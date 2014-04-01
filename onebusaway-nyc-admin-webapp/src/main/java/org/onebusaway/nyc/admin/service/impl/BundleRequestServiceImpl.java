@@ -204,6 +204,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     bundleResponse.setBundleBuildName(bundleRequest.getBundleName());
     bundleResponse.setBundleStartDate(bundleRequest.getBundleStartDateString());
     bundleResponse.setBundleEndDate(bundleRequest.getBundleEndDateString());
+    bundleResponse.setBundleComment(bundleRequest.getBundleComment());
     
 	_buildMap.put(bundleResponse.getId(), bundleResponse);
 	bundleResponse.addStatusMessage("queueing...");
@@ -213,6 +214,10 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
 
   protected <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType) {
     return _bundleServer.makeRequest(instanceId, apiCall, payload, returnType, WAIT_SECONDS);
+  }
+  
+  protected <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, Map params) {
+    return _bundleServer.makeRequest(instanceId, apiCall, payload, returnType, WAIT_SECONDS, params);
   }
   
   private class ValidateThread implements Runnable {
@@ -354,15 +359,17 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           return;
         }
         
-        String url = "/build/remote/" + _request.getBundleDirectory() + "/"
-            + _request.getBundleName() + "/"
-            + _request.getEmailAddress() + "/" 
-            + _request.getId() + "/" 
-            + _request.getBundleStartDate() + "/" 
-            + _request.getBundleEndDate() + "/create";
-        _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
-
-          if (_response != null && _response.getId() != null) {
+        String url = "/build/remote/create";
+        Map <String, String> params = new HashMap<String, String>();
+        params.put("bundleDirectory", _request.getBundleDirectory());
+        params.put("bundleBuildName", _request.getBundleName());
+        params.put("email", _request.getEmailAddress());
+        params.put("id", _request.getId());
+        params.put("bundleStartDate", _request.getBundleStartDateString());
+        params.put("bundleEndDate", _request.getBundleEndDateString());
+        params.put("bundleComment", _request.getBundleComment());
+        _response = makeRequest(serverId, url, null, BundleBuildResponse.class, params);
+        if (_response != null && _response.getId() != null) {
           String id = _response.getId();
           // put response in map
           _buildMap.put(id, _response);
@@ -421,7 +428,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       } else if (response == null && errorCount > MAX_ERRORS) {
         _log.error("Received " + MAX_ERRORS + " errors, bailing");
         return true;
-      } else if (response.isComplete()) {
+      } else if (response != null && response.isComplete()) {
         return true;
       } else if (pollCount > MAX_COUNT) {
         _log.error("Build timed-out, bailing");
