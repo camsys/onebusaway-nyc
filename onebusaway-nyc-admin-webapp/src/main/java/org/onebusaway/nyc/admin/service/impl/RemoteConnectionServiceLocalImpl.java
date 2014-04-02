@@ -2,6 +2,7 @@ package org.onebusaway.nyc.admin.service.impl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
@@ -30,6 +31,12 @@ public class RemoteConnectionServiceLocalImpl implements
 
 	@Override
 	public String getContent(String url) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public String postContent(String url, Map<String,String> params) {
 		// TODO Auto-generated method stub
 		return null;
 	}
