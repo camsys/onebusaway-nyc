@@ -665,7 +665,6 @@ function buildBundle(bundleName, startDate, endDate, bundleComment){
 					} else {
 						jQuery("#buildBundle_resultList").html("calling...");
 						jQuery("#buildBundle_id").text(bundleResponse.id);
-						console.log(bundleResponse);
 						window.setTimeout(updateBuildStatus, 5000);
 						bundleUrl();
 					}

@@ -3,7 +3,6 @@ package org.onebusaway.nyc.admin.service.server.impl;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +14,6 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 import org.onebusaway.nyc.admin.service.server.BundleServerService;
 import org.slf4j.Logger;
