@@ -7,10 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.Bundle;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
-import org.onebusaway.nyc.util.impl.FileUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +18,12 @@ import org.slf4j.LoggerFactory;
  * subdirectories, one for each bundle.
  * 
  */
-public class DirectoryBundleSource implements BundleSource {
+public class DirectoryBundleSource extends AbstractBundleSource implements BundleSource {
 
   private static Logger _log = LoggerFactory.getLogger(DirectoryBundleSource.class);
 
   private static String BUNDLE_METADATA_FILENAME = "BundleMetadata.json";
-  private static String BUNDLE_DATA_DIRNAME = "data";
+  
 
   private JsonTool jsonTool;
   private File masterBundleDirectory;
@@ -33,6 +31,8 @@ public class DirectoryBundleSource implements BundleSource {
   public File getMasterBundleDirectory() {
     return masterBundleDirectory;
   }
+  
+
 
   /**
    * Construct this DirectoryBundleSource, verifying that the passed directory
@@ -95,39 +95,6 @@ public class DirectoryBundleSource implements BundleSource {
     return bundles;
   }
 
-  @Override
-  public void stage(String stagingDirectory, String env, String bundleDir, String bundleName) throws Exception {
-    File srcDir = new File(this.getMasterBundleDirectory().toString()
-        + File.separator
-        + "st_bundles" /*TODO where does this come from?*/
-        + File.separator
-        + bundleDir
-        + File.separator
-        + "builds"
-        + File.separator
-        + bundleName);
-    File srcFile = new File(srcDir, bundleName + ".tar.gz");
-    File destDir = new File(stagingDirectory);
-    _log.info("deleting " + destDir);
-    // cleanup from past run
-    try {
-      FileUtils.deleteDirectory(destDir);
-    } catch (Exception any) {
-      _log.info("deleteDir failed with :", any);
-    }
-    
-    FileUtility fu = new FileUtility();
-    _log.info("making directory" + destDir);
-    destDir.mkdir();
-    
-    _log.info("expanding " + srcFile + " to " + destDir);
-    fu.unTargz(srcFile, destDir);
-    File oldDir = new File(destDir + File.separator + bundleName);
-    File newDir = new File(destDir + File.separator + env);
-    _log.info("moving " + oldDir + " to " + newDir);
-    FileUtils.moveDirectory(oldDir, newDir);
-  }
-  
   private List<String> getSubDirectoryNamesOfBundleDirectory() {
     List<String> subDirectories = new ArrayList<String>();
 
@@ -171,9 +138,9 @@ public class DirectoryBundleSource implements BundleSource {
       // directory
       // named 'data'
       if (arrayContainsItem(dirList, BUNDLE_METADATA_FILENAME)
-          && arrayContainsItem(dirList, BUNDLE_DATA_DIRNAME)) {
+          && arrayContainsItem(dirList, AbstractBundleSource.BUNDLE_DATA_DIRNAME)) {
         File bundleMetadataFile = new File(bundleFile, BUNDLE_METADATA_FILENAME);
-        File dataDir = new File(bundleFile, BUNDLE_DATA_DIRNAME);
+        File dataDir = new File(bundleFile, AbstractBundleSource.BUNDLE_DATA_DIRNAME);
 
         if (bundleMetadataFile.isFile() && dataDir.isDirectory()) {
           Bundle bundle;
@@ -207,7 +174,7 @@ public class DirectoryBundleSource implements BundleSource {
 
     return resultBundle;
   }
-
+  
   private Bundle loadBundleMetadata(File metadataFile) throws FileNotFoundException {
     FileReader metadataReader = null;
 
@@ -227,61 +194,6 @@ public class DirectoryBundleSource implements BundleSource {
     return resultBundle;
   }
 
-  private boolean arrayContainsItem(String[] array, String item) {
-    boolean result = false;
-
-    for (int i = 0; i < array.length; i++) {
-      if (item.equals(array[i])) {
-        result = true;
-        break;
-      }
-    }
-
-    return result;
-  }
-
-  @Override
-  public File getBundleFile(String bundleId, String relativeFilePath)
-      throws FileNotFoundException {
-
-    File file = new File(masterBundleDirectory, getFilePath(bundleId,
-        relativeFilePath));
-
-    if (!file.exists()) {
-      _log.info("A requested file in bundle " + bundleId + " does not exist at path: " + file.getPath());
-      throw new FileNotFoundException("File " + file.getPath() + " not found.");
-    }
-    return file;
-  }
-
-  @Override
-  public File getBundleFile(String bundleDirectory, String bundleId, String relativeFilePath)
-      throws FileNotFoundException {
-
-    File file = new File(bundleDirectory, getFilePath(bundleId,
-        relativeFilePath));
-
-    if (!file.exists()) {
-      _log.info("A requested file in bundle " + bundleId + " does not exist at path: " + file.getPath());
-      throw new FileNotFoundException("File " + file.getPath() + " not found.");
-    } else {
-      _log.info("getBundleFile(" + file + ")");
-    }
-    return file;
-  }
-
-  
-  private String getFilePath(String bundleId, String relativeFilePath) {
-    if (bundleId == null && relativeFilePath == null) return "";
-    if (bundleId == null) return relativeFilePath;
-    
-    String fileSep = System.getProperty("file.separator");
-
-    String relPath = bundleId + fileSep + BUNDLE_DATA_DIRNAME + fileSep
-        + relativeFilePath;
-
-    return relPath;
-  }
 
   @Override
   public boolean checkIsValidBundleFile(String bundleId, String relativeFilePath) {
@@ -301,4 +213,14 @@ public class DirectoryBundleSource implements BundleSource {
 
     return isValid;
   }
+
+
+
+  @Override
+  public File getBundleFile(String bundleId, String relativeFilePath)
+      throws FileNotFoundException {
+    return getBundleFile(this.masterBundleDirectory.toString(), bundleId, relativeFilePath);
+  }
+  
+ 
 }

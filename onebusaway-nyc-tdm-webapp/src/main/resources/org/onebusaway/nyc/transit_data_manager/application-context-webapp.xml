@@ -62,6 +62,12 @@
   <bean class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
     <constructor-arg ref="bundleSource" />
   </bean>
+  
+  <bean id="stagingBundleProvider" 
+  	class="org.onebusaway.nyc.transit_data_manager.bundle.StagingBundleProvider">
+    <constructor-arg ref="stagingBundleSource" />
+  </bean>
+  
 
   <bean id="bundleDeployer"
     class="org.onebusaway.nyc.transit_data_manager.bundle.impl.BundleDeployerImpl">
@@ -80,6 +86,13 @@
     <constructor-arg type="java.lang.String" value="${tdm.bundlePath}" />
     <constructor-arg ref="gsonTool" />
   </bean>
+
+  <bean id="stagingBundleSource"
+    class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryStagingBundleSource">
+    <constructor-arg type="java.lang.String" value="${tdm.bundlePath}" />
+    <constructor-arg type="java.lang.String" value="/var/lib/obanyc/bundles/staged" />
+  </bean>
+
 
   <bean id="gsonTool"
     class="org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool">

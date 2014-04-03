@@ -2,11 +2,13 @@ package org.onebusaway.nyc.admin.service.impl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
+import org.onebusaway.nyc.transit_data_manager.bundle.StagingBundleProvider;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleMetadata;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.slf4j.Logger;
@@ -26,6 +28,11 @@ public class RemoteConnectionServiceLocalImpl implements
     private BundleProvider _bundleProvider;
     public void setBundleProvider(BundleProvider bundleProvider) {
       _bundleProvider = bundleProvider;
+    }
+    
+    private StagingBundleProvider _stagingBundleProvider;
+    public void setStagingBundleProvider(StagingBundleProvider bundleProvider) {
+      _stagingBundleProvider = bundleProvider;
     }
 
 	@Override
@@ -83,10 +90,11 @@ public class RemoteConnectionServiceLocalImpl implements
       return null;
     }
     
-    return _bundleProvider.getMetadata(stagingDirectory.toString());
+    return _stagingBundleProvider.getMetadata(stagingDirectory.toString());
   }
 
   public File getStagedBundleFile(String relativeFilePath) {
+    _log.debug("getStagedBundleFile(" + relativeFilePath + ")");
     String bundleStagingProp = null;
     try {
       bundleStagingProp = _configClient.getItem("admin", "bundleStagingDir");
@@ -98,11 +106,20 @@ public class RemoteConnectionServiceLocalImpl implements
       return null;
     }
     try {
-      return _bundleProvider.getStagedBundleFile(bundleStagingProp, relativeFilePath);
+      return _stagingBundleProvider.getBundleFile(bundleStagingProp, relativeFilePath);
     } catch (FileNotFoundException e) {
       _log.error("error retrieving file " + bundleStagingProp + File.separator + relativeFilePath);
       return null;
     }
+  }
+
+  public boolean checkIsValidStagedBundleFile(String relativeFilename) {
+    return _stagingBundleProvider.checkIsValidStagedBundleFile("prod", relativeFilename);
+  }
+
+  @Override
+  public String postContent(String url, Map<String, String> params) {
+    throw new UnsupportedOperationException("postContent not implemented");
   }
   
 }

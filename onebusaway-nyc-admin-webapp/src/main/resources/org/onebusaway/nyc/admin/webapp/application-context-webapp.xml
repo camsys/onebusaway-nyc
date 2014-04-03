@@ -121,9 +121,19 @@
     <constructor-arg type="java.lang.String" value="/var/lib/obanyc" />
     <constructor-arg ref="gsonTool" />
   </bean>
+
+  <bean id="stagingBundleSource"
+    class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryStagingBundleSource">
+    <constructor-arg type="java.lang.String" value="/var/lib/obanyc/st_bundles" />
+    <constructor-arg type="java.lang.String" value="/var/lib/obanyc/bundles/staged" />
+  </bean>
   
   <bean class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
     <constructor-arg ref="bundleSource" />
+  </bean>
+
+  <bean class="org.onebusaway.nyc.transit_data_manager.bundle.StagingBundleProvider">
+    <constructor-arg ref="stagingBundleSource" />
   </bean>
    
 </beans>

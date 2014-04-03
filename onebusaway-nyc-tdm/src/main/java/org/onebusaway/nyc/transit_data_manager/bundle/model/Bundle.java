@@ -67,7 +67,7 @@ public class Bundle {
   
   public boolean containsFile(String fileName) {
     boolean containsFile = false;
-    
+    if (getFiles() == null) return false;
     for (BundleFile file : getFiles()) {
       if (file.getFilename().equals(fileName)){
         containsFile = true;

@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BundleRequestServiceImplTest {
   private static Logger _log = LoggerFactory.getLogger(BundleRequestServiceImplTest.class);
@@ -105,12 +106,12 @@ public class BundleRequestServiceImplTest {
       }
       @SuppressWarnings("unchecked")
       @Override
-      public <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds) {
+      public <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds, Map params) {
         _log.debug("makeRequest called with apiCall=" + apiCall + " and payload=" + payload);
         if (apiCall.equals("/validate/remote/2012Jan/test_0/1/create")) {
           BundleResponse br = new BundleResponse("1");
           return (T) br;
-        } else if (apiCall.equals("/build/remote/2012Jan/test_0/null/1/2012-04-08/2012-07-07/create")) {
+        } else if (apiCall.equals("/build/remote/2012Jan/test_0/null/1/2012-04-08/2012-07-07/create") || apiCall.equals("/build/remote/create")) {
           BundleBuildResponse br = new BundleBuildResponse("1");
           return (T) br;
         } else if (apiCall.equals("/ping/remote")) {
