@@ -147,11 +147,19 @@ public class BundleResource implements ServletContextAware {
     try {
       String stagingDir = _configClient.getItem("admin", "bundleStagingDir");
       this._stagingBundleProvider.stage(stagingDir, bundleDir, bundleName);
+      notifyOTP();
       json = "{SUCCESS}";
     } catch (Exception any) {
       _log.error("stage failed:", any);
     }
     return Response.ok(json).build();
+  }
+  
+  private void notifyOTP() throws Exception {
+    String otpNotificationUrl = _configClient.getItem("admin", "otpNotificationUrl");
+    BundleMetadata meta = _localConnectionService.getStagedBundleMetadata();
+    otpNotificationUrl = otpNotificationUrl.replaceAll(":uuid", (meta==null?"":meta.getId()));
+    _remoteConnectionService.getContent(otpNotificationUrl);
   }
 
   private String getTDMURL() {
