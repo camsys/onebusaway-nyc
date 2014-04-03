@@ -40,6 +40,12 @@ public class RemoteConnectionServiceLocalImpl implements
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public String postContent(String url, Map<String,String> params) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	@Override
 	public <T> T postBinaryData(String url, File data, Class<T> responseType) {

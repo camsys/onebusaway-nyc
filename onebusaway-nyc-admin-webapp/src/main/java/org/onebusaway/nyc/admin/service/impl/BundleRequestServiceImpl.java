@@ -97,7 +97,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
    * Retrieve a BundleBuildResponse object for the given id.
    */
   public BundleBuildResponse lookupBuildRequest(String id) {
-    return _buildMap.get(id);
+	  return _buildMap.get(id);
   }
   
   /**
@@ -199,13 +199,11 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   public BundleBuildResponse build(BundleBuildRequest bundleRequest) {
     String id = getNextId();
     bundleRequest.setId(id);
-    
     BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
     bundleResponse.setBundleBuildName(bundleRequest.getBundleName());
     bundleResponse.setBundleStartDate(bundleRequest.getBundleStartDateString());
     bundleResponse.setBundleEndDate(bundleRequest.getBundleEndDateString());
     bundleResponse.setBundleComment(bundleRequest.getBundleComment());
-    
 	_buildMap.put(bundleResponse.getId(), bundleResponse);
 	bundleResponse.addStatusMessage("queueing...");
     _executorService.execute(new BuildThread(bundleRequest, bundleResponse));
@@ -372,6 +370,8 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         if (_response != null && _response.getId() != null) {
           String id = _response.getId();
           // put response in map
+          _response.setBundleResultLink(getResultLink(_request.getBundleName(), _request.getId(),
+    			_request.getBundleStartDateString(), _request.getBundleEndDateString()));
           _buildMap.put(id, _response);
 
           // should this response look ok, query until it completes
@@ -379,6 +379,8 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
             url = "/build/remote/" + id + "/list";
             _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
             if (_response != null) {
+            	_response.setBundleResultLink(getResultLink(_request.getBundleName(), _request.getId(),
+            			_request.getBundleStartDateString(), _request.getBundleEndDateString()));
               _buildMap.put(id, _response);
             }
             pollCount++;

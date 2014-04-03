@@ -44,10 +44,8 @@ public class MetadataTask implements Runnable {
       String rootDirectory = requestResponse.getResponse().getBundleRootDirectory();
       data.setId(generateId());
       data.setName(requestResponse.getRequest().getBundleName());
-      if (requestResponse.getRequest().getBundleStartDate()!=null)
-    	  data.setServiceDateFrom(requestResponse.getRequest().getBundleStartDate().toDate());
-      if (requestResponse.getRequest().getBundleEndDate()!=null)
-    	  data.setServiceDateTo(requestResponse.getRequest().getBundleEndDate().toDate());
+      data.setServiceDateFrom(requestResponse.getRequest().getBundleStartDate().toDate());
+      data.setServiceDateTo(requestResponse.getRequest().getBundleEndDate().toDate());
 
       data.setOutputFiles(util.getBundleFilesWithSumsForDirectory(new File(outputDirectory), new File(outputDirectory), new File(rootDirectory)));
       data.setSourceData(util.getSourceFilesWithSumsForDirectory(new File(sourceDirectory), new File(sourceDirectory), new File(rootDirectory)));
