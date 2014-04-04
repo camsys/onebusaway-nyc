@@ -58,6 +58,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String DEFAULT_AGENCY = "MTA";
   private static final String DATA_DIR = "data";
   private static final String OUTPUT_DIR = "outputs";
+  private static final String OUTPUT_GTFS_DIR = "output_gtfs";
   private static final String INPUTS_DIR = "inputs";
   private static final String DEFAULT_TRIP_TO_DSC_FILE = "tripToDSCMap.txt";
   private static final String ARG_THROW_EXCEPTION_INVALID_STOPS = "tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException";
@@ -194,6 +195,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     File outputsDir = new File(outputsPath);
     outputsDir.mkdirs();
 
+    String outputGtfsPath = request.getTmpDirectory() + File.separator + request.getBundleName()
+        + File.separator + OUTPUT_GTFS_DIR;
+    response.setBundleOutputGtfsDirectory(outputGtfsPath);
+    File outputGtfsDir = new File(outputGtfsPath);
+    outputGtfsDir.mkdirs();
+
+    
     String dataPath = request.getTmpDirectory() + File.separator + request.getBundleName()
         + File.separator + DATA_DIR;
     

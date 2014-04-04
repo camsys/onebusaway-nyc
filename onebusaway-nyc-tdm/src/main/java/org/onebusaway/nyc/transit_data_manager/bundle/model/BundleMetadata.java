@@ -11,6 +11,7 @@ public class BundleMetadata {
   private Date serviceDateFrom;
   private Date serviceDateTo;
   private List<BundleFile> outputFiles;
+  private List<BundleFile> outputGtfsFiles;
   private List<SourceFile> sourceData;
   private String changeLogUri;
   private String statisticsUri;
@@ -46,6 +47,15 @@ public class BundleMetadata {
   public void setOutputFiles(List<BundleFile> bundleFiles) {
     outputFiles = bundleFiles;	
   }
+  
+  public List<BundleFile> getOutputGtfsFiles() {
+    return outputGtfsFiles;
+  }
+  
+  public void setOutputGtfsFiles(List<BundleFile> bundleFiles) {
+    outputGtfsFiles = bundleFiles;
+  }
+
   public List<SourceFile> getSourceData() {
     return sourceData;
   }

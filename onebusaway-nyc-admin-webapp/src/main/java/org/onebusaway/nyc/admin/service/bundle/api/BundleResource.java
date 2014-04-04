@@ -157,6 +157,7 @@ public class BundleResource implements ServletContextAware {
   
   private void notifyOTP() throws Exception {
     String otpNotificationUrl = _configClient.getItem("admin", "otpNotificationUrl");
+    if (otpNotificationUrl == null) return;
     BundleMetadata meta = _localConnectionService.getStagedBundleMetadata();
     otpNotificationUrl = otpNotificationUrl.replaceAll(":uuid", (meta==null?"":meta.getId()));
     _remoteConnectionService.getContent(otpNotificationUrl);
@@ -189,7 +190,7 @@ public class BundleResource implements ServletContextAware {
     }
   }
 
-  @Path("/staged")
+  @Path("/staged/list")
   @GET
   public Response getStagedBundleMetadata() {
 

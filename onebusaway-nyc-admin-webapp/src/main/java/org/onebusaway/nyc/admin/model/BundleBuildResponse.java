@@ -1,10 +1,10 @@
 package org.onebusaway.nyc.admin.model;
 
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 
 public class BundleBuildResponse {
 	private List<String> _gtfsList = Collections.synchronizedList(new ArrayList<String>());
@@ -12,11 +12,13 @@ public class BundleBuildResponse {
 	private List<String> _configList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _statusList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _outputFileList = Collections.synchronizedList(new ArrayList<String>());
+	private List<String> _outputGtfsFileList = Collections.synchronizedList(new ArrayList<String>());
 	private SerializableException _exception = null;
 	private boolean _isComplete = false;
 	private String _bundleRootDirectory;
 	private String _bundleInputDirectory;
 	private String _bundleOutputDirectory;
+	private String _bundleOutputGtfsDirectory;
 	private String _bundleDataDirectory;
 	private String _bundleTarFilename;
 	private String _remoteInputDirectory;
@@ -117,7 +119,20 @@ public class BundleBuildResponse {
 	public void setOutputFileList(List<String> outputFileList) {
 		_outputFileList = outputFileList;
 	}
+	
+  public void addOutputGtfsFile(String gtfsFile) {
+    _outputGtfsFileList.add(gtfsFile);
+  }
 
+  public List<String> getOutputGtfsFile() {
+    return new ArrayList<String>(_outputGtfsFileList);
+  }
+
+  public void setOutputGtfsFileList(List<String> outputGtfsFileList) {
+    _outputGtfsFileList = outputGtfsFileList;
+  }
+
+	
 	/**
 	 * This method is additive, it chains exceptions if called multiple times.
 	 */
@@ -168,6 +183,14 @@ public class BundleBuildResponse {
 		_bundleDataDirectory = directoryPath;
 	}
 
+  public String getBundleOutputGtfsDirectory() {
+    return _bundleOutputGtfsDirectory;
+  }
+
+  public void setBundleOutputGtfsDirectory(String directoryPath) {
+    _bundleOutputGtfsDirectory = directoryPath;
+  }
+	
 	public String getBundleInputDirectory() {
 		return _bundleInputDirectory;
 	}
@@ -315,5 +338,6 @@ public class BundleBuildResponse {
 		 }
 		
 	 }
+
 
 }
