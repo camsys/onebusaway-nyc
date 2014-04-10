@@ -62,7 +62,7 @@ public class BaseModTask {
     String path = gtfsBundle.getPath().getPath();
     if (transform != null) {
       _log.info("using transform=" + transform);
-      factory.addModificationsFromString(mod, transform);
+      factory.addModificationsFromString(transform);
     }
 
     _log.info("running...");
