@@ -39,7 +39,7 @@ public class BuildRemoteResource extends AuthenticatedResource {
 
   private final ObjectMapper _mapper = new ObjectMapper();
 
-	private static Logger _log = LoggerFactory.getLogger(BuildRemoteResource.class);
+  private static Logger _log = LoggerFactory.getLogger(BuildRemoteResource.class);
   private Map<String, BundleBuildResponse> _buildMap = new HashMap<String, BundleBuildResponse>();
   private ExecutorService _executorService = null;
 	
@@ -62,7 +62,7 @@ public class BuildRemoteResource extends AuthenticatedResource {
       @FormParam("bundleStartDate") String bundleStartDate,
       @FormParam("bundleEndDate") String bundleEndDate,
       @FormParam("bundleComment") String bundleComment
-      ) {
+  ) {
     Response response = null;
     if (!isAuthorized()) {
       return Response.noContent().build();

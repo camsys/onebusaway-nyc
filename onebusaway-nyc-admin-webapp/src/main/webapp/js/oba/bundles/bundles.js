@@ -674,7 +674,7 @@ function buildBundle(bundleName, startDate, endDate, bundleComment){
 				}
 		},
 		error: function(request) {
-			alert("There was an error processing your request. Please try again");
+			alert("There was an error processing your request. Please try again.");
 		}
 	});
 }
@@ -835,7 +835,7 @@ function stageClick() {
 				}
 		},
 		error: function(request) {
-			alert("There was an error processing your request. Please try again");
+			alert("There was an error processing your request. Please try again.");
 		}
 	});
 	
@@ -873,7 +873,7 @@ function deployBundle(){
 				}
 		},
 		error: function(request) {
-			alert("There was an error processing your request. Please try again");
+			alert("There was an error processing your request. Please try again.");
 		}
 	});
 }
@@ -970,7 +970,7 @@ function onDeployListClick(){
 				}
 		},
 		error: function(request) {
-			alert("There was an error processing your request. Please try again");
+			alert("There was an error processing your request. Please try again.");
 		}
 	});
 }

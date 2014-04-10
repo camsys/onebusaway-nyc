@@ -46,11 +46,13 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipFile;
 
 public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String BUNDLE_RESOURCE = "classpath:org/onebusaway/transit_data_federation/bundle/application-context-bundle-admin.xml";
@@ -116,8 +118,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setTmpDirectory(tmpDirectory);
 
     // download gtfs
-    List<String> gtfs = _fileService.list(
-        bundleDir + "/" + _fileService.getGtfsPath(), -1);
+    /*List<String> gtfs = new ArrayList<String>();
+    List<String> data = new ArrayList<String>();
+    populateLists(bundleDir, gtfs, data);*/
+    List<String> gtfs = _fileService.list( bundleDir + "/" + _fileService.getGtfsPath(), -1);
+	
+    
+    
     for (String file : gtfs) {
       _log.debug("downloading gtfs:" + file);
       response.addStatusMessage("downloading gtfs " + file);
@@ -641,21 +648,27 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     if (agencyId == null) return null;
     Map<String, String> map = new HashMap<String, String>();
     if ("1".equals(agencyId)) {
-      map.put("KCM", "1");
-      map.put("EOS", "23");
-      map.put("ST", "40");
-    }
-    if ("3".equals(agencyId)) {
-      map.put("PT", "3");
-      map.put("Pierce Transit", "3");
-      map.put("ST", "40");
-    }
-    if ("19".equals(agencyId)) {
-      map.put("IntercityTransit", "19");
-    }
-    if ("40".equals(agencyId)) {
-      map.put("SoundTransit", "40");
-    }
+        map.put("KCM", "1");
+        map.put("EOS", "23");
+        map.put("ST", "40");
+      }
+      if ("3".equals(agencyId)) {
+        map.put("PT", "3");
+        map.put("Pierce Transit", "3");
+        map.put("ST", "40");
+      }
+      if ("19".equals(agencyId)) {
+        map.put("IntercityTransit", "19");
+      }
+      if ("29".equals(agencyId)) {
+  	  map.put("29", "29");
+  	}
+      if ("40".equals(agencyId)) {
+  	  map.put("SoundTransit", "40");
+  	}
+      if ("99".equals(agencyId)) {
+  	  map.put("A01", "99");
+  	}
     return map;
   }
 
@@ -724,4 +737,32 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 		this.loggingService = loggingService;
 	}
 
+    private boolean isValidGtfs(ZipFile gtfs){
+        String[] gtfsValidator = {"agency.txt", "trips.txt", "stops.txt",
+        		"routes.txt", "calendar.txt"};
+    	for(String validationStr : gtfsValidator){
+    		if (gtfs.getEntry(validationStr)==null){
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+    
+	protected void populateLists(String bundleDir, List<String> gtfsList, List<String> dataList){
+		List<String> zipList = _fileService.list( bundleDir + "/" + _fileService.getGtfsPath(), -1);
+		for(String zipFile : zipList){
+			try {
+				String fileName = _fileService.getBucketName() + "/" + zipFile;
+				ZipFile file = new ZipFile(fileName);
+				if(isValidGtfs(file)){
+					gtfsList.add(zipFile);
+				}
+				else {
+					dataList.add(zipFile);
+				}
+			} catch (Exception e) {
+				dataList.add(zipFile);
+			}
+		}
+	}
 }

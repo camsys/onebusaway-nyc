@@ -72,18 +72,6 @@ public class RemoteConnectionServiceImpl implements RemoteConnectionService {
 			}
 		}
 		return content;
-		/*
-		String getResponse = getContent(url);
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			//HashMap<String,Object> contentMap = mapper.readValue( getResponse, HashMap.class);
-			HashMap<String,Object> contentMap = new HashMap<String,Object>();
-		    for (String s : params.keySet()){
-			   contentMap.put(s, params.get(s));
-		    }
-		    return mapper.writeValueAsString(contentMap);
-		} catch (Exception e) {}
-		return null;*/
 	}
 	
 	@Override

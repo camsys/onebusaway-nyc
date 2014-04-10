@@ -65,7 +65,7 @@
 
   <bean id="task_multi_agency" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="multiAgency" />
-    <property name="afterTaskName" value="start"/>
+    <property name="afterTaskName" value="community_transit_translate_task"/>
     <property name="beforeTaskName" value="gtfs_pre"/>
     <property name="task" ref="multiAgencyMod" />
   </bean>
@@ -77,6 +77,17 @@
 
   <!-- Load GTFS -->
 
+  <bean id="task_community_transit_translate" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="community_transit_translate_task" />
+    <property name="afterTaskName" value="start" />
+    <property name="beforeTaskName" value="multiAgency" />
+    <property name="task" ref="communityTransitTranslateTask" />
+  </bean>
+  <bean id="communityTransitTranslateTask" class="org.onebusaway.nyc.admin.service.bundle.task.CommunityTransitTranslateTask" >
+    <property name="logger" ref="multiCSVLogger" />
+    <property name="bundleRequestResponse" ref="bundleRequestResponse" />
+  </bean>
+  
   <bean id="task_gtfs_pre" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="gtfs_pre" />
     <property name="afterTaskName" value="multiAgency" />
