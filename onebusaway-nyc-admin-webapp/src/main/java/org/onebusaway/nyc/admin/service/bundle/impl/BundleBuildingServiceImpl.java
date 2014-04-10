@@ -118,12 +118,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setTmpDirectory(tmpDirectory);
 
     // download gtfs
-    /*List<String> gtfs = new ArrayList<String>();
-    List<String> data = new ArrayList<String>();
-    populateLists(bundleDir, gtfs, data);*/
-    List<String> gtfs = _fileService.list( bundleDir + "/" + _fileService.getGtfsPath(), -1);
-	
-    
+    List<String> gtfs = new ArrayList<String>();
+    List<String> exports = new ArrayList<String>();
+    populateLists(bundleDir, gtfs, exports);
     
     for (String file : gtfs) {
       _log.debug("downloading gtfs:" + file);
@@ -154,6 +151,36 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       }
     }
     _log.debug("finished download gtfs");
+    
+    for (String file : exports) {
+        _log.debug("downloading export:" + file);
+        response.addStatusMessage("downloading export " + file);
+        // write some meta_data into the file name for later use
+        String agencyDir = parseAgencyDir(file);
+        
+        String exportFileName = _fileService.get(file, tmpDirectory);
+        
+        // if we have metadata, rename file to encode metadata
+        if (agencyDir != null) {
+          FileUtils fs = new FileUtils();
+          File toRename = new File(exportFileName);
+          String newNameStr = fs.parseDirectory(exportFileName) + File.separator + "exports" + File.separator + agencyDir
+                + "_" + toRename.getName();
+          try {
+            fs.moveFile(exportFileName, newNameStr);
+            response.addGtfsFile(newNameStr);
+            _log.debug("export file " + exportFileName + " renamed to " + newNameStr);
+          } catch (Exception e) {
+            _log.error("exception moving export file:", e);
+            // use the old one and carry on
+            //response.addGtfsFile(exportFileName);
+          }
+          
+        } else {
+          //response.addGtfsFile(exportFileName);  
+        }
+      }
+    
     // download stifs
     List<String> stif = _fileService.list(
         bundleDir + "/" + _fileService.getStifPath(), -1);
