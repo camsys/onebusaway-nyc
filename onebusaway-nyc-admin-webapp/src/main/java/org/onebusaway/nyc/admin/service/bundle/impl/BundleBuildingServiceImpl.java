@@ -119,13 +119,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setTmpDirectory(tmpDirectory);
 
     // download gtfs
-    /*List<String> gtfs = new ArrayList<String>();
-    List<String> data = new ArrayList<String>();
-    populateLists(bundleDir, gtfs, data);*/
     List<String> gtfs = _fileService.list( bundleDir + "/" + _fileService.getGtfsPath(), -1);
 	
     
     FileUtils fs = new FileUtils();
+    List<String> gtfs = new ArrayList<String>();
+    List<String> exports = new ArrayList<String>();
+    populateLists(bundleDir, gtfs, exports);
     
     for (String file : gtfs) {
       _log.debug("downloading gtfs:" + file);
