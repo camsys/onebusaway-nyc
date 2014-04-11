@@ -10,8 +10,8 @@ public interface FileService {
   void setBucketName(String bucketName);
   void setGtfsPath(String gtfsPath);
   String getGtfsPath();
-  void setStifPath(String stifPath);
-  String getStifPath();
+  void setAuxPath(String auxPath);
+  String getAuxPath();
   void setBuildPath(String buildPath);
   String getConfigPath();
   void setConfigPath(String configPath);
@@ -43,5 +43,6 @@ public interface FileService {
    * @param fileName the given file name
    */
   void validateFileName(String fileName);
+  
 
 }

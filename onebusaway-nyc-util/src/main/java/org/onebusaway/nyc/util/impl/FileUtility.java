@@ -47,7 +47,7 @@ public class FileUtility {
           destinationFileName));
       IOUtils.copy(source, destination);
     } catch (Exception any) {
-      _log.error(any.toString());
+      _log.error(any.toString(), any);
       throw new RuntimeException(any);
     } finally {
       if (source != null)
@@ -228,6 +228,7 @@ public class FileUtility {
     });
     
     if (files == null) {
+      zos.close();
       throw new FileNotFoundException("no files selected for basePath=" + basePath 
         + " and includeExpression=" + includeExpression);
     }

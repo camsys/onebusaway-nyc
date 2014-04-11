@@ -51,8 +51,8 @@ public class S3FileServiceImpl implements FileService, ServletContextAware {
 	// the gtfs directory relative to the bundle directory; e.g. gtfs_latest
 	private String _gtfsPath;
 
-	// the stif directory relative to the bundle directory; e.g. stif_latest
-	private String _stifPath;
+	// the stif directory relative to the bundle directory; e.g. aux_latest
+	private String _auxPath;
 	// the config directory, relative to the bundle directory; e.g., config
 	private String _configPath;
 	private String _buildPath;
@@ -89,13 +89,13 @@ public class S3FileServiceImpl implements FileService, ServletContextAware {
 	}
 
 	@Override
-	public void setStifPath(String stifPath) {
-		this._stifPath = stifPath;
+	public void setAuxPath(String auxPath) {
+		this._auxPath = auxPath;
 	}
 
 	@Override
-	public String getStifPath() {
-		return _stifPath;
+	public String getAuxPath() {
+		return _auxPath;
 	}
 
  @Override
@@ -185,7 +185,7 @@ public class S3FileServiceImpl implements FileService, ServletContextAware {
 					this.getGtfsPath() + "/README.txt", tmpFile);
 			result = _s3.putObject(request);
 			request = new PutObjectRequest(_bucketName, filename + "/" +
-					this.getStifPath() + "/README.txt", tmpFile);
+					this.getAuxPath() + "/README.txt", tmpFile);
 			result = _s3.putObject(request);
 			request = new PutObjectRequest(_bucketName, filename + "/" +
 					this.getBuildPath() + "/README.txt", tmpFile);

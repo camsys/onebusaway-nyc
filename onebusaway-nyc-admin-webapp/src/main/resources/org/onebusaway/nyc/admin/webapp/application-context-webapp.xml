@@ -88,7 +88,7 @@
    <bean id="fileService" class="org.onebusaway.nyc.admin.service.impl.FileServiceBridge">
    		<property name="bucketName" value="obanyc-bundle-data-test"/>
    		<property name="gtfsPath" value="gtfs_latest" />
-   		<property name="stifPath" value="stif_latest" />
+   		<property name="auxPath" value="aux_latest" />
         <property name="configPath" value="config" />
    		<property name="buildPath" value="builds" />
    </bean>

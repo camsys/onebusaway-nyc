@@ -9,6 +9,7 @@ import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.bundle.impl.BundleBuildingServiceImpl;
 import org.onebusaway.nyc.admin.util.FileUtils;
 
+import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -21,16 +22,20 @@ import java.util.List;
 
 public class BundleBuildingServiceImplTest {
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImplTest.class);
+  private static String CT_GIS_ZIP = "29_gis.zip";
+  private static String CT_SCHEDULE_ZIP = "29_HastusRoutesAndSchedules.zip";
   private BundleBuildingServiceImpl _service;
 
   @Before
   public void setup() {
+    BasicConfigurator.configure();
     _service = new BundleBuildingServiceImpl() {
       @Override
       public String getDefaultAgencyId() {
         return null;
       }
     };
+    
     
     FileService fileService;
     fileService = new S3FileServiceImpl() {
@@ -71,12 +76,18 @@ public class BundleBuildingServiceImplTest {
         ArrayList<String> list = new ArrayList<String>();
         if (directory.equals("test/gtfs_latest")) {
           list.add("gtfs-m34.zip");
-        } else if (directory.equals("test/stif_latest")) {
-          list.add("stif-m34.zip");
+        } else if (directory.equals("test/aux_latest")) {
+          if ("true".equals(_service.getAuxConfig())) {
+            list.add(CT_GIS_ZIP);
+            list.add(CT_SCHEDULE_ZIP);
+          } else {
+            list.add("stif-m34.zip");
+          }
         } else if (directory.equals("test/config")) {
           // do nothing
         } else {
-          list.add("empty");
+          throw new RuntimeException("file not found for dir=" + directory);
+          //list.add("empty");
         }
         return list;
       }
@@ -90,8 +101,15 @@ public class BundleBuildingServiceImplTest {
               "gtfs-m34.zip");
         } else if (key.equals("stif-m34.zip")) {
           source = this.getClass().getResourceAsStream("stif-m34.zip");
+        } else if (key.equals(CT_GIS_ZIP)) {
+          source = this.getClass().getResourceAsStream(CT_GIS_ZIP);
+        } else if (key.equals(CT_SCHEDULE_ZIP)) {
+          source = this.getClass().getResourceAsStream(CT_SCHEDULE_ZIP);
+        } else {
+          throw new RuntimeException("unmatched key=" + key + " for tmpDir=" + tmpDir);
         }
         String filename = tmpDir + File.separator + key;
+        _log.info("copying " + source + " to " + filename);
         new FileUtils().copy(source, filename);
         return filename;
       }
@@ -104,7 +122,7 @@ public class BundleBuildingServiceImplTest {
     };
     fileService.setBucketName("obanyc-bundle-data");
     fileService.setGtfsPath("gtfs_latest");
-    fileService.setStifPath("stif_latest");
+    fileService.setAuxPath("aux_latest");
     fileService.setBuildPath("builds");
     fileService.setConfigPath("config");
     fileService.setup();
@@ -123,7 +141,8 @@ public class BundleBuildingServiceImplTest {
   }
 
   @Test
-  public void testBuild() {
+  public void testBuildStif() {
+    _service.setAuxConfig("false");
     String bundleDir = "test";
     String tmpDir = new FileUtils().createTmpDirectory();
 
@@ -144,8 +163,8 @@ public class BundleBuildingServiceImplTest {
     assertNotNull(response.getGtfsList());
     assertEquals(1, response.getGtfsList().size());
 
-    assertNotNull(response.getStifZipList());
-    assertEquals(1, response.getStifZipList().size());
+    assertNotNull(response.getAuxZipList());
+    assertEquals(1, response.getAuxZipList().size());
      
     assertNotNull(response.getStatusList());
     assertTrue(response.getStatusList().size() > 0);
@@ -162,7 +181,7 @@ public class BundleBuildingServiceImplTest {
     // step 3
     int rc = _service.build(request, response);
     if (response.getException() != null) {
-      _log.error("Failed with exception=" + response.getException());
+      _log.error("Failed with exception=" + response.getException(), response.getException());
     }
     assertNull(response.getException());
     assertFalse(response.isComplete());
@@ -178,4 +197,62 @@ public class BundleBuildingServiceImplTest {
 
   }
 
+  @Test
+  public void testBuildHastus() {
+    _service.setAuxConfig("true");
+    String bundleDir = "test";
+    String tmpDir = new FileUtils().createTmpDirectory();
+
+    BundleBuildRequest request = new BundleBuildRequest();
+    request.setBundleDirectory(bundleDir);
+    request.setBundleName("testnameHastus");
+    request.setTmpDirectory(tmpDir);
+    request.setBundleStartDate("2012-04-08");
+    request.setBundleEndDate("2012-07-07");
+    assertNotNull(request.getTmpDirectory());
+    assertNotNull(request.getBundleDirectory());
+    BundleBuildResponse response = new BundleBuildResponse(""
+        + System.currentTimeMillis());
+    assertEquals(0, response.getStatusList().size());
+
+    // step 1
+    _service.download(request, response);
+    assertNotNull(response.getGtfsList());
+    assertEquals(1, response.getGtfsList().size());
+
+    assertNotNull(response.getAuxZipList());
+    assertEquals(2, response.getAuxZipList().size());
+     
+    assertNotNull(response.getStatusList());
+    assertTrue(response.getStatusList().size() > 0);
+
+    assertNotNull(response.getConfigList());
+    assertEquals(0, response.getConfigList().size());
+    
+    // step 2
+    _service.prepare(request, response);
+
+    
+    assertFalse(response.isComplete());
+    
+    // step 3
+    int rc = _service.build(request, response);
+    if (response.getException() != null) {
+      _log.error("Failed with exception=" + response.getException(), response.getException());
+    }
+    assertNull(response.getException());
+    assertFalse(response.isComplete());
+    assertEquals(0, rc);
+    
+    // step 4
+    // OBANYC-1451 -- fails on OSX TODO
+    //_service.assemble(request, response);
+
+    // step 5
+    _service.upload(request, response);
+    assertFalse(response.isComplete()); // set by BundleRequestService
+
+  }
+
+  
 }

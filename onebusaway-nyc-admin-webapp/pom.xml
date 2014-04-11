@@ -147,7 +147,7 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-community-transit-gtfs</artifactId>
-			<version>0.0.1-st-SNAPSHOT</version>
+			<version>0.0.2-st-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>

@@ -20,6 +20,7 @@ public class DiskFileServiceImpl implements FileService {
 	private String _basePath;
 	private String _gtfsPath;
 	private String _stifPath;
+	private String _auxPath;
 	private String _buildPath;
 	private String _configPath;
 	@Override
@@ -54,15 +55,15 @@ public class DiskFileServiceImpl implements FileService {
 		return _gtfsPath;
 	}
 
-	@Override
-	public void setStifPath(String stifPath) {
-		_stifPath = stifPath;
-	}
+  @Override
+  public void setAuxPath(String auxPath) {
+    _auxPath = auxPath;
+  }
 
-	@Override
-	public String getStifPath() {
-		return _stifPath;
-	}
+  @Override
+  public String getAuxPath() {
+    return _auxPath;
+  }
 
 	@Override
 	public void setBuildPath(String buildPath) {

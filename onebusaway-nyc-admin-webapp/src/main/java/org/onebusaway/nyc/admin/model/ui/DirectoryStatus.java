@@ -10,7 +10,7 @@ public class DirectoryStatus {
 	private String message;
 	private boolean selected;
 	private String gtfsPath;
-	private String stifPath;
+	private String auxPath;
 	private String bucketName;
 
 	public DirectoryStatus(String directoryName, String message, boolean selected) {
@@ -46,17 +46,17 @@ public class DirectoryStatus {
 	}
 
 	/**
-	 * @return the stifPath
+	 * @return the auxPath for stif/hastus support
 	 */
-	public String getStifPath() {
-		return stifPath;
+	public String getAuxPath() {
+		return auxPath;
 	}
 
 	/**
-	 * @param stifPath the stifPath to set
+	 * @param stifPath path for stif/hastus support
 	 */
-	public void setStifPath(String stifPath) {
-		this.stifPath = stifPath;
+	public void setAuxPath(String auxPath) {
+		this.auxPath = auxPath;
 	}
 
 	/**

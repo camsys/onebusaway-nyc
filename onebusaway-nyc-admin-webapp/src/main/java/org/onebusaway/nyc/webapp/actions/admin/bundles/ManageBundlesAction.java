@@ -132,7 +132,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	private DirectoryStatus createDirectoryStatus(String statusMessage, boolean selected) {
 		DirectoryStatus directoryStatus = new DirectoryStatus(directoryName, statusMessage, selected);
 		directoryStatus.setGtfsPath(fileService.getGtfsPath());
-		directoryStatus.setStifPath(fileService.getStifPath());
+		directoryStatus.setAuxPath(fileService.getAuxPath());
 		directoryStatus.setBucketName(fileService.getBucketName());
 		return directoryStatus;
 	}

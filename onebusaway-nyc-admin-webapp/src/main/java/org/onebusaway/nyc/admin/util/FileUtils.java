@@ -142,6 +142,17 @@ public class FileUtils {
     int start = s3path.indexOf("/", bucketStart + 1);
     return s3path.substring(start, s3path.length());
   }
+  public String parseAgency(String path) {
+    if (!path.contains("_")) return null;
+    int start = path.lastIndexOf("/");
+    if (start == -1) { 
+      start = 0;
+    } else {
+      start = start + 1; // advance past "/"
+    }
+    int stop = path.indexOf("_", start);
+    return path.substring(start, stop);
+  }
 
   /**
    * untar and uncompress a tar file (.tar.gz)
@@ -368,6 +379,8 @@ public class FileUtils {
                 }
       }
   }
+
+
 
 
 }

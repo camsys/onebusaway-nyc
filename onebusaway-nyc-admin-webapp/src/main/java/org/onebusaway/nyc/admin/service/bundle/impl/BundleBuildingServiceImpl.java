@@ -1,5 +1,23 @@
 package org.onebusaway.nyc.admin.service.bundle.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipFile;
+
+import org.apache.log4j.Layout;
+import org.apache.log4j.Level;
+import org.apache.log4j.SimpleLayout;
+import org.apache.log4j.WriterAppender;
 import org.onebusaway.container.ContainerLibrary;
 import org.onebusaway.container.spring.PropertyOverrideConfigurer;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
@@ -8,14 +26,10 @@ import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
-import org.onebusaway.nyc.admin.service.bundle.task.GtfsModTask;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.nyc.admin.util.ProcessUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.CheckShapeIdTask;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.ClearCSVTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.SummarizeCSVTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
@@ -25,34 +39,13 @@ import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
 import org.onebusaway.transit_data_federation.bundle.model.TaskDefinition;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
-
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.SimpleLayout;
-import org.apache.log4j.WriterAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.remoting.RemoteConnectFailureException;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.ZipFile;
 
 public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String BUNDLE_RESOURCE = "classpath:org/onebusaway/transit_data_federation/bundle/application-context-bundle-admin.xml";
@@ -69,6 +62,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private FileService _fileService;
   private ConfigurationService configurationService;
   private LoggingService loggingService;
+  private String _auxConfig = null;
   
   @Autowired
   private ConfigurationServiceClient configurationServiceClient;
@@ -91,6 +85,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
 
+  public void setAuxConfig(String flag) {
+    _auxConfig = flag;
+  }
+  public String getAuxConfig() {
+    return _auxConfig;
+  }
+  
   @Override
   public void doBuild(BundleBuildRequest request, BundleBuildResponse response) {
     response.setId(request.getId());
@@ -124,6 +125,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     List<String> gtfs = _fileService.list( bundleDir + "/" + _fileService.getGtfsPath(), -1);
 	
     
+    FileUtils fs = new FileUtils();
     
     for (String file : gtfs) {
       _log.debug("downloading gtfs:" + file);
@@ -133,9 +135,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       
       String gtfsFileName = _fileService.get(file, tmpDirectory);
       
+      
       // if we have metadata, rename file to encode metadata
       if (agencyDir != null) {
-        FileUtils fs = new FileUtils();
         File toRename = new File(gtfsFileName);
         String newNameStr = fs.parseDirectory(gtfsFileName) + File.separator + agencyDir
               + "_" + toRename.getName();
@@ -154,15 +156,32 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       }
     }
     _log.debug("finished download gtfs");
-    // download stifs
-    List<String> stif = _fileService.list(
-        bundleDir + "/" + _fileService.getStifPath(), -1);
-    for (String file : stif) {
-      _log.debug("downloading stif:" + stif);
-      response.addStatusMessage("downloading stif " + file);
-      response.addStifZipFile(_fileService.get(file, tmpDirectory));
+    // download aux files, which could be stif or hastus, etc
+    List<String> aux = _fileService.list(
+        bundleDir + "/" + _fileService.getAuxPath(), -1);
+    for (String file : aux) {
+      _log.info("downloading aux:" + aux);
+      response.addStatusMessage("downloading aux files " + file);
+      String agencyDir = parseAgencyDir(file);
+      if (agencyDir == null) {
+        response.addAuxZipFile(_fileService.get(file, tmpDirectory));
+      } else {
+        String auxFileName = _fileService.get(file, tmpDirectory);
+        File toRename = new File(file);
+        String newNameStr = fs.parseDirectory(auxFileName) + File.separator
+            + agencyDir + "_" + toRename.getName();
+        try {
+          _log.info(auxFileName + " moved to " + newNameStr);
+          fs.moveFile(auxFileName, newNameStr);
+          response.addAuxZipFile(newNameStr);
+        } catch (Exception e) {
+          _log.error("exception moving AUX file:", e);
+          // use the old one and carry on
+          response.addAuxZipFile(auxFileName);
+        }
+     }
     }
-    _log.debug("finished download stif");
+    _log.info("finished download aux files");
     // download optional configuration files
     List<String> config = _fileService.list(
         bundleDir + "/" + _fileService.getConfigPath(), -1);
@@ -212,11 +231,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     String dataPath = request.getTmpDirectory() + File.separator + request.getBundleName()
         + File.separator + DATA_DIR;
     
-    // create STIF dir as well
-    String stifPath = request.getTmpDirectory() + File.separator + "stif";
-    File stifDir = new File(stifPath);
-    _log.info("creating stif directory=" + stifPath);
-    stifDir.mkdirs();
     
     
     File dataDir = new File(dataPath);
@@ -236,13 +250,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     }
     _log.debug("finished prepping gtfs!");
     
-    for (String stif: response.getStifZipList()) {
+    for (String stif: response.getAuxZipList()) {
       _log.debug("prepping stif:" + stif);
       String outputFilename = inputsPath + File.separator + fs.parseFileName(stif); 
       fs.copyFiles(new File(stif), new File(outputFilename));
     }
     
-    for (String stifZip : response.getStifZipList()) {
+    for (String stifZip : response.getAuxZipList()) {
       _log.debug("stif copying " + stifZip + " to " + request.getTmpDirectory() + File.separator
           + "stif");
       new FileUtils().unzip(stifZip, request.getTmpDirectory() + File.separator
@@ -266,7 +280,37 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       fs.copyFiles(new File(config), new File(outputFilename));
     }
     
-    // clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
+    if (isStifTaskApplicable()) {
+      _log.info("running stif with auxconfig=" + this._auxConfig);
+      prepStif(request, response);
+    } else {
+      _log.info("running hastus with auxconfig=" + this._auxConfig);
+      prepHastus(request, response);
+    }
+    
+  }
+
+   private void prepHastus(BundleBuildRequest request,
+      BundleBuildResponse response) {
+     FileUtils fs = new FileUtils();
+     // create AUX dir as well
+     String auxPath = request.getTmpDirectory() + File.separator + "aux";
+     File auxDir = new File(auxPath);
+     _log.info("creating aux directory=" + auxPath);
+     auxDir.mkdirs();
+    
+  }
+
+  //clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
+  private void prepStif(BundleBuildRequest request, BundleBuildResponse response) {
+    
+    FileUtils fs = new FileUtils();
+    // create STIF dir as well
+    String stifPath = request.getTmpDirectory() + File.separator + "stif";
+    File stifDir = new File(stifPath);
+    _log.info("creating stif directory=" + stifPath);
+    stifDir.mkdirs();
+
     try {
       File[] stifDirectories = stifDir.listFiles();
       if (stifDirectories != null) {
@@ -303,6 +347,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     } catch (Exception any) {
       response.setException(any);
     }
+    
   }
 
   private String parseAgencyDir(String path) {
@@ -491,8 +536,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   }
   
   private boolean isStifTaskApplicable() {
-    // TODO lookup this 
-    return false;
+    if (_auxConfig != null) { 
+      return "false".equals(_auxConfig);
+    }
+    try {
+      _auxConfig = configurationService.getConfigurationValueAsString("admin.auxSupport", null);
+      if ("true".equals(_auxConfig))
+          return false;
+    } catch (Exception any) {
+      return true;
+    }
+    return true;
   }
 
   private String getTripToDSCFilename() {

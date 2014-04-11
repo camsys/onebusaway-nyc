@@ -13,7 +13,6 @@ import org.springframework.web.context.ServletContextAware;
 
 public class FileServiceBridge implements FileService, ServletContextAware {
 
-	private static final String AUX_PATH = "aux_latest";
   private static Logger _log = LoggerFactory.getLogger(FileServiceBridge.class);
 	private FileService _s3;
 	private FileService _disk;
@@ -22,7 +21,7 @@ public class FileServiceBridge implements FileService, ServletContextAware {
 	private String _bucketName;
 	private boolean _isS3 = false;
 	private String _gtfsPath;
-	private String _stifPath;
+	private String _auxPath;
 	private String _buildPath;
 	private String _configPath;
 	
@@ -37,7 +36,7 @@ public class FileServiceBridge implements FileService, ServletContextAware {
 			_s3.setPassword(_password);
 			_s3.setBucketName(_bucketName);
 			_s3.setGtfsPath(_gtfsPath);
-			_s3.setStifPath(_stifPath);
+			_s3.setAuxPath(_auxPath);
 			_s3.setBuildPath(_buildPath);
 			_s3.setConfigPath(_configPath);
 			_s3.setup();
@@ -45,7 +44,7 @@ public class FileServiceBridge implements FileService, ServletContextAware {
 			_disk = new DiskFileServiceImpl();
 			_disk.setBucketName(_bucketName);
 			_disk.setGtfsPath(_gtfsPath);
-			_disk.setStifPath(AUX_PATH);
+			_disk.setAuxPath(_auxPath);
 			_disk.setBuildPath(_buildPath);
 			_disk.setConfigPath(_configPath);
 			_disk.setup();
@@ -77,15 +76,15 @@ public class FileServiceBridge implements FileService, ServletContextAware {
 		return _gtfsPath;
 	}
 
-	@Override
-	public void setStifPath(String stifPath) {
-		_stifPath = stifPath;
-	}
+  @Override
+  public void setAuxPath(String auxPath) {
+    _auxPath = auxPath;
+  }
 
-	@Override
-	public String getStifPath() {
-		return _stifPath;
-	}
+  @Override
+  public String getAuxPath() {
+    return _auxPath;
+  }
 
 	@Override
 	public void setBuildPath(String buildPath) {
