@@ -1,8 +1,8 @@
 package org.onebusaway.nyc.admin.util;
 
 import org.onebusaway.nyc.util.impl.FileUtility;
-
-import org.h2.util.IOUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,18 +24,18 @@ import java.net.URL;
  * in org.onebusaway.nyc.util.impl.FileUtility.
  * 
  */
-public class FileUtils {
-  private static Logger _log = LoggerFactory.getLogger(FileUtils.class);
+public class NYCFileUtils {
+  private static Logger _log = LoggerFactory.getLogger(NYCFileUtils.class);
 
   private String _workingDirectory = null;
   // more generic file handling functions belong in nyc.util
   private FileUtility _fileUtil = new FileUtility();
 
-  public FileUtils() {
+  public NYCFileUtils() {
     _workingDirectory = System.getProperty("java.io.tmpdir");
   }
 
-  public FileUtils(String workingDirectory) {
+  public NYCFileUtils(String workingDirectory) {
     _workingDirectory = workingDirectory;
   }
 

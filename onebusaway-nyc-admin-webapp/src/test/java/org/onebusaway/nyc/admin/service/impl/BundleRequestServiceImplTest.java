@@ -9,7 +9,7 @@ import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.impl.BundleValidationServiceImpl;
 import org.onebusaway.nyc.admin.service.server.impl.BundleServerServiceImpl;
-import org.onebusaway.nyc.admin.util.FileUtils;
+import org.onebusaway.nyc.admin.util.NYCFileUtils;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +62,7 @@ public class BundleRequestServiceImplTest {
         InputStream input = this.getClass().getResourceAsStream(
         "empty_feed.zip");
         String destination = "/tmp/empty_feed.zip.html";
-        new FileUtils().copy(input, destination);
+        new NYCFileUtils().copy(input, destination);
         return destination;
       }
       @Override
@@ -179,7 +179,7 @@ public class BundleRequestServiceImplTest {
     //String key = "m34"; // use for faster testing
     req.setBundleDirectory(key);
     req.setBundleName("test_0");
-    req.setTmpDirectory(new FileUtils().createTmpDirectory());
+    req.setTmpDirectory(new NYCFileUtils().createTmpDirectory());
     req.setBundleStartDate("2012-04-08");
     req.setBundleEndDate("2012-07-07");
     _log.debug("calling build for dir=" + req.getBundleDirectory() + " name=" + req.getBundleName());

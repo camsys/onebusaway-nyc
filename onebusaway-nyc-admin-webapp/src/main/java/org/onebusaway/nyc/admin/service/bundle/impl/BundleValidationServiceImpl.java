@@ -6,7 +6,7 @@ import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.model.ServiceDateRange;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleValidationService;
-import org.onebusaway.nyc.admin.util.FileUtils;
+import org.onebusaway.nyc.admin.util.NYCFileUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,7 +195,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
         }
         String tmpDir = request.getTmpDirectory(); 
         if (tmpDir == null) {
-          tmpDir = new FileUtils().createTmpDirectory();
+          tmpDir = new NYCFileUtils().createTmpDirectory();
           request.setTmpDirectory(tmpDir);
         }
         response.setTmpDirectory(request.getTmpDirectory());
@@ -209,7 +209,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
           installAndValidateGtfs(gtfsZipFileName,
               outputFile);
           _log.info("results of " + gtfsZipFileName + " at " + outputFile);
-          response.addValidationFile(new FileUtils().parseFileName(outputFile));
+          response.addValidationFile(new NYCFileUtils().parseFileName(outputFile));
           upload(request, response);
           response.addStatusMessage("complete");
         }
@@ -246,7 +246,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
 
   public void downloadFeedValidator() {
     String tmpDir = System.getProperty("java.io.tmpdir");
-    FileUtils fs = new FileUtils(tmpDir);
+    NYCFileUtils fs = new NYCFileUtils(tmpDir);
     String url = "http://googletransitdatafeed.googlecode.com/files/"
         + TRANSIT_FEED + ".tar.gz";
     fs.wget(url);
@@ -273,11 +273,11 @@ public class BundleValidationServiceImpl implements BundleValidationService {
   }
 
   private String escapeFilename(String s) {
-    return FileUtils.escapeFilename(s);
+    return NYCFileUtils.escapeFilename(s);
   }
   
   private void debugCmds(String[] array) {
-    FileUtils.debugCmds(array);
+    NYCFileUtils.debugCmds(array);
   }
   
   

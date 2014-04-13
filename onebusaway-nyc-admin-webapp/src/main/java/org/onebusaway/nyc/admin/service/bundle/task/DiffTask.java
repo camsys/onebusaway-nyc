@@ -64,6 +64,7 @@ public abstract class DiffTask implements Runnable {
 	}
 	private List<String> fileToLines(String filename) {
 		List<String> lines = new LinkedList<String>();
+		if (filename == null) return lines;
 		String line = "";
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(filename));

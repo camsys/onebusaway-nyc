@@ -23,6 +23,11 @@
             <artifactId>onebusaway-gtfs-hibernate-spring</artifactId>
             <version>${onebusaway.app-modules.version}</version>
         </dependency>
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-main</artifactId>
+		<version>10-SNAPSHOT</version>
+	</dependency>
         <dependency>
       	    <groupId>com.google.protobuf</groupId>
       	    <artifactId>protobuf-java</artifactId>

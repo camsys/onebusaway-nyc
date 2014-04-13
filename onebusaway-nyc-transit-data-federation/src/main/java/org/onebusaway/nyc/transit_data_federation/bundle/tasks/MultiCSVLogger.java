@@ -96,7 +96,8 @@ public class MultiCSVLogger {
   public void log(String file, Object... args) {
     Log log = logs.get(file);
     if (log == null) {
-      throw new RuntimeException("log called before header for file " + file);
+      _log.warn("log called before header for file " + file);
+      header(file, "MISSING");
     }
     log.lines += 1;
     for (int i = 0; i < args.length; ++i) {

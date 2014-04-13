@@ -5,12 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.onebusaway.nyc.admin.service.FileService;
-import org.onebusaway.nyc.admin.util.FileUtils;
+import org.onebusaway.nyc.admin.util.NYCFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,7 +119,7 @@ public class DiskFileServiceImpl implements FileService {
 
 	@Override
 	public String get(String s3path, String tmpDir) {
-		FileUtils fs = new FileUtils();
+		NYCFileUtils fs = new NYCFileUtils();
 		File srcFile = new File(_basePath, s3path);
 		File destFile = new File(tmpDir);
 		fs.copyFiles(srcFile, destFile);
@@ -147,7 +146,7 @@ public class DiskFileServiceImpl implements FileService {
   // copy file to dir
 	public String put(String key, String directory) {
 		_log.info("put(" + key + ", " + directory + ")");
-		FileUtils fs = new FileUtils();
+		NYCFileUtils fs = new NYCFileUtils();
 		String baseDirectoryName = _basePath + File.separator + fs.parseDirectory(key);
 		File baseDirectory = new File(baseDirectoryName);
 		if (!baseDirectory.exists()) {

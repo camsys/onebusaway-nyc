@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import org.onebusaway.nyc.admin.model.ServiceDateRange;
 import org.onebusaway.nyc.admin.service.bundle.impl.BundleValidationServiceImpl;
-import org.onebusaway.nyc.admin.util.FileUtils;
+import org.onebusaway.nyc.admin.util.NYCFileUtils;
 
 import org.junit.Test;
 
@@ -88,7 +88,7 @@ public class BundleValidationServiceImplTest {
         "gtfs-m34.zip");
     assertNotNull(source);
     String goodFeedFilename = getTmpDir() + File.separatorChar + "good_feed.zip";
-    new FileUtils().copy(source, goodFeedFilename);
+    new NYCFileUtils().copy(source, goodFeedFilename);
     assertTrue(new File(goodFeedFilename).exists());
     String emptyFeedFilename = getTmpDir() + File.separatorChar + "good_feed.zip";
     assertTrue(new File(emptyFeedFilename).exists());

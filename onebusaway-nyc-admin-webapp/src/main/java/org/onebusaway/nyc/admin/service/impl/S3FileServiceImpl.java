@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.admin.service.impl;
 
 import org.onebusaway.nyc.admin.service.FileService;
-import org.onebusaway.nyc.admin.util.FileUtils;
+import org.onebusaway.nyc.admin.util.NYCFileUtils;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -266,7 +266,7 @@ public class S3FileServiceImpl implements FileService, ServletContextAware {
 	 */
 	public String get(String key, String tmpDir) {
 		_log.debug("get(" + key + ", " + tmpDir + ")");
-		FileUtils fs = new FileUtils();
+		NYCFileUtils fs = new NYCFileUtils();
 		String filename = fs.parseFileName(key);
 		_log.debug("filename=" + filename);
 		GetObjectRequest request = new GetObjectRequest(this._bucketName, key);
@@ -348,7 +348,7 @@ public class S3FileServiceImpl implements FileService, ServletContextAware {
 	public String createOutputFilesZip(String s3Path) {
 	  String directoryName = null;
 	  // create tmp dir
-	  FileUtils fs = new FileUtils();
+	  NYCFileUtils fs = new NYCFileUtils();
 	  directoryName = fs.createTmpDirectory();
 	  
 	  // pull down output directory files to this tmp directory

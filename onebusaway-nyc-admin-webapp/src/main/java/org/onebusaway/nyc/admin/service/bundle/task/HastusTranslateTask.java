@@ -5,15 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.onebusaway.community_transit_gtfs.CommunityTransitGtfsFactory;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
-import org.onebusaway.nyc.admin.util.FileUtils;
+import org.onebusaway.nyc.admin.service.bundle.hastus.HastusGtfsFactory;
+import org.onebusaway.nyc.admin.util.NYCFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HastusTranslateTask extends BaseModTask implements Runnable {
 
-	private static Logger _log = LoggerFactory.getLogger(GtfsModTask.class);
+	private static final String AUX_DIR = "aux";
+  private static Logger _log = LoggerFactory.getLogger(GtfsModTask.class);
 	private Map<String, HastusData> _agencyMap = new HashMap<String, HastusData>();
 	
 	@Override
@@ -54,7 +55,7 @@ public class HastusTranslateTask extends BaseModTask implements Runnable {
     File gis = new File(hd.getGisDataDirectory());
 
     try {
-      CommunityTransitGtfsFactory factory = new CommunityTransitGtfsFactory();
+      HastusGtfsFactory factory = new HastusGtfsFactory();
       if (hastus != null && gis != null) {
         factory.setScheduleInputPath(hastus);
         factory.setGisInputPath(gis);
@@ -75,7 +76,7 @@ public class HastusTranslateTask extends BaseModTask implements Runnable {
   private void buildAgencyMap(String zipFile) {
     File auxFilePath = new File(zipFile);
     if (auxFilePath.exists() && auxFilePath.getName().contains("_")) {
-      FileUtils fu = new FileUtils();
+      NYCFileUtils fu = new NYCFileUtils();
       String agencyId = fu.parseAgency(auxFilePath.toString());
       
       HastusData hd = null;
@@ -97,25 +98,44 @@ public class HastusTranslateTask extends BaseModTask implements Runnable {
   }
 
   private String createGisDataDir(String file) {
-    FileUtils fu = new FileUtils();
+    NYCFileUtils fu = new NYCFileUtils();
     _log.info("expanding " + file);
     String dir = fu.parseDirectory(file);
-    fu.unzip(file, dir);
-    File[] files = new File(dir).listFiles();
+    String auxDir = dir + File.separator + AUX_DIR;
+    fu.unzip(file, auxDir);
+    File[] files = new File(auxDir).listFiles();
     if (files != null) {
       for (File checkDir : files) {
         if (checkDir.exists() && checkDir.isDirectory()) {
-          _log.info("data dir=" + checkDir);
-          return checkDir.toString();
+          if (checkDir.getName().toUpperCase().contains("GIS")) {
+            _log.info("gis data dir=" + checkDir);
+            return checkDir.toString();
+          }
         }
       }
     }
-    _log.error("could not find data dir");
+    _log.error("could not find gis data dir");
     return null;
   }
 
   private String createScheduleDataDir(String file) {
-    // this is the same impl for now
-    return createGisDataDir(file);
+    NYCFileUtils fu = new NYCFileUtils();
+    _log.info("expanding " + file);
+    String dir = fu.parseDirectory(file);
+    String auxDir = dir + File.separator + AUX_DIR;
+    fu.unzip(file, auxDir);
+    File[] files = new File(auxDir).listFiles();
+    if (files != null) {
+      for (File checkDir : files) {
+        if (checkDir.exists() && checkDir.isDirectory()) {
+          if (checkDir.getName().toUpperCase().contains("ROUTES")) {
+            _log.info("routes data dir=" + checkDir);
+            return checkDir.toString();
+          }
+        }
+      }
+    }
+    _log.error("could not find routes data dir");
+    return null;
   }
 }

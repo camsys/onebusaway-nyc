@@ -19,7 +19,7 @@ import org.onebusaway.nyc.admin.model.ui.DirectoryStatus;
 import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.FileService;
-import org.onebusaway.nyc.admin.util.FileUtils;
+import org.onebusaway.nyc.admin.util.NYCFileUtils;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,7 +167,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	  this.bundleResponse = bundleRequestService.lookupValidationRequest(getId());
 	  _log.info("download=" + this.downloadFilename + " and id=" + id);
 	  if (this.bundleResponse != null) {
-	    this.downloadInputStream = new FileUtils().read(this.bundleResponse.getTmpDirectory() + File.separator + this.downloadFilename);
+	    this.downloadInputStream = new NYCFileUtils().read(this.bundleResponse.getTmpDirectory() + File.separator + this.downloadFilename);
 	    return "download";
 	  }
 	  // TODO

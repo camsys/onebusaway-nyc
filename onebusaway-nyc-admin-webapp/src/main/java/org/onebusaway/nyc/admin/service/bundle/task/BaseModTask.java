@@ -8,7 +8,7 @@ import org.onebusaway.gtfs_transformer.GtfsTransformer;
 import org.onebusaway.gtfs_transformer.GtfsTransformerLibrary;
 import org.onebusaway.gtfs_transformer.factory.TransformFactory;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
-import org.onebusaway.nyc.admin.util.FileUtils;
+import org.onebusaway.nyc.admin.util.NYCFileUtils;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.util.impl.FileUtility;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
@@ -75,7 +75,7 @@ public class BaseModTask {
   private String cleanup(GtfsBundle gtfsBundle) throws Exception {
     File gtfsFile = gtfsBundle.getPath();
     FileUtility fu = new FileUtility();
-    FileUtils fs = new FileUtils();
+    NYCFileUtils fs = new NYCFileUtils();
 
     _log.info("gtfsBundle.getPath=" + gtfsFile.getPath());
     String oldGtfsName = gtfsFile.getPath().toString();
@@ -103,7 +103,7 @@ public class BaseModTask {
       String outputLocation = getOutputDirectory() + File.separator
           + fs.parseFileName(newGtfsName);
       // copy to outputs for downstream systems
-      FileUtils.copyFile(new File(newGtfsName), new File(outputLocation));
+      NYCFileUtils.copyFile(new File(newGtfsName), new File(outputLocation));
     }
     return newGtfsName;
 

@@ -7,7 +7,7 @@ import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.bundle.impl.BundleBuildingServiceImpl;
-import org.onebusaway.nyc.admin.util.FileUtils;
+import org.onebusaway.nyc.admin.util.NYCFileUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
@@ -72,7 +72,7 @@ public class BundleBuildingServiceImplTest {
 
       @Override
       public List<String> list(String directory, int maxResults) {
-        _log.error("list called with " + directory);
+        _log.debug("list called with " + directory);
         ArrayList<String> list = new ArrayList<String>();
         if (directory.equals("test/gtfs_latest")) {
           list.add("gtfs-m34.zip");
@@ -94,7 +94,7 @@ public class BundleBuildingServiceImplTest {
 
       @Override
       public String get(String key, String tmpDir) {
-        _log.error("get called with " + key);
+        _log.debug("get called with " + key);
         InputStream source = null;
         if (key.equals("gtfs-m34.zip")) {
           source = this.getClass().getResourceAsStream(
@@ -110,7 +110,7 @@ public class BundleBuildingServiceImplTest {
         }
         String filename = tmpDir + File.separator + key;
         _log.info("copying " + source + " to " + filename);
-        new FileUtils().copy(source, filename);
+        new NYCFileUtils().copy(source, filename);
         return filename;
       }
 
@@ -144,7 +144,7 @@ public class BundleBuildingServiceImplTest {
   public void testBuildStif() {
     _service.setAuxConfig("false");
     String bundleDir = "test";
-    String tmpDir = new FileUtils().createTmpDirectory();
+    String tmpDir = new NYCFileUtils().createTmpDirectory();
 
     BundleBuildRequest request = new BundleBuildRequest();
     request.setBundleDirectory(bundleDir);
@@ -201,7 +201,7 @@ public class BundleBuildingServiceImplTest {
   public void testBuildHastus() {
     _service.setAuxConfig("true");
     String bundleDir = "test";
-    String tmpDir = new FileUtils().createTmpDirectory();
+    String tmpDir = new NYCFileUtils().createTmpDirectory();
 
     BundleBuildRequest request = new BundleBuildRequest();
     request.setBundleDirectory(bundleDir);
