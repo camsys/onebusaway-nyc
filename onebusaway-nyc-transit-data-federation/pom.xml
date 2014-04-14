@@ -26,7 +26,7 @@
 	<dependency>
 		<groupId>org.geotools</groupId>
 		<artifactId>gt-main</artifactId>
-		<version>10-SNAPSHOT</version>
+		<version>${geotools.version}</version>
 	</dependency>
         <dependency>
       	    <groupId>com.google.protobuf</groupId>

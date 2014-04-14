@@ -26,7 +26,9 @@
         <onebusaway.app-modules.version>1.1.12-st-SNAPSHOT</onebusaway.app-modules.version>
         <gitDescribe>99999</gitDescribe>
         <xwiki.version>2.3.1</xwiki.version>
-		<xwiki.integration.version>0.0.2</xwiki.integration.version>
+	<xwiki.integration.version>0.0.2</xwiki.integration.version>
+        <slf4j.version>1.7.5</slf4j.version>
+        <geotools.version>11-beta</geotools.version>
     </properties>
 
     <repositories>
@@ -380,7 +382,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-   	    <version>1.7.5</version>
+	    <version>${slf4j.version}</version>
         </dependency>
 
             <dependency>

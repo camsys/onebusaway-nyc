@@ -453,9 +453,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         // TODO this is a convention, pull out into config?
         stifLoaderTask.addPropertyValue("stifPath", request.getTmpDirectory()
             + File.separator + "stif");
-        String notInServiceFilename = request.getTmpDirectory()
-            + File.separator + "NotInServiceDSCs.txt";
+        String notInServiceDirString = request.getTmpDirectory()
+            + File.separator + "config";
+        String notInServiceFilename = notInServiceDirString +  File.separator + "NotInServiceDSCs.txt";
 
+        _log.info("creating NotInServiceDSCs file = " + notInServiceFilename);
+        new File(notInServiceDirString).mkdirs();
         new NYCFileUtils().createFile(notInServiceFilename,
             listToFile(request.getNotInServiceDSCList()));
         stifLoaderTask.addPropertyValue("notInServiceDscPath",
