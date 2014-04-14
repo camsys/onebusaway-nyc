@@ -19,9 +19,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:sec="http://www.springframework.org/schema/security"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
-           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
            
     <!-- This turns on automatic annotation configuration -->
     <context:annotation-config />
@@ -66,11 +66,14 @@
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
+            <!--  TODO FIXME -->
+            <!-- 
 		        <prop key="userIndexAuthenticationFilter.defaultTargetUrl">/admin</prop>
 		        <prop key="userIndexAuthenticationFilter.authenticationFailureUrl">/login.action?failure=true</prop>
 		        <prop key="everyLastLoginAuthenticationFilter.defaultTargetUrl">/admin</prop>
 		        <prop key="everyLastLoginAuthenticationFilter.authenticationFailureUrl">/login.action?failure=true</prop>
-		        <prop key="resourceServiceImpl.prefix">/resource.action?id=</prop>            
+		        <prop key="resourceServiceImpl.prefix">/resource.action?id=</prop>
+		         -->            
         	</props>
         </property>
     </bean>

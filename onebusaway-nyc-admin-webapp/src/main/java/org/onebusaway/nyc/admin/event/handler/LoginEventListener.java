@@ -4,8 +4,8 @@ import org.apache.log4j.Level;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.security.event.authentication.AuthenticationSuccessEvent;
-import org.springframework.security.userdetails.UserDetails;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Listens to @{link AuthenticationSuccessEvent} and calls logging service to log successful login event
