@@ -670,16 +670,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   private List<GtfsBundle> createGtfsBundles(BundleBuildResponse response) {
     List<String> gtfsList = response.getGtfsList();
-//    // TODO this really belongs in BaseModTask or HastusTranslateTask
-//    if (response.getAuxZipList() != null && !response.getAuxZipList().isEmpty()) {
-//      NYCFileUtils fu = new NYCFileUtils();
-//      for (String filename : response.getAuxZipList()) {
-//        _log.info("anticipated aux zip =" + filename);
-//        String outputZip = response.getTmpDirectory() + File.separator + fu.parseAgency(filename) + "_" + "google_transit.zip";
-//        _log.info("anticipated gtfs zipfile =" + outputZip);
-//        gtfsList.add(outputZip);
-//      }
-//    }
     final String gtfsMsg = "constructing configuration for bundles=" + gtfsList; 
     response.addStatusMessage(gtfsMsg);
     _log.info(gtfsMsg);

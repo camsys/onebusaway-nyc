@@ -28,7 +28,6 @@ public class BundleBuildingServiceImplTest {
 
   @Before
   public void setup() {
-    BasicConfigurator.configure();
     _service = new BundleBuildingServiceImpl() {
       @Override
       public String getDefaultAgencyId() {
@@ -87,7 +86,6 @@ public class BundleBuildingServiceImplTest {
           // do nothing
         } else {
           throw new RuntimeException("file not found for dir=" + directory);
-          //list.add("empty");
         }
         return list;
       }
