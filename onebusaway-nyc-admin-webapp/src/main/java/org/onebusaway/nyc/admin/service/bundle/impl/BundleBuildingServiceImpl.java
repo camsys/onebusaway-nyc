@@ -63,6 +63,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private ConfigurationService configurationService;
   private LoggingService loggingService;
   private String _auxConfig = null;
+  private boolean _debug = false;
+  
+  public void setDebug(boolean flag) {
+    _debug = flag;
+  }
   
   @Autowired
   private ConfigurationServiceClient configurationServiceClient;
@@ -575,6 +580,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
    * tear down the logger for the bundle building activity. 
    */
   private void deconfigureLogging(OutputStream os) {
+    if (_debug) return;
     _log.info("deconfiguring logging");
     try {
       os.flush();
@@ -591,6 +597,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
    * setup a logger just for the bundle building activity. 
    */
   private void configureLogging(OutputStream os) {
+    if (_debug) return;
     Layout layout = new SimpleLayout();
     WriterAppender wa = new WriterAppender(layout, os);
     wa.setName("bundlebuilder.out");

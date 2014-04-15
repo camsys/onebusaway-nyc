@@ -26,7 +26,6 @@ public class BundleBuildingServiceImplTest {
   private static String CT_SCHEDULE_ZIP = "29_HastusRoutesAndSchedules.zip";
   private BundleBuildingServiceImpl _service;
 
-  @Before
   public void setup() {
     _service = new BundleBuildingServiceImpl() {
       @Override
@@ -35,7 +34,7 @@ public class BundleBuildingServiceImplTest {
       }
     };
     
-    
+    _service.setDebug(true);
     FileService fileService;
     fileService = new S3FileServiceImpl() {
       @Override
@@ -139,7 +138,16 @@ public class BundleBuildingServiceImplTest {
   }
 
   @Test
-  public void testBuildStif() {
+  public void testMe() {
+    BasicConfigurator.configure();
+    setup();
+    testBuildStif();
+    setup();
+    testBuildHastus();
+  }
+  
+  
+  private void testBuildStif() {
     _service.setAuxConfig("false");
     String bundleDir = "test";
     String tmpDir = new NYCFileUtils().createTmpDirectory();
@@ -195,8 +203,7 @@ public class BundleBuildingServiceImplTest {
 
   }
 
-  @Test
-  public void testBuildHastus() {
+  private void testBuildHastus() {
     _service.setAuxConfig("true");
     String bundleDir = "test";
     String tmpDir = new NYCFileUtils().createTmpDirectory();

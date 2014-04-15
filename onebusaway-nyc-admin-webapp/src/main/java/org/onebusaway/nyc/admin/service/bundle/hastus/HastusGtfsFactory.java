@@ -25,7 +25,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -538,6 +537,7 @@ public class HastusGtfsFactory {
     GtfsTransformer transformer = new GtfsTransformer();
     transformer.setGtfsInputDirectory(_gtfsOutputPath);
     transformer.setOutputDirectory(_gtfsOutputPath);
+    _log.info("writing export to " + _gtfsOutputPath);
 
     TransformFactory modificationFactory = new TransformFactory(transformer);
     if (_modificationsPath.startsWith("http")) {

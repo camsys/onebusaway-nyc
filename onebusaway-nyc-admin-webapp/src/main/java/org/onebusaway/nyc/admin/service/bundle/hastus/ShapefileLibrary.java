@@ -37,15 +37,16 @@ public class ShapefileLibrary {
   public static FeatureCollection<SimpleFeatureType, SimpleFeature> loadShapeFile(
       File path) throws Exception {
   
-    _log.error("loading shapefile " + path.toURI());
+    _log.info("loading shapefile " + path.toURI());
     ShapefileDataStore dataStore = new ShapefileDataStore(path.toURI().toURL());
-    _log.error("loaded!");
+    _log.info("loaded!");
     
     String typeNames[] = dataStore.getTypeNames();
     String typeName = typeNames[0];
   
     FeatureSource<SimpleFeatureType, SimpleFeature> featureSource = dataStore.getFeatureSource(typeName);
     CoordinateReferenceSystem sourceCRS = featureSource.getInfo().getCRS();
+    _log.info("using sourceCRS=" + sourceCRS + " for typeName=" + typeName);
   
     Hints hints = new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER,
         Boolean.TRUE);
@@ -53,11 +54,12 @@ public class ShapefileLibrary {
         "EPSG", hints);
     CoordinateReferenceSystem worldCRS = factory.createCoordinateReferenceSystem("EPSG:4326");
   
-    DefaultQuery query = new DefaultQuery();
+    DefaultQuery query = new DefaultQuery(typeName);
     query.setCoordinateSystem(sourceCRS);
     query.setCoordinateSystemReproject(worldCRS);
+    query.setHints(hints);
   
-    return featureSource.getFeatures();
+    return featureSource.getFeatures(query);
   }
 
 }

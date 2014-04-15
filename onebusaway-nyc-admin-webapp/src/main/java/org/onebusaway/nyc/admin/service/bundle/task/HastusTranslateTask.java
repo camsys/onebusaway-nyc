@@ -159,7 +159,7 @@ public class HastusTranslateTask extends BaseModTask implements Runnable {
     if (files != null) {
       for (File checkDir : files) {
         if (checkDir.exists() && checkDir.isDirectory()) {
-          if (checkDir.getName().toUpperCase().contains("ROUTE")) {
+          if (checkDir.getName().toUpperCase().contains("SCHEDULES")) {
             _log.info("routes data dir=" + checkDir);
             return checkDir.toString();
           }
