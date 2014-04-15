@@ -62,18 +62,14 @@
         <sec:logout invalidate-session="true" logout-url="/logout.action" />
     </sec:http>
     
+     <bean id="LoginAuthenticationFailureHandler" class="org.onebusaway.users.impl.authentication.LoginAuthenticationFailureHandler"/>
+    <bean id="LoginAuthenticationSuccessHandler" class="org.onebusaway.users.impl.authentication.LoginAuthenticationSuccessHandler"/>
  
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
-            <!--  TODO FIXME -->
-            <!-- 
-		        <prop key="userIndexAuthenticationFilter.defaultTargetUrl">/admin</prop>
-		        <prop key="userIndexAuthenticationFilter.authenticationFailureUrl">/login.action?failure=true</prop>
-		        <prop key="everyLastLoginAuthenticationFilter.defaultTargetUrl">/admin</prop>
-		        <prop key="everyLastLoginAuthenticationFilter.authenticationFailureUrl">/login.action?failure=true</prop>
+		        <prop key="loginAuthenticationSuccessHandler.targetUrl">/admin/index.action</prop>
 		        <prop key="resourceServiceImpl.prefix">/resource.action?id=</prop>
-		         -->            
         	</props>
         </property>
     </bean>
