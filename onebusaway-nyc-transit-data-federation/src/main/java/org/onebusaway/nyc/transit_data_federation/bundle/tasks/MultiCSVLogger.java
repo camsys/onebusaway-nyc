@@ -97,7 +97,7 @@ public class MultiCSVLogger {
     Log log = logs.get(file);
     if (log == null) {
       _log.warn("log called before header for file " + file);
-      header(file, "MISSING");
+      header(file, "MISSING1");
       log = logs.get(file);
     }
     log.lines += 1;
@@ -143,7 +143,15 @@ public class MultiCSVLogger {
     String file = CHANGE_LOG;
     Log log = logs.get(file);
     if (log == null) {
+      _log.info("creating change log");
       header(file, "date,message", comment);  
+    } else {
+      if (comment != null) {
+        _log.warn("change log already created, writing comment");
+        changelog(comment);
+      } else {
+        _log.warn("header exists, nothing to do");
+      }
     }
   }
   

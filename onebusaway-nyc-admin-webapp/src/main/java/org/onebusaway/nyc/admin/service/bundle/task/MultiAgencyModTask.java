@@ -20,7 +20,6 @@ public class MultiAgencyModTask extends BaseModTask implements Runnable {
   public void run() {
     try {
       _log.info("GtfsModTask Starting");
-      logger.changelogHeader(requestResponse.getRequest().getBundleComment());
       
       makeOutputDirectory(requestResponse.getResponse());
       

@@ -1,1 +1,4 @@
-transit-data-bundle/*
+transit-data-bundle/*ignore trips_with_null_dscs.csv
+trips_with_duplicate_run_and_start_time.csv
+stif_trips_with_no_gtfs_match.csv
+stif_trip_layers_with_missing_route.csv

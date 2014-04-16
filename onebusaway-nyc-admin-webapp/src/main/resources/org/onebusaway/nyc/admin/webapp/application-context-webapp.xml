@@ -55,25 +55,34 @@
       <property name="password" value="operator"/>
     </bean>
     
-    <sec:http>
+    <!-- 
+    <sec:http auto-config="false" entry-point-ref="authenticationProcessingFilterEntryPoint">
         <sec:intercept-url pattern="/admin/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
         <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1" />
         <sec:remember-me />
         <sec:logout invalidate-session="true" logout-url="/logout.action" />
     </sec:http>
-    
+     -->
      <bean id="LoginAuthenticationFailureHandler" class="org.onebusaway.users.impl.authentication.LoginAuthenticationFailureHandler"/>
     <bean id="LoginAuthenticationSuccessHandler" class="org.onebusaway.users.impl.authentication.LoginAuthenticationSuccessHandler"/>
  
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
+            	<!-- <prop key="userIndexAuthenticationFilter.filterProcessesUrl">/userIndex_login</prop> -->
 		        <prop key="loginAuthenticationSuccessHandler.targetUrl">/admin/index.action</prop>
 		        <prop key="resourceServiceImpl.prefix">/resource.action?id=</prop>
         	</props>
         </property>
     </bean>
     
+    <!-- 
+    <bean id="authenticationProcessingFilterEntryPoint" class="org.springframework.security.web.authentication.AuthenticationProcessingFilterEntryPoint">
+      <property name="loginFormUrl" value="/userIndex_login" />
+      <property name="forceHttps" value="false" />
+    </bean>
+     -->
+     
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
     	<property name="order" value="-2" />
     	<property name="properties">

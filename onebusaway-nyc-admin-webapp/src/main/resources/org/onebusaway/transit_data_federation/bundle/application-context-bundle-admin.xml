@@ -52,17 +52,39 @@
 
   <bean id="startTask" class="org.onebusaway.transit_data_federation.bundle.tasks.NullTask" />
 
-
+  <bean id="clearCSVTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.ClearCSVTask" />
+  
   <bean id="clear_CSV" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="clearCSVTask" />
     <property name="afterTaskName" value="start"/>
-    <property name="beforeTaskName" value="multiAgency"/>
+    <property name="beforeTaskName" value="changeLogTask"/>
     <property name="task" ref="clearCSVTask" />
   </bean>
 
-<bean id="clearCSVTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.ClearCSVTask" />
+   <bean id="changeLogTask" class="org.onebusaway.nyc.admin.service.bundle.task.ChangeLogTask" >
+     <property name="logger" ref="multiCSVLogger" />
+     <property name="bundleRequestResponse" ref="bundleRequestResponse" />
+  </bean>
+  
+  <bean id="change_log" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="changeLogTask" />
+    <property name="afterTaskName" value="clearCSVTask"/>
+    <property name="beforeTaskName" value="hastus_translate_task"/>
+    <property name="task" ref="changeLogTask" />
+  </bean>
 
 
+  <bean id="task_hastus_translate" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="hastus_translate_task" />
+    <property name="afterTaskName" value="changeLogTask" />
+    <property name="beforeTaskName" value="multiAgency" />
+    <property name="task" ref="hastusTranslateTask" />
+  </bean>
+  <bean id="hastusTranslateTask" class="org.onebusaway.nyc.admin.service.bundle.task.HastusTranslateTask" >
+    <property name="logger" ref="multiCSVLogger" />
+    <property name="bundleRequestResponse" ref="bundleRequestResponse" />
+  </bean>
+  
   <bean id="task_multi_agency" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="multiAgency" />
     <property name="afterTaskName" value="hastus_translate_task"/>
@@ -77,17 +99,6 @@
 
   <!-- Load GTFS -->
 
-  <bean id="task_hastus_translate" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
-    <property name="taskName" value="hastus_translate_task" />
-    <property name="afterTaskName" value="start" />
-    <property name="beforeTaskName" value="multiAgency" />
-    <property name="task" ref="hastusTranslateTask" />
-  </bean>
-  <bean id="hastusTranslateTask" class="org.onebusaway.nyc.admin.service.bundle.task.HastusTranslateTask" >
-    <property name="logger" ref="multiCSVLogger" />
-    <property name="bundleRequestResponse" ref="bundleRequestResponse" />
-  </bean>
-  
   <bean id="task_gtfs_pre" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="gtfs_pre" />
     <property name="afterTaskName" value="multiAgency" />

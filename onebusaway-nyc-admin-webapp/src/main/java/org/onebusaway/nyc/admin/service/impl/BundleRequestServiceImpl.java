@@ -204,8 +204,8 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     bundleResponse.setBundleStartDate(bundleRequest.getBundleStartDateString());
     bundleResponse.setBundleEndDate(bundleRequest.getBundleEndDateString());
     bundleResponse.setBundleComment(bundleRequest.getBundleComment());
-	_buildMap.put(bundleResponse.getId(), bundleResponse);
-	bundleResponse.addStatusMessage("queueing...");
+    _buildMap.put(bundleResponse.getId(), bundleResponse);
+    bundleResponse.addStatusMessage("queueing...");
     _executorService.execute(new BuildThread(bundleRequest, bundleResponse));
     return bundleResponse;
   }

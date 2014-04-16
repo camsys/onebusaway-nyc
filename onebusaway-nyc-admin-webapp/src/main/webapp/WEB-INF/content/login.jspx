@@ -31,7 +31,7 @@
 			<p class="error">Your username and or password are incorrect.</p>
 		</s:if>
 
-	    <s:form action="/userIndex_login" method="put">
+	    <s:form action="/j_spring_security_check" method="POST">
 			<fieldset>
 	        	<label class="top">Username:</label>
     	    	<s:textfield name="j_username"/>

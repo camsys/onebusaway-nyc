@@ -85,7 +85,7 @@ public class BuildResource extends AuthenticatedResource {
 			
 			try {
 				String message = "Starting bundle building process for bundle '" + buildRequest.getBundleName()
-						+ "' initiated by user : " + _currentUserService.getCurrentUserDetails().getUsername();
+						+ "' initiated by user : " /*+ _currentUserService.getCurrentUserDetails().getUsername()*/;
 				String component = System.getProperty("admin.chefRole");
 				loggingService.log(component, Level.INFO, message);
 				buildResponse =_bundleService.build(buildRequest);
