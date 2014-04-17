@@ -56,7 +56,7 @@ public class ConfigurationServiceClientFileImpl implements
 	@Override
 	public List<Map<String, String>> getItems(String baseObject,
 			String... params) throws Exception {
-		_log.info("getItems(" + baseObject + ", " + params + ")");
+		_log.debug("getItems(" + baseObject + ", " + params + ")");
 		return (List<Map<String, String>>) getConfig().get("config");
 	}
 

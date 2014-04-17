@@ -51,7 +51,7 @@
 						<img src="${url}" alt="OneBusAway Enterprise" />
 					</a>
 				</div>
-				<s:if test="adminUser">
+				<s:if test="!anonymousUser">
 					<div id="navigation">
 						<s:url var="url" namespace="/" action="logout"></s:url>
 						<s:a href="%{url}">Logout</s:a>

@@ -20,15 +20,13 @@ public class LogoutEventListener implements ApplicationListener<HttpSessionDestr
 	@Override
 	public void onApplicationEvent(HttpSessionDestroyedEvent event) {
 		SecurityContext securityContext = (SecurityContext) event.getSession().getAttribute("SPRING_SECURITY_CONTEXT");
-		IndexedUserDetails userDetails;
-		try {
-		  userDetails = (IndexedUserDetails) securityContext.getAuthentication().getPrincipal();
-		} catch (NullPointerException npe) {
-		  return;
+		if (securityContext != null && securityContext.getAuthentication() != null
+		    && securityContext.getAuthentication().getPrincipal() != null) {
+		  IndexedUserDetails userDetails = (IndexedUserDetails) securityContext.getAuthentication().getPrincipal();
+		  String component = System.getProperty("admin.chefRole");
+		  String message = "User '" + userDetails.getUsername() + "' logged out";
+		  loggingService.log(component, Level.INFO, message);
 		}
-		String component = System.getProperty("admin.chefRole");
-		String message = "User '" + userDetails.getUsername() + "' logged out";
-		loggingService.log(component, Level.INFO, message);
 	}
 	
 	/**

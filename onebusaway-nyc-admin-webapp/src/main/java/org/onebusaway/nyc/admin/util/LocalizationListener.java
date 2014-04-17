@@ -22,7 +22,7 @@ public class LocalizationListener implements ServletContextListener {
 
   @Override
   public void contextInitialized(ServletContextEvent servletContextEvent) {
-    _log.error("context init");
+    _log.debug("context init");
     ServletContext servletContext = servletContextEvent.getServletContext();
     if (servletContext == null) return; // for testing support
     String resource = (String) servletContext.getInitParameter("obanyc.resource");
