@@ -645,7 +645,7 @@ public class StifTask implements Runnable {
     
     File source = new File(path);
     
-    CSVLibrary.parse(source, listener);
+    new CSVLibrary().parse(source, listener);
     
     return results;
   }
