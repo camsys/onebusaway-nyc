@@ -166,7 +166,7 @@
                 <tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
                 <tdm.depotIdTranslationConfigFile>/mnt/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
-                <bundle.location>/tmp/oba-bundle-tdm</bundle.location>
+                <bundle.location>/home/dev/oba-bundle-tdm</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <log4j.appender>stdout</log4j.appender>
                 <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
@@ -246,7 +246,7 @@
                 <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
-                <bundle.location>/tmp/oba-bundle-tdm</bundle.location>
+                <bundle.location>/home/dev/oba-bundle-tdm</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <log4j.appender>ROLL</log4j.appender>
             </properties>
@@ -273,7 +273,7 @@
                 <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles-eclipse</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
-                <bundle.location>/tmp/oba-bundle-tdm-eclipse</bundle.location>
+                <bundle.location>/home/dev/oba-bundle-tdm-eclipse</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <log4j.appender>ROLL</log4j.appender>
             </properties>
@@ -314,9 +314,9 @@
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
-                <tdm.bundlePath>/tmp/oba-bundle</tdm.bundlePath>
+                <tdm.bundlePath>/home/dev/oba-bundle</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
-                <bundle.location>/tmp/oba-bundle-tdm</bundle.location>
+                <bundle.location>/home/dev/oba-bundle-tdm</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
 
             </properties>
