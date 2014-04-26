@@ -37,6 +37,16 @@
 
     <package name="onebusaway-webapp-default" extends="struts-default">
 
+        <interceptors>
+            <interceptor-stack name="secureParamInterceptor">
+                <interceptor-ref name="defaultStack">
+                    <param name="params.excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*</param>
+                </interceptor-ref>
+            </interceptor-stack>
+        </interceptors>
+
+        <default-interceptor-ref name="secureParamInterceptor" />
+
         <global-results>
          	<result name="NotFound">
                 <param name="location">/WEB-INF/content/error/404.jspx</param>
@@ -57,16 +67,6 @@
          <global-exception-mappings>
     		<exception-mapping exception="java.lang.Exception" result="errorHandler"/>
 		</global-exception-mappings>
-
-        <interceptors>
-            <interceptor-stack name="secureParamInterceptor">
-                <interceptor-ref name="defaultStack">
-                    <param name="params.excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*</param>
-                </interceptor-ref>
-            </interceptor-stack>
-        </interceptors>
-
-        <default-interceptor-ref name="secureParamInterceptor" />
     </package>
 
     <package name="onebusaway-webapp-api" extends="onebusaway-webapp-default" namespace="/api/siri">
