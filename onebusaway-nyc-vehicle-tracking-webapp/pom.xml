@@ -204,8 +204,9 @@
                 <ie.listener>DummyPartitionedInputQueueListenerTask</ie.listener>
                 <!-- <ie.listener>PartitionedInputQueueListenerTask</ie.listener> -->
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
-                <tdm.host>tdm.dev.obanyc.com</tdm.host> 
+                <tdm.host/>
 <!-- 
+                <tdm.host>tdm.dev.obanyc.com</tdm.host> 
                 <tdm.port>80</tdm.port>
                 <tdm.url>/api/</tdm.url>
       -->           

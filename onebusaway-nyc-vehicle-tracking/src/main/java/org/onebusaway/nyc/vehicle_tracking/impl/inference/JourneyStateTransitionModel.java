@@ -22,12 +22,16 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JourneyStateTransitionModel {
 
+  private static Logger _log = LoggerFactory
+      .getLogger(JourneyStateTransitionModel.class);
   /*
    * Time (seconds) that the vehicle needs to be not moving in order to be a layover.
    */
@@ -139,6 +143,7 @@ public class JourneyStateTransitionModel {
           return JourneyState.layoverBefore();
         } else {
           // TODO: handle layover-in-motion here (possibly) to allow a moving layover_before
+          _log.warn("really layover-in-moton");
           return JourneyState.deadheadBefore(null);
         }
       } else if (distanceAlong > blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
@@ -146,6 +151,7 @@ public class JourneyStateTransitionModel {
          * Note: we changed this from >= because snapped deadhead-after states could be more
          * likely than in-progress at/near the end.
          */
+         _log.warn("end of block");
          return JourneyState.deadheadAfter();
         
       } else {
@@ -162,21 +168,26 @@ public class JourneyStateTransitionModel {
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
           if ((obs.hasOutOfServiceDsc())) {
             if (blockState.isRunFormal()) {
+              _log.warn("layover oos");
               return JourneyState.layoverDuring(isDetour);
             }
             // we don't have confidence in this being a layover
+            _log.warn("uncertain layover");
             return JourneyState.deadheadDuring(isDetour); 
           } else {
             // in service DSC
+            _log.warn("layover is");
             return JourneyState.layoverDuring(isDetour);
           }
         } else {
           if (blockState.isOnTrip()) {
-            if (isDetour)
+            if (isDetour) {
+              _log.warn("detour");
               return JourneyState.deadheadDuring(true);
-            else if (obs.hasOutOfServiceDsc())
+            } else if (obs.hasOutOfServiceDsc()) {
+              _log.debug("deadhead?");
               return JourneyState.deadheadDuring(isDetour);
-            else
+            } else
               return adjustInProgressTransition(parentPhase, blockState, isDetour, isLayoverStopped);
           } else {
         	/* 
@@ -189,14 +200,17 @@ public class JourneyStateTransitionModel {
         	 */
             if(parentPhase != null && parentPhase.equals(EVehiclePhase.LAYOVER_DURING)
             		&& blockState.isAtPotentialLayoverSpot() && blockState.isRunFormal()) {
+              _log.warn("layover-in-motion");
             	return JourneyState.layoverDuring(false);
             } else {
+              _log.warn("off trip deadhead");
             	return JourneyState.deadheadDuring(false);
             }
           }
         }
       }
     } else {
+      _log.warn("no block deadhead");
       return JourneyState.deadheadBefore(null);
     }
   }
