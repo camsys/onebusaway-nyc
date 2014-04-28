@@ -31,7 +31,9 @@
         <interceptors>
             <interceptor name="mc-session" class="org.onebusaway.nyc.sms.impl.MobileCommonsSessionInterceptor" />
             <interceptor-stack name="onebusaway-nyc-sms-webapp-stack">
-                <interceptor-ref name="defaultStack" />
+                <interceptor-ref name="defaultStack" >
+                    <param name="params.excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*</param>
+                </interceptor-ref>
                 <interceptor-ref name="mc-session" />
             </interceptor-stack>
         </interceptors>
