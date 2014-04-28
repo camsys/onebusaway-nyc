@@ -68,7 +68,7 @@ public class RouteResource {
     // lookup routeId for that DSC
     try {
       for (String dsc : dscList) {
-        Set<AgencyAndId> routeIds = _dscService.getRouteCollectionIdsForDestinationSignCode(dsc);
+        Set<AgencyAndId> routeIds = _dscService.getRouteCollectionIdsForDestinationSignCode(dsc, null);
         if (!routeIds.isEmpty()) {
           AgencyAndId routeId = routeIds.iterator().next();
           RouteDetail routeDetail = new RouteDetail();

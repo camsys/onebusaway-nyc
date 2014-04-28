@@ -90,7 +90,7 @@ public class RunServiceImplTest {
     runDataByTrip.put(tripE.getId(), new RunData("X1-5", null, -1));
     runDataByTrip.put(tripF.getId(), new RunData("X0102-5", null, -1));
     runDataByTrip.put(tripG.getId(), new RunData("B63-5", null, -1));
-    runDataByTrip.put(tripH.getId(), new RunData("MISC-75", null, -1));
+    runDataByTrip.put(tripH.getId(), new RunData("MISC-YU-75", null, -1));
     runDataByTrip.put(tripI.getId(), new RunData("X102-5", null, -1));
     runDataByTrip.put(tripJ.getId(), new RunData("BX39-X01", null, -1));
 
@@ -135,14 +135,14 @@ public class RunServiceImplTest {
     
     assertTrue("fuzzy matches contain id", fuzzyMatches.contains("X0102-5"));
     assertEquals("fuzzy matches size", 2, fuzzyMatches.size());
-    assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
+    assertEquals("best fuzzy distance not zero: " + bestFuzzyDistance, 0, bestFuzzyDistance.intValue());
     
     matches = _service.getBestRunIdsForFuzzyId("999-75");
     
     bestFuzzyDistance = matches.keySet().first();
     fuzzyMatches = matches.get(bestFuzzyDistance);
     
-    assertTrue("fuzzy matches contain id", fuzzyMatches.contains("MISC-75"));
+    assertTrue("fuzzy matches contain id", fuzzyMatches.contains("MISC-YU-75"));
     assertEquals("fuzzy matches size", 1, fuzzyMatches.size());
     assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
     

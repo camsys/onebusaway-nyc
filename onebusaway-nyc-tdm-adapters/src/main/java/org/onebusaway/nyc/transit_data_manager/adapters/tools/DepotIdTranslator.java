@@ -21,6 +21,11 @@ public class DepotIdTranslator {
   
   private Map<String, Map<String, String>> datasourceToIdMappingsMap = null;
 
+  // for unit tests
+  public DepotIdTranslator() {
+	  
+  }
+  
   public DepotIdTranslator(File configFile) throws IOException {
     _log.debug("Constructing DepotIdTranslator using config file: " + configFile.getPath());
     

@@ -967,7 +967,7 @@ public class IndexAction extends SessionedIndexAction {
       List<ServiceAlertBean> globalAlerts = _realtimeService.getServiceAlertsGlobal();
       if (globalAlerts != null && globalAlerts.size() > 0) {
         String alertsThatFit = "\n\nService Notice: ";
-        String end = "... More at mta.info";
+        String end = "... More at web.mta.info";
         for (ServiceAlertBean alert : globalAlerts) {
           
           @SuppressWarnings("unchecked")

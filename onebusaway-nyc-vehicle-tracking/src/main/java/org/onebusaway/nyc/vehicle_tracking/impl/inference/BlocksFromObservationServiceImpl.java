@@ -191,10 +191,8 @@ public class BlocksFromObservationServiceImpl implements
       if (observation.getRunResults().hasRunResults()
           || observation.hasValidDsc()) {
         for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
-          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-              bs, observation);
           potentialBlockStatesInProgress.add(new BlockStateObservation(bs,
-              observation, isAtPotentialLayoverSpot, true));
+              observation, true));
           snappedBlocks.add(bs.getBlockInstance());
         }
   
@@ -214,10 +212,7 @@ public class BlocksFromObservationServiceImpl implements
         final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
         try {
           final BlockState bs = _blockStateService.getAsState(thisBIS, 0.0);
-          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-              bs, observation);
-          states.add(new BlockStateObservation(bs, observation,
-              isAtPotentialLayoverSpot, false));
+          states.add(new BlockStateObservation(bs, observation, false));
         } catch (final Exception e) {
           _log.warn(e.getMessage());
           continue;
@@ -240,9 +235,7 @@ public class BlocksFromObservationServiceImpl implements
       Observation obs, BlockInstance blockInstance, double distanceAlong) {
     final BlockState bs = _blockStateService.getAsState(blockInstance,
         distanceAlong);
-    final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-        bs, obs);
-    return new BlockStateObservation(bs, obs, isAtPotentialLayoverSpot, false);
+    return new BlockStateObservation(bs, obs, false);
   }
 
   /****
@@ -288,10 +281,7 @@ public class BlocksFromObservationServiceImpl implements
       for (final BlockState bs : foundStates.getAllStates()) {
         final double dab = bs.getBlockLocation().getDistanceAlongBlock();
         if (dab < maxDab && dab > minDab) {
-          final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-              bs, observation);
-          resStates.add(new BlockStateObservation(bs, observation,
-              isAtPotentialLayoverSpot, true));
+          resStates.add(new BlockStateObservation(bs, observation, true));
         }
       }
     } else {
@@ -301,72 +291,6 @@ public class BlocksFromObservationServiceImpl implements
     return resStates;
   }
 
-  @Override
-  public BlockStateObservation advanceLayoverState(Observation obs,
-      BlockStateObservation blockState) {
-
-    final long timestamp = obs.getTime();
-    final BlockInstance instance = blockState.getBlockState().getBlockInstance();
-
-    /**
-     * The targetScheduleTime is the schedule time we SHOULD be at
-     */
-    int targetScheduleTime = (int) ((timestamp - instance.getServiceDate()) / 1000);
-
-    final ScheduledBlockLocation blockLocation = blockState.getBlockState().getBlockLocation();
-
-    final int scheduledTime = blockLocation.getScheduledTime();
-
-    /**
-     * First, we must actually be in a layover location
-     */
-    final BlockStopTimeEntry layoverSpot = VehicleStateLibrary.getPotentialLayoverSpot(blockLocation);
-
-    if (layoverSpot == null)
-      return blockState;
-
-    /**
-     * The layover spot is the location between the last stop in the previous
-     * trip and the first stop of the next trip
-     */
-    final StopTimeEntry stopTime = layoverSpot.getStopTime();
-
-    /**
-     * We only adjust our layover schedule time if our current location is
-     * within the range of the layover bounds.
-     */
-    if (scheduledTime > stopTime.getDepartureTime())
-      return blockState;
-
-    /**
-     * We won't advance the vehicle out of the layover, so we put an upper bound
-     * on our target schedule time
-     */
-    targetScheduleTime = Math.min(targetScheduleTime,
-        stopTime.getDepartureTime());
-
-    if (layoverSpot.getBlockSequence() > 0) {
-      final BlockConfigurationEntry blockConfig = instance.getBlock();
-      final int minArrivalTime = blockConfig.getArrivalTimeForIndex(layoverSpot.getBlockSequence() - 1);
-      if (scheduledTime + 5 * 60 < minArrivalTime)
-        return blockState;
-
-      /**
-       * We won't advance the vehicle out of the layover, so we put a lower
-       * bound on our target schedule time
-       */
-      targetScheduleTime = Math.max(targetScheduleTime, minArrivalTime);
-    }
-
-    final BlockState bs = _blockStateService.getScheduledTimeAsState(instance,
-        targetScheduleTime);
-    final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-        bs, obs);
-    final BlockStateObservation state = new BlockStateObservation(bs, obs,
-        isAtPotentialLayoverSpot, true);
-
-    return state;
-  }
 
   /**
    * Finds the best block state assignments along the ENTIRE length of the block
@@ -389,10 +313,7 @@ public class BlocksFromObservationServiceImpl implements
     }
     if (foundStates != null) {
       for (final BlockState bs : foundStates.getAllStates()) {
-        final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-            bs, observation);
-        resStates.add(new BlockStateObservation(bs, observation,
-            isAtPotentialLayoverSpot, true));
+        resStates.add(new BlockStateObservation(bs, observation, true));
       }
     }
     return Sets.newHashSet(resStates);
@@ -406,6 +327,11 @@ public class BlocksFromObservationServiceImpl implements
       Observation observation, Set<BlockInstance> potentialBlocks) {
 
     final long time = observation.getTime();
+    String agencyId = null;
+    if (observation.getRecord() != null 
+        && observation.getRecord().getVehicleId() != null) {
+      agencyId = observation.getRecord().getVehicleId().getAgencyId();
+    }
 
     /**
      * We use the last valid DSC, which will be the current DSC if it's not 0000
@@ -419,9 +345,10 @@ public class BlocksFromObservationServiceImpl implements
      */
     final List<AgencyAndId> tripIds = Lists.newArrayList();
     if (observation.getLastValidDestinationSignCode() != null
-        && !observation.hasOutOfServiceDsc() && observation.hasValidDsc())
-      tripIds.addAll(_destinationSignCodeService.getTripIdsForDestinationSignCode(dsc));
-
+        && !observation.hasOutOfServiceDsc() && observation.hasValidDsc()) {
+      tripIds.addAll(_destinationSignCodeService.getTripIdsForDestinationSignCode(dsc, agencyId));
+    }
+    
     final List<String> runIds = Lists.newArrayList();
     runIds.add(observation.getOpAssignedRunId());
     runIds.addAll(observation.getBestFuzzyRunIds());
@@ -483,10 +410,7 @@ public class BlocksFromObservationServiceImpl implements
     final Set<BlockState> blockStates = _blockStateService.getBlockStatesForObservation(obs);
     final Set<BlockStateObservation> results = Sets.newHashSet();
     for (final BlockState blockState : blockStates) {
-      final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-          blockState, obs);
-      results.add(new BlockStateObservation(blockState, obs,
-          isAtPotentialLayoverSpot, true));
+      results.add(new BlockStateObservation(blockState, obs, true));
     }
     return results;
   }
@@ -496,10 +420,7 @@ public class BlocksFromObservationServiceImpl implements
       Observation obs, BlockInstance blockInstance, int newSchedTime) {
     final BlockState blockState = _blockStateService.getScheduledTimeAsState(
         blockInstance, newSchedTime);
-    final boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-        blockState, obs);
-    return new BlockStateObservation(blockState, obs, isAtPotentialLayoverSpot,
-        false);
+    return new BlockStateObservation(blockState, obs, false);
   }
 
 }

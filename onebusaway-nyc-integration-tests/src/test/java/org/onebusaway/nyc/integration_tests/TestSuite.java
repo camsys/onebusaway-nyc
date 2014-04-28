@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriBlockInference_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriBlockLayoverInference_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriScheduleDeviation_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriTripInference_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriTripLayoverInference_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_0927_20101209T124742_IntegrationTest;
@@ -29,6 +30,8 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2433_20120723_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2711_20111208_054046_102329_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2782_20111202_211038_222038_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_2782_deadhead_nyct_bus_as_mta_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_3088_in_progress_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_324_20121004_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_3649_20101125T121801_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_3819_20120829_220004_222001_IntegrationTest;
@@ -37,7 +40,9 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4255_20111215_183433_183932_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4257_20120907_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4264_20120907T162054_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4399_20131225_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5318_20101202T172138_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5558_layover_in_motion_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5799_20121011_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5725_20120919T101417_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_6154_20111214_123000_143500_IntegrationTest;
@@ -54,6 +59,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7564_20101202T114909_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7659_20121010_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7726_20121010_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_9527_Q_MISC_IntegrationTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ 
@@ -63,7 +69,19 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	/*
 	 * Inference tests
 	 */
+	// 2014Jan_AllCity_r09_b3
+	Trace_3088_in_progress_IntegrationTest.class,
+	Trace_2782_deadhead_nyct_bus_as_mta_IntegrationTest.class,
+  // 2013June_Prod_r04_b03
+	Trace_5558_layover_in_motion_IntegrationTest.class,
+	
+  // 2013Sept_Prod_r08_b04
+	Trace_4399_20131225_IntegrationTest.class,
+	SiriScheduleDeviation_IntegrationTest.class,
 
+	// 2013Sept_AllCity_r15_b02
+	Trace_9527_Q_MISC_IntegrationTest.class,
+	
 	// September_Bronx_r10_b03
 	Trace_324_20121004_IntegrationTest.class,
 	Trace_5799_20121011_IntegrationTest.class,

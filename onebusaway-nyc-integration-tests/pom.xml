@@ -4,7 +4,7 @@
     <parent>
         <artifactId>onebusaway-nyc</artifactId>
         <groupId>org.onebusaway</groupId>
-        <version>2.9.0-SNAPSHOT</version>
+        <version>2.11.0-SNAPSHOT</version>
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-integration-tests</artifactId>
@@ -13,7 +13,7 @@
 
     <properties>
         <tomcat-version>5.5.29</tomcat-version>
-        <cargo.jvmargs>-Xmx2G -XX:MaxPermSize=256m</cargo.jvmargs>
+        <cargo.jvmargs>-Xmx7G -XX:MaxPermSize=256m</cargo.jvmargs>
         <cargo.logging>low</cargo.logging>
         <hsqldb.port>9930</hsqldb.port>
 
@@ -37,35 +37,35 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
-            <version>2.9.0-SNAPSHOT</version>
+            <version>2.11.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-api-webapp</artifactId>
-            <version>2.9.0-SNAPSHOT</version>
+            <version>2.11.0-SNAPSHOT</version>
             <type>war</type>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
-            <version>2.9.0-SNAPSHOT</version>
+            <version>2.11.0-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
-            <version>2.9.0-SNAPSHOT</version>
+            <version>2.11.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking-webapp</artifactId>
-            <version>2.9.0-SNAPSHOT</version>
+            <version>2.11.0-SNAPSHOT</version>
             <type>war</type>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-webapp</artifactId>
-            <version>2.9.0-SNAPSHOT</version>
+            <version>2.11.0-SNAPSHOT</version>
             <type>war</type>
         </dependency>
         <dependency>
@@ -185,6 +185,75 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1.1</version>
                 <executions>
+                    <execution>
+                        <id>graph-builder-execution-2014Jan_AllCity_r09_b3</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx2g</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2014Jan_AllCity_r09_b3.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2014Jan_AllCity_r09_b3</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>graph-builder-execution-2013Sept_Prod_r08_b04</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx2g</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2013Sept_Prod_r08_b04.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2013Sept_Prod_r08_b04</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>graph-builder-execution-2013Sept_AllCity_r15_b02</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx2g</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2013Sept_AllCity_r15_b02.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2013Sept_AllCity_r15_b02</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>graph-builder-execution-2012September_Bronx_r10_b03</id>
                         <phase>pre-integration-test</phase>
@@ -323,6 +392,29 @@
                             </arguments>
                         </configuration>
                     </execution>                
+                    <execution>
+                        <id>graph-builder-execution-2013June_Prod_r04_b03</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx1500m</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2013June_Prod_r04_b03.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2013June_Prod_r04_b03</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>graph-builder-execution-2013June_Prod_r03_b02</id>
                         <phase>pre-integration-test</phase>

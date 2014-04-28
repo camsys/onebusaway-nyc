@@ -242,6 +242,11 @@ public class StifTripLoader {
             stifTrip.agencyId = agencyId;
             stifTrip.serviceCode = serviceCode;
             stifTrip.depot = tripRecord.getDepotCode();
+            if (tripRecord.getNextTripOperatorDepotCode() != null) {
+              stifTrip.nextTripOperatorDepot = tripRecord.getNextTripOperatorDepotCode();
+            } else {
+              stifTrip.nextTripOperatorDepot = tripRecord.getDepotCode(); 
+            }
             stifTrip.firstStopTime = tripRecord.getOriginTime();
             stifTrip.lastStopTime = tripRecord.getDestinationTime();
             stifTrip.listedFirstStopTime = tripRecord.getOriginTime();
@@ -269,9 +274,9 @@ public class StifTripLoader {
 
           }
 
-          String runId = tripRecord.getRunId();
+          String runId = tripRecord.getRunIdWithDepot();
           String reliefRunId = tripRecord.getReliefRunId();
-          String nextOperatorRunId = tripRecord.getNextTripOperatorRunId();
+          String nextOperatorRunId = tripRecord.getNextTripOperatorRunIdWithDepot();
 
           StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
               tripRecord.getReliefRunId(),
@@ -280,6 +285,11 @@ public class StifTripLoader {
           stifTrip.agencyId = agencyId;
           stifTrip.serviceCode = serviceCode;
           stifTrip.depot = tripRecord.getDepotCode();
+          if (tripRecord.getNextTripOperatorDepotCode() != null) {
+            stifTrip.nextTripOperatorDepot = tripRecord.getNextTripOperatorDepotCode();
+          } else {
+            stifTrip.nextTripOperatorDepot = tripRecord.getDepotCode(); 
+          }
           stifTrip.firstStopTime = firstEventRecord.getTime();
           stifTrip.lastStopTime = eventRecord.getTime();
           stifTrip.firstStop = support.getStopIdForLocation(firstEventRecord.getLocation());

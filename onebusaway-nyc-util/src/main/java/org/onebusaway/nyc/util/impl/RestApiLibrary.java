@@ -20,6 +20,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class RestApiLibrary {
+  
+  private static int DEFAULT_READ_TIMEOUT = 60 * 1000;
+  private static int DEFAULT_CONNECTION_TIMEOUT = 60 * 1000;
 
 	private String _host = null;
 
@@ -27,8 +30,19 @@ public class RestApiLibrary {
 
 	private int _port = 80;
 
+	private int readTimeout = DEFAULT_READ_TIMEOUT;
+	private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+	
 	private static Logger log = LoggerFactory.getLogger(RestApiLibrary.class);
 
+	public void setReadTimeout(int readTimeout) {
+	  this.readTimeout = readTimeout;
+	}
+	
+	public void setConnectionTimeout(int connectionTimeout) {
+	  this.connectionTimeout = connectionTimeout;
+	}
+	
 	public RestApiLibrary(String host, Integer port, String apiPrefix) {
 		_host = host;
 		_apiPrefix = apiPrefix;
@@ -56,6 +70,8 @@ public class RestApiLibrary {
 
 	public String getContentsOfUrlAsString(URL requestUrl) throws Exception {
 		URLConnection conn = requestUrl.openConnection();
+		conn.setConnectTimeout(connectionTimeout);
+		conn.setReadTimeout(readTimeout);
 		InputStream inStream = conn.getInputStream();
 		BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
 

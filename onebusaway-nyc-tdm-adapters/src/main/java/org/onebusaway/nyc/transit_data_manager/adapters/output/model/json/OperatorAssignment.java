@@ -22,6 +22,7 @@ public class OperatorAssignment {
   private String passId;
   private String runRoute;
   private String runNumber;
+  private String runId;
   private String depot;
   private String serviceDate;
   private String updated;
@@ -81,7 +82,15 @@ public class OperatorAssignment {
   public String getUpdated() {
     return updated;
   }
+  
+  public String getRunId() {
+	  return runId;
+  }
 
+  public void setRunId(String runId) {
+	  this.runId = runId;
+  }
+  
   public int compareTo(OperatorAssignment oa) {
     DateTime incomingRecord = DATE_PATTERN.parseDateTime(oa.getUpdated());
     DateTime currentRecord = DATE_PATTERN.parseDateTime(getUpdated());

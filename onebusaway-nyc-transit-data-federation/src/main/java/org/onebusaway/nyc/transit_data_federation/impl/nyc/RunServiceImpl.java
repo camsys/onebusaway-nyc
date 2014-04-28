@@ -163,14 +163,19 @@ public class RunServiceImpl implements RunService {
     String[] runInfo = StringUtils.splitByWholeSeparator(runId, "-");
     String runNumber = null;
     String runRoute = null;
+    String runDepot = null;
 
     if (runInfo != null && runInfo.length > 0) {
       runRoute = runInfo[0];
-      if (runInfo.length > 1)
+      if (runInfo.length > 2) {
+        runNumber = runInfo[2];
+        runDepot = runInfo[1];
+      } else if (runInfo.length > 1) {
         runNumber = runInfo[1];
+      }
     }
 
-    RunTripEntry rte = new RunTripEntry(trip, runNumber, runRoute, reliefTime,
+    RunTripEntry rte = new RunTripEntry(trip, runNumber, runRoute, runDepot, reliefTime,
         relief);
     entriesByRun.put(runId, rte);
     entriesByRunNumber.put(runNumber, rte);
@@ -236,7 +241,7 @@ public class RunServiceImpl implements RunService {
 
     if (!reportedIdMatcher.matches()) {
       throw new IllegalArgumentException(
-          "reported-id does not have required format");
+          "reported-id does not have required format:" + reportedRunId);
     }
 
     /*
@@ -253,7 +258,14 @@ public class RunServiceImpl implements RunService {
     for (String runId : entriesByRun.keySet()) {
       String[] runPieces= runId.split("-");
       String runRoute = runPieces[0];
-      String runNumber = runPieces[1];
+      // must support MISC convention of MISC-YU-101
+      String runNumber = null;
+      if (runPieces.length > 2) {
+        runNumber = runPieces[2];
+      } else {
+        runNumber = runPieces[1];
+      }
+      
       Matcher runNumberMatcher = realRunNumberPattern.matcher(runNumber);
       if (runNumberMatcher.matches()) {
         runNumber = runNumberMatcher.group(1);

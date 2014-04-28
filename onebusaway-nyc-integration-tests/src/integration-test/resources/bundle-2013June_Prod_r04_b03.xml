@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+    <!-- Provides support for specifying "${some.java.system.property}" for bean values -->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
+
+    <bean id="bundle" class="org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle">
+      <property name="path" value="${bundlePath}" />
+    </bean>
+
+    <bean id="nycBundle" class="org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle">
+      <property name="path" value="${bundlePath}" />
+    </bean>
+
+    <bean id="gtfs-bundles" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundles">
+        <property name="bundles">
+            <list>
+                <ref bean="google_transit_bronx" />
+                <ref bean="google_transit_mta_agency" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="google_transit_bronx" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+		<property name="defaultAgencyId" value="MTA" /> 
+        <property name="path" 
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2013June_Prod_r04_b03/google_transit_bronx.zip" />
+    </bean>
+    <bean id="google_transit_mta_agency" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+		<property name="defaultAgencyId" value="MTA" /> 
+        <property name="path" 
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2013June_Prod_r04_b03/google_transit_mta_agency.zip" />
+    </bean>
+
+    <bean id="multiCSVLogger" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger"/>
+
+    <bean id="clearCSVsTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.ClearCSVTask">
+        <property name="logger" ref="multiCSVLogger"/>
+    </bean>
+    <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+        <property name="taskName" value="clearCSVsTask" />
+        <property name="afterTaskName" value="gtfs" />
+ 	    <property name="beforeTaskName" value="transit_graph" />
+        <property name="task" ref="clearCSVsTask" />
+    </bean>
+
+    <bean id="checkShapesTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.CheckShapeIdTask">
+        <property name="logger" ref="multiCSVLogger"/>
+    </bean>
+    <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+        <property name="taskName" value="checkShapesTask" />
+        <property name="afterTaskName" value="clearCSVsTask" />
+ 	    <property name="beforeTaskName" value="transit_graph" />
+        <property name="task" ref="checkShapesTask" />
+    </bean>
+
+    <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">
+        <property name="logger" ref="multiCSVLogger"/>
+        <property name="stifPath"
+            value="${onebusaway_prefix}/src/integration-test/resources/bundle/stifs/2013June_Prod_r04_b03" />
+	    <property name="notInServiceDscPath"
+            value="${onebusaway_prefix}/src/integration-test/resources/bundle/NotInServiceDSCs.txt" />
+    </bean>
+    <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+        <property name="taskName" value="stifLoaderTask" />
+        <property name="afterTaskName" value="checkShapesTask" />
+ 	    <property name="beforeTaskName" value="transit_graph" />
+        <property name="task" ref="stifLoaderTask" />
+    </bean>
+
+    <bean id="summarizeCSVTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.SummarizeCSVTask">
+        <property name="logger" ref="multiCSVLogger"/>
+    </bean>
+    <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+        <property name="taskName" value="summarizeCSVTask" />
+        <property name="afterTaskName" value="stifLoaderTask" />
+ 	    <property name="beforeTaskName" value="transit_graph" />
+        <property name="task" ref="summarizeCSVTask" />
+    </bean>
+
+</beans>

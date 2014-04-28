@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.transit_data_federation.services.nyc;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -28,8 +29,8 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 public interface DestinationSignCodeService {
 
   public List<AgencyAndId> getTripIdsForDestinationSignCode(
-      String destinationSignCode);
-
+      String destinationSignCode, String agencyId);
+  
   public String getDestinationSignCodeForTripId(AgencyAndId tripId);
 
   public boolean isOutOfServiceDestinationSignCode(String destinationSignCode);
@@ -39,6 +40,6 @@ public interface DestinationSignCodeService {
   public boolean isUnknownDestinationSignCode(String destinationSignCode);
 
   public Set<AgencyAndId> getRouteCollectionIdsForDestinationSignCode(
-      String destinationSignCode);
-  
+      String destinationSignCode, String agencyId);
+
 }

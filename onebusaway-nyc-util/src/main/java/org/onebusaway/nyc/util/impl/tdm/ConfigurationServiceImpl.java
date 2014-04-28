@@ -89,30 +89,39 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public String getConfigurationValueAsString(String configurationItemKey,
 			String defaultValue) {
+	  try {
+      if (_configurationKeyToValueMap.size() == 0) {
+        _log.warn("No configuration values are present!");
+      } else {
+        _log.debug("Have " + _configurationKeyToValueMap.size()
+            + " configuration parameters.");
+      }
 
-		if(_configurationKeyToValueMap.size() == 0) {
-			_log.warn("No configuration values are present!");
-		} else {        
-			_log.debug("Have " + _configurationKeyToValueMap.size() + " configuration parameters.");
-		}
+      String value = _configurationKeyToValueMap.get(configurationItemKey);
 
-		String value = _configurationKeyToValueMap.get(configurationItemKey);
-
-		if(value == null) {
-			return defaultValue;
-		} else { 
-			return value;
-		}
+      if (value == null) {
+        return defaultValue;
+      } else {
+        return value;
+      }
+	  } catch (Exception any) {
+	    _log.error("getConfigurationValue(" + configurationItemKey + ", " + defaultValue + ") exception:", any);
+	    return defaultValue;
+	  }
 	}
 
 	@Override
 	public Float getConfigurationValueAsFloat(String configurationItemKey, Float defaultValue) {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
-
-			return Float.parseFloat(getConfigurationValueAsString(configurationItemKey, defaultValueAsString));					
+			String valueAsString = getConfigurationValueAsString(configurationItemKey, defaultValueAsString);
+			if (valueAsString == null) return defaultValue;
+			return Float.parseFloat(valueAsString);					
 		} catch(NumberFormatException ex) {
 			return defaultValue;
+		} catch (Exception any) {
+		  _log.error("getConfigurationValueAsFloat(" + configurationItemKey + ", " + defaultValue + ") exception:", any);
+		  return defaultValue;
 		}
 	}
 
@@ -120,8 +129,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	public Integer getConfigurationValueAsInteger(String configurationItemKey, Integer defaultValue) {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
-
-			return Integer.parseInt(getConfigurationValueAsString(configurationItemKey, defaultValueAsString));					
+			String valueAsString = getConfigurationValueAsString(configurationItemKey, defaultValueAsString);
+			if (valueAsString == null) return defaultValue;
+			return Integer.parseInt(valueAsString);					
 		} catch(NumberFormatException ex) {
 			return defaultValue;
 		}

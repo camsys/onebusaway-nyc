@@ -37,7 +37,11 @@ public class TDMBundleManagementServiceImpl extends BundleManagementServiceImpl 
   protected void timingHook() {
     _log.info("sleeping to stabilize");
     try {
-          Thread.sleep(10 * 1000);
+          /*
+           * TODO:  long term goal of not needing this at all
+           * RestApiLibrary read timeout may have solved this issue
+           */
+          Thread.sleep(10 * 1000);  
         } catch (InterruptedException ie) {
           return;
         }
@@ -50,13 +54,16 @@ public class TDMBundleManagementServiceImpl extends BundleManagementServiceImpl 
     public void run() {
 
       try {
-        final int SLEEP_TIME = 20 * 1000;
+        final int SLEEP_TIME = 20 * 1000; // TODO:  long term goal of not needing this at all
         _log.info("init thread sleeping " + SLEEP_TIME + " on startup");
         /*
          * Initial bundle load is already in progress due to other TDM
          * dependencies -- allow that load to complete before we re-load. This
          * value can be very small but is currently large for safety.
+         * TODO:  long term goal of not needing this at all
+         * RestApiLibrary read timeout may have solved this issue
          */
+
         Thread.sleep(SLEEP_TIME);
         _log.info("thread resuming");
       } catch (InterruptedException e) {

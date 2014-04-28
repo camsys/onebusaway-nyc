@@ -37,6 +37,16 @@
 
     <package name="onebusaway-webapp-default" extends="struts-default">
 
+        <interceptors>
+            <interceptor-stack name="secureParamInterceptor">
+                <interceptor-ref name="defaultStack">
+                    <param name="params.excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*</param>
+                </interceptor-ref>
+            </interceptor-stack>
+        </interceptors>
+
+        <default-interceptor-ref name="secureParamInterceptor" />
+
         <global-results>
          	<result name="NotFound">
                 <param name="location">/WEB-INF/content/error/404.jspx</param>
@@ -57,14 +67,15 @@
          <global-exception-mappings>
     		<exception-mapping exception="java.lang.Exception" result="errorHandler"/>
 		</global-exception-mappings>
-
     </package>
 
     <package name="onebusaway-webapp-api" extends="onebusaway-webapp-default" namespace="/api/siri">
       <interceptors>
         <interceptor name="ApiKeyInterceptor" class="org.onebusaway.nyc.webapp.api.ApiKeyInterceptor" />
         <interceptor-stack name="onebusaway-nyc-webapp-api-stack">
-          <interceptor-ref name="defaultStack" />
+        <interceptor-ref name="defaultStack">
+                    <param name="params.excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*</param>
+        </interceptor-ref>
           <interceptor-ref name="ApiKeyInterceptor" />
         </interceptor-stack>
       </interceptors>

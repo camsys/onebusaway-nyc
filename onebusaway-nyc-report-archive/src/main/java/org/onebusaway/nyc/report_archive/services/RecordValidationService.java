@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.report_archive.services;
 
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
+import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
 /**
@@ -26,6 +28,21 @@ public interface RecordValidationService {
 	boolean validateRealTimeRecord(RealtimeEnvelope realTimeRecord);
 	
 	/**
+	 * Validates the last known (operational API) record satisfies the database 
+	 * constratints.
+	 * @param record lastKnown record to validate
+	 * @return true if the record satisfies the require constraints, false otherwise
+	 */
+	boolean validateLastKnownRecord(CcAndInferredLocationRecord record);
+
+	/**
+   * Validates that given post processed inferred record satisfies the database constraints set
+   * @param inferredRecord inferred record to validate
+   * @return true if the record satisfies the required constraints, false otherwise
+   */
+	boolean validateArchiveInferenceRecord(ArchivedInferredLocationRecord record);
+	
+	/**
 	 * Checks if the given value is within allowed range of numbers
 	 * @param value value to check
 	 * @param lowerBound lower bound of the acceptable range
@@ -33,5 +50,7 @@ public interface RecordValidationService {
 	 * @return true if the value falls within the range, false otherwise
 	 */
 	boolean isValueWithinRange(Double value, double lowerBound, double upperBound);
+
+  
 
 }

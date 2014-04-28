@@ -40,7 +40,7 @@ public class OperatorAssignmentServiceImplTest {
   @Before
   public void setupApiLibrary() throws Exception {
     RestApiLibrary ral = new RestApiLibrary("localhost", null, "api");
-    String json = "{\"crew\": [{\"agency-id\": \"MTA NYCT\",\"pass-id\": \"123456\",\"depot\": \"JG\",\"run-route\": \"63\",\"run-number\": \"200\",\"service-date\": \"2011-11-02\",\"updated\": \"2011-11-02T10:11:10-05:00\"}],\"status\": \"OK\"}";
+    String json = "{\"crew\": [{\"agency-id\": \"MTA NYCT\",\"pass-id\": \"123456\",\"depot\": \"JG\",\"run-route\": \"63\",\"run-number\": \"200\",\"run-id\": \"63-200\",\"service-date\": \"2011-11-02\",\"updated\": \"2011-11-02T10:11:10-05:00\"}],\"status\": \"OK\"}";
 
     when(mockApiLibrary.getItemsForRequest("crew", "2011-10-14", "list"))
       .thenReturn(ral.getJsonObjectsForString(json));
@@ -58,6 +58,7 @@ public class OperatorAssignmentServiceImplTest {
     assertEquals(item.getAgencyId(), "MTA NYCT");
     assertEquals(item.getRunRoute(), "63");
     assertEquals(item.getRunNumber(), "200");
+    assertEquals(item.getRunId(), "63-200");
     assertEquals(item.getDepot(), "JG");
   }
 
@@ -70,6 +71,7 @@ public class OperatorAssignmentServiceImplTest {
     assertEquals(item.getAgencyId(), "MTA NYCT");
     assertEquals(item.getRunRoute(), "63");
     assertEquals(item.getRunNumber(), "200");
+    assertEquals(item.getRunId(), "63-200");
     assertEquals(item.getDepot(), "JG");
   }
 
@@ -85,7 +87,7 @@ public class OperatorAssignmentServiceImplTest {
     assertFalse(service.isApplicable(new ServiceDate(longAgo)));
     Date stillValid2 = new Date(now.getAsDate().getTime() + (1 * 24 * 60 * 60 * 1000));
     assertTrue(service.isApplicable(new ServiceDate(stillValid2)));
-    Date aWaysOff = new Date(now.getAsDate().getTime() + (2 * 24 * 60 * 60 * 1000));
+    Date aWaysOff = new Date(now.getAsDate().getTime() + (3 * 24 * 60 * 60 * 1000));
     assertFalse(service.isApplicable(new ServiceDate(aWaysOff)));
     
   }

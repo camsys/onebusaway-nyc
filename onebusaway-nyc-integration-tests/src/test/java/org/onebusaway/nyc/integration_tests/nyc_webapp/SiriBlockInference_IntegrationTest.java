@@ -23,13 +23,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.commons.httpclient.HttpException;
+import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
 public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase {
 	
+  protected static Logger _log = LoggerFactory.getLogger(SiriBlockInference_IntegrationTest.class);
   private boolean _isSetUp = false;
 	
   public SiriBlockInference_IntegrationTest() {
@@ -39,6 +43,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   @Before
   public void setUp() throws Throwable {
 	if(_isSetUp == false) {
+	  BasicConfigurator.configure();
 		setTrace("siri-test-block-level-inference.csv");
 		setBundle("2012Jan_SIB63M34_r20_b01", "2012-03-02T13:57:00-04:00");
 
@@ -77,6 +82,47 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> mvj = (HashMap<String, Object>) mvjWrapper.get("MonitoredVehicleJourney");
 
 	 assertTrue(mvj.get("BlockRef") != null);
+  }
+
+  
+  /**
+   * Open ended VM response is officially supported, though its discouraged.  Test
+   * the caching of it.
+   */
+  @Test
+  public void testOpenVM() throws HttpException, IOException {
+    long start = System.currentTimeMillis();
+    HashMap<String, Object> vmResponse1 = getVmResponse(null, null);
+    long end = System.currentTimeMillis();
+    long vmTime1 = (end - start);
+    // assuming we are the first call to the cache
+    _log.info("call took " + vmTime1);
+    assert(vmTime1 > 50);  // we are only loading/returning the csv data set
+    HashMap<String, Object> siri = (HashMap<String, Object>) vmResponse1.get("Siri");
+    HashMap<String, Object> serviceDelivery = (HashMap<String, Object>) siri.get("ServiceDelivery");
+    ArrayList<Object> stopMonitoringDelivery = (ArrayList<Object>) serviceDelivery.get("VehicleMonitoringDelivery");
+    HashMap<String, Object> monitoredStopVisit = (HashMap<String, Object>) stopMonitoringDelivery.get(0);
+    ArrayList<Object> mvjs = (ArrayList<Object>) monitoredStopVisit.get("VehicleActivity");
+    HashMap<String, Object> mvjWrapper = (HashMap<String, Object>) mvjs.get(0);
+    HashMap<String, Object> mvj = (HashMap<String, Object>) mvjWrapper.get("MonitoredVehicleJourney");
+
+    assertTrue(mvj.get("BlockRef") != null);
+    
+    // now make the same call expecting it to be cached
+    start = System.currentTimeMillis();
+    HashMap<String, Object> vmResponse2 = getVmResponse(null, null);
+    end = System.currentTimeMillis();
+    long vmTime2 = (end - start);
+    _log.info("call 2 took " + vmTime2);
+    assert(vmTime2 < vmTime1);
+
+    final int MAX_VM_TIME = 150; // slow build server!
+    // caching will still be faster than the small data set
+    assertTrue("vmTime2=" + vmTime2 + " not less than " + MAX_VM_TIME, vmTime2 < MAX_VM_TIME);
+    
+    // compare the responses -- they should be identical
+    assert(vmResponse1.equals(vmResponse2));
+    
   }
 
   @Test

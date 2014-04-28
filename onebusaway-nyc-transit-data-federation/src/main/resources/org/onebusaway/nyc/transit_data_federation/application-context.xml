@@ -23,7 +23,7 @@
 	<bean id="nycBundle" class="org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle" />
 
 	<bean id="configurationService" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl" />
-
+	
 	<bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
 
 	<context:component-scan base-package="org.onebusaway.nyc.transit_data_federation.impl" />
