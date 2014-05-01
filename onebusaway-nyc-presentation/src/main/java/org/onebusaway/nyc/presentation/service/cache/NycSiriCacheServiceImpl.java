@@ -16,7 +16,7 @@ import com.google.common.cache.CacheBuilder;
 
 public class NycSiriCacheServiceImpl extends NycCacheService<Integer, String> {
 
-  private static final int DEFAULT_CACHE_TIMEOUT = 60;
+  private static final int DEFAULT_CACHE_TIMEOUT = 30;
   private static final String SIRI_CACHE_TIMEOUT_KEY = "cache.expiry.siri";
 
   @Autowired

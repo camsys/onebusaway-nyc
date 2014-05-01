@@ -20,7 +20,7 @@ import com.google.common.cache.CacheBuilder;
 
 public abstract class NycCacheService<K, V> {
 
-  private static final int DEFAULT_CACHE_TIMEOUT = 60;
+  private static final int DEFAULT_CACHE_TIMEOUT = 30;
 
   private static final int STATUS_INTERVAL_MINUTES = 1;
   protected static Logger _log = LoggerFactory.getLogger(NycCacheService.class);
