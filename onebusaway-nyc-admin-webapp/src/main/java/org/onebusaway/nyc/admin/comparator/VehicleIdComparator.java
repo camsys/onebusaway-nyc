@@ -2,7 +2,7 @@ package org.onebusaway.nyc.admin.comparator;
 
 import java.util.Comparator;
 
-import org.apache.commons.lang.xwork.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 
 /**
