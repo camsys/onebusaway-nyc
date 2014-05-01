@@ -108,7 +108,7 @@
             <id>local-single-port</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
+                <bundle.location>/var/lib/obanyc/oba-tds-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
 <!--
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>

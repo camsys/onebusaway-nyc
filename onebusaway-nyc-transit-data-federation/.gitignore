@@ -1,1 +1,6 @@
 transit-data-bundle/*
+/stif_trip_layers_with_missing_route.csv
+/stif_trips_with_no_gtfs_match.csv
+/trips_with_duplicate_run_and_start_time.csv
+/trips_with_null_dscs.csv
+/dsc_statistics.csv
