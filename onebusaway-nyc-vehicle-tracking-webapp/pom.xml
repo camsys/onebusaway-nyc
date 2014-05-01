@@ -214,7 +214,7 @@
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
 <!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
                  <siri.service.config>empty.xml</siri.service.config>
-                 <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
+                 <bundle.location>/var/lib/obanyc/oba-vtw-bundle</bundle.location>
                  <bundle.mode.standalone>true</bundle.mode.standalone>
 <!--                  <bundle.mode.standalone>false</bundle.mode.standalone> -->
                  <depot.partition.key />
