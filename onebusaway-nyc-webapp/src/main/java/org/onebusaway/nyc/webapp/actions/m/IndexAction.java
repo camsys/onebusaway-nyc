@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.xwork.StringEscapeUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;

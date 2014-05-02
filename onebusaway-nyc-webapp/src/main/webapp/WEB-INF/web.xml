@@ -66,7 +66,7 @@
 	</filter>
 	<filter>
 		<filter-name>action2-cleanup</filter-name>
-		<filter-class>org.apache.struts2.dispatcher.ActionContextCleanUp</filter-class>
+		<filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareFilter</filter-class>
 	</filter>
 	<filter>
 		<filter-name>sitemesh</filter-name>
@@ -74,7 +74,7 @@
 	</filter>
 	<filter>
 		<filter-name>action2</filter-name>
-		<filter-class>org.apache.struts2.dispatcher.FilterDispatcher</filter-class>
+		<filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsExecuteFilter</filter-class>
 	</filter>
 	<filter-mapping>
 		<filter-name>UrlRewriteFilter</filter-name>
