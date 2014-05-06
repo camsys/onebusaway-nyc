@@ -20,11 +20,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import org.onebusaway.nyc.presentation.comparator.AlphanumComparator;
+import org.onebusaway.nyc.presentation.impl.realtime.PresentationServiceImpl;
 import org.onebusaway.nyc.presentation.service.routes.RouteListService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.RouteBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,12 +38,14 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class RouteListServiceImpl implements RouteListService {
-
+	
     @Autowired
     private ConfigurationService _configurationService;
     @Autowired
     private NycTransitDataService _nycTransitDataService;
-
+    
+    private static Logger _log = LoggerFactory.getLogger(RouteListServiceImpl.class);
+    
     @Override
     public boolean getShowAgencyNames() {
         return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.showAgencyNames", "false"));
@@ -51,26 +58,38 @@ public class RouteListServiceImpl implements RouteListService {
 
     @Override
     public List<RouteBean> getRoutes() {
-        List<RouteBean> allRoutes = new ArrayList<RouteBean>();
+    	_log.info("getRoutes Called");
+    	List<RouteBean> allRoutes = new ArrayList<RouteBean>();
 
         List<AgencyWithCoverageBean> agencies = _nycTransitDataService.getAgenciesWithCoverage();
 
         for (AgencyWithCoverageBean agency : agencies) {
             allRoutes.addAll(_nycTransitDataService.getRoutesForAgencyId(agency.getAgency().getId()).getList());
         }
-
-        Collections.sort(allRoutes, (getShowAgencyNames() ? new AgencyAndRouteComparator() : new RouteComparator()));
-
+        
+        _log.info("getShowAgencyNames() is " + getShowAgencyNames());
+        
+        if(getShowAgencyNames()){
+        	Collections.sort(allRoutes, new AgencyAndRouteComparator());
+        	_log.debug("AgencyAndRouteComparator Sort");
+        }
+        else{
+        	Collections.sort(allRoutes, new RouteComparator());
+        	_log.debug("RouteComparator Sort");
+        }
+		
         return allRoutes;
     }
 
     public class AgencyAndRouteComparator implements Comparator<RouteBean> {
+    	
+    	private Comparator<String> alphaNumComparator = new AlphanumComparator();
 
         @Override
         public int compare(RouteBean t, RouteBean t1) {
             if (t.getAgency().getName().compareTo(t1.getAgency().getName()) == 0) {
                 if (t.getShortName() != null && t1.getShortName() != null) {
-                    return t.getShortName().compareTo(t1.getShortName());
+                	return alphaNumComparator.compare(t.getShortName(), t1.getShortName());
                 } else {
                     return t.getId().compareTo(t1.getId());
                 }
@@ -81,11 +100,13 @@ public class RouteListServiceImpl implements RouteListService {
     }
 
     public class RouteComparator implements Comparator<RouteBean> {
+    	
+    	private Comparator<String> alphaNumComparator = new AlphanumComparator();
 
         @Override
         public int compare(RouteBean t, RouteBean t1) {
             if (t.getShortName() != null && t1.getShortName() != null) {
-                return t.getShortName().compareTo(t1.getShortName());
+            	return alphaNumComparator.compare(t.getShortName(), t1.getShortName());
             } else {
                 return t.getId().compareTo(t1.getId());
             }
