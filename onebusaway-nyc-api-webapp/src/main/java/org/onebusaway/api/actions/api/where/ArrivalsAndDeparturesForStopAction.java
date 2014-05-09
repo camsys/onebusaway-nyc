@@ -17,6 +17,7 @@ package org.onebusaway.api.actions.api.where;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.struts2.rest.DefaultHttpHeaders;
@@ -101,6 +102,14 @@ public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
     if (result == null)
       return setResourceNotFoundResponse();
 
+    List<ArrivalAndDepartureBean> realTimeBeans = new LinkedList<ArrivalAndDepartureBean>();
+    for (ArrivalAndDepartureBean bean : result.getArrivalsAndDepartures()){
+    	if (bean.isPredicted()){
+    		realTimeBeans.add(bean);
+    	}
+    }
+	result.getArrivalsAndDepartures().removeAll(realTimeBeans);
+    
     if (isVersion(V1)) {
       // Convert data to v1 form
       List<ArrivalAndDepartureBeanV1> arrivals = getArrivalsAsV1(result);
