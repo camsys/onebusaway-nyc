@@ -479,16 +479,6 @@ public class BlockStateService {
     			   * computed distance along shape for the snapped point to find the
     			   * total distanceAlongBlock.
     			   */
-    		    /*
-    		     * Additional notes:
-    		     * The above is correct:  this "guess" only works if we picked the right trip.
-    		     *  If we are on the wrong trip the results are non-sensical and result in
-    		     *  the snapping failing, removing this trip from consideration
-    		     *  TODOSAB
-    		     */
-    		    _log.warn("guessing DAB at " + blockTrip.getDistanceAlongBlock() + " + "
-    		        + distanceAlongShape + " = " + (blockTrip.getDistanceAlongBlock() + distanceAlongShape)
-    		        + " for trip=" + blockTrip.getTrip().getId());
     			  final double distanceAlongBlock = blockTrip.getDistanceAlongBlock()
     					  + distanceAlongShape;
 
@@ -531,9 +521,6 @@ public class BlockStateService {
        * TODO could do some really easy improved traversing of these
        * distances...
        */
-      /*
-       * TODOSAB this is where we find current location from distance along block.
-       */
       for (final Double distanceAlongBlock : biEntry.getValue()) {
         final ScheduledBlockLocation location = 
         	_scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
@@ -544,9 +531,6 @@ public class BlockStateService {
         
         /*
          * Don't consider opposite direction trips.
-         */
-        /*
-         * TODOSAB except at beginning/end of current trip?
          */
         if (movedInOppositeDirection(observation, location))
           continue;
@@ -577,6 +561,7 @@ public class BlockStateService {
         thisMin.add(dist, location);
       }
 
+      // here we exhaustively assemble blockstates from tripToDists
       for (final Min<ScheduledBlockLocation> thisMin : tripToDists.values()) {
         final ScheduledBlockLocation location = thisMin.getMinElement();
         final BlockTripEntry activeTrip = location.getActiveTrip();

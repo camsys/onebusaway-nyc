@@ -17,7 +17,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
 
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.GpsLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -36,6 +35,9 @@ import com.google.common.collect.Iterables;
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
+  //radius of obs compared to schedule for keeping deadhead trips warm
+  private static final double LOCATION_RADIUS = 100.0;  
+  
   private ScheduledBlockLocationService _scheduledBlockLocationService;
   
   private BlocksFromObservationService _blocksFromObservationService;
@@ -168,14 +170,26 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
        * If the current time puts us in deadhead-during between trips, then
        * it's possible that the block location will be at the start
        * of the previous trip (potentially very far away), so we skip
-       * these situations.
+       * these situations. (see exception below)
        */
       if (JourneyStateTransitionModel.isLocationOnATrip(blockLocation)) {
         final double impliedVelocity = obs.getDistanceMoved() / obs.getTimeDelta();
         timeToGetToCurrentTimeLoc = TurboButton.distance(blockLocation.getLocation(),
             obs.getLocation()) / impliedVelocity;
       } else {
+        /*
+	       * check to see if we are close to where we guessed, and if so, do the calculation anyways
+         * This catches cases like Trip A->B In Progress
+	       * Trip B->A DEADHEAD
+         * Trip A->B In Progress
+         */ 
+        if (obs.hasOutOfServiceDsc() && TurboButton.distance(blockLocation.getLocation(), obs.getLocation()) < LOCATION_RADIUS) {
+          final double impliedVelocity = obs.getDistanceMoved() / obs.getTimeDelta();
+          timeToGetToCurrentTimeLoc = TurboButton.distance(blockLocation.getLocation(),
+              obs.getLocation()) / impliedVelocity;
+        } else {
         timeToGetToCurrentTimeLoc = 0d;
+        }
       }
     } else {
       timeToGetToCurrentTimeLoc = 0d;
