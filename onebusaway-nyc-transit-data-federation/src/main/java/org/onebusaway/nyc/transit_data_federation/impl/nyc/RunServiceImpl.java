@@ -381,6 +381,7 @@ public class RunServiceImpl implements RunService {
   public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip,
       int scheduleTime) {
 
+    // trip is potentially split into initial + relief  
     List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getId());
 
     if (!bothTrips.isEmpty()) {

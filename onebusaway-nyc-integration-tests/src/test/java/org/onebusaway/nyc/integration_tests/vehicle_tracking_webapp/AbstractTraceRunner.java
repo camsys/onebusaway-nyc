@@ -182,9 +182,9 @@ public class AbstractTraceRunner {
 
           // mark new row
           System.out.println("\n\nRecord "
-              + (i + 1)
+              + (i)
               + ", line "
-              + (i + 2)
+              + (i + 1)
               + ", observed timestamp= "
               + expectedResult.getTimestampAsDate()
               + "\n============================================================");
