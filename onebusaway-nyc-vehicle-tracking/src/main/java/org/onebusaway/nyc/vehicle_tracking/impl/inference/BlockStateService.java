@@ -561,6 +561,7 @@ public class BlockStateService {
         thisMin.add(dist, location);
       }
 
+      // here we exhaustively assemble blockstates from tripToDists
       for (final Min<ScheduledBlockLocation> thisMin : tripToDists.values()) {
         final ScheduledBlockLocation location = thisMin.getMinElement();
         final BlockTripEntry activeTrip = location.getActiveTrip();
