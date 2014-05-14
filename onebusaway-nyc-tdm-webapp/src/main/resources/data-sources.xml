@@ -134,10 +134,26 @@
 		<property name="cronExpression" value="0 10 4 * * ?" />
 	</bean>
 	
+	<bean name="depotAssignsSoapQueryJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="org.onebusaway.nyc.transit_data_manager.job.DepotAssignsSOAPQueryJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="configurationService" value-ref="configurationService"/>
+				<entry key="depotFileDir" value-ref="depotFileDir"/>
+     		</map>
+		</property>
+	</bean>
+
+	<bean id="depotAssignsSoapQueryTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="depotAssignsSoapQueryJob" />
+		<property name="cronExpression" value="0 0 * * * ?" />
+	</bean>
+	
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
 				<ref bean="persistTrigger" />
+				<ref bean="depotAssignsSoapQueryTrigger" />
 			</list>
 		</property>
 	</bean>
