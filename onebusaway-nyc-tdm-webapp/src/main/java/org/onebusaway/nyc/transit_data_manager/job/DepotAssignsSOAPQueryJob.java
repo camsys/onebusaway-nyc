@@ -1,20 +1,12 @@
 package org.onebusaway.nyc.transit_data_manager.job;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.LineNumberReader;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.SOAPConnection;
-import javax.xml.soap.SOAPConnectionFactory;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.soap.*;
+import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -27,7 +19,7 @@ import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 /**
- * Persists TDM web service data every day at 4 a.m.
+ * 	Quartz job to invoke Depot Assign web service every hour.
  * 
  */
 public class DepotAssignsSOAPQueryJob extends QuartzJobBean {
@@ -88,7 +80,9 @@ public class DepotAssignsSOAPQueryJob extends QuartzJobBean {
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.METHOD, "text");
         Source sourceContent = soapResponse.getSOAPPart().getContent();
-        String date = new SimpleDateFormat("yyyyMMdd_kkmm").format(new Date());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_kkmm");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        String date = dateFormat.format(new Date());
         String path = System.getProperty(_depotFileDir)+"/"+"depot_assignments"+date+".xml";
         File file = new File(path);
         StreamResult result = new StreamResult(file);
