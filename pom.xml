@@ -19,7 +19,7 @@
     	<onebusaway.gtfs.version>1.2.6</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
     	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
     	<onebusaway.csv-entities.version>1.0.3</onebusaway.csv-entities.version>
-    	<struts.version>2.3.15.1</struts.version>
+    	<struts.version>2.3.16.2</struts.version>
         <jetty.version>6.1.26</jetty.version>
         <spring.version>3.0.3.RELEASE</spring.version>
         <onebusaway.app-modules.version>1.1.11</onebusaway.app-modules.version>
