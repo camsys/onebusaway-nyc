@@ -83,7 +83,7 @@ public class DepotAssignsSOAPQueryJob extends QuartzJobBean {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_kkmm");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         String date = dateFormat.format(new Date());
-        String path = System.getProperty(_depotFileDir)+"/"+"depot_assignments"+date+".xml";
+        String path = System.getProperty(_depotFileDir)+"/"+"depot_assignments_"+date+".xml";
         File file = new File(path);
         StreamResult result = new StreamResult(file);
         transformer.transform(sourceContent, result);
