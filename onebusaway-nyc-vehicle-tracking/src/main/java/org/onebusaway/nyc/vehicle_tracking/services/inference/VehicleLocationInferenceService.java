@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.services.inference;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
@@ -72,4 +73,6 @@ public interface VehicleLocationInferenceService {
       int particleId);
 
   public void setSeeds(long cdfSeed, long factorySeed);
+  
+  public List<NycQueuedInferredLocationBean> getLatestProcessedQueuedVehicleLocationRecords();
 }

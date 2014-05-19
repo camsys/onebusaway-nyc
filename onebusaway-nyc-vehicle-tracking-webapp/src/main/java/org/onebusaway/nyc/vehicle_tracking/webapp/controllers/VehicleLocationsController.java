@@ -17,8 +17,10 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycQueuedInferredLocationBeanVehicleComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestInferredLocationRecordDestinationSignCodeComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestInferredLocationRecordVehicleComparator;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
@@ -30,7 +32,6 @@ import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,6 +68,18 @@ public class VehicleLocationsController {
     Collections.sort(records, comparator);
 
     ModelAndView mv = new ModelAndView("vehicle-locations.jspx");
+    mv.addObject("records", records);
+    return mv;
+  }
+  
+  @RequestMapping("/queued-vehicle-locations.do")
+  public ModelAndView queuedVehicleLocations() {
+
+    List<NycQueuedInferredLocationBean> records = _vehicleLocationInferenceService.getLatestProcessedQueuedVehicleLocationRecords();
+
+    Collections.sort(records, new NycQueuedInferredLocationBeanVehicleComparator());
+
+    ModelAndView mv = new ModelAndView("queued-vehicle-locations.jspx");
     mv.addObject("records", records);
     return mv;
   }
@@ -188,7 +201,9 @@ public class VehicleLocationsController {
 
     if (sort.equals("dsc"))
       return new NycTestInferredLocationRecordDestinationSignCodeComparator();
+    
+
 
     return new NycTestInferredLocationRecordVehicleComparator();
   }
-}
+}  

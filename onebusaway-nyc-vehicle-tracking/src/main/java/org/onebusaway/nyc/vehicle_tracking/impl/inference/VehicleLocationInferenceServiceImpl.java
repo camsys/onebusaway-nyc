@@ -41,14 +41,19 @@ import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -59,6 +64,11 @@ import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
+import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.realtime.api.VehicleLocationListener;
+import org.onebusaway.realtime.api.VehicleLocationRecord;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
@@ -84,8 +94,7 @@ import com.google.common.collect.TreeMultiset;
 import com.jhlabs.map.proj.ProjectionException;
 
 @Component
-public class VehicleLocationInferenceServiceImpl implements
-    VehicleLocationInferenceService {
+public class VehicleLocationInferenceServiceImpl implements VehicleLocationInferenceService {
 
   private static Logger _log = LoggerFactory.getLogger(VehicleLocationInferenceServiceImpl.class);
 
@@ -105,7 +114,28 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Autowired
   private BundleManagementService _bundleManagementService;
+  
+  @Autowired
+  private NycTransitDataService _nycTransitDataService;
+  
+  @Autowired
+  private VehicleLocationListener _vehicleLocationListener;
 
+  @Autowired
+  private PredictionIntegrationService _predictionIntegrationService;
+  
+  @Autowired
+  protected ConfigurationService _configurationService;
+  
+  /*
+  private RecordValidationService validationService;
+
+  @Autowired
+  public void setValidationService(RecordValidationService validationService) {
+    this.validationService = validationService;
+  }
+  */
+  
   private BundleItem _lastBundle = null;
 
   private ExecutorService _executorService;
@@ -118,6 +148,22 @@ public class VehicleLocationInferenceServiceImpl implements
 		  new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
+  
+  
+  // Process Record Fields (TDS)
+  private boolean useTimePredictions = false;
+  
+  private boolean checkAge = false;
+  
+  private int ageLimit = 300;
+  
+  private boolean refreshCheck;
+  
+  
+  public VehicleLocationInferenceServiceImpl() {
+	  setConfigurationService(new ConfigurationServiceImpl());
+	  refreshCache();
+  }
 	
   public void setNumberOfProcessingThreads(int numberOfProcessingThreads) {
     _numberOfProcessingThreads = numberOfProcessingThreads;
@@ -146,6 +192,30 @@ public class VehicleLocationInferenceServiceImpl implements
   @PreDestroy
   public void stop() {
     _executorService.shutdownNow();
+  }
+  
+  protected void setPredictionIntegrationService( PredictionIntegrationService predictionIntegrationService) {
+	  _predictionIntegrationService = predictionIntegrationService;
+  }
+
+  protected void setVehicleLocationListener( VehicleLocationListener vehicleLocationListener) {
+	  _vehicleLocationListener = vehicleLocationListener;
+  }
+
+  protected void setConfigurationService(ConfigurationServiceImpl config) {
+	  _configurationService = config;
+	  refreshCache();
+  }
+  
+  protected boolean getRefreshCheck() {
+	  return refreshCheck;
+  }
+  
+  @Refreshable(dependsOn = {"display.checkAge", "display.useTimePredictions", "display.ageLimit"})
+  protected void refreshCache() {
+	checkAge = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.checkAge", "false"));
+	useTimePredictions = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
+	ageLimit = Integer.parseInt(_configurationService.getConfigurationValueAsString("display.ageLimit", "300"));
   }
 
   /****
@@ -304,7 +374,7 @@ public class VehicleLocationInferenceServiceImpl implements
         }
       }
     }
-
+    
     final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId);    
 		final Future<?> result = _executorService.submit(new ProcessingTask(i, r, false, false));
 		_bundleManagementService.registerInferenceProcessingThread(result);
@@ -345,6 +415,27 @@ public class VehicleLocationInferenceServiceImpl implements
         final NycTestInferredLocationRecord record = instance.getCurrentState();
         if (record != null) {
           record.setVehicleId(vehicleId);
+          records.add(record);
+        }
+      } else {
+        _log.warn("No VehicleInferenceInstance found: vid=" + vehicleId);
+      }
+    }
+
+    return records;
+  }
+  
+  public List<NycQueuedInferredLocationBean> getLatestProcessedQueuedVehicleLocationRecords() {
+    final List<NycQueuedInferredLocationBean> records = new ArrayList<NycQueuedInferredLocationBean>();
+
+    for (final Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
+      final AgencyAndId vehicleId = entry.getKey();
+      final VehicleInferenceInstance instance = entry.getValue();
+      if (instance != null) {
+        final NycQueuedInferredLocationBean record = instance.getCurrentStateAsNycQueuedInferredLocationBean();
+        if (record != null) {
+          record.setVehicleId(vehicleId.toString());
+          postProcess(record);
           records.add(record);
         }
       } else {
@@ -654,15 +745,18 @@ public class VehicleLocationInferenceServiceImpl implements
     				// send inferred result to output queue
     			} else {
     				// add some more properties to the record before sending off
+    				record.setVehicleId(_vehicleId.toString());
     				record.getManagementRecord().setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
     				record.getManagementRecord().setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
-
+    				
+    				// Process TDS Fields - OBANYC-2184 (Previously Archive PostProceess)
+    			    postProcess(record);
+    				
     				final BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
     				if (currentBundle != null) {
     					record.getManagementRecord().setActiveBundleId(currentBundle.getId());
     				}
 
-    				record.setVehicleId(_vehicleId.toString());
     				_outputQueueSenderService.enqueue(record);
     			}
     		}
@@ -680,5 +774,58 @@ public class VehicleLocationInferenceServiceImpl implements
   public void setSeeds(long cdfSeed, long factorySeed) {
     ParticleFactoryImpl.setSeed(factorySeed);
     CategoricalDist.setSeed(cdfSeed);
+  }
+  
+  protected void postProcess(NycQueuedInferredLocationBean record){
+	// Populate TDS Fields (VLR)
+	processRecord(record);  
+	  
+	// Process TDS Fields - OBANYC-2184 (Previously Archive PostProceess)  
+	VehicleStatusBean vehicle = _nycTransitDataService.getVehicleForAgency(
+			record.getVehicleId(), new Date(record.getRecordTimestamp()).getTime());
+	record.setVehicleStatusBean(vehicle);
+	
+	VehicleLocationRecordBean vehicleLocation = _nycTransitDataService.getVehicleLocationRecordForVehicleId(
+			record.getVehicleId(), new Date(record.getRecordTimestamp()).getTime());
+	
+	record.setVehicleLocationRecordBean(vehicleLocation);
+	
+  }
+
+  protected void processRecord(NycQueuedInferredLocationBean inferredResult) {
+		VehicleLocationRecord vlr = new VehicleLocationRecord();
+		if (checkAge) {
+			long difference = computeTimeDifference(inferredResult.getRecordTimestamp());
+			if (difference > ageLimit) {
+				_log.info("VehicleLocationRecord for "+ inferredResult.getVehicleId() + " discarded.");
+				return;
+			}
+		}
+		vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(inferredResult.getVehicleId()));
+		vlr.setTimeOfRecord(inferredResult.getRecordTimestamp());
+		vlr.setTimeOfLocationUpdate(inferredResult.getRecordTimestamp());
+		vlr.setBlockId(AgencyAndIdLibrary.convertFromString(inferredResult.getBlockId()));
+		vlr.setTripId(AgencyAndIdLibrary.convertFromString(inferredResult.getTripId()));
+		vlr.setServiceDate(inferredResult.getServiceDate());
+		vlr.setDistanceAlongBlock(inferredResult.getDistanceAlongBlock());
+		vlr.setCurrentLocationLat(inferredResult.getInferredLatitude());
+		vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
+		vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getPhase()));
+		vlr.setStatus(inferredResult.getStatus());
+		if (_vehicleLocationListener != null) {
+			_vehicleLocationListener.handleVehicleLocationRecord(vlr);
+		}
+		if (useTimePredictions) {
+			// if we're updating time predictions with the generation service,
+			// tell the integration service to fetch
+			// a new set of predictions now that the TDS has been updated
+			// appropriately.
+			_predictionIntegrationService.updatePredictionsForVehicle(vlr.getVehicleId());
+		}
+		
+  }
+  
+  protected long computeTimeDifference(long timestamp) {
+	  return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds
   }
 }

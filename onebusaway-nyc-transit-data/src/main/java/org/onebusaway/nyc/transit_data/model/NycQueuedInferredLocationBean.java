@@ -1,6 +1,14 @@
 package org.onebusaway.nyc.transit_data.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
+
+import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 /**
  * An "over the wire", queued inferred location result--gets passed between the inference
@@ -55,6 +63,27 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	private String routeId;
 
 	private Double bearing;
+	
+	// Fields from TDS
+	
+	// Stop ID of next scheduled stop
+	private String nextScheduledStopId;
+
+	// Distance to next scheduled stop
+	private Double nextScheduledStopDistance;
+
+	private String assignedRunId = null;
+
+	private String inferredBlockId;
+
+	private String inferredTripId;
+	
+	private String inferredRouteId;
+	
+	private String inferredDirectionId;
+	
+	private Long lastLocationUpdateTime;
+	
 
 	public NycQueuedInferredLocationBean() {}
 
@@ -200,8 +229,113 @@ public class NycQueuedInferredLocationBean implements Serializable {
 
 	public double getBearing() {
 		return bearing;
-	}  
+	}
+	
+	// Properties from TDS
+	
+	public void setAssignedRunId(String assignedRunId) {
+		this.assignedRunId = assignedRunId;
+	}
+	
+	public String getAssignedRunId() {
+		return assignedRunId;
+	}
+	
+	public void setNextScheduledStopId(String nextScheduledStopId) {
+		this.nextScheduledStopId = nextScheduledStopId;
+	}
+	
+	public String getNextScheduledStopId() {
+		return nextScheduledStopId;
+	}
+	
+	public void setNextScheduledStopDistance(Double distance) {
+		this.nextScheduledStopDistance = distance;
+	}
+	
+	public Double getNextScheduledStopDistance() {
+		return nextScheduledStopDistance;
+	}
+
+	public String getInferredBlockId() {
+		return inferredBlockId;
+	}
+
+	public void setInferredBlockId(String inferredBlockId) {
+		this.inferredBlockId = inferredBlockId;
+	}
+
+	public String getInferredTripId() {
+		return inferredTripId;
+	}
+
+	public void setInferredTripId(String inferredTripId) {
+		this.inferredTripId = inferredTripId;
+	}
+
+	public String getInferredRouteId() {
+		return inferredRouteId;
+	}
+
+	public void setInferredRouteId(String inferredRouteId) {
+		this.inferredRouteId = inferredRouteId;
+	}
+
+	public String getInferredDirectionId() {
+		return inferredDirectionId;
+	}
+
+	public void setInferredDirectionId(String inferredDirectionId) {
+		this.inferredDirectionId = inferredDirectionId;
+	}
+	
+	public Long getLastLocationUpdateTime() {
+		return lastLocationUpdateTime;
+	}
+
+	public void setLastLocationUpdateTime(Long lastLocationUpdateTime) {
+		this.lastLocationUpdateTime = lastLocationUpdateTime;
+	}
+
+	public void setRouteBean(RouteBean rb) {
+		setInferredRouteId(rb.getId());
+	}
+
+	public void setVehicleStatusBean(VehicleStatusBean vehicle) {
+		if (vehicle == null)
+			return;
+	    TripStatusBean tsb = vehicle.getTripStatus();
+	    if (tsb != null) {setTripStatusBean(tsb);
+	    }
+	}
+
+	public void setTripStatusBean(TripStatusBean tsb) {
+		setNextScheduledStopDistance(tsb.getNextStopDistanceFromVehicle());
+	    if (tsb.getNextStop() != null) {
+	      setNextScheduledStopId(tsb.getNextStop().getId());
+	    }
+	    if (!Double.isNaN(tsb.getLastKnownDistanceAlongTrip())) {
+	      setDistanceAlongTrip(tsb.getLastKnownDistanceAlongTrip());
+	    }
+	    // todo: can this be pulled from TDS?
+	    // setDistanceAlongBlock()
+	    TripBean trip = tsb.getActiveTrip();
+	    if (trip != null && trip.getRoute() != null) {
+	      setInferredBlockId(trip.getBlockId());
+	      setInferredTripId(trip.getId());
+	      setRouteBean(trip.getRoute());
+	      setInferredDirectionId(trip.getDirectionId());
+	    }
+	}
+	
+	public void setVehicleLocationRecordBean(VehicleLocationRecordBean vlr) {
+	    if (vlr != null && (getInferredLatitude() == null || getInferredLongitude() == null)) {
+	      setInferredLatitude(vlr.getCurrentLocation().getLat()); //Previously BigDecimal
+	      setInferredLongitude(vlr.getCurrentLocation().getLon()); //Previously BigDecimal
+	      setLastLocationUpdateTime(vlr.getTimeOfLocationUpdate());
+	      setScheduleDeviation((int) new Double(vlr.getScheduleDeviation()).longValue());
+	    }
+	  }
 
 }
-
 
