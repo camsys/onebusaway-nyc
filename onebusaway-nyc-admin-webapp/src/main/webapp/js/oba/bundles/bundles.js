@@ -243,9 +243,10 @@ jQuery(function() {
 		} else {
 			disableSelectButton();
 			jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
-			disableContinueButton(jQuery("#create_continue"));
 		}
 	});
+	disableStageButton();
+	disableBuildButton();
 
 	//toggle bundle staging progress list
 	jQuery("#stageBundle #stageBundle_progress #expand").bind({
@@ -309,10 +310,13 @@ function onSelectClick() {
 					jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
 					if(status.selected == true) {
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/dialog-accept-2.png");
+						jQuery("#createDirectoryMessage").text(status.message).css("color", "green");
+						enableBuildButton();
 					} else {
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
+						jQuery("#createDirectoryMessage").text(status.message).css("color", "red");
+						disableBuildButton();
 					}
-					jQuery("#createDirectoryMessage").text(status.message).css("color", "green");
 					var continueButton = jQuery("#create_continue");
 					enableContinueButton(continueButton);
 					var bundleDir = status.directoryName;
@@ -324,23 +328,25 @@ function onSelectClick() {
 					enableContinueButton(jQuery("#upload_continue"));
 				} else {
 					alert("null status");
+					disableBuildButton();
 				}
 			},
 			error: function(request) {
 				alert("There was an error processing your request. Please try again.");
 			}
 		});
+	disableStageButton();
 }
 
 
 function enableContinueButton(continueButton) {
 	jQuery(continueButton).removeAttr("disabled")
-		.removeClass("submit_disabled").addClass("submit_enabled");	
+	.css("color", "#666");
 }
 
 function disableContinueButton(continueButton) {
 	jQuery(continueButton).attr("disabled", "disabled")
-		.removeClass("submit_enabled").addClass("submit_disabled");	
+	.css("color", "#666");
 }
 
 function enableSelectButton() {
@@ -353,6 +359,29 @@ function disableSelectButton() {
 	.css("color", "#999");
 }
 
+function enableStageButton() {
+	jQuery("#stageBundle_stageButton").removeAttr("disabled")
+	.css("color", "#666");
+	enableContinueButton($("#build_continue"));
+}
+
+function disableStageButton() {
+	jQuery("#stageBundle_stageButton").attr("disabled", "disabled")
+	.css("color", "#999");
+	disableContinueButton($("#build_continue"));
+}
+
+function enableBuildButton() {
+	jQuery("#buildBundle_buildButton").removeAttr("disabled")
+	.css("color", "#666");
+	enableContinueButton($("#create_continue"));
+}
+
+function disableBuildButton() {
+	jQuery("#buildBundle_buildButton").attr("disabled", "disabled")
+	.css("color", "#999");
+	disableContinueButton($("#create_continue"));
+}
 function toggleAdvancedOptions() {
 	var $image = jQuery("#createDirectory #advancedOptions #expand");
 	changeImageSrc($image);
@@ -616,18 +645,17 @@ function bundleUrl() {
 				var bundleResponse = response;
 				if(bundleResponse.exception !=null) {
 					jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
-							.text("(exception)")
 							.css("padding-left", "5px")
 							.css("font-size", "12px")
 							.addClass("adminLabel")
 							.css("color", "red");
 				} else {
 					jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
-							.text(bundleResponse.bundleResultLink)
 							.css("padding-left", "5px")
 							.css("font-size", "12px")
 							.addClass("adminLabel")
 							.css("color", "green");
+					
 				}
 		},
 		error: function(request) {
@@ -680,6 +708,7 @@ function buildBundle(bundleName, startDate, endDate, bundleComment){
 }
 
 function updateBuildStatus() {
+	disableStageButton();
 	id = jQuery("#buildBundle_id").text();
 	jQuery.ajax({
 		url: "../../api/build/" + id + "/list?ts=" +new Date().getTime(),
@@ -705,7 +734,7 @@ function updateBuildStatus() {
 					jQuery("#buildBundle_buildProgress").text("Bundle Complete!");
 					jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-accept-2.png");
 					updateBuildList(id);
-
+					enableStageButton();
 				}
 				txt = txt + "</ul>";
 				jQuery("#buildBundle_resultList").html(txt).css("font-size", "12px");	
@@ -717,6 +746,7 @@ function updateBuildStatus() {
 						jQuery("#buildBundle_exception").show().css("display","inline");
 						jQuery("#buildBundle_exception").html(bundleResponse.exception.message);
 					}
+					disableStageButton();
 				}
 		},
 		error: function(request) {

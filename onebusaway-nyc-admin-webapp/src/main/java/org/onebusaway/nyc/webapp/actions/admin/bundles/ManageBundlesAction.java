@@ -123,9 +123,16 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	}
 	
 	public String selectDirectory() {
+	  List<String[]> existingDirectories = fileService.listBundleDirectories(MAX_RESULTS);
 	  _log.info("in selectDirectory with dirname=" + directoryName);
 	  bundleDirectory = directoryName;
-	  directoryStatus = createDirectoryStatus("Loaded existing directory " + directoryName, true);
+	  directoryStatus = createDirectoryStatus("Failed to find directory " + directoryName, false);
+	  for (String[] directory: existingDirectories){
+		  if (directory[0].equals(directoryName)){
+			  directoryStatus = createDirectoryStatus("Loaded existing directory " + directoryName, true);
+			  break;
+		  }
+	  }
 	  return "selectDirectory";
 	}
 	

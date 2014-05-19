@@ -44,8 +44,8 @@
 			</div>
 			
 			<div id="requestLabels">
-				<label class="adminLabel directoryLabel">Request
-					Id :</label> <label id="stageBundle_id" class="adminLabel directoryLabel"></label>
+				<label class="adminLabel directoryLabel">Request Id :</label> 
+				<label id="stageBundle_id" class="adminLabel directoryLabel"></label>
 			</div>
 			<div id="stageContentsHolder">					
 				<div id="stageBox">
