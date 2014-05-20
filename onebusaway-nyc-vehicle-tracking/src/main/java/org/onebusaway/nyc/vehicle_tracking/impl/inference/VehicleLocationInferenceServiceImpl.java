@@ -127,15 +127,6 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   @Autowired
   protected ConfigurationService _configurationService;
   
-  /*
-  private RecordValidationService validationService;
-
-  @Autowired
-  public void setValidationService(RecordValidationService validationService) {
-    this.validationService = validationService;
-  }
-  */
-  
   private BundleItem _lastBundle = null;
 
   private ExecutorService _executorService;
@@ -776,6 +767,9 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     CategoricalDist.setSeed(cdfSeed);
   }
   
+  /**
+   * This method is used to populate additional record values using the TDS
+   */
   protected void postProcess(NycQueuedInferredLocationBean record){
 	// Populate TDS Fields (VLR)
 	processRecord(record);  
@@ -791,7 +785,10 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 	record.setVehicleLocationRecordBean(vehicleLocation);
 	
   }
-
+  
+  /**
+   * This method is used to generate values for the TDS
+   */
   protected void processRecord(NycQueuedInferredLocationBean inferredResult) {
 		VehicleLocationRecord vlr = new VehicleLocationRecord();
 		if (checkAge) {
@@ -825,7 +822,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 		
   }
   
-  protected long computeTimeDifference(long timestamp) {
+  private long computeTimeDifference(long timestamp) {
 	  return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds
   }
 }

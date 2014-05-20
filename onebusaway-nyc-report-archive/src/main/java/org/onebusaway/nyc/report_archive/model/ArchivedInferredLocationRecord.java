@@ -31,7 +31,6 @@ import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
-
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -206,14 +205,12 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setInferredPhase(message.getPhase());
     setInferredStatus(message.getStatus());
     setInferredRouteId(message.getRouteId());
-    // inferredDirectionId set by TDS
 
     NycVehicleManagementStatusBean managementBean = message.getManagementRecord();
 
     setUUID(managementBean.getUUID());
 
     setLastUpdateTime(managementBean.getLastUpdateTime());
-    setLastLocationUpdateTime(managementBean.getLastLocationUpdateTime());
     String inferredDscString = managementBean.getLastInferredDestinationSignCode();
     if (inferredDscString != null) {
       setInferredDestSignCode(Integer.parseInt(inferredDscString));
@@ -225,50 +222,19 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setInferredRunId(managementBean.getInferredRunId());
     setAssignedRunId(managementBean.getAssignedRunId());
 
-    // TDS fields are inserted by setVehicleLocationRecordBean
-
-  }
-
-  public void setVehicleStatusBean(VehicleStatusBean vehicle) {
-    if (vehicle == null)
-      return;
-    TripStatusBean tsb = vehicle.getTripStatus();
-    if (tsb != null) {
-      setTripStatusBean(tsb);
-    }
-  }
-
-  public void setTripStatusBean(TripStatusBean tsb) {
-    setNextScheduledStopDistance(tsb.getNextStopDistanceFromVehicle());
-    if (tsb.getNextStop() != null) {
-      setNextScheduledStopId(tsb.getNextStop().getId());
-    }
-    if (!Double.isNaN(tsb.getLastKnownDistanceAlongTrip())) {
-      setDistanceAlongTrip(tsb.getLastKnownDistanceAlongTrip());
-    }
-    // todo: can this be pulled from TDS?
-    // setDistanceAlongBlock()
-    TripBean trip = tsb.getActiveTrip();
-    if (trip != null && trip.getRoute() != null) {
-      setInferredBlockId(trip.getBlockId());
-      setInferredTripId(trip.getId());
-      setRouteBean(trip.getRoute());
-      setInferredDirectionId(trip.getDirectionId());
-    }
-
-  }
-
-  public void setRouteBean(RouteBean rb) {
-    setInferredRouteId(rb.getId());
-  }
-
-  public void setVehicleLocationRecordBean(VehicleLocationRecordBean vlr) {
-    if (getInferredLatitude() == null || getInferredLongitude() == null) {
-      setInferredLatitude(new BigDecimal(vlr.getCurrentLocation().getLat()));
-      setInferredLongitude(new BigDecimal(vlr.getCurrentLocation().getLon()));
-      setLastLocationUpdateTime(vlr.getTimeOfLocationUpdate());
-      setScheduleDeviation((int) new Double(vlr.getScheduleDeviation()).longValue());
-    }
+    // TDS Fields
+    setNextScheduledStopDistance(message.getNextScheduledStopDistance());
+    setNextScheduledStopId(message.getNextScheduledStopId());
+    setInferredBlockId(message.getInferredBlockId());
+    setInferredTripId(message.getInferredTripId());
+    setInferredRouteId(message.getInferredRouteId());
+    setInferredDirectionId(message.getInferredDirectionId());
+    setScheduleDeviation(message.getScheduleDeviation());
+    
+    if(message.getLastLocationUpdateTime() != null)
+    	setLastLocationUpdateTime(message.getLastLocationUpdateTime());
+    else
+    	setLastLocationUpdateTime(managementBean.getLastLocationUpdateTime());
   }
 
   public Long getId() {
@@ -415,7 +381,8 @@ public class ArchivedInferredLocationRecord implements Serializable {
     return inferredDirectionId;
   }
 
-  // properties from NycVehicleManagementStatusBean
+  // Properties from NycVehicleManagementStatusBean
+  
   public long getLastUpdateTime() {
     return lastUpdateTime;
   }

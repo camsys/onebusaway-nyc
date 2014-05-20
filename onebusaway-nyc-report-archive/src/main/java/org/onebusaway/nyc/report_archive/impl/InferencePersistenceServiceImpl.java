@@ -1,24 +1,15 @@
 package org.onebusaway.nyc.report_archive.impl;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.InferencePersistenceService;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 import org.onebusaway.nyc.report_archive.services.RecordValidationService;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.transit_data.model.VehicleStatusBean;
-import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,14 +32,6 @@ public class InferencePersistenceServiceImpl implements
     this._locationDao = locationDao;
   }
 
-  private NycTransitDataService _nycTransitDataService;
-
-  @Autowired
-  public void setNycTransitDataService(
-      NycTransitDataService nycTransitDataService) {
-    this._nycTransitDataService = nycTransitDataService;
-  }
-
   private RecordValidationService validationService;
 
   @Autowired
@@ -56,12 +39,9 @@ public class InferencePersistenceServiceImpl implements
     this.validationService = validationService;
   }
 
-  private ExecutorService executorService = null;
+  private ArrayBlockingQueue<ArchivedInferredLocationRecord> messages = new ArrayBlockingQueue<ArchivedInferredLocationRecord>(
+      100000);
 
-  private ArrayBlockingQueue<ArchivedInferredLocationRecordAndContents> preMessages = new ArrayBlockingQueue<ArchivedInferredLocationRecordAndContents>(
-      100000);
-  private ArrayBlockingQueue<ArchivedInferredLocationRecord> postMessages = new ArrayBlockingQueue<ArchivedInferredLocationRecord>(
-      100000);
   private int _batchSize;
 
   public void setBatchSize(String batchSizeStr) {
@@ -73,82 +53,17 @@ public class InferencePersistenceServiceImpl implements
 
   @PostConstruct
   public void setup() {
-    executorService = Executors.newFixedThreadPool(1);
-    executorService.execute(new PostProcessThread());
     final SaveThread saveThread = new SaveThread();
     _taskScheduler.scheduleWithFixedDelay(saveThread, 1000); // every second
   }
 
   @Override
-  public void persist(ArchivedInferredLocationRecord record, String contents) {
-      ArchivedInferredLocationRecordAndContents message = new ArchivedInferredLocationRecordAndContents(
-          record, contents);
-      boolean accepted = preMessages.offer(message);
+  public void persist(ArchivedInferredLocationRecord record, String contents) {     
+      boolean accepted = messages.offer(record);
       if (!accepted) {
         _log.error("inf record " + record.getUUID() + " dropped, local buffer full!  Clearing!");
-        preMessages.clear();
+        messages.clear();
       }      
-  }
-
-  private void discardRecord(Integer vehicleId, String contents) {
-    _log.error(
-        "Discarding inferred record for vehicle : {} as inferred latitude or inferred longitude "
-            + "values are out of range", vehicleId);
-    Exception e = new Exception("Inference record for vehile : " + vehicleId
-        + " failed validation." + "Discarding");
-    _locationDao.handleException(contents, e, new Date());
-  }
-
-  private boolean postProcess(ArchivedInferredLocationRecord locationRecord) {
-    boolean postProcessSuccess = true;
-
-    // Extract next stop id and distance
-    String vehicleId = locationRecord.getAgencyId() + "_"
-        + locationRecord.getVehicleId().toString();
-
-    VehicleStatusBean vehicle = _nycTransitDataService.getVehicleForAgency(
-        vehicleId, locationRecord.getTimeReported().getTime());
-    locationRecord.setVehicleStatusBean(vehicle);
-
-    VehicleLocationRecordBean vehicleLocation = _nycTransitDataService.getVehicleLocationRecordForVehicleId(
-        vehicleId, locationRecord.getTimeReported().getTime());
-
-    locationRecord.setVehicleLocationRecordBean(vehicleLocation);
-
-    postProcessSuccess = validationService.validateArchiveInferenceRecord(locationRecord);
-    return postProcessSuccess;
-  }
-
-  @PreDestroy
-  public void destroy() {
-    executorService.shutdownNow();
-  }
-
-  private class PostProcessThread implements Runnable {
-
-    @Override
-    public void run() {
-      while (!Thread.currentThread().isInterrupted()) {
-        ArchivedInferredLocationRecordAndContents record;
-        try {
-          record = preMessages.take();
-        } catch (InterruptedException e) {
-          _log.error("PostProcessThread interrupted with " + e);
-          return;
-        }
-
-        try {
-        	boolean postProcessSuccess = postProcess(record.getRecord());
-        	if (postProcessSuccess) {
-        	  postMessages.add(record.getRecord());
-        	} else {
-        	  discardRecord(record.getRecord().getVehicleId(), record.getContents());
-        	}
-        } catch (Throwable t) {
-        	_log.error("caught postProcess error:", t);
-        }
-      }
-    }
   }
 
   private class SaveThread implements Runnable {
@@ -157,7 +72,7 @@ public class InferencePersistenceServiceImpl implements
     public void run() {
       List<ArchivedInferredLocationRecord> reports = new ArrayList<ArchivedInferredLocationRecord>();
       // remove at most _batchSize (1000) records
-      postMessages.drainTo(reports, _batchSize);
+      messages.drainTo(reports, _batchSize);
       logLatency(reports);
       try {
         _locationDao.saveOrUpdateRecords(reports.toArray(new ArchivedInferredLocationRecord[0]));
