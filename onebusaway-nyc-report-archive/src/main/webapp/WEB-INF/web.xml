@@ -21,7 +21,6 @@
         <param-value>
             classpath:org/onebusaway/nyc/report_archive/application-context.xml
             classpath:org/onebusaway/nyc/tdm_adapters/application-context.xml
-            classpath:org/onebusaway/nyc/transit_data_federation/application-context-webapp.xml
             classpath:data-sources.xml
         </param-value>
     </context-param>
