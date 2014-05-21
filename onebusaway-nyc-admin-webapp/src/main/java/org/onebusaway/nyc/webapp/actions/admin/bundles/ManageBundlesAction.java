@@ -99,25 +99,31 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	 * Creates directory for uploading bundles on AWS
 	 */
 	public String createDirectory() {
-	  String createDirectoryMessage = null;
-	  boolean directoryCreated = false;
-	  
-	  _log.debug("in create directory with dir=" + directoryName);
-		if(fileService.bundleDirectoryExists(directoryName)) {
-		  _log.info("bundle dir exists");
-			createDirectoryMessage = directoryName + " already exists. Please try again!";
+		String createDirectoryMessage = null;
+		boolean directoryCreated = false;
+
+		_log.debug("in create directory with dir=" + directoryName);
+
+		if (directoryName.contains(" ")){
+			_log.info("bundle dir contains a space");
+			createDirectoryMessage = "Directory name cannot contain spaces. Please try again!";
 		} else {
-		  _log.info("creating bundledir=" + directoryName);
-			//Create the directory if it does not exist.
-			directoryCreated = fileService.createBundleDirectory(directoryName);
-			bundleDirectory = directoryName;
-			if(directoryCreated) {
-				createDirectoryMessage = "Successfully created new directory: " +directoryName;
+			if(fileService.bundleDirectoryExists(directoryName)) {
+				_log.info("bundle dir exists");
+				createDirectoryMessage = directoryName + " already exists. Please try again!";
 			} else {
-				createDirectoryMessage = "Unable to create direcory: " +directoryName;
+				_log.info("creating bundledir=" + directoryName);
+				//Create the directory if it does not exist.
+				directoryCreated = fileService.createBundleDirectory(directoryName);
+				bundleDirectory = directoryName;
+				if(directoryCreated) {
+					createDirectoryMessage = "Successfully created new directory: " +directoryName;
+				} else {
+					createDirectoryMessage = "Unable to create direcory: " +directoryName;
+				}
 			}
 		}
-		 
+
 		directoryStatus = createDirectoryStatus(createDirectoryMessage, directoryCreated);
 		return "selectDirectory";
 	}
