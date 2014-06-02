@@ -6,6 +6,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
+import org.onebusaway.nyc.presentation.comparator.RouteComparator;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
@@ -20,7 +21,6 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
-
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -217,6 +217,8 @@ public class SearchServiceImpl implements SearchService {
 		queryBean.setMaxCount(100);
 
 		RoutesBean routes = _nycTransitDataService.getRoutes(queryBean);
+		
+		Collections.sort(routes.getRoutes(), new RouteComparator());
 
 		SearchResultCollection results = new SearchResultCollection();
 
