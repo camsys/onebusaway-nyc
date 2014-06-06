@@ -46,6 +46,11 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 	private boolean checkAge = false;
 	private int ageLimit = 300;
 	private boolean refreshCheck;
+	
+	private boolean overrideTimePredictionsValueFromTDM = false;
+	public void setEnableTimePredictionsOverridesTDM(boolean value){
+		overrideTimePredictionsValueFromTDM = value;
+	}
 
 	public InferenceInputQueueListenerTask() {
 		setConfigurationService(new ConfigurationServiceImpl());
@@ -81,7 +86,7 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 	}
 
 	protected boolean getUseTimePredictions() {
-		return useTimePredictions;
+		return useTimePredictions || overrideTimePredictionsValueFromTDM;
 	}
 	
 	protected long getAgeLimit() {
@@ -116,7 +121,7 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 		if (_vehicleLocationListener != null) {
 			_vehicleLocationListener.handleVehicleLocationRecord(vlr);
 		}
-		if (useTimePredictions) {
+		if (getUseTimePredictions()) {
 			// if we're updating time predictions with the generation service,
 			// tell the integration service to fetch
 			// a new set of predictions now that the TDS has been updated

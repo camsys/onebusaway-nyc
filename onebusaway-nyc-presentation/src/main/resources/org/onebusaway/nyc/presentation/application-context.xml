@@ -25,6 +25,13 @@
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
 
+	<bean id="PresentationService" class="org.onebusaway.nyc.presentation.impl.realtime.PresentationServiceImpl">
+		<!-- Only uncomment this if you plan on enabling or disabling predictions locally by overriding the TDM -->
+		<!--
+		<property name="useTimePredictions" value="true" />
+		-->
+	</bean>
+
 	<bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
 
     <context:component-scan base-package="org.onebusaway.nyc.presentation.impl"/>

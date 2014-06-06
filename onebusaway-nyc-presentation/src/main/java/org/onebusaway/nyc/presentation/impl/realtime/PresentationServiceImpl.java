@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.presentation.impl.realtime;
 
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
+import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
  * @author jmaki
  *
  */
-@Component
 public class PresentationServiceImpl implements PresentationService {
   
 
@@ -26,6 +26,11 @@ public class PresentationServiceImpl implements PresentationService {
   private ConfigurationService _configurationService;
 
   private Long _now = null;
+  
+  private boolean overrideTDMTimePredictionsValueToEnable = false;
+  public void setUseTimePredictions(boolean value){
+	  overrideTDMTimePredictionsValueToEnable = value;
+  }
   
   @Override
   public void setTime(long time) {
@@ -47,6 +52,9 @@ public class PresentationServiceImpl implements PresentationService {
    */
   @Override
   public Boolean useTimePredictionsIfAvailable() {
+	  if(overrideTDMTimePredictionsValueToEnable == true){
+		  return overrideTDMTimePredictionsValueToEnable;
+	  }
 	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
   }
 
