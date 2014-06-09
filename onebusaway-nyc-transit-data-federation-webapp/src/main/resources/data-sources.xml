@@ -58,12 +58,7 @@
 
     
 	<!-- Input Queue Configuration -->
-  	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask">
-  		<!-- Uncomment to override the TDM value for this (also configure properties on timeInputQueue here and Presentation layer -->
-  		<!-- 
-  		<property name="enableTimePredictionsOverridesTDM" value="true" />
-  		-->
-  	</bean>
+  	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
 	<!--  for debugging purposes, the TDS can be populated via a JSON file -->
 
 <!--
@@ -77,7 +72,6 @@
 		<property name="disable" value="false"/>
 		<!-- Set the below values to override the TDM's provided values (mostly for testing, but might be useful in the future) -->
 		<!-- 
-		<property name="useTimePredictions" value="true" />
 		<property name="queueHost" value="queue.dev.obanyc.com" />
 		<property name="queueName" value="time" />
 		<property name="queuePort" value="5569" />

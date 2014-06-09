@@ -12,20 +12,22 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
   	private String _queueHost = null;
   	private String _queueName = "time";
   	private Integer _queuePort = 5569;
-  	protected boolean _xmlOverrideUseTimePredictions = false;
+  	private boolean _xmlSetHost = false;
+  	private boolean _xmlSetName = false;
+  	private boolean _xmlSetPort = false;
   	
   	//setters for overriding queue values via spring configuration
   	public void setQueueHost(String host){
   		_queueHost = host;
+  		_xmlSetHost = true;
   	}
   	public void setQueuePort(Integer port){
   		_queuePort = port;
+  		_xmlSetPort = true;
   	}
   	public void setQueueName(String name){
   		_queueName = name;
-  	}
-  	public void setUseTimePredictions(boolean useTimePredictionsXMLOverrideOption){
-  		_xmlOverrideUseTimePredictions = useTimePredictionsXMLOverrideOption;
+  		_xmlSetName = true;
   	}
 
 	
@@ -47,7 +49,7 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 	
 	@Override
 	public String getQueueHost() {
-		if(_xmlOverrideUseTimePredictions){
+		if(_xmlSetHost){
 			return _queueHost;
 		}
 		return _configurationService.getConfigurationValueAsString("tds.timePredictionQueueHost", _queueHost);
@@ -55,7 +57,7 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 
 	@Override
 	public String getQueueName() {
-		if(_xmlOverrideUseTimePredictions){
+		if(_xmlSetName){
 			return _queueName;
 		}
 		return _configurationService.getConfigurationValueAsString("tds.timePredictionQueueName", _queueName);
@@ -63,7 +65,7 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 
 	@Override
 	public Integer getQueuePort() {
-		if(_xmlOverrideUseTimePredictions){
+		if(_xmlSetPort){
 			return _queuePort;
 		}
 		return _configurationService.getConfigurationValueAsInteger("tds.timePredictionQueueOutputPort", _queuePort);
@@ -82,9 +84,14 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
   //Central authority method on determining if time-based-predictions are enabled
   @Refreshable(dependsOn = { "display.useTimePredictions" })
   public Boolean useTimePredictionsIfAvailable() {
-	if(Boolean.TRUE.equals(this._xmlOverrideUseTimePredictions)) return true;
-    if (Boolean.TRUE.equals(Boolean.parseBoolean(disable))) return false;
-    return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
+	  //System properties are easier than xml configuration
+	  if(System.getProperty("showPredictionsLocally") != null){
+		  if(System.getProperty("showPredictionsLocally").equalsIgnoreCase("true")){
+			  return true;
+		  }
+	  }
+	  if (Boolean.TRUE.equals(Boolean.parseBoolean(disable))) return false;
+	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
   }
   
 	@Refreshable(dependsOn = { "tds.timePredictionQueueHost", "tds.timePredictionQueuePort", "tds.timePredictionQueueName" })

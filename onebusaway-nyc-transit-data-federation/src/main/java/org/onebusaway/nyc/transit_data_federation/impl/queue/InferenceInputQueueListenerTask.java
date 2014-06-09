@@ -46,11 +46,6 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 	private boolean checkAge = false;
 	private int ageLimit = 300;
 	private boolean refreshCheck;
-	
-	private boolean overrideTimePredictionsValueFromTDM = false;
-	public void setEnableTimePredictionsOverridesTDM(boolean value){
-		overrideTimePredictionsValueFromTDM = value;
-	}
 
 	public InferenceInputQueueListenerTask() {
 		setConfigurationService(new ConfigurationServiceImpl());
@@ -86,7 +81,13 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 	}
 
 	protected boolean getUseTimePredictions() {
-		return useTimePredictions || overrideTimePredictionsValueFromTDM;
+		//System properties are easier than xml configuration
+		if(System.getProperty("showPredictionsLocally") != null){
+			if(System.getProperty("showPredictionsLocally").equalsIgnoreCase("true")){
+				return true;
+			}
+		}
+		return useTimePredictions;
 	}
 	
 	protected long getAgeLimit() {

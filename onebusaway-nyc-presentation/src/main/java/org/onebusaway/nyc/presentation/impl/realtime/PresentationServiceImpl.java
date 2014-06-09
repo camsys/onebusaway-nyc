@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
  * @author jmaki
  *
  */
+@Component
 public class PresentationServiceImpl implements PresentationService {
   
 
@@ -26,11 +27,6 @@ public class PresentationServiceImpl implements PresentationService {
   private ConfigurationService _configurationService;
 
   private Long _now = null;
-  
-  private boolean overrideTDMTimePredictionsValueToEnable = false;
-  public void setUseTimePredictions(boolean value){
-	  overrideTDMTimePredictionsValueToEnable = value;
-  }
   
   @Override
   public void setTime(long time) {
@@ -52,8 +48,11 @@ public class PresentationServiceImpl implements PresentationService {
    */
   @Override
   public Boolean useTimePredictionsIfAvailable() {
-	  if(overrideTDMTimePredictionsValueToEnable == true){
-		  return overrideTDMTimePredictionsValueToEnable;
+	  //System properties are easier than xml configuration
+	  if(System.getProperty("showPredictionsLocally") != null){
+		  if(System.getProperty("showPredictionsLocally").equalsIgnoreCase("true")){
+			  return true;
+		  }
 	  }
 	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
   }
