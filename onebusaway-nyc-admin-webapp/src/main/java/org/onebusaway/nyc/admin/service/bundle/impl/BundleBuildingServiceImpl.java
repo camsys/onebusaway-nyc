@@ -710,34 +710,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     return bundles;
   }
 
-  // TODO move this to configuration
-  // TODO test this as a single map, instead of seperate results per agency
   private Map<String, String> getAgencyIdMappings(String path) {
     String agencyId = parseAgencyFromPath(path);
     if (agencyId == null) return null;
     Map<String, String> map = new HashMap<String, String>();
-    if ("1".equals(agencyId)) {
-        map.put("KCM", "1");
-        map.put("EOS", "23");
-        map.put("ST", "40");
-      }
-      if ("3".equals(agencyId)) {
-        map.put("PT", "3");
-        map.put("Pierce Transit", "3");
-        map.put("ST", "40");
-      }
-      if ("19".equals(agencyId)) {
-        map.put("IntercityTransit", "19");
-      }
-      if ("29".equals(agencyId)) {
-  	  map.put("29", "29");
-  	}
-      if ("40".equals(agencyId)) {
-  	  map.put("SoundTransit", "40");
-  	}
-      if ("99".equals(agencyId)) {
-  	  map.put("A01", "99");
-  	}
+    try {
+		String[] elements = configurationServiceClient.getItem("agency", agencyId).split(";");
+		for(String pair : elements){
+			String[] components = pair.split(",");
+			if (components.length == 2){
+				map.put(components[0], components[1]);
+			}
+		}
+		if (map.size() == 0){
+	    	_log.error("Agency mapping is not configured for agencyId " + agencyId + ".");
+	    }
+	} catch (Exception e) {
+		_log.error("getAgencyIdMappings failed:", e);
+	}
     return map;
   }
 

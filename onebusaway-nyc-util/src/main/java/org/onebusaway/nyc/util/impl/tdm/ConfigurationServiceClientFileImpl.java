@@ -61,12 +61,16 @@ public class ConfigurationServiceClientFileImpl implements
 	}
 
 	@Override
-	public String getItem(String baseObject, String key) throws Exception {
-		List<Map<String, String>> items = getItems("config", "list");
-		if (items == null) return null;
-		for (Map<String, String> component : items) {
-			if (component.containsKey("key") && key.equals(component.get("key"))) {
-				return component.get("value");
+	public String getItem(String component, String key) throws Exception {
+		List<Map<String, String>> settings = getItems("config", "list");
+		if (settings == null) return null;
+		for (Map<String, String> setting : settings) {
+			if ((component==null || 
+				(setting.containsKey("component") && 
+					component.equals(setting.get("component"))) &&
+				setting.containsKey("key") && 
+				key.equals(setting.get("key")))) {
+				return setting.get("value");
 			}
 		}
 		return null;
