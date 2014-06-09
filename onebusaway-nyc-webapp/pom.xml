@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>onebusaway-nyc</artifactId>
 		<groupId>org.onebusaway</groupId>
-		<version>2.12.0-SNAPSHOT</version>
+		<version>2.11.3-test-SNAPSHOT</version>
 	</parent>
 	<groupId>org.onebusaway</groupId>
 	<artifactId>onebusaway-nyc-webapp</artifactId>
@@ -26,13 +26,13 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-presentation</artifactId>
-			<version>2.12.0-SNAPSHOT</version>
+			<version>2.11.3-test-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-transit-data</artifactId>
-			<version>2.12.0-SNAPSHOT</version>
+			<version>2.11.3-test-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
@@ -43,12 +43,12 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-api-core</artifactId>
-			<version>2.12.0-SNAPSHOT</version>
+			<version>2.11.3-test-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-util</artifactId>
-			<version>2.12.0-SNAPSHOT</version>
+			<version>2.11.3-test-SNAPSHOT</version>
 		</dependency>
 		
 		<!-- Wiki Integration Support -->
@@ -143,6 +143,18 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.17</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>commons-digester</groupId>
+			<artifactId>commons-digester</artifactId>
+			<version>1.7</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.1</version>
 		</dependency>
 
 	</dependencies>

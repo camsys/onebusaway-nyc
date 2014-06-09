@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.presentation.impl.realtime;
 
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
+import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -47,6 +48,12 @@ public class PresentationServiceImpl implements PresentationService {
    */
   @Override
   public Boolean useTimePredictionsIfAvailable() {
+	  //System properties are easier than xml configuration
+	  if(System.getProperty("showPredictionsLocally") != null){
+		  if(System.getProperty("showPredictionsLocally").equalsIgnoreCase("true")){
+			  return true;
+		  }
+	  }
 	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
   }
 

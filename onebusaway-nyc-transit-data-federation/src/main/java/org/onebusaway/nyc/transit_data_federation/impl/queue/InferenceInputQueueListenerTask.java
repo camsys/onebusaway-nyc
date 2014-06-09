@@ -81,6 +81,12 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 	}
 
 	protected boolean getUseTimePredictions() {
+		//System properties are easier than xml configuration
+		if(System.getProperty("showPredictionsLocally") != null){
+			if(System.getProperty("showPredictionsLocally").equalsIgnoreCase("true")){
+				return true;
+			}
+		}
 		return useTimePredictions;
 	}
 	
@@ -116,7 +122,7 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 		if (_vehicleLocationListener != null) {
 			_vehicleLocationListener.handleVehicleLocationRecord(vlr);
 		}
-		if (useTimePredictions) {
+		if (getUseTimePredictions()) {
 			// if we're updating time predictions with the generation service,
 			// tell the integration service to fetch
 			// a new set of predictions now that the TDS has been updated

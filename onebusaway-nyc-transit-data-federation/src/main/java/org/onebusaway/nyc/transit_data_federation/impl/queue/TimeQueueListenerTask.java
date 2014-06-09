@@ -8,6 +8,28 @@ import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 public abstract class TimeQueueListenerTask extends QueueListenerTask {
 
   protected abstract void processResult(FeedMessage message);
+  
+  	private String _queueHost = null;
+  	private String _queueName = "time";
+  	private Integer _queuePort = 5569;
+  	private boolean _xmlSetHost = false;
+  	private boolean _xmlSetName = false;
+  	private boolean _xmlSetPort = false;
+  	
+  	//setters for overriding queue values via spring configuration
+  	public void setQueueHost(String host){
+  		_queueHost = host;
+  		_xmlSetHost = true;
+  	}
+  	public void setQueuePort(Integer port){
+  		_queuePort = port;
+  		_xmlSetPort = true;
+  	}
+  	public void setQueueName(String name){
+  		_queueName = name;
+  		_xmlSetName = true;
+  	}
+
 	
 	@Override
 	public boolean processMessage(String address, byte[] buff) {
@@ -27,17 +49,26 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 	
 	@Override
 	public String getQueueHost() {
-		return _configurationService.getConfigurationValueAsString("tds.timePredictionQueueHost", null);
+		if(_xmlSetHost){
+			return _queueHost;
+		}
+		return _configurationService.getConfigurationValueAsString("tds.timePredictionQueueHost", _queueHost);
 	}
 
 	@Override
 	public String getQueueName() {
-		return _configurationService.getConfigurationValueAsString("tds.timePredictionQueueName", "time");
+		if(_xmlSetName){
+			return _queueName;
+		}
+		return _configurationService.getConfigurationValueAsString("tds.timePredictionQueueName", _queueName);
 	}
 
 	@Override
 	public Integer getQueuePort() {
-		return _configurationService.getConfigurationValueAsInteger("tds.timePredictionQueueOutputPort", 5569);
+		if(_xmlSetPort){
+			return _queuePort;
+		}
+		return _configurationService.getConfigurationValueAsInteger("tds.timePredictionQueueOutputPort", _queuePort);
 	}
 	
   @Override
@@ -50,10 +81,17 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
     this.disable = disable;
   }
   
+  //Central authority method on determining if time-based-predictions are enabled
   @Refreshable(dependsOn = { "display.useTimePredictions" })
   public Boolean useTimePredictionsIfAvailable() {
-    if (Boolean.TRUE.equals(Boolean.parseBoolean(disable))) return false;
-    return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
+	  //System properties are easier than xml configuration
+	  if(System.getProperty("showPredictionsLocally") != null){
+		  if(System.getProperty("showPredictionsLocally").equalsIgnoreCase("true")){
+			  return true;
+		  }
+	  }
+	  if (Boolean.TRUE.equals(Boolean.parseBoolean(disable))) return false;
+	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
   }
   
 	@Refreshable(dependsOn = { "tds.timePredictionQueueHost", "tds.timePredictionQueuePort", "tds.timePredictionQueueName" })
@@ -68,19 +106,19 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 		  return;
 		}
 		
-		String host = getQueueHost();
-		String queueName = getQueueName();
-		Integer port = getQueuePort();
+		_queueHost = getQueueHost();
+		_queueName = getQueueName();
+		_queuePort = getQueuePort();
 
-		if (host == null) {
+		if (_queueHost == null) {
 			_log.info("Prediction input queue is not attached; input hostname was not available via configuration service.");
 			return;
 		}
 
-		_log.info("time prediction input queue listening on " + host + ":" + port + ", queue=" + queueName);
+		_log.info("time prediction input queue listening on " + _queueHost + ":" + _queuePort + ", queue=" + _queueName);
 
 		try {
-			initializeQueue(host, queueName, port);
+			initializeQueue(_queueHost, _queueName, _queuePort);
 		} catch (InterruptedException ie) {
 			return;
 		}
