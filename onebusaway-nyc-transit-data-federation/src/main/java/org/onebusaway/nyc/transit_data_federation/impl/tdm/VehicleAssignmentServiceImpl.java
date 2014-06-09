@@ -99,10 +99,9 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
     Set<String> keySet = new HashSet<String>(_depotToVehicleIdListMap.keySet());
     for (String depotId : keySet) {
       ArrayList<AgencyAndId> list = getVehicleListForDepot(depotId);
-
       if (list != null) {
-        updateVehicleIdToDepotMap(_depotToVehicleIdListMap.get(depotId), list, depotId);
-        _depotToVehicleIdListMap.put(depotId, list);
+    		updateVehicleIdToDepotMap(_depotToVehicleIdListMap.get(depotId), list, depotId);
+    		_depotToVehicleIdListMap.put(depotId, list);  	
       }
     }
   }
@@ -141,7 +140,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   }
   
   @Override
-  public synchronized ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(
+  public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(
       String depotId) throws Exception {
 
     ArrayList<AgencyAndId> list = _depotToVehicleIdListMap.get(depotId);
@@ -152,9 +151,11 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
         throw new Exception(
             "Vehicle assignment service is temporarily unavailable.");
       }
-
-      updateVehicleIdToDepotMap(_depotToVehicleIdListMap.get(depotId), list, depotId);
-      _depotToVehicleIdListMap.put(depotId, list);
+      
+      synchronized(this){
+    	  updateVehicleIdToDepotMap(_depotToVehicleIdListMap.get(depotId), list, depotId);
+    	  _depotToVehicleIdListMap.put(depotId, list);
+      }
     }
 
     if (_depotToVehicleIdListMap.size() == 0) {
