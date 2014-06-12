@@ -177,10 +177,13 @@ public class HastusGtfsFactory {
       stop.setLon(point.getX());
       _dao.saveEntity(stop);
     }
-
-    it.close();
+    try {
+      it.close();
+    } catch (Exception e) {
+      _log.error("issue closing feature.  Exception will be ignored.", e);
+    }
   }
-
+  
   private String computeStopName(String primaryName, String crossName) {
     String stopName = primaryName + " & " + crossName;
     stopName = stopName.replaceAll(" & Bay", " - Bay");
@@ -225,7 +228,11 @@ public class HastusGtfsFactory {
       item.setGeometry(feature.getDefaultGeometry());
       sequence.add(item);
     }
-    it.close();
+    try {
+      it.close();
+    } catch (Exception e) {
+      _log.error("issue closing feature.  Exception will be ignored.", e);
+    }
   }
 
   private void processShapes() {

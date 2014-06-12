@@ -65,13 +65,20 @@ public class ConfigurationServiceClientFileImpl implements
 		List<Map<String, String>> settings = getItems("config", "list");
 		if (settings == null) return null;
 		for (Map<String, String> setting : settings) {
-			if ((component==null || 
-				(setting.containsKey("component") && 
-					component.equals(setting.get("component"))) &&
-				setting.containsKey("key") && 
-				key.equals(setting.get("key")))) {
-				return setting.get("value");
-			}
+		  if (component == null) {
+		    if (setting.containsKey("key") && key.equals(setting.get("key"))) {
+		      _log.info("getItem(no-component)(" + component  + ", " + key + ")=" + setting.get("value"));
+		      return setting.get("value");  
+		    }
+		  } else {
+  			if ((setting.containsKey("component") && 
+  					component.equals(setting.get("component"))) &&
+  				setting.containsKey("key") && 
+  				key.equals(setting.get("key"))) {
+  			  _log.info("getItem(" + component  + ", " + key + ")=" + setting.get("value"));
+  				return setting.get("value");
+  			}
+		  }
 		}
 		return null;
 	}

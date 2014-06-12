@@ -83,14 +83,16 @@ public class BundleResource implements ServletContextAware {
         _log.debug("response:" + json);
         return Response.ok(json).build();
       } else {
+        _log.debug("local conenction:" + environment);
         String json = _localConnectionService.getList(environment);
+        _log.debug("response:" + json);
         if (json != null) {
           return Response.ok(json).build();
         }
         return Response.serverError().build();
       }
     } catch (Exception e) {
-      _log.info("bundle list failed:", e);
+      _log.error("bundle list failed:", e);
       return Response.serverError().build();
     }
   }

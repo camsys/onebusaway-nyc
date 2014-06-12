@@ -549,17 +549,22 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   }
   
   private boolean isStifTaskApplicable() {
+    boolean isStifTaskApplicable = true; // on by default for NYC
+    
+    if (_auxConfig == null) {
+      try {
+        _auxConfig = configurationService.getConfigurationValueAsString("admin.auxSupport", null);
+        _log.info("auxConfig from configService=" + _auxConfig);
+      } catch (Exception any) {
+        _log.debug(any.toString(), any);
+      }
+    }    
     if (_auxConfig != null) { 
-      return "false".equals(_auxConfig);
+      isStifTaskApplicable =  !"true".equals(_auxConfig);
     }
-    try {
-      _auxConfig = configurationService.getConfigurationValueAsString("admin.auxSupport", null);
-      if ("true".equals(_auxConfig))
-          return false;
-    } catch (Exception any) {
-      return true;
-    }
-    return true;
+
+    _log.info("isStifTaskApplicable=" + isStifTaskApplicable + " for auxConfig=" + _auxConfig);
+    return isStifTaskApplicable;
   }
 
   private String getTripToDSCFilename() {
@@ -715,19 +720,29 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     if (agencyId == null) return null;
     Map<String, String> map = new HashMap<String, String>();
     try {
-		String[] elements = configurationServiceClient.getItem("agency", agencyId).split(";");
-		for(String pair : elements){
-			String[] components = pair.split(",");
-			if (components.length == 2){
-				map.put(components[0], components[1]);
-			}
-		}
-		if (map.size() == 0){
-	    	_log.error("Agency mapping is not configured for agencyId " + agencyId + ".");
-	    }
-	} catch (Exception e) {
-		_log.error("getAgencyIdMappings failed:", e);
-	}
+      if (configurationServiceClient == null) {
+        _log.error("misconfiguration: expecting configurationServiceClient!");
+        return map;
+      }
+      String elementStr = configurationServiceClient.getItem("agency", agencyId);
+      if (elementStr == null) {
+        _log.error("expecting agency configuration for " + agencyId);
+        return map;
+      }
+      String[] elements = elementStr.split(";");
+      for (String pair : elements) {
+        String[] components = pair.split(",");
+        if (components.length == 2) {
+          map.put(components[0], components[1]);
+        }
+      }
+      if (map.size() == 0) {
+        _log.error("Agency mapping is not configured for agencyId " + agencyId
+            + ".");
+      }
+    } catch (Exception e) {
+      _log.error("getAgencyIdMappings failed:", e);
+    }
     return map;
   }
 

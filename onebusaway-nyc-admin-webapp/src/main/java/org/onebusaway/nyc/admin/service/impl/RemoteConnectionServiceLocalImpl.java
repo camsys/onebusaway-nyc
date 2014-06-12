@@ -69,6 +69,8 @@ public class RemoteConnectionServiceLocalImpl implements
 				json = json + "\"" + bundle + "\"";
 			}
 			return json+"]";
+		} else {
+		  _log.error("expected property bundleStagingDir to have existing directory=" + bundleStagingProp);
 		}
 		return null;
 	}
