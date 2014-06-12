@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs_transformer.GtfsTransformer;
 import org.onebusaway.gtfs_transformer.GtfsTransformerLibrary;
 import org.onebusaway.gtfs_transformer.factory.TransformFactory;
@@ -45,8 +46,12 @@ public class BaseModTask {
 
   protected String runModifications(GtfsBundle gtfsBundle, String agencyId,
       String modUrl, String transform) throws Exception {
+    _log.info("runModifications(" + agencyId + ") with mappings=" + gtfsBundle.getAgencyIdMappings() );
     GtfsTransformer mod = new GtfsTransformer();
     TransformFactory factory = mod.getTransformFactory();
+    
+    addAgencyMappings(mod.getReader(), gtfsBundle);
+    
     // add models outside the default namespace
     factory.addEntityPackage("org.onebusaway.king_county_metro_gtfs.model");
 
@@ -70,6 +75,14 @@ public class BaseModTask {
     _log.info("done!");
     // cleanup
     return cleanup(gtfsBundle);
+  }
+
+  private void addAgencyMappings(GtfsReader reader, GtfsBundle gtfsBundle) {
+    if (gtfsBundle != null && gtfsBundle.getAgencyIdMappings() != null) {
+      for (String key : gtfsBundle.getAgencyIdMappings().keySet()) {
+        reader.addAgencyIdMapping(key, gtfsBundle.getAgencyIdMappings().get(key));
+      }
+    }
   }
 
   private String cleanup(GtfsBundle gtfsBundle) throws Exception {
@@ -97,7 +110,7 @@ public class BaseModTask {
     }
 
     gtfsBundle.setPath(new File(newGtfsName));
-    _log.info("gtfsBundle.getPath(mod)=" + gtfsBundle.getPath());
+    _log.info("gtfsBundle.getPath(mod)=" + gtfsBundle.getPath() + " with mappings= " + gtfsBundle.getAgencyIdMappings());
 
     if (getOutputDirectory() != null) {
       String outputLocation = getOutputDirectory() + File.separator
