@@ -29,7 +29,7 @@
 			</label>
 		</div>
 		<div id="helpfulMessage">
-			Coming soon!
+			<s:text name="deploy-bundle.helpfulMessage"/>
 		<!-- Please copy the bundle created in Build And Validate to the <b><s:property value="s3Path" ></s:property></b> directory via the S3 Management Console.--> 
 		</div>
 		<div id="deployBundle">
