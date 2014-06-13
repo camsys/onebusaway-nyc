@@ -38,7 +38,7 @@ public class TransitDataManagerApiLibrary {
         _apiEndpointPath = path;
       }
 
-      _log.info("TDM hostname = " + _tdmHostname);
+      _log.info("Sheldon's TDM hostname = " + _tdmHostname);
 
       if (!StringUtils.isBlank(_tdmHostname))
         _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);

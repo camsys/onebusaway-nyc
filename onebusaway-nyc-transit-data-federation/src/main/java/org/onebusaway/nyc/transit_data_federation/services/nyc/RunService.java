@@ -52,6 +52,8 @@ public interface RunService {
   public boolean isValidRunId(String runId);
 
   public Set<AgencyAndId> getRoutesForRunId(String opAssignedRunId);
+  
+  public Set<AgencyAndId> getRoutesForRunId(String opAssignedRunId, String AgencyId);
 
   public Set<String> getRunIdsForTrip(TripEntry trip);
 

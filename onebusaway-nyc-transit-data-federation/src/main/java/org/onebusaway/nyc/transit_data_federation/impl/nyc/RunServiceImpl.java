@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -424,6 +425,22 @@ public class RunServiceImpl implements RunService {
     Collection<AgencyAndId> routeIds = runIdsToRoutes.get(runId);
     return Objects.firstNonNull(Sets.newHashSet(routeIds), Collections.<AgencyAndId>emptySet());
   }
+
+  @Override
+  public Set<AgencyAndId> getRoutesForRunId(String runId, String agencyId) {
+    _log.error("getRoutesForRunId(" + runId + ", " + agencyId + ")");
+    Set<AgencyAndId> filtered = new HashSet<AgencyAndId>();
+    Set<AgencyAndId> routeIds = getRoutesForRunId(runId);
+    for (AgencyAndId routeId : routeIds) {
+      if (routeId.getAgencyId().equals(agencyId)) {
+        filtered.add(routeId);
+      } else {
+        _log.error("dropping " + routeId + ":" + runId);
+      }
+    }
+    return filtered;
+  }
+
   
   @Override
   public RunTripEntry getPreviousEntry(RunTripEntry before, long serviceDate) {
