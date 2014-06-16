@@ -195,7 +195,7 @@
                         <configuration>
                             <executable>java</executable>
                             <arguments>
-                                <argument>-Xmx6g</argument>
+                                <argument>-Xmx4g</argument>
                                 <argument>-classpath</argument>
                                 <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>

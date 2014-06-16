@@ -48,6 +48,8 @@ public interface RunService {
       String runAgencyAndId) throws IllegalArgumentException;
 
   public Collection<? extends AgencyAndId> getTripIdsForRunId(String runId);
+  
+  public Collection<? extends AgencyAndId> getTripIdsForRunId(String runId, String agencyId);
 
   public boolean isValidRunId(String runId);
 

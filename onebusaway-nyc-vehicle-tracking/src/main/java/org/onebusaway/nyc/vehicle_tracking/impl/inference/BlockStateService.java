@@ -503,9 +503,7 @@ public class BlockStateService {
     					  }
     				  } 
     			  }
-    			  if (!blockTrip.getTrip().getId().getAgencyId().equals(vehicleAgencyId)) {
-    			  _log.error("found blockTrip=" + blockTrip + " that does not match agency=" + vehicleAgencyId);
-    			  }
+
     			  instancesToDists.put(instance, distanceAlongBlock);
     		  }
     	  }

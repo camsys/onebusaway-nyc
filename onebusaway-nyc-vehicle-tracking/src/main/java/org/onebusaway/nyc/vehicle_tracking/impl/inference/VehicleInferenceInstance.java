@@ -585,13 +585,7 @@ public class VehicleInferenceInstance {
         if (oai != null) {
           if (_runService.isValidRunId(oai.getRunId())) {
             opAssignedRunId = oai.getRunId();
-            Set<AgencyAndId> routesForRunId = _runService.getRoutesForRunId(opAssignedRunId, agencyId);
-            for (AgencyAndId agency: routesForRunId) {
-              if (!agencyId.equals(agency.getAgencyId())) {
-                _log.error("mismatched agencyId for run=" + oai.getRunId());
-              }
-            }
-            routeIds.addAll(routesForRunId);
+            routeIds.addAll(_runService.getRoutesForRunId(opAssignedRunId, agencyId));
           }
         }
       } catch (final Exception e) {
@@ -619,13 +613,7 @@ public class VehicleInferenceInstance {
           if (bestFuzzyDistance <= 0) {
             fuzzyMatches = fuzzyReportedMatches.get(bestFuzzyDistance);
             for (final String runId : fuzzyMatches) {
-              Set<AgencyAndId> routesForRunId = _runService.getRoutesForRunId(runId, agencyId);
-              for (AgencyAndId agency: routesForRunId) {
-                if (!agencyId.equals(agency.getAgencyId())) {
-                  _log.error("mismatched agencyId(" + agencyId + " for run=" + runId);
-                }
-              }
-              routeIds.addAll(routesForRunId);
+              routeIds.addAll(_runService.getRoutesForRunId(runId, agencyId));
             }
           }
         }

@@ -22,8 +22,6 @@
                 <ref bean="google_transit_queens" />
                 <ref bean="google_transit_brooklyn" />
                 <ref bean="google_transit_bronx" />
-                <ref bean="google_transit_manhattan" />
-                <ref bean="google_transit_staten_island" />
                 <ref bean="google_mtabc" />
                 <ref bean="gtfs_mta_stub" />
             </list>
