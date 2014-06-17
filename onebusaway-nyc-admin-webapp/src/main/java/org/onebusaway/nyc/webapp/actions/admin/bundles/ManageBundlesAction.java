@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.ServletContext;
 
@@ -154,15 +156,14 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	 * Returns the existing directories in the current bucket on AWS
 	 * @return list of existing directories
 	 */
-	public List<ExistingDirectory> getExistingDirectories() {
+	public Set<ExistingDirectory> getExistingDirectories() {
 		List<String[]> existingDirectories = fileService.listBundleDirectories(MAX_RESULTS);
-		List<ExistingDirectory> directories = new ArrayList<ExistingDirectory>();
+		Set<ExistingDirectory> directories = new TreeSet<ExistingDirectory> ();
 		for(String[] existingDirectory : existingDirectories) {
 			ExistingDirectory directory = new ExistingDirectory(existingDirectory[0], existingDirectory[1], 
 					existingDirectory[2]);
 			directories.add(directory);
 		}
-		
 		return directories;
 	}
 	

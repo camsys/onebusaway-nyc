@@ -5,7 +5,7 @@ package org.onebusaway.nyc.admin.model.ui;
  * @author abelsare
  *
  */
-public class ExistingDirectory {
+public class ExistingDirectory implements Comparable {
 	private String name;
 	private String type;
 	private String creationTimestamp;
@@ -55,5 +55,12 @@ public class ExistingDirectory {
 		this.creationTimestamp = creationTimestamp;
 	}
 	
-	
+	public int compareTo(Object directory) {
+		try {
+			return this.getName().compareTo(
+					((ExistingDirectory) directory).getName());
+		} catch (Exception e) {
+			return 0;
+		}
+	}
 }
