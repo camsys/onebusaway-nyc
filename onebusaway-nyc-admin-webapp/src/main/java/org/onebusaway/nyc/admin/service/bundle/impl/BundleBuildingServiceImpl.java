@@ -38,6 +38,7 @@ import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleC
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
 import org.onebusaway.transit_data_federation.bundle.model.TaskDefinition;
+import org.onebusaway.transit_data_federation.bundle.tasks.EntityReplacementStrategyFactory;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private ConfigurationService configurationService;
   private LoggingService loggingService;
   private String _auxConfig = null;
+  private String _stopConsolidationConfig = null;
   private boolean _debug = false;
   
   public void setDebug(boolean flag) {
@@ -308,7 +310,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
      File auxDir = new File(auxPath);
      _log.info("creating aux directory=" + auxPath);
      auxDir.mkdirs();
-    //xxx
   }
 
   //clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
@@ -451,44 +452,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       BeanDefinitionBuilder task = null;
       if (isStifTaskApplicable()) {
-        // STEP 3
-        BeanDefinitionBuilder stifLoaderTask = BeanDefinitionBuilder.genericBeanDefinition(StifTask.class);
-        stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
-        stifLoaderTask.addPropertyReference("logger", "multiCSVLogger");
-        // TODO this is a convention, pull out into config?
-        stifLoaderTask.addPropertyValue("stifPath", request.getTmpDirectory()
-            + File.separator + "stif");
-        String notInServiceDirString = request.getTmpDirectory()
-            + File.separator + "config";
-        String notInServiceFilename = notInServiceDirString +  File.separator + "NotInServiceDSCs.txt";
-
-        _log.info("creating NotInServiceDSCs file = " + notInServiceFilename);
-        new File(notInServiceDirString).mkdirs();
-        new NYCFileUtils().createFile(notInServiceFilename,
-            listToFile(request.getNotInServiceDSCList()));
-        stifLoaderTask.addPropertyValue("notInServiceDscPath",
-            notInServiceFilename);
-
-        String dscMapPath = response.getBundleInputDirectory() + File.separator
-            + "config" + File.separator + getTripToDSCFilename();
-        _log.info("looking for configuration at " + dscMapPath);
-        File dscMapFile = new File(dscMapPath);
-        if (dscMapFile.exists()) {
-          _log.info("loading tripToDSCMap at" + dscMapPath);
-          response.addStatusMessage("loading tripToDSCMap at" + dscMapPath);
-          stifLoaderTask.addPropertyValue("tripToDSCOverridePath", dscMapPath);
-        } else {
-          response.addStatusMessage(getTripToDSCFilename()
-              + " not found, override ignored");
-        }
-        beans.put("stifLoaderTask", stifLoaderTask.getBeanDefinition());
-
-        task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
-        task.addPropertyValue("taskName", "stifLoaderTask");
-        task.addPropertyValue("afterTaskName", "check_shapes");
-        task.addPropertyValue("beforeTaskName", "transit_graph");
-        task.addPropertyReference("task", "stifLoaderTask");
-        beans.put("stifLoaderTaskDef", task.getBeanDefinition());
+        addStifTask(beans, request, response);
       }
       
       _log.debug("setting outputPath=" + outputPath);
@@ -511,6 +475,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       contextBeans.putAll(beans);
       context = ContainerLibrary.createContext(contextPaths, contextBeans);
       creator.setContext(context);
+
+      if (isStopConsolidationApplicable()) {
+        addStopConsolidationMappings(context, request, response);
+      }
       
       response.addStatusMessage("building bundle");
       creator.run();
@@ -548,6 +516,70 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
   
+  private void addStopConsolidationMappings(ConfigurableApplicationContext context,
+      BundleBuildRequest request, BundleBuildResponse response) {
+    EntityReplacementStrategyFactory entityReplacementStartegyFactory 
+      = (EntityReplacementStrategyFactory) context.getBean("entityReplacementStrategyFactory");
+    String stopMappingUrl = configurationService.getConfigurationValueAsString("admin.stopMappingUrl", null);
+    
+    if (stopMappingUrl != null && entityReplacementStartegyFactory != null) {
+      _log.info("configuring stopConsolidation(factory=" 
+          + entityReplacementStartegyFactory + ", stops=" + stopMappingUrl);
+      Map<Class<?>, String> mappings = new HashMap<Class<?>, String>();
+      mappings.put(org.onebusaway.gtfs.model.Stop.class, stopMappingUrl);
+      entityReplacementStartegyFactory.setEntityMappings(mappings);
+      response.addStatusMessage("configuration StopMappingUrl=" + stopMappingUrl);
+    } else {
+      _log.info("not configuring stopConsolidation(factory=" 
+          + entityReplacementStartegyFactory + ", stops=" + stopMappingUrl);
+    }
+    
+  }
+
+  private void addStifTask(Map<String, BeanDefinition> beans, BundleBuildRequest request, BundleBuildResponse response) {
+    // STEP 3
+    BeanDefinitionBuilder stifLoaderTask = BeanDefinitionBuilder.genericBeanDefinition(StifTask.class);
+    stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
+    stifLoaderTask.addPropertyReference("logger", "multiCSVLogger");
+    // TODO this is a convention, pull out into config?
+    stifLoaderTask.addPropertyValue("stifPath", request.getTmpDirectory()
+        + File.separator + "stif");
+    String notInServiceDirString = request.getTmpDirectory()
+        + File.separator + "config";
+    String notInServiceFilename = notInServiceDirString +  File.separator + "NotInServiceDSCs.txt";
+
+    _log.info("creating NotInServiceDSCs file = " + notInServiceFilename);
+    new File(notInServiceDirString).mkdirs();
+    new NYCFileUtils().createFile(notInServiceFilename,
+        listToFile(request.getNotInServiceDSCList()));
+    stifLoaderTask.addPropertyValue("notInServiceDscPath",
+        notInServiceFilename);
+
+    String dscMapPath = response.getBundleInputDirectory() + File.separator
+        + "config" + File.separator + getTripToDSCFilename();
+    _log.info("looking for configuration at " + dscMapPath);
+    File dscMapFile = new File(dscMapPath);
+    if (dscMapFile.exists()) {
+      _log.info("loading tripToDSCMap at" + dscMapPath);
+      response.addStatusMessage("loading tripToDSCMap at" + dscMapPath);
+      stifLoaderTask.addPropertyValue("tripToDSCOverridePath", dscMapPath);
+    } else {
+      response.addStatusMessage(getTripToDSCFilename()
+          + " not found, override ignored");
+    }
+    beans.put("stifLoaderTask", stifLoaderTask.getBeanDefinition());
+    
+    BeanDefinitionBuilder task = null;
+    task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+    task.addPropertyValue("taskName", "stifLoaderTask");
+    task.addPropertyValue("afterTaskName", "check_shapes");
+    task.addPropertyValue("beforeTaskName", "transit_graph");
+    task.addPropertyReference("task", "stifLoaderTask");
+    beans.put("stifLoaderTaskDef", task.getBeanDefinition());
+
+    
+  }
+
   private boolean isStifTaskApplicable() {
     boolean isStifTaskApplicable = true; // on by default for NYC
     
@@ -567,6 +599,27 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     return isStifTaskApplicable;
   }
 
+  private boolean isStopConsolidationApplicable() {
+    boolean isStopConsolidationApplicable = false; // off by default for NYC
+    
+    if (_stopConsolidationConfig == null) {
+      try {
+        _stopConsolidationConfig = configurationService.getConfigurationValueAsString("admin.stopConsolidation", null);
+        _log.info("auxConfig from configService=" + _stopConsolidationConfig);
+      } catch (Exception any) {
+        _log.debug(any.toString(), any);
+      }
+    }    
+    if (_stopConsolidationConfig != null) { 
+      isStopConsolidationApplicable =  "true".equals(_stopConsolidationConfig);
+    }
+
+    _log.debug("isStopConsolidationApplicable=" + isStopConsolidationApplicable + " for stopConsolidationConfig=" + _stopConsolidationConfig);
+    return isStopConsolidationApplicable;
+  }
+
+
+  
   private String getTripToDSCFilename() {
     String dscFilename = null;
     try {
