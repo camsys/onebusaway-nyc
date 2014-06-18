@@ -455,6 +455,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         addStifTask(beans, request, response);
       }
       
+      if (isStopConsolidationApplicable()) {
+        addStopConsolidationMappings(beans, request, response);
+      }
+      
+
       _log.debug("setting outputPath=" + outputPath);
       creator.setOutputPath(outputPath);
       creator.setContextPaths(contextPaths);
@@ -462,6 +467,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // manage our own overrides, as we use our own context
       Properties cmdOverrides = new Properties();
       cmdOverrides.setProperty(ARG_THROW_EXCEPTION_INVALID_STOPS, "false");
+      cmdOverrides.setProperty("stopVerificationTask.path", this.getStopVerificationURL());
       creator.setAdditionalBeanPropertyOverrides(cmdOverrides);
 
 
@@ -476,10 +482,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       context = ContainerLibrary.createContext(contextPaths, contextBeans);
       creator.setContext(context);
 
-      if (isStopConsolidationApplicable()) {
-        addStopConsolidationMappings(context, request, response);
-      }
-      
       response.addStatusMessage("building bundle");
       creator.run();
       response.addStatusMessage("bundle build complete");
@@ -516,22 +518,31 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
   
-  private void addStopConsolidationMappings(ConfigurableApplicationContext context,
+  // configure entity replacement strategy to consolidate stops based on configurable URL
+  private void addStopConsolidationMappings(Map<String, BeanDefinition> beans,
       BundleBuildRequest request, BundleBuildResponse response) {
-    EntityReplacementStrategyFactory entityReplacementStartegyFactory 
-      = (EntityReplacementStrategyFactory) context.getBean("entityReplacementStrategyFactory");
     String stopMappingUrl = configurationService.getConfigurationValueAsString("admin.stopMappingUrl", null);
     
-    if (stopMappingUrl != null && entityReplacementStartegyFactory != null) {
-      _log.info("configuring stopConsolidation(factory=" 
-          + entityReplacementStartegyFactory + ", stops=" + stopMappingUrl);
-      Map<Class<?>, String> mappings = new HashMap<Class<?>, String>();
-      mappings.put(org.onebusaway.gtfs.model.Stop.class, stopMappingUrl);
-      entityReplacementStartegyFactory.setEntityMappings(mappings);
+    if (stopMappingUrl != null ) {
+      _log.info("configuring stopConsolidation(" 
+          + ", stops=" + stopMappingUrl);
+      
+      BeanDefinitionBuilder erFactory = BeanDefinitionBuilder.genericBeanDefinition(EntityReplacementStrategyFactory.class);
+      
+      Map<String, String> mappings = new HashMap<String, String>();
+      mappings.put("org.onebusaway.gtfs.model.Stop", stopMappingUrl);
+      erFactory.addPropertyValue("entityMappings", mappings);
+      
+      beans.put("entityReplacementStrategyFactory", erFactory.getBeanDefinition());
+      
+      BeanDefinitionBuilder er = BeanDefinitionBuilder.genericBeanDefinition();
+      er.setFactoryBean("entityReplacementStrategyFactory", "create");
+      beans.put("entityReplacementStrategy", er.getBeanDefinition());
+      
       response.addStatusMessage("configuration StopMappingUrl=" + stopMappingUrl);
     } else {
-      _log.info("not configuring stopConsolidation(factory=" 
-          + entityReplacementStartegyFactory + ", stops=" + stopMappingUrl);
+      _log.info("not configuring stopConsolidation(" 
+           + ", stops=" + stopMappingUrl);
     }
     
   }
@@ -766,6 +777,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       bundles.add(gtfsBundle);
     }
     return bundles;
+  }
+  
+  private String getStopVerificationURL() {
+    String path = null;
+    try {
+      path = configurationServiceClient.getItem(null, "admin.stopVerificationUrl");
+    } catch (Exception e) {
+      _log.error("configuration service lookup issue:", e); 
+    }
+    _log.info("stopVerificationPath = " + path);
+    return path;
   }
 
   private Map<String, String> getAgencyIdMappings(String path) {

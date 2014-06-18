@@ -410,6 +410,17 @@
     <property name="bundleRequestResponse" ref="bundleRequestResponse" />
   </bean>
 
+  <bean id="stopVerificationTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.StopVerificationTask">
+  </bean>
+  
+  <bean id="task_stop_verification" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="stop_verification" />
+    <property name="beforeTaskName" value="summary" />
+    <property name="afterTaskName" value="metadata" />
+    <property name="task" ref="stopVerificationTask" />
+  </bean>
+
+
   <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="summary" />
     <property name="afterTaskName" value="pre_cache" />
@@ -419,6 +430,7 @@
   <bean id="summaryTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.SummarizeCSVTask" >
     <property name="logger" ref="multiCSVLogger" />
   </bean>
+  
   
   <bean id="configurationServiceClient" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientBridge" >
     <constructor-arg type="java.lang.String" value="http://tdm"/>
@@ -433,6 +445,8 @@
             </map>
         </property>
     </bean>
-    
+    <!--  invoked dynamically based on above configuration -->
+    <!-- 
     <bean id="entityReplacementStrategy" factory-bean="entityReplacementStrategyFactory" factory-method="create"/>
+     -->
 </beans>
