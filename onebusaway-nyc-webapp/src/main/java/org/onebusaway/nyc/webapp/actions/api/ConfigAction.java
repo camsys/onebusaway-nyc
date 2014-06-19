@@ -76,11 +76,11 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   }
   
   public Float getMapCenterLat() {
-    return _configurationService.getConfigurationValueAsFloat("display.mapCenterLat", null);
+    return _configurationService.getConfigurationValueAsFloat("display.mapCenterLat1", null);
   }
   
   public Float getMapCenterLon() {
-    return _configurationService.getConfigurationValueAsFloat("display.mapCenterLon", null);
+    return _configurationService.getConfigurationValueAsFloat("display.mapCenterLon1", null);
   }
   
   public Integer getMapZoom() {

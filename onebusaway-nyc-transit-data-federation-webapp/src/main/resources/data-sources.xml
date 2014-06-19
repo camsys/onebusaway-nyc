@@ -49,7 +49,9 @@
         <property name="target" value="hibernateProperties" />
         <property name="properties">
             <props>
+<!--
                 <prop key="bundle.location">${bundle.location}</prop>
+-->
             </props> 
         </property> 
     </bean> 
@@ -57,11 +59,24 @@
     <alias name="dataSource" alias="mutableDataSource" />
 
 <!-- GTFS RT sources -->
+<!--
     <bean id="mbta_avl" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
       <property name="tripUpdatesUrl" value="http://developer.mbta.com/lib/gtrtfs/Passages.pb" />
       <property name="vehiclePositionsUrl" value="http://developer.mbta.com/lib/gtrtfs/Vehicles.pb" />
       <property name="refreshInterval" value="60" />
     </bean>
+-->
+	<bean id="hamilton_avl"
+		class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+		<property name="tripUpdatesUrl" value="http://localhost:8008/gtfs-realtime-hamilton/tripUpdates" />
+		<property name="vehiclePositionsUrl" value="http://localhost:8008/gtfs-realtime-hamilton/vehiclePositions" />
+		<property name="refreshInterval" value="30" />
+		<property name="agencyIds">
+			<list>
+				<value>PAV</value>
+			</list>
+		</property>
+	</bean>
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean">   
     </bean>
 	<!-- Input Queue Configuration -->

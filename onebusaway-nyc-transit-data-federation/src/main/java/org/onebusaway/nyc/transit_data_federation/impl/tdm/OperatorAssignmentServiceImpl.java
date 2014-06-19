@@ -125,7 +125,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   }
 
   public void refreshData() {
-    _log.info("refreshData starting...");
+//    _log.info("refreshData starting...");
     /*
      * update a copy of the data, to reduce the synchronization interval
      */
@@ -147,20 +147,20 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     
     // the actual sync takes place in this method
     updateData(serviceDateMapCopy);
-    _log.info("refreshData complete");
+//    _log.info("refreshData complete");
   }
 
   /**
    * lock the underlying map to update with refreshed values. 
    */
   private  void updateData(Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> serviceDateMapCopy) {
-    _log.info("updateData starting...");
+    _log.debug("updateData starting...");
     synchronized (_serviceDateToOperatorListMap) {
     	for (ServiceDate serviceDate: serviceDateMapCopy.keySet()) {
     		_serviceDateToOperatorListMap.put(serviceDate, serviceDateMapCopy.get(serviceDate));
     	}
     }
-    _log.info("updateData complete");
+    _log.debug("updateData complete");
   }
   
   // cap service dates to within a range of days from now

@@ -71,7 +71,8 @@
 				<vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
 				<config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
 				<archive.path>http://localhost:8080/onebusaway-nyc-report-archive</archive.path>
-				<tdm.host>tdm.dev.obanyc.com</tdm.host>
+<!-- 				<tdm.host>tdm.dev.obanyc.com</tdm.host> -->
+				<tdm.host/>
 				<webapp.api.url />
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>

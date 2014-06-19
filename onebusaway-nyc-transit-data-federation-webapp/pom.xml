@@ -108,8 +108,8 @@
             <id>local-single-port</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
-                <bundle.mode.standalone>false</bundle.mode.standalone>
+                <bundle.location>/var/lib/obanyc/hamilton</bundle.location>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
 <!--
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
