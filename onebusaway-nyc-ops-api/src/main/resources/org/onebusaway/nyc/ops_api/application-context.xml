@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:context="http://www.springframework.org/schema/context" xmlns:aop="http://www.springframework.org/schema/aop"
+  xmlns:tx="http://www.springframework.org/schema/tx" xmlns:sec="http://www.springframework.org/schema/security"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
+
+  <import resource="classpath:data-sources.xml" />
+  <import resource="classpath:org/onebusaway/container/application-context.xml" />
+
+  <context:component-scan base-package="org.onebusaway.nyc.ops_api" />
+
+  <bean id="configurationService" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl" />
+
+  <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
+
+  <bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
+
+  <bean id="gsonTool" class="org.onebusaway.nyc.ops_api.api.json.LowerCaseWDashesGsonJsonTool">
+    <property name="prettyPrintOutput" value="true" />
+  </bean>
+
+  <bean id="usersHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
+    <property name="target" value="hibernateAnnotatedClasses" />
+    <property name="values">
+      <list>
+        <value>org.onebusaway.nyc.ops_api.model.CcLocationReportRecord</value>
+        <value>org.onebusaway.nyc.ops_api.model.ArchivedInferredLocationRecord</value>
+        <value>org.onebusaway.nyc.ops_api.model.CcAndInferredLocationRecord</value>
+      </list>
+    </property>
+  </bean>
+  
+   <bean id="infPersistorService" class="org.onebusaway.nyc.ops_api.impl.InferencePersistenceServiceImpl">
+    <property name="batchSize" value="1000" />
+  </bean>
+</beans>
