@@ -394,15 +394,18 @@ public class VehicleLocationSimulationServiceImpl implements
     String runRoute = runTrip.getRunRoute();
 
     if (StringUtils.equals(runRoute, "MISC")) {
-      // runRoute = "0" + random.nextInt(9) + random.nextInt(9);
-      runRoute = "000";
+	      // runRoute = "0" + random.nextInt(9) + random.nextInt(9);
+	      runRoute = "000";
     } else if (runRoute.length() >= 5) {
-      final String firstPart = runRoute.substring(1, 3);
-      final String lastPart = runRoute.substring(3);
+	      final String firstPart = runRoute.substring(1, 3);
+	      final String lastPart = runRoute.substring(3);
       runRoute = "0" + (random.nextBoolean() ? firstPart : lastPart);
+    } else if(runRoute.length() > 2){
+    	final String firstPart = runRoute.substring(1, 3);
+    	runRoute = "0" + firstPart;
     } else {
-      final String firstPart = runRoute.substring(1, 3);
-      runRoute = "0" + firstPart;
+    	final String firstPart = runRoute;
+	    runRoute = "0" + firstPart;
     }
 
     final String reportedRunId = RunTripEntry.createId(runRoute, runNumber);

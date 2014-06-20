@@ -83,31 +83,13 @@
   </bean>
   <bean id="output_queue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInferenceQueueListenerTask">
   </bean>
-  <!--  Time Queue Configuration -->
-	<!--  This option integrates with an external time prediction queue -->
-	<bean id="timeInputQueueDisable" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
-	  <property name="disable" value="true"/>
-	</bean>
-<!-- tds integration -->
-	<!-- Input Queue Configuration -->
- 	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
-
-    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
-        <property name="properties">
-            <props>
-                <prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
-                <prop key="blockLocationServiceImpl.locationInterpolation">false</prop>
-                <prop key="cacheManager.cacheManagerName">org.onebusaway.transit_data_federation_webapp.cacheManager</prop>
-            </props>
-        </property>
-    </bean>
+  
+  <!-- Transit Data Service -->
     
-   	<bean id="bundleManagementService"
-		class="org.onebusaway.nyc.report_archive.impl.ArchiveBundleManagementServiceImpl">
-		<property name="bundleStoreRoot" value="${bundle.location}" />
-		<property name="standaloneMode" value="${bundle.mode.standalone}" />
-        <property name="tz" value="America/New_York" />
-	</bean>
+  <bean id="nycTransitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+       <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
+       <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
+  </bean>
   
 	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />

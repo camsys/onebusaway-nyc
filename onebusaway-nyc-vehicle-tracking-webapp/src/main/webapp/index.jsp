@@ -20,7 +20,8 @@
 <h2>onebusaway-nyc-vehicle-tracking-webapp</h2>
 
 <ul>
-	<li><a href="vehicle-locations.do">Current Vehicle Particles/Status</a></li>
+	<li><a href="vehicle-locations.do">Current Vehicle Particles/Status (Test Record)</a></li>
+	<li><a href="queued-vehicle-locations.do">Current Vehicle Particles/Status (Queue Record)</a></li>
 	<li><a href="bundles.do">Bundle Status</a></li>
 	<li><a href="vehicle-location-simulation.do">Vehicle Simulator/Logged Data Playback</a></li>
 	<li><a href="data-debug.do">Data Debug/Sanity Checks</a></li>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fmt="http://java.sun.com/jsp/jstl/fmt">
+<jsp:directive.page contentType="text/html" />
+<head>
+<title>Vehicles</title>
+<style>
+table td {
+    border: 1px solid black;
+}
+</style>
+</head>
+<body>
+
+<h2>Vehicles</h2>
+
+<table>
+    <thead>
+        <tr>
+            <td>Time</td>
+            <td><a href="vehicle-locations.do?sort=vehicle">Vehicle</a></td>
+            <td>Particles</td>
+            <td>Reset</td>
+            <td>Location</td>
+            <td>Phase</td>
+            <td>RunId</td>
+            <td>BlockId</td>
+            <td>TripId</td>
+            <td>ServiceDate</td>
+            <td>DistanceAlongBlock</td>
+            <td>Status</td>
+            <td>Direction Id</td>
+            <td>Last Location Time</td>
+            <td>Route Id</td>
+        </tr>
+    </thead>
+    <tbody>
+        <c:forEach var="vp" items="${records}">
+            <tr>
+                <td>
+                	<jsp:useBean id="recordTimestampAsDate" class="java.util.Date" />
+                	<jsp:setProperty name="recordTimestampAsDate" property="time" value="${vp.recordTimestamp}" />
+                	<fmt:formatDate type="time" timeStyle="short" value="${recordTimestampAsDate}" />
+               	</td>
+                <td><c:out value="${vp.vehicleId}" /></td>
+                <td><a
+                    href="vehicle-location!particles.do?vehicleId=${vp.vehicleId}">Particles</a></td>
+                <td><a
+                    href="vehicle-location!reset.do?vehicleId=${vp.vehicleId}">Reset</a></td>
+                <td>
+                	<c:out value="${vp.observedLatitude}" />,<c:out value="${vp.observedLongitude}" />
+					<br/>
+	    			<a 
+	    			href="vehicle-location!map.do?lat=${vp.observedLatitude}&amp;lon=${vp.observedLongitude}">View on Map</a>
+                </td>
+                <td><c:out value="${vp.phase}" /></td>
+                <td><c:out value="${vp.runId}" /></td>
+                <td><c:out value="${vp.inferredBlockId}" /></td>
+                <td><c:out value="${vp.inferredTripId}" /></td>
+                <td><c:out value="${vp.serviceDate}" /></td>
+                <td><fmt:formatNumber pattern="0.0" value="${vp.distanceAlongBlock}"/></td>
+                <td><c:out value="${vp.status}" /></td>
+                <td><c:out value="${vp.inferredDirectionId}" /></td> 
+                <td>
+                	<jsp:useBean id="lastLocationUpdateTimeAsDate" class="java.util.Date" />
+                	<jsp:setProperty name="lastLocationUpdateTimeAsDate" property="time" value="${vp.lastLocationUpdateTime}" />
+                	<fmt:formatDate type="time" timeStyle="short" value="${lastLocationUpdateTimeAsDate}" />
+               	</td>
+                <td><c:out value="${vp.inferredRouteId}" /></td>              
+            </tr>
+        </c:forEach>
+    </tbody>
+</table>
+
+</body>
+</html>

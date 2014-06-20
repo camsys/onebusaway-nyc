@@ -410,6 +410,10 @@ public class VehicleInferenceInstance {
    */
   public NycQueuedInferredLocationBean getCurrentStateAsNycQueuedInferredLocationBean() {
     final NycTestInferredLocationRecord tilr = getCurrentState();
+    
+    if(tilr == null)
+    	return null;
+    
     final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(tilr);
 
     final Particle particle = _particleFilter.getMostLikelyParticle();
