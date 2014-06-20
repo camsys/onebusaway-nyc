@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -420,10 +421,38 @@ public class RunServiceImpl implements RunService {
   }
 
   @Override
+  public Collection<? extends AgencyAndId> getTripIdsForRunId(String runId, String agencyId) {
+    if (agencyId == null) return runIdsToTripIds.get(runId); 
+    //Multimap<String, AgencyAndId>
+    List<AgencyAndId> filtered = new ArrayList<AgencyAndId>();
+    Collection<AgencyAndId> tripIds = runIdsToTripIds.get(runId);
+    if (tripIds == null) return filtered;
+    for (AgencyAndId trip : tripIds) {
+      if (trip.getAgencyId().equals(agencyId)) {
+        filtered.add(trip);
+      }
+    }
+    return filtered;
+  }
+
+  @Override
   public Set<AgencyAndId> getRoutesForRunId(String runId) {
     Collection<AgencyAndId> routeIds = runIdsToRoutes.get(runId);
     return Objects.firstNonNull(Sets.newHashSet(routeIds), Collections.<AgencyAndId>emptySet());
   }
+
+  @Override
+  public Set<AgencyAndId> getRoutesForRunId(String runId, String agencyId) {
+    Set<AgencyAndId> filtered = new HashSet<AgencyAndId>();
+    Set<AgencyAndId> routeIds = getRoutesForRunId(runId);
+    for (AgencyAndId routeId : routeIds) {
+      if (routeId.getAgencyId().equals(agencyId)) {
+        filtered.add(routeId);
+      } 
+    }
+    return filtered;
+  }
+
   
   @Override
   public RunTripEntry getPreviousEntry(RunTripEntry before, long serviceDate) {

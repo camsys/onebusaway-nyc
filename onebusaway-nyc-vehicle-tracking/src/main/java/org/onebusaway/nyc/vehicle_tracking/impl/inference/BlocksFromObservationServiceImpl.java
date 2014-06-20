@@ -354,7 +354,7 @@ public class BlocksFromObservationServiceImpl implements
     runIds.addAll(observation.getBestFuzzyRunIds());
 
     for (final String runId : runIds) {
-      tripIds.addAll(_runService.getTripIdsForRunId(runId));
+      tripIds.addAll(_runService.getTripIdsForRunId(runId, agencyId));
     }
 
     if (tripIds.isEmpty() && !_destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc)) {

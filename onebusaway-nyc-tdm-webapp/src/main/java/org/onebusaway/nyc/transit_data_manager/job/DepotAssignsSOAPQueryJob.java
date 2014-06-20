@@ -80,10 +80,10 @@ public class DepotAssignsSOAPQueryJob extends QuartzJobBean {
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.METHOD, "text");
         Source sourceContent = soapResponse.getSOAPPart().getContent();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_kkmm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         String date = dateFormat.format(new Date());
-        String path = System.getProperty(_depotFileDir)+"/"+"depot_assignments"+date+".xml";
+        String path = System.getProperty(_depotFileDir)+"/"+"depot_assignments_"+date+".xml";
         File file = new File(path);
         StreamResult result = new StreamResult(file);
         transformer.transform(sourceContent, result);

@@ -531,9 +531,11 @@ public class VehicleInferenceInstance {
     final Set<AgencyAndId> routeIds = Sets.newHashSet();
     if (!noOperatorIdGiven) {
       try {
+        
+        final String agencyId = observation.getVehicleId().getAgencyId();
         final OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
             new ServiceDate(obsDate), new AgencyAndId(
-                observation.getVehicleId().getAgencyId(), operatorId));
+                agencyId, operatorId));
 
         if (oai != null) {
           if (_runService.isValidRunId(oai.getRunId())) {
@@ -548,9 +550,9 @@ public class VehicleInferenceInstance {
             /*
              * new assigned run-id; recompute the routes
              */
-            routeIds.addAll(_runService.getRoutesForRunId(opAssignedRunId));
+            routeIds.addAll(_runService.getRoutesForRunId(opAssignedRunId, agencyId));
             for (final String runId : results.getFuzzyMatches()) {
-              routeIds.addAll(_runService.getRoutesForRunId(runId));
+              routeIds.addAll(_runService.getRoutesForRunId(runId, agencyId));
             }
             return new RunResults(opAssignedRunId, results.getFuzzyMatches(),
                 results.getBestFuzzyDist(), routeIds);
@@ -572,6 +574,7 @@ public class VehicleInferenceInstance {
 
     String opAssignedRunId = null;
     final String operatorId = observation.getOperatorId();
+    final String agencyId = observation.getVehicleId().getAgencyId();
 
     final boolean noOperatorIdGiven = StringUtils.isEmpty(operatorId)
         || StringUtils.containsOnly(operatorId, "0");
@@ -581,12 +584,12 @@ public class VehicleInferenceInstance {
       try {
         final OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
             new ServiceDate(obsDate), new AgencyAndId(
-                observation.getVehicleId().getAgencyId(), operatorId));
+                agencyId, operatorId));
 
         if (oai != null) {
           if (_runService.isValidRunId(oai.getRunId())) {
             opAssignedRunId = oai.getRunId();
-            routeIds.addAll(_runService.getRoutesForRunId(opAssignedRunId));
+            routeIds.addAll(_runService.getRoutesForRunId(opAssignedRunId, agencyId));
           }
         }
       } catch (final Exception e) {
@@ -614,7 +617,7 @@ public class VehicleInferenceInstance {
           if (bestFuzzyDistance <= 0) {
             fuzzyMatches = fuzzyReportedMatches.get(bestFuzzyDistance);
             for (final String runId : fuzzyMatches) {
-              routeIds.addAll(_runService.getRoutesForRunId(runId));
+              routeIds.addAll(_runService.getRoutesForRunId(runId, agencyId));
             }
           }
         }

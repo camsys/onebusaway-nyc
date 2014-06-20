@@ -24,15 +24,15 @@ public class LastUpdateComparator implements Comparator<VehicleStatus>{
 
 	@Override
 	public int compare(VehicleStatus o1, VehicleStatus o2) {
-		if(StringUtils.isBlank(o1.getTimeReported())) {
+		if(StringUtils.isBlank(o1.getLastUpdate())) {
 			return 1;
 		}
-		if(StringUtils.isBlank(o2.getTimeReported())) {
+		if(StringUtils.isBlank(o2.getLastUpdate())) {
 			return -1;
 		}
 		
-		DateTime time1 = formatter.parseDateTime(o1.getTimeReported());
-		DateTime time2 = formatter.parseDateTime(o2.getTimeReported());
-		return timeComparator.compare(time2, time1);
+		DateTime time1 = formatter.parseDateTime(o1.getLastUpdate());
+		DateTime time2 = formatter.parseDateTime(o2.getLastUpdate());
+		return timeComparator.compare(time1, time2);
 	}
 }
