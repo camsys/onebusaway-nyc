@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.report_archive.event;
 
-import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 
 import com.amazonaws.services.sns.AmazonSNSClient;
 

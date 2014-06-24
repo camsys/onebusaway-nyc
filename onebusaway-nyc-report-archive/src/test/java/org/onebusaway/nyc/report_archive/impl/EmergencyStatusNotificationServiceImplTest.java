@@ -18,7 +18,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.nyc.report_archive.event.SNSApplicationEventData;
 import org.onebusaway.nyc.report_archive.event.handlers.SNSApplicationEventPublisher;
-import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 
 /**
  * Tests {@link EmergencyStatusNotificationServiceImpl}

@@ -7,7 +7,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
 import org.onebusaway.nyc.report_archive.services.RealtimePersistenceService;
 import org.slf4j.Logger;

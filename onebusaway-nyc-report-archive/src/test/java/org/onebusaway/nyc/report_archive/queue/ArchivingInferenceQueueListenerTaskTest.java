@@ -11,9 +11,10 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.nyc.report_archive.services.InferencePersistenceService;
-import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
-import org.onebusaway.nyc.report_archive.services.RecordValidationService;
+import org.onebusaway.nyc.report.services.CcAndInferredLocationDao;
+import org.onebusaway.nyc.report.services.InferencePersistenceService;
+import org.onebusaway.nyc.report.services.CcAndInferredLocationDao;
+import org.onebusaway.nyc.report.services.RecordValidationService;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -28,7 +29,7 @@ public class ArchivingInferenceQueueListenerTaskTest {
 	private NycQueuedInferredLocationBean inferredResult;
 	
 	@Mock
-	private NycQueuedInferredLocationDao locationDao;
+	private CcAndInferredLocationDao locationDao;
 	
 	@Mock
 	private InferencePersistenceService persister;

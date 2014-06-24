@@ -56,11 +56,6 @@
     
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="hibernateProperties" />
-        <property name="properties">
-            <props>
-              <prop key="bundle.location">${bundle.location}</prop>
-            </props> 
-        </property> 
     </bean> 
 
 
@@ -71,10 +66,10 @@
   </bean>
 
     <!-- Input and Inference Queue Configuration -->
-  <bean id="realtimeCache" class="org.onebusaway.nyc.report_archive.impl.CcLocationCache"
+  <!-- <bean id="realtimeCache" class="org.onebusaway.nyc.report.impl.CcLocationCache"
     scope="singleton">
     <constructor-arg value="200000"/>
-  </bean>
+  </bean> -->
   <bean id="timeOutputQueue" class="org.onebusaway.nyc.report_archive.queue.DummyPredictionOutputQueueSenderServiceImpl">
   </bean>
   <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask">

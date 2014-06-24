@@ -1,9 +1,8 @@
 package org.onebusaway.nyc.report_archive.impl;
 
-import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.model.InvalidLocationRecord;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
-import org.onebusaway.nyc.report_archive.services.LocationDao;
+import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;

@@ -14,8 +14,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.onebusaway.nyc.report_archive.api.json.HistoricalRecordsMessage;
-import org.onebusaway.nyc.report_archive.api.json.JsonTool;
-import org.onebusaway.nyc.report_archive.impl.CcAndInferredLocationFilter;
+import org.onebusaway.nyc.report.api.json.JsonTool;
+import org.onebusaway.nyc.report.impl.CcAndInferredLocationFilter;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecord;
 import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
 import org.slf4j.Logger;

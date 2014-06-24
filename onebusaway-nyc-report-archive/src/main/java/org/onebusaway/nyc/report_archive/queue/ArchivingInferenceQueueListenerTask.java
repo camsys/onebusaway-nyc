@@ -6,10 +6,10 @@ import javax.annotation.PreDestroy;
 
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
-import org.onebusaway.nyc.report_archive.services.InferencePersistenceService;
-import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
-import org.onebusaway.nyc.report_archive.services.RecordValidationService;
+import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
+import org.onebusaway.nyc.report.services.InferencePersistenceService;
+import org.onebusaway.nyc.report.services.CcAndInferredLocationDao;
+import org.onebusaway.nyc.report.services.RecordValidationService;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ public class ArchivingInferenceQueueListenerTask extends
 
   private static Logger _log = LoggerFactory.getLogger(ArchivingInferenceQueueListenerTask.class);
 
-  private NycQueuedInferredLocationDao _locationDao;
+  private CcAndInferredLocationDao _locationDao;
 
   private RecordValidationService validationService;
 
@@ -29,7 +29,7 @@ public class ArchivingInferenceQueueListenerTask extends
 
 
   @Autowired
-  public void setLocationDao(NycQueuedInferredLocationDao locationDao) {
+  public void setLocationDao(CcAndInferredLocationDao locationDao) {
     this._locationDao = locationDao;
   }
 

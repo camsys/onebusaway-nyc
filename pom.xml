@@ -36,7 +36,7 @@
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
         </repository>
         <repository>
@@ -46,7 +46,7 @@
                 <enabled>false</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
         </repository>
         <repository>
@@ -104,7 +104,7 @@
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
         </repository>
 <!-- these have been phased out -->
@@ -220,7 +220,8 @@
     	<module>onebusaway-nyc-util</module>
     	<module>onebusaway-nyc-admin-webapp</module>
     	<module>onebusaway-nyc-acta-webapp</module>
-    	<module>onebusaway-nyc-ops-api</module>
+    	<module>onebusaway-nyc-ops-api-webapp</module>
+    	<module>onebusaway-nyc-report</module>
 <!-- this only needs to be built on changes, which are rare -->
 <!--
     	<module>onebusaway-nyc-tcip-api</module>
@@ -257,7 +258,8 @@
                 <module>onebusaway-nyc-report-archive</module>
                 <module>onebusaway-nyc-admin-webapp</module>
                 <module>onebusaway-nyc-acta-webapp</module>
-                <module>onebusaway-nyc-ops-api</module>
+                <module>onebusaway-nyc-ops-api-webapp</module>
+                <module>onebusaway-nyc-report</module>
 <!-- this only needs to be built on changes, which are rare -->
 <!--
 		<module>onebusaway-nyc-tcip-api</module>

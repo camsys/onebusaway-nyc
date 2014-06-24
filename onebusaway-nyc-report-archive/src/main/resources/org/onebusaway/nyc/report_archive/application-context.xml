@@ -8,15 +8,17 @@
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
 
+  <!-- This turns on automatic annotation configuration for Jackson -->
+ <context:annotation-config /> 
+
   <import resource="classpath:data-sources.xml" />
   <import resource="classpath:org/onebusaway/container/application-context.xml" />
-  
-  <!-- This turns on automatic annotation configuration for Jackson -->
-  <!-- <context:annotation-config />  --> 
-  
-  <!-- <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl" /> -->
+  <import resource="classpath:org/onebusaway/nyc/report/application-context.xml" />
   
   <context:component-scan base-package="org.onebusaway.nyc.report_archive" />
+
+  
+  <bean id="ccAndInferredLocationDao" class="org.onebusaway.nyc.report_archive.impl.ArchiveCcAndInferredLocationDaoImpl" />
 
   <bean id="configurationService" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl" />
 
@@ -24,7 +26,7 @@
 
   <bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
 
-  <bean id="gsonTool" class="org.onebusaway.nyc.report_archive.api.json.LowerCaseWDashesGsonJsonTool">
+  <bean id="gsonTool" class="org.onebusaway.nyc.report.api.json.LowerCaseWDashesGsonJsonTool">
     <property name="prettyPrintOutput" value="true" />
   </bean>
 
@@ -51,7 +53,7 @@
   <bean id="realtimePersistorService" class="org.onebusaway.nyc.report_archive.impl.RealtimePersistenceServiceImpl">
     <property name="batchSize" value="1000" />
   </bean>
-   <bean id="infPersistorService" class="org.onebusaway.nyc.report_archive.impl.InferencePersistenceServiceImpl">
+   <bean id="infPersistorService" class="org.onebusaway.nyc.report.impl.InferencePersistenceServiceImpl">
     <property name="batchSize" value="1000" />
   </bean>
 </beans>

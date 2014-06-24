@@ -14,7 +14,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
+import org.onebusaway.nyc.report.impl.RecordValidationServiceImpl;
+import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 

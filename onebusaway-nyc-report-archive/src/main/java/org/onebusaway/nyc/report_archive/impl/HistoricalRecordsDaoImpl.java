@@ -14,6 +14,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.onebusaway.nyc.report.impl.CcAndInferredLocationFilter;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecord;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecordResultTransformer;
 import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;

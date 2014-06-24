@@ -17,7 +17,7 @@ package org.onebusaway.nyc.report_archive.impl;
 
 import static org.junit.Assert.*;
 
-import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;

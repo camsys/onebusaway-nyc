@@ -20,6 +20,7 @@
         <param-name>contextConfigLocation</param-name>
         <param-value>
             classpath:org/onebusaway/nyc/report_archive/application-context.xml
+            classpath:org/onebusaway/nyc/report/application-context.xml
             classpath:org/onebusaway/nyc/tdm_adapters/application-context.xml
             classpath:data-sources.xml
         </param-value>

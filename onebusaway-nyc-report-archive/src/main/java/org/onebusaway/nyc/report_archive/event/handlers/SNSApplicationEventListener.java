@@ -7,9 +7,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
-import org.onebusaway.nyc.report_archive.api.json.JsonTool;
+import org.onebusaway.nyc.report.api.json.JsonTool;
+import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.event.SNSApplicationEvent;
-import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

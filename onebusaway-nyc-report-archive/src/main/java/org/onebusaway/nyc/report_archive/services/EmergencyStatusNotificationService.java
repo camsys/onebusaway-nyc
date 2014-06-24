@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.report_archive.services;
 
-import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 
 /**
  * Processes incoming bus records from the real time queue and sends notification to amazon sns service
