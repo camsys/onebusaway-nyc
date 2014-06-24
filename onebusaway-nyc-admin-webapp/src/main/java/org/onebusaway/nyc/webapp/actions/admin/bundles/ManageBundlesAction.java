@@ -3,7 +3,6 @@ package org.onebusaway.nyc.webapp.actions.admin.bundles;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +20,7 @@ import org.onebusaway.nyc.admin.model.ui.DirectoryStatus;
 import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.admin.service.bundle.task.BundleDiffTask;
 import org.onebusaway.nyc.admin.util.NYCFileUtils;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
@@ -37,8 +37,8 @@ import org.springframework.web.context.ServletContextAware;
  */
 @Namespace(value="/admin/bundles")
 @Results({
-    @Result(type = "redirectAction", name = "redirect", params = {
-    "actionName", "manage-bundles"}),
+    @Result(type = "redirectAction", name = "redirect", 
+  params={"actionName", "manage-bundles"}),
     @Result(name="selectDirectory", type="json", 
   params={"root", "directoryStatus"}),
     @Result(name="validationResponse", type="json", 
@@ -47,6 +47,10 @@ import org.springframework.web.context.ServletContextAware;
   params={"root", "bundleBuildResponse"}),
     @Result(name="fileList", type="json", 
   params={"root", "fileList"}),
+    @Result(name="existingBuildList", type="json", 
+  params={"root", "existingBuildList"}),
+  	@Result(name="diffResult", type="json", 
+  params={"root", "diffResult"}),
   	@Result(name="downloadZip", type="stream", 
   params={"contentType", "application/zip", 
           "inputName", "downloadInputStream",
@@ -65,6 +69,16 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	private String bundleDirectory;
 	//Holds the value entered in the text box
 	private String directoryName;
+	//Holds the value build name selected in the Compare tab
+	private String bundleBuildName;
+	public String getBundleBuildName() {
+		return bundleBuildName;
+	}
+
+	public void setBundleBuildName(String bundleBuildName) {
+		this.bundleBuildName = bundleBuildName;
+	}
+
 	// what to call the bundle, entered in the text box
 	private String bundleName;
 	private boolean productionTarget;
@@ -79,10 +93,15 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	private String emailTo;
 	private InputStream downloadInputStream;
 	private List<String> fileList = new ArrayList<String>();
+	private String diffBundleName;
+	private String diffBuildName;
+	private List<String> existingBuildList = new ArrayList<String>();
+	private List<String> diffResult = new ArrayList<String>();
 	private DirectoryStatus directoryStatus;
 	// where the bundle is deployed to
 	private String s3Path = "s3://bundle-data/activebundle/<env>/";
 	private String environment = "dev";
+	private BundleDiffTask diffTask = new BundleDiffTask();
 	
 	@Override
 	public String input() {
@@ -175,6 +194,29 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	    fileList.addAll(this.bundleResponse.getValidationFiles());
 	  }
 	  return "fileList";
+	}
+	
+	public String existingBuildList() {
+		_log.info("existingBuildList called for path=" + fileService.getBucketName()+"/"+ diffBundleName +"/"+fileService.getBuildPath()); 
+		File builds = new File(fileService.getBucketName()+"/"+ diffBundleName +"/"+fileService.getBuildPath());
+		File[] existingDirectories = builds.listFiles();
+		existingBuildList.clear();
+		if(existingDirectories == null){
+			return null;
+		}
+		for(File file: existingDirectories) {
+			existingBuildList.add(file.getName());
+		}
+		return "existingBuildList";
+	}
+	
+	public String diffResult() {
+		_log.info("diffResult called for build=" + diffBundleName + "." + diffBuildName);
+		String buildPath = new String(fileService.getBucketName()+"/"+diffBundleName+"/builds/"+diffBuildName+"/outputs");
+		diffResult.clear();
+		diffTask.setBundleBuildPath(buildPath);
+		diffResult = diffTask.diff();
+		return "diffResult";
 	}
 	
 	public String download() {
@@ -302,7 +344,6 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	public void setBundleDirectory(String bundleDirectory) {
 		this.bundleDirectory = bundleDirectory;
 	}
-	
 
 	/**
 	 * Injects {@link BundleRequestService}
@@ -334,7 +375,23 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	}
 	
 	public String getBundleName() {
-    return bundleName;
+		return bundleName;
+	}
+	
+	public void setDiffBundleName(String diffBundleName) {
+		this.diffBundleName = diffBundleName;
+	}
+		
+	public String getDiffBundleName() {
+	    return diffBundleName;
+	}
+	
+	public void setDiffBuildName(String diffBuildName) {
+		this.diffBuildName = diffBuildName;
+	}
+		
+	public String getDiffBuildName() {
+	    return diffBuildName;
 	}
 
 	public DirectoryStatus getDirectoryStatus() {
@@ -356,6 +413,14 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	public List<String> getFileList() {
 	  return this.fileList;
 	}
+	
+	public List<String> getExistingBuildList() {
+	  return this.existingBuildList;
+	}
+	
+	public List<String> getDiffResult() {
+	  return this.diffResult;
+	}
 
 	public void setEmailTo(String to) {
 	  emailTo = to;
@@ -370,8 +435,8 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	}
 	
 	@Override
-  public void setServletContext(ServletContext context) {
-	    if (context != null) {
+	public void setServletContext(ServletContext context) {
+		if (context != null) {
 	      String obanycEnv = context.getInitParameter("obanyc.environment");
 	      if (obanycEnv != null && obanycEnv.length() > 0) {
 	        String rootDir = context.getInitParameter("s3.bundle.bucketName");
@@ -387,5 +452,5 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	        _log.info("injecting env=" + environment + ", s3Path=" + s3Path);
 	      }
 	    }
-  }
+	}
 }

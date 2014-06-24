@@ -66,6 +66,7 @@
 					<li><a href="#Build" title="Build And Validate"><span>4. <s:text name="manage-bundles.buildTitle"/></span></a></li>
 					<li><a href="#Stage" title="Stage Bundle"><span>5. <s:text name="manage-bundles.stageTitle"/></span></a></li>
 					<li><a href="#Deploy" title="Deploy Bundle"><span>6. <s:text name="manage-bundles.deployTitle"/></span></a></li>
+					<li><a href="#Compare" title="Compare Bundle"><span>7. <s:text name="manage-bundles.compareTitle"/></span></a></li>
 				</ul>
 
 				<div id="Create">
@@ -95,6 +96,11 @@
 				</div>
 				<div id="Deploy">
 					<jsp:include page="deploy-bundle.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
+				<div id="Compare">
+					<jsp:include page="compare-bundle.jspx">
 						<!--  space -->
 					</jsp:include>
 				</div>

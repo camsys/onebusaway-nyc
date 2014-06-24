@@ -33,12 +33,10 @@
 #tabs #breadcrumb li {
     list-style-type:none;
     float:left;
-    width: 140px;
     color: #808080;
 }
 
 #tabs #breadcrumb a {
-    height:30px;
     display:block;
     background-repeat:no-repeat;
     background-position:right;
@@ -117,8 +115,8 @@
 	font: Arial, Helvetica, sans-serif;
 	font-size: 16px;
 	padding-top: 20px;
-	
 }
+
 .adminLabel {
 	font-weight: bold;
 	font-size: 12px;
@@ -145,11 +143,16 @@
 	margin-right: 10px;
 }
 
-#createDirectory {
+#createDirectory,
+#compareBundles,
+#compareBuilds,
+#compareDiff {
 	padding-top: 20px;
 }
 
-#createDirectory #directoryOptions {
+#createDirectory #directoryOptions,
+#compareBundles #directoryOptions,
+#compareBuilds #directoryOptions {
 	vertical-align: middle;
 	padding-top: 10px;
 	padding-left: 20px;
@@ -159,13 +162,15 @@
 	padding-left: 30px;
 }
 
-#createDirectory #selectExistingContents {
+#createDirectory #selectExistingContents{
 	display:none;
 	padding-left: 30px;
 	margin-top: 15px;
 }
 
-#createDirectory #selectExistingContents #currentDirectories {
+#createDirectory #selectExistingContents #currentDirectories,
+#compareBundles #compareExistingContents #compareCurrentDirectories,
+#compareBuilds #compareExistingBuilds #compareSelectedBuild {
     margin-top: 7px;
     overflow: auto;
     height: 200px;
@@ -173,26 +178,64 @@
     width: 600px;
 }
 
-#currentDirectories #listItem {
-	 cursor: pointer;
-	 display: table-row;
+#compareDiff #diffResult{
+	margin-top: 7px;
+    overflow: auto;
+    height: 500px;
+    border: solid 1px #C0C0C0;
+    width: 850px;
+	font-size: 12px;
 }
 
-#currentDirectories .listData {
+#currentDirectories #listItem,
+#compareCurrentDirectories #compareListItem,
+#compareSelectedBuild #compareBuildListItem {
+	 cursor: pointer;
+	 display: table-row;
+	 width: 600px;
+}
+
+#diffResult #diffResultItems{
+	 cursor: pointer;
+	 display: table-row;
+	 width: 850px;
+}
+
+#currentDirectories .listData,
+#compareCurrentDirectories .listData
+{
 	 width: 200px;
 	 font-size: 12px;
 	 display: table-cell;
 }
 
-#createDirectory #createDirectoryContents #directoryName {
+#compareSelectedBuild .listData{
+	width: 600px;
+	font-size: 12px;
+	display: table-cell;
+}
+
+.redListData{
+	background-color: #FF9999;
+}
+
+.greenListData{
+	background-color: #99FF99;
+}
+
+.blueListData{
+	background-color: #CEF6F5;
+}
+
+#createDirectory #createDirectoryContents #directoryName{
 	width: 420px;
 }
 
-#createDirectory #createDirectoryContents #directoryButton {
+#createDirectory #createDirectoryContents #directoryButton{
 	margin-left: 60px;
 }
 
-#createDirectory #createDirectoryContents #createDirectoryResult {
+#createDirectory #createDirectoryContents #createDirectoryResult{
 	display: none;
 }
 
@@ -214,7 +257,6 @@
 #createDirectory #advancedOptionsContents {
 	display: none;
 }
-
 
 #advancedOptionsContents #production #productionCheck {
 	margin-top: 10px;
@@ -273,7 +315,6 @@
 	margin-top: 20px;
 	vertical-align: middle;
 }
-
 
 #uploadFiles #gtfs_details {
 	margin-top: 10px;
@@ -335,7 +376,6 @@
 	font-size : 12px;
 	font-family: arial;
 	color: blue;
-	
 }
 	
 #prevalidate_exception {
@@ -383,7 +423,6 @@
 	display: none;
 	background-color: #F0F0F0;
 }
-
 
 #buildBox #buildBundle_buildButton {
 	border: 1px transparent;
@@ -491,13 +530,18 @@
 	font: 13px/1.231 helvetica,arial,clean,sans-serif;
 }
 
-#currentDirectories .ui-selecting {
+#currentDirectories .ui-selecting,
+#compareCurrentDirectories .ui-selecting,
+#compareSelectedBuild .ui-selecting
+ {
 	background: #FEFF9F;  
 }
 
-#currentDirectories .ui-selected {  
+#currentDirectories .ui-selected,
+#compareCurrentDirectories .ui-selected,
+#compareSelectedBuild .ui-selected {
   	background-color:#eEeF8F;  
-}  
+}
 
 /** deploy section **/
 #deployBundle {
@@ -510,6 +554,7 @@
 	height: 200px;
 	overflow: none;
 }
+
 #deployBundle #bundleResultsHolder #deployBundle_progress {
 	vertical-align: middle;
 	margin-right: 10px;
@@ -585,4 +630,3 @@
 	display: block;
 	padding-top : 10px;
 }
-

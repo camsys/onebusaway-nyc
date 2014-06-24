@@ -95,6 +95,14 @@
    		<property name="buildPath" value="builds" />
    </bean>
    
+   <!-- TODO: Will need to pull out diff logic from DiffTask, so that the staged bundle build directory is read from config
+   
+	<bean id="bundleDiffTask" class="org.onebusaway.nyc.admin.service.bundle.task.BundleDiffTask" >
+	    <property name="logger" ref="multiCSVLogger" />
+	    <property name="configurationServiceClient" ref="configurationServiceClient" />
+	    <property name="bundleRequestResponse" ref="bundleRequestResponse" />
+	</bean> -->
+  
    <bean id="emailService" class="org.onebusaway.nyc.admin.service.impl.EmailServiceImpl" />
       
    <bean id="bundleRequestService" class="org.onebusaway.nyc.admin.service.impl.BundleRequestServiceImpl" />

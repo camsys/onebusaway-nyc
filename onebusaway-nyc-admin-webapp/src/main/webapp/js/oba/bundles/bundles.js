@@ -14,122 +14,6 @@
  * the License.
  */
 
-/*var OBA = window.OBA || {};
-
-OBA.Bundles = function() {
-
-var timeout = null;
-
-function startup(){
-	
-	
-	//Initialize tabs
-	jQuery("#tabs").tabs();
-	
-	//Initialize date pickers
-	jQuery("#startDatePicker").datepicker(
-			{ 
-				dateFormat: "yy-mm-dd",
-				altField: "#startDate",
-				onSelect: function(selectedDate) {
-					jQuery("#endDatePicker").datepicker("option", "minDate", selectedDate);
-				}
-			});
-	jQuery("#endDatePicker").datepicker(
-			{ 
-				dateFormat: "yy-mm-dd",
-				altField: "#endDate",
-				onSelect: function(selectedDate) {
-					jQuery("#startDatePicker").datepicker("option", "maxDate", selectedDate);
-				}
-			});
-	
-	// check if we were called with a hash -- re-enter from email link
-	if (window.location.hash) {
-		var hash = window.location.hash;
-		hash = hash.split('?')[0];
-		// TODO this doesn't work when fromEmail query string is present 
-		// alert("hash=" + hash);
-		$(hash).click();
-	}
-	var qs = parseQuerystring();
-	if (qs["fromEmail"] == "true") {
-		//alert("called from email!");
-		jQuery("#prevalidate_id").text(qs["id"]);
-		jQuery("#buildBundle_id").text(qs["id"]);
-		jQuery("#buildBundle_bundleName").val(qs["name"]);
-		//hide the result link when reentering from email
-		jQuery("#buildBundle_resultLink").hide();
-		// just in case set the tab
-		var $tabs = jQuery("#tabs");
-		$tabs.tabs('select', 3);
-		updateBuildStatus();
-	}
-	// politely set our hash as tabs are changed
-	jQuery("#tabs").bind("tabsshow", function(event, ui) {
-		window.location.hash = ui.tab.hash;
-	});
-	
-	jQuery("#currentDirectories").selectable({ 
-		stop: function() {
-			var names = $.map($('.ui-selected strong, this'), function(element, i) {  
-				  return $(element).text();  
-				}); 
-			if (names.length > 0) {
-				var $element = jQuery("#manage-bundles_directoryName");
-				// only return the first selection, as multiple selections are possible
-				$element.attr("value", names[0]);
-				jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
-				jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
-				jQuery("#createDirectoryMessage").text("Click Select button to load your directory")
-								.css("font-weight", "bold").css("color", "red");
-			}
-		}
-	});
-
-	jQuery("#create_continue").click(onCreateContinueClick);
-	
-	jQuery("#prevalidate_continue").click(onPrevalidateContinueClick);
-	
-	jQuery("#upload_continue").click(onUploadContinueClick);
-	
-	// hookup ajax call to select
-	jQuery("#directoryButton").click(onSelectClick);
-	
-	//toggle advanced option contents
-	jQuery("#createDirectory #advancedOptions #expand").bind({
-			'click' : toggleAdvancedOptions	});
-	
-	//toggle validation progress list
-	jQuery("#prevalidateInputs #prevalidate_progress #expand").bind({
-			'click' : toggleValidationResultList});
-	
-	//toggle bundle build progress list
-	jQuery("#buildBundle #buildBundle_progress #expand").bind({
-			'click' : toggleBuildBundleResultList});
-	
-	//handle create and select radio buttons
-	jQuery("input[name='options']").change(directoryOptionChanged);
-	
-	//Handle validate button click event
-	jQuery("#prevalidateInputs #validateBox #validateButton").click(onValidateClick);
-	
-	//Handle build button click event
-	jQuery("#buildBundle_buildButton").click(onBuildClick);
-	
-}
-
-
-
-	return {
-		initialize : function () {
-			startup();
-		}
-	};
-};
-
-jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
-
 var timeout = null;
 
 jQuery(function() {
@@ -146,7 +30,7 @@ jQuery(function() {
 				}
 			});
 	jQuery("#endDatePicker").datepicker(
-			{ 
+			{
 				dateFormat: "yy-mm-dd",
 				altField: "#endDate",
 				onSelect: function(selectedDate) {
@@ -185,9 +69,9 @@ jQuery(function() {
 	
 	jQuery("#currentDirectories").selectable({ 
 		stop: function() {
-			var names = $.map($('.ui-selected strong, this'), function(element, i) {  
-				  return $(element).text();  
-				}); 
+			var names = $.map($('#listItem.ui-selected strong, this'), function(element, i) {  
+			  return $(element).text();  
+			});
 			if (names.length > 0) {
 				var $element = jQuery("#createDirectory #directoryName");
 				// only return the first selection, as multiple selections are possible
@@ -195,9 +79,64 @@ jQuery(function() {
 				jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
 				jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 				jQuery("#createDirectoryMessage").text("Click Select button to load your directory")
-								.css("font-weight", "bold").css("color", "red");
+					.css("font-weight", "bold").css("color", "red");
 				//Enable select button
 				enableSelectButton();
+			}
+		}
+	});
+	
+	jQuery("#compareCurrentDirectories").selectable({
+		stop: function() {
+			var names = $.map($('#compareListItem.ui-selected strong, this'), function(element, i) {  
+			  return $(element).text();  
+			}); 
+			if (names.length > 0) {
+				jQuery.ajax({
+					url: "manage-bundles!existingBuildList.action",
+					data: {
+						"diffBundleName" : names[0]
+					},
+					type: "GET",
+					async: false,
+					success: function(data) {
+						$('#compareSelectedBuild').text('');
+						$('#diffResult').text('');
+						$.each(data, function(index, value) {
+							$('#compareSelectedBuild').append(
+								"<div id=\"compareBuildListItem\"><div class=\"listData\"><strong>"+value+"</strong></div></div>");
+						});
+					}
+				})
+			}
+		}
+	});
+	
+	jQuery("#compareSelectedBuild").selectable({
+		stop: function() {
+			var bundleNames = $.map($('#compareListItem.ui-selected strong, this'), function(element, i) {  
+			  return $(element).text();  
+			}); 
+			var buildNames = $.map($('#compareBuildListItem.ui-selected strong, this'), function(element, i) {  
+			  return $(element).text();  
+			});
+			if (buildNames.length > 0) {
+				jQuery.ajax({
+					url: "manage-bundles!diffResult.action",
+					data: {
+						"diffBundleName" : bundleNames[0],
+						"diffBuildName" : buildNames[0]
+					},
+					type: "GET",
+					async: false,
+					success: function(data) {
+						$('#diffResult').text('');
+						$.each(data, function(index, value) {
+							$('#diffResult').append(
+								"<div id=\"diffResultItem\">"+value+"</div>");
+						});
+					}
+				})
 			}
 		}
 	});
@@ -305,7 +244,9 @@ function onSelectClick() {
 			data: {"directoryName" : bundleDir},
 			async: false,
 			success: function(response) {
+				disableSelectButton();
 				var status = response;
+				console.log(response);
 				if (status != undefined) {
 					jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
 					if(status.selected == true) {
@@ -341,27 +282,27 @@ function onSelectClick() {
 
 function enableContinueButton(continueButton) {
 	jQuery(continueButton).removeAttr("disabled")
-	.css("color", "#666");
+	.css("color", "#000");
 }
 
 function disableContinueButton(continueButton) {
 	jQuery(continueButton).attr("disabled", "disabled")
-	.css("color", "#666");
+	.css("color", "#999");
 }
 
 function enableSelectButton() {
 	jQuery("#createDirectory #createDirectoryContents #directoryButton").removeAttr("disabled")
-	.css("color", "#666");
+		.css("color", "#000");
 }
 
 function disableSelectButton() {
 	jQuery("#createDirectory #createDirectoryContents #directoryButton").attr("disabled", "disabled")
-	.css("color", "#999");
+		.css("color", "#999");
 }
 
 function enableStageButton() {
 	jQuery("#stageBundle_stageButton").removeAttr("disabled")
-	.css("color", "#666");
+	.css("color", "#000");
 	enableContinueButton($("#build_continue"));
 }
 
@@ -373,13 +314,13 @@ function disableStageButton() {
 
 function enableBuildButton() {
 	jQuery("#buildBundle_buildButton").removeAttr("disabled")
-	.css("color", "#666");
+		.css("color", "#000");
 	enableContinueButton($("#create_continue"));
 }
 
 function disableBuildButton() {
 	jQuery("#buildBundle_buildButton").attr("disabled", "disabled")
-	.css("color", "#999");
+		.css("color", "#999");
 	disableContinueButton($("#create_continue"));
 }
 function toggleAdvancedOptions() {
@@ -590,6 +531,7 @@ function updateValidateList(id) {
 }
 
 function onBuildClick() {
+	disableBuildButton();//////////////////////
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
 	var bundleName = jQuery("#buildBundle_bundleName").val();
 	var startDate = jQuery("#startDate").val();
@@ -655,7 +597,6 @@ function bundleUrl() {
 							.css("font-size", "12px")
 							.addClass("adminLabel")
 							.css("color", "green");
-					
 				}
 		},
 		error: function(request) {
@@ -971,7 +912,6 @@ function updateDeployStatus() {
 		}
 	});
 }
-
 
 function onDeployListClick(){
 	var environment = jQuery("#deploy_environment").text();
