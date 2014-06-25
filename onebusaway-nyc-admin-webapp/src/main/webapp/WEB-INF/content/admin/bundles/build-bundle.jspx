@@ -65,9 +65,8 @@
 					</div>
 					<div id="building">
 						<s:url var="url" value="/css/img/ajax-loader.gif" />
-						<img id="buildingProgress" src="${url}" alt="Ajax loader"
-							class="progress" /> <label id="buildBundle_buildProgress"
-							class="adminLabel">Building ... </label>
+						<img id="buildingProgress" src="${url}" alt="Ajax loader" class="progress" /> 
+						<label id="buildBundle_buildProgress" class="adminLabel">Bundle Build in Progress...</label>
 					</div>
 					<div id="buildBundle_resultLink">
 						<label class="adminLabel">Result Link :</label>
