@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.report_archive.model;
+package org.onebusaway.nyc.report.model;
 
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;

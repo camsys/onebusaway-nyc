@@ -66,10 +66,10 @@
   </bean>
 
     <!-- Input and Inference Queue Configuration -->
-  <!-- <bean id="realtimeCache" class="org.onebusaway.nyc.report.impl.CcLocationCache"
+  <bean id="realtimeCache" class="org.onebusaway.nyc.report.impl.CcLocationCache"
     scope="singleton">
     <constructor-arg value="200000"/>
-  </bean> -->
+  </bean>
   <bean id="timeOutputQueue" class="org.onebusaway.nyc.report_archive.queue.DummyPredictionOutputQueueSenderServiceImpl">
   </bean>
   <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask">
@@ -90,10 +90,10 @@
 		<property name="dataSource" ref="dataSource" />
 		<property name="annotatedClasses">
 			<list>
-				<value>org.onebusaway.nyc.report_archive.model.CcLocationReportRecord</value>
-				<value>org.onebusaway.nyc.report_archive.model.InvalidLocationRecord</value>
-				<value>org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord</value>
-				<value>org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord</value>
+				<value>org.onebusaway.nyc.report.model.CcLocationReportRecord</value>
+				<value>org.onebusaway.nyc.report.model.InvalidLocationRecord</value>
+				<value>org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord</value>
+				<value>org.onebusaway.nyc.report.model.CcAndInferredLocationRecord</value>
 			</list>
 		</property>
 		<property name="hibernateProperties">
@@ -114,10 +114,10 @@
 		<property name="dataSource" ref="slaveDataSource" />
 		<property name="annotatedClasses">
 			<list>
-				<value>org.onebusaway.nyc.report_archive.model.CcLocationReportRecord</value>
-				<value>org.onebusaway.nyc.report_archive.model.InvalidLocationRecord</value>
-				<value>org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord</value>
-				<value>org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord</value>
+				<value>org.onebusaway.nyc.report.model.CcLocationReportRecord</value>
+				<value>org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord</value>
+				<value>org.onebusaway.nyc.report.model.CcAndInferredLocationRecord</value>
+				<value>org.onebusaway.nyc.report.model.InvalidLocationRecord</value>
 			</list>
 		</property>
 		<property name="hibernateProperties">

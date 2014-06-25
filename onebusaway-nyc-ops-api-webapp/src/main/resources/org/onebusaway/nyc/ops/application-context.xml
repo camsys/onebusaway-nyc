@@ -20,8 +20,6 @@
 		<constructor-arg type="java.lang.String" value="${ops.url}" />
   </bean> -->
   
-  <bean id="ccAndInferredLocationDao" class="org.onebusaway.nyc.report.impl.CcAndInferredLocationDaoImpl" />
-
   <bean id="configurationService" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl" />
 
   <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
@@ -43,7 +41,9 @@
     </property>
   </bean>
   
-   <bean id="infPersistorService" class="org.onebusaway.nyc.report.impl.InferencePersistenceServiceImpl">
+  <bean id="ccAndInferredLocationDao" class="org.onebusaway.nyc.report.impl.CcAndInferredLocationDaoImpl" />
+  
+  <bean id="infPersistorService" class="org.onebusaway.nyc.report.impl.InferencePersistenceServiceImpl">
     <property name="batchSize" value="1000" />
   </bean>
 </beans>
