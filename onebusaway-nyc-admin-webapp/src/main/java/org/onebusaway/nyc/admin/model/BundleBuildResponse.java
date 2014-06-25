@@ -141,7 +141,7 @@ public class BundleBuildResponse {
 	    _exception = null;
 	    return;
 	  }
-	  if (_exception== null) {
+	  if (_exception == null) {
 	  _exception = new SerializableException(e.getMessage(), e);
 	  } else {
 	    _exception = new SerializableException(e, _exception);

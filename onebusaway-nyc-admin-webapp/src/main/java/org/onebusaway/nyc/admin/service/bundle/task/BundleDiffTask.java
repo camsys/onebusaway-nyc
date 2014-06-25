@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class BundleDiffTask extends DiffTask {
 	
+  private String currentBundlePath;
 	private String bundleBuildPath;
 	ConfigurationServiceClient configurationServiceClient;
 	
@@ -28,11 +29,15 @@ public class BundleDiffTask extends DiffTask {
 	@Override
 	public void initFilename(){
 		try{
-			_filename1 = "/var/lib/obanyc/bundles/staged" 
-			    + File.separator
-			    + "prod"
-			    + File.separator
-			    + "outputs"
+		  // TODO look up these values from config service
+		  if (currentBundlePath == null) {
+		  currentBundlePath = "/var/lib/obanyc/bundles/staged" 
+          + File.separator
+          + "prod"
+          + File.separator
+          + "outputs";
+		  }
+			_filename1 = currentBundlePath 
 			    + File.separator
 			    + FILENAME;
 			_filename2 = bundleBuildPath + File.separator + FILENAME;
@@ -40,6 +45,10 @@ public class BundleDiffTask extends DiffTask {
 		} catch(Exception e){
 			_log.error(e.toString());
 		}
+	}
+	
+	public void setCurrentBundlePath(String path) {
+	  this.currentBundlePath = path;
 	}
 	
 	public void setBundleBuildPath(String bundleBuildPath) {

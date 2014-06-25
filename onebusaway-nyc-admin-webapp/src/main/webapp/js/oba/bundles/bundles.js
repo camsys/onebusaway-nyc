@@ -125,7 +125,9 @@ jQuery(function() {
 					url: "manage-bundles!diffResult.action",
 					data: {
 						"diffBundleName" : bundleNames[0],
-						"diffBuildName" : buildNames[0]
+						"diffBuildName" : buildNames[0],
+						"bundleDirectory" : jQuery("#createDirectory #directoryName").val(),
+						"bundleName": jQuery("#buildBundle_bundleName").val()
 					},
 					type: "GET",
 					async: false,

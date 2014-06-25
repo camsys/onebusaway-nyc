@@ -212,9 +212,15 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	
 	public String diffResult() {
 		_log.info("diffResult called for build=" + diffBundleName + "." + diffBuildName);
-		String buildPath = new String(fileService.getBucketName()+"/"+diffBundleName+"/builds/"+diffBuildName+"/outputs");
+		String currentBundlePath = fileService.getBucketName() + File.separator 
+		    + bundleDirectory + "/builds/" + bundleName + "/outputs"; 
+		String selectedBundlePath = fileService.getBucketName()
+		    + File.separator
+		    + diffBundleName + "/builds/"
+		    + diffBuildName + "/outputs";
 		diffResult.clear();
-		diffTask.setBundleBuildPath(buildPath);
+		diffTask.setCurrentBundlePath(currentBundlePath);
+		diffTask.setBundleBuildPath(selectedBundlePath);
 		diffResult = diffTask.diff();
 		return "diffResult";
 	}
