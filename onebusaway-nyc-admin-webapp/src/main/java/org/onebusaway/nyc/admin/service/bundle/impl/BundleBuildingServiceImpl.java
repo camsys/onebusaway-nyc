@@ -467,7 +467,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // manage our own overrides, as we use our own context
       Properties cmdOverrides = new Properties();
       cmdOverrides.setProperty(ARG_THROW_EXCEPTION_INVALID_STOPS, "false");
-      cmdOverrides.setProperty("stopVerificationTask.path", this.getStopVerificationURL());
+      if (this.getStopVerificationURL() != null) {
+        cmdOverrides.setProperty("stopVerificationTask.path", this.getStopVerificationURL());
+      }
       creator.setAdditionalBeanPropertyOverrides(cmdOverrides);
 
 
