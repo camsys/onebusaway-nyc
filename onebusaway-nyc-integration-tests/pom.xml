@@ -202,8 +202,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2014April_Prod_r12_b01.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2014April_Prod_r12_b01</argument>
                             </arguments>
@@ -227,8 +225,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2014April_Prod_r06_b02.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2014April_Prod_r06_b02</argument>
                             </arguments>
@@ -251,8 +247,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2014Jan_AllCity_r09_b3.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2014Jan_AllCity_r09_b3</argument>
                             </arguments>
@@ -274,8 +268,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2013Sept_Prod_r08_b04.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2013Sept_Prod_r08_b04</argument>
                             </arguments>
@@ -297,8 +289,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2013Sept_AllCity_r15_b02.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2013Sept_AllCity_r15_b02</argument>
                             </arguments>
@@ -320,8 +310,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2012September_Bronx_r10_b03.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2012September_Bronx_r10_b03</argument>
                             </arguments>
@@ -343,8 +331,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2012July_r04_b02.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2012July_r04_b02</argument>
                             </arguments>
@@ -366,8 +352,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-b63-winter10.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/b63-winter10</argument>
                             </arguments>
@@ -389,8 +373,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-s54.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/s54</argument>
                             </arguments>
@@ -412,8 +394,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-si.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/si</argument>
                             </arguments>
@@ -435,8 +415,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2012Jan_SIB63M34_r20_b01.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2012Jan_SIB63M34_r20_b01</argument>
                             </arguments>
@@ -458,8 +436,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2013June_Prod_r04_b03.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2013June_Prod_r04_b03</argument>
                             </arguments>
@@ -481,8 +457,6 @@
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
-                                <argument>-additionalResourcesDirectory</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2013June_Prod_r03_b02.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2013June_Prod_r03_b02</argument>
                             </arguments>
