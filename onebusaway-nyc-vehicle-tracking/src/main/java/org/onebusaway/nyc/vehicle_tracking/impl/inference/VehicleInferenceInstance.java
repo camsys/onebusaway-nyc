@@ -713,9 +713,10 @@ public class VehicleInferenceInstance {
             activeTrip, location);
 
         final boolean isLayoverEligible = VehicleStateLibrary.isAtPotentialLayoverSpot(blockState.getBlockState(), obs, true);
+        final boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(nycRecord.getDestinationSignCode());
         
         // vehicles on detour (but not layover) should be in_progress with status=deviated
-        if (state.getJourneyState().getIsDetour() && vehicleIsDetourEligible  && !isLayoverEligible) {
+        if (state.getJourneyState().getIsDetour() && vehicleIsDetourEligible  && !isLayoverEligible && !outOfService) {
           // remap this journey state/phase to IN_PROGRESS to conform to
           // previous pilot project semantics.
           if (EVehiclePhase.DEADHEAD_DURING.equals(phase)) {
