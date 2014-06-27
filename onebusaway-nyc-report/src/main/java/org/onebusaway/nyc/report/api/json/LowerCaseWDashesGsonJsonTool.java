@@ -3,6 +3,7 @@ package org.onebusaway.nyc.report.api.json;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.Type;
 
 import org.joda.time.LocalDate;
 
@@ -44,6 +45,11 @@ public class LowerCaseWDashesGsonJsonTool implements JsonTool{
   @Override
   public <T> T readJson(Reader reader, Class<T> classOfT) {
     return gson.fromJson(reader, classOfT);
+  }
+  
+  @Override
+  public <T> T readJson(Reader reader, Type typeOfT) {
+    return gson.fromJson(reader, typeOfT);
   }
 
   @Override

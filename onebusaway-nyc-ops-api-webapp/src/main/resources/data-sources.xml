@@ -24,25 +24,20 @@
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
 
     <!-- Database Connection Configuration -->   
-    <!-- <bean id="cacheDataSource"
-          class="org.springframework.jndi.JndiObjectFactoryBean">
-      <property name="jndiName"
-                value="java:comp/env/jdbc/cacheDB"/>   
-      <property name="lookupOnStartup"
-                value="true"/>   
-      <property name="cache"
-                value="true"/>   
-      <property name="proxyInterface"
-                value="javax.sql.DataSource"/>   
-      <property name="resourceRef"
-                value="true" />
-    </bean> -->
-
 
   <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary">
     <constructor-arg type="java.lang.String" value="${tdm.host}" />
     <constructor-arg type="java.lang.Integer" value="80" />
     <constructor-arg type="java.lang.String" value="/api/" />
+  </bean>
+  
+   <bean id="opsApiLibrary" class="org.onebusaway.nyc.ops.util.OpsApiLibrary">
+		<constructor-arg type="java.lang.String" value="${ops.host}" />
+		<constructor-arg type="java.lang.Integer" value="${ops.port}" />
+		<constructor-arg type="java.lang.String" value="${ops.path}" />
+		<constructor-arg type="java.lang.String" value="${archive.host}" />
+		<constructor-arg type="java.lang.Integer" value="${archive.port}" />
+		<constructor-arg type="java.lang.String" value="${archive.path}" />
   </bean>
 
     <!-- Input and Inference Queue Configuration -->
@@ -77,7 +72,8 @@
        	<prop key="hibernate.order_updates">false</prop>
        	<prop key="hibernate.show_sql">false</prop>
        	<prop key="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</prop>
-       	<prop key="hibernate.connection.url">jdbc:hsqldb:mem:onebusaway_temporary</prop>
+       	<!-- <prop key="hibernate.connection.url">jdbc:hsqldb:mem:onebusaway_temporary</prop> -->
+       	<prop key="hibernate.connection.url">jdbc:hsqldb:file:/home/lenny/opt/temp/onebusaway_temporary</prop>
        	<prop key="hibernate.connection.username">sa</prop>
        	<prop key="hibernate.connection.password"></prop>    	
        	<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>              	

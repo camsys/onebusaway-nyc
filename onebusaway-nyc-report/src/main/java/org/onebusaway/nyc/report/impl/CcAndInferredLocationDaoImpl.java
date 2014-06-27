@@ -66,19 +66,29 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		if (cc != null) {
 			CcAndInferredLocationRecord lastKnown = new CcAndInferredLocationRecord(
 					record, cc);
-			_template.saveOrUpdate(lastKnown);
+			saveOrUpdateRecord(lastKnown);
 		}
-
-		_template.flush();
-		_template.clear();
 	}
 
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecords(ArchivedInferredLocationRecord... records) {
 		Collection<CcAndInferredLocationRecord> lastKnownRecords = getLastKnownRecords(records);
-		
-		_template.saveOrUpdateAll(lastKnownRecords);
+		saveOrUpdateRecords(lastKnownRecords);
+	}
+	
+	@Transactional(rollbackFor = Throwable.class)
+	@Override
+	public void saveOrUpdateRecord(CcAndInferredLocationRecord record) {
+		_template.saveOrUpdate(record);
+		_template.flush();
+		_template.clear();
+	}
+	
+	@Transactional(rollbackFor = Throwable.class)
+	@Override
+	public void saveOrUpdateRecords(Collection<CcAndInferredLocationRecord> records) {		
+		_template.saveOrUpdateAll(records);
 		_template.flush();
 		_template.clear();
 	}
@@ -100,7 +110,6 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		
 		return lastKnownRecords.values();
 	}
-	
 
 	protected CcLocationReportRecord findRealtimeRecord(
 			ArchivedInferredLocationRecord record) {

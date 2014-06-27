@@ -76,7 +76,8 @@ public class LastKnownLocationResource {
 	@Path("/list")
 	@GET
 	@Produces("application/json")
-	public Response getAllLastLocationRecords(@QueryParam(value="depot-id") final String depotId,
+	public Response getAllLastLocationRecords(
+			@QueryParam(value="depot-id") final String depotId,
 			@QueryParam(value="inferred-route-id") final String inferredRouteId,
 			@QueryParam(value="inferred-phase") final String inferredPhase,
 			@QueryParam(value="bbox") final String boundingBox) {

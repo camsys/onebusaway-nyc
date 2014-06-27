@@ -1,13 +1,17 @@
 package org.onebusaway.nyc.ops.queue;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.ops.services.CcAndInferredLocationService;
+import org.onebusaway.nyc.report.api.json.JsonTool;
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
+import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report.services.CcAndInferredLocationDao;
 import org.onebusaway.nyc.report.services.InferencePersistenceService;
 import org.onebusaway.nyc.report.services.RecordValidationService;
@@ -28,7 +32,8 @@ public class OpsInferenceQueueListenerTask extends
   private RecordValidationService validationService;
 
   private InferencePersistenceService persister;
-
+  
+  private CcAndInferredLocationService _locationService;
 
   @Autowired
   public void setLocationDao(CcAndInferredLocationDao locationDao) {
@@ -45,7 +50,12 @@ public class OpsInferenceQueueListenerTask extends
       InferencePersistenceService pService) {
     this.persister = pService;
   }
-
+  
+  @Autowired
+  public void setCcAndInferredLocationService(
+		  CcAndInferredLocationService locationService) {
+    this._locationService = locationService;
+  }
 
   @Refreshable(dependsOn = {
       "tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName"})
@@ -140,8 +150,14 @@ public class OpsInferenceQueueListenerTask extends
     _mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
     
-    // check for state
-    
+   // get current state from backup ops api or archiver
+    try {
+    	_log.info("Attempting to set initial state");
+		List<CcAndInferredLocationRecord> lastKnownRecords = _locationService.getAllLastKnownRecords();
+		_locationDao.saveOrUpdateRecords(lastKnownRecords);
+	} catch (Exception e) {
+		_log.error("Failed to set initial state", e);
+	}
   }
 
   @PreDestroy

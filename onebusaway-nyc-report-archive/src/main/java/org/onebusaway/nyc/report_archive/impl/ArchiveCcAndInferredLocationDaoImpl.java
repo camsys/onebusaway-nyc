@@ -2,7 +2,6 @@ package org.onebusaway.nyc.report_archive.impl;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -87,6 +86,22 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		
 		_template.saveOrUpdateAll(inferredLocationRecords);
 		_template.saveOrUpdateAll(lastKnownRecords);
+		_template.flush();
+		_template.clear();
+	}
+	
+	@Transactional(rollbackFor = Throwable.class)
+	@Override
+	public void saveOrUpdateRecord(CcAndInferredLocationRecord record) {
+		_template.saveOrUpdate(record);
+		_template.flush();
+		_template.clear();
+	}
+	
+	@Transactional(rollbackFor = Throwable.class)
+	@Override
+	public void saveOrUpdateRecords(Collection<CcAndInferredLocationRecord> records) {		
+		_template.saveOrUpdateAll(records);
 		_template.flush();
 		_template.clear();
 	}
@@ -287,5 +302,4 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		_template.flush();
 		_template.evict(ilr);
 	}
-
 }

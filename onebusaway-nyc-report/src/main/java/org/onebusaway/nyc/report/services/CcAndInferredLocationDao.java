@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.report.services;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +13,10 @@ public interface CcAndInferredLocationDao extends LocationDao {
   void saveOrUpdateRecord(ArchivedInferredLocationRecord record);
 
   void saveOrUpdateRecords(ArchivedInferredLocationRecord... records);
+  
+  void saveOrUpdateRecord(CcAndInferredLocationRecord record);
+  
+  void saveOrUpdateRecords(Collection<CcAndInferredLocationRecord> records);
 
   /**
    * Returns last known location records applying filters if available in the URL

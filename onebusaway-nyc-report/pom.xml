@@ -184,8 +184,6 @@
                 <log4j.appender>stdout</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
                 <log4j.hibernate.type>OFF</log4j.hibernate.type>
-                <ops.host>localhost</ops.host>
-                <ops.port>8080</ops.port>
             </properties>
         </profile>
         <profile>

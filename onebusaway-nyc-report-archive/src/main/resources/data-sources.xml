@@ -103,9 +103,9 @@
 				<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
 				<prop key="hibernate.show_sql">false</prop>
 				<prop key="hibernate.hbm2ddl.auto">validate</prop>
-	            <prop key="hibernate.jdbc.batch_size">1000</prop>
-    		    <prop key="hibernate.order_inserts">false</prop>
-            	<prop key="hibernate.order_updates">false</prop>
+        <prop key="hibernate.jdbc.batch_size">1000</prop>
+	    	<prop key="hibernate.order_inserts">false</prop>
+       	<prop key="hibernate.order_updates">false</prop>
 			</props>
 		</property>
 	</bean>
@@ -126,10 +126,10 @@
 				<prop key="hibernate.current_session_context_class">thread</prop>
 				<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
 				<prop key="hibernate.hbm2ddl.auto">validate</prop>
-              	<prop key="hibernate.jdbc.batch_size">1000</prop>
-              	<prop key="hibernate.order_inserts">false</prop>
-              	<prop key="hibernate.order_updates">false</prop>
-              	<prop key="hibernate.show_sql">false</prop>
+       	<prop key="hibernate.jdbc.batch_size">1000</prop>
+       	<prop key="hibernate.order_inserts">false</prop>
+       	<prop key="hibernate.order_updates">false</prop>
+       	<prop key="hibernate.show_sql">false</prop>
 			</props>
 		</property>
 	</bean>
