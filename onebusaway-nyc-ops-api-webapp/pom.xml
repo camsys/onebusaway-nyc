@@ -190,7 +190,7 @@
                 <ops.port>8080</ops.port>
                 <ops.path>/${project.name}/api/record/</ops.path>
                 <!-- <archive.host>archive.dev.obanyc.com</archive.host> -->
-               <!--  <archive.port>80</archive.port> -->
+                <!--  <archive.port>80</archive.port> -->
                 <archive.host>localhost</archive.host>
                 <archive.port>8980</archive.port>
                 <archive.path>/onebusaway-nyc-report-archive/api/record/</archive.path>
