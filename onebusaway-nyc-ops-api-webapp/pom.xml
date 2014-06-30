@@ -153,9 +153,11 @@
             <properties>
                 <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path><!-- assumes domain is set in resolv.conf -->
                 <tdm.host>tdm</tdm.host>
+                <ops.host>ops</ops.host>
+                <archive.host>archive</archive.host>
                 <log4j.appender>ROLL</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
-                <log4j.hibernate.type>OFF</log4j.hibernate.type>
+                <log4j.hibernate.type>OFF</log4j.hibernate.type> 
             </properties>
         </profile>
         <profile>
@@ -171,6 +173,8 @@
                 <jetty.port>8082</jetty.port>
                 <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <archive.host>archive.dev.obanyc.com</archive.host>
+                <ops.host>ops.dev.obanyc.com</ops.host>
                 <log4j.appender>stdout</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
                 <log4j.hibernate.type>OFF</log4j.hibernate.type>
@@ -183,17 +187,11 @@
             <properties>
                 <jetty.port>8085</jetty.port>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <archive.host>archive.dev.obanyc.com</archive.host>
+                <ops.host>ops.dev.obanyc.com</ops.host>
                 <log4j.appender>stdout</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
                 <log4j.hibernate.type>OFF</log4j.hibernate.type>
-                <ops.host>localhost</ops.host>
-                <ops.port>8080</ops.port>
-                <ops.path>/${project.name}/api/record/</ops.path>
-                <!-- <archive.host>archive.dev.obanyc.com</archive.host> -->
-                <!--  <archive.port>80</archive.port> -->
-                <archive.host>localhost</archive.host>
-                <archive.port>8980</archive.port>
-                <archive.path>/onebusaway-nyc-report-archive/api/record/</archive.path>
             </properties>
         </profile>
         <profile>
@@ -201,6 +199,8 @@
             <properties>
                 <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <archive.host>archive.dev.obanyc.com</archive.host>
+                <ops.host>ops.dev.obanyc.com</ops.host>
                 <log4j.appender>stdout</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
                 <log4j.hibernate.type>OFF</log4j.hibernate.type>
@@ -212,6 +212,8 @@
                 <jetty.port>8082</jetty.port>
                 <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <archive.host>archive.dev.obanyc.com</archive.host>
+                <ops.host>ops.dev.obanyc.com</ops.host>
                 <log4j.appender>stdout</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
                 <log4j.hibernate.type>OFF</log4j.hibernate.type>

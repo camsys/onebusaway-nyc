@@ -27,11 +27,11 @@ public class OpsApiLibrary {
 
   private Integer _opsPort = 80;
   
+  private String _opsApiEndpointPath = "/api/record/";
+  
   private String _archiveHostname = null;
   
   private Integer _archivePort = 80;
-
-  private String _opsApiEndpointPath = "/onebusaway-nyc-ops-api-webapp/api/record/";
   
   private String _archiveApiEndpointPath = "/api/record/";
   
@@ -88,7 +88,6 @@ public class OpsApiLibrary {
   public List<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {		
     if (_restApiLibrary == null)
       return Collections.emptyList();
-    
     try{ 
     	return getContents(baseObject, params);
     }
@@ -113,17 +112,16 @@ public class OpsApiLibrary {
 	    	_log.warn("re-connect attempt " + connect_attempt + " of " + MAX_RETRIES);
 	    	if (connect_attempt++ == MAX_RETRIES) throw ce;
 		}
-		catch(InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
 		catch (SocketTimeoutException ste){
 			throw ste;
 	    }
+		catch(InterruptedException ex) {
+			Thread.currentThread().interrupt();
+		}
+		
 	}
   }
   
-  
-
   /**
    * Convenience method. Note this assumes all values coming back from the service are strings.
    */
