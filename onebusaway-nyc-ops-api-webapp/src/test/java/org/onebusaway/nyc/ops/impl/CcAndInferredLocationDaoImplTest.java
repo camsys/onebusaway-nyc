@@ -53,7 +53,7 @@ public class  CcAndInferredLocationDaoImplTest {
   public void setup() throws IOException {
 
     Configuration config = new AnnotationConfiguration();
-    config = config.configure("org/onebusaway/nyc/report/hibernate-configuration.xml");
+    config = config.configure("org/onebusaway/nyc/ops/hibernate-configuration.xml");
     _sessionFactory = config.buildSessionFactory();
 
     _cache = new CcLocationCache(10);
