@@ -46,22 +46,26 @@ public class  ArchiveCcAndInferredLocationDaoImplTest {
 
   private SessionFactory _sessionFactory;
 
-  private CcAndInferredLocationDaoImpl _dao;
+  private ArchiveCcAndInferredLocationDaoImpl _dao;
+  private CcLocationReportDaoImpl _ccDao;
   private CcLocationCache _cache;
 
   @Before
   public void setup() throws IOException {
 
     Configuration config = new AnnotationConfiguration();
-    config = config.configure("org/onebusaway/nyc/report/hibernate-configuration.xml");
+    config = config.configure("org/onebusaway/nyc/report_archive/hibernate-configuration.xml");
     _sessionFactory = config.buildSessionFactory();
 
     _cache = new CcLocationCache(10);
     
-    _dao = new CcAndInferredLocationDaoImpl();
+    _dao = new ArchiveCcAndInferredLocationDaoImpl();
     _dao.setValidationService(new RecordValidationServiceImpl());
     _dao.setSessionFactory(_sessionFactory);
     _dao.setCcLocationCache(_cache);
+    
+    _ccDao = new CcLocationReportDaoImpl();
+    _ccDao.setSessionFactory(_sessionFactory);
 
   }
 
@@ -78,6 +82,7 @@ public class  ArchiveCcAndInferredLocationDaoImplTest {
 
     CcLocationReportRecord bhs = getCcRecord();
     _cache.put(bhs); // this happens via ArchivingInputQueueListener 
+    _ccDao.saveOrUpdateReport(bhs);
 
     ArchivedInferredLocationRecord record = getTestRecord();
     _dao.saveOrUpdateRecords(record);

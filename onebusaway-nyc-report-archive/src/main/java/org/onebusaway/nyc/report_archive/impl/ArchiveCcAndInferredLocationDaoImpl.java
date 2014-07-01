@@ -67,6 +67,8 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecord(ArchivedInferredLocationRecord record) {
+		_template.saveOrUpdate(record);
+		
 		CcLocationReportRecord cc = findRealtimeRecord(record);
 		if (cc != null) {
 			CcAndInferredLocationRecord lastKnown = new CcAndInferredLocationRecord(
