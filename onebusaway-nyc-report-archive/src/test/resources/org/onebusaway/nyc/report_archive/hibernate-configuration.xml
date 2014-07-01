@@ -49,10 +49,10 @@
         <!-- Drop and re-create the database schema on startup -->
         <property name="hbm2ddl.auto">create</property>
 
-        <mapping class="org.onebusaway.nyc.report_archive.model.CcLocationReportRecord"/>
-        <mapping class="org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord"/>
-        <mapping class="org.onebusaway.nyc.report_archive.model.InvalidLocationRecord"/>
-        <mapping class="org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord"/>
+        <mapping class="org.onebusaway.nyc.report.model.CcLocationReportRecord"/>
+        <mapping class="org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord"/>
+        <mapping class="org.onebusaway.nyc.report.model.InvalidLocationRecord"/>
+        <mapping class="org.onebusaway.nyc.report.model.CcAndInferredLocationRecord"/>
 
     </session-factory>
 
