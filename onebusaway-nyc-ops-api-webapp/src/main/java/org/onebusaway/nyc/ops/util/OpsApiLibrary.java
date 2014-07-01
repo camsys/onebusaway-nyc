@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.report.impl.MinRecordsException;
 import org.onebusaway.nyc.util.impl.RestApiLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,8 @@ public class OpsApiLibrary {
   private static Logger _log = LoggerFactory.getLogger(OpsApiLibrary.class);
 
   private final int MAX_RETRIES = 3;
+  
+  private final int MIN_RECORDS = 3000;
   
   private String _opsHostname = null;
 
@@ -89,7 +92,8 @@ public class OpsApiLibrary {
     if (_restApiLibrary == null)
       return Collections.emptyList();
     try{ 
-    	return getContents(baseObject, params);
+    	//return getContents(baseObject, params);
+    	throw new Exception();
     }
     catch (Exception e){
     	_log.warn("Attempt to set intial state failed. Will attempt to get the state from Archiver instead.");
@@ -104,8 +108,13 @@ public class OpsApiLibrary {
 	_log.info("Requesting " + requestUrl);
 	while(true){
 		try{
+			_log.info("Connecting to " + requestUrl.toString());
 			String responseJson = _restApiLibrary.getContentsOfUrlAsString(requestUrl);
-			return _restApiLibrary.getJsonObjectsForString(responseJson);
+			List<JsonObject> contents = _restApiLibrary.getJsonObjectsForString(responseJson);
+			if(contents.size() < MIN_RECORDS){
+				throw new MinRecordsException("Received " + contents.size() + " records which is less than the expected minimum of " + MIN_RECORDS);
+			}
+			return contents;
 		}
 		catch (ConnectException ce){
 			Thread.sleep(1000); //Wait 1 second between attempts

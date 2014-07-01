@@ -52,8 +52,7 @@ public class OpsInferenceQueueListenerTask extends
   }
   
   @Autowired
-  public void setCcAndInferredLocationService(
-		  CcAndInferredLocationService locationService) {
+  public void setLocationService(CcAndInferredLocationService locationService) {
     this._locationService = locationService;
   }
 

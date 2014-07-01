@@ -23,16 +23,6 @@
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
 
-	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	  <property name="properties">  
-	    <props>  
-	      <prop key="ops.host">localhost</prop>
-	      <prop key="ops.port">8080</prop>
-	      <prop key="ops.path">/${project.name}/api/record/</prop>   
-	    </props>  
-  	</property>  
-	</bean>
-
 
  <!-- Database Connection Configuration -->   
 
@@ -44,11 +34,11 @@
   
    <bean id="opsApiLibrary" class="org.onebusaway.nyc.ops.util.OpsApiLibrary">
 		<constructor-arg type="java.lang.String" value="${ops.host}" />
-		<constructor-arg type="java.lang.Integer" value="${ops.port}:80" />
-		<constructor-arg type="java.lang.String" value="${ops.path}:/api/record/" />
+		<constructor-arg type="java.lang.Integer" value="${ops.port}" />
+		<constructor-arg type="java.lang.String" value="${ops.path}" />
 		<constructor-arg type="java.lang.String" value="${archive.host}" />
-		<constructor-arg type="java.lang.Integer" value="${archive.port:80}" />
-		<constructor-arg type="java.lang.String" value="${archive.path}:/api/record/" />
+		<constructor-arg type="java.lang.Integer" value="${archive.port}" />
+		<constructor-arg type="java.lang.String" value="${archive.path}" />
   </bean>
 
     <!-- Input and Inference Queue Configuration -->
