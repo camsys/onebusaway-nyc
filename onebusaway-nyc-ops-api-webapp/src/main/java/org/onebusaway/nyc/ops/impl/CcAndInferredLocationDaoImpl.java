@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.report.impl;
+package org.onebusaway.nyc.ops.impl;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -13,6 +13,8 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.onebusaway.nyc.report.impl.CcAndInferredLocationFilter;
+import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;

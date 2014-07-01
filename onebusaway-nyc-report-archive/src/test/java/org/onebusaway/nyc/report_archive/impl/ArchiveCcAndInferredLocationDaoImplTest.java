@@ -17,7 +17,6 @@ package org.onebusaway.nyc.report_archive.impl;
 
 import static org.junit.Assert.*;
 
-import org.onebusaway.nyc.report.impl.CcAndInferredLocationDaoImpl;
 import org.onebusaway.nyc.report.impl.CcAndInferredLocationFilter;
 import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.impl.RecordValidationServiceImpl;

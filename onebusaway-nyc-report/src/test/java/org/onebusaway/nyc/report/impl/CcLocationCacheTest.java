@@ -16,7 +16,6 @@
 package org.onebusaway.nyc.report.impl;
 import static org.junit.Assert.*;
 
-import org.onebusaway.nyc.report.impl.CcAndInferredLocationDaoImpl;
 import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
@@ -40,10 +39,6 @@ import java.util.List;
 
 
 public class CcLocationCacheTest {
-
-
-
-  private CcAndInferredLocationDaoImpl _dao;
   
   @Before
   public void setup() throws IOException {

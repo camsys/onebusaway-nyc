@@ -35,7 +35,7 @@
     </property>
   </bean>
   
-  <bean id="ccAndInferredLocationDao" class="org.onebusaway.nyc.report.impl.CcAndInferredLocationDaoImpl" />
+  <bean id="ccAndInferredLocationDao" class="org.onebusaway.nyc.ops.impl.CcAndInferredLocationDaoImpl" />
   
   <bean id="infPersistorService" class="org.onebusaway.nyc.report.impl.InferencePersistenceServiceImpl">
     <property name="batchSize" value="1000" />
