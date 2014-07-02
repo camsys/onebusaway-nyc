@@ -191,8 +191,10 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       minimumStopVisitsPerLine = null;
     }
     
-    _monitoringActionSupport.reportToGoogleAnalytics(_request, "Stop Monitoring", StringUtils.join(stopIds, ","), _configurationService);
-
+    if (_monitoringActionSupport.canReportToGoogleAnalytics(_configurationService)) {
+      _monitoringActionSupport.reportToGoogleAnalytics(_request, "Stop Monitoring", StringUtils.join(stopIds, ","), _configurationService);
+    }
+    
     List<MonitoredStopVisitStructure> visits = new ArrayList<MonitoredStopVisitStructure>();
 
     for (AgencyAndId stopId : stopIds) {
