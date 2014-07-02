@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.ops.util;
 
+import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -25,6 +26,8 @@ public class OpsApiLibrary {
   private final int MAX_RETRIES = 3;
   
   private final int MIN_RECORDS = 3000;
+  
+  private static int OPS_READ_TIMEOUT = 3 * 60 * 1000; // 3 Min Timeout
   
   private String _opsHostname = null;
 
@@ -70,8 +73,10 @@ public class OpsApiLibrary {
       }
       
 
-      if (!StringUtils.isBlank(_opsHostname))
+      if (!StringUtils.isBlank(_opsHostname)){
         _restApiLibrary = new RestApiLibrary(_opsHostname, _opsPort, _opsApiEndpointPath);
+      	_restApiLibrary.setReadTimeout(OPS_READ_TIMEOUT);
+      }
       else
         _log.warn("No Ops URL given!");
       
@@ -92,12 +97,12 @@ public class OpsApiLibrary {
     if (_restApiLibrary == null)
       return Collections.emptyList();
     try{ 
-    	//return getContents(baseObject, params);
-    	throw new Exception();
+    	return getContents(baseObject, params);
     }
     catch (Exception e){
-    	_log.warn("Attempt to set intial state failed. Will attempt to get the state from Archiver instead.");
+    	_log.error("Attempt to set intial state failed. Will attempt to get the state from Archiver instead.", e);
     	_restApiLibrary = new RestApiLibrary(_archiveHostname, _archivePort, _archiveApiEndpointPath);
+    	_restApiLibrary.setReadTimeout(OPS_READ_TIMEOUT);
     	return getContents(baseObject, params);
     }
   }
@@ -124,6 +129,11 @@ public class OpsApiLibrary {
 		catch (SocketTimeoutException ste){
 			throw ste;
 	    }
+		catch (IOException ioe){
+			Thread.sleep(1000); //Wait 1 second between attempts
+	    	_log.warn("re-connect attempt " + connect_attempt + " of " + MAX_RETRIES);
+	    	if (connect_attempt++ == MAX_RETRIES) throw ioe;
+		}
 		catch(InterruptedException ex) {
 			Thread.currentThread().interrupt();
 		}

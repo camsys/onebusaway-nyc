@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.util.impl;
 
 import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,8 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 public class RestApiLibrary {
   
@@ -76,19 +79,22 @@ public class RestApiLibrary {
 		BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
 
 		StringBuilder output = new StringBuilder();
-		while(br.ready()) {
-			output.append(br.readLine());
+		
+		int cp;
+		while ((cp = br.read()) != -1) {
+			output.append((char) cp);
 		}
 
 		br.close();
 		inStream.close();
-
 		return output.toString();
 	}
 
 	public ArrayList<JsonObject> getJsonObjectsForString(String string) throws Exception {
 		JsonParser parser = new JsonParser();
-		JsonObject response = (JsonObject)parser.parse(string);
+		JsonObject response = null;
+
+		response = (JsonObject)parser.parse(string);
 
 		// check status
 		if(response.has("status")) {
