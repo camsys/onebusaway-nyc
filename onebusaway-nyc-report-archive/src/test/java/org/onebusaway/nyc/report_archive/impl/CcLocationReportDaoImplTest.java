@@ -78,9 +78,9 @@ public class CcLocationReportDaoImplTest {
     report.setLatitude(new BigDecimal("70.25"));
     report.setLongitude(new BigDecimal("-101.10"));
     report.setManufacturerData("manufacturerData");
-    report.setOperatorIdDesignator("operatorIdDesignator");
+    report.setOperatorIdDesignator("opIdDesignator");
     report.setRequestId(456);
-    report.setRouteIdDesignator("routeIdDesignator");
+    report.setRouteIdDesignator("rteIdDesignator");
     report.setRunIdDesignator("runIdDesignator");
     report.setSpeed(new BigDecimal("5.6"));
     report.setTimeReported(new Date(System.currentTimeMillis()));

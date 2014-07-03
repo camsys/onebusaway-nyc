@@ -137,9 +137,9 @@ public class  ArchiveCcAndInferredLocationDaoImplTest {
       cc.setLatitude(new BigDecimal("70.25"));
       cc.setLongitude(new BigDecimal("-101.10"));
       cc.setManufacturerData("manufacturerData");
-      cc.setOperatorIdDesignator("operatorIdDesignator");
+      cc.setOperatorIdDesignator("opIdDesignator");
       cc.setRequestId(456);
-      cc.setRouteIdDesignator("routeIdDesignator");
+      cc.setRouteIdDesignator("rteIdDesignator");
       cc.setRunIdDesignator("runIdDesignator");
       cc.setSpeed(new BigDecimal("5.6"));
       cc.setTimeReceived(new Date(System.currentTimeMillis()));
