@@ -5,6 +5,8 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsCrewAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import tcip_final_3_0_5_1.CPTOperatorIden;
 import tcip_final_3_0_5_1.CPTRowMetaData;
@@ -22,6 +24,8 @@ import tcip_final_3_0_5_1.SCHTripIden;
  */
 public class MtaUtsToTcipAssignmentConverter {
 
+  private static Logger _log = LoggerFactory.getLogger(MtaUtsToTcipAssignmentConverter.class);
+  
   public MtaUtsToTcipAssignmentConverter() {
     mappingTool = new UtsMappingTool();
   }
@@ -43,6 +47,12 @@ public class MtaUtsToTcipAssignmentConverter {
   public SCHOperatorAssignment ConvertToOutput(
       MtaUtsCrewAssignment inputAssignment) {
 
+    if (inputAssignment.getTimestamp() == null) {
+      //invalid record, discard
+      _log.error("discarding invalid inputAssignment " + inputAssignment.getPassNumberNumericPortion());
+      return null;
+    }
+    
     SCHOperatorAssignment outputAssignment = new SCHOperatorAssignment();
 
     CPTOperatorIden operator = new CPTOperatorIden();
