@@ -48,6 +48,7 @@
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
             <version>2.12.0-SNAPSHOT</version>
         </dependency>
+        
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-xc</artifactId>
@@ -149,7 +150,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path><!-- assumes domain is set in resolv.conf -->
+                <tds.path>http://tds:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path><!-- assumes domain is set in resolv.conf -->
                 <tdm.host>tdm</tdm.host>
                 <log4j.appender>ROLL</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
@@ -167,7 +168,7 @@
             <id>local-front-end</id>
             <properties>
                 <jetty.port>8082</jetty.port>
-                <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tds.path>http://tds.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
@@ -189,7 +190,7 @@
         <profile>
             <id>local-ie</id> <!-- aka services-vtw-as-tds --> <!-- single port, aka development -->
             <properties>
-                <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <tds.path>http://tds.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
@@ -200,7 +201,7 @@
             <id>local-multi-port</id> <!-- services-vtw-as-tds-multiport --><!-- multi port, also for development -->
             <properties>
                 <jetty.port>8082</jetty.port>
-                <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <tds.path>http://tds.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
                 <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
@@ -265,8 +266,6 @@
                         <artifactId>mysql-connector-java</artifactId>
                         <version>5.1.17</version>
                     </dependency>
-                    <!-- <dependency> <groupId>org.hsqldb</groupId> <artifactId>hsqldb</artifactId> <version>2.0.0</version> 
-                        </dependency> -->
                 </dependencies>
             </plugin>
             <plugin>

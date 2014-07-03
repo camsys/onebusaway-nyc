@@ -24,7 +24,7 @@
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
 
 
- <!-- Database Connection Configuration -->   
+ <!-- WebServices Connection Configuration -->   
 
   <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary">
     <constructor-arg type="java.lang.String" value="${tdm.host}" />
@@ -53,6 +53,7 @@
   <bean id="output_queue" class="org.onebusaway.nyc.ops.queue.OpsInferenceQueueListenerTask">
   </bean>
 	
+	<!-- Database Connection Configuration -->   
 	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
 		<!-- <property name="dataSource" ref="cacheDataSource" /> -->
 		<property name="annotatedClasses">

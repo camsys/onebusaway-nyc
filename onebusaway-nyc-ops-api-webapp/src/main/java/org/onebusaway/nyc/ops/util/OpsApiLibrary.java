@@ -25,9 +25,11 @@ public class OpsApiLibrary {
 
   private final int MAX_RETRIES = 3;
   
-  private final int MIN_RECORDS = 3000;
+  private final int MIN_RECORDS = 3000; //TODO - This value should come from TDM Config
   
-  private static int OPS_READ_TIMEOUT = 3 * 60 * 1000; // 3 Min Timeout
+  private final int OPS_READ_TIMEOUT = 5 * 60 * 1000; // 5 Min Timeout
+  
+  private final int OPS_CONNECTION_TIMEOUT = 1 * 60 * 1000; // 1 Min Timeout
   
   private String _opsHostname = null;
 
@@ -75,12 +77,11 @@ public class OpsApiLibrary {
 
       if (!StringUtils.isBlank(_opsHostname)){
         _restApiLibrary = new RestApiLibrary(_opsHostname, _opsPort, _opsApiEndpointPath);
-      	_restApiLibrary.setReadTimeout(OPS_READ_TIMEOUT);
+        _restApiLibrary.setReadTimeout(OPS_READ_TIMEOUT);
+      	_restApiLibrary.setConnectionTimeout(OPS_CONNECTION_TIMEOUT);
       }
       else
         _log.warn("No Ops URL given!");
-      
-      
   }
 
 
@@ -103,6 +104,7 @@ public class OpsApiLibrary {
     	_log.error("Attempt to set intial state failed. Will attempt to get the state from Archiver instead.", e);
     	_restApiLibrary = new RestApiLibrary(_archiveHostname, _archivePort, _archiveApiEndpointPath);
     	_restApiLibrary.setReadTimeout(OPS_READ_TIMEOUT);
+    	_restApiLibrary.setConnectionTimeout(OPS_CONNECTION_TIMEOUT);
     	return getContents(baseObject, params);
     }
   }
