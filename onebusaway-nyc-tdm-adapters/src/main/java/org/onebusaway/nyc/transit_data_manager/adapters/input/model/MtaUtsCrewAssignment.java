@@ -69,21 +69,35 @@ public class MtaUtsCrewAssignment extends MtaUtsObject {
   private DateTime timestamp; // Assignment Timestamp
 
   public void setTimestamp(String value) {
+    if (value == null) {
+      return;
+    }
     DateTime parsedDate = null;
 
     DateTimeFormatter dtf = DateTimeFormat.forPattern(UtsMappingTool.UTS_TIMESTAMP_FIELD_DATEFORMAT);
 
-    parsedDate = dtf.parseDateTime(value);
+    try {
+      parsedDate = dtf.parseDateTime(value);
+    } catch (IllegalArgumentException iae) {
+      // bury
+    }
 
     timestamp = parsedDate;
   }
 
   public void setDate(String value) {
+    if (value == null) {
+      return;
+    }
     DateTime parsedDate = null;
 
     DateTimeFormatter dtf = DateTimeFormat.forPattern(UtsMappingTool.UTS_DATE_FIELD_DATEFORMAT);
 
-    parsedDate = dtf.parseDateTime(value);
+    try {
+      parsedDate = dtf.parseDateTime(value);
+    } catch (IllegalArgumentException iae) {
+      // bury
+    }
 
     DateMidnight dm = new DateMidnight(parsedDate);
 

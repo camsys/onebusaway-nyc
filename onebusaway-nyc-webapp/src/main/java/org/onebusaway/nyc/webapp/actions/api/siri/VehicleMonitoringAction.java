@@ -264,7 +264,9 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       }
     }
     
-    _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
+    if (_monitoringActionSupport.canReportToGoogleAnalytics(_configurationService)) {
+      _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
+    } 
     
     try {
       this._servletResponse.getWriter().write(getVehicleMonitoring());

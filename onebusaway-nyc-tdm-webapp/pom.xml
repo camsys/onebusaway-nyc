@@ -246,7 +246,7 @@
                 <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
                 <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
-                <bundle.location>/tmp/oba-bundle-tdm</bundle.location>
+                <bundle.location>/var/lib/obanyc/oba-bundle-tdm</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <log4j.appender>ROLL</log4j.appender>
             </properties>

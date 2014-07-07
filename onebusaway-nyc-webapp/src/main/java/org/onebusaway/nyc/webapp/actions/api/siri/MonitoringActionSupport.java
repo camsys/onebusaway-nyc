@@ -12,7 +12,8 @@ import com.dmurph.tracking.VisitorData;
 public class MonitoringActionSupport {
 
   protected JGoogleAnalyticsTracker _googleAnalytics = null;
-
+  private Boolean _reportToGoogleAnalytics = null;
+  
   public MonitoringActionSupport() {
   }
 
@@ -44,5 +45,13 @@ public class MonitoringActionSupport {
       }
     }
   }
+  
+  protected boolean canReportToGoogleAnalytics(ConfigurationService configService) {
+    if (_reportToGoogleAnalytics == null) {
+      _reportToGoogleAnalytics = "true".equals(configService.getConfigurationValueAsString("display.reportToGoogleAnalytics", "false"));
+    }
+    return Boolean.TRUE.equals(_reportToGoogleAnalytics);
+  }
+
 
 }

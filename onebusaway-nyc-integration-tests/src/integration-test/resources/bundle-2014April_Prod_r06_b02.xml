@@ -20,6 +20,7 @@
         <property name="bundles">
             <list>
                 <ref bean="google_transit_brooklyn" />
+                <ref bean="google_transit_queens" />
                 <ref bean="gtfs_mta_stub" />
             </list>
         </property>
@@ -29,6 +30,11 @@
         <property name="defaultAgencyId" value="MTA" />
         <property name="path" 
         	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2014April_Prod_r06_b02/google_transit_brooklyn.zip" />
+    </bean>
+    <bean id="google_transit_queens" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="defaultAgencyId" value="MTA" />
+        <property name="path" 
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2014April_Prod_r06_b02/google_transit_queens.zip" />
     </bean>
     <bean id="gtfs_mta_stub" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
         <property name="defaultAgencyId" value="MTA" />

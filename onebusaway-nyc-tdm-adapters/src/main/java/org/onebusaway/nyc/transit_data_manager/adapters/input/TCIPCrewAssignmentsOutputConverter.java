@@ -33,7 +33,9 @@ public class TCIPCrewAssignmentsOutputConverter implements
     
     for (MtaUtsCrewAssignment utsAssignment : crewAssignInputData) {
       SCHOperatorAssignment opAssign = dataConverter.ConvertToOutput(utsAssignment);
-      opAssigns.add(opAssign);
+      if (opAssign != null) {
+        opAssigns.add(opAssign);
+      }
     }
 
     _log.debug("Done conversions, returning List<SCHOperatorAssignment>.");
