@@ -26,16 +26,25 @@ public class CcAndInferredLocationServiceImpl implements CcAndInferredLocationSe
 	private JsonTool _jsonTool;
 
 	public List<CcAndInferredLocationRecord> getAllLastKnownRecords() throws Exception {
-		String json = _apiLibrary.getItemsForRequest("last-known", "list").toString();
+		String json = _apiLibrary.getItemsForRequestAsString("last-known", "list");
 		StringReader reader = new StringReader(json);
 		Type collectionType = new TypeToken<Collection<CcAndInferredLocationRecord>>(){}.getType();
 		return _jsonTool.readJson(reader, collectionType);
 	}
 	
-	@Override
-	public CcAndInferredLocationRecord getLastKnownRecordForVehicle(
-			Integer vehicleId) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public OpsApiLibrary get_apiLibrary() {
+		return _apiLibrary;
+	}
+
+	public void set_apiLibrary(OpsApiLibrary _apiLibrary) {
+		this._apiLibrary = _apiLibrary;
+	}
+
+	public JsonTool get_jsonTool() {
+		return _jsonTool;
+	}
+
+	public void set_jsonTool(JsonTool _jsonTool) {
+		this._jsonTool = _jsonTool;
 	}
 }

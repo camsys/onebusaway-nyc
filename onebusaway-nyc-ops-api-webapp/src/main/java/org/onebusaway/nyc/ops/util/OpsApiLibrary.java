@@ -94,6 +94,10 @@ public class OpsApiLibrary {
 	  return _restApiLibrary.log(baseObject, component, priority, message);
   }
   
+  public String getItemsForRequestAsString(String baseObject, String... params) throws Exception {
+	  return getItemsForRequest(baseObject, params).toString();
+  }
+  
   public List<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {		
     if (_restApiLibrary == null)
       return Collections.emptyList();
