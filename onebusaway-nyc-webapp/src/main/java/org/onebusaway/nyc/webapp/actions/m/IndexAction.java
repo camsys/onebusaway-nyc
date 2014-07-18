@@ -214,8 +214,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   public String getRouteColors() {
     Set<String> routeColors = new HashSet<String>();
     for (SearchResult _result : _results.getMatches()) {
-      RouteResult result = (RouteResult) _result;
-      routeColors.add(result.getColor());
+      // we may also receive StopResult
+      if (_result instanceof RouteResult) {
+        RouteResult result = (RouteResult) _result;
+        routeColors.add(result.getColor());
+      } 
     }
 
     return StringUtils.join(routeColors, ",");

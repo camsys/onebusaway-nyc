@@ -319,7 +319,7 @@ public class PresentationServiceImpl implements PresentationService {
 	      // since the bus is not in layover now.
 	      if (activeTrip != null
 	          && !adTripBean.getId().equals(activeTrip.getId())) {
-	        _log.debug("  " + status.getVehicleId() + " filtered out due to not serving trip for A/D");
+	        _log.debug("  " + status.getVehicleId() + " filtered out due to trip " + activeTrip.getId() + " not serving trip for A/D " + adTripBean.getId());
 	        return false;
 	      }
 	    }
