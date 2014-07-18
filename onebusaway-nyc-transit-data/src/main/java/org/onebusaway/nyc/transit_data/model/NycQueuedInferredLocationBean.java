@@ -21,6 +21,8 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 public class NycQueuedInferredLocationBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	
+	private final int DECIMAL_PLACES = 6;
 
 	// the timestamp applied to the record when received by the inference engine
 	private Long recordTimestamp;
@@ -71,8 +73,6 @@ public class NycQueuedInferredLocationBean implements Serializable {
 
 	// Distance to next scheduled stop
 	private Double nextScheduledStopDistance;
-
-	private String assignedRunId = null;
 
 	private String inferredBlockId;
 
@@ -140,7 +140,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setDistanceAlongBlock(Double distanceAlongBlock) {
-		this.distanceAlongBlock = distanceAlongBlock;
+		this.distanceAlongBlock = scaleDouble(distanceAlongBlock, DECIMAL_PLACES);;
 	}
 
 	public Double getDistanceAlongTrip() {
@@ -148,7 +148,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setDistanceAlongTrip(Double distanceAlongTrip) {
-		this.distanceAlongTrip = distanceAlongTrip;
+		this.distanceAlongTrip = scaleDouble(distanceAlongTrip, DECIMAL_PLACES);;
 	}
 
 	public Double getInferredLatitude() {
@@ -156,7 +156,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setInferredLatitude(Double inferredLatitude) {
-		this.inferredLatitude = inferredLatitude;
+		this.inferredLatitude = scaleDouble(inferredLatitude, DECIMAL_PLACES);
 	}
 
 	public Double getInferredLongitude() {
@@ -164,7 +164,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setInferredLongitude(Double inferredLongitude) {
-		this.inferredLongitude = inferredLongitude;
+		this.inferredLongitude = scaleDouble(inferredLongitude, DECIMAL_PLACES);
 	}
 
 	public Double getObservedLatitude() {
@@ -172,7 +172,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setObservedLatitude(Double observedLatitude) {
-		this.observedLatitude = observedLatitude;
+		this.observedLatitude = scaleDouble(observedLatitude, DECIMAL_PLACES);
 	}
 
 	public Double getObservedLongitude() {
@@ -180,7 +180,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setObservedLongitude(Double observedLongitude) {
-		this.observedLongitude = observedLongitude;
+		this.observedLongitude = scaleDouble(observedLongitude, DECIMAL_PLACES);
 	}
 
 	public String getPhase() {
@@ -231,16 +231,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 		return bearing;
 	}
 	
-	// Properties from TDS
-	
-	public void setAssignedRunId(String assignedRunId) {
-		this.assignedRunId = assignedRunId;
-	}
-	
-	public String getAssignedRunId() {
-		return assignedRunId;
-	}
-	
+	// Properties from TDS	
 	public void setNextScheduledStopId(String nextScheduledStopId) {
 		this.nextScheduledStopId = nextScheduledStopId;
 	}
@@ -250,7 +241,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 	
 	public void setNextScheduledStopDistance(Double distance) {
-		this.nextScheduledStopDistance = distance;
+		this.nextScheduledStopDistance = scaleDouble(distance, DECIMAL_PLACES);;
 	}
 	
 	public Double getNextScheduledStopDistance() {
@@ -336,6 +327,14 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	      setScheduleDeviation((int) new Double(vlr.getScheduleDeviation()).longValue());
 	    }
 	  }
+	
+	private Double scaleDouble(Double doubleVal, int decimalPlaces){
+		if(doubleVal == null || doubleVal.isNaN())
+			return doubleVal;
+		
+		return new BigDecimal(doubleVal).setScale(decimalPlaces, BigDecimal.ROUND_HALF_UP).doubleValue();
+		
+	}
 
 }
 
