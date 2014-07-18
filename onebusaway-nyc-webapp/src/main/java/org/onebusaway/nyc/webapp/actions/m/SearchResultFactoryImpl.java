@@ -88,7 +88,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     }
 
     // add stops in both directions
-    Map<String, List<String>> stopIdToDistanceAwayStringMap = getStopIdToDistanceAwayStringsListMapForRoute(routeBean);
+    Map<String, List<String>> stopIdAndDirectionToDistanceAwayStringMap = getStopIdAndDirectionToDistanceAwayStringsListMapForRoute(routeBean);
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
@@ -120,7 +120,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
           for (String stopId : stopGroupBean.getStopIds()) {
             stopsOnRoute.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId),
-                stopIdToDistanceAwayStringMap.get(stopId)));
+                stopIdAndDirectionToDistanceAwayStringMap.get(stopId + "_" + stopGroupBean.getId())));
           }
         }
 
@@ -279,7 +279,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   // route view
-  private Map<String, List<String>> getStopIdToDistanceAwayStringsListMapForRoute(
+  private Map<String, List<String>> getStopIdAndDirectionToDistanceAwayStringsListMapForRoute(
       RouteBean routeBean) {
     Map<String, List<String>> result = new HashMap<String, List<String>>();
 
@@ -295,6 +295,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
         continue;
       }
 
+      String direction = journey.getMonitoredVehicleJourney().getDirectionRef().getValue();
       String stopId = monitoredCall.getStopPointRef().getValue();
 
       List<String> distanceStrings = result.get(stopId);
@@ -305,7 +306,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       distanceStrings.add(getPresentableDistance(
           journey.getMonitoredVehicleJourney(),
           journey.getRecordedAtTime().getTime(), false));
-      result.put(stopId, distanceStrings);
+      result.put(stopId + "_" + direction, distanceStrings);
     }
 
     return result;
