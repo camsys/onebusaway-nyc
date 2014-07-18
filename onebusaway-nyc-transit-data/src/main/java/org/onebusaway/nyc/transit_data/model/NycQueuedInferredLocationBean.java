@@ -140,7 +140,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setDistanceAlongBlock(Double distanceAlongBlock) {
-		this.distanceAlongBlock = scaleDouble(distanceAlongBlock, DECIMAL_PLACES);;
+		this.distanceAlongBlock = distanceAlongBlock;
 	}
 
 	public Double getDistanceAlongTrip() {
@@ -148,7 +148,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setDistanceAlongTrip(Double distanceAlongTrip) {
-		this.distanceAlongTrip = scaleDouble(distanceAlongTrip, DECIMAL_PLACES);;
+		this.distanceAlongTrip = distanceAlongTrip;
 	}
 
 	public Double getInferredLatitude() {
@@ -156,7 +156,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setInferredLatitude(Double inferredLatitude) {
-		this.inferredLatitude = scaleDouble(inferredLatitude, DECIMAL_PLACES);
+		this.inferredLatitude = inferredLatitude;
 	}
 
 	public Double getInferredLongitude() {
@@ -164,7 +164,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setInferredLongitude(Double inferredLongitude) {
-		this.inferredLongitude = scaleDouble(inferredLongitude, DECIMAL_PLACES);
+		this.inferredLongitude = inferredLongitude;
 	}
 
 	public Double getObservedLatitude() {
@@ -172,7 +172,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setObservedLatitude(Double observedLatitude) {
-		this.observedLatitude = scaleDouble(observedLatitude, DECIMAL_PLACES);
+		this.observedLatitude = observedLatitude;
 	}
 
 	public Double getObservedLongitude() {
@@ -180,7 +180,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 
 	public void setObservedLongitude(Double observedLongitude) {
-		this.observedLongitude = scaleDouble(observedLongitude, DECIMAL_PLACES);
+		this.observedLongitude = observedLongitude;
 	}
 
 	public String getPhase() {
@@ -241,7 +241,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 	
 	public void setNextScheduledStopDistance(Double distance) {
-		this.nextScheduledStopDistance = scaleDouble(distance, DECIMAL_PLACES);;
+		this.nextScheduledStopDistance = distance;
 	}
 	
 	public Double getNextScheduledStopDistance() {
