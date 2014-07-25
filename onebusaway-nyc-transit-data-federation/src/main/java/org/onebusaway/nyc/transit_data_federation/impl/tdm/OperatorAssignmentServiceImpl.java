@@ -125,7 +125,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   }
 
   public void refreshData() {
-    _log.info("refreshData starting...");
+    _log.debug("refreshData starting...");
     /*
      * update a copy of the data, to reduce the synchronization interval
      */
@@ -147,7 +147,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     
     // the actual sync takes place in this method
     updateData(serviceDateMapCopy);
-    _log.info("refreshData complete");
+    _log.debug("refreshData complete");
   }
 
   /**
