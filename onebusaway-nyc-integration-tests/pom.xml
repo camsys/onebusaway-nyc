@@ -518,10 +518,8 @@
                 <configuration>
                     <container>
 <!-- use this when debugging cargo -->
-<!--
                         <log>${java.io.tmpdir}/cargo.log</log>
                         <output>${java.io.tmpdir}/cargo</output>
--->
                         <append>true</append>
                         <containerId>tomcat5x</containerId>
                         <systemProperties>
