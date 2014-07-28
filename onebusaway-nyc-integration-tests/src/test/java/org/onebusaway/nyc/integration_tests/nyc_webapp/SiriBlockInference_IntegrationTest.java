@@ -54,18 +54,35 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	}
   }
   
+  private void debugSMError(String msg, HashMap<String,Object> smResponse, String arg1, String arg2) throws IOException {
+      _log.error(msg + " for args " + arg1 + "_" + arg2);
+      _log.error("response=" + smResponse);
+      smResponse = getSmResponse(arg1, arg2, true);
+      _log.error("second try=" + smResponse);
+      assertTrue(false);
+  }
+  
   @Test
   public void testBlockSetOnSM() throws HttpException, IOException {
-	 HashMap<String,Object> smResponse = getSmResponse("MTA", "903036");
-	  
+    String arg1 = "MTA";
+    String arg2 = "903036";
+	 HashMap<String,Object> smResponse = getSmResponse(arg1, arg2);
+	 if (smResponse == null || smResponse.size() == 0)  debugSMError("empty stop monitoring response", smResponse, arg1, arg2);
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
+	 if (siri == null || siri.size() == 0) debugSMError("empty Siri", smResponse, arg1, arg2);
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
+	 if (serviceDelivery == null || serviceDelivery.size() == 0) debugSMError("empty ServiceDelivery", smResponse, arg1, arg2);
 	 ArrayList<Object> stopMonitoringDelivery = (ArrayList<Object>)serviceDelivery.get("StopMonitoringDelivery");
+	 if (stopMonitoringDelivery == null || stopMonitoringDelivery.size() == 0) debugSMError("empty stopMonitoringDelivery", smResponse, arg1, arg2);
 	 HashMap<String,Object> monitoredStopVisit = (HashMap<String,Object>)stopMonitoringDelivery.get(0);
+	 if (monitoredStopVisit == null || monitoredStopVisit.size() == 0) debugSMError("empty monitoredStopVisit", smResponse, arg1, arg2);
 	 ArrayList<Object> mvjs = (ArrayList<Object>) monitoredStopVisit.get("MonitoredStopVisit");
+	 if (mvjs == null || mvjs.size() == 0) debugSMError("empty mvjs", smResponse, arg1, arg2);
 	 HashMap<String,Object> mvjWrapper = (HashMap<String, Object>) mvjs.get(0);
+	 if (mvjWrapper == null || mvjWrapper.size() == 0) debugSMError("empty mvjWrapper", smResponse, arg1, arg2);
 	 HashMap<String,Object> mvj = (HashMap<String, Object>) mvjWrapper.get("MonitoredVehicleJourney");
-
+	 if (mvj == null || mvj.size() == 0) debugSMError("empty journey", smResponse, arg1, arg2);
+	 
 	 assertTrue(mvj.get("BlockRef") != null);
   }
 

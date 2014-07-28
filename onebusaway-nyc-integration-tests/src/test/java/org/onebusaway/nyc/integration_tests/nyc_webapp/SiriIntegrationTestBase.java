@@ -166,14 +166,20 @@ public class SiriIntegrationTestBase {
   }
 
   protected HashMap<String,Object> getSmResponse(String operatorId, String mRef) throws IOException, HttpException {
+    return getSmResponse(operatorId, mRef, false);
+  }
+  
+  protected HashMap<String,Object> getSmResponse(String operatorId, String mRef, boolean debug) throws IOException, HttpException {
 
 	  HttpClient client = new HttpClient();
 	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
 	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?key=TEST&StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
+	  if (debug) _log.error("url=" + url);
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);
 	  _log.debug(url);
 	  String response = get.getResponseBodyAsString();
+	  if (debug) _log.error("response=" + response);
 	  _log.debug(response);
 	  JsonFactory factory = new JsonFactory(); 
 	  ObjectMapper mapper = new ObjectMapper(factory); 
