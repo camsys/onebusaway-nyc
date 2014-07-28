@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import org.onebusaway.geocoder.model.GeocoderResult;
 import org.onebusaway.geocoder.model.GeocoderResults;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -70,6 +71,7 @@ public class GoogleGeocoderImplTest {
   }
   
   @Test
+  @Ignore
   public void testAmbiguousIntersectionSearch() {
 
     GoogleGeocoderImpl geocoder = new GoogleGeocoderImpl();
