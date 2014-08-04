@@ -89,10 +89,10 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = true, name = "inferred_trip_id", length = 64)
   private String inferredTripId;
 
-  @Column(nullable = true, name = "distance_along_block")
+  @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "distance_along_block")
   private Double distanceAlongBlock;
 
-  @Column(nullable = true, name = "distance_along_trip")
+  @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "distance_along_trip")
   private Double distanceAlongTrip;
 
   @Column(nullable = true, columnDefinition = "DECIMAL(9,6)", name = "inferred_latitude")
@@ -144,7 +144,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
   private String nextScheduledStopId;
 
   // Distance to next scheduled stop
-  @Column(nullable = true, name = "next_scheduled_stop_distance")
+  @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "next_scheduled_stop_distance")
   private Double nextScheduledStopDistance;
 
   @Column(nullable = true, name = "assigned_run_id", length = 16)
