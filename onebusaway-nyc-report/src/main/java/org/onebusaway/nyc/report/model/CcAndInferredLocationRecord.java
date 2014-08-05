@@ -194,16 +194,16 @@ public class CcAndInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "inference_is_formal")
   private boolean inferenceIsFormal;
 
-  @Column(nullable = true, name = "distance_along_block")
+  @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "distance_along_block")
   private Double distanceAlongBlock;
 
-  @Column(nullable = true, name = "distance_along_trip")
+  @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "distance_along_trip")
   private Double distanceAlongTrip;
 
   @Column(nullable = true, name = "next_scheduled_stop_id", length = 32)
   private String nextScheduledStopId;
 
-  @Column(nullable = true, name = "next_scheduled_stop_distance")
+  @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "next_scheduled_stop_distance")
   private Double nextScheduledStopDistance;
 
   @Column(nullable = true, name = "schedule_deviation")
