@@ -112,6 +112,9 @@ public class CcLocationReportRecord implements Serializable {
 
   @Column(nullable = false, name = "raw_message", length = 1400)
   private String rawMessage;
+  
+  @Column(nullable = true, name = "vehicle_power_state", length = 1)
+  private Integer vehiclePowerState;
 
   public CcLocationReportRecord() {
   }
@@ -158,22 +161,25 @@ public class CcLocationReportRecord implements Serializable {
     setVehicleAgencyDesignator(message.getVehicle().getAgencydesignator());
     setVehicleAgencyId(message.getVehicle().getAgencyId().intValue());
     setVehicleId((int) message.getVehicle().getVehicleId());
-
+    
     // Check for localCcLocationReport and extract sentences if available
     String gpggaSentence = null;
     String gprmcSentence = null;
-    if ((message.getLocalCcLocationReport() != null)
-        && (message.getLocalCcLocationReport().getNMEA() != null)
-        && (message.getLocalCcLocationReport().getNMEA().getSentence() != null)) {
-      for (String s : message.getLocalCcLocationReport().getNMEA().getSentence()) {
-        if (s != null) {
-          if (s.indexOf("$GPGGA") != -1) {
-            gpggaSentence = s;
-          } else if (s.indexOf("$GPRMC") != -1) {
-            gprmcSentence = s;
-          }
-        }
-      }
+    if (message.getLocalCcLocationReport() != null){
+		if ((message.getLocalCcLocationReport().getNMEA() != null)
+	    && (message.getLocalCcLocationReport().getNMEA().getSentence() != null)) {
+	      for (String s : message.getLocalCcLocationReport().getNMEA().getSentence()) {
+	        if (s != null) {
+	          if (s.indexOf("$GPGGA") != -1) {
+	            gpggaSentence = s;
+	          } else if (s.indexOf("$GPRMC") != -1) {
+	            gprmcSentence = s;
+	          }
+	        }
+	      }
+		}
+		//Vehicle Power State
+    	setVehiclePowerState(message.getLocalCcLocationReport().getVehiclePowerState());
     }
     setNmeaSentenceGPGGA(gpggaSentence);
     setNmeaSentenceGPRMC(gprmcSentence);
@@ -427,4 +433,12 @@ public class CcLocationReportRecord implements Serializable {
   public void setRawMessage(String rawMessage) {
     this.rawMessage = rawMessage;
   }
+
+public Integer getVehiclePowerState() {
+	return vehiclePowerState;
+}
+
+public void setVehiclePowerState(Integer vehiclePowerState) {
+	this.vehiclePowerState = vehiclePowerState;
+}
 }

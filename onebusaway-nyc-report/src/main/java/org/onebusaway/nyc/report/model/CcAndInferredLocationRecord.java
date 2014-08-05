@@ -90,6 +90,8 @@ public class CcAndInferredLocationRecord implements Serializable {
     setDistanceAlongTrip(inferred.getDistanceAlongTrip());
     setNextScheduledStopId(inferred.getNextScheduledStopId());
     setNextScheduledStopDistance(inferred.getNextScheduledStopDistance());
+    setPreviousScheduledStopId(inferred.getPreviousScheduledStopId());
+    setPreviousScheduledStopDistance(inferred.getPreviousScheduledStopDistance());
     setScheduleDeviation(inferred.getScheduleDeviation());
     setAssignedRunId(inferred.getAssignedRunId());
 
@@ -205,6 +207,15 @@ public class CcAndInferredLocationRecord implements Serializable {
 
   @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "next_scheduled_stop_distance")
   private Double nextScheduledStopDistance;
+  
+  //Stop ID of previous scheduled stop
+  @Column(nullable = true, name = "previous_scheduled_stop_id", length = 32)
+  private String previousScheduledStopId;
+
+  // Distance from previous scheduled stop
+  @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "previous_scheduled_stop_distance")
+  private Double previousScheduledStopDistance;
+
 
   @Column(nullable = true, name = "schedule_deviation")
   private Integer scheduleDeviation;
@@ -485,7 +496,24 @@ public class CcAndInferredLocationRecord implements Serializable {
     this.nextScheduledStopDistance = stopDistance;
   }
 
-  public Integer getScheduleDeviation() {
+  public String getPreviousScheduledStopId() {
+	return previousScheduledStopId;
+}
+
+public void setPreviousScheduledStopId(String previousScheduledStopId) {
+	this.previousScheduledStopId = previousScheduledStopId;
+}
+
+public Double getPreviousScheduledStopDistance() {
+	return previousScheduledStopDistance;
+}
+
+public void setPreviousScheduledStopDistance(
+		Double previousScheduledStopDistance) {
+	this.previousScheduledStopDistance = previousScheduledStopDistance;
+}
+
+public Integer getScheduleDeviation() {
     return scheduleDeviation;
   }
 

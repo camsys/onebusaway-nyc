@@ -146,6 +146,14 @@ public class ArchivedInferredLocationRecord implements Serializable {
   // Distance to next scheduled stop
   @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "next_scheduled_stop_distance")
   private Double nextScheduledStopDistance;
+  
+  //Stop ID of previous scheduled stop
+  @Column(nullable = true, name = "previous_scheduled_stop_id", length = 32)
+  private String previousScheduledStopId;
+
+  // Distance from previous scheduled stop
+  @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "previous_scheduled_stop_distance")
+  private Double previousScheduledStopDistance;
 
   @Column(nullable = true, name = "assigned_run_id", length = 16)
   private String assignedRunId = null;
@@ -218,8 +226,10 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setAssignedRunId(managementBean.getAssignedRunId());
 
     // TDS Fields
-    setNextScheduledStopDistance(message.getNextScheduledStopDistance());
     setNextScheduledStopId(message.getNextScheduledStopId());
+    setNextScheduledStopDistance(message.getNextScheduledStopDistance());
+    setPreviousScheduledStopId(message.getPreviousScheduledStopId());
+    setPreviousScheduledStopDistance(message.getPreviousScheduledStopDistance());
     setInferredBlockId(message.getInferredBlockId());
     setInferredTripId(message.getInferredTripId());
     setInferredRouteId(message.getInferredRouteId());
@@ -467,5 +477,22 @@ public class ArchivedInferredLocationRecord implements Serializable {
   public Double getNextScheduledStopDistance() {
     return nextScheduledStopDistance;
   }
+
+public String getPreviousScheduledStopId() {
+	return previousScheduledStopId;
+}
+
+public void setPreviousScheduledStopId(String previousScheduledStopId) {
+	this.previousScheduledStopId = previousScheduledStopId;
+}
+
+public Double getPreviousScheduledStopDistance() {
+	return previousScheduledStopDistance;
+}
+
+public void setPreviousScheduledStopDistance(
+		Double previousScheduledStopDistance) {
+	this.previousScheduledStopDistance = previousScheduledStopDistance;
+}
 
 }

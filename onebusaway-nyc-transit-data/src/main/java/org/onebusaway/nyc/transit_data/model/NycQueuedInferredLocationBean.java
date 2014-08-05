@@ -74,6 +74,12 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	// Distance to next scheduled stop
 	private Double nextScheduledStopDistance;
 	
+	// Stop ID from previous scheduled stop
+	private String previousScheduledStopId;
+
+	// Distance from previous scheduled stop
+	private Double previousScheduledStopDistance;
+	
 	private String assignedRunId = null;
 
 	private String inferredBlockId;
@@ -259,6 +265,23 @@ public class NycQueuedInferredLocationBean implements Serializable {
 		return nextScheduledStopDistance;
 	}
 
+	public String getPreviousScheduledStopId() {
+		return previousScheduledStopId;
+	}
+
+	public void setPreviousScheduledStopId(String previousScheduledStopId) {
+		this.previousScheduledStopId = previousScheduledStopId;
+	}
+
+	public Double getPreviousScheduledStopDistance() {
+		return previousScheduledStopDistance;
+	}
+
+	public void setPreviousScheduledStopDistance(
+			Double previousScheduledStopDistance) {
+		this.previousScheduledStopDistance = previousScheduledStopDistance;
+	}
+
 	public String getInferredBlockId() {
 		return inferredBlockId;
 	}
@@ -316,6 +339,12 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	    if (tsb.getNextStop() != null) {
 	      setNextScheduledStopId(tsb.getNextStop().getId());
 	    }
+	    
+	    setPreviousScheduledStopDistance(tsb.getPreviousStopDistanceFromVehicle());
+	    if (tsb.getPreviousStop() != null) {
+	      setPreviousScheduledStopId(tsb.getPreviousStop().getId());
+	    }
+	    
 	    if (!Double.isNaN(tsb.getLastKnownDistanceAlongTrip())) {
 	      setDistanceAlongTrip(tsb.getLastKnownDistanceAlongTrip());
 	    }
