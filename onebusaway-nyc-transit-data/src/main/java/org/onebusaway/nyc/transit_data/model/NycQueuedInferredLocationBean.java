@@ -79,8 +79,6 @@ public class NycQueuedInferredLocationBean implements Serializable {
 
 	// Distance from previous scheduled stop
 	private Double previousScheduledStopDistance;
-	
-	private String assignedRunId = null;
 
 	private String inferredBlockId;
 
@@ -240,14 +238,6 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	}
 	
 	// Properties from TDS	
-
-	public void setAssignedRunId(String assignedRunId) {
-		this.assignedRunId = assignedRunId;
-	}
-	 
-	public String getAssignedRunId() {
-		return assignedRunId;
-	}
 	
 	public void setNextScheduledStopId(String nextScheduledStopId) {
 		this.nextScheduledStopId = nextScheduledStopId;
