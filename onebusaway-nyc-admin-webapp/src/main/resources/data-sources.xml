@@ -12,7 +12,6 @@
 
 
  <!-- Transit Data Service -->
-    
     <bean id="nycTransitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
@@ -96,6 +95,11 @@
 		<property name="jobDetail" ref="pingJob" />
 		<property name="cronExpression" value="0 * * * * ?" /><!--  every minute -->
 	</bean>
+	
+	<bean id="gsonTool"
+    class="org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool">
+    <property name="prettyPrintOutput" value="false" />
+  </bean>
 	
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">

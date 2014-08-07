@@ -11,6 +11,7 @@ import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
 import org.onebusaway.nyc.transit_data_manager.bundle.StagingBundleProvider;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleMetadata;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

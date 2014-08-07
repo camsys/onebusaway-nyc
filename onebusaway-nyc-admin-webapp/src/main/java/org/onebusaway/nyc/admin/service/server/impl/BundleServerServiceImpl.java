@@ -224,11 +224,11 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 
    private String generateUrl(String host, String apiCall) {
      if (LOCAL_HOST.equalsIgnoreCase(host)) { 
-       String url = "http://" + host + ":8080/" + _context + apiCall;
+       String url = "http://" + host + ":8280/" + _context + apiCall;
        _log.info("generateUrl=" + url + " (use admin.context to override)");
        return url;
      }
-     return "http://" + host + ":8080/api" + apiCall;
+     return "http://" + host + ":8280/api" + apiCall;
    }
    
    protected <T> T makeRequestInternal(String instanceId, String apiCall, String jsonPayload, Class<T> returnType) {

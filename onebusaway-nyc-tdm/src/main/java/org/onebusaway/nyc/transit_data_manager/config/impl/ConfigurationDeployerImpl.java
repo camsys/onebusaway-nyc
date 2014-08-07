@@ -2,7 +2,7 @@ package org.onebusaway.nyc.transit_data_manager.config.impl;
 
 import org.onebusaway.nyc.transit_data_manager.bundle.model.ConfigDeployStatus;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDeployer;
-import org.onebusaway.nyc.transit_data_manager.util.BaseDeployer;
+import org.onebusaway.nyc.transit_data_manager.util.AwsBaseDeployer;
 import org.onebusaway.nyc.util.impl.FileUtility;
 
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -23,7 +23,7 @@ import javax.servlet.ServletContext;
  * destination sign code spreadsheet and depot id map. 
  *
  */
-public class ConfigurationDeployerImpl extends BaseDeployer implements ConfigurationDeployer {
+public class ConfigurationDeployerImpl extends AwsBaseDeployer implements ConfigurationDeployer {
 
   private static Logger _log = LoggerFactory.getLogger(ConfigurationDeployerImpl.class);
   private static final int MAX_RESULTS = -1;

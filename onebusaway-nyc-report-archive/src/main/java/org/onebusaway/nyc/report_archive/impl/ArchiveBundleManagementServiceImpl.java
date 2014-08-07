@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.report_archive.impl;
 
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
-import org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl;
+import org.onebusaway.nyc.transit_data_federation.impl.bundle.NycBundleManagementServiceImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,7 @@ import java.util.TimeZone;
  *
  */
 public class ArchiveBundleManagementServiceImpl extends
-    BundleManagementServiceImpl {
+    NycBundleManagementServiceImpl {
   
   private String tz;
   private static Logger _log = LoggerFactory.getLogger(ArchiveBundleManagementServiceImpl.class);  

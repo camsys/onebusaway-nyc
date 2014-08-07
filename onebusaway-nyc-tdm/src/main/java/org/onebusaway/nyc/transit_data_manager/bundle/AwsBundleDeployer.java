@@ -5,7 +5,7 @@ import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleDeployStatus;
 
 import java.util.List;
 
-public interface BundleDeployer {
+public interface AwsBundleDeployer {
   void setup();
   String get(String s3Key, String destinationDirectory);
   void setUser(String user);

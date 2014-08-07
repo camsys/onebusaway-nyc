@@ -13,6 +13,13 @@ import org.onebusaway.nyc.util.impl.FileUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+/**
+ * Represents a staging bundle source where each bundle is saved as a set of files
+ * within a directory. The constructor takes a directory which contains multiple
+ * subdirectories, one for each bundle.
+ * 
+ */
 public class DirectoryStagingBundleSource extends AbstractBundleSource
     implements StagingBundleSource {
   private static Logger _log = LoggerFactory.getLogger(DirectoryStagingBundleSource.class);
@@ -33,7 +40,7 @@ public class DirectoryStagingBundleSource extends AbstractBundleSource
     return _masterBundleDirectory;
   }
 
-  @Override
+  /*@Override
   public void stage(String env, String bundleDir, String bundleName)
       throws Exception {
     File srcDir = new File(this.getMasterBundleDirectory().toString()
@@ -60,7 +67,7 @@ public class DirectoryStagingBundleSource extends AbstractBundleSource
     _log.info("moving " + oldDir + " to " + newDir);
     FileUtils.moveDirectory(oldDir, newDir);
   }
-
+*/
   private Bundle loadStagedBundleDirectory(String dirName) throws IOException {
     Bundle resultBundle = null;
     File bundleFile = new File(getStagedBundleDirectory(), dirName);

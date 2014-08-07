@@ -28,9 +28,9 @@ import javax.servlet.ServletContext;
  * Base class for impelmentation classes that deploy from S3.
  *
  */
-public class BaseDeployer implements ServletContextAware {
+public class AwsBaseDeployer implements ServletContextAware {
 
-  protected static Logger _log = LoggerFactory.getLogger(BaseDeployer.class);
+  protected static Logger _log = LoggerFactory.getLogger(AwsBaseDeployer.class);
   protected static final int MAX_RESULTS = -1;
 
   @Autowired
@@ -62,13 +62,13 @@ public class BaseDeployer implements ServletContextAware {
   @PostConstruct
   public void setup() {
     try {
-      _log.info("setting up BundleDeployerImpl with username=" + _username 
+      _log.info("setting up AwsBundleDeployerImpl with username=" + _username 
           + " and bucket=" + _bucketName);
       _credentials = new BasicAWSCredentials(_username, _password);
       _s3 = new AmazonS3Client(_credentials);
       _fileUtil = new FileUtility();
     } catch (Exception ioe) {
-      _log.error("BaseDeplyer setup failed, likely due to missing or invalid s3 credentials");
+      _log.error("AwsBaseDeployer setup failed, likely due to missing or invalid s3 credentials");
       _log.error(ioe.toString());
     }
 

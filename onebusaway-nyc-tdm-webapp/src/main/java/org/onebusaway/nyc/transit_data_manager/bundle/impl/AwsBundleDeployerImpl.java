@@ -1,8 +1,8 @@
 package org.onebusaway.nyc.transit_data_manager.bundle.impl;
 
-import org.onebusaway.nyc.transit_data_manager.bundle.BundleDeployer;
+import org.onebusaway.nyc.transit_data_manager.bundle.AwsBundleDeployer;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleDeployStatus;
-import org.onebusaway.nyc.transit_data_manager.util.BaseDeployer;
+import org.onebusaway.nyc.transit_data_manager.util.AwsBaseDeployer;
 import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.util.List;
  * namely that s3://{bucketName}/activebundles/{environment} contain bundle.tar.gz
  *
  */
-public class BundleDeployerImpl extends BaseDeployer implements BundleDeployer {
+public class AwsBundleDeployerImpl extends AwsBaseDeployer implements AwsBundleDeployer {
 
   private String _localBundlePath;
   private String _localBundleStagingPath;

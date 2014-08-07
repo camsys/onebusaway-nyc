@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.util.impl;
 
 import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -12,19 +13,26 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Map.Entry;
 
+import javax.net.ssl.HttpsURLConnection;
+
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 public class RestApiLibrary {
   
   private static int DEFAULT_READ_TIMEOUT = 60 * 1000;
   private static int DEFAULT_CONNECTION_TIMEOUT = 60 * 1000;
 
-	private String _host = null;
+	private String _protocol = "http";
+  
+  	private String _host = null;
 
 	private String _apiPrefix = "/api/";
 
@@ -43,11 +51,17 @@ public class RestApiLibrary {
 	  this.connectionTimeout = connectionTimeout;
 	}
 	
-	public RestApiLibrary(String host, Integer port, String apiPrefix) {
+	public RestApiLibrary(String protocol, String host, Integer port, String apiPrefix) {
 		_host = host;
 		_apiPrefix = apiPrefix;
+		if(StringUtils.isNotBlank(protocol))
+			_protocol = protocol;
 		if(port != null)
 			_port = port;
+	}
+	
+	public RestApiLibrary(String host, Integer port, String apiPrefix) {
+		this("http", host, port, apiPrefix);
 	}
 
 	public URL buildUrl(String baseObject, String... params) throws Exception {
@@ -65,7 +79,7 @@ public class RestApiLibrary {
 			}
 		}
 
-		return new URL("http", _host, _port, url);
+		return new URL(_protocol, _host, _port, url);
 	}	
 
 	public String getContentsOfUrlAsString(URL requestUrl) throws Exception {
@@ -76,26 +90,29 @@ public class RestApiLibrary {
 		BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
 
 		StringBuilder output = new StringBuilder();
-		while(br.ready()) {
-			output.append(br.readLine());
+		
+		int cp;
+		while ((cp = br.read()) != -1) {
+			output.append((char) cp);
 		}
 
 		br.close();
 		inStream.close();
-
 		return output.toString();
 	}
 
 	public ArrayList<JsonObject> getJsonObjectsForString(String string) throws Exception {
 		JsonParser parser = new JsonParser();
-		JsonObject response = (JsonObject)parser.parse(string);
+		JsonObject response = null;
+
+		response = (JsonObject)parser.parse(string);
 
 		// check status
-		if(response.has("status")) {
+		/*if(response.has("status")) {
 			if(!response.get("status").getAsString().equals("OK"))
 				throw new Exception("Response error: status was not OK");
 		} else
-			throw new Exception("Invalid response: no status element was found.");
+			throw new Exception("Invalid response: no status element was found.");*/
 
 		ArrayList<JsonObject> output = new ArrayList<JsonObject>();
 
@@ -212,6 +229,12 @@ public class RestApiLibrary {
 	private HttpURLConnection getHttpURLConnection(URL requestUrl) {
 		HttpURLConnection conn = null;
 		try {
+			if(requestUrl.getProtocol().toLowerCase().equals("https")){
+				conn = (HttpsURLConnection)requestUrl.openConnection();
+			}
+			else{
+				conn = (HttpURLConnection)requestUrl.openConnection();
+			}
 			conn = (HttpURLConnection)requestUrl.openConnection();
 			conn.setRequestMethod("POST");
 			conn.setRequestProperty("Content-Type", "application/json");

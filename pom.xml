@@ -40,10 +40,10 @@
       <id>snapshots-camsys-repo</id>
       <url>http://developer.onebusaway.org/archiva/repository/snapshots/</url> 
     </repository>
-    <repository>
+    <!-- <repository>
       <id>public.onebusaway.org</id>
       <url>http://nexus.onebusaway.org/content/groups/public/</url>
-    </repository>
+    </repository> -->
         <repository>
             <id>camsys-cache</id>
             <url>http://svn2.camsys.com/archiva/repository/internal/</url>

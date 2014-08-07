@@ -65,7 +65,7 @@ public class BundleBuildingUtil {
     
     List<String> applicableAgencyIds = new ArrayList<String>();
     // TODO this should come from somewhere
-    applicableAgencyIds.add("MTA NYCT");
+    //applicableAgencyIds.add("MTA NYCT");
     
     bundle.setApplicableAgencyIds(applicableAgencyIds);
     

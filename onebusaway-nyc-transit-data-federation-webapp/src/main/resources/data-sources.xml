@@ -28,6 +28,12 @@
       <constructor-arg type="java.lang.Integer" value="80" />
       <constructor-arg type="java.lang.String" value="/api/" />
     </bean>
+      
+    <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" >
+      <constructor-arg type="java.lang.String" value="${bundle.list.host}"/>
+      <constructor-arg type="java.lang.Integer" value="${bundle.list.port}" />
+      <constructor-arg type="java.lang.String" value="/onebusaway-nyc-admin-webapp/api/" />
+    </bean>
 
     <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->
     <!-- Database Configuration -->
@@ -83,11 +89,11 @@
         </property>
     </bean>
     
-    <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
+    <bean id="nycBundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.NycBundleManagementServiceImpl">
         <property name="bundleStoreRoot" value="${bundle.location}" />
         <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
-
+    
     <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
         <property name="serviceAlertsUrl" value="${service.alerts.url}" />
         <property name="subscriptionPath" value="${service.alerts.subscription.path}" />        

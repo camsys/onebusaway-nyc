@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleMetadata;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 
 public class StagingBundleProvider {
   private static final String META_DATA_LOCATION = "metadata.json";
@@ -17,7 +18,8 @@ public class StagingBundleProvider {
   }
   
   public File getBundleFile(String bundleDirectory, String relativeFilePath) throws FileNotFoundException {
-    return bundleSource.getBundleFile(ENV, relativeFilePath);
+    /*return bundleSource.getBundleFile(ENV, relativeFilePath);*/
+    return bundleSource.getBundleFile(bundleDirectory, relativeFilePath);
   }
   
   public boolean checkIsValidStagedBundleFile (String bundleId, String relativeFilePath) {
@@ -29,9 +31,12 @@ public class StagingBundleProvider {
   }
   
   public BundleMetadata getMetadata(String stagingDirectory) throws Exception {
-    File file = bundleSource.getBundleFile(ENV, 
+    /*File file = bundleSource.getBundleFile(ENV, 
+        AbstractBundleSource.BUNDLE_DATA_DIRNAME + File.separator + META_DATA_LOCATION);*/
+    File file = bundleSource.getBundleFile(stagingDirectory, 
         AbstractBundleSource.BUNDLE_DATA_DIRNAME + File.separator + META_DATA_LOCATION);
     ObjectMapper mapper = new ObjectMapper();
+    //BundleMetadata meta = mapper.readValue(file, BundleMetadata.class);
     BundleMetadata meta = mapper.readValue(file, BundleMetadata.class);
     return meta;
   }

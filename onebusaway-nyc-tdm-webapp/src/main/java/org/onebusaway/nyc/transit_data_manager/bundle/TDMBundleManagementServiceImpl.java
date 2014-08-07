@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.bundle;
 
-import org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl;
-import org.onebusaway.nyc.transit_data_federation.impl.bundle.LocalBundleStoreImpl;
+import org.onebusaway.nyc.transit_data_federation.impl.bundle.NycBundleManagementServiceImpl;
+import org.onebusaway.transit_data_federation.impl.bundle.LocalBundleStoreImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.TDMBundleStoreImpl;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 
@@ -13,7 +13,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.annotation.PostConstruct;
 
-public class TDMBundleManagementServiceImpl extends BundleManagementServiceImpl {
+public class TDMBundleManagementServiceImpl extends NycBundleManagementServiceImpl {
 
   private static Logger _log = LoggerFactory.getLogger(TDMBundleManagementServiceImpl.class);
 

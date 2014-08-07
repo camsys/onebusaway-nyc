@@ -59,6 +59,16 @@ public class FileUtility {
         }
     }
   }
+  
+  /**
+   * Copy the sourceDirectory to the given destinationDirectory
+   */
+  public void copyDir(String sourceDirectoryPath, String destinationDirectoryPath) throws IOException{
+
+    File sourceDir = new File(sourceDirectoryPath);
+    File destinationDir = new File(destinationDirectoryPath);
+    FileUtils.copyDirectoryToDirectory(sourceDir, destinationDir);
+  }
 
   /**
    * Delete the file or directory represented by file. Throw an exception if

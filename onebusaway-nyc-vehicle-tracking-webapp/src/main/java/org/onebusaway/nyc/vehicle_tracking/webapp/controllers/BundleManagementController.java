@@ -15,8 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
-import org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.nyc.transit_data_federation.impl.bundle.NycBundleManagementServiceImpl;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.utility.DateLibrary;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +34,7 @@ import java.util.List;
 public class BundleManagementController {
 
   @Autowired
-  private BundleManagementServiceImpl _bundleManager;
+  private NycBundleManagementServiceImpl _bundleManager;
 
   // for integration testing only
   @RequestMapping(value = "/change-bundle.do", method = RequestMethod.GET)

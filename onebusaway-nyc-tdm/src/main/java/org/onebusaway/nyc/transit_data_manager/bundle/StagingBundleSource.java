@@ -8,6 +8,6 @@ public interface StagingBundleSource {
 
   File getBundleFile(String bundleId,
       String relativeFilePath) throws FileNotFoundException;
-  void stage(String env, String bundleDir, String bundleName) throws Exception;
+  //void stage(String env, String bundleDir, String bundleName) throws Exception;
 
 }

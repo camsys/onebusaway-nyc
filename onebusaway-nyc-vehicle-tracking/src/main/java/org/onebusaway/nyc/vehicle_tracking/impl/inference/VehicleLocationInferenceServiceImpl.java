@@ -46,8 +46,8 @@ import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
-import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.NycBundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
@@ -104,7 +104,7 @@ public class VehicleLocationInferenceServiceImpl implements
   private TransitGraphDao _transitGraphDao;
 
   @Autowired
-  private BundleManagementService _bundleManagementService;
+  private NycBundleManagementService _bundleManagementService;
 
   private BundleItem _lastBundle = null;
 

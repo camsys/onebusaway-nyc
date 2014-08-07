@@ -21,11 +21,15 @@
 	<bean id="bundle" class="org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle" />
 	
 	<bean id="nycBundle" class="org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle" />
+	
+	<bean id="transitDataServiceTemplate" class="org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl" />
 
 	<bean id="configurationService" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl" />
 	
 	<bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
-
+  
+  <context:component-scan base-package="org.onebusaway.transit_data_federation.impl" />
+  
 	<context:component-scan base-package="org.onebusaway.nyc.transit_data_federation.impl" />
 
 	<!-- The beans below used to be imported by adding org/onebusaway/transit_data_federation/application-context.xml -->
@@ -38,7 +42,7 @@
 
 	<import resource="classpath:org/onebusaway/transit_data_federation/application-context-otp.xml" />
 
-	<context:component-scan base-package="org.onebusaway.transit_data_federation.impl" />
+
 
 	<bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
 

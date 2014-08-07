@@ -70,7 +70,7 @@
   
 
   <bean id="bundleDeployer"
-    class="org.onebusaway.nyc.transit_data_manager.bundle.impl.BundleDeployerImpl">
+    class="org.onebusaway.nyc.transit_data_manager.bundle.impl.AwsBundleDeployerImpl">
     <property name="localBundlePath" value="${bundle.location}" />
     <property name="localBundleStagingPath" value="${tdm.bundlePath}" />
   </bean>

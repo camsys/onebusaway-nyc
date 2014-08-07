@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.transit_data_federation.services.bundle;
 
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 
 import java.util.List;
 

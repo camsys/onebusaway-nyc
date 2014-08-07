@@ -96,6 +96,8 @@
             <id>local-front-end</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <bundle.list.host>localhost</bundle.list.host>
+                <bundle.list.port>8280</bundle.list.port>
                 <bundle.location>/tmp/oba-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
                 <log4j.appender>stdout</log4j.appender>
@@ -108,7 +110,9 @@
             <id>local-single-port</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
+                <bundle.list.host>localhost</bundle.list.host>
+                <bundle.list.port>8280</bundle.list.port>
+                <bundle.location>/var/lib/obanyc/oba-sound-bundle/</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
 <!--
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>

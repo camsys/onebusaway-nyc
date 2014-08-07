@@ -26,7 +26,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.onebusaway.nyc.transit_data_manager.bundle.BundleDeployer;
+import org.onebusaway.nyc.transit_data_manager.bundle.AwsBundleDeployer;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundlesListMessage;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.Bundle;
@@ -61,7 +61,7 @@ public class BundleServiceResource {
   @Autowired
   private JsonTool jsonTool;
   @Autowired
-  private BundleDeployer bundleDeployer;
+  private AwsBundleDeployer bundleDeployer;
   @Autowired
   private ConfigurationService configurationService;
   private Map<String, BundleDeployStatus> _deployMap = new HashMap<String, BundleDeployStatus>();
@@ -200,13 +200,8 @@ public class BundleServiceResource {
     String s3Path = getBundleDirectory() + File.separator + environment + File.separator;
     List<String> list = bundleDeployer.listBundlesForServing(s3Path);
     try {
-      // serialize the status object and send to client -- it contains an id for querying
-      final StringWriter sw = new StringWriter();
-      final MappingJsonFactory jsonFactory = new MappingJsonFactory();
-      final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(jsonGenerator, list);
-      return Response.ok(sw.toString()).build();
+      String jsonList = jsonSerializer(list);
+      Response.ok(jsonList).build();
     } catch (Exception e) {
       _log.error("exception serializing response:", e);
     }
@@ -230,13 +225,8 @@ public class BundleServiceResource {
     _log.info("deploy request complete");
 
     try {
-      // serialize the status object and send to client -- it contains an id for querying
-      final StringWriter sw = new StringWriter();
-      final MappingJsonFactory jsonFactory = new MappingJsonFactory();
-      final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(jsonGenerator, status);
-      return Response.ok(sw.toString()).build();
+      String jsonStatus = jsonSerializer(status);
+      Response.ok(jsonStatus).build();
     } catch (Exception e) {
       _log.error("exception serializing response:", e);
     }
@@ -253,19 +243,14 @@ public class BundleServiceResource {
   public Response deployStatus(@PathParam("id") String id) {
     BundleDeployStatus status = this.lookupDeployRequest(id);
     try {
-      final StringWriter sw = new StringWriter();
-      final MappingJsonFactory jsonFactory = new MappingJsonFactory();
-      final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(jsonGenerator, status);
-      return Response.ok(sw.toString()).build();
+      String jsonStatus = jsonSerializer(status);
+      Response.ok(jsonStatus).build();
     } catch (Exception e) {
       _log.error("exception serializing response:", e);
     }
     return Response.serverError().build();
-    }
+  }
 
-  
   
   /**
    * Trivial implementation of creating unique Ids. Security is not a
@@ -293,7 +278,17 @@ public class BundleServiceResource {
     }
     return DEFAULT_BUNDLE_STAGING_DIRECTORY;
   }
-
+  
+  private String jsonSerializer(Object object) throws IOException{
+    //serialize the status object and send to client -- it contains an id for querying
+    final StringWriter sw = new StringWriter();
+    final MappingJsonFactory jsonFactory = new MappingJsonFactory();
+    final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.writeValue(jsonGenerator, object);
+    return sw.toString();
+  }
+  
   /**
    * Thread to perform the actual deployment of the bundle.  Downloading from S3 and
    * unzipping can take some time....
