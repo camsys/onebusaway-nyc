@@ -94,14 +94,10 @@
         <property name="configPath" value="config" />
    		<property name="buildPath" value="builds" />
    </bean>
-   
-   <!-- TODO: Will need to pull out diff logic from DiffTask, so that the staged bundle build directory is read from config
-   
-	<bean id="bundleDiffTask" class="org.onebusaway.nyc.admin.service.bundle.task.BundleDiffTask" >
-	    <property name="logger" ref="multiCSVLogger" />
-	    <property name="configurationServiceClient" ref="configurationServiceClient" />
-	    <property name="bundleRequestResponse" ref="bundleRequestResponse" />
-	</bean> -->
+	
+   <bean id="diffService" class="org.onebusaway.nyc.admin.service.impl.DiffServiceImpl" >
+	   <property name="configurationServiceClient" ref="configurationServiceClient" />
+   </bean>
   
    <bean id="emailService" class="org.onebusaway.nyc.admin.service.impl.EmailServiceImpl" />
       
@@ -146,4 +142,10 @@
     <constructor-arg ref="stagingBundleSource" />
   </bean>
    
+  <bean id="configurationServiceClient" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientBridge" >
+    <constructor-arg type="java.lang.String" value="http://tdm"/>
+    <constructor-arg type="java.lang.Integer" value="80" />
+    <constructor-arg type="java.lang.String" value="/api/" />
+  </bean>
+  
 </beans>

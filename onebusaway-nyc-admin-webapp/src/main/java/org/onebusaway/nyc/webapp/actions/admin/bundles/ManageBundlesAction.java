@@ -19,8 +19,8 @@ import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.model.ui.DirectoryStatus;
 import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
+import org.onebusaway.nyc.admin.service.DiffService;
 import org.onebusaway.nyc.admin.service.FileService;
-import org.onebusaway.nyc.admin.service.bundle.task.BundleDiffTask;
 import org.onebusaway.nyc.admin.util.NYCFileUtils;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
@@ -101,13 +101,12 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	// where the bundle is deployed to
 	private String s3Path = "s3://bundle-data/activebundle/<env>/";
 	private String environment = "dev";
-	private BundleDiffTask diffTask = new BundleDiffTask();
+	private DiffService diffService;
 	
 	@Override
 	public String input() {
 	  _log.debug("in input");
-    return SUCCESS;
-	  
+	  return SUCCESS;
 	}
 	
 	@Override
@@ -211,17 +210,14 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	}
 	
 	public String diffResult() {
-		_log.info("diffResult called for build=" + diffBundleName + "." + diffBuildName);
 		String currentBundlePath = fileService.getBucketName() + File.separator 
-		    + bundleDirectory + "/builds/" + bundleName + "/outputs"; 
+		    + bundleDirectory + "/builds/" + bundleName + "/outputs/gtfs_stats.csv"; 
 		String selectedBundlePath = fileService.getBucketName()
 		    + File.separator
 		    + diffBundleName + "/builds/"
-		    + diffBuildName + "/outputs";
+		    + diffBuildName + "/outputs/gtfs_stats.csv";
 		diffResult.clear();
-		diffTask.setCurrentBundlePath(currentBundlePath);
-		diffTask.setBundleBuildPath(selectedBundlePath);
-		diffResult = diffTask.diff();
+		diffResult = diffService.diff(currentBundlePath, selectedBundlePath);
 		return "diffResult";
 	}
 	
@@ -335,6 +331,14 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	@Autowired
 	public void setFileService(FileService fileService) {
 		this.fileService = fileService;
+	}
+	
+	/**
+	 * @param diffService the diffService to set
+	 */
+	@Autowired
+	public void setDiffService(DiffService diffService) {
+		this.diffService = diffService;
 	}
 
 	/**

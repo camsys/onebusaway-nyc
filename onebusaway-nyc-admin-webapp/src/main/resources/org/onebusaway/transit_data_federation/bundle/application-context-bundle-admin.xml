@@ -132,31 +132,23 @@
     <property name="logger" ref="multiCSVLogger" />
     <property name="bundleRequestResponse" ref="bundleRequestResponse" />
   </bean>
-  
-  <!--
-  <bean id="task_diff" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
-    <property name="taskName" value="diff_task" />
-    <property name="afterTaskName" value="gtfs_statistics" />
-    <property name="task" ref="diffTask" />
-  </bean>
-  
-  <bean id="diffTask" class="org.onebusaway.nyc.admin.service.bundle.task.DiffTask" >
-    <property name="logger" ref="multiCSVLogger" />
-    <property name="localConnectionService" ref="connectionService" />
-  </bean>
-  -->
-  
+
   <bean id="task_diff_validation" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="diff_validation_task" />
     <property name="afterTaskName" value="gtfs_statistics" />
     <property name="task" ref="diffValidationTask" />
   </bean>
-  
 
-  <bean id="diffValidationTask" class="org.onebusaway.nyc.admin.service.bundle.task.ValidationDiffTask" >
+
+  <bean id="diffValidationTask" class="org.onebusaway.nyc.admin.service.bundle.task.ValidationDiffTask">
     <property name="logger" ref="multiCSVLogger" />
+    <property name="diffService" ref="diffService" />
     <property name="configurationServiceClient" ref="configurationServiceClient" />
     <property name="bundleRequestResponse" ref="bundleRequestResponse" />
+  </bean>
+
+  <bean id="diffService" class="org.onebusaway.nyc.admin.service.impl.DiffServiceImpl">
+    <property name="configurationServiceClient" ref="configurationServiceClient" />
   </bean>
 
   <!--  clean up from previous run -->
