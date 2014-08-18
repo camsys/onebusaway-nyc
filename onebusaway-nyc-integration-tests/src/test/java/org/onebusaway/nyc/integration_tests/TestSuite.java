@@ -41,6 +41,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4257_20120907_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4264_20120907T162054_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4399_20131225_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4655_mtabus_as_nyct_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4855_export_trips_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5318_20101202T172138_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5558_layover_in_motion_IntegrationTest;
@@ -49,6 +50,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_6154_20111214_123000_143500_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_6333_20120717_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_6844_deadhead_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7040_layover_oosdsc_formal_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7040_layover_oosdsc_informal_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7560_20101122T084226_IntegrationTest;
@@ -70,8 +72,13 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	/*
 	 * Inference tests
 	 */
+	
+	// 2014April_Prod_r12_b01
+	Trace_4655_mtabus_as_nyct_IntegrationTest.class,
+	
 	// 2014April_Prod_r06_b02
 	Trace_4855_export_trips_IntegrationTest.class,
+	Trace_6844_deadhead_IntegrationTest.class,
 	
 	// 2014Jan_AllCity_r09_b3
 	Trace_3088_in_progress_IntegrationTest.class,
