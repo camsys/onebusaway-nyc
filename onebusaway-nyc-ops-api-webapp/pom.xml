@@ -131,7 +131,7 @@
       </activation>
       <properties>
         <tdm.host>tdm</tdm.host>
-        <ops.host>opslb</ops.host>
+        <ops.host>opselb</ops.host>
         <ops.port>80</ops.port>
         <ops.path>/api/record/</ops.path>
         <archive.host>archive</archive.host>
