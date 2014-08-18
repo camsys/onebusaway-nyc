@@ -45,6 +45,8 @@ public class HistoricalRecord {
 	private Double distanceAlongTrip;
 	private String nextScheduledStopId;
 	private Double nextScheduledStopDistance;
+	private String previousScheduledStopId;
+	private Double previousScheduledStopDistance;
 	private Integer scheduleDeviation;
 	/**
 	 * @return the vehicleAgencyId
@@ -429,6 +431,19 @@ public class HistoricalRecord {
 	 */
 	public void setNextScheduledStopDistance(Double nextScheduledStopDistance) {
 		this.nextScheduledStopDistance = nextScheduledStopDistance;
+	}
+	public String getPreviousScheduledStopId() {
+		return previousScheduledStopId;
+	}
+	public void setPreviousScheduledStopId(String previousScheduledStopId) {
+		this.previousScheduledStopId = previousScheduledStopId;
+	}
+	public Double getPreviousScheduledStopDistance() {
+		return previousScheduledStopDistance;
+	}
+	public void setPreviousScheduledStopDistance(
+			Double previousScheduledStopDistance) {
+		this.previousScheduledStopDistance = previousScheduledStopDistance;
 	}
 	/**
 	 * @return the scheduleDeviation

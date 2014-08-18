@@ -58,7 +58,9 @@ public class HistoricalRecordResultTransformer implements ResultTransformer{
 		record.setDistanceAlongTrip((Double)tuple[32]);
 		record.setNextScheduledStopId((String)tuple[33]);
 		record.setNextScheduledStopDistance((Double)tuple[34]);
-		record.setScheduleDeviation((Integer)tuple[35]);
+		record.setPreviousScheduledStopId((String)tuple[35]);
+		record.setPreviousScheduledStopDistance((Double)tuple[36]);
+		record.setScheduleDeviation((Integer)tuple[37]);
 		
 		return record;
 	}

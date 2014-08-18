@@ -61,7 +61,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 				"inf.inferred_route_id, inf.inferred_direction_id, inf.inferred_dest_sign_code, inf.inferred_latitude, " +
 				"inf.inferred_longitude, inf.inferred_phase, inf.inferred_status, inf.inference_is_formal, " +
 				"inf.distance_along_block, inf.distance_along_trip, inf.next_scheduled_stop_id, inf.next_scheduled_stop_distance, " +
-				"inf.schedule_deviation from obanyc_cclocationreport cc ");
+				"inf.previous_scheduled_stop_id, inf.previous_scheduled_stop_distance, inf.schedule_deviation from obanyc_cclocationreport cc ");
 		
   	/* 
   	 * here we expect vehicle_id_2 index to be present. On mysql, create it via
