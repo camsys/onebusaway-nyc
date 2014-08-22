@@ -48,6 +48,8 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
@@ -57,6 +59,8 @@ import uk.org.siri.siri.VehicleActivityStructure;
 
 public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl implements SearchResultFactory {
 
+  private static Logger _log = LoggerFactory.getLogger(SearchResultFactoryImpl.class);
+  
   private ConfigurationService _configurationService;
 
   private RealtimeService _realtimeService;
@@ -139,6 +143,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   @Override
+  // TODO: this method needs refactoring to consider route and direction for routes with loops
   public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
     List<RouteAtStop> routesWithArrivals = new ArrayList<RouteAtStop>();
     List<RouteAtStop> routesWithNoVehiclesEnRoute = new ArrayList<RouteAtStop>();
@@ -205,24 +210,32 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions,
           serviceAlertDescriptions);
 
-      // Keep track of service and no service per route. If at least one
-      // direction per route meets some criteria, break because that route is handled.
+      // Keep track of service and no service per route and direction. 
+      // in case the route has loops, we must consider both directions
+      boolean arrivalsFound = false;
+      boolean nssm = false;
       for (RouteDirection direction : routeAtStop.getDirections()) {
-        if (direction.getHasUpcomingScheduledService() == false && direction.getDistanceAways().isEmpty()) {
-          routesWithNoScheduledService.add(routeAtStop);
-          break;
+        if (direction.getHasUpcomingScheduledService() == false 
+            && direction.getDistanceAways().isEmpty()) {
+          nssm = true;
         } else {
           if (!direction.getDistanceAways().isEmpty()) {
-            routesWithArrivals.add(routeAtStop);
-            break;
-          } else {
-            routesWithNoVehiclesEnRoute.add(routeAtStop);
+            arrivalsFound = true;
             break;
           }
         }
       }
+      if (arrivalsFound) {
+        routesWithArrivals.add(routeAtStop);
+      } else if (nssm) {
+        routesWithNoScheduledService.add(routeAtStop);
+      } else {
+        routesWithNoVehiclesEnRoute.add(routeAtStop);
+      }
     }
 
+    
+    
     return new StopResult(stopBean, routesWithArrivals,
         routesWithNoVehiclesEnRoute, routesWithNoScheduledService, filteredRoutes, serviceAlertDescriptions);
   }
