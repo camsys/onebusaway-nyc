@@ -154,13 +154,13 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
    * lock the underlying map to update with refreshed values. 
    */
   private  void updateData(Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> serviceDateMapCopy) {
-    _log.info("updateData starting...");
+    _log.debug("updateData starting...");
     synchronized (_serviceDateToOperatorListMap) {
     	for (ServiceDate serviceDate: serviceDateMapCopy.keySet()) {
     		_serviceDateToOperatorListMap.put(serviceDate, serviceDateMapCopy.get(serviceDate));
     	}
     }
-    _log.info("updateData complete");
+    _log.debug("updateData complete");
   }
   
   // cap service dates to within a range of days from now
