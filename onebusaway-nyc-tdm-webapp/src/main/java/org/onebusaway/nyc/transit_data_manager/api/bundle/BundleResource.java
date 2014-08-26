@@ -49,11 +49,11 @@ import com.sun.jersey.core.header.ContentDisposition;
 @Path("/bundle")
 @Component
 @Scope("singleton")
-public class BundleServiceResource {
+public class BundleResource{
 
   private static final String DEFAULT_BUNDLE_STAGING_DIRECTORY = "activebundles";
 
-  private static Logger _log = LoggerFactory.getLogger(BundleServiceResource.class);
+  private static Logger _log = LoggerFactory.getLogger(BundleResource.class);
 
   private ExecutorService _executorService = null;
   @Autowired
