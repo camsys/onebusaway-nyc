@@ -40,7 +40,7 @@ public class DirectoryStagingBundleSource extends AbstractBundleSource
     return _masterBundleDirectory;
   }
 
-  /*@Override
+  @Override
   public void stage(String env, String bundleDir, String bundleName)
       throws Exception {
     File srcDir = new File(this.getMasterBundleDirectory().toString()
@@ -67,7 +67,7 @@ public class DirectoryStagingBundleSource extends AbstractBundleSource
     _log.info("moving " + oldDir + " to " + newDir);
     FileUtils.moveDirectory(oldDir, newDir);
   }
-*/
+
   private Bundle loadStagedBundleDirectory(String dirName) throws IOException {
     Bundle resultBundle = null;
     File bundleFile = new File(getStagedBundleDirectory(), dirName);
