@@ -13,6 +13,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,8 +72,6 @@ public class BundleResource implements ServletContextAware{
   @Autowired
   private StagingBundleProvider _stagingBundleProvider;
   @Autowired
-  private AwsBundleDeployer bundleDeployer;
-  @Autowired
   private JsonTool jsonTool;
   
   private RemoteConnectionServiceLocalImpl _localConnectionService;
@@ -118,7 +117,7 @@ public class BundleResource implements ServletContextAware{
     try {
       String stagingDir = _configClient.getItem("admin", "bundleStagingDir");
       _stagingBundleProvider.stage(stagingDir, bundleDir, bundleName);
-      notifyOTP();
+      //notifyOTP();
       json = "{SUCCESS}";
     } catch (Exception any) {
       _log.error("stage failed:", any);
@@ -142,13 +141,11 @@ public class BundleResource implements ServletContextAware{
         _log.debug("response:" + json);
         return Response.ok(json).build();
       } else {
-        String path = getBundleDirectory() + File.separator + environment + File.separator;
-        List<String> list = bundleDeployer.listBundlesForServing(path);
-        try {
-          String jsonList = jsonSerializer(list);
-          Response.ok(jsonList).build();
-        } catch (Exception e) {
-          _log.error("exception serializing response:", e);
+        _log.debug("local conenction:" + environment);
+        String json = _localConnectionService.getList(environment);
+        _log.debug("response:" + json);
+        if (json != null) {
+          return Response.ok(json).build();
         }
         return Response.serverError().build();
       }
@@ -168,13 +165,13 @@ public class BundleResource implements ServletContextAware{
    */
   public Response deploy(@PathParam("environment")
   String environment) {
-    if(isTdm()){
+    //if(isTdm()){
       String url = getTDMURL() + "/api/bundle/deploy/from/" + environment;
       _log.debug("requesting:" + url);
       String json = _remoteConnectionService.getContent(url);
       _log.debug("response:" + json);
       return Response.ok(json).build();
-    }
+    /*}
     else{
       _log.info("Starting deploy(" + environment + ")...");
       String s3Path = getBundleDirectory() + File.separator + environment + File.separator;
@@ -191,7 +188,7 @@ public class BundleResource implements ServletContextAware{
         _log.error("exception serializing response:", e);
       }
       return Response.serverError().build();
-      }
+      }*/
   }
   
   @Path("/deploy/status/{id}/list")
@@ -450,7 +447,7 @@ public class BundleResource implements ServletContextAware{
    * Thread to perform the actual deployment of the bundle. 
    *
    */
-  private class DeployThread implements Runnable {
+  /*private class DeployThread implements Runnable {
     private String stagedBundlesPath;
     private BundleDeployStatus status;
     public DeployThread(String stagedBundlesPath, BundleDeployStatus status){
@@ -462,7 +459,7 @@ public class BundleResource implements ServletContextAware{
     public void run() {
       bundleDeployer.deploy(status, stagedBundlesPath);
     }
-  }
+  }*/
 
   @Override
   public void setServletContext(ServletContext context) {

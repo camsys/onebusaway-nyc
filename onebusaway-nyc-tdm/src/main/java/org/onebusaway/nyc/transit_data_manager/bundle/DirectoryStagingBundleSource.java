@@ -65,7 +65,7 @@ public class DirectoryStagingBundleSource extends AbstractBundleSource
     File oldDir = new File(destDir + File.separator + bundleName);
     File newDir = new File(destDir + File.separator + env);
     _log.info("moving " + oldDir + " to " + newDir);
-    FileUtils.moveDirectory(oldDir, newDir);
+    FileUtils.moveDirectoryToDirectory(oldDir, newDir, true);
   }
 
   private Bundle loadStagedBundleDirectory(String dirName) throws IOException {
