@@ -24,7 +24,6 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.NycBundleManagementService;
-import org.onebusaway.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.transit_data_federation.services.bundle.BundleStoreService;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.transit_data.model.AgencyBean;
@@ -194,20 +193,6 @@ public class NycBundleManagementServiceImpl implements NycBundleManagementServic
 
   @PostConstruct
   protected void setup() throws Exception {
-   /* if(!_standaloneMode) {
-      
-      try{
-        _bundleStore = new TDMBundleStoreImpl(_bundleRootPath, _apiLibrary);        
-      }
-      catch(Exception e){
-        _bundleStore = new LocalBundleStoreImpl(_bundleRootPath);
-      }
-    }
-    else{
-      _bundleStore = new LocalBundleStoreImpl(_bundleRootPath);
-    }
-    discoverBundles();*/
-    
     if(!_standaloneMode) {
       _bundleStore = new HttpBundleStoreImpl(_bundleRootPath, _restApiLibrary);        
     }
