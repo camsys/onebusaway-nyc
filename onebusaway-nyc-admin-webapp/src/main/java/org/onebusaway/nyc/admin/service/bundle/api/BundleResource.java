@@ -1,62 +1,24 @@
 package org.onebusaway.nyc.admin.service.bundle.api;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.WritableByteChannel;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 
 import org.onebusaway.nyc.admin.service.BundleDeployerService;
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
-import org.onebusaway.nyc.admin.service.bundle.BundleDeployer;
-import org.onebusaway.nyc.admin.service.impl.RemoteConnectionServiceLocalImpl;
-import org.onebusaway.nyc.transit_data_manager.bundle.AwsBundleDeployer;
-import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
-import org.onebusaway.nyc.transit_data_manager.bundle.BundlesListMessage;
-import org.onebusaway.nyc.transit_data_manager.bundle.StagingBundleProvider;
-import org.onebusaway.nyc.transit_data_manager.bundle.model.Bundle;
+import org.onebusaway.nyc.admin.service.bundle.BundleStager;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleDeployStatus;
-import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleMetadata;
-import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
-import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.MappingJsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Scope;
-import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
-
-import com.sun.jersey.core.header.ContentDisposition;
 
 @Path("/bundle")
 @Component
@@ -70,7 +32,7 @@ public class BundleResource implements ServletContextAware{
   @Autowired
   RemoteConnectionService _remoteConnectionService;
   @Autowired
-  private StagingBundleProvider _stagingBundleProvider;
+  private BundleStager _bundleStager;
   @Autowired
   @Qualifier("localBundleDeployerImpl")
   private BundleDeployerService _localBundleDeployer;
@@ -89,22 +51,22 @@ public class BundleResource implements ServletContextAware{
   }
   
   
-  @Path("/stagerequest/{bundleDir}/{bundleName}")
+  @Path("/stagerequest/{environment}/{bundleDir}/{bundleName}")
   @GET
   /**
    * request just-built bundle is staged for deployment
    * @return status object with id for querying status
    */
-  public Response stage(@PathParam("bundleDir")
+  public Response stage(@PathParam("environment")
+    String environment, @PathParam("bundleDir")
     String bundleDir, @PathParam("bundleName")
     String bundleName) {
       // TODO this should follow the deployer pattern with an async response
       // object
       String json = "{ERROR}";
       try {
-        String stagingDir = _configClient.getItem("admin", "bundleStagingDir");
-        _stagingBundleProvider.stage(stagingDir, bundleDir, bundleName);
-        notifyOTP();
+        _bundleStager.stage(environment, bundleDir, bundleName);
+        _bundleStager.notifyOTP(bundleName);
         json = "{SUCCESS}";
       } catch (Exception any) {
         _log.error("stage failed:", any);
@@ -114,9 +76,6 @@ public class BundleResource implements ServletContextAware{
 
   @Path("/deploy/list/{environment}")
   @GET
-  /**
-   * list the bundle(s) that are on S3, potentials to be deployed.
-   */
   public Response list(@PathParam("environment")
   String environment) {
       if (isTdm()) {
@@ -128,12 +87,6 @@ public class BundleResource implements ServletContextAware{
 
   @Path("/deploy/from/{environment}")
   @GET
-  /**
-   * request bundles at s3://obanyc-bundle-data/activebundes/{environment} be deployed
-   * on the TDM (and hence the rest of the environment)
-   * @param environment string representing environment (dev/staging/prod/qa)
-   * @return status object with id for querying status
-   */
   public Response deploy(@PathParam("environment")
   String environment) {
     if(isTdm()){
@@ -145,11 +98,6 @@ public class BundleResource implements ServletContextAware{
   
   @Path("/deploy/status/{id}/list")
   @GET
-  /**
-   * query the status of a requested bundle deployment
-   * @param id the id of a BundleDeploymentStatus
-   * @return a serialized version of the requested BundleDeploymentStatus, null otherwise
-   */
   public Response deployStatus(@PathParam("id")
   String id) {
     if (isTdm()) {
@@ -159,10 +107,7 @@ public class BundleResource implements ServletContextAware{
     return _localBundleDeployer.deployStatus(id);
   }
   
-  /*
-   * methods exclusive to none TDM  
-   */
-  
+
   @Path("/list")
   @GET
   public Response getBundleList() {
@@ -187,26 +132,6 @@ public class BundleResource implements ServletContextAware{
     return _localBundleDeployer.getBundleFile(bundleId, relativeFilename);
   }
   
-  
-  /*
-   * Private Methods
-   */
-
-  private void notifyOTP() throws Exception {
-    String otpNotificationUrl = _configClient.getItem("admin", "otpNotificationUrl");
-    if (otpNotificationUrl == null) return;
-    BundleMetadata meta = getStagedBundleMetadata();
-    otpNotificationUrl = otpNotificationUrl.replaceAll(":uuid", (meta==null?"":meta.getId()));
-    _remoteConnectionService.getContent(otpNotificationUrl);
-  }
-
-  private String getTDMURL() {
-    if (tdmURL != null && tdmURL.length() > 0) {
-      return tdmURL;
-    }
-    return DEFAULT_TDM_URL;
-  }
-  
 
   private boolean isTdm() {
     if (isTdm != null)
@@ -219,28 +144,6 @@ public class BundleResource implements ServletContextAware{
     }
     return isTdm;
   }
-
-  private BundleMetadata getStagedBundleMetadata() throws Exception {
-    String bundleStagingProp = null;
-    try {
-      bundleStagingProp = _configClient.getItem("admin", "bundleStagingDir");
-    } catch (Exception e) {
-      _log.error("error looking up bundleStagingDir:", e);
-    }
-    if (bundleStagingProp == null) {
-      _log.error("expecting bundleStagingDir property from config, Failing");
-      return null;
-    }
-    File stagingDirectory = new File(bundleStagingProp);
-    if (!stagingDirectory.exists() || !stagingDirectory.isDirectory()) {
-      _log.error("expecting bundleStagingDir directory to exist: " + stagingDirectory);
-      return null;
-    }
-    
-    return _stagingBundleProvider.getMetadata(stagingDirectory.toString());
-  }
-  
-
 
   @Override
   public void setServletContext(ServletContext context) {

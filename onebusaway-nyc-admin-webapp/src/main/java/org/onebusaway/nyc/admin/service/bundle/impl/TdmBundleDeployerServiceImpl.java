@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Qualifier("tdmRemoteBundleDeployerImpl")
-public class TdmRemoteBundleDeployerImpl implements BundleDeployerService{
+public class TdmBundleDeployerServiceImpl implements BundleDeployerService{
 
   private static final String DEFAULT_TDM_URL = "http://tdm";
   private static Logger _log = LoggerFactory.getLogger(BundleResource.class);

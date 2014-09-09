@@ -62,12 +62,19 @@
 					<div id="deployBundle_progress">
 						<s:url var="url" value="/css/img/arrow-right-3.png" />
 						<img src="${url}" alt="Not found" id="expand" /> <label
-							class="adminLabel">Bundles Staged:</label>
+							class="adminLabel">Bundles Deployed:</label>
 					</div>
 					<div id="deployBundle_resultList">
 						<!--  space -->
 					</div>
 				</div>
 			</div>
+			<div class="submitForm">
+        <fieldset>
+          <s:url var="url" action="index.action" namespace="/admin" />
+          <a href="${url}" class="link">Cancel</a> 
+            <input type="button" id="deploy_continue" value="Continue" class="submit_disabled" disabled="disabled" />
+        </fieldset>
+      </div>    
 		</div>		
 </html>

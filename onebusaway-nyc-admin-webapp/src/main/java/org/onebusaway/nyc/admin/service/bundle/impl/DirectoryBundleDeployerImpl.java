@@ -13,25 +13,25 @@ import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleDeployStatus;
 import org.onebusaway.nyc.util.impl.FileUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-public class BundleDeployerImpl implements BundleDeployer {
+public class DirectoryBundleDeployerImpl implements BundleDeployer {
   
   private static final int MAX_RESULTS = -1;
   private static Logger _log = LoggerFactory
-      .getLogger(BundleDeployerImpl.class);
+      .getLogger(DirectoryBundleDeployerImpl.class);
   
   private FileUtility _fileUtil;
   
-  private String _localBundlePath;
-  private String _localBundleStagingPath;
+  private String _stagingDirectory;
+  private String _deployBundleDirectory;
   
-
-  public void setLocalBundleStagingPath(String localBundlePath) {
-    this._localBundleStagingPath = localBundlePath;
+  public void setStagedBundleDirectory(String stagingDirectory) {
+    _stagingDirectory = stagingDirectory;
   }
-
-  public void setLocalBundlePath(String localBundlePath) {
-    this._localBundlePath = localBundlePath;
+  
+  public void setDeployBundleDirectory(String localBundlePath) {
+    _deployBundleDirectory = localBundlePath;
   }
   
   @PostConstruct
@@ -52,7 +52,11 @@ public class BundleDeployerImpl implements BundleDeployer {
   public List<String> listFiles(String directory, int maxResults){
     File bundleDir = new File(directory);
     int fileCount = 1;
-    List<String> fileList = new ArrayList<String>(maxResults);
+    List<String> fileList;
+      if(maxResults > 0)
+        fileList = new ArrayList<String>(maxResults);
+      else
+        fileList = new ArrayList<String>();
     if (bundleDir.isDirectory()) {
       for (File bundleFile : bundleDir.listFiles()) {
         if (maxResults >= 0 && fileCount > maxResults)
@@ -76,15 +80,15 @@ public class BundleDeployerImpl implements BundleDeployer {
    * Copy the bundle from Staging to the Admin Server's bundle serving location, and arrange
    * as necessary.
    */
-  private int stageBundleForServing(String path) {
-    _log.info("stageBundleForServing(" + path + ")");
+  private int deployBundleForServing(BundleDeployStatus status, String path) {
+    _log.info("deployBundleForServing(" + path + ")");
 
     int bundlesDownloaded = 0;
     // list bundles at given path
     List<String> bundles = listFiles(path, MAX_RESULTS);
 
     if (bundles != null && !bundles.isEmpty()) {
-      clearBundleStagingDirectory();
+      clearBundleDeployDirectory();
     } else {
       _log.error("no bundles found at path=" + path);
       return bundlesDownloaded;
@@ -94,21 +98,21 @@ public class BundleDeployerImpl implements BundleDeployer {
       _log.info("getting bundle = " + bundle);
       String bundleFilename = parseFileName(bundle, File.separator);
       // download and stage
-      get(bundle, _localBundleStagingPath);
+      get(bundle, _deployBundleDirectory);
       // explode the tar file
       try {
-        String bundleFileLocation = _localBundleStagingPath + File.separator
+        String bundleFileLocation = _deployBundleDirectory + File.separator
             + bundleFilename;
         _log.info("unGzip(" + bundleFileLocation + ", "
-            + _localBundleStagingPath + ")");
+            + _deployBundleDirectory + ")");
         _fileUtil.unGzip(new File(bundleFileLocation), new File(
-            _localBundleStagingPath));
+            _deployBundleDirectory));
         String tarFilename = parseTarName(bundleFileLocation);
-        _log.info("unTar(" + tarFilename + ", " + _localBundleStagingPath + ")");
+        _log.info("unTar(" + tarFilename + ", " + _deployBundleDirectory + ")");
         _fileUtil.unTar(new File(tarFilename),
-            new File(_localBundleStagingPath));
+            new File(_deployBundleDirectory));
         _log.info("deleting bundle tar.gz=" + bundleFileLocation);
-        //status.addBundleName(bundleFilename);
+        status.addBundleName(bundleFilename);
         new File(tarFilename).delete();
         new File(bundleFileLocation).delete();
         bundlesDownloaded++;
@@ -118,67 +122,9 @@ public class BundleDeployerImpl implements BundleDeployer {
     }
 
     // now cleanup -- delete bundles
-    //status.setStatus(BundleDeployStatus.STATUS_COMPLETE);
+    clearBundleStagingDirectory();
+    status.setStatus(BundleDeployStatus.STATUS_COMPLETE);
     return bundlesDownloaded;
-  }
-
-  /**
-   * Copy the bundle from the bundle deployer directory to the bundle loading
-   * directory, and arrange as necessary.
-   */
-  private int stageBundleForUse(BundleDeployStatus status, String s3Path) {
-    int bundleCount = 0;
-    // list directories of staged location
-    File stagingDirectory = new File(this._localBundleStagingPath);
-    String[] directories = stagingDirectory.list();
-    if (directories == null) {
-      _log.error("no bundles to copy");
-      return bundleCount;
-    }
-
-    clearBundleDirectory();
-
-    for (String directory : directories) {
-      // copy data directory and rename as bundle name
-      String bundleName = directory;
-      // the actual data of the bundle is nested inside the "data" directory
-      String source = this._localBundleStagingPath + File.separator + directory
-          + File.separator + "data";
-      String destination = _localBundlePath + File.separator + bundleName;
-      try {
-        File sourceDirectory = new File(source);
-        if (sourceDirectory.exists() && sourceDirectory.isDirectory()) {
-          _log.info("creating bundle output directory = " + destination);
-          new File(destination).mkdirs();
-          // recursively copy contents of "data" director to the bundle-named
-          // loading directory
-          File[] bundleFiles = sourceDirectory.listFiles();
-          if (bundleFiles != null) {
-            for (File bundleFile : bundleFiles) {
-              _log.info("copying staged bundle=" + bundleFile
-                  + " to deployed dir=" + destination);
-              try {
-                if (bundleFile.exists() && bundleFile.isFile()) {
-                  FileUtils.copyFileToDirectory(bundleFile, new File(
-                      destination));
-                } else if (bundleFile.exists() && bundleFile.isFile()) {
-                  FileUtils.copyDirectoryToDirectory(bundleFile, new File(
-                      destination));
-                }
-              } catch (Exception e) {
-                _log.error("copyDirToDir(" + bundleFile + ", " + destination
-                    + ") failed:", e);
-              }
-            }
-          }
-
-          bundleCount++;
-        }
-      } catch (Exception e) {
-        _log.error("Exception moving bundle=" + bundleName, e);
-      }
-    }
-    return bundleCount;
   }
 
   private String parseTarName(String urlString) {
@@ -195,24 +141,24 @@ public class BundleDeployerImpl implements BundleDeployer {
   private void clearBundleStagingDirectory() {
     _log.info("wiping bundle staging directory");
     try {
-      _fileUtil.delete(new File(_localBundleStagingPath));
+      _fileUtil.delete(new File(_stagingDirectory));
     } catch (IOException ioe) {
       _log.error("error wiping bundle dir:", ioe);
     }
-    new File(_localBundleStagingPath).mkdir();
+    new File(_stagingDirectory).mkdir();
   }
 
   /**
-   * delete bundle loading directory.
+   * delete bundle deploy directory.
    */
-  private void clearBundleDirectory() {
-    _log.info("wiping bundle directory");
+  private void clearBundleDeployDirectory(){
+    _log.info("wiping bundle deploy directory");
     try {
-      _fileUtil.delete(new File(_localBundlePath));
+      _fileUtil.delete(new File(_deployBundleDirectory));
     } catch (IOException ioe) {
       _log.error("error wiping bundle dir:", ioe);
     }
-    new File(_localBundleStagingPath).mkdir();
+    new File(_deployBundleDirectory).mkdir();
   }
   
   private String parseFileName(String fullFileName, String separator) {
@@ -237,8 +183,12 @@ public class BundleDeployerImpl implements BundleDeployer {
     _log.info("filename=" + filename);
     String pathAndFileName = destinationDirectory + File.separator + filename;
     try {
-      _fileUtil.copyDir(bundlePath, pathAndFileName);
+      //_fileUtil.copyDir(bundlePath, pathAndFileName);
+      _fileUtil.moveFile(bundlePath, pathAndFileName);
     } catch (IOException e) {
+      _log.error("exception copying bundle from " + bundlePath + "to " + pathAndFileName, e);
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
       _log.error("exception copying bundle from " + bundlePath + "to " + pathAndFileName, e);
     }
     return pathAndFileName;
@@ -253,17 +203,10 @@ public class BundleDeployerImpl implements BundleDeployer {
   public void deploy(BundleDeployStatus status, String path) {
     try {
       status.setStatus(BundleDeployStatus.STATUS_STARTED);
-      //stageBundleForServing(status, s3Path);
-      //status.setStatus(BundleDeployStatus.STATUS_STAGING_COMPLETE);
-      stageBundleForUse(status, path);
+      deployBundleForServing(status, path);
       status.setStatus(BundleDeployStatus.STATUS_COMPLETE);
     } catch (Exception e) {
       status.setStatus(BundleDeployStatus.STATUS_ERROR);
     }
-  }
-  
-  public void stage(String path) throws Exception {
-      stageBundleForServing(path);
-
   }
 }

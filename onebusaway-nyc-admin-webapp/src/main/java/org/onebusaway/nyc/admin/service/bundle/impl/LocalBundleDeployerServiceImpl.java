@@ -29,6 +29,7 @@ import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.admin.service.BundleDeployerService;
 import org.onebusaway.nyc.admin.service.bundle.BundleDeployer;
+import org.onebusaway.nyc.admin.service.bundle.BundleStager;
 import org.onebusaway.nyc.admin.service.bundle.api.BundleResource;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundlesListMessage;
@@ -41,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
 import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.stereotype.Component;
 
@@ -48,11 +50,12 @@ import com.sun.jersey.core.header.ContentDisposition;
 
 @Component
 @Qualifier("localBundleDeployerImpl")
-public class LocalBundleDeployerImpl implements BundleDeployerService{
+@Scope("singleton")
+public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
 
     private static final String DEFAULT_BUNDLE_STAGING_DIRECTORY = "activebundles";
 
-    private static Logger _log = LoggerFactory.getLogger(BundleResource.class);
+    private static Logger _log = LoggerFactory.getLogger(LocalBundleDeployerServiceImpl.class);
 
     private ExecutorService _executorService = null;
     @Autowired
@@ -62,7 +65,8 @@ public class LocalBundleDeployerImpl implements BundleDeployerService{
     @Autowired
     private BundleDeployer bundleDeployer;
     @Autowired
-    private ConfigurationServiceClient _configClient;
+    private BundleStager bundleStager;
+    
     private Map<String, BundleDeployStatus> _deployMap = new HashMap<String, BundleDeployStatus>();
     private Integer jobCounter = 0;
 
@@ -73,10 +77,6 @@ public class LocalBundleDeployerImpl implements BundleDeployerService{
     
     public BundleDeployStatus lookupDeployRequest(String id) {
       return _deployMap.get(id);
-    }
-    
-    public void setConfigurationService(ConfigurationServiceClient configClient) {
-      _configClient = configClient;
     }
     
     public void setBundleProvider(BundleProvider bundleProvider) {
@@ -96,7 +96,7 @@ public class LocalBundleDeployerImpl implements BundleDeployerService{
       List<String> list = bundleDeployer.listBundlesForServing(bundlePath);
       try {
         String jsonList = jsonSerializer(list);
-        Response.ok(jsonList).build();
+        return Response.ok(jsonList).build();
       } catch (Exception e) {
         _log.error("exception serializing response:", e);
       }
@@ -104,24 +104,23 @@ public class LocalBundleDeployerImpl implements BundleDeployerService{
     }
 
     /**
-     * request bundles at s3://obanyc-bundle-data/activebundes/{environment} be deployed
-     * on the TDM (and hence the rest of the environment)
+     * request bundles at /var/lib/obanyc/bundles/staged/{environment} be deployed
      * @param environment string representing environment (dev/staging/prod/qa)
      * @return status object with id for querying status
      */
     @Override
     public Response deploy(@PathParam("environment") String environment) {
       _log.info("Starting deploy(" + environment + ")...");
-      String s3Path = getBundleDirectory() + File.separator + environment + File.separator;
+      String path = getBundleDirectory() + File.separator + environment + File.separator;
       BundleDeployStatus status = new BundleDeployStatus();
       status.setId(getNextId());
       _deployMap.put(status.getId(), status);
-      _executorService.execute(new DeployThread(s3Path, status));
+      _executorService.execute(new DeployThread(path, status));
       _log.info("deploy request complete");
 
       try {
         String jsonStatus = jsonSerializer(status);
-        Response.ok(jsonStatus).build();
+        return Response.ok(jsonStatus).build();
       } catch (Exception e) {
         _log.error("exception serializing response:", e);
       }
@@ -138,7 +137,7 @@ public class LocalBundleDeployerImpl implements BundleDeployerService{
       BundleDeployStatus status = this.lookupDeployRequest(id);
       try {
         String jsonStatus = jsonSerializer(status);
-        Response.ok(jsonStatus).build();
+        return Response.ok(jsonStatus).build();
       } catch (Exception e) {
         _log.error("exception serializing response:", e);
       }
@@ -263,15 +262,7 @@ public class LocalBundleDeployerImpl implements BundleDeployerService{
     }
     
     private String getBundleDirectory() {
-      if (_configClient != null) {
-        try {
-          return _configClient.getItem("admin.bundle_directory", DEFAULT_BUNDLE_STAGING_DIRECTORY);
-        } catch (Exception e){
-          _log.error("default bundle dir lookup failed:", e);
-          return DEFAULT_BUNDLE_STAGING_DIRECTORY;
-        }
-      }
-      return DEFAULT_BUNDLE_STAGING_DIRECTORY;
+      return bundleStager.getStagedBundleDirectory();
     }
     
     private String jsonSerializer(Object object) throws IOException{
@@ -285,21 +276,20 @@ public class LocalBundleDeployerImpl implements BundleDeployerService{
     }
     
     /**
-     * Thread to perform the actual deployment of the bundle.  Downloading from S3 and
-     * unzipping can take some time....
+     * Thread to perform the actual deployment of the bundle.
      *
      */
     private class DeployThread implements Runnable {
-      private String s3Path;
+      private String path;
       private BundleDeployStatus status;
-      public DeployThread(String s3Path, BundleDeployStatus status){
-        this.s3Path = s3Path;
+      public DeployThread(String path, BundleDeployStatus status){
+        this.path = path;
         this.status = status;
       }
       
       @Override
       public void run() {
-        bundleDeployer.deploy(status, s3Path);
+        bundleDeployer.deploy(status, path);
       }
     }
 

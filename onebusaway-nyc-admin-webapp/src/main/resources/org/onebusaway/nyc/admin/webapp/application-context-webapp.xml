@@ -37,6 +37,7 @@
     <context:component-scan base-package="org.onebusaway.nyc.admin.service.api" />
     <context:component-scan base-package="org.onebusaway.nyc.admin.service.impl" />
     <context:component-scan base-package="org.onebusaway.nyc.admin.job" />
+    <context:component-scan base-package="org.onebusaway.nyc.admin.service.bundle.impl" />
     
     
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
@@ -128,22 +129,23 @@
    
   <bean id="bundleSource"
     class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryBundleSource">
-    <constructor-arg type="java.lang.String" value="/var/lib/obanyc/bundles/staged" />
+    <constructor-arg type="java.lang.String" value="${bundle.deployPath}" />
     <constructor-arg ref="gsonTool" />
-  </bean>
-
-  <bean id="stagingBundleSource"
-    class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryStagingBundleSource">
-    <constructor-arg type="java.lang.String" value="/var/lib/obanyc/st_bundles" />
-    <constructor-arg type="java.lang.String" value="/var/lib/obanyc/bundles/staged" />
   </bean>
   
   <bean class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
     <constructor-arg ref="bundleSource" />
   </bean>
 
-  <bean class="org.onebusaway.nyc.transit_data_manager.bundle.StagingBundleProvider">
-    <constructor-arg ref="stagingBundleSource" />
+   <bean id="bundleStager"
+    class="org.onebusaway.nyc.admin.service.bundle.impl.DirectoryBundleStagerImpl">
+    <property name="builtBundleDirectory" value="${bundle.builtPath}" />
+    <property name="stagedBundleDirectory" value="${bundle.stagedPath}" />
   </bean>
    
+  <bean id="bundleDeployer"
+    class="org.onebusaway.nyc.admin.service.bundle.impl.DirectoryBundleDeployerImpl">
+    <property name="stagedBundleDirectory" value="${bundle.stagedPath}" />
+    <property name="deployBundleDirectory" value="${bundle.deployPath}" />
+  </bean>
 </beans>

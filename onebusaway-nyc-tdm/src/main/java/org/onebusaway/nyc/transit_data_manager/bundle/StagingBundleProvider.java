@@ -18,25 +18,17 @@ public class StagingBundleProvider {
   }
   
   public File getBundleFile(String bundleDirectory, String relativeFilePath) throws FileNotFoundException {
-    /*return bundleSource.getBundleFile(ENV, relativeFilePath);*/
-    return bundleSource.getBundleFile(bundleDirectory, relativeFilePath);
+    return bundleSource.getBundleFile(ENV, relativeFilePath);
   }
   
   public boolean checkIsValidStagedBundleFile (String bundleId, String relativeFilePath) {
     return bundleSource.checkIsValidBundleFile(bundleId, relativeFilePath);
   }
   
-  public void stage(String stagingDirectory, String bundleDir, String bundleName) throws Exception {
-    bundleSource.stage(ENV, bundleDir, bundleName);
-  }
-  
   public BundleMetadata getMetadata(String stagingDirectory) throws Exception {
-    /*File file = bundleSource.getBundleFile(ENV, 
-        AbstractBundleSource.BUNDLE_DATA_DIRNAME + File.separator + META_DATA_LOCATION);*/
     File file = bundleSource.getBundleFile(stagingDirectory, 
         AbstractBundleSource.BUNDLE_DATA_DIRNAME + File.separator + META_DATA_LOCATION);
     ObjectMapper mapper = new ObjectMapper();
-    //BundleMetadata meta = mapper.readValue(file, BundleMetadata.class);
     BundleMetadata meta = mapper.readValue(file, BundleMetadata.class);
     return meta;
   }

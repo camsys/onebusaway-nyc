@@ -151,6 +151,10 @@ jQuery(function() {
 	
 	jQuery("#build_continue").click(onBuildContinueClick);
 	
+	jQuery("#stage_continue").click(onStageContinueClick);
+	
+	jQuery("#deploy_continue").click(onDeployContinueClick);
+	
 	// hookup ajax call to select
 	jQuery("#directoryButton").click(onSelectClick);
 	
@@ -233,6 +237,11 @@ function onStageContinueClick() {
 	$tabs.tabs('select', 5);
 }
 
+function onDeployContinueClick() {
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 6);
+}
+
 function onSelectClick() {
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
 	var actionName = "selectDirectory";
@@ -298,12 +307,22 @@ function disableSelectButton() {
 
 function enableStageButton() {
 	jQuery("#stageBundle_stageButton").removeAttr("disabled").css("color", "#000");
-	enableContinueButton($("#build_continue"));
+	enableContinueButton($("#stage_continue"));
 }
 
 function disableStageButton() {
 	jQuery("#stageBundle_stageButton").attr("disabled", "disabled").css("color", "#999");
-	disableContinueButton($("#build_continue"));
+	disableContinueButton($("#stage_continue"));
+}
+
+function enableDeployButton() {
+	jQuery("#deployBundle_deployButton").removeAttr("disabled").css("color", "#000");
+	enableContinueButton($("#deploy_continue"));
+}
+
+function disableDeployButton() {
+	jQuery("#deployBundle_deployButton").attr("disabled", "disabled").css("color", "#999");
+	disableContinueButton($("#deploy_continue"));
 }
 
 function enableBuildButton() {
@@ -775,10 +794,11 @@ function onStageClick() {
 }
 
 function stageClick() {
+	var environment = jQuery("#deploy_environment").text();
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
 	var bundleName = jQuery("#buildBundle_bundleName").val();
 	jQuery.ajax({
-		url: "../../api/bundle/stagerequest/" + bundleDir + "/" + bundleName + "?ts=" +new Date().getTime(), 
+		url: "../../api/bundle/stagerequest/" + environment + "/" + bundleDir + "/" + bundleName + "?ts=" +new Date().getTime(), 
 		type: "GET",
 		async: false,
 		success: function(response) {
@@ -792,6 +812,8 @@ function stageClick() {
 							jQuery("#stageBundle_resultList").html(bundleName);
 							jQuery("#stageContentsHolder #stageBox #staging #stagingProgress").attr("src","../../css/img/dialog-accept-2.png");
 							jQuery("#stageBundle_stageProgress").text("Staging Complete!");
+							var continueButton = jQuery("#stage_continue");
+							enableContinueButton(continueButton);
 						} else {
 							jQuery("#stageBundle_id").text("Failed to Stage requested Bundle!");
 							jQuery("#stageBundle_resultList").html("error");
@@ -881,6 +903,8 @@ function updateDeployStatus() {
 								txt = txt + "<li>" + bundleResponse.bundleNames[i] + "</li>";
 							}
 						}
+						var continueButton = jQuery("#deploy_continue");
+						enableContinueButton(continueButton);
 					} else {
 						jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-warning-4.png");
 						jQuery("#deployBundle_deployProgress").text("Deploy Failed!");
