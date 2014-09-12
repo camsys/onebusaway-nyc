@@ -113,8 +113,14 @@
     <bean class="org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter" scope="prototype">
         <property name="_debugEnabled" value="${particle.filter.debug}"/>
     </bean>
-
-    <bean id="bundleManagementService" class="org.onebusaway.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
+    
+    <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" >
+      <constructor-arg type="java.lang.String" value="${bundle.list.host}"/>
+      <constructor-arg type="java.lang.Integer" value="80" />
+      <constructor-arg type="java.lang.String" value="/api/" />
+    </bean>
+    
+    <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.NycBundleManagementServiceImpl">
         <property name="bundleStoreRoot" value="${bundle.location}" />
         <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>

@@ -31,8 +31,8 @@
       
     <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" >
       <constructor-arg type="java.lang.String" value="${bundle.list.host}"/>
-      <constructor-arg type="java.lang.Integer" value="${bundle.list.port}" />
-      <constructor-arg type="java.lang.String" value="/onebusaway-nyc-admin-webapp/api/" />
+      <constructor-arg type="java.lang.Integer" value="80" />
+      <constructor-arg type="java.lang.String" value="/api/" />
     </bean>
 
     <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->

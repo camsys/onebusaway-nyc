@@ -124,6 +124,7 @@
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
+                <bundle.list.host>admin</bundle.list.host>
                 <service.alerts.url>http://tdm/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <bundle.location>/mnt/obanyc/oba-bundle</bundle.location>
@@ -150,6 +151,7 @@
                 <!-- <ie.listener>PartitionedInputQueueListenerTask</ie.listener>-->
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <bundle.list.host>admin.dev.obanyc.com</bundle.list.host>
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
@@ -180,6 +182,7 @@
                  -->
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <bundle.list.host>admin.dev.obanyc.com</bundle.list.host>
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
@@ -203,7 +206,8 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
-                <tdm.host>tdm.dev.obanyc.com</tdm.host> 
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <bundle.list.host>admin.dev.obanyc.com</bundle.list.host> 
 <!-- 
                 <tdm.port>80</tdm.port>
                 <tdm.url>/api/</tdm.url>
@@ -236,6 +240,7 @@
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <bundle.list.host>admin.dev.obanyc.com</bundle.list.host>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
