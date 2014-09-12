@@ -72,12 +72,13 @@ public class DiffServiceImpl implements DiffService {
 	}
 	
 	private class DefaultDiffTransformer implements DiffTransformer {
-		final String ADD_PREFIX = "<div class=\"greenListData\">";
-		final String ADD_SUFFIX = "</div>";
-		final String REMOVE_PREFIX = "<div class=\"redListData\">";
-		final String REMOVE_SUFFIX = "</div>";
-		final String DESCRIPTOR_PREFIX = "<div class=\"blueListData\">";
-		final String DESCRIPTOR_SUFFIX = "</div>";
+		final int[] COLUMN_WIDTHS = {40, 180, 60, 60, 60, 100, 180, 180, 180, 180};
+		final String ADD_PREFIX = "<table class=\"greenListData\">" + getColumnTags() + "<tr>";
+		final String ADD_SUFFIX = "</tr></table>";
+		final String REMOVE_PREFIX = "<table class=\"redListData\">" + getColumnTags() + "<tr>";
+		final String REMOVE_SUFFIX = "</tr></table>";
+		final String DESCRIPTOR_PREFIX = "<table class=\"blueListData\"><tr><td colspan=10>";
+		final String DESCRIPTOR_SUFFIX = "</td></tr></table>";
 		
 		@Override
 		public List<String> transform(List<String> preTransform) {
@@ -87,10 +88,10 @@ public class DiffServiceImpl implements DiffService {
 			}
 			for(String line: preTransform.subList(2, preTransform.size())){
 				if (line.startsWith("+")){
-					line = ADD_PREFIX + line + ADD_SUFFIX;
+					line = ADD_PREFIX + delimit(line) + ADD_SUFFIX;
 				}
 				else if (line.startsWith("-")){
-					line = REMOVE_PREFIX + line + REMOVE_SUFFIX;
+					line = REMOVE_PREFIX + delimit(line) + REMOVE_SUFFIX;
 				}
 				else if(line.startsWith("@")){
 					line = DESCRIPTOR_PREFIX + line + DESCRIPTOR_SUFFIX;
@@ -98,6 +99,22 @@ public class DiffServiceImpl implements DiffService {
 				diffResult.add(line);
 			}
 			return diffResult;
+		}
+		
+		private String delimit(String line) {
+			String delimitedLine = "";
+			for (String entry : line.split(",")) {
+				delimitedLine += "<td>" + entry + "</td>";
+			}
+			return delimitedLine;
+		}
+		
+		private String getColumnTags() {
+			String tag = "";
+			for (int width : COLUMN_WIDTHS) {
+				tag += "<col style=\"width:" + width + "px\">";
+			}
+			return tag;
 		}
 	}
 }
