@@ -80,13 +80,14 @@ public class ScheduleLikelihood implements SensorModelRule {
     	
     	// adjust positive schedule deviation cut off according to the trip duration
         if(!blockState.getRunTripEntry().getTripEntry().equals(null)){
-    		
-        	final double trip_sched_dev_cuttoff = ((blockState.getRunTripEntry().getStopTime() - blockState.getRunTripEntry().getStartTime()) *2)/60;
-    		
-    		if(trip_sched_dev_cuttoff < POS_SCHED_DEV_CUTOFF)
-    			POS_SCHED_DEV_CUTOFF = trip_sched_dev_cuttoff;		
-    		else
+        	final double trip_sched_dev_cuttoff = ((blockState.getRunTripEntry().getTripEntry().getStopTimes().get(blockState.getRunTripEntry().getTripEntry().getStopTimes().size()-1).getDepartureTime() - blockState.getRunTripEntry().getTripEntry().getStopTimes().get(0).getArrivalTime()) * 2)/60;
+        	
+    		if(trip_sched_dev_cuttoff < DEFAULT_POS_SCHED_DEV_CUTOFF){
+    			POS_SCHED_DEV_CUTOFF = trip_sched_dev_cuttoff;
+    		}
+    		else{
     			POS_SCHED_DEV_CUTOFF = DEFAULT_POS_SCHED_DEV_CUTOFF;
+    		}
 
     	} else{
     		POS_SCHED_DEV_CUTOFF = DEFAULT_POS_SCHED_DEV_CUTOFF;
