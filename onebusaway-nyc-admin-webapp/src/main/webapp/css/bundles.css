@@ -217,14 +217,17 @@
 
 .redListData{
 	background-color: #FF9999;
+	table-layout: fixed;
 }
 
 .greenListData{
 	background-color: #99FF99;
+	table-layout: fixed;
 }
 
 .blueListData{
 	background-color: #CEF6F5;
+	table-layout: fixed;
 }
 
 #createDirectory #createDirectoryContents #directoryName{
