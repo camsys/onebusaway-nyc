@@ -137,8 +137,6 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
       if (envelope == null || envelope.getCcLocationReport() == null) {
         _log.error("Message discarded, probably corrupted, contents= "
             + contents);
-        Exception e = new Exception(
-            "deserializeMessage failed, possible corrupted message.");
         return false;
       }
 
@@ -153,8 +151,6 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
         _log.error(
             "Discarding real time record for vehicle : {} as it does not meet the "
                 + "required database constraints", vehicleId);
-        Exception e = new Exception("Real time record for vehile : "
-            + vehicleId + " failed validation." + "Discarding");
       }
       
       if (System.currentTimeMillis() - zoneOffsetWindow > 60 * 60 * 1000) {
@@ -164,14 +160,6 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
       }
     } catch (Throwable t) {
       _log.error("Exception processing contents= " + contents, t);
-      try {
-        Date timeReceived = null;
-        if (envelope != null)
-          timeReceived = new Date(envelope.getTimeReceived());
-      } catch (Throwable tt) {
-        // we tried
-        _log.error("Exception handling exception= " + tt);
-      }
     }
 
     return true;

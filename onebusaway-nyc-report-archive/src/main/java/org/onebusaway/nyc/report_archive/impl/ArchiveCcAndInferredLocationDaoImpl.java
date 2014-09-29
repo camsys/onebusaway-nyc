@@ -304,4 +304,22 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		_template.flush();
 		_template.evict(ilr);
 	}
+
+	@Override
+	public Integer getArchiveInferredLocationCount() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Integer getCcLocationReportRecordCount() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Integer getCcAndInferredLocationCount() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

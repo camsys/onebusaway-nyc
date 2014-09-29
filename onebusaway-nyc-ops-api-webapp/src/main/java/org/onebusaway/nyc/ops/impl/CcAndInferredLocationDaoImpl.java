@@ -95,6 +95,51 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		_template.clear();
 	}
 	
+	@Transactional(rollbackFor = Throwable.class)
+	@Override
+	public Integer getCcAndInferredLocationCount() {		
+		Integer resultCount = null;
+		String hql = "select count(cilr.id) from CcAndInferredLocationRecord cilr";
+		List result = _template.find(hql);
+		try{
+			resultCount = ((Long)result.get(0)).intValue();
+		}
+		catch(Exception e){
+			_log.info("Error retreiving CcAndInferredLocationRecord count", e);
+		}
+		return resultCount;
+	}
+	
+	@Transactional(rollbackFor = Throwable.class)
+	@Override
+	public Integer getArchiveInferredLocationCount() {		
+		Integer resultCount = null;
+		String hql = "select count(ailr.id) from ArchivedInferredLocationRecord ailr";
+		List result = _template.find(hql);
+		try{
+			resultCount = ((Long)result.get(0)).intValue();
+		}
+		catch(Exception e){
+			_log.info("Error retreiving ArchivedInferredLocationRecord count", e);
+		}
+		return resultCount;
+	}
+	
+	@Transactional(rollbackFor = Throwable.class)
+	@Override
+	public Integer getCcLocationReportRecordCount() {		
+		Integer resultCount = null;
+		String hql = "select count(clrr.id) from CcLocationReportRecord clrr";
+		List result = _template.find(hql);
+		try{
+			resultCount = ((Long)result.get(0)).intValue();
+		}
+		catch(Exception e){
+			_log.info("Error retreiving CcLocationReportRecord count", e);
+		}
+		return resultCount;
+	}
+	
 	protected Collection<CcAndInferredLocationRecord> getLastKnownRecords(ArchivedInferredLocationRecord[] records){
 		LinkedHashMap<Integer, CcAndInferredLocationRecord> lastKnownRecords = new LinkedHashMap<Integer, CcAndInferredLocationRecord>(
 				records.length);
@@ -278,7 +323,6 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 	@Override
 	public void handleException(String content, Throwable error,
 			Date timeReceived) {
-		// TODO Auto-generated method stub
-		
+		 _log.error("Discarding record", error);		
 	}
 }

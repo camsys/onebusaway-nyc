@@ -26,5 +26,11 @@ public interface CcAndInferredLocationDao extends LocationDao {
   List<CcAndInferredLocationRecord> getAllLastKnownRecords(Map<CcAndInferredLocationFilter, String> filter);
   
   CcAndInferredLocationRecord getLastKnownRecordForVehicle(Integer vehicleId) throws Exception;
+
+  Integer getArchiveInferredLocationCount();
+
+  Integer getCcLocationReportRecordCount();
+
+  Integer getCcAndInferredLocationCount();
   
 }

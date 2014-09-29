@@ -80,6 +80,8 @@ public class RecordValidationServiceImpl implements RecordValidationService {
 		  //Check inferred trip id
 		  if(StringUtils.isNotBlank(inferredRecord.getTripId())) {
 		    if (inferredRecord.getTripId().length() >= 64) {
+		      log.debug("Inferred trip id : " + inferredRecord.getTripId());
+		      log.debug("Inferred trip id length : " + String.valueOf(inferredRecord.getTripId().length()));
 		      log.error("Inferred trip id too long : {}", id);
 		      isValid = false;
 		    }
@@ -88,6 +90,8 @@ public class RecordValidationServiceImpl implements RecordValidationService {
       //Check inferred block id
       if(StringUtils.isNotBlank(inferredRecord.getBlockId())) {
         if (inferredRecord.getBlockId().length() >= 64) {
+          log.debug("Inferred block id value : " + inferredRecord.getBlockId());
+          log.debug("Inferred block id length : " + String.valueOf(inferredRecord.getBlockId().length()));
           log.error("Inferred block id too long : {}", id);
           isValid = false;
         }
@@ -243,7 +247,7 @@ public class RecordValidationServiceImpl implements RecordValidationService {
 
     //Check inferred trip id
     if(StringUtils.isNotBlank(inferredRecord.getInferredTripId())) {
-      if (inferredRecord.getInferredTripId().length() >= 64) {
+      if (inferredRecord.getInferredTripId().length() >= 1) {
         log.error("Inferred trip id too long : {}", id);
         isValid = false;
       }

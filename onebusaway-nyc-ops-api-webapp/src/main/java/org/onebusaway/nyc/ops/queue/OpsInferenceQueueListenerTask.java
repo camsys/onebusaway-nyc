@@ -2,6 +2,8 @@ package org.onebusaway.nyc.ops.queue;
 
 import java.util.Date;
 import java.util.List;
+import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -9,6 +11,7 @@ import javax.annotation.PreDestroy;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.ops.services.CcAndInferredLocationService;
+import org.onebusaway.nyc.presentation.service.cache.NycCacheService;
 import org.onebusaway.nyc.report.api.json.JsonTool;
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
@@ -21,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class OpsInferenceQueueListenerTask extends
     InferenceQueueListenerTask {
@@ -34,7 +38,14 @@ public class OpsInferenceQueueListenerTask extends
   private InferencePersistenceService persister;
   
   private CcAndInferredLocationService _locationService;
-
+  
+  private static final int STATUS_INTERVAL_MINUTES = 1;
+  
+  private ScheduledFuture<OpsInferenceQueueListenerTask.StatusThread> _statusTask = null;
+  
+  @Autowired
+  private ThreadPoolTaskScheduler _taskScheduler;
+  
   @Autowired
   public void setLocationDao(CcAndInferredLocationDao locationDao) {
     this._locationDao = locationDao;
@@ -138,9 +149,23 @@ public class OpsInferenceQueueListenerTask extends
     return _configurationService.getConfigurationValueAsInteger(
         "tds.inputQueuePort", 5567);
   }
+  
+  public void logStatus() {
+    _log.info("obanyc_inferredlocation records count : " + _locationDao.getArchiveInferredLocationCount());
+    _log.info("obanyc_cclocationreport records count : " + _locationDao.getCcLocationReportRecordCount());
+    _log.info("obanyc_last_known_vehicle records Count : " + _locationDao.getCcAndInferredLocationCount());
+  }
+  
+  
+  private class StatusThread extends TimerTask {
+    @Override
+    public void run() {
+      logStatus();
+    }
+  }
 
 
-
+  @SuppressWarnings("unchecked")
   @PostConstruct
   public void setup() {
     super.setup();
@@ -157,6 +182,12 @@ public class OpsInferenceQueueListenerTask extends
 	} catch (Exception e) {
 		_log.error("Failed to set initial state", e);
 	}
+
+    if (_statusTask == null) {
+    	_statusTask = _taskScheduler.scheduleWithFixedDelay(new StatusThread(),
+        STATUS_INTERVAL_MINUTES * 60 * 1000);
+    }
+    
   }
 
   @PreDestroy
