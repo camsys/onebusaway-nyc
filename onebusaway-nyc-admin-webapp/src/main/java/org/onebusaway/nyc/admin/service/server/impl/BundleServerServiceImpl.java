@@ -49,6 +49,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 	private String _password;
 	private String _context = DEFAULT_CONTEXT;
 	private boolean _isAws = false;
+  private int _adminPort = 8080;
 
 	@Override
 	public void setEc2User(String user) {
@@ -94,6 +95,12 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 			  _log.info("using context=" + context);
 			  _context = context;
 			}
+     String adminPortStr = servletContext.getInitParameter("admin.port");
+	      if (adminPortStr != null) {
+	        _log.info("using admin port=" + adminPortStr);
+	        _adminPort = Integer.parseInt(adminPortStr);
+	      }
+
 		}
 	}
 
@@ -224,11 +231,11 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 
    private String generateUrl(String host, String apiCall) {
      if (LOCAL_HOST.equalsIgnoreCase(host)) { 
-       String url = "http://" + host + ":8280/" + _context + apiCall;
+       String url = "http://" + host + ":" + _adminPort + "/" + _context + apiCall;
        _log.info("generateUrl=" + url + " (use admin.context to override)");
        return url;
      }
-     return "http://" + host + ":8280/api" + apiCall;
+     return "http://" + host + ":" + _adminPort + "/api" + apiCall;
    }
    
    protected <T> T makeRequestInternal(String instanceId, String apiCall, String jsonPayload, Class<T> returnType) {
