@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.bundle.impl;
 
 import org.onebusaway.nyc.transit_data_manager.bundle.AwsBundleDeployer;
-import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleDeployStatus;
+import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleStatus;
 import org.onebusaway.nyc.transit_data_manager.util.AwsBaseDeployer;
 import org.apache.commons.io.FileUtils;
 import java.io.File;
@@ -43,7 +43,7 @@ public class AwsBundleDeployerImpl extends AwsBaseDeployer implements AwsBundleD
    * Copy the bundle from S3 to the TDM's bundle serving location, and arrange as
    * necessary. 
    */
-  private int stageBundleForServing(BundleDeployStatus status, String s3Path) {
+  private int stageBundleForServing(BundleStatus status, String s3Path) {
     _log.info("stageBundleForServing(" + s3Path + ")");
     
     int bundlesDownloaded = 0;
@@ -81,7 +81,7 @@ public class AwsBundleDeployerImpl extends AwsBaseDeployer implements AwsBundleD
     }
     
     // now cleanup -- delete bundles
-    status.setStatus(BundleDeployStatus.STATUS_COMPLETE);
+    status.setStatus(BundleStatus.STATUS_COMPLETE);
     return bundlesDownloaded;
   }
 
@@ -89,7 +89,7 @@ public class AwsBundleDeployerImpl extends AwsBaseDeployer implements AwsBundleD
    * Copy the bundle from the bundle deployer directory to the bundle loading directory,
    * and arrange as necessary.
    */
-  private int stageBundleForUse(BundleDeployStatus status, String s3Path) {
+  private int stageBundleForUse(BundleStatus status, String s3Path) {
     int bundleCount = 0;
     // list directories of staged location
     File stagingDirectory = new File(this._localBundleStagingPath);
@@ -178,15 +178,15 @@ public class AwsBundleDeployerImpl extends AwsBaseDeployer implements AwsBundleD
    * Download bundles from s3://{bucketname}/activebundles/{environment} and stage
    * for downloading and loading on the TDM.
    */
-  public void deploy(BundleDeployStatus status, String s3Path) {
+  public void deploy(BundleStatus status, String s3Path) {
     try {
-      status.setStatus(BundleDeployStatus.STATUS_STARTED);
+      status.setStatus(BundleStatus.STATUS_STARTED);
       stageBundleForServing(status, s3Path);
-      status.setStatus(BundleDeployStatus.STATUS_STAGING_COMPLETE);
+      status.setStatus(BundleStatus.STATUS_STAGING_COMPLETE);
       stageBundleForUse(status, s3Path);
-      status.setStatus(BundleDeployStatus.STATUS_COMPLETE);
+      status.setStatus(BundleStatus.STATUS_COMPLETE);
     } catch (Exception e) {
-      status.setStatus(BundleDeployStatus.STATUS_ERROR);
+      status.setStatus(BundleStatus.STATUS_ERROR);
     }
   }
 

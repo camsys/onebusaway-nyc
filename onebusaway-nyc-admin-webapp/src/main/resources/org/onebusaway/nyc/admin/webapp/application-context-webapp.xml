@@ -123,33 +123,43 @@
     <property name="prettyPrintOutput" value="false" />
     </bean>
    
-  <bean id="bundleSource"
+   <bean id="bundleStagingSource"
     class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryBundleSource">
-    <constructor-arg type="java.lang.String" value="${bundle.deployPath}" />
+    <constructor-arg type="java.lang.String" value="${bundle.stagedPath}" />
     <constructor-arg ref="gsonTool" />
-  </bean>
-  
-  <bean class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
-    <constructor-arg ref="bundleSource" />
-  </bean>
-
-   <bean id="bundleStager"
-    class="org.onebusaway.nyc.admin.service.bundle.impl.DirectoryBundleStagerImpl">
-    <property name="builtBundleDirectory" value="${bundle.builtPath}" />
-    <property name="stagedBundleDirectory" value="${bundle.stagedPath}" />
-  </bean>
+    </bean>
    
+	  <bean id="bundleDeploySource"
+	    class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryBundleSource">
+	    <constructor-arg type="java.lang.String" value="${bundle.deployPath}" />
+	    <constructor-arg ref="gsonTool" />
+	  </bean>
+	  
+	  <bean id="bundleStagingProvider" 
+	    class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
+	    <constructor-arg ref="bundleStagingSource" />
+	  </bean>
+	  
+	  <bean id="bundleDeployProvider" 
+      class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
+      <constructor-arg ref="bundleDeploySource" />
+    </bean>
+	
+	   <bean id="bundleStager"
+	    class="org.onebusaway.nyc.admin.service.bundle.impl.DirectoryBundleStagerImpl">
+	    <property name="builtBundleDirectory" value="${bundle.builtPath}" />
+	    <property name="stagedBundleDirectory" value="${bundle.stagedPath}" />
+	  </bean>
 
-  <bean id="bundleDeployer"
-    class="org.onebusaway.nyc.admin.service.bundle.impl.DirectoryBundleDeployerImpl">
-    <property name="stagedBundleDirectory" value="${bundle.stagedPath}" />
-    <property name="deployBundleDirectory" value="${bundle.deployPath}" />
-  </bean>
-
-  <bean id="configurationServiceClient" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientBridge" >
-    <constructor-arg type="java.lang.String" value="http://tdm"/>
-    <constructor-arg type="java.lang.Integer" value="80" />
-    <constructor-arg type="java.lang.String" value="/api/" />
-  </bean>
+	  <bean id="bundleDeployer"
+	    class="org.onebusaway.nyc.admin.service.bundle.impl.DirectoryBundleDeployerImpl">
+	    <property name="deployBundleDirectory" value="${bundle.deployPath}" />
+	  </bean>
+	
+	  <bean id="configurationServiceClient" class="org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceClientBridge" >
+	    <constructor-arg type="java.lang.String" value="http://tdm"/>
+	    <constructor-arg type="java.lang.Integer" value="80" />
+	    <constructor-arg type="java.lang.String" value="/api/" />
+	  </bean>
   
 </beans>

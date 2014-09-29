@@ -46,7 +46,7 @@ public class TdmBundleDeployerServiceImpl implements BundleDeployerService{
    * list the bundle(s) that are on S3, potentials to be deployed.
    */
   @Override
-  public Response list(String environment) {
+  public Response listStagedBundles(String environment) {
     try {
       _log.info("list with tdm url=" + getTDMURL());
       String url = getTDMURL() + "/api/bundle/deploy/list/" + environment;

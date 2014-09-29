@@ -30,8 +30,8 @@
 			</label>
 		 -->
 		</div>
-		<div id="helpfulMessage">
-		Staging a bundle marks the bundle as then next bundle suitable for production. 
+		<div id="helpfulMessage" class="helpfulMessage"> <s:text name="stage-bundle.helpfulMessage"/>
+		<!-- Staging a bundle marks the bundle as then next bundle suitable for production.  -->
 		</div>
 		<div id="stageBundle">
 			<label class="bundleHeader">Stage this Bundle</label>  

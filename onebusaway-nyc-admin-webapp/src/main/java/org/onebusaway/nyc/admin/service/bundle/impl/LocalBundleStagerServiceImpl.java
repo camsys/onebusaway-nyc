@@ -27,8 +27,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.onebusaway.nyc.admin.service.BundleDeployerService;
-import org.onebusaway.nyc.admin.service.bundle.BundleDeployer;
+import org.onebusaway.nyc.admin.service.BundleStagerService;
 import org.onebusaway.nyc.admin.service.bundle.BundleStager;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundlesListMessage;
@@ -45,25 +44,24 @@ import org.springframework.stereotype.Component;
 import com.sun.jersey.core.header.ContentDisposition;
 
 @Component
-@Qualifier("localBundleDeployerImpl")
 @Scope("singleton")
-public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
+public class LocalBundleStagerServiceImpl implements BundleStagerService{
 
-    private static Logger _log = LoggerFactory.getLogger(LocalBundleDeployerServiceImpl.class);
+    private static Logger _log = LoggerFactory.getLogger(LocalBundleStagerServiceImpl.class);
 
     private ExecutorService _executorService = null;
     
     @Autowired
-    @Qualifier("bundleDeployProvider")
+    @Qualifier("bundleStagingProvider")
     private BundleProvider bundleProvider;
-    @Autowired
-    private JsonTool jsonTool;
-    @Autowired
-    private BundleDeployer bundleDeployer;
+    
     @Autowired
     private BundleStager bundleStager;
     
-    private Map<String, BundleStatus> _deployMap = new HashMap<String, BundleStatus>();
+    @Autowired
+    private JsonTool jsonTool;
+
+    private Map<String, BundleStatus> _stageMap = new HashMap<String, BundleStatus>();
     private Integer jobCounter = 0;
 
     @PostConstruct
@@ -76,8 +74,8 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
       _executorService.shutdownNow();
     }
     
-    public BundleStatus lookupDeployRequest(String id) {
-      return _deployMap.get(id);
+    public BundleStatus lookupStagedRequest(String id) {
+      return _stageMap.get(id);
     }
     
     public void setBundleProvider(BundleProvider bundleProvider) {
@@ -88,36 +86,20 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
       this.jsonTool = jsonTool;
     }
     
-    /**
-     * list the bundle(s) with potential to be deployed.
-     */
-    @Override
-    public Response listStagedBundles(String environment) {
-      String bundlePath = getBundleDirectory() + File.separator;
-      List<String> list = bundleDeployer.listStagedBundles(bundlePath);
-      try {
-        String jsonList = jsonSerializer(list);
-        return Response.ok(jsonList).build();
-      } catch (Exception e) {
-        _log.error("exception serializing response:", e);
-      }
-      return Response.serverError().build();
-    }
 
     /**
-     * request bundles at /var/lib/obanyc/bundles/staged/{environment} be deployed
+     * request bundles at /var/lib/obanyc/bundles/staged/{environment} be staged
      * @param environment string representing environment (dev/staging/prod/qa)
      * @return status object with id for querying status
      */
     @Override
-    public Response deploy(String environment) {
-      _log.info("Starting deploy(" + environment + ")...");
-      String path = getBundleDirectory() + File.separator;
+    public Response stage(String environment, String bundleDir, String bundlePath) {
+      _log.info("Starting staging(" + environment + ")...");
       BundleStatus status = new BundleStatus();
       status.setId(getNextId());
-      _deployMap.put(status.getId(), status);
-      _executorService.execute(new DeployThread(path, status));
-      _log.info("deploy request complete");
+      _stageMap.put(status.getId(), status);
+      _executorService.execute(new StageThread(status, environment, bundleDir, bundlePath));
+      _log.info("stage request complete");
 
       try {
         String jsonStatus = jsonSerializer(status);
@@ -130,12 +112,12 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
 
     /**
      * query the status of a requested bundle deployment
-     * @param id the id of a BundleDeploymentStatus
-     * @return a serialized version of the requested BundleDeploymentStatus, null otherwise
+     * @param id the id of a BundleStatus
+     * @return a serialized version of the requested BundleStatus, null otherwise
      */
     @Override
-    public Response deployStatus(String id) {
-      BundleStatus status = this.lookupDeployRequest(id);
+    public Response stageStatus(String id) {
+      BundleStatus status = this.lookupStagedRequest(id);
       try {
         String jsonStatus = jsonSerializer(status);
         return Response.ok(jsonStatus).build();
@@ -185,7 +167,7 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
     }
     
     @Override
-    public Response getBundleFile(String bundleId,String relativeFilename) {
+    public Response getBundleFile(String bundleId, String relativeFilename) {
 
       _log.info("starting getBundleFile for relative filename " + relativeFilename + " in bundle " + bundleId);
 
@@ -261,9 +243,9 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
       return jobCounter;
     }
     
-    private String getBundleDirectory() {
+    /*private String getBundleDirectory() {
       return bundleStager.getStagedBundleDirectory();
-    }
+    }*/
     
     private String jsonSerializer(Object object) throws IOException{
       //serialize the status object and send to client -- it contains an id for querying
@@ -279,18 +261,22 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
      * Thread to perform the actual deployment of the bundle.
      *
      */
-    private class DeployThread implements Runnable {
-      private String path;
+    private class StageThread implements Runnable {
       private BundleStatus status;
-      public DeployThread(String path, BundleStatus status){
-        this.path = path;
+      private String environment;
+      private String bundleDir;
+      private String bundleName;
+      
+      public StageThread(BundleStatus status, String environment, String bundleDir, String bundleName){
         this.status = status;
+        this.environment = environment;
+        this.bundleDir = bundleDir;
+        this.bundleName = bundleName;
       }
       
       @Override
       public void run() {
-        bundleDeployer.deploy(status, path);
+        bundleStager.stage(status, environment, bundleDir, bundleName);
       }
     }
-
 }

@@ -30,7 +30,7 @@ import org.onebusaway.nyc.transit_data_manager.bundle.AwsBundleDeployer;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundlesListMessage;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.Bundle;
-import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleDeployStatus;
+import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleStatus;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
@@ -64,7 +64,7 @@ public class BundleResource{
   private AwsBundleDeployer bundleDeployer;
   @Autowired
   private ConfigurationService configurationService;
-  private Map<String, BundleDeployStatus> _deployMap = new HashMap<String, BundleDeployStatus>();
+  private Map<String, BundleStatus> _deployMap = new HashMap<String, BundleStatus>();
   private Integer jobCounter = 0;
 
   @PostConstruct
@@ -72,7 +72,7 @@ public class BundleResource{
       _executorService = Executors.newFixedThreadPool(1);
   }
   
-  public BundleDeployStatus lookupDeployRequest(String id) {
+  public BundleStatus lookupDeployRequest(String id) {
     return _deployMap.get(id);
   }
   
@@ -218,7 +218,7 @@ public class BundleResource{
   public Response deploy(@PathParam("environment") String environment) {
     _log.info("Starting deploy(" + environment + ")...");
     String s3Path = getBundleDirectory() + File.separator + environment + File.separator;
-    BundleDeployStatus status = new BundleDeployStatus();
+    BundleStatus status = new BundleStatus();
     status.setId(getNextId());
     _deployMap.put(status.getId(), status);
     _executorService.execute(new DeployThread(s3Path, status));
@@ -241,7 +241,7 @@ public class BundleResource{
    * @return a serialized version of the requested BundleDeploymentStatus, null otherwise
    */
   public Response deployStatus(@PathParam("id") String id) {
-    BundleDeployStatus status = this.lookupDeployRequest(id);
+    BundleStatus status = this.lookupDeployRequest(id);
     try {
       String jsonStatus = jsonSerializer(status);
       Response.ok(jsonStatus).build();
@@ -296,8 +296,8 @@ public class BundleResource{
    */
   private class DeployThread implements Runnable {
     private String s3Path;
-    private BundleDeployStatus status;
-    public DeployThread(String s3Path, BundleDeployStatus status){
+    private BundleStatus status;
+    public DeployThread(String s3Path, BundleStatus status){
       this.s3Path = s3Path;
       this.status = status;
     }

@@ -214,6 +214,16 @@ public class FileUtility {
     FileUtils.moveFile(new File(srcFileName),
         new File(destFileName));
   }
+  
+  /**
+   * Copy the sourceDirectory to the given destinationDirectory
+   */
+  public void moveDir(String sourceDirectoryPath, String destinationDirectoryPath) throws IOException{
+
+    File sourceDir = new File(sourceDirectoryPath);
+    File destinationDir = new File(destinationDirectoryPath);
+    FileUtils.moveDirectoryToDirectory(sourceDir, destinationDir, true);
+  }
 
   /**
    * Zip up the files in basePath according to the globbing includeExpression.  Similar to

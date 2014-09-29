@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A collection of file handling utilities making life easier when working with
@@ -81,10 +83,10 @@ public class NYCFileUtils {
   public void copy(InputStream source, String destinationFileName) {
     _fileUtil.copy(source, destinationFileName);
   }
-
-  public String parseFileName(String urlString) {
+  
+  public String parseFileName(String urlString, String seperator) {
     if (urlString == null) return null;
-    int i = urlString.lastIndexOf("/");
+    int i = urlString.lastIndexOf(seperator);
     // check to see we don't have a trailing slash
     if (i > 0 && i+1 < urlString.length()) {
       
@@ -96,6 +98,10 @@ public class NYCFileUtils {
     }
     // did not find a slash, return filename as is
     return urlString;
+  }
+  
+  public String parseFileName(String urlString) {
+    return parseFileName(urlString, "/");
   }
 
   public String parseDirectory(String urlString) {
@@ -120,8 +126,13 @@ public class NYCFileUtils {
     return urlString;
   }
 
-
-
+  public String parseExtension(String urlString) {
+    int i = urlString.lastIndexOf(".");
+    if (i < urlString.length()) {
+      return urlString.substring(0, i);
+    }
+    return urlString;
+  }
 
   public String parseBucket(String s3path) {
     if (s3path.indexOf("s3://") == -1) {
