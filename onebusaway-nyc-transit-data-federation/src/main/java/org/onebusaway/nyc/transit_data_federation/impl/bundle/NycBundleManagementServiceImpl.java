@@ -76,6 +76,8 @@ public class NycBundleManagementServiceImpl implements BundleManagementService {
   private boolean _bundleIsReady = false;
 
   private boolean _standaloneMode = true;
+  
+  private boolean _testMode = false;
 
   private String _bundleRootPath = null;
 
@@ -149,6 +151,14 @@ public class NycBundleManagementServiceImpl implements BundleManagementService {
 
   public boolean getStandaloneMode() {
     return _standaloneMode;
+  }
+
+  public boolean getTestMode() {
+    return _testMode;
+  }
+
+  public void setTestMode(boolean _testMode) {
+    this._testMode = _testMode;
   }
 
   public void discoverBundles() throws Exception {

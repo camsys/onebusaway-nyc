@@ -13,7 +13,7 @@
             value="http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
-
+    
     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl"
             value="http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/remoting/configuration-service" />
@@ -30,5 +30,4 @@
         </property>
         <property name="defaultProviderId" value="v1" />
     </bean>
-
 </beans>

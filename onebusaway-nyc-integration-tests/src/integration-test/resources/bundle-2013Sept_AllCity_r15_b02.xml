@@ -15,7 +15,9 @@
     <bean id="nycBundle" class="org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle">
       <property name="path" value="${bundlePath}" />
     </bean>
-
+    
+   <bean id="bundleManagementService" class="org.onebusaway.transit_data_federation.impl.bundle.SingleBundleManagementServiceImpl"></bean>
+    
     <bean id="gtfs-bundles" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundles">
         <property name="bundles">
             <list>
