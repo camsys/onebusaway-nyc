@@ -54,6 +54,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   implements ServletRequestAware, ServletResponseAware {
 
   private static final long serialVersionUID = 1L;
+  
+  private static final String PREV_TRIP = "prevTrip";
 
   @Autowired
   public NycTransitDataService _nycTransitDataService;
@@ -195,8 +197,10 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       _monitoringActionSupport.reportToGoogleAnalytics(_request, "Stop Monitoring", StringUtils.join(stopIds, ","), _configurationService);
     }
     
+    // Monitored Stop Visits
     List<MonitoredStopVisitStructure> visits = new ArrayList<MonitoredStopVisitStructure>();
-
+    Map<String, MonitoredStopVisitStructure> visitsMap = new HashMap<String, MonitoredStopVisitStructure>();
+    
     for (AgencyAndId stopId : stopIds) {
       
       if (!stopId.hasValues()) continue;
@@ -239,6 +243,27 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
           }
         }
       }
+      
+      // unique stops filters
+      if (visit.getMonitoredVehicleJourney() == null || 
+    		  visit.getMonitoredVehicleJourney().getVehicleRef() == null ||
+    		  StringUtils.isBlank(visit.getMonitoredVehicleJourney().getVehicleRef().getValue())){
+    	  continue;
+      }
+      else{
+    	  String visitKey = visit.getMonitoredVehicleJourney().getVehicleRef().getValue();
+    	  if(visitsMap.containsKey(visit.getMonitoredVehicleJourney().getVehicleRef().getValue())){
+    		  if(visit.getMonitoredVehicleJourney().getProgressRate() == null ||
+    				  !visit.getMonitoredVehicleJourney().getProgressRate().equals(PREV_TRIP)){
+    			  visitsMap.remove(visitKey);
+    			  visitsMap.put(visitKey, visit);
+    		  }
+    		  continue; 
+    	  }
+    	  else{
+    		  visitsMap.put(visit.getMonitoredVehicleJourney().getVehicleRef().getValue(), visit);
+    	  }
+      }	  
       
       filteredVisits.add(visit);
 
