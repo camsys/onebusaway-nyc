@@ -253,8 +253,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       else{
     	  String visitKey = visit.getMonitoredVehicleJourney().getVehicleRef().getValue();
     	  if(visitsMap.containsKey(visit.getMonitoredVehicleJourney().getVehicleRef().getValue())){
-    		  if(visit.getMonitoredVehicleJourney().getProgressRate() == null ||
-    				  !visit.getMonitoredVehicleJourney().getProgressRate().equals(PREV_TRIP)){
+    		  if(visit.getMonitoredVehicleJourney().getProgressStatus() == null){
     			  visitsMap.remove(visitKey);
     			  visitsMap.put(visitKey, visit);
     		  }
