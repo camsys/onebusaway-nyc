@@ -70,11 +70,7 @@
     scope="singleton">
     <constructor-arg value="200000"/>
   </bean>
-  <bean id="timeOutputQueue" class="org.onebusaway.nyc.report_archive.queue.DummyPredictionOutputQueueSenderServiceImpl">
-  </bean>
   <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask">
-  </bean>
-  <bean id="timeInputQueue" class="org.onebusaway.nyc.report_archive.queue.DummyQueueBasedPredictionGeneratorTask">
   </bean>
   <bean id="output_queue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInferenceQueueListenerTask">
   </bean>
