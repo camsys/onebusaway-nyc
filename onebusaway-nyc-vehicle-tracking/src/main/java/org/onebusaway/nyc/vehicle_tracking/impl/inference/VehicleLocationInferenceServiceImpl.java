@@ -62,6 +62,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.services.aws.AwsMetadataService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -140,7 +141,6 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
   private ApplicationContext _applicationContext;
   
-  
   // Process Record Fields (TDS)
   private boolean useTimePredictions = false;
   
@@ -150,6 +150,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   
   private boolean refreshCheck;
   
+ 
   
   public VehicleLocationInferenceServiceImpl() {
 	  setConfigurationService(new ConfigurationServiceImpl());
@@ -175,6 +176,8 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   public void start() {
 	if (_numberOfProcessingThreads <= 0)
 	  throw new IllegalArgumentException("numberOfProcessingThreads must be positive");
+	
+	
 	
 	_log.info("Creating thread pool of size=" + _numberOfProcessingThreads);
 	_executorService = Executors.newFixedThreadPool(_numberOfProcessingThreads);
@@ -784,6 +787,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 	
 	record.setVehicleLocationRecordBean(vehicleLocation);
 	
+	record.getManagementRecord().setInferenceEngineHostname(_outputQueueSenderService.getPrimaryHostname());
   }
   
   /**

@@ -15,12 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,11 +25,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
-import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.util.git.GitRepositoryHelper;
 import org.onebusaway.nyc.util.model.GitRepositoryState;
 import org.onebusaway.nyc.vehicle_tracking.impl.queue.InputQueueListenerTask;
+import org.onebusaway.nyc.vehicle_tracking.services.aws.AwsMetadataService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 /**
  * Controller for git status. 
@@ -41,12 +37,6 @@ import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderServi
  */
 @Controller
 public class StatusController {
-
-	private static final String INSTANCE_ID_URL = "http://169.254.169.254/latest/meta-data/instance-id";
-	private static final String INSTANCE_TYPE_URL = "http://169.254.169.254/latest/meta-data/instance-type";
-	private static final String AMI_ID_URL = "http://169.254.169.254/latest/meta-data/ami-id";
-	private static final String PUBLIC_HOSTNAME_URL = "http://169.254.169.254/latest/meta-data/public-hostname";
-	private static final String INTERNAL_HOSTNAME_URL = "http://169.254.169.254/latest/meta-data/hostname";
 
 	private ObjectMapper _mapper = new ObjectMapper();
 	private GitRepositoryState gitState = null;
@@ -56,6 +46,9 @@ public class StatusController {
 	
 	@Autowired
 	private InputQueueListenerTask queueListener;
+	
+	@Autowired
+	private AwsMetadataService awsMetadataService;
 	
 	
   @RequestMapping(value="/status.do", method=RequestMethod.GET)
@@ -80,41 +73,12 @@ public class StatusController {
 	  status.setListenerTask(queueListener.getClass().getName());
 	  status.setDepotList(queueListener.getDepotPartitionKey());
 	  status.setGitDescribe(gitState.getDescribe());
-	  status.setInstanceId(slurp(INSTANCE_ID_URL));
-	  status.setInstanceType(slurp(INSTANCE_TYPE_URL));
-	  status.setAmiId(slurp(AMI_ID_URL));
-	  status.setPublicHostname(slurp(PUBLIC_HOSTNAME_URL));
-	  status.setInternalHostname(slurp(INTERNAL_HOSTNAME_URL));
+	  status.setInstanceId(awsMetadataService.getInstanceId());
+	  status.setInstanceType(awsMetadataService.getInstanceType());
+	  status.setAmiId(awsMetadataService.getAmiId());
+	  status.setPublicHostname(awsMetadataService.getPublicHostname());
+	  status.setInternalHostname(awsMetadataService.getInternalHostname());
 	  return status;
-  }
-  
-  private String slurp(String urlString) {
-    URL url;
-    InputStream is = null;
-    BufferedInputStream bis = null;
-    ByteArrayOutputStream baos = null;
-
-    try {
-      url = new URL(urlString);
-      is = url.openStream();
-      bis = new BufferedInputStream(is);
-      baos = new ByteArrayOutputStream();
-      IOUtils.copy(bis, baos);
-    } catch (Exception any) {
-      return any.toString();
-    } finally {
-      if (bis != null)
-        try {
-          bis.close();
-        } catch (Exception e1) {
-        }
-      if (baos != null)
-        try {
-          baos.close();
-        } catch (Exception e2) {
-        }
-    }
-    return baos.toString();
   }
   
   public static class StatusModel {
