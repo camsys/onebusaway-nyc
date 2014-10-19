@@ -108,7 +108,7 @@
             <id>local-single-port</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
-                <bundle.location>/var/lib/obanyc/hamilton</bundle.location>
+                <bundle.location>/var/lib/obanyc/hamilton-nyc</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
 <!--
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>

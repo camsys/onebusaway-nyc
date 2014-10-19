@@ -51,6 +51,8 @@ import org.onebusaway.transit_data.model.StopsWithArrivalsAndDeparturesBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
+import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
+import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.blocks.ScheduledBlockLocationBean;
 import org.onebusaway.transit_data.model.oba.LocalSearchResult;
 import org.onebusaway.transit_data.model.oba.MinTravelTimeToStopsBean;
@@ -83,6 +85,7 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,10 +148,75 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
 			TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
 		//return _predictionIntegrationService.getPredictionsForTrip(tripStatus);
-		return new ArrayList<TimepointPredictionRecord>();
+		return fakePredictionsForTrip(tripStatus);
+//		return new ArrayList<TimepointPredictionRecord>();
 	}
 
-	@Override
+	private List<TimepointPredictionRecord> fakePredictionsForTrip(
+      TripStatusBean tripStatus) {
+	  List<TimepointPredictionRecord> tprs = new ArrayList<TimepointPredictionRecord>();
+	  
+	  if(tripStatus == null) {
+      _log.debug("no trip status");
+      return null;
+    }
+      
+    
+    BlockInstanceBean blockInstance = _transitDataService.getBlockInstance(tripStatus.getActiveTrip().getBlockId(), tripStatus.getServiceDate());
+    if(blockInstance == null) {
+      _log.debug("no block");
+      return null;
+    }
+      
+    
+    List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
+
+    double distanceOfVehicleAlongBlock = 0;
+    boolean foundActiveTrip = false;
+    for(int i = 0; i < blockTrips.size(); i++) {
+      BlockTripBean blockTrip = blockTrips.get(i);
+
+      if(!foundActiveTrip) {
+        if(tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
+          distanceOfVehicleAlongBlock += tripStatus.getDistanceAlongTrip();
+
+          foundActiveTrip = true;
+        } else {
+          // a block trip's distance along block is the *beginning* of that block trip along the block
+          // so to get the size of this one, we have to look at the next.
+          if(i + 1 < blockTrips.size()) {
+            distanceOfVehicleAlongBlock = blockTrips.get(i + 1).getDistanceAlongBlock();
+          }
+
+          // bus has already served this trip, so no need to go further
+          continue;
+        }
+      }
+
+      int stopSequence = -1;
+      for(BlockStopTimeBean blockStopTime : blockTrip.getBlockStopTimes()) {
+        stopSequence++;
+        if(blockStopTime.getDistanceAlongBlock() < distanceOfVehicleAlongBlock) {
+          continue;
+        }
+   
+        long arrivalTime = Math.round(tripStatus.getServiceDate() + (blockStopTime.getStopTime().getDepartureTime() * 1000) + (tripStatus.getScheduleDeviation() * 1000));
+        long departureTime = arrivalTime;
+        TimepointPredictionRecord tpr = new TimepointPredictionRecord();
+        tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(blockStopTime.getStopTime().getStop().getId()));
+        tpr.setTimepointPredictedTime(arrivalTime);
+        tpr.setTimepointScheduledTime(blockStopTime.getStopTime().getDepartureTime() * 1000);
+        tprs.add(tpr);
+        
+      }
+      
+      break;
+    }
+
+    return tprs;
+  }
+
+  @Override
 	public String getActiveBundleId() {
 		blockUntilBundleIsReady();
 

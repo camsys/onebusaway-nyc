@@ -47,7 +47,8 @@ public class PresentationServiceImpl implements PresentationService {
    */
   @Override
   public Boolean useTimePredictionsIfAvailable() {
-	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
+//	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "true"));
+    return Boolean.TRUE;
   }
 
   @Override

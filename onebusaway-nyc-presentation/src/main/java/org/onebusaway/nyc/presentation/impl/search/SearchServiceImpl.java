@@ -67,6 +67,7 @@ public class SearchServiceImpl implements SearchService {
 
 	// The max number of closest stops to display
 	private static final int MAX_STOPS = 10;
+  private static final int MIN_ROUTE_LENGTH = 1;
 
 	@Autowired
 	private NycGeocoderService _geocoderService;
@@ -367,7 +368,7 @@ public class SearchServiceImpl implements SearchService {
 
 		routeQuery = routeQuery.toUpperCase().trim();
 
-		if (routeQuery.length() < 2) {
+		if (routeQuery.length() < MIN_ROUTE_LENGTH) { // We allow single digit routes
 			return;
 		}
 
