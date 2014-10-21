@@ -126,6 +126,9 @@ public class DepotResourceTest extends ResourceTest {
     assertEquals("true", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[*]/group-members/group-member[*]/vehicle-id/text() = \"57\"", doc, XPathConstants.STRING));
     assertEquals("false", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[*]/group-members/group-member[*]/vehicle-id/text() = \"0057\"", doc, XPathConstants.STRING));
     assertEquals("true", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group[*]/group-members/group-member[*]/vehicle-id/text() = \"4836\"", doc, XPathConstants.STRING));
+    // Test added for Jira issue OBANYC-2258
+    assertEquals("CMOE", xpath.evaluate("/cptFleetSubsets/defined-groups/defined-group/group-name[../group-members/group-member/vehicle-id='2055']/text()", doc, XPathConstants.STRING));
+    
     tmpOutFile.deleteOnExit();
   }
 

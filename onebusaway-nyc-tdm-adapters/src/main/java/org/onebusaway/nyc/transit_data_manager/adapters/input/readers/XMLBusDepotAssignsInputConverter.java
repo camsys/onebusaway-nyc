@@ -83,8 +83,14 @@ public class XMLBusDepotAssignsInputConverter implements
       depAssign.setAgencyId(mappingTool.getAgencyIdFromAgency(tableDepotAssign.getAGENCY()));
       if (tableDepotAssign.getBUSNUMBER().matches("[0-9]*")){
     	  depAssign.setBusNumber(Integer.decode(stripLeadingZeros(tableDepotAssign.getBUSNUMBER())));
+        // Convert any lowercase depot letters to uppercase (Jira issue OBANYC-2258)
+        if (!tableDepotAssign.getDEPOT().matches("[^a-z]*")) {
+          depAssign.setDepot(tableDepotAssign.getDEPOT().toUpperCase());
+          _log.warn("found depot with lowercase char: " + tableDepotAssign.getDEPOT());
+        } else {    
           depAssign.setDepot(tableDepotAssign.getDEPOT());
-          assignments.add(depAssign);
+        }
+        assignments.add(depAssign);
       }
       else{
     	  _log.warn("found non-numeric bus number: "+tableDepotAssign.getBUSNUMBER());
