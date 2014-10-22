@@ -38,22 +38,28 @@
 			  </execution>
 			</executions>
      	</plugin> -->
-     	<!-- <plugin>
-        	<groupId>org.codehaus.mojo</groupId>
-            <artifactId>jaxb2-maven-plugin</artifactId>
-            <version>1.5</version>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>testXjc</goal>
-                    </goals>
-                </execution>
-            </executions>
-            <configuration>
-                <schemaDirectory>${basedir}/src/main/resources</schemaDirectory>
-            </configuration>
-      	</plugin> -->
-      	<plugin>
+		<plugin>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>jaxb2-maven-plugin</artifactId>
+			<version>1.5</version>
+			<executions>
+				<execution>
+					<goals>
+						<goal>xjc</goal>
+					</goals>
+				</execution>
+			</executions>
+			<configuration>
+				<source>1.5</source>
+				<target>2.1</target>
+				<schemaDirectory>${basedir}/src/main/resources/</schemaDirectory>
+				<schemaIncludes>
+					<include>*.xsd</include>
+				</schemaIncludes>
+				<arguments>-nv</arguments>
+			</configuration>
+		</plugin>
+      	<!-- <plugin>
         	<groupId>org.jvnet.jaxb2.maven2</groupId>
 			<artifactId>maven-jaxb2-plugin</artifactId>
 			<version>0.10.0</version>
@@ -64,7 +70,7 @@
                     </goals>
                 </execution>
             </executions>
-      	</plugin>
+      	</plugin> -->
     <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-compiler-plugin</artifactId>
