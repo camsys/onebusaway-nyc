@@ -81,6 +81,7 @@
     		<props>
     			<prop key="tdm.host">${tdm.host}</prop>
     			<prop key="admin.chefRole">ADMIN</prop>
+    			<prop key="admin.stifScriptLocation">/var/lib/obanyc</prop>
     		</props>
     	</property>
     </bean>
