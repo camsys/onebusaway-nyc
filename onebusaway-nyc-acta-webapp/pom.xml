@@ -81,12 +81,12 @@
 			<!-- Vehicle tracking webapp offers the TDS -->
 			<id>local-ie</id> <!-- aka services-vtw-as-tds --> <!-- single port, aka development -->
 			<properties>
-				<tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
-				<vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
-				<config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+				<tds.path>http://localhost:9905/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+				<vtms.path>http://localhost:9905/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+				<config.path>http://localhost:9905/onebusaway-nyc-vehicle-tracking-webapp</config.path>
 				<archive.path>http://localhost:9090/onebusaway-nyc-report-archive</archive.path>
 				<tdm.host>tdm.dev.obanyc.com</tdm.host>
-				<webapp.api.url>http://localhost:8080</webapp.api.url>
+				<webapp.api.url>http://localhost:8180</webapp.api.url>
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>
 			</properties>

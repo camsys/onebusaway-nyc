@@ -188,8 +188,8 @@ public class SimulatorTask implements Runnable, EntityHandler {
      * We add this time so that multiple traces for the 
      * same vehicle id can be run without conflict.
      */
-    final String adjId = record.getVehicleId().getId() + "_" + this.creationTime;
-    record.getVehicleId().setId(adjId);
+   /* final String adjId = record.getVehicleId().getId() + "_" + this.creationTime;
+    record.getVehicleId().setId(adjId);*/
     
     final AgencyAndId vid = record.getVehicleId();
     if (_vehicleId != null) {

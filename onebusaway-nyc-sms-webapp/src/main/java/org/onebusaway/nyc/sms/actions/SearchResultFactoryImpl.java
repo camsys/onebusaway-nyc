@@ -44,6 +44,9 @@ import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
@@ -51,6 +54,8 @@ import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
 
 public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
+	
+  private static Logger _log = LoggerFactory.getLogger(SearchResultFactoryImpl.class);
 
   private static final boolean HTMLIZE_NEWLINES = false;
 
@@ -142,18 +147,21 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
           HashMap<Double, String> distanceAwayStringsByDistanceFromStop = 
               distanceAwayStringsByDistanceFromStopAndRouteAndDirection.get(routeBean.getId() + "_" + stopGroupBean.getId());
           
+          // service alerts for this route + direction
+          List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
+          List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
+          populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
+          
+          // service in this direction
           Boolean hasUpcomingScheduledService = 
               _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
-
+          
           // if there are buses on route, always have "scheduled service"
           if(distanceAwayStringsByDistanceFromStop != null && !distanceAwayStringsByDistanceFromStop.isEmpty()) {
         	  hasUpcomingScheduledService = true;
           }
 
-          // service alerts for this route + direction
-          List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
-          List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-          populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
+         
           
           directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, distanceAwayStringsByDistanceFromStop, serviceAlertDescriptions));
         }

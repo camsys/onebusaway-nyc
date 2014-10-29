@@ -89,8 +89,9 @@ public abstract class InputQueueListenerTask extends QueueListenerTask {
 
   @Override
   public String getQueueHost() {
-    return _configurationService.getConfigurationValueAsString(
-        "inference-engine.inputQueueHost", null);
+    /*return _configurationService.getConfigurationValueAsString(
+        "inference-engine.inputQueueHost", null);*/
+	  return "localhost";
   }
 
   @Override

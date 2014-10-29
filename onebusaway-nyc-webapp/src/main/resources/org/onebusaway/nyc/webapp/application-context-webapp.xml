@@ -54,7 +54,7 @@
     <bean id="createAPIKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction" 
     	init-method="init">
     	<property name="createAPIKey" value="${create-apikey}" />
-    	<property name="key" value="OBANYC" />
+    	<property name="key" value="TEST" />
     </bean>
 
     <bean id="createAPITestKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction" 

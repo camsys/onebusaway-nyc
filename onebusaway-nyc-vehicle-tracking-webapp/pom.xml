@@ -155,8 +155,8 @@
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
 <!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
                  <siri.service.config>empty.xml</siri.service.config>
-                 <bundle.location>/tmp/oba-bundle</bundle.location>
-                 <bundle.mode.standalone>false</bundle.mode.standalone>
+                 <bundle.location>/var/lib/obanyc/oba-vtw-bundle</bundle.location>
+                 <bundle.mode.standalone>true</bundle.mode.standalone>
                  <depot.partition.key />
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
@@ -211,7 +211,7 @@
                 <tdm.url>/api/</tdm.url>
       -->           
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
-                <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <service.alerts.subscription.path>:9905/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
 <!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
                  <siri.service.config>empty.xml</siri.service.config>
