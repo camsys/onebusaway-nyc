@@ -388,16 +388,14 @@
 	text-align: center;
 	}
 .leaflet-popup-content-wrapper {
-	padding: 1px;
+	padding: 10px 20px 10px 10px;
 	text-align: left;
-	border-radius: 12px;
+	border-radius: 5;
 	}
 .leaflet-popup-content {
-	margin: 13px 19px;
-	line-height: 1.4;
-	}
-.leaflet-popup-content p {
-	margin: 18px 0;
+	width:auto !important;
+	height:auto !important;
+	zoom: 0.8;
 	}
 .leaflet-popup-tip-container {
 	margin: 0 auto;
@@ -429,7 +427,7 @@
 	position: absolute;
 	top: 0;
 	right: 0;
-	padding: 4px 4px 0 0;
+	padding: 15px 4px;
 	text-align: center;
 	width: 18px;
 	height: 14px;
