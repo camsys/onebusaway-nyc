@@ -212,8 +212,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           String stifUtilName = fs.parseFileName(stifUtilUrl);
           // obanyc-2177, pull fix_stif_date_codes onto adminx image if download fails
           try {
-            fs.wget(stifUtilUrl);
-            response.addStatusMessage("download complete");
+            throw new RuntimeException("Throw new exception for testing download failure");
+            //fs.wget(stifUtilUrl);
+            //response.addStatusMessage("download complete");
           } catch (Exception any) {
             _log.info("Download of " + stifUtilUrl + "failed.");
             response.addStatusMessage("download failed, copying local copy of " + stifUtilName + " instead");
