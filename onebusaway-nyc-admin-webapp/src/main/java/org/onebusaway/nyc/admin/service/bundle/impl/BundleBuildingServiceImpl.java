@@ -210,17 +210,20 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           String stifUtilUrl = getStifCleanupUrl();
           response.addStatusMessage("downloading " + stifUtilUrl + " to clean stifs");
           String stifUtilName = fs.parseFileName(stifUtilUrl);
-          // obanyc-2177, pull fix_stif_date_codes onto adminx image
+          // obanyc-2177, pull fix_stif_date_codes onto adminx image if download fails
           try {
             fs.wget(stifUtilUrl);
+            response.addStatusMessage("download complete");
           } catch (Exception any) {
             _log.info("Download of " + stifUtilUrl + "failed.");
+            response.addStatusMessage("download failed, copying local copy of " + stifUtilName + " instead");
             // Copy local version of script
             String stifScriptDir = System.getProperty("admin.stifScriptLocation");
             File localStifScript = new File(stifScriptDir + File.separator + stifUtilName);
             _log.info("Copying " + localStifScript + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
             File workingStifScript = new File(request.getTmpDirectory() + File.separator + stifUtilName);
             fs.copyFiles(localStifScript, workingStifScript);
+            response.addStatusMessage("copy complete");
           }
           // make executable
           fs.chmod("500", request.getTmpDirectory() + File.separator + stifUtilName);
