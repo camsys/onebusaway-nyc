@@ -220,8 +220,15 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
             response.addStatusMessage("download failed, copying local copy of " + stifUtilName + " instead");
             // Copy local version of script
             String stifScriptDir = System.getProperty("admin.stifScriptLocation");
-            File localStifScript = new File(stifScriptDir + File.separator + stifUtilName);
-            _log.info("Copying " + localStifScript + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
+            String localStifScriptName = stifScriptDir + File.separator + stifUtilName;
+            File localStifScript = new File(localStifScriptName);
+            _log.info("Copying " + localStifScriptName + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
+            response.addStatusMessage("download failed, copying " + localStifScriptName + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
+            if (!localStifScript.exists()) {
+              response.addStatusMessage(localStifScriptName + " was not found");
+            } else {
+              response.addStatusMessage(localStifScriptName + " was found");
+            }
             File workingStifScript = new File(request.getTmpDirectory() + File.separator + stifUtilName);
             fs.copyFiles(localStifScript, workingStifScript);
             response.addStatusMessage("copy complete");
