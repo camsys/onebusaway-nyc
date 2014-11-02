@@ -21,7 +21,6 @@ import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
 import org.onebusaway.transit_data_federation.bundle.model.TaskDefinition;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
-
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.SimpleLayout;
@@ -39,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -210,6 +210,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           String stifUtilUrl = getStifCleanupUrl();
           response.addStatusMessage("downloading " + stifUtilUrl + " to clean stifs");
           String stifUtilName = fs.parseFileName(stifUtilUrl);
+          // For debugging, print working directory
+          URL location = BundleBuildingServiceImpl.class.getProtectionDomain().getCodeSource().getLocation();
+          response.addStatusMessage("Current directory: " + location.getHost() + location.getFile());
+
           // obanyc-2177, pull fix_stif_date_codes onto adminx image if download fails
           try {
             throw new RuntimeException("Throw new exception for testing download failure");
