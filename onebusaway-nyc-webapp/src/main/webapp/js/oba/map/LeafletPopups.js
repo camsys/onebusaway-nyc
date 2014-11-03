@@ -25,9 +25,6 @@ OBA.Popups = (function() {
 	var stopBubbleListener = null, stopBubbleTrigger = null;
 
 	function closeInfoWindow() {
-		if(infoWindow !== null) {
-			//infoWindow.close();
-		}
 		infoWindow = null;
 	}
 
@@ -598,14 +595,12 @@ OBA.Popups = (function() {
 	}
 
 	function registerStopBubbleListener(obj, trigger) {
-		console.log('registerstopbublelistener');
 		stopBubbleListener = obj;
 		stopBubbleTrigger = trigger;
 		return stopBubbleListener;
 	}
 
 	function unregisterStopBubbleListener() {
-		console.log('unregisterstopbubblelistener');
 		stopBubbleListener = null;
 		stopBubbleTrigger = null;
 		return null;

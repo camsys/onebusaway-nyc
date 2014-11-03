@@ -138,7 +138,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 			}
 			var iconOptions = {
 				iconUrl: "img/stop/stop-" + directionKey + ".png",
-				iconSize: [21, 21]
+				iconSize: [21, 21],
+				shadowUrl: "img/location/shadow.png"
 			};
 			var icon = new L.icon(iconOptions);
 			var defaultOpacity = (map.getZoom() < 16) ? 0 : 1;
@@ -245,7 +246,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				
 				var iconOptions = {
 					iconUrl: "img/vehicle/vehicle-" + orientationAngle + ".png",
-					iconSize: [51, 51]
+					iconSize: [51, 51],
+					shadowUrl: "img/location/shadow.png"
 				};
 				var icon = new L.icon(iconOptions);
 
@@ -395,7 +397,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 			}
 			var iconOptions = {
 				iconUrl: "img/stop/stop-" + directionKey + "-active.png",
-				iconSize: [21, 21]
+				iconSize: [21, 21],
+				shadowUrl: "img/location/shadow.png"
 			};
 			var highlightedIcon = new L.icon(iconOptions);
 			
