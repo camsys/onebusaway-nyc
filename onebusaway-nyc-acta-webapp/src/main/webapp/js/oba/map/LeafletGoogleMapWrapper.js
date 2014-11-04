@@ -12,16 +12,9 @@ OBA.LeafletMapWrapper = function(mapNode) {
 		lon = -74.081154;
 		zoom = 11;
 	}
-	
+
+	var map = new L.Map('map', {center: new L.LatLng(lat, lon), zoom: zoom });
 	var googleLayer = new L.Google('ROADMAP');
-	
-	var map = new L.Map('map', {
-		center : new L.LatLng(lat, lon),
-		zoom : zoom,
-		minZoom : 9,
-		maxZoom : 19,
-		layers: [googleLayer]
-	});
-	
+	map.addLayer(googleLayer);
 	return map;
 };

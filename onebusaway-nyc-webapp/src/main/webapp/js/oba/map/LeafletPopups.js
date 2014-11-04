@@ -79,22 +79,14 @@ OBA.Popups = (function() {
 				}
 
 				// hack to prevent scrollbars in the IEs
-				var sizeChanged = false;
 				var content = jQuery("#" + popupContainerId);
 				if(content.height() > 300) {
 					content.css("overflow-y", "scroll")
 					.css("height", "280");
-					sizeChanged = true;
 				}
 				if(content.width() > 500) {
 					content.css("overflow-x", "hidden")
 					.css("width", "480");
-					sizeChanged = true;
-				}
-				if(sizeChanged) {
-					infoWindow.setContent(content.get(0));
-					marker.bindPopup(infoWindow);
-					marker.openPopup();
 				}
 			});
 		};

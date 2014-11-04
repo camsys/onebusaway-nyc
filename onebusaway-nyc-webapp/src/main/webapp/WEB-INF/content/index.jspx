@@ -64,10 +64,6 @@
 </s:url>
 <script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/lib/leaflet-google.js">
-</s:url>
-<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
-
 <s:url var="url" value="/js/lib/jquery.ui.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
@@ -113,26 +109,8 @@
 </s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<!-- Leaflet Maps (Google) Instance -->
-<s:if test="mapInstance.equals('leaflet-google')">
-	<s:url var="url" value="/js/oba/map/LeafletMapWrapper.js">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-	<s:url var="url" value="/js/oba/map/LeafletPopups.js">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-	<s:url var="url" value="/js/oba/map/LeafletRouteMap.js">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-</s:if>
-<!-- Leaflet Maps (Bing) Instance -->
-<s:elseif test="mapInstance.equals('leaflet-bing')">
-</s:elseif>
 <!-- Google Maps Instance -->
-<s:else">
+<s:if test="mapInstance.equals('google')">
 	<s:url var="url" value="/js/oba/map/GoogleMapWrapper.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
@@ -142,6 +120,35 @@
 	</s:url>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 	<s:url var="url" value="/js/oba/map/RouteMap.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+</s:if>
+<s:else>
+	<!-- Leaflet Maps (Google) Instance -->
+	<s:if test="mapInstance.equals('leaflet-google')">
+		<s:url var="url" value="/js/lib/leaflet-google.js">
+		</s:url>
+		<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+		<s:url var="url" value="/js/oba/map/LeafletGoogleMapWrapper.js">
+			<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+		</s:url>
+	</s:if>
+	<!-- Leaflet Maps (Bing) Instance -->
+	<s:elseif test="mapInstance.equals('leaflet-bing')">
+		<s:url var="url" value="/js/lib/leaflet-bing.js">
+		</s:url>
+		<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+		<s:url var="url" value="/js/oba/map/LeafletBingMapWrapper.js">
+			<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+		</s:url>
+	</s:elseif>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<s:url var="url" value="/js/oba/map/LeafletPopups.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<s:url var="url" value="/js/oba/map/LeafletRouteMap.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>

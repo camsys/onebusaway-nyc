@@ -45,6 +45,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 	var locationIcons = locationIconArrays[0], activeLocationIcons = locationIconArrays[1], iconShadow = locationIconArrays[2];    
 	var normalLocationIcon = locationIcons[0], activeLocationIcon = activeLocationIcons[0];
 	
+	L.Icon.Default.imagePath = 'img/leaflet';
+	
 	// POLYLINE
 	function removePolylines(routeId) {
 		if(typeof polylinesByRoute[routeId] !== 'undefined') {
@@ -136,12 +138,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 			if(directionKey === null) {
 				directionKey = "unknown";
 			}
-			var iconOptions = {
-				iconUrl: "img/stop/stop-" + directionKey + ".png",
-				iconSize: [21, 21],
-				shadowUrl: "img/location/shadow.png"
-			};
-			var icon = new L.icon(iconOptions);
+			var icon = new L.Icon({iconUrl: "img/stop/stop-" + directionKey + ".png",	iconSize: [21, 21]});
 			var defaultOpacity = (map.getZoom() < 16) ? 0 : 1;
 			var markerOptions = {
 				icon: icon,
@@ -243,13 +240,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				if(orientation !== null && orientation !== 'NaN') {
 					orientationAngle = Math.floor(orientation / 5) * 5;
 				}
-				
-				var iconOptions = {
-					iconUrl: "img/vehicle/vehicle-" + orientationAngle + ".png",
-					iconSize: [51, 51],
-					shadowUrl: "img/location/shadow.png"
-				};
-				var icon = new L.icon(iconOptions);
+				var icon = new L.Icon({iconUrl: "img/vehicle/vehicle-" + orientationAngle + ".png", iconSize: [51, 51]});
 
 				marker.setIcon(icon);
 
@@ -395,12 +386,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 			if(directionKey === null) {
 				directionKey = "unknown";
 			}
-			var iconOptions = {
-				iconUrl: "img/stop/stop-" + directionKey + "-active.png",
-				iconSize: [21, 21],
-				shadowUrl: "img/location/shadow.png"
-			};
-			var highlightedIcon = new L.icon(iconOptions);
+			var highlightedIcon = new L.Icon({iconUrl: "img/stop/stop-" + directionKey + "-active.png", iconSize: [21, 21]});
 			
 			stopMarker.options.previousIcon = stopMarker.options.icon;
 			stopMarker.setIcon(highlightedIcon);

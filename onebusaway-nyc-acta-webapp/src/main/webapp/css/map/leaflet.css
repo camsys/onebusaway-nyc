@@ -77,7 +77,6 @@
 
 
 /* control positioning */
-
 .leaflet-control {
 	position: relative;
 	z-index: 7;
@@ -278,12 +277,12 @@
 	border-radius: 5px;
 	}
 .leaflet-control-layers-toggle {
-	background-image: url(images/layers.png);
+	background-image: url(../../img/leaflet/layers.png);
 	width: 36px;
 	height: 36px;
 	}
 .leaflet-retina .leaflet-control-layers-toggle {
-	background-image: url(images/layers-2x.png);
+	background-image: url(../../img/leaflet/layers-2x.png);
 	background-size: 26px 26px;
 	}
 .leaflet-touch .leaflet-control-layers-toggle {
@@ -390,7 +389,7 @@
 .leaflet-popup-content-wrapper {
 	padding: 10px 20px 10px 10px;
 	text-align: left;
-	border-radius: 5;
+	border-radius: 5px;
 	}
 .leaflet-popup-content {
 	width:auto !important;
@@ -467,9 +466,7 @@
 	border: 1px solid #999;
 	}
 
-
 /* div icon */
-
 .leaflet-div-icon {
 	background: #fff;
 	border: 1px solid #666;

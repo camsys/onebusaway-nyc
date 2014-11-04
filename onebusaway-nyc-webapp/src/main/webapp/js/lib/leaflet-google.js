@@ -13,7 +13,7 @@ L.Google = L.Class.extend({
 		attribution: '',
 		opacity: 1,
 		continuousWorld: false,
-		noWrap: false,
+		noWrap: false
 	},
 
 	// Possible types: SATELLITE, ROADMAP, HYBRID
