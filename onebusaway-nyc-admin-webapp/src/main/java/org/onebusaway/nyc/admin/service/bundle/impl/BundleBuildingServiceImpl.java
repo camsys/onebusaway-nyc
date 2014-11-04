@@ -210,29 +210,19 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           String stifUtilUrl = getStifCleanupUrl();
           response.addStatusMessage("downloading " + stifUtilUrl + " to clean stifs");
           String stifUtilName = fs.parseFileName(stifUtilUrl);
-          // For debugging, print working directory
-          URL location = BundleBuildingServiceImpl.class.getProtectionDomain().getCodeSource().getLocation();
-          response.addStatusMessage("Current directory: " + location.getHost() + location.getFile());
 
           // obanyc-2177, pull fix_stif_date_codes onto adminx image if download fails
           try {
-            throw new RuntimeException("Throw new exception for testing download failure");
-            //fs.wget(stifUtilUrl);
-            //response.addStatusMessage("download complete");
+            fs.wget(stifUtilUrl);
+            response.addStatusMessage("download complete");
           } catch (Exception any) {
             _log.info("Download of " + stifUtilUrl + "failed.");
-            response.addStatusMessage("download failed, copying local copy of " + stifUtilName + " instead");
             // Copy local version of script
             String stifScriptDir = System.getProperty("admin.stifScriptLocation");
             String localStifScriptName = stifScriptDir + File.separator + stifUtilName;
             File localStifScript = new File(localStifScriptName);
             _log.info("Copying " + localStifScriptName + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
             response.addStatusMessage("download failed, copying " + localStifScriptName + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
-            if (!localStifScript.exists()) {
-              response.addStatusMessage(localStifScriptName + " was not found");
-            } else {
-              response.addStatusMessage(localStifScriptName + " was found");
-            }
             File workingStifScript = new File(request.getTmpDirectory() + File.separator + stifUtilName);
             fs.copyFiles(localStifScript, workingStifScript);
             response.addStatusMessage("copy complete");
