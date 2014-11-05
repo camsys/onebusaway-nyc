@@ -18,8 +18,6 @@ var OBA = window.OBA || {};
 
 OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {	
 
-	var initialized = false;
-
 	var map = null;
 
 	var locationMarker = null;
@@ -333,18 +331,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		map.fitBounds(bounds);
 	}
 	
-	// when map is idle ("ready"), initialize the rest of the google maps stuff, if we haven't already.
-	// otherwise, refresh the stops on the map after the user is done panning.
+	// refresh the stops on the map after the user is done panning
 	map.addEventListener("moveend", function() {
-		// start adding things to map once it's ready...
-		if(initialized === false) {
-			initialized = true;
-
-			if(typeof initCallbackFn === 'function') {
-				initCallbackFn();
-			}
-		}
-		
 		// request list of stops in viewport when user stops moving map
 		if(map.getZoom() < 16) {
 			removeStops(false);
@@ -629,6 +617,13 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 
 		unregisterStopBubbleListener: function() {
 			return OBA.Popups.unregisterStopBubbleListener();
+		},
+		
+		setup: function() {
+			// start adding things to map once it's ready...
+			if(typeof initCallbackFn === 'function') {
+				initCallbackFn();
+			}
 		}
 	};
 };
