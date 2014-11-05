@@ -299,7 +299,7 @@ OBA.Popups = (function() {
 		zoomHereLink.click(function(e) {
 			e.preventDefault();
 
-			var map = marker.map;
+			var map = marker.options.map;
 			map.setView(marker.getLatLng());
 			map.setZoom(16);
 		});
@@ -572,7 +572,7 @@ OBA.Popups = (function() {
 		zoomHereLink.click(function(e) {
 			e.preventDefault();
 
-			var map = marker.map;
+			var map = marker.options.map;
 			map.setView(marker.getLatLng());
 			map.setZoom(16);
 		});

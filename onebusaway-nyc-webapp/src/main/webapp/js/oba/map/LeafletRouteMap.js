@@ -144,7 +144,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				icon: icon,
 				title: name,
 				stopId: stopId,
-				opacity: defaultOpacity
+				opacity: defaultOpacity,
+				map: map
 			};
 	        marker = new L.Marker([latitude, longitude], markerOptions);
 	        marker.addEventListener("click", function(mouseEvent, routeFilter) {
@@ -220,7 +221,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 						map: map,
 						title: "Vehicle " + vehicleIdWithoutAgency + ", " + routeName + " to " + headsign,
 						vehicleId: vehicleId,
-						routeId: routeId
+						routeId: routeId,
+						map: map
 					};
 
 					marker = new L.Marker([latitude, longitude], markerOptions);
@@ -530,8 +532,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		        icon: normalLocationIcon,
 		        riseOffset: 2,
 		        title: address,
-		        map: map,
-		        shadow: iconShadow
+		        shadow: iconShadow,
+		        map: map
 			};
 			
 			locationMarker = new L.Marker(latlng, markerOptions);
@@ -572,8 +574,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		            icon: locationIcon,
 		            zIndex: 2,
 		            title: address,
-		            map: map,
-		            shadow: iconShadow
+		            shadow: iconShadow,
+		            map: map
 			};
 
 		    var marker = new L.Marker(latlng, markerOptions);
