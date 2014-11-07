@@ -6,7 +6,7 @@ L.Google = L.Class.extend({
 
 	options: {
 		minZoom: 0,
-		maxZoom: 18,
+		maxZoom: 19,
 		tileSize: 256,
 		subdomains: 'abc',
 		errorTileUrl: '',
@@ -85,6 +85,7 @@ L.Google = L.Class.extend({
 
 	_initMapObject: function() {
 		this._google_center = new google.maps.LatLng(0, 0);
+		
 		var map = new google.maps.Map(this._container, {
 		    center: this._google_center,
 		    zoom: 0,

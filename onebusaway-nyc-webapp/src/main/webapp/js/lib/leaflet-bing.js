@@ -2,8 +2,8 @@
 L.BingLayer = L.TileLayer.extend({
 	options: {
 		type: 'Road',
-		minZoom: 0,
-		maxZoom: 18,
+		minZoom: 9,
+		maxZoom: 19,
 		tileSize: 256,
 		subdomains: 'abc',
 		errorTileUrl: '',
@@ -15,7 +15,7 @@ L.BingLayer = L.TileLayer.extend({
 
 	initialize: function(options) {
 		L.Util.setOptions(this, options);
-		this._key = "AvyU-eBGROGWcBT9wya6uZfDQeqB1LGwg3Mk8Vrw_389cUvx4_fikZkd39H_HKRI";
+		this._key = OBA.Config.bingMapsKey;
 		this._url = null;
 		this.meta = {};
 		this.loadMetadata();
@@ -57,7 +57,7 @@ L.BingLayer = L.TileLayer.extend({
 			_this.initMetadata();
 		};
 		var url = document.location.protocol + '//dev.virtualearth.net/REST/v1/Imagery/Metadata/' + this.options.type + '?include=ImageryProviders&jsonp=' + cbid +
-		          '&key=' + this._key + '&UriScheme=' + document.location.protocol.slice(0, -1);
+		          '&stl=h&key=' + this._key + '&UriScheme=' + document.location.protocol.slice(0, -1);
 		var script = document.createElement('script');
 		script.type = 'text/javascript';
 		script.src = url;
