@@ -17,8 +17,11 @@ package org.onebusaway.nyc.geocoder.impl;
 
 import org.onebusaway.geocoder.model.GeocoderResults;
 import org.onebusaway.geocoder.services.GeocoderService;
+import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -42,6 +45,33 @@ public abstract class FilteredGeocoderBase implements NycGeocoderService, Geocod
   private static GeometryFactory _geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
   private Polygon _wktFilterPolygon = null;
+  
+  @Autowired
+  protected ConfigurationService _configurationService;
+  
+  protected CoordinateBounds _resultBiasingBounds = null;
+  
+  public FilteredGeocoderBase(){}
+  public FilteredGeocoderBase(FilteredGeocoderBase template){
+	  _configurationService = template.getConfigurationService();
+	  _resultBiasingBounds = template.getResultingBiasingBounds();
+  }
+  
+  protected ConfigurationService getConfigurationService(){
+	return _configurationService;
+  }
+  
+  protected void setConfigurationService(ConfigurationService configurationService){
+	_configurationService = configurationService;
+  }
+  
+  protected CoordinateBounds getResultingBiasingBounds(){
+	return _resultBiasingBounds;
+  }
+  
+  public void setResultBiasingBounds(CoordinateBounds bounds) {
+    _resultBiasingBounds = bounds;
+  }
   
   public void setWktFilterPolygon(String wkt) throws ParseException {
     WKTReader reader = new WKTReader();

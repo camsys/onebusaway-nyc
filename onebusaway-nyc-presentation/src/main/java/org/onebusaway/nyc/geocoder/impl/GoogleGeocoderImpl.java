@@ -16,10 +16,8 @@
 package org.onebusaway.nyc.geocoder.impl;
 
 import org.onebusaway.geocoder.impl.GoogleAddressComponent;
-import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.geocoder.model.GoogleGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.digester.Digester;
@@ -54,19 +52,16 @@ public class GoogleGeocoderImpl extends FilteredGeocoderBase {
   
   private static final String GEOCODE_PATH = "/maps/api/geocode/xml";
 
-  @Autowired
-  private ConfigurationService _configurationService;
-  
+  @Autowired  
   private boolean _sensor = false;
-
-  private CoordinateBounds _resultBiasingBounds = null;
+  
+  public GoogleGeocoderImpl(){}
+  public GoogleGeocoderImpl(FilteredGeocoderBase template){
+	  super(template);
+  }
   
   public void setSensor(boolean sensor) {
     _sensor = sensor;
-  }
-
-  public void setResultBiasingBounds(CoordinateBounds bounds) {
-    _resultBiasingBounds = bounds;
   }
   
   public List<NycGeocoderResult> nycGeocode(String location) {

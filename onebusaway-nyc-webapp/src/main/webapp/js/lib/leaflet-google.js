@@ -5,7 +5,7 @@ L.Google = L.Class.extend({
 	includes: L.Mixin.Events,
 
 	options: {
-		minZoom: 0,
+		minZoom: 9,
 		maxZoom: 19,
 		tileSize: 256,
 		subdomains: 'abc',
