@@ -58,11 +58,15 @@ public class Observation implements Comparable<Observation> {
 
   private final Set<AgencyAndId> _impliedRouteCollections;
 
+  private final String _assignedBlockId;
+
+  private final boolean _isValidAssignedBlockId;
+
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
       boolean outOfService, boolean hasValidDsc,
       Observation previousObservation, Set<AgencyAndId> dscImpliedRoutes,
-      RunResults runResults) {
+      RunResults runResults, String assignedBlockId, boolean isValidAssignedBlockId) {
     _timestamp = timestamp;
     _record = record;
     _point = ProjectedPointFactory.forward(record.getLatitude(),
@@ -76,6 +80,8 @@ public class Observation implements Comparable<Observation> {
     this.atTerminal = atTerminal;
     this.outOfService = outOfService;
     this._hasValidDsc = hasValidDsc;
+    this._assignedBlockId = assignedBlockId;
+    this._isValidAssignedBlockId = isValidAssignedBlockId;
 
     if (previousObservation == null) {
       this._timeDelta = null;
@@ -195,7 +201,7 @@ public class Observation implements Comparable<Observation> {
         _lastValidDestinationSignCode, o2._lastValidDestinationSignCode,
         Ordering.natural().nullsLast()).compare(_record, o2._record).compare(
         outOfService, o2.outOfService).compare(atTerminal, o2.atTerminal).compare(
-        atBase, o2.atBase).compare(_runResults, o2._runResults).result();
+        atBase, o2.atBase).compare(_runResults, o2._runResults).compare(_assignedBlockId, o2._assignedBlockId).result();
 
     return res;
   }
@@ -228,6 +234,7 @@ public class Observation implements Comparable<Observation> {
     result = prime * result + (atBase ? 1231 : 1237);
     result = prime * result + (atTerminal ? 1231 : 1237);
     result = prime * result + (outOfService ? 1231 : 1237);
+    result = prime * result + (_assignedBlockId == null ? 0 : _assignedBlockId.hashCode());
 
     _hash = result;
     return result;
@@ -270,6 +277,13 @@ public class Observation implements Comparable<Observation> {
       return false;
     if (outOfService != other.outOfService)
       return false;
+    if (_assignedBlockId == null) {
+      if(other._assignedBlockId != null)
+        return false;
+    } else if (!_assignedBlockId.equals(other._assignedBlockId)) {
+      return false;
+    }
+      
     return true;
   }
 
@@ -308,6 +322,10 @@ public class Observation implements Comparable<Observation> {
 
   public double getOrientation() {
     return _orientation;
+  }
+
+  public String getAssignedBlockId() {
+    return _assignedBlockId;
   }
 
 }

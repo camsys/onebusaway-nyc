@@ -1,6 +1,11 @@
 package org.onebusaway.nyc.transit_data_federation.impl.bundle;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -30,8 +35,10 @@ import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDaoImpl;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
@@ -251,6 +258,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 		if(bundleId.equals(_currentBundleId)) {
 			_log.info("Received command to change to " + bundleId + "; bundle is already active.");
+      logTripsAndBlocks(bundleId);
 			return;
 		}
 
@@ -339,9 +347,34 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		// need to do after bundle is ready so TDS can not block
 		removeAndRebuildCache();
 		_log.info("Cache rebuild complete.");
+		
+		logTripsAndBlocks(bundleId);
 
 		return;
 	}
+
+  /**
+   * Logs trip IDs to bundle ID mapping for the bundle we just switch to.
+   * For debugging purposes, normally switched off, change the if (false) conditional
+   * to turn it on.
+   * 
+   * @param bundleId
+   */
+  @SuppressWarnings("unused")
+  private void logTripsAndBlocks(String bundleId) {
+    if (false) {
+      try {
+        Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(System.getProperty("user.home") + "/" + bundleId + ".txt"), "utf-8"));
+        List<TripEntry> allTrips = _transitGraphDao.getAllTrips();
+        for (TripEntry trip : allTrips) {
+          writer.write(bundleId + "\t" + trip.getId() + "\t" + trip.getBlock().getId() + "\n");
+        }
+        writer.close();
+      } catch (IOException ex) {
+        _log.error("Exception during file write " + ex.getMessage());
+      }
+    }
+  }
 
 	// some kind of event notification system camsys setup? 
 	protected void timingHook() {}

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:schPullOutList deactivation="2040-01-04T23:59:00-08:00" noNameSpaceSchemaLocation="http://www.aptatcip.com/APTA-TCIP-S-01%204.0_files/Schema%20Set.zip" sourceapp="YardBoss" schVersion="TCIP 4.0" created="2011-06-01T04:59:00-08:00" xmlns:ns2="http://www.TCIP-Final-4-0-0" xmlns:ns4="http://www.lrms-final-09-07-for-atis" xmlns:ns3="http://www.lrms-final-09-07" xmlns:ns5="http://www.atis-partial-03-00-74">
+    <subscriptionInfo>
+        <requestedType>Event</requestedType>
+        <expirationTime>19:00:00</expirationTime>
+        <requestIdentifier>1</requestIdentifier>
+        <subscriberIdentifier>0</subscriberIdentifier>
+        <publisherIdentifier>0</publisherIdentifier>
+    </subscriptionInfo>
+    <beginDate>2011-06-01</beginDate>
+    <beginTime>0</beginTime>
+    <endDate>2011-06-01</endDate>
+    <endTime>0</endTime>
+    <pull-outs>
+        <pull-out>
+            <pull-in>false</pull-in>
+            <garage>
+                <id>CSLT</id>
+                <agdesig>MTA NYCT</agdesig>
+            </garage>
+            <vehicle>
+                <id>7777</id>
+                <ag>2008</ag>
+            </vehicle>
+            <operator>
+                <id>859007</id>
+                <ag>2008</ag>
+                <desig>TA859007</desig>
+            </operator>
+            <date>2011-06-01</date>
+            <time>2011-06-01T04:59:00-08:00</time>
+            <run>
+                <id>S56-001</id>
+            </run>
+            <block>
+                <id>MTA NYCT_20120206_CSLT_S56_001</id>
+            </block>
+        </pull-out>
+        <pull-out>
+            <pull-in>true</pull-in>
+            <garage>
+                <id>CSLT</id>
+                <agdesig>MTA NYCT</agdesig>
+            </garage>
+            <vehicle>
+                <id>7777</id>
+                <ag>2008</ag>
+            </vehicle>
+            <date>2011-06-01</date>
+            <time>2011-06-02T00:49:00-08:00</time>
+            <run>
+                <id>S56-001</id>
+            </run>
+            <block>
+                <id>MTA NYCT_20120206_CSLT_S56_001</id>
+            </block>
+        </pull-out>
+    </pull-outs>
+</ns2:schPullOutList>

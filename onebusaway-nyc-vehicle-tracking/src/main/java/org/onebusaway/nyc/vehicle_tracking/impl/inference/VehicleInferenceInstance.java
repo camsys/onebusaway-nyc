@@ -33,6 +33,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationServi
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehiclePulloutService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
@@ -84,6 +85,8 @@ public class VehicleInferenceInstance {
 
   private RunService _runService;
 
+  private VehiclePulloutService _pulloutService;
+
   private long _automaticResetWindow = 20 * 60 * 1000;
 
   private Observation _previousObservation = null;
@@ -107,6 +110,11 @@ public class VehicleInferenceInstance {
   @Autowired
   public void setRunService(RunService runService) {
     _runService = runService;
+  }
+
+  @Autowired
+  public void setPulloutService(VehiclePulloutService pulloutService) {
+    _pulloutService = pulloutService;
   }
 
   @Autowired
@@ -274,9 +282,11 @@ public class VehicleInferenceInstance {
           _previousObservation.getRunResults());
     }
 
+    String assignedBlockId = _pulloutService.getAssignedBlockId(record.getVehicleId());
+        
     final Observation observation = new Observation(timestamp, record,
         lastValidDestinationSignCode, atBase, atTerminal, outOfService,
-        hasValidDsc, _previousObservation, routeIds, runResults);
+        hasValidDsc, _previousObservation, routeIds, runResults, assignedBlockId);
 
     if (_previousObservation != null)
       _previousObservation.clearPreviousObservation();

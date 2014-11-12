@@ -24,6 +24,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.math.util.FastMath;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.BlockLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.DscLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood.EdgeLikelihood;
@@ -107,6 +108,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
   public GpsLikelihood gpsLikelihood = new GpsLikelihood();
   public RunLikelihood runLikelihood = new RunLikelihood();
   public MovedLikelihood movedLikelihood = new MovedLikelihood();
+  public BlockLikelihood blockLikelihood = new BlockLikelihood();
   /*
    * Some of these likelihoods need services attached.
    */
@@ -418,6 +420,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       transProb.addResultAsAnd(nullStateLikelihood.likelihood(context));
       transProb.addResultAsAnd(nullLocationLikelihood.likelihood(context));
       transProb.addResultAsAnd(movedLikelihood.likelihood(context));
+      transProb.addResultAsAnd(blockLikelihood.likelihood(context));
 
       /*
        * TODO: this is mainly for debug and can/should be removed.

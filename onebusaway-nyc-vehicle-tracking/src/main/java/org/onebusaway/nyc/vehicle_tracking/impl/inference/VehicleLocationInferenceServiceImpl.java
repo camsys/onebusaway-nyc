@@ -45,9 +45,9 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
+import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyVehiclePulloutService;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
@@ -642,7 +642,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
     private final AgencyAndId _vehicleId;
 
-    private final NycRawLocationRecord _nycRawLocationRecord;
+    public final NycRawLocationRecord _nycRawLocationRecord;
 
     private NycTestInferredLocationRecord _nycTestInferredLocationRecord;
 
@@ -678,29 +678,8 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     @Override
     public void run() {
     	try {
-    		// operator assignment service in simulation case: returns a 1:1 result to what the trace indicates is the 
-    		// true operator assignment.
     		if (_simulation) {
-    			final DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
-
-    			final String assignedRun = _nycTestInferredLocationRecord.getAssignedRunId();
-    			final String operatorId = _nycTestInferredLocationRecord.getOperatorId();
-    			if (!Strings.isNullOrEmpty(assignedRun) && !Strings.isNullOrEmpty(operatorId)) {
-    				final String[] runParts = assignedRun.split("-");
-    				if (runParts.length > 2) {
-              opSvc.setOperatorAssignment(new AgencyAndId(
-                  _nycRawLocationRecord.getVehicleId().getAgencyId(), operatorId),
-                  runParts[1] + "-" + runParts[2], runParts[0]);
-    				  
-    				} else {
-    				  opSvc.setOperatorAssignment(new AgencyAndId(
-    				      _nycRawLocationRecord.getVehicleId().getAgencyId(), operatorId),
-    				      runParts[1], runParts[0]);
-    				}
-    			}
-
-    			_inferenceInstance.setOperatorAssignmentService(opSvc);
-    			_log.warn("Set operator assignment service to dummy for debugging!");
+    			setupSimulationBeforeRun();
     		}
 
     		// bypass/process record through inference
@@ -759,6 +738,50 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     		_observationCache.purge(_vehicleId);    	  
     	}
     }
+
+    /**
+     * If we're running within a simulation context, we need to stub some services into inference instance
+     * so that we can deliver data from the trace file.
+     */
+    private void setupSimulationBeforeRun() {
+      setupDummyOperatorAssignmentService();
+      setupDummyPulloutsService();
+    }
+
+    private void setupDummyPulloutsService() {
+      String assignedBlockId = _nycTestInferredLocationRecord.getAssignedBlockId();
+      DummyVehiclePulloutService pulloutService = new DummyVehiclePulloutService();
+      pulloutService.setVehiclePullout(_nycTestInferredLocationRecord.getVehicleId(), assignedBlockId);
+      _inferenceInstance.setPulloutService(pulloutService);
+    }
+
+    /**
+     * operator assignment service in simulation case: returns a 1:1 result to what the trace indicates is the
+     * true operator assignment.
+     */
+    private void setupDummyOperatorAssignmentService() {
+      final DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
+
+      final String assignedRun = _nycTestInferredLocationRecord.getAssignedRunId();
+      final String operatorId = _nycTestInferredLocationRecord.getOperatorId();
+      if (!Strings.isNullOrEmpty(assignedRun) && !Strings.isNullOrEmpty(operatorId)) {
+      	final String[] runParts = assignedRun.split("-");
+      	if (runParts.length > 2) {
+          opSvc.setOperatorAssignment(new AgencyAndId(
+              _nycRawLocationRecord.getVehicleId().getAgencyId(), operatorId),
+              runParts[1] + "-" + runParts[2], runParts[0]);
+      	  
+      	} else {
+      	  opSvc.setOperatorAssignment(new AgencyAndId(
+      	      _nycRawLocationRecord.getVehicleId().getAgencyId(), operatorId),
+      	      runParts[1], runParts[0]);
+      	}
+      }
+
+      _inferenceInstance.setOperatorAssignmentService(opSvc);
+      _log.warn("Operator assignment service has been set to dummy for simulation.");
+    }
+
   }
 
   @Override

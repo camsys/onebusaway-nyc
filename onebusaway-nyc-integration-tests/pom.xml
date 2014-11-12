@@ -13,7 +13,7 @@
 
     <properties>
         <tomcat-version>5.5.29</tomcat-version>
-        <cargo.jvmargs>-Xmx7G -XX:MaxPermSize=256m</cargo.jvmargs>
+        <cargo.jvmargs>-Xmx7G -XX:MaxPermSize=256m -Duser.timezone=America/New_York</cargo.jvmargs>
         <cargo.logging>low</cargo.logging>
         <hsqldb.port>9930</hsqldb.port>
 
@@ -154,6 +154,7 @@
                                 <org.onebusaway.webapp.port>${org.onebusaway.api_webapp.port}</org.onebusaway.webapp.port>
                                 <pauseDuringIntegrationTest>${pauseDuringIntegrationTest}</pauseDuringIntegrationTest>
                             </systemPropertyVariables>
+                            <argLine>${argLine}</argLine>
                         </configuration>
                     </execution>
                 </executions>

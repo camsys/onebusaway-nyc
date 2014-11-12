@@ -6,3 +6,7 @@
 */local-hsqldb-db/*
 *.swp
 target
+*.sublime-*
+.DS_Store
+.metadata
+Servers

@@ -129,6 +129,9 @@ public class VehicleStateLibrary {
     if (layoverSpot == null)
       return false;
 
+    CoordinatePoint location = obs.getLocation();
+    CoordinatePoint stopLocation = layoverSpot.getStopTime().getStop().getStopLocation();
+    
     final double dist = TurboButton.distance(obs.getLocation(),
         layoverSpot.getStopTime().getStop().getStopLocation());
     return dist <= _layoverStopDistance;
@@ -287,11 +290,12 @@ public class VehicleStateLibrary {
 
     final BlockStopTimeEntry nextStop = location.getNextStop();
     
+    List<BlockStopTimeEntry> stopTimes1 = location.getActiveTrip().getStopTimes();
     /**
      * If we're at the first or last stop of a trip in our run, then
      * we're at a potential layover spot.
      */
-    final BlockStopTimeEntry tripFirstStop = Iterables.getLast(location.getActiveTrip().getStopTimes());
+    final BlockStopTimeEntry tripFirstStop = Iterables.getLast(stopTimes1);
     final BlockStopTimeEntry tripLastStop = Iterables.getFirst(location.getActiveTrip().getStopTimes(), null);
     if (tripFirstStop.equals(closestStop)
         || tripLastStop.equals(closestStop))

@@ -23,6 +23,9 @@
     <head>
     <title>Vehicle Location Simulations</title>
 	<style>
+	table.summaries {
+	 border-collapse: collapse;
+	}
 	table.summaries td {
    		border: 1px solid black;
 	}
@@ -38,6 +41,7 @@
                 <td>records</td>
                 <td>details</td>
                 <td>results</td>
+                <td>results2</td>
                 <td>toggle</td>
                 <td>step</td>
                 <td>step_to</td>
@@ -55,6 +59,8 @@
                     <td><a href="vehicle-location-simulation!task-details.do?taskId=${s.id}&amp;recordNumber=${s.numberOfRecordsProcessed-1}">details</a></td>
                     <td>
                     <a href="vehicle-location-simulation!task-view-result-records.do?taskId=${s.id}">records</a></td>
+                    <td>
+                    <a href="vehicle-location-simulation!task-view-result-records2.do?taskId=${s.id}">records2</a></td>
                     <td><a
                         href="vehicle-location-simulation!toggle.do?taskId=${s.id}">
                     <c:if test="${s.paused}">resume</c:if> <c:if
