@@ -29,11 +29,10 @@ public class AdaptiveGeocoderImpl extends FilteredGeocoderBase {
 	NycGeocoderService geocoder;
 
 	public List<NycGeocoderResult> nycGeocode(String location) {
-		if (_configurationService.getConfigurationValueAsString("display.geocoderInstance", "").equals("google")
-				&& (geocoder == null || !geocoder.getClass().equals(GoogleGeocoderImpl.class))) {
+		String geocoderInstance = _configurationService.getConfigurationValueAsString("display.geocoderInstance", "google");
+		if (geocoderInstance.equals("google") && (geocoder == null || !geocoder.getClass().equals(GoogleGeocoderImpl.class))) {
 			geocoder = new GoogleGeocoderImpl(this);
-		} else if (_configurationService.getConfigurationValueAsString("display.geocoderInstance", "").equals("bing")
-				&& (geocoder == null || !geocoder.getClass().equals(BingGeocoderImpl.class))) {
+		} else if (geocoderInstance.equals("bing") && (geocoder == null || !geocoder.getClass().equals(BingGeocoderImpl.class))) {
 			geocoder = new BingGeocoderImpl(this);
 		}
 		return geocoder.nycGeocode(location);

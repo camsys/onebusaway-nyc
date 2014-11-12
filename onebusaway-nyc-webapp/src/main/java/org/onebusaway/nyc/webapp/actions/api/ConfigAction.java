@@ -88,6 +88,6 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   }
   
   public String getMapInstance() {
-    return _configurationService.getConfigurationValueAsString("display.mapInstance", null);
+    return _configurationService.getConfigurationValueAsString("display.mapInstance", "google");
   }
 }

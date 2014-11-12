@@ -50,7 +50,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
   
   public String getMapInstance() {
-	String value = _configurationService.getConfigurationValueAsString("display.mapInstance", "leaflet-google"); 
+	String value = _configurationService.getConfigurationValueAsString("display.mapInstance", "google"); 
     return value;    
   }
 
