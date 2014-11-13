@@ -608,7 +608,9 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		},
 
 		unregisterMapListener: function(registeredName) {
-			L.event.removeListener(registeredName);
+			if (map.hasEventListeners(registeredName)){
+				return map.removeEventListener(registeredName);
+			}
 		},
 		
 		registerStopBubbleListener: function(obj, trigger) {

@@ -1,18 +1,6 @@
 /* global console: true */
 L.BingLayer = L.TileLayer.extend({
-	options: {
-		type: 'Road',
-		minZoom: 9,
-		maxZoom: 19,
-		tileSize: 256,
-		subdomains: 'abc',
-		errorTileUrl: '',
-		attribution: '',
-		opacity: 1,
-		continuousWorld: false,
-		noWrap: false
-	},
-
+	
 	initialize: function(options) {
 		L.Util.setOptions(this, options);
 		this._key = OBA.Config.bingMapsKey;
