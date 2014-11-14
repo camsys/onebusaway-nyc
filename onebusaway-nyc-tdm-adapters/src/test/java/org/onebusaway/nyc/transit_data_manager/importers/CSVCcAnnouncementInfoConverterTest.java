@@ -12,11 +12,11 @@ import org.junit.Test;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.CSVCcAnnouncementInfoConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.CcAnnouncementInfoConverter;
 
-import tcip_final_3_0_5_1.CCDestinationMessageIden;
-import tcip_final_3_0_5_1.CCDestinationSignMessage;
-import tcip_final_3_0_5_1.CPTRowMetaData;
-import tcip_final_3_0_5_1.CcAnnouncementInfo;
-import tcip_final_3_0_5_1.SCHRouteIden;
+import tcip_final_4_0_0_0.CCDestinationMessageIden;
+import tcip_final_4_0_0_0.CCDestinationSignMessage;
+import tcip_final_4_0_0_0.CPTRowMetaData;
+import tcip_final_4_0_0_0.CcAnnouncementInfo;
+import tcip_final_4_0_0_0.SCHRouteIden;
 
 public class CSVCcAnnouncementInfoConverterTest {
 

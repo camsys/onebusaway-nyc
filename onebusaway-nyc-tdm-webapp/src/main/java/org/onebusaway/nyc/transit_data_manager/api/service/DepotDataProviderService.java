@@ -7,7 +7,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicl
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.api.DepotResource;
 
-import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
+import tcip_final_4_0_0_0.CPTFleetSubsetGroup;
 
 
 /**

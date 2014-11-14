@@ -19,8 +19,8 @@ import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 
-import tcip_final_3_0_5_1.CPTVehicleIden;
-import tcip_final_3_0_5_1.CcLocationReport;
+import tcip_final_4_0_0_0.CPTVehicleIden;
+import tcip_final_4_0_0_0.CcLocationReport;
 
 /**
  * Tests {@link RecordValidationServiceImpl}

@@ -8,14 +8,14 @@ import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import tcip_final_3_0_5_1.CPTOperatorIden;
-import tcip_final_3_0_5_1.CPTRowMetaData;
-import tcip_final_3_0_5_1.CPTTransitFacilityIden;
-import tcip_final_3_0_5_1.SCHOperatorAssignment;
-import tcip_final_3_0_5_1.SCHOperatorAssignment.DayTypes;
-import tcip_final_3_0_5_1.SCHOperatorAssignment.Trips;
-import tcip_final_3_0_5_1.SCHRunIden;
-import tcip_final_3_0_5_1.SCHTripIden;
+import tcip_final_4_0_0_0.CPTOperatorIden;
+import tcip_final_4_0_0_0.CPTRowMetaData;
+import tcip_final_4_0_0_0.CPTTransitFacilityIden;
+import tcip_final_4_0_0_0.SCHOperatorAssignment;
+import tcip_final_4_0_0_0.SCHOperatorAssignment.DayTypes;
+import tcip_final_4_0_0_0.SCHOperatorAssignment.Trips;
+import tcip_final_4_0_0_0.SCHRunIden;
+import tcip_final_4_0_0_0.SCHTripIden;
 
 /***
  * 

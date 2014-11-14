@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.output.model.json;
 
-import tcip_final_3_0_5_1.SCHPullInOutInfo;
+import tcip_final_4_0_0_0.SCHPullInOutInfo;
 
 /**
  * Wraps {@link SCHPullInOutInfo} instances to store vehicle pull in and pull out info at one place. 

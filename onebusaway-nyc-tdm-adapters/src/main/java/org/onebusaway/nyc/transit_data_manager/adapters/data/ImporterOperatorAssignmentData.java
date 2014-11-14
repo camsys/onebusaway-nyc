@@ -10,7 +10,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import tcip_final_3_0_5_1.SCHOperatorAssignment;
+import tcip_final_4_0_0_0.SCHOperatorAssignment;
 
 public class ImporterOperatorAssignmentData implements OperatorAssignmentData {
   

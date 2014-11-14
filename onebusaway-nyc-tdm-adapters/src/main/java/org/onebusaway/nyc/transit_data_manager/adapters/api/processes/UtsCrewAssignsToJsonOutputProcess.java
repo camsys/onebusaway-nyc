@@ -23,7 +23,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Operat
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.ServiceDateOperatorAssignments;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.ListServiceDateOperatorAssignmentsMessage;
 
-import tcip_final_3_0_5_1.SCHOperatorAssignment;
+import tcip_final_4_0_0_0.SCHOperatorAssignment;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;

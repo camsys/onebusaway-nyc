@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import tcip_final_3_0_5_1.CcLocationReport;
+import tcip_final_4_0_0_0.CcLocationReport;
 
 /**
  * JSON wrapper for realtime bus data.

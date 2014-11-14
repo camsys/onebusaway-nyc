@@ -11,8 +11,8 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
-import tcip_final_3_0_5_1.CcLocationReport;
-import tcip_final_3_0_5_1.SPDataQuality;
+import tcip_final_4_0_0_0.CcLocationReport;
+import tcip_final_4_0_0_0.SPDataQuality;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

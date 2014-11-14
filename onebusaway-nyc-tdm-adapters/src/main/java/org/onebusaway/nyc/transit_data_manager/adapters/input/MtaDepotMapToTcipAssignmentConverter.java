@@ -5,10 +5,10 @@ import java.util.List;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 
-import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
-import tcip_final_3_0_5_1.CPTFleetSubsetGroup.GroupMembers;
-import tcip_final_3_0_5_1.CPTTransitFacilityIden;
-import tcip_final_3_0_5_1.CPTVehicleIden;
+import tcip_final_4_0_0_0.CPTFleetSubsetGroup;
+import tcip_final_4_0_0_0.CPTFleetSubsetGroup.GroupMembers;
+import tcip_final_4_0_0_0.CPTTransitFacilityIden;
+import tcip_final_4_0_0_0.CPTVehicleIden;
 
 public class MtaDepotMapToTcipAssignmentConverter {
 

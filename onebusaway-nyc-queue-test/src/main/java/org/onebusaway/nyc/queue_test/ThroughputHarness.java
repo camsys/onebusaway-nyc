@@ -13,12 +13,12 @@ import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.zeromq.ZMQ;
 
 import tcip_3_0_5_local.NMEA;
-import tcip_final_3_0_5_1.CPTOperatorIden;
-import tcip_final_3_0_5_1.CPTVehicleIden;
-import tcip_final_3_0_5_1.CcLocationReport;
-import tcip_final_3_0_5_1.SCHRouteIden;
-import tcip_final_3_0_5_1.SCHRunIden;
-import tcip_final_3_0_5_1.SPDataQuality;
+import tcip_final_4_0_0_0.CPTOperatorIden;
+import tcip_final_4_0_0_0.CPTVehicleIden;
+import tcip_final_4_0_0_0.CcLocationReport;
+import tcip_final_4_0_0_0.SCHRouteIden;
+import tcip_final_4_0_0_0.SCHRunIden;
+import tcip_final_4_0_0_0.SPDataQuality;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;

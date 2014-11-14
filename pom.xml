@@ -223,9 +223,7 @@
     	<module>onebusaway-nyc-ops-api-webapp</module>
     	<module>onebusaway-nyc-report</module>
 <!-- this only needs to be built on changes, which are rare -->
-<!--
     	<module>onebusaway-nyc-tcip-api</module>
--->
   </modules>
 
     <profiles>
@@ -261,9 +259,7 @@
                 <module>onebusaway-nyc-ops-api-webapp</module>
                 <module>onebusaway-nyc-report</module>
 <!-- this only needs to be built on changes, which are rare -->
-<!--
 		<module>onebusaway-nyc-tcip-api</module>
--->
             </modules>
         </profile>
     </profiles>

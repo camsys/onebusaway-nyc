@@ -20,7 +20,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.BusDepotAs
 import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.XMLBusDepotAssignsInputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 
-import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
+import tcip_final_4_0_0_0.CPTFleetSubsetGroup;
 
 public class MtaBusDepotFileToDataCreator {
 

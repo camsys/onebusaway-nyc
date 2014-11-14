@@ -13,10 +13,10 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 
-import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
-import tcip_final_3_0_5_1.CPTSubscriptionHeader;
-import tcip_final_3_0_5_1.CptFleetSubsets;
-import tcip_final_3_0_5_1.CptFleetSubsets.DefinedGroups;
+import tcip_final_4_0_0_0.CPTFleetSubsetGroup;
+import tcip_final_4_0_0_0.CPTSubscriptionHeader;
+import tcip_final_4_0_0_0.CptFleetSubsets;
+import tcip_final_4_0_0_0.CptFleetSubsets.DefinedGroups;
 
 public class FleetSubsetsGenerator {
 

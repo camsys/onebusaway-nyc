@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.joda.time.DateMidnight;
 
-import tcip_final_3_0_5_1.SCHOperatorAssignment;
+import tcip_final_4_0_0_0.SCHOperatorAssignment;
 
 /**
  * Designed to work with the entire set of Operator Assignment Data.

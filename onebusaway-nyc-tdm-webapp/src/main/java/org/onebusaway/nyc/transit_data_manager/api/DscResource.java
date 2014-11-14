@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import tcip_final_3_0_5_1.CCDestinationSignMessage;
+import tcip_final_4_0_0_0.CCDestinationSignMessage;
 
 @Path("/dsc")
 @Component

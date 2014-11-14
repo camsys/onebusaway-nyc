@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.ServletContextAware;
 
-import tcip_final_3_0_5_1.CPTVehicleIden;
-import tcip_final_3_0_5_1.CcLocationReport;
+import tcip_final_4_0_0_0.CPTVehicleIden;
+import tcip_final_4_0_0_0.CcLocationReport;
 
 /**
  * Test/Debug Class for loading realtime data from the archive database 

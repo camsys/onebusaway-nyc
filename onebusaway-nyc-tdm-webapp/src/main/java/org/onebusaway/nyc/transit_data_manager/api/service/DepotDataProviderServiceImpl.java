@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
-import tcip_final_3_0_5_1.CPTVehicleIden;
+import tcip_final_4_0_0_0.CPTFleetSubsetGroup;
+import tcip_final_4_0_0_0.CPTVehicleIden;
 
 /**
  * Default implementation of {@link DepotDataProviderService}

@@ -8,7 +8,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicl
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import tcip_final_3_0_5_1.SCHPullInOutInfo;
+import tcip_final_4_0_0_0.SCHPullInOutInfo;
 
 public class TCIPVehicleAssignmentsOutputConverter implements
     VehicleAssignmentsOutputConverter {

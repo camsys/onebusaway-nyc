@@ -6,7 +6,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Operat
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import tcip_final_3_0_5_1.SCHOperatorAssignment;
+import tcip_final_4_0_0_0.SCHOperatorAssignment;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

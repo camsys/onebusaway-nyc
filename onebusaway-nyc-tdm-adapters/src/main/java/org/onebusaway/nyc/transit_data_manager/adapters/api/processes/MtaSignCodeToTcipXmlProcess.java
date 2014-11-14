@@ -16,11 +16,11 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.SignCodeData;
 
-import tcip_final_3_0_5_1.CPTLoadFileHeader;
-import tcip_final_3_0_5_1.CPTVehicleIden;
-import tcip_final_3_0_5_1.CcAnnouncementInfo;
-import tcip_final_3_0_5_1.ObjectFactory;
-import tcip_final_3_0_5_1.SchPullOutList;
+import tcip_final_4_0_0_0.CPTLoadFileHeader;
+import tcip_final_4_0_0_0.CPTVehicleIden;
+import tcip_final_4_0_0_0.CcAnnouncementInfo;
+import tcip_final_4_0_0_0.ObjectFactory;
+import tcip_final_4_0_0_0.SchPullOutList;
 
 public class MtaSignCodeToTcipXmlProcess extends FileToFileConverterProcess {
 

@@ -7,7 +7,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverte
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 
-import tcip_final_3_0_5_1.SCHOperatorAssignment;
+import tcip_final_4_0_0_0.SCHOperatorAssignment;
 
 /**
  * Contains convert function to convert TCIP Operator assignments

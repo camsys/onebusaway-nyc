@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import tcip_final_3_0_5_1.CPTVehicleIden;
+import tcip_final_4_0_0_0.CPTVehicleIden;
 
 @Path("/depot")
 @Component

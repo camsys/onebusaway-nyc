@@ -83,8 +83,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import tcip_3_0_5_local.NMEA;
-import tcip_final_3_0_5_1.CcLocationReport;
-import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
+import tcip_final_4_0_0_0.CcLocationReport;
+import tcip_final_4_0_0_0.CcLocationReport.EmergencyCodes;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultiset;

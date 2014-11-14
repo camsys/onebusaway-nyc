@@ -6,8 +6,8 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicl
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import tcip_final_3_0_5_1.CPTVehicleIden;
-import tcip_final_3_0_5_1.SCHPullInOutInfo;
+import tcip_final_4_0_0_0.CPTVehicleIden;
+import tcip_final_4_0_0_0.SCHPullInOutInfo;
 
 /**
  * Converts tcip pull out object to a model object that can be serialized by JSON.

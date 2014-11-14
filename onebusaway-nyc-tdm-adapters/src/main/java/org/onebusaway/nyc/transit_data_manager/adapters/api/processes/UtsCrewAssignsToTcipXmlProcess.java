@@ -23,9 +23,9 @@ import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CSVCrewAss
 import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CrewAssignsInputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.tcip.PushOperatorAssignsGenerator;
 
-import tcip_final_3_0_5_1.ObjectFactory;
-import tcip_final_3_0_5_1.SCHOperatorAssignment;
-import tcip_final_3_0_5_1.SchPushOperatorAssignments;
+import tcip_final_4_0_0_0.ObjectFactory;
+import tcip_final_4_0_0_0.SCHOperatorAssignment;
+import tcip_final_4_0_0_0.SchPushOperatorAssignments;
 
 /**
  * Designed to hold code moved from CrewConverter.java

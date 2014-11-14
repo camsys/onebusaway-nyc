@@ -25,12 +25,12 @@ import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.queue.Publisher;
 import org.junit.Test;
 import lrms_final_09_07.Angle;
-import tcip_final_3_0_5_1.CcLocationReport;
-import tcip_final_3_0_5_1.CPTOperatorIden;
-import tcip_final_3_0_5_1.CPTVehicleIden;
-import tcip_final_3_0_5_1.SCHRouteIden;
-import tcip_final_3_0_5_1.SCHRunIden;
-import tcip_final_3_0_5_1.SPDataQuality;
+import tcip_final_4_0_0_0.CcLocationReport;
+import tcip_final_4_0_0_0.CPTOperatorIden;
+import tcip_final_4_0_0_0.CPTVehicleIden;
+import tcip_final_4_0_0_0.SCHRouteIden;
+import tcip_final_4_0_0_0.SCHRunIden;
+import tcip_final_4_0_0_0.SPDataQuality;
 import tcip_3_0_5_local.NMEA;
 
 import java.io.IOException;
