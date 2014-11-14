@@ -5,6 +5,7 @@
 <!-- Source DB File: atis_j2354_r74.its rendered into namespace: ATIS  -->
 <!-- Production releases of ITS schemas can be found at: http://www.ITSware.net/XML/readme.htm -->
 <!-- Produced from r74 database for use with TCIP -->
+<!-- Updated 22 July 2012 by Rob Ayers to deal with problems discovered in the development of TCIP 3.0.6 -->
 <!--  -->
 <xs:schema xmlns="http://www.atis-partial-03-00-74" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:itis="http://www.itis-final-3-0-0-for-atis" xmlns:lrms="http://www.lrms-final-09-07-for-atis" xmlns:local="http://www.atis-03-00-74-local" targetNamespace="http://www.atis-partial-03-00-74" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="DRAFT">
 	<!-- <xs:import namespace="http://www.ntcip-partial-00-00-00" schemaLocation="NTCIP_Partial_0_0_0.xsd"/> -->

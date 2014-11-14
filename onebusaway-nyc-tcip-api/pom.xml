@@ -9,44 +9,31 @@
   <artifactId>onebusaway-nyc-tcip-api</artifactId>
   <packaging>jar</packaging>
   <name>onebusaway-nyc-tcip-api</name>
-  <!--   <repositories><repository><id>java.net</id><name>java.net Maven Repository</name><url>https://maven-repository.dev.java.net/nonav/repository</url><layout>legacy</layout></repository></repositories>-->
-  <!--   <dependencies><dependency><groupId>javax.xml.bind</groupId><artifactId>jaxb-api</artifactId><version>2.0</version></dependency></dependencies>-->
   <build>
-    <pluginManagement>
-      <plugins>
-        <!--
-                    If we e.g. execute on JDK 1.7, we should compile for Java 7 to get
-                    the same (or higher) JAXB API version as used during the xjc execution.
-                -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <source>1.7</source>
-            <target>1.7</target>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jaxb2-maven-plugin</artifactId>
-        <version>1.6</version>
+        <groupId>org.jvnet.jaxb2.maven2</groupId>
+        <artifactId>maven-jaxb2-plugin</artifactId>
+        <version>0.11.0</version>
         <executions>
           <execution>
-            <id>xjc</id>
             <goals>
-              <goal>xjc</goal>
+              <goal>generate</goal>
             </goals>
           </execution>
         </executions>
         <configuration>
           <schemaDirectory>src/main/resources</schemaDirectory>
-          <schemaFiles>TCIP_4_0_0_Final.xsd</schemaFiles>
+          <schemaIncludes>
+            <include>TCIP_4_0_0_Final.xsd</include>
+          </schemaIncludes>
+          <bindingDirectory>src/main/resources</bindingDirectory>
+          <bindingIncludes>
+            <!-- Handles nested-class issues in the LRMS schemas; see the .xjb for more detail. -->
+            <include>rename.xjb</include>
+          </bindingIncludes>
         </configuration>
       </plugin>
-      <!--       <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><configuration><source>1.6</source></configuration></plugin>-->
     </plugins>
   </build>
 </project>

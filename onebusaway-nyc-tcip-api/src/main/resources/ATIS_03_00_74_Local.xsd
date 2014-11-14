@@ -4,11 +4,11 @@
 <!-- From node D:-75-0649-5535 Created on 5/30/2006 at 8:30:35 PM  -->
 <!-- Source DB File: atis_j2354_r74.its rendered into namespace: ATIS-Local  -->
 <!-- Edit namespaces to reflect the schema releases you will be using. -->
-<!-- Place at: www.YourSite.xxx/ITSschemas/ATIS-03-00-74/atis-local-draft-03-00-74.xsd  -->
 <!-- Local copy saved to: D:/Documents and Settings/sboarman/My Documents/APTA TCIP/3.0.0/atis 74 build/ITSschemas/ATIS-03-00-74/atis-local-draft-03-00-74.xsd -->
 <!-- Production releases of ITS schemas can be found at: http://www.ITSware.net/XML/readme.htm -->
+<!-- Updated 22 July 2012 by Rob Ayers to correct problems found during the development of TCIP 3.0.6. -->
 <!--  -->
-<xs:schema targetNamespace="http://www.atis-03-00-74-local" xmlns="http://www.atis-03-00-74-local" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="DRAFT">
+<xs:schema xmlns="http://www.atis-03-00-74-local" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.atis-03-00-74-local" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="DRAFT">
 	<!-- add for each space you define: xmlns:$NAME$="http://www.$NAME$-$RELEASE_TYPE$-$REVISION_STRING$ -->
 	<xs:annotation>
 		<xs:documentation>
@@ -239,7 +239,7 @@
            and any restrictions that are needed. -->
 		</xs:sequence>
 	</xs:complexType>
-		<!-- Descriptive Name: DF_ManeuverInstruction-Local2 -->
+	<!-- Descriptive Name: DF_ManeuverInstruction-Local2 -->
 	<xs:complexType name="ManeuverInstruction2">
 		<xs:sequence>
 			<xs:element name="yourName" minOccurs="0">

@@ -109,7 +109,7 @@
 	</xs:complexType>
 	<xs:complexType name="Chain">
 		<xs:sequence>
-			<xs:element name="chain2">
+			<xs:element name="chain">
 				<xs:complexType>
 					<xs:choice>
 						<xs:element name="chainName" type="Text-name255"/>
@@ -447,18 +447,23 @@
 			<xs:element name="pointCoordinateType" type="GridPointCoordinateType" minOccurs="0"/>
 			<xs:element name="side" type="Side" minOccurs="0"/>
 			<xs:element name="gridPointInfo">
+				<!-- added name & element for gridPointInfo-item 8/18/2012 this was not decoding in a useful way, and different versions of LRMS show it with and without a name -->
 				<xs:complexType>
 					<xs:sequence maxOccurs="1000">
-						<xs:sequence>
-							<xs:element name="longitude" type="GridPointLongitude" minOccurs="0"/>
-							<xs:element name="latitude" type="GridPointLatitude" minOccurs="0"/>
-							<xs:element name="gridId" type="Int-index8" minOccurs="0"/>
-							<xs:element name="latitudeDelta" type="GridPointLatLonDelta"/>
-							<xs:element name="longitudeDelta" type="GridPointLatLonDelta"/>
-							<xs:element name="altitudeDelta" type="GridPointAltitudeDelta" minOccurs="0"/>
-							<xs:element name="offsetStart" type="GridPointOffsetDistance" minOccurs="0"/>
-							<xs:element name="offsetEnd" type="GridPointOffsetDistance" minOccurs="0"/>
-						</xs:sequence>
+						<xs:element name="gridPointInfo-item">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="longitude" type="GridPointLongitude" minOccurs="0"/>
+									<xs:element name="latitude" type="GridPointLatitude" minOccurs="0"/>
+									<xs:element name="gridId" type="Int-index8" minOccurs="0"/>
+									<xs:element name="latitudeDelta" type="GridPointLatLonDelta"/>
+									<xs:element name="longitudeDelta" type="GridPointLatLonDelta"/>
+									<xs:element name="altitudeDelta" type="GridPointAltitudeDelta" minOccurs="0"/>
+									<xs:element name="offsetStart" type="GridPointOffsetDistance" minOccurs="0"/>
+									<xs:element name="offsetEnd" type="GridPointOffsetDistance" minOccurs="0"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -473,23 +478,28 @@
 			<xs:element name="pointPairInfo">
 				<xs:complexType>
 					<xs:sequence maxOccurs="1000">
-						<xs:sequence>
-							<xs:element name="startLongitude" type="GridPointLongitude" minOccurs="0"/>
-							<xs:element name="startLatitude" type="GridPointLatitude" minOccurs="0"/>
-							<xs:element name="endLongitude" type="GridPointLongitude" minOccurs="0"/>
-							<xs:element name="endLatitude" type="GridPointLatitude" minOccurs="0"/>
-							<xs:element name="gridId" type="Int-index8" minOccurs="0"/>
-							<xs:element name="startLatitudeGridDelta" type="GridPointLatLonDelta"/>
-							<xs:element name="startLongitudeGridDelta" type="GridPointLatLonDelta"/>
-							<xs:element name="endLatitudeGridDelta" type="GridPointLatLonDelta"/>
-							<xs:element name="endLongitudeGridDelta" type="GridPointLatLonDelta"/>
-							<xs:element name="endLatitudePointDelta" type="GridLatLonPointDelta"/>
-							<xs:element name="endLongitudePointDelta" type="GridLatLonPointDelta"/>
-							<xs:element name="startAltitudeGridDelta" type="GridAltitudeDelta" minOccurs="0"/>
-							<xs:element name="endAltitudeGridDelta" type="GridAltitudeDelta" minOccurs="0"/>
-							<xs:element name="offsetStart" type="NormalizedDistance" minOccurs="0"/>
-							<xs:element name="offsetEnd" type="NormalizedDistance" minOccurs="0"/>
-						</xs:sequence>
+						<xs:element name="pointPairInfo-item">
+							<!-- added name & element for pointPairInfo-item 8/18/2012 this was not decoding in a useful way, and different versions of LRMS show it with and without a name -->
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="startLongitude" type="GridPointLongitude" minOccurs="0"/>
+									<xs:element name="startLatitude" type="GridPointLatitude" minOccurs="0"/>
+									<xs:element name="endLongitude" type="GridPointLongitude" minOccurs="0"/>
+									<xs:element name="endLatitude" type="GridPointLatitude" minOccurs="0"/>
+									<xs:element name="gridId" type="Int-index8" minOccurs="0"/>
+									<xs:element name="startLatitudeGridDelta" type="GridPointLatLonDelta"/>
+									<xs:element name="startLongitudeGridDelta" type="GridPointLatLonDelta"/>
+									<xs:element name="endLatitudeGridDelta" type="GridPointLatLonDelta"/>
+									<xs:element name="endLongitudeGridDelta" type="GridPointLatLonDelta"/>
+									<xs:element name="endLatitudePointDelta" type="GridLatLonPointDelta"/>
+									<xs:element name="endLongitudePointDelta" type="GridLatLonPointDelta"/>
+									<xs:element name="startAltitudeGridDelta" type="GridAltitudeDelta" minOccurs="0"/>
+									<xs:element name="endAltitudeGridDelta" type="GridAltitudeDelta" minOccurs="0"/>
+									<xs:element name="offsetStart" type="NormalizedDistance" minOccurs="0"/>
+									<xs:element name="offsetEnd" type="NormalizedDistance" minOccurs="0"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -497,34 +507,40 @@
 		</xs:sequence>
 	</xs:complexType>
 	<!-- Descriptive Name: GridPointSequenceframe -->
-	<xs:complexType name="GridPointSequence">
-		<xs:sequence>
-			<xs:element name="pointPairCoordinateType" type="GridPointPairCoordinateType"/>
-			<xs:element name="side" type="Side"/>
-			<xs:element name="startLongitude" type="GridPointLongitude" minOccurs="0"/>
-			<xs:element name="startLatitude" type="GridPointLatitude" minOccurs="0"/>
-			<xs:element name="endLongitude" type="GridPointLongitude" minOccurs="0"/>
-			<xs:element name="endLatitude" type="GridPointLatitude" minOccurs="0"/>
-			<xs:element name="gridId" type="Int-index8" minOccurs="0"/>
-			<xs:element name="startLatitudeGridDelta" type="GridPointLatLonDelta"/>
-			<xs:element name="startLongitudeGridDelta" type="GridPointLatLonDelta"/>
-			<xs:element name="pointPairInfo">
-				<xs:complexType>
-					<xs:sequence maxOccurs="1000">
-						<xs:sequence>
-							<xs:element name="nextLatitudeGridDelta" type="GridPointLatLonDelta"/>
-							<xs:element name="nextLongitudeGridDelta" type="GridPointLatLonDelta"/>
-							<xs:element name="nextLatitudePointDelta" type="GridLatLonPointDelta"/>
-							<xs:element name="nextLongitudePointDelta" type="GridLatLonPointDelta"/>
-							<xs:element name="startAltitudeGridDelta" type="GridAltitudeDelta" minOccurs="0"/>
-							<xs:element name="nextAltitudeGridDelta" type="GridAltitudeDelta" minOccurs="0"/>
-						</xs:sequence>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="localGridPointSequence" type="local:GridPointSequence" minOccurs="0"/>
-		</xs:sequence>
-	</xs:complexType>
+	<!-- Descriptive Name: GridPointSequenceframe -->
+    <xs:complexType name="GridPointSequence">
+        <xs:sequence>
+            <xs:element name="pointPairCoordinateType" type="GridPointPairCoordinateType"/>
+            <xs:element name="side" type="Side"/>
+            <xs:element name="startLongitude" type="GridPointLongitude" minOccurs="0"/>
+            <xs:element name="startLatitude" type="GridPointLatitude" minOccurs="0"/>
+            <xs:element name="endLongitude" type="GridPointLongitude" minOccurs="0"/>
+            <xs:element name="endLatitude" type="GridPointLatitude" minOccurs="0"/>
+            <xs:element name="gridId" type="Int-index8" minOccurs="0"/>
+            <xs:element name="startLatitudeGridDelta" type="GridPointLatLonDelta"/>
+            <xs:element name="startLongitudeGridDelta" type="GridPointLatLonDelta"/>
+            <xs:element name="pointPairInfo">
+                <xs:complexType>
+                    <xs:sequence maxOccurs="1000">
+                        <xs:element name="pointPairInfo-item"> <!-- added name as this would not decode correctly -->
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="nextLatitudeGridDelta" type="GridPointLatLonDelta"/>
+                                    <xs:element name="nextLongitudeGridDelta" type="GridPointLatLonDelta"/>
+                                    <xs:element name="nextLatitudePointDelta" type="GridLatLonPointDelta"/>
+                                    <xs:element name="nextLongitudePointDelta" type="GridLatLonPointDelta"/>
+                                    <xs:element name="startAltitudeGridDelta" type="GridAltitudeDelta" minOccurs="0"/>
+                                    <xs:element name="nextAltitudeGridDelta" type="GridAltitudeDelta" minOccurs="0"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                       </xs:element >
+                    </xs:sequence>
+            </xs:complexType>
+            </xs:element>
+            <xs:element name="localGridPointSequence" type="local:GridPointSequence" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
 	<!-- Descriptive Name: GroupLocationframe -->
 	<xs:complexType name="GroupLocation">
 		<xs:sequence>
@@ -1715,7 +1731,7 @@
 	<!-- END of the output -->
 	<xs:element name="locationReference" type="LocationReference"/>
 	<!-- pasted in from DSRC schema to make this copy of LRMS independent of the separate schema -->
-		<xs:simpleType name="country-code-text">
+	<xs:simpleType name="country-code-text">
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="dummy1"/>
 			<xs:enumeration value="dummy2"/>

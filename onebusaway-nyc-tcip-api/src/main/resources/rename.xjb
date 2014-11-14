@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings jaxb:version="2.0" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!--
+    This JAXB bindings file deals with the situation that the LRMS schema has a complexType named Chain
+    with an enclosed element named 'chain'; XJC doesn't like that because it would result in a
+    nested class with the same name as its enclosing class, which not allowed.
+
+    These bindings rename the enclosing class to ChainClass.
+
+    TODO It may be possible to do this with one binding instead of three, but I found I had to specify the
+    schemaLocation for each.
+  -->
+  <jaxb:bindings node="/xs:schema" schemaLocation="LRMS_Final_09_07.xsd">
+    <jaxb:bindings node="//xs:complexType[@name='Chain']">
+      <jaxb:class name="ChainClass"/>
+    </jaxb:bindings>
+  </jaxb:bindings>
+
+  <jaxb:bindings node="/xs:schema" schemaLocation="LRMS_Final_09_07_for_im.xsd">
+    <jaxb:bindings node="//xs:complexType[@name='Chain']">
+      <jaxb:class name="ChainClass"/>
+    </jaxb:bindings>
+  </jaxb:bindings>
+
+  <jaxb:bindings node="/xs:schema" schemaLocation="LRMS_Final_09_07_for_atis.xsd">
+    <jaxb:bindings node="//xs:complexType[@name='Chain']">
+      <jaxb:class name="ChainClass"/>
+    </jaxb:bindings>
+  </jaxb:bindings>
+
+</jaxb:bindings>

@@ -6,22 +6,22 @@
 <!--  -->
 <!-- End of the TMDD.xsd file. -->
 <xs:schema targetNamespace="http://www.tmdd-partial-00-00-00" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.tmdd-partial-00-00-00" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="DRAFT">
-  <xs:annotation>
-    <xs:documentation>
+	<xs:annotation>
+		<xs:documentation>
       Exported on: 04:49:50 PM Thursday, July 07, 2005 From file: IEEE_Combined_r31.mdb [By: Mini-Edit Rev 0.8.321] 
-    </xs:documentation>
-  </xs:annotation>
-  <!-- Descriptive Name: EXT_EVENT_IncidentSeverity_code -->
-  <xs:simpleType name="Event-incident-severity">
-    <xs:annotation>
-      <xs:appinfo>
+   </xs:documentation>
+	</xs:annotation>
+	<!-- Descriptive Name: EXT_EVENT_IncidentSeverity_code -->
+	<xs:simpleType name="Event-incident-severity">
+		<xs:annotation>
+			<xs:appinfo>
             none (1)
             minor (2)
             major (3)
             natural disaster (4)
-      </xs:appinfo>
-    </xs:annotation>
-    <xs:union>
+         </xs:appinfo>
+		</xs:annotation>
+		<xs:union>
 			<xs:simpleType>
 				<xs:restriction base="xs:unsignedInt">
 					<xs:minInclusive value="1"/>
