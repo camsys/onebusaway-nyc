@@ -215,6 +215,11 @@
   display: table-cell;
 }
 
+.grayListData{
+  background-color: #A8A8A8 ;
+  table-layout: fixed;
+}
+
 .redListData{
   background-color: #FF9999;
   table-layout: fixed;

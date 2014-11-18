@@ -217,7 +217,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 		    + diffBundleName + "/builds/"
 		    + diffBuildName + "/outputs/gtfs_stats.csv";
 		diffResult.clear();
-		diffResult = diffService.diff(currentBundlePath, selectedBundlePath);
+		diffResult = diffService.diff(selectedBundlePath, currentBundlePath);
 		return "diffResult";
 	}
 	

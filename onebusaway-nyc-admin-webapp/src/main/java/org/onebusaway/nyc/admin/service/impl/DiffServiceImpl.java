@@ -64,6 +64,7 @@ public class DiffServiceImpl implements DiffService {
 		String line = "";
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(filename));
+			in.readLine();
 			while ((line = in.readLine()) != null) {
 				lines.add(line);
 			}
@@ -71,8 +72,18 @@ public class DiffServiceImpl implements DiffService {
 		return lines;
 	}
 	
+	private String extractHeader(String filename){
+		try {
+			return new BufferedReader(new FileReader(filename)).readLine();
+		} catch (IOException e) {
+			return "&nbsp;";
+		}
+	}
+	
 	private class DefaultDiffTransformer implements DiffTransformer {
 		final int[] COLUMN_WIDTHS = {40, 180, 60, 60, 60, 100, 180, 180, 180, 180};
+		final String HEADER_PREFIX = "<table class=\"grayListData\">" + getColumnTags() + "<tr>";
+		final String HEADER_SUFFIX = "</tr></table>";
 		final String ADD_PREFIX = "<table class=\"greenListData\">" + getColumnTags() + "<tr>";
 		final String ADD_SUFFIX = "</tr></table>";
 		final String REMOVE_PREFIX = "<table class=\"redListData\">" + getColumnTags() + "<tr>";
@@ -82,16 +93,19 @@ public class DiffServiceImpl implements DiffService {
 		
 		@Override
 		public List<String> transform(List<String> preTransform) {
-			List<String> diffResult = new LinkedList<String>(); 
+			List<String> diffResult = new LinkedList<String>();
+			try{
+				diffResult.add(HEADER_PREFIX + delimit(extractHeader(preTransform.get(0).split(" ")[1])) + HEADER_SUFFIX);
+			} catch(Exception e){}
 			if (preTransform.size() < 2){
 				return null;
 			}
 			for(String line: preTransform.subList(2, preTransform.size())){
 				if (line.startsWith("+")){
-					line = ADD_PREFIX + delimit(line) + ADD_SUFFIX;
+					line = ADD_PREFIX + delimit(line.substring(1)) + ADD_SUFFIX;
 				}
 				else if (line.startsWith("-")){
-					line = REMOVE_PREFIX + delimit(line) + REMOVE_SUFFIX;
+					line = REMOVE_PREFIX + delimit(line.substring(1)) + REMOVE_SUFFIX;
 				}
 				else if(line.startsWith("@")){
 					line = DESCRIPTOR_PREFIX + line + DESCRIPTOR_SUFFIX;
