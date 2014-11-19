@@ -69,7 +69,7 @@ jQuery(function() {
 	
 	jQuery("#currentDirectories").selectable({ 
 		stop: function() {
-			var names = $.map($('#listItem.ui-selected strong, this'), function(element, i) {  
+			var names = $.map($('#listItem.ui-selected strong, this'), function(element, i) {
 			  return $(element).text();  
 			});
 			if (names.length > 0) {
@@ -179,6 +179,9 @@ jQuery(function() {
 	//Handle build button click event
 	jQuery("#buildBundle_buildButton").click(onBuildClick);
 	
+	//Handle reset button click event
+	jQuery("#buildBundle_resetButton").click(onResetClick);
+	
 	//Enable or disable create/select button when user enters/removes directory name
 	//Using bind() with propertychange event as live() does not work in IE for unknown reasons
 	jQuery("#createDirectoryContents #directoryName").bind("input propertychange", function() {
@@ -263,10 +266,12 @@ function onSelectClick() {
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/dialog-accept-2.png");
 						jQuery("#createDirectoryMessage").text(status.message).css("color", "green");
 						enableBuildButton();
+						enableResetButton();
 					} else {
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 						jQuery("#createDirectoryMessage").text(status.message).css("color", "red");
 						disableBuildButton();
+						disableResetButton();
 					}
 					var continueButton = jQuery("#create_continue");
 					enableContinueButton(continueButton);
@@ -334,6 +339,15 @@ function disableBuildButton() {
 	jQuery("#buildBundle_buildButton").attr("disabled", "disabled").css("color", "#999");
 	disableContinueButton($("#create_continue"));
 }
+
+function enableResetButton() {
+	jQuery("#buildBundle_resetButton").removeAttr("disabled").css("color", "#000");
+}
+
+function disableResetButton() {
+	jQuery("#buildBundle_resetButton").attr("disabled", "disabled").css("color", "#999");
+}
+
 function toggleAdvancedOptions() {
 	var $image = jQuery("#createDirectory #advancedOptions #expand");
 	changeImageSrc($image);
@@ -387,7 +401,8 @@ function directoryOptionChanged() {
 	jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
 	jQuery("#createDirectory #directoryName").val("");
 	jQuery("#createDirectory #createDirectoryContents #directoryButton").attr("disabled", "disabled").css("color", "#999");
-		
+	jQuery('#currentDirectories .ui-selected').removeClass('ui-selected');
+	
 	if(jQuery("#create").is(":checked")) {
 		//Change the button text and hide select directory list
 		jQuery("#createDirectoryContents #directoryButton").val("Create");
@@ -555,9 +570,25 @@ function onBuildClick() {
 	jQuery("#buildBundle_buildProgress").text("Bundle Build in Progress...");
 	jQuery("#buildBundle_fileList").html("");
 	jQuery("#buildBundle #downloadLogs").hide();
+	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
 	
 	disableBuildButton();
+	disableResetButton();
 	buildBundle(bundleName, startDate, endDate, bundleComment);
+}
+
+function onResetClick() {
+	jQuery("#startDatePicker").val("");
+	jQuery("#endDatePicker").val("");
+	jQuery("#buildBundle_bundleName").val("");
+	
+	jQuery("#buildBundle_resultList").html("");
+	jQuery("#buildBundle_exception").html("");
+	jQuery("#buildBundle_fileList").html("");
+	jQuery("#buildBundle_fileList").html("");
+	
+	jQuery("#buildBundle #downloadLogs").hide();
+	jQuery("#buildBundle #buildBox #building").hide();
 }
 
 function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
@@ -585,7 +616,6 @@ function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
 	}
 	if(errors.length > 0) {
 		alert(errors);
-		enableBuildButton();
 	}
 	return valid;
 }
@@ -593,7 +623,6 @@ function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
 function bundleUrl() {
 	var id = jQuery("#buildBundle_id").text();
 	jQuery("#buildBundle_exception").hide();
-	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
 	jQuery.ajax({
 		url: "../../api/build/" + id + "/url?ts=" +new Date().getTime(),
 		type: "GET",
@@ -692,6 +721,7 @@ function updateBuildStatus() {
 					updateBuildList(id);
 					enableStageButton();
 					enableBuildButton();
+					enableResetButton();
 				}
 				txt = txt + "</ul>";
 				jQuery("#buildBundle_resultList").html(txt).css("font-size", "12px");	
@@ -705,6 +735,7 @@ function updateBuildStatus() {
 					}
 					disableStageButton();
 					enableBuildButton();
+					enableResetButton();
 				}
 		},
 		error: function(request) {

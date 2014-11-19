@@ -432,17 +432,10 @@
   background-color: #F0F0F0;
 }
 
-#buildBox #buildBundle_buildButton {
-  border: 1px transparent;
-  width: 150px;
-  height: 40px;
-  margin-top: 15px;
-  background-image:url('img/Button_background.png');
-}
-
 #buildBox #buildBundle_resultLink {
   vertical-align: middle;
   margin-top: 10px;
+  float: left;
 }
 
 #buildBox #bundleParams {
@@ -452,6 +445,11 @@
 #bundleParams #bundleNameHolder, #bundleParams #bundleStartDateHolder,
 #bundleParams #bundleEndDateHolder {
   float: left;
+  margin-right: 20px;
+}
+
+#buildBundle_buildButton, #buildBundle_resetButton {
+  margin-top: 5px;
   margin-right: 20px;
 }
 
