@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -410,36 +411,31 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	}
 	
 	public String getDeployedBundle() {
+		String tdmHost = System.getProperty("tdm.host") + "/api/bundle/list";
+		String apiHost = configService.getConfigurationValueAsString(
+				"apiHostname", "") + "/api/where/config.json?key=TEST";
 		try {
-			String spec = System.getProperty("tdm.host") + "/api/bundle/list";
-			return getJsonData(spec).getAsJsonObject()
+			return getJsonData(tdmHost).getAsJsonObject()
 					.getAsJsonArray("bundles").get(0).getAsJsonObject()
 					.get("name").getAsString();
 		} catch (Exception e) {
 			try {
-				String spec = configService.getConfigurationValueAsString(
-						"apiHostname", "") + "/api/where/config.json?key=TEST";
-				return getJsonData(spec).getAsJsonObject()
+				return getJsonData(apiHost).getAsJsonObject()
 						.getAsJsonObject("data").getAsJsonObject("entry")
 						.get("name").getAsString();
 			} catch (Exception e2) {
-				_log.error(e2.toString());
+				_log.error("Failed to retrieve name of the latest deployed bundle (tdmHost=["+tdmHost+"], apiHost=["+ apiHost+"])");
 			}
 		}
 		return "";
 	}
 	
-	private JsonElement getJsonData (String spec){
-		try {
-			URL url = new URL((!spec.toLowerCase().matches("^\\w+://.*")?"http://":"") + spec);
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.setRequestMethod("GET");
-			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			return new JsonParser().parse(in.readLine());
-		} catch (Exception e) {
-			_log.error(e.toString());
-		}
-		return null;
+	private JsonElement getJsonData (String spec) throws IOException{
+		URL url = new URL((!spec.toLowerCase().matches("^\\w+://.*")?"http://":"") + spec);
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		con.setRequestMethod("GET");
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		return new JsonParser().parse(in.readLine());
 	}
 	
 	public void setDiffBundleName(String diffBundleName) {
