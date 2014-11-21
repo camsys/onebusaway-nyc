@@ -24,8 +24,13 @@
 			<label class="headerLabel">Create Bundle Directory</label>
 		</div>
 		<div id="createDirectory">
-			<label class="bundleHeader">Select or Create New Bundle
-				Directory</label>
+			<label class="bundleHeader">Select or Create New Bundle Directory</label>
+			<div class="directoryLabels">
+				<label class="adminLabel directoryLabel">Currently deployed bundle:</label> 
+				<label id="buildBundle_bundleDirectory" class="adminLabel directoryLabel">
+					<s:property value="deployedBundle"/>
+				</label>
+			</div>
 			<div id="directoryOptions">
 				<input type="radio" name="options" id="create" checked="checked" /> 
 				<label for="create" class="horizontalRadio">Create New Bundle Directory</label> 

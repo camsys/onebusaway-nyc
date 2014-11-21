@@ -1,9 +1,13 @@
 package org.onebusaway.nyc.webapp.actions.admin.bundles;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.ServletContextAware;
+
+import com.google.gson.JsonParser;
 
 
 /**
@@ -65,22 +71,11 @@ import org.springframework.web.context.ServletContextAware;
 public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport implements ServletContextAware {
   private static Logger _log = LoggerFactory.getLogger(ManageBundlesAction.class);
 	private static final long serialVersionUID = 1L;
-	//To hold the final directory name 
-	private String bundleDirectory;
-	//Holds the value entered in the text box
-	private String directoryName;
-	//Holds the value build name selected in the Compare tab
-	private String bundleBuildName;
-	public String getBundleBuildName() {
-		return bundleBuildName;
-	}
-
-	public void setBundleBuildName(String bundleBuildName) {
-		this.bundleBuildName = bundleBuildName;
-	}
-
-	// what to call the bundle, entered in the text box
-	private String bundleName;
+	
+	private String bundleDirectory; // holds the final directory name 
+	private String directoryName; // holds the value entered in the text box
+	private String bundleBuildName; // holds the build name selected in the Compare tab
+	private String bundleName; // what to call the bundle, entered in the text box
 	private boolean productionTarget;
 	private String comments;
 	private FileService fileService;
@@ -298,6 +293,20 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	}
 	
 	/**
+	 * @return the bundleBuildName
+	 */
+	public String getBundleBuildName() {
+		return bundleBuildName;
+	}
+
+	/**
+	 * @param bundleBuildName
+	 */
+	public void setBundleBuildName(String bundleBuildName) {
+		this.bundleBuildName = bundleBuildName;
+	}
+	
+	/**
 	 * @return the productionTarget
 	 */
 	public boolean isProductionTarget() {
@@ -386,6 +395,22 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	
 	public String getBundleName() {
 		return bundleName;
+	}
+	
+	public String getDeployedBundle() {
+		try {
+			String spec = System.getProperty("tdm.host")+"/api/bundle/list";
+			spec = (!spec.toLowerCase().matches("^\\w+://.*")?"http://":"") + spec;
+			URL url = new URL(spec);
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setRequestMethod("GET");
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					con.getInputStream()));
+			return new JsonParser().parse(in.readLine()).getAsJsonObject()
+					.getAsJsonArray("bundles").get(0).getAsJsonObject()
+					.get("name").getAsString();
+		} catch (Exception e) {}
+		return "";
 	}
 	
 	public void setDiffBundleName(String diffBundleName) {
