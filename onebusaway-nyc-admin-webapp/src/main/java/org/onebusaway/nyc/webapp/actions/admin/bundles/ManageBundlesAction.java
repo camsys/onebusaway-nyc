@@ -26,12 +26,14 @@ import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.DiffService;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.util.NYCFileUtils;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.ServletContextAware;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 
@@ -80,6 +82,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	private String comments;
 	private FileService fileService;
 	private BundleRequestService bundleRequestService;
+	private ConfigurationService configService;
 	private static final int MAX_RESULTS = -1;
 	private BundleResponse bundleResponse;
 	private BundleBuildResponse bundleBuildResponse;
@@ -372,6 +375,15 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	public void setBundleRequestService(BundleRequestService bundleRequestService) {
 		this.bundleRequestService = bundleRequestService;
 	}
+	
+	/**
+	 * Injects {@link ConfigurationService}
+	 * @param configService the configService to set
+	 */
+	@Autowired
+	public void setConfigurationService(ConfigurationService configService) {
+		this.configService = configService;
+	}
 
 	public BundleResponse getBundleResponse() {
 	  return bundleResponse;
@@ -399,18 +411,35 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	
 	public String getDeployedBundle() {
 		try {
-			String spec = System.getProperty("tdm.host")+"/api/bundle/list";
-			spec = (!spec.toLowerCase().matches("^\\w+://.*")?"http://":"") + spec;
-			URL url = new URL(spec);
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.setRequestMethod("GET");
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					con.getInputStream()));
-			return new JsonParser().parse(in.readLine()).getAsJsonObject()
+			String spec = System.getProperty("tdm.host") + "/api/bundle/list";
+			return getJsonData(spec).getAsJsonObject()
 					.getAsJsonArray("bundles").get(0).getAsJsonObject()
 					.get("name").getAsString();
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			try {
+				String spec = configService.getConfigurationValueAsString(
+						"apiHostname", "") + "/api/where/config.json?key=TEST";
+				return getJsonData(spec).getAsJsonObject()
+						.getAsJsonObject("data").getAsJsonObject("entry")
+						.get("name").getAsString();
+			} catch (Exception e2) {
+				_log.error(e2.toString());
+			}
+		}
 		return "";
+	}
+	
+	private JsonElement getJsonData (String spec){
+		try {
+			URL url = new URL((!spec.toLowerCase().matches("^\\w+://.*")?"http://":"") + spec);
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setRequestMethod("GET");
+			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			return new JsonParser().parse(in.readLine());
+		} catch (Exception e) {
+			_log.error(e.toString());
+		}
+		return null;
 	}
 	
 	public void setDiffBundleName(String diffBundleName) {
