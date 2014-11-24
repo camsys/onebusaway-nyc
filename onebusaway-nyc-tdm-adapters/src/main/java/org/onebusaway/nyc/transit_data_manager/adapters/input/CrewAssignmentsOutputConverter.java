@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 
-import tcip_final_4_0_0_0.SCHOperatorAssignment;
+import tcip_final_4_0_0.SCHOperatorAssignment;
 
 public interface CrewAssignmentsOutputConverter {
 

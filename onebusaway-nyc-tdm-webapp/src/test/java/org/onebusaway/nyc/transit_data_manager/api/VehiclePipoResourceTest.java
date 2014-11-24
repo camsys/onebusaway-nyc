@@ -34,11 +34,11 @@ import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePu
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool;
 
-import tcip_final_4_0_0_0.CPTOperatorIden;
-import tcip_final_4_0_0_0.CPTTransitFacilityIden;
-import tcip_final_4_0_0_0.CPTVehicleIden;
-import tcip_final_4_0_0_0.SCHPullInOutInfo;
-import tcip_final_4_0_0_0.SCHRunIden;
+import tcip_final_4_0_0.CPTOperatorIden;
+import tcip_final_4_0_0.CPTTransitFacilityIden;
+import tcip_final_4_0_0.CPTVehicleIden;
+import tcip_final_4_0_0.SCHPullInOutInfo;
+import tcip_final_4_0_0.SCHRunIden;
 
 
 public class VehiclePipoResourceTest {

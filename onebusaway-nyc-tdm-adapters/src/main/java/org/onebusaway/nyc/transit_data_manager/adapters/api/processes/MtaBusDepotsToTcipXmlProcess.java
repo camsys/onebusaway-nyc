@@ -15,9 +15,9 @@ import javax.xml.bind.Marshaller;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.VehicleDepotData;
 import org.onebusaway.nyc.transit_data_manager.adapters.tcip.FleetSubsetsGenerator;
 
-import tcip_final_4_0_0_0.CPTFleetSubsetGroup;
-import tcip_final_4_0_0_0.CptFleetSubsets;
-import tcip_final_4_0_0_0.ObjectFactory;
+import tcip_final_4_0_0.CPTFleetSubsetGroup;
+import tcip_final_4_0_0.CptFleetSubsets;
+import tcip_final_4_0_0.ObjectFactory;
 
 public class MtaBusDepotsToTcipXmlProcess extends FileToFileConverterProcess {
 

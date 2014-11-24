@@ -25,16 +25,18 @@ import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.queue.Publisher;
 import org.junit.Test;
 import lrms_final_09_07.Angle;
-import tcip_final_4_0_0_0.CcLocationReport;
-import tcip_final_4_0_0_0.CPTOperatorIden;
-import tcip_final_4_0_0_0.CPTVehicleIden;
-import tcip_final_4_0_0_0.SCHRouteIden;
-import tcip_final_4_0_0_0.SCHRunIden;
-import tcip_final_4_0_0_0.SPDataQuality;
-import tcip_3_0_5_local.NMEA;
+import tcip_final_4_0_0.CcLocationReport;
+import tcip_4_0_0_local.ObaCcLocationReport;
+import tcip_final_4_0_0.CPTOperatorIden;
+import tcip_final_4_0_0.CPTVehicleIden;
+import tcip_final_4_0_0.SCHRouteIden;
+import tcip_final_4_0_0.SCHRunIden;
+import tcip_final_4_0_0.SPDataQuality;
+import tcip_4_0_0_local.NMEA;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
@@ -80,7 +82,7 @@ public class PublisherTest {
       // now deserialize validating JSON 
       JsonNode wrappedMessage = _mapper.readValue(envelope, JsonNode.class);
       String realtimeEnvelopeString = wrappedMessage.get("RealtimeEnvelope").toString();
-			//System.out.println("realtimeEnvelopeString=\n" + realtimeEnvelopeString);
+			System.out.println("realtimeEnvelopeString=\n" + realtimeEnvelopeString);
 			RealtimeEnvelope env = _mapper.readValue(realtimeEnvelopeString, RealtimeEnvelope.class);      
   }
 
@@ -163,36 +165,36 @@ public class PublisherTest {
 
   private CcLocationReport buildCcLocationReport() {
       CcLocationReport m = new CcLocationReport();
-      m.setRequestId(1205);
+      m.setRequestId(BigInteger.valueOf(1205));
       m.setDataQuality(new SPDataQuality());
       m.getDataQuality().setQualitativeIndicator("4");
-      m.setDestSignCode(4631l);
+      m.setDestSignCode("4631");
       m.setDirection(new Angle());
       m.getDirection().setDeg(new BigDecimal(128.77));
       m.setLatitude(40640760);
       m.setLongitude(-74018234);
       m.setManufacturerData("VFTP123456789");
       m.setOperatorID(new CPTOperatorIden());
-      m.getOperatorID().setOperatorId(0);
-      m.getOperatorID().setDesignator("123456");
-      m.setRequestId(1);
+      m.getOperatorID().setId("0");
+      m.getOperatorID().setDesig("123456");
       m.setRouteID(new SCHRouteIden());
-      m.getRouteID().setRouteId(0);
-      m.getRouteID().setRouteDesignator("63");
+      m.getRouteID().setId("0");
+      m.getRouteID().setDesig("63");
       m.setRunID(new SCHRunIden());
-      m.getRunID().setRunId(0);
-      m.getRunID().setDesignator("1");
+      m.getRunID().setId("0");
+      m.getRunID().setDesig("1");
       m.setSpeed((short)36);
       m.setStatusInfo(0);
       m.setTimeReported("2011-06-22T10:58:10.0-00:00");
       m.setVehicle(new CPTVehicleIden());
-      m.getVehicle().setAgencydesignator("MTA NYCT");
-      m.getVehicle().setAgencyId(2008l);
-      m.getVehicle().setVehicleId(2560);
-      m.setLocalCcLocationReport(new tcip_3_0_5_local.CcLocationReport());
-      m.getLocalCcLocationReport().setNMEA(new NMEA());
-      m.getLocalCcLocationReport().getNMEA().getSentence().add("$GPRMC,105850.00,A,4038.445646,N,07401.094043,W,002.642,128.77,220611,,,A*7C");
-      m.getLocalCcLocationReport().getNMEA().getSentence().add("$GPGGA,105850.000,4038.44565,N,07401.09404,W,1,09,01.7,+00042.0,M,,M,,*49");
+      m.getVehicle().setAgdesig("MTA NYCT");
+      m.getVehicle().setAg(BigInteger.valueOf(2008l));
+      m.getVehicle().setId("2560");
+      m.setLocalCcLocationReport(new tcip_4_0_0_local.ObaCcLocationReport());
+      ObaCcLocationReport o = (ObaCcLocationReport) m.getLocalCcLocationReport();
+      o.setNMEA(new NMEA());
+      o.getNMEA().getSentence().add("$GPRMC,105850.00,A,4038.445646,N,07401.094043,W,002.642,128.77,220611,,,A*7C");
+      o.getNMEA().getSentence().add("$GPGGA,105850.000,4038.44565,N,07401.09404,W,1,09,01.7,+00042.0,M,,M,,*49");
       return m;
   }
     

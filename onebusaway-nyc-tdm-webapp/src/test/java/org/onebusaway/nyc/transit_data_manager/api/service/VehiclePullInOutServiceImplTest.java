@@ -19,8 +19,8 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicl
 import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutService;
 import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutServiceImpl;
 
-import tcip_final_4_0_0_0.CPTVehicleIden;
-import tcip_final_4_0_0_0.SCHPullInOutInfo;
+import tcip_final_4_0_0.CPTVehicleIden;
+import tcip_final_4_0_0.SCHPullInOutInfo;
 
 /**
  * Tests {@link VehiclePullInOutServiceImpl}

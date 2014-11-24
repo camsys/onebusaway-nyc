@@ -24,7 +24,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
-import tcip_final_4_0_0_0.CPTFleetSubsetGroup;
+import tcip_final_4_0_0.CPTFleetSubsetGroup;
 
 /**
  * Default implementation of {@link DepotDataPersistenceService}

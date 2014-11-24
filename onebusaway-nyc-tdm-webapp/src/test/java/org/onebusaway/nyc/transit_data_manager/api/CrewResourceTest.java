@@ -16,7 +16,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import tcip_final_4_0_0_0.SCHOperatorAssignment;
+import tcip_final_4_0_0.SCHOperatorAssignment;
 
 import java.io.File;
 import java.io.IOException;

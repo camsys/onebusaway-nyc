@@ -2,7 +2,7 @@ package org.onebusaway.nyc.transit_data_manager.adapters.data;
 
 import java.util.List;
 
-import tcip_final_4_0_0_0.CCDestinationSignMessage;
+import tcip_final_4_0_0.CCDestinationSignMessage;
 
 public interface SignCodeData {
   /**

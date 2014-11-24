@@ -10,19 +10,19 @@
     TODO It may be possible to do this with one binding instead of three, but I found I had to specify the
     schemaLocation for each.
   -->
-  <jaxb:bindings node="/xs:schema" schemaLocation="LRMS_Final_09_07.xsd">
+  <jaxb:bindings node="/xs:schema" schemaLocation="../LRMS_Final_09_07.xsd">
     <jaxb:bindings node="//xs:complexType[@name='Chain']">
       <jaxb:class name="ChainClass"/>
     </jaxb:bindings>
   </jaxb:bindings>
 
-  <jaxb:bindings node="/xs:schema" schemaLocation="LRMS_Final_09_07_for_im.xsd">
+  <jaxb:bindings node="/xs:schema" schemaLocation="../LRMS_Final_09_07_for_im.xsd">
     <jaxb:bindings node="//xs:complexType[@name='Chain']">
       <jaxb:class name="ChainClass"/>
     </jaxb:bindings>
   </jaxb:bindings>
 
-  <jaxb:bindings node="/xs:schema" schemaLocation="LRMS_Final_09_07_for_atis.xsd">
+  <jaxb:bindings node="/xs:schema" schemaLocation="../LRMS_Final_09_07_for_atis.xsd">
     <jaxb:bindings node="//xs:complexType[@name='Chain']">
       <jaxb:class name="ChainClass"/>
     </jaxb:bindings>

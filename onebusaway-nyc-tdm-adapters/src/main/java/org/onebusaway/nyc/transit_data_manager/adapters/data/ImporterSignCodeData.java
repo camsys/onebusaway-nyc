@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import tcip_final_4_0_0_0.CCDestinationSignMessage;
+import tcip_final_4_0_0.CCDestinationSignMessage;
 
 /**
  * Represents data from our parser, which is in TCIP format.

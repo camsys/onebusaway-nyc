@@ -4,7 +4,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverte
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicle;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 
-import tcip_final_4_0_0_0.CPTVehicleIden;
+import tcip_final_4_0_0.CPTVehicleIden;
 
 /**
  * Converts a tcip vehicle object (CPTVehicleIden) to a json vehicle object

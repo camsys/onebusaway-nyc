@@ -3,7 +3,7 @@ package org.onebusaway.nyc.transit_data_manager.adapters.output.json;
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.DestinationSign;
 
-import tcip_final_4_0_0_0.CCDestinationSignMessage;
+import tcip_final_4_0_0.CCDestinationSignMessage;
 
 public class SignMessageFromTcip implements
     ModelCounterpartConverter<CCDestinationSignMessage, DestinationSign> {

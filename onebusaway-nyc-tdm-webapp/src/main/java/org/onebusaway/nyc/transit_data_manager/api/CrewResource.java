@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import tcip_final_4_0_0_0.SCHOperatorAssignment;
+import tcip_final_4_0_0.SCHOperatorAssignment;
 
 import com.sun.jersey.api.spring.Autowire;
 

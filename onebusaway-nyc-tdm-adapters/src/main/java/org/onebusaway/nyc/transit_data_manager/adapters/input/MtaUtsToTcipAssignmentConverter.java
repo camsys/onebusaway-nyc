@@ -8,14 +8,14 @@ import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import tcip_final_4_0_0_0.CPTOperatorIden;
-import tcip_final_4_0_0_0.CPTRowMetaData;
-import tcip_final_4_0_0_0.CPTTransitFacilityIden;
-import tcip_final_4_0_0_0.SCHOperatorAssignment;
-import tcip_final_4_0_0_0.SCHOperatorAssignment.DayTypes;
-import tcip_final_4_0_0_0.SCHOperatorAssignment.Trips;
-import tcip_final_4_0_0_0.SCHRunIden;
-import tcip_final_4_0_0_0.SCHTripIden;
+import tcip_final_4_0_0.CPTOperatorIden;
+import tcip_final_4_0_0.CPTRowMetaData;
+import tcip_final_4_0_0.CPTTransitFacilityIden;
+import tcip_final_4_0_0.SCHOperatorAssignment;
+import tcip_final_4_0_0.SCHOperatorAssignment.DayTypes;
+import tcip_final_4_0_0.SCHOperatorAssignment.Trips;
+import tcip_final_4_0_0.SCHRunIden;
+import tcip_final_4_0_0.SCHTripIden;
 
 /***
  * 
@@ -102,7 +102,7 @@ public class MtaUtsToTcipAssignmentConverter {
     outputAssignment.setMetadata(metaData);
 
     // Now set the local sch operator assignment.
-    tcip_3_0_5_local.SCHOperatorAssignment localOpAssignment = new tcip_3_0_5_local.SCHOperatorAssignment();
+    tcip_4_0_0_local.SCHOperatorAssignment localOpAssignment = new tcip_4_0_0_local.SCHOperatorAssignment();
     localOpAssignment.setRunRoute(inputAssignment.getRoute());
     outputAssignment.setLocalSCHOperatorAssignment(localOpAssignment);
 

@@ -9,13 +9,13 @@ import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import tcip_final_4_0_0_0.CPTOperatorIden;
-import tcip_final_4_0_0_0.CPTTransitFacilityIden;
-import tcip_final_4_0_0_0.CPTVehicleIden;
-import tcip_final_4_0_0_0.SCHBlockIden;
-import tcip_final_4_0_0_0.SCHPullInOutInfo;
-import tcip_final_4_0_0_0.SCHRouteIden;
-import tcip_final_4_0_0_0.SCHRunIden;
+import tcip_final_4_0_0.CPTOperatorIden;
+import tcip_final_4_0_0.CPTTransitFacilityIden;
+import tcip_final_4_0_0.CPTVehicleIden;
+import tcip_final_4_0_0.SCHBlockIden;
+import tcip_final_4_0_0.SCHPullInOutInfo;
+import tcip_final_4_0_0.SCHRouteIden;
+import tcip_final_4_0_0.SCHRunIden;
 
 public class MtaUtsToTcipVehicleAssignmentConverter {
   

@@ -19,8 +19,8 @@ import org.onebusaway.nyc.transit_data_manager.adapters.input.VehicleAssignments
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.tcip.ListPullOutsGenerator;
 
-import tcip_final_4_0_0_0.ObjectFactory;
-import tcip_final_4_0_0_0.SchPullOutList;
+import tcip_final_4_0_0.ObjectFactory;
+import tcip_final_4_0_0.SchPullOutList;
 
 public class UtsVehiclePulloutToTcipXmlProcess extends
     FileToFileConverterProcess {

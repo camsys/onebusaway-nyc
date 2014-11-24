@@ -13,13 +13,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import lrms_final_09_07.Angle;
-import tcip_final_4_0_0_0.CcLocationReport;
-import tcip_final_4_0_0_0.CPTOperatorIden;
-import tcip_final_4_0_0_0.CPTVehicleIden;
-import tcip_final_4_0_0_0.SCHRouteIden;
-import tcip_final_4_0_0_0.SCHRunIden;
-import tcip_final_4_0_0_0.SPDataQuality;
-import tcip_3_0_5_local.NMEA;
+import tcip_final_4_0_0.CcLocationReport;
+import tcip_final_4_0_0.CPTOperatorIden;
+import tcip_final_4_0_0.CPTVehicleIden;
+import tcip_final_4_0_0.SCHRouteIden;
+import tcip_final_4_0_0.SCHRunIden;
+import tcip_final_4_0_0.SPDataQuality;
+import tcip_4_0_0_local.NMEA;
 
 public class CcLocationReportRecordTest {
 
@@ -43,7 +43,7 @@ public class CcLocationReportRecordTest {
     c.getVehicle().setAgencyId(2008l);
     c.getVehicle().setVehicleId(2560);
 
-    c.setLocalCcLocationReport(new tcip_3_0_5_local.CcLocationReport());
+    c.setLocalCcLocationReport(new tcip_4_0_0_local.CcLocationReport());
     c.getLocalCcLocationReport().setNMEA(new NMEA());
     c.getLocalCcLocationReport().getNMEA().getSentence().add(rmc);
     c.getLocalCcLocationReport().getNMEA().getSentence().add(gga);

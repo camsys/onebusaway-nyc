@@ -12,13 +12,13 @@ import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.zeromq.ZMQ;
 
-import tcip_3_0_5_local.NMEA;
-import tcip_final_4_0_0_0.CPTOperatorIden;
-import tcip_final_4_0_0_0.CPTVehicleIden;
-import tcip_final_4_0_0_0.CcLocationReport;
-import tcip_final_4_0_0_0.SCHRouteIden;
-import tcip_final_4_0_0_0.SCHRunIden;
-import tcip_final_4_0_0_0.SPDataQuality;
+import tcip_4_0_0_local.NMEA;
+import tcip_final_4_0_0.CPTOperatorIden;
+import tcip_final_4_0_0.CPTVehicleIden;
+import tcip_final_4_0_0.CcLocationReport;
+import tcip_final_4_0_0.SCHRouteIden;
+import tcip_final_4_0_0.SCHRunIden;
+import tcip_final_4_0_0.SPDataQuality;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -181,7 +181,7 @@ public class ThroughputHarness {
     m.getVehicle().setAgencydesignator("MTA NYCT");
     m.getVehicle().setAgencyId(2008l);
     m.getVehicle().setVehicleId(vehicleCount);
-    m.setLocalCcLocationReport(new tcip_3_0_5_local.CcLocationReport());
+    m.setLocalCcLocationReport(new tcip_4_0_0_local.CcLocationReport());
     m.getLocalCcLocationReport().setNMEA(new NMEA());
     m.getLocalCcLocationReport().getNMEA().getSentence().add(
         "$GPRMC,105850.00,A,4038.445646,N,07401.094043,W,002.642,128.77,220611,,,A*7C");

@@ -15,11 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-import tcip_final_4_0_0_0.CCDestinationMessageIden;
-import tcip_final_4_0_0_0.CCDestinationSignMessage;
-import tcip_final_4_0_0_0.CPTRowMetaData;
-import tcip_final_4_0_0_0.CcAnnouncementInfo;
-import tcip_final_4_0_0_0.SCHRouteIden;
+import tcip_final_4_0_0.CCDestinationMessageIden;
+import tcip_final_4_0_0.CCDestinationSignMessage;
+import tcip_final_4_0_0.CPTRowMetaData;
+import tcip_final_4_0_0.CcAnnouncementInfo;
+import tcip_final_4_0_0.SCHRouteIden;
 
 public class CSVCcAnnouncementInfoConverter implements
     CcAnnouncementInfoConverter {

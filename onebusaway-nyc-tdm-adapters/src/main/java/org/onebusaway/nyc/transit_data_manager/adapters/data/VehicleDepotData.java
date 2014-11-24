@@ -3,8 +3,8 @@ package org.onebusaway.nyc.transit_data_manager.adapters.data;
 import java.util.Date;
 import java.util.List;
 
-import tcip_final_4_0_0_0.CPTFleetSubsetGroup;
-import tcip_final_4_0_0_0.CPTVehicleIden;
+import tcip_final_4_0_0.CPTFleetSubsetGroup;
+import tcip_final_4_0_0.CPTVehicleIden;
 
 public interface VehicleDepotData {
   /**

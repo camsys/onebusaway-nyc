@@ -82,9 +82,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import tcip_3_0_5_local.NMEA;
-import tcip_final_4_0_0_0.CcLocationReport;
-import tcip_final_4_0_0_0.CcLocationReport.EmergencyCodes;
+import tcip_4_0_0_local.NMEA;
+import tcip_final_4_0_0.CcLocationReport;
+import tcip_final_4_0_0.CcLocationReport.EmergencyCodes;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultiset;
@@ -316,7 +316,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     else
       r.setEmergencyFlag(false);
 
-    final tcip_3_0_5_local.CcLocationReport gpsData = message.getLocalCcLocationReport();
+    final tcip_4_0_0_local.CcLocationReport gpsData = message.getLocalCcLocationReport();
     if (gpsData != null && gpsData.getNMEA() != null) {
       final NMEA nemaSentences = gpsData.getNMEA();
       final List<String> sentenceStrings = nemaSentences.getSentence();

@@ -8,7 +8,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import tcip_final_4_0_0_0.SCHOperatorAssignment;
+import tcip_final_4_0_0.SCHOperatorAssignment;
 
 public class TCIPCrewAssignmentsOutputConverter implements
     CrewAssignmentsOutputConverter {

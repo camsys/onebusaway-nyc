@@ -16,7 +16,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.json.SignMessageF
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.DestinationSign;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tcip_final_4_0_0_0.CCDestinationSignMessage;
+import tcip_final_4_0_0.CCDestinationSignMessage;
 
 public class DscResourceTest extends ResourceTest {
 

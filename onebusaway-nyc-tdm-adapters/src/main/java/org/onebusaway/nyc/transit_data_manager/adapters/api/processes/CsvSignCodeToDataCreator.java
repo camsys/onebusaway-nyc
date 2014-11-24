@@ -9,7 +9,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.data.SignCodeData;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.CSVCcAnnouncementInfoConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.CcAnnouncementInfoConverter;
 
-import tcip_final_4_0_0_0.CCDestinationSignMessage;
+import tcip_final_4_0_0.CCDestinationSignMessage;
 
 public class CsvSignCodeToDataCreator {
   private File inputFile;

@@ -7,10 +7,10 @@ import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
-import tcip_3_0_5_local.CPTFileIdentifier;
-import tcip_final_4_0_0_0.CPTPushHeader;
-import tcip_final_4_0_0_0.SCHOperatorAssignment;
-import tcip_final_4_0_0_0.SchPushOperatorAssignments;
+import tcip_4_0_0_local.CPTFileIdentifier;
+import tcip_final_4_0_0.CPTPushHeader;
+import tcip_final_4_0_0.SCHOperatorAssignment;
+import tcip_final_4_0_0.SchPushOperatorAssignments;
 
 public class PushOperatorAssignsGenerator {
 

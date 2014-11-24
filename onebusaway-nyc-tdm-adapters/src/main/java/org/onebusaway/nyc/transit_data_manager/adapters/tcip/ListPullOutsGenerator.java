@@ -8,8 +8,8 @@ import org.joda.time.format.DateTimeFormatter;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
-import tcip_final_4_0_0_0.CPTSubscriptionHeader;
-import tcip_final_4_0_0_0.SchPullOutList;
+import tcip_final_4_0_0.CPTSubscriptionHeader;
+import tcip_final_4_0_0.SchPullOutList;
 
 public class ListPullOutsGenerator {
 
