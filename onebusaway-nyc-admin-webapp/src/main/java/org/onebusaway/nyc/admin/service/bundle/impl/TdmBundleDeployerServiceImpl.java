@@ -59,6 +59,13 @@ public class TdmBundleDeployerServiceImpl implements BundleDeployerService{
       return Response.serverError().build();
     }
   }
+  
+  @Override
+  public Response getLatestBundle() {
+    // not implemented
+    _log.error("getLatestBundle not implemented");
+    return Response.serverError().build();
+  }
 
   /**
    * request bundles at s3://obanyc-bundle-data/activebundes/{environment} be deployed
