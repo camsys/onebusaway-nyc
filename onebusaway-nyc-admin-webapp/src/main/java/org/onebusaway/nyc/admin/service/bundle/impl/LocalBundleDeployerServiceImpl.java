@@ -118,7 +118,7 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
           latestBundle = bundle;
         }
       }
-      return Response.ok(latestBundle.getName()).build();
+      return Response.ok((latestBundle == null ? "" : latestBundle.getName())).build();
     }
 
     /**
