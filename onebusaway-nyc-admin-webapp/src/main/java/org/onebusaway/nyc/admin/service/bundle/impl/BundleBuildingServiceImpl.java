@@ -719,6 +719,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     String outputsPath = request.getTmpDirectory() + File.separator + OUTPUT_DIR;
     File outputsDestDir = new File(outputsPath);
     outputsDestDir.mkdir();
+    
+    // GTFS-tagged outputs
+    String outputsGtfsPath = request.getTmpDirectory() + File.separator + OUTPUT_GTFS_DIR;
+    File outputsGtfsDestDir = new File(outputsGtfsPath);
+    outputsGtfsDestDir.mkdir();
 
     // copy log file to outputs
     File outputPath = new File(response.getBundleDataDirectory());
@@ -733,6 +738,18 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       for (File output : outputFiles) {
         response.addOutputFile(output.getName());
         fs.copyFiles(output, new File(outputsPath + File.separator + output.getName()));
+      }
+    }
+    
+    // copy the GTFS-tagged outputs 
+    File outputsGtfsDir = new File(response.getBundleOutputGtfsDirectory());
+    File[] outputGtfsFiles = outputsGtfsDir.listFiles();
+    if (outputGtfsFiles != null) {
+      for (File output : outputGtfsFiles) {
+        if (output.getName().toLowerCase().endsWith(".zip")) {
+        response.addOutputGtfsFile(output.getName());
+        fs.copyFiles(output, new File(outputsGtfsPath + File.separator + output.getName()));
+        }
       }
     }
     
@@ -860,6 +877,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setRemoteInputDirectory(versionString + File.separator + INPUTS_DIR);
     _fileService.put(versionString + File.separator + OUTPUT_DIR, response.getBundleOutputDirectory());
     response.setRemoteOutputDirectory(versionString + File.separator + OUTPUT_DIR);
+    
+    _fileService.put(versionString + File.separator + OUTPUT_GTFS_DIR, response.getBundleOutputGtfsDirectory());
+    response.setRemoteOutputGtfsDirectory(versionString + File.separator + OUTPUT_GTFS_DIR);
+
+    
+    
     _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
         response.getBundleTarFilename());
 

@@ -1,10 +1,12 @@
 package org.onebusaway.nyc.admin.service.bundle.task;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.service.bundle.hastus.HastusGtfsFactory;
@@ -73,6 +75,7 @@ public class HastusTranslateTask extends BaseModTask implements Runnable {
         factory.run();
         _log.info("done!");
         String zipFilename = postPackage(outputDir.toString(), requestResponse.getResponse().getTmpDirectory(), hd.getAgencyId());
+        cleanup(outputDir);
         updateGtfsBundle(requestResponse, zipFilename, hd);
         _log.info("created zipFilename=" + zipFilename);
         String msg = "Packaged " + hastus + " and " + gis + " to GTFS to support Community Transit with output=" + outputDir;
@@ -83,6 +86,16 @@ public class HastusTranslateTask extends BaseModTask implements Runnable {
       }
     } catch (Throwable ex) {
       _log.error("error packaging Community Transit gtfs:", ex);
+    }
+    
+  }
+
+  private void cleanup(File outputDir) {
+    _log.info("deleting GTFS dir (zipfile already created) = " + outputDir);
+    try {
+      FileUtils.deleteDirectory(outputDir);
+    } catch (IOException e) {
+      _log.error("GTFS dir deletion (" + outputDir + ") failed", e);
     }
     
   }

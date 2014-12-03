@@ -23,6 +23,7 @@ public class BundleBuildResponse {
 	private String _bundleTarFilename;
 	private String _remoteInputDirectory;
 	private String _remoteOutputDirectory;
+	private String _remoteOutputGtfsDirectory;	
 	private String _versionString;
 	private String _tmpDirectory;
 	private String _bundleBuildName;
@@ -239,6 +240,16 @@ public class BundleBuildResponse {
 		_remoteOutputDirectory = directoryPath;
 	}
 
+	
+	public String getRemoteOutputGtfsDirectory() {
+	  return _remoteOutputGtfsDirectory;
+	}
+	
+  public void setRemoteOutputGtfsDirectory(String directoryPath) {
+    _remoteOutputGtfsDirectory = directoryPath;
+  }
+
+	
 	/**
 	 * @return the bundleResultLink
 	 */
@@ -338,6 +349,7 @@ public class BundleBuildResponse {
 		 }
 		
 	 }
+
 
 
 }

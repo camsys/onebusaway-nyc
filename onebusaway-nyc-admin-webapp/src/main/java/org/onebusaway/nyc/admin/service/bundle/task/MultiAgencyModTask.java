@@ -47,11 +47,16 @@ public class MultiAgencyModTask extends BaseModTask implements Runnable {
       return;
     }
     
+    if (!srcFilename.toLowerCase().endsWith(".zip")) {
+      _log.error("refusing to copy tagged GTFS file that is not a zip file:  " + srcFilename);
+      return;
+    }
+    _log.info("copying tagged gtfs file=" + srcFilename);
+    
     File srcFile = new File(srcFilename);
     File destFile = new File(requestResponse.getResponse().getBundleOutputGtfsDirectory() + File.separator + srcFile.getName());
     FileUtils.copyFile(srcFile, destFile, true);
     logger.changelog("applied output gtfs tag to " + destFile);
-    response.addOutputGtfsFile(destFile.toString()); 
   }
 
 
