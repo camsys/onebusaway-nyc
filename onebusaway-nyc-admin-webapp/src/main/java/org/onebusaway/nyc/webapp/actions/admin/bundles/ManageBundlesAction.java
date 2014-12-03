@@ -411,21 +411,28 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	}
 	
 	public String getDeployedBundle() {
+	   String apiHostname = configService.getConfigurationValueAsString(
+	        "apiHostname", null);
+	  if (apiHostname != null) {
+	    String apiHost = apiHostname + "/api/where/config.json?key=TEST";  
+      try {
+        return getJsonData(apiHost).getAsJsonObject()
+            .getAsJsonObject("data").getAsJsonObject("entry")
+            .get("name").getAsString();
+      } catch (Exception e2) {
+        _log.error("Failed to retrieve name of the latest deployed bundle (apiHost=["+ apiHost+"])");
+      }
+
+	  }
+	  
 		String tdmHost = System.getProperty("tdm.host") + "/api/bundle/list";
-		String apiHost = configService.getConfigurationValueAsString(
-				"apiHostname", "") + "/api/where/config.json?key=TEST";
+		
 		try {
 			return getJsonData(tdmHost).getAsJsonObject()
 					.getAsJsonArray("bundles").get(0).getAsJsonObject()
 					.get("name").getAsString();
 		} catch (Exception e) {
-			try {
-				return getJsonData(apiHost).getAsJsonObject()
-						.getAsJsonObject("data").getAsJsonObject("entry")
-						.get("name").getAsString();
-			} catch (Exception e2) {
-				_log.error("Failed to retrieve name of the latest deployed bundle (tdmHost=["+tdmHost+"], apiHost=["+ apiHost+"])");
-			}
+		  _log.error("Failed to retrieve name of the latest deployed bundle (tdmHost=["+tdmHost+"])");
 		}
 		return "";
 	}

@@ -103,6 +103,23 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
       }
       return Response.serverError().build();
     }
+    
+    /**
+     * list the bundle(s) with potential to be deployed.
+     */
+    @Override
+    public Response getLatestBundle() {
+      _log.info("Starting getLatestBundle.");
+      List<Bundle> bundles = bundleProvider.getBundles();
+      Bundle latestBundle = null;
+      for (Bundle bundle : bundles) {
+        if (latestBundle == null
+            || bundle.getCreated().isAfter(latestBundle.getCreated())) {
+          latestBundle = bundle;
+        }
+      }
+      return Response.ok((latestBundle == null ? "" : latestBundle.getName())).build();
+    }
 
     /**
      * request bundles at /var/lib/obanyc/bundles/staged/{environment} be deployed

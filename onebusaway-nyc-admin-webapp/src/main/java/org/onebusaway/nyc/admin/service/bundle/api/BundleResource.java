@@ -96,16 +96,23 @@ public class BundleResource implements ServletContextAware{
 
   }
   
-
   @Path("/deploy/list/{environment}")
   @GET
   public Response listStagedBundles(@PathParam("environment")
   String environment) {
-      if (isTdm()) {
-        return _tdmBundleDeployer.listStagedBundles(environment);
-      } 
-      
-      return _localBundleDeployer.listStagedBundles(environment); 
+    if (isTdm()) {
+      return _tdmBundleDeployer.listStagedBundles(environment);
+    }
+    return _localBundleDeployer.listStagedBundles(environment);
+  }
+  
+  @Path("/latest")
+  @GET
+  public Response getLatestBundle() {
+    if (isTdm()) {
+      return _tdmBundleDeployer.getLatestBundle();
+    }
+    return _localBundleDeployer.getLatestBundle();
   }
 
   @Path("/deploy/from/{environment}")

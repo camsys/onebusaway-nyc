@@ -5,6 +5,8 @@ import javax.ws.rs.core.Response;
 public interface BundleDeployerService {
     
     public Response listStagedBundles(String environment);
+    
+    public Response getLatestBundle();
   
     public Response deploy(String environment);
 
