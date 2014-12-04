@@ -86,14 +86,14 @@ public class VehicleStatusServiceImplTest {
 		
 		VehicleStatus vehicleStatus = vehicleStatusRecords.get(0);
 		
-		assertEquals("Mismatched vehicle id", vehicleStatus.getVehicleId(), "5638");
-		assertEquals("Mismatched inferred phase", vehicleStatus.getInferredPhase(), "IN PROGRESS");
-		assertEquals("Mismatched observed DSC", vehicleStatus.getObservedDSC(), "4611");
-		assertEquals("Mismatched pull in time", vehicleStatus.getFormattedPullinTime(), "00:23 +1 day");
-		assertEquals("Mismatched pull out time", vehicleStatus.getFormattedPulloutTime(), "05:51");
-		assertEquals("Mismatched inferred DSC", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
-		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_orange_alert_18x18.png");
-		assertEquals("Mismatched emergency status", vehicleStatus.getEmergencyStatus(), "1");
+		assertEquals("Mismatched vehicle id", "5638", vehicleStatus.getVehicleId());
+		assertEquals("Mismatched inferred phase", "IN PROGRESS", vehicleStatus.getInferredPhase());
+		assertEquals("Mismatched observed DSC", "4611", vehicleStatus.getObservedDSC());
+		assertEquals("Mismatched pull in time", "00:23 +1 day", vehicleStatus.getFormattedPullinTime());
+		assertEquals("Mismatched pull out time", "05:51", vehicleStatus.getFormattedPulloutTime());
+		assertEquals("Mismatched inferred DSC", "4611:B61 Direction: 1", vehicleStatus.getInferredDestination());
+		assertEquals("Mismatched status image", "circle_orange_alert_18x18.png", vehicleStatus.getStatus());
+		assertEquals("Mismatched emergency status", "1", vehicleStatus.getEmergencyStatus());
 	}
 	
 	@Test
@@ -156,13 +156,13 @@ public class VehicleStatusServiceImplTest {
 		
 		VehicleStatus vehicleStatus = vehicleStatusRecords.get(0);
 		
-		assertEquals("Mismatched vehicle id", vehicleStatus.getVehicleId(), "344");
-		assertEquals("Mismatched inferred phase", vehicleStatus.getInferredPhase(), "IN PROGRESS");
-		assertEquals("Mismatched observed DSC", vehicleStatus.getObservedDSC(), "4611");
+		assertEquals("Mismatched vehicle id", "344", vehicleStatus.getVehicleId());
+		assertEquals("Mismatched inferred phase", "IN PROGRESS", vehicleStatus.getInferredPhase());
+		assertEquals("Mismatched observed DSC", "4611", vehicleStatus.getObservedDSC());
 		assertNull("No pull in time", vehicleStatus.getPullinTime());
 		assertNull("No pull out time", vehicleStatus.getPulloutTime());
-		assertEquals("Mismatched inferred destination information", vehicleStatus.getInferredDestination(), "4611:B61 Direction: 1");
-		assertEquals("Mismatched status image", vehicleStatus.getStatus(), "circle_red18x18.png");
+		assertEquals("Mismatched inferred destination information", "4611:B61 Direction: 1", vehicleStatus.getInferredDestination());
+		assertEquals("Mismatched status image", "circle_red18x18.png", vehicleStatus.getStatus());
 	}
 	
 	@Test

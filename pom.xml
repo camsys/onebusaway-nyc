@@ -365,6 +365,7 @@
                             <value>log4j-stdout.xml</value>
                           </property>
                         </systemProperties>
+                        <argLine>${argLine}</argLine>
                     </configuration>
                     <executions>
             <!-- Instead, we add a special integration-test execution that 

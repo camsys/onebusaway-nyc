@@ -21,7 +21,6 @@ import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
 import org.onebusaway.transit_data_federation.bundle.model.TaskDefinition;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
-
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.SimpleLayout;
@@ -39,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -209,8 +209,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         fs = new FileUtils(request.getTmpDirectory());
           String stifUtilUrl = getStifCleanupUrl();
           response.addStatusMessage("downloading " + stifUtilUrl + " to clean stifs");
-          fs.wget(stifUtilUrl);
           String stifUtilName = fs.parseFileName(stifUtilUrl);
+
+          // obanyc-2177, pull fix_stif_date_codes onto adminx image if download fails
+          try {
+            fs.wget(stifUtilUrl);
+            response.addStatusMessage("download complete");
+          } catch (Exception any) {
+            _log.info("Download of " + stifUtilUrl + "failed.");
+            // Copy local version of script
+            String stifScriptDir = System.getProperty("admin.stifScriptLocation");
+            String localStifScriptName = stifScriptDir + File.separator + stifUtilName;
+            File localStifScript = new File(localStifScriptName);
+            _log.info("Copying " + localStifScriptName + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
+            response.addStatusMessage("download failed, copying " + localStifScriptName + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
+            File workingStifScript = new File(request.getTmpDirectory() + File.separator + stifUtilName);
+            fs.copyFiles(localStifScript, workingStifScript);
+            response.addStatusMessage("copy complete");
+          }
           // make executable
           fs.chmod("500", request.getTmpDirectory() + File.separator + stifUtilName);
 
