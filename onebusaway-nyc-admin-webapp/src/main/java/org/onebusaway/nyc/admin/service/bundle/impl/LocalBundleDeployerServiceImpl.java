@@ -27,6 +27,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONObject;
 import org.onebusaway.nyc.admin.service.BundleDeployerService;
 import org.onebusaway.nyc.admin.service.bundle.BundleDeployer;
 import org.onebusaway.nyc.admin.service.bundle.BundleStager;
@@ -118,7 +119,17 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
           latestBundle = bundle;
         }
       }
-      return Response.ok(latestBundle == null ? "" : latestBundle.getName()).build();
+      if (latestBundle != null) {
+        try {
+          JSONObject response = new JSONObject();
+          response.put("id", latestBundle.getId());
+          response.put("name", latestBundle.getName());
+          return Response.ok(response.toString()).build();
+        } catch (Exception e) {
+          _log.error("Error reading latest bundle: " + e);
+        }
+      }
+      return Response.ok("Error: No bundles deployed.").build();
     }
 
     /**

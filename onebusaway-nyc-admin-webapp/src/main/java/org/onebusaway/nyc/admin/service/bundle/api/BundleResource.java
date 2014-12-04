@@ -6,6 +6,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
+import org.onebusaway.nyc.admin.service.BundleArchiverService;
 import org.onebusaway.nyc.admin.service.BundleDeployerService;
 import org.onebusaway.nyc.admin.service.BundleStagerService;
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
@@ -21,13 +22,13 @@ import org.springframework.web.context.ServletContextAware;
 @Component
 public class BundleResource implements ServletContextAware{
   
-  private static final String DEFAULT_TDM_URL = "http://tdm";
-  
   private static Logger _log = LoggerFactory.getLogger(BundleResource.class);
   @Autowired
   private ConfigurationServiceClient _configClient;
   @Autowired
   RemoteConnectionService _remoteConnectionService;
+  @Autowired
+  private BundleArchiverService _localBundleArchiver;
   @Autowired
   private BundleStagerService _localBundleStager;
   @Autowired
@@ -84,7 +85,7 @@ public class BundleResource implements ServletContextAware{
   @Path("/archive/list")
   @GET
   public Response getArchiveBundleList() {
-    return _localBundleStager.getArchiveBundleList();
+    return _localBundleArchiver.getArchiveBundleList();
   }
   
   @Path("/archive/get-by-name/{dataset}/{name}/{file:.+}")
@@ -93,7 +94,7 @@ public class BundleResource implements ServletContextAware{
   String dataset, @PathParam("name")
   String name, @PathParam("file")
   String file) {
-    return _localBundleStager.getFileByName(dataset, name, file);
+    return _localBundleArchiver.getFileByName(dataset, name, file);
   }
   
   @Path("/archive/get-by-id/{id}/{file:.+}")
@@ -101,7 +102,7 @@ public class BundleResource implements ServletContextAware{
   public Response getFileById(@PathParam("id")
   String id, @PathParam("file")
   String file) {
-    return _localBundleStager.getFileById(id, file);
+    return _localBundleArchiver.getFileById(id, file);
   }
 
   @Path("/staged/{bundleId}/file/{bundleFileFilename: [a-zA-Z0-9_./]+}/get")
