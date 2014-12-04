@@ -258,27 +258,26 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 	   if (content == null) return null;
 	   
 	   // parse content to appropriate return type
-	   T t = null;
-	   if (returnType == String.class) {
-		   t = (T)content;
-	   } else {
-		   String json = content;
-		   try {
-			t =_mapper.readValue(json, returnType);
-		} catch (JsonParseException e) {
-			_log.error("Error parsing json content : " +e);
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			_log.error("Error mapping parsed json content : " +e);
-			e.printStackTrace();
-		} catch (IOException e) {
-			_log.error("Error parsing json content : " +e);
-			e.printStackTrace();
-		}
-	   }
-	   _log.debug("got |" + t + "|");
-	   return t;
-
+     T t = null;
+     if (returnType == String.class) {
+       t = (T) content;
+     } else {
+       String json = content;
+       try {
+         t = _mapper.readValue(json, returnType);
+       } catch (JsonParseException e) {
+         _log.error("Error parsing json content : " + e);
+         e.printStackTrace();
+       } catch (JsonMappingException e) {
+         _log.error("Error mapping parsed json content : " + e);
+         e.printStackTrace();
+       } catch (IOException e) {
+        _log.error("Error parsing json content : " + e);
+         e.printStackTrace();
+       }
+     }
+     _log.debug("got |" + t + "|");
+     return t;
    }
    
    @Override

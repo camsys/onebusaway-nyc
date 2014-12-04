@@ -1,8 +1,5 @@
 package org.onebusaway.nyc.admin.service.bundle.api;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -12,8 +9,6 @@ import javax.ws.rs.core.Response;
 import org.onebusaway.nyc.admin.service.BundleDeployerService;
 import org.onebusaway.nyc.admin.service.BundleStagerService;
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
-import org.onebusaway.nyc.admin.service.bundle.BundleStager;
-import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleStatus;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,16 +79,36 @@ public class BundleResource implements ServletContextAware{
   @GET
   public Response getStagedBundleList() {
     return _localBundleStager.getBundleList();
-
+  }
+  
+  @Path("/archive/list")
+  @GET
+  public Response getArchiveBundleList() {
+    return _localBundleStager.getArchiveBundleList();
+  }
+  
+  @Path("/archive/get-by-name/{dataset}/{name}/{file:.+}")
+  @GET
+  public Response getFileByName(@PathParam("dataset")
+  String dataset, @PathParam("name")
+  String name, @PathParam("file")
+  String file) {
+    return _localBundleStager.getFileByName(dataset, name, file);
+  }
+  
+  @Path("/archive/get-by-id/{id}/{file:.+}")
+  @GET
+  public Response getFileById(@PathParam("id")
+  String id, @PathParam("file")
+  String file) {
+    return _localBundleStager.getFileById(id, file);
   }
 
   @Path("/staged/{bundleId}/file/{bundleFileFilename: [a-zA-Z0-9_./]+}/get")
   @GET
   public Response getStagedFile(@PathParam("bundleId") String bundleId,
       @PathParam("bundleFileFilename") String relativeFilename) {
-
     return _localBundleStager.getBundleFile(bundleId, relativeFilename);
-
   }
   
   @Path("/deploy/list/{environment}")
@@ -122,7 +137,6 @@ public class BundleResource implements ServletContextAware{
     if(isTdm()){
       return _tdmBundleDeployer.deploy(environment);
     }
-    
     return _localBundleDeployer.deploy(environment);
   }
   
@@ -133,7 +147,6 @@ public class BundleResource implements ServletContextAware{
     if (isTdm()) {
       return _tdmBundleDeployer.deployStatus(id);
     }
-    
     return _localBundleDeployer.deployStatus(id);
   }
   
@@ -141,11 +154,9 @@ public class BundleResource implements ServletContextAware{
   @Path("/list")
   @GET
   public Response getBundleList() {
-    
     if (isTdm()) {
       return _tdmBundleDeployer.getBundleList();
     }
-    
     return _localBundleDeployer.getBundleList();
   }
   
@@ -158,7 +169,6 @@ public class BundleResource implements ServletContextAware{
     if (isTdm()) {
       return _tdmBundleDeployer.getBundleFile(bundleId, relativeFilename);
     }
-
     return _localBundleDeployer.getBundleFile(bundleId, relativeFilename);
   }
   

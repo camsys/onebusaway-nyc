@@ -1,13 +1,9 @@
 package org.onebusaway.nyc.admin.service.bundle.task;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.UUID;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.service.bundle.impl.BundleBuildingUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
@@ -57,6 +53,8 @@ public class MetadataTask implements Runnable {
       logger.changelog("generated metadata for bundle " + data.getName());
     
       String outputFile = outputDirectory + File.separator + "metadata.json";
+      mapper.writeValue(new File(outputFile), data);
+      outputFile = sourceDirectory + File.separator + "metadata.json";
       mapper.writeValue(new File(outputFile), data);
     } catch (Exception e) {
       _log.error("json serialization failed:", e);

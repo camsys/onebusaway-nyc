@@ -105,7 +105,7 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
     }
     
     /**
-     * list the bundle(s) with potential to be deployed.
+     * displays the latest active bundle.
      */
     @Override
     public Response getLatestBundle() {
@@ -118,7 +118,7 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
           latestBundle = bundle;
         }
       }
-      return Response.ok((latestBundle == null ? "" : latestBundle.getName())).build();
+      return Response.ok(latestBundle == null ? "" : latestBundle.getName()).build();
     }
 
     /**
