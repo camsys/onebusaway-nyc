@@ -41,12 +41,12 @@ public class HistoricalRecord {
 	private String inferredPhase;
 	private String inferredStatus;
 	private boolean inferenceIsFormal;
-	private Double distanceAlongBlock;
-	private Double distanceAlongTrip;
+	private BigDecimal distanceAlongBlock;
+	private BigDecimal distanceAlongTrip;
 	private String nextScheduledStopId;
-	private Double nextScheduledStopDistance;
+	private BigDecimal nextScheduledStopDistance;
 	private String previousScheduledStopId;
-	private Double previousScheduledStopDistance;
+	private BigDecimal previousScheduledStopDistance;
 	private Integer scheduleDeviation;
 	/**
 	 * @return the vehicleAgencyId
@@ -387,25 +387,25 @@ public class HistoricalRecord {
 	/**
 	 * @return the distanceAlongBlock
 	 */
-	public Double getDistanceAlongBlock() {
+	public BigDecimal getDistanceAlongBlock() {
 		return distanceAlongBlock;
 	}
 	/**
 	 * @param distanceAlongBlock the distanceAlongBlock to set
 	 */
-	public void setDistanceAlongBlock(Double distanceAlongBlock) {
+	public void setDistanceAlongBlock(BigDecimal distanceAlongBlock) {
 		this.distanceAlongBlock = distanceAlongBlock;
 	}
 	/**
 	 * @return the distanceAlongTrip
 	 */
-	public Double getDistanceAlongTrip() {
+	public BigDecimal getDistanceAlongTrip() {
 		return distanceAlongTrip;
 	}
 	/**
 	 * @param distanceAlongTrip the distanceAlongTrip to set
 	 */
-	public void setDistanceAlongTrip(Double distanceAlongTrip) {
+	public void setDistanceAlongTrip(BigDecimal distanceAlongTrip) {
 		this.distanceAlongTrip = distanceAlongTrip;
 	}
 	/**
@@ -423,13 +423,13 @@ public class HistoricalRecord {
 	/**
 	 * @return the nextScheduledStopDistance
 	 */
-	public Double getNextScheduledStopDistance() {
+	public BigDecimal getNextScheduledStopDistance() {
 		return nextScheduledStopDistance;
 	}
 	/**
 	 * @param nextScheduledStopDistance the nextScheduledStopDistance to set
 	 */
-	public void setNextScheduledStopDistance(Double nextScheduledStopDistance) {
+	public void setNextScheduledStopDistance(BigDecimal nextScheduledStopDistance) {
 		this.nextScheduledStopDistance = nextScheduledStopDistance;
 	}
 	public String getPreviousScheduledStopId() {
@@ -438,11 +438,11 @@ public class HistoricalRecord {
 	public void setPreviousScheduledStopId(String previousScheduledStopId) {
 		this.previousScheduledStopId = previousScheduledStopId;
 	}
-	public Double getPreviousScheduledStopDistance() {
+	public BigDecimal getPreviousScheduledStopDistance() {
 		return previousScheduledStopDistance;
 	}
 	public void setPreviousScheduledStopDistance(
-			Double previousScheduledStopDistance) {
+			BigDecimal previousScheduledStopDistance) {
 		this.previousScheduledStopDistance = previousScheduledStopDistance;
 	}
 	/**
