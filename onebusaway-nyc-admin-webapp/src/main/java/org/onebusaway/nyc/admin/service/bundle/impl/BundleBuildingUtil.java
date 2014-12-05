@@ -2,7 +2,6 @@ package org.onebusaway.nyc.admin.service.bundle.impl;
 
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
-import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.json.Bundle;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleFile;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.SourceFile;
@@ -11,6 +10,7 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -50,9 +51,12 @@ public class BundleBuildingUtil {
         .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES).setPrettyPrinting().create();
     
     Bundle bundle = new Bundle();
-    
-    bundle.setId(request.getBundleName());
-    
+
+    bundle.setId(getBundleId(response.getBundleRootDirectory() + File.separator
+        + "data" + File.separator + "metadata.json"));
+
+    bundle.setDataset(request.getBundleDirectory());
+
     bundle.setName(request.getBundleName());
     
     bundle.setServiceDateFrom(request.getBundleStartDate());
@@ -180,6 +184,16 @@ public class BundleBuildingUtil {
       _log.error("file " + file + File.separator + file + " does not exist: cannot guess date!");
     }
     return new Date(file.lastModified());
+  }
+  
+  private String getBundleId(String metadataFile) {
+    try {
+      String bundleId = new JsonParser().parse(new FileReader(metadataFile)).getAsJsonObject().get(
+          "id").getAsString();
+      return bundleId;
+    } catch (Exception e) {
+    }
+    return null;
   }
 
   private String getMd5ForFile(File file) {

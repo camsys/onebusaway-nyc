@@ -123,6 +123,7 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
         try {
           JSONObject response = new JSONObject();
           response.put("id", latestBundle.getId());
+          response.put("dataset", latestBundle.getDataset());
           response.put("name", latestBundle.getName());
           return Response.ok(response.toString()).build();
         } catch (Exception e) {

@@ -8,6 +8,7 @@ import org.joda.time.LocalDate;
 public class Bundle {
 
   private String id;
+  private String dataset;
   private String name;
   private List<String> applicableAgencyIds;
   private LocalDate serviceDateFrom;
@@ -18,6 +19,9 @@ public class Bundle {
   
   public String getId() {
     return id;
+  }
+  public String getDataset() {
+    return dataset;
   }
   public String getName() {
     return name;
@@ -42,6 +46,9 @@ public class Bundle {
   }
   public void setId(String id) {
     this.id = id;
+  }
+  public void setDataset(String dataset) {
+    this.dataset = dataset;
   }
   public void setName(String name) {
     this.name = name;

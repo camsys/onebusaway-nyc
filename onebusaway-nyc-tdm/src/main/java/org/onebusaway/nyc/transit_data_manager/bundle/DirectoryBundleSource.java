@@ -151,13 +151,7 @@ public class DirectoryBundleSource extends AbstractBundleSource implements Bundl
           }
 
           if (bundle != null) {
-            if (dirName.equals(bundle.getId())) {
               resultBundle = bundle;
-            } else {
-              _log.info("Invalid individual bundle directory " + dirName
-                  + ": Directory name does not match id '" + bundle.getId()
-                  + "' in metadata.");
-            }
           } else {
             _log.info("Invalid individual bundle directory " + dirName
                 + ": Could not parse metadata file as json.");
