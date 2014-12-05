@@ -82,12 +82,27 @@ public class BundleResource implements ServletContextAware{
     return _localBundleStager.getBundleList();
   }
   
-  @Path("/archive/list")
+  @Path("/archive/list-datasets")
   @GET
   public Response getArchiveBundleList() {
     return _localBundleArchiver.getArchiveBundleList();
   }
-  
+
+  @Path("/archive/list-by-name/{dataset}/{name}")
+  @GET
+  public Response getArchiveBundleByName(@PathParam("dataset")
+  String dataset, @PathParam("name")
+  String name) {
+    return _localBundleArchiver.getArchiveBundleByName(dataset, name);
+  }
+
+  @Path("/archive/list-by-id/{id}")
+  @GET
+  public Response getArchiveBundleById(@PathParam("id")
+  String id) {
+    return _localBundleArchiver.getArchiveBundleById(id);
+  }
+
   @Path("/archive/get-by-name/{dataset}/{name}/{file:.+}")
   @GET
   public Response getFileByName(@PathParam("dataset")

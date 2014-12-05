@@ -10,4 +10,8 @@ public interface BundleArchiverService {
 
   public Response getFileById(String id, String file);
 
+  public Response getArchiveBundleByName(String dataset, String name);
+
+  public Response getArchiveBundleById(String id);
+
 }

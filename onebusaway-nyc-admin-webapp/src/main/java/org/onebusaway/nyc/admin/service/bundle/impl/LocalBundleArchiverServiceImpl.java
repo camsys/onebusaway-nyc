@@ -2,7 +2,13 @@ package org.onebusaway.nyc.admin.service.bundle.impl;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.Collection;
+
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.onebusaway.nyc.admin.service.BundleArchiverService;
@@ -58,6 +64,46 @@ public class LocalBundleArchiverServiceImpl implements BundleArchiverService {
     } catch (Exception e2) {
       return Response.serverError().build();
     }
+  }
+
+  @Override
+  public Response getArchiveBundleByName(String dataset, String name) {
+    File bundleDir = new File(bundleStager.getBuiltBundleDirectory() + "/"
+        + dataset + "/builds/" + name);
+    return getContents(bundleDir);
+  }
+
+  @Override
+  public Response getArchiveBundleById(String id) {
+    try {
+      for (File datasetDir : new File(bundleStager.getBuiltBundleDirectory()).listFiles()) {
+        File buildsDir = new File(datasetDir.getAbsolutePath() + "/builds");
+        if (buildsDir.exists() && buildsDir.listFiles().length > 0) {
+          for (File bundleDir : buildsDir.listFiles()) {
+            try {
+              if (getBundleId(bundleDir).equals(id)) {
+                return getContents(bundleDir);
+              }
+            } catch (Exception e1) {
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return Response.serverError().build();
+  }
+
+  @SuppressWarnings("unchecked")
+  private Response getContents(File bundleDir) {
+    Collection<File> files = FileUtils.listFiles(bundleDir,
+        new RegexFileFilter("^(.*?)"), DirectoryFileFilter.DIRECTORY);
+    JSONArray response = new JSONArray();
+    for (File file : files) {
+      response.put(bundleDir.toURI().relativize(file.toURI()));
+    }
+    return Response.ok(response.toString(), "application/json").build();
   }
 
   @Override
