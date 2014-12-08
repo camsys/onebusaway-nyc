@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.admin.service.api;
 
+import java.util.UUID;
+
 import org.onebusaway.nyc.admin.service.RemoteConnectionService;
 
 import org.slf4j.Logger;
@@ -25,6 +27,15 @@ public class ConfigResource implements ServletContextAware {
   private RemoteConnectionService _remoteConnectionService;
   private String tdmURL;
 
+  @Path("/generate-api-key")
+  @GET
+  /**
+   * generates an api key
+   */
+  public Response generateApiKey() {
+	  return Response.ok(UUID.randomUUID().toString()).build();
+  }
+  
   @Path("/deploy/list/depot/{environment}")
   @GET
   /**
