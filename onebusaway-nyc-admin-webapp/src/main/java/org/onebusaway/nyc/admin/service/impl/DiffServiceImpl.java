@@ -37,19 +37,6 @@ public class DiffServiceImpl implements DiffService {
 	}
 
 	public List<String> diff(String filename1, String filename2){
-		if (!new File(filename1).exists()){
-			try {
-				filename1 = configurationServiceClient.getItem("admin", "bundleStagingDir") 
-					+ File.separator
-					+ "prod"
-					+ File.separator
-					+ "outputs"
-					+ File.separator
-					+ FILENAME;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 		List<String> original = fileToLines(filename1);
 		List<String> revised  = fileToLines(filename2);
 		_log.info("Called diff " + this.getClass().getName() +" between (" + filename1 + ") and (" + filename2 + ")");
