@@ -1,13 +1,14 @@
 package org.onebusaway.nyc.webapp.actions.admin.usermanagement;
 
+import java.io.StringReader;
+
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.ui.UserDetail;
 import org.onebusaway.nyc.admin.service.UserManagementService;
+import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.gson.Gson;
 
 /**
  * Action class for user management operations
@@ -22,7 +23,7 @@ public class ManageUsersAction extends OneBusAwayNYCAdminActionSupport {
 	private static final long serialVersionUID = 1L;
 	
 	private UserManagementService userManagementService;
-	private Gson gsonTool;
+	private JsonTool gsonTool;
 	
 	private String userData;
 	private String updateUserMessage;
@@ -32,7 +33,7 @@ public class ManageUsersAction extends OneBusAwayNYCAdminActionSupport {
 	 * @return
 	 */
 	public String editUser() {
-		UserDetail userDetail = gsonTool.fromJson(userData, UserDetail.class);
+		UserDetail userDetail = gsonTool.readJson(new StringReader(userData), UserDetail.class);
 		boolean success = userManagementService.updateUser(userDetail);
 		if(success) {
 			updateUserMessage =  "User '" +userDetail.getUserName() + "' edited successfully";
@@ -45,7 +46,7 @@ public class ManageUsersAction extends OneBusAwayNYCAdminActionSupport {
 	}
 	
 	public String deactivateUser() {
-		UserDetail userDetail = gsonTool.fromJson(userData, UserDetail.class);
+		UserDetail userDetail = gsonTool.readJson(new StringReader(userData), UserDetail.class);
 		boolean success = userManagementService.deactivateUser(userDetail);
 		if(success) {
 			updateUserMessage =  "User '" +userDetail.getUserName() + "' deactivated successfully";
@@ -95,7 +96,7 @@ public class ManageUsersAction extends OneBusAwayNYCAdminActionSupport {
 	 * @param gsonTool the gsonTool to set
 	 */
 	@Autowired
-	public void setGsonTool(Gson gsonTool) {
+	public void setGsonTool(JsonTool gsonTool) {
 		this.gsonTool = gsonTool;
 	}
 
