@@ -31,19 +31,14 @@
 
     <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->
     <!-- Database Configuration -->
-    <bean id="dataSource"
-          class="org.springframework.jndi.JndiObjectFactoryBean">
-      <property name="jndiName"
-                value="java:comp/env/jdbc/appDB"/>   
-      <property name="lookupOnStartup"
-                value="true"/>   
-      <property name="cache"
-                value="true"/>   
-      <property name="proxyInterface"
-                value="javax.sql.DataSource"/>   
-      <property name="resourceRef"
-                value="true" />
-    </bean>
+    
+      <!-- Database Connection Configuration -->
+	  <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	    <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+	    <property name="url" value="jdbc:hsqldb:file:${bundle.location}/onebusaway_nyc" />
+	    <property name="username" value="sa" />
+	    <property name="password" value="" />
+	  </bean>
     
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="hibernateProperties" />
