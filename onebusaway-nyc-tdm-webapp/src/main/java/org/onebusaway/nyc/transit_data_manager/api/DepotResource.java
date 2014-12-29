@@ -42,6 +42,9 @@ public class DepotResource {
 
 	private static final String TEST_DEPOT = "TEST";
 	private static final String TEST_DEPOT_FILE = "testDepot.csv";
+	private static final String NEW_DEPOTS_STRING = "^";  // For OBANYC-2282.  This will map to all depot codes longer 
+	                                                      // than two characters to pick up new depots that are not
+	                                                      // yet mapped to two character codes in depot_ids.csv.
 
 	private static Logger _log = LoggerFactory.getLogger(DepotResource.class);
 
@@ -147,7 +150,19 @@ public class DepotResource {
 		VehicleDepotData data = depotDataProviderService.getVehicleDepotData(depotIdTranslator);
 
 		// Then I need to get the data for the input depot
-		List<CPTVehicleIden> depotVehicles = data.getVehiclesByDepotNameStr(depotName);
+		List<CPTVehicleIden> depotVehicles = null;
+		if (depotName.equals(NEW_DEPOTS_STRING)) {  // Added for OBANYC-2282 to pick up new depots.
+		  // Get list of all depots and check for any longer than two characters
+		  List<String> allDepotNames = data.getAllDepotNames();
+		  depotVehicles = new ArrayList<CPTVehicleIden>();
+		  for (String depotCode : allDepotNames) {
+		    if (depotCode.length() > 2) {
+		      depotVehicles.addAll(data.getVehiclesByDepotNameStr(depotCode));
+		    }
+		  }		    
+		} else {
+		  depotVehicles = data.getVehiclesByDepotNameStr(depotName);
+		}
 
 		// add support for testing/monitoring depot and vehicles
 		if (TEST_DEPOT.equalsIgnoreCase(depotName)) {
