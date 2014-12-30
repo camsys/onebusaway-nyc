@@ -146,6 +146,7 @@ public class DepotResource {
 			throws FileNotFoundException {
 
 		_log.info("Starting getDepotAssignments");
+		_log.info("Depot name: " + depotName);
 
 		VehicleDepotData data = depotDataProviderService.getVehicleDepotData(depotIdTranslator);
 
@@ -153,11 +154,15 @@ public class DepotResource {
 		List<CPTVehicleIden> depotVehicles = null;
 		if (depotName.equals(NEW_DEPOTS_STRING)) {  // Added for OBANYC-2282 to pick up new depots.
 		  // Get list of all depots and check for any longer than two characters
+		  _log.info("Looking for new unmapped depots");
 		  List<String> allDepotNames = data.getAllDepotNames();
+		  _log.info("All depots: " + allDepotNames);
 		  depotVehicles = new ArrayList<CPTVehicleIden>();
 		  for (String depotCode : allDepotNames) {
 		    if (depotCode.length() > 2) {
+		      _log.info("New depot: " + depotCode);
 		      depotVehicles.addAll(data.getVehiclesByDepotNameStr(depotCode));
+		      _log.info("depotVehicles size is " + depotVehicles.size());
 		    }
 		  }		    
 		} else {
