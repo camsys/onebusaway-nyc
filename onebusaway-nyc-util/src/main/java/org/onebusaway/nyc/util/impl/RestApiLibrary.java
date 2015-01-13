@@ -21,8 +21,8 @@ import com.google.gson.JsonParser;
 
 public class RestApiLibrary {
   
-  private static int DEFAULT_READ_TIMEOUT = 60 * 1000;
-  private static int DEFAULT_CONNECTION_TIMEOUT = 60 * 1000;
+  private static int DEFAULT_READ_TIMEOUT = 5 * 1000;
+  private static int DEFAULT_CONNECTION_TIMEOUT = 5 * 1000;
 
 	private String _host = null;
 

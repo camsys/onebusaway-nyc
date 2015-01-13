@@ -1,13 +1,18 @@
 package org.onebusaway.nyc.transit_data_federation_webapp.siri;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.xml.datatype.Duration;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -19,6 +24,7 @@ import org.onebusaway.siri.core.ESiriModuleType;
 import org.onebusaway.siri.core.SiriClientRequest;
 import org.onebusaway.siri.core.SiriCommon;
 import org.onebusaway.siri.core.SiriLibrary;
+import org.onebusaway.siri.core.services.JAXBContextProvider;
 import org.onebusaway.siri.core.versioning.SiriVersioning;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -60,6 +66,7 @@ public class UtaSiriFeed extends SiriCommon {
     _log.error("making siri request");
     
     _client= new DefaultHttpClient();
+    _jaxbContext = new JAXBContextProvider().get();
     SiriVersioning versioning = SiriVersioning.getInstance();
     SiriClientRequest request = new SiriClientRequest();
     request.setSubscribe(false);
@@ -74,39 +81,52 @@ public class UtaSiriFeed extends SiriCommon {
     HttpEntity entity = response.getEntity();
     String responseContent = null;
     Object responseData = null;
-
+    
     Reader responseReader = new InputStreamReader(entity.getContent());
 
     _log.error("response content length: {}", entity.getContentLength());
 
     if (entity.getContentLength() != 0) {
-      responseData = unmarshall(responseReader);
-      responseData = versioning.getPayloadAsVersion(responseData,
-          versioning.getDefaultVersion());
+      XMLInputFactory xmlInputFact = XMLInputFactory.newInstance();
+      XMLStreamReader xmlReader =  xmlInputFact.createXMLStreamReader(filter(responseReader));
+      responseData = unmarshall(xmlReader, VehicleMonitoringDeliveryStructure.class);
+//      responseData = versioning.getPayloadAsVersion(responseData,
+//          versioning.getDefaultVersion());
     }
     
-    Siri siri = (Siri) responseData;
+    VehicleMonitoringDeliveryStructure vm = (VehicleMonitoringDeliveryStructure) responseData;
     
-    handleUtaResponse(siri, false, request);
+    handleUtaResponse(vm, false, request);
     } catch (Exception any) {
       _log.error("start broke:", any);
     }
   }
 
-  private void handleUtaResponse(Siri siri, boolean b, SiriClientRequest request) {
+  private Reader filter(Reader responseReader) {
+    String line = null;
+    try {
+      StringBuilder input = new StringBuilder();
+      StringBuilder output = new StringBuilder();
+      copyReaderToStringBuilder(responseReader, input);
+      int startPosition = input.indexOf("<VehicleMonitoringDelivery");
+      int stopPosition = input.indexOf("</Siri");
+      if (startPosition > 0 && stopPosition > startPosition) {
+        output.append(input.subSequence(startPosition, stopPosition));
+        _log.error("found vm!");
+        return new StringReader(output.toString());
+      }  
+    } catch (Exception any) {
+      _log.error("filter blew:", any);
+    }
+    _log.error("did not find vm");
+    return responseReader;
+  }
+  private void handleUtaResponse(VehicleMonitoringDeliveryStructure deliveryForModule, boolean b, SiriClientRequest request) {
     List<VehicleLocationRecord> records = new ArrayList<VehicleLocationRecord>();
-    
-    _log.error("service delivery=" + siri.getServiceDelivery());
-    
-    VehicleMonitoringDeliveryStructure deliveryForModule =
-        (VehicleMonitoringDeliveryStructure) SiriLibrary.getServiceDeliveriesForModule(
-        siri.getServiceDelivery(), ESiriModuleType.VEHICLE_MONITORING);
-    
     Date now = new Date();
     long timeFrom = now.getTime() - _blockInstanceSearchWindow * 60 * 1000;
     long timeTo = now.getTime() + _blockInstanceSearchWindow * 60 * 1000;
 
-     _log.error("extensions=" + siri.getExtensions());
      _log.error("delivery=" + deliveryForModule);
      
      for (VehicleActivityStructure vehicleActivity : deliveryForModule.getVehicleActivity()) {

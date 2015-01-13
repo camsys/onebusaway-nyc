@@ -66,17 +66,22 @@
       <property name="refreshInterval" value="60" />
     </bean>
 -->
-	<bean id="hamilton_avl"
-		class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
-		<property name="tripUpdatesUrl" value="http://localhost:8008/gtfs-realtime-hamilton/tripUpdates" />
-		<property name="vehiclePositionsUrl" value="http://localhost:8008/gtfs-realtime-hamilton/vehiclePositions" />
-		<property name="refreshInterval" value="30" />
-		<property name="agencyIds">
-			<list>
-				<value>PAV</value>
-			</list>
-		</property>
-	</bean>
+<!-- 	<bean id="hamilton_avl" -->
+<!-- 		class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource"> -->
+<!-- 		<property name="tripUpdatesUrl" value="http://localhost:8008/gtfs-realtime-hamilton/tripUpdates" /> -->
+<!-- 		<property name="vehiclePositionsUrl" value="http://localhost:8008/gtfs-realtime-hamilton/vehiclePositions" /> -->
+<!-- 		<property name="refreshInterval" value="30" /> -->
+<!-- 		<property name="agencyIds"> -->
+<!-- 			<list> -->
+<!-- 				<value>PAV</value> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+<!-- 	</bean> -->
+
+<bean class="org.onebusaway.siri.core.services.HttpClientServiceImpl" />
+<bean class="org.onebusaway.siri.core.services.SchedulingServiceImpl" />
+<bean class="org.onebusaway.nyc.transit_data_federation_webapp.siri.UtaSiriFeed" />
+
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean">   
     </bean>
 	<!-- Input Queue Configuration -->
