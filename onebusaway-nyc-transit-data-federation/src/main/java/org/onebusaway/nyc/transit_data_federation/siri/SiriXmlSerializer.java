@@ -1,7 +1,9 @@
 package org.onebusaway.nyc.transit_data_federation.siri;
 
 import uk.org.siri.siri.Siri;
+import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
 
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -65,6 +67,13 @@ public class SiriXmlSerializer {
   public Siri fromXml(String xml) throws JAXBException {
     Unmarshaller u = context.createUnmarshaller();
     Siri siri = (Siri) u.unmarshal(new StringReader(xml));
+    
+    return siri;
+  }
+
+  public Siri fromXml(Reader reader) throws JAXBException {
+    Unmarshaller u = context.createUnmarshaller();
+    Siri siri = (Siri) u.unmarshal(reader);
     
     return siri;
   }

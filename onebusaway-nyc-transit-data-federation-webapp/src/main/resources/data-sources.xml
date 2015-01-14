@@ -80,7 +80,8 @@
 
 <bean class="org.onebusaway.siri.core.services.HttpClientServiceImpl" />
 <bean class="org.onebusaway.siri.core.services.SchedulingServiceImpl" />
-<bean class="org.onebusaway.nyc.transit_data_federation_webapp.siri.UtaSiriFeed" />
+<!-- <bean class="org.onebusaway.nyc.transit_data_federation_webapp.siri.UtaSiriFeed" /> -->
+<bean class="org.onebusaway.nyc.transit_data_federation_webapp.siri.UtaSiriClient" />
 
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean">   
     </bean>
@@ -115,7 +116,8 @@
     </bean>
     
     <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-        <property name="bundleStoreRoot" value="${bundle.location}" />
+<!--         <property name="bundleStoreRoot" value="${bundle.location}" /> -->
+        <property name="bundleStoreRoot" value="/home/dev/opt/bundle/uta" />
         <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
