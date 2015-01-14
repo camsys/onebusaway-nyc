@@ -27,7 +27,7 @@ import java.util.List;
 
 public class GoogleGeocoderImplTest {
 
-  @Test
+    //@Test
   public void testZipCodeSearch() {
 
     GoogleGeocoderImpl geocoder = new GoogleGeocoderImpl();
