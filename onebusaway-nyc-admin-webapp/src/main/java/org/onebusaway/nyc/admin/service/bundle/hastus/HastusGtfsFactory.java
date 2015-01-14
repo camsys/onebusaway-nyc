@@ -670,7 +670,12 @@ public class HastusGtfsFactory {
   }
 
   private AgencyAndId id(String id) {
-    return new AgencyAndId(_agencyId, id);
+    return new AgencyAndId(_agencyId, sanitize(id));
+  }
+
+  private String sanitize(String id) {
+    if (id == null) return null;
+    return id.replace("/", "");
   }
 
   public void setCalendarStartDate(ServiceDate startDate) {
