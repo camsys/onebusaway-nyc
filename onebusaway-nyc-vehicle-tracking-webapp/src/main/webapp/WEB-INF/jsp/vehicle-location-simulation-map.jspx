@@ -242,7 +242,7 @@ OBA.Debug = function() {
           var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
           
 	        var point = new OpenLayers.LonLat(record.lon, record.lat);
-          var icon_url = 'http://www.openlayers.org/dev/img/marker.png';
+          var icon_url = 'http://www.openstreetmap.org/openlayers/img/marker.png';
           var proj = new OpenLayers.Projection("EPSG:4326");
           point.transform(proj, map.getProjectionObject());
           
@@ -306,16 +306,16 @@ OBA.Debug = function() {
 								markerText.inferredPhase = value;
 								
 								if (value.indexOf("PROGRESS") != -1) {
-									icon_url = 'http://www.openlayers.org/dev/img/marker-green.png';
+									icon_url = 'http://www.openstreetmap.org/openlayers/img/marker-green.png';
 								} else if (value.indexOf("LAYOVER") != -1) {
-									icon_url = 'http://www.openlayers.org/dev/img/marker-blue.png';
+									icon_url = 'http://www.openstreetmap.org/openlayers/img/marker-blue.png';
 								} 
 							} else if (property === "dsc") {
 								markerText.dsc = value;
 							} else if (property === "inferredStatus") {
 								markerText.status = value;
 								if (value.indexOf("deviated") != -1) {
-									icon_url = 'http://query.mtabuscis.net/tools/img/marker-red-center.png';
+									icon_url = 'http://www.openstreetmap.org/openlayers/marker-red-center.png';
 								}
 							} else if (property === "inferredDsc") {
 								markerText.inferredDsc = value;
@@ -358,7 +358,7 @@ OBA.Debug = function() {
 	          var inferredPoint = new OpenLayers.LonLat(inferredLon, inferredLat);
 		        var inferredProj = new OpenLayers.Projection("EPSG:4326");
 	          inferredPoint.transform(inferredProj, map.getProjectionObject());
-	          var inferredIcon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker-gold.png',size,offset);
+	          var inferredIcon = new OpenLayers.Icon('http://www.openstreetmap.org/openlayers/img/marker-gold.png',size,offset);
 	          inferredMarker = new OpenLayers.Marker(inferredPoint, inferredIcon);
 	          inferredMarkers.addMarker(inferredMarker);
 	          markerText.inferredLatLon = "<a name='inferredLoc' href='#'>" + inferredLat + "," + inferredLon + "</a>";
