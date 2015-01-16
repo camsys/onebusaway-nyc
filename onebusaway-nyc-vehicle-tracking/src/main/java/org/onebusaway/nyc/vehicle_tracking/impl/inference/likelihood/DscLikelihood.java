@@ -28,6 +28,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityPar
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +38,8 @@ import com.google.common.collect.Sets;
 @Component
 public class DscLikelihood implements SensorModelRule {
 
+  private final Logger _log = LoggerFactory.getLogger(DscLikelihood.class);
+  
   private DestinationSignCodeService _destinationSignCodeService;
 
   @Autowired
@@ -49,7 +53,7 @@ public class DscLikelihood implements SensorModelRule {
   }
 
   public static enum DSC_STATE {
-    DSC_OOS_IP, DSC_OOS_NOT_IP, DSC_IS_NO_BLOCK, DSC_MATCH, DSC_ROUTE_MATCH, DSC_NO_ROUTE_MATCH, DSC_NOT_VALID, DSC_DEADHEAD_MATCH
+    DSC_OOS_IP, DSC_OOS_NOT_IP, DSC_IS_NO_BLOCK, DSC_MATCH, DSC_ROUTE_MATCH, DSC_NO_ROUTE_MATCH, DSC_NOT_VALID, DSC_DEADHEAD_MATCH, DSC_POSSIBLE_LAYOVER, DSC_FORMAL_DEADHEAD_MATCH
   }
 
   @Override
@@ -61,6 +65,7 @@ public class DscLikelihood implements SensorModelRule {
     switch (state) {
       case DSC_OOS_IP:
         result.addResultAsAnd("i.p. o.o.s. dsc", 0.0);
+        _log.debug("dropping result as oos dsc");
         return result;
       case DSC_NOT_VALID:
         result.addResultAsAnd("!valid dsc", 1d);
@@ -74,6 +79,10 @@ public class DscLikelihood implements SensorModelRule {
       case DSC_DEADHEAD_MATCH:
         result.addResultAsAnd("i.s. deadhead matching DSC", (8d/30d));
         return result;
+      case DSC_FORMAL_DEADHEAD_MATCH:
+        _log.error("FORMAL DEADHEAD");
+        result.addResultAsAnd("i.s. deadhead matching DSC", (10d/30d));
+        return result;
       case DSC_ROUTE_MATCH:
         result.addResultAsAnd("i.s. route-matching/deadhead-before/after", (8d/30d));
         return result;
@@ -81,9 +90,15 @@ public class DscLikelihood implements SensorModelRule {
         result.addResultAsAnd("!o.o.s. dsc null-block", (1d/30d));
         return result;
       case DSC_NO_ROUTE_MATCH:
+        _log.debug("no route match dsc");
         result.addResultAsAnd("i.s. non-route-matching DSC", 0.0);
         return result;
+//      case DSC_POSSIBLE_LAYOVER:
+//        _log.debug("possible layover");
+//        result.addResultAsAnd("possible layover", /*(1d/30d)*/(1d/100d));
+//        return result;
       default:
+        _log.error("fall through!");
         return null;
     }
 
@@ -106,7 +121,9 @@ public class DscLikelihood implements SensorModelRule {
         return DSC_STATE.DSC_NOT_VALID;
       } else if (EVehiclePhase.IN_PROGRESS == phase && obs.hasOutOfServiceDsc()) {
         return DSC_STATE.DSC_OOS_IP;
-      } else {
+      } /*else if (isPossibleLayover(obs)) {
+        return DSC_STATE.DSC_POSSIBLE_LAYOVER;
+      } */else {
         return DSC_STATE.DSC_OOS_NOT_IP;
       }
     } else {
@@ -118,7 +135,7 @@ public class DscLikelihood implements SensorModelRule {
         dscs.add(bs.getDestinationSignCode());
         final Set<AgencyAndId> routes = Sets.newHashSet();
         routes.add(bs.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId());
-
+        
         /*
          * dsc changes occur between parts of a block, so account for that
          */
@@ -128,8 +145,10 @@ public class DscLikelihood implements SensorModelRule {
 
           if (nextTrip != null) {
             final String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(nextTrip.getTrip().getId());
-            if (dsc != null)
+            if (dsc != null) {
+              _log.debug("found nextDSC=" + dsc);
               dscs.add(dsc);
+            }
             routes.add(nextTrip.getTrip().getRouteCollection().getId());
           }
         }
@@ -145,9 +164,25 @@ public class DscLikelihood implements SensorModelRule {
             && dscs.contains(observedDsc)) {
           if (EVehiclePhase.IN_PROGRESS == phase)
             return DSC_STATE.DSC_MATCH;
-          else
+          else {
+            if (isFormalDeadhead(context)) {
+              _log.error("FORMAL DEADHEAD DSC 1");
+              return DSC_STATE.DSC_FORMAL_DEADHEAD_MATCH;
+            }
             return DSC_STATE.DSC_DEADHEAD_MATCH;
+          }
         } else {
+          /*
+           * following the comment above, if we are deadheading with formal inference
+           * then we have more certainty than deadheading with no inference
+           */
+          if (EVehiclePhase.DEADHEAD_DURING == phase
+              && isFormalDeadhead(context)) {
+            _log.error("FORMAL DEADHEAD DSC 2");
+            return DSC_STATE.DSC_FORMAL_DEADHEAD_MATCH;
+          }
+          
+          
           /*
            * a dsc implies a route. even though the reported dsc may not match,
            * we expect the general route to be the same...
@@ -162,12 +197,87 @@ public class DscLikelihood implements SensorModelRule {
 
           if (routeMatch)
             return DSC_STATE.DSC_ROUTE_MATCH;
-          else
-            return DSC_STATE.DSC_NO_ROUTE_MATCH;
+          else {
+            // here we relax the no route match if we are an OOS DSC but last observation was IS
+            // and we are formal
+           /* if (isPossibleDscLayover(obs, routes)) {
+              _log.error("possible layover");
+              return DSC_STATE.DSC_POSSIBLE_LAYOVER;
+            } else {
+             */ return DSC_STATE.DSC_NO_ROUTE_MATCH;
+           // }
+          }
         }
 
       }
     }
+  }
+
+  /*
+   * TODO perhaps check the last non-o.o.s. dsc to give
+   * higher weight to deadhead-after's that match (when
+   * we have good run-info, perhaps).
+   */
+  private boolean isFormalDeadhead(Context context) {
+    Observation obs = context.getObservation();
+    if (context.getParentState() == null) return false;
+    EVehiclePhase parentPhase = context.getParentState().getJourneyState().getPhase();
+    _log.debug("lastValidDSC=" + context.getObservation().getLastValidDestinationSignCode());
+    if (obs.getFuzzyMatchDistance() != null && obs.getFuzzyMatchDistance() == 0 
+        && obs.hasOutOfServiceDsc()
+        && EVehiclePhase.IN_PROGRESS != parentPhase)
+      return true;
+    return false;
+  }
+
+  private boolean isPossibleLayover(Observation obs) {
+    if (obs.getPreviousObservation() == null && obs.getLastValidDestinationSignCode() == null) {
+      _log.error("no prev obs for" + new java.util.Date(obs.getTime()) + " with dsc=" + obs.getRecord().getDestinationSignCode());
+      return false;
+    }
+    Observation previousObservation = obs.getPreviousObservation();
+//    _log.info("possibeLayover: dsc=" + obs.getRecord().getDestinationSignCode()
+//        + ", oos?" + obs.hasOutOfServiceDsc() 
+//        + ", matchDistance=" + obs.getFuzzyMatchDistance() 
+//        + ", previousDsc=" + (previousObservation == null?"NuLl":previousObservation.hasValidDsc())
+//        + ", impliedRoutes=" + obs.getImpliedRouteCollections()
+//        + ", lastValidDsc=" + obs.getLastValidDestinationSignCode());
+
+    if (
+        obs.hasOutOfServiceDsc()
+        /* we still have potential routes we could be serving */
+         && !obs.getImpliedRouteCollections().isEmpty()
+         // we are run-matched
+         && obs.getFuzzyMatchDistance() == 0
+        ) {
+      return true;
+    }
+    return false;
+  }
+
+  private boolean isPossibleDscLayover(Observation obs, Set<AgencyAndId> routes) {
+    if (obs.getPreviousObservation() == null && obs.getLastValidDestinationSignCode() == null) {
+      _log.error("no prev obs for" + new java.util.Date(obs.getTime()) + " with dsc=" + obs.getRecord().getDestinationSignCode());
+      return false;
+    }
+    Observation previousObservation = obs.getPreviousObservation();
+    _log.error("possibeLayover: dsc=" + obs.getRecord().getDestinationSignCode()
+        + ", oos?" + obs.hasOutOfServiceDsc() 
+        + ", matchDistance=" + obs.getFuzzyMatchDistance() 
+        + ", previousDsc=" + (previousObservation == null?"NuLl":previousObservation.hasValidDsc())
+        + ", impliedRoutes=" + obs.getImpliedRouteCollections()
+        + ", routes=" + routes
+        + ", lastValidDsc=" + obs.getLastValidDestinationSignCode());
+    if (
+        /*obs.hasOutOfServiceDsc()
+        && */ obs.getFuzzyMatchDistance() != null 
+        && obs.getFuzzyMatchDistance() == 0
+        && (previousObservation == null || previousObservation.hasValidDsc())
+        && routes.isEmpty()
+        ) {
+      return true;
+    }
+    return false;
   }
 
 }

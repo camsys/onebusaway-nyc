@@ -100,7 +100,7 @@ public class SiriIntegrationTestBase {
   
   protected HashMap<String,Object> getVmResponse(Map<String, String> params) throws IOException {
     HttpClient client = new HttpClient();
-    String port = System.getProperty("org.onebusaway.webapp.port", "9000");
+    String port = System.getProperty("org.onebusaway.webapp.port", "9905");
     String url = null;
     url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?";
     if (!params.containsKey(("key"))) {
@@ -144,7 +144,7 @@ public class SiriIntegrationTestBase {
   protected HashMap<String,Object> getVmResponse(String operatorId, String vId) throws IOException, HttpException {
 
 	  HttpClient client = new HttpClient();
-	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
+	  String port = System.getProperty("org.onebusaway.webapp.port", "9905");
 	  String url = null;
 	  if (operatorId == null && vId == null) {
 	    // open ended call
@@ -168,7 +168,7 @@ public class SiriIntegrationTestBase {
   protected HashMap<String,Object> getSmResponse(String operatorId, String mRef) throws IOException, HttpException {
 
 	  HttpClient client = new HttpClient();
-	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
+	  String port = System.getProperty("org.onebusaway.webapp.port", "9905");
 	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?key=TEST&StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);

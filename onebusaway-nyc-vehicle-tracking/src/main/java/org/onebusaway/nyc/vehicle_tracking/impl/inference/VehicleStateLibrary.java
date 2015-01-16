@@ -131,6 +131,7 @@ public class VehicleStateLibrary {
 
     final double dist = TurboButton.distance(obs.getLocation(),
         layoverSpot.getStopTime().getStop().getStopLocation());
+    _log.debug("layover spot? " + (dist <= _layoverStopDistance));
     return dist <= _layoverStopDistance;
   }
 

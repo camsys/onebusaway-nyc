@@ -426,6 +426,9 @@ public class BlockStateService {
     final Coordinate obsPoint = new Coordinate(record.getLongitude(), record.getLatitude());
     final Envelope searchEnv = new Envelope(bounds.getMinLon(), bounds.getMaxLon(), bounds.getMinLat(), bounds.getMaxLat());
 
+    
+    _log.debug("index=" + _index);
+    _log.debug("searchEnv=" + searchEnv);
     @SuppressWarnings("unchecked")
     final List<Collection<LocationIndexedLine>> lineMatches = _index.query(searchEnv);
     final Multimap<BlockInstance, Double> instancesToDists = TreeMultimap.create(
@@ -854,6 +857,9 @@ public class BlockStateService {
         for (final Entry<Envelope, Collection<LocationIndexedLine>> envLines : envToLines.asMap().entrySet()) {
           _index.insert(envLines.getKey(), envLines.getValue());
         }
+      } else {
+        _log.error("building empty spatial index.  Something went wrong");
+        _index = new STRtree(2);
       }
     } catch (final Exception ex) {
       ex.printStackTrace();

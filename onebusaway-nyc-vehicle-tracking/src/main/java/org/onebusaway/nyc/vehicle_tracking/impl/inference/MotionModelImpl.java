@@ -46,6 +46,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.TurboButton;
 import org.onebusaway.realtime.api.EVehiclePhase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Objects;
@@ -64,6 +66,7 @@ import com.google.common.collect.Sets;
  */
 public class MotionModelImpl implements MotionModel<Observation> {
  
+  private final Logger _log = LoggerFactory.getLogger(MotionModelImpl.class);
   /**
    * Effective sample size thresholds that trigger resampling.
    */
@@ -314,6 +317,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
         /*
          * These are all the snapped and DSC/run blocks
          */
+        _log.debug("generalBlockTransition");
         transitions.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(obs));
       } else if (parentBlockStateObs != null) {
 
@@ -335,6 +339,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
             parentBlockStateObs.getBlockState().getBlockInstance(),
             parentBlockStateObs.getBlockState().getBlockLocation().getDistanceAlongBlock());
       } else {
+        _log.error("null block state");
         newParentBlockStateObs = null;
       }
       transitions.add(newParentBlockStateObs);

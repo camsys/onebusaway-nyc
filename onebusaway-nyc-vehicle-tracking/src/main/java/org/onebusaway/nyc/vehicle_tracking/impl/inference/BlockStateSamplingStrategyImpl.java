@@ -27,6 +27,8 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +37,8 @@ import com.google.common.collect.Iterables;
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
+  private final Logger _log = LoggerFactory.getLogger(BlockStateSamplingStrategyImpl.class);
+  
   //radius of obs compared to schedule for keeping deadhead trips warm
   private static final double LOCATION_RADIUS = 100.0;  
   
@@ -204,8 +208,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     double newSchedTime = currentTime + timeToGetToCurrentTimeLoc 
         + Math.max(schedTimeError, -timeToGetToCurrentTimeLoc/3d);
     
-    if (Double.isInfinite(newSchedTime))
+    if (Double.isInfinite(newSchedTime)) {
+      _log.debug("infinite new schedule time");
       return null;
+    }
 
 
     BlockStateObservation schedState;
@@ -213,6 +219,15 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
           obs, blockInstance, 0.0);
     } else if (endSchedTime < newSchedTime) {
+      // TODO this is NOT key to trace 5040
+      // we are in between trips -- if it looks like we are deadheading then continue
+      if (isDeadheadToNextTrip(obs)) {
+        schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
+            obs, blockInstance, (int) endSchedTime);
+        _log.error("schedule override ");
+        return schedState;
+      }
+      _log.debug("end schedule time 2");
       return null;
     } else {
       /**
@@ -224,11 +239,37 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
           obs, blockInstance, (int) newSchedTime);
       if (!schedState.isOnTrip()) {
+//        _log.error("dropped non trip 2");
+        
+        if (isDeadheadToNextTrip(obs)) {
+          // we are still formal, so continue
+          _log.error("formal override");
+          return schedState;
+        }
         return null;
       }
     }
 
-    return orientationCheck(null, schedState, obs);
+    BlockStateObservation orientationCheck = orientationCheck(null, schedState, obs);
+    if (orientationCheck == null) {
+      // if inference is formal, -we are deadheading-, and we are out of service
+      // do not perform orientation check
+      if (isDeadheadToNextTrip(obs)) {
+        _log.error("orientation check override ");
+        return schedState;
+      }
+      _log.debug("prior orientation check failed");
+    }
+    return orientationCheck;
+  }
+
+  private boolean isDeadheadToNextTrip(Observation obs) {
+    // TODO consider line 81 logic here
+//    return obs.getFuzzyMatchDistance() != null 
+//        && obs.getFuzzyMatchDistance() == 0
+//        && obs.hasOutOfServiceDsc();
+        /*&& EVehiclePhase.IN_PROGRESS*/
+    return false;
   }
 
   @Override
@@ -251,13 +292,18 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
           obs, parentBlockState.getBlockInstance(), 0.0);
     } else if (endSchedTime < newSchedTime) {
+      _log.error("end schedule time");
       return null;
     } else {
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
           obs, parentBlockState.getBlockInstance(), newSchedTime);
     }
 
-    return orientationCheck(parentBlockStateObs, schedState, obs);
+    BlockStateObservation orientationCheck = orientationCheck(parentBlockStateObs, schedState, obs);
+    if (orientationCheck == null) {
+      _log.debug("transition orientation check failed");
+    }
+    return orientationCheck;
   }
 
   /**
@@ -298,8 +344,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
                 adjustedDistAlong);
             return adjustedState;
           }
+          _log.debug("wrong direction 1");
           return null;
         } else {
+          _log.debug("wrong direction 2");
           return null;
         }
       }

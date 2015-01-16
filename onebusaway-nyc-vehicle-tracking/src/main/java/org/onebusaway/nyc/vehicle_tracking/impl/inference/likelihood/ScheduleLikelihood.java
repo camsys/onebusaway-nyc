@@ -27,12 +27,15 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
 
 import org.apache.commons.math.util.FastMath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ScheduleLikelihood implements SensorModelRule {
 
+  private final Logger _log = LoggerFactory.getLogger(ScheduleLikelihood.class);
   /*
    * These are all in minutes
    */
@@ -73,6 +76,7 @@ public class ScheduleLikelihood implements SensorModelRule {
       Observation obs) throws BadProbabilityParticleFilterException {
     final SensorModelResult result = new SensorModelResult("pSchedule", 1.0);
     if (blockState == null) {
+      _log.debug("no block");
       result.addLogResultAsAnd("null state", 0.0);
 
     } else {
@@ -85,6 +89,7 @@ public class ScheduleLikelihood implements SensorModelRule {
           final double pSched = getScheduleDevLogProb(x, schedDist);
           result.addLogResultAsAnd("deadhead after", pSched);
         } else {
+          _log.debug("deadhead after!");
           result.addLogResultAsAnd("deadhead after", 0.0);
         }
 

@@ -91,7 +91,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			String defaultValue) {
 	  try {
       if (_configurationKeyToValueMap.size() == 0) {
-        _log.warn("No configuration values are present!");
+        _log.debug("No configuration values are present!");
       } else {
         _log.debug("Have " + _configurationKeyToValueMap.size()
             + " configuration parameters.");

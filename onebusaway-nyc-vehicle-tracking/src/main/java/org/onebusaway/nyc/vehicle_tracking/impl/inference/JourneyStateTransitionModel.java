@@ -22,12 +22,15 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JourneyStateTransitionModel {
 
+  private final Logger _log = LoggerFactory.getLogger(JourneyStateTransitionModel.class);
   /*
    * Time (seconds) that the vehicle needs to be not moving in order to be a layover.
    */
@@ -112,8 +115,10 @@ public class JourneyStateTransitionModel {
 
     final long secondsNotInMotion = (obs.getTime() - parentState.getMotionState().getLastInMotionTime()) / 1000;
 
-    if (secondsNotInMotion >= LAYOVER_WAIT_TIME)
+    if (secondsNotInMotion >= LAYOVER_WAIT_TIME) {
+      LoggerFactory.getLogger(JourneyStateTransitionModel.class).info("Layover stopped");
       return true;
+    }
 
     return false;
   }
@@ -136,9 +141,11 @@ public class JourneyStateTransitionModel {
       final double distanceAlong = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock();
       if (distanceAlong <= 0.0) {
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
+          _log.error("layover before");
           return JourneyState.layoverBefore();
         } else {
           // TODO: handle layover-in-motion here (possibly) to allow a moving layover_before
+          _log.error("layover in motion");
           return JourneyState.deadheadBefore(null);
         }
       } else if (distanceAlong > blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
@@ -146,6 +153,7 @@ public class JourneyStateTransitionModel {
          * Note: we changed this from >= because snapped deadhead-after states could be more
          * likely than in-progress at/near the end.
          */
+        _log.error("layover after");
          return JourneyState.deadheadAfter();
         
       } else {
@@ -160,14 +168,18 @@ public class JourneyStateTransitionModel {
          */
         
         if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
+          _log.error("potential layover during");
           if ((obs.hasOutOfServiceDsc())) {
             if (blockState.isRunFormal()) {
+              _log.error("layover during oos");
               return JourneyState.layoverDuring(isDetour);
             }
             // we don't have confidence in this being a layover
+            _log.error("low confidence layover during");
             return JourneyState.deadheadDuring(isDetour); 
           } else {
             // in service DSC
+            _log.error("layover during is");
             return JourneyState.layoverDuring(isDetour);
           }
         } else {
@@ -189,8 +201,25 @@ public class JourneyStateTransitionModel {
         	 */
             if(parentPhase != null && parentPhase.equals(EVehiclePhase.LAYOVER_DURING)
             		&& blockState.isAtPotentialLayoverSpot() && blockState.isRunFormal()) {
+              _log.error("layover during 2");
             	return JourneyState.layoverDuring(false);
             } else {
+              if (parentPhase != null && parentPhase.equals(EVehiclePhase.LAYOVER_DURING)
+                  && !blockState.isAtPotentialLayoverSpot() && blockState.isRunFormal()) {
+                _log.error("too far from layover spot 1");
+              }
+              
+              // allow a transition from DEADHEAD_DURING to LAYOVER_DURING if everything else above is true
+              if (parentPhase != null && parentPhase.equals(EVehiclePhase.DEADHEAD_DURING)
+                  && blockState.isAtPotentialLayoverSpot() && blockState.isRunFormal()) {
+                _log.error("layover during 4");
+//                return JourneyState.layoverDuring(false);
+              }
+              if (parentPhase != null && parentPhase.equals(EVehiclePhase.DEADHEAD_DURING)
+                  && !blockState.isAtPotentialLayoverSpot() && blockState.isRunFormal()) {
+                _log.error("too far from layover spot 2");
+              }
+              _log.debug("layover during 3");
             	return JourneyState.deadheadDuring(false);
             }
           }

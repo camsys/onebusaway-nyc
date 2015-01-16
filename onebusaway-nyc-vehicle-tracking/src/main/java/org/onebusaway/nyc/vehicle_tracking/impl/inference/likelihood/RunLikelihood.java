@@ -22,11 +22,15 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityPar
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RunLikelihood implements SensorModelRule {
 
+  private final Logger _log = LoggerFactory.getLogger(RunLikelihood.class);
+  
   public static enum RUN_INFO_STATE {
     NO_RUN_INFO, RUN_INFO_NO_RUN, FORMAL_RUN_MATCH, NO_FORMAL_FUZZY_MATCH, NO_FORMAL_NO_FUZZY_MATCH,
   };
@@ -39,6 +43,7 @@ public class RunLikelihood implements SensorModelRule {
 
     switch (state) {
       case NO_RUN_INFO:
+        _log.debug("no run info");
         result.addResultAsAnd("no run info", 1d);
         return result;
       case FORMAL_RUN_MATCH:
@@ -54,6 +59,7 @@ public class RunLikelihood implements SensorModelRule {
         result.addResultAsAnd("run-info, but no run", (2d/20d));
         return result;
       default:
+        _log.debug("run fall through");
         return null;
     }
   }

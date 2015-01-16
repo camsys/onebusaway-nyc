@@ -1,0 +1,5 @@
+dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs
+7042,MTA_NYCT,4,0
+7041,MTA_NYCT,52,0
+7041,MTABC,52,0
+7040,MTABC,43,0

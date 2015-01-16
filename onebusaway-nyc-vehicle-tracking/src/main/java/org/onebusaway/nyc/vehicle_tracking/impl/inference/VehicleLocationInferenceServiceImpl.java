@@ -618,7 +618,7 @@ public class VehicleLocationInferenceServiceImpl implements
     			}
 
     			_inferenceInstance.setOperatorAssignmentService(opSvc);
-    			_log.warn("Set operator assignment service to dummy for debugging!");
+    			_log.debug("Set operator assignment service to dummy for debugging!");
     		}
 
     		// bypass/process record through inference

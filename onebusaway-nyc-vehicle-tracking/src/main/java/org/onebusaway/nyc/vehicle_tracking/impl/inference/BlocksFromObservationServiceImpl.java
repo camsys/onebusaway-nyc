@@ -173,8 +173,10 @@ public class BlocksFromObservationServiceImpl implements
             notInProgressStates));
       }
       if (inProgressStates == null || inProgressStates.isEmpty()
-          || potentialBlockStates.isEmpty())
+          || potentialBlockStates.isEmpty()) {
         potentialBlockStates.add(null);
+        _log.debug("no potential blocks for obs=" + new java.util.Date(observation.getTime()));
+      }
   
       return potentialBlockStates;
     } 
