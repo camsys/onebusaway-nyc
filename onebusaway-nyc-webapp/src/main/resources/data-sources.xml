@@ -63,14 +63,17 @@
 <!--         </property> -->
 <!-- </bean> -->
         <!--  UTA -->
+
+
+
             <bean id="externalGeocoderImpl" class="org.onebusaway.nyc.geocoder.impl.GoogleGeocoderImpl">
-    <property name="wktFilterPolygon" value="POLYGON((-104.617737 39.914082, -104.617737 39.614231, -105.109840 39.614231, -105.109840 39.914082, -104.617737 39.914082))"/>
+    <property name="wktFilterPolygon" value="POLYGON((-111.478576 41.528157, -112.469597 41.528157, -112.469597 39.975512, -111.478576 39.975512, -111.478576 41.528157))"/>
         <property name="resultBiasingBounds">
             <bean class="org.onebusaway.geospatial.model.CoordinateBounds">
-                <property name="minLat" value="39.914082" />
-                <property name="minLon" value="-104.617737" />
-                <property name="maxLat" value="39.614231" />
-                <property name="maxLon" value="-105.109840" />
+                <property name="minLat" value="39.975512" />
+                <property name="minLon" value="-112.469597" />
+                <property name="maxLat" value="41.528157" />
+                <property name="maxLon" value="-111.478576" />
             </bean>
         </property>
         
@@ -105,10 +108,21 @@
         <bean id="serviceAreaServiceImpl" class="org.onebusaway.presentation.impl.ServiceAreaServiceImpl">
         <property name="defaultBounds">
             <bean class="org.onebusaway.geospatial.model.CoordinateBounds">
-                <property name="minLat" value="39.914082" />
-                <property name="minLon" value="-104.617737" />
-                <property name="maxLat" value="39.614231" />
-                <property name="maxLon" value="-105.109840" />
+<!--                 <property name="minLat" value="-104.617737" /> -->
+<!--                 <property name="minLon" value="39.614231" /> -->
+<!--                 <property name="maxLat" value="-105.109840" /> -->
+<!--                 <property name="maxLon" value="39.914082" /> -->
+<!--                 <property name="minLat" value="39.914082" /> -->
+<!--                 <property name="minLon" value="-104.617737" /> -->
+<!--                 <property name="maxLat" value="39.614231" /> -->
+<!--                 <property name="maxLon" value="-105.109840" /> -->
+                <property name="minLat" value="39.975512" />
+                <property name="minLon" value="-112.469597" />
+                <property name="maxLat" value="41.528157" />
+                <property name="maxLon" value="-111.478576" />
+
+
+
             </bean>
         </property>
         <property name="calculateDefaultBoundsFromAgencyCoverage" value="false" />

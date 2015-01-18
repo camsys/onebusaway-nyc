@@ -117,7 +117,7 @@
     
     <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
 <!--         <property name="bundleStoreRoot" value="${bundle.location}" /> -->
-        <property name="bundleStoreRoot" value="/home/dev/opt/bundle/uta" />
+        <property name="bundleStoreRoot" value="/home/sbrown/opt/bundle/uta" />
         <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 

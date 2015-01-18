@@ -79,15 +79,142 @@ public class UtaSiriClient {
 
   public void refresh() throws Exception {
     List<VehicleLocationRecord> records = new ArrayList<VehicleLocationRecord>();
-//    refresh("11");
-//    refresh("17");
-//    refresh("2");
-//    refresh("200");
-//    refresh("201");
-//    refresh("205");
-//    refresh("209");
-//    refresh("21");
-    records.addAll(refresh("213"));
+		records.addAll(refresh("11"));
+		records.addAll(refresh("17"));
+		records.addAll(refresh("2"));
+		records.addAll(refresh("200"));
+		records.addAll(refresh("201"));
+		records.addAll(refresh("205"));
+		records.addAll(refresh("209"));
+		records.addAll(refresh("21"));
+		records.addAll(refresh("213"));
+		records.addAll(refresh("217"));
+		records.addAll(refresh("218"));
+		records.addAll(refresh("220"));
+		records.addAll(refresh("223"));
+		records.addAll(refresh("227"));
+		records.addAll(refresh("228"));
+		records.addAll(refresh("232"));
+		records.addAll(refresh("240"));
+		records.addAll(refresh("248"));
+		records.addAll(refresh("2X"));
+		records.addAll(refresh("3"));
+		records.addAll(refresh("307"));
+		records.addAll(refresh("313"));
+		records.addAll(refresh("320"));
+		records.addAll(refresh("33"));
+		records.addAll(refresh("35"));
+		records.addAll(refresh("354"));
+		records.addAll(refresh("35M"));
+		records.addAll(refresh("39"));
+		records.addAll(refresh("41"));
+		records.addAll(refresh("45"));
+		records.addAll(refresh("451"));
+		records.addAll(refresh("453"));
+		records.addAll(refresh("454"));
+		records.addAll(refresh("455"));
+		records.addAll(refresh("456"));
+		records.addAll(refresh("460"));
+		records.addAll(refresh("461"));
+		records.addAll(refresh("462"));
+		records.addAll(refresh("463"));
+		records.addAll(refresh("47"));
+		records.addAll(refresh("470"));
+		records.addAll(refresh("471"));
+		records.addAll(refresh("472"));
+		records.addAll(refresh("473"));
+		records.addAll(refresh("477"));
+		records.addAll(refresh("500"));
+		records.addAll(refresh("509"));
+		records.addAll(refresh("513"));
+		records.addAll(refresh("516"));
+		records.addAll(refresh("519"));
+		records.addAll(refresh("520"));
+		records.addAll(refresh("525"));
+		records.addAll(refresh("526"));
+		records.addAll(refresh("54"));
+		records.addAll(refresh("551"));
+		records.addAll(refresh("6"));
+		records.addAll(refresh("603"));
+		records.addAll(refresh("604"));
+		records.addAll(refresh("606"));
+		records.addAll(refresh("608"));
+		records.addAll(refresh("612"));
+		records.addAll(refresh("613"));
+		records.addAll(refresh("616"));
+		records.addAll(refresh("62"));
+		records.addAll(refresh("625"));
+		records.addAll(refresh("626"));
+		records.addAll(refresh("627"));
+		records.addAll(refresh("630"));
+		records.addAll(refresh("640"));
+		records.addAll(refresh("645"));
+		records.addAll(refresh("650"));
+		records.addAll(refresh("664"));
+		records.addAll(refresh("665"));
+		records.addAll(refresh("667"));
+		records.addAll(refresh("674"));
+		records.addAll(refresh("675"));
+		records.addAll(refresh("701"));
+		records.addAll(refresh("703"));
+		records.addAll(refresh("704"));
+		records.addAll(refresh("710"));
+		records.addAll(refresh("72"));
+		records.addAll(refresh("720"));
+		records.addAll(refresh("750"));
+		records.addAll(refresh("805"));
+		records.addAll(refresh("806"));
+		records.addAll(refresh("807"));
+		records.addAll(refresh("811"));
+		records.addAll(refresh("821"));
+		records.addAll(refresh("822"));
+		records.addAll(refresh("830"));
+		records.addAll(refresh("831"));
+		records.addAll(refresh("832"));
+		records.addAll(refresh("833"));
+		records.addAll(refresh("834"));
+		records.addAll(refresh("835"));
+		records.addAll(refresh("836"));
+		records.addAll(refresh("838"));
+		records.addAll(refresh("840"));
+		records.addAll(refresh("841"));
+		records.addAll(refresh("842"));
+		records.addAll(refresh("850"));
+		records.addAll(refresh("862"));
+		records.addAll(refresh("863"));
+		records.addAll(refresh("880"));
+		records.addAll(refresh("9"));
+		records.addAll(refresh("901"));
+		records.addAll(refresh("902"));
+		records.addAll(refresh("919"));
+		records.addAll(refresh("920"));
+		records.addAll(refresh("951"));
+		records.addAll(refresh("952"));
+		records.addAll(refresh("953"));
+		records.addAll(refresh("954"));
+		records.addAll(refresh("960"));
+		records.addAll(refresh("962"));
+		records.addAll(refresh("990"));
+		records.addAll(refresh("992"));
+		records.addAll(refresh("F400"));
+		records.addAll(refresh("F401"));
+		records.addAll(refresh("F504"));
+		records.addAll(refresh("F514"));
+		records.addAll(refresh("F518"));
+		records.addAll(refresh("F522"));
+		records.addAll(refresh("F534"));
+		records.addAll(refresh("F546"));
+		records.addAll(refresh("F547"));
+		records.addAll(refresh("F556"));
+		records.addAll(refresh("F570"));
+		records.addAll(refresh("F578"));
+		records.addAll(refresh("F590"));
+		records.addAll(refresh("F618"));
+		records.addAll(refresh("F638"));
+		records.addAll(refresh("F868"));
+		records.addAll(refresh("F94"));
+
+    // records.addAll(refresh("213"));
     if (!records.isEmpty()) {
       _log.error("found " + records.size() + " records");
       _vehicleLocationListener.handleVehicleLocationRecords(records);
@@ -130,10 +257,10 @@ public class UtaSiriClient {
     long timeFrom = now.getTime() - _blockInstanceSearchWindow * 60 * 1000;
     long timeTo = now.getTime() + _blockInstanceSearchWindow * 60 * 1000;
 
-    _log.info("vms=" + siri.getServiceDelivery().getVehicleMonitoringDelivery().size());
+    _log.debug("vms=" + siri.getServiceDelivery().getVehicleMonitoringDelivery().size());
     
     for (VehicleMonitoringDeliveryStructure vehicleDelivery : siri.getServiceDelivery().getVehicleMonitoringDelivery()) {
-      _log.info("vas=" + vehicleDelivery.getVehicleActivity().size());
+      _log.debug("vas=" + vehicleDelivery.getVehicleActivity().size());
       for (VehicleActivityStructure vehicleActivity : vehicleDelivery.getVehicleActivity()) {
         Date time = vehicleActivity.getRecordedAtTime();
         if (time == null) {
@@ -149,12 +276,13 @@ public class UtaSiriClient {
         // continue;
         // }
 
+        if (mvj == null) continue;
         VehicleRefStructure vehicleRef = mvj.getVehicleRef();
         if (vehicleRef == null || vehicleRef.getValue() == null) {
           _log.error("missing vehicleRef!");
           continue;
         }
-        _log.info("vehicleId=" + vehicleRef.getValue());
+        _log.debug("vehicleId=" + vehicleRef.getValue());
         List<String> defaultAgencyIds = new ArrayList<String>();
         defaultAgencyIds.add("Utah Transit Authority");
         defaultAgencyIds.add("1");
@@ -167,7 +295,7 @@ public class UtaSiriClient {
           if (trip != null) {
             block = trip.getBlock();
           } else {
-            _log.error("couldn't find trip either!");
+            _log.debug("couldn't find trip either!");
           }
         }
 
@@ -204,7 +332,7 @@ public class UtaSiriClient {
           r.setCurrentLocationLon(location.getLongitude().doubleValue());
         }
 
-        _log.info("adding r=" + r);
+        _log.debug("adding r=" + r);
         records.add(r);
       }
     }
@@ -242,7 +370,7 @@ public class UtaSiriClient {
       MonitoredVehicleJourney mvj, List<String> defaultAgencyIds) {
     FramedVehicleJourneyRefStructure fvjRef = mvj.getFramedVehicleJourneyRef();
     if (fvjRef == null || fvjRef.getDatedVehicleJourneyRef() == null) {
-      _log.error("no framed vehicles");
+      _log.debug("no framed vehicles");
       return null;
     }
 
@@ -261,7 +389,7 @@ public class UtaSiriClient {
       AgencyAndId tripId = AgencyAndId.convertFromString(fvjRef.getDatedVehicleJourneyRef());
       return _transitGraphDao.getTripEntryForId(tripId);
     } catch (IllegalArgumentException ex) {
-      _log.error("unparseable:", ex);
+      _log.debug("unparseable:", ex);
       return null;
     }
   }
