@@ -199,8 +199,8 @@ public class Observation implements Comparable<Observation> {
     final int res = ComparisonChain.start().compare(_timestamp, o2._timestamp).compare(
         _point, o2._point, _orderByXandY).compare(
         _lastValidDestinationSignCode, o2._lastValidDestinationSignCode,
-        Ordering.natural().nullsLast()).compare(_record, o2._record).compare(
-        outOfService, o2.outOfService).compare(atTerminal, o2.atTerminal).compare(
+        Ordering.natural().nullsLast()).compare(_record, o2._record).compareFalseFirst(
+        outOfService, o2.outOfService).compareFalseFirst(atTerminal, o2.atTerminal).compareFalseFirst(
         atBase, o2.atBase).compare(_runResults, o2._runResults).compare(_assignedBlockId, o2._assignedBlockId).result();
 
     return res;
