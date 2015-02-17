@@ -1,16 +1,3 @@
-/*
- * Copyright 2010, OpenPlans Licensed under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
 import java.io.IOException;
@@ -25,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -40,6 +26,7 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
@@ -48,11 +35,10 @@ import uk.org.siri.siri_2.ServiceDelivery;
 import uk.org.siri.siri_2.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri_2.Siri;
 import uk.org.siri.siri_2.StopMonitoringDeliveryStructure;
+import uk.org.siri.siri_2.StopPointsDeliveryStructure;
 
-@ParentPackage("onebusaway-webapp-api")
-public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
-		implements ServletRequestAware, ServletResponseAware {
-
+public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
+		ServletRequestAware, ServletResponseAware {
 	private static final long serialVersionUID = 1L;
 
 	private static final String PREV_TRIP = "prevTrip";
@@ -120,40 +106,7 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 
 		List<AgencyAndId> stopIds = new ArrayList<AgencyAndId>();
 		String stopIdsErrorString = "";
-		if (_request.getParameter("MonitoringRef") != null) {
-			try {
-				// If the user included an agency id as part of the stop id,
-				// ignore any OperatorRef arg
-				// or lack of OperatorRef arg and just use the included one.
-				AgencyAndId stopId = AgencyAndIdLibrary
-						.convertFromString(_request
-								.getParameter("MonitoringRef"));
-				if (_monitoringActionSupport.isValidStop(stopId, _nycTransitDataService)) {
-					stopIds.add(stopId);
-				} else {
-					stopIdsErrorString += "No such stop: " + stopId.toString()
-							+ ".";
-				}
-			} catch (Exception e) {
-				// The user didn't provide an agency id in the MonitoringRef, so
-				// use our list of operator refs
-				for (String agency : agencyIds) {
-					AgencyAndId stopId = new AgencyAndId(agency,
-							_request.getParameter("MonitoringRef"));
-					if (_monitoringActionSupport.isValidStop(stopId, _nycTransitDataService)) {
-						stopIds.add(stopId);
-					} else {
-						stopIdsErrorString += "No such stop: "
-								+ stopId.toString() + ". ";
-					}
-				}
-				stopIdsErrorString = stopIdsErrorString.trim();
-			}
-			if (stopIds.size() > 0)
-				stopIdsErrorString = "";
-		} else {
-			stopIdsErrorString = "You must provide a MonitoringRef.";
-		}
+		
 
 		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
 		String routeIdsErrorString = "";
@@ -162,7 +115,8 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 				// Same as above for stop id
 				AgencyAndId routeId = AgencyAndIdLibrary
 						.convertFromString(_request.getParameter("LineRef"));
-				if (_monitoringActionSupport.isValidRoute(routeId, _nycTransitDataService)) {
+				if (_monitoringActionSupport.isValidRoute(routeId,
+						_nycTransitDataService)) {
 					routeIds.add(routeId);
 				} else {
 					routeIdsErrorString += "No such route: "
@@ -173,7 +127,8 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 				for (String agency : agencyIds) {
 					AgencyAndId routeId = new AgencyAndId(agency,
 							_request.getParameter("LineRef"));
-					if (_monitoringActionSupport.isValidRoute(routeId, _nycTransitDataService)) {
+					if (_monitoringActionSupport.isValidRoute(routeId,
+							_nycTransitDataService)) {
 						routeIds.add(routeId);
 					} else {
 						routeIdsErrorString += "No such route: "
@@ -188,33 +143,6 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 
 		String detailLevel = _request.getParameter("StopMonitoringDetailLevel");
 
-		int maximumOnwardCalls = 0;
-		if (detailLevel != null && detailLevel.equals("calls")) {
-			maximumOnwardCalls = Integer.MAX_VALUE;
-
-			try {
-				maximumOnwardCalls = Integer.parseInt(_request
-						.getParameter("MaximumNumberOfCallsOnwards"));
-			} catch (NumberFormatException e) {
-				maximumOnwardCalls = Integer.MAX_VALUE;
-			}
-		}
-
-		int maximumStopVisits = Integer.MAX_VALUE;
-		try {
-			maximumStopVisits = Integer.parseInt(_request
-					.getParameter("MaximumStopVisits"));
-		} catch (NumberFormatException e) {
-			maximumStopVisits = Integer.MAX_VALUE;
-		}
-
-		Integer minimumStopVisitsPerLine = null;
-		try {
-			minimumStopVisitsPerLine = Integer.parseInt(_request
-					.getParameter("MinimumStopVisitsPerLine"));
-		} catch (NumberFormatException e) {
-			minimumStopVisitsPerLine = null;
-		}
 
 		if (_monitoringActionSupport
 				.canReportToGoogleAnalytics(_configurationService)) {
@@ -223,8 +151,8 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 					_configurationService);
 		}
 
-		// Monitored Stop Visits
-		List<MonitoredStopVisitStructure> visits = new ArrayList<MonitoredStopVisitStructure>();
+		// Annotated Stop Points
+		List<AnnotatedStopPointStructure> visits = new ArrayList<AnnotatedStopPointStructure>();
 		Map<String, MonitoredStopVisitStructure> visitsMap = new HashMap<String, MonitoredStopVisitStructure>();
 
 		for (AgencyAndId stopId : stopIds) {
@@ -234,14 +162,14 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 
 			// Stop ids can only be valid here because we only added valid ones
 			// to stopIds.
-			List<MonitoredStopVisitStructure> visitsForStop = _realtimeService
+			List<AnnotatedStopPointStructure> visitsForStop = _realtimeService
 					.getMonitoredStopVisitsForStop(stopId.toString(),
 							maximumOnwardCalls, responseTimestamp);
 			if (visitsForStop != null)
 				visits.addAll(visitsForStop);
 		}
 
-		List<MonitoredStopVisitStructure> filteredVisits = new ArrayList<MonitoredStopVisitStructure>();
+		List<AnnotatedStopPointStructure> filteredVisits = new ArrayList<AnnotatedStopPointStructure>();
 
 		Map<AgencyAndId, Integer> visitCountByLine = new HashMap<AgencyAndId, Integer>();
 		int visitCount = 0;
@@ -319,7 +247,7 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 				responseTimestamp);
 
 		try {
-			this._servletResponse.getWriter().write(getStopMonitoring());
+			this._servletResponse.getWriter().write(getStopPoints());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -330,14 +258,9 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 	private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits,
 			List<AgencyAndId> stopIds, Exception error, long responseTimestamp) {
 
-		StopMonitoringDeliveryStructure stopMonitoringDelivery = new StopMonitoringDeliveryStructure();
-		stopMonitoringDelivery.setResponseTimestamp(DateUtil
+		StopPointsDeliveryStructure stopPointsDelivery = new StopPointsDeliveryStructure();
+		stopPointsDelivery.setResponseTimestamp(DateUtil
 				.toXmlGregorianCalendar(responseTimestamp));
-
-		ServiceDelivery serviceDelivery = new ServiceDelivery();
-		serviceDelivery.setResponseTimestamp(DateUtil
-				.toXmlGregorianCalendar(responseTimestamp));
-		serviceDelivery.getStopMonitoringDelivery().add(stopMonitoringDelivery);
 
 		if (error != null) {
 			ServiceDeliveryErrorConditionStructure errorConditionStructure = new ServiceDeliveryErrorConditionStructure();
@@ -351,17 +274,19 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 			errorConditionStructure.setDescription(errorDescriptionStructure);
 			errorConditionStructure.setOtherError(otherErrorStructure);
 
-			stopMonitoringDelivery.setErrorCondition(errorConditionStructure);
+			stopPointsDelivery.setErrorCondition(errorConditionStructure);
 		} else {
 			Calendar gregorianCalendar = new GregorianCalendar();
 			gregorianCalendar.setTimeInMillis(responseTimestamp);
 			gregorianCalendar.add(Calendar.MINUTE, 1);
-			stopMonitoringDelivery
+			stopPointsDelivery
 					.setValidUntil(DateUtil
 							.toXmlGregorianCalendar(gregorianCalendar
 									.getTimeInMillis()));
 
-			stopMonitoringDelivery.getMonitoredStopVisit().addAll(visits);
+			stopPointsDelivery.
+			
+			getMonitoredStopVisit().addAll(visits);
 
 			serviceDelivery.setResponseTimestamp(DateUtil
 					.toXmlGregorianCalendar(responseTimestamp));
@@ -373,12 +298,12 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 		}
 
 		Siri siri = new Siri();
-		siri.setServiceDelivery(serviceDelivery);
+		siri.setStopPointsDelivery(stopPointsDelivery);
 
 		return siri;
 	}
 
-	public String getStopMonitoring() {
+	public String getStopPoints() {
 		try {
 			if (_type.equals("xml")) {
 				this._servletResponse.setContentType("application/xml");
@@ -407,5 +332,4 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 	public HttpServletResponse getServletResponse() {
 		return _servletResponse;
 	}
-
 }

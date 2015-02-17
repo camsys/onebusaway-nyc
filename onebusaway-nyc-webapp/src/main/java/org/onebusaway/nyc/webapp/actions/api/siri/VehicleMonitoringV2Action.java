@@ -140,7 +140,7 @@ public class VehicleMonitoringV2Action extends OneBusAwayNYCActionSupport
       try {
         // Same as above for vehicle id
         AgencyAndId routeId = AgencyAndIdLibrary.convertFromString(_request.getParameter("LineRef"));
-        if (isValidRoute(routeId)) {
+        if (_monitoringActionSupport.isValidRoute(routeId, _nycTransitDataService)) {
           routeIds.add(routeId);
         } else {
           routeIdErrorString += "No such route: " + routeId.toString() + ".";
@@ -149,7 +149,7 @@ public class VehicleMonitoringV2Action extends OneBusAwayNYCActionSupport
         // Same as above for vehicle id
         for (String agency : agencyIds) {
           AgencyAndId routeId = new AgencyAndId(agency, _request.getParameter("LineRef"));
-          if (isValidRoute(routeId)) {
+          if (_monitoringActionSupport.isValidRoute(routeId, _nycTransitDataService)) {
             routeIds.add(routeId);
           } else {
             routeIdErrorString += "No such route: " + routeId.toString() + ". ";
@@ -326,13 +326,6 @@ public class VehicleMonitoringV2Action extends OneBusAwayNYCActionSupport
     return siri;
   }
   
-  private boolean isValidRoute(AgencyAndId routeId) {
-    if (routeId != null && routeId.hasValues() && this._nycTransitDataService.getRouteForId(routeId.toString()) != null) {
-      return true;
-    }
-    return false;
-  }
-
   public String getVehicleMonitoring() {
     if (_cachedResponse != null) {
       // check the cache first
