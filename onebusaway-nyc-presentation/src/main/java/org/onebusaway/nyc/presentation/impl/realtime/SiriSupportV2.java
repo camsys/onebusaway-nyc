@@ -42,6 +42,7 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
+import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.BlockRefStructure;
 import uk.org.siri.siri_2.DataFrameRefStructure;
 import uk.org.siri.siri_2.DestinationRefStructure;
@@ -258,6 +259,10 @@ public final class SiriSupportV2 {
 		fillSituations(monitoredVehicleJourney, currentVehicleTripStatus);
 
 		return;
+	}
+	
+	public static void fillAnnotatedStopPointStructure(AnnotatedStopPointStructure annotatedStopPoint, StopBean stopBean, String detailLevel, long currentTime){
+		
 	}
 
 	/***

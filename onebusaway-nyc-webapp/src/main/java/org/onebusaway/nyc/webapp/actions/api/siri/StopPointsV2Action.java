@@ -27,7 +27,9 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
+import uk.org.siri.siri_2.AnnotatedStopPointStructure.Lines;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
+import uk.org.siri.siri_2.LineDirectionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
@@ -42,6 +44,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 	private static final long serialVersionUID = 1L;
 
 	private static final String PREV_TRIP = "prevTrip";
+	private static final int COORDINATES_COUNT = 4;
 
 	@Autowired
 	public NycTransitDataService _nycTransitDataService;
@@ -104,15 +107,30 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 			agencyIds.addAll(agencies.keySet());
 		}
 
-		List<AgencyAndId> stopIds = new ArrayList<AgencyAndId>();
-		String stopIdsErrorString = "";
-		
+		// Check for Bounding Box
+		String boundsErrorString = "";
+		String boundingBox = _request.getParameter("BoundingBox");
+		CoordinateBounds bounds = null;
+		if (boundingBox != null) {
+			String[] coordinates = boundingBox.split(",");
+			if (coordinates.length >= COORDINATES_COUNT) {
+				bounds = new CoordinateBounds(
+						Double.parseDouble(coordinates[0]),
+						Double.parseDouble(coordinates[1]),
+						Double.parseDouble(coordinates[2]),
+						Double.parseDouble(coordinates[3]));
+			}
+		}
+
+		if (bounds == null) {
+			boundsErrorString += "You must provide " + COORDINATES_COUNT
+					+ " coordinates.";
+		}
 
 		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
 		String routeIdsErrorString = "";
 		if (_request.getParameter("LineRef") != null) {
 			try {
-				// Same as above for stop id
 				AgencyAndId routeId = AgencyAndIdLibrary
 						.convertFromString(_request.getParameter("LineRef"));
 				if (_monitoringActionSupport.isValidRoute(routeId,
@@ -123,7 +141,6 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 							+ routeId.toString() + ".";
 				}
 			} catch (Exception e) {
-				// Same as above for stop id
 				for (String agency : agencyIds) {
 					AgencyAndId routeId = new AgencyAndId(agency,
 							_request.getParameter("LineRef"));
@@ -143,108 +160,60 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 
 		String detailLevel = _request.getParameter("StopMonitoringDetailLevel");
 
-
-		if (_monitoringActionSupport
-				.canReportToGoogleAnalytics(_configurationService)) {
-			_monitoringActionSupport.reportToGoogleAnalytics(_request,
-					"Stop Monitoring", StringUtils.join(stopIds, ","),
-					_configurationService);
-		}
+		/*
+		 * if (_monitoringActionSupport
+		 * .canReportToGoogleAnalytics(_configurationService)) {
+		 * _monitoringActionSupport.reportToGoogleAnalytics(_request,
+		 * "Stop Monitoring", StringUtils.join(stopIds, ","),
+		 * _configurationService); }
+		 */
 
 		// Annotated Stop Points
-		List<AnnotatedStopPointStructure> visits = new ArrayList<AnnotatedStopPointStructure>();
-		Map<String, MonitoredStopVisitStructure> visitsMap = new HashMap<String, MonitoredStopVisitStructure>();
+		List<AnnotatedStopPointStructure> stopPoints = _realtimeService
+				.getAnnotatedStopPointStructuresForCoordinates(bounds,
+						detailLevel, responseTimestamp);
+		Map<String, MonitoredStopVisitStructure> stopPointsMap = new HashMap<String, MonitoredStopVisitStructure>();
 
-		for (AgencyAndId stopId : stopIds) {
+		List<AnnotatedStopPointStructure> filteredStopPoints = new ArrayList<AnnotatedStopPointStructure>();
+		List<LineDirectionStructure> filteredLineDirections = new ArrayList<LineDirectionStructure>();
 
-			if (!stopId.hasValues())
-				continue;
+		for (AnnotatedStopPointStructure stopPoint : stopPoints) {
+			// TODO - LCARABALLLO - Is there a better way to do this
+			// conversion/filtering
+			List<LineDirectionStructure> lineDirections = (List<LineDirectionStructure>) (Object) stopPoint
+					.getLines().getLineRefOrLineDirection();
+			for (LineDirectionStructure lineDirection : lineDirections) {
 
-			// Stop ids can only be valid here because we only added valid ones
-			// to stopIds.
-			List<AnnotatedStopPointStructure> visitsForStop = _realtimeService
-					.getMonitoredStopVisitsForStop(stopId.toString(),
-							maximumOnwardCalls, responseTimestamp);
-			if (visitsForStop != null)
-				visits.addAll(visitsForStop);
-		}
+				AgencyAndId thisRouteId = AgencyAndIdLibrary
+						.convertFromString(lineDirection.getDirectionRef()
+								.getValue());
+				String thisDirectionId = lineDirection.getLineRef().getValue();
 
-		List<AnnotatedStopPointStructure> filteredVisits = new ArrayList<AnnotatedStopPointStructure>();
-
-		Map<AgencyAndId, Integer> visitCountByLine = new HashMap<AgencyAndId, Integer>();
-		int visitCount = 0;
-
-		for (MonitoredStopVisitStructure visit : visits) {
-			MonitoredVehicleJourneyStructure journey = visit
-					.getMonitoredVehicleJourney();
-
-			AgencyAndId thisRouteId = AgencyAndIdLibrary
-					.convertFromString(journey.getLineRef().getValue());
-			String thisDirectionId = journey.getDirectionRef().getValue();
-
-			// user filtering
-			if (routeIds.size() > 0 && !routeIds.contains(thisRouteId))
-				continue;
-
-			if (directionId != null && !thisDirectionId.equals(directionId))
-				continue;
-
-			// visit count filters
-			Integer visitCountForThisLine = visitCountByLine.get(thisRouteId);
-			if (visitCountForThisLine == null) {
-				visitCountForThisLine = 0;
-			}
-
-			if (visitCount >= maximumStopVisits) {
-				if (minimumStopVisitsPerLine == null) {
-					break;
-				} else {
-					if (visitCountForThisLine >= minimumStopVisitsPerLine) {
-						continue;
-					}
-				}
-			}
-
-			// unique stops filters
-			if (visit.getMonitoredVehicleJourney() == null
-					|| visit.getMonitoredVehicleJourney().getVehicleRef() == null
-					|| StringUtils.isBlank(visit.getMonitoredVehicleJourney()
-							.getVehicleRef().getValue())) {
-				continue;
-			} else {
-				String visitKey = visit.getMonitoredVehicleJourney()
-						.getVehicleRef().getValue();
-				if (visitsMap.containsKey(visit.getMonitoredVehicleJourney()
-						.getVehicleRef().getValue())) {
-					if (visit.getMonitoredVehicleJourney().getProgressStatus() == null) {
-						visitsMap.remove(visitKey);
-						visitsMap.put(visitKey, visit);
-					}
+				// user filtering
+				if (routeIds.size() > 0 && !routeIds.contains(thisRouteId))
 					continue;
-				} else {
-					visitsMap.put(visit.getMonitoredVehicleJourney()
-							.getVehicleRef().getValue(), visit);
-				}
+				if (directionId != null && !thisDirectionId.equals(directionId))
+					continue;
+				filteredLineDirections.add(lineDirection);
 			}
 
-			filteredVisits.add(visit);
+			if (filteredLineDirections.size() == 0)
+				continue;
 
-			visitCount++;
-			visitCountForThisLine++;
-			visitCountByLine.put(thisRouteId, visitCountForThisLine);
+			filteredStopPoints.add(stopPoint);
+
 		}
-		visits = filteredVisits;
+		stopPoints = filteredStopPoints;
 
 		Exception error = null;
-		if (stopIds.size() == 0
+		if (bounds == null
 				|| (_request.getParameter("LineRef") != null && routeIds.size() == 0)) {
-			String errorString = (stopIdsErrorString + " " + routeIdsErrorString)
+			String errorString = (boundsErrorString + " " + routeIdsErrorString)
 					.trim();
 			error = new Exception(errorString);
 		}
 
-		_response = generateSiriResponse(visits, stopIds, error,
-				responseTimestamp);
+		_response = generateSiriResponse(stopPoints, error, responseTimestamp);
 
 		try {
 			this._servletResponse.getWriter().write(getStopPoints());
@@ -255,8 +224,9 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		return null;
 	}
 
-	private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits,
-			List<AgencyAndId> stopIds, Exception error, long responseTimestamp) {
+	private Siri generateSiriResponse(
+			List<AnnotatedStopPointStructure> stopPoints, Exception error,
+			long responseTimestamp) {
 
 		StopPointsDeliveryStructure stopPointsDelivery = new StopPointsDeliveryStructure();
 		stopPointsDelivery.setResponseTimestamp(DateUtil
@@ -284,17 +254,17 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 							.toXmlGregorianCalendar(gregorianCalendar
 									.getTimeInMillis()));
 
-			stopPointsDelivery.
-			
-			getMonitoredStopVisit().addAll(visits);
+			stopPointsDelivery.getAnnotatedStopPointRef().addAll(stopPoints);
 
-			serviceDelivery.setResponseTimestamp(DateUtil
+			stopPointsDelivery.setResponseTimestamp(DateUtil
 					.toXmlGregorianCalendar(responseTimestamp));
 
-			_serviceAlertsHelper.addSituationExchangeToSiriForStops(
-					serviceDelivery, visits, _nycTransitDataService, stopIds);
-			_serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(
-					serviceDelivery, _realtimeService);
+			/*
+			 * _serviceAlertsHelper.addSituationExchangeToSiriForStops(
+			 * serviceDelivery, visits, _nycTransitDataService, stopIds);
+			 * _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(
+			 * serviceDelivery, _realtimeService);
+			 */
 		}
 
 		Siri siri = new Siri();

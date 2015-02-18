@@ -2,10 +2,12 @@ package org.onebusaway.nyc.presentation.service.realtime;
 
 import java.util.List;
 
+import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializerV2;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializerV2;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
+import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.VehicleActivityStructure;
 
@@ -42,5 +44,8 @@ public interface RealtimeServiceV2 {
       String routeId, String directionId);
   
   public List<ServiceAlertBean> getServiceAlertsGlobal();
+
+  public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructuresForCoordinates(
+		CoordinateBounds bounds, String detailLevel, long currentTime);
     
 }

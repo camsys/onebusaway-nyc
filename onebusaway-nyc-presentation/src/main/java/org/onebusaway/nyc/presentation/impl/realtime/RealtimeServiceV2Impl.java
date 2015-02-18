@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.OnwardCallsMode;
@@ -21,7 +22,10 @@ import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.SearchQueryBean;
+import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
+import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
@@ -33,14 +37,15 @@ import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri_2.VehicleActivityStructure;
 import uk.org.siri.siri_2.VehicleActivityStructure.MonitoredVehicleJourney;
 
 /**
- * A source of SIRI classes containing real time data, subject to the conventions expressed
- * in the PresentationService.
+ * A source of SIRI classes containing real time data, subject to the
+ * conventions expressed in the PresentationService.
  * 
  * @author jmaki
  *
@@ -48,324 +53,448 @@ import uk.org.siri.siri_2.VehicleActivityStructure.MonitoredVehicleJourney;
 @Component
 public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
-  private NycTransitDataService _nycTransitDataService;
+	private NycTransitDataService _nycTransitDataService;
 
-  private PresentationService _presentationService;
-  
-  private SiriXmlSerializerV2 _siriXmlSerializer = new SiriXmlSerializerV2();
+	private PresentationService _presentationService;
 
-  private SiriJsonSerializerV2 _siriJsonSerializer = new SiriJsonSerializerV2();
+	private SiriXmlSerializerV2 _siriXmlSerializer = new SiriXmlSerializerV2();
 
-  private Long _now = null;
-  
-  @Override
-  public void setTime(long time) {
-    _now = time;
-    _presentationService.setTime(time);
-  }
+	private SiriJsonSerializerV2 _siriJsonSerializer = new SiriJsonSerializerV2();
 
-  public long getTime() {
-    if(_now != null)
-      return _now;
-    else
-      return System.currentTimeMillis();
-  }
+	private Long _now = null;
 
-  @Autowired
-  public void setNycTransitDataService(NycTransitDataService transitDataService) {
-    _nycTransitDataService = transitDataService;
-  }
+	@Override
+	public void setTime(long time) {
+		_now = time;
+		_presentationService.setTime(time);
+	}
 
-  @Autowired
-  public void setPresentationService(PresentationService presentationService) {
-    _presentationService = presentationService;
-  }
-  
-  @Override
-  public PresentationService getPresentationService() {
-    return _presentationService;
-  }  
+	public long getTime() {
+		if (_now != null)
+			return _now;
+		else
+			return System.currentTimeMillis();
+	}
 
-  @Override
-  public SiriJsonSerializerV2 getSiriJsonSerializer() {
-    return _siriJsonSerializer;
-  }
-  
-  @Override
-  public SiriXmlSerializerV2 getSiriXmlSerializer() {
-    return _siriXmlSerializer;
-  }
+	@Autowired
+	public void setNycTransitDataService(
+			NycTransitDataService transitDataService) {
+		_nycTransitDataService = transitDataService;
+	}
 
-  /**
-   * SIRI METHODS
-   */
-  @Override
-  public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, String directionId, int maximumOnwardCalls, long currentTime) {
-    List<VehicleActivityStructure> output = new ArrayList<VehicleActivityStructure>();
-    
-    boolean useTimePredictionsIfAvailable =
-    		_presentationService.useTimePredictionsIfAvailable();
-    
-    ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId, currentTime);
-    for(TripDetailsBean tripDetails : trips.getList()) {
-      // filter out interlined routes
-      if(routeId != null && !tripDetails.getTrip().getRoute().getId().equals(routeId))
-        continue;
+	@Autowired
+	public void setPresentationService(PresentationService presentationService) {
+		_presentationService = presentationService;
+	}
 
-      // filtered out by user
-      if(directionId != null && !tripDetails.getTrip().getDirectionId().equals(directionId))
-        continue;
-      
-      if(!_presentationService.include(tripDetails.getStatus()))
-        continue;
-        
-      VehicleActivityStructure activity = new VehicleActivityStructure();
-      activity.setRecordedAtTime(DateUtil.toXmlGregorianCalendar(tripDetails.getStatus().getLastUpdateTime()));
+	@Override
+	public PresentationService getPresentationService() {
+		return _presentationService;
+	}
 
-      List<TimepointPredictionRecord> timePredictionRecords = null;
-      if(useTimePredictionsIfAvailable == true) {
-    	  timePredictionRecords = _nycTransitDataService.getPredictionRecordsForTrip(AgencyAndId.convertFromString(routeId).getAgencyId(), tripDetails.getStatus());
-      }
-      
-      activity.setMonitoredVehicleJourney(new MonitoredVehicleJourney());  
-      SiriSupportV2.fillMonitoredVehicleJourney(activity.getMonitoredVehicleJourney(), 
-          tripDetails.getTrip(), tripDetails.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
-          _presentationService, _nycTransitDataService, maximumOnwardCalls, 
-          timePredictionRecords, currentTime);
-            
-      output.add(activity);
-    }
+	@Override
+	public SiriJsonSerializerV2 getSiriJsonSerializer() {
+		return _siriJsonSerializer;
+	}
 
-    Collections.sort(output, new Comparator<VehicleActivityStructure>() {
-      public int compare(VehicleActivityStructure arg0, VehicleActivityStructure arg1) {
-        try {
-          SiriExtensionWrapper wrapper0 = (SiriExtensionWrapper)arg0.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getAny();
-          SiriExtensionWrapper wrapper1 = (SiriExtensionWrapper)arg1.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getAny();
-          return wrapper0.getDistances().getDistanceFromCall().compareTo(wrapper1.getDistances().getDistanceFromCall());        
-        } catch(Exception e) {
-          return -1;
-        }
-      }
-    });
-    
-    return output;
-  }
+	@Override
+	public SiriXmlSerializerV2 getSiriXmlSerializer() {
+		return _siriXmlSerializer;
+	}
 
-  @Override
-  public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, int maximumOnwardCalls, long currentTime) {    
+	/**
+	 * SIRI METHODS
+	 */
+	@Override
+	public List<VehicleActivityStructure> getVehicleActivityForRoute(
+			String routeId, String directionId, int maximumOnwardCalls,
+			long currentTime) {
+		List<VehicleActivityStructure> output = new ArrayList<VehicleActivityStructure>();
 
-	boolean useTimePredictionsIfAvailable =
-	  		_presentationService.useTimePredictionsIfAvailable();
-  
-	TripForVehicleQueryBean query = new TripForVehicleQueryBean();
-    query.setTime(new Date(currentTime));
-    query.setVehicleId(vehicleId);
+		boolean useTimePredictionsIfAvailable = _presentationService
+				.useTimePredictionsIfAvailable();
 
-    TripDetailsInclusionBean inclusion = new TripDetailsInclusionBean();
-    inclusion.setIncludeTripStatus(true);
-    inclusion.setIncludeTripBean(true);
-    query.setInclusion(inclusion);
+		ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId,
+				currentTime);
+		for (TripDetailsBean tripDetails : trips.getList()) {
+			// filter out interlined routes
+			if (routeId != null
+					&& !tripDetails.getTrip().getRoute().getId()
+							.equals(routeId))
+				continue;
 
-    TripDetailsBean tripDetailsForCurrentTrip = _nycTransitDataService.getTripDetailsForVehicleAndTime(query);
-    if (tripDetailsForCurrentTrip != null) {
-      if(!_presentationService.include(tripDetailsForCurrentTrip.getStatus()))
-        return null;
-      
-      VehicleActivityStructure output = new VehicleActivityStructure();
-      output.setRecordedAtTime(DateUtil.toXmlGregorianCalendar(tripDetailsForCurrentTrip.getStatus().getLastUpdateTime()));
+			// filtered out by user
+			if (directionId != null
+					&& !tripDetails.getTrip().getDirectionId()
+							.equals(directionId))
+				continue;
 
-      List<TimepointPredictionRecord> timePredictionRecords = null;
-      if(useTimePredictionsIfAvailable == true) {
-    	  timePredictionRecords = _nycTransitDataService.getPredictionRecordsForTrip(AgencyAndId.convertFromString(vehicleId).getAgencyId(), tripDetailsForCurrentTrip.getStatus());
-      }
+			if (!_presentationService.include(tripDetails.getStatus()))
+				continue;
 
-      output.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
-      SiriSupportV2.fillMonitoredVehicleJourney(output.getMonitoredVehicleJourney(), 
-    	  tripDetailsForCurrentTrip.getTrip(), tripDetailsForCurrentTrip.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
-    	  _presentationService, _nycTransitDataService, maximumOnwardCalls,
-    	  timePredictionRecords, currentTime);
+			VehicleActivityStructure activity = new VehicleActivityStructure();
+			activity.setRecordedAtTime(DateUtil
+					.toXmlGregorianCalendar(tripDetails.getStatus()
+							.getLastUpdateTime()));
 
-      return output;
-    }
-    
-    return null;
-  }
+			List<TimepointPredictionRecord> timePredictionRecords = null;
+			if (useTimePredictionsIfAvailable == true) {
+				timePredictionRecords = _nycTransitDataService
+						.getPredictionRecordsForTrip(AgencyAndId
+								.convertFromString(routeId).getAgencyId(),
+								tripDetails.getStatus());
+			}
 
-  @Override
-  public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls, long currentTime) {
-    List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
+			activity.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
+			SiriSupportV2.fillMonitoredVehicleJourney(
+					activity.getMonitoredVehicleJourney(),
+					tripDetails.getTrip(), tripDetails.getStatus(), null,
+					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
+					_nycTransitDataService, maximumOnwardCalls,
+					timePredictionRecords, currentTime);
 
-	boolean useTimePredictionsIfAvailable =
-	  		_presentationService.useTimePredictionsIfAvailable();
+			output.add(activity);
+		}
 
-    for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
-      TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
-      TripBean tripBeanForAd = adBean.getTrip();
+		Collections.sort(output, new Comparator<VehicleActivityStructure>() {
+			public int compare(VehicleActivityStructure arg0,
+					VehicleActivityStructure arg1) {
+				try {
+					SiriExtensionWrapper wrapper0 = (SiriExtensionWrapper) arg0
+							.getMonitoredVehicleJourney().getMonitoredCall()
+							.getExtensions().getAny();
+					SiriExtensionWrapper wrapper1 = (SiriExtensionWrapper) arg1
+							.getMonitoredVehicleJourney().getMonitoredCall()
+							.getExtensions().getAny();
+					return wrapper0
+							.getDistances()
+							.getDistanceFromCall()
+							.compareTo(
+									wrapper1.getDistances()
+											.getDistanceFromCall());
+				} catch (Exception e) {
+					return -1;
+				}
+			}
+		});
 
-      if(statusBeanForCurrentTrip == null)
-    	  continue;
+		return output;
+	}
 
-      if(!_presentationService.include(statusBeanForCurrentTrip) || !_presentationService.include(adBean, statusBeanForCurrentTrip))
-          continue;
+	@Override
+	public VehicleActivityStructure getVehicleActivityForVehicle(
+			String vehicleId, int maximumOnwardCalls, long currentTime) {
 
-      MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
-      stopVisit.setRecordedAtTime(DateUtil.toXmlGregorianCalendar(statusBeanForCurrentTrip.getLastUpdateTime()));
-        
-      List<TimepointPredictionRecord> timePredictionRecords = null;
-      if(useTimePredictionsIfAvailable == true) {
-    	  timePredictionRecords = _nycTransitDataService.getPredictionRecordsForTrip(AgencyAndId.convertFromString(stopId).getAgencyId(), statusBeanForCurrentTrip);
-      }
+		boolean useTimePredictionsIfAvailable = _presentationService
+				.useTimePredictionsIfAvailable();
 
-      stopVisit.setMonitoredVehicleJourney(new MonitoredVehicleJourneyStructure());
-      SiriSupportV2.fillMonitoredVehicleJourney(stopVisit.getMonitoredVehicleJourney(), 
-    	  tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), OnwardCallsMode.STOP_MONITORING,
-    	  _presentationService, _nycTransitDataService, maximumOnwardCalls,
-    	  timePredictionRecords, currentTime);
+		TripForVehicleQueryBean query = new TripForVehicleQueryBean();
+		query.setTime(new Date(currentTime));
+		query.setVehicleId(vehicleId);
 
-      output.add(stopVisit);
-    }
-    
-    Collections.sort(output, new Comparator<MonitoredStopVisitStructure>() {
-      public int compare(MonitoredStopVisitStructure arg0, MonitoredStopVisitStructure arg1) {
-        try {
-          SiriExtensionWrapper wrapper0 = (SiriExtensionWrapper)arg0.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getAny();
-          SiriExtensionWrapper wrapper1 = (SiriExtensionWrapper)arg1.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getAny();
-          return wrapper0.getDistances().getDistanceFromCall().compareTo(wrapper1.getDistances().getDistanceFromCall());
-        } catch(Exception e) {
-          return -1;
-        }
-      }
-    });
-    
-    return output;
-  }
+		TripDetailsInclusionBean inclusion = new TripDetailsInclusionBean();
+		inclusion.setIncludeTripStatus(true);
+		inclusion.setIncludeTripBean(true);
+		query.setInclusion(inclusion);
 
-  /**
-   * CURRENT IN-SERVICE VEHICLE STATUS FOR ROUTE
-   */
+		TripDetailsBean tripDetailsForCurrentTrip = _nycTransitDataService
+				.getTripDetailsForVehicleAndTime(query);
+		if (tripDetailsForCurrentTrip != null) {
+			if (!_presentationService.include(tripDetailsForCurrentTrip
+					.getStatus()))
+				return null;
 
-  /**
-   * Returns true if there are vehicles in service for given route+direction
-   */
-  @Override
-  public boolean getVehiclesInServiceForRoute(String routeId, String directionId, long currentTime) {
-	  ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId, currentTime);
-	  for(TripDetailsBean tripDetails : trips.getList()) {
-		  // filter out interlined routes
-		  if(routeId != null && !tripDetails.getTrip().getRoute().getId().equals(routeId))
-			  continue;
+			VehicleActivityStructure output = new VehicleActivityStructure();
+			output.setRecordedAtTime(DateUtil
+					.toXmlGregorianCalendar(tripDetailsForCurrentTrip
+							.getStatus().getLastUpdateTime()));
 
-		  // filtered out by user
-		  if(directionId != null && !tripDetails.getTrip().getDirectionId().equals(directionId))
-			  continue;
+			List<TimepointPredictionRecord> timePredictionRecords = null;
+			if (useTimePredictionsIfAvailable == true) {
+				timePredictionRecords = _nycTransitDataService
+						.getPredictionRecordsForTrip(AgencyAndId
+								.convertFromString(vehicleId).getAgencyId(),
+								tripDetailsForCurrentTrip.getStatus());
+			}
 
-		  if(!_presentationService.include(tripDetails.getStatus()))
-			  continue;
+			output.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
+			SiriSupportV2.fillMonitoredVehicleJourney(
+					output.getMonitoredVehicleJourney(),
+					tripDetailsForCurrentTrip.getTrip(),
+					tripDetailsForCurrentTrip.getStatus(), null,
+					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
+					_nycTransitDataService, maximumOnwardCalls,
+					timePredictionRecords, currentTime);
 
-		  return true;
-	  } 
+			return output;
+		}
 
-	  return false;
-  }
+		return null;
+	}
 
-  /**
-   * Returns true if there are vehicles in service for given route+direction that will stop
-   * at the indicated stop in the future.
-   */
-  @Override
-  public boolean getVehiclesInServiceForStopAndRoute(String stopId, String routeId, long currentTime) {
-	  for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
-		  TripStatusBean statusBean = adBean.getTripStatus();
-		  if(!_presentationService.include(statusBean) || !_presentationService.include(adBean, statusBean))
-			  continue;
+	@Override
+	public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(
+			String stopId, int maximumOnwardCalls, long currentTime) {
+		List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
-		  // filtered out by user
-		  if(routeId != null && !adBean.getTrip().getRoute().getId().equals(routeId))
-			  continue;
+		boolean useTimePredictionsIfAvailable = _presentationService
+				.useTimePredictionsIfAvailable();
 
-		  return true;
-	  }
+		for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(
+				stopId, currentTime)) {
+			TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
+			TripBean tripBeanForAd = adBean.getTrip();
 
-	  return false;
-  }
-  
-  /**
-   * SERVICE ALERTS METHODS
-   */
-  
-  @Override
-  public List<ServiceAlertBean> getServiceAlertsForRoute(String routeId) {
-    return getServiceAlertsForRouteAndDirection(routeId, null); 
-  }
-  
-  @Override
-  public List<ServiceAlertBean> getServiceAlertsForRouteAndDirection(
-      String routeId, String directionId) {
-    SituationQueryBean query = new SituationQueryBean();
-    SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-    query.getAffects().add(affects);
+			if (statusBeanForCurrentTrip == null)
+				continue;
 
-    affects.setRouteId(routeId);
-    if (directionId != null) {
-      affects.setDirectionId(directionId);
-    } else {
-      /*
-       * TODO
-       * The route index is not currently being populated correctly; query by route and direction,
-       * and supply both directions if not present
-       */
-      SituationQueryBean.AffectsBean affects1 = new SituationQueryBean.AffectsBean();
-      query.getAffects().add(affects1);
-      affects1.setRouteId(routeId);
-      affects1.setDirectionId("0");
-      SituationQueryBean.AffectsBean affects2 = new SituationQueryBean.AffectsBean();
-      query.getAffects().add(affects2);
-      affects2.setRouteId(routeId);
-      affects2.setDirectionId("1");
-    }
-    
-    ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
-    return serviceAlerts.getList();
-  }
-  
-  @Override
-  public List<ServiceAlertBean> getServiceAlertsGlobal() {
-    SituationQueryBean query = new SituationQueryBean();
-    SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
-    
-    affects.setAgencyId("__ALL_OPERATORS__");
-    query.getAffects().add(affects);
+			if (!_presentationService.include(statusBeanForCurrentTrip)
+					|| !_presentationService.include(adBean,
+							statusBeanForCurrentTrip))
+				continue;
 
-    ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
-    return serviceAlerts.getList();
-  }
-  
-  /**
-   * PRIVATE METHODS
-   */
-  private ListBean<TripDetailsBean> getAllTripsForRoute(String routeId, long currentTime) {
-    TripsForRouteQueryBean tripRouteQueryBean = new TripsForRouteQueryBean();
-    tripRouteQueryBean.setRouteId(routeId);
-    tripRouteQueryBean.setTime(currentTime);
-    
-    TripDetailsInclusionBean inclusionBean = new TripDetailsInclusionBean();
-    inclusionBean.setIncludeTripBean(true);
-    inclusionBean.setIncludeTripStatus(true);
-    tripRouteQueryBean.setInclusion(inclusionBean);
+			MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
+			stopVisit.setRecordedAtTime(DateUtil
+					.toXmlGregorianCalendar(statusBeanForCurrentTrip
+							.getLastUpdateTime()));
 
-    return _nycTransitDataService.getTripsForRoute(tripRouteQueryBean);
-  } 
-  
-  private List<ArrivalAndDepartureBean> getArrivalsAndDeparturesForStop(String stopId, long currentTime) {
-    ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
-    query.setTime(currentTime);
-    query.setMinutesBefore(5 * 60);
-    query.setMinutesAfter(5 * 60);
-    
-    StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures =
-        _nycTransitDataService.getStopWithArrivalsAndDepartures(stopId, query);
+			List<TimepointPredictionRecord> timePredictionRecords = null;
+			if (useTimePredictionsIfAvailable == true) {
+				timePredictionRecords = _nycTransitDataService
+						.getPredictionRecordsForTrip(AgencyAndId
+								.convertFromString(stopId).getAgencyId(),
+								statusBeanForCurrentTrip);
+			}
 
-    return stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
-  }
+			stopVisit
+					.setMonitoredVehicleJourney(new MonitoredVehicleJourneyStructure());
+			SiriSupportV2.fillMonitoredVehicleJourney(
+					stopVisit.getMonitoredVehicleJourney(), tripBeanForAd,
+					statusBeanForCurrentTrip, adBean.getStop(),
+					OnwardCallsMode.STOP_MONITORING, _presentationService,
+					_nycTransitDataService, maximumOnwardCalls,
+					timePredictionRecords, currentTime);
+
+			output.add(stopVisit);
+		}
+
+		Collections.sort(output, new Comparator<MonitoredStopVisitStructure>() {
+			public int compare(MonitoredStopVisitStructure arg0,
+					MonitoredStopVisitStructure arg1) {
+				try {
+					SiriExtensionWrapper wrapper0 = (SiriExtensionWrapper) arg0
+							.getMonitoredVehicleJourney().getMonitoredCall()
+							.getExtensions().getAny();
+					SiriExtensionWrapper wrapper1 = (SiriExtensionWrapper) arg1
+							.getMonitoredVehicleJourney().getMonitoredCall()
+							.getExtensions().getAny();
+					return wrapper0
+							.getDistances()
+							.getDistanceFromCall()
+							.compareTo(
+									wrapper1.getDistances()
+											.getDistanceFromCall());
+				} catch (Exception e) {
+					return -1;
+				}
+			}
+		});
+
+		return output;
+	}
+
+	@Override
+	public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructuresForCoordinates(
+			CoordinateBounds bounds, String detailLevel, long currentTime) {
+		List<AnnotatedStopPointStructure> output = new ArrayList<AnnotatedStopPointStructure>();
+
+		for (StopBean stopBean : getStopsForBounds(bounds, detailLevel,
+				currentTime)) {
+			if (stopBean == null)
+				continue;
+
+			AnnotatedStopPointStructure annotatedStopPoint = new AnnotatedStopPointStructure();
+
+			SiriSupportV2.fillAnnotatedStopPointStructure(annotatedStopPoint,
+					stopBean, detailLevel, currentTime);
+
+			output.add(annotatedStopPoint);
+		}
+
+		/*
+		 * Collections.sort(output, new
+		 * Comparator<MonitoredStopVisitStructure>() { public int
+		 * compare(MonitoredStopVisitStructure arg0, MonitoredStopVisitStructure
+		 * arg1) { try { SiriExtensionWrapper wrapper0 =
+		 * (SiriExtensionWrapper)arg0
+		 * .getMonitoredVehicleJourney().getMonitoredCall
+		 * ().getExtensions().getAny(); SiriExtensionWrapper wrapper1 =
+		 * (SiriExtensionWrapper
+		 * )arg1.getMonitoredVehicleJourney().getMonitoredCall
+		 * ().getExtensions().getAny(); return
+		 * wrapper0.getDistances().getDistanceFromCall
+		 * ().compareTo(wrapper1.getDistances().getDistanceFromCall()); }
+		 * catch(Exception e) { return -1; } } });
+		 */
+
+		return output;
+	}
+
+	/**
+	 * CURRENT IN-SERVICE VEHICLE STATUS FOR ROUTE
+	 */
+
+	/**
+	 * Returns true if there are vehicles in service for given route+direction
+	 */
+	@Override
+	public boolean getVehiclesInServiceForRoute(String routeId,
+			String directionId, long currentTime) {
+		ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId,
+				currentTime);
+		for (TripDetailsBean tripDetails : trips.getList()) {
+			// filter out interlined routes
+			if (routeId != null
+					&& !tripDetails.getTrip().getRoute().getId()
+							.equals(routeId))
+				continue;
+
+			// filtered out by user
+			if (directionId != null
+					&& !tripDetails.getTrip().getDirectionId()
+							.equals(directionId))
+				continue;
+
+			if (!_presentationService.include(tripDetails.getStatus()))
+				continue;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns true if there are vehicles in service for given route+direction
+	 * that will stop at the indicated stop in the future.
+	 */
+	@Override
+	public boolean getVehiclesInServiceForStopAndRoute(String stopId,
+			String routeId, long currentTime) {
+		for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(
+				stopId, currentTime)) {
+			TripStatusBean statusBean = adBean.getTripStatus();
+			if (!_presentationService.include(statusBean)
+					|| !_presentationService.include(adBean, statusBean))
+				continue;
+
+			// filtered out by user
+			if (routeId != null
+					&& !adBean.getTrip().getRoute().getId().equals(routeId))
+				continue;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * SERVICE ALERTS METHODS
+	 */
+
+	@Override
+	public List<ServiceAlertBean> getServiceAlertsForRoute(String routeId) {
+		return getServiceAlertsForRouteAndDirection(routeId, null);
+	}
+
+	@Override
+	public List<ServiceAlertBean> getServiceAlertsForRouteAndDirection(
+			String routeId, String directionId) {
+		SituationQueryBean query = new SituationQueryBean();
+		SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+		query.getAffects().add(affects);
+
+		affects.setRouteId(routeId);
+		if (directionId != null) {
+			affects.setDirectionId(directionId);
+		} else {
+			/*
+			 * TODO The route index is not currently being populated correctly;
+			 * query by route and direction, and supply both directions if not
+			 * present
+			 */
+			SituationQueryBean.AffectsBean affects1 = new SituationQueryBean.AffectsBean();
+			query.getAffects().add(affects1);
+			affects1.setRouteId(routeId);
+			affects1.setDirectionId("0");
+			SituationQueryBean.AffectsBean affects2 = new SituationQueryBean.AffectsBean();
+			query.getAffects().add(affects2);
+			affects2.setRouteId(routeId);
+			affects2.setDirectionId("1");
+		}
+
+		ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService
+				.getServiceAlerts(query);
+		return serviceAlerts.getList();
+	}
+
+	@Override
+	public List<ServiceAlertBean> getServiceAlertsGlobal() {
+		SituationQueryBean query = new SituationQueryBean();
+		SituationQueryBean.AffectsBean affects = new SituationQueryBean.AffectsBean();
+
+		affects.setAgencyId("__ALL_OPERATORS__");
+		query.getAffects().add(affects);
+
+		ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService
+				.getServiceAlerts(query);
+		return serviceAlerts.getList();
+	}
+
+	/**
+	 * PRIVATE METHODS
+	 */
+	private ListBean<TripDetailsBean> getAllTripsForRoute(String routeId,
+			long currentTime) {
+		TripsForRouteQueryBean tripRouteQueryBean = new TripsForRouteQueryBean();
+		tripRouteQueryBean.setRouteId(routeId);
+		tripRouteQueryBean.setTime(currentTime);
+
+		TripDetailsInclusionBean inclusionBean = new TripDetailsInclusionBean();
+		inclusionBean.setIncludeTripBean(true);
+		inclusionBean.setIncludeTripStatus(true);
+		tripRouteQueryBean.setInclusion(inclusionBean);
+
+		return _nycTransitDataService.getTripsForRoute(tripRouteQueryBean);
+	}
+
+	private List<ArrivalAndDepartureBean> getArrivalsAndDeparturesForStop(
+			String stopId, long currentTime) {
+		ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
+		query.setTime(currentTime);
+		query.setMinutesBefore(5 * 60);
+		query.setMinutesAfter(5 * 60);
+
+		StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = _nycTransitDataService
+				.getStopWithArrivalsAndDepartures(stopId, query);
+
+		return stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
+	}
+
+	private List<StopBean> getStopsForBounds(CoordinateBounds bounds,
+			String detailLevel, long currentTime) {
+		if (bounds != null) {
+
+			SearchQueryBean queryBean = new SearchQueryBean();
+			queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
+			queryBean.setBounds(bounds);
+			queryBean.setMaxCount(200);
+
+			StopsBean stops = _nycTransitDataService.getStops(queryBean);
+			return stops.getStops();
+		}
+		return new ArrayList<StopBean>();
+	}
 
 }

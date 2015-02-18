@@ -1,8 +1,13 @@
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -71,27 +76,45 @@ public class MonitoringActionSupport {
 		}
 		return Boolean.TRUE.equals(_reportToGoogleAnalytics);
 	}
-	
-	protected boolean isValidRoute(AgencyAndId routeId, NycTransitDataService nycTransitDataService) {
+
+	protected boolean isValidRoute(AgencyAndId routeId,
+			NycTransitDataService nycTransitDataService) {
 		if (routeId != null
 				&& routeId.hasValues()
-				&& nycTransitDataService
-						.getRouteForId(routeId.toString()) != null) {
+				&& nycTransitDataService.getRouteForId(routeId.toString()) != null) {
 			return true;
 		}
 		return false;
 	}
 
-	protected boolean isValidStop(AgencyAndId stopId, NycTransitDataService nycTransitDataService) {
+	protected boolean isValidStop(AgencyAndId stopId,
+			NycTransitDataService nycTransitDataService) {
 		try {
-			StopBean stopBean = nycTransitDataService.getStop(stopId
-					.toString());
+			StopBean stopBean = nycTransitDataService
+					.getStop(stopId.toString());
 			if (stopBean != null)
 				return true;
 		} catch (Exception e) {
 			// This means the stop id is not valid.
 		}
 		return false;
+	}
+
+	protected List<String> getAgencies(HttpServletRequest request,
+			 NycTransitDataService nycTransitDataService) {
+		String agencyId = request.getParameter("OperatorRef");
+		List<String> agencyIds = new ArrayList<String>();
+		if (agencyId != null) {
+			// The user provided an agancy id so, use it
+			agencyIds.add(agencyId);
+		} else {
+			// They did not provide an agency id, so interpret that an any/all
+			// agencies.
+			Map<String, List<CoordinateBounds>> agencies = nycTransitDataService
+					.getAgencyIdsWithCoverageArea();
+			agencyIds.addAll(agencies.keySet());
+		}
+		return agencyIds;
 	}
 
 }
