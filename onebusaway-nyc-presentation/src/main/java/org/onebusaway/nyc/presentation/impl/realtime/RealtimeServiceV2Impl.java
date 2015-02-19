@@ -304,7 +304,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	}
 
 	@Override
-	public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructuresForCoordinates(
+	public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructures(
 			CoordinateBounds bounds, String detailLevel, long currentTime) {
 		List<AnnotatedStopPointStructure> output = new ArrayList<AnnotatedStopPointStructure>();
 

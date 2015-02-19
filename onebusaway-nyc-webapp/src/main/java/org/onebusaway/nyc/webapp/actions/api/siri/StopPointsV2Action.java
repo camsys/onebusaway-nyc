@@ -170,7 +170,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 
 		// Annotated Stop Points
 		List<AnnotatedStopPointStructure> stopPoints = _realtimeService
-				.getAnnotatedStopPointStructuresForCoordinates(bounds,
+				.getAnnotatedStopPointStructures(bounds,
 						detailLevel, responseTimestamp);
 		Map<String, MonitoredStopVisitStructure> stopPointsMap = new HashMap<String, MonitoredStopVisitStructure>();
 

@@ -45,7 +45,8 @@ public interface RealtimeServiceV2 {
   
   public List<ServiceAlertBean> getServiceAlertsGlobal();
 
-  public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructuresForCoordinates(
+  
+  public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructures(
 		CoordinateBounds bounds, String detailLevel, long currentTime);
     
 }

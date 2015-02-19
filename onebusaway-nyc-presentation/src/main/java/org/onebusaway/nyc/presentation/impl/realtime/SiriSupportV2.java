@@ -34,6 +34,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
@@ -51,6 +52,7 @@ import uk.org.siri.siri_2.ExtensionsStructure;
 import uk.org.siri.siri_2.FramedVehicleJourneyRefStructure;
 import uk.org.siri.siri_2.JourneyPatternRefStructure;
 import uk.org.siri.siri_2.JourneyPlaceRefStructure;
+import uk.org.siri.siri_2.LineDirectionStructure;
 import uk.org.siri.siri_2.LineRefStructure;
 import uk.org.siri.siri_2.LocationStructure;
 import uk.org.siri.siri_2.MonitoredCallStructure;
@@ -64,6 +66,7 @@ import uk.org.siri.siri_2.SituationRefStructure;
 import uk.org.siri.siri_2.SituationSimpleRefStructure;
 import uk.org.siri.siri_2.StopPointRefStructure;
 import uk.org.siri.siri_2.VehicleRefStructure;
+import uk.org.siri.siri_2.AnnotatedStopPointStructure.Lines;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -262,7 +265,48 @@ public final class SiriSupportV2 {
 	}
 	
 	public static void fillAnnotatedStopPointStructure(AnnotatedStopPointStructure annotatedStopPoint, StopBean stopBean, String detailLevel, long currentTime){
+		//Set Stop Name
+		NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
+		stopName.setValue(stopBean.getName());
 		
+		
+		// Set Route and Direction
+		Lines lines = new Lines();
+		DirectionRefStructure direction = new DirectionRefStructure();
+		direction.setValue(stopBean.getDirection());	
+		
+		for(RouteBean routeBean : stopBean.getRoutes()){
+			LineRefStructure line = new LineRefStructure();
+			line.setValue(routeBean.getId());
+			
+			LineDirectionStructure lineDirection = new LineDirectionStructure();
+			lineDirection.setDirectionRef(direction);
+			lineDirection.setLineRef(line);
+			
+			lines.getLineRefOrLineDirection().add(lineDirection);
+		}
+		
+		// Set Lat and Lon
+		BigDecimal stopLat = new BigDecimal(stopBean.getLat());
+		BigDecimal stopLon = new BigDecimal(stopBean.getLon());
+		
+		LocationStructure location = new LocationStructure();
+		location.setLongitude(stopLon);
+		location.setLatitude(stopLat);
+		
+		//Set StopId
+		StopPointRefStructure stopPointRef = new StopPointRefStructure();
+		stopPointRef.setValue(stopBean.getId());
+		
+		//Detail Levels
+		annotatedStopPoint.getStopName().add(stopName);
+		
+		// Details -- normal	
+		annotatedStopPoint.setLocation(location);
+		annotatedStopPoint.setLines(lines);
+		annotatedStopPoint.setMonitored(true);
+		
+		annotatedStopPoint.setStopPointRef(stopPointRef);		
 	}
 
 	/***
