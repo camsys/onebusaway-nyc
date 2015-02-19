@@ -79,6 +79,15 @@ public final class SiriSupportV2 {
 		VEHICLE_MONITORING,
 		STOP_MONITORING
 	}
+	
+	public enum DetailLevel {
+		MINIMUM,
+		BASIC,
+		NORMAL,
+		CALLS;
+	}
+	
+	
 
 	/**
 	 * NOTE: The tripDetails bean here may not be for the trip the vehicle is currently on 
@@ -298,13 +307,16 @@ public final class SiriSupportV2 {
 		StopPointRefStructure stopPointRef = new StopPointRefStructure();
 		stopPointRef.setValue(stopBean.getId());
 		
-		//Detail Levels
+		//Detail -- minimum
 		annotatedStopPoint.getStopName().add(stopName);
 		
-		// Details -- normal	
-		annotatedStopPoint.setLocation(location);
-		annotatedStopPoint.setLines(lines);
-		annotatedStopPoint.setMonitored(true);
+		// Details -- normal
+		if(!detailLevel.equalsIgnoreCase(DetailLevel.MINIMUM.name())){
+			annotatedStopPoint.setLocation(location);
+			annotatedStopPoint.setLines(lines);
+			//TODO - LCARABALLO Always true?
+			annotatedStopPoint.setMonitored(true);
+		}
 		
 		annotatedStopPoint.setStopPointRef(stopPointRef);		
 	}

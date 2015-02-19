@@ -308,8 +308,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			CoordinateBounds bounds, String detailLevel, long currentTime) {
 		List<AnnotatedStopPointStructure> output = new ArrayList<AnnotatedStopPointStructure>();
 
-		for (StopBean stopBean : getStopsForBounds(bounds, detailLevel,
-				currentTime)) {
+		for (StopBean stopBean : getStopsForBounds(bounds, currentTime)) {
 			if (stopBean == null)
 				continue;
 
@@ -483,7 +482,22 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	}
 
 	private List<StopBean> getStopsForBounds(CoordinateBounds bounds,
-			String detailLevel, long currentTime) {
+			long currentTime) {
+		if (bounds != null) {
+
+			SearchQueryBean queryBean = new SearchQueryBean();
+			queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
+			queryBean.setBounds(bounds);
+			queryBean.setMaxCount(200);
+
+			StopsBean stops = _nycTransitDataService.getStops(queryBean);
+			return stops.getStops();
+		}
+		return new ArrayList<StopBean>();
+	}
+	
+	private List<StopBean> getStopsForRoute(AgencyId routeId,
+			long currentTime) {
 		if (bounds != null) {
 
 			SearchQueryBean queryBean = new SearchQueryBean();

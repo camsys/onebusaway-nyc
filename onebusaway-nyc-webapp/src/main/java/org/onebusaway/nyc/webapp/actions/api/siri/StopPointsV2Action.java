@@ -11,7 +11,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -22,21 +21,16 @@ import org.onebusaway.nyc.presentation.service.realtime.RealtimeServiceV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
-import uk.org.siri.siri_2.AnnotatedStopPointStructure.Lines;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.LineDirectionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
-import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
-import uk.org.siri.siri_2.ServiceDelivery;
 import uk.org.siri.siri_2.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri_2.Siri;
-import uk.org.siri.siri_2.StopMonitoringDeliveryStructure;
 import uk.org.siri.siri_2.StopPointsDeliveryStructure;
 
 public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
@@ -81,6 +75,8 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 				_configurationService);
 
 		_realtimeService.setTime(responseTimestamp);
+		
+		boolean useLifeRef = false;
 
 		String directionId = _request.getParameter("DirectionRef");
 
@@ -107,26 +103,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 			agencyIds.addAll(agencies.keySet());
 		}
 
-		// Check for Bounding Box
-		String boundsErrorString = "";
-		String boundingBox = _request.getParameter("BoundingBox");
-		CoordinateBounds bounds = null;
-		if (boundingBox != null) {
-			String[] coordinates = boundingBox.split(",");
-			if (coordinates.length >= COORDINATES_COUNT) {
-				bounds = new CoordinateBounds(
-						Double.parseDouble(coordinates[0]),
-						Double.parseDouble(coordinates[1]),
-						Double.parseDouble(coordinates[2]),
-						Double.parseDouble(coordinates[3]));
-			}
-		}
-
-		if (bounds == null) {
-			boundsErrorString += "You must provide " + COORDINATES_COUNT
-					+ " coordinates.";
-		}
-
+		// Check for LineRef (Route Id)
 		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
 		String routeIdsErrorString = "";
 		if (_request.getParameter("LineRef") != null) {
@@ -158,8 +135,35 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 				routeIdsErrorString = "";
 		}
 
-		String detailLevel = _request.getParameter("StopMonitoringDetailLevel");
+		// Check for Bounding Box
+		String boundsErrorString = "";
+		String boundingBox = _request.getParameter("BoundingBox");
+		CoordinateBounds bounds = null;
+		if (boundingBox != null) {
+			String[] coordinates = boundingBox.split(",");
+			if (coordinates.length >= COORDINATES_COUNT) {
+				bounds = new CoordinateBounds(
+						Double.parseDouble(coordinates[0]),
+						Double.parseDouble(coordinates[1]),
+						Double.parseDouble(coordinates[2]),
+						Double.parseDouble(coordinates[3]));
+			}
+		}
 
+		if (bounds == null) {
+			if(routeIds.size() > 0){
+				useLifeRef = true;
+			}
+			else{
+				boundsErrorString += "You must provide " + COORDINATES_COUNT
+						+ " BoundingBox coordinates or a LineRef value.";
+			}
+		}
+		
+		// Check for Detail Level
+		String detailLevel = _request.getParameter("StopPointsDetailLevel");
+		
+		//TODO LCARABALLO GoogleAnalytics?
 		/*
 		 * if (_monitoringActionSupport
 		 * .canReportToGoogleAnalytics(_configurationService)) {
@@ -172,32 +176,33 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		List<AnnotatedStopPointStructure> stopPoints = _realtimeService
 				.getAnnotatedStopPointStructures(bounds,
 						detailLevel, responseTimestamp);
+		
 		Map<String, MonitoredStopVisitStructure> stopPointsMap = new HashMap<String, MonitoredStopVisitStructure>();
 
 		List<AnnotatedStopPointStructure> filteredStopPoints = new ArrayList<AnnotatedStopPointStructure>();
-		List<LineDirectionStructure> filteredLineDirections = new ArrayList<LineDirectionStructure>();
 
 		for (AnnotatedStopPointStructure stopPoint : stopPoints) {
 			// TODO - LCARABALLLO - Is there a better way to do this
 			// conversion/filtering
+			boolean hasMatch = false;
 			List<LineDirectionStructure> lineDirections = (List<LineDirectionStructure>) (Object) stopPoint
 					.getLines().getLineRefOrLineDirection();
 			for (LineDirectionStructure lineDirection : lineDirections) {
-
+				
 				AgencyAndId thisRouteId = AgencyAndIdLibrary
-						.convertFromString(lineDirection.getDirectionRef()
+						.convertFromString(lineDirection.getLineRef()
 								.getValue());
-				String thisDirectionId = lineDirection.getLineRef().getValue();
+				String thisDirectionId = lineDirection.getDirectionRef().getValue();
 
 				// user filtering
-				if (routeIds.size() > 0 && !routeIds.contains(thisRouteId))
+				if (!useLifeRef && routeIds.size() > 0 && !routeIds.contains(thisRouteId))
 					continue;
 				if (directionId != null && !thisDirectionId.equals(directionId))
 					continue;
-				filteredLineDirections.add(lineDirection);
+				hasMatch = true;
 			}
 
-			if (filteredLineDirections.size() == 0)
+			if (!hasMatch)
 				continue;
 
 			filteredStopPoints.add(stopPoint);
@@ -258,7 +263,8 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 
 			stopPointsDelivery.setResponseTimestamp(DateUtil
 					.toXmlGregorianCalendar(responseTimestamp));
-
+			
+			//TODO - LCARABALLO Do I still need serviceAlertsHelper?
 			/*
 			 * _serviceAlertsHelper.addSituationExchangeToSiriForStops(
 			 * serviceDelivery, visits, _nycTransitDataService, stopIds);
