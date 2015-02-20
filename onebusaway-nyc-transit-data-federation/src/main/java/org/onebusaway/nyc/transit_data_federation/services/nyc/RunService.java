@@ -32,6 +32,8 @@ public interface RunService {
 		  long time);
 
   public Collection<RunTripEntry> getRunTripEntriesForRun(String runId);
+  
+  public Collection<RunTripEntry> getRunTripEntriesForBlock(String blockId);
 
   public RunTripEntry getActiveRunTripEntryForBlockInstance(
 		  BlockInstance blockInstance, int scheduleTime);
@@ -53,6 +55,8 @@ public interface RunService {
 
   public boolean isValidRunId(String runId);
 
+  public boolean isValidBlockId(String blockId);
+
   public Set<AgencyAndId> getRoutesForRunId(String opAssignedRunId);
   
   public Set<AgencyAndId> getRoutesForRunId(String opAssignedRunId, String AgencyId);
@@ -65,5 +69,5 @@ public interface RunService {
   public RunTripEntry getPreviousEntry(RunTripEntry entry, long date);
 
   public RunTripEntry getNextEntry(RunTripEntry entry, long date);
-  
+
 }

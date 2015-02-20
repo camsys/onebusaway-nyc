@@ -69,6 +69,8 @@ public class RunServiceImpl implements RunService {
   private Map<AgencyAndId, RunData> runDataByTrip;
 
   private Multimap<String, RunTripEntry> entriesByRun;
+
+  private Multimap<String, RunTripEntry> entriesByBlock;
   
   private Multimap<String, AgencyAndId> runIdsToRoutes;
   
@@ -134,6 +136,7 @@ public class RunServiceImpl implements RunService {
   // public only for unit testing
   public void transformRunData() {
     entriesByRun = TreeMultimap.create();
+    entriesByBlock = TreeMultimap.create();
     runIdsToRoutes = HashMultimap.create();
     runIdsToTripIds = HashMultimap.create();
     entriesByTrip = ArrayListMultimap.create();
@@ -179,7 +182,15 @@ public class RunServiceImpl implements RunService {
     RunTripEntry rte = new RunTripEntry(trip, runNumber, runRoute, runDepot, reliefTime,
         relief);
     entriesByRun.put(runId, rte);
-    entriesByRunNumber.put(runNumber, rte);
+		entriesByRunNumber.put(runNumber, rte);
+    try {
+      String rawBlockId = trip.getBlock().getId().toString();
+      String agencyIdPrefix = rte.getTripEntry().getId().getAgencyId() + "_";
+      entriesByBlock.put(
+          rawBlockId.startsWith(agencyIdPrefix) ? rawBlockId.replaceFirst(
+              agencyIdPrefix, "") : rawBlockId, rte);
+    } catch (Exception e) {
+    }
     // this will fail for unit tests otherwise
     RouteEntry route = rte.getTripEntry().getRoute();
     if (route != null)
@@ -226,6 +237,11 @@ public class RunServiceImpl implements RunService {
   @Override
   public Collection<RunTripEntry> getRunTripEntriesForRun(String runId) {
     return entriesByRun.get(runId);
+  }
+  
+  @Override
+  public Collection<RunTripEntry> getRunTripEntriesForBlock(String blockId) {
+    return entriesByBlock.get(blockId);
   }
 
   private final Pattern realRunRouteIdPattern = Pattern.compile("[a-zA-Z]+0*(\\d+)[a-zA-Z]*");
@@ -413,6 +429,11 @@ public class RunServiceImpl implements RunService {
   @Override
   public boolean isValidRunId(String runId) {
     return this.entriesByRun.containsKey(runId);
+  }
+
+  @Override
+  public boolean isValidBlockId(String blockId) {
+    return this.entriesByBlock.containsKey(blockId);
   }
 
   @Override
