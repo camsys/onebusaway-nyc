@@ -4,19 +4,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeServiceV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
-import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializer;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializerV2;
-import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializerV2;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -26,6 +29,7 @@ import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
 import org.onebusaway.transit_data.model.StopsBean;
+import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
@@ -34,10 +38,12 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
+import uk.org.siri.siri_2.LineDirectionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri_2.VehicleActivityStructure;
@@ -305,7 +311,8 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructures(
-			CoordinateBounds bounds, String detailLevel, long currentTime) {
+			CoordinateBounds bounds, String detailLevel, long currentTime,
+			Map<Filters, String> filters) {
 		List<AnnotatedStopPointStructure> output = new ArrayList<AnnotatedStopPointStructure>();
 
 		for (StopBean stopBean : getStopsForBounds(bounds, currentTime)) {
@@ -314,10 +321,12 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 			AnnotatedStopPointStructure annotatedStopPoint = new AnnotatedStopPointStructure();
 
-			SiriSupportV2.fillAnnotatedStopPointStructure(annotatedStopPoint,
-					stopBean, detailLevel, currentTime);
-
-			output.add(annotatedStopPoint);
+			boolean isValid = SiriSupportV2.fillAnnotatedStopPointStructure(annotatedStopPoint,
+					stopBean, filters, detailLevel, currentTime);
+			
+			//filterStopPoints(annotatedStopPoint, filters, output);
+			if(isValid)
+				output.add(annotatedStopPoint);
 		}
 
 		/*
@@ -336,6 +345,27 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		 * catch(Exception e) { return -1; } } });
 		 */
 
+		return output;
+	}
+
+	@Override
+	public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructures(
+			List<AgencyAndId> routeIds, String detailLevel, long currentTime,
+			Map<Filters, String> filters) {
+		List<AnnotatedStopPointStructure> output = new ArrayList<AnnotatedStopPointStructure>();
+
+		for (StopBean stopBean : getStopsForRoutes(routeIds, currentTime)) {
+			if (stopBean == null)
+				continue;
+
+			AnnotatedStopPointStructure annotatedStopPoint = new AnnotatedStopPointStructure();
+
+			boolean isValid = SiriSupportV2.fillAnnotatedStopPointStructure(annotatedStopPoint,
+					stopBean, filters, detailLevel, currentTime);
+			
+			if(isValid)
+				output.add(annotatedStopPoint);
+		}
 		return output;
 	}
 
@@ -484,31 +514,55 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	private List<StopBean> getStopsForBounds(CoordinateBounds bounds,
 			long currentTime) {
 		if (bounds != null) {
-
 			SearchQueryBean queryBean = new SearchQueryBean();
 			queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
 			queryBean.setBounds(bounds);
-			queryBean.setMaxCount(200);
+			queryBean.setMaxCount(Integer.MAX_VALUE);
 
 			StopsBean stops = _nycTransitDataService.getStops(queryBean);
 			return stops.getStops();
 		}
 		return new ArrayList<StopBean>();
+	}
+
+	private List<StopBean> getStopsForRoutes(List<AgencyAndId> routeIds,
+			long currentTime) {
+		Set<StopBean> stopsSet = new HashSet<StopBean>();
+		List<StopBean> stopsList = new ArrayList<StopBean>();
+
+		for (AgencyAndId routeId : routeIds) {
+			StopsForRouteBean stopsForRoute = _nycTransitDataService
+					.getStopsForRoute(AgencyAndIdLibrary
+							.convertToString(routeId));
+			stopsSet.addAll(stopsForRoute.getStops());
+		}
+		stopsList.addAll(stopsSet);
+
+		return stopsList;
 	}
 	
-	private List<StopBean> getStopsForRoute(AgencyId routeId,
-			long currentTime) {
-		if (bounds != null) {
+	/*private void filterStopPoints(AnnotatedStopPointStructure annotatedStopPoint, Map<Filters, String> filters, List<AnnotatedStopPointStructure> output){
+		List<LineDirectionStructure> lineDirections = (List<LineDirectionStructure>) (Object) annotatedStopPoint
+				.getLines().getLineRefOrLineDirection();
 
-			SearchQueryBean queryBean = new SearchQueryBean();
-			queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
-			queryBean.setBounds(bounds);
-			queryBean.setMaxCount(200);
+		for (LineDirectionStructure lineDirection : lineDirections) {
+			
+			String fiterRouteId = filters.get(Filters.LINE_REF);
+			String filterDirectionId = filters.get(Filters.DIRECTION_REF);
+			
+			String thisRouteId = lineDirection.getLineRef().getValue();
+			String thisDirectionId = lineDirection.getDirectionRef()
+					.getValue();
 
-			StopsBean stops = _nycTransitDataService.getStops(queryBean);
-			return stops.getStops();
+			// user filtering
+			if (StringUtils.isNotBlank(fiterRouteId)
+					&& !fiterRouteId.equalsIgnoreCase(thisRouteId))
+				continue;
+			if (StringUtils.isNotBlank(null) && !thisDirectionId.equals(filterDirectionId))
+				continue;
+			
+			output.add(annotatedStopPoint);
 		}
-		return new ArrayList<StopBean>();
-	}
+	}*/
 
 }

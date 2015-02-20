@@ -16,6 +16,9 @@ import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.DetailLevel;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelperV2;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeServiceV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -23,6 +26,8 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.base.Predicate;
 
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
@@ -37,8 +42,12 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		ServletRequestAware, ServletResponseAware {
 	private static final long serialVersionUID = 1L;
 
-	private static final String PREV_TRIP = "prevTrip";
 	private static final int COORDINATES_COUNT = 4;
+	private static final String LINE_REF = "LineRef";
+	private static final String DIRECTION_REF = "DirectionRef"; 
+	private static final String OPERATOR_REF = "Operator"; 
+	private static final String BOUNDING_BOX = "BoundingBox";
+	private static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
 
 	@Autowired
 	public NycTransitDataService _nycTransitDataService;
@@ -75,10 +84,10 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 				_configurationService);
 
 		_realtimeService.setTime(responseTimestamp);
-		
-		boolean useLifeRef = false;
 
-		String directionId = _request.getParameter("DirectionRef");
+		boolean useLineRef = false;
+		
+		String directionId = _request.getParameter(DIRECTION_REF);
 
 		// We need to support the user providing no agency id which means 'all
 		// agencies'.
@@ -90,7 +99,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		List<String> agencyIds = new ArrayList<String>();
 
 		// Try to get the agency id passed by the user
-		String agencyId = _request.getParameter("OperatorRef");
+		String agencyId = _request.getParameter(OPERATOR_REF);
 
 		if (agencyId != null) {
 			// The user provided an agancy id so, use it
@@ -105,11 +114,12 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 
 		// Check for LineRef (Route Id)
 		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
+		String lineRef = _request.getParameter(LINE_REF);
 		String routeIdsErrorString = "";
-		if (_request.getParameter("LineRef") != null) {
+		if (lineRef != null) {
 			try {
 				AgencyAndId routeId = AgencyAndIdLibrary
-						.convertFromString(_request.getParameter("LineRef"));
+						.convertFromString(lineRef);
 				if (_monitoringActionSupport.isValidRoute(routeId,
 						_nycTransitDataService)) {
 					routeIds.add(routeId);
@@ -120,7 +130,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 			} catch (Exception e) {
 				for (String agency : agencyIds) {
 					AgencyAndId routeId = new AgencyAndId(agency,
-							_request.getParameter("LineRef"));
+							lineRef);
 					if (_monitoringActionSupport.isValidRoute(routeId,
 							_nycTransitDataService)) {
 						routeIds.add(routeId);
@@ -131,13 +141,15 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 				}
 				routeIdsErrorString = routeIdsErrorString.trim();
 			}
-			if (routeIds.size() > 0)
+			if (routeIds.size() > 0){
+				
 				routeIdsErrorString = "";
+			}
 		}
 
 		// Check for Bounding Box
 		String boundsErrorString = "";
-		String boundingBox = _request.getParameter("BoundingBox");
+		String boundingBox = _request.getParameter(BOUNDING_BOX);
 		CoordinateBounds bounds = null;
 		if (boundingBox != null) {
 			String[] coordinates = boundingBox.split(",");
@@ -151,19 +163,18 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		}
 
 		if (bounds == null) {
-			if(routeIds.size() > 0){
-				useLifeRef = true;
-			}
-			else{
+			if (routeIds.size() > 0) {
+				useLineRef = true;
+			} else {
 				boundsErrorString += "You must provide " + COORDINATES_COUNT
 						+ " BoundingBox coordinates or a LineRef value.";
 			}
 		}
-		
+
 		// Check for Detail Level
-		String detailLevel = _request.getParameter("StopPointsDetailLevel");
-		
-		//TODO LCARABALLO GoogleAnalytics?
+		String detailLevel = _request.getParameter(STOP_POINTS_DETAIL_LEVEL);
+
+		// TODO LCARABALLO GoogleAnalytics?
 		/*
 		 * if (_monitoringActionSupport
 		 * .canReportToGoogleAnalytics(_configurationService)) {
@@ -171,31 +182,46 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		 * "Stop Monitoring", StringUtils.join(stopIds, ","),
 		 * _configurationService); }
 		 */
-
-		// Annotated Stop Points
-		List<AnnotatedStopPointStructure> stopPoints = _realtimeService
-				.getAnnotatedStopPointStructures(bounds,
-						detailLevel, responseTimestamp);
 		
-		Map<String, MonitoredStopVisitStructure> stopPointsMap = new HashMap<String, MonitoredStopVisitStructure>();
+		// Setup Filters
+		Map<Filters, String> filters = new HashMap<Filters,String>();		
+		filters.put(Filters.DIRECTION_REF, directionId);
+		filters.put(Filters.LINE_REF, lineRef);
 
-		List<AnnotatedStopPointStructure> filteredStopPoints = new ArrayList<AnnotatedStopPointStructure>();
+		// Annotated Stop Points		
+		List<AnnotatedStopPointStructure> stopPoints;
+		if (useLineRef) {
+			stopPoints = _realtimeService.getAnnotatedStopPointStructures(
+					routeIds, detailLevel, responseTimestamp, filters);
+		} else {
+			stopPoints = _realtimeService.getAnnotatedStopPointStructures(
+					bounds, detailLevel, responseTimestamp, filters);
+		}
 
-		for (AnnotatedStopPointStructure stopPoint : stopPoints) {
+		
+		//List<AnnotatedStopPointStructure> filteredStopPoints = new ArrayList<AnnotatedStopPointStructure>();
+		
+		/*for (AnnotatedStopPointStructure stopPoint : stopPoints) {
 			// TODO - LCARABALLLO - Is there a better way to do this
 			// conversion/filtering
 			boolean hasMatch = false;
-			List<LineDirectionStructure> lineDirections = (List<LineDirectionStructure>) (Object) stopPoint
+			
+			List<LineDirectionStructure> lineDirections = null;
+			
+			lineDirections = (List<LineDirectionStructure>) (Object) stopPoint
 					.getLines().getLineRefOrLineDirection();
+
 			for (LineDirectionStructure lineDirection : lineDirections) {
-				
+
 				AgencyAndId thisRouteId = AgencyAndIdLibrary
 						.convertFromString(lineDirection.getLineRef()
 								.getValue());
-				String thisDirectionId = lineDirection.getDirectionRef().getValue();
+				String thisDirectionId = lineDirection.getDirectionRef()
+						.getValue();
 
 				// user filtering
-				if (!useLifeRef && routeIds.size() > 0 && !routeIds.contains(thisRouteId))
+				if (!useLineRef && routeIds.size() > 0
+						&& !routeIds.contains(thisRouteId))
 					continue;
 				if (directionId != null && !thisDirectionId.equals(directionId))
 					continue;
@@ -208,7 +234,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 			filteredStopPoints.add(stopPoint);
 
 		}
-		stopPoints = filteredStopPoints;
+		stopPoints = filteredStopPoints;*/
 
 		Exception error = null;
 		if (bounds == null
@@ -263,8 +289,8 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 
 			stopPointsDelivery.setResponseTimestamp(DateUtil
 					.toXmlGregorianCalendar(responseTimestamp));
-			
-			//TODO - LCARABALLO Do I still need serviceAlertsHelper?
+
+			// TODO - LCARABALLO Do I still need serviceAlertsHelper?
 			/*
 			 * _serviceAlertsHelper.addSituationExchangeToSiriForStops(
 			 * serviceDelivery, visits, _nycTransitDataService, stopIds);
