@@ -48,7 +48,7 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   }
 
   public String getBingMapsKey() {
-    return _configurationService.getConfigurationValueAsString("display.bingMapsKey", null);    
+    return _configurationService.getConfigurationValueAsString("display.bingMapsKey", null);
   }
   
   public String getObaApiKey() {

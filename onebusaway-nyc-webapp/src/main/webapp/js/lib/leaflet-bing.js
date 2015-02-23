@@ -1,7 +1,8 @@
 /* global console: true */
 L.BingLayer = L.TileLayer.extend({
 	
-	initialize: function(options) {
+	initialize: function(type, options) {
+		this.type = type;
 		L.Util.setOptions(this, options);
 		this._key = OBA.Config.bingMapsKey;
 		this._url = null;
@@ -44,9 +45,11 @@ L.BingLayer = L.TileLayer.extend({
 			}
 			_this.initMetadata();
 		};
-		var url = document.location.protocol + '//dev.virtualearth.net/REST/v1/Imagery/Metadata/' + this.options.type + '?include=ImageryProviders&jsonp=' + cbid +
-		          '&key=' + this._key + '&UriScheme=' + document.location.protocol.slice(0, -1);
-		var script = document.createElement('script');
+		var url = document.location.protocol
+				+ '//dev.virtualearth.net/REST/v1/Imagery/Metadata/'
+				+ this.type + '?include=ImageryProviders&jsonp=' + cbid
+				+ '&key=' + this._key + '&UriScheme=' + document.location.protocol.slice(0, -1)
+        var script = document.createElement('script');
 		script.type = 'text/javascript';
 		script.src = url;
 		script.id = cbid;

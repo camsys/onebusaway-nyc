@@ -15,7 +15,6 @@ OBA.LeafletMapWrapper = function(mapNode) {
 	}
 	
 	options = {
-		type: 'Road',
 		minZoom: 9,
 		maxZoom: 19,
 		tileSize: 256,
@@ -27,11 +26,11 @@ OBA.LeafletMapWrapper = function(mapNode) {
 		noWrap: false
 	};
 	
-	if (true || instance == 'leaflet-bing'){
+	if (instance == 'leaflet-bing'){
 		var map = new L.Map('map', {center: new L.LatLng(lat, lon), zoom: zoom });
-		var osmLayer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', options);
-		var bingLayer = new L.BingLayer('Road', options); //'Road', 'Aerial', 'AerialWithLabels'
-		var mapboxLayer = new L.TileLayer('https://{s}.tiles.mapbox.com/v3/examples.map-i87786ca/{z}/{x}/{y}.png', options);
+		var bingLayer = new L.BingLayer('Road', options);
+		var mapboxLayer = new L.TileLayer(document.location.protocol + '//{s}.tiles.mapbox.com/v3/examples.map-i87786ca/{z}/{x}/{y}.png', options);
+		var osmLayer = new L.TileLayer(document.location.protocol + '//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', options);
 		map.addLayer(bingLayer);
 		map.addControl(new L.Control.Layers({'Bing':bingLayer, 'Mapbox':mapboxLayer, 'OSM':osmLayer}, {}));
 	}

@@ -300,8 +300,7 @@ OBA.Popups = (function() {
 			e.preventDefault();
 
 			var map = marker.options.map;
-			map.setView(marker.getLatLng());
-			map.setZoom(16);
+			map.setView(marker.getLatLng(), 16);
 		});
 
 		activateAlertLinks(content);
@@ -573,8 +572,7 @@ OBA.Popups = (function() {
 			e.preventDefault();
 
 			var map = marker.options.map;
-			map.setView(marker.getLatLng());
-			map.setZoom(16);
+			map.setView(marker.getLatLng(), 16);
 		});
 
 		marker.setOpacity(1);
