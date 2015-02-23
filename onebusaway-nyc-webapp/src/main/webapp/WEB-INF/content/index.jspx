@@ -27,6 +27,11 @@
 </s:url>
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
+<s:url var="url" value="/css/map/leaflet.css">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
+<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+
 <s:url var="url" value="/css/map/popup.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
@@ -52,6 +57,10 @@
 	<s:param name="v">3</s:param>
 	<s:param name="client"><s:property value="googleMapsClientId" /></s:param>
 	<s:param name="sensor">false</s:param>
+</s:url>
+<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+
+<s:url var="url" value="/js/lib/leaflet.js">
 </s:url>
 <script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
 
@@ -100,25 +109,54 @@
 </s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/map/GoogleMapWrapper.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-<s:url var="url" value="/js/oba/map/Popups.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-<s:url var="url" value="/js/oba/map/RouteMap.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-<s:url var="url" value="/js/oba/map/Sidebar.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+<!-- Google Maps Instance -->
+<s:if test="mapInstance.equals('google')">
+	<s:url var="url" value="/js/oba/map/GoogleMapWrapper.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<s:url var="url" value="/js/oba/map/Popups.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+		<s:url var="url" value="/js/oba/map/RouteMap.js">
+			<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+		</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+		<s:url var="url" value="/js/oba/map/Sidebar.js">
+			<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+		</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+</s:if>
+<s:else>
+	<!-- Leaflet Maps (Google) Instance -->
+	<s:if test="mapInstance.equals('leaflet-google')">
+		<s:url var="url" value="/js/lib/leaflet-google.js">
+		</s:url>
+	</s:if>
+	<!-- Leaflet Maps (Bing) Instance -->
+	<s:elseif test="mapInstance.equals('leaflet-bing')">
+		<s:url var="url" value="/js/lib/leaflet-bing.js">
+		</s:url>
+	</s:elseif>
+	<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+	<s:url var="url" value="/js/oba/map/LeafletMapWrapper.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<s:url var="url" value="/js/oba/map/LeafletPopups.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<s:url var="url" value="/js/oba/map/LeafletRouteMap.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<s:url var="url" value="/js/oba/map/LeafletSidebar.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+</s:else>
 
 <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"><!-- jspx --></script>
 

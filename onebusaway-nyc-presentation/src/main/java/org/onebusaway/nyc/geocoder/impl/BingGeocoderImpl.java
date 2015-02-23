@@ -15,16 +15,13 @@
  */
 package org.onebusaway.nyc.geocoder.impl;
 
-import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.geocoder.model.BingGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -43,15 +40,11 @@ public class BingGeocoderImpl extends FilteredGeocoderBase {
 
   private static final String GEOCODE_URL_PREFIX = "http://dev.virtualearth.net/REST/v1/Locations";
   
-  @Autowired
-  private ConfigurationService _configurationService;
-
-  private CoordinateBounds _resultBiasingBounds = null;
-    
-  public void setResultBiasingBounds(CoordinateBounds bounds) {
-    _resultBiasingBounds = bounds;
+  public BingGeocoderImpl(){}
+  public BingGeocoderImpl(FilteredGeocoderBase template){
+	  super(template);
   }
-
+  
   public List<NycGeocoderResult> nycGeocode(String location) {
     try {
       List<NycGeocoderResult> results = new ArrayList<NycGeocoderResult>();
@@ -60,7 +53,7 @@ public class BingGeocoderImpl extends FilteredGeocoderBase {
       q.append("includeNeighborhood=true");
       q.append("&output=xml");
     
-      String encodedLocation = URLEncoder.encode(location, "UTF-8");
+      String encodedLocation = URLEncoder.encode(location + (location.contains(", NY")?"":", NY"), "UTF-8");
       q.append("&query=").append(encodedLocation);
     
       if(_resultBiasingBounds != null) {
