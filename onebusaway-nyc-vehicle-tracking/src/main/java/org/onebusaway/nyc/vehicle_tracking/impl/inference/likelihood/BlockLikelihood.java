@@ -15,17 +15,22 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
-import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BlockLikelihood implements SensorModelRule {
+
+  // TODO remove logging
+  private static Logger _log = LoggerFactory.getLogger(BlockLikelihood.class);
 
   public static enum BLOCK_INFO_STATE {
     NO_BLOCK_INFO, BLOCK_MATCH, NO_BLOCK_MATCH, BLOCK_INFO_NO_BLOCK,
@@ -73,31 +78,23 @@ public class BlockLikelihood implements SensorModelRule {
           );
     }
 
-    if (StringUtils.isEmpty(assignedBlockId))
-      return BLOCK_INFO_STATE.NO_BLOCK_INFO;
+    BLOCK_INFO_STATE result = BLOCK_INFO_STATE.NO_BLOCK_MATCH;
 
-    return BLOCK_INFO_STATE.NO_BLOCK_INFO;
-    return BLOCK_INFO_STATE.BLOCK_MATCH;
-    return BLOCK_INFO_STATE.NO_BLOCK_MATCH;
-    return BLOCK_INFO_STATE.BLOCK_INFO_NO_BLOCK;
+    if (StringUtils.isEmpty(assignedBlockId)) {
+      result = BLOCK_INFO_STATE.NO_BLOCK_INFO;
+    } else if (!obs.hasValidAssignedBlockId()) {
+      result = BLOCK_INFO_STATE.BLOCK_INFO_NO_BLOCK;
+    } else if (inferredBlockId == null) {
+      result = BLOCK_INFO_STATE.NO_BLOCK_MATCH;
+    } else if (StringUtils.equals(assignedBlockId, inferredBlockId)) {
+      result = BLOCK_INFO_STATE.BLOCK_MATCH;
+    }
 
-    // TODO: BLOCK_INFO_NO_BLOCK means we have an assigned block but it doesn't match the current bundle
+    _log.info("getBlockInfoState: " + assignedBlockId + ", " + inferredBlockId +
+        ", " + obs.hasValidAssignedBlockId() + ", result: " + result);
     
-//    if (blockState != null) {
-//      if (blockState.getOpAssigned() == Boolean.TRUE) {
-//        return BLOCK_INFO_STATE.FORMAL_RUN_MATCH;
-//      } else {
-//        if (blockState.getRunReported() == Boolean.TRUE) {
-//          return BLOCK_INFO_STATE.NO_FORMAL_FUZZY_MATCH;
-//        } else {
-//          return BLOCK_INFO_STATE.NO_FORMAL_NO_FUZZY_MATCH;
-//        }
-//      }
-//    } else {
-//      return BLOCK_INFO_STATE.RUN_INFO_NO_RUN;
-//    }
-    
-    return BLOCK_INFO_STATE.BLOCK_INFO_NO_BLOCK;
+    return result;
+
   }
 
 }

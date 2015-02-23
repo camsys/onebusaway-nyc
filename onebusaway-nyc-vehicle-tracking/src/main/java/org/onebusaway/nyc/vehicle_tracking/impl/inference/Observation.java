@@ -201,7 +201,10 @@ public class Observation implements Comparable<Observation> {
         _lastValidDestinationSignCode, o2._lastValidDestinationSignCode,
         Ordering.natural().nullsLast()).compare(_record, o2._record).compareFalseFirst(
         outOfService, o2.outOfService).compareFalseFirst(atTerminal, o2.atTerminal).compareFalseFirst(
-        atBase, o2.atBase).compare(_runResults, o2._runResults).compare(_assignedBlockId, o2._assignedBlockId).result();
+        atBase, o2.atBase).compare(_runResults, o2._runResults)
+          .compare(_assignedBlockId, o2._assignedBlockId)
+          .compareFalseFirst(_isValidAssignedBlockId, o2._isValidAssignedBlockId)
+          .result();
 
     return res;
   }
@@ -235,6 +238,7 @@ public class Observation implements Comparable<Observation> {
     result = prime * result + (atTerminal ? 1231 : 1237);
     result = prime * result + (outOfService ? 1231 : 1237);
     result = prime * result + (_assignedBlockId == null ? 0 : _assignedBlockId.hashCode());
+    result = prime * result + (_isValidAssignedBlockId ? 1231 : 1237);
 
     _hash = result;
     return result;
@@ -283,6 +287,8 @@ public class Observation implements Comparable<Observation> {
     } else if (!_assignedBlockId.equals(other._assignedBlockId)) {
       return false;
     }
+    if (_isValidAssignedBlockId != other._isValidAssignedBlockId)
+      return false;
       
     return true;
   }
@@ -326,6 +332,10 @@ public class Observation implements Comparable<Observation> {
 
   public String getAssignedBlockId() {
     return _assignedBlockId;
+  }
+
+  public boolean hasValidAssignedBlockId() {
+    return _isValidAssignedBlockId;
   }
 
 }

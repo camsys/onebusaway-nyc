@@ -24,7 +24,9 @@ import net.sf.ehcache.CacheManager;
 
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
+import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
@@ -35,10 +37,10 @@ import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDaoImpl;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
@@ -104,6 +106,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	@Autowired
 	private RefreshService _refreshService;
+	
+	// This is only used when logging block info at bundle change.
+	@Autowired
+	private CalendarService _calendarService;
 
 	/******
 	 * Getters / Setters
@@ -368,6 +374,16 @@ public class BundleManagementServiceImpl implements BundleManagementService {
         List<TripEntry> allTrips = _transitGraphDao.getAllTrips();
         for (TripEntry trip : allTrips) {
           writer.write(bundleId + "\t" + trip.getId() + "\t" + trip.getBlock().getId() + "\n");
+          for (BlockConfigurationEntry configuration: trip.getBlock().getConfigurations()) {
+            ServiceIdActivation serviceIds = configuration.getServiceIds();
+            for (LocalizedServiceId s : serviceIds.getActiveServiceIds()) {
+              writer.write("\t" + s.toString()+ "\n");
+              List<Date> dates = _calendarService.getDatesForLocalizedServiceId(s);
+              for (Date date : dates) {
+                writer.write("\t" + date + "\n");
+              }
+            }
+          }
         }
         writer.close();
       } catch (IOException ex) {
