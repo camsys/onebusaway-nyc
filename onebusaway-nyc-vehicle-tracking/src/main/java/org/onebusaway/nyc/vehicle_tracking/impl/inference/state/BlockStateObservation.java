@@ -48,9 +48,7 @@ public final class BlockStateObservation implements
         ? obs.getOpAssignedRunId().equals(runId) : null;
     _isRunReported = ((runId != null) && (obs.getBestFuzzyRunIds() != null) && (obs.getFuzzyMatchDistance() != null))
         ? obs.getBestFuzzyRunIds().contains(runId) : null;
-    _isRunFormal = _isOpAssigned == Boolean.TRUE
-        || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0)
-        ? true : false;
+    _isRunFormal = decideIfRunIsFormal(obs);
     _isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);
     _isSnapped = state._isSnapped;
     _obs = obs;
@@ -74,15 +72,19 @@ public final class BlockStateObservation implements
         ? obs.getOpAssignedRunId().equals(runId) : null;
     _isRunReported = ((runId != null) && (obs.getBestFuzzyRunIds() != null) && (obs.getFuzzyMatchDistance() != null))
         ? obs.getBestFuzzyRunIds().contains(runId) : null;
-    _isRunFormal = _isOpAssigned == Boolean.TRUE
-        || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0)
-        ? true : false;
+    _isRunFormal = decideIfRunIsFormal(obs);
     _isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);;
     _isSnapped = isSnapped;
     _scheduleDeviation = computeScheduleDeviation(obs, blockState);
     _obs = obs;
     _isOnTrip = JourneyStateTransitionModel.isLocationOnATrip(blockState);
 
+  }
+
+  private boolean decideIfRunIsFormal(Observation obs) {
+    return _isOpAssigned == Boolean.TRUE
+        || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0)
+        ? true : false;
   }
 
   /**
