@@ -84,7 +84,7 @@ public final class SiriSupportV2 {
 	}
 
 	public enum Filters {
-		DIRECTION_REF, LINE_REF, USE_LINE_REF
+		DIRECTION_REF, LINE_REF, USE_LINE_REF, UPCOMING_SCHEDULED_SERVICE, DETAIL_LEVEL
 	}
 
 	/**
@@ -316,8 +316,15 @@ public final class SiriSupportV2 {
 	}
 
 	public static boolean fillAnnotatedStopPointStructure(
-			AnnotatedStopPointStructure annotatedStopPoint, StopBean stopBean, Map<Filters, String> filters,
-			String detailLevel, long currentTime) {
+			AnnotatedStopPointStructure annotatedStopPoint, 
+			StopBean stopBean,
+			String directionId,
+			boolean hasUpcomingScheduledService,
+			Map<Filters, String> filters,
+			long currentTime) {
+		
+		// Detail Level
+		String detailLevel = filters.get(Filters.DETAIL_LEVEL);
 
 		// Set Stop Name
 		NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
@@ -342,7 +349,7 @@ public final class SiriSupportV2 {
 		
 		if(!hasValidStopPoints(lines, filters))
 			return false;
-
+		
 		// Set Lat and Lon
 		BigDecimal stopLat = new BigDecimal(stopBean.getLat());
 		BigDecimal stopLon = new BigDecimal(stopBean.getLon());
@@ -359,7 +366,7 @@ public final class SiriSupportV2 {
 		annotatedStopPoint.getStopName().add(stopName);
 
 		// Details -- normal
-		if (detailLevel == null || !detailLevel.equalsIgnoreCase(DetailLevel.MINIMUM.name())) {
+		if (detailLevel == null || !detailLevel.trim().equalsIgnoreCase(DetailLevel.MINIMUM.name())) {
 			annotatedStopPoint.setLocation(location);
 			annotatedStopPoint.setLines(lines);
 			// TODO - LCARABALLO Always true?
@@ -772,16 +779,10 @@ public final class SiriSupportV2 {
 		for (LineDirectionStructure lineDirection : lineDirections) {
 
 			String fiterRouteId = filters.get(Filters.LINE_REF);
-			String filterDirectionId = filters.get(Filters.DIRECTION_REF);
-
 			String thisRouteId = lineDirection.getLineRef().getValue();
-			String thisDirectionId = lineDirection.getDirectionRef().getValue();
 
 			if (StringUtils.isNotBlank(fiterRouteId)
-					&& !fiterRouteId.equalsIgnoreCase(thisRouteId))
-				continue;
-			if (StringUtils.isNotBlank(null)
-					&& !thisDirectionId.equals(filterDirectionId))
+					&& !fiterRouteId.trim().equalsIgnoreCase(thisRouteId))
 				continue;
 
 			return true;

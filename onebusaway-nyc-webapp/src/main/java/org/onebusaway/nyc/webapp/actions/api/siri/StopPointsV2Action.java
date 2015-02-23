@@ -48,6 +48,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 	private static final String OPERATOR_REF = "Operator"; 
 	private static final String BOUNDING_BOX = "BoundingBox";
 	private static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
+	private static final String UPCOMING_SCHEDULED_SERVICE = "hasUpcomingScheduledService";
 
 	@Autowired
 	public NycTransitDataService _nycTransitDataService;
@@ -88,6 +89,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		boolean useLineRef = false;
 		
 		String directionId = _request.getParameter(DIRECTION_REF);
+		String hasUpcomingScheduledService  = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
 
 		// We need to support the user providing no agency id which means 'all
 		// agencies'.
@@ -187,6 +189,8 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		Map<Filters, String> filters = new HashMap<Filters,String>();		
 		filters.put(Filters.DIRECTION_REF, directionId);
 		filters.put(Filters.LINE_REF, lineRef);
+		filters.put(Filters.UPCOMING_SCHEDULED_SERVICE, hasUpcomingScheduledService);
+		filters.put(Filters.USE_LINE_REF, detailLevel);
 
 		// Annotated Stop Points		
 		List<AnnotatedStopPointStructure> stopPoints;
@@ -237,7 +241,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		stopPoints = filteredStopPoints;*/
 
 		Exception error = null;
-		if (bounds == null
+		if ((bounds == null && !useLineRef)
 				|| (_request.getParameter("LineRef") != null && routeIds.size() == 0)) {
 			String errorString = (boundsErrorString + " " + routeIdsErrorString)
 					.trim();
