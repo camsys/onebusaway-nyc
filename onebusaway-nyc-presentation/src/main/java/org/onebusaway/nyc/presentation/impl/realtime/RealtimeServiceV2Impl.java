@@ -358,41 +358,48 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			Map<Filters, String> filters) {
 		
 		long aspsRun = System.currentTimeMillis();
-		System.out.println("getAnnotatedStopPointStructures Run Time:" + System.currentTimeMillis());
-		
-		
-
-		Map<String, StopBean> stopIdToStopBeanMap = new HashMap<String, StopBean>();
 		List<AnnotatedStopPointStructure> output = new ArrayList<AnnotatedStopPointStructure>();
+		Map<String, StopBean> boundsStopBeanMap = new HashMap<String, StopBean>();
+		Set<String> stopGroupBeanStopIds = new HashSet<String>();
+		//Map<String, StopBean> routeStopBeanMap = new HashMap<String, StopBean>();
 
 		// Filters
-		String fiterDirectionId = filters.get(Filters.DIRECTION_REF);
-		String filterUpcomingScheduledService = filters
-				.get(Filters.UPCOMING_SCHEDULED_SERVICE);
+		String filterRouteId = filters.get(Filters.LINE_REF);
+		String filterDirectionId = filters.get(Filters.DIRECTION_REF);
+		String filterUpcomingScheduledService = filters.get(Filters.UPCOMING_SCHEDULED_SERVICE);
+
 		
-		long getRoutesForBoundsRun = System.currentTimeMillis();
+		long getStopsForBoundsRun = System.currentTimeMillis();
+		for(StopBean stopBean : getStopsForBounds(bounds, currentTime)){
+			boundsStopBeanMap.put(stopBean.getId(), stopBean);
+		}
+		System.out.println("getStopsForBounds Run Time: " + (System.currentTimeMillis() - getStopsForBoundsRun)  + "ms");
+		
+		long getRoutesForBoundsRun = System.currentTimeMillis();	
 		List<RouteBean> routeBeans =  getRoutesForBounds(bounds, currentTime);
 		System.out.println("getRoutesForBounds Run Time: " + (System.currentTimeMillis() - getRoutesForBoundsRun)  + "ms");
+
 		
 		for (RouteBean routeBean :routeBeans) {
-
-			// populate stop ID->stop bean map
 			
-			long stopsForRouteRun = System.currentTimeMillis();
+			// filter by routeId
+			if(StringUtils.isNotBlank(filterRouteId) && filterRouteId.trim().equalsIgnoreCase(routeBean.getId()))
+				continue;
 			
-			StopsForRouteBean stopsForRoute = _nycTransitDataService
-					.getStopsForRoute(routeBean.getId());
-			for (StopBean stopBean : stopsForRoute.getStops()) {
-				stopIdToStopBeanMap.put(stopBean.getId(), stopBean);
-			}
+			long stopsForRouteRun = System.currentTimeMillis();	
+			StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 			System.out.println("stopsForRoute Run Time: " + (System.currentTimeMillis() - stopsForRouteRun) + "ms");
+			
+			/*for (StopBean stopBean : stopsForRoute.getStops()) {
+				if(boundsStopBeanMap.containsKey(stopBean.getId())){
+					routeStopBeanMap.put(stopBean.getId(), stopBean);
+				}
+			}*/
 
-			List<StopGroupingBean> stopGroupings = stopsForRoute
-					.getStopGroupings();
+			List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
+			
 			for (StopGroupingBean stopGroupingBean : stopGroupings) {
-				for (StopGroupBean stopGroupBean : stopGroupingBean
-						.getStopGroups()) {
-
+				for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
 					String directionId = stopGroupBean.getId();
 					NameBean name = stopGroupBean.getName();
 					String type = name.getType();
@@ -401,13 +408,20 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					if (!type.equals("destination"))
 						continue;
 					
-					if (StringUtils.isNotBlank(fiterDirectionId)
-							&& !directionId.equalsIgnoreCase(fiterDirectionId
+					if (StringUtils.isNotBlank(filterDirectionId)
+							&& !directionId.equalsIgnoreCase(filterDirectionId
 									.trim()))
 						continue;
 					
 					
 					for (String stopId : stopGroupBean.getStopIds()) {
+						// only process route stops within the bounds
+						String lineStopId = directionId + "_" + routeBean.getId() + "_" + stopId; 
+						if(!boundsStopBeanMap.containsKey(stopId) || stopGroupBeanStopIds.contains(lineStopId))
+							continue;
+						
+						stopGroupBeanStopIds.add(lineStopId);
+						
 						long stopHasUpcomingScheduledServiceRun = System.currentTimeMillis();
 						Boolean hasUpcomingScheduledService = _nycTransitDataService
 								.stopHasUpcomingScheduledService((routeBean
@@ -419,7 +433,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 						// if there are buses on route, always have
 						// "scheduled service"
-						long getVehiclesInServiceForStopAndRouteRun = System.currentTimeMillis();
+						//long getVehiclesInServiceForStopAndRouteRun = System.currentTimeMillis();
 						//Expensive Operation
 						/*Boolean routeHasVehiclesInService = getVehiclesInServiceForStopAndRoute(
 								stopId, routeBean.getId(),
@@ -442,13 +456,14 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 						else if (!hasUpcomingScheduledService) {
 							continue;
 						}
-
+						
+						// Populate AnnotatedStopPointStructure
 						AnnotatedStopPointStructure annotatedStopPoint = new AnnotatedStopPointStructure();
 						long fillAnnotatedStopPointStructureRun = System.currentTimeMillis();	
 						boolean isValid = SiriSupportV2
 								.fillAnnotatedStopPointStructure(
 										annotatedStopPoint,
-										stopIdToStopBeanMap.get(stopId),
+										boundsStopBeanMap.get(stopId),
 										directionId,
 										hasUpcomingScheduledService, 
 										filters,
@@ -482,7 +497,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		 * ().compareTo(wrapper1.getDistances().getDistanceFromCall()); }
 		 * catch(Exception e) { return -1; } } });
 		 */
-
+		System.out.println("getRoutesForBounds Run Time: " + (System.currentTimeMillis() - aspsRun)  + "ms");
 		return output;
 	}
 

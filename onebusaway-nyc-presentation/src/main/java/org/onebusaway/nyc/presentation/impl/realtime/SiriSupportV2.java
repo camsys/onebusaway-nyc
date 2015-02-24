@@ -333,7 +333,8 @@ public final class SiriSupportV2 {
 		// Set Route and Direction
 		Lines lines = new Lines();
 		DirectionRefStructure direction = new DirectionRefStructure();
-		direction.setValue(stopBean.getDirection());
+		//direction.setValue(stopBean.getDirection());
+		direction.setValue(directionId);
 
 		for (RouteBean routeBean : stopBean.getRoutes()) {
 			LineRefStructure line = new LineRefStructure();
@@ -347,8 +348,8 @@ public final class SiriSupportV2 {
 
 		}
 		
-		if(!hasValidStopPoints(lines, filters))
-			return false;
+		/*if(!hasValidStopPoints(lines, filters))
+			return false;*/
 		
 		// Set Lat and Lon
 		BigDecimal stopLat = new BigDecimal(stopBean.getLat());
