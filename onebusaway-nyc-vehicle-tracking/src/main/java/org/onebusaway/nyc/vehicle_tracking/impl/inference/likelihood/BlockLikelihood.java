@@ -22,15 +22,10 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObserv
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BlockLikelihood implements SensorModelRule {
-
-  // TODO remove logging
-  private static Logger _log = LoggerFactory.getLogger(BlockLikelihood.class);
 
   public static enum BLOCK_INFO_STATE {
     NO_BLOCK_INFO, BLOCK_MATCH, NO_BLOCK_MATCH, BLOCK_INFO_NO_BLOCK,
@@ -90,9 +85,6 @@ public class BlockLikelihood implements SensorModelRule {
       result = BLOCK_INFO_STATE.BLOCK_MATCH;
     }
 
-    _log.info("getBlockInfoState: " + assignedBlockId + ", " + inferredBlockId +
-        ", " + obs.hasValidAssignedBlockId() + ", result: " + result);
-    
     return result;
 
   }

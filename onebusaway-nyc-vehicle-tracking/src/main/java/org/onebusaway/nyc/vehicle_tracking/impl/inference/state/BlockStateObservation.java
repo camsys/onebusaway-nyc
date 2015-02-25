@@ -1,8 +1,15 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -41,14 +48,13 @@ public final class BlockStateObservation implements
   private final boolean _isOnTrip;
 
   public BlockStateObservation(BlockStateObservation state, Observation obs) {
-    
     final String runId = state.getBlockState().getRunId();
     _blockState = state._blockState;
     _isOpAssigned = obs.getOpAssignedRunId() != null
         ? obs.getOpAssignedRunId().equals(runId) : null;
     _isRunReported = ((runId != null) && (obs.getBestFuzzyRunIds() != null) && (obs.getFuzzyMatchDistance() != null))
         ? obs.getBestFuzzyRunIds().contains(runId) : null;
-    _isRunFormal = decideIfRunIsFormal(obs);
+    _isRunFormal = decideIfRunIsFormal(obs, getInferredBlockId(state.getBlockState()));
     _isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);
     _isSnapped = state._isSnapped;
     _obs = obs;
@@ -72,19 +78,30 @@ public final class BlockStateObservation implements
         ? obs.getOpAssignedRunId().equals(runId) : null;
     _isRunReported = ((runId != null) && (obs.getBestFuzzyRunIds() != null) && (obs.getFuzzyMatchDistance() != null))
         ? obs.getBestFuzzyRunIds().contains(runId) : null;
-    _isRunFormal = decideIfRunIsFormal(obs);
+
+    _isRunFormal = decideIfRunIsFormal(obs, getInferredBlockId(blockState));
     _isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);;
     _isSnapped = isSnapped;
     _scheduleDeviation = computeScheduleDeviation(obs, blockState);
     _obs = obs;
     _isOnTrip = JourneyStateTransitionModel.isLocationOnATrip(blockState);
+    
 
   }
 
-  private boolean decideIfRunIsFormal(Observation obs) {
+  private String getInferredBlockId(BlockState blockState) {
+    final BlockInstance blockInstance = blockState.getBlockInstance();
+    final BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+    final BlockEntry block = blockConfig.getBlock();
+
+    return AgencyAndIdLibrary.convertToString(block.getId());
+  }
+
+  private boolean decideIfRunIsFormal(Observation obs, String inferredBlockId) {
+    String assignedBlockId = obs.getAssignedBlockId();
     return _isOpAssigned == Boolean.TRUE
-        || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0)
-        ? true : false;
+        || ((_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0) ? true : false)
+        || (StringUtils.equals(assignedBlockId, inferredBlockId));
   }
 
   /**
