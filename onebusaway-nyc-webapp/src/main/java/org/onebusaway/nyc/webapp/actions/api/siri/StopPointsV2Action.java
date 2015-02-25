@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -22,6 +23,7 @@ import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelperV2;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeServiceV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriUpcomingServiceExtension;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -31,6 +33,7 @@ import com.google.common.base.Predicate;
 
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
+import uk.org.siri.siri_2.ExtensionsStructure;
 import uk.org.siri.siri_2.LineDirectionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
@@ -44,8 +47,8 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 
 	private static final int COORDINATES_COUNT = 4;
 	private static final String LINE_REF = "LineRef";
-	private static final String DIRECTION_REF = "DirectionRef"; 
-	private static final String OPERATOR_REF = "Operator"; 
+	private static final String DIRECTION_REF = "DirectionRef";
+	private static final String OPERATOR_REF = "Operator";
 	private static final String BOUNDING_BOX = "BoundingBox";
 	private static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
 	private static final String UPCOMING_SCHEDULED_SERVICE = "hasUpcomingScheduledService";
@@ -87,9 +90,10 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		_realtimeService.setTime(responseTimestamp);
 
 		boolean useLineRef = false;
-		
+		Boolean upcomingServiceAllStops = null;
+
 		String directionId = _request.getParameter(DIRECTION_REF);
-		String hasUpcomingScheduledService  = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
+		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
 
 		// We need to support the user providing no agency id which means 'all
 		// agencies'.
@@ -131,8 +135,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 				}
 			} catch (Exception e) {
 				for (String agency : agencyIds) {
-					AgencyAndId routeId = new AgencyAndId(agency,
-							lineRef);
+					AgencyAndId routeId = new AgencyAndId(agency, lineRef);
 					if (_monitoringActionSupport.isValidRoute(routeId,
 							_nycTransitDataService)) {
 						routeIds.add(routeId);
@@ -143,8 +146,8 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 				}
 				routeIdsErrorString = routeIdsErrorString.trim();
 			}
-			if (routeIds.size() > 0){
-				
+			if (routeIds.size() > 0) {
+
 				routeIdsErrorString = "";
 			}
 		}
@@ -184,61 +187,63 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		 * "Stop Monitoring", StringUtils.join(stopIds, ","),
 		 * _configurationService); }
 		 */
-		
+
 		// Setup Filters
-		Map<Filters, String> filters = new HashMap<Filters,String>();		
+		Map<Filters, String> filters = new HashMap<Filters, String>();
 		filters.put(Filters.DIRECTION_REF, directionId);
 		filters.put(Filters.LINE_REF, lineRef);
-		filters.put(Filters.UPCOMING_SCHEDULED_SERVICE, hasUpcomingScheduledService);
-		filters.put(Filters.USE_LINE_REF, detailLevel);
+		filters.put(Filters.UPCOMING_SCHEDULED_SERVICE,
+				hasUpcomingScheduledService);
+		filters.put(Filters.DETAIL_LEVEL, detailLevel);
 
-		// Annotated Stop Points		
-		List<AnnotatedStopPointStructure> stopPoints;
+		// Annotated Stop Points
+		List<AnnotatedStopPointStructure> stopPoints = new ArrayList<AnnotatedStopPointStructure>();
+		Map<Boolean, List<AnnotatedStopPointStructure>> stopPointsMap;
+		
 		if (useLineRef) {
-			stopPoints = _realtimeService.getAnnotatedStopPointStructures(
-					routeIds, detailLevel, responseTimestamp, filters);
+			stopPointsMap = new HashMap<Boolean, List<AnnotatedStopPointStructure>>();
+			stopPoints.addAll(_realtimeService.getAnnotatedStopPointStructures(
+					routeIds, detailLevel, responseTimestamp, filters));
 		} else {
-			stopPoints = _realtimeService.getAnnotatedStopPointStructures(
+			stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(
 					bounds, detailLevel, responseTimestamp, filters);
-		}
-
-		
-		//List<AnnotatedStopPointStructure> filteredStopPoints = new ArrayList<AnnotatedStopPointStructure>();
-		
-		/*for (AnnotatedStopPointStructure stopPoint : stopPoints) {
-			// TODO - LCARABALLLO - Is there a better way to do this
-			// conversion/filtering
-			boolean hasMatch = false;
 			
-			List<LineDirectionStructure> lineDirections = null;
-			
-			lineDirections = (List<LineDirectionStructure>) (Object) stopPoint
-					.getLines().getLineRefOrLineDirection();
-
-			for (LineDirectionStructure lineDirection : lineDirections) {
-
-				AgencyAndId thisRouteId = AgencyAndIdLibrary
-						.convertFromString(lineDirection.getLineRef()
-								.getValue());
-				String thisDirectionId = lineDirection.getDirectionRef()
-						.getValue();
-
-				// user filtering
-				if (!useLineRef && routeIds.size() > 0
-						&& !routeIds.contains(thisRouteId))
-					continue;
-				if (directionId != null && !thisDirectionId.equals(directionId))
-					continue;
-				hasMatch = true;
+			for (Map.Entry<Boolean, List<AnnotatedStopPointStructure>> entry : stopPointsMap.entrySet()) {
+				upcomingServiceAllStops= entry.getKey();
+				stopPoints.addAll(entry.getValue());
 			}
-
-			if (!hasMatch)
-				continue;
-
-			filteredStopPoints.add(stopPoint);
-
 		}
-		stopPoints = filteredStopPoints;*/
+		
+
+		// List<AnnotatedStopPointStructure> filteredStopPoints = new
+		// ArrayList<AnnotatedStopPointStructure>();
+
+		/*
+		 * for (AnnotatedStopPointStructure stopPoint : stopPoints) { // TODO -
+		 * LCARABALLLO - Is there a better way to do this //
+		 * conversion/filtering boolean hasMatch = false;
+		 * 
+		 * List<LineDirectionStructure> lineDirections = null;
+		 * 
+		 * lineDirections = (List<LineDirectionStructure>) (Object) stopPoint
+		 * .getLines().getLineRefOrLineDirection();
+		 * 
+		 * for (LineDirectionStructure lineDirection : lineDirections) {
+		 * 
+		 * AgencyAndId thisRouteId = AgencyAndIdLibrary
+		 * .convertFromString(lineDirection.getLineRef() .getValue()); String
+		 * thisDirectionId = lineDirection.getDirectionRef() .getValue();
+		 * 
+		 * // user filtering if (!useLineRef && routeIds.size() > 0 &&
+		 * !routeIds.contains(thisRouteId)) continue; if (directionId != null &&
+		 * !thisDirectionId.equals(directionId)) continue; hasMatch = true; }
+		 * 
+		 * if (!hasMatch) continue;
+		 * 
+		 * filteredStopPoints.add(stopPoint);
+		 * 
+		 * } stopPoints = filteredStopPoints;
+		 */
 
 		Exception error = null;
 		if ((bounds == null && !useLineRef)
@@ -247,8 +252,9 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 					.trim();
 			error = new Exception(errorString);
 		}
-
-		_response = generateSiriResponse(stopPoints, error, responseTimestamp);
+		
+		
+		_response = generateSiriResponse(stopPoints, upcomingServiceAllStops, error, responseTimestamp);
 
 		try {
 			this._servletResponse.getWriter().write(getStopPoints());
@@ -260,10 +266,11 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 	}
 
 	private Siri generateSiriResponse(
-			List<AnnotatedStopPointStructure> stopPoints, Exception error,
+			List<AnnotatedStopPointStructure> stopPoints, Boolean hasUpcomingScheduledService, Exception error,
 			long responseTimestamp) {
 
 		StopPointsDeliveryStructure stopPointsDelivery = new StopPointsDeliveryStructure();
+		
 		stopPointsDelivery.setResponseTimestamp(DateUtil
 				.toXmlGregorianCalendar(responseTimestamp));
 
@@ -288,9 +295,19 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 					.setValidUntil(DateUtil
 							.toXmlGregorianCalendar(gregorianCalendar
 									.getTimeInMillis()));
-
+			
 			stopPointsDelivery.getAnnotatedStopPointRef().addAll(stopPoints);
-
+			
+			if(hasUpcomingScheduledService != null){
+				// siri extensions
+				ExtensionsStructure upcomingServiceExtensions = new ExtensionsStructure();
+				SiriUpcomingServiceExtension upcomingService = new SiriUpcomingServiceExtension();
+				upcomingService.setUpcomingScheduledService(hasUpcomingScheduledService);
+				upcomingServiceExtensions.setAny(upcomingService);
+				
+				stopPointsDelivery.setExtensions(upcomingServiceExtensions);
+			}
+			
 			stopPointsDelivery.setResponseTimestamp(DateUtil
 					.toXmlGregorianCalendar(responseTimestamp));
 

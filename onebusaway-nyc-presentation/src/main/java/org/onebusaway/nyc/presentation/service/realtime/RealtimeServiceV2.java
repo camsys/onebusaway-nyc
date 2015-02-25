@@ -49,7 +49,7 @@ public interface RealtimeServiceV2 {
 
 	public List<ServiceAlertBean> getServiceAlertsGlobal();
 
-	public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructures(
+	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
 			CoordinateBounds bounds, String detailLevel, long currentTime, Map<Filters, String> filters);
 
 	public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructures(

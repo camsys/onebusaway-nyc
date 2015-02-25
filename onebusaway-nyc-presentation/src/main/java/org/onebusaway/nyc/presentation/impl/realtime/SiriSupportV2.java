@@ -33,6 +33,7 @@ import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriUpcomingServiceExtension;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
@@ -317,14 +318,18 @@ public final class SiriSupportV2 {
 
 	public static boolean fillAnnotatedStopPointStructure(
 			AnnotatedStopPointStructure annotatedStopPoint, 
-			StopBean stopBean,
-			String directionId,
-			boolean hasUpcomingScheduledService,
-			Map<Filters, String> filters,
-			long currentTime) {
+			StopBean stopBean, 
+			Map<String, List<RouteBean>> routesByDirection,
+			Map<Filters, String> filters, 
+			long currentTime
+			) {
 		
-		// Detail Level
-		String detailLevel = filters.get(Filters.DETAIL_LEVEL);
+		boolean hasValidRoute = false;
+		
+		// Filter Values
+		String detailLevelFilter = filters.get(Filters.DETAIL_LEVEL);
+		String directionIdFilter = filters.get(Filters.DIRECTION_REF);
+		String lineRefFilter = filters.get(Filters.LINE_REF);
 
 		// Set Stop Name
 		NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
@@ -332,25 +337,40 @@ public final class SiriSupportV2 {
 
 		// Set Route and Direction
 		Lines lines = new Lines();
-		DirectionRefStructure direction = new DirectionRefStructure();
-		//direction.setValue(stopBean.getDirection());
-		direction.setValue(directionId);
+		
+		for (Map.Entry<String, List<RouteBean>> entry : routesByDirection.entrySet()) {
 
-		for (RouteBean routeBean : stopBean.getRoutes()) {
-			LineRefStructure line = new LineRefStructure();
-			line.setValue(routeBean.getId());
+			String directionId = entry.getKey();
+			List<RouteBean> routeBeans = entry.getValue();
+			
+			// DirectionId Filter
+			if(!passFilter(directionId, directionIdFilter))
+				continue;
 
-			LineDirectionStructure lineDirection = new LineDirectionStructure();
-			lineDirection.setDirectionRef(direction);
-			lineDirection.setLineRef(line);
+			DirectionRefStructure direction = new DirectionRefStructure();
+			direction.setValue(directionId);
+			
+			for (RouteBean routeBean : routeBeans) {
+				// LineRef (RouteId) Filter
+				if(!hasValidRoute && passFilter(routeBean.getId(), lineRefFilter))
+					hasValidRoute=true;
+				
+				LineRefStructure line = new LineRefStructure();
+				line.setValue(routeBean.getId());
 
-			lines.getLineRefOrLineDirection().add(lineDirection);
-
+				LineDirectionStructure lineDirection = new LineDirectionStructure();
+				lineDirection.setDirectionRef(direction);
+				lineDirection.setLineRef(line);
+				
+				lines.getLineRefOrLineDirection().add(lineDirection);
+				
+			}
 		}
 		
-		/*if(!hasValidStopPoints(lines, filters))
-			return false;*/
-		
+		// No Valid Stops
+		if(!hasValidRoute || lines.getLineRefOrLineDirection().size() == 0)
+			return false;
+
 		// Set Lat and Lon
 		BigDecimal stopLat = new BigDecimal(stopBean.getLat());
 		BigDecimal stopLon = new BigDecimal(stopBean.getLon());
@@ -367,16 +387,23 @@ public final class SiriSupportV2 {
 		annotatedStopPoint.getStopName().add(stopName);
 
 		// Details -- normal
-		if (detailLevel == null || !detailLevel.trim().equalsIgnoreCase(DetailLevel.MINIMUM.name())) {
+		if(StringUtils.isBlank(detailLevelFilter) || !passFilter(DetailLevel.MINIMUM.name(),detailLevelFilter)){
 			annotatedStopPoint.setLocation(location);
 			annotatedStopPoint.setLines(lines);
 			// TODO - LCARABALLO Always true?
 			annotatedStopPoint.setMonitored(true);
+			
 		}
+		
 
 		annotatedStopPoint.setStopPointRef(stopPointRef);
 		
 		return true;
+	}
+
+	private static void fillUpcomingScheduledService(AnnotatedStopPointStructure annotatedStopPoint, Boolean hasUpcomingScheduleService) {
+		
+		
 	}
 
 	/***
@@ -772,24 +799,13 @@ public final class SiriSupportV2 {
 		return ProgressRateEnumeration.UNKNOWN;
 	}
 
-	private static boolean hasValidStopPoints(Lines lines,
-			Map<Filters, String> filters) {
-		List<LineDirectionStructure> lineDirections = (List<LineDirectionStructure>) (Object) lines
-				.getLineRefOrLineDirection();
-
-		for (LineDirectionStructure lineDirection : lineDirections) {
-
-			String fiterRouteId = filters.get(Filters.LINE_REF);
-			String thisRouteId = lineDirection.getLineRef().getValue();
-
-			if (StringUtils.isNotBlank(fiterRouteId)
-					&& !fiterRouteId.trim().equalsIgnoreCase(thisRouteId))
-				continue;
-
-			return true;
-		}
-
-		return false;
+	
+	private static boolean passFilter(String value, String filterValue){
+		if (StringUtils.isNotBlank(filterValue)
+				&& !value.equalsIgnoreCase(filterValue.trim()))
+			return false;
+		
+		return true;
 	}
-
+	
 }
