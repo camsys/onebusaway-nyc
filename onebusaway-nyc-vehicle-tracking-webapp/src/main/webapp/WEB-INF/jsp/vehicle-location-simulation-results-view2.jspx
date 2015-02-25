@@ -88,7 +88,8 @@ td.dsc {
 				<th>Sched. Time</th>
 				<th>Phase</th>
 				<th>Status</th>
-				<th>DAB</th>
+        <th>DAB</th>
+        <th>Assigned block id</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -132,6 +133,7 @@ td.dsc {
 	            value="${record.actualDistanceAlongBlock}" var="actualDab" />
 					</c:if>
 					<td><c:out value="${actualDab}" /></td>
+					<td></td>
 				</tr>
 
 				<tr class="inferred">
@@ -190,6 +192,7 @@ td.dsc {
 					<fmt:formatNumber maxFractionDigits="1"
 						value="${record.inferredDistanceAlongBlock}" var="infDab" />
 					<td><c:out value="${infDab}" /></td>
+					<td><c:out value="${record.assignedBlockId}"/></td>
 				</tr>
 			</c:forEach>
 		</tbody>
