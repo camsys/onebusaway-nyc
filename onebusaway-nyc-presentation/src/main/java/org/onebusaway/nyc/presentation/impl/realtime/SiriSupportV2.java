@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
+import org.onebusaway.nyc.presentation.model.DetailLevel;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
@@ -78,10 +79,6 @@ public final class SiriSupportV2 {
 	
 	public enum OnwardCallsMode {
 		VEHICLE_MONITORING, STOP_MONITORING
-	}
-
-	public enum DetailLevel {
-		MINIMUM, BASIC, NORMAL, CALLS;
 	}
 
 	public enum Filters {
@@ -321,14 +318,13 @@ public final class SiriSupportV2 {
 			StopBean stopBean, 
 			Map<String, List<RouteBean>> routesByDirection,
 			Map<Filters, String> filters, 
+			DetailLevel detailLevel, 
 			long currentTime
 			) {
 		
 		boolean hasValidRoute = false;
 		
 		// Filter Values
-		String detailLevelFilter = filters.get(Filters.DETAIL_LEVEL);
-		String directionIdFilter = filters.get(Filters.DIRECTION_REF);
 		String lineRefFilter = filters.get(Filters.LINE_REF);
 
 		// Set Stop Name
@@ -342,15 +338,12 @@ public final class SiriSupportV2 {
 
 			String directionId = entry.getKey();
 			List<RouteBean> routeBeans = entry.getValue();
-			
-			// DirectionId Filter
-			if(!passFilter(directionId, directionIdFilter))
-				continue;
 
 			DirectionRefStructure direction = new DirectionRefStructure();
 			direction.setValue(directionId);
 			
 			for (RouteBean routeBean : routeBeans) {
+				
 				// LineRef (RouteId) Filter
 				if(!hasValidRoute && passFilter(routeBean.getId(), lineRefFilter))
 					hasValidRoute=true;
@@ -387,14 +380,12 @@ public final class SiriSupportV2 {
 		annotatedStopPoint.getStopName().add(stopName);
 
 		// Details -- normal
-		if(StringUtils.isBlank(detailLevelFilter) || !passFilter(DetailLevel.MINIMUM.name(),detailLevelFilter)){
+		if (detailLevel.equals(DetailLevel.BASIC) || detailLevel.equals(DetailLevel.NORMAL)|| detailLevel.equals(DetailLevel.CALLS)){
 			annotatedStopPoint.setLocation(location);
 			annotatedStopPoint.setLines(lines);
 			// TODO - LCARABALLO Always true?
 			annotatedStopPoint.setMonitored(true);
-			
 		}
-		
 
 		annotatedStopPoint.setStopPointRef(stopPointRef);
 		
@@ -800,7 +791,7 @@ public final class SiriSupportV2 {
 	}
 
 	
-	private static boolean passFilter(String value, String filterValue){
+	public static boolean passFilter(String value, String filterValue){
 		if (StringUtils.isNotBlank(filterValue)
 				&& !value.equalsIgnoreCase(filterValue.trim()))
 			return false;

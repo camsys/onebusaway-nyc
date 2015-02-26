@@ -6,6 +6,7 @@ import java.util.Map;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
+import org.onebusaway.nyc.presentation.model.DetailLevel;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializerV2;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializerV2;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
@@ -50,10 +51,10 @@ public interface RealtimeServiceV2 {
 	public List<ServiceAlertBean> getServiceAlertsGlobal();
 
 	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
-			CoordinateBounds bounds, String detailLevel, long currentTime, Map<Filters, String> filters);
+			CoordinateBounds bounds, DetailLevel detailLevel, long currentTime, Map<Filters, String> filters);
 
-	public List<AnnotatedStopPointStructure> getAnnotatedStopPointStructures(
-			List<AgencyAndId> routeIds, String detailLevel,
+	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
+			List<AgencyAndId> routeIds, DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters);
 
 }
