@@ -149,16 +149,16 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		Map<Boolean, List<AnnotatedStopPointStructure>> stopPointsMap;
 		
 		if (useLineRefOnly) {
-			stopPointsMap = new HashMap<Boolean, List<AnnotatedStopPointStructure>>();
-			stopPoints.addAll(_realtimeService.getAnnotatedStopPointStructures(
-					routeIds, detailLevel, responseTimestamp, filters));
+			stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(
+					routeIds, detailLevel, responseTimestamp, filters);
 		} else {
 			stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(
-					bounds, detailLevel, responseTimestamp, filters);		
-			for (Map.Entry<Boolean, List<AnnotatedStopPointStructure>> entry : stopPointsMap.entrySet()) {
-				upcomingServiceAllStops= entry.getKey();
-				stopPoints.addAll(entry.getValue());
-			}
+					bounds, detailLevel, responseTimestamp, filters);			
+		}
+		
+		for (Map.Entry<Boolean, List<AnnotatedStopPointStructure>> entry : stopPointsMap.entrySet()) {
+			upcomingServiceAllStops= entry.getKey();
+			stopPoints.addAll(entry.getValue());
 		}
 
 		Exception error = null;
