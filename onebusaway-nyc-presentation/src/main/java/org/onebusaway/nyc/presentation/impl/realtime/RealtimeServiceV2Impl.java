@@ -18,8 +18,8 @@ import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.model.DetailLevel;
-import org.onebusaway.nyc.presentation.model.siri.RouteDirection;
-import org.onebusaway.nyc.presentation.model.siri.StopRouteDirection;
+import org.onebusaway.nyc.presentation.model.RouteDirection;
+import org.onebusaway.nyc.presentation.model.StopRouteDirection;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeServiceV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -332,7 +332,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		// AnnotatedStopPointStructures List with hasUpcomingScheduledService
 		Map<Boolean, List<AnnotatedStopPointStructure>> output = new HashMap<Boolean, List<AnnotatedStopPointStructure>>();
 		
-		Boolean upcomingServiceAllStops = true;  
+		Boolean upcomingServiceAllStops = true;
 		
 		List<StopBean> stopBeans = getStopsForBounds(bounds, currentTime);
 		
@@ -543,7 +543,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			SearchQueryBean queryBean = new SearchQueryBean();
 			queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
 			queryBean.setBounds(bounds);
-			queryBean.setMaxCount(100);
+			queryBean.setMaxCount(Integer.MAX_VALUE);
 
 			StopsBean stops = _nycTransitDataService.getStops(queryBean);
 			return stops.getStops();

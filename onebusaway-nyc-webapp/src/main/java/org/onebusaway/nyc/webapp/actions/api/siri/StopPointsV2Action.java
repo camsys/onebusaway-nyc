@@ -11,11 +11,14 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelperV2;
 import org.onebusaway.nyc.presentation.model.DetailLevel;
@@ -39,11 +42,13 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		ServletRequestAware, ServletResponseAware {
 	private static final long serialVersionUID = 1L;
 
-	private static final int COORDINATES_COUNT = 4;
+	private static final int MIN_COORDINATES = 3;
+	
 	private static final String LINE_REF = "LineRef";
 	private static final String DIRECTION_REF = "DirectionRef";
 	private static final String OPERATOR_REF = "Operator";
 	private static final String BOUNDING_BOX = "BoundingBox";
+	private static final String CIRCLE = "Circle";
 	private static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
 	private static final String UPCOMING_SCHEDULED_SERVICE = "hasUpcomingScheduledService";
 
@@ -86,6 +91,9 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		boolean useLineRefOnly = false;
 		Boolean upcomingServiceAllStops = null;
 		
+		CoordinateBounds bounds = null;
+		String boundCoordinates;
+		
 		//get the detail level parameter or set it to default if not specified
 	    DetailLevel detailLevel;
 	    if(_request.getParameter("StopMonitoringDetailLevel") == null){
@@ -96,6 +104,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 
 		// User Parameters
 		String boundingBox = _request.getParameter(BOUNDING_BOX);
+		String circle = _request.getParameter(CIRCLE);
 		String lineRef = _request.getParameter(LINE_REF);
 		String directionId = _request.getParameter(DIRECTION_REF);
 		String agencyId = _request.getParameter(OPERATOR_REF);
@@ -114,20 +123,34 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		*/
 		List<String> agencyIds = processAgencyIds(agencyId);
 		
-		List<AgencyAndId> routeIds =  processRouteIds(lineRef, routeIdsErrorString, agencyIds);
+		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
 		
-		CoordinateBounds bounds = processBoundingBox(boundingBox,boundsErrorString);
+		routeIdsErrorString =  processRouteIds(lineRef, routeIds, agencyIds);
 
 		
+		if(StringUtils.isNotBlank(circle))
+			boundCoordinates = circle;
+		else{
+			boundCoordinates = boundingBox;
+		}
+		
+		try{
+			bounds = getBounds(boundCoordinates,boundsErrorString);
+		}
+		catch (NumberFormatException nfe){
+			boundsErrorString += "One or more invalid Coordinate values was provided.";
+		}
+
 		// Check for case where only LineRef was provided
 		if (bounds == null) {
 			if (routeIds.size() > 0) {
 				useLineRefOnly = true;
 			} else {
-				boundsErrorString += "You must provide " + COORDINATES_COUNT
-						+ " BoundingBox coordinates or a LineRef value.";
+				boundsErrorString += "You must provide at least " + MIN_COORDINATES
+						+ " BoundingBox or Circle coordinates or a LineRef value.";
 			}
 		}
+	
 		
 		// TODO LCARABALLO GoogleAnalytics?
 		/*
@@ -160,7 +183,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 			upcomingServiceAllStops= entry.getKey();
 			stopPoints.addAll(entry.getValue());
 		}
-
+		
 		Exception error = null;
 		if ((bounds == null && !useLineRefOnly)
 				|| (_request.getParameter("LineRef") != null && routeIds.size() == 0)) {
@@ -277,8 +300,8 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		return agencyIds;
 	}
 	
-	private List<AgencyAndId> processRouteIds(String lineRef, String routeIdsErrorString, List<String> agencyIds) {
-		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
+	private String processRouteIds(String lineRef, List<AgencyAndId> routeIds, List<String> agencyIds) {
+		String routeIdsErrorString = "";
 		if (lineRef != null) {
 			try {
 				AgencyAndId routeId = AgencyAndIdLibrary
@@ -309,30 +332,54 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 			}
 		}
 		
-		return routeIds;
+		return routeIdsErrorString;
 	}
-	
-	private CoordinateBounds processBoundingBox(String boundingBox, String boundsErrorString){
+
+	private CoordinateBounds getBounds(String boundingCoordinates, String boundsErrorString) throws NumberFormatException{
 		CoordinateBounds bounds = null;
-		if (boundingBox != null) {
-			String[] coordinates = boundingBox.split(",");
-			
-			if (coordinates.length >= COORDINATES_COUNT) {
-				try{
-				bounds = new CoordinateBounds(
-						Double.parseDouble(coordinates[0]),
+		if (boundingCoordinates != null) {
+			String[] coordinates = boundingCoordinates.split(",");
+
+			if (coordinates.length > MIN_COORDINATES) {
+
+				bounds = SphericalGeometryLibrary.boundsFromLatLonOffset(
+						Double.parseDouble(coordinates[0]), 
 						Double.parseDouble(coordinates[1]),
-						Double.parseDouble(coordinates[2]),
-						Double.parseDouble(coordinates[3]));
-				}
-				catch(NumberFormatException nfe){
-					boundsErrorString += "One or more invalid BoundingBox values was provided.";
-				}
+						Double.parseDouble(coordinates[2])/2,
+						Double.parseDouble(coordinates[3])/2);
+
 			}
+			else if(coordinates.length == MIN_COORDINATES){
+				return SphericalGeometryLibrary.bounds(
+						Double.parseDouble(coordinates[0]), 
+						Double.parseDouble(coordinates[1]),
+						Double.parseDouble(coordinates[2]));
+			}
+
 		}
-		
 		return bounds;
 	}
+	
+	
+	
+	/*private CoordinateBounds getSearchBounds() {
+
+	    if (_radius > 0) {
+	      return SphericalGeometryLibrary.bounds(_lat, _lon, _radius);
+	    } else if (_latSpan > 0 && _lonSpan > 0) {
+	      return SphericalGeometryLibrary.boundsFromLatLonOffset(_lat, _lon,
+	          _latSpan / 2, _lonSpan / 2);
+	    } else {
+	      if (_query != null)
+	        return SphericalGeometryLibrary.bounds(_lat, _lon,
+	            DEFAULT_SEARCH_RADIUS_WITH_QUERY);
+	      else
+	        return SphericalGeometryLibrary.bounds(_lat, _lon,
+	            DEFAULT_SEARCH_RADIUS_WITHOUT_QUERY);
+	    }
+	  }
+	
+	*/
 	
 	@Override
 	public void setServletRequest(HttpServletRequest request) {

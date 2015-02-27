@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.presentation.model.siri;
+package org.onebusaway.nyc.presentation.model;
 
 import java.util.ArrayList;
 import java.util.List;
