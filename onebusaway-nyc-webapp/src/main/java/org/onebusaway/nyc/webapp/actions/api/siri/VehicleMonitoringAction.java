@@ -21,6 +21,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -81,8 +82,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   // respect an HTTP Accept: header.
   private String _type = "xml";
 
-  @Autowired
-  private NycCacheService<Integer, String> _cacheService;
+  @Resource(name="siriCacheService")
+  private NycCacheService<Integer, String> _siriCacheService;
   
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
   
@@ -234,10 +235,10 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       try {
       gaLabel = "All Vehicles";
       
-      int hashKey = _cacheService.hash(maximumOnwardCalls, agencyIds, _type);
+      int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type);
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-      if (!_cacheService.containsKey(hashKey)) {
+      if (!_siriCacheService.containsKey(hashKey)) {
         for (String agency : agencyIds) {
           ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
               agency, currentTimestamp);
@@ -254,9 +255,9 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         // There is no input (route id) to validate, so pass null error
         _response = generateSiriResponse(activities, null, null,
             currentTimestamp);
-        _cacheService.store(hashKey, getVehicleMonitoring());
+        _siriCacheService.store(hashKey, getVehicleMonitoring());
       } else {
-        _cachedResponse = _cacheService.retrieve(hashKey);
+        _cachedResponse = _siriCacheService.retrieve(hashKey);
       }
       } catch (Exception e) {
         _log.error("vm all broke:", e);

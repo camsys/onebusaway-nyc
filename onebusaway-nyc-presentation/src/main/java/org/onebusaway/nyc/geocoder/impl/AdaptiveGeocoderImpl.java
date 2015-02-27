@@ -17,6 +17,8 @@ package org.onebusaway.nyc.geocoder.impl;
 
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
+import org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -26,15 +28,22 @@ import java.util.List;
  */
 
 public class AdaptiveGeocoderImpl extends FilteredGeocoderBase {
-	NycGeocoderService geocoder;
+
+  @Autowired
+  NycGeocoderCacheServiceImpl _geocoderCacheService;
+
+  NycGeocoderService geocoder;
 
 	public List<NycGeocoderResult> nycGeocode(String location) {
-		String geocoderInstance = _configurationService.getConfigurationValueAsString("display.geocoderInstance", "google");
-		if (geocoderInstance.equals("google") && (geocoder == null || !geocoder.getClass().equals(GoogleGeocoderImpl.class))) {
-			geocoder = new GoogleGeocoderImpl(this);
-		} else if (geocoderInstance.equals("bing") && (geocoder == null || !geocoder.getClass().equals(BingGeocoderImpl.class))) {
-			geocoder = new BingGeocoderImpl(this);
-		}
-		return geocoder.nycGeocode(location);
-	}
+    if (!_geocoderCacheService.containsKey(location)) {
+      String geocoderInstance = _configurationService.getConfigurationValueAsString("display.geocoderInstance", "google");
+  		if (geocoderInstance.equals("google") && (geocoder == null || !geocoder.getClass().equals(GoogleGeocoderImpl.class))) {
+  			geocoder = new GoogleGeocoderImpl(this);
+  		} else if (geocoderInstance.equals("bing") && (geocoder == null || !geocoder.getClass().equals(BingGeocoderImpl.class))) {
+  			geocoder = new BingGeocoderImpl(this);
+      }
+  		_geocoderCacheService.store(location, geocoder.nycGeocode(location));
+    }
+    return _geocoderCacheService.retrieve(location);
+  }
 }

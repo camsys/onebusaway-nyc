@@ -104,10 +104,13 @@
         <property name="wikiDocumentEditUrl" ref="xwikiDocumentEditUrlBean" />
         <property name="wikiAttachmentUrl" ref="xwikiAttachmentUrlBean" />
     </bean>
-    
-    <bean id="siriCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycSiriCacheServiceImpl">
-    <property name="disabled" value="${siri.cache.disabled}" />
-    </bean>
 
-    
+	<bean id="siriCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycSiriCacheServiceImpl">
+		<property name="disabled" value="${siri.cache.disabled}" />
+	</bean>
+
+	<bean id="geocoderCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl">
+		<property name="disabled" value="${geocoder.cache.disabled}" />
+	</bean>
+
 </beans>

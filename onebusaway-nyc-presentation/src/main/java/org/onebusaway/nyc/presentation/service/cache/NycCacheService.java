@@ -26,13 +26,15 @@ public abstract class NycCacheService<K, V> {
   protected static Logger _log = LoggerFactory.getLogger(NycCacheService.class);
   protected Cache<K, V> _cache;
 
+  @SuppressWarnings("rawtypes")
   private ScheduledFuture<NycCacheService.StatusThread> _statusTask = null;
 
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
 
+  String type;
   String addr = "sessions-memcache:11211";
-  MemcachedClient memcache;
+  MemcachedClient memcachedClient;
   boolean useMemcached;
 
   protected abstract void refreshCache();
@@ -46,11 +48,10 @@ public abstract class NycCacheService<K, V> {
     this._disabled = disable;
   }
 
-  public Cache<K, V> getCache() {
-    return getCache(DEFAULT_CACHE_TIMEOUT, "GENERIC");
-  }
+  public abstract Cache<K, V> getCache();
 
-  public Cache<K, V> getCache(int timeout, String type) {
+  public Cache<K, V> getCache(int timeout, String type, boolean memcacheable) {
+    this.type = type;
     if (_cache == null) {
       _log.info("creating initial " + type + " cache with timeout " + timeout
           + "...");
@@ -58,14 +59,12 @@ public abstract class NycCacheService<K, V> {
           TimeUnit.SECONDS).build();
       _log.info("done");
     }
-    if (memcache==null)
-    {
+    if (memcacheable && memcachedClient == null) {
       try {
-        memcache = new MemcachedClient(
+        memcachedClient = new MemcachedClient(
             new BinaryConnectionFactory(),
             AddrUtil.getAddresses(addr));
-      } 
-      catch (Exception e) {
+      } catch (Exception e) {
       }
     }
     if (_disabled)
@@ -79,7 +78,7 @@ public abstract class NycCacheService<K, V> {
       return null;
     if (useMemcached) {
       try {
-        return (V) memcache.get(key.toString());
+        return (V) memcachedClient.get(key.toString());
       } catch (Exception e) {
         toggleCache(false);
       }
@@ -96,7 +95,7 @@ public abstract class NycCacheService<K, V> {
       return;
     if (useMemcached) {
       try {
-        memcache.set(key.toString(), timeout, value);
+        memcachedClient.set(key.toString(), timeout, value);
         return;
       } catch (Exception e) {
         toggleCache(false);
@@ -111,7 +110,7 @@ public abstract class NycCacheService<K, V> {
     Cache<K, V> cache = getCache();
     if (useMemcached) {
       try {
-        return memcache.get(key.toString()) != null;
+        return memcachedClient.get(key.toString()) != null;
       } catch (Exception e) {
         toggleCache(false);
       }
@@ -119,7 +118,7 @@ public abstract class NycCacheService<K, V> {
     if (!cache.asMap().containsKey(key)){
       // only attempt to switch to memcached if there is a miss in local cache
       // to minimize memcached connection attempts, saving time per local cache usage
-      if (memcache != null && !memcache.getAvailableServers().isEmpty()){
+      if (memcachedClient != null && !memcachedClient.getAvailableServers().isEmpty()){
         toggleCache(true);
       }
       return false;
@@ -145,10 +144,11 @@ public abstract class NycCacheService<K, V> {
   }
 
   public void logStatus() {
-    _log.info(getCache().stats().toString() + "; disabled=" + _disabled
-        + "; useMemcached=" + useMemcached
-        + "; Local Size=" + _cache.size()
-        + "; Memcached Size=" + (memcache==null?"[null]":memcache.getStats("sizes")));
+    if (type != null) {
+      _log.info("name=" + type + ": disabled=" + _disabled
+          + "; " + (useMemcached ? "Memcached" : "Local Cache")
+          + "; " + (useMemcached ? memcachedClient.getStats("sizes") : getCache().stats().toString()));
+    }
   }
 
   private class StatusThread extends TimerTask {
@@ -157,9 +157,9 @@ public abstract class NycCacheService<K, V> {
       logStatus();
     }
   }
-  
-  private void toggleCache(boolean useMemcached){
+
+  private void toggleCache(boolean useMemcached) {
     this.useMemcached = useMemcached;
-    _log.info("Caching with " + (useMemcached?"Memcached":"Local Cache"));
+    _log.info("Caching with " + (useMemcached ? "Memcached" : "Local Cache"));
   }
 }

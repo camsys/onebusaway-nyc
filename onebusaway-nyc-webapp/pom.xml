@@ -164,6 +164,7 @@
 				<log4j.appender>ROLL</log4j.appender>
 				<create-apikey>false</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
+				<geocoder.cache.disabled>false</geocoder.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -178,6 +179,7 @@
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
+				<geocoder.cache.disabled>false</geocoder.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -192,6 +194,7 @@
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
+				<geocoder.cache.disabled>false</geocoder.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -207,6 +210,7 @@
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
+				<geocoder.cache.disabled>false</geocoder.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -222,6 +226,7 @@
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
+				<geocoder.cache.disabled>false</geocoder.cache.disabled>
 			</properties>
 		</profile>
 	</profiles>
