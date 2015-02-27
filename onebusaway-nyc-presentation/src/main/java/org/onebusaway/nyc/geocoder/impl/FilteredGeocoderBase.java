@@ -55,29 +55,34 @@ public abstract class FilteredGeocoderBase implements NycGeocoderService, Geocod
   public FilteredGeocoderBase(FilteredGeocoderBase template){
 	  _configurationService = template.getConfigurationService();
 	  _resultBiasingBounds = template.getResultingBiasingBounds();
+	  _wktFilterPolygon = template.getWktFilterPolygon();
   }
-  
-  protected ConfigurationService getConfigurationService(){
-	return _configurationService;
+
+  protected ConfigurationService getConfigurationService() {
+    return _configurationService;
   }
-  
-  protected void setConfigurationService(ConfigurationService configurationService){
-	_configurationService = configurationService;
+
+  protected void setConfigurationService(ConfigurationService configurationService) {
+    _configurationService = configurationService;
   }
-  
-  protected CoordinateBounds getResultingBiasingBounds(){
-	return _resultBiasingBounds;
+
+  protected CoordinateBounds getResultingBiasingBounds() {
+    return _resultBiasingBounds;
   }
-  
+
   public void setResultBiasingBounds(CoordinateBounds bounds) {
     _resultBiasingBounds = bounds;
   }
-  
+
   public void setWktFilterPolygon(String wkt) throws ParseException {
     WKTReader reader = new WKTReader();
-    _wktFilterPolygon = (Polygon)reader.read(wkt);
+    _wktFilterPolygon = (Polygon) reader.read(wkt);
   }
 
+  protected Polygon getWktFilterPolygon() {
+    return _wktFilterPolygon;
+  }
+  
   /**
    * This method does nothing--it's only required to implement GeocoderService which 
    * classic OBA components require to exist in the Spring container to work.

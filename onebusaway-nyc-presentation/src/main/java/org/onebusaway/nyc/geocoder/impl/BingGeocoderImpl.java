@@ -53,7 +53,7 @@ public class BingGeocoderImpl extends FilteredGeocoderBase {
       q.append("includeNeighborhood=true");
       q.append("&output=xml");
     
-      String encodedLocation = URLEncoder.encode(location + (location.contains(", NY")?"":", NY"), "UTF-8");
+      String encodedLocation = URLEncoder.encode(location, "UTF-8");
       q.append("&query=").append(encodedLocation);
     
       if(_resultBiasingBounds != null) {
