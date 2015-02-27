@@ -58,6 +58,7 @@ public class RecordLibrary {
     qlr.setObservedLongitude(record.getLon());
     qlr.setPhase(record.getInferredPhase());
     qlr.setStatus(record.getInferredStatus());
+    qlr.setAssignedBlockId(record.getAssignedBlockId());
     // TODO add operator, run?
 
     return qlr;

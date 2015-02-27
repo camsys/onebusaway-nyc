@@ -24,7 +24,6 @@
 package org.onebusaway.nyc.report_archive.model;
 
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
-
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;

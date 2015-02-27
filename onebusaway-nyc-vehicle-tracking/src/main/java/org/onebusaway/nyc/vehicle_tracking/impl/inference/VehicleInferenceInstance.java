@@ -494,6 +494,7 @@ public class VehicleInferenceInstance {
     record.setLastUpdateTime(_lastUpdateTime);
     record.setLastLocationUpdateTime(_lastLocationUpdateTime);
     record.setAssignedRunId(obs.getOpAssignedRunId());
+    record.setAssignedBlockId(obs.getAssignedBlockId());
     record.setMostRecentObservedDestinationSignCode(nycRawRecord.getDestinationSignCode());
     record.setLastObservedLatitude(nycRawRecord.getLatitude());
     record.setLastObservedLongitude(nycRawRecord.getLongitude());
