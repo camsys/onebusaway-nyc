@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
@@ -43,6 +44,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 	private static final long serialVersionUID = 1L;
 
 	private static final int MIN_COORDINATES = 3;
+	private static final double MAX_BOUNDS_RADIUS = 500; //in meters
 	
 	private static final String LINE_REF = "LineRef";
 	private static final String DIRECTION_REF = "DirectionRef";
@@ -62,7 +64,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 	private ConfigurationService _configurationService;
 
 	private Siri _response;
-
+	
 	private ServiceAlertsHelperV2 _serviceAlertsHelper = new ServiceAlertsHelperV2();
 
 	private HttpServletRequest _request;
@@ -92,7 +94,7 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		Boolean upcomingServiceAllStops = null;
 		
 		CoordinateBounds bounds = null;
-		String boundCoordinates;
+		boolean validBoundDistance = true;
 		
 		//get the detail level parameter or set it to default if not specified
 	    DetailLevel detailLevel;
@@ -127,19 +129,23 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		
 		routeIdsErrorString =  processRouteIds(lineRef, routeIds, agencyIds);
 
-		
-		if(StringUtils.isNotBlank(circle))
-			boundCoordinates = circle;
-		else{
-			boundCoordinates = boundingBox;
-		}
-		
+		// Calculate Bounds	
 		try{
-			bounds = getBounds(boundCoordinates,boundsErrorString);
+			if(StringUtils.isNotBlank(circle)){
+				bounds = getBounds(circle);		
+			}
+			else if(StringUtils.isNotBlank(boundingBox)){
+				bounds = getBounds(boundingBox);
+			}
+			if(!isValidBoundsDistance(bounds)){
+				boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m";
+				validBoundDistance = false;
+			}
 		}
 		catch (NumberFormatException nfe){
-			boundsErrorString += "One or more invalid Coordinate values was provided.";
+			boundsErrorString += "One or more coordinate values contain a non-numeric value.";
 		}
+
 
 		// Check for case where only LineRef was provided
 		if (bounds == null) {
@@ -170,27 +176,31 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		// Annotated Stop Points
 		List<AnnotatedStopPointStructure> stopPoints = new ArrayList<AnnotatedStopPointStructure>();
 		Map<Boolean, List<AnnotatedStopPointStructure>> stopPointsMap;
-		
-		if (useLineRefOnly) {
-			stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(
-					routeIds, detailLevel, responseTimestamp, filters);
-		} else {
-			stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(
-					bounds, detailLevel, responseTimestamp, filters);			
-		}
-		
-		for (Map.Entry<Boolean, List<AnnotatedStopPointStructure>> entry : stopPointsMap.entrySet()) {
-			upcomingServiceAllStops= entry.getKey();
-			stopPoints.addAll(entry.getValue());
-		}
-		
+
+		// Error Handler
 		Exception error = null;
-		if ((bounds == null && !useLineRefOnly)
-				|| (_request.getParameter("LineRef") != null && routeIds.size() == 0)) {
-			String errorString = (boundsErrorString + " " + routeIdsErrorString)
-					.trim();
+		if ((bounds == null && !useLineRefOnly) || 
+			(_request.getParameter("LineRef") != null && routeIds.size() == 0) ||
+			!validBoundDistance) {
+			String errorString = (boundsErrorString + " " + routeIdsErrorString).trim();
 			error = new Exception(errorString);
 		}
+		else{
+		
+			if (useLineRefOnly) {
+				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(
+						routeIds, detailLevel, responseTimestamp, filters);
+			} else {
+				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(
+						bounds, detailLevel, responseTimestamp, filters);			
+			}
+			
+			for (Map.Entry<Boolean, List<AnnotatedStopPointStructure>> entry : stopPointsMap.entrySet()) {
+				upcomingServiceAllStops= entry.getKey();
+				stopPoints.addAll(entry.getValue());
+			}
+		}
+		
 		
 		_response = generateSiriResponse(stopPoints, upcomingServiceAllStops, error, responseTimestamp);
 
@@ -203,7 +213,6 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		return null;
 	}
 
-	
 
 	private Siri generateSiriResponse(
 			List<AnnotatedStopPointStructure> stopPoints, Boolean hasUpcomingScheduledService, Exception error,
@@ -335,25 +344,33 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 		return routeIdsErrorString;
 	}
 
-	private CoordinateBounds getBounds(String boundingCoordinates, String boundsErrorString) throws NumberFormatException{
+	private CoordinateBounds getBounds(String boundingCoordinates) throws NumberFormatException{
 		CoordinateBounds bounds = null;
 		if (boundingCoordinates != null) {
 			String[] coordinates = boundingCoordinates.split(",");
-
+			
 			if (coordinates.length > MIN_COORDINATES) {
 
+				CoordinateBounds userBounds = new CoordinateBounds(
+						Double.parseDouble(coordinates[0]), 
+						Double.parseDouble(coordinates[1]),
+						Double.parseDouble(coordinates[2]),
+						Double.parseDouble(coordinates[3]));
+	
 				bounds = SphericalGeometryLibrary.boundsFromLatLonOffset(
-						Double.parseDouble(coordinates[0]), 
-						Double.parseDouble(coordinates[1]),
-						Double.parseDouble(coordinates[2])/2,
-						Double.parseDouble(coordinates[3])/2);
-
+						userBounds.getMinLat(),
+						userBounds.getMinLon(),
+						(userBounds.getMaxLat() - userBounds.getMinLat()) / 2, 
+						(userBounds.getMaxLon() - userBounds.getMinLon()) / 2);
+				
 			}
-			else if(coordinates.length == MIN_COORDINATES){
-				return SphericalGeometryLibrary.bounds(
+			else if(coordinates.length == MIN_COORDINATES){	
+				
+				bounds = SphericalGeometryLibrary.bounds(
 						Double.parseDouble(coordinates[0]), 
-						Double.parseDouble(coordinates[1]),
+						Double.parseDouble(coordinates[1]), 
 						Double.parseDouble(coordinates[2]));
+				
 			}
 
 		}
@@ -361,25 +378,26 @@ public class StopPointsV2Action extends OneBusAwayNYCActionSupport implements
 	}
 	
 	
-	
-	/*private CoordinateBounds getSearchBounds() {
+	private boolean isValidBoundsDistance(CoordinateBounds bounds){
+		if(bounds != null){
+		 CoordinateBounds maxBounds = SphericalGeometryLibrary.bounds(
+				 bounds.getMinLat(), bounds.getMinLon(), MAX_BOUNDS_RADIUS);
 
-	    if (_radius > 0) {
-	      return SphericalGeometryLibrary.bounds(_lat, _lon, _radius);
-	    } else if (_latSpan > 0 && _lonSpan > 0) {
-	      return SphericalGeometryLibrary.boundsFromLatLonOffset(_lat, _lon,
-	          _latSpan / 2, _lonSpan / 2);
-	    } else {
-	      if (_query != null)
-	        return SphericalGeometryLibrary.bounds(_lat, _lon,
-	            DEFAULT_SEARCH_RADIUS_WITH_QUERY);
-	      else
-	        return SphericalGeometryLibrary.bounds(_lat, _lon,
-	            DEFAULT_SEARCH_RADIUS_WITHOUT_QUERY);
-	    }
-	  }
+		 double maxLatSpan = (maxBounds.getMaxLat() - maxBounds.getMinLat());
+		 double maxLonSpan = (maxBounds.getMaxLon() - maxBounds.getMinLon());
+		 
+		 double latSpan = (bounds.getMaxLat() - bounds.getMinLat());
+	     double lonSpan = (bounds.getMaxLon() - bounds.getMinLon());
+		 
+		 if (latSpan < maxLatSpan && lonSpan < maxLonSpan) {
+			 return true;
+		      
+		 }
+		}
+		return false;
+	}
 	
-	*/
+	
 	
 	@Override
 	public void setServletRequest(HttpServletRequest request) {

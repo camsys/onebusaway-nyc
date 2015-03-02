@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DelaysStructure", propOrder = {
+@XmlType(name = "ScheduledService", propOrder = {
     "upcomingScheduledService"
 })
 public class SiriUpcomingServiceExtension {

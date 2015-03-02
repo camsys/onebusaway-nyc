@@ -551,7 +551,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		return new ArrayList<StopBean>();
 	}
 	
-	public void processAnnotatedStopPoints(
+	private void processAnnotatedStopPoints(
 			List<StopBean> stopBeans, 
 			List<AnnotatedStopPointStructure> annotatedStopPoints, 
 			Map<Filters, String> filters, 
