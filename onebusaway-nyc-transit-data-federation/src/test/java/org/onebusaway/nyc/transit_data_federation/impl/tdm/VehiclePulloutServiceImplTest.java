@@ -93,7 +93,7 @@ public class VehiclePulloutServiceImplTest {
     JsonElement json = new JsonParser().parse(s);
     value.add(json.getAsJsonObject());
 
-    when(mockApiLibrary.getItemsForRequest("pullouts", "realtime", "list")).thenReturn(value);
+    when(mockApiLibrary.getItemsForRequestNoCheck("pullouts", "realtime", "list")).thenReturn(value);
     
     service.refreshData();
     

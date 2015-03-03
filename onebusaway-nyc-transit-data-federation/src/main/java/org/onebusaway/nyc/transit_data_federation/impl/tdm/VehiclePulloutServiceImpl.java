@@ -94,7 +94,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
       List<SCHPullInOutInfo> pulloutList = schPulloutList.getPullOuts().getPullOut();
       for (SCHPullInOutInfo pullInOutInfo: pulloutList) {
         CPTVehicleIden v = pullInOutInfo.getVehicle();
-        _vehicleIdToPullouts.put(AgencyAndId.convertFromString(v.getAgdesig() + "_" + v.getId()), pullInOutInfo);
+        _vehicleIdToPullouts.put(new AgencyAndId(v.getAgdesig(), v.getId()), pullInOutInfo);
       }
     } catch (Exception e) {
       _log.error(e.getMessage());
@@ -142,8 +142,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   public SCHPullInOutInfo getVehiclePullout(AgencyAndId vehicle) {
     if (vehicle==null)
       return null;
-    String lookup = vehicle.getAgencyId() + " " + vehicle.getId();    
-    return _vehicleIdToPullouts.get(lookup);
+    return _vehicleIdToPullouts.get(vehicle);
   }
 
   @Override
