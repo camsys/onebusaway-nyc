@@ -12,6 +12,8 @@ OBA.Mobile = (function() {
 		
 		searchInput.autocomplete({
 			source: "../" + OBA.Config.autocompleteUrl,
+			delay: 250,
+			minLength: 3,
 			select: function(event, ui) {
 		        if(ui.item){
 		        	searchInput.val(ui.item.value);

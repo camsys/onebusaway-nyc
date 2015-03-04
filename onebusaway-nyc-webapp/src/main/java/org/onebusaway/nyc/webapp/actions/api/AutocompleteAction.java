@@ -19,6 +19,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
@@ -52,7 +53,7 @@ public class AutocompleteAction extends OneBusAwayNYCActionSupport {
 
   @Override
   public String execute() {
-    if (_term == null || _term.isEmpty())
+    if (_term == null || _term.isEmpty() || _term.matches("^[^a-zA-Z0-9]*$"))
       return SUCCESS;
 
     suggestions = _nycTransitDataService.getSearchSuggestions(null, _term.toLowerCase());

@@ -54,7 +54,7 @@ OBA.Sidebar = function() {
 		// add autocomplete behavior
 		searchInput.autocomplete({
 			source: OBA.Config.autocompleteUrl,
-			delay: 1500,
+			delay: 250,
 			minLength: 3,
 			select: function(event, ui) {
 		        if(ui.item){
