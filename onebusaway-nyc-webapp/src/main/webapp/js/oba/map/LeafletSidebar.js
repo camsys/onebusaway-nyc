@@ -53,7 +53,18 @@ OBA.Sidebar = function() {
 		
 		// add autocomplete behavior
 		searchInput.autocomplete({
-			source: OBA.Config.autocompleteUrl,
+			source : function(request, response) {
+				var query = $.trim(request.term);
+				if (query.length >= 3 && !query.match("^[^a-zA-Z0-9]*$")) {
+					jQuery.get(OBA.Config.autocompleteUrl, {
+						term : query
+					}, function(data) {
+						response(data);
+					});
+				} else {
+					response();
+				}
+			},
 			delay: 250,
 			minLength: 3,
 			select: function(event, ui) {
