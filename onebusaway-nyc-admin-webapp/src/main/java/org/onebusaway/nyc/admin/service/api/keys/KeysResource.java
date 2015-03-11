@@ -146,6 +146,33 @@ public class KeysResource {
 	    return response;
 	  }
 
+	  @Path("/update/{keyValue}")
+	  @GET
+	  @Produces("application/json")
+	  public Response updateKey(
+	    @PathParam("keyValue") String keyValue,
+	    @QueryParam("name") String name, 
+	    @QueryParam("company") String company, 
+	    @QueryParam("email") String email, 
+	    @QueryParam("details") String details
+	    )  throws JsonGenerationException, JsonMappingException, IOException {
+	        
+	    log.info("Starting updateKey with keyValue: " + keyValue + ", name: " 
+	      + name + ", company: " + company +", email: " + email + ", details: " 
+	      + details);
+
+	    String message = "API Key updated: " + keyValue;
+	    try {
+	      updateKeyContactInfo(keyValue, name, company, email, details);
+	    } catch (Exception e) {
+	      log.error(e.getMessage());
+	      message = e.getMessage();
+	    }
+	    Response response = constructResponse(message);
+	    log.info("Returning updateKey result.");
+	    return response;
+	  }
+
 	  @Path("/delete/{keyValue}")
 	  @GET
 	  @Produces("application/json")
@@ -185,12 +212,45 @@ public class KeysResource {
 	    // Set the API Key contact info
 	    User user = userIndex.getUser();
 	    _userPropertiesService.updateApiKeyContactInfo(user, contactName, 
-      contactCompany, contactEmail, contactDetails);
+        contactCompany, contactEmail, contactDetails);
 
 	    // Clear the cached value here
 	    _userService.getMinApiRequestIntervalForKey(apiKey, true);
 	  }
 
+	  private void updateKeyContactInfo(String apiKey, String contactName, 
+	      String contactCompany, String contactEmail, 
+	      String contactDetails) throws Exception {
+	    UserIndexKey key = new UserIndexKey(UserIndexTypes.API_KEY, apiKey);
+	    UserIndex userIndex = _userService.getUserIndexForId(key);
+
+	    if (userIndex == null)
+	      throw new Exception("API key " + apiKey + " not found (userIndex null).");
+
+	    User user = userIndex.getUser();
+      UserBean bean = _userService.getUserAsBean(user);
+      String keyContactName = bean.getContactName();
+      String keyContactCompany = bean.getContactCompany();
+      String keyContactEmail = bean.getContactEmail();
+      String keyContactDetails = bean.getContactDetails();
+      
+      if (contactName != null) {
+        keyContactName = contactName;
+      }	    
+      if (contactCompany != null) {
+        keyContactCompany = contactCompany;
+      }	    
+      if (contactEmail != null) {
+        keyContactEmail = contactEmail;
+      }	    
+      if (contactDetails != null) {
+        keyContactDetails = contactDetails;
+      }
+	    
+	    _userPropertiesService.updateApiKeyContactInfo(user, keyContactName, 
+        keyContactCompany, keyContactEmail, keyContactDetails);
+	  }
+	  
 	  private void delete(String apiKey) throws Exception {
 	    UserIndexKey key = new UserIndexKey(UserIndexTypes.API_KEY, apiKey);
 	    UserIndex userIndex = _userService.getUserIndexForId(key);
