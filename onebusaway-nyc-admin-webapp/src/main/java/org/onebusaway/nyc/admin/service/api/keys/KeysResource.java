@@ -5,10 +5,12 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.UUID;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
@@ -17,6 +19,7 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
@@ -54,9 +57,46 @@ public class KeysResource {
 	    log.info("Starting listKeys");
 
 	    try {
-	      List<String> apiKeys = _userService.getUserIndexKeyValuesForKeyType(UserIndexTypes.API_KEY);
+	      List<String> apiKeys = 
+	        _userService.getUserIndexKeyValuesForKeyType(UserIndexTypes.API_KEY);
 	      Response response = constructResponse(apiKeys);
 		  log.info("Returning response from listKeys");
+		  return response;
+	    } catch (Exception e) {
+	      log.error(e.getMessage());
+	      throw new WebApplicationException(e, Response.serverError().build());
+	    }
+	  }
+
+	  @Path("/list/{apiKey}")
+	  @GET
+	  @Produces("application/json")
+	  public Response listKeyDetails(@PathParam("apiKey") String apiKey)
+		throws JsonGenerationException, JsonMappingException, IOException {
+	    log.info("Starting listKeyDetails");
+
+	    try {
+        UserIndexKey key = new UserIndexKey(UserIndexTypes.API_KEY, apiKey);
+        UserIndex userIndex = _userService.getUserIndexForId(key);
+  
+        if (userIndex == null)
+          throw new Exception("API key " + apiKey + " not found (userIndex null).");
+  
+        User user = userIndex.getUser();
+        UserBean bean = _userService.getUserAsBean(user);
+        String contactName = bean.getContactName();
+        String contactCompany = bean.getContactCompany();
+        String contactEmail = bean.getContactEmail();
+        String contactDetails = bean.getContactDetails();
+     
+        String result = "{keyValue:" + apiKey
+          + ", contactName: " + contactName
+          + ", contactCompany: " + contactCompany
+          + ", contactEmail: " + contactEmail
+          + ", contactDetails: " + contactDetails
+          + "}";
+	      Response response = constructResponse(result);
+		  log.info("Returning response from listKeyDetails");
 		  return response;
 	    } catch (Exception e) {
 	      log.error(e.getMessage());
@@ -67,23 +107,36 @@ public class KeysResource {
 	  @Path("/create")
 	  @GET
 	  @Produces("application/json")
-	  public Response createKey() throws JsonGenerationException,
+	  public Response createKey(
+	    @DefaultValue("") @QueryParam("name") String name, 
+	    @DefaultValue("") @QueryParam("company") String company, 
+	    @DefaultValue("") @QueryParam("email") String email, 
+	    @DefaultValue("") @QueryParam("details") String details
+	    ) throws JsonGenerationException,
 	      JsonMappingException, IOException {
 	    log.info("Starting createKey with no parameter");
-	    return createKey(UUID.randomUUID().toString());
+	    return createKey(UUID.randomUUID().toString(), name, company, 
+	      email, details);
 	  }
 
 	  @Path("/create/{keyValue}")
 	  @GET
 	  @Produces("application/json")
-	  public Response createKey(@PathParam("keyValue")
-	  String keyValue) throws JsonGenerationException, JsonMappingException,
-	      IOException {
-	    log.info("Starting createKey with parameter " + keyValue);
+	  public Response createKey(
+	    @PathParam("keyValue") String keyValue,
+	    @DefaultValue("") @QueryParam("name") String name, 
+	    @DefaultValue("") @QueryParam("company") String company, 
+	    @DefaultValue("") @QueryParam("email") String email, 
+	    @DefaultValue("") @QueryParam("details") String details
+	    )  throws JsonGenerationException, JsonMappingException, IOException {
+	        
+	    log.info("Starting createKey with keyValue: " + keyValue + ", name: " 
+	      + name + ", company: " + company +", email: " + email + ", details: " 
+	      + details);
 
 	    String message = "API Key created: " + keyValue;
 	    try {
-	      saveOrUpdateKey(keyValue, 0L);
+	      saveOrUpdateKey(keyValue, 0L, name, company, email, details);
 	    } catch (Exception e) {
 	      log.error(e.getMessage());
 	      message = e.getMessage();
@@ -115,17 +168,24 @@ public class KeysResource {
 
 	  // Private methods
 
-	  private void saveOrUpdateKey(String apiKey, Long minApiRequestInterval)
-	      throws Exception {
+	  private void saveOrUpdateKey(String apiKey, Long minApiRequestInterval, 
+	      String contactName, String contactCompany, String contactEmail, 
+	      String contactDetails) throws Exception {
 	    UserIndexKey key = new UserIndexKey(UserIndexTypes.API_KEY, apiKey);
 	    UserIndex userIndexForId = _userService.getUserIndexForId(key);
 	    if (userIndexForId != null) {
 	      throw new Exception("API key " + apiKey + " already exists.");
 	    }
-	    UserIndex userIndex = _userService.getOrCreateUserForIndexKey(key, "", true);
+	    UserIndex userIndex = 
+	      _userService.getOrCreateUserForIndexKey(key, "", true);
 
 	    _userPropertiesService.authorizeApi(userIndex.getUser(),
 	        minApiRequestInterval);
+	    
+	    // Set the API Key contact info
+	    User user = userIndex.getUser();
+	    _userPropertiesService.updateApiKeyContactInfo(user, contactName, 
+      contactCompany, contactEmail, contactDetails);
 
 	    // Clear the cached value here
 	    _userService.getMinApiRequestIntervalForKey(apiKey, true);
