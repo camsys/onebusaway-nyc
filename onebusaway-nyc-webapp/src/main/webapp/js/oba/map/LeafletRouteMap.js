@@ -233,6 +233,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, MaximumNumberOfCallsOnwards: "3", VehicleMonitoringDetailLevel: "calls" }, 
 		    				OBA.Popups.getVehicleContentForResponse, null);
 			    	});
+				} else{
+					map.addLayer(marker);
 				}
 
 				// icon
@@ -281,7 +283,6 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 			
 			jQuery.each(vehicles, function(_, marker) {
 				var vehicleId = marker.vehicleId;
-				
 				map.removeLayer(marker);
 				delete vehiclesById[vehicleId];
 			});
