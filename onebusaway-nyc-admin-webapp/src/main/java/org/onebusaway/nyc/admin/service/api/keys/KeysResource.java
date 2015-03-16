@@ -2,7 +2,9 @@ package org.onebusaway.nyc.admin.service.api.keys;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.DefaultValue;
@@ -83,21 +85,16 @@ public class KeysResource {
           throw new Exception("API key " + apiKey + " not found (userIndex null).");
   
         User user = userIndex.getUser();
-        UserBean bean = _userService.getUserAsBean(user);
-        String contactName = bean.getContactName();
-        String contactCompany = bean.getContactCompany();
-        String contactEmail = bean.getContactEmail();
-        String contactDetails = bean.getContactDetails();
-     
-        String result = "{keyValue:" + apiKey
-          + ", contactName: " + contactName
-          + ", contactCompany: " + contactCompany
-          + ", contactEmail: " + contactEmail
-          + ", contactDetails: " + contactDetails
-          + "}";
-	      Response response = constructResponse(result);
-		  log.info("Returning response from listKeyDetails");
-		  return response;
+        UserBean bean = _userService.getUserAsBean(user);     
+        Map<String, String> result = new HashMap<String, String>();
+        result.put("keyValue", apiKey);
+        result.put("contactName", bean.getContactName());
+        result.put("contactCompany", bean.getContactCompany());
+        result.put("contactEmail", bean.getContactEmail());
+        result.put("contactDetails", bean.getContactDetails());
+        Response response = constructResponse(result);
+        log.info("Returning response from listKeyDetails");
+        return response;
 	    } catch (Exception e) {
 	      log.error(e.getMessage());
 	      throw new WebApplicationException(e, Response.serverError().build());
