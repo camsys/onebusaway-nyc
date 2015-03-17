@@ -166,7 +166,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetails.getTrip(), tripDetails.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, currentTime);
+					timePredictionRecords, null, currentTime);
 
 			output.add(activity);
 		}
@@ -239,7 +239,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetailsForCurrentTrip.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, currentTime);
+					timePredictionRecords, null,currentTime);
 
 			return output;
 		}
@@ -249,7 +249,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(
-			String stopId, int maximumOnwardCalls, long currentTime) {
+			String stopId, int maximumOnwardCalls, DetailLevel detailLevel, long currentTime) {
 		List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
 		boolean useTimePredictionsIfAvailable = _presentationService
@@ -288,7 +288,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					statusBeanForCurrentTrip, adBean.getStop(),
 					OnwardCallsMode.STOP_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, currentTime);
+					timePredictionRecords, detailLevel, currentTime);
 
 			output.add(stopVisit);
 		}

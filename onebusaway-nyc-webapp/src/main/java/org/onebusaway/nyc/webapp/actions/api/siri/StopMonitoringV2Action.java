@@ -31,7 +31,9 @@ import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelperV2;
+import org.onebusaway.nyc.presentation.model.DetailLevel;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeServiceV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -50,15 +52,15 @@ import uk.org.siri.siri_2.Siri;
 import uk.org.siri.siri_2.StopMonitoringDeliveryStructure;
 
 @ParentPackage("onebusaway-webapp-api")
-public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
+public class StopMonitoringV2Action extends MonitoringActionBase
 		implements ServletRequestAware, ServletResponseAware {
 
 	private static final long serialVersionUID = 1L;
 
 	private static final String PREV_TRIP = "prevTrip";
 
-	@Autowired
-	public NycTransitDataService _nycTransitDataService;
+	/*@Autowired
+	public NycTransitDataService _nycTransitDataService;*/
 
 	@Autowired
 	private RealtimeServiceV2 _realtimeService;
@@ -92,137 +94,65 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 				_configurationService);
 
 		_realtimeService.setTime(responseTimestamp);
-
-		String directionId = _request.getParameter("DirectionRef");
-
-		// We need to support the user providing no agency id which means 'all
-		// agencies'.
-		// So, this array will hold a single agency if the user provides it or
-		// all
-		// agencies if the user provides none. We'll iterate over them later
-		// while
-		// querying for vehicles and routes
-		List<String> agencyIds = new ArrayList<String>();
-
-		// Try to get the agency id passed by the user
-		String agencyId = _request.getParameter("OperatorRef");
-
-		if (agencyId != null) {
-			// The user provided an agancy id so, use it
-			agencyIds.add(agencyId);
-		} else {
-			// They did not provide an agency id, so interpret that an any/all
-			// agencies.
-			Map<String, List<CoordinateBounds>> agencies = _nycTransitDataService
-					.getAgencyIdsWithCoverageArea();
-			agencyIds.addAll(agencies.keySet());
-		}
-
-		List<AgencyAndId> stopIds = new ArrayList<AgencyAndId>();
-		String stopIdsErrorString = "";
-		if (_request.getParameter("MonitoringRef") != null) {
-			try {
-				// If the user included an agency id as part of the stop id,
-				// ignore any OperatorRef arg
-				// or lack of OperatorRef arg and just use the included one.
-				AgencyAndId stopId = AgencyAndIdLibrary
-						.convertFromString(_request
-								.getParameter("MonitoringRef"));
-				if (_monitoringActionSupport.isValidStop(stopId, _nycTransitDataService)) {
-					stopIds.add(stopId);
-				} else {
-					stopIdsErrorString += "No such stop: " + stopId.toString()
-							+ ".";
-				}
-			} catch (Exception e) {
-				// The user didn't provide an agency id in the MonitoringRef, so
-				// use our list of operator refs
-				for (String agency : agencyIds) {
-					AgencyAndId stopId = new AgencyAndId(agency,
-							_request.getParameter("MonitoringRef"));
-					if (_monitoringActionSupport.isValidStop(stopId, _nycTransitDataService)) {
-						stopIds.add(stopId);
-					} else {
-						stopIdsErrorString += "No such stop: "
-								+ stopId.toString() + ". ";
-					}
-				}
-				stopIdsErrorString = stopIdsErrorString.trim();
-			}
-			if (stopIds.size() > 0)
-				stopIdsErrorString = "";
-		} else {
-			stopIdsErrorString = "You must provide a MonitoringRef.";
-		}
-
-		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
+		
+		//get the detail level parameter or set it to default if not specified
+	    DetailLevel detailLevel;
+	    if(_request.getParameter("StopMonitoringDetailLevel") == null){
+	    	detailLevel = DetailLevel.NORMAL;
+	    }else{
+	    	detailLevel = DetailLevel.valueOf(_request.getParameter(STOP_POINTS_DETAIL_LEVEL));
+	    }	
+	    
+		// User Parameters
+		String boundingBox = _request.getParameter(BOUNDING_BOX);
+		String circle = _request.getParameter(CIRCLE);
+		String lineRef = _request.getParameter(LINE_REF);
+		String monitoringRef = _request.getParameter(MONITORING_REF);
+		String directionId = _request.getParameter(DIRECTION_REF);
+		String agencyId = _request.getParameter(OPERATOR_REF);
+		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
+		String maxOnwardCallsParam = _request.getParameter(MAX_ONWARD_CALLS);
+		String maxStopVisitsParam = _request.getParameter(MAX_STOP_VISITS);
+		String minStopVisitsParam = _request.getParameter(MIN_STOP_VISITS);
+		
+		// Error Strings
 		String routeIdsErrorString = "";
-		if (_request.getParameter("LineRef") != null) {
-			try {
-				// Same as above for stop id
-				AgencyAndId routeId = AgencyAndIdLibrary
-						.convertFromString(_request.getParameter("LineRef"));
-				if (_monitoringActionSupport.isValidRoute(routeId, _nycTransitDataService)) {
-					routeIds.add(routeId);
-				} else {
-					routeIdsErrorString += "No such route: "
-							+ routeId.toString() + ".";
-				}
-			} catch (Exception e) {
-				// Same as above for stop id
-				for (String agency : agencyIds) {
-					AgencyAndId routeId = new AgencyAndId(agency,
-							_request.getParameter("LineRef"));
-					if (_monitoringActionSupport.isValidRoute(routeId, _nycTransitDataService)) {
-						routeIds.add(routeId);
-					} else {
-						routeIdsErrorString += "No such route: "
-								+ routeId.toString() + ". ";
-					}
-				}
-				routeIdsErrorString = routeIdsErrorString.trim();
-			}
-			if (routeIds.size() > 0)
-				routeIdsErrorString = "";
-		}
+		String boundsErrorString = "";
+		String stopIdsErrorString = "";
 
-		String detailLevel = _request.getParameter("StopMonitoringDetailLevel");
+		/* 
+		 * We need to support the user providing no agency id which means 'all
+		agencies'. So, this array will hold a single agency if the user provides it or
+		all agencies if the user provides none. We'll iterate over them later while
+		querying for vehicles and routes
+		*/
+		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
+		List<AgencyAndId> stopIds = new ArrayList<AgencyAndId>();
+		
 
+		List<String> agencyIds = processAgencyIds(agencyId);
+		
+		stopIdsErrorString = processStopIds(monitoringRef, stopIds, agencyIds);
+		routeIdsErrorString =  processRouteIds(lineRef, routeIds, agencyIds);
+		
 		int maximumOnwardCalls = 0;
-		if (detailLevel != null && detailLevel.equals("calls")) {
-			maximumOnwardCalls = Integer.MAX_VALUE;
-
-			try {
-				maximumOnwardCalls = Integer.parseInt(_request
-						.getParameter("MaximumNumberOfCallsOnwards"));
-			} catch (NumberFormatException e) {
-				maximumOnwardCalls = Integer.MAX_VALUE;
-			}
+		
+		if (detailLevel.equals(DetailLevel.CALLS)) {
+			maximumOnwardCalls = convertToNumeric(maxOnwardCallsParam, Integer.MAX_VALUE);
 		}
 
-		int maximumStopVisits = Integer.MAX_VALUE;
-		try {
-			maximumStopVisits = Integer.parseInt(_request
-					.getParameter("MaximumStopVisits"));
-		} catch (NumberFormatException e) {
-			maximumStopVisits = Integer.MAX_VALUE;
-		}
+		int maximumStopVisits = convertToNumeric(maxStopVisitsParam, Integer.MAX_VALUE);
+		
+		Integer minimumStopVisitsPerLine = convertToNumeric(minStopVisitsParam, null);
 
-		Integer minimumStopVisitsPerLine = null;
-		try {
-			minimumStopVisitsPerLine = Integer.parseInt(_request
-					.getParameter("MinimumStopVisitsPerLine"));
-		} catch (NumberFormatException e) {
-			minimumStopVisitsPerLine = null;
-		}
-
+		
 		if (_monitoringActionSupport
 				.canReportToGoogleAnalytics(_configurationService)) {
 			_monitoringActionSupport.reportToGoogleAnalytics(_request,
 					"Stop Monitoring", StringUtils.join(stopIds, ","),
 					_configurationService);
-		}
-
+		}		
+		
 		// Monitored Stop Visits
 		List<MonitoredStopVisitStructure> visits = new ArrayList<MonitoredStopVisitStructure>();
 		Map<String, MonitoredStopVisitStructure> visitsMap = new HashMap<String, MonitoredStopVisitStructure>();
@@ -236,7 +166,7 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 			// to stopIds.
 			List<MonitoredStopVisitStructure> visitsForStop = _realtimeService
 					.getMonitoredStopVisitsForStop(stopId.toString(),
-							maximumOnwardCalls, responseTimestamp);
+							maximumOnwardCalls, detailLevel, responseTimestamp);
 			if (visitsForStop != null)
 				visits.addAll(visitsForStop);
 		}
@@ -406,6 +336,16 @@ public class StopMonitoringV2Action extends OneBusAwayNYCActionSupport
 
 	public HttpServletResponse getServletResponse() {
 		return _servletResponse;
+	}
+	
+	private Integer convertToNumeric(String param, Integer defaultValue){
+		Integer numericValue = defaultValue;
+		try {
+			numericValue = Integer.parseInt(param);
+		} catch (NumberFormatException e) {
+			numericValue = defaultValue;
+		}
+		return numericValue;
 	}
 
 }

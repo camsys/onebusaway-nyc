@@ -100,6 +100,7 @@ public final class SiriSupportV2 {
 			NycTransitDataService nycTransitDataService,
 			int maximumOnwardCalls,
 			List<TimepointPredictionRecord> stopLevelPredictions,
+			DetailLevel detailLevel,
 			long responseTimestamp) {
 		BlockInstanceBean blockInstance = nycTransitDataService
 				.getBlockInstance(currentVehicleTripStatus.getActiveTrip()
@@ -113,8 +114,8 @@ public final class SiriSupportV2 {
 			monitoredCallStopBean = currentVehicleTripStatus.getNextStop();
 		}
 
-		// ///////////
-
+		/**********************************************/
+		
 		LineRefStructure lineRef = new LineRefStructure();
 		lineRef.setValue(framedJourneyTripBean.getRoute().getId());
 		monitoredVehicleJourney.setLineRef(lineRef);

@@ -33,7 +33,8 @@ public interface RealtimeServiceV2 {
 			long currentTime);
 
 	public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(
-			String stopId, int maximumOnwardCalls, long currentTime);
+			String stopId, int maximumOnwardCalls, DetailLevel detailLevel,
+			long currentTime);
 
 	public boolean getVehiclesInServiceForRoute(String routeId,
 			String directionId, long currentTime);
