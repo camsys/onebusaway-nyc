@@ -51,6 +51,7 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import uk.org.siri.siri_2.AnnotatedLineStructure;
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.LineDirectionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
@@ -393,6 +394,22 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		output.put(upcomingServiceAllStops, annotatedStopPoints);
 		return output;
 			
+	}
+	
+	@Override
+	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
+			List<AgencyAndId> routeIds, DetailLevel detailLevel,
+			long responseTimestamp, Map<Filters, String> filters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
+			CoordinateBounds bounds, DetailLevel detailLevel,
+			long responseTimestamp, Map<Filters, String> filters) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**

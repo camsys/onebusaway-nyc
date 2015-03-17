@@ -7,8 +7,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeServiceV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -30,9 +33,14 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	public static final String MAX_STOP_VISITS = "MaximumStopVisits";
 	public static final String MIN_STOP_VISITS = "MinimumStopVisitsPerLine";
 
-	
 	@Autowired
 	protected NycTransitDataService _nycTransitDataService;
+
+	@Autowired
+	protected RealtimeServiceV2 _realtimeService;
+	
+	@Autowired
+	protected ConfigurationService _configurationService;
 
 	protected boolean isValidRoute(AgencyAndId routeId) {
 		if (routeId != null
@@ -156,6 +164,60 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	    
 	    return stopIdsErrorString;
 	}
+	
+	
+	protected boolean isValidBoundsDistance(CoordinateBounds bounds, double maxRadius){
+		if(bounds != null){
+		 CoordinateBounds maxBounds = SphericalGeometryLibrary.bounds(
+				 bounds.getMinLat(), bounds.getMinLon(), maxRadius);
+
+		 double maxLatSpan = (maxBounds.getMaxLat() - maxBounds.getMinLat());
+		 double maxLonSpan = (maxBounds.getMaxLon() - maxBounds.getMinLon());
+		 
+		 double latSpan = (bounds.getMaxLat() - bounds.getMinLat());
+	     double lonSpan = (bounds.getMaxLon() - bounds.getMinLon());
+		 
+		 if (latSpan < maxLatSpan && lonSpan < maxLonSpan) {
+			 return true;
+		      
+		 }
+		}
+		return false;
+	}
+	
+	protected CoordinateBounds getBounds(String boundingCoordinates) throws NumberFormatException{
+		CoordinateBounds bounds = null;
+		if (boundingCoordinates != null) {
+			String[] coordinates = boundingCoordinates.split(",");
+			
+			if (coordinates.length > 4) {
+
+				CoordinateBounds userBounds = new CoordinateBounds(
+						Double.parseDouble(coordinates[0]), 
+						Double.parseDouble(coordinates[1]),
+						Double.parseDouble(coordinates[2]),
+						Double.parseDouble(coordinates[3]));
+	
+				bounds = SphericalGeometryLibrary.boundsFromLatLonOffset(
+						userBounds.getMinLat(),
+						userBounds.getMinLon(),
+						(userBounds.getMaxLat() - userBounds.getMinLat()) / 2, 
+						(userBounds.getMaxLon() - userBounds.getMinLon()) / 2);
+				
+			}
+			else if(coordinates.length == 3){	
+				
+				bounds = SphericalGeometryLibrary.bounds(
+						Double.parseDouble(coordinates[0]), 
+						Double.parseDouble(coordinates[1]), 
+						Double.parseDouble(coordinates[2]));
+				
+			}
+
+		}
+		return bounds;
+	}
+
 	
 
 }

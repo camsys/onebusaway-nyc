@@ -55,20 +55,11 @@ import uk.org.siri.siri_2.VehicleActivityStructure;
 import uk.org.siri.siri_2.VehicleMonitoringDeliveryStructure;
 
 @ParentPackage("onebusaway-webapp-api")
-public class VehicleMonitoringV2Action extends OneBusAwayNYCActionSupport
+public class VehicleMonitoringV2Action extends MonitoringActionBase
     implements ServletRequestAware, ServletResponseAware {
 
   private static final long serialVersionUID = 1L;
   protected static Logger _log = LoggerFactory.getLogger(VehicleMonitoringV2Action.class);
-  
-  @Autowired
-  public NycTransitDataService _nycTransitDataService;
-
-  @Autowired
-  private RealtimeServiceV2 _realtimeService;
-
-  @Autowired
-  protected ConfigurationService _configurationService;
   
   private Siri _response;
   
@@ -140,7 +131,7 @@ public class VehicleMonitoringV2Action extends OneBusAwayNYCActionSupport
       try {
         // Same as above for vehicle id
         AgencyAndId routeId = AgencyAndIdLibrary.convertFromString(_request.getParameter("LineRef"));
-        if (_monitoringActionSupport.isValidRoute(routeId, _nycTransitDataService)) {
+        if (isValidRoute(routeId)) {
           routeIds.add(routeId);
         } else {
           routeIdErrorString += "No such route: " + routeId.toString() + ".";
@@ -149,7 +140,7 @@ public class VehicleMonitoringV2Action extends OneBusAwayNYCActionSupport
         // Same as above for vehicle id
         for (String agency : agencyIds) {
           AgencyAndId routeId = new AgencyAndId(agency, _request.getParameter("LineRef"));
-          if (_monitoringActionSupport.isValidRoute(routeId, _nycTransitDataService)) {
+          if (isValidRoute(routeId)) {
             routeIds.add(routeId);
           } else {
             routeIdErrorString += "No such route: " + routeId.toString() + ". ";

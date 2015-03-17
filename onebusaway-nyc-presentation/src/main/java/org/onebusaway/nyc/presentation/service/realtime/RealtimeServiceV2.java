@@ -11,6 +11,7 @@ import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializerV2;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializerV2;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
+import uk.org.siri.siri_2.AnnotatedLineStructure;
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.VehicleActivityStructure;
@@ -56,6 +57,14 @@ public interface RealtimeServiceV2 {
 
 	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
 			List<AgencyAndId> routeIds, DetailLevel detailLevel,
+			long responseTimestamp, Map<Filters, String> filters);
+
+	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
+			List<AgencyAndId> routeIds, DetailLevel detailLevel,
+			long responseTimestamp, Map<Filters, String> filters);
+
+	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
+			CoordinateBounds bounds, DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters);
 
 }
