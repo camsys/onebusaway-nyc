@@ -90,5 +90,9 @@
     </bean>
     
     <bean id="sessionManager" class="${sms.sessions.manager}"/>
+    
+   	<bean id="geocoderCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl">
+		<property name="disabled" value="${geocoder.cache.disabled}" />
+	</bean>
 
 </beans>
