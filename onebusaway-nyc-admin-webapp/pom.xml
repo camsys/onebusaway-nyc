@@ -142,6 +142,7 @@
 				<vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
 				<tdm.host>tdm</tdm.host><!-- assumes domain is set -->
 				<log4j.appender>ROLL</log4j.appender>
+				<geocoder.cache.disabled>true</geocoder.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -151,6 +152,7 @@
 				<vtms.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
 				<tdm.host>tdm.dev.obanyc.com</tdm.host>
 				<log4j.appender>stdout</log4j.appender>
+				<geocoder.cache.disabled>true</geocoder.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -160,6 +162,7 @@
 				<vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
 				<tdm.host>tdm.dev.obanyc.com</tdm.host>
 				<log4j.appender>stdout</log4j.appender>
+				<geocoder.cache.disabled>true</geocoder.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -169,6 +172,7 @@
 				<vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
 				<tdm.host>localhost:8080/onebusaway-nyc-tdm-webapp</tdm.host>
 				<log4j.appender>stdout</log4j.appender>
+				<geocoder.cache.disabled>true</geocoder.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -179,6 +183,7 @@
 				<vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
 				<tdm.host>tdm.dev.obanyc.com</tdm.host>
 				<log4j.appender>stdout</log4j.appender>
+				<geocoder.cache.disabled>true</geocoder.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -188,6 +193,7 @@
 				<vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
 				<tdm.host>tdm.dev.obanyc.com</tdm.host>
 				<log4j.appender>stdout</log4j.appender>
+				<geocoder.cache.disabled>true</geocoder.cache.disabled>
 			</properties>
 		</profile>
 	</profiles>
