@@ -26,15 +26,16 @@ public class ValidationDiffTask extends DiffTask {
 	
 	public void run(){
 		diffService.setDiffTransformer(new ValidationDiffTransformer());
-		_output = "diff_log.csv";
-		try {
-			_filename1 = configurationServiceClient.getItem("admin", "bundleStagingDir") 
-				+ File.separator
-				+ "prod"
-				+ File.separator
-				+ "outputs"
-				+ File.separator
-				+ FILENAME;
+    _output = "diff_log.csv";
+    try {
+      _filename1 = configurationServiceClient.getItem("admin",
+          "bundleStagingDir")
+          + File.separator
+          + bundleRequestResponse.getRequest().getBundleName()
+          + File.separator
+          + "outputs" 
+          + File.separator 
+          + FILENAME;
 		}
 		catch (Exception e) {
 			e.printStackTrace();

@@ -118,8 +118,7 @@
    
    <bean id="jsonTool" class="com.google.gson.Gson" />
    
-   <bean id="gsonTool"
-    class="org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool">
+   <bean id="gsonTool" class="org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool">
     <property name="prettyPrintOutput" value="false" />
     </bean>
    

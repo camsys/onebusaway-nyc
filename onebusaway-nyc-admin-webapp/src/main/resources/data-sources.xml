@@ -96,8 +96,7 @@
 		<property name="cronExpression" value="0 * * * * ?" /><!--  every minute -->
 	</bean>
 	
-	<bean id="gsonTool"
-    class="org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool">
+	<bean id="gsonTool" class="org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool">
     <property name="prettyPrintOutput" value="false" />
   </bean>
 	
