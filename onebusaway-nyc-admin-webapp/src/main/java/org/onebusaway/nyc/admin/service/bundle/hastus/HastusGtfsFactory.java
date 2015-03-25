@@ -212,6 +212,7 @@ public class HastusGtfsFactory {
       if (sequence == null) {
         sequence = new RouteStopSequence();
         _stopSequences.put(id, sequence);
+        _log.info("created stopSequence |" + id + "|");
       }
 
       RouteStopSequenceItem item = new RouteStopSequenceItem();
@@ -665,12 +666,28 @@ public class HastusGtfsFactory {
     if (route.equals("201") && routeVariation.equals("s1")
         && scheduleType.equals("Saturday"))
       routeVariation = "sb";
+    
+    if (route.equals("270") && routeVariation.equals("e1")
+        && scheduleType.equals("Saturday"))
+      routeVariation = "eb";
+
+    if (route.equals("270") && routeVariation.equals("w3")
+        && scheduleType.equals("Saturday"))
+      routeVariation = "wb";
+    
+    if (route.equals("535") && routeVariation.equals("n2"))
+      routeVariation = "nb";
 
     return route + "-" + routeVariation + "-" + scheduleType;
   }
 
   private AgencyAndId id(String id) {
-    return new AgencyAndId(_agencyId, id);
+    return new AgencyAndId(_agencyId, sanitize(id));
+  }
+
+  private String sanitize(String id) {
+    if (id == null) return null;
+    return id.replace("/", "");
   }
 
   public void setCalendarStartDate(ServiceDate startDate) {

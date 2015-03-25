@@ -251,6 +251,7 @@ public class NYCFileUtils {
       } catch (InterruptedException ie) {
         return null;
       }
+     _log.error("issue creating tmpDir=" + tmpDir);
       return createTmpDirectory();
     }
     return tmpDir;

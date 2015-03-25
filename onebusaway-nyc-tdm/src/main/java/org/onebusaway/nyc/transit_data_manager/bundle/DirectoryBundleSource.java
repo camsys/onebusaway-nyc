@@ -151,7 +151,13 @@ public class DirectoryBundleSource extends AbstractBundleSource implements Bundl
           }
 
           if (bundle != null) {
+            if (dirName.equals(bundle.getName())) {
               resultBundle = bundle;
+            } else {
+              _log.info("Invalid individual bundle directory " + dirName
+                  + ": Direcorty name does not match name '" + bundle.getName()
+                  + "' in metadata.");
+            }
           } else {
             _log.info("Invalid individual bundle directory " + dirName
                 + ": Could not parse metadata file as json.");
