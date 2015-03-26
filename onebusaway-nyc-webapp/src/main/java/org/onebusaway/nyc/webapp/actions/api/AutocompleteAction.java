@@ -26,7 +26,7 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @ParentPackage("json-default")
-@Result(type="json", params={"callbackParameter", "callback", "root", "suggestions"})
+@Result(type="json", params={"root", "suggestions"})
 public class AutocompleteAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
