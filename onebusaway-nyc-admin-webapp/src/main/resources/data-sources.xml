@@ -102,7 +102,11 @@
 				<ref bean="pingTrigger" />
 			</list>
 		</property>
-	</bean>
 	
+	</bean>
+
+	<bean id="geocoderCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl">
+		<property name="disabled" value="${geocoder.cache.disabled}" />
+	</bean>
 	
 </beans>
