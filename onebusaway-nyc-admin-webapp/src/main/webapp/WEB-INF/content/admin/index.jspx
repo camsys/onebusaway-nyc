@@ -83,6 +83,12 @@
 							<s:a href="%{url}">QR Code Generation</s:a>
 							</li>
 						</s:if>
+    					<s:if test="getConfig('manageServiceAlerts')">						
+							<li>
+							<s:url var="url" action="service-alerts" namespace="/admin/servicealerts"></s:url>
+							<s:a href="%{url}">Manage Service Alerts</s:a>
+							</li>
+						</s:if>
 								
 				</ul>
 			</div>

@@ -27,7 +27,7 @@
 <struts>
     <constant name="struts.devMode" value="false" />
 	<constant name="struts.locale" value="en_US"/> 
-	<constant name="struts.ui.theme" value="simple"/>   
+	<constant name="struts.ui.theme" value="xhtml"/>   
 	<constant name="struts.convention.action.suffix" value="Action" />    
     <constant name="struts.convention.action.mapAllMatches" value="true" />
     <constant name="struts.convention.package.locators.basePackage" value="org.onebusaway.nyc.webapp.actions" />

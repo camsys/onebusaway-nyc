@@ -14,6 +14,28 @@
  * the License.
  */
 
+thead.darkHeader > tr {
+    background-color: #6D6E72;
+}
+
+thead.darkHeader > tr > td {
+    color: white;
+    font-weight: bold;
+    padding: 5px;
+}
+
+/****
+ *
+ ****/
+ 
+#service-alert_summary_value {
+	width: 639px;
+}
+
+/****
+ *
+ ****/
+
 #contentbox {
 	padding:0;
 	margin: 0 0 0 20px;
@@ -96,10 +118,10 @@ ul li {
 	outline: none;
 }
 
-::-moz-focus-inner {
+/* ::-moz-focus-inner {
 	border: 0;
 	outline: none;
-}
+} */
 
 .formButton {
 	border: 1px transparent;
