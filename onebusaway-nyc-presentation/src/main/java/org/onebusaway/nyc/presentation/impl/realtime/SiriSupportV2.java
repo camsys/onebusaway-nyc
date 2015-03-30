@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
 import org.onebusaway.nyc.presentation.model.DetailLevel;
 import org.onebusaway.nyc.presentation.model.RouteDirection;
 import org.onebusaway.nyc.presentation.model.StopRouteDirection;
@@ -47,6 +48,7 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
+import uk.org.siri.siri_2.AnnotatedLineStructure;
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.BlockRefStructure;
 import uk.org.siri.siri_2.DataFrameRefStructure;
@@ -324,6 +326,83 @@ public final class SiriSupportV2 {
 			long currentTime
 			) {
 		
+		boolean hasValidRoute = false;
+		
+		StopBean stopBean = stopRouteDirection.getStop();
+		List<RouteDirection> routeDirections = stopRouteDirection.getRouteDirections();
+		
+		// Filter Values
+		String lineRefFilter = filters.get(Filters.LINE_REF);
+
+		// Set Stop Name
+		NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
+		stopName.setValue(stopBean.getName());
+
+		// Set Route and Direction
+		Lines lines = new Lines();
+		
+		for (RouteDirection routeDirection : routeDirections){
+			
+			String directionId = routeDirection.getDirectionId();
+			String routeId = routeDirection.getRouteBean().getId();
+			
+			
+			LineRefStructure line = new LineRefStructure();
+			line.setValue(routeId);
+
+			DirectionRefStructure direction = new DirectionRefStructure();
+			direction.setValue(directionId);
+			
+			LineDirectionStructure lineDirection = new LineDirectionStructure();
+			lineDirection.setDirectionRef(direction);
+			lineDirection.setLineRef(line);
+			
+			lines.getLineRefOrLineDirection().add(lineDirection);
+				
+			// LineRef (RouteId) Filter
+			if(!hasValidRoute && passFilter(routeId, lineRefFilter))
+				hasValidRoute=true;
+
+		}
+		
+		// No Valid Stops
+		if(!hasValidRoute || lines.getLineRefOrLineDirection().size() == 0)
+			return false;
+
+		// Set Lat and Lon
+		BigDecimal stopLat = new BigDecimal(stopBean.getLat());
+		BigDecimal stopLon = new BigDecimal(stopBean.getLon());
+
+		LocationStructure location = new LocationStructure();
+		location.setLongitude(stopLon);
+		location.setLatitude(stopLat);
+
+		// Set StopId
+		StopPointRefStructure stopPointRef = new StopPointRefStructure();
+		stopPointRef.setValue(stopBean.getId());
+
+		// Detail -- minimum
+		annotatedStopPoint.getStopName().add(stopName);
+
+		// Details -- normal
+		if (detailLevel.equals(DetailLevel.BASIC) || detailLevel.equals(DetailLevel.NORMAL)|| detailLevel.equals(DetailLevel.CALLS)){
+			annotatedStopPoint.setLocation(location);
+			annotatedStopPoint.setLines(lines);
+			// TODO - LCARABALLO Always true?
+			annotatedStopPoint.setMonitored(true);
+		}
+
+		annotatedStopPoint.setStopPointRef(stopPointRef);
+		
+		return true;
+	}
+	
+	public static boolean fillAnnotatedLineStructure(
+			AnnotatedLineStructure annotatedLineStructure,
+			StopRouteDirection stopRouteDirection,
+			Map<Filters, String> filters, 
+			DetailLevel detailLevel,
+			long currentTime) {
 		boolean hasValidRoute = false;
 		
 		StopBean stopBean = stopRouteDirection.getStop();
@@ -797,5 +876,5 @@ public final class SiriSupportV2 {
 		
 		return true;
 	}
-	
+
 }

@@ -44,7 +44,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 
 	private static final double MAX_BOUNDS_RADIUS = 500;
 	private static final String LINE_REF = "LineRef";
-	private static final String DIRECTION_REF = "DirectionRef";
+	private static final String DIRECTION_REF = "LineDirectionRef";
 	private static final String OPERATOR_REF = "Operator";
 	private static final String BOUNDING_BOX = "BoundingBox";
 	private static final String CIRCLE = "Circle";
