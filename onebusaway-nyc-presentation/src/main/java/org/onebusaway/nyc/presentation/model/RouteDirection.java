@@ -6,13 +6,13 @@ public class RouteDirection {
 
 	private String directionId;
 
-	private RouteBean routeBean;
+	private String routeId;
 
 	private Boolean hasUpcomingScheduledService;
 
-	public RouteDirection(RouteBean routeBean, String directionId,
+	public RouteDirection(String routeId, String directionId,
 			Boolean hasUpcomingScheduledService) {
-		this.routeBean = routeBean;
+		this.routeId = routeId;
 		this.directionId = directionId;
 		this.hasUpcomingScheduledService = hasUpcomingScheduledService;
 	}
@@ -25,12 +25,12 @@ public class RouteDirection {
 		this.directionId = directionId;
 	}
 
-	public RouteBean getRouteBean() {
-		return routeBean;
+	public String getRouteId() {
+		return routeId;
 	}
 
-	public void setRouteBean(RouteBean routeBean) {
-		this.routeBean = routeBean;
+	public void setRouteId(String routeBean) {
+		this.routeId = routeBean;
 	}
 
 	public Boolean getHasUpcomingScheduledService() {

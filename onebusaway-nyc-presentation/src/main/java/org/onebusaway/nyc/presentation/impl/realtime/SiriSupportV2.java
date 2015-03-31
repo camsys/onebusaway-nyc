@@ -49,6 +49,7 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 import uk.org.siri.siri_2.AnnotatedLineStructure;
+import uk.org.siri.siri_2.AnnotatedLineStructure.Directions;
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.BlockRefStructure;
 import uk.org.siri.siri_2.DataFrameRefStructure;
@@ -68,8 +69,13 @@ import uk.org.siri.siri_2.OnwardCallStructure;
 import uk.org.siri.siri_2.OnwardCallsStructure;
 import uk.org.siri.siri_2.OperatorRefStructure;
 import uk.org.siri.siri_2.ProgressRateEnumeration;
+import uk.org.siri.siri_2.RouteDirectionStructure;
+import uk.org.siri.siri_2.RouteDirectionStructure.JourneyPatterns;
+import uk.org.siri.siri_2.RouteDirectionStructure.JourneyPatterns.JourneyPattern;
+import uk.org.siri.siri_2.RouteDirectionStructure.JourneyPatterns.JourneyPattern.StopsInPattern;
 import uk.org.siri.siri_2.SituationRefStructure;
 import uk.org.siri.siri_2.SituationSimpleRefStructure;
+import uk.org.siri.siri_2.StopPointInPatternStructure;
 import uk.org.siri.siri_2.StopPointRefStructure;
 import uk.org.siri.siri_2.VehicleRefStructure;
 import uk.org.siri.siri_2.AnnotatedStopPointStructure.Lines;
@@ -344,7 +350,7 @@ public final class SiriSupportV2 {
 		for (RouteDirection routeDirection : routeDirections){
 			
 			String directionId = routeDirection.getDirectionId();
-			String routeId = routeDirection.getRouteBean().getId();
+			String routeId = routeDirection.getRouteId();
 			
 			
 			LineRefStructure line = new LineRefStructure();
@@ -399,49 +405,62 @@ public final class SiriSupportV2 {
 	
 	public static boolean fillAnnotatedLineStructure(
 			AnnotatedLineStructure annotatedLineStructure,
-			StopRouteDirection stopRouteDirection,
+			String routeId, 
+			List<StopRouteDirection> stopRouteDirections,
 			Map<Filters, String> filters, 
 			DetailLevel detailLevel,
 			long currentTime) {
+		
 		boolean hasValidRoute = false;
+		List<StopBean> stops = new ArrayList<StopBean>(stopRouteDirections.size());
+
+		// journey patterns
+		JourneyPattern pattern = new JourneyPattern();
+		JourneyPatterns patterns = new JourneyPatterns();
 		
-		StopBean stopBean = stopRouteDirection.getStop();
-		List<RouteDirection> routeDirections = stopRouteDirection.getRouteDirections();
+		// directions
+		Directions directions = new Directions();
+		RouteDirectionStructure rds = new RouteDirectionStructure();
+		rds.getDirectionName().add(new NaturalLanguageStringStructure());
+		directions.getDirection().add(rds);
 		
-		// Filter Values
-		String lineRefFilter = filters.get(Filters.LINE_REF);
+		AnnotatedLineStructure lineStructure = new AnnotatedLineStructure();
 
-		// Set Stop Name
-		NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
-		stopName.setValue(stopBean.getName());
-
-		// Set Route and Direction
-		Lines lines = new Lines();
+		StopsInPattern stopsInPattern = new StopsInPattern();
 		
-		for (RouteDirection routeDirection : routeDirections){
+		if(stopRouteDirections == null | stopRouteDirections.size() < 1)
+			return false;
+		
+		for(int i = 0; i < stopRouteDirections.size(); i++){
+			StopBean stop = stopRouteDirections.get(i).getStop();
 			
-			String directionId = routeDirection.getDirectionId();
-			String routeId = routeDirection.getRouteBean().getId();
+			StopPointRefStructure spr = new StopPointRefStructure();
+			spr.setValue(stop.getId());
 			
+			StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
+			pointInPattern.setStopPointRef(spr);
+			pointInPattern.setOrder(BigInteger.valueOf(i));
+			NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
+			stopName.setValue(stop.getName());
+			pointInPattern.getStopName().add(stopName);
 			
-			LineRefStructure line = new LineRefStructure();
-			line.setValue(routeId);
-
-			DirectionRefStructure direction = new DirectionRefStructure();
-			direction.setValue(directionId);
-			
-			LineDirectionStructure lineDirection = new LineDirectionStructure();
-			lineDirection.setDirectionRef(direction);
-			lineDirection.setLineRef(line);
-			
-			lines.getLineRefOrLineDirection().add(lineDirection);
-				
-			// LineRef (RouteId) Filter
-			if(!hasValidRoute && passFilter(routeId, lineRefFilter))
-				hasValidRoute=true;
-
+			stopsInPattern.getStopPointInPattern().add(pointInPattern);
 		}
 		
+		
+		
+		LineRefStructure line = new LineRefStructure();
+		line.setValue(routeId);
+
+		DirectionRefStructure direction = new DirectionRefStructure();
+		direction.setValue(directionId);
+		
+		LineDirectionStructure lineDirection = new LineDirectionStructure();
+		lineDirection.setDirectionRef(direction);
+		lineDirection.setLineRef(line);
+		
+		lines.getLineRefOrLineDirection().add(lineDirection);
+			
 		// No Valid Stops
 		if(!hasValidRoute || lines.getLineRefOrLineDirection().size() == 0)
 			return false;
