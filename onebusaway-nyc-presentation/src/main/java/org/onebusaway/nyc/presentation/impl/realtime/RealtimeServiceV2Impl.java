@@ -20,6 +20,7 @@ import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.OnwardCallsMo
 import org.onebusaway.nyc.presentation.model.DetailLevel;
 import org.onebusaway.nyc.presentation.model.RouteDirection;
 import org.onebusaway.nyc.presentation.model.StopRouteDirection;
+import org.onebusaway.nyc.presentation.model.StopRouteDirectionGroup;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeServiceV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -668,6 +669,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			return;
 
 		Map<String, List<StopRouteDirection>> stopRouteDirectionMap = new HashMap<String, List<StopRouteDirection>>();
+		StopRouteDirectionGroup stopRouteDirectionGroup = new StopRouteDirectionGroup();
 		
 		// Group StopRouteDirection By DirectionId
 		for(StopRouteDirection srd : stopRouteDirections){
@@ -683,7 +685,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		
 		AnnotatedLineStructure annotatedLineStructure = new AnnotatedLineStructure();
 
-		boolean isValid = SiriSupportV2.fillAnnotatedLineStructure(annotatedLineStructure, stopsForLineRef.getRoute().getId(),
+		boolean isValid = SiriSupportV2.fillAnnotatedLineStructure(annotatedLineStructure, stopsForLineRef.getRoute(),
 				stopRouteDirectionMap, filters, detailLevel, currentTime);
 		
 		if(isValid)

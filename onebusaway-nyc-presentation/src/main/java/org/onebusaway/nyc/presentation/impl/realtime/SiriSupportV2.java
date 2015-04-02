@@ -388,7 +388,7 @@ public final class SiriSupportV2 {
 		StopPointRefStructure stopPointRef = new StopPointRefStructure();
 		stopPointRef.setValue(stopBean.getId());
 
-		// Detail -- minimum
+		// Details -- minimum
 		annotatedStopPoint.getStopName().add(stopName);
 
 		// Details -- normal
@@ -406,13 +406,28 @@ public final class SiriSupportV2 {
 	
 	public static boolean fillAnnotatedLineStructure(
 			AnnotatedLineStructure annotatedLineStructure,
-			String routeId, 
+			RouteBean routeBean, 
 			Map<String, List<StopRouteDirection>> stopRouteDirectionMap,
 			Map<Filters, String> filters, 
 			DetailLevel detailLevel,
 			long currentTime) {
 		
 		Directions directions = new Directions();
+		
+		// Set Line Value
+		LineRefStructure line = new LineRefStructure();
+		line.setValue(routeBean.getId());
+		
+		NaturalLanguageStringStructure lineName = new NaturalLanguageStringStructure();
+		lineName.setValue(routeBean.getShortName());
+		
+		
+		// DETAIL - minimum: Return only the name and identifier of stops
+		//ideally, this would return only stops with scheduled service
+		annotatedLineStructure.setLineRef(line);
+		annotatedLineStructure.getLineName().add(lineName);
+		annotatedLineStructure.setDirections(directions);
+		annotatedLineStructure.setMonitored(true);
 		
 		// Loop through Direction Ids
 		for (Map.Entry<String, List<StopRouteDirection>> entry : stopRouteDirectionMap.entrySet()) {
@@ -442,6 +457,7 @@ public final class SiriSupportV2 {
 			if(stopRouteDirections == null | stopRouteDirections.size() < 1)
 				return false;
 			
+
 			// Loop through StopRouteDirecion for particular Direction Id
 			for(int i = 0; i < stopRouteDirections.size(); i++){
 				StopBean stop = stopRouteDirections.get(i).getStop();
@@ -457,6 +473,71 @@ public final class SiriSupportV2 {
 				pointInPattern.getStopName().add(stopName);
 				
 				stopsInPattern.getStopPointInPattern().add(pointInPattern);
+				
+				// DETAIL -- normal: Return name, identifier and coordinates of the stop.??
+				// my interpretation is that normal returns the list of stops with coordinates and their polylines
+				//ideally, this would return only stops with scheduled service
+				
+				if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.STOPS) || detailLevel.equals(DetailLevel.FULL)){
+					
+					BigDecimal stopLat = new BigDecimal(stop.getLat());
+					BigDecimal stopLon = new BigDecimal(stop.getLon());
+					
+					LocationStructure location = new LocationStructure();
+					location.setLongitude(stopLon);
+					location.setLatitude(stopLat);
+
+					pointInPattern.setLocation(location);
+					
+					route
+
+					/*
+					ExtensionsStructure polylineExtension = new ExtensionsStructure();
+					
+					Polylines polylines = new Polylines();
+					polylines.add(routeBean.get);
+					
+					Color color = new Color();
+					color.set("00AAFF");
+					
+					lds.setExtensions(polylineExtension);
+					*/
+					
+				}
+				
+				// DETAIL -- stops: Return name, identifier and coordinates of the stop.??
+				// my interpretation is that normal returns the list of stops with coordinates and their polylines
+				//ideally, this would return only stops with scheduled service
+				
+				if (detailLevel.equals(DetailLevel.STOPS) || detailLevel.equals(DetailLevel.FULL)){
+					
+					BigDecimal unschedStopLat2 = new BigDecimal(44.3456);
+					BigDecimal unschedStopLon2 = new BigDecimal(-74.3456);
+					
+					LocationStructure unschedStopLocation = new LocationStructure();
+					unschedStopLocation.setLongitude(unschedStopLon2);
+					unschedStopLocation.setLatitude(unschedStopLat2);
+					NaturalLanguageStringStructure unschedStopName = new NaturalLanguageStringStructure();
+					unschedStopName.setValue("stop with no currently scheduled service");
+					
+					StopPointRefStructure spr3 = new StopPointRefStructure();
+					spr3.setValue("Agency_5678");
+					
+					StopPointInPatternStructure pointInPattern3 = new StopPointInPatternStructure();
+					pointInPattern3.getStopName().add(unschedStopName);
+					pointInPattern3.setLocation(unschedStopLocation);
+					pointInPattern3.setStopPointRef(spr3);
+					pointInPattern3.setOrder(BigInteger.valueOf(3));
+					//
+					
+					ExtensionsStructure scheduledExtension = new ExtensionsStructure();
+					Scheduled scheduled = new Scheduled();
+					scheduled.set(false);
+					
+					//scheduledExtension.setAny(scheduled);
+					pointInPattern3.setExtensions(scheduledExtension );
+					stopsInPattern.getStopPointInPattern().add(pointInPattern3);
+				}
 			}
 			
 			
@@ -464,9 +545,10 @@ public final class SiriSupportV2 {
 			pattern.setStopsInPattern(stopsInPattern);
 			patterns.getJourneyPattern().add(pattern);
 			routeDirectionStructure.setDirectionRef(direction);
-			
-			annotatedLineStructure.getDirections().getDirection().add(routeDirectionStructure);
 		}
+		
+		
+
 		return true;
 	}
 

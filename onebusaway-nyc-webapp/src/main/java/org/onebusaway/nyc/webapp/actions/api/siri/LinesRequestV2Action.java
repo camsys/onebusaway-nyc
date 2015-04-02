@@ -123,7 +123,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 			} else if (StringUtils.isNotBlank(boundingBox)) {
 				bounds = getBounds(boundingBox);
 			}
-			if (!isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)) {
+			if (bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)) {
 				boundsErrorString += "Provided values exceed allowed search radius of "
 						+ MAX_BOUNDS_RADIUS + "m. ";
 				validBoundDistance = false;
@@ -133,14 +133,12 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		}
 
 		// Check for case where only LineRef was provided
-		if (bounds == null) {
-			if (routeIds.size() > 0) {
-				useLineRefOnly = true;
-			} else {
-				boundsErrorString += "You must provide at least "
-						+ MonitoringActionSupport.MIN_COORDINATES
-						+ " BoundingBox or Circle coordinates or a LineRef value.";
-			}
+		if (routeIds.size() > 0) {
+			useLineRefOnly = true;
+		} else if(bounds == null) {
+			boundsErrorString += "You must provide at least "
+					+ MonitoringActionSupport.MIN_COORDINATES
+					+ " BoundingBox or Circle coordinates or a LineRef value.";
 		}
 
 		// TODO LCARABALLO GoogleAnalytics?
@@ -249,13 +247,6 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 			linesDelivery.setResponseTimestamp(DateUtil
 					.toXmlGregorianCalendar(responseTimestamp));
 
-			// TODO - LCARABALLO Do I still need serviceAlertsHelper?
-			/*
-			 * _serviceAlertsHelper.addSituationExchangeToSiriForStops(
-			 * serviceDelivery, visits, _nycTransitDataService, stopIds);
-			 * _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(
-			 * serviceDelivery, _realtimeService);
-			 */
 		}
 
 		Siri siri = new Siri();
