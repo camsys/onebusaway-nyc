@@ -126,10 +126,6 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 			else if(StringUtils.isNotBlank(boundingBox)){
 				bounds = getBounds(boundingBox);
 			}
-			if(!isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)){
-				boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m";
-				validBoundDistance = false;
-			}
 		}
 		catch (NumberFormatException nfe){
 			boundsErrorString += "One or more coordinate values contain a non-numeric value.";
@@ -145,7 +141,10 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 						+ " BoundingBox or Circle coordinates or a LineRef value.";
 			}
 		}
-	
+		else if(!isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)){
+			boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m";
+			validBoundDistance = false;
+		}
 		
 		// TODO LCARABALLO GoogleAnalytics?
 		/*

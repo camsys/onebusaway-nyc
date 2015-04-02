@@ -32,6 +32,7 @@ import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.RoutesBean;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
@@ -335,7 +336,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		
 		Boolean upcomingServiceAllStops = true;
 		
-		List<StopBean> stopBeans = getStopsForBounds(bounds, currentTime);
+		List<StopBean> stopBeans = getStopsForBounds(bounds);
 		
 		processAnnotatedStopPoints(stopBeans,annotatedStopPoints, 
 				filters, stopsForRouteCache, detailLevel, currentTime);
@@ -417,7 +418,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		
 			StopsForRouteBean stopsForLineRef = _nycTransitDataService.getStopsForRoute(routeId);
 			
-	    	processAnnotatedLines(routeId, stopsForLineRef, annotatedLines, filters, detailLevel, currentTime);
+	    	processAnnotatedLines(stopsForLineRef, annotatedLines, filters, detailLevel, currentTime);
 		}
 		
 		output.put(upcomingServiceAllStops, annotatedLines);
@@ -428,8 +429,14 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
 			CoordinateBounds bounds, DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
+		
+		for(RouteBean route : getRoutesForBounds(bounds)){
+			routeIds.add(AgencyAndId.convertFromString(route.getId()));
+		}
+		
+		return getAnnotatedLineStructures(routeIds, detailLevel, responseTimestamp, filters);
 	}
 
 	/**
@@ -574,8 +581,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		return stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
 	}
 
-	private List<StopBean> getStopsForBounds(CoordinateBounds bounds,
-			long currentTime) {
+	private List<StopBean> getStopsForBounds(CoordinateBounds bounds) {
 		if (bounds != null) {
 			SearchQueryBean queryBean = new SearchQueryBean();
 			queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
@@ -586,6 +592,19 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			return stops.getStops();
 		}
 		return new ArrayList<StopBean>();
+	}
+	
+	private List<RouteBean> getRoutesForBounds(CoordinateBounds bounds) {
+		if (bounds != null) {
+			SearchQueryBean queryBean = new SearchQueryBean();
+			queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
+			queryBean.setBounds(bounds);
+			queryBean.setMaxCount(Integer.MAX_VALUE);
+
+			RoutesBean routes = _nycTransitDataService.getRoutes(queryBean);
+			return routes.getRoutes();
+		}
+		return new ArrayList<RouteBean>();
 	}
 	
 	private void processAnnotatedStopPoints(
@@ -635,7 +654,6 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	}
 	
 	private void processAnnotatedLines(
-			String routeId, 
 			StopsForRouteBean stopsForLineRef, 
 			List<AnnotatedLineStructure> annotatedLineStructures, 
 			Map<Filters, String> filters, 
@@ -648,17 +666,25 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		
 		if(stopRouteDirections == null || stopRouteDirections.size() == 0)
 			return;
+
+		Map<String, List<StopRouteDirection>> stopRouteDirectionMap = new HashMap<String, List<StopRouteDirection>>();
+		
+		// Group StopRouteDirection By DirectionId
+		for(StopRouteDirection srd : stopRouteDirections){
+			for(RouteDirection rd : srd.getRouteDirections()){
+				List<StopRouteDirection> srdList = stopRouteDirectionMap.get(rd.getDirectionId());
+				if(srdList == null){
+					srdList = new ArrayList<StopRouteDirection>();
+					stopRouteDirectionMap.put(rd.getDirectionId(), srdList);
+				}
+				srdList.add(srd);	
+			}
+		}
 		
 		AnnotatedLineStructure annotatedLineStructure = new AnnotatedLineStructure();
-		
-		for (StopGroupingBean stopGrouping : stopsForLineRef.getStopGroupings()) {
-			for (StopGroupBean stopGroup : stopGrouping.getStopGroups()) {
-				NameBean name = stopGroup.getName();
-		        String type = name.getType();
-				String directionId = stopGroup.getId();
-		
-		boolean isValid = SiriSupportV2.fillAnnotatedLineStructure(annotatedLineStructure, routeId,
-				stopRouteDirections, filters, detailLevel, currentTime);
+
+		boolean isValid = SiriSupportV2.fillAnnotatedLineStructure(annotatedLineStructure, stopsForLineRef.getRoute().getId(),
+				stopRouteDirectionMap, filters, detailLevel, currentTime);
 		
 		if(isValid)
 			annotatedLineStructures.add(annotatedLineStructure);
@@ -693,35 +719,33 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					if(!type.equals("destination") || !SiriSupportV2.passFilter(directionId, directionIdFilter))
 						continue;
 					
-					
-					
-						// Check if the current stop is served in this direction. If so, record it.
-						if (stopGroup.getStopIds().contains(stopBean.getId())) {
-							
-							// filter hasUpcomingScheduledService
-							Boolean hasUpcomingScheduledService = _nycTransitDataService
-									.stopHasUpcomingScheduledService((route
-											.getAgency() != null ? route
-											.getAgency().getId() : null), 
-									System.currentTimeMillis(), 
-									stopBean.getId(), 
-									route.getId(), 
-									directionId
-							);
-							
-							String hasUpcomingScheduledServiceVal = String.valueOf(hasUpcomingScheduledService);
-	
-							if(!SiriSupportV2.passFilter(hasUpcomingScheduledServiceVal,upcomingScheduledServiceFilter) 
-									|| !hasUpcomingScheduledService)
-								continue;
+					// Check if the current stop is served in this direction. If so, record it.
+					if (stopGroup.getStopIds().contains(stopBean.getId())) {
+						
+						// filter hasUpcomingScheduledService
+						Boolean hasUpcomingScheduledService = _nycTransitDataService
+								.stopHasUpcomingScheduledService((route
+										.getAgency() != null ? route
+										.getAgency().getId() : null), 
+								System.currentTimeMillis(), 
+								stopBean.getId(), 
+								route.getId(), 
+								directionId
+						);
+						
+						String hasUpcomingScheduledServiceVal = String.valueOf(hasUpcomingScheduledService);
 
-							stopRouteDirection.addRouteDirection(new RouteDirection(route.getId(), directionId, hasUpcomingScheduledService));
-							stopRouteDirections.add(stopRouteDirection);
-						}
+						if(!SiriSupportV2.passFilter(hasUpcomingScheduledServiceVal,upcomingScheduledServiceFilter) 
+								|| !hasUpcomingScheduledService)
+							continue;
+
+						stopRouteDirection.addRouteDirection(new RouteDirection(route.getId(), directionId, hasUpcomingScheduledService));
+						stopRouteDirections.add(stopRouteDirection);
 					}
-	
 				}
+	
 			}
+			
 		}
 		
 		return stopRouteDirections;

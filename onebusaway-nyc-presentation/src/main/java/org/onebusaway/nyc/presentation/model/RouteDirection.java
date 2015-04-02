@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.presentation.model;
 
-import org.onebusaway.transit_data.model.RouteBean;
+import java.util.List;
+
+import org.onebusaway.transit_data.model.StopBean;
 
 public class RouteDirection {
 
@@ -9,12 +11,19 @@ public class RouteDirection {
 	private String routeId;
 
 	private Boolean hasUpcomingScheduledService;
+	
+	private List<StopRouteDirection> stopRouteDirections;
 
 	public RouteDirection(String routeId, String directionId,
 			Boolean hasUpcomingScheduledService) {
 		this.routeId = routeId;
 		this.directionId = directionId;
 		this.hasUpcomingScheduledService = hasUpcomingScheduledService;
+	}
+	
+	public RouteDirection(String routeId, String directionId){
+		this.routeId = routeId;
+		this.directionId = directionId;
 	}
 
 	public String getDirectionId() {
@@ -40,6 +49,14 @@ public class RouteDirection {
 	public void setHasUpcomingScheduledService(
 			Boolean hasUpcomingScheduledService) {
 		this.hasUpcomingScheduledService = hasUpcomingScheduledService;
+	}
+
+	public List<StopRouteDirection> getStopRouteDirections() {
+		return stopRouteDirections;
+	}
+
+	public void setStopRouteDirections(List<StopRouteDirection> stopRouteDirections) {
+		this.stopRouteDirections = stopRouteDirections;
 	}
 
 }

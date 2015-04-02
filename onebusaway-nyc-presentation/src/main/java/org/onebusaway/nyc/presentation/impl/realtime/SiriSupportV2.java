@@ -61,6 +61,7 @@ import uk.org.siri.siri_2.JourneyPatternRefStructure;
 import uk.org.siri.siri_2.JourneyPlaceRefStructure;
 import uk.org.siri.siri_2.LineDirectionStructure;
 import uk.org.siri.siri_2.LineRefStructure;
+import uk.org.siri.siri_2.LinesDeliveryStructure;
 import uk.org.siri.siri_2.LocationStructure;
 import uk.org.siri.siri_2.MonitoredCallStructure;
 import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
@@ -406,90 +407,66 @@ public final class SiriSupportV2 {
 	public static boolean fillAnnotatedLineStructure(
 			AnnotatedLineStructure annotatedLineStructure,
 			String routeId, 
-			List<StopRouteDirection> stopRouteDirections,
+			Map<String, List<StopRouteDirection>> stopRouteDirectionMap,
 			Map<Filters, String> filters, 
 			DetailLevel detailLevel,
 			long currentTime) {
 		
-		boolean hasValidRoute = false;
-		List<StopBean> stops = new ArrayList<StopBean>(stopRouteDirections.size());
-
-		// journey patterns
-		JourneyPattern pattern = new JourneyPattern();
-		JourneyPatterns patterns = new JourneyPatterns();
-		
-		// directions
 		Directions directions = new Directions();
-		RouteDirectionStructure rds = new RouteDirectionStructure();
-		rds.getDirectionName().add(new NaturalLanguageStringStructure());
-		directions.getDirection().add(rds);
 		
-		AnnotatedLineStructure lineStructure = new AnnotatedLineStructure();
+		// Loop through Direction Ids
+		for (Map.Entry<String, List<StopRouteDirection>> entry : stopRouteDirectionMap.entrySet()) {
+		    
+			String directionId = entry.getKey();
+		    List<StopRouteDirection> stopRouteDirections = entry.getValue();
 
-		StopsInPattern stopsInPattern = new StopsInPattern();
-		
-		if(stopRouteDirections == null | stopRouteDirections.size() < 1)
-			return false;
-		
-		for(int i = 0; i < stopRouteDirections.size(); i++){
-			StopBean stop = stopRouteDirections.get(i).getStop();
+			// journey patterns - holds stop points for direction
+			JourneyPattern pattern = new JourneyPattern();
+			JourneyPatterns patterns = new JourneyPatterns();
 			
-			StopPointRefStructure spr = new StopPointRefStructure();
-			spr.setValue(stop.getId());
+			// directions
+			DirectionRefStructure direction = new DirectionRefStructure();
+			direction.setValue(directionId);
 			
-			StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
-			pointInPattern.setStopPointRef(spr);
-			pointInPattern.setOrder(BigInteger.valueOf(i));
-			NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
-			stopName.setValue(stop.getName());
-			pointInPattern.getStopName().add(stopName);
+			RouteDirectionStructure routeDirectionStructure = new RouteDirectionStructure();
+			NaturalLanguageStringStructure directionName = new NaturalLanguageStringStructure();
 			
-			stopsInPattern.getStopPointInPattern().add(pointInPattern);
+			// TODO - LCARABALLO - Currently set to direction Id, should it be something else?
+			directionName.setValue(directionId);
+			routeDirectionStructure.getDirectionName().add(directionName);
+			directions.getDirection().add(routeDirectionStructure);
+
+			// stops
+			StopsInPattern stopsInPattern = new StopsInPattern();
+			
+			if(stopRouteDirections == null | stopRouteDirections.size() < 1)
+				return false;
+			
+			// Loop through StopRouteDirecion for particular Direction Id
+			for(int i = 0; i < stopRouteDirections.size(); i++){
+				StopBean stop = stopRouteDirections.get(i).getStop();
+				
+				StopPointRefStructure spr = new StopPointRefStructure();
+				spr.setValue(stop.getId());
+				
+				StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
+				pointInPattern.setStopPointRef(spr);
+				pointInPattern.setOrder(BigInteger.valueOf(i));
+				NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
+				stopName.setValue(stop.getName());
+				pointInPattern.getStopName().add(stopName);
+				
+				stopsInPattern.getStopPointInPattern().add(pointInPattern);
+			}
+			
+			
+			routeDirectionStructure.setJourneyPatterns(patterns);
+			pattern.setStopsInPattern(stopsInPattern);
+			patterns.getJourneyPattern().add(pattern);
+			routeDirectionStructure.setDirectionRef(direction);
+			
+			annotatedLineStructure.getDirections().getDirection().add(routeDirectionStructure);
 		}
-		
-		
-		
-		LineRefStructure line = new LineRefStructure();
-		line.setValue(routeId);
-
-		DirectionRefStructure direction = new DirectionRefStructure();
-		direction.setValue(directionId);
-		
-		LineDirectionStructure lineDirection = new LineDirectionStructure();
-		lineDirection.setDirectionRef(direction);
-		lineDirection.setLineRef(line);
-		
-		lines.getLineRefOrLineDirection().add(lineDirection);
-			
-		// No Valid Stops
-		if(!hasValidRoute || lines.getLineRefOrLineDirection().size() == 0)
-			return false;
-
-		// Set Lat and Lon
-		BigDecimal stopLat = new BigDecimal(stopBean.getLat());
-		BigDecimal stopLon = new BigDecimal(stopBean.getLon());
-
-		LocationStructure location = new LocationStructure();
-		location.setLongitude(stopLon);
-		location.setLatitude(stopLat);
-
-		// Set StopId
-		StopPointRefStructure stopPointRef = new StopPointRefStructure();
-		stopPointRef.setValue(stopBean.getId());
-
-		// Detail -- minimum
-		annotatedStopPoint.getStopName().add(stopName);
-
-		// Details -- normal
-		if (detailLevel.equals(DetailLevel.BASIC) || detailLevel.equals(DetailLevel.NORMAL)|| detailLevel.equals(DetailLevel.CALLS)){
-			annotatedStopPoint.setLocation(location);
-			annotatedStopPoint.setLines(lines);
-			// TODO - LCARABALLO Always true?
-			annotatedStopPoint.setMonitored(true);
-		}
-
-		annotatedStopPoint.setStopPointRef(stopPointRef);
-		
 		return true;
 	}
 

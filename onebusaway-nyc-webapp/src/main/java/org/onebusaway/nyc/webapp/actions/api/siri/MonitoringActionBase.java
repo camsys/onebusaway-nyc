@@ -190,7 +190,7 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 		if (boundingCoordinates != null) {
 			String[] coordinates = boundingCoordinates.split(",");
 			
-			if (coordinates.length > 4) {
+			if (coordinates.length >= 4) {
 
 				CoordinateBounds userBounds = new CoordinateBounds(
 						Double.parseDouble(coordinates[0]), 
