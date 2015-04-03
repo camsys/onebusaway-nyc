@@ -18,42 +18,36 @@ var OBA = window.OBA || {};
 
 OBA.Popups = (function() {	
 
-	var infoWindow = null;
+	var popup = null;
 
 	var refreshPopupRequest = null;
 
 	var stopBubbleListener = null, stopBubbleTrigger = null;
 
-	function closeInfoWindow() {
-		infoWindow = null;
+	function closePopup() {
+		popup = null;
 	}
 
 	// PUBLIC METHODS
 	function showPopupWithContent(map, marker, content) {
-		closeInfoWindow();
-
-		infoWindow = new L.Popup({
+		popup = new L.Popup({
 			offset: new L.Point(0, (marker.options.icon.size.height / 2)),
 			disableAutoPan: false
 		});
 
-		map.addEventListener("popupclose", closeInfoWindow);
+		map.addEventListener("popupclose", closePopup);
 
-		infoWindow.setContent(content);
-		marker.bindPopup(infoWindow);
+		popup.setContent(content);
+		marker.bindPopup(popup);
 		marker.openPopup();
 	}
 
 	function showPopupWithContentFromRequest(map, marker, url, params, contentFn, routeFilter) {
-		closeInfoWindow();
-
-		infoWindow = new L.Popup({
+		popup = new L.Popup({
 			offset: new L.Point(0, (marker.options.icon.options.iconSize.y / 2)),
 			disableAutoPan: false,
 			stopId: marker.stopId // to lock an icon on the map when a popup is open for it
 		});
-
-		map.addEventListener("popupclose", closeInfoWindow);
 
 		var popupContainerId = "container" + Math.floor(Math.random() * 1000000);
 		var refreshFn = function(openBubble) {
@@ -67,14 +61,15 @@ OBA.Popups = (function() {
 				openBubble = true;
 			}
 			refreshPopupRequest = jQuery.getJSON(url, params, function(json) {
-				if(infoWindow === null) {
-					return;
-				}
-
-				infoWindow.setContent(contentFn(json, popupContainerId, marker, routeFilter));
+				popup = new L.Popup({
+					offset: new L.Point(0, (marker.options.icon.options.iconSize.y / 2)),
+					disableAutoPan: false,
+					stopId: marker.stopId // to lock an icon on the map when a popup is open for it
+				});
+				popup.setContent(contentFn(json, popupContainerId, marker, routeFilter));
 
 				if(openBubble === true) {
-					marker.bindPopup(infoWindow);
+					marker.bindPopup(popup);
 					marker.openPopup();
 				}
 
@@ -91,7 +86,7 @@ OBA.Popups = (function() {
 			});
 		};
 		refreshFn(true);		
-		infoWindow.refreshFn = refreshFn;	
+		popup.refreshFn = refreshFn;	
 
 		var updateTimestamp = function() {
 			var timestampContainer = jQuery("#" + popupContainerId).find(".updated");
@@ -106,7 +101,7 @@ OBA.Popups = (function() {
 			timestampContainer.text("Data updated " + OBA.Util.displayTime(newAge));
 		};
 		updateTimestamp();		
-		infoWindow.updateTimestamp = updateTimestamp;
+		popup.updateTimestamp = updateTimestamp;
 	}
 
 	// CONTENT GENERATION
@@ -599,26 +594,26 @@ OBA.Popups = (function() {
 	//////////////////// CONSTRUCTOR /////////////////////
 	// timer to update data periodically 
 	setInterval(function() {
-		if(infoWindow !== null && typeof infoWindow.refreshFn === 'function') {
-			infoWindow.refreshFn();
+		if(popup !== null && typeof popup.refreshFn === 'function') {
+			popup.refreshFn();
 		}
 	}, OBA.Config.refreshInterval);
 
 	// updates timestamp in popup bubble every second
 	setInterval(function() {
-		if(infoWindow !== null && typeof infoWindow.updateTimestamp === 'function') {
-			infoWindow.updateTimestamp();
+		if(popup !== null && typeof popup.updateTimestamp === 'function') {
+			popup.updateTimestamp();
 		}
 	}, 1000);
 
 	return {
 		reset: function() {
-			closeInfoWindow();
+			closePopup();
 		},
 
 		getPopupStopId: function() {
-			if(infoWindow !== null) {
-				return infoWindow.stopId;
+			if(popup !== null) {
+				return popup.stopId;
 			} else {
 				return null;
 			}

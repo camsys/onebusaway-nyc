@@ -185,94 +185,96 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		}
 		siriVMRequestsByRouteId[routeId] = jQuery.getJSON(OBA.Config.siriVMUrl + "&callback=?", params, 
 		function(json) {
-			// service alerts
-			if(typeof serviceAlertCallbackFn === 'function') {
-				if(typeof json.Siri.ServiceDelivery.SituationExchangeDelivery !== 'undefined' && json.Siri.ServiceDelivery.SituationExchangeDelivery.length > 0) {
-					serviceAlertCallbackFn(routeId, 
-						json.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement);
-				}
-			}
-			
-			// service delivery
-			var vehiclesByIdInResponse = {};
-			jQuery.each(json.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function(_, activity) {
-				var latitude = activity.MonitoredVehicleJourney.VehicleLocation.Latitude;
-				var longitude = activity.MonitoredVehicleJourney.VehicleLocation.Longitude;
-				var orientation = activity.MonitoredVehicleJourney.Bearing;
-				var headsign = activity.MonitoredVehicleJourney.DestinationName;
-				var routeName = activity.MonitoredVehicleJourney.PublishedLineName;
-
-				var vehicleId = activity.MonitoredVehicleJourney.VehicleRef;
-				var vehicleIdParts = vehicleId.split("_");
-				var vehicleIdWithoutAgency = vehicleIdParts[1];
-				var marker = vehiclesById[vehicleId];
-				
-				// has route been removed while in the process of updating?
-				if(typeof vehiclesByRoute[routeId] === 'undefined') {
-					return false;
+			if(json != undefined) {
+				// service alerts
+				if(typeof serviceAlertCallbackFn === 'function') {
+					if(typeof json.Siri.ServiceDelivery.SituationExchangeDelivery !== 'undefined' && json.Siri.ServiceDelivery.SituationExchangeDelivery.length > 0) {
+						serviceAlertCallbackFn(routeId, 
+							json.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement);
+					}
 				}
 				
-				// create marker if it doesn't exist				
-				if(typeof marker === 'undefined' || marker === null) {
-					var markerOptions = {
-						riseOffset: 3,
-						map: map,
-						title: "Vehicle " + vehicleIdWithoutAgency + ", " + routeName + " to " + headsign,
-						vehicleId: vehicleId,
-						routeId: routeId,
-						map: map
-					};
-
-					marker = new L.Marker([latitude, longitude], markerOptions);
-					marker.addTo(map);
-			        
-			    	marker.addEventListener("click", function(mouseEvent) {
-			    		OBA.Config.analyticsFunction("Vehicle Marker Click", vehicleIdWithoutAgency);
-
-		    		OBA.Popups.showPopupWithContentFromRequest(map, this, OBA.Config.siriVMUrl + "&callback=?", 
-		    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, MaximumNumberOfCallsOnwards: "3", VehicleMonitoringDetailLevel: "calls" }, 
-		    				OBA.Popups.getVehicleContentForResponse, null);
-			    	});
-				} else{
-					map.addLayer(marker);
-				}
-
-				// icon
-				var orientationAngle = "unknown";
-				if(orientation !== null && orientation !== 'NaN') {
-					orientationAngle = Math.floor(orientation / 5) * 5;
-				}
-				var icon = new L.Icon({iconUrl: "img/vehicle/vehicle-" + orientationAngle + ".png", iconSize: [51, 51]});
-
-				marker.setIcon(icon);
-
-				// position
-				var position = new L.LatLng(latitude, longitude);
-				marker.setLatLng(position);
-							    	
-				// (mark that this vehicle is still in the response)
-				vehiclesByIdInResponse[vehicleId] = true;
-
-				// maps used to keep track of marker
-				vehiclesByRoute[routeId][vehicleId] = marker;
-				vehiclesById[vehicleId] = marker; 
-			});
-			
-			// remove vehicles from map that are no longer in the response, for all routes in the query
-			jQuery.each(vehiclesById, function(vehicleOnMap_vehicleId, vehicleOnMap) {
-				if(typeof vehiclesByIdInResponse[vehicleOnMap_vehicleId] === 'undefined') {
-					var vehicleOnMap_routeId = vehicleOnMap.routeId;
+				// service delivery
+				var vehiclesByIdInResponse = {};
+				jQuery.each(json.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function(_, activity) {
+					var latitude = activity.MonitoredVehicleJourney.VehicleLocation.Latitude;
+					var longitude = activity.MonitoredVehicleJourney.VehicleLocation.Longitude;
+					var orientation = activity.MonitoredVehicleJourney.Bearing;
+					var headsign = activity.MonitoredVehicleJourney.DestinationName;
+					var routeName = activity.MonitoredVehicleJourney.PublishedLineName;
+	
+					var vehicleId = activity.MonitoredVehicleJourney.VehicleRef;
+					var vehicleIdParts = vehicleId.split("_");
+					var vehicleIdWithoutAgency = vehicleIdParts[1];
+					var marker = vehiclesById[vehicleId];
 					
-					// the route of the vehicle on the map wasn't in the query, so don't check it.
-					if(routeId !== vehicleOnMap_routeId) {
-						return;
+					// has route been removed while in the process of updating?
+					if(typeof vehiclesByRoute[routeId] === 'undefined') {
+						return false;
 					}
 					
-					map.removeLayer(vehicleOnMap);
-					delete vehiclesById[vehicleOnMap_vehicleId];
-					delete vehiclesByRoute[vehicleOnMap_routeId][vehicleOnMap_vehicleId];
-				}
-			});
+					// create marker if it doesn't exist				
+					if(typeof marker === 'undefined' || marker === null) {
+						var markerOptions = {
+							riseOffset: 3,
+							map: map,
+							title: "Vehicle " + vehicleIdWithoutAgency + ", " + routeName + " to " + headsign,
+							vehicleId: vehicleId,
+							routeId: routeId,
+							map: map
+						};
+	
+						marker = new L.Marker([latitude, longitude], markerOptions);
+						marker.addTo(map);
+				        
+				    	marker.addEventListener("click", function(mouseEvent) {
+				    		OBA.Config.analyticsFunction("Vehicle Marker Click", vehicleIdWithoutAgency);
+	
+			    		OBA.Popups.showPopupWithContentFromRequest(map, this, OBA.Config.siriVMUrl + "&callback=?", 
+			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, MaximumNumberOfCallsOnwards: "3", VehicleMonitoringDetailLevel: "calls" }, 
+			    				OBA.Popups.getVehicleContentForResponse, null);
+				    	});
+					} else{
+						map.addLayer(marker);
+					}
+	
+					// icon
+					var orientationAngle = "unknown";
+					if(orientation !== null && orientation !== 'NaN') {
+						orientationAngle = Math.floor(orientation / 5) * 5;
+					}
+					var icon = new L.Icon({iconUrl: "img/vehicle/vehicle-" + orientationAngle + ".png", iconSize: [51, 51]});
+	
+					marker.setIcon(icon);
+	
+					// position
+					var position = new L.LatLng(latitude, longitude);
+					marker.setLatLng(position);
+								    	
+					// (mark that this vehicle is still in the response)
+					vehiclesByIdInResponse[vehicleId] = true;
+	
+					// maps used to keep track of marker
+					vehiclesByRoute[routeId][vehicleId] = marker;
+					vehiclesById[vehicleId] = marker; 
+				});
+				
+				// remove vehicles from map that are no longer in the response, for all routes in the query
+				jQuery.each(vehiclesById, function(vehicleOnMap_vehicleId, vehicleOnMap) {
+					if(typeof vehiclesByIdInResponse[vehicleOnMap_vehicleId] === 'undefined') {
+						var vehicleOnMap_routeId = vehicleOnMap.routeId;
+						
+						// the route of the vehicle on the map wasn't in the query, so don't check it.
+						if(routeId !== vehicleOnMap_routeId) {
+							return;
+						}
+						
+						map.removeLayer(vehicleOnMap);
+						delete vehiclesById[vehicleOnMap_vehicleId];
+						delete vehiclesByRoute[vehicleOnMap_routeId][vehicleOnMap_vehicleId];
+					}
+				});
+			}
 		});
 	}
 	
