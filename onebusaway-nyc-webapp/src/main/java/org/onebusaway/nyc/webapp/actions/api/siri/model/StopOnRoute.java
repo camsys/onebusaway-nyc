@@ -12,6 +12,11 @@ public class StopOnRoute {
     this.stop = stop;
   }
   
+  public StopOnRoute(StopBean stop, Boolean hasUpcomingScheduledStop) {
+	  this.stop = stop;
+	  this.hasUpcomingScheduledStop = hasUpcomingScheduledStop;
+  }
+  
   public String getId() {
     return stop.getId();
   }

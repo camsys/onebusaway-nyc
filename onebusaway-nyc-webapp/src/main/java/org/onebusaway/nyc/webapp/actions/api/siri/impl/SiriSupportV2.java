@@ -33,6 +33,7 @@ import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriPolylinesExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriUpcomingServiceExtension;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteDirection;
@@ -489,7 +490,7 @@ public final class SiriSupportV2 {
 				for(int i = 0; i < scheduledStops.size(); i++){
 					
 					StopOnRoute stop = direction.getStops().get(i);
-					
+
 					BigDecimal stopLat = new BigDecimal(stop.getLatitude());
 					BigDecimal stopLon = new BigDecimal(stop.getLongitude());
 					
@@ -503,11 +504,13 @@ public final class SiriSupportV2 {
 					NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
 					stopName.setValue(stop.getName());
 					pointInPattern.getStopName().add(stopName);
+					
+					StopPointRefStructure spr = new StopPointRefStructure();
+					spr.setValue(stop.getId());
+					
+					stopsInPattern.getStopPointInPattern().add(pointInPattern);
 				}
-
-				/*Polylines polylines = direction.getPolylines();
-				polylines.add("eetvFznpbM?P");
-				polylines.add("idtvFrvpbMFhALhCVrEFjALfCHhALhC"); */
+				
 			}
 			
 			// DETAIL -- stops: Return name, identifier and coordinates of the stop.??
@@ -518,6 +521,7 @@ public final class SiriSupportV2 {
 				for(int i = 0; i < allStops.size(); i++){
 					
 					StopOnRoute stop = direction.getStops().get(i);
+					Boolean hasUpcomingScheduledService = stop.getHasUpcomingScheduledStop();
 					
 					BigDecimal stopLat = new BigDecimal(stop.getLatitude());
 					BigDecimal stopLon = new BigDecimal(stop.getLongitude());
@@ -537,14 +541,33 @@ public final class SiriSupportV2 {
 					StopPointRefStructure spr = new StopPointRefStructure();
 					spr.setValue(stop.getId());
 					stopsInPattern.getStopPointInPattern().add(pointInPattern);
+					
+					// HasUpcomingService Extension
+					SiriUpcomingServiceExtension upcomingService = new SiriUpcomingServiceExtension();
+					upcomingService.setUpcomingScheduledService(hasUpcomingScheduledService);
+					
+					ExtensionsStructure upcomingServiceExtensions = new ExtensionsStructure();
+					upcomingServiceExtensions.setAny(upcomingService);
+					pointInPattern.setExtensions(upcomingServiceExtensions);
 				}
 			}
 			
+			// Polyline Extension
+			ExtensionsStructure polylineExtension = new ExtensionsStructure();
+			SiriPolylinesExtension polylinesExt = new SiriPolylinesExtension();
+			
+			for(String polyline : direction.getPolylines()){
+				polylinesExt.add(polyline);
+			}
+
+			polylineExtension.setAny(polylinesExt.getPolylines());
+			annotatedLineStructure.setExtensions(polylineExtension);
 			
 			routeDirectionStructure.setJourneyPatterns(patterns);
 			pattern.setStopsInPattern(stopsInPattern);
 			patterns.getJourneyPattern().add(pattern);
 			routeDirectionStructure.setDirectionRef(dirRefStructure);
+
 		}
 			
 		return true;

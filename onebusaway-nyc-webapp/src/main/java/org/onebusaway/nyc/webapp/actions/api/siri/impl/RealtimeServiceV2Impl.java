@@ -5,13 +5,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -27,8 +23,8 @@ import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.OnwardCalls
 import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteDirection;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteForDirection;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.StopOnRoute;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirection;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirectionGroup;
 import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -52,13 +48,11 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import uk.org.siri.siri_2.AnnotatedLineStructure;
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
-import uk.org.siri.siri_2.LineDirectionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri_2.VehicleActivityStructure;
@@ -348,23 +342,6 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		output.put(upcomingServiceAllStops, annotatedStopPoints);
 		
 		return output;
-					
-
-		/*
-		 * Collections.sort(output, new
-		 * Comparator<MonitoredStopVisitStructure>() { public int
-		 * compare(MonitoredStopVisitStructure arg0, MonitoredStopVisitStructure
-		 * arg1) { try { SiriExtensionWrapper wrapper0 =
-		 * (SiriExtensionWrapper)arg0
-		 * .getMonitoredVehicleJourney().getMonitoredCall
-		 * ().getExtensions().getAny(); SiriExtensionWrapper wrapper1 =
-		 * (SiriExtensionWrapper
-		 * )arg1.getMonitoredVehicleJourney().getMonitoredCall
-		 * ().getExtensions().getAny(); return
-		 * wrapper0.getDistances().getDistanceFromCall
-		 * ().compareTo(wrapper1.getDistances().getDistanceFromCall()); }
-		 * catch(Exception e) { return -1; } } });
-		 */
 	}
 
 	@Override
@@ -383,7 +360,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		// AnnotatedStopPointStructures List with hasUpcomingScheduledService
 		Map<Boolean, List<AnnotatedStopPointStructure>> output = new HashMap<Boolean, List<AnnotatedStopPointStructure>>();
 		
-		Boolean upcomingServiceAllStops = null;  
+		Boolean upcomingServiceAllStops = true;  
 		
 		for(AgencyAndId aid : routeIds){
 
@@ -720,6 +697,12 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		List<RouteDirection> directions = new ArrayList<RouteDirection>();
 	    
 	    StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
+	    
+	    // create stop ID->stop bean map
+	    Map<String, StopBean> stopIdToStopBeanMap = new HashMap<String, StopBean>();
+	    for (StopBean stopBean : stopsForRoute.getStops()) {
+	      stopIdToStopBeanMap.put(stopBean.getId(), stopBean);
+	    }
 
 	    List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
 	    for (StopGroupingBean stopGroupingBean : stopGroupings) {
@@ -735,7 +718,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	          polylines.add(polyline.getPoints());
 	        }
 
-	        Boolean hasUpcomingScheduledService = 
+	        Boolean routeHasUpcomingScheduledService = 
 	            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
 	        // if there are buses on route, always have "scheduled service"
@@ -743,9 +726,26 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	      		  getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
 
 	        if(routeHasVehiclesInService) {
-	      	  hasUpcomingScheduledService = true;
+	        	routeHasUpcomingScheduledService = true;
 	        }
-	        directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
+	        
+	        // stops in this direction
+	        List<StopOnRoute> stopsOnRoute = null;
+	        if (!stopGroupBean.getStopIds().isEmpty()) {
+	          stopsOnRoute = new ArrayList<StopOnRoute>();
+
+	          for (String stopId : stopGroupBean.getStopIds()) {
+	        	  // service in this direction
+	        	  StopBean stopBean = stopIdToStopBeanMap.get(stopId);
+	        	  
+	        	  Boolean stopHasUpcomingScheduledService = _nycTransitDataService.stopHasUpcomingScheduledService(
+	            	  (routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
+	                  System.currentTimeMillis(), stopBean.getId(), routeBean.getId(),
+	                  stopGroupBean.getId());  
+	        	  stopsOnRoute.add(new StopOnRoute(stopBean, stopHasUpcomingScheduledService));
+	          }
+	        }
+	        directions.add(new RouteDirection(stopGroupBean, polylines, stopsOnRoute, routeHasUpcomingScheduledService));
 	      }
 	    }
 

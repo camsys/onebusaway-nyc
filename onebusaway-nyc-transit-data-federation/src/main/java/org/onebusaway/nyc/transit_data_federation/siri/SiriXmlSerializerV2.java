@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_federation.siri;
 
+import uk.org.siri.siri_2.ExtensionsStructure;
 import uk.org.siri.siri_2.Siri;
 
 import java.io.StringReader;
@@ -14,6 +15,7 @@ import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,9 +33,14 @@ public class SiriXmlSerializerV2 {
   
   public SiriXmlSerializerV2() {
     try {
-      context = JAXBContext.newInstance(Siri.class, SiriExtensionWrapper.class, SiriDistanceExtension.class);
+      context = JAXBContext.newInstance(
+    		  Siri.class,
+    		  SiriExtensionWrapper.class, 
+    		  SiriDistanceExtension.class, 
+    		  SiriUpcomingServiceExtension.class);
     } catch(Exception e) {
     	_log.error("Failed to Serialize Siri to XML", e);
+    	System.out.println("Failed to Serialize Siri to XML : " + e);
     }
   }
   
@@ -60,8 +67,17 @@ public class SiriXmlSerializerV2 {
     outputAsString = outputAsString.replaceAll("</ns6:", "</");
     outputAsString = outputAsString.replaceAll("xmlns:ns6", "xmlns");
 */
-    outputAsString = outputAsString.replaceAll("<siriExtensionWrapper>", "");
-    outputAsString = outputAsString.replaceAll("</siriExtensionWrapper>", "");
+    
+    String[] searchList = {
+    	"<siriExtensionWrapper>", 
+    	"</siriExtensionWrapper>",
+    	"<siriUpcomingServiceExtension>",
+    	"</siriUpcomingServiceExtension>"
+	};
+    
+    String[] replacementList = {"","","",""};
+    
+    outputAsString = StringUtils.replaceEach(outputAsString, searchList, replacementList);
 
     return outputAsString;
   }

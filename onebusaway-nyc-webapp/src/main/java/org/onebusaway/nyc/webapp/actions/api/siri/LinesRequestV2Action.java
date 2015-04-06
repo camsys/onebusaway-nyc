@@ -36,7 +36,6 @@ import uk.org.siri.siri_2.LinesDeliveryStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
 import uk.org.siri.siri_2.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri_2.Siri;
-import uk.org.siri.siri_2.StopPointsDeliveryStructure;
 
 public class LinesRequestV2Action extends MonitoringActionBase implements
 		ServletRequestAware, ServletResponseAware {
@@ -84,11 +83,10 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 
 		// get the detail level parameter or set it to default if not specified
 		DetailLevel detailLevel;
-		if (_request.getParameter("StopMonitoringDetailLevel") == null) {
+		if (_request.getParameter(LINES_DETAIL_LEVEL) == null) {
 			detailLevel = DetailLevel.NORMAL;
 		} else {
-			detailLevel = DetailLevel.valueOf(_request
-					.getParameter(LINES_DETAIL_LEVEL));
+			detailLevel = DetailLevel.valueOf(_request.getParameter(LINES_DETAIL_LEVEL));
 		}
 
 		// User Parameters
@@ -120,14 +118,23 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		try {
 			if (StringUtils.isNotBlank(circle)) {
 				bounds = getBounds(circle);
+				
+				if (bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)) {
+					boundsErrorString += "Provided values exceed allowed search radius of "
+							+ MAX_BOUNDS_RADIUS + "m. ";
+					validBoundDistance = false;
+				}
+				
 			} else if (StringUtils.isNotBlank(boundingBox)) {
 				bounds = getBounds(boundingBox);
+				
+				if (bounds != null && !isValidBoundBoxDistance(bounds, MAX_BOUNDS_RADIUS)) {
+					boundsErrorString += "Provided values exceed allowed search radius of "
+							+ MAX_BOUNDS_RADIUS + "m. ";
+					validBoundDistance = false;
+				}
 			}
-			if (bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)) {
-				boundsErrorString += "Provided values exceed allowed search radius of "
-						+ MAX_BOUNDS_RADIUS + "m. ";
-				validBoundDistance = false;
-			}
+			
 		} catch (NumberFormatException nfe) {
 			boundsErrorString += "One or more coordinate values contain a non-numeric value. ";
 		}
@@ -236,11 +243,11 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 			if (hasUpcomingScheduledService != null) {
 				// siri extensions
 				ExtensionsStructure upcomingServiceExtensions = new ExtensionsStructure();
+				upcomingServiceExtensions.setAny(hasUpcomingScheduledService);
 				SiriUpcomingServiceExtension upcomingService = new SiriUpcomingServiceExtension();
 				upcomingService
 						.setUpcomingScheduledService(hasUpcomingScheduledService);
 				upcomingServiceExtensions.setAny(upcomingService);
-
 				linesDelivery.setExtensions(upcomingServiceExtensions);
 			}
 

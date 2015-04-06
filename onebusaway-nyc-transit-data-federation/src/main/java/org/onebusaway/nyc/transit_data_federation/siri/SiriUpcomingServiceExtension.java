@@ -1,14 +1,12 @@
 package org.onebusaway.nyc.transit_data_federation.siri;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement
 @XmlType(name = "ScheduledService", propOrder = {
-    "upcomingScheduledService"
+	    "upcomingScheduledService"
 })
 public class SiriUpcomingServiceExtension {
 	

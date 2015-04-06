@@ -185,6 +185,17 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 		return false;
 	}
 	
+	protected boolean isValidBoundBoxDistance(CoordinateBounds bounds, double maxDistance){
+		if(bounds != null){
+			Double distance = SphericalGeometryLibrary.distanceFaster(bounds.getMinLat(), bounds.getMinLon(), bounds.getMaxLat(), bounds.getMaxLon());
+			
+			if (distance != null && distance < maxDistance) {
+				 return true;   
+			 }
+		}
+		return false;
+	}
+	
 	protected CoordinateBounds getBounds(String boundingCoordinates) throws NumberFormatException{
 		CoordinateBounds bounds = null;
 		if (boundingCoordinates != null) {
@@ -197,12 +208,14 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 						Double.parseDouble(coordinates[1]),
 						Double.parseDouble(coordinates[2]),
 						Double.parseDouble(coordinates[3]));
-	
-				bounds = SphericalGeometryLibrary.boundsFromLatLonOffset(
+				
+				bounds = userBounds;
+				
+				/*bounds = SphericalGeometryLibrary.boundsFromLatLonOffset(
 						userBounds.getMinLat(),
 						userBounds.getMinLon(),
 						(userBounds.getMaxLat() - userBounds.getMinLat()) / 2, 
-						(userBounds.getMaxLon() - userBounds.getMinLon()) / 2);
+						(userBounds.getMaxLon() - userBounds.getMinLon()) / 2);*/
 				
 			}
 			else if(coordinates.length == 3){	

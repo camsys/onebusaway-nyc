@@ -86,7 +86,7 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		
 		//get the detail level parameter or set it to default if not specified
 	    DetailLevel detailLevel;
-	    if(_request.getParameter("StopMonitoringDetailLevel") == null){
+	    if(_request.getParameter(STOP_POINTS_DETAIL_LEVEL) == null){
 	    	detailLevel = DetailLevel.NORMAL;
 	    }else{
 	    	detailLevel = DetailLevel.valueOf(_request.getParameter(STOP_POINTS_DETAIL_LEVEL));
@@ -120,10 +120,20 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		// Calculate Bounds	
 		try{
 			if(StringUtils.isNotBlank(circle)){
-				bounds = getBounds(circle);		
+				bounds = getBounds(circle);	
+				
+				if(!isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)){
+					boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m";
+					validBoundDistance = false;
+				}
 			}
 			else if(StringUtils.isNotBlank(boundingBox)){
 				bounds = getBounds(boundingBox);
+				
+				if(!isValidBoundBoxDistance(bounds, MAX_BOUNDS_RADIUS)){
+					boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m";
+					validBoundDistance = false;
+				}
 			}
 		}
 		catch (NumberFormatException nfe){
@@ -139,10 +149,6 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 				boundsErrorString += "You must provide at least " + MonitoringActionSupport.MIN_COORDINATES
 						+ " BoundingBox or Circle coordinates or a LineRef value.";
 			}
-		}
-		else if(!isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)){
-			boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m";
-			validBoundDistance = false;
 		}
 		
 		// TODO LCARABALLO GoogleAnalytics?
@@ -240,7 +246,6 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 				SiriUpcomingServiceExtension upcomingService = new SiriUpcomingServiceExtension();
 				upcomingService.setUpcomingScheduledService(hasUpcomingScheduledService);
 				upcomingServiceExtensions.setAny(upcomingService);
-				
 				stopPointsDelivery.setExtensions(upcomingServiceExtensions);
 			}
 			
