@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.presentation.impl.realtime;
+package org.onebusaway.nyc.webapp.actions.api.siri.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,20 +13,23 @@ import java.util.Set;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
-import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
-import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.OnwardCallsMode;
-import org.onebusaway.nyc.presentation.model.DetailLevel;
-import org.onebusaway.nyc.presentation.model.RouteDirection;
-import org.onebusaway.nyc.presentation.model.StopRouteDirection;
-import org.onebusaway.nyc.presentation.model.StopRouteDirectionGroup;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
-import org.onebusaway.nyc.presentation.service.realtime.RealtimeServiceV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializerV2;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializerV2;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteResult;
+import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
+import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.OnwardCallsMode;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteDirection;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteForDirection;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirection;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirectionGroup;
+import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
@@ -416,10 +419,26 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		for(AgencyAndId aid : routeIds){
 
 			String routeId = AgencyAndId.convertToString(aid);
-		
-			StopsForRouteBean stopsForLineRef = _nycTransitDataService.getStopsForRoute(routeId);
 			
-	    	processAnnotatedLines(stopsForLineRef, annotatedLines, filters, detailLevel, currentTime);
+			RouteBean routeBean = _nycTransitDataService.getRouteForId(routeId);
+		
+			//StopsForRouteBean stopsForLineRef = _nycTransitDataService.getStopsForRoute(routeId);
+			
+	    	//processAnnotatedLines(stopsForLineRef, annotatedLines, filters, detailLevel, currentTime);
+	    	
+	    	AnnotatedLineStructure annotatedLineStructure = new AnnotatedLineStructure();
+
+	    	RouteResult routeResult = getRouteResult(routeBean, filters);
+
+			boolean isValid = SiriSupportV2.fillAnnotatedLineStructure(
+					annotatedLineStructure, 
+					routeResult, 
+					filters, 
+					detailLevel, 
+					currentTime);
+			
+			if(isValid)
+				annotatedLines.add(annotatedLineStructure);
 		}
 		
 		output.put(upcomingServiceAllStops, annotatedLines);
@@ -611,7 +630,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	private void processAnnotatedStopPoints(
 			List<StopBean> stopBeans, 
 			List<AnnotatedStopPointStructure> annotatedStopPoints, 
-			Map<Filters, String> filters, 
+			Map<Filters, String> filters,
 			Map<String, StopsForRouteBean> stopsForRouteCache,
 			DetailLevel detailLevel,
 			long currentTime
@@ -654,7 +673,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		
 	}
 	
-	private void processAnnotatedLines(
+	/*private void processAnnotatedLines(
 			StopsForRouteBean stopsForLineRef, 
 			List<AnnotatedLineStructure> annotatedLineStructures, 
 			Map<Filters, String> filters, 
@@ -691,9 +710,49 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		if(isValid)
 			annotatedLineStructures.add(annotatedLineStructure);
 		
+	}*/
+	
+	
+	private RouteResult getRouteResult(
+			RouteBean routeBean,
+			Map<Filters, String> filters){
+
+		List<RouteDirection> directions = new ArrayList<RouteDirection>();
+	    
+	    StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
+
+	    List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
+	    for (StopGroupingBean stopGroupingBean : stopGroupings) {
+	      for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
+	        NameBean name = stopGroupBean.getName();
+	        String type = name.getType();
+
+	        if (!type.equals("destination"))
+	          continue;
+	        
+	        List<String> polylines = new ArrayList<String>();
+	        for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
+	          polylines.add(polyline.getPoints());
+	        }
+
+	        Boolean hasUpcomingScheduledService = 
+	            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
+
+	        // if there are buses on route, always have "scheduled service"
+	        Boolean routeHasVehiclesInService = 
+	      		  getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
+
+	        if(routeHasVehiclesInService) {
+	      	  hasUpcomingScheduledService = true;
+	        }
+	        directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
+	      }
+	    }
+
+	    return new RouteResult(routeBean, directions);
+	
 	}
-	
-	
+
 	private List<StopRouteDirection> getStopRouteDirections(
 			List<StopBean> stops,
 			RouteBean route,
@@ -721,29 +780,30 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					if(!type.equals("destination") || !SiriSupportV2.passFilter(directionId, directionIdFilter))
 						continue;
 					
-					// Check if the current stop is served in this direction. If so, record it.
-					if (stopGroup.getStopIds().contains(stopBean.getId())) {
+					 // filter out route directions that don't stop at this stop
+					if (!stopGroup.getStopIds().contains(stopBean.getId()))
+			            continue;
 						
-						// filter hasUpcomingScheduledService
-						Boolean hasUpcomingScheduledService = _nycTransitDataService
-								.stopHasUpcomingScheduledService((route
-										.getAgency() != null ? route
-										.getAgency().getId() : null), 
-								System.currentTimeMillis(), 
-								stopBean.getId(), 
-								route.getId(), 
-								directionId
-						);
-						
-						String hasUpcomingScheduledServiceVal = String.valueOf(hasUpcomingScheduledService);
+					// filter hasUpcomingScheduledService
+					Boolean hasUpcomingScheduledService = _nycTransitDataService
+							.stopHasUpcomingScheduledService((route
+									.getAgency() != null ? route
+									.getAgency().getId() : null), 
+							System.currentTimeMillis(), 
+							stopBean.getId(), 
+							route.getId(), 
+							directionId
+					);
+					
+					String hasUpcomingScheduledServiceVal = String.valueOf(hasUpcomingScheduledService);
 
-						if(!SiriSupportV2.passFilter(hasUpcomingScheduledServiceVal,upcomingScheduledServiceFilter) 
-								|| !hasUpcomingScheduledService)
-							continue;
+					if(!SiriSupportV2.passFilter(hasUpcomingScheduledServiceVal,upcomingScheduledServiceFilter) 
+							|| !hasUpcomingScheduledService)
+						continue;
 
-						stopRouteDirection.addRouteDirection(new RouteDirection(route.getId(), directionId, hasUpcomingScheduledService));
-						stopRouteDirections.add(stopRouteDirection);
-					}
+					stopRouteDirection.addRouteDirection(new RouteForDirection(route.getId(), directionId, hasUpcomingScheduledService));
+					stopRouteDirections.add(stopRouteDirection);
+					
 				}
 	
 			}

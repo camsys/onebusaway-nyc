@@ -1,10 +1,10 @@
-package org.onebusaway.nyc.presentation.impl.service_alerts;
+package org.onebusaway.nyc.webapp.actions.api.siri.impl;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.presentation.service.realtime.RealtimeServiceV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
 import org.onebusaway.siri.OneBusAwayConsequence;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;

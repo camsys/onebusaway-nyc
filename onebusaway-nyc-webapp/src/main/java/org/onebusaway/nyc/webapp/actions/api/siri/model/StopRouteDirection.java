@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.presentation.model;
+package org.onebusaway.nyc.webapp.actions.api.siri.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,22 +9,22 @@ public class StopRouteDirection {
 	
 	private StopBean stopBean;
 	
-	private List<RouteDirection> routeDirections = new ArrayList<RouteDirection>();
+	private List<RouteForDirection> routeDirections = new ArrayList<RouteForDirection>();
 	
 	public StopRouteDirection(StopBean stopBean){
 		this.setStop(stopBean);
 	}
 	
-	public StopRouteDirection(StopBean stopBean, RouteDirection routeDirection){
+	public StopRouteDirection(StopBean stopBean, RouteForDirection routeDirection){
 		this.setStop(stopBean);
 		routeDirections.add(routeDirection);
 	}
 
-	public void addRouteDirection(RouteDirection routeDirection) {
+	public void addRouteDirection(RouteForDirection routeDirection) {
 		routeDirections.add(routeDirection);
 	}
 	
-	public List<RouteDirection> getRouteDirections() {
+	public List<RouteForDirection> getRouteDirections() {
 		return routeDirections;
 	}
 

@@ -12,7 +12,7 @@
  * the License.
  */
 
-package org.onebusaway.nyc.presentation.impl.realtime;
+package org.onebusaway.nyc.webapp.actions.api.siri.impl;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -29,15 +29,18 @@ import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
-import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
-import org.onebusaway.nyc.presentation.model.DetailLevel;
-import org.onebusaway.nyc.presentation.model.RouteDirection;
-import org.onebusaway.nyc.presentation.model.StopRouteDirection;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriUpcomingServiceExtension;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteDirection;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteForDirection;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteResult;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.StopOnRoute;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirection;
+import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
@@ -48,7 +51,9 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
+import uk.org.siri.siri_2.AnnotatedDestinationStructure;
 import uk.org.siri.siri_2.AnnotatedLineStructure;
+import uk.org.siri.siri_2.AnnotatedLineStructure.Destinations;
 import uk.org.siri.siri_2.AnnotatedLineStructure.Directions;
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.BlockRefStructure;
@@ -336,7 +341,7 @@ public final class SiriSupportV2 {
 		boolean hasValidRoute = false;
 		
 		StopBean stopBean = stopRouteDirection.getStop();
-		List<RouteDirection> routeDirections = stopRouteDirection.getRouteDirections();
+		List<RouteForDirection> routeDirections = stopRouteDirection.getRouteDirections();
 		
 		// Filter Values
 		String lineRefFilter = filters.get(Filters.LINE_REF);
@@ -348,7 +353,7 @@ public final class SiriSupportV2 {
 		// Set Route and Direction
 		Lines lines = new Lines();
 		
-		for (RouteDirection routeDirection : routeDirections){
+		for (RouteForDirection routeDirection : routeDirections){
 			
 			String directionId = routeDirection.getDirectionId();
 			String routeId = routeDirection.getRouteId();
@@ -406,8 +411,7 @@ public final class SiriSupportV2 {
 	
 	public static boolean fillAnnotatedLineStructure(
 			AnnotatedLineStructure annotatedLineStructure,
-			RouteBean routeBean, 
-			Map<String, List<StopRouteDirection>> stopRouteDirectionMap,
+			RouteResult routeResult,
 			Map<Filters, String> filters, 
 			DetailLevel detailLevel,
 			long currentTime) {
@@ -416,10 +420,10 @@ public final class SiriSupportV2 {
 		
 		// Set Line Value
 		LineRefStructure line = new LineRefStructure();
-		line.setValue(routeBean.getId());
+		line.setValue(routeResult.getId());
 		
 		NaturalLanguageStringStructure lineName = new NaturalLanguageStringStructure();
-		lineName.setValue(routeBean.getShortName());
+		lineName.setValue(routeResult.getShortName());
 		
 		
 		// DETAIL - minimum: Return only the name and identifier of stops
@@ -430,18 +434,21 @@ public final class SiriSupportV2 {
 		annotatedLineStructure.setMonitored(true);
 		
 		// Loop through Direction Ids
-		for (Map.Entry<String, List<StopRouteDirection>> entry : stopRouteDirectionMap.entrySet()) {
-		    
-			String directionId = entry.getKey();
-		    List<StopRouteDirection> stopRouteDirections = entry.getValue();
+		for(RouteDirection direction : routeResult.getDirections()){
+			
+			// Check for existing stops in direction
+			if(direction == null | direction.getStops().size() == 0)
+				continue;
+			
+			String directionId = direction.getDirectionId();
 
-			// journey patterns - holds stop points for direction
+			// Journey patterns - holds stop points for direction
 			JourneyPattern pattern = new JourneyPattern();
 			JourneyPatterns patterns = new JourneyPatterns();
 			
-			// directions
-			DirectionRefStructure direction = new DirectionRefStructure();
-			direction.setValue(directionId);
+			// Directions
+			DirectionRefStructure dirRefStructure = new DirectionRefStructure();
+			dirRefStructure.setValue(directionId);
 			
 			RouteDirectionStructure routeDirectionStructure = new RouteDirectionStructure();
 			NaturalLanguageStringStructure directionName = new NaturalLanguageStringStructure();
@@ -450,93 +457,86 @@ public final class SiriSupportV2 {
 			directionName.setValue(directionId);
 			routeDirectionStructure.getDirectionName().add(directionName);
 			directions.getDirection().add(routeDirectionStructure);
+			
+			// Destination
+			Destinations destinations = new Destinations();
+			AnnotatedDestinationStructure annotatedDest = new AnnotatedDestinationStructure();
+			DestinationRefStructure destRef = new DestinationRefStructure();
+			destRef.setValue(direction.getDestination());
+			annotatedDest.setDestinationRef(destRef );
+			destinations.getDestination().add(annotatedDest);
 
-			// stops
+			// Stops
 			StopsInPattern stopsInPattern = new StopsInPattern();
-			
-			if(stopRouteDirections == null | stopRouteDirections.size() < 1)
-				return false;
-			
+			List<StopOnRoute> scheduledStops = new ArrayList<StopOnRoute>();
+			List<StopOnRoute> allStops = new ArrayList<StopOnRoute>();			
 
-			// Loop through StopRouteDirecion for particular Direction Id
-			for(int i = 0; i < stopRouteDirections.size(); i++){
-				StopBean stop = stopRouteDirections.get(i).getStop();
+			// Loop through StopOnRoute for particular Direction Id		
+			// Categorize by Scheduled and Unscheduled Stops
+			for(StopOnRoute stop : direction.getStops()){
+				if(stop.getHasUpcomingScheduledStop() != null && stop.getHasUpcomingScheduledStop())
+					scheduledStops.add(stop);
 				
-				StopPointRefStructure spr = new StopPointRefStructure();
-				spr.setValue(stop.getId());
+				allStops.add(stop);
+			}
+	
+			// DETAIL -- normal: Return name, identifier and coordinates of the stop.??
+			// my interpretation is that normal returns the list of stops with coordinates and their polylines
+			//ideally, this would return only stops with scheduled service
+			
+			if (detailLevel.equals(DetailLevel.NORMAL)){
 				
-				StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
-				pointInPattern.setStopPointRef(spr);
-				pointInPattern.setOrder(BigInteger.valueOf(i));
-				NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
-				stopName.setValue(stop.getName());
-				pointInPattern.getStopName().add(stopName);
-				
-				stopsInPattern.getStopPointInPattern().add(pointInPattern);
-				
-				// DETAIL -- normal: Return name, identifier and coordinates of the stop.??
-				// my interpretation is that normal returns the list of stops with coordinates and their polylines
-				//ideally, this would return only stops with scheduled service
-				
-				if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.STOPS) || detailLevel.equals(DetailLevel.FULL)){
+				for(int i = 0; i < scheduledStops.size(); i++){
 					
-					BigDecimal stopLat = new BigDecimal(stop.getLat());
-					BigDecimal stopLon = new BigDecimal(stop.getLon());
+					StopOnRoute stop = direction.getStops().get(i);
+					
+					BigDecimal stopLat = new BigDecimal(stop.getLatitude());
+					BigDecimal stopLon = new BigDecimal(stop.getLongitude());
 					
 					LocationStructure location = new LocationStructure();
 					location.setLongitude(stopLon);
 					location.setLatitude(stopLat);
-
+					
+					StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
 					pointInPattern.setLocation(location);
-					
-					route
-
-					/*
-					ExtensionsStructure polylineExtension = new ExtensionsStructure();
-					
-					Polylines polylines = new Polylines();
-					polylines.add(routeBean.get);
-					
-					Color color = new Color();
-					color.set("00AAFF");
-					
-					lds.setExtensions(polylineExtension);
-					*/
-					
+					pointInPattern.setOrder(BigInteger.valueOf(i));
+					NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
+					stopName.setValue(stop.getName());
+					pointInPattern.getStopName().add(stopName);
 				}
-				
-				// DETAIL -- stops: Return name, identifier and coordinates of the stop.??
-				// my interpretation is that normal returns the list of stops with coordinates and their polylines
-				//ideally, this would return only stops with scheduled service
-				
-				if (detailLevel.equals(DetailLevel.STOPS) || detailLevel.equals(DetailLevel.FULL)){
+
+				/*Polylines polylines = direction.getPolylines();
+				polylines.add("eetvFznpbM?P");
+				polylines.add("idtvFrvpbMFhALhCVrEFjALfCHhALhC"); */
+			}
+			
+			// DETAIL -- stops: Return name, identifier and coordinates of the stop.??
+			// my interpretation is that normal returns the list of stops with coordinates and their polylines
+			//ideally, this would return only stops with scheduled service
+			
+			if (detailLevel.equals(DetailLevel.STOPS) || detailLevel.equals(DetailLevel.FULL)){
+				for(int i = 0; i < allStops.size(); i++){
 					
-					BigDecimal unschedStopLat2 = new BigDecimal(44.3456);
-					BigDecimal unschedStopLon2 = new BigDecimal(-74.3456);
+					StopOnRoute stop = direction.getStops().get(i);
 					
-					LocationStructure unschedStopLocation = new LocationStructure();
-					unschedStopLocation.setLongitude(unschedStopLon2);
-					unschedStopLocation.setLatitude(unschedStopLat2);
-					NaturalLanguageStringStructure unschedStopName = new NaturalLanguageStringStructure();
-					unschedStopName.setValue("stop with no currently scheduled service");
+					BigDecimal stopLat = new BigDecimal(stop.getLatitude());
+					BigDecimal stopLon = new BigDecimal(stop.getLongitude());
 					
-					StopPointRefStructure spr3 = new StopPointRefStructure();
-					spr3.setValue("Agency_5678");
+					LocationStructure location = new LocationStructure();
+					location.setLongitude(stopLon);
+					location.setLatitude(stopLat);
 					
-					StopPointInPatternStructure pointInPattern3 = new StopPointInPatternStructure();
-					pointInPattern3.getStopName().add(unschedStopName);
-					pointInPattern3.setLocation(unschedStopLocation);
-					pointInPattern3.setStopPointRef(spr3);
-					pointInPattern3.setOrder(BigInteger.valueOf(3));
-					//
+					StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
+					pointInPattern.setLocation(location);
+					pointInPattern.setOrder(BigInteger.valueOf(i));
+					NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
+					stopName.setValue(stop.getName());
+					pointInPattern.getStopName().add(stopName);
 					
-					ExtensionsStructure scheduledExtension = new ExtensionsStructure();
-					Scheduled scheduled = new Scheduled();
-					scheduled.set(false);
 					
-					//scheduledExtension.setAny(scheduled);
-					pointInPattern3.setExtensions(scheduledExtension );
-					stopsInPattern.getStopPointInPattern().add(pointInPattern3);
+					StopPointRefStructure spr = new StopPointRefStructure();
+					spr.setValue(stop.getId());
+					stopsInPattern.getStopPointInPattern().add(pointInPattern);
 				}
 			}
 			
@@ -544,11 +544,9 @@ public final class SiriSupportV2 {
 			routeDirectionStructure.setJourneyPatterns(patterns);
 			pattern.setStopsInPattern(stopsInPattern);
 			patterns.getJourneyPattern().add(pattern);
-			routeDirectionStructure.setDirectionRef(direction);
+			routeDirectionStructure.setDirectionRef(dirRefStructure);
 		}
-		
-		
-
+			
 		return true;
 	}
 

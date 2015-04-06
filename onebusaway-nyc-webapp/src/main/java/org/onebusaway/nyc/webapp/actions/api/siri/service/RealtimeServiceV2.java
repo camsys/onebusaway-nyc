@@ -1,14 +1,15 @@
-package org.onebusaway.nyc.presentation.service.realtime;
+package org.onebusaway.nyc.webapp.actions.api.siri.service;
 
 import java.util.List;
 import java.util.Map;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportV2.Filters;
-import org.onebusaway.nyc.presentation.model.DetailLevel;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializerV2;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializerV2;
+import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import uk.org.siri.siri_2.AnnotatedLineStructure;

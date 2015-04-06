@@ -1,27 +1,30 @@
-package org.onebusaway.nyc.presentation.model;
+package org.onebusaway.nyc.webapp.actions.api.siri.model;
 
 import java.util.List;
 
 import org.onebusaway.transit_data.model.StopBean;
 
-public class RouteDirection {
+public class RouteForDirection {
 
 	private String directionId;
+	
+	private String destination;
 
 	private String routeId;
 
 	private Boolean hasUpcomingScheduledService;
 	
-	private List<StopRouteDirection> stopRouteDirections;
+	private List<StopOnRoute> stops;
 
-	public RouteDirection(String routeId, String directionId,
+	public RouteForDirection(String routeId, String directionId,
 			Boolean hasUpcomingScheduledService) {
 		this.routeId = routeId;
 		this.directionId = directionId;
 		this.hasUpcomingScheduledService = hasUpcomingScheduledService;
+		this.setDestination(null);
 	}
 	
-	public RouteDirection(String routeId, String directionId){
+	public RouteForDirection(String routeId, String directionId){
 		this.routeId = routeId;
 		this.directionId = directionId;
 	}
@@ -51,12 +54,20 @@ public class RouteDirection {
 		this.hasUpcomingScheduledService = hasUpcomingScheduledService;
 	}
 
-	public List<StopRouteDirection> getStopRouteDirections() {
-		return stopRouteDirections;
+	public String getDestination() {
+		return destination;
 	}
 
-	public void setStopRouteDirections(List<StopRouteDirection> stopRouteDirections) {
-		this.stopRouteDirections = stopRouteDirections;
+	public void setDestination(String destination) {
+		this.destination = destination;
+	}
+
+	public List<StopOnRoute> getStops() {
+		return stops;
+	}
+
+	public void setStops(List<StopOnRoute> stops) {
+		this.stops = stops;
 	}
 
 }

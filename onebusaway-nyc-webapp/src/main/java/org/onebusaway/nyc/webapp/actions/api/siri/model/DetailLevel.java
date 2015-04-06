@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.presentation.model;
+package org.onebusaway.nyc.webapp.actions.api.siri.model;
 
 public enum DetailLevel {
 	MINIMUM(0), BASIC(1), NORMAL(2), CALLS(3), STOPS(4), FULL(5);

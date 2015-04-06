@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.actions.api.siri;
+package org.onebusaway.nyc.webapp.actions.api.siri.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
