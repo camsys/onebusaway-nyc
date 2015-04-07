@@ -36,8 +36,7 @@ public class MonitoringActionSupport {
 		GoogleAnalyticsApiHelper gaApiHelper = new GoogleAnalyticsApiHelper(
 				configService);
 
-		String googleAnalyticsSiteId = configService
-				.getConfigurationValueAsString("display.googleAnalyticsSiteId",
+		String googleAnalyticsSiteId = configService.getConfigurationValueAsString("display.googleAnalyticsSiteId",
 						null);
 
 		try {

@@ -97,10 +97,10 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 		
 		//get the detail level parameter or set it to default if not specified
 	    DetailLevel detailLevel;
-	    if(_request.getParameter("StopMonitoringDetailLevel") == null){
+	    if(_request.getParameter(STOP_MONITORING_DETAIL_LEVEL) == null){
 	    	detailLevel = DetailLevel.NORMAL;
 	    }else{
-	    	detailLevel = DetailLevel.valueOf(_request.getParameter(STOP_POINTS_DETAIL_LEVEL));
+	    	detailLevel = DetailLevel.valueOf(_request.getParameter(STOP_MONITORING_DETAIL_LEVEL).toUpperCase());
 	    }	
 	    
 		// User Parameters

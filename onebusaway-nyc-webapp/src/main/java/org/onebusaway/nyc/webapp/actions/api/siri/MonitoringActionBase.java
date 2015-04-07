@@ -28,6 +28,7 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	public static final String BOUNDING_BOX = "BoundingBox";
 	public static final String CIRCLE = "Circle";
 	public static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
+	public static final String STOP_MONITORING_DETAIL_LEVEL = "StopMonitoringDetailLevel";
 	public static final String UPCOMING_SCHEDULED_SERVICE = "hasUpcomingScheduledService";
 	public static final String MAX_ONWARD_CALLS = "MaximumNumberOfCallsOnwards";
 	public static final String MAX_STOP_VISITS = "MaximumStopVisits";

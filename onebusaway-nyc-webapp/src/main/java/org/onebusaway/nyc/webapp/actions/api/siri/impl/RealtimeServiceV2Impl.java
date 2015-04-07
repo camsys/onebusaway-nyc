@@ -639,6 +639,10 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					stopRouteDirection = stopRouteDirections.get(0);
 			}
 			
+			// Skip if No Route Directions Found
+			if(stopRouteDirection == null)
+				continue;
+			
 			AnnotatedStopPointStructure annotatedStopPoint = new AnnotatedStopPointStructure();
 			
 			boolean isValid = SiriSupportV2.fillAnnotatedStopPointStructure(annotatedStopPoint,
@@ -695,8 +699,11 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			Map<Filters, String> filters){
 
 		List<RouteDirection> directions = new ArrayList<RouteDirection>();
-	    
 	    StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
+	    
+	    // Filter Values
+	 	String directionIdFilter = filters.get(Filters.DIRECTION_REF);
+	 	String upcomingScheduledServiceFilter = filters.get(Filters.UPCOMING_SCHEDULED_SERVICE);
 	    
 	    // create stop ID->stop bean map
 	    Map<String, StopBean> stopIdToStopBeanMap = new HashMap<String, StopBean>();
@@ -709,9 +716,11 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	      for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
 	        NameBean name = stopGroupBean.getName();
 	        String type = name.getType();
+	        String directionId = stopGroupBean.getId();
 
-	        if (!type.equals("destination"))
-	          continue;
+	        // Destination and DirectionId Filter
+			if(!type.equals("destination") || !SiriSupportV2.passFilter(directionId, directionIdFilter))
+				continue;
 	        
 	        List<String> polylines = new ArrayList<String>();
 	        for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
@@ -719,15 +728,21 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	        }
 
 	        Boolean routeHasUpcomingScheduledService = 
-	            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
+	            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), directionId);
 
 	        // if there are buses on route, always have "scheduled service"
 	        Boolean routeHasVehiclesInService = 
-	      		  getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
+	      		  getVehiclesInServiceForRoute(routeBean.getId(), directionId, System.currentTimeMillis());
 
 	        if(routeHasVehiclesInService) {
 	        	routeHasUpcomingScheduledService = true;
 	        }
+			
+			String hasUpcomingScheduledServiceVal = String.valueOf(routeHasUpcomingScheduledService);
+
+			if(!SiriSupportV2.passFilter(hasUpcomingScheduledServiceVal,upcomingScheduledServiceFilter) 
+					|| !routeHasUpcomingScheduledService)
+				continue;
 	        
 	        // stops in this direction
 	        List<StopOnRoute> stopsOnRoute = null;

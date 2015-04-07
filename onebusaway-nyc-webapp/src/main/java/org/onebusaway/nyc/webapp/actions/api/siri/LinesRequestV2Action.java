@@ -86,7 +86,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		if (_request.getParameter(LINES_DETAIL_LEVEL) == null) {
 			detailLevel = DetailLevel.NORMAL;
 		} else {
-			detailLevel = DetailLevel.valueOf(_request.getParameter(LINES_DETAIL_LEVEL));
+			detailLevel = DetailLevel.valueOf(_request.getParameter(LINES_DETAIL_LEVEL).toUpperCase());
 		}
 
 		// User Parameters
