@@ -73,6 +73,11 @@
     	API rules.
      -->
     <rule>
+    	<condition type="parameter" name="version">2</condition>
+        <from>^/api/siri/([^.]*)\.(xml|json)$</from>
+        <to last="true">/api/siri/$1-v2.action?type=$2</to>
+    </rule> 
+    <rule>
         <from>^/api/siri/([^.]*)\.(xml|json)$</from>
         <to last="true">/api/siri/$1.action?type=$2</to>
     </rule>   

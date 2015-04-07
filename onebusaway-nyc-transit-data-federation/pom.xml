@@ -96,6 +96,12 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
         </dependency>
+        <!-- SIRI 2.0 -->
+		<dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-siri-api-v20</artifactId>
+            <version>${onebusaway.siri_2.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
