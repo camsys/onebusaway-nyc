@@ -284,9 +284,19 @@ OBA.Sidebar = function() {
 				
 	
 				// sidebar item
+				shortName = routeResult.shortName;
+				if (shortName == undefined || shortName == null || shortName == "null") {
+					shortName = "";
+				}
+				
+                longName = routeResult.longName;
+                if (longName == undefined || longName == null || longName == "null") {
+                        longName = "";
+                }
+
 				var titleBox = jQuery("<p></p>")
 								.addClass("name")
-								.text(routeResult.shortName + " " + routeResult.longName)
+								.text(shortName + " " + longName)
 								.css("border-bottom", "5px solid #" + routeResult.color);
 				
 				var descriptionBox = jQuery("<p></p>")

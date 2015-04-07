@@ -23,12 +23,15 @@ import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @ParentPackage("json-default")
 @Result(type="json", params={"callbackParameter", "callback", "root", "suggestions"})
 public class AutocompleteAction extends OneBusAwayNYCActionSupport {
 
+  private static Logger _log = LoggerFactory.getLogger(AutocompleteAction.class);
   private static final long serialVersionUID = 1L;
 
   @Autowired
@@ -52,7 +55,10 @@ public class AutocompleteAction extends OneBusAwayNYCActionSupport {
     if(_term == null || _term.isEmpty())
       return SUCCESS;
     
+    _log.debug("autocomplete has term=" + _term);
     suggestions = _nycTransitDataService.getSearchSuggestions(null, _term.toLowerCase());
+    
+    _log.debug("autocomplete pre sugguestions=" + suggestions);
     
     if (suggestions.size() == 0 && _term.length() > 2) {
     	List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(_term);

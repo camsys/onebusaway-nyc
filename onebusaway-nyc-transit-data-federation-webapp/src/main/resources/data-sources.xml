@@ -59,13 +59,12 @@
     <alias name="dataSource" alias="mutableDataSource" />
 
 <!-- GTFS RT sources -->
-<!--
     <bean id="mbta_avl" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
       <property name="tripUpdatesUrl" value="http://developer.mbta.com/lib/gtrtfs/Passages.pb" />
       <property name="vehiclePositionsUrl" value="http://developer.mbta.com/lib/gtrtfs/Vehicles.pb" />
       <property name="refreshInterval" value="60" />
     </bean>
--->
+<!-- 
 	<bean id="hamilton_avl"
 		class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
 		<property name="tripUpdatesUrl" value="http://localhost:8008/gtfs-realtime-hamilton/tripUpdates" />
@@ -77,6 +76,7 @@
 			</list>
 		</property>
 	</bean>
+	-->
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean">   
     </bean>
 	<!-- Input Queue Configuration -->
