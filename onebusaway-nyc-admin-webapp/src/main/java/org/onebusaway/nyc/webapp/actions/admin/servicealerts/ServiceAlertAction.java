@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.struts2.convention.annotation.InterceptorRef;
+import org.apache.struts2.convention.annotation.InterceptorRefs;
+import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.json.JSONException;
@@ -38,6 +41,8 @@ import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.ModelDriven;
 import com.thoughtworks.xstream.XStream;
 
+@ParentPackage("onebusaway-admin-webapp-default")
+@InterceptorRefs( {@InterceptorRef("onebusaway-webapp-stack")})
 @Results({
     @Result(type = "redirectAction", name = "submitSuccess", params = {
         "actionName", "service-alert", "id", "${id}", "parse", "true"}),
