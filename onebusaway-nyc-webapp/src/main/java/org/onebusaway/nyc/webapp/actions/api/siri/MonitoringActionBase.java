@@ -190,7 +190,7 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 		if(bounds != null){
 			Double distance = SphericalGeometryLibrary.distanceFaster(bounds.getMinLat(), bounds.getMinLon(), bounds.getMaxLat(), bounds.getMaxLon());
 			
-			if (distance != null && distance < maxDistance) {
+			if (distance != null && distance <= maxDistance) {
 				 return true;   
 			 }
 		}
