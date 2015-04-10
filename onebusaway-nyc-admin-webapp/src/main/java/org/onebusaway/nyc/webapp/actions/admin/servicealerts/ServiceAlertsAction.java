@@ -23,7 +23,7 @@ import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionSupport;
@@ -37,7 +37,7 @@ public class ServiceAlertsAction extends ActionSupport {
 
   private static final long serialVersionUID = 1L;
 
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _transitDataService;
 
   private String _agencyId;
 
@@ -46,7 +46,7 @@ public class ServiceAlertsAction extends ActionSupport {
   private List<ServiceAlertBean> _situations;
 
   @Autowired
-  public void setTransitDataService(TransitDataService transitDataService) {
+  public void setTransitDataService(NycTransitDataService transitDataService) {
     _transitDataService = transitDataService;
   }
 
@@ -87,4 +87,5 @@ public class ServiceAlertsAction extends ActionSupport {
 
     return "redirect";
   }
+  
 }

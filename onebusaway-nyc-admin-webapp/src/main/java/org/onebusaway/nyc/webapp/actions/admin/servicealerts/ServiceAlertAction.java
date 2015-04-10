@@ -34,7 +34,7 @@ import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBea
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
-import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionSupport;
@@ -54,7 +54,7 @@ public class ServiceAlertAction extends ActionSupport implements
 
   private static final long serialVersionUID = 1L;
 
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _transitDataService;
 
   private ServiceAlertBean _model = new ServiceAlertBean();
 
@@ -63,7 +63,7 @@ public class ServiceAlertAction extends ActionSupport implements
   private String _raw;
 
   @Autowired
-  public void setTransitDataService(TransitDataService transitDataService) {
+  public void setTransitDataService(NycTransitDataService transitDataService) {
     _transitDataService = transitDataService;
   }
 
