@@ -28,6 +28,8 @@
 </head>
 <body>
 
+<s:set name="theme" value="'xhtml'" scope="page" />
+
 <p><s:a namespace="/admin" action="index">Back to the Console</s:a></p>
 
 <s:if test="agencyId == null">

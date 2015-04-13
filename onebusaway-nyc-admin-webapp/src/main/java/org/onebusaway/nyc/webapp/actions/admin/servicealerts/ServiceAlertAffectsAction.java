@@ -23,7 +23,7 @@ import org.apache.struts2.convention.annotation.Results;
 import org.json.JSONException;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionSupport;
@@ -36,7 +36,7 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
 
   private static final long serialVersionUID = 1L;
 
-  private NycTransitDataService _transitDataService;
+  private TransitDataService _transitDataService;
 
   private SituationAffectsBean _model = new SituationAffectsBean();
 
@@ -45,7 +45,7 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
   private int _index = -1;
 
   @Autowired
-  public void setTransitDataService(NycTransitDataService transitDataService) {
+  public void setTransitDataService(TransitDataService transitDataService) {
     _transitDataService = transitDataService;
   }
 
