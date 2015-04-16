@@ -28,7 +28,9 @@
 </head>
 <body>
 
-<p><s:a namespace="/admin" action="index">Back to the Console</s:a></p>
+<s:set name="theme" value="'xhtml'" scope="page" />
+
+<p><s:a namespace="/admin" action="index">Back To Welcome</s:a></p>
 
 <s:if test="agencyId == null">
     <h2>Pick an agency:</h2>

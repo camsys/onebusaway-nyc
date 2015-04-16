@@ -26,6 +26,8 @@
 </head>
 <body>
 
+<s:set name="theme" value="'xhtml'" scope="page" />
+
 <s:if test="agencyId != null">
 <s:url var="url" action="service-alerts!agency">
   <s:param name="agencyId" value="agencyId"/>
@@ -36,7 +38,7 @@
 <p><s:a action="service-alerts">Back to Service Alerts</s:a></p>
 </s:else>
 
-<s:form action="service-alert!submit">
+<s:form action="service-alert!submit" theme="xhtml">
 <s:textfield label="Summary" name="summary" value="%{summary}"/>
 <s:textarea label="Description" name="description" value="%{description}" cols="80" rows="5"/>
 <s:select label="Reason" name="reason" headerKey="null" headerValue="Select Reason" list="reasonValues" value="%{reason}"/>
@@ -53,7 +55,7 @@
 </s:form>
 
 <s:iterator value="allAffects" status="it">
-  <s:form action="service-alert-affects!update">
+  <s:form action="service-alert-affects!update" theme="xhtml">
     <s:textfield label="Agency Id" name="agencyId" value="%{agencyId}"/>
     <s:textfield label="Route Id" name="routeId" value="%{routeId}"/>
     <s:textfield label="Direction Id" name="directionId" value="%{directionId}"/>

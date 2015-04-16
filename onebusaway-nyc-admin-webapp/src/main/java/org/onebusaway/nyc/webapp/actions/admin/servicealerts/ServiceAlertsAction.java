@@ -24,6 +24,8 @@ import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionSupport;
@@ -36,6 +38,7 @@ import com.opensymphony.xwork2.validator.annotations.Validations;
 public class ServiceAlertsAction extends ActionSupport {
 
   private static final long serialVersionUID = 1L;
+  //private static Logger _log = LoggerFactory.getLogger(ServiceAlertsAction.class);
 
   private TransitDataService _transitDataService;
 
@@ -69,6 +72,7 @@ public class ServiceAlertsAction extends ActionSupport {
   @SkipValidation
   @Override
   public String execute() {
+    //_log.debug("Starting execute()");
     _agencies = _transitDataService.getAgenciesWithCoverage();
     return SUCCESS;
   }
@@ -87,4 +91,5 @@ public class ServiceAlertsAction extends ActionSupport {
 
     return "redirect";
   }
+  
 }
