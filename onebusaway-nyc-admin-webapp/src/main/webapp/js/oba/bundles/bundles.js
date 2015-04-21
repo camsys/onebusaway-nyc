@@ -158,6 +158,19 @@ jQuery(function() {
 	// hookup ajax call to select
 	jQuery("#directoryButton").click(onSelectClick);
 	
+	// upload bundle source data for selected agency
+	jQuery("#uploadSelectedAgenciesButton").click(onUploadSelectedAgenciesClick);
+	
+	// add another row to the list of agencies and their source data
+	jQuery("#addAnotherAgencyButton").click(onAddAnotherAgencyClick);
+	
+	// toggle agency row as selected when checkbox is clicked
+	//jQuery("#agency_data :checkbox").change(onSelectAgencyChange);
+	jQuery("#agency_data").on("change", "tr :checkbox", onSelectAgencyChange);
+	
+	// remove selected agencies
+	jQuery("#removeSelectedAgenciesButton").click(onRemoveSelectedAgenciesClick);
+
 	//toggle advanced option contents
 	jQuery("#createDirectory #advancedOptions #expand").bind({
 			'click' : toggleAdvancedOptions	});
@@ -288,11 +301,73 @@ function onSelectClick() {
 				}
 			},
 			error: function(request) {
-				alert("There was an error processing your request. Please try again.");
+			    alert("There was an error processing your request. Please try again.");
 			}
 		});
 }
 
+function onUploadSelectedAgenciesClick() {
+	var bundleDir = jQuery("#createDirectory #directoryName").val();
+	console.log("in onUploadSelectedAgenciesClick");
+	$('#agency_data .agencySelected').each(function() {
+		$this = $(this)
+		var agencyId = $(this).find('.agencyId').val();
+		var agencyDataSourceType = $(this).find('.agencyDataSourceType').val();
+		var agencyProtocol = $(this).find('.agencyProtocol').val();
+		var agencyDataSource = $(this).find('.agencyDataSource').val();
+		console.log("next agency: " + agencyId + ", type: " + agencyDataSourceType
+			+ ", protocol: " + agencyProtocol
+			+ ", data source: " + agencyDataSource);
+		
+		var actionName = "uploadSourceData";	
+		jQuery.ajax({
+				url: "manage-bundles!" + actionName + ".action?ts=" + new Date().getTime(),
+				type: "GET",
+				data: {
+					"directoryName" : bundleDir,
+					"agencyId" : agencyId,
+					"agencyDataSourceType" : agencyDataSourceType,
+					"agencyProtocol" : agencyProtocol,
+					"agencyDataSource" : agencyDataSource
+				},
+				async: false,
+				success: function(response) {
+				},
+				error: function(request) {
+				    alert("There was an error processing your request. Please try again.");
+				}
+			});
+		
+	});
+}
+
+function onAddAnotherAgencyClick() {
+	var new_row = '<tr> \
+		<td><input type="checkbox" /></td> \
+		<td><input type="text" class="agencyId"/></td> \
+		<td><select class="agencyDataSourceType"> \
+		    <option value="gtfs">gtfs</option> \
+		    <option value="aux">aux</option> \
+		</select></td> \
+		<td><select class="agencyProtocol"> \
+		    <option value="http">http</option> \
+		    <option value="ftp">ftp</option> \
+		    <option value="file">file</option> \
+		</select></td> \
+		<td><input type="text" class="agencyDataSource"/></td> \
+		</tr>';
+	$('#agency_data').append(new_row);
+}
+
+function onSelectAgencyChange() {
+	console.log("in onSelectAgencyChange, v1");
+	$(this).closest('tr').toggleClass('agencySelected');
+}
+
+function onRemoveSelectedAgenciesClick() {
+	console.log("in onRemoveSelectedAgenciesClick, v2");
+	$('#agency_data .agencySelected').remove();
+}
 
 function enableContinueButton(continueButton) {
 	jQuery(continueButton).removeAttr("disabled").css("color", "#000");

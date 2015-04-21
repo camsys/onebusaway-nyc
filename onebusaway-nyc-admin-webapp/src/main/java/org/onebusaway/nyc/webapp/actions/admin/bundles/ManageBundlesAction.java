@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +18,7 @@ import java.util.TreeSet;
 
 import javax.servlet.ServletContext;
 
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
@@ -50,6 +53,8 @@ import com.google.gson.JsonParser;
   params={"actionName", "manage-bundles"}),
     @Result(name="selectDirectory", type="json", 
   params={"root", "directoryStatus"}),
+    @Result(name="uploadStatus", type="json",
+  params={"root", "directoryStatus"}),
     @Result(name="validationResponse", type="json", 
   params={"root", "bundleResponse"}),
     @Result(name="buildResponse", type="json", 
@@ -79,6 +84,10 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	private String directoryName; // holds the value entered in the text box
 	private String bundleBuildName; // holds the build name selected in the Compare tab
 	private String bundleName; // what to call the bundle, entered in the text box
+	private String agencyId; // agencyId from the Upload tab
+	private String agencyDataSourceType; // 'gtfs' or 'aux', from the Upload tab
+	private String agencyProtocol;  // 'http', 'ftp', or 'file', from the Upload tab
+	private String agencyDataSource; // URL for the source data file, from the Upload tab
 	private boolean productionTarget;
 	private String comments;
 	private FileService fileService;
@@ -194,6 +203,64 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	  return "fileList";
 	}
 	
+	/**
+	 * Uploads the bundle source data for the specified agency
+	 */
+	public String uploadSourceData() {
+	  _log.info("uploadSourceData called"); 
+	  _log.info("agencyId: " + agencyId + ", agencyDataSourceType: " + agencyDataSourceType + ", agencyProtocol: " + agencyProtocol 
+	      + ", agencyDataSource: " + agencyDataSource);
+	  _log.info("gtfs path: " + fileService.getGtfsPath());
+	  _log.info("aux path: " + fileService.getAuxPath());
+	  _log.info("build path: " + fileService.getBuildPath());
+	   _log.info("directory name: " + directoryName);
+	   _log.info("base path: " + fileService.getBucketName());
+	   // Build URL/File path
+	   String src = agencyDataSource;
+	   if (agencyProtocol.equals("http")) {
+	     if (src.startsWith("//")) {
+	         src = "http:" + src;
+	     } else if (src.startsWith("/")) {
+	          src = "http:/" + src;
+       } else if (!src.startsWith("http")) {
+           src = "http://" + src;
+       }
+     } else if (agencyProtocol.equals("ftp")) {
+       if (src.startsWith("//")) {
+         src = "ftp:" + src;
+       } else if (src.startsWith("/")) {
+            src = "ftp:/" + src;
+       } else if (!src.startsWith("http")) {
+           src = "ftp://" + src;
+       }      
+     }
+     _log.info("Source: " + src);
+     
+	   // Build target path
+	   String target = fileService.getBucketName() + "/" + directoryName + "/";
+	   if (agencyDataSourceType.equals("gtfs")) {
+	       target += fileService.getGtfsPath();
+	   } else {
+	     target += fileService.getAuxPath();
+	   }
+	   target += "/" + agencyId;
+	   target += src.substring(src.lastIndexOf('/'));
+     _log.info("Target: " + target);
+	   
+	   // Copy file
+     if (agencyProtocol.equals("http") || agencyProtocol.equals("ftp")) {
+  	   try {
+    	   URL website = new URL(src);
+    	   File targetPath = new File(target);
+    	   targetPath.mkdirs();
+    	   Files.copy(website.openStream(), targetPath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+  	   } catch (Exception e) {
+  	     _log.info(e.getMessage());
+  	   }
+    } 
+	  return "uploadStatus";
+	}
+
 	public String existingBuildList() {
 		_log.info("existingBuildList called for path=" + fileService.getBucketName()+"/"+ diffBundleName +"/"+fileService.getBuildPath()); 
 		File builds = new File(fileService.getBucketName()+"/"+ diffBundleName +"/"+fileService.getBuildPath());
@@ -409,6 +476,39 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	public String getBundleName() {
 		return bundleName;
 	}
+	
+	public void setAgencyId(String agencyId) {
+	  this.agencyId = agencyId;
+	}
+	
+	public String getAgencyId() {
+		return agencyId;
+	}
+		
+	public void setAgencyDataSourceType(String agencyDataSourceType) {
+	  this.agencyDataSourceType = agencyDataSourceType;
+	}
+	
+	public String getAgencyDataSourceType() {
+		return agencyDataSourceType;
+	}
+		
+	public void setAgencyProtocol(String agencyProtocol) {
+	  this.agencyProtocol = agencyProtocol;
+	}
+	
+	public String getAgencyProtocol() {
+		return agencyProtocol;
+	}
+		
+	public void setAgencyDataSource(String agencyDataSource) {
+	  this.agencyDataSource = agencyDataSource;
+	}
+	
+	public String getAgencyDataSource() {
+		return agencyDataSource;
+	}
+		
 	
 	public String getDeployedBundle() {
 	   String apiHostname = configService.getConfigurationValueAsString(
