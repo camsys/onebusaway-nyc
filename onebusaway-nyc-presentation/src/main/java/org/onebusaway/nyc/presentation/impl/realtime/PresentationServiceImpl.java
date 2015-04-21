@@ -21,7 +21,14 @@ public class PresentationServiceImpl implements PresentationService {
   
 
   private static Logger _log = LoggerFactory.getLogger(PresentationServiceImpl.class);
-
+  
+  private static final String APPROACHING_TEXT = "approaching";
+  private static final String ONE_STOP_WORD = "stop";
+  private static final String MULTIPLE_STOPS_WORD = "stops";
+  private static final String ONE_MILE_WORD = "mile";
+  private static final String MULTIPLE_MILES_WORD = "miles";
+  private static final String AWAY_WORD = "away";
+  
   @Autowired
   private ConfigurationService _configurationService;
 
@@ -95,14 +102,31 @@ public class PresentationServiceImpl implements PresentationService {
   
   @Override
   public String getPresentableDistance(SiriDistanceExtension distances) {
-    return getPresentableDistance(distances, "approaching", "stop", "stops", "mile", "miles", "away");
+	  return getPresentableDistance(distances, APPROACHING_TEXT, ONE_STOP_WORD, MULTIPLE_STOPS_WORD, 
+    		ONE_MILE_WORD, MULTIPLE_MILES_WORD, AWAY_WORD);
+  }
+  
+  @Override
+  public String getPresentableDistance(Double distanceFromStop, Integer numberOfStopsAway) {
+	  return getPresentableDistance(distanceFromStop, numberOfStopsAway, APPROACHING_TEXT, ONE_STOP_WORD, 
+	    		MULTIPLE_STOPS_WORD, ONE_MILE_WORD,	MULTIPLE_MILES_WORD, AWAY_WORD);
   }
   
   @Override
   public String getPresentableDistance(SiriDistanceExtension distances, String approachingText, 
       String oneStopWord, String multipleStopsWord, String oneMileWord, String multipleMilesWord, String awayWord) {
-
-    String r = "";
+	  
+	  Double distanceFromStop = distances.getDistanceFromCall();
+	  Integer numberOfStopsAway = distances.getStopsFromCall();
+	  
+	  return getPresentableDistance(distanceFromStop, numberOfStopsAway, approachingText, oneStopWord, 
+			  multipleStopsWord, oneMileWord, multipleMilesWord, awayWord);
+  }
+    
+  @Override
+  public String getPresentableDistance(Double distanceFromStop, Integer numberOfStopsAway, String approachingText, 
+	      String oneStopWord, String multipleStopsWord, String oneMileWord, String multipleMilesWord, String awayWord){
+  	String r = "";
 
 	int atStopThresholdInFeet = 
 			  _configurationService.getConfigurationValueAsInteger("display.atStopThresholdInFeet", 100);    
@@ -120,7 +144,7 @@ public class PresentationServiceImpl implements PresentationService {
 			  _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsMaximumThresholdInFeet", 2640);
     
     // meters->feet
-    double feetAway = distances.getDistanceFromCall() * 3.2808399;
+    double feetAway = distanceFromStop * 3.2808399;
 
     if(feetAway < atStopThresholdInFeet) {
       r = "at " + oneStopWord;
@@ -130,15 +154,15 @@ public class PresentationServiceImpl implements PresentationService {
     
     } else {
       if(feetAway <= distanceAsStopsMaximumThresholdInFeet && 
-          (distances.getStopsFromCall() <= distanceAsStopsThresholdInStops 
+          (numberOfStopsAway <= distanceAsStopsThresholdInStops 
           || feetAway <= distanceAsStopsThresholdInFeet)) {
         
-        if(distances.getStopsFromCall() == 0)
+        if(numberOfStopsAway == 0)
           r = "< 1 " + oneStopWord + " " + awayWord;
         else
-          r = distances.getStopsFromCall() == 1
+          r = numberOfStopsAway == 1
           ? "1 " + oneStopWord + " " + awayWord
-              : distances.getStopsFromCall() + " " + multipleStopsWord + " " + awayWord;
+              : numberOfStopsAway + " " + multipleStopsWord + " " + awayWord;
 
       } else {
         double milesAway = (float)feetAway / 5280;

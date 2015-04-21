@@ -57,17 +57,6 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String PREV_TRIP = "prevTrip";
-
-	/*@Autowired
-	public NycTransitDataService _nycTransitDataService;*/
-
-	@Autowired
-	private RealtimeServiceV2 _realtimeService;
-
-	@Autowired
-	private ConfigurationService _configurationService;
-
 	private Siri _response;
 
 	private ServiceAlertsHelperV2 _serviceAlertsHelper = new ServiceAlertsHelperV2();
@@ -104,20 +93,16 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 	    }	
 	    
 		// User Parameters
-		String boundingBox = _request.getParameter(BOUNDING_BOX);
-		String circle = _request.getParameter(CIRCLE);
 		String lineRef = _request.getParameter(LINE_REF);
 		String monitoringRef = _request.getParameter(MONITORING_REF);
 		String directionId = _request.getParameter(DIRECTION_REF);
 		String agencyId = _request.getParameter(OPERATOR_REF);
-		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
 		String maxOnwardCallsParam = _request.getParameter(MAX_ONWARD_CALLS);
 		String maxStopVisitsParam = _request.getParameter(MAX_STOP_VISITS);
 		String minStopVisitsParam = _request.getParameter(MIN_STOP_VISITS);
 		
 		// Error Strings
 		String routeIdsErrorString = "";
-		String boundsErrorString = "";
 		String stopIdsErrorString = "";
 
 		/* 
@@ -239,7 +224,7 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 
 		Exception error = null;
 		if (stopIds.size() == 0
-				|| (_request.getParameter("LineRef") != null && routeIds.size() == 0)) {
+				|| (_request.getParameter(LINE_REF) != null && routeIds.size() == 0)) {
 			String errorString = (stopIdsErrorString + " " + routeIdsErrorString)
 					.trim();
 			error = new Exception(errorString);

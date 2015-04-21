@@ -398,10 +398,6 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			String routeId = AgencyAndId.convertToString(aid);
 			
 			RouteBean routeBean = _nycTransitDataService.getRouteForId(routeId);
-		
-			//StopsForRouteBean stopsForLineRef = _nycTransitDataService.getStopsForRoute(routeId);
-			
-	    	//processAnnotatedLines(stopsForLineRef, annotatedLines, filters, detailLevel, currentTime);
 	    	
 	    	AnnotatedLineStructure annotatedLineStructure = new AnnotatedLineStructure();
 

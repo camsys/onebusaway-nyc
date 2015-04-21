@@ -292,7 +292,7 @@ public final class SiriSupportV2 {
 		
 		
 		// detail level - basic
-		if (detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
+		if (detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
 			monitoredVehicleJourney.setFramedVehicleJourneyRef(framedJourney);
 			monitoredVehicleJourney.setDirectionRef(directionRef);
 			monitoredVehicleJourney.setOperatorRef(operatorRef);
@@ -303,7 +303,7 @@ public final class SiriSupportV2 {
 		}
 		
 		// detail level - normal
-		if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
+		if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
 			for (int i = 0; i < blockTrips.size(); i++) {
 				BlockTripBean blockTrip = blockTrips.get(i);
 
@@ -328,7 +328,7 @@ public final class SiriSupportV2 {
 		}	
 		
 		// onward calls
-		if (detailLevel.equals(DetailLevel.CALLS)){
+		if (detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
 			if (!presentationService.isOnDetour(currentVehicleTripStatus))
 				fillOnwardCalls(monitoredVehicleJourney, blockInstance,
 						framedJourneyTripBean, currentVehicleTripStatus,
@@ -414,7 +414,6 @@ public final class SiriSupportV2 {
 		if (detailLevel.equals(DetailLevel.NORMAL)|| detailLevel.equals(DetailLevel.FULL)){
 			annotatedStopPoint.setLocation(location);
 			annotatedStopPoint.setLines(lines);
-			// TODO - LCARABALLO Always true?
 			annotatedStopPoint.setMonitored(true);
 		}
 
@@ -852,9 +851,19 @@ public final class SiriSupportV2 {
 								.getTimepointPredictedTime()));
 			}
 		}
-
+		
+		// Distances
+		NaturalLanguageStringStructure presentableDistance = new NaturalLanguageStringStructure();
+		presentableDistance.setValue(presentationService
+				.getPresentableDistance(distanceOfVehicleFromCall, index));
+		
+		onwardCallStructure.setNumberOfStopsAway(BigInteger.valueOf(index));
+		onwardCallStructure.setDistanceFromStop(new BigDecimal(distanceOfVehicleFromCall).toBigInteger());
+		onwardCallStructure.setArrivalProximityText(presentableDistance);
+		
 		// siri extensions
-		SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
+		// TODO - LCARABALLO - Distance Along Route Might Still need Extension
+		/*SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
 		ExtensionsStructure distancesExtensions = new ExtensionsStructure();
 		SiriDistanceExtension distances = new SiriDistanceExtension();
 
@@ -862,17 +871,12 @@ public final class SiriSupportV2 {
 		df.setMaximumFractionDigits(2);
 		df.setGroupingUsed(false);
 
-		distances.setStopsFromCall(index);
 		distances.setCallDistanceAlongRoute(Double.valueOf(df
 				.format(distanceOfCallAlongTrip)));
-		distances.setDistanceFromCall(Double.valueOf(df
-				.format(distanceOfVehicleFromCall)));
-		distances.setPresentableDistance(presentationService
-				.getPresentableDistance(distances));
 
 		wrapper.setDistances(distances);
 		distancesExtensions.setAny(wrapper);
-		onwardCallStructure.setExtensions(distancesExtensions);
+		onwardCallStructure.setExtensions(distancesExtensions);*/
 
 		return onwardCallStructure;
 	}
@@ -918,10 +922,9 @@ public final class SiriSupportV2 {
 
 		}
 		
-		
-		
 		// siri extensions
-		SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
+		// TODO - LCARABALLO - Distance Along Route Might Still need Extension
+		/*SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
 		ExtensionsStructure distancesExtensions = new ExtensionsStructure();
 		SiriDistanceExtension distances = new SiriDistanceExtension();
 
@@ -929,20 +932,22 @@ public final class SiriSupportV2 {
 		df.setMaximumFractionDigits(2);
 		df.setGroupingUsed(false);
 
-		distances.setStopsFromCall(index);
 		distances.setCallDistanceAlongRoute(Double.valueOf(df
 				.format(distanceOfCallAlongTrip)));
-		distances.setDistanceFromCall(Double.valueOf(df
-				.format(distanceOfVehicleFromCall)));
-		distances.setPresentableDistance(presentationService
-				.getPresentableDistance(distances));
-
+	
 		wrapper.setDistances(distances);
 		distancesExtensions.setAny(wrapper);
-		monitoredCallStructure.setExtensions(distancesExtensions);
+		monitoredCallStructure.setExtensions(distancesExtensions);*/
+		
+		// distances
+		NaturalLanguageStringStructure presentableDistance = new NaturalLanguageStringStructure();
+		presentableDistance.setValue(presentationService
+				.getPresentableDistance(distanceOfVehicleFromCall, index));
 		
 		monitoredCallStructure.setNumberOfStopsAway(BigInteger.valueOf(index));
 		monitoredCallStructure.setDistanceFromStop(new BigDecimal(distanceOfVehicleFromCall).toBigInteger());
+		monitoredCallStructure.setArrivalProximityText(presentableDistance);
+		
 		
 		// basic 
 		if (detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){

@@ -42,16 +42,7 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 	private static final long serialVersionUID = 1L;
 
 	private static final double MAX_BOUNDS_RADIUS = 500;
-	private static final String LINE_REF = "LineRef";
-	private static final String DIRECTION_REF = "DirectionRef";
-	private static final String OPERATOR_REF = "Operator";
-	private static final String BOUNDING_BOX = "BoundingBox";
-	private static final String CIRCLE = "Circle";
 	private static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
-	private static final String UPCOMING_SCHEDULED_SERVICE = "hasUpcomingScheduledService";
-
-	@Autowired
-	private ConfigurationService _configurationService;
 
 	private Siri _response;
 
