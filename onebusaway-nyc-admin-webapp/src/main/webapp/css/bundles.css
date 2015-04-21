@@ -339,6 +339,26 @@
   font-size : 12px;
 }
 
+#uploadFiles #agency_data {
+  	border-collapse: collapse;
+}
+
+#uploadFiles #agency_data th, td {
+  border: 1px solid black;
+}
+
+#uploadFiles #agency_data th,td {
+  padding: 5px 10px;
+}
+
+#uploadFiles #agency_data .agencyId {
+  width: 50px;
+}
+
+#uploadFiles #agency_data .agencyDataSource {
+  width: 400px;
+}
+
 #prevalidateInputs {
   padding-top: 20px;
 }
