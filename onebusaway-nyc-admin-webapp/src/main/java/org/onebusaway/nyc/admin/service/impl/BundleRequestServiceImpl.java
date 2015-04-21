@@ -324,7 +324,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   }
 
   private class BuildThread implements Runnable {
-    private static final int MAX_COUNT = 3600; // 5 hours at 5 second increments
+    private static final int MAX_COUNT = 360; // 30 minutes at 5 second increments
     private static final int MAX_PING_COUNT = 60; // 5 minutes
     private static final int MAX_ERRORS = 20;
     private BundleBuildRequest _request;
