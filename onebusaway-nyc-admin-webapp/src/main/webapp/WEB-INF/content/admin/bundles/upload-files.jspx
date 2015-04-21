@@ -20,24 +20,45 @@
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
+<!-- <s:set name="theme" value="'xhtml'" scope="page" /> -->
 		<div class="tabHeader">
 			<label class="headerLabel">Upload Files</label>
 		</div>
 		<div id="uploadFiles">
-			<div id="instruction">
-				<p><s:text name="upload-files.instruction"/></p>
+			<div>
+				<input type="button" id="uploadSelectedAgenciesButton" value="Upload Selected Agencies"/>
+				<input type="button" id="addAnotherAgencyButton" value="Add Another Agency"/>
+				<input type="button" id="removeSelectedAgenciesButton" value="Remove Selected Agencies"/>
 			</div>
-			<div id="s3_details">
-				<label class="adminLabel"><s:text name="upload-files.root_location" /></label>
-				<label id="s3_location"><!-- For IE --><s:property value="" /></label>
-			</div>
-			<div id="gtfs_details">
-				<label class="adminLabel"><s:text name="upload-files.gtfs_location" /></label>
-				<label id="gtfs_location"><!-- For IE --><s:property value="" /></label>
-			</div>
-			<div id="stif_details">
-				<label class="adminLabel"><s:text name="upload-files.aux_location" /></label>
-				<label id="stif_location"><!-- For IE --><s:property value="" /></label>
+			<br/>
+			<div>
+				<table id="agency_data">
+					<tr>
+						<th><input type="checkbox"/></th>
+						<th>Agency</th>
+						<th>Type</th>
+						<th>Protocol</th>
+						<th class="agencyDataSource">URL/File</th>
+					</tr>
+					<tr>
+						<td><input type="checkbox" /></td>
+						<td><input type="text" class="agencyId" /></td>
+						<td>
+							<select class="agencyDataSourceType">
+								<option value="gtfs">gtfs</option>
+								<option value="aux">aux</option>
+							</select>
+						</td>
+						<td>
+							<select class="agencyProtocol">
+								<option value="http">http</option>
+								<option value="ftp">ftp</option>
+								<option value="file">file</option>
+							</select>
+						</td>
+						<td><input type="text" class="agencyDataSource"/></td>
+					</tr>
+				</table>
 			</div>
 			<div class="submitForm">
 				<fieldset>
