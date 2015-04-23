@@ -356,7 +356,16 @@
 }
 
 #uploadFiles #agency_data .agencyDataSource {
-  width: 400px;
+  width: 450px;
+}
+
+#uploadFiles #agency_data .agencyCheckboxUploadSuccess {
+  color: white;
+  background-color: green;
+}
+
+#uploadFiles #agency_data .agencyUploadSuccess {
+  color: green;
 }
 
 #prevalidateInputs {
