@@ -225,7 +225,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	         src = "http:" + src;
 	     } else if (src.startsWith("/")) {
 	          src = "http:/" + src;
-       } else if (!src.startsWith("http")) {
+       } else if (!src.toLowerCase().startsWith("http")) {
            src = "http://" + src;
        }
      } else if (agencyProtocol.equals("ftp")) {
@@ -233,7 +233,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
          src = "ftp:" + src;
        } else if (src.startsWith("/")) {
             src = "ftp:/" + src;
-       } else if (!src.startsWith("http")) {
+       } else if (!src.toLowerCase().startsWith("ftp")) {
            src = "ftp://" + src;
        }      
      }

@@ -388,7 +388,7 @@ function onUploadSelectedAgenciesClick() {
 
 function onAddAnotherAgencyClick() {
 	var new_row = '<tr> \
-		<td><input type="checkbox" /></td> \
+		<td><div><input type="checkbox" /></div></td> \
 		<td><input type="text" class="agencyId"/></td> \
 		<td><select class="agencyDataSourceType"> \
 		    <option value="gtfs">gtfs</option> \
@@ -406,7 +406,27 @@ function onAddAnotherAgencyClick() {
 
 function onSelectAgencyChange() {
 	console.log("in onSelectAgencyChange, v1");
-	$(this).closest('tr').toggleClass('agencySelected');
+	console.log("parent: " + $(this).parent().get(0).tagName);
+	$this = $(this);
+	if ($this.parent().is("th")) {	// For the checkbox in the header, turn all the rest on/off
+		if ($this.is(":checked")) {
+			$this.closest("table").find("tr td :checkbox").each(function() {
+				$(this).prop('checked', true);
+				$(this).closest("tr").addClass("agencySelected");
+			});
+		} else {
+			$this.closest("table").find("tr td :checkbox").each(function() {
+				$(this).prop('checked', false);
+				$(this).closest("tr").removeClass("agencySelected");
+				$(this).closest('tr').find("div").removeClass('agencyCheckboxUploadSuccess');
+				$(this).closest('tr').find(".agencyDataSource").removeClass('agencyUploadSuccess');
+			});
+		}
+	} else {		// For toggling a single checkbox
+		$this.closest('tr').toggleClass('agencySelected');
+		$this.closest('tr').find("div").removeClass('agencyCheckboxUploadSuccess');
+		$this.closest('tr').find(".agencyDataSource").removeClass('agencyUploadSuccess');
+	}
 }
 
 function onAgencyProtocolChange() {
