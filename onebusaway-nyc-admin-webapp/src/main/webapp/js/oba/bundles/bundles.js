@@ -168,6 +168,9 @@ jQuery(function() {
 	//jQuery("#agency_data :checkbox").change(onSelectAgencyChange);
 	jQuery("#agency_data").on("change", "tr :checkbox", onSelectAgencyChange);
 	
+	// change input type to 'file' if protocol changes to 'file'
+	jQuery("#agency_data").on("change", "tr .agencyProtocol", onAgencyProtocolChange);
+	
 	// remove selected agencies
 	jQuery("#removeSelectedAgenciesButton").click(onRemoveSelectedAgenciesClick);
 
@@ -311,16 +314,22 @@ function onUploadSelectedAgenciesClick() {
 	console.log("in onUploadSelectedAgenciesClick");
 	$('#agency_data .agencySelected').each(function() {
 		$this = $(this)
+		console.log("getting agency values");
 		var agencyId = $(this).find('.agencyId').val();
 		var agencyDataSourceType = $(this).find('.agencyDataSourceType').val();
 		var agencyProtocol = $(this).find('.agencyProtocol').val();
 		var agencyDataSource = $(this).find('.agencyDataSource').val();
+		if (agencyProtocol == "file") {
+			var agencyDataFile = $(this).find(':file')[0].files[0];
+			//var file = $(this).find('.agencyDataSource').files[0];
+			//console.log("file name: " + file.name);
+		}
 		console.log("next agency: " + agencyId + ", type: " + agencyDataSourceType
 			+ ", protocol: " + agencyProtocol
 			+ ", data source: " + agencyDataSource);
-		
-		var actionName = "uploadSourceData";	
-		jQuery.ajax({
+		if (agencyProtocol != "file") {
+			var actionName = "uploadSourceData";	
+			jQuery.ajax({
 				url: "manage-bundles!" + actionName + ".action?ts=" + new Date().getTime(),
 				type: "GET",
 				data: {
@@ -332,18 +341,54 @@ function onUploadSelectedAgenciesClick() {
 				},
 				async: false,
 				success: function(response) {
+					console.log("Successfully uploaded " + agencyDataSource);
+					$this.find("div").addClass('agencyCheckboxUploadSuccess');
+					$this.find(".agencyDataSource").addClass('agencyUploadSuccess');
 				},
 				error: function(request) {
+					console.log("Error uploadeding " + agencyDataSource);
 				    alert("There was an error processing your request. Please try again.");
 				}
 			});
+		} else {
+			console.log("about to call manage-bundles!uploadSourceFile");
+			var files = agencyDataFile;
+			//var agencyFile = agencyDataFile.files[0];
+			console.log("file name is: " + agencyDataFile.name);
+			var formData = new FormData();
+			formData.append("ts", new Date().getTime());
+			formData.append("directoryName", bundleDir);
+			formData.append("agencyId", agencyId);
+			formData.append("agencyDataSourceType", agencyDataSourceType);
+			formData.append("agencySourceFile", agencyDataFile);
+			var actionName = "uploadSourceFile";
+			jQuery.ajax({
+				url: "manage-bundles!" + actionName + ".action",
+				type: "POST",
+				data: formData,
+				cache: false,
+				processData: false,
+				contentType: false, 
+				async: false,
+				success: function(response) {
+					console.log("Successfully uploaded " + agencyDataFile.name);
+					$this.find("div").addClass('agencyCheckboxUploadSuccess');
+					$this.find(".agencyDataSource").addClass('agencyUploadSuccess');
+				},
+				error: function(request) {
+					console.log("Error uploadeding " + agencyDataFile.name);
+				    alert("There was an error processing your request. Please try again.");
+				}
+			});
+			
+		}
 		
 	});
 }
 
 function onAddAnotherAgencyClick() {
 	var new_row = '<tr> \
-		<td><input type="checkbox" /></td> \
+		<td><div><input type="checkbox" /></div></td> \
 		<td><input type="text" class="agencyId"/></td> \
 		<td><select class="agencyDataSourceType"> \
 		    <option value="gtfs">gtfs</option> \
@@ -361,7 +406,47 @@ function onAddAnotherAgencyClick() {
 
 function onSelectAgencyChange() {
 	console.log("in onSelectAgencyChange, v1");
-	$(this).closest('tr').toggleClass('agencySelected');
+	console.log("parent: " + $(this).parent().get(0).tagName);
+	$this = $(this);
+	if ($this.parent().is("th")) {	// For the checkbox in the header, turn all the rest on/off
+		if ($this.is(":checked")) {
+			$this.closest("table").find("tr td :checkbox").each(function() {
+				$(this).prop('checked', true);
+				$(this).closest("tr").addClass("agencySelected");
+			});
+		} else {
+			$this.closest("table").find("tr td :checkbox").each(function() {
+				$(this).prop('checked', false);
+				$(this).closest("tr").removeClass("agencySelected");
+				$(this).closest('tr').find("div").removeClass('agencyCheckboxUploadSuccess');
+				$(this).closest('tr').find(".agencyDataSource").removeClass('agencyUploadSuccess');
+			});
+		}
+	} else {		// For toggling a single checkbox
+		$this.closest('tr').toggleClass('agencySelected');
+		$this.closest('tr').find("div").removeClass('agencyCheckboxUploadSuccess');
+		$this.closest('tr').find(".agencyDataSource").removeClass('agencyUploadSuccess');
+	}
+}
+
+function onAgencyProtocolChange() {
+	console.log("in onAgencyProtocolChange, v1");
+	var protocol = $(this).val();
+	//alert("agency protocol change: " + protocol);
+	var elementType = $(this).prop('tagName');
+	//alert("elementType is " + elementType);
+	var dataSource = $(this).closest('tr').find(".agencyDataSource");
+	console.log("dataSource attr 'type' is " + dataSource.attr('type'));
+	//alert("dataSource type is " + dataSource.attr('type'));
+	if (protocol == "file") {
+		dataSource.clone().attr('type','file').insertAfter(dataSource).prev().remove();
+	} else if (dataSource.attr('type') == 'file') {
+		console.log("type is file");
+		console.log("value: " + dataSource.get(0).files[0]);
+		dataSource.clone().attr('type','text').insertAfter(dataSource).prev().remove();
+	}
+	//$(this).closest('tr').find(".agencyDataSource").css( "background-color", "red" );
+	//$(this).closest('tr').toggleClass('agencySelected');
 }
 
 function onRemoveSelectedAgenciesClick() {

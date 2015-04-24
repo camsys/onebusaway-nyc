@@ -41,7 +41,7 @@
 						<th class="agencyDataSource">URL/File</th>
 					</tr>
 					<tr>
-						<td><input type="checkbox" /></td>
+						<td><div><input type="checkbox" /></div></td>
 						<td><input type="text" class="agencyId" /></td>
 						<td>
 							<select class="agencyDataSourceType">

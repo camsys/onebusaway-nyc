@@ -88,6 +88,9 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	private String agencyDataSourceType; // 'gtfs' or 'aux', from the Upload tab
 	private String agencyProtocol;  // 'http', 'ftp', or 'file', from the Upload tab
 	private String agencyDataSource; // URL for the source data file, from the Upload tab
+	private File agencySourceFile;
+	private String agencySourceFileContentType;
+	private String agencySourceFileFileName;
 	private boolean productionTarget;
 	private String comments;
 	private FileService fileService;
@@ -122,7 +125,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	  _log.info("in execute");
 	  return SUCCESS;
 	}
-	
+
 	/**
 	 * Creates directory for uploading bundles on AWS
 	 */
@@ -222,7 +225,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	         src = "http:" + src;
 	     } else if (src.startsWith("/")) {
 	          src = "http:/" + src;
-       } else if (!src.startsWith("http")) {
+       } else if (!src.toLowerCase().startsWith("http")) {
            src = "http://" + src;
        }
      } else if (agencyProtocol.equals("ftp")) {
@@ -230,7 +233,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
          src = "ftp:" + src;
        } else if (src.startsWith("/")) {
             src = "ftp:/" + src;
-       } else if (!src.startsWith("http")) {
+       } else if (!src.toLowerCase().startsWith("ftp")) {
            src = "ftp://" + src;
        }      
      }
@@ -260,6 +263,41 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
     } 
 	  return "uploadStatus";
 	}
+	
+	public String uploadSourceFile() {
+	  _log.info("in uploadSourceFile");
+    _log.info("agencyId: " + agencyId + ", agencyDataSourceType: " + agencyDataSourceType);
+    _log.info("gtfs path: " + fileService.getGtfsPath());
+    _log.info("aux path: " + fileService.getAuxPath());
+    _log.info("build path: " + fileService.getBuildPath());
+     _log.info("directory name: " + directoryName);
+     _log.info("base path: " + fileService.getBucketName());
+     _log.info("upload file name: " + agencySourceFileFileName);
+     _log.info("file content type: " + agencySourceFileContentType);
+     _log.info("file name: " +  agencySourceFile.getName());
+     
+	   // Build target path
+	   String target = fileService.getBucketName() + "/" + directoryName + "/";
+	   if (agencyDataSourceType.equals("gtfs")) {
+	       target += fileService.getGtfsPath();
+	   } else {
+	     target += fileService.getAuxPath();
+	   }
+	   target += "/" + agencyId;
+	   target += "/" + agencySourceFileFileName;
+     _log.info("Target: " + target);
+
+	   // Copy file
+     try {
+       File targetPath = new File(target);
+       targetPath.mkdirs();
+       Files.copy(agencySourceFile.toPath(), targetPath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+     } catch (Exception e) {
+       _log.info(e.getMessage());
+     }
+	   
+	  return "uploadStatus";
+	}	  
 
 	public String existingBuildList() {
 		_log.info("existingBuildList called for path=" + fileService.getBucketName()+"/"+ diffBundleName +"/"+fileService.getBuildPath()); 
@@ -509,6 +547,24 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 		return agencyDataSource;
 	}
 		
+	public void setAgencySourceFile(File agencySourceFile) {
+    this.agencySourceFile = agencySourceFile;
+  }
+  
+  public File getAgencySourceFile(File agencySourceFile) {
+    return agencySourceFile;
+  }
+
+  public void setAgencySourceFileContentType(String agencySourceFileContentType) {
+    this.agencySourceFileContentType = agencySourceFileContentType;
+  }
+
+  public void setAgencySourceFileFileName(String agencySourceFileFileName) {
+    this.agencySourceFileFileName = agencySourceFileFileName;
+  }
+	
+
+	
 	
 	public String getDeployedBundle() {
 	   String apiHostname = configService.getConfigurationValueAsString(
