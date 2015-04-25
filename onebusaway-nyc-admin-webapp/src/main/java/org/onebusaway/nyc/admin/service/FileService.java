@@ -17,6 +17,7 @@ public interface FileService {
   void setConfigPath(String configPath);
   String getBuildPath();
   String getBucketName();
+  String getBundleDirTimestamp(String dir);
   
   boolean bundleDirectoryExists(String filename);
 

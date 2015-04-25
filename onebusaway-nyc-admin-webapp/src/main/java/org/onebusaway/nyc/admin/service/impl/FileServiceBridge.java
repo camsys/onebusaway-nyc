@@ -136,6 +136,14 @@ public class FileServiceBridge implements FileService, ServletContextAware {
 	}
 
 	@Override
+	public String getBundleDirTimestamp(String dir) {
+		if (_isS3) {
+			return _s3.getBundleDirTimestamp(dir);
+		}
+		return _disk.getBundleDirTimestamp(dir);
+	}
+
+	@Override
 	public String get(String basePath, String tmpDir) {
 		if (_isS3) {
 			return _s3.get(basePath, tmpDir);

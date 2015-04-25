@@ -118,6 +118,14 @@ public class DiskFileServiceImpl implements FileService {
 	}
 
 	@Override
+	public String getBundleDirTimestamp(String dir) {
+	  File baseDir = new File(_basePath);
+	  File fDir = new File(baseDir, dir);
+	  String timestamp =  new Date(fDir.lastModified()).toString();
+	  return timestamp;
+	}
+
+	@Override
 	public String get(String s3path, String tmpDir) {
 		NYCFileUtils fs = new NYCFileUtils();
 		File srcFile = new File(_basePath, s3path);

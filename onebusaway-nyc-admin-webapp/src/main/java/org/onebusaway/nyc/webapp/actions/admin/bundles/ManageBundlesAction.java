@@ -132,6 +132,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	public String createDirectory() {
 		String createDirectoryMessage = null;
 		boolean directoryCreated = false;
+		String timestamp = "";
 
 		_log.debug("in create directory with dir=" + directoryName);
 
@@ -149,13 +150,14 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 				bundleDirectory = directoryName;
 				if(directoryCreated) {
 					createDirectoryMessage = "Successfully created new directory: " +directoryName;
+					timestamp = fileService.getBundleDirTimestamp(directoryName);
 				} else {
 					createDirectoryMessage = "Unable to create direcory: " +directoryName;
 				}
 			}
 		}
 
-		directoryStatus = createDirectoryStatus(createDirectoryMessage, directoryCreated);
+		directoryStatus = createDirectoryStatus(createDirectoryMessage, directoryCreated, timestamp);
 		return "selectDirectory";
 	}
 	
@@ -175,6 +177,14 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	
 	private DirectoryStatus createDirectoryStatus(String statusMessage, boolean selected) {
 		DirectoryStatus directoryStatus = new DirectoryStatus(directoryName, statusMessage, selected);
+		directoryStatus.setGtfsPath(fileService.getGtfsPath());
+		directoryStatus.setAuxPath(fileService.getAuxPath());
+		directoryStatus.setBucketName(fileService.getBucketName());
+		return directoryStatus;
+	}
+	
+	private DirectoryStatus createDirectoryStatus(String statusMessage, boolean selected, String timestamp) {
+		DirectoryStatus directoryStatus = new DirectoryStatus(directoryName, statusMessage, selected, timestamp);
 		directoryStatus.setGtfsPath(fileService.getGtfsPath());
 		directoryStatus.setAuxPath(fileService.getAuxPath());
 		directoryStatus.setBucketName(fileService.getBucketName());

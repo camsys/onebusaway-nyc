@@ -281,6 +281,36 @@ function onSelectClick() {
 					if(status.selected == true) {
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/dialog-accept-2.png");
 						jQuery("#createDirectoryMessage").text(status.message).css("color", "green");
+						// If "createDirectory", add the new directory to the current list of bundle directories.
+						if (actionName == "createDirectory") {
+							// Add a new div for this directory to the list of existing directories
+							var idx = 0;
+							$("#createDirectory #currentDirectories").find("#listItem").each(function() {
+								idx++
+								if (status.directoryName < $(this).find(".listData").first().text()) {
+									idx--;
+									return false;
+								}
+							});
+							var insertAfterThis = $("#createDirectory #currentDirectories");
+							if (idx > 0) {
+								insertAfterThis = insertAfterThis.find("#listItem").eq(idx-1);
+							}
+							var newDirRow = '<div class="ui-selectee" style="" id="listItem">'
+								+ '<div style="" class="listData ui-selectee">'
+								+ '<strong class="ui-selectee" style="">'
+								+ status.directoryName
+								+ '</strong></div>'
+								+ '<div style="" class="listData ui-selectee"> </div>'
+								+ '<div style="" class="listData ui-selectee">'
+								+ status.timestamp;
+								+ '</div></div>"';
+							if (idx == 0) {
+								insertAfterThis.prepend(newDirRow);
+							} else {
+								insertAfterThis.after(newDirRow);
+							}
+						}
 						enableBuildButton();
 						enableResetButton();
 					} else {

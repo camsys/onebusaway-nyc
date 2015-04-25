@@ -245,6 +245,14 @@ public class S3FileServiceImpl implements FileService, ServletContextAware {
 		return rows;
 	}
 
+	@Override
+	/**
+	 * Not implemented for s3, but was added to FileService interface.
+	 */
+	public String getBundleDirTimestamp(String dir) {
+		return "";
+	}
+
 
 	private Date getLastModifiedTimeForKey(String key) {
 		ListObjectsRequest request = new ListObjectsRequest(_bucketName, key, null,
