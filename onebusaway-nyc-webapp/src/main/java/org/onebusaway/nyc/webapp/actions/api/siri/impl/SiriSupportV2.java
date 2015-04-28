@@ -509,8 +509,8 @@ public final class SiriSupportV2 {
 					BigDecimal stopLon = new BigDecimal(stop.getLongitude());
 					
 					LocationStructure location = new LocationStructure();
-					location.setLongitude(stopLon);
-					location.setLatitude(stopLat);
+					location.setLongitude(stopLon.setScale(6, BigDecimal.ROUND_HALF_DOWN));
+					location.setLatitude(stopLat.setScale(6, BigDecimal.ROUND_HALF_DOWN));
 					
 					StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
 					pointInPattern.setLocation(location);
@@ -541,8 +541,8 @@ public final class SiriSupportV2 {
 					BigDecimal stopLon = new BigDecimal(stop.getLongitude());
 					
 					LocationStructure location = new LocationStructure();
-					location.setLongitude(stopLon);
-					location.setLatitude(stopLat);
+					location.setLongitude(stopLon.setScale(6, BigDecimal.ROUND_HALF_DOWN));
+					location.setLatitude(stopLat.setScale(6, BigDecimal.ROUND_HALF_DOWN));
 					
 					StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
 					pointInPattern.setLocation(location);
