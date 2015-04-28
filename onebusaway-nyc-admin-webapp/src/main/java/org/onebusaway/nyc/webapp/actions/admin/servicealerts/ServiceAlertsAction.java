@@ -91,9 +91,12 @@ public class ServiceAlertsAction extends ActionSupport {
 
   @Validations(requiredStrings = {@RequiredStringValidator(fieldName = "agencyId", message = "missing required agencyId field")})
   public String removeAllForAgency() {
-
-    _transitDataService.removeAllServiceAlertsForAgencyId(_agencyId);
-
+    try {
+      _transitDataService.removeAllServiceAlertsForAgencyId(_agencyId);
+    } catch (RuntimeException e) {
+      _log.error("Unable to remove all service alerts for agency", e);
+      throw e;
+    }
     return "redirect";
   }
   

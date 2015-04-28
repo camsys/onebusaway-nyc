@@ -24,6 +24,8 @@ import org.json.JSONException;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionSupport;
@@ -35,6 +37,8 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
     ModelDriven<SituationAffectsBean> {
 
   private static final long serialVersionUID = 1L;
+  
+  private static Logger _log = LoggerFactory.getLogger(ServiceAlertsAction.class);
 
   private TransitDataService _transitDataService;
 
@@ -76,7 +80,14 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
       return INPUT;
     }
 
-    ServiceAlertBean alert = _transitDataService.getServiceAlertForId(_id);
+    ServiceAlertBean alert = null;
+    try {
+      alert = _transitDataService.getServiceAlertForId(_id);
+    } catch (RuntimeException e) {
+      _log.error("Error retrieving Service Alerts", e);
+      throw e;
+    }
+   
     if (alert == null) {
       return INPUT;
     }
@@ -93,7 +104,13 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
     _model.setStopId(string(_model.getStopId()));
     
     allAffects.set(_index, _model);
-    _transitDataService.updateServiceAlert(alert);
+    
+    try {
+      _transitDataService.updateServiceAlert(alert);
+    } catch (RuntimeException e) {
+      _log.error("Error updating Service Alert Affects clause", e);
+      throw e;
+    }
 
     return SUCCESS;
   }
@@ -104,7 +121,15 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
       return INPUT;
     }
 
-    ServiceAlertBean alert = _transitDataService.getServiceAlertForId(_id);
+    ServiceAlertBean alert = null;
+    
+    try {
+      alert = _transitDataService.getServiceAlertForId(_id);
+    } catch (RuntimeException e) {
+      _log.error("Error retrieving Service Alert", e);
+      throw e;
+    }
+    
     if (alert == null) {
       return INPUT;
     }
@@ -115,7 +140,13 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
     }
 
     allAffects.remove(_index);
-    _transitDataService.updateServiceAlert(alert);
+    
+    try {
+      _transitDataService.updateServiceAlert(alert);
+    } catch (RuntimeException e) {
+      _log.error("Error removing Service Alert Affects clause", e);
+      throw e;
+    }
 
     return SUCCESS;
   }

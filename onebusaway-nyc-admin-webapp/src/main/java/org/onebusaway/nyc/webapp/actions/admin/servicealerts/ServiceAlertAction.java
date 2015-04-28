@@ -35,6 +35,8 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionSupport;
@@ -53,6 +55,8 @@ public class ServiceAlertAction extends ActionSupport implements
     ModelDriven<ServiceAlertBean> {
 
   private static final long serialVersionUID = 1L;
+  
+  private static Logger _log = LoggerFactory.getLogger(ServiceAlertsAction.class);
 
   private TransitDataService _transitDataService;
 
@@ -133,8 +137,13 @@ public class ServiceAlertAction extends ActionSupport implements
   @Override
   public String execute() {
 
-    if (_model.getId() != null && !_model.getId().trim().isEmpty())
-      _model = _transitDataService.getServiceAlertForId(_model.getId());
+    try {
+      if (_model.getId() != null && !_model.getId().trim().isEmpty())
+        _model = _transitDataService.getServiceAlertForId(_model.getId());
+    } catch (RuntimeException e) {
+      _log.error("Unable to retrieve Service Alerts for agency Id", e);
+      throw e;
+    }
 
     if (_agencyId == null && _model.getId() != null) {
       String id = _model.getId();
@@ -152,16 +161,21 @@ public class ServiceAlertAction extends ActionSupport implements
 
     _model.setReason(string(_model.getReason()));
 
-    if (_model.getId() == null || _model.getId().trim().isEmpty()) {
-      _model = _transitDataService.createServiceAlert(_agencyId, _model);
-    }
-    else {
-      ServiceAlertBean existing = _transitDataService.getServiceAlertForId(_model.getId());
-      if (existing != null) {
-        // The updated service alert constructed from the POST won't include affects clauses.
-        _model.setAllAffects(existing.getAllAffects());
+    try {
+      if (_model.getId() == null || _model.getId().trim().isEmpty()) {
+        _model = _transitDataService.createServiceAlert(_agencyId, _model);
       }
-      _transitDataService.updateServiceAlert(_model);
+      else {
+        ServiceAlertBean existing = _transitDataService.getServiceAlertForId(_model.getId());
+        if (existing != null) {
+          // The updated service alert constructed from the POST won't include affects clauses.
+          _model.setAllAffects(existing.getAllAffects());
+        }
+        _transitDataService.updateServiceAlert(_model);
+      }
+    } catch (RuntimeException e) {
+      _log.error("Error creating or updating Service Alert", e);
+      throw e;
     }
 
     return "submitSuccess";
@@ -171,23 +185,33 @@ public class ServiceAlertAction extends ActionSupport implements
     if (_model.getId() == null) {
       return INPUT;
     }
-
-    _model = _transitDataService.getServiceAlertForId(_model.getId());
-
-    List<SituationAffectsBean> allAffects = _model.getAllAffects();
-    if (allAffects == null) {
-      allAffects = new ArrayList<SituationAffectsBean>();
-      _model.setAllAffects(allAffects);
+    try {
+      _model = _transitDataService.getServiceAlertForId(_model.getId());
+  
+      List<SituationAffectsBean> allAffects = _model.getAllAffects();
+      if (allAffects == null) {
+        allAffects = new ArrayList<SituationAffectsBean>();
+        _model.setAllAffects(allAffects);
+      }
+      allAffects.add(new SituationAffectsBean());
+      _transitDataService.updateServiceAlert(_model);
+    } catch (RuntimeException e) {
+      _log.error("Error updating Service Alert Affects clause", e);
+      throw e;
     }
-    allAffects.add(new SituationAffectsBean());
-    _transitDataService.updateServiceAlert(_model);
+      
     return "submitSuccess";
   }
 
   public String delete() {
 
-    if (_model.getId() != null) {
-      _transitDataService.removeServiceAlert(_model.getId());
+    try {
+      if (_model.getId() != null) {
+        _transitDataService.removeServiceAlert(_model.getId());
+      }
+    } catch (RuntimeException e) {
+      _log.error("Error removing Service Alert", e);
+      throw e;
     }
 
     return "deleteSuccess";
