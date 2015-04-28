@@ -208,13 +208,6 @@ public final class SiriSupportV2 {
 			monitoredVehicleJourney.getProgressStatus().add(progressStatus);
 		}
 
-		// block ref
-		if (presentationService.isBlockLevelInference(currentVehicleTripStatus)) {
-			BlockRefStructure blockRef = new BlockRefStructure();
-			blockRef.setValue(framedJourneyTripBean.getBlockId());
-			monitoredVehicleJourney.setBlockRef(blockRef);
-		}
-
 		// scheduled depature time
 		if (presentationService.isBlockLevelInference(currentVehicleTripStatus)
 				&& (presentationService.isInLayover(currentVehicleTripStatus) || !framedJourneyTripBean
@@ -295,7 +288,8 @@ public final class SiriSupportV2 {
 		if (detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
 			monitoredVehicleJourney.setFramedVehicleJourneyRef(framedJourney);
 			monitoredVehicleJourney.setDirectionRef(directionRef);
-			monitoredVehicleJourney.setOperatorRef(operatorRef);
+			// since LineRef is fully qualified with operatorref, moving to normal
+			//monitoredVehicleJourney.setOperatorRef(operatorRef);
 			monitoredVehicleJourney.setLineRef(lineRef);
 			monitoredVehicleJourney.setProgressRate(getProgressRateForPhaseAndStatus(
 								currentVehicleTripStatus.getStatus(),
@@ -304,6 +298,13 @@ public final class SiriSupportV2 {
 		
 		// detail level - normal
 		if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
+			monitoredVehicleJourney.setOperatorRef(operatorRef);
+			// block ref
+			if (presentationService.isBlockLevelInference(currentVehicleTripStatus)) {
+				BlockRefStructure blockRef = new BlockRefStructure();
+				blockRef.setValue(framedJourneyTripBean.getBlockId());
+				monitoredVehicleJourney.setBlockRef(blockRef);
+			}
 			for (int i = 0; i < blockTrips.size(); i++) {
 				BlockTripBean blockTrip = blockTrips.get(i);
 
@@ -467,7 +468,8 @@ public final class SiriSupportV2 {
 			NaturalLanguageStringStructure directionName = new NaturalLanguageStringStructure();
 			
 			// TODO - LCARABALLO - Currently set to direction Id, should it be something else?
-			directionName.setValue(directionId);
+			// more appropriate -laidig
+			directionName.setValue(direction.getDestination());
 			routeDirectionStructure.getDirectionName().add(directionName);
 			directions.getDirection().add(routeDirectionStructure);
 			
@@ -951,12 +953,12 @@ public final class SiriSupportV2 {
 		
 		// basic 
 		if (detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
-			monitoredCallStructure.setStopPointRef(stopPointRef);
+			monitoredCallStructure.getStopPointName().add(stopPoint);
 		}
 		
 		// normal
 		if(detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
-			monitoredCallStructure.getStopPointName().add(stopPoint);
+			monitoredCallStructure.setStopPointRef(stopPointRef);
 		}
 
 		return monitoredCallStructure;
