@@ -21,6 +21,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -61,6 +62,8 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
   private static final long serialVersionUID = 1L;
   protected static Logger _log = LoggerFactory.getLogger(VehicleMonitoringV2Action.class);
   
+  private static final String VEHICLE_REF = "VehicleRef";
+  
   private Siri _response;
   
   private String _cachedResponse = null;
@@ -74,9 +77,9 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
   // See urlrewrite.xml as to how this is set. Which means this action doesn't
   // respect an HTTP Accept: header.
   private String _type = "xml";
-
-  @Autowired
-  private NycCacheService<Integer, String> _cacheService;
+  
+  @Resource(name="siriCacheService")
+  private NycCacheService<Integer, String> _siriCacheService;
   
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
   
@@ -92,38 +95,25 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
     
     _realtimeService.setTime(currentTimestamp);
     
-    String directionId = _request.getParameter("DirectionRef");
+    // User Parameters
+	String lineRef = _request.getParameter(LINE_REF);
+	String vehicleRef = _request.getParameter(VEHICLE_REF);
+	String directionId = _request.getParameter(DIRECTION_REF);
+	String agencyId = _request.getParameter(OPERATOR_REF);
+	String maxOnwardCallsParam = _request.getParameter(MAX_ONWARD_CALLS);
+	String maxStopVisitsParam = _request.getParameter(MAX_STOP_VISITS);
+	String minStopVisitsParam = _request.getParameter(MIN_STOP_VISITS);
     
-    // We need to support the user providing no agency id which means 'all agencies'.
-    // So, this array will hold a single agency if the user provides it or all
-    // agencies if the user provides none. We'll iterate over them later while 
-    // querying for vehicles and routes
-    List<String> agencyIds = new ArrayList<String>();
-
-    String agencyId = _request.getParameter("OperatorRef");
     
-    if (agencyId != null) {
-      agencyIds.add(agencyId);
-    } else {
-      Map<String,List<CoordinateBounds>> agencies = _nycTransitDataService.getAgencyIdsWithCoverageArea();
-      agencyIds.addAll(agencies.keySet());
-    }
+    /*
+     * We need to support the user providing no agency id which means 'all agencies'.
+    So, this array will hold a single agency if the user provides it or all
+    agencies if the user provides none. We'll iterate over them later while 
+    querying for vehicles and routes
+    */
+	List<String> agencyIds = processAgencyIds(agencyId);
 
-    List<AgencyAndId> vehicleIds = new ArrayList<AgencyAndId>();
-    if (_request.getParameter("VehicleRef") != null) {
-      try {
-        // If the user included an agency id as part of the vehicle id, ignore any OperatorRef arg
-        // or lack of OperatorRef arg and just use the included one.
-        AgencyAndId vehicleId = AgencyAndIdLibrary.convertFromString(_request.getParameter("VehicleRef"));
-        vehicleIds.add(vehicleId);
-      } catch (Exception e) {
-        // The user didn't provide an agency id in the VehicleRef, so use our list of operator refs
-        for (String agency : agencyIds) {
-          AgencyAndId vehicleId = new AgencyAndId(agency, _request.getParameter("VehicleRef"));
-          vehicleIds.add(vehicleId);
-        }
-      }
-    }
+    List<AgencyAndId> vehicleIds = processVehicleIds(vehicleRef, agencyIds);
     
     List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
     String routeIdErrorString = "";
@@ -228,10 +218,10 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
       try {
       gaLabel = "All Vehicles";
       
-      int hashKey = _cacheService.hash(maximumOnwardCalls, agencyIds, _type);
+      int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type);
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-      if (!_cacheService.containsKey(hashKey)) {
+      if (!_siriCacheService.containsKey(hashKey)) {
         for (String agency : agencyIds) {
           ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
               agency, currentTimestamp);
@@ -248,9 +238,9 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
         // There is no input (route id) to validate, so pass null error
         _response = generateSiriResponse(activities, null, null,
             currentTimestamp);
-        _cacheService.store(hashKey, getVehicleMonitoring());
+        _siriCacheService.store(hashKey, getVehicleMonitoring());
       } else {
-        _cachedResponse = _cacheService.retrieve(hashKey);
+        _cachedResponse = _siriCacheService.retrieve(hashKey);
       }
       } catch (Exception e) {
         _log.error("vm all broke:", e);

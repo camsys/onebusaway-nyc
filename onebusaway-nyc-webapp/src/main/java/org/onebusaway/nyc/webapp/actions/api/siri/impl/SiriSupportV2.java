@@ -98,12 +98,13 @@ public final class SiriSupportV2 {
 	}
 
 	public enum Filters {
-		DIRECTION_REF, LINE_REF, USE_LINE_REF, UPCOMING_SCHEDULED_SERVICE, DETAIL_LEVEL
+		DIRECTION_REF, LINE_REF, USE_LINE_REF, UPCOMING_SCHEDULED_SERVICE, DETAIL_LEVEL, MAX_STOP_VISITS, MIN_STOP_VISITS
 	}
 
 	/**
 	 * NOTE: The tripDetails bean here may not be for the trip the vehicle is
 	 * currently on in the case of A-D for stop!
+	 * @param filters 
 	 */
 	public static void fillMonitoredVehicleJourney(
 			MonitoredVehicleJourneyStructure monitoredVehicleJourney,
@@ -115,7 +116,7 @@ public final class SiriSupportV2 {
 			int maximumOnwardCalls,
 			List<TimepointPredictionRecord> stopLevelPredictions,
 			DetailLevel detailLevel,
-			long responseTimestamp) {
+			long responseTimestamp, Map<Filters, String> filters) {
 		BlockInstanceBean blockInstance = nycTransitDataService
 				.getBlockInstance(currentVehicleTripStatus.getActiveTrip()
 						.getBlockId(), currentVehicleTripStatus
@@ -292,7 +293,7 @@ public final class SiriSupportV2 {
 		
 		
 		// detail level - basic
-		if (detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
+		if (detailLevel.equals(DetailLevel.MINIMUM) ||detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
 			monitoredVehicleJourney.setFramedVehicleJourneyRef(framedJourney);
 			monitoredVehicleJourney.setDirectionRef(directionRef);
 			monitoredVehicleJourney.setOperatorRef(operatorRef);
@@ -1007,6 +1008,16 @@ public final class SiriSupportV2 {
 			return false;
 		
 		return true;
+	}
+	
+	public static Integer convertToNumeric(String param, Integer defaultValue){
+		Integer numericValue = defaultValue;
+		try {
+			numericValue = Integer.parseInt(param);
+		} catch (NumberFormatException e) {
+			numericValue = defaultValue;
+		}
+		return numericValue;
 	}
 
 }

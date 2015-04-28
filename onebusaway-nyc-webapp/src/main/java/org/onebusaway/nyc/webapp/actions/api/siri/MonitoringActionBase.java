@@ -99,6 +99,26 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 		return agencyIds;
 	}
 	
+	protected List<AgencyAndId> processVehicleIds(String vehicleRef, List<String> agencyIds){
+		List<AgencyAndId> vehicleIds = new ArrayList<AgencyAndId>();
+	    if (vehicleRef != null) {
+	      try {
+	        // If the user included an agency id as part of the vehicle id, ignore any OperatorRef arg
+	        // or lack of OperatorRef arg and just use the included one.
+	        AgencyAndId vehicleId = AgencyAndIdLibrary.convertFromString(vehicleRef);
+	        vehicleIds.add(vehicleId);
+	      } catch (Exception e) {
+	        // The user didn't provide an agency id in the VehicleRef, so use our list of operator refs
+	        for (String agency : agencyIds) {
+	          AgencyAndId vehicleId = new AgencyAndId(agency, vehicleRef);
+	          vehicleIds.add(vehicleId);
+	        }
+	      }
+	    }
+		
+		return vehicleIds;
+	}
+	
 	protected String processRouteIds(String lineRef, List<AgencyAndId> routeIds, List<String> agencyIds) {
 		String routeIdsErrorString = "";
 		if (lineRef != null) {
@@ -165,7 +185,6 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	    
 	    return stopIdsErrorString;
 	}
-	
 	
 	protected boolean isValidBoundsDistance(CoordinateBounds bounds, double maxRadius){
 		if(bounds != null){

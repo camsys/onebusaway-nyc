@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -48,6 +49,7 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -166,7 +168,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetails.getTrip(), tripDetails.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, null, currentTime);
+					timePredictionRecords, null, currentTime, null);
 
 			output.add(activity);
 		}
@@ -239,7 +241,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetailsForCurrentTrip.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, null,currentTime);
+					timePredictionRecords, null,currentTime, null);
 
 			return output;
 		}
@@ -249,14 +251,24 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(
-			String stopId, int maximumOnwardCalls, DetailLevel detailLevel, long currentTime) {
+			String stopId, int maximumOnwardCalls, DetailLevel detailLevel, 
+			long currentTime, List<AgencyAndId> routeIds, Map<Filters, String> filters) {
 		List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
 		boolean useTimePredictionsIfAvailable = _presentationService
 				.useTimePredictionsIfAvailable();
-
+		
+		String directionId = filters.get(Filters.DIRECTION_REF);
+		int maximumStopVisits = SiriSupportV2.convertToNumeric(filters.get(Filters.MAX_STOP_VISITS), Integer.MAX_VALUE);
+		Integer minimumStopVisitsPerLine = SiriSupportV2.convertToNumeric(filters.get(Filters.MIN_STOP_VISITS), null);
+		
+		
+		Map<AgencyAndId, Integer> visitCountByLine = new HashMap<AgencyAndId, Integer>();
+		int visitCount = 0;
+		
 		for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(
 				stopId, currentTime)) {
+
 			TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
 			TripBean tripBeanForAd = adBean.getTrip();
 
@@ -280,17 +292,76 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 								.convertFromString(stopId).getAgencyId(),
 								statusBeanForCurrentTrip);
 			}
-
-			stopVisit
-					.setMonitoredVehicleJourney(new MonitoredVehicleJourneyStructure());
+			
+			MonitoredVehicleJourneyStructure mvjourney = new MonitoredVehicleJourneyStructure();
+			stopVisit.setMonitoredVehicleJourney(mvjourney);
+			
 			SiriSupportV2.fillMonitoredVehicleJourney(
-					stopVisit.getMonitoredVehicleJourney(), tripBeanForAd,
+					mvjourney, tripBeanForAd,
 					statusBeanForCurrentTrip, adBean.getStop(),
 					OnwardCallsMode.STOP_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, detailLevel, currentTime);
+					timePredictionRecords, detailLevel, currentTime, filters);
+			
+			
+			// FILTERS
+			AgencyAndId thisRouteId = AgencyAndIdLibrary
+					.convertFromString(mvjourney.getLineRef().getValue());
+			String thisDirectionId = mvjourney.getDirectionRef().getValue();
 
+			if (routeIds.size() > 0 && !routeIds.contains(thisRouteId))
+				continue;
+
+			if (directionId != null && !thisDirectionId.equals(directionId))
+				continue;
+			
+			
+			// Monitored Stop Visits
+			Map<String, MonitoredStopVisitStructure> visitsMap = new HashMap<String, MonitoredStopVisitStructure>();
+			
+			// visit count filters
+			Integer visitCountForThisLine = visitCountByLine.get(thisRouteId);
+			if (visitCountForThisLine == null) {
+				visitCountForThisLine = 0;
+			}
+
+			if (visitCount >= maximumStopVisits) {
+				if (minimumStopVisitsPerLine == null) {
+					break;
+				} else {
+					if (visitCountForThisLine >= minimumStopVisitsPerLine) {
+						continue;
+					}
+				}
+			}
+
+			// unique stops filters
+			if (stopVisit.getMonitoredVehicleJourney() == null
+					|| stopVisit.getMonitoredVehicleJourney().getVehicleRef() == null
+					|| StringUtils.isBlank(stopVisit.getMonitoredVehicleJourney()
+							.getVehicleRef().getValue())) {
+				continue;
+			} else {
+				String visitKey = stopVisit.getMonitoredVehicleJourney()
+						.getVehicleRef().getValue();
+				if (visitsMap.containsKey(stopVisit.getMonitoredVehicleJourney()
+						.getVehicleRef().getValue())) {
+					if (stopVisit.getMonitoredVehicleJourney().getProgressStatus() == null) {
+						visitsMap.remove(visitKey);
+						visitsMap.put(visitKey, stopVisit);
+					}
+					continue;
+				} else {
+					visitsMap.put(stopVisit.getMonitoredVehicleJourney()
+							.getVehicleRef().getValue(), stopVisit);
+				}
+			}
+			
 			output.add(stopVisit);
+			
+			visitCount++;
+			visitCountForThisLine++;
+			visitCountByLine.put(thisRouteId, visitCountForThisLine);
 		}
 
 		Collections.sort(output, new Comparator<MonitoredStopVisitStructure>() {

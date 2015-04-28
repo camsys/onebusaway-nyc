@@ -6,7 +6,7 @@ public enum DetailLevel {
 	private int _type;
 	
 	DetailLevel(){
-		_type = 0;
+		_type = 2;
 	}
 	
 	DetailLevel(int type){
@@ -17,5 +17,11 @@ public enum DetailLevel {
 		return _type;
 	}
 	
+	public static boolean contains(String type){
+	      for(DetailLevel DetailLevel:values())
+	           if (DetailLevel.name().equalsIgnoreCase(type)) 
+	              return true;
+	      return false;
+	} 
 	
 }

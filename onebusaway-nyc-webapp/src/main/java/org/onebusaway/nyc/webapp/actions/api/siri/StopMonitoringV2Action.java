@@ -35,6 +35,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.ServiceAlertsHelperV2;
+import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
 import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
@@ -83,14 +84,17 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 				_configurationService);
 
 		_realtimeService.setTime(responseTimestamp);
+		String detailLevelParam = _request.getParameter(STOP_MONITORING_DETAIL_LEVEL).toUpperCase();
 		
 		//get the detail level parameter or set it to default if not specified
 	    DetailLevel detailLevel;
-	    if(_request.getParameter(STOP_MONITORING_DETAIL_LEVEL) == null){
+	    
+	    if(DetailLevel.contains(detailLevelParam)){
+	    	detailLevel = DetailLevel.valueOf(detailLevelParam);
+	    }
+	    else{
 	    	detailLevel = DetailLevel.NORMAL;
-	    }else{
-	    	detailLevel = DetailLevel.valueOf(_request.getParameter(STOP_MONITORING_DETAIL_LEVEL).toUpperCase());
-	    }	
+	    }
 	    
 		// User Parameters
 		String lineRef = _request.getParameter(LINE_REF);
@@ -123,14 +127,10 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 		int maximumOnwardCalls = 0;
 		
 		if (detailLevel.equals(DetailLevel.CALLS)) {
-			maximumOnwardCalls = convertToNumeric(maxOnwardCallsParam, Integer.MAX_VALUE);
+			maximumOnwardCalls = SiriSupportV2.convertToNumeric(maxOnwardCallsParam, Integer.MAX_VALUE);
 		}
 
-		int maximumStopVisits = convertToNumeric(maxStopVisitsParam, Integer.MAX_VALUE);
-		
-		Integer minimumStopVisitsPerLine = convertToNumeric(minStopVisitsParam, null);
 
-		
 		if (_monitoringActionSupport
 				.canReportToGoogleAnalytics(_configurationService)) {
 			_monitoringActionSupport.reportToGoogleAnalytics(_request,
@@ -138,10 +138,17 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 					_configurationService);
 		}		
 		
+		
+		// Setup Filters
+		Map<Filters, String> filters = new HashMap<Filters, String>();
+		filters.put(Filters.DIRECTION_REF, directionId);
+		filters.put(Filters.MAX_STOP_VISITS, maxStopVisitsParam);
+		filters.put(Filters.MIN_STOP_VISITS, minStopVisitsParam);
+		
+		
 		// Monitored Stop Visits
 		List<MonitoredStopVisitStructure> visits = new ArrayList<MonitoredStopVisitStructure>();
-		Map<String, MonitoredStopVisitStructure> visitsMap = new HashMap<String, MonitoredStopVisitStructure>();
-
+		
 		for (AgencyAndId stopId : stopIds) {
 
 			if (!stopId.hasValues())
@@ -151,76 +158,10 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 			// to stopIds.
 			List<MonitoredStopVisitStructure> visitsForStop = _realtimeService
 					.getMonitoredStopVisitsForStop(stopId.toString(),
-							maximumOnwardCalls, detailLevel, responseTimestamp);
+							maximumOnwardCalls, detailLevel, responseTimestamp, routeIds, filters);
 			if (visitsForStop != null)
 				visits.addAll(visitsForStop);
 		}
-
-		List<MonitoredStopVisitStructure> filteredVisits = new ArrayList<MonitoredStopVisitStructure>();
-
-		Map<AgencyAndId, Integer> visitCountByLine = new HashMap<AgencyAndId, Integer>();
-		int visitCount = 0;
-
-		for (MonitoredStopVisitStructure visit : visits) {
-			MonitoredVehicleJourneyStructure journey = visit
-					.getMonitoredVehicleJourney();
-
-			AgencyAndId thisRouteId = AgencyAndIdLibrary
-					.convertFromString(journey.getLineRef().getValue());
-			String thisDirectionId = journey.getDirectionRef().getValue();
-
-			// user filtering
-			if (routeIds.size() > 0 && !routeIds.contains(thisRouteId))
-				continue;
-
-			if (directionId != null && !thisDirectionId.equals(directionId))
-				continue;
-
-			// visit count filters
-			Integer visitCountForThisLine = visitCountByLine.get(thisRouteId);
-			if (visitCountForThisLine == null) {
-				visitCountForThisLine = 0;
-			}
-
-			if (visitCount >= maximumStopVisits) {
-				if (minimumStopVisitsPerLine == null) {
-					break;
-				} else {
-					if (visitCountForThisLine >= minimumStopVisitsPerLine) {
-						continue;
-					}
-				}
-			}
-
-			// unique stops filters
-			if (visit.getMonitoredVehicleJourney() == null
-					|| visit.getMonitoredVehicleJourney().getVehicleRef() == null
-					|| StringUtils.isBlank(visit.getMonitoredVehicleJourney()
-							.getVehicleRef().getValue())) {
-				continue;
-			} else {
-				String visitKey = visit.getMonitoredVehicleJourney()
-						.getVehicleRef().getValue();
-				if (visitsMap.containsKey(visit.getMonitoredVehicleJourney()
-						.getVehicleRef().getValue())) {
-					if (visit.getMonitoredVehicleJourney().getProgressStatus() == null) {
-						visitsMap.remove(visitKey);
-						visitsMap.put(visitKey, visit);
-					}
-					continue;
-				} else {
-					visitsMap.put(visit.getMonitoredVehicleJourney()
-							.getVehicleRef().getValue(), visit);
-				}
-			}
-
-			filteredVisits.add(visit);
-
-			visitCount++;
-			visitCountForThisLine++;
-			visitCountByLine.put(thisRouteId, visitCountForThisLine);
-		}
-		visits = filteredVisits;
 
 		Exception error = null;
 		if (stopIds.size() == 0
@@ -323,14 +264,6 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 		return _servletResponse;
 	}
 	
-	private Integer convertToNumeric(String param, Integer defaultValue){
-		Integer numericValue = defaultValue;
-		try {
-			numericValue = Integer.parseInt(param);
-		} catch (NumberFormatException e) {
-			numericValue = defaultValue;
-		}
-		return numericValue;
-	}
+	
 
 }
