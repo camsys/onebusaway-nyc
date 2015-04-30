@@ -28,7 +28,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
   private static final String OUTPUT_DIR = "outputs";
   private static final String BUILD_DIR = "builds";
   private static final int CHUNK_SIZE = 1024;
-  private static final String TRANSIT_FEED = "transitfeed-1.2.11";
+  private static final String TRANSIT_FEED = "transitfeed-1.2.13";
   private static Logger _log = LoggerFactory.getLogger(BundleValidationServiceImpl.class);
   private FileService _fileService;
 
