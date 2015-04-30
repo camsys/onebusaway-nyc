@@ -11,6 +11,7 @@ import javax.servlet.ServletContext;
 
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -63,6 +64,8 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 	@PostConstruct
 	@Override
   public void setup() {
+	  _mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	  
 		try {
 			if (_isAws) {
 				_credentials = new BasicAWSCredentials(_username, _password);
