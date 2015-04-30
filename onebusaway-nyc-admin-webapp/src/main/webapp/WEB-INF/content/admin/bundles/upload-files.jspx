@@ -42,21 +42,21 @@
 					</tr>
 					<tr>
 						<td><div><input type="checkbox" /></div></td>
-						<td><input type="text" class="agencyId" /></td>
+						<td><input type="text" class="agencyId" id="agencyId"/></td>
 						<td>
-							<select class="agencyDataSourceType">
+							<select class="agencyDataSourceType" id="agencyDataSourceType">
 								<option value="gtfs">gtfs</option>
 								<option value="aux">aux</option>
 							</select>
 						</td>
 						<td>
-							<select class="agencyProtocol">
+							<select class="agencyProtocol" id="agencyProtocol">
 								<option value="http">http</option>
 								<option value="ftp">ftp</option>
 								<option value="file">file</option>
 							</select>
 						</td>
-						<td><input type="text" class="agencyDataSource"/></td>
+						<td><input type="text" class="agencyDataSource" id="agencyDataSource"/></td>
 					</tr>
 				</table>
 			</div>

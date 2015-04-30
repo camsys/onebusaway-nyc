@@ -30,7 +30,8 @@ public class BundleBuildResponse {
 	private String bundleStartDate;
 	private String bundleEndDate;
 	private String bundleComment;
-
+	private String bundleDirectoryName;
+	private String bundleEmailTo;
 
 	private String _id = null;
 	private String bundleResultLink;
@@ -350,6 +351,16 @@ public class BundleBuildResponse {
 		
 	 }
 
-
-
+	public String getBundleDirectoryName() {
+		return bundleDirectoryName;
+	}
+	public void setBundleDirectoryName(String bundleDirectoryName) {
+		this.bundleDirectoryName = bundleDirectoryName;
+	}
+	public String getBundleEmailTo() {
+		return bundleEmailTo;
+	}
+	public void setBundleEmailTo(String bundleEmailTo) {
+		this.bundleEmailTo = bundleEmailTo;
+	}
 }

@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.admin.model.ui;
 
+import org.json.simple.JSONObject;
+
 /**
  * DTO for sending created/selected directory status to UI
  * @author abelsare
@@ -13,6 +15,7 @@ public class DirectoryStatus {
 	private String auxPath;
 	private String bucketName;
 	private String timestamp;
+	private JSONObject bundleInfo;
 
 	public DirectoryStatus(String directoryName, String message, boolean selected) {
 	  this(directoryName, message, selected, "");
@@ -92,4 +95,12 @@ public class DirectoryStatus {
 	 public void setTimestamp(String timestamp) {
 	   this.timestamp = timestamp;
 	 }
+
+	public JSONObject getBundleInfo() {
+		return bundleInfo;
+	}
+
+	public void setBundleInfo(JSONObject bundleInfo) {
+		this.bundleInfo = bundleInfo;
+	}
 }

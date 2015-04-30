@@ -260,7 +260,73 @@ function onDeployContinueClick() {
 	var $tabs = jQuery("#tabs");
 	$tabs.tabs('select', 6);
 }
-
+//Helper method for setting up different DIVs HTML
+function setDivHtml(field, info){
+	var messages = '<ul>';
+	$.each(info, function(i, str) {		
+		messages = messages + '<li>' + str + '</li>';			    
+	});
+	messages = messages + '</ul>';
+	jQuery(field).html(messages).css("font-size", "12px");	
+}
+//Helper method for showing build file list on bundle selection
+function showBuildFileList(info, id) {
+	var txt = '<ul>';
+	$.each(info, function(i, str) {		
+		if(str.search(".csv") != -1){
+			var encoded = encodeURIComponent(str);
+			var description = str.slice(0, str.lastIndexOf(".csv"));
+			txt = txt + "<li>" + description + ":"
+			+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+			+ "<img src=\"../../css/img/go-down-5.png\" />"
+			+ "<a href=\"manage-bundles!downloadOutputFile.action?id="
+			+ id+ "&downloadFilename=" 
+			+ encoded + "\">" + ".csv" +  "</a></li>";	
+		}		    
+	});
+	
+	// append log file
+	txt = txt + "<li>" + "Bundle Builder Log:" + "&nbsp;"
+	+ " " + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+	+ "<img src=\"../../css/img/go-down-5.png\" />"
+	+ "<a href=\"manage-bundles!downloadOutputFile.action?id="
+	+ id+ "&downloadFilename=" 
+	+ encodeURIComponent("bundleBuilder.out.txt") + "\">" + ".txt" +  "</a></li>";	
+	txt = txt + '</ul>';
+	
+	jQuery("#buildBundle_fileList").html(txt).css("display", "block");
+	jQuery("#buildBundle #downloadLogs").show().css("display", "block");
+	jQuery("#buildBundle #downloadLogs #downloadButton").attr("href", "manage-bundles!buildOutputZip.action?id=" + id);
+}
+//Populates bundle information in related fields.
+function showBundleInfo(bundleInfo){
+	var bundleObj = JSON.parse(bundleInfo);
+	
+	//Populating Upload Tab Fields
+	$.each(bundleObj.agencyList, function(i, agency) {
+	    jQuery("#agencyId").val(agency.agencyId);
+	    jQuery("#agencyDataSource").val(agency.agencyDataSource);
+	    jQuery("#agencyDataSourceType").val(agency.agencyDataSourceType);
+	    jQuery("#agencyProtocol").val(agency.agencyProtocol);
+	});
+	
+	//Populating Pre-Validate Tab Fields
+	jQuery("#prevalidate_bundleName").val(bundleObj.validationResponse.bundleBuildName);
+	jQuery("#prevalidate_id").text(bundleObj.validationResponse.requestId);
+	setDivHtml(document.getElementById('prevalidate_resultList'), bundleObj.validationResponse.statusMessages);
+	
+	//Populating Build Tab Fields
+	jQuery("#buildBundle_email").val(bundleObj.buildResponse.email);
+	jQuery("#buildBundle_bundleName").val(bundleObj.buildResponse.bundleBuildName);
+	jQuery("#startDatePicker").val(bundleObj.buildResponse.startDate);
+	jQuery("#endDatePicker").val(bundleObj.buildResponse.endDate);
+	jQuery("#commentBox #bundleComment").val(bundleObj.buildResponse.comment);
+	console.log(bundleObj.directoryName);
+	jQuery("#buildBundle_bundleDirectory").text(bundleObj.directoryName);
+	jQuery("#buildBundle_id").text(bundleObj.buildResponse.requestId);	
+	setDivHtml(document.getElementById('buildBundle_resultList'), bundleObj.buildResponse.statusMessages);
+	showBuildFileList(bundleObj.buildResponse.buildOutputFiles, bundleObj.buildResponse.requestId);
+}
 function onSelectClick() {
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
 	var actionName = "selectDirectory";
@@ -322,6 +388,10 @@ function onSelectClick() {
 					var continueButton = jQuery("#create_continue");
 					enableContinueButton(continueButton);
 					var bundleDir = status.directoryName;
+					var bundleInfo = status.bundleInfo;
+					if(bundleInfo != null || bundleInfo != undefined){
+						showBundleInfo(JSON.stringify(bundleInfo));
+					}					
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
 					jQuery("#buildBundle_bundleDirectory").text(bundleDir);
 					jQuery("#s3_location").text(status.bucketName);

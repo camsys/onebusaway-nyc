@@ -38,6 +38,12 @@ public class BuildResource extends AuthenticatedResource {
 	@Autowired
 	private BundleRequestService _bundleService;
 	private LoggingService loggingService;
+	private String directoryName;
+	private String bundleName;
+	private String startDate;
+	private String endDate;
+	private String emailTo;
+	private String comment;
 	
 	private final ObjectMapper _mapper = new ObjectMapper();
 	private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
@@ -53,6 +59,13 @@ public class BuildResource extends AuthenticatedResource {
 			@FormParam("bundleEndDate") String bundleEndDate,
 			@FormParam("bundleComment") String bundleComment) {
 		Response response = null;
+		directoryName = bundleDirectory;
+		this.bundleName = bundleName;
+		startDate = bundleStartDate;
+		endDate = bundleEndDate;
+		emailTo = email;
+		comment = bundleComment;
+		
 		if (!isAuthorized()) {
 			return Response.noContent().build();
 		}
@@ -81,7 +94,6 @@ public class BuildResource extends AuthenticatedResource {
 			buildRequest.setBundleStartDate(bundleStartDate);
 			buildRequest.setBundleEndDate(bundleEndDate);
 			buildRequest.setBundleComment(bundleComment);
-			
 			
 			try {
 				String message = "Starting bundle building process for bundle '" + buildRequest.getBundleName()
@@ -139,6 +151,12 @@ public class BuildResource extends AuthenticatedResource {
 			return Response.noContent().build();
 		}
 		BundleBuildResponse buildResponse = _bundleService.lookupBuildRequest(id);
+		buildResponse.setBundleBuildName(bundleName);
+		buildResponse.setBundleDirectoryName(directoryName);
+		buildResponse.setBundleEmailTo(emailTo);
+		buildResponse.setBundleStartDate(startDate);
+		buildResponse.setBundleEndDate(endDate);
+		buildResponse.setBundleComment(comment);
 		try {
 			final StringWriter sw = new StringWriter();
 			final MappingJsonFactory jsonFactory = new MappingJsonFactory();
@@ -176,5 +194,17 @@ public class BuildResource extends AuthenticatedResource {
 	@Autowired
 	public void setLoggingService(LoggingService loggingService) {
 		this.loggingService = loggingService;
+	}
+
+	public LoggingService getLoggingService() {
+		return loggingService;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 }

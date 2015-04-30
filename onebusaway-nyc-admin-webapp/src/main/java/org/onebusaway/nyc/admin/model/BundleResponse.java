@@ -11,6 +11,8 @@ public class BundleResponse {
   private List<String> _validationFiles = Collections.synchronizedList(new ArrayList<String>());
   private String _tmpDirectory = null;
   private String _remoteOutputDirectory;
+  private String directoryName;
+  private String buildName;
   private String _id = null;
   
   
@@ -25,6 +27,7 @@ public class BundleResponse {
   public BundleResponse(String id) {
     _id = id;
   }
+  
   public synchronized  boolean isComplete() {
     return _isComplete;
   }
@@ -92,5 +95,21 @@ public class BundleResponse {
    public String getRemoteOutputDirectory() {
     return _remoteOutputDirectory;
   }
+
+   public String getDirectoryName() {
+	   return directoryName;
+   }
+
+   public void setDirectoryName(String directoryName) {
+	   this.directoryName = directoryName;
+   }
+
+   public String getBuildName() {
+	   return buildName;
+   }
+
+   public void setBuildName(String buildName) {
+	   this.buildName = buildName;
+   }
 
 }
