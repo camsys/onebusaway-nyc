@@ -185,8 +185,14 @@ public class HastusGtfsFactory {
   }
   
   private String computeStopName(String primaryName, String crossName) {
-    String stopName = primaryName + " & " + crossName;
-    stopName = stopName.replaceAll(" & Bay", " - Bay");
+    
+    String stopName;
+    if (crossName != null && crossName.trim().length() > 0) {
+      stopName = primaryName + " & " + crossName;
+    } else {
+      stopName = primaryName;
+    }
+      stopName = stopName.replaceAll(" & Bay", " - Bay");
     return stopName;
   }
 
