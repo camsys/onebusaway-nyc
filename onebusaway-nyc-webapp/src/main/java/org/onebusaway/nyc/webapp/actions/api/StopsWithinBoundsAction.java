@@ -31,7 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ParentPackage("json-default")
-@Result(type="json")
+//@Result(type="json")
+@Result(type="json", params={"callbackParameter", "callback"})
 public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;

@@ -25,7 +25,8 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @ParentPackage("json-default")
-@Result(type="json")
+//@Result(type="json")
+@Result(type="json", params={"callbackParameter", "callback"})
 public class SearchAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
