@@ -182,6 +182,7 @@ public class BundleRequestServiceImplTest {
     req.setTmpDirectory(new NYCFileUtils().createTmpDirectory());
     req.setBundleStartDate("2012-04-08");
     req.setBundleEndDate("2012-07-07");
+    req.setBundleComment("Test Bundle");
     _log.debug("calling build for dir=" + req.getBundleDirectory() + " name=" + req.getBundleName());
     BundleBuildResponse res = service.build(req);
     assertFalse(res.isComplete());

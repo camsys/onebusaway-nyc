@@ -379,7 +379,7 @@ function onSelectClick() {
 		data: {"directoryName" : bundleDir,
 			"destDirectoryName" : copyDir},
 			async: false,
-			success: function(response) {
+			success: function(response) {				
 				disableSelectButton();
 				var status = response;
 				if (status != undefined) {

@@ -38,7 +38,7 @@ public class ManageBundlesActionTest {
 	public void testCreateDirectorySuccess() {
 		setCommonExpectations(false, true);
 		
-		action.createDirectory();
+		action.createDirectory();	
 		
 		assertEquals(action.getDirectoryStatus().getMessage(), "Successfully created new directory: TEST");
 		assertEquals(action.getBundleDirectory(), "TEST");
@@ -77,5 +77,4 @@ public class ManageBundlesActionTest {
 		verify(fileService, times(1)).bundleDirectoryExists(directoryName);
 		verify(fileService, times(0)).createBundleDirectory(directoryName);
 	}
-
 }

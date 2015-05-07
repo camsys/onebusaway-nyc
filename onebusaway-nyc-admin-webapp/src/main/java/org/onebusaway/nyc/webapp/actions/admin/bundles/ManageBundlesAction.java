@@ -119,7 +119,6 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	private String environment = "dev";
 	private DiffService diffService;
 	private static final String TRACKING_INFO = "info.json";
-	private boolean isCopy;
 
 	@Override
 	public String input() {
@@ -224,29 +223,32 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	}
 
 	private void writeBundleTrackingInfo(JSONObject bundleObject, String directoryName) {
-		String pathname = fileService.getBucketName() + File.separatorChar + directoryName + File.separatorChar + TRACKING_INFO;		
-		File file = new File(pathname);		
-		FileWriter handle = null;
+		if(fileService.getBucketName() != null){
+			String pathname = fileService.getBucketName() + File.separatorChar + directoryName + File.separatorChar + TRACKING_INFO;
+			
+			File file = new File(pathname);		
+			FileWriter handle = null;
 
-		try {			
-			if(!file.exists()){
-				file.createNewFile();
+			try {			
+				if(!file.exists()){
+					file.createNewFile();
+				}
+
+				handle = new FileWriter(file);
+				if(bundleObject != null){
+					handle.write(bundleObject.toJSONString());
+				}		
+				handle.flush();
 			}
-
-			handle = new FileWriter(file);
-			if(bundleObject != null){
-				handle.write(bundleObject.toJSONString());
-			}		
-			handle.flush();
-		}
-		catch(Exception e){
-			_log.error("Bundle Tracker Writing:: " +e.getMessage());
-		}
-		finally{
-			try{
-				handle.close();
-			}catch(IOException ie){
-				_log.error("Bundle Tracker Writing :: File Handle Failed to Close");
+			catch(Exception e){
+				_log.error("Bundle Tracker Writing:: " +e.getMessage());
+			}
+			finally{
+				try{
+					handle.close();
+				}catch(IOException ie){
+					_log.error("Bundle Tracker Writing :: File Handle Failed to Close");
+				}
 			}
 		}
 	}
@@ -277,7 +279,9 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 		directoryStatus.setBucketName(fileService.getBucketName());	
 		if(selected){
 			JSONObject bundleInfo = getBundleTrackingObject(directoryName);
-			if(!bundleInfo.isEmpty()) {
+			String str = bundleInfo.toJSONString();
+			_log.info("bundleInfo.length :: " + str.length());
+			if(str.length() > 2) {
 				directoryStatus.setBundleInfo(bundleInfo);
 			}else {
 				directoryStatus.setBundleInfo(null);
@@ -914,19 +918,5 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	 */
 	public void setDestDirectoryName(String destDirectoryName) {
 		this.destDirectoryName = destDirectoryName;
-	}
-
-	/**
-	 * @return the isCopy
-	 */
-	public boolean isCopy() {
-		return isCopy;
-	}
-
-	/**
-	 * @param isCopy the isCopy to set
-	 */
-	public void setCopy(boolean isCopy) {
-		this.isCopy = isCopy;
 	}
 }
