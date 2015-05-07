@@ -279,12 +279,13 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 		directoryStatus.setBucketName(fileService.getBucketName());	
 		if(selected){
 			JSONObject bundleInfo = getBundleTrackingObject(directoryName);
-			String str = bundleInfo.toJSONString();
-			_log.info("bundleInfo.length :: " + str.length());
-			if(str.length() > 2) {
-				directoryStatus.setBundleInfo(bundleInfo);
-			}else {
-				directoryStatus.setBundleInfo(null);
+			if(bundleInfo != null) { //Added for JUnit
+				if(!bundleInfo.isEmpty()) {
+					directoryStatus.setBundleInfo(bundleInfo);
+				}
+				else {
+					directoryStatus.setBundleInfo(null);
+				}
 			}
 		}
 		return directoryStatus;
