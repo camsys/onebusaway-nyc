@@ -167,6 +167,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 					_log.info("Copied from: "+directoryName+ " to: "+destDirectoryName);
 					directoryName = destDirectoryName;
 					createDirectoryMessage = "Successfully copied into new directory: " + destDirectoryName;
+					createDirectoryMessage += ". Validate and Build now!";
 					timestamp = fileService.getBundleDirTimestamp(destDirectoryName);
 				} else {
 					createDirectoryMessage = "Unable to create direcory: " + destDirectoryName;
