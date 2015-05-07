@@ -19,7 +19,7 @@ var timeout = null;
 jQuery(function() {
 	//Initialize tabs
 	jQuery("#tabs").tabs();
-	
+
 	//Initialize date pickers
 	jQuery("#startDatePicker").datepicker(
 			{ 
@@ -37,7 +37,7 @@ jQuery(function() {
 					jQuery("#startDatePicker").datepicker("option", "maxDate", selectedDate);
 				}
 			});
-	
+
 	// check if we were called with a hash -- re-enter from email link
 	if (window.location.hash) {
 		var hash = window.location.hash;
@@ -66,11 +66,11 @@ jQuery(function() {
 	jQuery("#tabs").bind("tabsshow", function(event, ui) {
 		window.location.hash = ui.tab.hash;
 	});
-	
+
 	jQuery("#currentDirectories").selectable({ 
 		stop: function() {
 			var names = $.map($('#listItem.ui-selected strong, this'), function(element, i) {
-			  return $(element).text();  
+				return $(element).text();  
 			});
 			if (names.length > 0) {
 				var $element = jQuery("#createDirectory #directoryName");
@@ -78,18 +78,29 @@ jQuery(function() {
 				$element.attr("value", names[0]);
 				jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
 				jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
-				jQuery("#createDirectoryMessage").text("Click Select button to load your directory")
+
+				if(jQuery("#select").is(":checked")){
+					jQuery("#createDirectoryMessage").text("Click Select button to load your directory")
 					.css("font-weight", "bold").css("color", "red");
-				//Enable select button
-				enableSelectButton();
+					//Enable select button			
+					enableSelectButton();
+				}
+
+				//Do little different if its copy.
+				if (jQuery("#copy").is(":checked")) {					
+					jQuery("#createDirectoryMessage").text("Click Copy to copy directory contents")
+					.css("font-weight", "bold").css("color", "red");	
+					//Enable select button			
+					enableSelectButton();
+				}
 			}
 		}
 	});
-	
+
 	jQuery("#compareCurrentDirectories").selectable({
 		stop: function() {
 			var names = $.map($('#compareListItem.ui-selected strong, this'), function(element, i) {  
-			  return $(element).text();  
+				return $(element).text();  
 			}); 
 			if (names.length > 0) {
 				jQuery.ajax({
@@ -104,21 +115,21 @@ jQuery(function() {
 						$('#diffResult').text('');
 						$.each(data, function(index, value) {
 							$('#compareSelectedBuild').append(
-								"<div id=\"compareBuildListItem\"><div class=\"listData\"><strong>"+value+"</strong></div></div>");
+									"<div id=\"compareBuildListItem\"><div class=\"listData\"><strong>"+value+"</strong></div></div>");
 						});
 					}
 				})
 			}
 		}
 	});
-	
+
 	jQuery("#compareSelectedBuild").selectable({
 		stop: function() {
 			var bundleNames = $.map($('#compareListItem.ui-selected strong, this'), function(element, i) {  
-			  return $(element).text();  
+				return $(element).text();  
 			}); 
 			var buildNames = $.map($('#compareBuildListItem.ui-selected strong, this'), function(element, i) {  
-			  return $(element).text();  
+				return $(element).text();  
 			});
 			if (buildNames.length > 0) {
 				jQuery.ajax({
@@ -135,7 +146,7 @@ jQuery(function() {
 						$('#diffResult').text('');
 						$.each(data, function(index, value) {
 							$('#diffResult').append(
-								"<div id=\"diffResultItem\">"+value+"</div>");
+									"<div id=\"diffResultItem\">"+value+"</div>");
 						});
 					}
 				})
@@ -144,60 +155,60 @@ jQuery(function() {
 	});
 
 	jQuery("#create_continue").click(onCreateContinueClick);
-	
+
 	jQuery("#prevalidate_continue").click(onPrevalidateContinueClick);
-	
+
 	jQuery("#upload_continue").click(onUploadContinueClick);
-	
+
 	jQuery("#build_continue").click(onBuildContinueClick);
-	
+
 	jQuery("#stage_continue").click(onStageContinueClick);
-	
+
 	jQuery("#deploy_continue").click(onDeployContinueClick);
-	
+
 	// hookup ajax call to select
 	jQuery("#directoryButton").click(onSelectClick);
-	
+
 	// upload bundle source data for selected agency
 	jQuery("#uploadSelectedAgenciesButton").click(onUploadSelectedAgenciesClick);
-	
+
 	// add another row to the list of agencies and their source data
 	jQuery("#addAnotherAgencyButton").click(onAddAnotherAgencyClick);
-	
+
 	// toggle agency row as selected when checkbox is clicked
 	//jQuery("#agency_data :checkbox").change(onSelectAgencyChange);
 	jQuery("#agency_data").on("change", "tr :checkbox", onSelectAgencyChange);
-	
+
 	// change input type to 'file' if protocol changes to 'file'
 	jQuery("#agency_data").on("change", "tr .agencyProtocol", onAgencyProtocolChange);
-	
+
 	// remove selected agencies
 	jQuery("#removeSelectedAgenciesButton").click(onRemoveSelectedAgenciesClick);
 
 	//toggle advanced option contents
 	jQuery("#createDirectory #advancedOptions #expand").bind({
-			'click' : toggleAdvancedOptions	});
-	
+		'click' : toggleAdvancedOptions	});
+
 	//toggle validation progress list
 	jQuery("#prevalidateInputs #prevalidate_progress #expand").bind({
-			'click' : toggleValidationResultList});
-	
+		'click' : toggleValidationResultList});
+
 	//toggle bundle build progress list
 	jQuery("#buildBundle #buildBundle_progress #expand").bind({
-			'click' : toggleBuildBundleResultList});
-	
-	//handle create and select radio buttons
+		'click' : toggleBuildBundleResultList});
+
+	//handle create, select and copy radio buttons
 	jQuery("input[name='options']").change(directoryOptionChanged);
-	
+
 	//Handle validate button click event
 	jQuery("#prevalidateInputs #validateBox #validateButton").click(onValidateClick);
-	
+
 	//Handle build button click event
 	jQuery("#buildBundle_buildButton").click(onBuildClick);
-	
+
 	//Handle reset button click event
 	jQuery("#buildBundle_resetButton").click(onResetClick);
-	
+
 	//Enable or disable create/select button when user enters/removes directory name
 	//Using bind() with propertychange event as live() does not work in IE for unknown reasons
 	jQuery("#createDirectoryContents #directoryName").bind("input propertychange", function() {
@@ -214,17 +225,17 @@ jQuery(function() {
 
 	//toggle bundle staging progress list
 	jQuery("#stageBundle #stageBundle_progress #expand").bind({
-			'click' : toggleStageBundleResultList});
+		'click' : toggleStageBundleResultList});
 
-	
+
 	//Handle stage button click event
 	jQuery("#stageBundle_stageButton").click(onStageClick);
 
-	
+
 	//toggle bundle deploy progress list
 	jQuery("#deployBundle #deployBundle_progress #expand").bind({
-			'click' : toggleDeployBundleResultList});
-	
+		'click' : toggleDeployBundleResultList});
+
 	//Handle deploy button click event
 	jQuery("#deployBundle_deployButton").click(onDeployClick);
 	jQuery("#deployBundle_listButton").click(onDeployListClick);
@@ -284,7 +295,7 @@ function showBuildFileList(info, id) {
 			+ encoded + "\">" + ".csv" +  "</a></li>";	
 		}		    
 	});
-	
+
 	// append log file
 	txt = txt + "<li>" + "Bundle Builder Log:" + "&nbsp;"
 	+ " " + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
@@ -293,33 +304,54 @@ function showBuildFileList(info, id) {
 	+ id+ "&downloadFilename=" 
 	+ encodeURIComponent("bundleBuilder.out.txt") + "\">" + ".txt" +  "</a></li>";	
 	txt = txt + '</ul>';
-	
+
 	jQuery("#buildBundle_fileList").html(txt).css("display", "block");
 	jQuery("#buildBundle #downloadLogs").show().css("display", "block");
 	jQuery("#buildBundle #downloadLogs #downloadButton").attr("href", "manage-bundles!buildOutputZip.action?id=" + id);
 }
+//Helper Method for Agency Row
+function showThisAgency(agency){
+	var new_row = '<tr> \
+		<td><div><input type="checkbox" /></div></td> \
+		<td><input type="text" class="agencyId"/></td> \
+		<td><select class="agencyDataSourceType"> \
+		<option value="gtfs">gtfs</option> \
+		<option value="aux">aux</option> \
+		</select></td> \
+		<td><select class="agencyProtocol"> \
+		<option value="http">http</option> \
+		<option value="ftp">ftp</option> \
+		<option value="file">file</option> \
+		</select></td> \
+		<td><input type="text" class="agencyDataSource"/></td> \
+		</tr>';
+	$('#agency_data').append(new_row);	
+}
 //Populates bundle information in related fields.
 function showBundleInfo(bundleInfo){
 	var bundleObj = JSON.parse(bundleInfo);
-	
+
 	//Populating Upload Tab Fields
 	$.each(bundleObj.agencyList, function(i, agency) {
-	    jQuery("#agencyId").val(agency.agencyId);
+		//showThisAgency(agency);
+		jQuery("#agencyId").val(agency.agencyId);
 	    jQuery("#agencyDataSource").val(agency.agencyDataSource);
 	    jQuery("#agencyDataSourceType").val(agency.agencyDataSourceType);
 	    jQuery("#agencyProtocol").val(agency.agencyProtocol);
 	});
-	
+
 	//Populating Pre-Validate Tab Fields
 	jQuery("#prevalidate_bundleName").val(bundleObj.validationResponse.bundleBuildName);
 	jQuery("#prevalidate_id").text(bundleObj.validationResponse.requestId);
 	setDivHtml(document.getElementById('prevalidate_resultList'), bundleObj.validationResponse.statusMessages);
-	
+
 	//Populating Build Tab Fields
 	jQuery("#buildBundle_email").val(bundleObj.buildResponse.email);
 	jQuery("#buildBundle_bundleName").val(bundleObj.buildResponse.bundleBuildName);
 	jQuery("#startDatePicker").val(bundleObj.buildResponse.startDate);
+	jQuery("#startDate").val(bundleObj.buildResponse.startDate);
 	jQuery("#endDatePicker").val(bundleObj.buildResponse.endDate);
+	jQuery("#endDate").val(bundleObj.buildResponse.endDate);
 	jQuery("#commentBox #bundleComment").val(bundleObj.buildResponse.comment);
 	console.log(bundleObj.directoryName);
 	jQuery("#buildBundle_bundleDirectory").text(bundleObj.directoryName);
@@ -330,14 +362,22 @@ function showBundleInfo(bundleInfo){
 function onSelectClick() {
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
 	var actionName = "selectDirectory";
-	
+	var copyDir = "";
+
 	if (jQuery("#create").is(":checked")) {
 		actionName = "createDirectory";
 	}
+
+	if(jQuery("#copy").is(":checked")) {
+		copyDir = jQuery("#destDirectoryName").val();
+		actionName = "copyDirectory";
+	}
+
 	jQuery.ajax({
-			url: "manage-bundles!" + actionName + ".action?ts=" +new Date().getTime(),
-			type: "GET",
-			data: {"directoryName" : bundleDir},
+		url: "manage-bundles!" + actionName + ".action?ts=" +new Date().getTime(),
+		type: "GET",
+		data: {"directoryName" : bundleDir,
+			"destDirectoryName" : copyDir},
 			async: false,
 			success: function(response) {
 				disableSelectButton();
@@ -370,16 +410,17 @@ function onSelectClick() {
 								+ '<div style="" class="listData ui-selectee"> </div>'
 								+ '<div style="" class="listData ui-selectee">'
 								+ status.timestamp;
-								+ '</div></div>"';
+							+ '</div></div>"';
 							if (idx == 0) {
 								insertAfterThis.prepend(newDirRow);
 							} else {
 								insertAfterThis.after(newDirRow);
 							}
-						}
+						}						
 						enableBuildButton();
 						enableResetButton();
-					} else {
+					}					
+					else {
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 						jQuery("#createDirectoryMessage").text(status.message).css("color", "red");
 						disableBuildButton();
@@ -404,9 +445,9 @@ function onSelectClick() {
 				}
 			},
 			error: function(request) {
-			    alert("There was an error processing your request. Please try again.");
+				alert("There was an error processing your request. Please try again.");
 			}
-		});
+	});
 }
 
 function onUploadSelectedAgenciesClick() {
@@ -425,8 +466,8 @@ function onUploadSelectedAgenciesClick() {
 			//console.log("file name: " + file.name);
 		}
 		console.log("next agency: " + agencyId + ", type: " + agencyDataSourceType
-			+ ", protocol: " + agencyProtocol
-			+ ", data source: " + agencyDataSource);
+				+ ", protocol: " + agencyProtocol
+				+ ", data source: " + agencyDataSource);
 		if (agencyProtocol != "file") {
 			var actionName = "uploadSourceData";	
 			jQuery.ajax({
@@ -447,7 +488,7 @@ function onUploadSelectedAgenciesClick() {
 				},
 				error: function(request) {
 					console.log("Error uploadeding " + agencyDataSource);
-				    alert("There was an error processing your request. Please try again.");
+					alert("There was an error processing your request. Please try again.");
 				}
 			});
 		} else {
@@ -477,12 +518,12 @@ function onUploadSelectedAgenciesClick() {
 				},
 				error: function(request) {
 					console.log("Error uploadeding " + agencyDataFile.name);
-				    alert("There was an error processing your request. Please try again.");
+					alert("There was an error processing your request. Please try again.");
 				}
 			});
-			
+
 		}
-		
+
 	});
 }
 
@@ -491,13 +532,13 @@ function onAddAnotherAgencyClick() {
 		<td><div><input type="checkbox" /></div></td> \
 		<td><input type="text" class="agencyId"/></td> \
 		<td><select class="agencyDataSourceType"> \
-		    <option value="gtfs">gtfs</option> \
-		    <option value="aux">aux</option> \
+		<option value="gtfs">gtfs</option> \
+		<option value="aux">aux</option> \
 		</select></td> \
 		<td><select class="agencyProtocol"> \
-		    <option value="http">http</option> \
-		    <option value="ftp">ftp</option> \
-		    <option value="file">file</option> \
+		<option value="http">http</option> \
+		<option value="ftp">ftp</option> \
+		<option value="file">file</option> \
 		</select></td> \
 		<td><input type="text" class="agencyDataSource"/></td> \
 		</tr>';
@@ -645,7 +686,7 @@ function toggleStageBundleResultList() {
 
 
 function changeImageSrc($image) {
-	
+
 	var $imageSource = $image.attr("src");
 	if($imageSource.indexOf("right-3") != -1) {
 		//Change the img to down arrow
@@ -668,26 +709,44 @@ function directoryOptionChanged() {
 		jQuery("#createDirectoryContents #directoryButton").val("Create");
 		jQuery("#createDirectoryContents #directoryButton").attr("name","method:createDirectory");
 		jQuery("#selectExistingContents").hide();
-	} else {
+		jQuery('#copyDirectory').hide();
+	} 
+	else if(jQuery("#copy").is(":checked")) {
+		jQuery("#createDirectoryContents #directoryButton").val("Copy");
+		jQuery("#createDirectoryContents #directoryButton").attr("name","method:selectDirectory");
+		jQuery("#selectExistingContents").show();
+		var element = '<br><div id="copyDirectory">' + 'Destination: ' + 
+		'<input type="text" id="destDirectoryName" class="destDirectoryName" required="required"/>' + '<label class="required">*</label></div>';
+			if(jQuery('#destDirectoryName').length){						
+				//Do nothing
+				console.log('Element exists');
+				jQuery('#copyDirectory').show();
+			}else{
+				jQuery(element).insertAfter("#directoryButton");
+			}	
+	}
+	else 
+	{
 		//Change the button text and show select directory list
 		jQuery("#createDirectoryContents #directoryButton").val("Select");
 		jQuery("#createDirectoryContents #directoryButton").attr("name","method:selectDirectory");
 		jQuery("#selectExistingContents").show();
+		jQuery('#copyDirectory').hide();
 		// TODO replace the exitingDirectories form call with this below
 //		jQuery.ajax({
-//			url: "manage-bundles!requestExistingDirectories.action",
-//			type: "GET",
-//			async: false,
-//			success: function(response) {
-//				jQuery("#selectExistingContents").show();
-//				
-//			},
-//			error: function(request) {
-//				alert(request.statustext);
-//			}
+//		url: "manage-bundles!requestExistingDirectories.action",
+//		type: "GET",
+//		async: false,
+//		success: function(response) {
+//		jQuery("#selectExistingContents").show();
+
+//		},
+//		error: function(request) {
+//		alert(request.statustext);
+//		}
 //		});
 	}
-	
+
 }
 
 function onValidateClick() {
@@ -705,7 +764,7 @@ function onValidateClick() {
 		alert("bundle build name cannot contain spaces");
 		return;
 	}
-	
+
 	else {
 		jQuery("#buildBundle_bundleName").val(bundleName);
 	}
@@ -718,15 +777,15 @@ function onValidateClick() {
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var bundleResponse = response;
-				if (bundleResponse != undefined) {
-					jQuery("#prevalidate_id").text(bundleResponse.id);
-					//jQuery("#prevalidate_resultList").text("calling...");
-					window.setTimeout(updateValidateStatus, 5000);
-				} else {
-					jQuery("#prevalidate_id").text(error);
-					jQuery("#prevalidate_resultList").text("error");
-				}
+			var bundleResponse = response;
+			if (bundleResponse != undefined) {
+				jQuery("#prevalidate_id").text(bundleResponse.id);
+				//jQuery("#prevalidate_resultList").text("calling...");
+				window.setTimeout(updateValidateStatus, 5000);
+			} else {
+				jQuery("#prevalidate_id").text(error);
+				jQuery("#prevalidate_resultList").text("error");
+			}
 		},
 		error: function(request) {
 			alert("There was an error processing your request. Please try again.");
@@ -741,34 +800,34 @@ function updateValidateStatus() {
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var txt = "<ul>";
-				var bundleResponse = response;
-				if (bundleResponse == null) {
-					jQuery("#prevalidate_validationProgress").text("Complete.");
-					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").attr("src","../../css/img/dialog-accept-2.png");
-					jQuery("#prevalidate_resultList").html("unknown id=" + id);
+			var txt = "<ul>";
+			var bundleResponse = response;
+			if (bundleResponse == null) {
+				jQuery("#prevalidate_validationProgress").text("Complete.");
+				jQuery("#prevalidateInputs #validateBox #validating #validationProgress").attr("src","../../css/img/dialog-accept-2.png");
+				jQuery("#prevalidate_resultList").html("unknown id=" + id);
+			}
+			var size = bundleResponse.statusMessages.length;
+			if (size > 0) {
+				for (var i=0; i<size; i++) {
+					txt = txt + "<li>" + bundleResponse.statusMessages[i] + "</li>";
 				}
-				var size = bundleResponse.statusMessages.length;
-				if (size > 0) {
-					for (var i=0; i<size; i++) {
-						txt = txt + "<li>" + bundleResponse.statusMessages[i] + "</li>";
-					}
+			}
+			if (bundleResponse.complete == false) {
+				window.setTimeout(updateValidateStatus, 5000); // recurse
+			} else {
+				jQuery("#prevalidate_validationProgress").text("Complete.");
+				jQuery("#prevalidateInputs #validateBox #validating #validationProgress").attr("src","../../css/img/dialog-accept-2.png");
+				updateValidateList(id);
+			}
+			txt = txt + "</ul>";
+			jQuery("#prevalidate_resultList").html(txt).css("font-size", "12px");
+			if (bundleResponse.exception != null) {
+				if (bundleResponse.exception.message != undefined) {
+					jQuery("#prevalidate_exception").show().css("display","inline");
+					jQuery("#prevalidate_exception").html(bundleResponse.exception.message);
 				}
-				if (bundleResponse.complete == false) {
-					window.setTimeout(updateValidateStatus, 5000); // recurse
-				} else {
-					jQuery("#prevalidate_validationProgress").text("Complete.");
-					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").attr("src","../../css/img/dialog-accept-2.png");
-					updateValidateList(id);
-				}
-				txt = txt + "</ul>";
-				jQuery("#prevalidate_resultList").html(txt).css("font-size", "12px");
-				if (bundleResponse.exception != null) {
-					if (bundleResponse.exception.message != undefined) {
-						jQuery("#prevalidate_exception").show().css("display","inline");
-						jQuery("#prevalidate_exception").html(bundleResponse.exception.message);
-					}
-				}
+			}
 
 		},
 		error: function(request) {
@@ -778,7 +837,7 @@ function updateValidateStatus() {
 	});
 }
 
-// populate list of files that were result of validation
+//populate list of files that were result of validation
 function updateValidateList(id) {
 	jQuery.ajax({
 		url: "manage-bundles!fileList.action?ts=" +new Date().getTime(),
@@ -786,25 +845,25 @@ function updateValidateList(id) {
 		data: {"id": id},
 		async: false,
 		success: function(response) {
-				var txt = "<ul>";
-				
-				var list = response;
-				if (list != null) {
-					var size = list.length;
-					if (size > 0) {
-						for (var i=0; i<size; i++) {
-							var encoded = encodeURIComponent(list[i]);
-							txt = txt + "<li><a href=\"manage-bundles!downloadValidateFile.action?id="
-							+ id+ "&downloadFilename=" 
-							+ encoded + "\">" + encoded +  "</a></li>";
-						}
+			var txt = "<ul>";
+
+			var list = response;
+			if (list != null) {
+				var size = list.length;
+				if (size > 0) {
+					for (var i=0; i<size; i++) {
+						var encoded = encodeURIComponent(list[i]);
+						txt = txt + "<li><a href=\"manage-bundles!downloadValidateFile.action?id="
+						+ id+ "&downloadFilename=" 
+						+ encoded + "\">" + encoded +  "</a></li>";
 					}
 				}
-				txt = txt + "</ul>";
-				jQuery("#prevalidate_fileList").html(txt);
-				jQuery("#prevalidateInputs #validateBox #validateButton").removeAttr("disabled");
-				var continueButton = jQuery("#prevalidate_continue");
-				enableContinueButton(continueButton);
+			}
+			txt = txt + "</ul>";
+			jQuery("#prevalidate_fileList").html(txt);
+			jQuery("#prevalidateInputs #validateBox #validateButton").removeAttr("disabled");
+			var continueButton = jQuery("#prevalidate_continue");
+			enableContinueButton(continueButton);
 		},
 		error: function(request) {
 			clearTimeout(timeout);
@@ -821,7 +880,7 @@ function onBuildClick() {
 	var startDate = jQuery("#startDate").val();
 	var endDate = jQuery("#endDate").val();
 	var bundleComment = jQuery("#bundleComment").val();
-	
+
 	var valid = validateBundleBuildFields(bundleDir, bundleName, startDate, endDate);
 	if(valid == false) {
 		return;
@@ -831,7 +890,7 @@ function onBuildClick() {
 	jQuery("#buildBundle_fileList").html("");
 	jQuery("#buildBundle #downloadLogs").hide();
 	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
-	
+
 	disableBuildButton();
 	disableResetButton();
 	buildBundle(bundleName, startDate, endDate, bundleComment);
@@ -841,12 +900,12 @@ function onResetClick() {
 	jQuery("#startDatePicker").val("");
 	jQuery("#endDatePicker").val("");
 	jQuery("#buildBundle_bundleName").val("");
-	
+
 	jQuery("#buildBundle_resultList").html("");
 	jQuery("#buildBundle_exception").html("");
 	jQuery("#buildBundle_fileList").html("");
 	jQuery("#buildBundle_fileList").html("");
-	
+
 	jQuery("#buildBundle #downloadLogs").hide();
 	jQuery("#buildBundle #buildBox #building").hide();
 }
@@ -888,20 +947,20 @@ function bundleUrl() {
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var bundleResponse = response;
-				if(bundleResponse.exception !=null) {
-					jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
-							.css("padding-left", "5px")
-							.css("font-size", "12px")
-							.addClass("adminLabel")
-							.css("color", "red");
-				} else {
-					jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
-							.css("padding-left", "5px")
-							.css("font-size", "12px")
-							.addClass("adminLabel")
-							.css("color", "green");
-				}
+			var bundleResponse = response;
+			if(bundleResponse.exception !=null) {
+				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
+				.css("padding-left", "5px")
+				.css("font-size", "12px")
+				.addClass("adminLabel")
+				.css("color", "red");
+			} else {
+				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
+				.css("padding-left", "5px")
+				.css("font-size", "12px")
+				.addClass("adminLabel")
+				.css("color", "green");
+			}
 		},
 		error: function(request) {
 			clearTimeout(timeout);
@@ -930,21 +989,21 @@ function buildBundle(bundleName, startDate, endDate, bundleComment){
 			bundleComment: bundleComment
 		},
 		success: function(response) {
-				var bundleResponse = response;
-				if (bundleResponse != undefined) {
-					//display exception message if there is any
-					if(bundleResponse.exception !=null) {
-						alert(bundleResponse.exception.message);
-					} else {
-						jQuery("#buildBundle_resultList").html("calling...");
-						jQuery("#buildBundle_id").text(bundleResponse.id);
-						window.setTimeout(updateBuildStatus, 5000);
-						bundleUrl();
-					}
+			var bundleResponse = response;
+			if (bundleResponse != undefined) {
+				//display exception message if there is any
+				if(bundleResponse.exception !=null) {
+					alert(bundleResponse.exception.message);
 				} else {
-					jQuery("#buildBundle_id").text(error);
-					jQuery("#buildBundle_resultList").html("error");
+					jQuery("#buildBundle_resultList").html("calling...");
+					jQuery("#buildBundle_id").text(bundleResponse.id);
+					window.setTimeout(updateBuildStatus, 5000);
+					bundleUrl();
 				}
+			} else {
+				jQuery("#buildBundle_id").text(error);
+				jQuery("#buildBundle_resultList").html("error");
+			}
 		},
 		error: function(request) {
 			alert("There was an error processing your request. Please try again.");
@@ -960,43 +1019,43 @@ function updateBuildStatus() {
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var txt = "<ul>";
-				var bundleResponse = response;
-				if (bundleResponse == null) {
-					jQuery("#buildBundle_buildProgress").text("Bundle Status Unkown!");
-					jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-warning-4.png");
-					jQuery("#buildBundle_resultList").html("unknown id=" + id);
+			var txt = "<ul>";
+			var bundleResponse = response;
+			if (bundleResponse == null) {
+				jQuery("#buildBundle_buildProgress").text("Bundle Status Unkown!");
+				jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-warning-4.png");
+				jQuery("#buildBundle_resultList").html("unknown id=" + id);
+			}
+			var size = bundleResponse.statusList.length;
+			if (size > 0) {
+				for (var i=0; i<size; i++) {
+					txt = txt + "<li>" + bundleResponse.statusList[i] + "</li>";
 				}
-				var size = bundleResponse.statusList.length;
-				if (size > 0) {
-					for (var i=0; i<size; i++) {
-						txt = txt + "<li>" + bundleResponse.statusList[i] + "</li>";
-					}
+			}
+			if (bundleResponse.complete == false) {
+				window.setTimeout(updateBuildStatus, 5000); // recurse
+			} else {
+				jQuery("#buildBundle_buildProgress").text("Bundle Complete!");
+				jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-accept-2.png");
+				updateBuildList(id);
+				enableStageButton();
+				enableBuildButton();
+				enableResetButton();
+			}
+			txt = txt + "</ul>";
+			jQuery("#buildBundle_resultList").html(txt).css("font-size", "12px");	
+			// check for exception
+			if (bundleResponse.exception != null) {
+				jQuery("#buildBundle_buildProgress").text("Bundle Failed!");
+				jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-warning-4.png");
+				if (bundleResponse.exception.message != undefined) {
+					jQuery("#buildBundle_exception").show().css("display","inline");
+					jQuery("#buildBundle_exception").html(bundleResponse.exception.message);
 				}
-				if (bundleResponse.complete == false) {
-					window.setTimeout(updateBuildStatus, 5000); // recurse
-				} else {
-					jQuery("#buildBundle_buildProgress").text("Bundle Complete!");
-					jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-accept-2.png");
-					updateBuildList(id);
-					enableStageButton();
-					enableBuildButton();
-					enableResetButton();
-				}
-				txt = txt + "</ul>";
-				jQuery("#buildBundle_resultList").html(txt).css("font-size", "12px");	
-				// check for exception
-				if (bundleResponse.exception != null) {
-						jQuery("#buildBundle_buildProgress").text("Bundle Failed!");
-						jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-warning-4.png");
-					if (bundleResponse.exception.message != undefined) {
-						jQuery("#buildBundle_exception").show().css("display","inline");
-						jQuery("#buildBundle_exception").html(bundleResponse.exception.message);
-					}
-					disableStageButton();
-					enableBuildButton();
-					enableResetButton();
-				}
+				disableStageButton();
+				enableBuildButton();
+				enableResetButton();
+			}
 		},
 		error: function(request) {
 			clearTimeout(timeout);
@@ -1005,71 +1064,71 @@ function updateBuildStatus() {
 	});
 }
 
-// populate list of files that were result of building
+//populate list of files that were result of building
 function updateBuildList(id) {
 	var summaryList = null;
-		jQuery.ajax({
+	jQuery.ajax({
 		url: "manage-bundles!downloadOutputFile.action?ts=" +new Date().getTime(),
 		type: "GET",
 		data: {"id": id,
-			   "downloadFilename": "summary.csv"},
-		async: false,
-		success: function(response){
-			summaryList = response;
+			"downloadFilename": "summary.csv"},
+			async: false,
+			success: function(response){
+				summaryList = response;
 			}
-		});
+	});
 
-		var lines = summaryList.split(/\n/);
-		lines.pop(lines.length-1); // discard header
-		var fileDescriptionMap = new Array();
-		var fileCountMap = new Array();
-		for (var i = 0; i < lines.length; i++) {
-			var dataField = lines[i].split(',');
+	var lines = summaryList.split(/\n/);
+	lines.pop(lines.length-1); // discard header
+	var fileDescriptionMap = new Array();
+	var fileCountMap = new Array();
+	for (var i = 0; i < lines.length; i++) {
+		var dataField = lines[i].split(',');
 
-			fileDescriptionMap[dataField[0]] = dataField[1];
-			fileCountMap[dataField[0]] = dataField[2];
-		}
+		fileDescriptionMap[dataField[0]] = dataField[1];
+		fileCountMap[dataField[0]] = dataField[2];
+	}
 	jQuery.ajax({
 		url: "manage-bundles!buildList.action?ts=" +new Date().getTime(),
 		type: "GET",
 		data: {"id": id},
 		async: false,
 		success: function(response) {
-				var txt = "<ul>";
-				
-				var list = response;
-				if (list != null) {
-					var size = list.length;
-					if (size > 0) {
-						for (var i=0; i<size; i++) {
-							var description = fileDescriptionMap[list[i]];
-							var lineCount = fileCountMap[list[i]];
-							if (description != undefined) {
-								var encoded = encodeURIComponent(list[i]);
-								txt = txt + "<li>" + description + ":" + "&nbsp;"
-								+ lineCount + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-								+ "<img src=\"../../css/img/go-down-5.png\" />"
-								+ "<a href=\"manage-bundles!downloadOutputFile.action?id="
-								+ id+ "&downloadFilename=" 
-								+ encoded + "\">" + ".csv" +  "</a></li>";
-							}
+			var txt = "<ul>";
+
+			var list = response;
+			if (list != null) {
+				var size = list.length;
+				if (size > 0) {
+					for (var i=0; i<size; i++) {
+						var description = fileDescriptionMap[list[i]];
+						var lineCount = fileCountMap[list[i]];
+						if (description != undefined) {
+							var encoded = encodeURIComponent(list[i]);
+							txt = txt + "<li>" + description + ":" + "&nbsp;"
+							+ lineCount + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+							+ "<img src=\"../../css/img/go-down-5.png\" />"
+							+ "<a href=\"manage-bundles!downloadOutputFile.action?id="
+							+ id+ "&downloadFilename=" 
+							+ encoded + "\">" + ".csv" +  "</a></li>";
 						}
 					}
 				}
-				// append log file
-				txt = txt + "<li>" + "Bundle Builder Log:" + "&nbsp;"
-				+ " " + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-				+ "<img src=\"../../css/img/go-down-5.png\" />"
-				+ "<a href=\"manage-bundles!downloadOutputFile.action?id="
-				+ id+ "&downloadFilename=" 
-				+ encodeURIComponent("bundleBuilder.out.txt") + "\">" + ".txt" +  "</a></li>";
-				
-				txt = txt + "</ul>";
-				jQuery("#buildBundle_fileList").html(txt).css("display", "block");
-				jQuery("#buildBundle #downloadLogs").show().css("display", "block");
-				jQuery("#buildBundle #downloadLogs #downloadButton").attr("href", "manage-bundles!buildOutputZip.action?id=" + id);
-				var continueButton = jQuery("#build_continue");
-				enableContinueButton(continueButton);
+			}
+			// append log file
+			txt = txt + "<li>" + "Bundle Builder Log:" + "&nbsp;"
+			+ " " + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+			+ "<img src=\"../../css/img/go-down-5.png\" />"
+			+ "<a href=\"manage-bundles!downloadOutputFile.action?id="
+			+ id+ "&downloadFilename=" 
+			+ encodeURIComponent("bundleBuilder.out.txt") + "\">" + ".txt" +  "</a></li>";
+
+			txt = txt + "</ul>";
+			jQuery("#buildBundle_fileList").html(txt).css("display", "block");
+			jQuery("#buildBundle #downloadLogs").show().css("display", "block");
+			jQuery("#buildBundle #downloadLogs #downloadButton").attr("href", "manage-bundles!buildOutputZip.action?id=" + id);
+			var continueButton = jQuery("#build_continue");
+			enableContinueButton(continueButton);
 		},
 		error: function(request) {
 			clearTimeout(timeout);
@@ -1093,7 +1152,7 @@ function stageBundle() {
 		type: "GET",
 		async: false,
 		success: function(response) {
-				/*var bundleResponse = response;
+			/*var bundleResponse = response;
 				if (bundleResponse != undefined) {
 					if (typeof response=="string") {
 						if (bundleResponse.match(/SUCCESS/)) {
@@ -1110,29 +1169,29 @@ function stageBundle() {
 							jQuery("#stageBundle_resultList").html("error");
 						}
 					}*/
-				var bundleResponse = response;
-				if (bundleResponse != undefined) {
-					// the header is set wrong for the proxied object, run eval to correct
-					if (typeof response=="string") {
-						bundleResponse = eval('(' + response + ')');
-					}
-					jQuery("#stageBundle_resultList").html("calling...");
-					jQuery("#stageBundle_id").text(bundleResponse.id);
-					jQuery("#stageBundle #requestLabels").show().css("display","block");
-					jQuery("#stageContentsHolder #stageBox #staging").show().css("display","block");
-					jQuery("#stageBundle_stageProgress").text("Staging ...");
-					jQuery("#stageContentsHolder #stageBox #staging #stagingProgress").attr("src","../../css/img/ajax-loader.gif");
-					window.setTimeout(updateStageStatus, 5000);
-				} else {
-					jQuery("#stageBundle_id").text(error);
-					jQuery("#stageBundle_resultList").html("error");
+			var bundleResponse = response;
+			if (bundleResponse != undefined) {
+				// the header is set wrong for the proxied object, run eval to correct
+				if (typeof response=="string") {
+					bundleResponse = eval('(' + response + ')');
 				}
+				jQuery("#stageBundle_resultList").html("calling...");
+				jQuery("#stageBundle_id").text(bundleResponse.id);
+				jQuery("#stageBundle #requestLabels").show().css("display","block");
+				jQuery("#stageContentsHolder #stageBox #staging").show().css("display","block");
+				jQuery("#stageBundle_stageProgress").text("Staging ...");
+				jQuery("#stageContentsHolder #stageBox #staging #stagingProgress").attr("src","../../css/img/ajax-loader.gif");
+				window.setTimeout(updateStageStatus, 5000);
+			} else {
+				jQuery("#stageBundle_id").text(error);
+				jQuery("#stageBundle_resultList").html("error");
+			}
 		},
 		error: function(request) {
 			alert("There was an error processing your request. Please try again.");
 		}
 	});
-	
+
 }
 
 function updateStageStatus() {
@@ -1142,50 +1201,50 @@ function updateStageStatus() {
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var txt = "<ul>";
-				var bundleResponse = response;
-				if (bundleResponse == null) {
-					jQuery("#stageBundle_stageProgress").text("Stage Complete!");
-					jQuery("#stageContentsHolder #stageBox #staging #stagingProgress").attr("src","../../css/img/dialog-warning-4.png");
-					jQuery("#stageBundle_resultList").html("unknown id=" + id);
-					return;
-				}
-				// the header is set wrong for the proxied object, run eval to correct
-				if (typeof response=="string") {
-					bundleResponse = eval('(' + response + ')');
-				}
-				if (bundleResponse.status != "complete" && bundleResponse.status != "error") {
-					window.setTimeout(updateStageStatus, 5000); // recurse
-				} else {
-					toggleStageBundleResultList();
-					jQuery("#bundleStagingResultsHolder #bundleStagingResults #stageBundle_progress").show().css("display","block");
-					jQuery("#bundleStagingResultsHolder #bundleStagingResults #stageBundle_resultList").show().css("display","block");
-					if (bundleResponse.status == "complete") {
-						jQuery("#stageContentsHolder #stageBox #staging #stagingProgress").attr("src","../../css/img/dialog-accept-2.png");
-						jQuery("#stageBundle_stageProgress").text("Staging Complete!");
-						// set resultList to bundleNames list
-						var size = bundleResponse.bundleNames.length;
-						if (size > 0) {
-							for (var i=0; i<size; i++) {
-								txt = txt + "<li>" + bundleResponse.bundleNames[i] + "</li>";
-							}
+			var txt = "<ul>";
+			var bundleResponse = response;
+			if (bundleResponse == null) {
+				jQuery("#stageBundle_stageProgress").text("Stage Complete!");
+				jQuery("#stageContentsHolder #stageBox #staging #stagingProgress").attr("src","../../css/img/dialog-warning-4.png");
+				jQuery("#stageBundle_resultList").html("unknown id=" + id);
+				return;
+			}
+			// the header is set wrong for the proxied object, run eval to correct
+			if (typeof response=="string") {
+				bundleResponse = eval('(' + response + ')');
+			}
+			if (bundleResponse.status != "complete" && bundleResponse.status != "error") {
+				window.setTimeout(updateStageStatus, 5000); // recurse
+			} else {
+				toggleStageBundleResultList();
+				jQuery("#bundleStagingResultsHolder #bundleStagingResults #stageBundle_progress").show().css("display","block");
+				jQuery("#bundleStagingResultsHolder #bundleStagingResults #stageBundle_resultList").show().css("display","block");
+				if (bundleResponse.status == "complete") {
+					jQuery("#stageContentsHolder #stageBox #staging #stagingProgress").attr("src","../../css/img/dialog-accept-2.png");
+					jQuery("#stageBundle_stageProgress").text("Staging Complete!");
+					// set resultList to bundleNames list
+					var size = bundleResponse.bundleNames.length;
+					if (size > 0) {
+						for (var i=0; i<size; i++) {
+							txt = txt + "<li>" + bundleResponse.bundleNames[i] + "</li>";
 						}
-						var continueButton = jQuery("#stage_continue");
-						enableContinueButton(continueButton);
-					} else {
-						jQuery("#stageContentsHolder #stageBox #staging #stagingProgress").attr("src","../../css/img/dialog-warning-4.png");
-						jQuery("#stageBundle_stageProgress").text("Staging Failed!");
-						// we've got an error
-						txt = txt + "<li><font color=\"red\">ERROR!  Please consult the logs and check the "
-							+ "filesystem permissions before continuing</font></li>";
 					}
+					var continueButton = jQuery("#stage_continue");
+					enableContinueButton(continueButton);
+				} else {
+					jQuery("#stageContentsHolder #stageBox #staging #stagingProgress").attr("src","../../css/img/dialog-warning-4.png");
+					jQuery("#stageBundle_stageProgress").text("Staging Failed!");
+					// we've got an error
+					txt = txt + "<li><font color=\"red\">ERROR!  Please consult the logs and check the "
+					+ "filesystem permissions before continuing</font></li>";
 				}
-				txt = txt + "</ul>";
-				jQuery("#stageBundle_resultList").html(txt).css("font-size", "12px");	
+			}
+			txt = txt + "</ul>";
+			jQuery("#stageBundle_resultList").html(txt).css("font-size", "12px");	
 		},
 		error: function(request) {
 			clearTimeout(timeout);
-			
+
 			jQuery("#stageContentsHolder #stagingBox #staging #stagingProgress").attr("src","../../css/img/dialog-warning-4.png");
 			jQuery("#stageBundle_stageProgress").text("Staging Failed!");
 			jQuery("#bundleStagingResultsHolder #bundleStagingResults #stageBundle_progress").show().css("display","block");
@@ -1195,7 +1254,7 @@ function updateStageStatus() {
 			// error out on a 500 error, the session will be lost so it will not recover
 			var txt = "<ul>";
 			txt = txt + "<li><font color=\"red\">The server returned an internal error.  Please consult the logs" 
-				+ " or retry your request</font></li>";
+			+ " or retry your request</font></li>";
 			txt = txt + "</ul>";
 			jQuery("#stageBundle_resultList").html(txt).css("font-size", "12px");
 		}
@@ -1215,23 +1274,23 @@ function deployBundle(){
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var bundleResponse = response;
-				if (bundleResponse != undefined) {
-					// the header is set wrong for the proxied object, run eval to correct
-					if (typeof response=="string") {
-						bundleResponse = eval('(' + response + ')');
-					}
-					jQuery("#deployBundle_resultList").html("calling...");
-					jQuery("#deployBundle_id").text(bundleResponse.id);
-					jQuery("#deployBundle #requestLabels").show().css("display","block");
-					jQuery("#deployContentsHolder #deployBox #deploying").show().css("display","block");
-					jQuery("#deployBundle_deployProgress").text("Deploying ...");
-					jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/ajax-loader.gif");
-					window.setTimeout(updateDeployStatus, 5000);
-				} else {
-					jQuery("#deployBundle_id").text(error);
-					jQuery("#deployBundle_resultList").html("error");
+			var bundleResponse = response;
+			if (bundleResponse != undefined) {
+				// the header is set wrong for the proxied object, run eval to correct
+				if (typeof response=="string") {
+					bundleResponse = eval('(' + response + ')');
 				}
+				jQuery("#deployBundle_resultList").html("calling...");
+				jQuery("#deployBundle_id").text(bundleResponse.id);
+				jQuery("#deployBundle #requestLabels").show().css("display","block");
+				jQuery("#deployContentsHolder #deployBox #deploying").show().css("display","block");
+				jQuery("#deployBundle_deployProgress").text("Deploying ...");
+				jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/ajax-loader.gif");
+				window.setTimeout(updateDeployStatus, 5000);
+			} else {
+				jQuery("#deployBundle_id").text(error);
+				jQuery("#deployBundle_resultList").html("error");
+			}
 		},
 		error: function(request) {
 			alert("There was an error processing your request. Please try again.");
@@ -1246,46 +1305,46 @@ function updateDeployStatus() {
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var txt = "<ul>";
-				var bundleResponse = response;
-				if (bundleResponse == null) {
+			var txt = "<ul>";
+			var bundleResponse = response;
+			if (bundleResponse == null) {
+				jQuery("#deployBundle_deployProgress").text("Deploy Complete!");
+				jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-warning-4.png");
+				jQuery("#deployBundle_resultList").html("unknown id=" + id);
+				return;
+			}
+			// the header is set wrong for the proxied object, run eval to correct
+			if (typeof response=="string") {
+				bundleResponse = eval('(' + response + ')');
+			}
+			if (bundleResponse.status != "complete" && bundleResponse.status != "error") {
+				window.setTimeout(updateDeployStatus, 5000); // recurse
+			} else {
+				toggleDeployBundleResultList();
+				jQuery("#bundleResultsHolder #bundleResults #deployBundle_progress").show().css("display","block");
+				jQuery("#bundleResultsHolder #bundleResults #deployBundle_resultList").show().css("display","block");
+				if (bundleResponse.status == "complete") {
+					jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-accept-2.png");
 					jQuery("#deployBundle_deployProgress").text("Deploy Complete!");
-					jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-warning-4.png");
-					jQuery("#deployBundle_resultList").html("unknown id=" + id);
-					return;
-				}
-				// the header is set wrong for the proxied object, run eval to correct
-				if (typeof response=="string") {
-					bundleResponse = eval('(' + response + ')');
-				}
-				if (bundleResponse.status != "complete" && bundleResponse.status != "error") {
-					window.setTimeout(updateDeployStatus, 5000); // recurse
-				} else {
-					toggleDeployBundleResultList();
-					jQuery("#bundleResultsHolder #bundleResults #deployBundle_progress").show().css("display","block");
-					jQuery("#bundleResultsHolder #bundleResults #deployBundle_resultList").show().css("display","block");
-					if (bundleResponse.status == "complete") {
-						jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-accept-2.png");
-						jQuery("#deployBundle_deployProgress").text("Deploy Complete!");
-						// set resultList to bundleNames list
-						var size = bundleResponse.bundleNames.length;
-						if (size > 0) {
-							for (var i=0; i<size; i++) {
-								txt = txt + "<li>" + bundleResponse.bundleNames[i] + "</li>";
-							}
+					// set resultList to bundleNames list
+					var size = bundleResponse.bundleNames.length;
+					if (size > 0) {
+						for (var i=0; i<size; i++) {
+							txt = txt + "<li>" + bundleResponse.bundleNames[i] + "</li>";
 						}
-						var continueButton = jQuery("#deploy_continue");
-						enableContinueButton(continueButton);
-					} else {
-						jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-warning-4.png");
-						jQuery("#deployBundle_deployProgress").text("Deploy Failed!");
-						// we've got an error
-						txt = txt + "<li><font color=\"red\">ERROR!  Please consult the logs and check the "
-							+ "filesystem permissions before continuing</font></li>";
 					}
+					var continueButton = jQuery("#deploy_continue");
+					enableContinueButton(continueButton);
+				} else {
+					jQuery("#deployContentsHolder #deployBox #deploying #deployingProgress").attr("src","../../css/img/dialog-warning-4.png");
+					jQuery("#deployBundle_deployProgress").text("Deploy Failed!");
+					// we've got an error
+					txt = txt + "<li><font color=\"red\">ERROR!  Please consult the logs and check the "
+					+ "filesystem permissions before continuing</font></li>";
 				}
-				txt = txt + "</ul>";
-				jQuery("#deployBundle_resultList").html(txt).css("font-size", "12px");	
+			}
+			txt = txt + "</ul>";
+			jQuery("#deployBundle_resultList").html(txt).css("font-size", "12px");	
 		},
 		error: function(request) {
 			clearTimeout(timeout);
@@ -1298,7 +1357,7 @@ function updateDeployStatus() {
 			// error out on a 500 error, the session will be lost so it will not recover
 			var txt = "<ul>";
 			txt = txt + "<li><font color=\"red\">The server returned an internal error.  Please consult the logs" 
-				+ " or retry your request</font></li>";
+			+ " or retry your request</font></li>";
 			txt = txt + "</ul>";
 			jQuery("#deployBundle_resultList").html(txt).css("font-size", "12px");
 		}
@@ -1312,24 +1371,24 @@ function onDeployListClick(){
 		type: "GET",
 		async: false,
 		success: function(response) {
-				var bundleResponse = response;
-				if (bundleResponse != undefined) {
-					var txt = "<ul>";
-					// the header is set wrong for the proxied object, run eval to correct
-					if (typeof response=="string") {
-						bundleResponse = eval('(' + response + ')');
-					}
-					// parse array of bundle names
-					var size = bundleResponse.length;
-					if (size > 0) {
-						for (var i=0; i<size; i++) {
-							txt = txt + "<li>" + bundleResponse[i] + "</li>";
-						}
-					}
-					txt = txt + "</ul>";
-					jQuery("#deployBundle_bundleList").html(txt).css("font-size", "12px");	
-
+			var bundleResponse = response;
+			if (bundleResponse != undefined) {
+				var txt = "<ul>";
+				// the header is set wrong for the proxied object, run eval to correct
+				if (typeof response=="string") {
+					bundleResponse = eval('(' + response + ')');
 				}
+				// parse array of bundle names
+				var size = bundleResponse.length;
+				if (size > 0) {
+					for (var i=0; i<size; i++) {
+						txt = txt + "<li>" + bundleResponse[i] + "</li>";
+					}
+				}
+				txt = txt + "</ul>";
+				jQuery("#deployBundle_bundleList").html(txt).css("font-size", "12px");	
+
+			}
 		},
 		error: function(request) {
 			alert("There was an error processing your request. Please try again.");
@@ -1337,15 +1396,15 @@ function onDeployListClick(){
 	});
 }
 
-// add support for parsing query string
-  function parseQuerystring (){
-    var nvpair = {};
-    var qs = window.location.hash.replace('#', 'hash=');
-    qs = qs.replace('?', '&');
-    var pairs = qs.split('&');
-    $.each(pairs, function(i, v){
-      var pair = v.split('=');
-      nvpair[pair[0]] = pair[1];
-    });
-    return nvpair;
-  }
+//add support for parsing query string
+function parseQuerystring (){
+	var nvpair = {};
+	var qs = window.location.hash.replace('#', 'hash=');
+	qs = qs.replace('?', '&');
+	var pairs = qs.split('&');
+	$.each(pairs, function(i, v){
+		var pair = v.split('=');
+		nvpair[pair[0]] = pair[1];
+	});
+	return nvpair;
+}

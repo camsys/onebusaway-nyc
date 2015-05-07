@@ -36,6 +36,8 @@
 				<label for="create" class="horizontalRadio">Create New Bundle Directory</label> 
 				<input type="radio" name="options" id="select" /> 
 				<label for="select" class="horizontalRadio">Select Existing Directory</label>
+				<input type="radio" name="options" id="copy" /> 
+				<label for="copy" class="horizontalRadio">Copy Existing Directory</label>
 			</div>
 			<div id="createDirectoryContents">
 				<input type="text" id="directoryName"/>
