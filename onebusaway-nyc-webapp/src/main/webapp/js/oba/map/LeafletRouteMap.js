@@ -244,6 +244,10 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				var icon = new L.Icon({iconUrl: "img/vehicle/vehicle-" + orientationAngle + ".png", iconSize: [51, 51]});
 
 				marker.setIcon(icon);
+				
+				// position
+				var position = new L.LatLng(latitude, longitude);
+				marker.setLatLng(position);
 							    	
 				// (mark that this vehicle is still in the response)
 				vehiclesByIdInResponse[vehicleId] = true;
