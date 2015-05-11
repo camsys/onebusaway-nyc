@@ -30,6 +30,8 @@
 				<label id="buildBundle_bundleDirectory" class="adminLabel directoryLabel">
 					<s:property value="deployedBundle"/>
 				</label>
+				<label class="adminLabel directoryLabel">Currently selected directory:</label>
+				<label id="selected_bundleDirectory" class="adminLabel directoryLabel"></label>
 			</div>
 			<div id="directoryOptions">
 				<input type="radio" name="options" id="create" checked="checked" /> 

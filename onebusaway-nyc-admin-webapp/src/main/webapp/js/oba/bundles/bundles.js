@@ -353,8 +353,7 @@ function showBundleInfo(bundleInfo){
 	jQuery("#endDatePicker").val(bundleObj.buildResponse.endDate);
 	jQuery("#endDate").val(bundleObj.buildResponse.endDate);
 	jQuery("#commentBox #bundleComment").val(bundleObj.buildResponse.comment);
-	console.log(bundleObj.directoryName);
-	jQuery("#buildBundle_bundleDirectory").text(bundleObj.directoryName);
+	jQuery("#selected_bundleDirectory").text(bundleObj.directoryName);
 	jQuery("#buildBundle_id").text(bundleObj.buildResponse.requestId);	
 	setDivHtml(document.getElementById('buildBundle_resultList'), bundleObj.buildResponse.statusMessages);
 	showBuildFileList(bundleObj.buildResponse.buildOutputFiles, bundleObj.buildResponse.requestId);
@@ -434,7 +433,7 @@ function onSelectClick() {
 						showBundleInfo(JSON.stringify(bundleInfo));
 					}					
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
-					jQuery("#buildBundle_bundleDirectory").text(bundleDir);
+					jQuery("#selected_bundleDirectory").text(bundleDir);
 					jQuery("#s3_location").text(status.bucketName);
 					jQuery("#gtfs_location").text(bundleDir + "/" + status.gtfsPath + " directory");
 					jQuery("#stif_location").text(bundleDir + "/" + status.stifPath + " directory");
@@ -973,7 +972,7 @@ function bundleUrl() {
 	}
 }
 function buildBundle(bundleName, startDate, endDate, bundleComment){
-	var bundleDirectory = jQuery("#buildBundle_bundleDirectory").text();
+	var bundleDirectory = jQuery("#selected_bundleDirectory").text();
 	var email = jQuery("#buildBundle_email").val();
 	if (email == "") { email = "null"; }
 	jQuery.ajax({

@@ -188,7 +188,7 @@ public class BundleResource implements ServletContextAware{
     return _localBundleDeployer.getBundleFile(bundleId, relativeFilename);
   }
   
-
+  
   private boolean isTdm() {
     if (isTdm != null)
       return isTdm;

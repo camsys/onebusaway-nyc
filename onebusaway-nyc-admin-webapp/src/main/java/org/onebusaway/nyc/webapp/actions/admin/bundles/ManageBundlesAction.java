@@ -285,7 +285,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 				}
 				else {
 					directoryStatus.setBundleInfo(null);
-				}
+				}				
 			}
 		}
 		return directoryStatus;
@@ -768,9 +768,6 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	public void setAgencySourceFileFileName(String agencySourceFileFileName) {
 		this.agencySourceFileFileName = agencySourceFileFileName;
 	}
-
-
-
 
 	public String getDeployedBundle() {
 		String apiHostname = configService.getConfigurationValueAsString(
