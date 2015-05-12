@@ -838,7 +838,8 @@ private JSONObject getBundleTrackingObject(String bundleDirectory) {
 		}
 	}
 	catch(Exception e){
-		_log.error(e.getMessage());
+		_log.error("tracking bundle obj issue:", e);
+		bundleObj = new JSONObject();
 	}
 
 	return bundleObj;
