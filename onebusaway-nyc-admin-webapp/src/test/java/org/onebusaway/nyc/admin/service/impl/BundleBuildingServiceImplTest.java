@@ -158,6 +158,7 @@ public class BundleBuildingServiceImplTest {
     request.setTmpDirectory(tmpDir);
     request.setBundleStartDate("2012-04-08");
     request.setBundleEndDate("2012-07-07");
+    request.setBundleComment("Test");
     assertNotNull(request.getTmpDirectory());
     assertNotNull(request.getBundleDirectory());
     BundleBuildResponse response = new BundleBuildResponse(""

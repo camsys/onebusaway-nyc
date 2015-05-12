@@ -28,9 +28,9 @@
 				Bundle</label>
 			<div class="directoryLabels">
 				<label class="adminLabel directoryLabel">Bundle Directory :</label> <label
-					id="buildBundle_bundleDirectory" class="adminLabel directoryLabel"><s:property
-						value="bundleDirectory" /></label> <label class="adminLabel directoryLabel">Request
-					Id :</label> <label id="buildBundle_id" class="adminLabel directoryLabel"><s:property
+					id="buildBundle_bundleDirectory" class="adminLabel directoryLabel">
+					<s:property value="bundleDirectory" /></label> 
+				<label class="adminLabel directoryLabel">Request Id :</label> <label id="buildBundle_id" class="adminLabel directoryLabel"><s:property
 						value="id" /></label>
 			</div>
 			<div id="bundleContentsHolder">

@@ -14,6 +14,7 @@ import org.junit.Test;
 public class FileServiceImplTest {
 
   private S3FileServiceImpl fileService;
+  
 
   @Before
   public void setup() {
