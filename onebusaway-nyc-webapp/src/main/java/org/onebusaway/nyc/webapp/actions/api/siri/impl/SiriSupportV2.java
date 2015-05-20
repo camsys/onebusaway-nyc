@@ -31,6 +31,7 @@ import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriPolyLinesExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriUpcomingServiceExtension;
@@ -353,14 +354,10 @@ public final class SiriSupportV2 {
 			DetailLevel detailLevel, 
 			long currentTime
 			) {
-		
-		boolean hasValidRoute = false;
+
 		
 		StopBean stopBean = stopRouteDirection.getStop();
 		List<RouteForDirection> routeDirections = stopRouteDirection.getRouteDirections();
-		
-		// Filter Values
-		String lineRefFilter = filters.get(Filters.LINE_REF);
 
 		// Set Stop Name
 		NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
@@ -386,24 +383,16 @@ public final class SiriSupportV2 {
 			lineDirection.setLineRef(line);
 			
 			lines.getLineRefOrLineDirection().add(lineDirection);
-				
-			// LineRef (RouteId) Filter
-			if(!hasValidRoute && passFilter(routeId, lineRefFilter))
-				hasValidRoute=true;
 
 		}
-		
-		// No Valid Stops
-		if(!hasValidRoute || lines.getLineRefOrLineDirection().size() == 0)
-			return false;
 
 		// Set Lat and Lon
 		BigDecimal stopLat = new BigDecimal(stopBean.getLat());
 		BigDecimal stopLon = new BigDecimal(stopBean.getLon());
 
 		LocationStructure location = new LocationStructure();
-		location.setLongitude(stopLon);
-		location.setLatitude(stopLat);
+		location.setLongitude(stopLon.setScale(6, BigDecimal.ROUND_HALF_DOWN));
+		location.setLatitude(stopLat.setScale(6, BigDecimal.ROUND_HALF_DOWN));
 
 		// Set StopId
 		StopPointRefStructure stopPointRef = new StopPointRefStructure();
@@ -568,15 +557,14 @@ public final class SiriSupportV2 {
 			}
 			
 			// Polyline Extension
-			/*ExtensionsStructure polylineExtension = new ExtensionsStructure();
-			SiriPolylinesExtension polylinesExt = new SiriPolylinesExtension();
-			
+			SiriPolyLinesExtension polylines = new SiriPolyLinesExtension();
 			for(String polyline : direction.getPolylines()){
-				polylinesExt.add(polyline);
+				polylines.getPolylines().add(polyline);
 			}
-
-			polylineExtension.setAny(polylinesExt.getPolylines());
-			annotatedLineStructure.setExtensions(polylineExtension);*/
+			
+			ExtensionsStructure PolylineExtension = new ExtensionsStructure();
+			PolylineExtension.setAny(polylines);
+			annotatedLineStructure.setExtensions(PolylineExtension);
 			
 			routeDirectionStructure.setJourneyPatterns(patterns);
 			pattern.setStopsInPattern(stopsInPattern);

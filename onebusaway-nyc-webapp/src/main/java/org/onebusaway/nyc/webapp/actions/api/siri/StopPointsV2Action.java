@@ -75,13 +75,17 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		CoordinateBounds bounds = null;
 		boolean validBoundDistance = true;
 		
+		
+		
+		
+		
 		//get the detail level parameter or set it to default if not specified
-	    DetailLevel detailLevel;
+	   /* DetailLevel detailLevel;
 	    if(_request.getParameter(STOP_POINTS_DETAIL_LEVEL) == null){
 	    	detailLevel = DetailLevel.NORMAL;
 	    }else{
 	    	detailLevel = DetailLevel.valueOf(_request.getParameter(STOP_POINTS_DETAIL_LEVEL).toUpperCase());
-	    }	
+	    }	*/
 
 		// User Parameters
 		String boundingBox = _request.getParameter(BOUNDING_BOX);
@@ -90,7 +94,20 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		String directionId = _request.getParameter(DIRECTION_REF);
 		String agencyId = _request.getParameter(OPERATOR_REF);
 		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
-
+		String detailLevelParam = _request.getParameter(STOP_POINTS_DETAIL_LEVEL);
+		
+		
+		//get the detail level parameter or set it to default if not specified
+	    DetailLevel detailLevel;
+	    
+	    if(DetailLevel.contains(detailLevelParam)){
+	    	detailLevel = DetailLevel.valueOf(detailLevelParam.toUpperCase());
+	    }
+	    else{
+	    	detailLevel = DetailLevel.NORMAL;
+	    }
+		
+		
 		// Error Strings
 		String routeIdsErrorString = "";
 		String boundsErrorString = "";
@@ -141,20 +158,10 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 						+ " BoundingBox or Circle coordinates or a LineRef value.";
 			}
 		}
-		
-		// TODO LCARABALLO GoogleAnalytics?
-		/*
-		 * if (_monitoringActionSupport
-		 * .canReportToGoogleAnalytics(_configurationService)) {
-		 * _monitoringActionSupport.reportToGoogleAnalytics(_request,
-		 * "Stop Monitoring", StringUtils.join(stopIds, ","),
-		 * _configurationService); }
-		 */
 
 		// Setup Filters
 		Map<Filters, String> filters = new HashMap<Filters, String>();
 		filters.put(Filters.DIRECTION_REF, directionId);
-		filters.put(Filters.LINE_REF, lineRef);
 		filters.put(Filters.UPCOMING_SCHEDULED_SERVICE,hasUpcomingScheduledService);
 
 		// Annotated Stop Points
@@ -176,7 +183,7 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 						routeIds, detailLevel, responseTimestamp, filters);
 			} else {
 				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(
-						bounds, detailLevel, responseTimestamp, filters);			
+						bounds, routeIds, detailLevel, responseTimestamp, filters);			
 			}
 			
 			for (Map.Entry<Boolean, List<AnnotatedStopPointStructure>> entry : stopPointsMap.entrySet()) {

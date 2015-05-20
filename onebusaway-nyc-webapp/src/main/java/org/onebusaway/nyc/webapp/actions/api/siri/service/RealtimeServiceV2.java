@@ -55,7 +55,9 @@ public interface RealtimeServiceV2 {
 	public List<ServiceAlertBean> getServiceAlertsGlobal();
 
 	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
-			CoordinateBounds bounds, DetailLevel detailLevel, long currentTime, Map<Filters, String> filters);
+			CoordinateBounds bounds, List<AgencyAndId> routeIds,
+			DetailLevel detailLevel, long currentTime,
+			Map<Filters, String> filters);
 
 	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
 			List<AgencyAndId> routeIds, DetailLevel detailLevel,

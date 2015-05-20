@@ -13,6 +13,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
+import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,9 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	protected ConfigurationService _configurationService;
 
 	protected boolean isValidRoute(AgencyAndId routeId) {
+		boolean hasValues = routeId.hasValues();
+		String routeIdStr = routeId.toString();
+		RouteBean rb = _nycTransitDataService.getRouteForId(routeId.toString());
 		if (routeId != null
 				&& routeId.hasValues()
 				&& _nycTransitDataService.getRouteForId(routeId.toString()) != null) {

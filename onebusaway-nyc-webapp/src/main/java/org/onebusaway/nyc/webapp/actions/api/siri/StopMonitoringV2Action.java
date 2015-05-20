@@ -84,13 +84,13 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 				_configurationService);
 
 		_realtimeService.setTime(responseTimestamp);
-		String detailLevelParam = _request.getParameter(STOP_MONITORING_DETAIL_LEVEL).toUpperCase();
+		String detailLevelParam = _request.getParameter(STOP_MONITORING_DETAIL_LEVEL);
 		
 		//get the detail level parameter or set it to default if not specified
 	    DetailLevel detailLevel;
 	    
 	    if(DetailLevel.contains(detailLevelParam)){
-	    	detailLevel = DetailLevel.valueOf(detailLevelParam);
+	    	detailLevel = DetailLevel.valueOf(detailLevelParam.toUpperCase());
 	    }
 	    else{
 	    	detailLevel = DetailLevel.NORMAL;

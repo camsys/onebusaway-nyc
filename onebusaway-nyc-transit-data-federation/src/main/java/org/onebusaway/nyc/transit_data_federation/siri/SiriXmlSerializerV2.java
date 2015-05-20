@@ -37,10 +37,10 @@ public class SiriXmlSerializerV2 {
     		  Siri.class,
     		  SiriExtensionWrapper.class, 
     		  SiriDistanceExtension.class, 
-    		  SiriUpcomingServiceExtension.class);
+    		  SiriUpcomingServiceExtension.class,
+    		  SiriPolyLinesExtension.class);
     } catch(Exception e) {
     	_log.error("Failed to Serialize Siri to XML", e);
-    	System.out.println("Failed to Serialize Siri to XML : " + e);
     }
   }
   
@@ -50,6 +50,7 @@ public class SiriXmlSerializerV2 {
     marshaller.setEventHandler(
         new ValidationEventHandler() {
             public boolean handleEvent(ValidationEvent event ) {
+            	_log.error(event.getMessage(), event.getLinkedException());
                 throw new RuntimeException(event.getMessage(), event.getLinkedException());
             }
         }
@@ -72,10 +73,12 @@ public class SiriXmlSerializerV2 {
     	"<siriExtensionWrapper>", 
     	"</siriExtensionWrapper>",
     	"<siriUpcomingServiceExtension>",
-    	"</siriUpcomingServiceExtension>"
+    	"</siriUpcomingServiceExtension>",
+    	"<siriPolyLinesExtension>",
+    	"</siriPolyLinesExtension>"
 	};
     
-    String[] replacementList = {"","","",""};
+    String[] replacementList = {"","","","","",""};
     
     outputAsString = StringUtils.replaceEach(outputAsString, searchList, replacementList);
 

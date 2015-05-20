@@ -80,23 +80,26 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 
 		CoordinateBounds bounds = null;
 		boolean validBoundDistance = true;
-
-		// get the detail level parameter or set it to default if not specified
-		DetailLevel detailLevel;
-		if (_request.getParameter(LINES_DETAIL_LEVEL) == null) {
-			detailLevel = DetailLevel.NORMAL;
-		} else {
-			detailLevel = DetailLevel.valueOf(_request.getParameter(LINES_DETAIL_LEVEL).toUpperCase());
-		}
-
+		
 		// User Parameters
 		String boundingBox = _request.getParameter(BOUNDING_BOX);
 		String circle = _request.getParameter(CIRCLE);
 		String lineRef = _request.getParameter(LINE_REF);
 		String directionId = _request.getParameter(DIRECTION_REF);
 		String agencyId = _request.getParameter(OPERATOR_REF);
-		String hasUpcomingScheduledService = _request
-				.getParameter(UPCOMING_SCHEDULED_SERVICE);
+		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
+		String detailLevelParam = _request.getParameter(LINES_DETAIL_LEVEL);
+		
+		
+		//get the detail level parameter or set it to default if not specified
+	    DetailLevel detailLevel;
+	    
+	    if(DetailLevel.contains(detailLevelParam)){
+	    	detailLevel = DetailLevel.valueOf(detailLevelParam.toUpperCase());
+	    }
+	    else{
+	    	detailLevel = DetailLevel.NORMAL;
+	    }
 
 		// Error Strings
 		String routeIdsErrorString = "";
