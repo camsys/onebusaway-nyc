@@ -330,23 +330,30 @@ function showThisAgency(agency){
 //Populates bundle information in related fields.
 function showBundleInfo(bundleInfo){
 	var bundleObj = JSON.parse(bundleInfo);
+	
+	if (bundleObj.agencyList != undefined) {
+		//Populating Upload Tab Fields
+		$.each(bundleObj.agencyList, function(i, agency) {
+			//showThisAgency(agency);
+			jQuery("#agencyId").val(agency.agencyId);
+		    jQuery("#agencyDataSource").val(agency.agencyDataSource);
+		    jQuery("#agencyDataSourceType").val(agency.agencyDataSourceType);
+		    jQuery("#agencyProtocol").val(agency.agencyProtocol);
+		});
+	}
 
-	//Populating Upload Tab Fields
-	$.each(bundleObj.agencyList, function(i, agency) {
-		//showThisAgency(agency);
-		jQuery("#agencyId").val(agency.agencyId);
-	    jQuery("#agencyDataSource").val(agency.agencyDataSource);
-	    jQuery("#agencyDataSourceType").val(agency.agencyDataSourceType);
-	    jQuery("#agencyProtocol").val(agency.agencyProtocol);
-	});
-
-	//Populating Pre-Validate Tab Fields
-	jQuery("#prevalidate_bundleName").val(bundleObj.validationResponse.bundleBuildName);
-	jQuery("#prevalidate_id").text(bundleObj.validationResponse.requestId);
-	setDivHtml(document.getElementById('prevalidate_resultList'), bundleObj.validationResponse.statusMessages);
-
+	if (bundleObj.validationResponse != undefined) {
+		//Populating Pre-Validate Tab Fields
+		jQuery("#prevalidate_bundleName").val(bundleObj.validationResponse.bundleBuildName);
+		jQuery("#prevalidate_id").text(bundleObj.validationResponse.requestId);
+		setDivHtml(document.getElementById('prevalidate_resultList'), bundleObj.validationResponse.statusMessages);
+	}
+	
 	//Populating Build Tab Fields
-	jQuery("#buildBundle_email").val(bundleObj.buildResponse.email);
+	if (bundleObj.buildResponse.email != undefined && bundleObj.buildResponse.email != null 
+			&& bundleObj.buildResponse.email != "null") {
+		jQuery("#buildBundle_email").val(bundleObj.buildResponse.email);
+	}
 	jQuery("#buildBundle_bundleName").val(bundleObj.buildResponse.bundleBuildName);
 	jQuery("#startDatePicker").val(bundleObj.buildResponse.startDate);
 	jQuery("#startDate").val(bundleObj.buildResponse.startDate);
@@ -354,12 +361,13 @@ function showBundleInfo(bundleInfo){
 	jQuery("#endDate").val(bundleObj.buildResponse.endDate);
 	jQuery("#commentBox #bundleComment").val(bundleObj.buildResponse.comment);
 	jQuery("#selected_bundleDirectory").text(bundleObj.directoryName);
-	jQuery("#buildBundle_id").text(bundleObj.buildResponse.requestId);	
+	jQuery("#buildBundle_id").text(bundleObj.buildResponse.requestId);
 	setDivHtml(document.getElementById('buildBundle_resultList'), bundleObj.buildResponse.statusMessages);
 	showBuildFileList(bundleObj.buildResponse.buildOutputFiles, bundleObj.buildResponse.requestId);
 }
 function onSelectClick() {
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
+	console.log("onSelectClick bundleDir=" + bundleDir);
 	var actionName = "selectDirectory";
 	var copyDir = "";
 
@@ -415,23 +423,28 @@ function onSelectClick() {
 							} else {
 								insertAfterThis.after(newDirRow);
 							}
-						}						
+						}			
+						console.log("after create Directory");
 						enableBuildButton();
 						enableResetButton();
 					}					
 					else {
+						console.log("selected is false");
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 						jQuery("#createDirectoryMessage").text(status.message).css("color", "red");
 						disableBuildButton();
 						disableResetButton();
 					}
+					console.log("continue");
 					var continueButton = jQuery("#create_continue");
 					enableContinueButton(continueButton);
 					var bundleDir = status.directoryName;
 					var bundleInfo = status.bundleInfo;
+					console.log("bundleInfo=" + bundleInfo);
 					if(bundleInfo != null || bundleInfo != undefined){
 						showBundleInfo(JSON.stringify(bundleInfo));
 					}					
+					console.log("bundleDir=" + bundleDir);
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
 					jQuery("#selected_bundleDirectory").text(bundleDir);
 					jQuery("#s3_location").text(status.bucketName);
