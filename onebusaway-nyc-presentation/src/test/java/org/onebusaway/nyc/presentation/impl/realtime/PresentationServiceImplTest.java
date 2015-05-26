@@ -22,7 +22,7 @@ public class PresentationServiceImplTest {
   private ConfigurationService configService;
 
   @InjectMocks
-  private PresentationServiceImpl service;
+  private NYCPresentationServiceImpl service;
   
   @Before
   public void setup() throws Exception {

@@ -17,9 +17,9 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class PresentationServiceImpl implements PresentationService {
+public class NYCPresentationServiceImpl implements PresentationService {
   
-  private static Logger _log = LoggerFactory.getLogger(PresentationServiceImpl.class);
+  private static Logger _log = LoggerFactory.getLogger(NYCPresentationServiceImpl.class);
 
   @Autowired
   private ConfigurationService _configurationService;

@@ -43,7 +43,7 @@ import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
  *
  */
 @Component
-public class RealtimeServiceImpl implements RealtimeService {
+public class NYCRealtimeServiceImpl implements RealtimeService {
 
   private NycTransitDataService _nycTransitDataService;
 
