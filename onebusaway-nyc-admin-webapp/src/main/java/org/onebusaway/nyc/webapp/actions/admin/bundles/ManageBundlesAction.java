@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -160,7 +161,29 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 			} else {
 				_log.info("creating bundledir=" + destDirectoryName);
 				//Create the directory if it does not exist.
-				directoryCreated = fileService.createBundleDirectory(destDirectoryName);				
+				directoryCreated = fileService.createBundleDirectory(destDirectoryName);
+				
+				// copy gtfs_latest and aux_latest 
+				try {
+          Path gtfsTempDir = Files.createTempDirectory("gtfs_latest");
+          Path auxTempDir = Files.createTempDirectory("aux_latest");
+          
+          String s3GtfsKey = directoryName +  File.separator + fileService.getGtfsPath();
+          String s3AuxKey = directoryName +  File.separator + fileService.getAuxPath();
+          
+          String gtfsCopy = fileService.get(s3GtfsKey, gtfsTempDir.toString());
+          String auxCopy = fileService.get(s3AuxKey, auxTempDir.toString());
+
+          String newS3GtfsKey = destDirectoryName + File.separator + fileService.getGtfsPath();
+          String newS3AuxKey = destDirectoryName + File.separator + fileService.getAuxPath();
+          fileService.put(newS3GtfsKey, gtfsCopy);
+          fileService.put(newS3AuxKey, auxCopy);
+          _log.info("copy complete");
+          
+        } catch (IOException e) {
+          _log.error("Error copying directory:", e);
+        }
+				
 				bundleDirectory = destDirectoryName;
 				if(directoryCreated) {
 					_log.info("Copied from: "+directoryName+ " to: "+destDirectoryName);

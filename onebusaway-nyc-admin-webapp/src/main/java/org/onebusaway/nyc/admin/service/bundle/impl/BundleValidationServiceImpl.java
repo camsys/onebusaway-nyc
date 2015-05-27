@@ -7,15 +7,16 @@ import org.onebusaway.nyc.admin.model.ServiceDateRange;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleValidationService;
 import org.onebusaway.nyc.admin.util.NYCFileUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
   private static final String OUTPUT_DIR = "outputs";
   private static final String BUILD_DIR = "builds";
   private static final int CHUNK_SIZE = 1024;
-  private static final String TRANSIT_FEED = "transitfeed-1.2.13";
+  private static final String TRANSIT_FEED = "transitfeed-1.2.15";
   private static Logger _log = LoggerFactory.getLogger(BundleValidationServiceImpl.class);
   private FileService _fileService;
 
@@ -232,6 +233,15 @@ public class BundleValidationServiceImpl implements BundleValidationService {
       };
       debugCmds(cmds);
       process = Runtime.getRuntime().exec(cmds);
+      /*
+       * more recent versions of transit feed produce output that needs to be consumed
+       * or process will be suspended
+       */
+      BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      String line;
+      while ((line = reader.readLine()) != null) {
+        _log.info(":" + line);
+      }
       return process.waitFor();
     } catch (Exception e) {
       _log.error(e.toString(), e);
@@ -247,8 +257,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
   public void downloadFeedValidator() {
     String tmpDir = System.getProperty("java.io.tmpdir");
     NYCFileUtils fs = new NYCFileUtils(tmpDir);
-    String url = "http://googletransitdatafeed.googlecode.com/files/"
-        + TRANSIT_FEED + ".tar.gz";
+    String url = "http://developer.onebusaway.org/tmp/" + TRANSIT_FEED + ".tar.gz";
     fs.wget(url);
     fs.tarzxf(tmpDir + File.separatorChar + TRANSIT_FEED + ".tar.gz");
   }
