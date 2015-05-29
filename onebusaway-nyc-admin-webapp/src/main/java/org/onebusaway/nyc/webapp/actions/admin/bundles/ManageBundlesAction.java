@@ -95,6 +95,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	private String agencyDataSourceType; // 'gtfs' or 'aux', from the Upload tab
 	private String agencyProtocol;  // 'http', 'ftp', or 'file', from the Upload tab
 	private String agencyDataSource; // URL for the source data file, from the Upload tab
+	private boolean cleanDir;    // on file upload, should target directory be cleaned first
 	private File agencySourceFile;
 	private String agencySourceFileContentType;
 	private String agencySourceFileFileName;
@@ -379,6 +380,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 		_log.info("build path: " + fileService.getBuildPath());
 		_log.info("directory name: " + directoryName);
 		_log.info("base path: " + fileService.getBucketName());
+		_log.info("cleanDir: " + cleanDir);
 		// Build URL/File path
 		String src = agencyDataSource;
 		if (agencyProtocol.equals("http")) {
@@ -409,10 +411,12 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 		}
 		target += "/" + agencyId;
 		// Clean target directory before appending the file name to the target string
-	  File targetDir = new File(target);
-	  for (File file: targetDir.listFiles()) {
-	    file.delete();
-	  }
+		if (cleanDir) {
+  	  File targetDir = new File(target);
+  	  for (File file: targetDir.listFiles()) {
+  	    file.delete();
+  	  }
+		}
 		target += src.substring(src.lastIndexOf('/'));
 		_log.info("Target: " + target);
 
@@ -460,6 +464,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 		_log.info("upload file name: " + agencySourceFileFileName);
 		_log.info("file content type: " + agencySourceFileContentType);
 		_log.info("file name: " +  agencySourceFile.getName());
+    _log.info("cleanDir: " + cleanDir);
 
 		// Build target path
 		String target = fileService.getBucketName() + "/" + directoryName + "/";
@@ -469,6 +474,13 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 			target += fileService.getAuxPath();
 		}
 		target += "/" + agencyId;
+    // Clean target directory before appending the file name to the target string
+    if (cleanDir) {
+      File targetDir = new File(target);
+      for (File file: targetDir.listFiles()) {
+        file.delete();
+      }
+    }		
 		target += "/" + agencySourceFileFileName;
 		_log.info("Target: " + target);
 
@@ -779,6 +791,14 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 
 	public String getAgencyDataSource() {
 		return agencyDataSource;
+	}
+
+	public void setCleanDir(boolean cleanDir) {
+		this.cleanDir = cleanDir;
+	}
+
+	public boolean getCleanDir() {
+		return cleanDir;
 	}
 
 	public void setAgencySourceFile(File agencySourceFile) {
