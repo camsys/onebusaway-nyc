@@ -13,10 +13,16 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.container.refresh.Refreshable;
@@ -87,6 +93,12 @@ public class RunServiceImpl implements RunService {
   private ScheduledBlockLocationService scheduledBlockLocationService;
 
   private ExtendedCalendarService extCalendarService;
+  
+  private ScheduledExecutorService _executor;
+
+  private ScheduledFuture<?> _evictionHandler;
+  
+  private int _cacheEvictionFrequency = 5;
 
   public ExtendedCalendarService getCalendarService() {
     return extCalendarService;
@@ -131,6 +143,16 @@ public class RunServiceImpl implements RunService {
       return;
 
     transformRunData();
+    _executor = Executors.newScheduledThreadPool(1);
+    _evictionHandler = _executor.scheduleAtFixedRate(new CacheEvictionHandler(), _cacheEvictionFrequency, _cacheEvictionFrequency, TimeUnit.MINUTES);
+  }
+
+  @PreDestroy
+  public void stop() {
+    if (_evictionHandler != null)
+      _evictionHandler.cancel(true);
+    if (_executor != null)
+      _executor.shutdownNow();
   }
 
   // public only for unit testing
@@ -248,8 +270,28 @@ public class RunServiceImpl implements RunService {
   private final Pattern realRunNumberPattern = Pattern.compile("[a-zA-Z]*0*(\\d+)");
   private final Pattern reportedRunIdPattern = Pattern.compile("0*([0-9]+)-0*(\\d+)");
 
+  private ConcurrentHashMap<String, TreeMultimap<Integer, String>> _cache = new ConcurrentHashMap<String, TreeMultimap<Integer, String>>();
+  
+  private void clearCache() {
+    _log.info("clearing RunService cache of " + _cache.size() + " elements");
+    _cache.clear();
+  }
+  
   @Override
   public TreeMultimap<Integer, String> getBestRunIdsForFuzzyId(
+      String reportedRunId)
+      throws IllegalArgumentException {
+    TreeMultimap<Integer, String> best = _cache.get(reportedRunId);
+    if (best == null) {
+      best = _cache.get(reportedRunId);
+      if (best != null) return best;
+      best = getBestRunIdsForFuzzyIdNonCached(reportedRunId);
+      _cache.put(reportedRunId, best);
+    }
+    return best;
+  }
+  
+  private TreeMultimap<Integer, String> getBestRunIdsForFuzzyIdNonCached(
       String reportedRunId)
       throws IllegalArgumentException {
     
@@ -595,4 +637,13 @@ public class RunServiceImpl implements RunService {
     }
     return bli;
   }
+  
+  private class CacheEvictionHandler implements Runnable {
+
+    @Override
+    public void run() {
+      clearCache();
+    }
+  }
+
 }

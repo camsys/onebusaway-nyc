@@ -103,6 +103,7 @@ public abstract class QueueListenerTask {
 						processedCount++;
 
 					} catch(Exception ex) {
+					  _log.error("failure:", ex);
 						_log.error("#####>>>>> processMessage() failed, exception was: " + ex.getMessage());
 					}
 						

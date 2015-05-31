@@ -25,6 +25,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTrans
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.InferenceProcessor;
 import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
@@ -55,7 +56,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	// when the command to change the bundle has been received.
 	private static final int INFERENCE_PROCESSING_THREAD_WAIT_TIMEOUT_IN_SECONDS = 60;
 
-  private static final int MAX_EXPECTED_THREADS = 3000;
+  private static final int MAX_EXPECTED_THREADS = 10000;
 
 	private static Logger _log = LoggerFactory.getLogger(BundleManagementServiceImpl.class);
 
@@ -65,6 +66,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	private volatile List<Future> _inferenceProcessingThreads = new ArrayList<Future>();
 
+	private volatile List<InferenceProcessor> _inferenceProcessingProcessors = new ArrayList<InferenceProcessor>();
+	
 	protected String _currentBundleId = null;
 
 	protected ServiceDate _currentServiceDate = null;
@@ -243,6 +246,16 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		}
 	}
 
+  @Override
+  public void registerInferenceProcessor(InferenceProcessor processor) {
+   _inferenceProcessingProcessors.add(processor); 
+   // keep our thread list from getting /too/ big unnecessarily
+   if(_inferenceProcessingProcessors.size() > MAX_EXPECTED_THREADS) {
+     removeDeadInferenceProcessors();
+   }
+
+  }
+	
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
 		if(bundleId == null || !_applicableBundles.containsKey(bundleId)) {
@@ -256,7 +269,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 		_log.info("Switching to bundle " + bundleId + "...");   
 		_bundleIsReady = false;
-
+		
+		signalInferenceProcessors();
 		// wait until all inference processing threads have exited...
 		int t = INFERENCE_PROCESSING_THREAD_WAIT_TIMEOUT_IN_SECONDS / 5;
 		while(t-- >= 0) {
@@ -343,7 +357,14 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		return;
 	}
 
-	// some kind of event notification system camsys setup? 
+	private void signalInferenceProcessors() {
+    for (InferenceProcessor processor : _inferenceProcessingProcessors) {
+      if (processor != null)
+        processor.shutdown(); 
+    }
+  }
+
+  // some kind of event notification system camsys setup? 
 	protected void timingHook() {}
 	
 	/*****
@@ -417,10 +438,27 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		}
 	}
 
+	 private void removeDeadInferenceProcessors() {
+	    List<InferenceProcessor> finishedProcessors = new ArrayList<InferenceProcessor>();
+
+	    // find all threads that are not running...
+	    for(InferenceProcessor processor : _inferenceProcessingProcessors) {
+	      if(processor == null || processor.isDone() || processor.isCancelled()) {
+	        finishedProcessors.add(processor);
+	      }
+	    }
+
+	    // ...and then remove them from our list of processing threads
+	    for(InferenceProcessor deadProcessor : finishedProcessors) {
+	      _inferenceProcessingProcessors.remove(deadProcessor);
+	    }
+	  }
+
+	
 	private boolean allInferenceThreadsHaveExited() {
 		removeDeadInferenceThreads();
-
-		return (_inferenceProcessingThreads.size() == 0);
+		removeDeadInferenceProcessors();
+		return (_inferenceProcessingThreads.size() == 0 && _inferenceProcessingProcessors.size() == 0);
 	}
 
 	protected class BundleSwitchUpdateThread extends TimerTask implements Trigger {
@@ -503,4 +541,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			return calendar.getTime();
 		}  
 	}
+
+
 }

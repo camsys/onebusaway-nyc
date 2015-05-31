@@ -8,7 +8,6 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleLocationInferenceServiceImpl.ProcessingTask;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 
@@ -58,10 +57,9 @@ public class ProcessingTaskTest {
     when(_vehicleAssignmentService.getAssignedDepotForVehicleId(vehicleId)).thenReturn(
         DEPOT);
 
-    service.setApplicationContext(appContext);
 
-    final ProcessingTask task = service.new ProcessingTask(vehInfInst, infLocationRec, false, false);
-    task.run();
+//    final ProcessingTask task = service.new ProcessingTask(vehInfInst, infLocationRec, false, false);
+//    task.run();
 
     // verify(mgmtStatus).setDepotId(DEPOT);
 

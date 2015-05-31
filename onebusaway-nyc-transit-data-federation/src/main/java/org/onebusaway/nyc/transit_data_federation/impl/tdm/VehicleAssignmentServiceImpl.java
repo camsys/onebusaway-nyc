@@ -119,6 +119,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
     Integer updateInterval = _configurationService.getConfigurationValueAsInteger("tdm.vehicleAssignmentRefreshInterval", null);
 
     if (updateInterval != null) {
+      _log.info("tdm.vehicleAssignmentRefreshInterval=" + updateInterval);
       setUpdateFrequency(updateInterval);
     }
   }

@@ -184,6 +184,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   private void configChanged() {
     Integer updateInterval = _configurationService.getConfigurationValueAsInteger("tdm.crewAssignmentRefreshInterval", null);
     if (updateInterval != null) {
+      _log.info("tdm.crewAssignmentRefreshInterval=" + updateInterval);
       setUpdateFrequency(updateInterval);
     }
   }

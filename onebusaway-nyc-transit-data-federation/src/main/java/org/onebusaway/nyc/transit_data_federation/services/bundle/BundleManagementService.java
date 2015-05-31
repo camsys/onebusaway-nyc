@@ -27,6 +27,8 @@ public interface BundleManagementService {
 
   // thread reference keepers
   public void registerInferenceProcessingThread(Future thread);
-  
+
+  public void registerInferenceProcessor(InferenceProcessor processor);
+
 }
 

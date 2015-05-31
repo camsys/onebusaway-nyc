@@ -85,7 +85,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   protected ZMQ.Socket _socket = null;
 
-  protected int _countInterval = 10000;
+  protected int _countInterval = 100;
   
   @Autowired
   private ConfigurationService _configurationService;
@@ -127,6 +127,8 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
     @Override
     public void run() {
+	_log.error("in output run");
+
       while (!Thread.currentThread().isInterrupted()) {
         String r = null;
         try {
@@ -138,16 +140,16 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
         if (r != null) {
           if (_isPrimaryInferenceInstance) {
-            _zmqSocket.send(_topicName, ZMQ.SNDMORE);
-            _zmqSocket.send(r.getBytes(), 0);
+            // _zmqSocket.send(_topicName, ZMQ.SNDMORE);
+            // _zmqSocket.send(r.getBytes(), 0);
           }
         }
 
         final String h = _heartbeatBuffer.poll();
         if (h != null) {
           if (_isPrimaryInferenceInstance) {
-            _zmqSocket.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
-            _zmqSocket.send(h.getBytes(), 0);
+            // _zmqSocket.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
+            // _zmqSocket.send(h.getBytes(), 0);
             _log.debug("heartbeat=" + h);
           }
         }

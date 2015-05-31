@@ -147,7 +147,7 @@ public class VehicleInferenceInstance {
    * @return true if the resulting inferred location record was successfully
    *         processed, otherwise false
    */
-  public synchronized boolean handleUpdate(NycRawLocationRecord record) {
+  public boolean handleUpdate(NycRawLocationRecord record) {
 
     /**
      * Choose the best timestamp based on device timestamp and received
@@ -326,7 +326,7 @@ public class VehicleInferenceInstance {
    * @return true if the resulting inferred location record should be passed on,
    *         otherwise false.
    */
-  public synchronized boolean handleBypassUpdate(
+  public boolean handleBypassUpdate(
       NycTestInferredLocationRecord record) {
     _previousObservation = null;
     _nycTestInferredLocationRecord = record;
@@ -341,19 +341,19 @@ public class VehicleInferenceInstance {
   /****
    * Simulator/debugging methods
    */
-  public synchronized Multiset<Particle> getPreviousParticles() {
+  public Multiset<Particle> getPreviousParticles() {
     return HashMultiset.create(_particleFilter.getWeightedParticles());
   }
 
-  public synchronized Multiset<Particle> getCurrentParticles() {
+  public Multiset<Particle> getCurrentParticles() {
     return HashMultiset.create(_particleFilter.getWeightedParticles());
   }
 
-  public synchronized Multiset<Particle> getCurrentSampledParticles() {
+  public Multiset<Particle> getCurrentSampledParticles() {
     return HashMultiset.create(_particleFilter.getSampledParticles());
   }
 
-  public synchronized List<JourneyPhaseSummary> getJourneySummaries() {
+  public List<JourneyPhaseSummary> getJourneySummaries() {
     final Particle particle = _particleFilter.getMostLikelyParticle();
     if (particle == null)
       return Collections.emptyList();
@@ -601,7 +601,7 @@ public class VehicleInferenceInstance {
     final String reportedRunId = observation.getRunId();
     Integer bestFuzzyDistance = null;
     if (StringUtils.isEmpty(opAssignedRunId) && !noOperatorIdGiven) {
-      _log.info("no assigned run found for operator=" + operatorId);
+      _log.debug("no assigned run found for operator=" + operatorId);
     }
 
     if (StringUtils.isNotEmpty(reportedRunId)
@@ -636,7 +636,7 @@ public class VehicleInferenceInstance {
    * 
    * @return
    */
-  private synchronized NycTestInferredLocationRecord getMostRecentParticleAsNycTestInferredLocationRecord() {
+  private NycTestInferredLocationRecord getMostRecentParticleAsNycTestInferredLocationRecord() {
     final Particle particle = _particleFilter.getMostLikelyParticle();
     if (particle == null)
       return null;
@@ -747,11 +747,11 @@ public class VehicleInferenceInstance {
   }
 
   /**
-   * handleUpdate and return the results of the particle filter in a thread safe
+   * handleUpdate and return the results of the particle filter in a non-thread safe
    * manner. After calling this method, the containedparticle filter nor this
    * class is not safe to call in a multi-threaded manner.
    */
-  public synchronized NycQueuedInferredLocationBean handleUpdateWithResults(
+  public NycQueuedInferredLocationBean handleUpdateWithResults(
       NycRawLocationRecord nycRawLocationRecord) {
     boolean success = handleUpdate(nycRawLocationRecord);
     if (!success)
@@ -766,7 +766,7 @@ public class VehicleInferenceInstance {
    * hand update of the test record, which merely converts the input record to
    * an output record.
    */
-  public synchronized NycQueuedInferredLocationBean handleBypassUpdateWithResults(
+  public NycQueuedInferredLocationBean handleBypassUpdateWithResults(
       NycTestInferredLocationRecord nycTestInferredLocationRecord) {
     boolean success = handleBypassUpdate(nycTestInferredLocationRecord);
     if (!success)
