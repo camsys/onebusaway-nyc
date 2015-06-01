@@ -168,7 +168,26 @@ public final class SiriSupportV2 {
 		VehicleRefStructure vehicleRef = new VehicleRefStructure();
 		vehicleRef.setValue(currentVehicleTripStatus.getVehicleId());
 
+		// Set Origin and Destination stops from Block trips. 
+		StopBean lastStop = new StopBean();
+		JourneyPlaceRefStructure origin = new JourneyPlaceRefStructure();
+		
+		for (int i = 0; i < blockTrips.size(); i++) {
+			BlockTripBean blockTrip = blockTrips.get(i);
 
+			if (blockTrip.getTrip().getId()
+					.equals(framedJourneyTripBean.getId())) {
+				List<BlockStopTimeBean> stops = blockTrip.getBlockStopTimes();
+
+				origin.setValue(stops.get(0).getStopTime().getStop().getId());
+				
+				lastStop = stops.get(stops.size() - 1).getStopTime()
+						.getStop();
+				break;
+			}
+		}
+		
+		
 		// location
 		// if vehicle is detected to be on detour, use actual lat/lon, not
 		// snapped location.
@@ -290,8 +309,15 @@ public final class SiriSupportV2 {
 		if (detailLevel.equals(DetailLevel.MINIMUM) ||detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
 			monitoredVehicleJourney.setFramedVehicleJourneyRef(framedJourney);
 			monitoredVehicleJourney.setDirectionRef(directionRef);
-			// since LineRef is fully qualified with operatorref, moving to normal
+			
+			// since LineRef is fully qualified with operatorref, moving OperatorRef to normal detail
 			//monitoredVehicleJourney.setOperatorRef(operatorRef);
+			
+			
+			DestinationRefStructure dest = new DestinationRefStructure();
+			dest.setValue(lastStop.getId());
+			monitoredVehicleJourney.setDestinationRef(dest);
+			
 			monitoredVehicleJourney.setLineRef(lineRef);
 			monitoredVehicleJourney.setProgressRate(getProgressRateForPhaseAndStatus(
 								currentVehicleTripStatus.getStatus(),
@@ -307,26 +333,8 @@ public final class SiriSupportV2 {
 				blockRef.setValue(framedJourneyTripBean.getBlockId());
 				monitoredVehicleJourney.setBlockRef(blockRef);
 			}
-			for (int i = 0; i < blockTrips.size(); i++) {
-				BlockTripBean blockTrip = blockTrips.get(i);
 
-				if (blockTrip.getTrip().getId()
-						.equals(framedJourneyTripBean.getId())) {
-					List<BlockStopTimeBean> stops = blockTrip.getBlockStopTimes();
-
-					JourneyPlaceRefStructure origin = new JourneyPlaceRefStructure();
-					origin.setValue(stops.get(0).getStopTime().getStop().getId());
-					monitoredVehicleJourney.setOriginRef(origin);
-
-					StopBean lastStop = stops.get(stops.size() - 1).getStopTime()
-							.getStop();
-					DestinationRefStructure dest = new DestinationRefStructure();
-					dest.setValue(lastStop.getId());
-					monitoredVehicleJourney.setDestinationRef(dest);
-
-					break;
-				}
-			}
+			monitoredVehicleJourney.setOriginRef(origin);
 			monitoredVehicleJourney.setJourneyPatternRef(journeyPattern);
 		}	
 		
