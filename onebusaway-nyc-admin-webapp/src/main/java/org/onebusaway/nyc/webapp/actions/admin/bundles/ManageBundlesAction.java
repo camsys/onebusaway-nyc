@@ -413,8 +413,10 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 		// Clean target directory before appending the file name to the target string
 		if (cleanDir) {
   	  File targetDir = new File(target);
-  	  for (File file: targetDir.listFiles()) {
-  	    file.delete();
+  	  if (targetDir.exists()) {
+    	  for (File file: targetDir.listFiles()) {
+    	    file.delete();
+    	  }
   	  }
 		}
 		target += src.substring(src.lastIndexOf('/'));
@@ -477,8 +479,10 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
     // Clean target directory before appending the file name to the target string
     if (cleanDir) {
       File targetDir = new File(target);
-      for (File file: targetDir.listFiles()) {
-        file.delete();
+      if (targetDir.exists()) {
+        for (File file: targetDir.listFiles()) {
+          file.delete();
+        }
       }
     }		
 		target += "/" + agencySourceFileFileName;
