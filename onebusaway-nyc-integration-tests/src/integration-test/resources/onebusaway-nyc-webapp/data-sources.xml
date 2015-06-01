@@ -87,7 +87,7 @@
 	</bean>
 
 	<bean id="siriCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycSiriCacheServiceImpl">
-		<property name="disabled" value="true" />
+		<property name="disabled" value="false" />
         </bean>
 	<bean id="geocoderCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl">
 		<property name="disabled" value="true" />
