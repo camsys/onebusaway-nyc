@@ -40,8 +40,7 @@ import uk.org.siri.siri_2.StopPointsDeliveryStructure;
 public class StopPointsV2Action extends MonitoringActionBase implements
 		ServletRequestAware, ServletResponseAware {
 	private static final long serialVersionUID = 1L;
-
-	private static final double MAX_BOUNDS_RADIUS = 500;
+	
 	private static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
 
 	private Siri _response;
@@ -75,18 +74,6 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		CoordinateBounds bounds = null;
 		boolean validBoundDistance = true;
 		
-		
-		
-		
-		
-		//get the detail level parameter or set it to default if not specified
-	   /* DetailLevel detailLevel;
-	    if(_request.getParameter(STOP_POINTS_DETAIL_LEVEL) == null){
-	    	detailLevel = DetailLevel.NORMAL;
-	    }else{
-	    	detailLevel = DetailLevel.valueOf(_request.getParameter(STOP_POINTS_DETAIL_LEVEL).toUpperCase());
-	    }	*/
-
 		// User Parameters
 		String boundingBox = _request.getParameter(BOUNDING_BOX);
 		String circle = _request.getParameter(CIRCLE);
@@ -131,21 +118,21 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 				bounds = getBounds(circle);	
 				
 				if(!isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)){
-					boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m";
+					boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m ";
 					validBoundDistance = false;
 				}
 			}
 			else if(StringUtils.isNotBlank(boundingBox)){
 				bounds = getBounds(boundingBox);
 				
-				if(!isValidBoundBoxDistance(bounds, MAX_BOUNDS_RADIUS)){
-					boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m";
+				if(!isValidBoundBoxDistance(bounds, MAX_BOUNDS_DISTANCE)){
+					boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_DISTANCE + "m ";
 					validBoundDistance = false;
 				}
 			}
 		}
 		catch (NumberFormatException nfe){
-			boundsErrorString += "One or more coordinate values contain a non-numeric value.";
+			boundsErrorString += ERROR_NON_NUMERIC;
 		}
 
 
@@ -154,8 +141,7 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 			if (routeIds.size() > 0) {
 				useLineRefOnly = true;
 			} else {
-				boundsErrorString += "You must provide at least " + MonitoringActionSupport.MIN_COORDINATES
-						+ " BoundingBox or Circle coordinates or a LineRef value.";
+				boundsErrorString += ERROR_REQUIRED_PARAMS;
 			}
 		}
 
@@ -171,7 +157,7 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		// Error Handler
 		Exception error = null;
 		if ((bounds == null && !useLineRefOnly) || 
-			(_request.getParameter("LineRef") != null && routeIds.size() == 0) ||
+			(_request.getParameter(LINE_REF) != null && routeIds.size() == 0) ||
 			!validBoundDistance) {
 			String errorString = (boundsErrorString + " " + routeIdsErrorString).trim();
 			error = new Exception(errorString);

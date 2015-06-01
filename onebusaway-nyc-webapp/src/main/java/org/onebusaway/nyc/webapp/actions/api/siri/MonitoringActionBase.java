@@ -34,6 +34,13 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	public static final String MAX_ONWARD_CALLS = "MaximumNumberOfCallsOnwards";
 	public static final String MAX_STOP_VISITS = "MaximumStopVisits";
 	public static final String MIN_STOP_VISITS = "MinimumStopVisitsPerLine";
+	
+	public static final double MAX_BOUNDS_DISTANCE= 500;
+	public static final double MAX_BOUNDS_RADIUS= 250;
+	
+	// Errors
+	public static final String ERROR_REQUIRED_PARAMS = "You must provide a Circle, BoundingBox or LineRef value. ";
+	public static final String ERROR_NON_NUMERIC = "One or more coordinate values contain a non-numeric value. ";
 
 	@Autowired
 	protected NycTransitDataService _nycTransitDataService;
@@ -193,7 +200,7 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	protected boolean isValidBoundsDistance(CoordinateBounds bounds, double maxRadius){
 		if(bounds != null){
 		 CoordinateBounds maxBounds = SphericalGeometryLibrary.bounds(
-				 bounds.getMinLat(), bounds.getMinLon(), maxRadius);
+				 bounds.getMinLat(), bounds.getMinLon(), maxRadius + 1);
 
 		 double maxLatSpan = (maxBounds.getMaxLat() - maxBounds.getMinLat());
 		 double maxLonSpan = (maxBounds.getMaxLon() - maxBounds.getMinLon());

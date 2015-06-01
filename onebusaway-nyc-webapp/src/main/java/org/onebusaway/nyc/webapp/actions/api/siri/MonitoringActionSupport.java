@@ -26,8 +26,6 @@ public class MonitoringActionSupport {
 	protected JGoogleAnalyticsTracker _googleAnalytics = null;
 	private Boolean _reportToGoogleAnalytics = null;
 	
-	public static final int MIN_COORDINATES = 3;
-
 	public MonitoringActionSupport() {
 	}
 

@@ -124,7 +124,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 				
 				if (bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)) {
 					boundsErrorString += "Provided values exceed allowed search radius of "
-							+ MAX_BOUNDS_RADIUS + "m. ";
+							+ MAX_BOUNDS_DISTANCE + "m. ";
 					validBoundDistance = false;
 				}
 				
@@ -139,16 +139,14 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 			}
 			
 		} catch (NumberFormatException nfe) {
-			boundsErrorString += "One or more coordinate values contain a non-numeric value. ";
+			boundsErrorString += ERROR_NON_NUMERIC;
 		}
 
 		// Check for case where only LineRef was provided
 		if (routeIds.size() > 0) {
 			useLineRefOnly = true;
 		} else if(bounds == null) {
-			boundsErrorString += "You must provide at least "
-					+ MonitoringActionSupport.MIN_COORDINATES
-					+ " BoundingBox or Circle coordinates or a LineRef value.";
+			boundsErrorString += ERROR_REQUIRED_PARAMS;
 		}
 
 		// TODO LCARABALLO GoogleAnalytics?
