@@ -41,7 +41,6 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		ServletRequestAware, ServletResponseAware {
 	private static final long serialVersionUID = 1L;
 
-	private static final double MAX_BOUNDS_RADIUS = 500;
 	private static final String LINE_REF = "LineRef";
 	private static final String DIRECTION_REF = "LineDirectionRef";
 	private static final String OPERATOR_REF = "Operator";
@@ -124,16 +123,16 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 				
 				if (bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)) {
 					boundsErrorString += "Provided values exceed allowed search radius of "
-							+ MAX_BOUNDS_DISTANCE + "m. ";
+							+ MAX_BOUNDS_RADIUS + "m. ";
 					validBoundDistance = false;
 				}
 				
 			} else if (StringUtils.isNotBlank(boundingBox)) {
 				bounds = getBounds(boundingBox);
 				
-				if (bounds != null && !isValidBoundBoxDistance(bounds, MAX_BOUNDS_RADIUS)) {
-					boundsErrorString += "Provided values exceed allowed search radius of "
-							+ MAX_BOUNDS_RADIUS + "m. ";
+				if (bounds != null && !isValidBoundBoxDistance(bounds, MAX_BOUNDS_DISTANCE)) {
+					boundsErrorString += "Provided values exceed allowed search distance of "
+							+ MAX_BOUNDS_DISTANCE + "m. ";
 					validBoundDistance = false;
 				}
 			}

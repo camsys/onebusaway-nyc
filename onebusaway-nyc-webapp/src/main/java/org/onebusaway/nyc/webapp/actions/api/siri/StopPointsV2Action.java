@@ -126,7 +126,7 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 				bounds = getBounds(boundingBox);
 				
 				if(!isValidBoundBoxDistance(bounds, MAX_BOUNDS_DISTANCE)){
-					boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_DISTANCE + "m ";
+					boundsErrorString += "Provided values exceed allowed search distance of " + MAX_BOUNDS_DISTANCE + "m ";
 					validBoundDistance = false;
 				}
 			}
