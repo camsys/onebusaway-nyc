@@ -125,7 +125,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	 */
 	@Override
 	public List<VehicleActivityStructure> getVehicleActivityForRoute(
-			String routeId, String directionId, int maximumOnwardCalls,
+			String routeId, String directionId, int maximumOnwardCalls, DetailLevel detailLevel,
 			long currentTime) {
 		List<VehicleActivityStructure> output = new ArrayList<VehicleActivityStructure>();
 
@@ -169,7 +169,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetails.getTrip(), tripDetails.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, null, currentTime, null);
+					timePredictionRecords, detailLevel, currentTime, null);
 
 			output.add(activity);
 		}
@@ -201,7 +201,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public VehicleActivityStructure getVehicleActivityForVehicle(
-			String vehicleId, int maximumOnwardCalls, long currentTime) {
+			String vehicleId, int maximumOnwardCalls, DetailLevel detailLevel, long currentTime) {
 
 		boolean useTimePredictionsIfAvailable = _presentationService
 				.useTimePredictionsIfAvailable();
@@ -242,7 +242,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetailsForCurrentTrip.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, null,currentTime, null);
+					timePredictionRecords, detailLevel,currentTime, null);
 
 			return output;
 		}

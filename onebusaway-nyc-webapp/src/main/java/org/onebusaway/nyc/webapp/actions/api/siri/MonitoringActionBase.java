@@ -25,11 +25,12 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	public static final String LINE_REF = "LineRef";
 	public static final String MONITORING_REF = "MonitoringRef";
 	public static final String DIRECTION_REF = "DirectionRef";
-	public static final String OPERATOR_REF = "Operator";
+	public static final String OPERATOR_REF = "OperatorRef";
 	public static final String BOUNDING_BOX = "BoundingBox";
 	public static final String CIRCLE = "Circle";
 	public static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
 	public static final String STOP_MONITORING_DETAIL_LEVEL = "StopMonitoringDetailLevel";
+	public static final String VEHICLE_MONITORING_DETAIL_LEVEL = "VehicleMonitoringDetailLevel";
 	public static final String UPCOMING_SCHEDULED_SERVICE = "hasUpcomingScheduledService";
 	public static final String MAX_ONWARD_CALLS = "MaximumNumberOfCallsOnwards";
 	public static final String MAX_STOP_VISITS = "MaximumStopVisits";

@@ -26,13 +26,13 @@ public interface RealtimeServiceV2 {
 	public SiriJsonSerializerV2 getSiriJsonSerializer();
 
 	public SiriXmlSerializerV2 getSiriXmlSerializer();
-
-	public VehicleActivityStructure getVehicleActivityForVehicle(
-			String vehicleId, int maximumOnwardCalls, long currentTime);
+	
+	public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId,
+			int maximumOnwardCalls, DetailLevel detailLevel, long currentTime);
 
 	public List<VehicleActivityStructure> getVehicleActivityForRoute(
 			String routeId, String directionId, int maximumOnwardCalls,
-			long currentTime);
+			DetailLevel detailLevel, long currentTime);
 
 	public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(
 			String stopId, int maximumOnwardCalls, DetailLevel detailLevel,
@@ -70,6 +70,8 @@ public interface RealtimeServiceV2 {
 	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
 			CoordinateBounds bounds, DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters);
+
+	
 
 	
 

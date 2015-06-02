@@ -37,6 +37,8 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.ServiceAlertsHelperV2;
+import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2;
+import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
 import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
@@ -95,6 +97,18 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
     
     _realtimeService.setTime(currentTimestamp);
     
+    String detailLevelParam = _request.getParameter(VEHICLE_MONITORING_DETAIL_LEVEL);
+	
+	//get the detail level parameter or set it to default if not specified
+    DetailLevel detailLevel;
+    
+    if(DetailLevel.contains(detailLevelParam)){
+    	detailLevel = DetailLevel.valueOf(detailLevelParam.toUpperCase());
+    }
+    else{
+    	detailLevel = DetailLevel.NORMAL;
+    }
+    
     // User Parameters
 	String lineRef = _request.getParameter(LINE_REF);
 	String vehicleRef = _request.getParameter(VEHICLE_REF);
@@ -104,86 +118,64 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
 	String maxStopVisitsParam = _request.getParameter(MAX_STOP_VISITS);
 	String minStopVisitsParam = _request.getParameter(MIN_STOP_VISITS);
     
-    
+	// Error Strings
+	String routeIdsErrorString = "";
+	
     /*
      * We need to support the user providing no agency id which means 'all agencies'.
     So, this array will hold a single agency if the user provides it or all
     agencies if the user provides none. We'll iterate over them later while 
     querying for vehicles and routes
     */
+	
+	List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
+	
 	List<String> agencyIds = processAgencyIds(agencyId);
-
     List<AgencyAndId> vehicleIds = processVehicleIds(vehicleRef, agencyIds);
+    routeIdsErrorString =  processRouteIds(lineRef, routeIds, agencyIds);
     
-    List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
-    String routeIdErrorString = "";
-    if (_request.getParameter("LineRef") != null) {
-      try {
-        // Same as above for vehicle id
-        AgencyAndId routeId = AgencyAndIdLibrary.convertFromString(_request.getParameter("LineRef"));
-        if (isValidRoute(routeId)) {
-          routeIds.add(routeId);
-        } else {
-          routeIdErrorString += "No such route: " + routeId.toString() + ".";
-        }
-      } catch (Exception e) {
-        // Same as above for vehicle id
-        for (String agency : agencyIds) {
-          AgencyAndId routeId = new AgencyAndId(agency, _request.getParameter("LineRef"));
-          if (isValidRoute(routeId)) {
-            routeIds.add(routeId);
-          } else {
-            routeIdErrorString += "No such route: " + routeId.toString() + ". ";
-          }
-        }
-      }
-    }
-
-    String detailLevel = _request.getParameter("VehicleMonitoringDetailLevel");
-
     int maximumOnwardCalls = 0;
-    if (detailLevel != null && detailLevel.equals("calls")) {
-      maximumOnwardCalls = Integer.MAX_VALUE;
-
-      try {
-        maximumOnwardCalls = Integer.parseInt(_request.getParameter("MaximumNumberOfCallsOnwards"));
-      } catch (NumberFormatException e) {
-        maximumOnwardCalls = Integer.MAX_VALUE;
-      }
-    }
+    
+    if (detailLevel.equals(DetailLevel.CALLS)) {
+		maximumOnwardCalls = SiriSupportV2.convertToNumeric(maxOnwardCallsParam, Integer.MAX_VALUE);
+	}
     
     String gaLabel = null;
     
     // *** CASE 1: single vehicle, ignore any other filters
     if (vehicleIds.size() > 0) {
       
-      gaLabel = _request.getParameter("VehicleRef");
+      gaLabel = vehicleRef;
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-      
-      for (AgencyAndId vehicleId : vehicleIds) {
-        VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-            vehicleId.toString(), maximumOnwardCalls, currentTimestamp);
-
-        if (activity != null) {
-          activities.add(activity);
-        }
+      try{
+	      for (AgencyAndId vehicleId : vehicleIds) {
+	        VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
+	            vehicleId.toString(), maximumOnwardCalls, detailLevel, currentTimestamp);
+	
+	        if (activity != null) {
+	          activities.add(activity);
+	        }
+	      }
+      }
+      catch(Exception e){
+    	  _log.info(e.getMessage(),e);
       }
       
       // No vehicle id validation, so we pass null for error
       _response = generateSiriResponse(activities, null, null, currentTimestamp);
 
       // *** CASE 2: by route, using direction id, if provided
-    } else if (_request.getParameter("LineRef") != null) {
+    } else if (lineRef != null) {
       
-      gaLabel = _request.getParameter("LineRef");
+      gaLabel = lineRef;
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
       
       for (AgencyAndId routeId : routeIds) {
         
         List<VehicleActivityStructure> activitiesForRoute = _realtimeService.getVehicleActivityForRoute(
-            routeId.toString(), directionId, maximumOnwardCalls, currentTimestamp);
+            routeId.toString(), directionId, maximumOnwardCalls, detailLevel, currentTimestamp);
         if (activitiesForRoute != null) {
           activities.addAll(activitiesForRoute);
         }
@@ -207,8 +199,8 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
       }
       
       Exception error = null;
-      if (_request.getParameter("LineRef") != null && routeIds.size() == 0) {
-        error = new Exception(routeIdErrorString.trim());
+      if (lineRef != null && routeIds.size() == 0) {
+        error = new Exception(routeIdsErrorString.trim());
       }
 
       _response = generateSiriResponse(activities, routeIds, error, currentTimestamp);
@@ -228,7 +220,7 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
 
           for (VehicleStatusBean v : vehicles.getList()) {
             VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-                v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
+                v.getVehicleId(), maximumOnwardCalls, detailLevel, currentTimestamp);
 
             if (activity != null) {
               activities.add(activity);

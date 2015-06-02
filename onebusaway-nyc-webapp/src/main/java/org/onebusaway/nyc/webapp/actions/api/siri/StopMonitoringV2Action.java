@@ -165,7 +165,7 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 
 		Exception error = null;
 		if (stopIds.size() == 0
-				|| (_request.getParameter(LINE_REF) != null && routeIds.size() == 0)) {
+				|| (lineRef != null && routeIds.size() == 0)) {
 			String errorString = (stopIdsErrorString + " " + routeIdsErrorString)
 					.trim();
 			error = new Exception(errorString);
