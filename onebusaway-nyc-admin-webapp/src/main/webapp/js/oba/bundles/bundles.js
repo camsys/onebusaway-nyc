@@ -465,6 +465,7 @@ function onSelectClick() {
 function onUploadSelectedAgenciesClick() {
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
 	console.log("in onUploadSelectedAgenciesClick");
+	var cleanedDirs = [];
 	$('#agency_data .agencySelected').each(function() {
 		$this = $(this)
 		console.log("getting agency values");
@@ -476,6 +477,13 @@ function onUploadSelectedAgenciesClick() {
 			var agencyDataFile = $(this).find(':file')[0].files[0];
 			//var file = $(this).find('.agencyDataSource').files[0];
 			//console.log("file name: " + file.name);
+		}
+		// Check if the target directory for this agency has already been cleaned
+		var cleanDir = "true";
+		if (cleanedDirs.indexOf(agencyId) == -1) {
+			cleanedDirs.push(agencyId);
+		} else {
+			cleanDir = "false";
 		}
 		console.log("next agency: " + agencyId + ", type: " + agencyDataSourceType
 				+ ", protocol: " + agencyProtocol
@@ -490,7 +498,8 @@ function onUploadSelectedAgenciesClick() {
 					"agencyId" : agencyId,
 					"agencyDataSourceType" : agencyDataSourceType,
 					"agencyProtocol" : agencyProtocol,
-					"agencyDataSource" : agencyDataSource
+					"agencyDataSource" : agencyDataSource,
+					"cleanDir" : cleanDir
 				},
 				async: false,
 				success: function(response) {
@@ -514,6 +523,7 @@ function onUploadSelectedAgenciesClick() {
 			formData.append("agencyId", agencyId);
 			formData.append("agencyDataSourceType", agencyDataSourceType);
 			formData.append("agencySourceFile", agencyDataFile);
+			formData.append("cleanDir", cleanDir);
 			var actionName = "uploadSourceFile";
 			jQuery.ajax({
 				url: "manage-bundles!" + actionName + ".action",
