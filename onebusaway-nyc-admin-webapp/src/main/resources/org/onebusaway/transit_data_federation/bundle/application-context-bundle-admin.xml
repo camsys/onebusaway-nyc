@@ -436,7 +436,7 @@
         <property name="entityMappings">
             <map>
             <!-- this is set dynamically from the configuration -->
-<!--                 <entry key="org.onebusaway.gtfs.model.Stop" value="https://raw.github.com/wiki/camsys/onebusaway-application-modules/PugetSoundStopConsolidation.mediawiki" /> -->
+<!--                 <entry key="org.onebusaway.gtfs.model.Stop" value="https://raw.github.com/wiki/camsys/onebusaway-application-modules/PugetSoundStopConsolidation.md" /> -->
             </map>
         </property>
     </bean>

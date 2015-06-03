@@ -41,7 +41,7 @@ public class BaseModTask {
   }
 
   protected String getEmptyModUrl() {
-    return "https://raw.github.com/wiki/camsys/onebusaway-application-modules/EmptyModifications.mediawiki";
+    return "https://raw.github.com/wiki/camsys/onebusaway-application-modules/EmptyModifications.md";
   }
 
   protected String runModifications(GtfsBundle gtfsBundle, String agencyId,
