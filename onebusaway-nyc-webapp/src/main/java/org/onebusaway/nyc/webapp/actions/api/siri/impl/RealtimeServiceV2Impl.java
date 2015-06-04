@@ -483,9 +483,9 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		
 		Boolean upcomingServiceAllStops = null; 
 		
-		for(AgencyAndId aid : routeIds){
+		for(AgencyAndId rteId : routeIds){
 
-			String routeId = AgencyAndId.convertToString(aid);
+			String routeId = AgencyAndId.convertToString(rteId);
 			
 			RouteBean routeBean = _nycTransitDataService.getRouteForId(routeId);
 			
@@ -496,6 +496,10 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	    	AnnotatedLineStructure annotatedLineStructure = new AnnotatedLineStructure();
 
 	    	RouteResult routeResult = getRouteResult(routeBean, filters);
+	    	
+	    	// Skip Routes with no stops
+	    	if(routeResult.getDirections() == null || routeResult.getDirections().size() == 0)
+	    		continue;
 
 			boolean isValid = SiriSupportV2.fillAnnotatedLineStructure(
 					annotatedLineStructure, 
@@ -793,7 +797,8 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	        for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
 	          polylines.add(polyline.getPoints());
 	        }
-
+	        
+	        // TODO - Re-evaluate the best method to determine upcoming scheduled service
 	        Boolean routeHasUpcomingScheduledService = 
 	            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), directionId);
 
@@ -805,7 +810,9 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	        	routeHasUpcomingScheduledService = true;
 	        }
 			
-			String hasUpcomingScheduledServiceVal = String.valueOf(routeHasUpcomingScheduledService);
+			//String hasUpcomingScheduledServiceVal = String.valueOf(routeHasUpcomingScheduledService);
+	        
+	        String hasUpcomingScheduledServiceVal = String.valueOf(routeHasVehiclesInService);
 
 			if(!SiriSupportV2.passFilter(hasUpcomingScheduledServiceVal,upcomingScheduledServiceFilter) 
 					|| !routeHasUpcomingScheduledService)
