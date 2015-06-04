@@ -197,7 +197,7 @@ public class StopPointsActionTest {
 	  Map<Boolean, List<AnnotatedStopPointStructure>> annotatedStopPointMap = new HashMap<Boolean, List<AnnotatedStopPointStructure>>();
 	  annotatedStopPointMap.put(true, mockStopPoints);
 
-	  when(realtimeService.getAnnotatedStopPointStructures(anyListOf(AgencyAndId.class), any(DetailLevel.class), anyLong(), anyMapOf(Filters.class, String.class))).thenReturn(annotatedStopPointMap);
+	  when(realtimeService.getAnnotatedStopPointStructures(anyListOf(String.class), anyListOf(AgencyAndId.class), any(DetailLevel.class), anyLong(), anyMapOf(Filters.class, String.class))).thenReturn(annotatedStopPointMap);
 	    
 	  // XML Serializer
 	  SiriXmlSerializerV2 serializer = new SiriXmlSerializerV2();
