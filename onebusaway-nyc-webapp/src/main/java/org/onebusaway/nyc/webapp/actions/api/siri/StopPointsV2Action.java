@@ -173,7 +173,8 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 			}
 			
 			for (Map.Entry<Boolean, List<AnnotatedStopPointStructure>> entry : stopPointsMap.entrySet()) {
-				upcomingServiceAllStops= entry.getKey();
+				if(entry.getValue().size() > 0)
+					upcomingServiceAllStops= entry.getKey();
 				stopPoints.addAll(entry.getValue());
 			}
 		}

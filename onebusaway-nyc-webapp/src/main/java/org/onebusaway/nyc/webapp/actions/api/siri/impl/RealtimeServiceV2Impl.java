@@ -700,12 +700,12 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		for (StopBean stopBean : stopBeans) {
 			
 			List<StopsForRouteBean> stopsForRouteList = new ArrayList<StopsForRouteBean>();
+			boolean filterByLineRef = (routeIds != null && routeIds.size() > 0) ? true : false;
+			boolean containsLineRef = false;
+			
  			
 			// Get a list of all the routes for the stop
 			for (RouteBean route : stopBean.getRoutes()) {
-				
-				/*if(!routeIds.contains(AgencyAndIdLibrary.convertFromString(route.getId())))
-					continue;*/
 				
 				// Add list of stops retreived from route to cache
 				StopsForRouteBean stopsForRoute = stopsForRouteCache.get(route.getId());
@@ -716,8 +716,15 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 				
 				if(stopsForRoute != null)
 					stopsForRouteList.add(stopsForRoute);
+				
+				if(filterByLineRef && routeIds.contains(AgencyAndIdLibrary.convertFromString(route.getId())))
+					containsLineRef = true;
 			}
 			
+			// Filter By LineRef
+			if(filterByLineRef && !containsLineRef)
+				continue;
+				
 			// Get Stops with List of Routes, Direction, and Upcoming Service Info
 			StopRouteDirection stopRouteDirection = getStopRouteDirection(stopBean, stopsForRouteList, filters);
 						
