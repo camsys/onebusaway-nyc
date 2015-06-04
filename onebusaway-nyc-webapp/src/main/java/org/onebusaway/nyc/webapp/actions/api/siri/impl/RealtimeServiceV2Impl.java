@@ -392,7 +392,8 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
-			CoordinateBounds bounds, 
+			CoordinateBounds bounds,
+			List<String> agencyIds,
 			List<AgencyAndId> routeIds, 
 			DetailLevel detailLevel, 
 			long currentTime,
@@ -417,7 +418,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		
 		List<StopBean> stopBeans = getStopsForBounds(bounds);
 		
-		processAnnotatedStopPoints(routeIds,stopBeans,annotatedStopPoints, 
+		processAnnotatedStopPoints(agencyIds, routeIds,stopBeans,annotatedStopPoints, 
 				filters, stopsForRouteCache, detailLevel, currentTime);
 
 		output.put(upcomingServiceAllStops, annotatedStopPoints);
@@ -427,6 +428,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
+			List<String> agencyIds,
 			List<AgencyAndId> routeIds, 
 			DetailLevel detailLevel, 
 			long currentTime,
@@ -455,7 +457,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		
 			StopsForRouteBean stopsForLineRef = _nycTransitDataService.getStopsForRoute(routeId);
 
-	    	processAnnotatedStopPoints(routeIds, stopsForLineRef.getStops(), annotatedStopPoints, filters, 
+	    	processAnnotatedStopPoints(agencyIds, routeIds, stopsForLineRef.getStops(), annotatedStopPoints, filters, 
 		    			stopsForRouteCache, detailLevel, currentTime);
 
 		}
@@ -467,6 +469,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	
 	@Override
 	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
+			List<String> agencyIds,
 			List<AgencyAndId> routeIds, 
 			DetailLevel detailLevel,
 			long currentTime, 
@@ -485,6 +488,10 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			String routeId = AgencyAndId.convertToString(aid);
 			
 			RouteBean routeBean = _nycTransitDataService.getRouteForId(routeId);
+			
+			// Filter By AgencyID
+			if(routeBean.getAgency() == null || !agencyIds.contains(routeBean.getAgency().getId()))
+				continue;
 	    	
 	    	AnnotatedLineStructure annotatedLineStructure = new AnnotatedLineStructure();
 
@@ -507,7 +514,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
-			CoordinateBounds bounds, DetailLevel detailLevel,
+			List<String> agencyIds, CoordinateBounds bounds, DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters) {
 		
 		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
@@ -516,7 +523,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			routeIds.add(AgencyAndId.convertFromString(route.getId()));
 		}
 		
-		return getAnnotatedLineStructures(routeIds, detailLevel, responseTimestamp, filters);
+		return getAnnotatedLineStructures(agencyIds, routeIds, detailLevel, responseTimestamp, filters);
 	}
 
 	/**
@@ -688,6 +695,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	}
 	
 	private void processAnnotatedStopPoints(
+			List<String> agencyIds,
 			List<AgencyAndId> routeIds,
 			List<StopBean> stopBeans, 
 			List<AnnotatedStopPointStructure> annotatedStopPoints, 
@@ -700,12 +708,16 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		for (StopBean stopBean : stopBeans) {
 			
 			List<StopsForRouteBean> stopsForRouteList = new ArrayList<StopsForRouteBean>();
+			
 			boolean filterByLineRef = (routeIds != null && routeIds.size() > 0) ? true : false;
 			boolean containsLineRef = false;
-			
  			
 			// Get a list of all the routes for the stop
 			for (RouteBean route : stopBean.getRoutes()) {
+				
+				// Filter By AgencyID
+				if(route.getAgency() == null || !agencyIds.contains(route.getAgency().getId()))
+					continue;
 				
 				// Add list of stops retreived from route to cache
 				StopsForRouteBean stopsForRoute = stopsForRouteCache.get(route.getId());

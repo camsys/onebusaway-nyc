@@ -164,11 +164,11 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		else{
 		
 			if (useLineRefOnly) {
-				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(
+				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(agencyIds,
 						routeIds, detailLevel, responseTimestamp, filters);
 			} else {
-				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(
-						bounds, routeIds, detailLevel, responseTimestamp, filters);			
+				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(bounds, agencyIds,
+						routeIds, detailLevel, responseTimestamp, filters);			
 			}
 			
 			for (Map.Entry<Boolean, List<AnnotatedStopPointStructure>> entry : stopPointsMap.entrySet()) {

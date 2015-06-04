@@ -41,13 +41,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		ServletRequestAware, ServletResponseAware {
 	private static final long serialVersionUID = 1L;
 
-	private static final String LINE_REF = "LineRef";
-	private static final String DIRECTION_REF = "LineDirectionRef";
-	private static final String OPERATOR_REF = "Operator";
-	private static final String BOUNDING_BOX = "BoundingBox";
-	private static final String CIRCLE = "Circle";
 	private static final String LINES_DETAIL_LEVEL = "LinesDetailLevel";
-	private static final String UPCOMING_SCHEDULED_SERVICE = "hasUpcomingScheduledService";
 
 	private Siri _response;
 
@@ -170,11 +164,11 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 
 			if (useLineRefOnly) {
 				linesMap = _realtimeService
-						.getAnnotatedLineStructures(routeIds, detailLevel,
+						.getAnnotatedLineStructures(agencyIds, routeIds, detailLevel,
 								responseTimestamp, filters);
 			} else {
 				linesMap = _realtimeService
-						.getAnnotatedLineStructures(bounds, detailLevel,
+						.getAnnotatedLineStructures(agencyIds, bounds, detailLevel,
 								responseTimestamp, filters);
 			}
 
