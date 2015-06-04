@@ -306,7 +306,7 @@ public final class SiriSupportV2 {
 		
 		
 		// detail level - basic
-		if (detailLevel.equals(DetailLevel.MINIMUM) ||detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
+		if (detailLevel.equals(DetailLevel.MINIMUM) ||detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
 			monitoredVehicleJourney.setFramedVehicleJourneyRef(framedJourney);
 			monitoredVehicleJourney.setDirectionRef(directionRef);
 			
@@ -325,7 +325,7 @@ public final class SiriSupportV2 {
 		}
 		
 		// detail level - normal
-		if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
+		if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
 			monitoredVehicleJourney.setOperatorRef(operatorRef);
 			// block ref
 			if (presentationService.isBlockLevelInference(currentVehicleTripStatus)) {
@@ -339,7 +339,7 @@ public final class SiriSupportV2 {
 		}	
 		
 		// onward calls
-		if (detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
+		if (detailLevel.equals(DetailLevel.CALLS)){
 			if (!presentationService.isOnDetour(currentVehicleTripStatus))
 				fillOnwardCalls(monitoredVehicleJourney, blockInstance,
 						framedJourneyTripBean, currentVehicleTripStatus,
@@ -362,7 +362,6 @@ public final class SiriSupportV2 {
 			DetailLevel detailLevel, 
 			long currentTime
 			) {
-
 		
 		StopBean stopBean = stopRouteDirection.getStop();
 		List<RouteForDirection> routeDirections = stopRouteDirection.getRouteDirections();
