@@ -464,8 +464,6 @@ public final class SiriSupportV2 {
 			RouteDirectionStructure routeDirectionStructure = new RouteDirectionStructure();
 			NaturalLanguageStringStructure directionName = new NaturalLanguageStringStructure();
 			
-			// TODO - LCARABALLO - Currently set to direction Id, should it be something else?
-			// more appropriate -laidig
 			directionName.setValue(direction.getDestination());
 			routeDirectionStructure.getDirectionName().add(directionName);
 			directions.getDirection().add(routeDirectionStructure);
@@ -526,7 +524,7 @@ public final class SiriSupportV2 {
 			
 			// DETAIL -- stops: Return name, identifier and coordinates of the stop.??
 			// my interpretation is that normal returns the list of stops with coordinates and their polylines
-			//ideally, this would return only stops with scheduled service
+			//ideally, this would return both stops with scheduled and unscheduled service
 			
 			if (detailLevel.equals(DetailLevel.STOPS) || detailLevel.equals(DetailLevel.FULL)){
 				for(int i = 0; i < allStops.size(); i++){
@@ -541,16 +539,17 @@ public final class SiriSupportV2 {
 					location.setLongitude(stopLon.setScale(6, BigDecimal.ROUND_HALF_DOWN));
 					location.setLatitude(stopLat.setScale(6, BigDecimal.ROUND_HALF_DOWN));
 					
+					StopPointRefStructure spr = new StopPointRefStructure();
+					spr.setValue(stop.getId());
+					
 					StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
 					pointInPattern.setLocation(location);
 					pointInPattern.setOrder(BigInteger.valueOf(i));
 					NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
 					stopName.setValue(stop.getName());
 					pointInPattern.getStopName().add(stopName);
+					pointInPattern.setStopPointRef(spr);
 					
-					
-					StopPointRefStructure spr = new StopPointRefStructure();
-					spr.setValue(stop.getId());
 					stopsInPattern.getStopPointInPattern().add(pointInPattern);
 					
 					// HasUpcomingService Extension
