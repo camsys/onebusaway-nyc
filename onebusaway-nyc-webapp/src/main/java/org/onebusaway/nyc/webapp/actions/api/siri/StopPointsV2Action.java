@@ -115,17 +115,17 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		// Calculate Bounds	
 		try{
 			if(StringUtils.isNotBlank(circle)){
-				bounds = getBounds(circle);	
+				bounds = getCircleBounds(circle);	
 				
-				if(!isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)){
+				if(bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)){
 					boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m ";
 					validBoundDistance = false;
 				}
 			}
 			else if(StringUtils.isNotBlank(boundingBox)){
-				bounds = getBounds(boundingBox);
+				bounds = getBoxBounds(boundingBox);
 				
-				if(!isValidBoundBoxDistance(bounds, MAX_BOUNDS_DISTANCE)){
+				if(bounds != null && !isValidBoundBoxDistance(bounds, MAX_BOUNDS_DISTANCE)){
 					boundsErrorString += "Provided values exceed allowed search distance of " + MAX_BOUNDS_DISTANCE + "m ";
 					validBoundDistance = false;
 				}
@@ -134,7 +134,6 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		catch (NumberFormatException nfe){
 			boundsErrorString += ERROR_NON_NUMERIC;
 		}
-
 
 		// Check for case where only LineRef was provided
 		if (bounds == null) {

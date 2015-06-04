@@ -119,7 +119,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		// Calculate Bounds
 		try {
 			if (StringUtils.isNotBlank(circle)) {
-				bounds = getBounds(circle);
+				bounds = getCircleBounds(circle);
 				
 				if (bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)) {
 					boundsErrorString += "Provided values exceed allowed search radius of "
@@ -128,7 +128,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 				}
 				
 			} else if (StringUtils.isNotBlank(boundingBox)) {
-				bounds = getBounds(boundingBox);
+				bounds = getBoxBounds(boundingBox);
 				
 				if (bounds != null && !isValidBoundBoxDistance(bounds, MAX_BOUNDS_DISTANCE)) {
 					boundsErrorString += "Provided values exceed allowed search distance of "
@@ -147,15 +147,6 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		} else if(bounds == null) {
 			boundsErrorString += ERROR_REQUIRED_PARAMS;
 		}
-
-		// TODO LCARABALLO GoogleAnalytics?
-		/*
-		 * if (_monitoringActionSupport
-		 * .canReportToGoogleAnalytics(_configurationService)) {
-		 * _monitoringActionSupport.reportToGoogleAnalytics(_request,
-		 * "Stop Monitoring", StringUtils.join(stopIds, ","),
-		 * _configurationService); }
-		 */
 
 		// Setup Filters
 		Map<Filters, String> filters = new HashMap<Filters, String>();

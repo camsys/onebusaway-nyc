@@ -40,7 +40,7 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	public static final double MAX_BOUNDS_RADIUS= 250;
 	
 	// Errors
-	public static final String ERROR_REQUIRED_PARAMS = "You must provide a Circle, BoundingBox or LineRef value. ";
+	public static final String ERROR_REQUIRED_PARAMS = "You must provide a valid Circle, BoundingBox or LineRef value. ";
 	public static final String ERROR_NON_NUMERIC = "One or more coordinate values contain a non-numeric value. ";
 
 	@Autowired
@@ -176,7 +176,7 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	        if (isValidStop(stopId)) {
 	          stopIds.add(stopId);
 	        } else {
-	          stopIdsErrorString += "No such stop: " + stopId.toString() + ".";
+	          stopIdsErrorString += "No such stop: " + stopId.toString() + ". ";
 	        }
 	      } catch (Exception e) {
 	        // The user didn't provide an agency id in the MonitoringRef, so use our list of operator refs
@@ -192,7 +192,7 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	      }
 	      if (stopIds.size() > 0) stopIdsErrorString = "";
 	    } else {
-	      stopIdsErrorString = "You must provide a MonitoringRef.";
+	      stopIdsErrorString = "You must provide a MonitoringRef. ";
 	    }
 	    
 	    return stopIdsErrorString;
@@ -228,7 +228,7 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 		return false;
 	}
 	
-	protected CoordinateBounds getBounds(String boundingCoordinates) throws NumberFormatException{
+	protected CoordinateBounds getBoxBounds(String boundingCoordinates) throws NumberFormatException{
 		CoordinateBounds bounds = null;
 		if (boundingCoordinates != null) {
 			String[] coordinates = boundingCoordinates.split(",");
@@ -243,26 +243,26 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 				
 				bounds = userBounds;
 				
-				/*bounds = SphericalGeometryLibrary.boundsFromLatLonOffset(
-						userBounds.getMinLat(),
-						userBounds.getMinLon(),
-						(userBounds.getMaxLat() - userBounds.getMinLat()) / 2, 
-						(userBounds.getMaxLon() - userBounds.getMinLon()) / 2);*/
-				
 			}
-			else if(coordinates.length == 3){	
+		}
+		return bounds;
+	}
+	
+	protected CoordinateBounds getCircleBounds(String boundingCoordinates) throws NumberFormatException{
+		CoordinateBounds bounds = null;
+		if (boundingCoordinates != null) {
+			String[] coordinates = boundingCoordinates.split(",");
+			
+			if(coordinates.length == 3){	
 				
 				bounds = SphericalGeometryLibrary.bounds(
 						Double.parseDouble(coordinates[0]), 
 						Double.parseDouble(coordinates[1]), 
-						Double.parseDouble(coordinates[2]));
-				
+						Double.parseDouble(coordinates[2]));	
 			}
-
 		}
+		
 		return bounds;
 	}
-
-	
 
 }
