@@ -99,7 +99,8 @@ public final class SiriSupportV2 {
 	}
 
 	public enum Filters {
-		DIRECTION_REF, OPERATOR_REF, LINE_REF, USE_LINE_REF, UPCOMING_SCHEDULED_SERVICE, DETAIL_LEVEL, MAX_STOP_VISITS, MIN_STOP_VISITS
+		DIRECTION_REF, OPERATOR_REF, LINE_REF, USE_LINE_REF, UPCOMING_SCHEDULED_SERVICE, 
+		DETAIL_LEVEL, MAX_STOP_VISITS, MIN_STOP_VISITS, INCLUDE_POLYLINES
 	}
 
 	/**
@@ -562,15 +563,18 @@ public final class SiriSupportV2 {
 				}
 			}
 			
-			// Polyline Extension
-			SiriPolyLinesExtension polylines = new SiriPolyLinesExtension();
-			for(String polyline : direction.getPolylines()){
-				polylines.getPolylines().add(polyline);
+			String includePolylineFilter = filters.get(Filters.INCLUDE_POLYLINES);
+			if(includePolylineFilter != null && passFilter("true",includePolylineFilter)){
+				// Polyline Extension
+				SiriPolyLinesExtension polylines = new SiriPolyLinesExtension();
+				for(String polyline : direction.getPolylines()){
+					polylines.getPolylines().add(polyline);
+				}
+				
+				ExtensionsStructure PolylineExtension = new ExtensionsStructure();
+				PolylineExtension.setAny(polylines);
+				routeDirectionStructure.setExtensions(PolylineExtension);
 			}
-			
-			ExtensionsStructure PolylineExtension = new ExtensionsStructure();
-			PolylineExtension.setAny(polylines);
-			annotatedLineStructure.setExtensions(PolylineExtension);
 			
 			routeDirectionStructure.setJourneyPatterns(patterns);
 			pattern.setStopsInPattern(stopsInPattern);

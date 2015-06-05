@@ -42,6 +42,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 	private static final long serialVersionUID = 1L;
 
 	private static final String LINES_DETAIL_LEVEL = "LinesDetailLevel";
+	private static final String INCLUDE_POLYLINES = "includePolylines";
 
 	private Siri _response;
 
@@ -82,6 +83,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		String agencyId = _request.getParameter(OPERATOR_REF);
 		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
 		String detailLevelParam = _request.getParameter(LINES_DETAIL_LEVEL);
+		String includePolylines = _request.getParameter(INCLUDE_POLYLINES);
 		
 		
 		//get the detail level parameter or set it to default if not specified
@@ -146,6 +148,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		Map<Filters, String> filters = new HashMap<Filters, String>();
 		filters.put(Filters.DIRECTION_REF, directionId);
 		filters.put(Filters.LINE_REF, lineRef);
+		filters.put(Filters.INCLUDE_POLYLINES, includePolylines);
 		filters.put(Filters.UPCOMING_SCHEDULED_SERVICE, hasUpcomingScheduledService);
 
 		// Annotated Lines
