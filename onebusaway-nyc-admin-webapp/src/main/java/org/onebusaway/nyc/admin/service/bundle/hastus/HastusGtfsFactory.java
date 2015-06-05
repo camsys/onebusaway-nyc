@@ -74,6 +74,8 @@ public class HastusGtfsFactory {
   private static Pattern _routeVariationB = Pattern.compile("\\b([a-z]{1})/([a-z]{1})\\b");
 
   private static Pattern _routeVariationC = Pattern.compile("\\b\\d+([a-z]{2})\\b");
+  
+  private static Pattern _shapeDirection = Pattern.compile("[0-9]{3}-([a-z]{2})-[a-z]*");
 
   private static DateFormat _dateParse = new SimpleDateFormat(
       "yyyy-MM-dd'T'HH:mm:ss.SSS");
@@ -279,6 +281,7 @@ public class HastusGtfsFactory {
     List<PublicTimeTable> timetables = processScheduleDirectory(
         _scheduleInputPath, new ArrayList<PublicTimeTable>());
 
+    int timetableSize = timetables.size();
     for (PublicTimeTable timetable : timetables) {
       int directionIndex = 0;
       if (timetable == null || timetable.getPlaceInfos() == null) continue;
@@ -311,7 +314,7 @@ public class HastusGtfsFactory {
 
           Trip trip = new Trip();
           trip.setId(tripId);
-          trip.setDirectionId(Integer.toString(directionIndex));
+          trip.setDirectionId(constructDirectionId(directionIndex, timetableSize, shapeId));
           trip.setRoute(route);
           trip.setServiceId(serviceId);
           trip.setShapeId(shapeId);
@@ -326,6 +329,33 @@ public class HastusGtfsFactory {
       }
       directionIndex++;
     }
+  }
+
+  
+  private String constructDirectionId(int directionIndex, int timetableSize,
+      AgencyAndId shapeId) {
+    if (timetableSize < 2 ) {
+      // if we have multiple time tables, then inbound/outbound is encoded in those
+      return Integer.toString(directionIndex);
+    }
+    
+    // we don't have multiple time tables, look at shape direction based on 
+    // naming conventions
+    String directionString = null;
+    Matcher m = _shapeDirection.matcher(shapeId.getId());
+    if (m.find()) {
+      directionString = m.group(1);
+    }
+
+    if ("nb".equals(directionString) || "wb".equals(directionString)) {
+      return "1"; //inbound
+    }
+    if ("sb".equals(directionString) || "eb".equals(directionString)) {
+      return "0"; //outbound
+    }
+    
+    // we don't know, fall back on directionIndex
+    return Integer.toString(directionIndex);
   }
 
   private void processStopTimesForTrip(Map<String, Integer> timepointPositions,
