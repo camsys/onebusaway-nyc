@@ -235,7 +235,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
    private String generateUrl(String host, String apiCall) {
      if (LOCAL_HOST.equalsIgnoreCase(host)) { 
        String url = "http://" + host + ":" + _adminPort + "/" + _context + apiCall;
-       _log.info("generateUrl=" + url + " (use admin.context to override)");
+       _log.debug("generateUrl=" + url + " (use admin.context to override)");
        return url;
      }
      return "http://" + host + ":" + _adminPort + "/api" + apiCall;
@@ -246,7 +246,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
    }
    
    protected <T> T makeRequestInternal(String instanceId, String apiCall, String jsonPayload, Class<T> returnType, Map<String, String> params) {
-	   _log.info("makeRequestInternal(" + instanceId + ", " + apiCall + ")");
+	   _log.debug("makeRequestInternal(" + instanceId + ", " + apiCall + ")");
 	   String host = this.findPublicDns(instanceId);
 	   if (host == null || host.length() == 0) {
 		   _log.error("makeRequest called with unknown instanceId=" + instanceId);
@@ -254,7 +254,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 	   }
 	
 	   String url = generateUrl(host, apiCall);
-	   _log.info("making request for " + url);
+	   _log.debug("making request for " + url);
 
 	   // copy stream into String
 	   String content = (params==null?remoteConnectionService.getContent(url):remoteConnectionService.postContent(url, params));
