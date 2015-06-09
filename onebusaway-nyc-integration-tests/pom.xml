@@ -490,17 +490,20 @@
                     </execution>
 		</executions>
             </plugin>
-            <!-- Start up an embedded database for sharing the user database between webapps -->
+	    <!-- Start up an embedded database for sharing the user database between webapps --> 
+	    <!-- switched from org.onebusaway.plugins to fr.avianey.mojo as -->
+	    <!-- hsqldb was outdated.  If you can find source of -->
+	    <!-- org.onebusaway.plugins please update the hsqldb version -->
             <plugin>
-                <groupId>org.onebusaway.plugins</groupId>
-                <artifactId>maven-hsqldb-plugin</artifactId>
-                <version>1.0</version>
+                <groupId>fr.avianey.mojo</groupId>
+                <artifactId>hsqldb-maven-plugin</artifactId>
+                <version>1.0.0</version>
                 <executions>
                     <execution>
-                        <id>user-database</id>
+                        <id>user-database-start</id>
                         <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>run</goal>
+                            <goal>start</goal>
                         </goals>
                         <configuration>
                             <deleteOnEntry>true</deleteOnEntry>
@@ -508,6 +511,13 @@
                             <port>${hsqldb.port}</port>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>user-database-stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+					</execution>                    
                 </executions>
             </plugin>
             <!-- Start up all the webapps using the cargo plugin -->
