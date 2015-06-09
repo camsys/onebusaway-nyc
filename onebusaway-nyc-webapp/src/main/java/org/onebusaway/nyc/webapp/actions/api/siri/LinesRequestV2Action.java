@@ -41,13 +41,8 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		ServletRequestAware, ServletResponseAware {
 	private static final long serialVersionUID = 1L;
 
-	private static final String LINE_REF = "LineRef";
-	private static final String DIRECTION_REF = "LineDirectionRef";
-	private static final String OPERATOR_REF = "Operator";
-	private static final String BOUNDING_BOX = "BoundingBox";
-	private static final String CIRCLE = "Circle";
 	private static final String LINES_DETAIL_LEVEL = "LinesDetailLevel";
-	private static final String UPCOMING_SCHEDULED_SERVICE = "hasUpcomingScheduledService";
+	private static final String INCLUDE_POLYLINES = "includePolylines";
 
 	private Siri _response;
 
@@ -88,6 +83,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		String agencyId = _request.getParameter(OPERATOR_REF);
 		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
 		String detailLevelParam = _request.getParameter(LINES_DETAIL_LEVEL);
+		String includePolylines = _request.getParameter(INCLUDE_POLYLINES);
 		
 		
 		//get the detail level parameter or set it to default if not specified
@@ -119,7 +115,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		// Calculate Bounds
 		try {
 			if (StringUtils.isNotBlank(circle)) {
-				bounds = getBounds(circle);
+				bounds = getCircleBounds(circle);
 				
 				if (bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)) {
 					boundsErrorString += "Provided values exceed allowed search radius of "
@@ -128,7 +124,7 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 				}
 				
 			} else if (StringUtils.isNotBlank(boundingBox)) {
-				bounds = getBounds(boundingBox);
+				bounds = getBoxBounds(boundingBox);
 				
 				if (bounds != null && !isValidBoundBoxDistance(bounds, MAX_BOUNDS_DISTANCE)) {
 					boundsErrorString += "Provided values exceed allowed search distance of "
@@ -148,19 +144,11 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 			boundsErrorString += ERROR_REQUIRED_PARAMS;
 		}
 
-		// TODO LCARABALLO GoogleAnalytics?
-		/*
-		 * if (_monitoringActionSupport
-		 * .canReportToGoogleAnalytics(_configurationService)) {
-		 * _monitoringActionSupport.reportToGoogleAnalytics(_request,
-		 * "Stop Monitoring", StringUtils.join(stopIds, ","),
-		 * _configurationService); }
-		 */
-
 		// Setup Filters
 		Map<Filters, String> filters = new HashMap<Filters, String>();
 		filters.put(Filters.DIRECTION_REF, directionId);
 		filters.put(Filters.LINE_REF, lineRef);
+		filters.put(Filters.INCLUDE_POLYLINES, includePolylines);
 		filters.put(Filters.UPCOMING_SCHEDULED_SERVICE, hasUpcomingScheduledService);
 
 		// Annotated Lines
@@ -179,11 +167,11 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 
 			if (useLineRefOnly) {
 				linesMap = _realtimeService
-						.getAnnotatedLineStructures(routeIds, detailLevel,
+						.getAnnotatedLineStructures(agencyIds, routeIds, detailLevel,
 								responseTimestamp, filters);
 			} else {
 				linesMap = _realtimeService
-						.getAnnotatedLineStructures(bounds, detailLevel,
+						.getAnnotatedLineStructures(agencyIds, bounds, detailLevel,
 								responseTimestamp, filters);
 			}
 

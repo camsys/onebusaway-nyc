@@ -99,7 +99,8 @@ public final class SiriSupportV2 {
 	}
 
 	public enum Filters {
-		DIRECTION_REF, LINE_REF, USE_LINE_REF, UPCOMING_SCHEDULED_SERVICE, DETAIL_LEVEL, MAX_STOP_VISITS, MIN_STOP_VISITS
+		DIRECTION_REF, OPERATOR_REF, LINE_REF, USE_LINE_REF, UPCOMING_SCHEDULED_SERVICE, 
+		DETAIL_LEVEL, MAX_STOP_VISITS, MIN_STOP_VISITS, INCLUDE_POLYLINES
 	}
 
 	/**
@@ -306,7 +307,7 @@ public final class SiriSupportV2 {
 		
 		
 		// detail level - basic
-		if (detailLevel.equals(DetailLevel.MINIMUM) ||detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
+		if (detailLevel.equals(DetailLevel.MINIMUM) ||detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
 			monitoredVehicleJourney.setFramedVehicleJourneyRef(framedJourney);
 			monitoredVehicleJourney.setDirectionRef(directionRef);
 			
@@ -325,7 +326,7 @@ public final class SiriSupportV2 {
 		}
 		
 		// detail level - normal
-		if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
+		if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
 			monitoredVehicleJourney.setOperatorRef(operatorRef);
 			// block ref
 			if (presentationService.isBlockLevelInference(currentVehicleTripStatus)) {
@@ -339,7 +340,7 @@ public final class SiriSupportV2 {
 		}	
 		
 		// onward calls
-		if (detailLevel.equals(DetailLevel.CALLS) || onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING){
+		if (detailLevel.equals(DetailLevel.CALLS)){
 			if (!presentationService.isOnDetour(currentVehicleTripStatus))
 				fillOnwardCalls(monitoredVehicleJourney, blockInstance,
 						framedJourneyTripBean, currentVehicleTripStatus,
@@ -362,7 +363,6 @@ public final class SiriSupportV2 {
 			DetailLevel detailLevel, 
 			long currentTime
 			) {
-
 		
 		StopBean stopBean = stopRouteDirection.getStop();
 		List<RouteForDirection> routeDirections = stopRouteDirection.getRouteDirections();
@@ -465,8 +465,6 @@ public final class SiriSupportV2 {
 			RouteDirectionStructure routeDirectionStructure = new RouteDirectionStructure();
 			NaturalLanguageStringStructure directionName = new NaturalLanguageStringStructure();
 			
-			// TODO - LCARABALLO - Currently set to direction Id, should it be something else?
-			// more appropriate -laidig
 			directionName.setValue(direction.getDestination());
 			routeDirectionStructure.getDirectionName().add(directionName);
 			directions.getDirection().add(routeDirectionStructure);
@@ -527,7 +525,7 @@ public final class SiriSupportV2 {
 			
 			// DETAIL -- stops: Return name, identifier and coordinates of the stop.??
 			// my interpretation is that normal returns the list of stops with coordinates and their polylines
-			//ideally, this would return only stops with scheduled service
+			//ideally, this would return both stops with scheduled and unscheduled service
 			
 			if (detailLevel.equals(DetailLevel.STOPS) || detailLevel.equals(DetailLevel.FULL)){
 				for(int i = 0; i < allStops.size(); i++){
@@ -542,16 +540,17 @@ public final class SiriSupportV2 {
 					location.setLongitude(stopLon.setScale(6, BigDecimal.ROUND_HALF_DOWN));
 					location.setLatitude(stopLat.setScale(6, BigDecimal.ROUND_HALF_DOWN));
 					
+					StopPointRefStructure spr = new StopPointRefStructure();
+					spr.setValue(stop.getId());
+					
 					StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
 					pointInPattern.setLocation(location);
 					pointInPattern.setOrder(BigInteger.valueOf(i));
 					NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
 					stopName.setValue(stop.getName());
 					pointInPattern.getStopName().add(stopName);
+					pointInPattern.setStopPointRef(spr);
 					
-					
-					StopPointRefStructure spr = new StopPointRefStructure();
-					spr.setValue(stop.getId());
 					stopsInPattern.getStopPointInPattern().add(pointInPattern);
 					
 					// HasUpcomingService Extension
@@ -564,15 +563,18 @@ public final class SiriSupportV2 {
 				}
 			}
 			
-			// Polyline Extension
-			SiriPolyLinesExtension polylines = new SiriPolyLinesExtension();
-			for(String polyline : direction.getPolylines()){
-				polylines.getPolylines().add(polyline);
+			String includePolylineFilter = filters.get(Filters.INCLUDE_POLYLINES);
+			if(includePolylineFilter != null && passFilter("true",includePolylineFilter)){
+				// Polyline Extension
+				SiriPolyLinesExtension polylines = new SiriPolyLinesExtension();
+				for(String polyline : direction.getPolylines()){
+					polylines.getPolylines().add(polyline);
+				}
+				
+				ExtensionsStructure PolylineExtension = new ExtensionsStructure();
+				PolylineExtension.setAny(polylines);
+				routeDirectionStructure.setExtensions(PolylineExtension);
 			}
-			
-			ExtensionsStructure PolylineExtension = new ExtensionsStructure();
-			PolylineExtension.setAny(polylines);
-			annotatedLineStructure.setExtensions(PolylineExtension);
 			
 			routeDirectionStructure.setJourneyPatterns(patterns);
 			pattern.setStopsInPattern(stopsInPattern);

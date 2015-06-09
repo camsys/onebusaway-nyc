@@ -87,9 +87,14 @@ public class RealtimeServiceTest {
   
   @Before
   public void initialize(){
+	  
+	  // Agency Bean
+	  AgencyBean agency = new AgencyBean();
+	  agency.setId("MTA NYCT");
+	  
 	  // Route Bean
 	  Builder routeBuilder = RouteBean.builder();
-	  routeBuilder.setAgency(new AgencyBean());
+	  routeBuilder.setAgency(agency);
 	  routeBuilder.setId("MTA NYCT_M102");
 	  routeBean = routeBuilder.create();
 	  
@@ -186,6 +191,11 @@ public class RealtimeServiceTest {
         
     // REALTIME ARGUMENTS
  	
+    // Agency Ids
+    List<String> agencyIds = new ArrayList<String>();
+    String agencyId = "MTA NYCT";
+ 	agencyIds.add(agencyId);
+    
  	// 	Route Ids
  	List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
  	AgencyAndId routeId = AgencyAndIdLibrary.convertFromString("MTA NYCT_M102");
@@ -200,7 +210,7 @@ public class RealtimeServiceTest {
     // Filters
     Map<Filters, String> filters = new HashMap<Filters, String>();
     
-    Map<Boolean, List<AnnotatedStopPointStructure>> actualResult = realtimeService.getAnnotatedStopPointStructures(routeIds, detailLevel, time, filters);
+    Map<Boolean, List<AnnotatedStopPointStructure>> actualResult = realtimeService.getAnnotatedStopPointStructures(agencyIds, routeIds, detailLevel, time, filters);
     AnnotatedStopPointStructure actualStopPoint = actualResult.get(true).get(0);
     
     assertTrue(isEqual(mockStopPoint, actualStopPoint));
@@ -270,6 +280,11 @@ public class RealtimeServiceTest {
     
         
     // REALTIME ARGUMENTS
+    
+    // Agency Ids
+    List<String> agencyIds = new ArrayList<String>();
+    String agencyId = "MTA NYCT";
+ 	agencyIds.add(agencyId);
  	
  	// 	Route Ids
  	List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
@@ -285,7 +300,7 @@ public class RealtimeServiceTest {
     // Filters
     Map<Filters, String> filters = new HashMap<Filters, String>();
     
-    Map<Boolean, List<AnnotatedStopPointStructure>> actualResult = realtimeService.getAnnotatedStopPointStructures(bounds, routeIds,detailLevel, time, filters);
+    Map<Boolean, List<AnnotatedStopPointStructure>> actualResult = realtimeService.getAnnotatedStopPointStructures(bounds, agencyIds, routeIds,detailLevel, time, filters);
     AnnotatedStopPointStructure actualStopPoint = actualResult.get(true).get(0);
 
     assertTrue(isEqual(mockStopPoint, actualStopPoint));

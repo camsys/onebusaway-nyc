@@ -26,9 +26,10 @@ public interface RealtimeServiceV2 {
 	public SiriJsonSerializerV2 getSiriJsonSerializer();
 
 	public SiriXmlSerializerV2 getSiriXmlSerializer();
-	
-	public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId,
-			int maximumOnwardCalls, DetailLevel detailLevel, long currentTime);
+
+	public VehicleActivityStructure getVehicleActivityForVehicle(
+			String vehicleId, int maximumOnwardCalls, DetailLevel detailLevel, 
+			long currentTime);
 
 	public List<VehicleActivityStructure> getVehicleActivityForRoute(
 			String routeId, String directionId, int maximumOnwardCalls,
@@ -55,24 +56,20 @@ public interface RealtimeServiceV2 {
 	public List<ServiceAlertBean> getServiceAlertsGlobal();
 
 	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
-			CoordinateBounds bounds, List<AgencyAndId> routeIds,
+			List<String> agencyIds, List<AgencyAndId> routeIds,
 			DetailLevel detailLevel, long currentTime,
 			Map<Filters, String> filters);
 
 	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
-			List<AgencyAndId> routeIds, DetailLevel detailLevel,
+			CoordinateBounds bounds, List<String> agencyIds, List<AgencyAndId> routeIds, DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters);
 
 	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
-			List<AgencyAndId> routeIds, DetailLevel detailLevel,
+			List<String> agencyIds, List<AgencyAndId> routeIds, DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters);
 
 	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
-			CoordinateBounds bounds, DetailLevel detailLevel,
+			List<String> agencyIds, CoordinateBounds bounds, DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters);
-
-	
-
-	
 
 }
