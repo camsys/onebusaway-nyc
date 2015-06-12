@@ -775,6 +775,10 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	    // Filter Values
 	 	String directionIdFilter = filters.get(Filters.DIRECTION_REF);
 	 	String upcomingScheduledServiceFilter = filters.get(Filters.UPCOMING_SCHEDULED_SERVICE);
+	 	
+		if(!upcomingScheduledServiceFilter.trim().equalsIgnoreCase("false")){
+			upcomingScheduledServiceFilter = "true";
+		}
 	    
 	    // create stop ID->stop bean map
 	    Map<String, StopBean> stopIdToStopBeanMap = new HashMap<String, StopBean>();
@@ -810,12 +814,11 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	        	routeHasUpcomingScheduledService = true;
 	        }
 			
-			//String hasUpcomingScheduledServiceVal = String.valueOf(routeHasUpcomingScheduledService);
+			String hasUpcomingScheduledServiceVal = String.valueOf(routeHasUpcomingScheduledService);
 	        
-	        String hasUpcomingScheduledServiceVal = String.valueOf(routeHasVehiclesInService);
+	        //String hasUpcomingScheduledServiceVal = String.valueOf(routeHasVehiclesInService);
 
-			if(!SiriSupportV2.passFilter(hasUpcomingScheduledServiceVal,upcomingScheduledServiceFilter) 
-					|| !routeHasUpcomingScheduledService)
+			if(!SiriSupportV2.passFilter(hasUpcomingScheduledServiceVal,upcomingScheduledServiceFilter))
 				continue;
 	        
 	        // stops in this direction
@@ -851,6 +854,9 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		String upcomingScheduledServiceFilter = filters.get(Filters.UPCOMING_SCHEDULED_SERVICE);
 		String directionIdFilter = filters.get(Filters.DIRECTION_REF);
 		
+		if(!upcomingScheduledServiceFilter.trim().equalsIgnoreCase("false")){
+			upcomingScheduledServiceFilter = "true";
+		}
 			
 		StopRouteDirection stopRouteDirection = new StopRouteDirection(stop);
 		
@@ -883,10 +889,6 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					);
 					
 					String hasUpcomingScheduledServiceVal = String.valueOf(hasUpcomingScheduledService);
-					
-					if(!hasUpcomingScheduledServiceVal.trim().equals("false")){
-						hasUpcomingScheduledServiceVal = "true";
-					}
 
 					if(!SiriSupportV2.passFilter(hasUpcomingScheduledServiceVal,upcomingScheduledServiceFilter))
 						continue;
