@@ -223,13 +223,15 @@ public class StopPointsActionTest {
     
     @Test
     public void testLineRef() throws Exception {
-      
     	
-	    when(request.getParameter(eq("LineRef"))).thenReturn("M102");
+    	Map<String, String[]> parameters = new HashMap<String, String[]>();
+    	parameters.put("LineRef", new String[]{"M102"});
+    	parameters.put("BoundingBox", new String[]{"40.799921","-73.942596","40.794755","-73.940301"});
+    	
+    	when(request.getParameterMap()).thenReturn(parameters);
 	    //when(request.getParameter(eq("OperatorRef"))).thenReturn("MTA NYCT");
 	    //when(request.getParameter(eq("StopPointsDetailLevel"))).thenReturn("calls");
-	    //when(request.getParameter(eq("BoundingBox"))).thenReturn("40.799921,-73.942596,40.794755,-73.940301");
-  
+	  
 	    action.setServletRequest(request);
 	    action.setServletResponse(servletResponse);
 	    action.execute();
@@ -243,10 +245,12 @@ public class StopPointsActionTest {
     
     @Test
     public void testDetailLevelCase() throws Exception {
+    	Map<String, String[]> parameters = new HashMap<String, String[]>();
+    	parameters.put("LineRef", new String[]{"M102"});
+    	parameters.put("StopPointsDetailLevel", new String[]{"Calls"});
     	
-	    when(request.getParameter(eq("LineRef"))).thenReturn("M102");
-	    when(request.getParameter(eq("StopPointsDetailLevel"))).thenReturn("Calls");
-  
+    	when(request.getParameterMap()).thenReturn(parameters);
+
 	    action.setServletRequest(request);
 	    action.setServletResponse(servletResponse);
 	    action.execute();
