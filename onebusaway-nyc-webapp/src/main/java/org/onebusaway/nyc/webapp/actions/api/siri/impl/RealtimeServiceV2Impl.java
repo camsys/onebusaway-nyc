@@ -776,7 +776,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	 	String directionIdFilter = filters.get(Filters.DIRECTION_REF);
 	 	String upcomingScheduledServiceFilter = filters.get(Filters.UPCOMING_SCHEDULED_SERVICE);
 	 	
-		if(!upcomingScheduledServiceFilter.trim().equalsIgnoreCase("false")){
+		if(upcomingScheduledServiceFilter != null && !upcomingScheduledServiceFilter.trim().equalsIgnoreCase("false")){
 			upcomingScheduledServiceFilter = "true";
 		}
 	    
@@ -854,7 +854,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		String upcomingScheduledServiceFilter = filters.get(Filters.UPCOMING_SCHEDULED_SERVICE);
 		String directionIdFilter = filters.get(Filters.DIRECTION_REF);
 		
-		if(!upcomingScheduledServiceFilter.trim().equalsIgnoreCase("false")){
+		if(upcomingScheduledServiceFilter != null && !upcomingScheduledServiceFilter.trim().equalsIgnoreCase("false")){
 			upcomingScheduledServiceFilter = "true";
 		}
 			

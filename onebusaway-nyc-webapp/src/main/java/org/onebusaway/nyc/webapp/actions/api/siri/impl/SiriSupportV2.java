@@ -564,7 +564,7 @@ public final class SiriSupportV2 {
 			}
 			
 			String includePolylineFilter = filters.get(Filters.INCLUDE_POLYLINES);
-			if(includePolylineFilter != null && passFilter("true",includePolylineFilter)){
+			if(StringUtils.isNotBlank(includePolylineFilter) && passFilter("true",includePolylineFilter)){
 				// Polyline Extension
 				SiriPolyLinesExtension polylines = new SiriPolyLinesExtension();
 				for(String polyline : direction.getPolylines()){
