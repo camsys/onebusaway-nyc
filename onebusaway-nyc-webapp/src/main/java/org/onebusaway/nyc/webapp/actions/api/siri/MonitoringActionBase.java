@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -263,6 +264,20 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 		}
 		
 		return bounds;
+	}
+	
+	protected String getRequestParameter(HttpServletRequest request, String parameter){
+		Map params = request.getParameterMap();
+		    Iterator i = params.keySet().iterator();
+		    while ( i.hasNext() )
+		      {
+		        String key = (String) i.next();
+		        String value = ((String[]) params.get( key ))[ 0 ];
+		        if (parameter.equalsIgnoreCase(key)) {
+		            return value;
+		        }
+		      }
+		return null;
 	}
 
 }

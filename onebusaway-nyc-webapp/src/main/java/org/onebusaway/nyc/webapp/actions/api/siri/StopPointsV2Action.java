@@ -75,13 +75,13 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		boolean validBoundDistance = true;
 		
 		// User Parameters
-		String boundingBox = _request.getParameter(BOUNDING_BOX);
-		String circle = _request.getParameter(CIRCLE);
-		String lineRef = _request.getParameter(LINE_REF);
-		String directionId = _request.getParameter(DIRECTION_REF);
-		String agencyId = _request.getParameter(OPERATOR_REF);
-		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
-		String detailLevelParam = _request.getParameter(STOP_POINTS_DETAIL_LEVEL);
+		String boundingBox = getRequestParameter(_request, BOUNDING_BOX);
+		String circle = getRequestParameter(_request, CIRCLE);
+		String lineRef = getRequestParameter(_request, LINE_REF);
+		String directionId = getRequestParameter(_request, DIRECTION_REF);
+		String agencyId = getRequestParameter(_request, OPERATOR_REF);
+		String hasUpcomingScheduledService = getRequestParameter(_request, UPCOMING_SCHEDULED_SERVICE);
+		String detailLevelParam = getRequestParameter(_request, STOP_POINTS_DETAIL_LEVEL);
 		
 		
 		//get the detail level parameter or set it to default if not specified
@@ -156,7 +156,7 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		// Error Handler
 		Exception error = null;
 		if ((bounds == null && !useLineRefOnly) || 
-			(_request.getParameter(LINE_REF) != null && routeIds.size() == 0) ||
+			(lineRef != null && routeIds.size() == 0) ||
 			!validBoundDistance) {
 			String errorString = (boundsErrorString + " " + routeIdsErrorString).trim();
 			error = new Exception(errorString);

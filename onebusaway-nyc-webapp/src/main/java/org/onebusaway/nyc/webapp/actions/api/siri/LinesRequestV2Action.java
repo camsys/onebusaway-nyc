@@ -76,14 +76,14 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		boolean validBoundDistance = true;
 		
 		// User Parameters
-		String boundingBox = _request.getParameter(BOUNDING_BOX);
-		String circle = _request.getParameter(CIRCLE);
-		String lineRef = _request.getParameter(LINE_REF);
-		String directionId = _request.getParameter(DIRECTION_REF);
-		String agencyId = _request.getParameter(OPERATOR_REF);
-		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
-		String detailLevelParam = _request.getParameter(LINES_DETAIL_LEVEL);
-		String includePolylines = _request.getParameter(INCLUDE_POLYLINES);
+		String boundingBox = getRequestParameter(_request, BOUNDING_BOX);
+		String circle = getRequestParameter(_request, CIRCLE);
+		String lineRef = getRequestParameter(_request, LINE_REF);
+		String directionId = getRequestParameter(_request, DIRECTION_REF);
+		String agencyId = getRequestParameter(_request, OPERATOR_REF);
+		String hasUpcomingScheduledService = getRequestParameter(_request, UPCOMING_SCHEDULED_SERVICE);
+		String detailLevelParam = getRequestParameter(_request, LINES_DETAIL_LEVEL);
+		String includePolylines = getRequestParameter(_request, INCLUDE_POLYLINES);
 		
 		
 		//get the detail level parameter or set it to default if not specified

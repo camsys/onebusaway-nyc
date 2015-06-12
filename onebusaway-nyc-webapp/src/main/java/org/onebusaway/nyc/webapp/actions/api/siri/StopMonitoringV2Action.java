@@ -84,7 +84,7 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 				_configurationService);
 
 		_realtimeService.setTime(responseTimestamp);
-		String detailLevelParam = _request.getParameter(STOP_MONITORING_DETAIL_LEVEL);
+		String detailLevelParam = getRequestParameter(_request, STOP_MONITORING_DETAIL_LEVEL);
 		
 		//get the detail level parameter or set it to default if not specified
 	    DetailLevel detailLevel;
@@ -97,13 +97,13 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 	    }
 	    
 		// User Parameters
-		String lineRef = _request.getParameter(LINE_REF);
-		String monitoringRef = _request.getParameter(MONITORING_REF);
-		String directionId = _request.getParameter(DIRECTION_REF);
-		String agencyId = _request.getParameter(OPERATOR_REF);
-		String maxOnwardCallsParam = _request.getParameter(MAX_ONWARD_CALLS);
-		String maxStopVisitsParam = _request.getParameter(MAX_STOP_VISITS);
-		String minStopVisitsParam = _request.getParameter(MIN_STOP_VISITS);
+		String lineRef = getRequestParameter(_request, LINE_REF);
+		String monitoringRef = getRequestParameter(_request, MONITORING_REF);
+		String directionId = getRequestParameter(_request, DIRECTION_REF);
+		String agencyId = getRequestParameter(_request, OPERATOR_REF);
+		String maxOnwardCallsParam = getRequestParameter(_request, MAX_ONWARD_CALLS);
+		String maxStopVisitsParam = getRequestParameter(_request, MAX_STOP_VISITS);
+		String minStopVisitsParam = getRequestParameter(_request, MIN_STOP_VISITS);
 		
 		// Error Strings
 		String routeIdsErrorString = "";
