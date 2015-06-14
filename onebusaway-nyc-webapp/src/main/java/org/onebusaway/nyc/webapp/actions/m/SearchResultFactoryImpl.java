@@ -30,9 +30,9 @@ import org.onebusaway.nyc.presentation.impl.search.AbstractSearchResultFactoryIm
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
+import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
+import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
-import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
