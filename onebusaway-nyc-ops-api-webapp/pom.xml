@@ -4,7 +4,6 @@
     <artifactId>onebusaway-nyc</artifactId>
     <groupId>org.onebusaway</groupId>
     <version>2.17.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
   </parent>
   <artifactId>onebusaway-nyc-ops-api-webapp</artifactId>
   <packaging>war</packaging>

@@ -93,7 +93,6 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-gtfs</artifactId>
-			<version>${onebusaway.gtfs.version}</version>
 		</dependency>
 		<!-- s3 integration -->
 		<dependency>
@@ -119,7 +118,6 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
-			<version>2.4</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

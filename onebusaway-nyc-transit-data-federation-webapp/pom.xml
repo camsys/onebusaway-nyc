@@ -22,7 +22,6 @@
         <dependency>
             <groupId>com.caucho</groupId>
             <artifactId>resin-hessian</artifactId>
-	        <version>3.1.6</version>
         </dependency>
 
         <dependency>

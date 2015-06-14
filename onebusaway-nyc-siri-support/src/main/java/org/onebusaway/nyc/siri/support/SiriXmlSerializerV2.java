@@ -1,6 +1,7 @@
-package org.onebusaway.nyc.transit_data_federation.siri;
+package org.onebusaway.nyc.siri.support;
 
-import uk.org.siri.siri.Siri;
+import uk.org.siri.siri_2.ExtensionsStructure;
+import uk.org.siri.siri_2.Siri;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -14,6 +15,10 @@ import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /** 
  * Serializer for XSD-generated SIRI classes, creating XML in the format suitable
  * for Bus Time front-ends and third-party apps.
@@ -21,15 +26,21 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * @author jmaki
  *
  */
-public class SiriXmlSerializer {
+public class SiriXmlSerializerV2 {
 
   private JAXBContext context = null;
+  private static Logger _log = LoggerFactory.getLogger(SiriXmlSerializerV2.class);
   
-  public SiriXmlSerializer() {
+  public SiriXmlSerializerV2() {
     try {
-      context = JAXBContext.newInstance(uk.org.siri.siri.Siri.class, SiriExtensionWrapper.class, SiriDistanceExtension.class);
+      context = JAXBContext.newInstance(
+    		  Siri.class,
+    		  SiriExtensionWrapper.class, 
+    		  SiriDistanceExtension.class, 
+    		  SiriUpcomingServiceExtension.class,
+    		  SiriPolyLinesExtension.class);
     } catch(Exception e) {
-      // discard
+    	_log.error("Failed to Serialize Siri to XML", e);
     }
   }
   
@@ -39,6 +50,7 @@ public class SiriXmlSerializer {
     marshaller.setEventHandler(
         new ValidationEventHandler() {
             public boolean handleEvent(ValidationEvent event ) {
+            	_log.error(event.getMessage(), event.getLinkedException());
                 throw new RuntimeException(event.getMessage(), event.getLinkedException());
             }
         }
@@ -50,14 +62,25 @@ public class SiriXmlSerializer {
     Writer output = new StringWriter();
     marshaller.marshal(siri, output);
 
-    // FIXME: strip off ns5 namespaces on siri root namespace. super hack, please fix me!
+    // FIXME: strip off ns6 namespaces on siri root namespace. super hack, please fix me!
     String outputAsString = output.toString();    
-    outputAsString = outputAsString.replaceAll("<ns5:", "<");
-    outputAsString = outputAsString.replaceAll("</ns5:", "</");
-    outputAsString = outputAsString.replaceAll("xmlns:ns5", "xmlns");
-
-    outputAsString = outputAsString.replaceAll("<siriExtensionWrapper>", "");
-    outputAsString = outputAsString.replaceAll("</siriExtensionWrapper>", "");
+    /*outputAsString = outputAsString.replaceAll("<ns6:", "<");
+    outputAsString = outputAsString.replaceAll("</ns6:", "</");
+    outputAsString = outputAsString.replaceAll("xmlns:ns6", "xmlns");
+*/
+    
+    String[] searchList = {
+    	"<siriExtensionWrapper>", 
+    	"</siriExtensionWrapper>",
+    	"<siriUpcomingServiceExtension>",
+    	"</siriUpcomingServiceExtension>",
+    	"<siriPolyLinesExtension>",
+    	"</siriPolyLinesExtension>"
+	};
+    
+    String[] replacementList = {"","","","","",""};
+    
+    outputAsString = StringUtils.replaceEach(outputAsString, searchList, replacementList);
 
     return outputAsString;
   }

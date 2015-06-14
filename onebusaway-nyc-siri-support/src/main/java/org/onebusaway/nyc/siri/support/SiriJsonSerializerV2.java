@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.transit_data_federation.siri;
+package org.onebusaway.nyc.siri.support;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;

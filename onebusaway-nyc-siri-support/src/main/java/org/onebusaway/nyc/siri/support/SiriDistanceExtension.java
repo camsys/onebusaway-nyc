@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.transit_data_federation.siri;
+package org.onebusaway.nyc.siri.support;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;

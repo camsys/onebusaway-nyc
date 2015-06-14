@@ -15,7 +15,7 @@ import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
-import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
+import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import uk.org.siri.siri.ParticipantRefStructure;

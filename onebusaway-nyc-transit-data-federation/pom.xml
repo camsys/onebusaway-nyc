@@ -27,7 +27,6 @@
         <dependency>
             		<artifactId>hsqldb</artifactId>
             		<groupId>org.hsqldb</groupId>
-            		<version>2.3.2</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
