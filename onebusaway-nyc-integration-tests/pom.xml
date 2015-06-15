@@ -8,7 +8,7 @@
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-integration-tests</artifactId>
-    <packaging>war</packaging>
+    <packaging>pom</packaging><!-- no need to deploy results -->
     <name>onebusaway-nyc-integration-tests</name>
 
     <properties>
@@ -92,11 +92,14 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+<!-- this hasn't worked for quite some time -->
+<!--
         <dependency>
             <groupId>org.seleniumhq.selenium.client-drivers</groupId>
             <artifactId>selenium-java-client-driver</artifactId>
             <version>1.0.2</version>
         </dependency>
+-->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -494,15 +497,16 @@
 	    <!-- hsqldb was outdated.  If you can find source of -->
 	    <!-- org.onebusaway.plugins please update the hsqldb version -->
             <plugin>
-                <groupId>fr.avianey.mojo</groupId>
-                <artifactId>hsqldb-maven-plugin</artifactId>
-                <version>1.0.0</version>
+                <groupId>org.onebusaway.plugins</groupId>
+                <artifactId>maven-hsqldb-plugin</artifactId>
+		<!-- version 1.0.1 supports hsqldb 2.3.2 -->
+                <version>1.0.1</version>
                 <executions>
                     <execution>
                         <id>user-database-start</id>
                         <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>start</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
                             <deleteOnEntry>true</deleteOnEntry>
@@ -510,37 +514,34 @@
                             <port>${hsqldb.port}</port>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>user-database-stop</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
-		    </execution>                    
                 </executions>
             </plugin>
             <!-- Start up all the webapps using the cargo plugin -->
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
                 <artifactId>cargo-maven2-plugin</artifactId>
-                <version>1.0.6</version>
+                <version>1.4.14</version>
+<!-- start container -->
                 <configuration>
                     <container>
 <!-- use this when debugging cargo -->
-                        <log>${java.io.tmpdir}/cargo.log</log>
-                        <output>${java.io.tmpdir}/cargo</output>
+                        <log>${java.io.tmpdir}/cargo-webapp.log</log>
+                        <output>${java.io.tmpdir}/cargo-webapp.out</output>
                         <append>true</append>
                         <containerId>tomcat5x</containerId>
+                        <zipUrlInstaller>
+                            <url>http://developer.onebusaway.org/dist/apache-tomcat-${tomcat-version}.zip</url>
+                        </zipUrlInstaller>
                         <systemProperties>
                             <onebusaway_prefix>${basedir}</onebusaway_prefix>
                             <hsqldb.port>${hsqldb.port}</hsqldb.port>
                             <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
                         </systemProperties>
-                        <zipUrlInstaller>
-                            <url>http://developer.onebusaway.org/dist/apache-tomcat-${tomcat-version}.zip</url>
-                            <installDir>${java.io.tmpdir}/cargo-installs</installDir>
-                        </zipUrlInstaller>
                     </container>
+		    <deployables>
+		      <!-- dont deploy intergration-tests -->
+		    </deployables>
+
                     <!-- Don't wait around once the container has been started -->
                     <wait>false</wait><!-- now deprecated -->
                 </configuration>
@@ -563,6 +564,7 @@
                                     <cargo.rmi.port>${org.onebusaway.transit_data_federation_webapp.rmi_port}</cargo.rmi.port>
                                     <cargo.logging>${cargo.logging}</cargo.logging>
                                 </properties>
+                            </configuration>
                                 <deployables>
                                     <deployable>
                                         <groupId>org.onebusaway</groupId>
@@ -576,7 +578,6 @@
                                         <pingTimeout>${ping_timeout}</pingTimeout>
                                     </deployable>
                                 </deployables>
-                            </configuration>
                         </configuration>
                     </execution>
                     <execution>
@@ -586,15 +587,18 @@
                             <goal>start</goal>
                         </goals>
                         <configuration>
+
                             <configuration>
                                 <home>${project.build.directory}/tomcat5x/webapp</home>
                                 <properties>
+				    <onebusaway_prefix>${basedir}</onebusaway_prefix>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
                                     <cargo.servlet.port>${org.onebusaway.webapp.port}</cargo.servlet.port>
                                     <cargo.tomcat.ajp.port>${org.onebusaway.webapp.ajp_port}</cargo.tomcat.ajp.port>
                                     <cargo.rmi.port>${org.onebusaway.webapp.rmi_port}</cargo.rmi.port>
                                     <cargo.logging>${cargo.logging}</cargo.logging>
                                 </properties>
+                            </configuration>
                                 <deployables>
                                     <deployable>
                                         <groupId>org.onebusaway</groupId>
@@ -615,11 +619,11 @@
                                             <context>onebusaway-nyc-webapp</context>
                                         </properties>
                                         <location>${project.build.directory}/onebusaway-nyc-integration-tests-onebusaway-nyc-webapp.war</location>
-                                        <pingURL>http://localhost:${org.onebusaway.webapp.port}/onebusaway-nyc-webapp/</pingURL>
+                                        <pingURL>http://localhost:${org.onebusaway.webapp.port}/onebusaway-nyc-webapp/api/release</pingURL>
                                         <pingTimeout>${ping_timeout}</pingTimeout>
                                     </deployable>
                                 </deployables>
-                            </configuration>
+<!-- end dynamic deployment -->
                         </configuration>
                     </execution>
                     <!-- The hooks to shutdown the webapps after integration testing -->
@@ -630,6 +634,9 @@
                             <goal>stop</goal>
                         </goals>
                         <configuration>
+			  <container>
+			    <containerId>tomcat5x</containerId>
+			  </container>
                             <configuration>
                                 <home>${project.build.directory}/tomcat5x/webapp</home>
                                 <properties>
@@ -640,6 +647,9 @@
                                     <cargo.logging>${cargo.logging}</cargo.logging>
                                 </properties>
                             </configuration>
+			    <deployables>
+			      <!-- dont deploy intergration-tests -->
+			    </deployables>
                         </configuration>
                     </execution>
                     <execution>
@@ -649,6 +659,9 @@
                             <goal>stop</goal>
                         </goals>
                         <configuration>
+			  <container>
+			    <containerId>tomcat5x</containerId>
+			  </container>
                             <configuration>
                                 <home>${project.build.directory}/tomcat5x/onebusaway-nyc-vehicle-tracking-webapp</home>
                                 <properties>
@@ -659,11 +672,15 @@
                                     <cargo.logging>${cargo.logging}</cargo.logging>
                                 </properties>
                             </configuration>
+			    <deployables>
+			      <!-- don't deploy default war -->
+			    </deployables>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
             <!-- Start up the selenium server, which we used for web-based integration tests -->
+<!--
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>selenium-maven-plugin</artifactId>
@@ -688,6 +705,7 @@
                     </execution>
                 </executions>
             </plugin>
+-->
         </plugins>
     </build>
 </project>

@@ -31,10 +31,17 @@
             <unpack>true</unpack>
         	<unpackOptions>
             	<excludes>
-                	<exclude>**/data-sources.xml</exclude>
+                	<exclude>WEB-INF/classes/data-sources.xml</exclude>
+                	<exclude>WEB-INF/classes/log4j.xml</exclude>
             	</excludes>
         	</unpackOptions>
             <scope>runtime</scope>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>WEB-INF/lib</outputDirectory>
+            <includes>
+                <include>org.hsqldb:hsqldb</include>
+            </includes>
         </dependencySet>
     </dependencySets>
     <fileSets>
