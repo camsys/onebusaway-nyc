@@ -5,6 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.onebusaway.gtfs_merge.GtfsMerger;
+import org.onebusaway.gtfs_merge.strategies.AgencyMergeStrategy;
+import org.onebusaway.gtfs_merge.strategies.EDuplicateDetectionStrategy;
+import org.onebusaway.gtfs_merge.strategies.EDuplicateRenamingStrategy;
+import org.onebusaway.gtfs_merge.strategies.RouteMergeStrategy;
+import org.onebusaway.gtfs_merge.strategies.ServiceCalendarMergeStrategy;
+import org.onebusaway.gtfs_merge.strategies.StopMergeStrategy;
+import org.onebusaway.gtfs_merge.strategies.TripMergeStrategy;
 import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
@@ -31,6 +38,7 @@ public class GtfsMergeTask extends BaseModTask implements Runnable {
 	public void run() {
 		log.info("GtfsMergeTask Starting");
 		try {			
+		  
 			log.info("Started merging modified GTFS feeds.");
 			GtfsBundles gtfsBundles = getGtfsBundles(_applicationContext);
 			List<File> inputPaths = new ArrayList<File>();
@@ -38,9 +46,10 @@ public class GtfsMergeTask extends BaseModTask implements Runnable {
 			if (getOutputDirectory() != null) {
 				outputLocation = getOutputDirectory() + File.separator + "gtfs_merged_mod.zip";		   
 			}
+			int i = 0;
 			for (GtfsBundle gtfsBundle : gtfsBundles.getBundles()) {	
 				if(gtfsBundle.getPath() != null){
-					log.info("addiing agency data file path for agencies");				
+					log.info("addiing agency data file path for agency[" + i + "]=" + gtfsBundle.getPath());				
 					inputPaths.add(gtfsBundle.getPath());
 				}else{
 					log.info("null file path for agency.");
@@ -49,6 +58,32 @@ public class GtfsMergeTask extends BaseModTask implements Runnable {
 						
 			//Now call GTFS merger
 			GtfsMerger feedMerger = new GtfsMerger();
+			AgencyMergeStrategy agencyStrategy = new AgencyMergeStrategy();
+			// agencies aren't duplicates, its by design
+			agencyStrategy.setDuplicateDetectionStrategy(EDuplicateDetectionStrategy.FUZZY);
+      feedMerger.setAgencyStrategy(agencyStrategy);
+      
+			StopMergeStrategy stopStrategy = new StopMergeStrategy();
+			stopStrategy.setDuplicateRenamingStrategy(EDuplicateRenamingStrategy.AGENCY);
+			stopStrategy.setDuplicateDetectionStrategy(EDuplicateDetectionStrategy.FUZZY);
+			feedMerger.setStopStrategy(stopStrategy);
+			
+			RouteMergeStrategy routeStrategy = new RouteMergeStrategy();
+			routeStrategy.setDuplicateRenamingStrategy(EDuplicateRenamingStrategy.AGENCY);
+      routeStrategy.setDuplicateDetectionStrategy(EDuplicateDetectionStrategy.FUZZY);
+      feedMerger.setRouteStrategy(routeStrategy);
+			
+      ServiceCalendarMergeStrategy serviceCalendarStrategy = new ServiceCalendarMergeStrategy();
+      serviceCalendarStrategy.setDuplicateRenamingStrategy(EDuplicateRenamingStrategy.AGENCY);
+      serviceCalendarStrategy.setDuplicateDetectionStrategy(EDuplicateDetectionStrategy.FUZZY);
+      feedMerger.setServiceCalendarStrategy(serviceCalendarStrategy);
+      
+      
+      TripMergeStrategy tripStrategy = new TripMergeStrategy();
+      tripStrategy.setDuplicateRenamingStrategy(EDuplicateRenamingStrategy.AGENCY);
+      tripStrategy.setDuplicateDetectionStrategy(EDuplicateDetectionStrategy.FUZZY);
+      feedMerger.setTripStrategy(tripStrategy);
+      
 			feedMerger.run(inputPaths, new File(outputLocation));
 			
 		} catch (Throwable ex) {

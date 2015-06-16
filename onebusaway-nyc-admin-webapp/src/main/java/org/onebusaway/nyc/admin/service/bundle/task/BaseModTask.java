@@ -11,6 +11,7 @@ import org.onebusaway.gtfs_transformer.factory.TransformFactory;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.util.NYCFileUtils;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
+import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.nyc.util.impl.FileUtility;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
@@ -24,7 +25,8 @@ public class BaseModTask {
   protected ApplicationContext _applicationContext;
   protected MultiCSVLogger logger;
   protected BundleRequestResponse requestResponse;
-
+  protected ConfigurationServiceClient configurationServiceClient;
+  
   @Autowired
   public void setApplicationContext(ApplicationContext applicationContext) {
     _applicationContext = applicationContext;
@@ -40,12 +42,22 @@ public class BaseModTask {
     this.logger = logger;
   }
 
+  
+  @Autowired
+  public void setConfigurationServiceClient(ConfigurationServiceClient configurationServiceClient) {
+    this.configurationServiceClient = configurationServiceClient;
+  }
+  
   protected String getEmptyModUrl() {
     return "https://raw.github.com/wiki/camsys/onebusaway-application-modules/EmptyModifications.md";
   }
 
   protected String runModifications(GtfsBundle gtfsBundle, String agencyId,
       String modUrl, String transform) throws Exception {
+    if (skipMod(agencyId)) {
+      _log.info("runModifications skipping agencyId " + agencyId + " as multiAgency set to false");
+      return gtfsBundle.getPath().getPath();
+    }
     _log.info("runModifications(" + agencyId + ") with mappings=" + gtfsBundle.getAgencyIdMappings() );
     GtfsTransformer mod = new GtfsTransformer();
     TransformFactory factory = mod.getTransformFactory();
@@ -75,6 +87,13 @@ public class BaseModTask {
     _log.info("done!");
     // cleanup
     return cleanup(gtfsBundle);
+  }
+
+  private boolean skipMod(String agencyId) {
+    try {
+    return "false".equals(configurationServiceClient.getItem("admin", agencyId+"_multiAgency"));
+  } catch (Exception e) {}
+    return false;
   }
 
   private void addAgencyMappings(GtfsReader reader, GtfsBundle gtfsBundle) {
