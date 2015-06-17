@@ -88,8 +88,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataService {
-
+class NycTransitDataServiceImpl implements NycTransitDataService {
+	
 	private static Logger _log = LoggerFactory.getLogger(NycTransitDataServiceImpl.class);
 
 	@Autowired
@@ -144,6 +144,12 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
 			TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
 		return _predictionIntegrationService.getPredictionsForTrip(tripStatus);
+	}
+	
+	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId,
+			String TripId) {
+		blockUntilBundleIsReady();
+		return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(VehicleId, TripId);
 	}
 
 	@Override

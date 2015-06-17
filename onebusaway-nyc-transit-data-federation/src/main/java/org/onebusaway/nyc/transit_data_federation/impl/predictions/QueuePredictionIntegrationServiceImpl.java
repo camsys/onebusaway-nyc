@@ -108,11 +108,11 @@ public class QueuePredictionIntegrationServiceImpl extends
 	      }
 	    }
 	    
-	  }
-    
-	  if (vehicleId != null) {
-	    // place in cache if we were able to extract a vehicle id
-	    getCache().put(hash(vehicleId, tripId), predictionRecords);
+	    if (vehicleId != null) {
+		    // place in cache if we were able to extract a vehicle id
+		    getCache().put(hash(vehicleId, tripId), predictionRecords);
+		}
+	    
 	  }
 	}
 	
@@ -162,6 +162,11 @@ public class QueuePredictionIntegrationServiceImpl extends
   public List<TimepointPredictionRecord> getPredictionsForTrip(
       TripStatusBean tripStatus) {
     return getCache().getIfPresent(hash(tripStatus.getVehicleId(), tripStatus.getActiveTrip().getId()));
+  }
+  
+  public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
+      String VehicleId, String TripId) {
+    return getCache().getIfPresent(hash(VehicleId, TripId));
   }
 
 }
