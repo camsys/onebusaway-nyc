@@ -50,8 +50,9 @@ public class SiriSupportTest {
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);
     MonitoredVehicleJourney journey = new MonitoredVehicleJourney();
-    SiriSupport.fillMonitoredVehicleJourney(journey, trip.getTrip(), trip.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
-        presentationService, nycTransitDataService, 0, null, System.currentTimeMillis());
+    SiriSupport ss = new SiriSupport();
+    ss.fillMonitoredVehicleJourney(journey, trip.getTrip(), trip.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
+        presentationService, nycTransitDataService, 0, System.currentTimeMillis());
     
     assertNotNull(journey);
     List<SituationRefStructure> situationRefs = journey.getSituationRef();
