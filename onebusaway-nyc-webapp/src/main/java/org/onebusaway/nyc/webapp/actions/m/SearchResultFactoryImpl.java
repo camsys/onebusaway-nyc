@@ -354,7 +354,13 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  String timeString = Math.round(minutes) + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
 				  
 		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-		    	return timeString;
+			    DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
+			    if(journey.getOriginAimedDepartureTime() != null){
+			    	String originDepartTimeString = formatter.format(journey.getOriginAimedDepartureTime());
+			    	return "<strong>" + timeString + "</strong>, " + distance + " [+ layover, scheduled to depart terminal at " + originDepartTimeString + "]";
+			    }else{
+			    	return "<strong>" + timeString + "</strong>, " + distance + " [+ layover at terminal]";
+			    }
 		  } else {
 		    	return "<strong>" + timeString + "</strong>" + ", " + distance;
 		  }
@@ -392,7 +398,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
         }
     } else if (isStopContext && progressStatus != null
         && progressStatus.getValue().contains("prevTrip")) {
-    	message += "+ scheduled layover at terminal";
+    	
+    	if(journey.getOriginAimedDepartureTime() != null) {
+        	DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
+        	message += "+ scheduled layover, departing the terminal at " 
+        					+ formatter.format(journey.getOriginAimedDepartureTime());
+    	}else{
+    		message += "+ scheduled layover at terminal";
+    	}
     }
     	
     int staleTimeout = _configurationService.getConfigurationValueAsInteger(
