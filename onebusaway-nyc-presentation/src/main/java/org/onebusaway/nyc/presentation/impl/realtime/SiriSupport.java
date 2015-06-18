@@ -279,7 +279,6 @@ public final class SiriSupport {
 					r.setTripId(currentVehicleTripStatus.getActiveTrip().getId());
 					r.setTimepointPredictionRecord(tpr);
 					stopIdToPredictionRecordMap.put(r.getKey(), r);
-					System.out.println("timepoint on current record "+r.getKey()+" with time "+r.getTimepointPredictionRecord().getTimepointPredictedTime());
 				}
 			}
 			if(nextTripPredictions != null && nextTripBean != null){
@@ -289,7 +288,6 @@ public final class SiriSupport {
 					r.setTripId(nextTripBean.getId());
 					r.setTimepointPredictionRecord(tpr);
 					stopIdToPredictionRecordMap.put(r.getKey(), r);
-					System.out.println("timepoint on next record "+r.getKey()+" with time "+r.getTimepointPredictionRecord().getTimepointPredictedTime());
 				}
 			}
 		}
