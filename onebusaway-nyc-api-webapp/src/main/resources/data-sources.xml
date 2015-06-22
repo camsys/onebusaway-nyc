@@ -20,7 +20,16 @@
         <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
     </bean>
 
-
+	<!-- Added for eclipse use, change "validate" to "create" on initial startup, then change back -Phil -->
+	<bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+        <property name="target" value="hibernateProperties" />
+        <property name="properties">
+            <props>
+              <prop key="hibernate.show_sql">false</prop>
+               <prop key="hibernate.hbm2ddl.auto">validate</prop>
+            </props> 
+        </property> 
+    </bean>
 
     <!-- Database Configuration -->
     <bean id="dataSource"
@@ -44,7 +53,9 @@
 	<!-- Other Stuff: -->
     
     <!-- This will get expanded out to a bean entry if configured so -->
-    ${dummy.permissions}
+    
+    <!-- Commented this out, this doesn't compile / run in my local environment (eclipse and command line), not sure why it's here. -Phil -->
+    <!-- ${dummy.permissions} -->
 
     <bean id="apiKeyValidationService" class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl"/>
 
