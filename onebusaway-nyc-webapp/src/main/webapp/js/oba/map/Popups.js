@@ -483,6 +483,12 @@ OBA.Popups = (function() {
 							&& monitoredVehicleJourney.ProgressStatus.indexOf("layover") !== -1) {
 							layover = true;
 						}
+						
+						var prevTrip = false;
+						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' 
+							&& monitoredVehicleJourney.ProgressStatus.indexOf("prevTrip") !== -1) {
+							prevTrip = true;
+						}
 
 						var stalled = false;
 						if(typeof monitoredVehicleJourney.ProgressRate !== 'undefined' 
@@ -491,10 +497,21 @@ OBA.Popups = (function() {
 						}
 
 						// time mode
-						if(timePrediction != null && stalled === false) {
-							if(wrapped === false) {
+						if(timePrediction != null) {
+							//if(wrapped === false) {
+							var departureTime = OBA.Util.ISO8601StringToDate(monitoredVehicleJourney.OriginAimedDepartureTime);
 								timePrediction += ", " + distance;
-							}
+								if(prevTrip === true){
+									timePrediction += " <span class='not_bold'>(Including expected layover time at the terminal)</span>";
+								}else if(layover === true) {
+									if(departureTime != null){
+										timePrediction += " <span class='not_bold'>(at the terminal, expected to depart at " + departureTime.format("h:MM TT") + ")</span>";
+									}else{
+										timePrediction += " <span class='not_bold'>(at the terminal, departing soon)</span>";
+									}
+								}
+								
+							//}
 							
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
 							html += '<li class="arrival' + lastClass + '">' + timePrediction + '</li>';

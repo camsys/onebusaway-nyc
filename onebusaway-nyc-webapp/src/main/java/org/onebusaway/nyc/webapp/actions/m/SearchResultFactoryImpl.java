@@ -349,20 +349,21 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
 		  SiriDistanceExtension distanceExtension = wrapper.getDistances();
 		  String distance = distanceExtension.getPresentableDistance();
-		  
+
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
 		  String timeString = Math.round(minutes) + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
-				  
+
 		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-			    DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
-			    if(journey.getOriginAimedDepartureTime() != null){
-			    	String originDepartTimeString = formatter.format(journey.getOriginAimedDepartureTime());
-			    	return "<strong>" + timeString + "</strong>, " + distance + " [+ layover, scheduled to depart terminal at " + originDepartTimeString + "]";
-			    }else{
-			    	return "<strong>" + timeString + "</strong>, " + distance + " [+ layover at terminal]";
-			    }
+			  return "<strong>" + timeString + "</strong>, " + distance + " (Including expected layover time at the terminal)";
+		  } else if(progressStatus != null && progressStatus.getValue().contains("layover") ){
+			  if(journey.getOriginAimedDepartureTime() != null){
+				  DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
+				  String originDepartTimeString = formatter.format(journey.getOriginAimedDepartureTime());
+				  return "<strong>" + timeString + "</strong>, " + distance + " (at the terminal, expected to depart at "+originDepartTimeString+")";
+			  }
+			  return "<strong>" + timeString + "</strong>, " + distance + " (at the terminal, departing soon)";
 		  } else {
-		    	return "<strong>" + timeString + "</strong>" + ", " + distance;
+			  return "<strong>" + timeString + "</strong>" + ", " + distance;
 		  }
 	  }
 	  
