@@ -15,6 +15,10 @@
  */
 
 var timeout = null;
+var agencyMetadataAvailable = false;
+//var agencyIds = [];		//For agency metadata
+//var agencyUrls = [];	//For agency metadata
+var agencyMetadata;		//For agency metadata
 
 jQuery(function() {
 	//Initialize tabs
@@ -240,6 +244,9 @@ jQuery(function() {
 	jQuery("#deployBundle_deployButton").click(onDeployClick);
 	jQuery("#deployBundle_listButton").click(onDeployListClick);
 	onDeployListClick();
+	
+	//Retrieve transit agency metadata
+	getAgencyMetadata();
 });
 
 function onCreateContinueClick() {
@@ -250,6 +257,25 @@ function onCreateContinueClick() {
 function onUploadContinueClick() {
 	var $tabs = jQuery("#tabs");
 	$tabs.tabs('select', 2);
+}
+
+function onAgencyIdSelectClick() {
+	console.log("Agency Id clicked");
+	var idx = $(this).find(":selected").index();
+	console.log("index: " + idx);
+	$(this).closest('tr').find(".agencyId").val(agencyMetadata[idx].legacyId);
+	var url = agencyMetadata[idx].gtfsFeedUrl;
+	if (url == null) {
+		url = "";
+	}
+	var protocol = "file";
+	if (url.toLowerCase().startsWith("http")) {
+	  protocol = "http";
+	} else if (url.toLowerCase().startsWith("ftp")) {
+		protocol = "ftp";
+	}
+	$(this).closest('tr').find(".agencyProtocol").val(protocol);
+	$(this).closest('tr').find(".agencyDataSource").val(agencyMetadata[idx].gtfsFeedUrl);
 }
 
 function onPrevalidateContinueClick() {
@@ -550,9 +576,19 @@ function onUploadSelectedAgenciesClick() {
 }
 
 function onAddAnotherAgencyClick() {
+	var metadata = "";
+	if (agencyMetadataAvailable) {
+	  console.log("adding metadata to new row");
+	  metadata = '<select class="agencyIdSelect">';
+	  for (var i=0; i<agencyMetadata.length; ++i) {
+		  metadata += '<option value="' + agencyMetadata[i].legacyId + '">'
+		  + agencyMetadata[i].legacyId + '</option>';
+	  }
+	  metadata += '</select>';
+	}
 	var new_row = '<tr> \
 		<td><div><input type="checkbox" /></div></td> \
-		<td><input type="text" class="agencyId"/></td> \
+		<td>' + metadata + '<input type="text" class="agencyId"/></td> \
 		<td><select class="agencyDataSourceType"> \
 		<option value="gtfs">gtfs</option> \
 		<option value="aux">aux</option> \
@@ -565,6 +601,10 @@ function onAddAnotherAgencyClick() {
 		<td><input type="text" class="agencyDataSource"/></td> \
 		</tr>';
 	$('#agency_data').append(new_row);
+	if (agencyMetadataAvailable) {
+		$("#agency_data tr:last .agencyId").hide();
+	}
+	jQuery(".agencyIdSelect").change(onAgencyIdSelectClick);
 }
 
 function onSelectAgencyChange() {
@@ -1429,4 +1469,40 @@ function parseQuerystring (){
 		nvpair[pair[0]] = pair[1];
 	});
 	return nvpair;
+}
+
+//retrieve transit agency metadata from server
+function getAgencyMetadata(){
+	jQuery.ajax({
+		url: "../../api/agency/list",
+		type: "GET",
+		async: false,
+		success: function(response) {
+			agencyMetadata = response;
+			if (agencyMetadata.length > 0) {
+				agencyMetadataAvailable = true;
+				//saveAgencyMetadata(agencyMetadata);
+				addUploadFileAgencyDropdown();
+				$("#agency_data tr:last .agencyId").hide();
+				jQuery(".agencyIdSelect").change(onAgencyIdSelectClick);
+			}
+		},
+		error: function(request) {
+			console.log("There was an error trying to retrieve agency metadata");
+		}
+	});
+}
+//function saveAgencyMetadata(metadata) {
+//	for (var i = 0; i < metadata.length; i++) {
+//		agencyIds.push(metadata[i].legacyId);
+//		agencyUrls.push(metadata[i].gtfsFeedUrl);
+//	}
+//}
+function addUploadFileAgencyDropdown() {
+	console.log("starting addUploadFileAgencyDropdown");
+	agencyDropDown = $('<select class="agencyIdSelect">');
+	jQuery(agencyMetadata).each(function() {
+		agencyDropDown.append(jQuery("<option>").attr('value',this.legacyId).text(this.legacyId));
+	});
+	agencyDropDown.insertBefore("#agencyId");
 }
