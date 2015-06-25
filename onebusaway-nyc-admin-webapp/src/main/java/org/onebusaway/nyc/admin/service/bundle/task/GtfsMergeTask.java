@@ -65,23 +65,19 @@ public class GtfsMergeTask extends BaseModTask implements Runnable {
       
 			StopMergeStrategy stopStrategy = new StopMergeStrategy();
 			stopStrategy.setDuplicateRenamingStrategy(EDuplicateRenamingStrategy.AGENCY);
-			stopStrategy.setDuplicateDetectionStrategy(EDuplicateDetectionStrategy.FUZZY);
 			feedMerger.setStopStrategy(stopStrategy);
 			
 			RouteMergeStrategy routeStrategy = new RouteMergeStrategy();
 			routeStrategy.setDuplicateRenamingStrategy(EDuplicateRenamingStrategy.AGENCY);
-      routeStrategy.setDuplicateDetectionStrategy(EDuplicateDetectionStrategy.FUZZY);
       feedMerger.setRouteStrategy(routeStrategy);
 			
       ServiceCalendarMergeStrategy serviceCalendarStrategy = new ServiceCalendarMergeStrategy();
       serviceCalendarStrategy.setDuplicateRenamingStrategy(EDuplicateRenamingStrategy.AGENCY);
-      serviceCalendarStrategy.setDuplicateDetectionStrategy(EDuplicateDetectionStrategy.FUZZY);
       feedMerger.setServiceCalendarStrategy(serviceCalendarStrategy);
       
       
       TripMergeStrategy tripStrategy = new TripMergeStrategy();
       tripStrategy.setDuplicateRenamingStrategy(EDuplicateRenamingStrategy.AGENCY);
-      tripStrategy.setDuplicateDetectionStrategy(EDuplicateDetectionStrategy.FUZZY);
       feedMerger.setTripStrategy(tripStrategy);
       
 			feedMerger.run(inputPaths, new File(outputLocation));
