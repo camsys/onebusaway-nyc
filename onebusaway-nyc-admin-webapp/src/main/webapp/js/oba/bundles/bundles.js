@@ -16,8 +16,6 @@
 
 var timeout = null;
 var agencyMetadataAvailable = false;
-//var agencyIds = [];		//For agency metadata
-//var agencyUrls = [];	//For agency metadata
 var agencyMetadata;		//For agency metadata
 
 jQuery(function() {
@@ -180,7 +178,6 @@ jQuery(function() {
 	jQuery("#addAnotherAgencyButton").click(onAddAnotherAgencyClick);
 
 	// toggle agency row as selected when checkbox is clicked
-	//jQuery("#agency_data :checkbox").change(onSelectAgencyChange);
 	jQuery("#agency_data").on("change", "tr :checkbox", onSelectAgencyChange);
 
 	// change input type to 'file' if protocol changes to 'file'
@@ -260,22 +257,35 @@ function onUploadContinueClick() {
 }
 
 function onAgencyIdSelectClick() {
-	console.log("Agency Id clicked");
+	console.log("in onAgencySelectClick");
 	var idx = $(this).find(":selected").index();
-	console.log("index: " + idx);
 	$(this).closest('tr').find(".agencyId").val(agencyMetadata[idx].legacyId);
 	var url = agencyMetadata[idx].gtfsFeedUrl;
 	if (url == null) {
 		url = "";
 	}
+	var previous_protocol = $(this).closest('tr').find(".agencyProtocol").val();
 	var protocol = "file";
 	if (url.toLowerCase().startsWith("http")) {
 	  protocol = "http";
 	} else if (url.toLowerCase().startsWith("ftp")) {
 		protocol = "ftp";
 	}
+	console.log("protocol: " + protocol + ", previous protocol: " + previous_protocol)
+	if ((previous_protocol == "file" && protocol != "file")
+			|| (previous_protocol != "file" && protocol == "file")) {
+		var dataSource = $(this).closest('tr').find(".agencyDataSource");
+		if (protocol == "file") {
+			dataSource.clone().attr('type','file').insertAfter(dataSource).prev().remove();
+		} else if (dataSource.attr('type') == 'file') {
+			dataSource.clone().attr('type','text').insertAfter(dataSource).prev().remove();
+		}  
+	}
 	$(this).closest('tr').find(".agencyProtocol").val(protocol);
-	$(this).closest('tr').find(".agencyDataSource").val(agencyMetadata[idx].gtfsFeedUrl);
+	if (protocol != "file") {		// Not possible to provide a value for "file" 
+									// fields for security reasons.
+		$(this).closest('tr').find(".agencyDataSource").val(url);
+	}
 }
 
 function onPrevalidateContinueClick() {
@@ -501,8 +511,6 @@ function onUploadSelectedAgenciesClick() {
 		var agencyDataSource = $(this).find('.agencyDataSource').val();
 		if (agencyProtocol == "file") {
 			var agencyDataFile = $(this).find(':file')[0].files[0];
-			//var file = $(this).find('.agencyDataSource').files[0];
-			//console.log("file name: " + file.name);
 		}
 		// Check if the target directory for this agency has already been cleaned
 		var cleanDir = "true";
@@ -577,6 +585,7 @@ function onUploadSelectedAgenciesClick() {
 
 function onAddAnotherAgencyClick() {
 	var metadata = "";
+	var url = "";
 	if (agencyMetadataAvailable) {
 	  console.log("adding metadata to new row");
 	  metadata = '<select class="agencyIdSelect">';
@@ -585,6 +594,10 @@ function onAddAnotherAgencyClick() {
 		  + agencyMetadata[i].legacyId + '</option>';
 	  }
 	  metadata += '</select>';
+	  url = agencyMetadata[0].gtfsFeedUrl;
+	  if (url.toLowerCase().startsWith("http") || url.toLowerCase().startsWith("ftp")) {
+	  	var urlValue = ' value="' + url + '"';
+	  }
 	}
 	var new_row = '<tr> \
 		<td><div><input type="checkbox" /></div></td> \
@@ -598,7 +611,7 @@ function onAddAnotherAgencyClick() {
 		<option value="ftp">ftp</option> \
 		<option value="file">file</option> \
 		</select></td> \
-		<td><input type="text" class="agencyDataSource"/></td> \
+		<td><input type="text" class="agencyDataSource" ' + urlValue + '/></td> \
 		</tr>';
 	$('#agency_data').append(new_row);
 	if (agencyMetadataAvailable) {
@@ -635,21 +648,13 @@ function onSelectAgencyChange() {
 function onAgencyProtocolChange() {
 	console.log("in onAgencyProtocolChange, v1");
 	var protocol = $(this).val();
-	//alert("agency protocol change: " + protocol);
-	var elementType = $(this).prop('tagName');
-	//alert("elementType is " + elementType);
+	//var elementType = $(this).prop('tagName');
 	var dataSource = $(this).closest('tr').find(".agencyDataSource");
-	console.log("dataSource attr 'type' is " + dataSource.attr('type'));
-	//alert("dataSource type is " + dataSource.attr('type'));
 	if (protocol == "file") {
 		dataSource.clone().attr('type','file').insertAfter(dataSource).prev().remove();
 	} else if (dataSource.attr('type') == 'file') {
-		console.log("type is file");
-		console.log("value: " + dataSource.get(0).files[0]);
 		dataSource.clone().attr('type','text').insertAfter(dataSource).prev().remove();
 	}
-	//$(this).closest('tr').find(".agencyDataSource").css( "background-color", "red" );
-	//$(this).closest('tr').toggleClass('agencySelected');
 }
 
 function onRemoveSelectedAgenciesClick() {
@@ -1481,10 +1486,19 @@ function getAgencyMetadata(){
 			agencyMetadata = response;
 			if (agencyMetadata.length > 0) {
 				agencyMetadataAvailable = true;
-				//saveAgencyMetadata(agencyMetadata);
 				addUploadFileAgencyDropdown();
 				$("#agency_data tr:last .agencyId").hide();
 				jQuery(".agencyIdSelect").change(onAgencyIdSelectClick);
+				var url = agencyMetadata[0].gtfsFeedUrl;
+				if (url == null) {
+				  url = "";
+				}
+				//console.log("url: " + url);
+				if (url.toLowerCase().startsWith("http")
+						|| url.toLowerCase().startsWith("ftp")) {
+					//console.log("set url");
+					$("#agency_data tr:last .agencyDataSource").val(url);
+				}	
 			}
 		},
 		error: function(request) {
@@ -1492,12 +1506,6 @@ function getAgencyMetadata(){
 		}
 	});
 }
-//function saveAgencyMetadata(metadata) {
-//	for (var i = 0; i < metadata.length; i++) {
-//		agencyIds.push(metadata[i].legacyId);
-//		agencyUrls.push(metadata[i].gtfsFeedUrl);
-//	}
-//}
 function addUploadFileAgencyDropdown() {
 	console.log("starting addUploadFileAgencyDropdown");
 	agencyDropDown = $('<select class="agencyIdSelect">');
