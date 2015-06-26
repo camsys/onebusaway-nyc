@@ -54,6 +54,7 @@ import org.onebusaway.nyc.admin.service.bundle.hastus.xml.PttRoute;
 import org.onebusaway.nyc.admin.service.bundle.hastus.xml.PttTimingPoint;
 import org.onebusaway.nyc.admin.service.bundle.hastus.xml.PttTrip;
 import org.onebusaway.nyc.admin.service.bundle.hastus.xml.PublicTimeTable;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.slf4j.Logger;
@@ -106,6 +107,8 @@ public class HastusGtfsFactory {
   private Map<AgencyAndId, String> _serviceIdAndScheduleType = new HashMap<AgencyAndId, String>();
 
   private Date _midnight;
+  
+  private MultiCSVLogger logger;
 
   public void setGisInputPath(File gisInputPath) {
     _gisInputPath = gisInputPath;
@@ -125,6 +128,11 @@ public class HastusGtfsFactory {
 
   public void run() throws Exception {
 
+    logger = new MultiCSVLogger();
+    String csvDir = _gtfsOutputPath.toString().replace("_gtfs/29", "s"); // hack to swap directories
+    logger.setBasePath(new File(csvDir));
+    _log.info("setting up MultiCSVLogger at path " + csvDir);
+    
     processAgency();
     processStops();
     processRoutesStopSequences();
@@ -141,6 +149,9 @@ public class HastusGtfsFactory {
     _dao = null;
 
     applyModifications();
+    
+    logger.summarize();
+    _log.info("MultiCSVLogger summarize called");
   }
 
   private void processAgency() {
@@ -161,6 +172,7 @@ public class HastusGtfsFactory {
     FeatureCollection<SimpleFeatureType, SimpleFeature> features = ShapefileLibrary.loadShapeFile(stopsShapeFile);
     
     FeatureIterator<SimpleFeature> it = features.features();
+    logger.header(csv("stops"), "stop_id,primary_name,cross_name,computed_name,lat,lon");
 
     while (it.hasNext()) {
 
@@ -177,6 +189,7 @@ public class HastusGtfsFactory {
       stop.setName(stopName);
       stop.setLat(point.getY());
       stop.setLon(point.getX());
+      logger.log(csv("stops"), stopId, primaryName, crossName, stopName, point.getY(), point.getX());
       _dao.saveEntity(stop);
     }
     try {
@@ -206,7 +219,8 @@ public class HastusGtfsFactory {
     FeatureCollection<SimpleFeatureType, SimpleFeature> features = ShapefileLibrary.loadShapeFile(routesShapeFile);
 
     FeatureIterator<SimpleFeature> it = features.features();
-
+    logger.header(csv("route_stops"), "route,rt_var,schedule_type,seqarc,seqart_id,length,rt_dir,route_dir,schedule,stopId,time_pt,purpose");
+    
     while (it.hasNext()) {
       SimpleFeature feature = it.next();
 
@@ -235,6 +249,9 @@ public class HastusGtfsFactory {
       item.setStopId((Long) feature.getProperty("STOP_ID").getValue());
       item.setTimePoint((String) feature.getProperty("TIME_PT").getValue());
       item.setGeometry(feature.getDefaultGeometry());
+      item.setBoarding((String)feature.getProperty("BOARDING").getValue());
+      logger.log(csv("route_stops"), route, routeVariation, scheduleType, item.getSequenceArc(), item.getSequenceArcId(), item.getLength(),
+          item.getRouteDirection(), item.getRouteDirectionAlternate(), item.getSchedule(), item.getStopId(), item.getTimePoint(), item.getBoarding());
       sequence.add(item);
     }
     try {
@@ -245,13 +262,15 @@ public class HastusGtfsFactory {
   }
 
   private void processShapes() {
-
+    
+    logger.header(csv("shapes"), "raw_id,shape_id");
     for (Map.Entry<String, RouteStopSequence> entry : _stopSequences.entrySet()) {
 
       String rawId = entry.getKey();
       RouteStopSequence stopSequence = entry.getValue();
 
       AgencyAndId shapeId = id(rawId);
+      logger.log(csv("shapes"), rawId, shapeId);
       int sequence = 0;
 
       for (RouteStopSequenceItem item : stopSequence) {
@@ -280,7 +299,8 @@ public class HastusGtfsFactory {
 
     List<PublicTimeTable> timetables = processScheduleDirectory(
         _scheduleInputPath, new ArrayList<PublicTimeTable>());
-
+    logger.header(csv("schedules"), "booking_id,schedule_type,place_id,trip_sequence,trip_id,route_id,service_id,route_variation,stop_sequence,shape_id,trip_direction,direction_name");
+    
     int timetableSize = timetables.size();
     for (PublicTimeTable timetable : timetables) {
       int directionIndex = 0;
@@ -319,7 +339,8 @@ public class HastusGtfsFactory {
           trip.setServiceId(serviceId);
           trip.setShapeId(shapeId);
           trip.setTripHeadsign(placeInfo.getDirectionName());
-
+          logger.log(csv("schedules"), timetable.getBookingIdentifier(), placeInfo.getScheduleType(), placeInfo.getId(), pttTrip.getSequence(),
+              tripId, route.getId(), serviceId, routeVariation, stopSequenceId, shapeId, trip.getDirectionId(), placeInfo.getDirectionName());
           _dao.saveEntity(trip);
 
           processStopTimesForTrip(timepointPositions, pttTrip, tripIdRaw,
@@ -406,13 +427,33 @@ public class HastusGtfsFactory {
       stopTime.setStop(stop);
       stopTime.setStopSequence(index - firstStopIndex);
       stopTime.setTrip(trip);
-
+      
+      if ("N".equals(item.getBoarding())) {
+        // timepoint -- not for pickup/drop off
+        stopTime.setDropOffType(1);
+        stopTime.setPickupType(1);
+      } else if ("A".equals(item.getBoarding())) {
+        stopTime.setDropOffType(0);
+        stopTime.setPickupType(1);
+      } else if ("B".equals(item.getBoarding())) {
+        stopTime.setDropOffType(1);
+        stopTime.setPickupType(0);
+      } else if ("E".equals(item.getBoarding())) {
+        stopTime.setDropOffType(0);
+        stopTime.setPickupType(0);
+      } //else we don't set it, it defaults
+      
       if (time != null) {
         stopTime.setArrivalTime(time);
         stopTime.setDepartureTime(time);
       }
-
-      _dao.saveEntity(stopTime);
+      if (!"N".equals(item.getBoarding())) {
+        // if we are a timepoint, don't bother adding the stop to the GTFS
+        _dao.saveEntity(stopTime);
+      } else {
+        _log.info("skipping stop " + item.getStopId() + " on trip " + trip.getId().getId() + " as it has no boarding");
+        stopTime = null;
+      }
 
       if (first == null)
         first = stopTime;
@@ -544,7 +585,9 @@ public class HastusGtfsFactory {
   }
 
   private void processCalendars() {
-
+    
+    logger.header(csv("calendars"), "id,scheduleType,service_calendar");
+    
     for (Map.Entry<AgencyAndId, String> entry : _serviceIdAndScheduleType.entrySet()) {
       AgencyAndId id = entry.getKey();
       String scheduleType = entry.getValue();
@@ -567,7 +610,8 @@ public class HastusGtfsFactory {
       }
       c.setStartDate(_calendarStartDate);
       c.setEndDate(_calendarEndDate);
-
+      
+      logger.log(csv("calendars"), id, scheduleType, c);
       _dao.saveEntity(c);
     }
   }
@@ -719,6 +763,10 @@ public class HastusGtfsFactory {
 
   private AgencyAndId id(String id) {
     return new AgencyAndId(_agencyId, sanitize(id));
+  }
+
+  private String csv(String type) {
+    return _agencyId + "_" + type + ".csv";
   }
 
   private String sanitize(String id) {
