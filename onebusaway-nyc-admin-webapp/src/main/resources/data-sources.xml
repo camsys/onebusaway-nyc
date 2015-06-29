@@ -18,7 +18,6 @@
     </bean>
 
 	<!-- Database Configuration -->
-
     <bean id="dataSource"
           class="org.springframework.jndi.JndiObjectFactoryBean">
       <property name="jndiName"
@@ -35,6 +34,21 @@
 
     <alias name="dataSource" alias="mutableDataSource" />
 
+    <!-- Database Connection Configuration for Agency Metadata -->
+    <bean id="agencyMetadataDataSource"
+          class="org.springframework.jndi.JndiObjectFactoryBean">
+      <property name="jndiName"
+                value="java:comp/env/jdbc/agencyMetadataDB"/>   
+      <property name="lookupOnStartup"
+                value="true"/>   
+      <property name="cache"
+                value="true"/>   
+      <property name="proxyInterface"
+                value="javax.sql.DataSource"/>   
+      <property name="resourceRef"
+                value="true" />
+    </bean>
+    
 <!-- Other Stuff: -->
 
     <bean id="externalGeocoderImpl" class="org.onebusaway.nyc.geocoder.impl.GoogleGeocoderImpl">
@@ -80,6 +94,28 @@
         </property> 
     </bean>
     
+	<bean id="agencyMetadataSessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="agencyMetadataDataSource" />
+		<property name="annotatedClasses">
+			<list>
+				<value>org.onebusaway.agency_metadata.model.AgencyMetadata</value>
+				<value>org.onebusaway.agency_metadata.service.AgencyMetadataDaoImpl</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.connection.pool_size">1</prop>
+				<prop key="hibernate.current_session_context_class">thread</prop>
+				<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.jdbc.batch_size">1000</prop>
+			</props>
+		</property>
+	</bean>
+
 	<!-- quartz scheduling for PingJob -->
 	<bean name="pingJob" class="org.springframework.scheduling.quartz.JobDetailBean">
 		<property name="jobClass" value="org.onebusaway.nyc.admin.job.PingJob" />
