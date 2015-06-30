@@ -61,5 +61,9 @@ class StopBasedPredictionIntegrationService implements PredictionIntegrationServ
   public List<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus) {
     return _predictionRecordsByVehicle.get(tripStatus.getVehicleId());
   }
+  
+  public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId, String TripId) {
+    return _predictionRecordsByVehicle.get(VehicleId);
+  }
 
 }

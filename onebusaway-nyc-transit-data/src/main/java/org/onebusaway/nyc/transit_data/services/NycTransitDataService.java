@@ -15,7 +15,9 @@
  */
 package org.onebusaway.nyc.transit_data.services;
 
+import java.util.List;
 
+import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 /**
@@ -27,5 +29,6 @@ import org.onebusaway.transit_data.services.TransitDataService;
  *
  */
 public interface NycTransitDataService extends TransitDataService {
-  
+	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId,
+			String TripId);
 }

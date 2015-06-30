@@ -44,5 +44,14 @@ public interface PredictionIntegrationService {
    * @return
    */
   public List<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus);
+  
+  /**
+   * A method to return predictions in a format suitable for injection into the TDS for the given
+   * vehicle status.
+   * 
+   * @param vehicleId
+   * @return
+   */
+  public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId, String TripId);
 
 }
