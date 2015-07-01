@@ -142,4 +142,32 @@ public class VehicleLocationDetails {
   public void setParticleFilterFailureActive(boolean particleFilterFailureActive) {
     this.particleFilterFailureActive = particleFilterFailureActive;
   }
+  
+  @Override
+  public String toString() {
+	  
+	  String journSummary = "";
+	  String particlesString = "";
+	  
+	  if (particles != null) {
+		  for(Particle p : particles){
+			  particlesString += "{ " + particlesString + " },";
+		  }
+	  }
+	  
+	  if(summaries != null){
+		  for(JourneyPhaseSummary jps : summaries){
+			  journSummary += "{ " + jps.toString() + " },";
+		  }
+	  }
+  	 
+	  return "ID : " + id + "\n" +
+			 "Vehicle ID : " + vehicleId.toString() + "\n" + 
+			 "History : " + history + "\n" + 
+			 "Vehicle ID : " + particleFilterFailure + "\n" + 
+			 "Sample Size : " + particles.size() + "\n" + 
+			 "Last Observation : { " + lastObservation.toString() + " } \n" +
+			 "Journey Summary : [ " + journSummary + " ] \n" +
+			 "Particles : [ " + particlesString + " ] \n";	 
+  }
 }

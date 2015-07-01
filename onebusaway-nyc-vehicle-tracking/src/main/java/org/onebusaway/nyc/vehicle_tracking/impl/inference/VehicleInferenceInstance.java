@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
@@ -34,6 +35,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCo
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -71,10 +73,9 @@ public class VehicleInferenceInstance {
   private static Logger _log = LoggerFactory.getLogger(VehicleInferenceInstance.class);
 
   @Autowired
-  private ConfigurationService _configurationService;
-
-  @Autowired
   private BlockStateService _blockStateService;
+  
+  private ConfigurationService _configurationService;
 
   private DestinationSignCodeService _destinationSignCodeService;
 
@@ -99,7 +100,24 @@ public class VehicleInferenceInstance {
   private Multiset<Particle> _badParticles;
 
   private ParticleFilter<Observation> _particleFilter;
+  
+  private boolean debuggingEnabled = true;
+  
+  private int debuggingVehicleId = 2817;
+  
+  @Autowired
+  public void setConfigurationService(ConfigurationService configurationService) {
+    this._configurationService = configurationService;
+    configChanged();
+  }
 
+  @Refreshable(dependsOn = {"inference-engine.debuggingEnabled, inference-engine.debuggingVehicleId"})
+  protected void configChanged() {
+	debuggingEnabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("inference-engine.debuggingEnabled", "true"));
+	debuggingVehicleId = Integer.parseInt(_configurationService.getConfigurationValueAsString("inference-engine.debuggingVehicleId", "2817"));
+
+  }
+  
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
   }
@@ -148,7 +166,14 @@ public class VehicleInferenceInstance {
    *         processed, otherwise false
    */
   public synchronized boolean handleUpdate(NycRawLocationRecord record) {
-
+	/**
+	 * DEBUG Settings
+	 */
+	  boolean enableDebug = false;
+	  if(record.getVehicleId() != null && record.getVehicleId().getId() != null){
+		  enableDebug = debugVehicle(Integer.parseInt(record.getVehicleId().getId()));
+	  }
+	  
     /**
      * Choose the best timestamp based on device timestamp and received
      * timestamp
@@ -255,16 +280,24 @@ public class VehicleInferenceInstance {
     final boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode);
     final boolean hasValidDsc = !_destinationSignCodeService.isMissingDestinationSignCode(lastValidDestinationSignCode)
         && !_destinationSignCodeService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
-
+        
     Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
     if (_previousObservation == null
         || !StringUtils.equals(_lastValidDestinationSignCode,
             lastValidDestinationSignCode)) {
       routeIds = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(lastValidDestinationSignCode, record.getVehicleId().getAgencyId());
+      if(enableDebug) _log.info("previous Observation null so getting route Ids from dsc : " + lastValidDestinationSignCode);
     } else {
       routeIds = _previousObservation.getDscImpliedRouteCollections();
+      if(enableDebug) _log.info("previous Observation not null, so get DscImpliedRouteCollections");
     }
-
+	if(enableDebug){
+		_log.info("-------------------------------------- Route IDS Start ----------------------------------");
+		for (AgencyAndId routeId: routeIds) {
+			  _log.info(routeId.toString());
+		}
+		_log.info("-------------------------------------- Route IDS END ----------------------------------");
+    }
     RunResults runResults = null;
     if (_previousObservation == null || operatorIdChange == Boolean.TRUE
         || reportedRunIdChange == Boolean.TRUE) {
@@ -272,6 +305,36 @@ public class VehicleInferenceInstance {
     } else {
       runResults = updateRunIdMatches(record,
           _previousObservation.getRunResults());
+    }
+    if(enableDebug){
+		_log.info("-------------------------------------- Run Results Start ----------------------------------");
+		for (AgencyAndId routeId: runResults.getRouteIds()) {
+	  	  _log.info("Run Results Route ID : " + routeId);
+		}
+		_log.info("Run Results Assigned Run ID : " + runResults.getAssignedRunId());
+		
+		for (String fuzzyMatch: runResults.getFuzzyMatches()) {
+			  _log.info("Run Results Fuzzy Match : " + fuzzyMatch);
+	  	}
+		
+		_log.info("Get Best Fuzzy Dist " + runResults.getBestFuzzyDist());
+		_log.info("-------------------------------------- Run Results END ----------------------------------");
+		
+		
+		_log.info("-------------------------------- OBSERVATION VALUES START ----------------------------");
+		_log.info("At Base: " + atBase);
+		_log.info("At Terminal: " + atTerminal);
+		_log.info("Out Of Service: " + outOfService);
+		_log.info("Has Valid DSC : " + hasValidDsc);
+		_log.info("Last Valid DSC : " + lastValidDestinationSignCode);
+		_log.info("-------------------------------- OBSERVATION VALUES END ----------------------------");
+		
+		_log.info("-------------------------------- RECORD START ----------------------------");
+		_log.info(record.toString());
+		_log.info("-------------------------------- RECORD END ----------------------------");
+		
+		
+		
     }
 
     final Observation observation = new Observation(timestamp, record,
@@ -453,8 +516,9 @@ public class VehicleInferenceInstance {
     final NycVehicleManagementStatusBean record = new NycVehicleManagementStatusBean();
 
     final Particle particle = _particleFilter.getMostLikelyParticle();
-    if (particle == null)
+    if (particle == null){
       return null;
+    }
 
     final VehicleState state = particle.getData();
     final Observation obs = state.getObservation();
@@ -544,8 +608,9 @@ public class VehicleInferenceInstance {
             /*
              * same results; we're done
              */
-            if (opAssignedRunId.equals(results.getAssignedRunId()))
-              return results;
+            if (opAssignedRunId.equals(results.getAssignedRunId())){
+            	return results;
+            }
 
             /*
              * new assigned run-id; recompute the routes
@@ -754,8 +819,10 @@ public class VehicleInferenceInstance {
   public synchronized NycQueuedInferredLocationBean handleUpdateWithResults(
       NycRawLocationRecord nycRawLocationRecord) {
     boolean success = handleUpdate(nycRawLocationRecord);
-    if (!success)
-      return null;
+    if (!success){
+    	return null;
+      
+    }
     final NycVehicleManagementStatusBean managementRecord = getCurrentManagementState();
     final NycQueuedInferredLocationBean record = getCurrentStateAsNycQueuedInferredLocationBean();
     record.setManagementRecord(managementRecord);
@@ -773,6 +840,12 @@ public class VehicleInferenceInstance {
       return null;
     final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(nycTestInferredLocationRecord);
     return record;
+  }
+  
+  private boolean debugVehicle(int vehicleId){
+	  if (debuggingEnabled && debuggingVehicleId == vehicleId)
+		  return true;
+	  return false;
   }
 
 }

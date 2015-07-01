@@ -144,6 +144,10 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   // Process Record Fields (TDS)
   private boolean useTimePredictions = false;
   
+  private boolean debuggingEnabled = true;
+  
+  private int debuggingVehicleId = 2817;
+  
   private boolean checkAge = false;
   
   private int ageLimit = 300;
@@ -207,6 +211,9 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 	checkAge = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.checkAge", "false"));
 	useTimePredictions = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
 	ageLimit = Integer.parseInt(_configurationService.getConfigurationValueAsString("display.ageLimit", "300"));
+	debuggingEnabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("inference-engine.debuggingEnabled", "true"));
+	debuggingVehicleId = Integer.parseInt(_configurationService.getConfigurationValueAsString("inference-engine.debuggingVehicleId", "2817"));
+
   }
 
   /****
@@ -713,8 +720,21 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   		    	record = _inferenceInstance.handleUpdateWithResults(_nycRawLocationRecord);
   		    	}   
     		}  
-	    	if (record != null) inferenceSuccess = true;
-
+    		if (record != null) inferenceSuccess = true;
+    		
+    		/*int vid = 0;
+    		
+    		if(_vehicleId != null && _vehicleId.getId() != null)
+    			vid = Integer.parseInt(_vehicleId.getId());
+    		
+    		if(debugVehicle(vid)){
+    			VehicleLocationDetails badVld = getBadDetailsForVehicleId(_vehicleId);
+    			VehicleLocationDetails goodVld = getDetailsForVehicleId(_vehicleId);
+    			_log.warn("BAD VLD ------------------------ \n" + badVld.toString());
+    			_log.warn("GOOD VLD ------------------------ \n" + goodVld.toString());
+    		}*/
+    		
+    		
     		if (inferenceSuccess) {
     			// send input "actuals" as inferred result to output queue to bypass inference process
     			if (_bypass == true) {
