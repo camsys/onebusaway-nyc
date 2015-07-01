@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.services.GtfsDao;
@@ -32,6 +33,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class StopVerificationTask implements Runnable {
+
+  private static final double STOP_DISTANCE_THRESHOLD = 50.0; // 50 meters
 
   private static Logger _log = LoggerFactory.getLogger(StopVerificationTask.class);
   
@@ -61,7 +64,7 @@ public class StopVerificationTask implements Runnable {
       return;
     }
     
-    _logger.header("stop_verification.csv", "root_stop_id,pass?,missing_stop_id,unexpected_stop_ids");
+    _logger.header("stop_verification.csv", "root_stop_id,pass?,missing_stop_id,unexpected_stop_ids,stop_distance");
     _log.info("running verification task from path=" + path);
     try {
       InputStream in = IOLibrary.getPathAsInputStream(path);
@@ -97,15 +100,26 @@ public class StopVerificationTask implements Runnable {
     boolean pass = expectedStop != null;
     String missingStopId = (pass?"":rootStopId);
     String unexpectedStopIds = "";
+    Double maxDistance = Double.NEGATIVE_INFINITY;
+    
     for (String consolidatedStop : consolidatedStops) {
       Stop unexpectedStop = _dao.getStopForId(AgencyAndIdLibrary.convertFromString(consolidatedStop));
       if (unexpectedStop != null) {
         pass = false;
         unexpectedStopIds += consolidatedStop + " ";
+        double distance = SphericalGeometryLibrary.distanceFaster(expectedStop.getLat(), 
+            expectedStop.getLon(), 
+            unexpectedStop.getLat(), 
+            unexpectedStop.getLon());
+//        if (distance > STOP_DISTANCE_THRESHOLD) {
+          if (distance > maxDistance) {
+            maxDistance = distance;
+//          }
+        }
       }
     }
-    if (!pass) {
-      _logger.log("stop_verification.csv", rootStopId, String.valueOf(pass), missingStopId, unexpectedStopIds);
+    if (!pass || maxDistance > Double.NEGATIVE_INFINITY) {
+      _logger.log("stop_verification.csv", rootStopId, String.valueOf(pass), missingStopId, unexpectedStopIds, maxDistance);
     }
   }
 
