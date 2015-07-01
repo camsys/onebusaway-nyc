@@ -25,7 +25,7 @@
 				</div>
 		<div id="prevalidateInputs">
 			<label class="bundleHeader">Pre-Bundle Building Validation of
-				GTFS and STIF Files</label>
+				GTFS and AUX Files</label>
 			<div class="directoryLabels">
 				<label class="adminLabel directoryLabel">Bundle Directory :</label> <label
 					id="prevalidate_bundleDirectory" class="adminLabel directoryLabel"><s:property

@@ -33,7 +33,7 @@
 		<!-- Please copy the bundle created in Build And Validate to the <b><s:property value="s3Path" ></s:property></b> directory via the S3 Management Console.--> 
 		</div>
 		<div id="deployBundle">
-			<label class="bundleHeader">Bundle(s) Available to Push to TDM</label>  
+			<label class="bundleHeader">Bundle(s) Available to Deploy</label>  
 			<div id="listButton">
 				<input type="button" id="deployBundle_listButton" value="Refresh" />
 			</div>
