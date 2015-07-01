@@ -19,7 +19,11 @@ var OBA = window.OBA || {};
 OBA.Util = (function() {
 	
 	// From http://delete.me.uk/2005/03/iso8601.html
-	var ISO8601StringToDate = function(str) {	    	
+	var ISO8601StringToDate = function(str) {
+		
+		if(typeof str === 'undefined')
+			return null;
+		
     	var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
     	"(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
     	"(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?";
