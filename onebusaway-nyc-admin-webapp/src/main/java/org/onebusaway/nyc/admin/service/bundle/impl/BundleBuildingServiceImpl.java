@@ -469,6 +469,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       cmdOverrides.setProperty(ARG_THROW_EXCEPTION_INVALID_STOPS, "false");
       if (this.getStopVerificationURL() != null) {
         cmdOverrides.setProperty("stopVerificationTask.path", this.getStopVerificationURL());
+        cmdOverrides.setProperty("stopVerificationDistanceTask.path", this.getStopVerificationURL());
       }
       creator.setAdditionalBeanPropertyOverrides(cmdOverrides);
 
