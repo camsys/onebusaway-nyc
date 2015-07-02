@@ -206,7 +206,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 	  return refreshCheck;
   }
   
-  @Refreshable(dependsOn = {"display.checkAge", "display.useTimePredictions", "display.ageLimit"})
+  @Refreshable(dependsOn = {"display.checkAge", "display.useTimePredictions", "display.ageLimit", "inference-engine.debuggingVehicleId", "inference-engine.debuggingEnabled"})
   protected void refreshCache() {
 	checkAge = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.checkAge", "false"));
 	useTimePredictions = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
@@ -215,7 +215,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 	debuggingVehicleId = Integer.parseInt(_configurationService.getConfigurationValueAsString("inference-engine.debuggingVehicleId", "2817"));
 
   }
-
+  
   /****
    * Service Methods
    ****/
@@ -257,7 +257,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     verifyVehicleResultMappingToCurrentBundle();
 
 		final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());    
-		final Future<?> result = _executorService.submit(new ProcessingTask(i, record, false, false));
+		final Future<?> result = _executorService.submit(new ProcessingTask(i, record, false, false, false));
 		_bundleManagementService.registerInferenceProcessingThread(result);
   }
 
@@ -269,7 +269,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   @Override
   public void handleRealtimeEnvelopeRecord(RealtimeEnvelope envelope) {
     final CcLocationReport message = envelope.getCcLocationReport();
-
+    
     if (!_bundleManagementService.bundleIsReady()) {
       _skippedUpdateLogCounter++;
 
@@ -372,9 +372,15 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
         }
       }
     }
+	
+    boolean enableDebug = false;
+    
+    if(r.getVehicleId() != null && r.getVehicleId().getId() != null){
+    	enableDebug = debugVehicle(Integer.parseInt(r.getVehicleId().getId()));
+	}
     
     final VehicleInferenceInstance i = getInstanceForVehicle(vehicleId);    
-		final Future<?> result = _executorService.submit(new ProcessingTask(i, r, false, false));
+		final Future<?> result = _executorService.submit(new ProcessingTask(i, r, false, false, enableDebug));
 		_bundleManagementService.registerInferenceProcessingThread(result);
   }
 
@@ -659,8 +665,10 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     
     private boolean _simulation = false;
     
+    private boolean _enableDebug = false;
+    
     public ProcessingTask(VehicleInferenceInstance inferenceInstance, NycRawLocationRecord record, 
-    		boolean simulation, boolean bypass) {
+    		boolean simulation, boolean bypass, boolean enableDebug) {
       _inferenceInstance = inferenceInstance;
       _vehicleId = record.getVehicleId();
 
@@ -668,6 +676,9 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       
       _simulation = simulation;
       _bypass = bypass;
+      
+      _enableDebug = enableDebug;
+      
     }
 
     public ProcessingTask(VehicleInferenceInstance inferenceInstance, NycTestInferredLocationRecord record, 
@@ -717,7 +728,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     		  if (_bypass == true) {
     			record = _inferenceInstance.handleBypassUpdateWithResults(_nycTestInferredLocationRecord);
   		    } else {
-  		    	record = _inferenceInstance.handleUpdateWithResults(_nycRawLocationRecord);
+  		    	record = _inferenceInstance.handleUpdateWithResults(_nycRawLocationRecord, _enableDebug);
   		    	}   
     		}  
     		if (record != null) inferenceSuccess = true;
@@ -845,4 +856,11 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   private long computeTimeDifference(long timestamp) {
 	  return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds
   }
+  
+  private boolean debugVehicle(int vehicleId){
+	  if (debuggingEnabled && debuggingVehicleId == vehicleId)
+		  return true;
+	  return false;
+  }
+
 }

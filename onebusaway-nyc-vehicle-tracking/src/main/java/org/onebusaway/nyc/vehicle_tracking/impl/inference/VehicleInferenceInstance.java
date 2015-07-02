@@ -75,6 +75,7 @@ public class VehicleInferenceInstance {
   @Autowired
   private BlockStateService _blockStateService;
   
+  @Autowired
   private ConfigurationService _configurationService;
 
   private DestinationSignCodeService _destinationSignCodeService;
@@ -104,19 +105,6 @@ public class VehicleInferenceInstance {
   private boolean debuggingEnabled = true;
   
   private int debuggingVehicleId = 2817;
-  
-  @Autowired
-  public void setConfigurationService(ConfigurationService configurationService) {
-    this._configurationService = configurationService;
-    configChanged();
-  }
-
-  @Refreshable(dependsOn = {"inference-engine.debuggingEnabled, inference-engine.debuggingVehicleId"})
-  protected void configChanged() {
-	debuggingEnabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("inference-engine.debuggingEnabled", "true"));
-	debuggingVehicleId = Integer.parseInt(_configurationService.getConfigurationValueAsString("inference-engine.debuggingVehicleId", "2817"));
-
-  }
   
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
@@ -165,14 +153,10 @@ public class VehicleInferenceInstance {
    * @return true if the resulting inferred location record was successfully
    *         processed, otherwise false
    */
-  public synchronized boolean handleUpdate(NycRawLocationRecord record) {
+  public synchronized boolean handleUpdate(NycRawLocationRecord record, boolean enableDebug) {
 	/**
 	 * DEBUG Settings
 	 */
-	  boolean enableDebug = false;
-	  if(record.getVehicleId() != null && record.getVehicleId().getId() != null){
-		  enableDebug = debugVehicle(Integer.parseInt(record.getVehicleId().getId()));
-	  }
 	  
     /**
      * Choose the best timestamp based on device timestamp and received
@@ -817,8 +801,8 @@ public class VehicleInferenceInstance {
    * class is not safe to call in a multi-threaded manner.
    */
   public synchronized NycQueuedInferredLocationBean handleUpdateWithResults(
-      NycRawLocationRecord nycRawLocationRecord) {
-    boolean success = handleUpdate(nycRawLocationRecord);
+      NycRawLocationRecord nycRawLocationRecord, boolean enableDebug) {
+    boolean success = handleUpdate(nycRawLocationRecord, enableDebug);
     if (!success){
     	return null;
       
@@ -842,10 +826,4 @@ public class VehicleInferenceInstance {
     return record;
   }
   
-  private boolean debugVehicle(int vehicleId){
-	  if (debuggingEnabled && debuggingVehicleId == vehicleId)
-		  return true;
-	  return false;
-  }
-
 }
