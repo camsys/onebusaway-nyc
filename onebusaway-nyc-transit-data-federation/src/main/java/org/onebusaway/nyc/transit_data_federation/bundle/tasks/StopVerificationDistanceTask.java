@@ -17,39 +17,50 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks;
 
 import java.util.List;
 
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 /**
- *  Check that stops listed in the stop consolidation file were actually consolidated, and
- *  output stops that are unexpected or missing. 
+ * Check stop consolidate file for distance between stops, and output stops that
+ * are above STOP_DISTANCE_THRESHOLD.
+ * 
+ *  Note that this require running the LoadGTFS task with stop consolidation turned
+ *  off so the consolidated stops will be available.
  *
  */
-public class StopVerificationTask extends AbstractStopTask implements Runnable {
+public class StopVerificationDistanceTask extends AbstractStopTask implements
+    Runnable {
+  private static final double STOP_DISTANCE_THRESHOLD = 100.0; // in meters
 
   protected void insertHeader() {
-    _logger.header("stop_verification.csv", "root_stop_id,pass?,missing_stop_id,unexpected_stop_ids");
+    _logger.header("stop_verification_distance.csv",
+        "root_stop_id,consolidated_stop_id,stop_distance,root_lat_lon,consolidated_lat_lon");
   }
 
-  
   protected void verifyStops(String rootStopId, List<String> consolidatedStops) {
     AgencyAndId agencyAndId = AgencyAndIdLibrary.convertFromString(rootStopId);
     Stop expectedStop = _dao.getStopForId(agencyAndId);
-    boolean pass = expectedStop != null;
-    String missingStopId = (pass?"":rootStopId);
-    String unexpectedStopIds = "";
-    
+
     for (String consolidatedStop : consolidatedStops) {
       Stop unexpectedStop = _dao.getStopForId(AgencyAndIdLibrary.convertFromString(consolidatedStop));
       if (unexpectedStop != null) {
-        pass = false;
-        unexpectedStopIds += consolidatedStop + " ";
+        if (expectedStop != null) {
+          double distance = SphericalGeometryLibrary.distanceFaster(
+              expectedStop.getLat(), expectedStop.getLon(),
+              unexpectedStop.getLat(), unexpectedStop.getLon());
+          if (distance > STOP_DISTANCE_THRESHOLD) {
+            _logger.log("stop_verification_distance.csv", rootStopId, consolidatedStop,
+                distance, toOrd(expectedStop.getLat(), expectedStop.getLon()), 
+                toOrd(unexpectedStop.getLat(), unexpectedStop.getLon()));
+          }
         }
-    }
-    if (!pass) {
-      _logger.log("stop_verification.csv", rootStopId, String.valueOf(pass), missingStopId, unexpectedStopIds);
+      } 
     }
   }
 
+  private String toOrd(double lat, double lon) {
+    return lat + "," + lon;
+  }
 }

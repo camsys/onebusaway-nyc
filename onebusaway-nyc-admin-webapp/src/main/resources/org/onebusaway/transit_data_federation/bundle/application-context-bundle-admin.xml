@@ -100,14 +100,45 @@
     <property name="bundleRequestResponse" ref="bundleRequestResponse" />
   </bean>
 
+
+<!--  do a non-stop consolidated load for stop verification distance -->
+  <bean id="task_gtfs_pre_pre" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="gtfs_pre_pre" />
+    <property name="afterTaskName" value="multiAgency" />
+    <property name="beforeTaskName" value="gtfs_validation_pretransform" />
+    <property name="task" ref="loadGtfsTaskNoConsolidation" />
+  </bean>
+
+  <bean id="stopVerificationDistanceTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.StopVerificationDistanceTask">
+  </bean>
+
+<!--  check distance between consolidated stops -->
+  <bean id="task_stop_verification_distance" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="stop_verification_distance" />
+    <property name="beforeTaskName" value="gtfs_pre" />
+    <property name="afterTaskName" value="gtfs_pre_pre" />
+    <property name="task" ref="stopVerificationDistanceTask" />
+  </bean>
+
+  <bean id="task_clear_gtfs_pre" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="clear_gtfs_pre" />
+    <property name="afterTaskName" value="stop_verification_distance" />
+    <property name="beforeTaskName" value="gtfs_pre" />
+    <property name="task" ref="clearGtfsTask" />
+  </bean>
+
   <!-- Load GTFS -->
 
   <bean id="task_gtfs_pre" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="gtfs_pre" />
-    <property name="afterTaskName" value="multiAgency" />
+    <property name="afterTaskName" value="clear_gtfs_pre" />
     <property name="beforeTaskName" value="gtfs_validation_pretransform" />
     <property name="task" ref="loadGtfsTask" />
   </bean>
+
+<bean id="loadGtfsTaskNoConsolidation" class="org.onebusaway.transit_data_federation.bundle.tasks.LoadGtfsTask" >
+	<property name="disableStopConsolidation" value="true" />
+</bean>
 
   <bean id="loadGtfsTask" class="org.onebusaway.transit_data_federation.bundle.tasks.LoadGtfsTask" />
   
