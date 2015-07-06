@@ -165,6 +165,7 @@
     <property name="configurationServiceClient" ref="configurationServiceClient" />
     <property name="logger" ref="multiCSVLogger" />
     <property name="bundleRequestResponse" ref="bundleRequestResponse" />
+    <property name="directoryHint" value="final" />
   </bean>
 
   <bean id="task_diff_validation" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">

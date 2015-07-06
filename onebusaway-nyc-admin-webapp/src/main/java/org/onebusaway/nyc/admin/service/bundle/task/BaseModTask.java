@@ -24,6 +24,7 @@ public class BaseModTask {
   protected ApplicationContext _applicationContext;
   protected MultiCSVLogger logger;
   protected BundleRequestResponse requestResponse;
+  private String _directoryHint = "modified";
 
   @Autowired
   public void setApplicationContext(ApplicationContext applicationContext) {
@@ -38,6 +39,10 @@ public class BaseModTask {
   @Autowired
   public void setLogger(MultiCSVLogger logger) {
     this.logger = logger;
+  }
+  
+  public void setDirectoryHint(String hint) {
+    _directoryHint = hint;
   }
 
   protected String getEmptyModUrl() {
@@ -113,13 +118,24 @@ public class BaseModTask {
     _log.info("gtfsBundle.getPath(mod)=" + gtfsBundle.getPath() + " with mappings= " + gtfsBundle.getAgencyIdMappings());
 
     if (getOutputDirectory() != null) {
+      File outputDir = new File(getOutputDirectory() + File.separator
+          + getDirectoryHint());
+      if (!outputDir.exists() || !outputDir.isDirectory()) {
+        outputDir.mkdirs();
+      }
+      
       String outputLocation = getOutputDirectory() + File.separator
-          + fs.parseFileName(newGtfsName);
+          + getDirectoryHint() + File.separator
+          + fs.parseFileName(newGtfsName).replaceAll("_mod", "");
       // copy to outputs for downstream systems
       NYCFileUtils.copyFile(new File(newGtfsName), new File(outputLocation));
     }
     return newGtfsName;
 
+  }
+
+  private String getDirectoryHint() {
+    return _directoryHint;
   }
 
   protected String getOutputDirectory() {

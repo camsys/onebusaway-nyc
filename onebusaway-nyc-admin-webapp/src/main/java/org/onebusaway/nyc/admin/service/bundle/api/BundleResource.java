@@ -146,6 +146,24 @@ public class BundleResource implements ServletContextAware{
     return _localBundleDeployer.getLatestBundle();
   }
 
+  @Path("/latest/final")
+  @GET
+  public Response getLatestBundleFinal() {
+    String latestBundleId;
+    if (isTdm()) {
+      latestBundleId = _tdmBundleDeployer.getLatestBundleId();
+    } else {
+      latestBundleId = _localBundleDeployer.getLatestBundleId();
+    }
+    if (latestBundleId == null) {
+      _log.error("no latest bundle found");
+      return Response.serverError().build();
+    }
+    
+    return _localBundleArchiver.getArchiveBundleById(latestBundleId, "/final/");
+  }
+
+  
   @Path("/deploy/from/{environment}")
   @GET
   public Response deploy(@PathParam("environment")

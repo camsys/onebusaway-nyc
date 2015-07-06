@@ -120,5 +120,11 @@ public class TdmBundleDeployerServiceImpl implements BundleDeployerService{
     _log.error("getLatestBundle not implemented");
     return Response.serverError().build();
   }
+  
+  @Override
+  public String getLatestBundleId() {
+    _log.error("getLatestBundleId not implemented");
+    return null;
+  }
 
 }

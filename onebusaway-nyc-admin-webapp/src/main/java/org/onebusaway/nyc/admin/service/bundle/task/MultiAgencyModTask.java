@@ -21,15 +21,12 @@ public class MultiAgencyModTask extends BaseModTask implements Runnable {
     try {
       _log.info("GtfsModTask Starting");
       
-      makeOutputDirectory(requestResponse.getResponse());
-      
       GtfsBundles gtfsBundles = getGtfsBundles(_applicationContext);
       for (GtfsBundle gtfsBundle : gtfsBundles.getBundles()) {
         String agencyId = parseAgencyDir(gtfsBundle.getPath().getPath());
         //_log.info("no modUrl found for agency " + agencyId + " and bundle " + gtfsBundle.getPath());
         String oldFilename = gtfsBundle.getPath().getPath();
         String newFilename = runModifications(gtfsBundle, agencyId, getEmptyModUrl(), null);
-        copyToOutputGtfsDirectory(requestResponse.getResponse(), newFilename);
         logger.changelog("Transformed " + oldFilename + " to " + newFilename + " to add multi-agency support");
       }
     } catch (Throwable ex) {
@@ -37,37 +34,6 @@ public class MultiAgencyModTask extends BaseModTask implements Runnable {
     } finally {
       _log.info("GtfsModTask Exiting");
     }
-  }
-
-
-  private void copyToOutputGtfsDirectory(BundleBuildResponse response,
-      String srcFilename) throws Exception {
-    if (response.getBundleOutputGtfsDirectory() == null) {
-      _log.error("bundle output gtfs dir not configured, not copying " + srcFilename);
-      return;
-    }
-    
-    if (!srcFilename.toLowerCase().endsWith(".zip")) {
-      _log.error("refusing to copy tagged GTFS file that is not a zip file:  " + srcFilename);
-      return;
-    }
-    _log.info("copying tagged gtfs file=" + srcFilename);
-    
-    File srcFile = new File(srcFilename);
-    File destFile = new File(requestResponse.getResponse().getBundleOutputGtfsDirectory() + File.separator + srcFile.getName());
-    FileUtils.copyFile(srcFile, destFile, true);
-    logger.changelog("applied output gtfs tag to " + destFile);
-  }
-
-
-  private void makeOutputDirectory(BundleBuildResponse response) {
-    if (response.getBundleOutputGtfsDirectory() == null) {
-      _log.error("bundle output gtfs dir not configured");
-      return;
-    }
-    File outputDirectory = new File(response.getBundleOutputGtfsDirectory());
-    if (outputDirectory.exists() && outputDirectory.isDirectory()) return;
-    outputDirectory.mkdirs();
   }
 
 }

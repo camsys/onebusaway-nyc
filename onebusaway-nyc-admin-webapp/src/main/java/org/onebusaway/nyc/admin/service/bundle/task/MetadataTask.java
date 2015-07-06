@@ -36,7 +36,6 @@ public class MetadataTask implements Runnable {
     BundleMetadata data = new BundleMetadata(); 
     try {
       String outputDirectory = requestResponse.getResponse().getBundleDataDirectory();
-      String outputGtfsDirectory = requestResponse.getResponse().getBundleOutputGtfsDirectory();
       String sourceDirectory = requestResponse.getResponse().getBundleOutputDirectory();
       String rootDirectory = requestResponse.getResponse().getBundleRootDirectory();
       data.setId(generateId());
@@ -45,7 +44,6 @@ public class MetadataTask implements Runnable {
       data.setServiceDateTo(requestResponse.getRequest().getBundleEndDate().toDate());
 
       data.setOutputFiles(util.getBundleFilesWithSumsForDirectory(new File(outputDirectory), new File(outputDirectory), new File(rootDirectory)));
-      data.setOutputGtfsFiles(util.getBundleFilesWithSumsForDirectory(new File(outputGtfsDirectory), new File(outputGtfsDirectory), new File(rootDirectory)));
       data.setSourceData(util.getSourceFilesWithSumsForDirectory(new File(sourceDirectory), new File(sourceDirectory), new File(rootDirectory)));
       data.setChangeLogUri(util.getUri(new File(rootDirectory), "change_log.csv"));
       data.setStatisticsUri(util.getUri(new File(rootDirectory), "gtfs_stats.csv"));

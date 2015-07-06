@@ -2,6 +2,7 @@ package org.onebusaway.nyc.admin.service.bundle.impl;
 
 import java.io.File;
 import java.io.FileReader;
+import java.net.URI;
 import java.util.Collection;
 
 import javax.ws.rs.core.Response;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
 import com.google.gson.JsonParser;
 
 @Component
@@ -75,6 +77,11 @@ public class LocalBundleArchiverServiceImpl implements BundleArchiverService {
 
   @Override
   public Response getArchiveBundleById(String id) {
+    return getArchiveBundleById(id, null);
+  }
+  
+  @Override
+  public Response getArchiveBundleById(String id, String filter) {
     try {
       for (File datasetDir : new File(bundleStager.getBuiltBundleDirectory()).listFiles()) {
         File buildsDir = new File(datasetDir.getAbsolutePath() + "/builds");
@@ -82,7 +89,7 @@ public class LocalBundleArchiverServiceImpl implements BundleArchiverService {
           for (File bundleDir : buildsDir.listFiles()) {
             try {
               if (getBundleId(bundleDir).equals(id)) {
-                return getContents(bundleDir);
+                return getContents(bundleDir, filter);
               }
             } catch (Exception e1) {
             }
@@ -95,13 +102,24 @@ public class LocalBundleArchiverServiceImpl implements BundleArchiverService {
     return Response.serverError().build();
   }
 
-  @SuppressWarnings("unchecked")
   private Response getContents(File bundleDir) {
+      return getContents(bundleDir, null);
+  }
+  
+  @SuppressWarnings("unchecked")
+  private Response getContents(File bundleDir, String filter) {
     Collection<File> files = FileUtils.listFiles(bundleDir,
         new RegexFileFilter("^(.*?)"), DirectoryFileFilter.DIRECTORY);
     JSONArray response = new JSONArray();
     for (File file : files) {
-      response.put(bundleDir.toURI().relativize(file.toURI()));
+      URI relativeName = bundleDir.toURI().relativize(file.toURI());
+      if (filter != null) {
+        if (relativeName.toString().contains(filter)) {
+          response.put(relativeName);
+        } 
+      } else {
+        response.put(relativeName);
+      }
     }
     return Response.ok(response.toString(), "application/json").build();
   }

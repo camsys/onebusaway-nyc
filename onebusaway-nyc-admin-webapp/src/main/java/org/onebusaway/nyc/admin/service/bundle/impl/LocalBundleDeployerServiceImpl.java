@@ -105,12 +105,15 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
       return Response.serverError().build();
     }
     
-    /**
-     * displays the latest active bundle.
-     */
     @Override
-    public Response getLatestBundle() {
-      _log.info("Starting getLatestBundle.");
+    public String getLatestBundleId() {
+      Bundle latestBundle = getLatestBundleAsBundle();
+      if (latestBundle != null)
+        return latestBundle.getId();
+      return null;
+    }
+    
+    private Bundle getLatestBundleAsBundle() {
       List<Bundle> bundles = bundleProvider.getBundles();
       Bundle latestBundle = null;
       for (Bundle bundle : bundles) {
@@ -119,6 +122,16 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
           latestBundle = bundle;
         }
       }
+    return latestBundle;
+    }
+    /**
+     * displays the latest active bundle.
+     */
+    @Override
+    public Response getLatestBundle() {
+      _log.info("Starting getLatestBundle.");
+      Bundle latestBundle = getLatestBundleAsBundle();
+
       if (latestBundle != null) {
         try {
           JSONObject response = new JSONObject();

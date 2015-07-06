@@ -63,7 +63,7 @@ public class HastusTranslateTask extends BaseModTask implements Runnable {
     try {
       HastusGtfsFactory factory = new HastusGtfsFactory();
       if (hastus != null && gis != null) {
-        File outputDir = new File(requestResponse.getResponse().getBundleOutputGtfsDirectory() + File.separator + hd.getAgencyId());
+        File outputDir = new File(requestResponse.getResponse().getBundleOutputDirectory() + File.separator + hd.getAgencyId());
         outputDir.mkdirs();
         
         factory.setScheduleInputPath(hastus);

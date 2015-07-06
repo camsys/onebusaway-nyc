@@ -6,6 +6,8 @@ public interface BundleDeployerService {
 
   public Response listStagedBundles(String environment);
 
+  public String getLatestBundleId();
+  
   public Response getLatestBundle();
 
   public Response deploy(String environment);

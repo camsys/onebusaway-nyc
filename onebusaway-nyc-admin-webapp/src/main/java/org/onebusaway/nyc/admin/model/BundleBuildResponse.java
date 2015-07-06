@@ -18,7 +18,6 @@ public class BundleBuildResponse {
 	private String _bundleRootDirectory;
 	private String _bundleInputDirectory;
 	private String _bundleOutputDirectory;
-	private String _bundleOutputGtfsDirectory;
 	private String _bundleDataDirectory;
 	private String _bundleTarFilename;
 	private String _remoteInputDirectory;
@@ -185,14 +184,6 @@ public class BundleBuildResponse {
 		_bundleDataDirectory = directoryPath;
 	}
 
-  public String getBundleOutputGtfsDirectory() {
-    return _bundleOutputGtfsDirectory;
-  }
-
-  public void setBundleOutputGtfsDirectory(String directoryPath) {
-    _bundleOutputGtfsDirectory = directoryPath;
-  }
-	
 	public String getBundleInputDirectory() {
 		return _bundleInputDirectory;
 	}

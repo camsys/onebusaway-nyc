@@ -13,5 +13,7 @@ public interface BundleArchiverService {
   public Response getArchiveBundleByName(String dataset, String name);
 
   public Response getArchiveBundleById(String id);
+  
+  public Response getArchiveBundleById(String id, String filter);
 
 }

@@ -54,7 +54,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String DEFAULT_AGENCY = "MTA";
   private static final String DATA_DIR = "data";
   private static final String OUTPUT_DIR = "outputs";
-  private static final String OUTPUT_GTFS_DIR = "output_gtfs";
   private static final String INPUTS_DIR = "inputs";
   private static final String DEFAULT_TRIP_TO_DSC_FILE = "tripToDSCMap.txt";
   private static final String ARG_THROW_EXCEPTION_INVALID_STOPS = "tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException";
@@ -233,13 +232,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     File outputsDir = new File(outputsPath);
     outputsDir.mkdirs();
 
-    String outputGtfsPath = request.getTmpDirectory() + File.separator + request.getBundleName()
-        + File.separator + OUTPUT_GTFS_DIR;
-    response.setBundleOutputGtfsDirectory(outputGtfsPath);
-    File outputGtfsDir = new File(outputGtfsPath);
-    outputGtfsDir.mkdirs();
-
-    
     String dataPath = request.getTmpDirectory() + File.separator + request.getBundleName()
         + File.separator + DATA_DIR;
     
@@ -721,11 +713,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     File outputsDestDir = new File(outputsPath);
     outputsDestDir.mkdir();
     
-    // GTFS-tagged outputs
-    String outputsGtfsPath = request.getTmpDirectory() + File.separator + OUTPUT_GTFS_DIR;
-    File outputsGtfsDestDir = new File(outputsGtfsPath);
-    outputsGtfsDestDir.mkdir();
-
     // copy log file to outputs
     File outputPath = new File(response.getBundleDataDirectory());
     String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
@@ -739,18 +726,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       for (File output : outputFiles) {
         response.addOutputFile(output.getName());
         fs.copyFiles(output, new File(outputsPath + File.separator + output.getName()));
-      }
-    }
-    
-    // copy the GTFS-tagged outputs 
-    File outputsGtfsDir = new File(response.getBundleOutputGtfsDirectory());
-    File[] outputGtfsFiles = outputsGtfsDir.listFiles();
-    if (outputGtfsFiles != null) {
-      for (File output : outputGtfsFiles) {
-        if (output.getName().toLowerCase().endsWith(".zip")) {
-        response.addOutputGtfsFile(output.getName());
-        fs.copyFiles(output, new File(outputsGtfsPath + File.separator + output.getName()));
-        }
       }
     }
     
@@ -878,11 +853,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setRemoteInputDirectory(versionString + File.separator + INPUTS_DIR);
     _fileService.put(versionString + File.separator + OUTPUT_DIR, response.getBundleOutputDirectory());
     response.setRemoteOutputDirectory(versionString + File.separator + OUTPUT_DIR);
-    
-    _fileService.put(versionString + File.separator + OUTPUT_GTFS_DIR, response.getBundleOutputGtfsDirectory());
-    response.setRemoteOutputGtfsDirectory(versionString + File.separator + OUTPUT_GTFS_DIR);
-
-    
     
     _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
         response.getBundleTarFilename());
