@@ -102,22 +102,8 @@ public class DirectoryBundleDeployerImpl implements BundleDeployer {
       }
     }
 
-    // now cleanup -- delete bundles
-    clearBundleStagingDirectory(path);
+    // don't cleanup, staging should mirror deploy
     return bundlesDownloaded;
-  }
-
-  /**
-   * delete bundle staging directory.
-   */
-  private void clearBundleStagingDirectory(String path) {
-    _log.info("wiping bundle staging directory");
-    try {
-      _fileUtil.delete(new File(path));
-    } catch (IOException ioe) {
-      _log.error("error wiping bundle dir:", ioe);
-    }
-    new File(path).mkdir();
   }
 
   /**
