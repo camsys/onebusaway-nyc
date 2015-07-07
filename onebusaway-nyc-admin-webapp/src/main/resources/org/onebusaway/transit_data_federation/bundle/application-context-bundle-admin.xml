@@ -115,14 +115,25 @@
 <!--  check distance between consolidated stops -->
   <bean id="task_stop_verification_distance" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="stop_verification_distance" />
-    <property name="beforeTaskName" value="gtfs_pre" />
+    <property name="beforeTaskName" value="stop_consolidation_suggest" />
     <property name="afterTaskName" value="gtfs_pre_pre" />
     <property name="task" ref="stopVerificationDistanceTask" />
   </bean>
 
+<!--  run stop consolidation suggestions -->
+  <bean id="stopConsolidationSuggestionsTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.StopConsolidationSuggestionsTask">
+  </bean>
+  <bean id="task_stop_consolidation_suggest" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="stop_consolidation_suggest" />
+    <property name="beforeTaskName" value="clear_gtfs_pre" />
+    <property name="afterTaskName" value="stop_verification_distance" />
+    <property name="task" ref="stopConsolidationSuggestionsTask" />
+  </bean>
+
+
   <bean id="task_clear_gtfs_pre" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="clear_gtfs_pre" />
-    <property name="afterTaskName" value="stop_verification_distance" />
+    <property name="afterTaskName" value="stop_consolidation_suggest" />
     <property name="beforeTaskName" value="gtfs_pre" />
     <property name="task" ref="clearGtfsTask" />
   </bean>
