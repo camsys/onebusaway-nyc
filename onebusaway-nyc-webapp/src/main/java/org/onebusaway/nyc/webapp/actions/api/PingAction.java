@@ -1,11 +1,15 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 
 import javax.servlet.ServletException;
 
 import org.apache.struts2.ServletActionContext;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.services.TransitDataService;
@@ -21,7 +25,10 @@ public class PingAction extends OneBusAwayNYCActionSupport {
   @Autowired
   public void setTransitDataService(TransitDataService tds) {
     _tds = tds;
-  } 
+  }
+  
+  @Autowired
+  private ConfigurationService _config;
   
   @Override
   public String execute() throws Exception {
@@ -39,14 +46,45 @@ public class PingAction extends OneBusAwayNYCActionSupport {
   public String getPing() throws RuntimeException {
     try {
       List<AgencyWithCoverageBean> count = _tds.getAgenciesWithCoverage();
+      String smsUrl = _config.getConfigurationValueAsString("sms.pingUrl", "http://localhost:8080/onebusaway-nyc-sms-webapp/index.action");
+      
       if (count == null || count.isEmpty()) {
         _log.error("Ping action found agencies = " + count);
         throw new ServletException("No agencies supported in current bundle");
       }
-      return "" + count.size();
+      if(!isResponsive(smsUrl)){
+    	throw new ServletException("SMS Url " + smsUrl + " is not responding");
+      }
+      
+      return "" + count.size();      
+      
     } catch (Throwable t) {
       _log.error("Ping action failed with ", t);
       throw new RuntimeException(t);
     }
   }
+  
+  private boolean isResponsive(String url) throws IOException{
+	  
+	  boolean responsive = false;
+	  
+	  try {
+          URL siteURL = new URL(url);
+          HttpURLConnection connection = (HttpURLConnection) siteURL
+                  .openConnection();
+          connection.setRequestMethod("GET");
+          connection.connect();
+
+          int code = connection.getResponseCode();
+          if (code == 200) {
+              responsive = true;
+          }
+      } catch (Exception e) {
+    	  responsive = false;
+      }
+
+	  return responsive;
+	  
+  }
+  
 }
