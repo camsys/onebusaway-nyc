@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import javax.servlet.ServletException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.struts2.ServletActionContext;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
@@ -17,9 +21,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 public class PingAction extends OneBusAwayNYCActionSupport {
   
   private static Logger _log = LoggerFactory.getLogger(PingAction.class);
+  private static final String TRUE_STRING = "true";
   private TransitDataService _tds;
   
   @Autowired
@@ -52,7 +61,7 @@ public class PingAction extends OneBusAwayNYCActionSupport {
         _log.error("Ping action found agencies = " + count);
         throw new ServletException("No agencies supported in current bundle");
       }
-      if(!isResponsive(smsUrl)){
+      if(!isSucessful(smsUrl)){
     	throw new ServletException("SMS Url " + smsUrl + " is not responding");
       }
       
@@ -64,27 +73,13 @@ public class PingAction extends OneBusAwayNYCActionSupport {
     }
   }
   
-  private boolean isResponsive(String url) throws IOException{
-	  
-	  boolean responsive = false;
-	  
-	  try {
-          URL siteURL = new URL(url);
-          HttpURLConnection connection = (HttpURLConnection) siteURL
-                  .openConnection();
-          connection.setRequestMethod("GET");
-          connection.connect();
-
-          int code = connection.getResponseCode();
-          if (code == 200) {
-              responsive = true;
-          }
-      } catch (Exception e) {
-    	  responsive = false;
-      }
-
-	  return responsive;
-	  
-  }
-  
+  private boolean isSucessful(String url){
+	  try{
+		  JSONObject json = new JSONObject(IOUtils.toString(new URL(url)));
+		  String success = json.get(SUCCESS).toString();
+		  return success.equals(TRUE_STRING);
+	  } catch(Exception e){
+		  return false;
+	  }
+  } 
 }
