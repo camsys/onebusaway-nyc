@@ -44,7 +44,10 @@ import com.opensymphony.xwork2.ModelDriven;
 import com.thoughtworks.xstream.XStream;
 
 @ParentPackage("onebusaway-admin-webapp-default")
-@InterceptorRefs( {@InterceptorRef("onebusaway-webapp-stack")})
+@InterceptorRefs({
+  @InterceptorRef("onebusaway-webapp-stack"),
+  @InterceptorRef(value = "store", params = {"operationMode", "RETRIEVE"})
+})
 @Results({
     @Result(type = "redirectAction", name = "submitSuccess", params = {
         "actionName", "service-alert", "id", "${id}", "parse", "true"}),
