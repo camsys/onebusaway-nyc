@@ -54,12 +54,18 @@
 </s:else>
 </s:form>
 
+<s:fielderror fieldName="agencyId_0" />
+<s:fielderror fieldName="routeId_0" />
+<s:fielderror fieldName="tripId_0" />
+<s:fielderror fieldName="directionId_0" />
+<s:fielderror fieldName="stopId_0" />
+
 <s:iterator value="allAffects" status="it">
-  <s:form action="service-alert-affects!update" theme="xhtml">
+  <s:form id="form_%{#it.index}" action="service-alert-affects!update" theme="xhtml">
     <s:textfield label="Agency Id" name="agencyId" value="%{agencyId}"/>
     <s:textfield label="Route Id" name="routeId" value="%{routeId}"/>
-    <s:textfield label="Direction Id" name="directionId" value="%{directionId}"/>
     <s:textfield label="Trip Id" name="tripId" value="%{tripId}"/>
+    <s:textfield label="Direction Id" name="directionId" value="%{directionId}"/>
     <s:textfield label="Stop Id" name="stopId" value="%{stopId}"/>
     <s:hidden name="id" value="%{id}"/>
     <s:hidden name="index" value="%{#it.index}"/>

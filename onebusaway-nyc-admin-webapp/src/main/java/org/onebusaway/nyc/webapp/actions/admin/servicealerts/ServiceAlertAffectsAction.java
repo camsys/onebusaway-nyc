@@ -16,13 +16,22 @@
 package org.onebusaway.nyc.webapp.actions.admin.servicealerts;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.struts2.convention.annotation.InterceptorRef;
+import org.apache.struts2.convention.annotation.InterceptorRefs;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.json.JSONException;
+import org.onebusaway.exceptions.NoSuchStopServiceException;
+import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
+import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +40,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.ModelDriven;
 
-@Results({@Result(type = "redirectAction", params = {
+@InterceptorRefs({
+  @InterceptorRef(value = "store", params = {"operationMode", "STORE"}),
+  @InterceptorRef("onebusaway-webapp-stack")
+})
+@Results({
+  @Result(type = "redirectAction", name="input", params = {"actionName", "service-alert", "id", "${id}"}),
+  @Result(type = "redirectAction", params = {
     "actionName", "service-alert", "id", "${id}", "parse", "true"})})
 public class ServiceAlertAffectsAction extends ActionSupport implements
     ModelDriven<SituationAffectsBean> {
@@ -40,6 +55,8 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
   
   private static Logger _log = LoggerFactory.getLogger(ServiceAlertsAction.class);
 
+  private static final String AGENCY_AND_ID_REGEX = "^[a-zA-Z0-9]{1,3}_[a-zA-Z0-9]+";
+
   private TransitDataService _transitDataService;
 
   private SituationAffectsBean _model = new SituationAffectsBean();
@@ -47,6 +64,8 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
   private String _id;
 
   private int _index = -1;
+
+  private Set<String> agencies = new HashSet<String>();
 
   @Autowired
   public void setTransitDataService(TransitDataService transitDataService) {
@@ -151,6 +170,76 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
     return SUCCESS;
   }
 
+  public void validate() {
+    String id = _model.getAgencyId();
+    if (id != null && id.length() > 0) {
+      if (!isValidAgency(id)) {
+        addFieldError("agencyId_0", "Error on agency id: agency \"" + id + "\" was not found");
+      }
+    }
+
+    id = _model.getRouteId();
+    if (id != null && id.length() > 0) {
+      if (!id.matches(AGENCY_AND_ID_REGEX)) {
+        addFieldError("routeId_0", "Error on route id format, must be <agency id>_<route id>");
+      } else if (!isValidAgency(id.substring(0,id.indexOf('_'))) ) {
+        addFieldError("routeId_0", "Error on agency portion of route id: \"" + id.substring(0,id.indexOf('_')) + "\" is not a valid agency id");
+      } else {
+          try {
+            RouteBean routeBean = _transitDataService.getRouteForId(id);
+            if (routeBean == null) {
+              addFieldError("routeId_0", "Error on route id: route \"" + id + "\" was not found");
+            }
+          } catch(Exception ex) {
+            addFieldError("routeId_0", "Error on route id: route \"" + id + "\" was not found");
+          }
+      }
+    }
+
+    id = _model.getDirectionId();
+    if (id != null && id.length() > 0) {
+      if (_model.getTripId() == null || _model.getTripId().length() == 0) {
+        addFieldError("directionId_0", "Error on direction id: not allowed unless a trip id has also been specified.");
+      }
+    }
+
+    id = _model.getTripId();
+    if (id != null && id.length() > 0) {
+      if (!id.matches(AGENCY_AND_ID_REGEX)) {
+        addFieldError("tripId_0", "Error on trip id format, must be <agency id>_<trip id>");
+      } else if (!isValidAgency(id.substring(0,id.indexOf('_'))) ) {
+        addFieldError("tripId_0", "Error on agency portion of trip id: \"" + id.substring(0,id.indexOf('_')) + "\" is not a valid agency id");
+      } else {
+        try {
+          TripBean tripBean = _transitDataService.getTrip(id);
+          if (tripBean == null) {
+            addFieldError("tripId_0", "Error on trip id: trip \"" + id + "\" was not found");
+          }
+        } catch(Exception ex) {
+          addFieldError("tripId_0", "Error on trip id: trip \"" + id + "\" was not found");
+        }
+      }
+    }
+
+    id = _model.getStopId();
+    if (id != null && id.length() > 0) {
+      if (!id.matches(AGENCY_AND_ID_REGEX)) {
+        addFieldError("stopId_0", "Error on stop id format, must be <agency id>_<stop id>");
+      } else if (!isValidAgency(id.substring(0,id.indexOf('_'))) ) {
+        addFieldError("stopId_0", "Error on agency portion of stop id: \"" + id.substring(0,id.indexOf('_')) + "\" is not a valid agency id");
+      } else {
+        try {
+          StopBean stopBean = _transitDataService.getStop(id);
+          if (stopBean == null) {
+            addFieldError("stopId_0", "Error on stop id: stop \"" + id + "\" was not found");
+          }
+        } catch(NoSuchStopServiceException ex) {
+          addFieldError("stopId_0", "Error on stop id: stop \"" + id + "\" was not found");
+        }
+      }
+    }
+  }
+
   /****
    * 
    ****/
@@ -159,5 +248,18 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
     if (value == null || value.isEmpty() || value.equals("null"))
       return null;
     return value;
+  }
+
+  private boolean isValidAgency(String agencyId) {
+    if (agencies.size() == 0) {
+      List<AgencyWithCoverageBean> agenciesWithCoverage = _transitDataService.getAgenciesWithCoverage();
+      for (AgencyWithCoverageBean agencyBean : agenciesWithCoverage) {
+        agencies.add(agencyBean.getAgency().getId());
+      }
+    }
+    if (agencies.contains(agencyId)) {
+      return true;
+    }
+    return false;
   }
 }
