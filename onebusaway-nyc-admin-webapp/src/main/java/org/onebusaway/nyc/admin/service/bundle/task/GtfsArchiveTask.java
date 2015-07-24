@@ -89,6 +89,7 @@ public class GtfsArchiveTask implements  Runnable {
   public void run() {
     if (!requestResponse.getRequest().getArchiveFlag()) {
       _log.info("archive flag not set, exiting");
+      return;
     }
     
     long start = System.currentTimeMillis();

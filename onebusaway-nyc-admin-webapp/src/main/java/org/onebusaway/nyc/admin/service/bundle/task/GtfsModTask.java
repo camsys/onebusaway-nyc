@@ -1,22 +1,15 @@
 package org.onebusaway.nyc.admin.service.bundle.task;
 
-import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class GtfsModTask extends BaseModTask implements Runnable {
 
   private static Logger _log = LoggerFactory.getLogger(GtfsModTask.class);
   
 
-  @Autowired
-  private ConfigurationServiceClient configurationServiceClient;
-  public void setConfigurationServiceClient(ConfigurationServiceClient configurationServiceClient) {
-    this.configurationServiceClient = configurationServiceClient;
-  }
   
   @Override
   public void run() {

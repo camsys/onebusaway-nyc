@@ -61,13 +61,15 @@ public class BuildRemoteResource extends AuthenticatedResource {
       @FormParam("id") String id,
       @FormParam("bundleStartDate") String bundleStartDate,
       @FormParam("bundleEndDate") String bundleEndDate,
-      @FormParam("bundleComment") String bundleComment
+      @FormParam("bundleComment") String bundleComment,
+      @FormParam("archive") boolean archive,
+      @FormParam("consolidate") boolean consolidate
   ) {
     Response response = null;
     if (!isAuthorized()) {
       return Response.noContent().build();
     }
-    _log.info("in build(local)");
+    _log.info("in build(local) with archive=" + archive + ", and consolidate=" + consolidate);
     
     BundleBuildRequest bundleRequest = new BundleBuildRequest();
     bundleRequest.setBundleDirectory(bundleDirectory);
@@ -77,6 +79,8 @@ public class BuildRemoteResource extends AuthenticatedResource {
     bundleRequest.setBundleStartDate(bundleStartDate);
     bundleRequest.setBundleEndDate(bundleEndDate);
     bundleRequest.setBundleComment(bundleComment);
+    bundleRequest.setArchiveFlag(archive);
+    bundleRequest.setConsolidateFlag(consolidate);
     
     BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
     

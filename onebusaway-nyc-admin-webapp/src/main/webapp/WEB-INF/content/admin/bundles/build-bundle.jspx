@@ -61,6 +61,15 @@
 							<input type="text" id="endDatePicker"/>
 							<input type="hidden" id="endDate" />
 						</div>
+						<div id="bundleArchiveHolder">
+							<label id="archiveLabel" class="adminLabel">Archive GTFS?</label>
+							<input type="checkbox" id="buildBundle_archive" />
+						</div>
+						<div id="bundleConsolidateHolder">
+							<label id="archiveLabel" class="adminLabel">Consolidate GTFS?</label>
+							<input type="checkbox" id="buildBundle_consolidate" />
+						</div>
+						
 						<input type="button" id="buildBundle_buildButton" value="Build Bundle" />
 						<input type="button" id="buildBundle_resetButton" value="Reset" />
 					</div>

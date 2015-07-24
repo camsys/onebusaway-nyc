@@ -44,6 +44,8 @@ public class BuildResource extends AuthenticatedResource {
 	private String endDate;
 	private String emailTo;
 	private String comment;
+	private boolean archive = false;
+	private boolean consolidate = false;
 	
 	private final ObjectMapper _mapper = new ObjectMapper();
 	private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
@@ -57,7 +59,9 @@ public class BuildResource extends AuthenticatedResource {
 			@FormParam("email") String email,
 			@FormParam("bundleStartDate") String bundleStartDate,
 			@FormParam("bundleEndDate") String bundleEndDate,
-			@FormParam("bundleComment") String bundleComment) {
+			@FormParam("bundleComment") String bundleComment,
+			@FormParam("archive") boolean archiveFlag,
+			@FormParam("consolidate") boolean consolidateFlag) {
 		Response response = null;
 		directoryName = bundleDirectory;
 		this.bundleName = bundleName;
@@ -65,7 +69,9 @@ public class BuildResource extends AuthenticatedResource {
 		endDate = bundleEndDate;
 		emailTo = email;
 		comment = bundleComment;
-		
+		archive = archiveFlag;
+		consolidate = consolidateFlag;
+
 		if (!isAuthorized()) {
 			return Response.noContent().build();
 		}
@@ -94,6 +100,8 @@ public class BuildResource extends AuthenticatedResource {
 			buildRequest.setBundleStartDate(bundleStartDate);
 			buildRequest.setBundleEndDate(bundleEndDate);
 			buildRequest.setBundleComment(bundleComment);
+			buildRequest.setArchiveFlag(archive);
+			buildRequest.setConsolidateFlag(consolidate);
 			
 			try {
 				String message = "Starting bundle building process for bundle '" + buildRequest.getBundleName()

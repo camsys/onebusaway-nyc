@@ -1041,7 +1041,7 @@ function bundleUrl() {
 		window.setTimeout(bundleUrl, 5000);
 	}
 }
-function buildBundle(bundleName, startDate, endDate, bundleComment){
+function buildBundle(bundleName, startDate, endDate, bundleComment, archive, consolidate){
 	var bundleDirectory = jQuery("#selected_bundleDirectory").text();
 	var email = jQuery("#buildBundle_email").val();
 	if (email == "") { email = "null"; }
@@ -1055,7 +1055,9 @@ function buildBundle(bundleName, startDate, endDate, bundleComment){
 			email: email,
 			bundleStartDate: startDate,
 			bundleEndDate: endDate,
-			bundleComment: bundleComment
+			archive: archive,
+			consolidate: consolidate,
+			bundleComment: bundleComment /*comment needs to be the last on the form*/
 		},
 		success: function(response) {
 			var bundleResponse = response;

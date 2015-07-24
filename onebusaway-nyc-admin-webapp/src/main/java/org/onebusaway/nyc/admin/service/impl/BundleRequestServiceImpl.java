@@ -324,7 +324,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   }
 
   private class BuildThread implements Runnable {
-    private static final int MAX_COUNT = 360; // 30 minutes at 5 second increments
+    private static final int MAX_COUNT = 4320; // 6 hours at 5 second increments
     private static final int MAX_PING_COUNT = 60; // 5 minutes
     private static final int MAX_ERRORS = 20;
     private BundleBuildRequest _request;
@@ -366,6 +366,8 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         params.put("bundleStartDate", _request.getBundleStartDateString());
         params.put("bundleEndDate", _request.getBundleEndDateString());
         params.put("bundleComment", _request.getBundleComment());
+        params.put("archive", ""+_request.getArchiveFlag());
+        params.put("consolidate", ""+_request.getConsolidateFlag());
         _response = makeRequest(serverId, url, null, BundleBuildResponse.class, params);
         if (_response != null && _response.getId() != null) {
           String id = _response.getId();

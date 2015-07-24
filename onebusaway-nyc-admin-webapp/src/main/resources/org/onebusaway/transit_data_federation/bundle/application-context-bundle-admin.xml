@@ -179,12 +179,24 @@
     <property name="directoryHint" value="final" />
   </bean>
 
+  <bean id="task_merge" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="merge_task" />
+    <property name="afterTaskName" value="mod_task" />
+    <property name="beforeTaskName" value="gtfs_post" />
+    <property name="task" ref="mergeTask" />
+  </bean>
+
+  <bean id="mergeTask" class="org.onebusaway.nyc.admin.service.bundle.task.GtfsMergeTask">
+    <property name="configurationServiceClient" ref="configurationServiceClient" />
+    <property name="logger" ref="multiCSVLogger" />
+    <property name="bundleRequestResponse" ref="bundleRequestResponse" />
+  </bean>
+	
   <bean id="task_diff_validation" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="diff_validation_task" />
     <property name="afterTaskName" value="gtfs_statistics" />
     <property name="task" ref="diffValidationTask" />
   </bean>
-
 
   <bean id="diffValidationTask" class="org.onebusaway.nyc.admin.service.bundle.task.ValidationDiffTask">
     <property name="logger" ref="multiCSVLogger" />
