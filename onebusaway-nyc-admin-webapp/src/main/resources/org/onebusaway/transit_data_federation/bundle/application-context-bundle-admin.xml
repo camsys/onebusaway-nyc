@@ -459,6 +459,18 @@
   </bean>
 
 
+  <bean id="gtfsArchiveTask" class="org.onebusaway.nyc.admin.service.bundle.task.GtfsArchiveTask">
+  </bean>
+
+<!--  check distance between consolidated stops -->
+  <bean id="task_gtfs_archive" class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="gtfs_archive" />
+    <property name="beforeTaskName" value="summary" />
+    <property name="afterTaskName" value="stop_verification" />
+    <property name="task" ref="gtfsArchiveTask" />
+  </bean>
+
+
   <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="summary" />
     <property name="afterTaskName" value="pre_cache" />

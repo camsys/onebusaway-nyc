@@ -31,6 +31,7 @@ public class BundleBuildResponse {
 	private String bundleComment;
 	private String bundleDirectoryName;
 	private String bundleEmailTo;
+	private String bundleId;
 
 	private String _id = null;
 	private String bundleResultLink;
@@ -353,5 +354,11 @@ public class BundleBuildResponse {
 	}
 	public void setBundleEmailTo(String bundleEmailTo) {
 		this.bundleEmailTo = bundleEmailTo;
+	}
+	public String getBundleId() {
+	  return bundleId;
+	}
+	public void setBundleId(String id) {
+	  bundleId = id;
 	}
 }
