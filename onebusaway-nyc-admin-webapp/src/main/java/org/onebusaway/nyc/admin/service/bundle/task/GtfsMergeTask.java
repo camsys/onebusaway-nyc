@@ -31,6 +31,7 @@ public class GtfsMergeTask extends BaseModTask implements Runnable {
 	public void run() {
 	  if (!requestResponse.getRequest().getConsolidateFlag()) {
 	    _log.info("consolidate flag not set, extiting");
+	    return;
 	  }
 		_log.info("GtfsMergeTask Starting with outputDirectory=" + getOutputDirectory());
 		try {			
