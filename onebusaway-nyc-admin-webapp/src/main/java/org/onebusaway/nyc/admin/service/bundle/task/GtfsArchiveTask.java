@@ -245,12 +245,16 @@ public class GtfsArchiveTask implements  Runnable {
       config.setProperty("hibernate.connection.pool_size", "1");
       config.setProperty("hibernate.cache.provider_class",
           "org.hibernate.cache.NoCacheProvider");
-      config.setProperty("hibernate.jdbc.batch_size", "500");
-      config.setProperty("hibernate.cache.use_second_level_cache", "false");
       config.setProperty("hibernate.hbm2ddl.auto", "update");
       config.addResource("org/onebusaway/gtfs/model/GtfsArchiveMapping.hibernate.xml");
       config.addResource("org/onebusaway/gtfs/impl/HibernateGtfsRelationalDaoImpl.hibernate.xml");
-  
+
+      //performance tuning
+      config.setProperty("hibernate.jdbc.batch_size", "500");
+      config.setProperty("hibernate.order_inserts", "true");
+      config.setProperty("hibernate.order_updates", "true");
+      config.setProperty("hibernate.cache.use_second_level_cache", "false");
+
       return config;
     } catch (Throwable t) {
       return null;
