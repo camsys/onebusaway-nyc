@@ -87,6 +87,10 @@ public class GtfsArchiveTask implements  Runnable {
   
   @Override
   public void run() {
+    if (!requestResponse.getRequest().getArchiveFlag()) {
+      _log.info("archive flag not set, exiting");
+    }
+    
     long start = System.currentTimeMillis();
     _log.info("archiving gtfs");
     

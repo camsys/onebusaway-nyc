@@ -16,6 +16,8 @@ public class BundleBuildRequest {
 	private String _bundleStartDate;
 	private String _bundleEndDate;
 	private String _bundleComment;
+	private boolean _archiveFlag;
+	private boolean _consolidateFlag;
 
 	public String getBundleDirectory() {
 		return _bundleDirectory;
@@ -102,5 +104,21 @@ public class BundleBuildRequest {
 	public void setId(String id) {
 		_id = id;
 	}
+
+	public boolean getArchiveFlag() {
+	  return _archiveFlag;
+	}
+	
+  public void setArchiveFlag(boolean archive) {
+    _archiveFlag = archive;
+  }
+  
+  public boolean getConsolidateFlag() {
+    return _consolidateFlag;
+  }
+  
+  public void setConsolidateFlag(boolean consolidate) {
+    _consolidateFlag = consolidate;
+  }
 
 }

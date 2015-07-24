@@ -947,6 +947,8 @@ function onBuildClick() {
 	var startDate = jQuery("#startDate").val();
 	var endDate = jQuery("#endDate").val();
 	var bundleComment = jQuery("#bundleComment").val();
+	var archive = jQuery("#buildBundle_archive").is(":checked");
+	var consolidate = jQuery("#buildBundle_consolidate").is(":checked");
 
 	var valid = validateBundleBuildFields(bundleDir, bundleName, startDate, endDate);
 	if(valid == false) {
@@ -960,7 +962,7 @@ function onBuildClick() {
 
 	disableBuildButton();
 	disableResetButton();
-	buildBundle(bundleName, startDate, endDate, bundleComment);
+	buildBundle(bundleName, startDate, endDate, bundleComment, archive, consolidate);
 }
 
 function onResetClick() {
