@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -20,6 +21,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.data.ImporterVehiclePull
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.VehiclePipoMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
+import org.onebusaway.nyc.transit_data_manager.api.service.RealtimeVehiclePipoService;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.VehiclePipoUploadsFilePicker;
 import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutDataProviderService;
 import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutService;
@@ -65,6 +67,8 @@ public class VehiclePipoResource {
   private JsonTool jsonTool;
   private VehiclePullInOutService vehiclePullInOutService;
   private VehiclePullInOutDataProviderService vehiclePullInOutDataProviderService;
+ 
+  
 
   private static Logger log = LoggerFactory
       .getLogger(VehiclePipoResource.class);
@@ -80,9 +84,42 @@ public class VehiclePipoResource {
       depotIdTranslator = null;
     }
   }
+  
+  /**
+   * Injects {@link JsonTool}
+   * 
+   * @param jsonTool
+   *          the jsonTool to set
+   */
+  @Autowired
+  public void setJsonTool(JsonTool jsonTool) {
+    this.jsonTool = jsonTool;
+  }
+
+  /**
+   * Injects {@link VehiclePullInOutService}
+   * 
+   * @param vehiclePullInOutService
+   *          the vehiclePullInOutService to set
+   */
+  @Autowired
+  public void setVehiclePullInOutService(
+      VehiclePullInOutService vehiclePullInOutService) {
+    this.vehiclePullInOutService = vehiclePullInOutService;
+  }
+
+  /**
+   * @param vehiclePullInOutDataProviderService
+   *          the vehiclePullInOutDataProviderService to set
+   */
+  @Autowired
+  public void setVehiclePullInOutDataProviderService(
+      VehiclePullInOutDataProviderService vehiclePullInOutDataProviderService) {
+    this.vehiclePullInOutDataProviderService = vehiclePullInOutDataProviderService;
+  }
 
   @Path("realtime")
-  public RealtimeVehiclePipoResource getRealtimeVehiclePipoResource() {
+  public RealtimeVehiclePipoResource getRealtimeVehiclePipoResource() throws IOException {
     return new RealtimeVehiclePipoResource();
   }
 
@@ -265,38 +302,7 @@ public class VehiclePipoResource {
     return outputJson;
   }
 
-  /**
-   * Injects {@link JsonTool}
-   * 
-   * @param jsonTool
-   *          the jsonTool to set
-   */
-  @Autowired
-  public void setJsonTool(JsonTool jsonTool) {
-    this.jsonTool = jsonTool;
-  }
-
-  /**
-   * Injects {@link VehiclePullInOutService}
-   * 
-   * @param vehiclePullInOutService
-   *          the vehiclePullInOutService to set
-   */
-  @Autowired
-  public void setVehiclePullInOutService(
-      VehiclePullInOutService vehiclePullInOutService) {
-    this.vehiclePullInOutService = vehiclePullInOutService;
-  }
-
-  /**
-   * @param vehiclePullInOutDataProviderService
-   *          the vehiclePullInOutDataProviderService to set
-   */
-  @Autowired
-  public void setVehiclePullInOutDataProviderService(
-      VehiclePullInOutDataProviderService vehiclePullInOutDataProviderService) {
-    this.vehiclePullInOutDataProviderService = vehiclePullInOutDataProviderService;
-  }
+  
 
   
   /**
@@ -304,6 +310,39 @@ public class VehiclePipoResource {
    * 
    */
   public class RealtimeVehiclePipoResource {
+	  
+	private DepotIdTranslator depotIdTranslator;
+	private RealtimeVehiclePipoService realtimeVehiclePipoService;
+	
+	/*@PostConstruct
+	public void configureDepotTranslator() throws IOException {
+	    try {
+	      depotIdTranslator = new DepotIdTranslator(new File(
+	          System.getProperty("tdm.depotIdTranslationFile")));
+	    } catch (IOException e) {
+	      // Set depotIdTranslator to null and otherwise do nothing.
+	      // Everything works fine without the depot id translator.
+	      depotIdTranslator = null;
+	    }
+	}*/
+	
+	public RealtimeVehiclePipoResource() throws IOException {
+
+	    try {
+	      depotIdTranslator = new DepotIdTranslator(new File(
+	          System.getProperty("tdm.depotIdTranslationFile")));
+	    } catch (IOException e) {
+	      // Set depotIdTranslator to null and otherwise do nothing.
+	      // Everything works fine without the depot id translator.
+	      depotIdTranslator = null;
+	    }
+	  }
+	
+	@Autowired
+	public void setRealtimeVehiclePipoService(
+		RealtimeVehiclePipoService realtimeVehiclePipoService) {
+		this.realtimeVehiclePipoService = realtimeVehiclePipoService;
+	}
 
     @Path("/list")
     @GET
@@ -386,7 +425,8 @@ public class VehiclePipoResource {
       @Override
       public boolean include(boolean includeAll,
           SCHPullInOutInfo pullOut, Map<String, Object> parameters) {
-        if (pullOut.getVehicle().getId().equals(parameters.get("busNumber"))) {
+        if (containsUsefulPullOutData(pullOut) && 
+        		pullOut.getVehicle().getId().equals(parameters.get("busNumber"))) {
           if (includeAll || isActive(pullOut)) {
             return true;
           }
@@ -399,7 +439,9 @@ public class VehiclePipoResource {
       @Override
       public boolean include(boolean includeAll,
           SCHPullInOutInfo pullOut, Map<String, Object> parameters) {
-        if (pullOut.getGarage().getId().equals(parameters.get("depotName"))) {
+        if (containsUsefulPullOutData(pullOut) && 
+        		pullOut.getGarage().getId() != null && 
+        		pullOut.getGarage().getId().equals(parameters.get("depotName"))) {
           if (includeAll || isActive(pullOut)) {
             return true;
           }
@@ -412,7 +454,9 @@ public class VehiclePipoResource {
       @Override
       public boolean include(boolean includeAll,
           SCHPullInOutInfo pullOut, Map<String, Object> parameters) {
-        if (pullOut.getGarage().getAgdesig().equals(parameters.get("agencyId"))) {
+        if (containsUsefulPullOutData(pullOut) &&
+        		pullOut.getGarage().getAgdesig() != null && 
+        		pullOut.getGarage().getAgdesig().equals(parameters.get("agencyId"))) {
           if (includeAll || isActive(pullOut)) {
             return true;
           }
@@ -435,7 +479,7 @@ public class VehiclePipoResource {
       boolean includeAll = isIncludeAllSet(includeAllPullouts);
 
       // Acquire
-      ObaSchPullOutList pulloutList = readRealtimePulloutList(m);
+      ObaSchPullOutList pulloutList = realtimeVehiclePipoService.readRealtimePulloutList(m, depotIdTranslator);
 
       if (pulloutList.getPullOuts() == null) {
         return m.writeValueAsString(pulloutList);
@@ -473,46 +517,20 @@ public class VehiclePipoResource {
       return pullOut.getTime().isBeforeNow();
     }
 
+  }
+  
+  private boolean containsUsefulPullOutData (SCHPullInOutInfo vehiclePipoInfo) {
+    boolean result = true;
     
-    private ObaSchPullOutList readRealtimePulloutList(ObjectMapper m)
-//        throws IOException, JsonParseException, JsonMappingException
-    {
-
-      // Read the current pullout list
-      VehiclePipoUploadsFilePicker picker;
-      try {
-        picker = new VehiclePipoUploadsFilePicker(
-            "tdm.vehiclepipoUploadDir", "RtSchPullinPulloutList_", ".json");
-      } catch (IOException e) {
-        String message = "instantiating VehiclePipoUploadsFilePicker returned " + e.getMessage();
-        log.warn(message);
-        return createObaSchPullOutListWithError(message);
-      }
-      File file = picker.getMostRecentSourceFile();
-      if (file == null) {
-        String message = "picker.getMostRecentSourceFile() returned null";
-        log.warn(message);
-        return createObaSchPullOutListWithError(message);
-      }
-      ObaSchPullOutList pulloutList;
-      try {
-        pulloutList = (ObaSchPullOutList) m.readValue(file,
-            ObaSchPullOutList.class);
-      } catch (Exception e) {
-        String message = "parsing pullout list failed, exception: " + e.getMessage();
-        log.error(message);
-        return createObaSchPullOutListWithError(message);
-      }
-      return pulloutList;
-    }
-
-    private ObaSchPullOutList createObaSchPullOutListWithError(String message) {
-      ObaSchPullOutList o = new ObaSchPullOutList();
-      o.setErrorCode("128");
-      o.setErrorDescription(message);
-      return o;
-    }
-
+    if (StringUtils.isBlank(vehiclePipoInfo.getVehicle().getId())) // no bus number means not useful.
+        result = false;
+    if ("open".equalsIgnoreCase(vehiclePipoInfo.getVehicle().getId())) 
+      result = false;
+    
+    if ("no op".equalsIgnoreCase(vehiclePipoInfo.getVehicle().getId()))
+      result = false;
+    
+    return result;
   }
 
 }

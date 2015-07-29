@@ -29,6 +29,8 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.PullIn
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 import org.onebusaway.nyc.transit_data_manager.api.VehiclePipoResource.RealtimeVehiclePipoResource;
+import org.onebusaway.nyc.transit_data_manager.api.service.RealtimeVehiclePipoService;
+import org.onebusaway.nyc.transit_data_manager.api.service.RealtimeVehiclePipoServiceImpl;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.VehiclePipoUploadsFilePicker;
 import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutDataProviderServiceImpl;
 import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutService;
@@ -104,6 +106,9 @@ public class RealtimeVehiclePipoResourceTest {
     resource.setVehiclePullInOutService(vehiclePullInOutService);
     resource
         .setVehiclePullInOutDataProviderService(vehiclePullInOutDataProviderService);
+    
+    RealtimeVehiclePipoService realtimeVehiclePipoService = new RealtimeVehiclePipoServiceImpl();
+    rtResource.setRealtimeVehiclePipoService(realtimeVehiclePipoService);
   }
 
 
@@ -243,37 +248,30 @@ public class RealtimeVehiclePipoResourceTest {
     
     ObjectMapper m = setupJaxb();
 
-    String outputJson = rtResource.getActivePulloutsForDepot("MJQT", null);
+    String outputJson = rtResource.getActivePulloutsForDepot("MQ", null);
 
     ObaSchPullOutList pulloutList = (ObaSchPullOutList) m.readValue(outputJson,
         ObaSchPullOutList.class);
     // TODO Use JsonUnit here
-    assertEquals(2, pulloutList.getPullOuts().getPullOut().size());
-    assertNull(pulloutList.getPullOuts().getPullOut().get(0)
-        .getVehicle().getId());
-    assertEquals("3937", pulloutList.getPullOuts().getPullOut().get(1)
+    assertEquals(1, pulloutList.getPullOuts().getPullOut().size());
+    assertEquals("3937", pulloutList.getPullOuts().getPullOut().get(0)
             .getVehicle().getId());
     
     // Now test with includeAll=true
-    outputJson = rtResource.getActivePulloutsForDepot("MJQT", "true");
+    outputJson = rtResource.getActivePulloutsForDepot("MQ", "true");
 
-    pulloutList = (ObaSchPullOutList) m
-        .readValue(outputJson, ObaSchPullOutList.class);
-    assertEquals(2, pulloutList.getPullOuts().getPullOut().size());
-    assertNull(pulloutList.getPullOuts().getPullOut().get(0)
-            .getVehicle().getId());
-        assertEquals("3937", pulloutList.getPullOuts().getPullOut().get(1)
+    pulloutList = (ObaSchPullOutList) m.readValue(outputJson, ObaSchPullOutList.class);
+    assertEquals(1, pulloutList.getPullOuts().getPullOut().size());
+    assertEquals("3937", pulloutList.getPullOuts().getPullOut().get(0)
                 .getVehicle().getId());
 
     // Now test with explicit includeAll=false
-    outputJson = rtResource.getActivePulloutsForDepot("MJQT", "false");
+    outputJson = rtResource.getActivePulloutsForDepot("MQ", "false");
 
     pulloutList = (ObaSchPullOutList) m
         .readValue(outputJson, ObaSchPullOutList.class);
-    assertEquals(2, pulloutList.getPullOuts().getPullOut().size());
-    assertNull(pulloutList.getPullOuts().getPullOut().get(0)
-            .getVehicle().getId());
-        assertEquals("3937", pulloutList.getPullOuts().getPullOut().get(1)
+    assertEquals(1, pulloutList.getPullOuts().getPullOut().size());
+    assertEquals("3937", pulloutList.getPullOuts().getPullOut().get(0)
                 .getVehicle().getId());
 
   }
@@ -289,16 +287,12 @@ public class RealtimeVehiclePipoResourceTest {
         ObaSchPullOutList.class);
     
     // TODO Use JsonUnit here
-    assertEquals(5, pulloutList.getPullOuts().getPullOut().size());
+    assertEquals(3, pulloutList.getPullOuts().getPullOut().size());
     assertEquals("5698", pulloutList.getPullOuts().getPullOut().get(0)
             .getVehicle().getId());
     assertEquals("1264", pulloutList.getPullOuts().getPullOut().get(1)
         .getVehicle().getId());
-    assertNull(pulloutList.getPullOuts().getPullOut().get(2)
-            .getVehicle().getId());
-    assertEquals("3937", pulloutList.getPullOuts().getPullOut().get(3)
-            .getVehicle().getId());
-    assertNull(pulloutList.getPullOuts().getPullOut().get(4)
+    assertEquals("3937", pulloutList.getPullOuts().getPullOut().get(2)
             .getVehicle().getId());
     
     // Now test with includeAll=true
@@ -306,16 +300,12 @@ public class RealtimeVehiclePipoResourceTest {
     pulloutList = (ObaSchPullOutList) m
         .readValue(outputJson, ObaSchPullOutList.class);
     
-    assertEquals(5, pulloutList.getPullOuts().getPullOut().size());
+    assertEquals(3, pulloutList.getPullOuts().getPullOut().size());
     assertEquals("5698", pulloutList.getPullOuts().getPullOut().get(0)
             .getVehicle().getId());
     assertEquals("1264", pulloutList.getPullOuts().getPullOut().get(1)
         .getVehicle().getId());
-    assertNull(pulloutList.getPullOuts().getPullOut().get(2)
-            .getVehicle().getId());
-    assertEquals("3937", pulloutList.getPullOuts().getPullOut().get(3)
-            .getVehicle().getId());
-    assertNull(pulloutList.getPullOuts().getPullOut().get(4)
+    assertEquals("3937", pulloutList.getPullOuts().getPullOut().get(2)
             .getVehicle().getId());
 
     // Now test with explicit includeAll=false
@@ -339,6 +329,7 @@ public class RealtimeVehiclePipoResourceTest {
     		+ "\"activation\":null,\"deactivation\":null}", outputJson);
   }
 
+  // TODO - Is this test no longer applicable?
   /*@Test
   public void testActivePulloutsForInvalidOperator() throws Exception {
     setUp("pullin-pullout-rt-tcip.json");
@@ -354,8 +345,8 @@ public class RealtimeVehiclePipoResourceTest {
     // replace resource's mock impl with ours from above
     resource.setVehiclePullInOutService(vehiclePullInOutService);
     
-     * known issue with 8826 - obanyc-1678 -- pass numbers with a leading
-     * non-numeric digits were setting operator-id to -1
+     *//** known issue with 8826 - obanyc-1678 -- pass numbers with a leading
+     * non-numeric digits were setting operator-id to -1*//*
      
     String outputJson = rtResource.getActivePulloutsForBus("8826", null);
     assertNotNull(outputJson);
@@ -375,9 +366,7 @@ public class RealtimeVehiclePipoResourceTest {
         vehiclePullInOutService.getActivePullOuts(isA(List.class),
             isA(Boolean.class))).thenReturn(activePullouts);
 
-    String outputJson = resource.getActivePulloutsForDepot("OS", null);
-
-    // writeToFile(outputJson, "activepulloutsbydepot.txt");
+    String outputJson = rtResource.getActivePulloutsForDepot("KB", null);
 
     verifyPulloutData(outputJson);
   }
@@ -395,15 +384,16 @@ public class RealtimeVehiclePipoResourceTest {
         vehiclePullInOutService.getActivePullOuts(isA(List.class),
             isA(Boolean.class))).thenReturn(activePullouts);
 
-    String outputJson = resource.getActivePulloutsForAgency("MTA NYCT", null);
+    String outputJson = rtResource.getActivePulloutsForAgency("MTA NYCT", null);
 
-    // writeToFile(outputJson, "activepulloutsbyagency.txt");
+    
 
     verifyPulloutData(outputJson);
   }
-
+  
+  // TODO - Is this test no longer applicable?
   // obanyc-1680, run numbers should be trimmed of leading zeros
-  @Test
+  /*@Test
   public void testCleanupRunNumber() throws Exception {
 
     setUp(PIPO_JSON_FILE);
@@ -422,10 +412,10 @@ public class RealtimeVehiclePipoResourceTest {
     // 3244th row has X109,YUKT,004. We want run=4, not 9, so run-route will be
     // X109-4, not X109-004
     // note that BX31-X01 is correct however
-    String json = resource.getActivePulloutsForDepot("YU", null);
+    String json = rtResource.getActivePulloutsForDepot("KB", null);
     assertTrue(json.contains(" \"run\": \"X109-4\""));
     assertFalse(json.contains(" \"run\": \"X109-004\""));
-  }
+  }*/
 
   /*
    * Private support methods.
@@ -480,17 +470,13 @@ public class RealtimeVehiclePipoResourceTest {
 
   private void verifyPulloutData(String outputJson) {
     // Check pullout data
-    assertTrue(outputJson.contains(" \"vehicle-id\": \"1253\""));
-    assertTrue(outputJson.contains("\"agency-id-tcip\": \"2008\""));
-    assertTrue(outputJson.contains(" \"agency-id\": \"MTA NYCT\""));
-    assertTrue(outputJson.contains("\"depot\": \"OS\""));
-    assertTrue(outputJson.contains(" \"service-date\": \"2012-06-15\""));
-    assertTrue(outputJson
-        .contains("\"pullout-time\": \"2012-06-15T09:23:00-04:00\""));
-    assertTrue(outputJson.contains(" \"run\": \"SBS15-106\""));
-    assertTrue(outputJson.contains(" \"operator-id\": \"1663\""));
-    assertTrue(outputJson
-        .contains("\"pullin-time\": \"2012-06-15T22:57:00-04:00\""));
+    assertTrue(outputJson.contains("\"vehicle\":{\"id\":\"5698\""));
+    assertTrue(outputJson.contains("\"agdesig\":\"MTA NYCT\""));
+    assertTrue(outputJson.contains("\"garage\":{\"id\":\"KB\""));
+    assertTrue(outputJson.contains("\"block\":{\"id\":\"KB_E5-Sunday_D_KB_21180_BX9-11\""));
+    assertTrue(outputJson.contains("\"operator\":{\"id\":\"001663\""));
+    assertTrue(outputJson.contains("\"run\":{\"desig\":null,\"id\":\"11\""));
+    assertTrue(outputJson.contains("\"time\":\"2015-06-22T10:52:00.000-04:00\""));
   }
 
   private void copyInputFiles(String filename) {

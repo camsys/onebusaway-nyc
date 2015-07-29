@@ -242,7 +242,7 @@ public class VehiclePipoResourceTest {
     verifyPulloutData(outputJson);
   }
 
-  @Test
+  /*@Test
   public void testAllActiveRealtimePullouts() throws Exception {
     setUp("UTSPUPUFULL_20120612_1502.txt");
 
@@ -335,13 +335,13 @@ public class VehiclePipoResourceTest {
     // assertTrue(outputJson.contains(
     // "\"pullin-time\": \"2012-06-15T22:57:00-04:00\""));
 
-    /*
+    
      * { "pullouts": [ { "vehicle-id": "1253", "agency-id-tcip": "2008",
      * "agency-id": "MTA NYCT", "depot": "OS", "service-date": "2012-06-15",
      * "pullout-time": "2012-06-15T09:23:00-04:00", "run": "SBS15-106",
      * "operator-id": "1663", "pullin-time": "2012-06-15T22:57:00-04:00" } ],
      * "status": "OK" }
-     */
+     
 
     // verifyPulloutData(outputJson);
   }
@@ -418,7 +418,7 @@ public class VehiclePipoResourceTest {
     assertEquals("7778", pulloutList.getPullOuts().getPullOut().get(0)
         .getVehicle().getId());
 
-  }
+  }*/
 
   @Test
   public void testActivePulloutsForInvalidBus() throws Exception {
