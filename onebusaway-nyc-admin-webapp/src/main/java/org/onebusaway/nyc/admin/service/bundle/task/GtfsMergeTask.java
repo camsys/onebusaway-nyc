@@ -39,9 +39,10 @@ public class GtfsMergeTask extends BaseModTask implements Runnable {
 			_log.info("Started merging modified GTFS feeds.");
 			GtfsBundles gtfsBundles = getGtfsBundles(_applicationContext);
 			List<File> inputPaths = new ArrayList<File>();
-			String outputLocation = "/tmp/gtfs_merged_mod.zip";			
+		  // note this will be overridden if properly configured
+			String outputLocation = System.getProperty("java.io.tmpdir") + File.separator + "gtfs_puget_sound_consolidated.zip"; 			
 			if (getOutputDirectory() != null) {
-				outputLocation = getOutputDirectory() + File.separator + "gtfs_merged_mod.zip";		   
+				outputLocation = getOutputDirectory() + File.separator + "final" + File.separator + "gtfs_puget_sound_consolidated.zip";		   
 			}
 			int i = 0;
 			for (GtfsBundle gtfsBundle : gtfsBundles.getBundles()) {	

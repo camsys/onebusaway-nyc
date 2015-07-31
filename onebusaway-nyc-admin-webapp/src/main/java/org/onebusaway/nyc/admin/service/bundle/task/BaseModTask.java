@@ -8,6 +8,7 @@ import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs_transformer.GtfsTransformer;
 import org.onebusaway.gtfs_transformer.GtfsTransformerLibrary;
 import org.onebusaway.gtfs_transformer.factory.TransformFactory;
+import org.onebusaway.king_county_metro_gtfs.model.PatternPair;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.util.NYCFileUtils;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
@@ -65,6 +66,10 @@ public class BaseModTask {
     }
     _log.info("runModifications(" + agencyId + ") with mappings=" + gtfsBundle.getAgencyIdMappings() );
     GtfsTransformer mod = new GtfsTransformer();
+    // add support for KCM Pattern Pairs
+    mod.getReader().getEntityClasses().add(PatternPair.class);
+    mod.getWriter().getEntityClasses().add(PatternPair.class);
+    
     TransformFactory factory = mod.getTransformFactory();
     
     addAgencyMappings(mod.getReader(), gtfsBundle);

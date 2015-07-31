@@ -21,9 +21,11 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.classic.Session;
 import org.hibernate.jdbc.Work;
+import org.hibernate.stat.Statistics;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
 import org.onebusaway.gtfs.services.HibernateGtfsFactory;
+import org.onebusaway.king_county_metro_gtfs.model.PatternPair;
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
@@ -41,6 +43,7 @@ public class GtfsArchiveTask implements  Runnable {
   
   private BundleRequestResponse requestResponse;
   private static String[] TMP_TABLES = {
+    "tmp_pattern_pairs",
     "tmp_gtfs_calendar_dates",
     "tmp_gtfs_calendars",
     "tmp_gtfs_fare_rules",
@@ -73,6 +76,7 @@ public class GtfsArchiveTask implements  Runnable {
     PRIMARY_KEY_MAP.put("gtfs_stops", "agencyId,id");
     PRIMARY_KEY_MAP.put("gtfs_transfers", "gid");
     PRIMARY_KEY_MAP.put("gtfs_trips", "agencyId,id");
+    PRIMARY_KEY_MAP.put("gtfs_pattern_pair", "id");
   }
   
   @Autowired
@@ -111,6 +115,7 @@ public class GtfsArchiveTask implements  Runnable {
     for (GtfsBundle gtfsBundle : gtfsBundles.getBundles()) {
     
       GtfsReader reader = new GtfsReader();
+      reader.getEntityClasses().add(PatternPair.class);
       try {
         
         cleanTempTables(session);
@@ -133,6 +138,7 @@ public class GtfsArchiveTask implements  Runnable {
 
     long stop = System.currentTimeMillis();
     _log.info("archiving gtfs complete in " + (stop-start)/1000 + "s");
+    
   }
 
   private Integer createMetaData(Session session,
@@ -250,10 +256,13 @@ public class GtfsArchiveTask implements  Runnable {
       config.addResource("org/onebusaway/gtfs/impl/HibernateGtfsRelationalDaoImpl.hibernate.xml");
 
       //performance tuning
-      config.setProperty("hibernate.jdbc.batch_size", "500");
+      config.setProperty("hibernate.jdbc.batch_size", "4000");
+      config.setProperty("hibernate.jdbc.fetch_size", "64");
       config.setProperty("hibernate.order_inserts", "true");
       config.setProperty("hibernate.order_updates", "true");
       config.setProperty("hibernate.cache.use_second_level_cache", "false");
+      config.setProperty("hibernate.generate_statistics", "false");
+      config.setProperty("hibernate.cache.use_query_cache", "false");
 
       return config;
     } catch (Throwable t) {

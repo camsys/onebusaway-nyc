@@ -10,9 +10,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
+
+import javax.annotation.PreDestroy;
 
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
@@ -37,6 +41,7 @@ import org.onebusaway.nyc.util.logging.LoggingService;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
+import org.onebusaway.transit_data_federation.bundle.model.StatusMessages;
 import org.onebusaway.transit_data_federation.bundle.model.TaskDefinition;
 import org.onebusaway.transit_data_federation.bundle.tasks.EntityReplacementStrategyFactory;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
@@ -62,6 +67,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private FileService _fileService;
   private ConfigurationService configurationService;
   private LoggingService loggingService;
+  private ExecutorService _executorService = null;
   private String _auxConfig = null;
   private String _stopConsolidationConfig = null;
   private boolean _debug = false;
@@ -96,7 +102,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   @Override
   public void setup() {
-
+    _executorService = Executors.newFixedThreadPool(1);
+  }
+  
+  @PreDestroy
+  public void stop() {
+    _executorService.shutdownNow();
   }
 
   public void setAuxConfig(String flag) {
@@ -478,7 +489,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       creator.setContext(context);
 
       response.addStatusMessage("building bundle");
+      monitorStatus(response, creator.getStatusMessages());
       creator.run();
+      demonitorStatus();
       response.addStatusMessage("bundle build complete");
       return 0;
 
@@ -511,6 +524,20 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       }
     }
 
+  }
+  
+  private void monitorStatus(BundleBuildResponse response,
+      StatusMessages statusMessages) {
+    if (_executorService == null) {
+      _executorService = Executors.newFixedThreadPool(1);
+    }
+    StatusMessageThread smt = new StatusMessageThread(response, statusMessages);
+    _executorService.execute(smt);
+  }
+
+  private void demonitorStatus() {
+    _executorService.shutdown();
+    _executorService = null;
   }
   
   // configure entity replacement strategy to consolidate stops based on configurable URL
@@ -885,5 +912,35 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     	}
     	return true;
     }
-    
+
+  private class StatusMessageThread implements Runnable {
+    private BundleBuildResponse response;
+    private StatusMessages statusMessages;
+    int lastMessageSize = 0;
+
+    public StatusMessageThread(BundleBuildResponse response,
+        StatusMessages statusMessages) {
+      this.response = response;
+      this.statusMessages = statusMessages;
+    }
+
+    @Override
+    public void run() {
+
+      while (!response.isComplete()) {
+
+        int size = statusMessages.getSize();
+        if (size > lastMessageSize) {
+          for (int i = lastMessageSize; i < size; i++) {
+            response.addStatusMessage(statusMessages.getMessages().get(i));
+          }
+        }
+        lastMessageSize = size;
+        try {
+          Thread.sleep(1 * 1000);
+        } catch (InterruptedException e) {
+        }
+      }
+    }
+  }
 }
