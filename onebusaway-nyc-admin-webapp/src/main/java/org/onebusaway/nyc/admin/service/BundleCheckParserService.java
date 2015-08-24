@@ -3,7 +3,7 @@ package org.onebusaway.nyc.admin.service;
 import java.io.File;
 import java.util.List;
 
-import org.onebusaway.nyc.admin.model.ParsedBundleValidationCheck;
+import org.onebusaway.nyc.admin.model.BundleValidationParseResults;
 
 /**
  * Provides a service to parse a file containing bundle validation checks used
@@ -13,5 +13,5 @@ import org.onebusaway.nyc.admin.model.ParsedBundleValidationCheck;
  *
  */
 public interface BundleCheckParserService {
-  public List<ParsedBundleValidationCheck> parseCsvFile(File checkFile);
+  public BundleValidationParseResults parseBundleChecksFile(File checkFile);
 }

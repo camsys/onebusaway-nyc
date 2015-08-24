@@ -2,13 +2,22 @@ package org.onebusaway.nyc.admin.service.impl;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.onebusaway.nyc.admin.model.BundleValidationParseError;
+import org.onebusaway.nyc.admin.model.BundleValidationParseResults;
 import org.onebusaway.nyc.admin.model.ParsedBundleValidationCheck;
 import org.onebusaway.nyc.admin.service.BundleCheckParserService;
 import org.slf4j.Logger;
@@ -36,76 +45,106 @@ public class BundleCheckParserServiceImpl implements BundleCheckParserService {
   private static final String TEST_SATURDAY_SCHEDULE = "saturday schedule";
   private static final String TEST_SUNDAY_SCHEDULE = "sunday schedule";
   private static final String TEST_EXPRESS_INDICATOR = "express indicator";
+  private static final String TEST_STOP_FOR_ROUTE = "stop for route";
+  private static final String TEST_NOT_STOP_FOR_ROUTE = "not stop for route";
+  private static final String TEST_STOP_DATE_AT_TIME = "stop date at time";
+  private static final String TEST_NOT_STOP_DATE_AT_TIME = "not stop date at time";
+  
+  private static final String PARSE_ERROR = "Record did not contain a valid test type";
+  
+  public static final String[] TEST_VALUES = new String[] {
+    TEST_ROUTE, 
+    TEST_ROUTE_SEARCH, 
+    TEST_SCHEDULE, 
+    TEST_RT, 
+    TEST_SCHEDULE_DATE, 
+    TEST_DELETED_ROUTE_SEARCH, 
+    TEST_ROUTE_REVISION, 
+    TEST_SATURDAY_SCHEDULE, 
+    TEST_SUNDAY_SCHEDULE, 
+    TEST_EXPRESS_INDICATOR, 
+    TEST_STOP_FOR_ROUTE, 
+    TEST_NOT_STOP_FOR_ROUTE,
+    TEST_STOP_DATE_AT_TIME,
+    TEST_NOT_STOP_DATE_AT_TIME
+    };
+  public static final Set<String> validTests = new HashSet<String>(Arrays.asList(TEST_VALUES));
   
   @Override
-  public List<ParsedBundleValidationCheck> parseCsvFile(File uploadedCsvFile) {
-    // Set up map of valid tests
-    Map<String, Integer> validTests = new HashMap<String, Integer>();
-    validTests.put(TEST_ROUTE,new Integer(0));
-    validTests.put(TEST_ROUTE_SEARCH,new Integer(0));
-    validTests.put(TEST_SCHEDULE,new Integer(0));
-    validTests.put(TEST_RT,new Integer(0));
-    validTests.put(TEST_SCHEDULE_DATE,new Integer(0));
-    validTests.put(TEST_DELETED_ROUTE_SEARCH,new Integer(0));
-    validTests.put(TEST_ROUTE_REVISION,new Integer(0));
-    validTests.put(TEST_SATURDAY_SCHEDULE,new Integer(0));
-    validTests.put(TEST_SUNDAY_SCHEDULE,new Integer(0));
-    validTests.put(TEST_EXPRESS_INDICATOR,new Integer(0));
-  
+  public BundleValidationParseResults parseBundleChecksFile(File uploadedCsvFile) {
+    // Create set of valid tests
+/*
+    Set<String> validTests = new HashSet<String>();
+    validTests.add(TEST_ROUTE);
+    validTests.add(TEST_ROUTE_SEARCH);
+    validTests.add(TEST_SCHEDULE);
+    validTests.add(TEST_RT);
+    validTests.add(TEST_SCHEDULE_DATE);
+    validTests.add(TEST_DELETED_ROUTE_SEARCH);
+    validTests.add(TEST_ROUTE_REVISION);
+    validTests.add(TEST_SATURDAY_SCHEDULE);
+    validTests.add(TEST_SUNDAY_SCHEDULE);
+    validTests.add(TEST_EXPRESS_INDICATOR);
+    validTests.add(TEST_STOP_FOR_ROUTE);
+    validTests.add(TEST_NOT_STOP_FOR_ROUTE);
+  */
     List<ParsedBundleValidationCheck> parsedChecks = new ArrayList<ParsedBundleValidationCheck>();
-    String ln = "";
-    int linenum = 0;
-    try (BufferedReader br = new BufferedReader(new FileReader(uploadedCsvFile))) {
-      while ((ln = br.readLine()) != null) {
+    List<BundleValidationParseError> parseErrors = new ArrayList<BundleValidationParseError> ();
+    BundleValidationParseResults parseResults = new BundleValidationParseResults();
+    parseResults.setParsedBundleChecks(parsedChecks);
+    parseResults.setParseErrors(parseErrors);
+    
+    try {
+      Reader in = new FileReader(uploadedCsvFile);
+      int linenum = 0;
+      for (CSVRecord record : CSVFormat.DEFAULT.parse(in)) {
         ++linenum;
-        ParsedBundleValidationCheck parsedCheck = new ParsedBundleValidationCheck();
-        // Check for second field being a recognized test
-        int idx = ln.indexOf(',');
-        int qidx = ln.indexOf("\"");
-        if (qidx != -1 && qidx < idx) {
-          int qidx2 = ln.indexOf("\"", qidx + 1);
-          if (qidx2 == -1) continue;
-          while (idx < qidx2) {
-            idx = ln.indexOf(',', idx+1);
-            if (idx == -1) continue;
-          }
-        }
-        if (idx == -1) continue;
-        String route = ln.substring(0,idx);
-        int idx2 = ln.indexOf(',', idx+1);
-        if (idx2 == -1) continue;
-        String specificTest = ln.substring(idx+1, idx2).toLowerCase();
-        if (specificTest.startsWith(TEST_RT)) {
-          specificTest = TEST_RT;
-        }
-        if (!validTests.containsKey(specificTest)) {
-          continue;    // Not a supported test, so continue with the next line
-        } else {
-          validTests.put(specificTest, validTests.get(specificTest)+1);
-        }     
-        int idx3 = ln.indexOf(',', idx2+1);
-        if (idx3 == -1) continue;
-        String routeOrStop = ln.substring(idx2+1, idx3);
-        // Need to handle a little differently if this is an "express indicator" check
-        if (specificTest.equals("express indicator")) {
-          routeOrStop = ln.substring(0,idx);
-        }
-        int idx4 = ln.indexOf(',', idx3+1);
-        if (idx4 == -1) continue;
-        String URI = ln.substring(idx3+1, idx4);
-        parsedCheck.setLinenum(linenum);
-        parsedCheck.setRoute(route);
-        parsedCheck.setSpecificTest(specificTest);
-        parsedCheck.setRouteOrStop(routeOrStop);
-        parsedCheck.setURI(URI);
-        parsedChecks.add(parsedCheck);
+        parseResults = parseRecord(record, parseResults);
       }
+    }  catch (FileNotFoundException e) {
+      _log.info("Exception parsing csv file " + uploadedCsvFile, e);
+      e.printStackTrace();
     } catch (IOException e) {
-      _log.error("Exception trying to read csv file: " + uploadedCsvFile);
+      _log.info("Exception parsing csv file " + uploadedCsvFile, e);
       e.printStackTrace();
     }
-    _log.info("number of parsed checks: " + parsedChecks.size());
-      
-    return parsedChecks;
+    return parseResults;
+  }
+  private BundleValidationParseResults parseRecord(CSVRecord record, 
+      BundleValidationParseResults parseResults) {  
+    // Verify that second field contains a valid test.
+    if (record.size() < 2 || !validTests.contains(record.get(1).toLowerCase())) {
+      BundleValidationParseError parseError = new BundleValidationParseError();
+      parseError.setLinenum((int)record.getRecordNumber());
+      parseError.setErrorMessage(PARSE_ERROR);
+      parseError.setOffendingLine(record.toString());
+      parseResults.getParseErrors().add(parseError);
+      return parseResults;  
+    }
+     
+    ParsedBundleValidationCheck parsedCheck = new ParsedBundleValidationCheck();
+    parsedCheck.setLinenum((int)record.getRecordNumber());
+    parsedCheck.setAgencyId(record.get(0));
+    parsedCheck.setSpecificTest(record.get(1));
+    if (record.get(2) != null) {
+      parsedCheck.setRouteName(record.get(2));
+    }
+    if (record.get(3) != null) {
+      parsedCheck.setRouteId(record.get(3));
+    }
+    if (record.get(4) != null) {
+      parsedCheck.setStopName(record.get(4));
+    }
+    if (record.get(5) != null) {
+      parsedCheck.setStopId(record.get(5));
+    }
+    if (record.get(6) != null) {
+      parsedCheck.setDate(record.get(6));
+    }
+    if (record.get(7) != null) {
+      parsedCheck.setDepartureTime(record.get(7));
+    }    
+    parseResults.getParsedBundleChecks().add(parsedCheck);
+    return parseResults;
   }
 }
