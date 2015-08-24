@@ -689,3 +689,30 @@
   display: block;
   padding-top : 10px;
 }
+
+/* Added for Validate Bundle */
+
+#resultsDiv {
+  padding-top: 20px;
+}
+#environmentOptions {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.validateBundle {
+  font-size: 14px;
+}
+#bundleValidationResults {
+  	border-collapse: collapse;
+}
+
+#bundleValidationResults th, td {
+  border: 1px solid black;
+}
+.testPass {
+  color: green
+}
+.testFail {
+  color: red
+}
+
