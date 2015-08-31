@@ -89,6 +89,12 @@
 							<s:a href="%{url}">Manage Service Alerts</s:a>
 							</li>
 						</s:if>
+    					<s:if test="getConfig('validateTransitDataBundle')">						
+							<li>
+							<s:url var="url" action="validate-bundle" namespace="/admin/bundles"/>
+							<s:a href="%{url}">Validate Transit Data Bundle</s:a>
+							</li>
+						</s:if>
 								
 				</ul>
 			</div>
