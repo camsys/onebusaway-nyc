@@ -946,7 +946,8 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 			}
 		}
 		catch(Exception e){
-			_log.error(e.getMessage());
+			_log.error(e.getMessage(), e);
+			_log.error("configured pathname was " + pathname);
 		}
 
 		return bundleObj;
