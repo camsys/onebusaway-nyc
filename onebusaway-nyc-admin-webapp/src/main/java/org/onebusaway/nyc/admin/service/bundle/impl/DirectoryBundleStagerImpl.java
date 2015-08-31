@@ -83,7 +83,6 @@ public class DirectoryBundleStagerImpl implements BundleStager {
       FileUtils.deleteDirectory(destDir);
     } catch (Exception any) {
       _log.error("deleteDir failed with :", any);
-      throw any;
     }
     
     try{
