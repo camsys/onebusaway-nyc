@@ -25,6 +25,7 @@
     "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
     "http://struts.apache.org/dtds/struts-2.0.dtd">
 <struts>
+	<constant name="struts.multipart.maxSize" value="104857600" />
     <constant name="struts.devMode" value="false" />
     <constant name="struts.locale" value="en_US"/>
     <constant name="struts.ui.theme" value="simple"/>
