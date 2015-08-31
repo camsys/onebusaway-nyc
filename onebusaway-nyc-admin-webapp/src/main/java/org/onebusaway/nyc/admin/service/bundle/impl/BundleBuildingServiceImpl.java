@@ -62,6 +62,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String INPUTS_DIR = "inputs";
   private static final String DEFAULT_TRIP_TO_DSC_FILE = "tripToDSCMap.txt";
   private static final String ARG_THROW_EXCEPTION_INVALID_STOPS = "tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException";
+  private static final String ARG_LENIENT_ARRIVAL_DEPARTURE = "stopTimeEntriesFactory.lenientArrivalDepartureTimes";
 
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImpl.class);
   private FileService _fileService;
@@ -470,6 +471,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // manage our own overrides, as we use our own context
       Properties cmdOverrides = new Properties();
       cmdOverrides.setProperty(ARG_THROW_EXCEPTION_INVALID_STOPS, "false");
+      cmdOverrides.setProperty(ARG_LENIENT_ARRIVAL_DEPARTURE,  "true");
       if (this.getStopVerificationURL() != null) {
         cmdOverrides.setProperty("stopVerificationTask.path", this.getStopVerificationURL());
         cmdOverrides.setProperty("stopVerificationDistanceTask.path", this.getStopVerificationURL());
