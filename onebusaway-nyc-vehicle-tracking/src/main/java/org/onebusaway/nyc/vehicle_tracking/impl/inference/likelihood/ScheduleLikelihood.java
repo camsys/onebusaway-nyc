@@ -46,7 +46,8 @@ public class ScheduleLikelihood implements SensorModelRule {
   /*
    * In minutes, as well
    */
-  private static final double POS_SCHED_DEV_CUTOFF = 75d;
+  private static final double DEFAULT_POS_SCHED_DEV_CUTOFF = 75d;
+  private static double POS_SCHED_DEV_CUTOFF = DEFAULT_POS_SCHED_DEV_CUTOFF;
   private static final double NEG_SCHED_DEV_CUTOFF = -30d;
 
   @Autowired
@@ -61,7 +62,7 @@ public class ScheduleLikelihood implements SensorModelRule {
     final EVehiclePhase phase = state.getJourneyState().getPhase();
     final BlockState blockState = state.getBlockState();
     final VehicleState parentState = context.getParentState();
-
+   
     final SensorModelResult result = computeSchedTimeProb(parentState, state,
         blockState, phase, obs);
 
@@ -76,6 +77,13 @@ public class ScheduleLikelihood implements SensorModelRule {
       result.addLogResultAsAnd("null state", 0.0);
 
     } else {
+    	
+    	// adjust positive schedule deviation cut off according to the trip duration
+        if(!blockState.getRunTripEntry().getTripEntry().equals(null)){
+    		POS_SCHED_DEV_CUTOFF = ((blockState.getRunTripEntry().getStopTime() - blockState.getRunTripEntry().getStartTime()) *2)/60;
+    	} else{
+    		POS_SCHED_DEV_CUTOFF = DEFAULT_POS_SCHED_DEV_CUTOFF;
+    	}
       final StudentTDistribution schedDist = getSchedDistForBlockState(state.getBlockStateObservation());
       final double x = state.getBlockStateObservation().getScheduleDeviation();
       
