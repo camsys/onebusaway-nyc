@@ -505,7 +505,7 @@ function onUploadSelectedAgenciesClick() {
 	$('#agency_data .agencySelected').each(function() {
 		$this = $(this)
 		console.log("getting agency values");
-		var agencyId = $(this).find('.agencyId').val();
+		var agencyId = $(this).find('.agencyIdSelect').val();
 		var agencyDataSourceType = $(this).find('.agencyDataSourceType').val();
 		var agencyProtocol = $(this).find('.agencyProtocol').val();
 		var agencyDataSource = $(this).find('.agencyDataSource').val();
