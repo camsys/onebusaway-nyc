@@ -408,6 +408,16 @@ function onSelectClick() {
 	var copyDir = "";
 
 	if (jQuery("#create").is(":checked")) {
+		// Check for valid bundle directory name
+		var bundleNameCheck = /^[a-zA-Z0-9\.\_\-]+$/;
+		if (!bundleNameCheck.test(bundleDir)) {
+			jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
+			jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
+			jQuery("#createDirectoryMessage").text("Invalid bundle directory name: can contain only "
+				+ "letters, numbers, periods, hyphens and underscores.")
+				.css("font-weight", "bold").css("color", "red");
+			return false;
+		}
 		actionName = "createDirectory";
 	}
 
