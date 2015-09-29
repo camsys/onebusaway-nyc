@@ -211,16 +211,19 @@ jQuery(function() {
 	jQuery("#buildBundle_resetButton").click(onResetClick);
 
 	//Enable or disable create/select button when user enters/removes directory name
+	//For a copy, a value must also be provided for the destination directory
 	//Using bind() with propertychange event as live() does not work in IE for unknown reasons
 	jQuery("#createDirectoryContents #directoryName").bind("input propertychange", function() {
 		var text = jQuery("#createDirectory #directoryName").val();
-		if(text.length > 0) {
+		var copyDestText = jQuery("#createDirectory #destDirectoryName").val();
+		if (text.length > 0 && (!jQuery("#copy").is(":checked") || copyDestText.length > 0)) {
 			enableSelectButton();
 		} else {
 			disableSelectButton();
 			jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
 		}
 	});
+	
 	disableStageButton();
 	disableBuildButton();
 
@@ -800,6 +803,18 @@ function directoryOptionChanged() {
 				jQuery('#copyDirectory').show();
 			}else{
 				jQuery(element).insertAfter("#directoryButton");
+				//Enable or disable create/select button when user enters/removes the destination 
+				// directory name for a Copy
+				jQuery("#createDirectoryContents #destDirectoryName").bind("input propertychange", function() {
+					var text = jQuery("#createDirectory #directoryName").val();
+					var copyDestText = jQuery("#createDirectory #destDirectoryName").val();
+					if (text.length > 0 && copyDestText.length > 0) {
+						enableSelectButton();
+					} else {
+						disableSelectButton();
+						jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
+					}
+				});
 			}	
 	}
 	else 
