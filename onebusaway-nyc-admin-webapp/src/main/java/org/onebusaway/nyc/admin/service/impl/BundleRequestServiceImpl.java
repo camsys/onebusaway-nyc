@@ -368,6 +368,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         params.put("bundleComment", _request.getBundleComment());
         params.put("archive", ""+_request.getArchiveFlag());
         params.put("consolidate", ""+_request.getConsolidateFlag());
+        params.put("predate", ""+_request.getPredate());
         _response = makeRequest(serverId, url, null, BundleBuildResponse.class, params);
         if (_response != null && _response.getId() != null) {
           String id = _response.getId();

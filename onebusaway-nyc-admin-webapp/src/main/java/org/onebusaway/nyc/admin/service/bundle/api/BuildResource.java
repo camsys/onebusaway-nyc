@@ -46,6 +46,7 @@ public class BuildResource extends AuthenticatedResource {
 	private String comment;
 	private boolean archive = false;
 	private boolean consolidate = false;
+	private boolean predate = false;
 	
 	private final ObjectMapper _mapper = new ObjectMapper();
 	private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
@@ -61,7 +62,8 @@ public class BuildResource extends AuthenticatedResource {
 			@FormParam("bundleEndDate") String bundleEndDate,
 			@FormParam("bundleComment") String bundleComment,
 			@FormParam("archive") boolean archiveFlag,
-			@FormParam("consolidate") boolean consolidateFlag) {
+			@FormParam("consolidate") boolean consolidateFlag,
+			@FormParam("predate") boolean predateFlag) {
 		Response response = null;
 		directoryName = bundleDirectory;
 		this.bundleName = bundleName;
@@ -71,6 +73,7 @@ public class BuildResource extends AuthenticatedResource {
 		comment = bundleComment;
 		archive = archiveFlag;
 		consolidate = consolidateFlag;
+		predate = predateFlag;
 
 		if (!isAuthorized()) {
 			return Response.noContent().build();
@@ -102,6 +105,7 @@ public class BuildResource extends AuthenticatedResource {
 			buildRequest.setBundleComment(bundleComment);
 			buildRequest.setArchiveFlag(archive);
 			buildRequest.setConsolidateFlag(consolidate);
+			buildRequest.setPredate(predate);
 			
 			try {
 				String message = "Starting bundle building process for bundle '" + buildRequest.getBundleName()

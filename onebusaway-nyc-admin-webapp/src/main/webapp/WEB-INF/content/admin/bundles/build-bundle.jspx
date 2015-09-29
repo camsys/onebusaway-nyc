@@ -69,7 +69,10 @@
 							<label id="archiveLabel" class="adminLabel">Consolidate GTFS?</label>
 							<input type="checkbox" id="buildBundle_consolidate" />
 						</div>
-						
+						<div id="bundlePreDateHolder">
+							<label id="archiveLabel" class="adminLabel">Back Date Calendar?</label>
+							<input type="checkbox" id="buildBundle_predate" />
+						</div>
 						<input type="button" id="buildBundle_buildButton" value="Build Bundle" />
 						<input type="button" id="buildBundle_resetButton" value="Reset" />
 					</div>

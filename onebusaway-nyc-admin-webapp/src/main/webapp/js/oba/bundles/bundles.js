@@ -388,6 +388,10 @@ function showBundleInfo(bundleInfo){
 		setDivHtml(document.getElementById('prevalidate_resultList'), bundleObj.validationResponse.statusMessages);
 	}
 	
+	if (bundleObj.buildResponse == undefined) {
+		return;
+	}
+	
 	//Populating Build Tab Fields
 	if (bundleObj.buildResponse.email != undefined && bundleObj.buildResponse.email != null 
 			&& bundleObj.buildResponse.email != "null") {
@@ -974,6 +978,7 @@ function onBuildClick() {
 	var bundleComment = jQuery("#bundleComment").val();
 	var archive = jQuery("#buildBundle_archive").is(":checked");
 	var consolidate = jQuery("#buildBundle_consolidate").is(":checked");
+	var predate = jQuery("#buildBundle_predate").is(":checked");
 
 	var valid = validateBundleBuildFields(bundleDir, bundleName, startDate, endDate);
 	if(valid == false) {
@@ -987,7 +992,7 @@ function onBuildClick() {
 
 	disableBuildButton();
 	disableResetButton();
-	buildBundle(bundleName, startDate, endDate, bundleComment, archive, consolidate);
+	buildBundle(bundleName, startDate, endDate, bundleComment, archive, consolidate, predate);
 }
 
 function onResetClick() {
@@ -1066,7 +1071,7 @@ function bundleUrl() {
 		window.setTimeout(bundleUrl, 5000);
 	}
 }
-function buildBundle(bundleName, startDate, endDate, bundleComment, archive, consolidate){
+function buildBundle(bundleName, startDate, endDate, bundleComment, archive, consolidate, predate){
 	var bundleDirectory = jQuery("#selected_bundleDirectory").text();
 	var email = jQuery("#buildBundle_email").val();
 	if (email == "") { email = "null"; }
@@ -1082,6 +1087,7 @@ function buildBundle(bundleName, startDate, endDate, bundleComment, archive, con
 			bundleEndDate: endDate,
 			archive: archive,
 			consolidate: consolidate,
+			predate: predate,
 			bundleComment: bundleComment /*comment needs to be the last on the form*/
 		},
 		success: function(response) {

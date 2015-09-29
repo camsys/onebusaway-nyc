@@ -3,7 +3,7 @@ package org.onebusaway.nyc.admin.service.bundle.task;
 import org.onebusaway.gtfs.model.ServiceCalendar;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
-
+import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,12 @@ public class ModifyStartDateTask implements Runnable {
   private Logger _log = LoggerFactory.getLogger(ModifyStartDateTask.class);
 
   private GtfsMutableRelationalDao _gtfsMutableRelationalDao;
+  protected BundleRequestResponse requestResponse;
+  
+  @Autowired
+  public void setBundleRequestResponse(BundleRequestResponse requestResponse) {
+    this.requestResponse = requestResponse;
+  }
 
   @Autowired
   public void setGtfsMutableRelationalDao(
@@ -33,6 +39,12 @@ public class ModifyStartDateTask implements Runnable {
   }
 
   public void run() {
+    if (!requestResponse.getRequest().getPredate()) {
+      _log.info("ModifyStartDateTask Exiting, predate flag not set");
+      return;
+    }
+    
+    _log.info("ModifyStartDateTask Running:  predate flag is set");
     Collection<ServiceCalendar> calendars = _gtfsMutableRelationalDao.getAllCalendars();
     _log.info("found " + calendars.size() + " calendar entries");
     for (ServiceCalendar sc : calendars) {

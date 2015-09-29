@@ -63,7 +63,8 @@ public class BuildRemoteResource extends AuthenticatedResource {
       @FormParam("bundleEndDate") String bundleEndDate,
       @FormParam("bundleComment") String bundleComment,
       @FormParam("archive") boolean archive,
-      @FormParam("consolidate") boolean consolidate
+      @FormParam("consolidate") boolean consolidate,
+      @FormParam("predate") boolean predate
   ) {
     Response response = null;
     if (!isAuthorized()) {
@@ -81,6 +82,7 @@ public class BuildRemoteResource extends AuthenticatedResource {
     bundleRequest.setBundleComment(bundleComment);
     bundleRequest.setArchiveFlag(archive);
     bundleRequest.setConsolidateFlag(consolidate);
+    bundleRequest.setPredate(predate);
     
     BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
     

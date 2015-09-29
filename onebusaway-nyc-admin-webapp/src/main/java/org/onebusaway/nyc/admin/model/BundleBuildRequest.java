@@ -18,6 +18,7 @@ public class BundleBuildRequest {
 	private String _bundleComment;
 	private boolean _archiveFlag;
 	private boolean _consolidateFlag;
+  private boolean _predateFlag;
 
 	public String getBundleDirectory() {
 		return _bundleDirectory;
@@ -119,6 +120,13 @@ public class BundleBuildRequest {
   
   public void setConsolidateFlag(boolean consolidate) {
     _consolidateFlag = consolidate;
+  }
+
+  public boolean getPredate() {
+    return _predateFlag;
+  }
+  public void setPredate(boolean predate) {
+    _predateFlag = predate;
   }
 
 }

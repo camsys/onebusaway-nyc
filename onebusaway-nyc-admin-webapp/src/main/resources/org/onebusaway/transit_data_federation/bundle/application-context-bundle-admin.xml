@@ -264,7 +264,9 @@
     <property name="task" ref="modifyStartDateTask" />
   </bean>
   
-  <bean id="modifyStartDateTask" class="org.onebusaway.nyc.admin.service.bundle.task.ModifyStartDateTask" />
+  <bean id="modifyStartDateTask" class="org.onebusaway.nyc.admin.service.bundle.task.ModifyStartDateTask" >
+  	<property name="bundleRequestResponse" ref="bundleRequestResponse" />
+  </bean>
   <!-- Calendar Data -->
 
   <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
