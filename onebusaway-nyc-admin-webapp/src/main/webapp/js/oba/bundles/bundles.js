@@ -604,7 +604,7 @@ function onAddAnotherAgencyClick() {
 	  metadata = '<select class="agencyIdSelect">';
 	  for (var i=0; i<agencyMetadata.length; ++i) {
 		  metadata += '<option value="' + agencyMetadata[i].legacyId + '">'
-		  + agencyMetadata[i].legacyId + '</option>';
+		  + agencyMetadata[i].shortName + '</option>';
 	  }
 	  metadata += '</select>';
 	  url = agencyMetadata[0].gtfsFeedUrl;
@@ -1539,7 +1539,7 @@ function addUploadFileAgencyDropdown() {
 	console.log("starting addUploadFileAgencyDropdown");
 	agencyDropDown = $('<select class="agencyIdSelect">');
 	jQuery(agencyMetadata).each(function() {
-		agencyDropDown.append(jQuery("<option>").attr('value',this.legacyId).text(this.legacyId));
+		agencyDropDown.append(jQuery("<option>").attr('value',this.legacyId).text(this.shortName));
 	});
 	agencyDropDown.insertBefore("#agencyId");
 }
