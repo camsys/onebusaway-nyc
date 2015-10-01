@@ -190,6 +190,11 @@ jQuery(function() {
 	jQuery("#createDirectory #advancedOptions #expand").bind({
 		'click' : toggleAdvancedOptions	});
 
+	//initially hide the Request Id label if the Request Id is blank
+	if (jQuery("#prevalidate_id").text().length == 0) {
+		jQuery("#prevalidate_id_label").hide();
+	}
+	
 	//initially hide the Validation Progress label
 	jQuery("#prevalidate_progress").hide();
 	
@@ -388,6 +393,9 @@ function showBundleInfo(bundleInfo){
 		//Populating Pre-Validate Tab Fields
 		jQuery("#prevalidate_bundleName").val(bundleObj.validationResponse.bundleBuildName);
 		jQuery("#prevalidate_id").text(bundleObj.validationResponse.requestId);
+		if (jQuery("#prevalidate_id").text().length > 0) {
+			jQuery("#prevalidate_id_label").show();
+		}
 		setDivHtml(document.getElementById('prevalidate_resultList'), bundleObj.validationResponse.statusMessages);
 	}
 	
@@ -417,6 +425,9 @@ function onSelectClick() {
 	var actionName = "selectDirectory";
 	var copyDir = "";
 
+	// initially hide the Request Id label when picking a new bundle
+	jQuery("#prevalidate_id_label").hide();
+	
 	if (jQuery("#create").is(":checked")) {
 		// Check for valid bundle directory name
 		var bundleNameCheck = /^[a-zA-Z0-9\.\_\-]+$/;
@@ -880,11 +891,17 @@ function onValidateClick() {
 			var bundleResponse = response;
 			if (bundleResponse != undefined) {
 				jQuery("#prevalidate_id").text(bundleResponse.id);
+				if (jQuery("#prevalidate_id").text().length > 0) {
+					jQuery("#prevalidate_id_label").show();
+				}
 				//jQuery("#prevalidate_resultList").text("calling...");
 				window.setTimeout(updateValidateStatus, 5000);
 			} else {
 				jQuery("#prevalidate_id").text(error);
 				jQuery("#prevalidate_resultList").text("error");
+				if (jQuery("#prevalidate_id").text().length > 0) {
+					jQuery("#prevalidate_id_label").show();
+				}
 			}
 		},
 		error: function(request) {
