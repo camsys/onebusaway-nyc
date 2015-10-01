@@ -190,6 +190,9 @@ jQuery(function() {
 	jQuery("#createDirectory #advancedOptions #expand").bind({
 		'click' : toggleAdvancedOptions	});
 
+	//initially hide the Validation Progress label
+	jQuery("#prevalidate_progress").hide();
+	
 	//toggle validation progress list
 	jQuery("#prevalidateInputs #prevalidate_progress #expand").bind({
 		'click' : toggleValidationResultList});
@@ -865,6 +868,7 @@ function onValidateClick() {
 		jQuery("#buildBundle_bundleName").val(bundleName);
 	}
 
+	jQuery("#prevalidate_progress").show();
 	jQuery("#prevalidate_exception").hide();
 	jQuery("#prevalidateInputs #validateBox #validateButton").attr("disabled", "disabled");
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
