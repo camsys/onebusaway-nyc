@@ -268,7 +268,6 @@ function onUploadContinueClick() {
 }
 
 function onAgencyIdSelectClick() {
-	console.log("in onAgencySelectClick");
 	var idx = $(this).find(":selected").index();
 	$(this).closest('tr').find(".agencyId").val(agencyMetadata[idx].legacyId);
 	var url = agencyMetadata[idx].gtfsFeedUrl;
@@ -282,7 +281,6 @@ function onAgencyIdSelectClick() {
 	} else if (url.toLowerCase().startsWith("ftp")) {
 		protocol = "ftp";
 	}
-	console.log("protocol: " + protocol + ", previous protocol: " + previous_protocol)
 	if ((previous_protocol == "file" && protocol != "file")
 			|| (previous_protocol != "file" && protocol == "file")) {
 		var dataSource = $(this).closest('tr').find(".agencyDataSource");
@@ -421,7 +419,6 @@ function showBundleInfo(bundleInfo){
 }
 function onSelectClick() {
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
-	console.log("onSelectClick bundleDir=" + bundleDir);
 	var actionName = "selectDirectory";
 	var copyDir = "";
 
@@ -491,18 +488,15 @@ function onSelectClick() {
 								insertAfterThis.after(newDirRow);
 							}
 						}			
-						console.log("after create Directory");
 						enableBuildButton();
 						enableResetButton();
 					}					
 					else {
-						console.log("selected is false");
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 						jQuery("#createDirectoryMessage").text(status.message).css("color", "red");
 						disableBuildButton();
 						disableResetButton();
 					}
-					console.log("continue");
 					var continueButton = jQuery("#create_continue");
 					enableContinueButton(continueButton);
 					var bundleDir = status.directoryName;
@@ -531,11 +525,9 @@ function onSelectClick() {
 
 function onUploadSelectedAgenciesClick() {
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
-	console.log("in onUploadSelectedAgenciesClick");
 	var cleanedDirs = [];
 	$('#agency_data .agencySelected').each(function() {
 		$this = $(this)
-		console.log("getting agency values");
 		var agencyId = $(this).find('.agencyIdSelect').val();
 		var agencyDataSourceType = $(this).find('.agencyDataSourceType').val();
 		var agencyProtocol = $(this).find('.agencyProtocol').val();
@@ -550,9 +542,6 @@ function onUploadSelectedAgenciesClick() {
 		} else {
 			cleanDir = "false";
 		}
-		console.log("next agency: " + agencyId + ", type: " + agencyDataSourceType
-				+ ", protocol: " + agencyProtocol
-				+ ", data source: " + agencyDataSource);
 		if (agencyProtocol != "file") {
 			var actionName = "uploadSourceData";	
 			jQuery.ajax({
@@ -618,7 +607,6 @@ function onAddAnotherAgencyClick() {
 	var metadata = "";
 	var url = "";
 	if (agencyMetadataAvailable) {
-	  console.log("adding metadata to new row");
 	  metadata = '<select class="agencyIdSelect">';
 	  for (var i=0; i<agencyMetadata.length; ++i) {
 		  metadata += '<option value="' + agencyMetadata[i].legacyId + '">'
@@ -1070,12 +1058,14 @@ function bundleUrl() {
 			var bundleResponse = response;
 			if(bundleResponse.exception !=null) {
 				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
+				.text("(exception)")
 				.css("padding-left", "5px")
 				.css("font-size", "12px")
 				.addClass("adminLabel")
 				.css("color", "red");
 			} else {
 				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
+				.text(bundleResponse.bundleResultLink)
 				.css("padding-left", "5px")
 				.css("font-size", "12px")
 				.addClass("adminLabel")

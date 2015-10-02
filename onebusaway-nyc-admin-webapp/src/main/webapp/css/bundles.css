@@ -497,7 +497,7 @@
 
 #buildBundle_exception {
   display: none;
-  background-color:#FF0000;
+  color: red;
 }
 
 #buildBundle #bundleResultsHolder {
