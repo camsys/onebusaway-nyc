@@ -176,6 +176,10 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     if (servletContext != null) {
       String key = servletContext.getInitParameter("server.url");
       if (key != null) {
+        String port = servletContext.getInitParameter("admin.port");
+        if (port != null) {
+          key = key + ":" + port;
+        }
         setServerURL(key);
       }
       String instanceOverride = servletContext.getInitParameter("admin.instanceId");
