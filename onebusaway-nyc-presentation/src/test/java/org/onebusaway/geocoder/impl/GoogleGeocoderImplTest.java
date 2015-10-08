@@ -74,7 +74,10 @@ public class GoogleGeocoderImplTest {
 
     GoogleGeocoderImpl geocoder = new GoogleGeocoderImpl();
 
-    GeocoderResults results = geocoder.geocode("Atlantic and Hoyt Street");
+    // Changed this to a city, since ambiguous intersections
+    // seem to no longer return multiple results
+    //GeocoderResults results = geocoder.geocode("Atlantic and Hoyt Street");
+    GeocoderResults results = geocoder.geocode("Hudson");
 
     List<GeocoderResult> records = results.getResults();
 
