@@ -398,6 +398,8 @@ function showBundleInfo(bundleInfo){
 	}
 	
 	if (bundleObj.buildResponse == undefined) {
+		// Set Comments field to ""
+		jQuery("#commentBox #bundleComment").val("");
 		return;
 	}
 	
@@ -796,6 +798,8 @@ function directoryOptionChanged() {
 		jQuery("#createDirectoryContents #directoryButton").attr("name","method:createDirectory");
 		jQuery("#selectExistingContents").hide();
 		jQuery('#copyDirectory').hide();
+		// Blank out the Comment box
+		jQuery("#commentBox #bundleComment").val("");
 	} 
 	else if(jQuery("#copy").is(":checked")) {
 		jQuery("#createDirectoryContents #directoryButton").val("Copy");
