@@ -24,8 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Combine all Modified GTFS data from multiple agencies into single zip file.
  */
 public class GtfsMergeTask extends BaseModTask implements Runnable {
-
-	private static Logger _log = LoggerFactory.getLogger(GtfsMergeTask.class);
+  private static final String CONSOLIDATED_DIR = "consolidated";
+  private static Logger _log = LoggerFactory.getLogger(GtfsMergeTask.class);
 	
 
 	public void run() {
@@ -42,8 +42,12 @@ public class GtfsMergeTask extends BaseModTask implements Runnable {
 		  // note this will be overridden if properly configured
 			String outputLocation = System.getProperty("java.io.tmpdir") + File.separator + "gtfs_puget_sound_consolidated.zip"; 			
 			if (getOutputDirectory() != null) {
-				outputLocation = getOutputDirectory() + File.separator + "final" + File.separator + "gtfs_puget_sound_consolidated.zip";		   
+			  String consolidatedPath = getOutputDirectory() + File.separator + CONSOLIDATED_DIR;
+			  File consolidatedDir = new File(consolidatedPath);
+			  consolidatedDir.mkdirs();
+			  outputLocation = consolidatedPath + File.separator + "gtfs_puget_sound_consolidated.zip";
 			}
+			_log.info("Consolidated file output location: " + outputLocation);
 			int i = 0;
 			for (GtfsBundle gtfsBundle : gtfsBundles.getBundles()) {	
 				if(gtfsBundle.getPath() != null){
@@ -78,6 +82,8 @@ public class GtfsMergeTask extends BaseModTask implements Runnable {
       tripStrategy.setDuplicateRenamingStrategy(EDuplicateRenamingStrategy.AGENCY);
       feedMerger.setTripStrategy(tripStrategy);
       
+      File outputFile = new File(outputLocation);
+      outputFile.createNewFile();
 			feedMerger.run(inputPaths, new File(outputLocation));
 			
 		} catch (Throwable ex) {
