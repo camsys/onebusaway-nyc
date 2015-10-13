@@ -49,7 +49,7 @@ public class ScheduleLikelihood implements SensorModelRule {
   private static final double DEFAULT_POS_SCHED_DEV_CUTOFF = 75d;
   private static double POS_SCHED_DEV_CUTOFF = DEFAULT_POS_SCHED_DEV_CUTOFF;
   private static final double NEG_SCHED_DEV_CUTOFF = -30d;
-
+  
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
   }
@@ -80,7 +80,14 @@ public class ScheduleLikelihood implements SensorModelRule {
     	
     	// adjust positive schedule deviation cut off according to the trip duration
         if(!blockState.getRunTripEntry().getTripEntry().equals(null)){
-    		POS_SCHED_DEV_CUTOFF = ((blockState.getRunTripEntry().getStopTime() - blockState.getRunTripEntry().getStartTime()) *2)/60;
+    		
+        	final double trip_sched_dev_cuttoff = ((blockState.getRunTripEntry().getStopTime() - blockState.getRunTripEntry().getStartTime()) *2)/60;
+    		
+    		if(trip_sched_dev_cuttoff < POS_SCHED_DEV_CUTOFF)
+    			POS_SCHED_DEV_CUTOFF = trip_sched_dev_cuttoff;		
+    		else
+    			POS_SCHED_DEV_CUTOFF = DEFAULT_POS_SCHED_DEV_CUTOFF;
+
     	} else{
     		POS_SCHED_DEV_CUTOFF = DEFAULT_POS_SCHED_DEV_CUTOFF;
     	}
