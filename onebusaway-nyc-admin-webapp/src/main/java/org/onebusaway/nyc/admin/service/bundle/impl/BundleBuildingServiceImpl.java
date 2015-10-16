@@ -60,6 +60,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String DATA_DIR = "data";
   private static final String OUTPUT_DIR = "outputs";
   private static final String INPUTS_DIR = "inputs";
+  private static final String METADATA_FILENAME = "metadata.json";
   private static final String DEFAULT_TRIP_TO_DSC_FILE = "tripToDSCMap.txt";
   private static final String ARG_THROW_EXCEPTION_INVALID_STOPS = "tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException";
   private static final String ARG_LENIENT_ARRIVAL_DEPARTURE = "stopTimeEntriesFactory.lenientArrivalDepartureTimes";
@@ -494,6 +495,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       monitorStatus(response, creator.getStatusMessages());
       creator.run();
       demonitorStatus();
+      // If this is a rebuild of a bundle, re-use the previous bundle id.
+      updateBundleId(request, response);
       response.addStatusMessage("bundle build complete");
       return 0;
 
@@ -709,8 +712,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.addStatusMessage("compressing results");
 
     NYCFileUtils fs = new NYCFileUtils();
-    // build BundleMetaData.json
-   new BundleBuildingUtil().generateJsonMetadata(request, response);
+    // build BundleMetaData.json.
+    // If this is a rebuild of a bundle, re-use the previous bundle id.
+    String bundleId = checkPreviousBundleId(request, response);
+    new BundleBuildingUtil().generateJsonMetadata(request, response, bundleId);
 
     String[] paths = {request.getBundleName()};
     String filename = request.getTmpDirectory() + File.separator + request.getBundleName() + ".tar.gz";
@@ -758,6 +763,38 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       }
     }
     
+  }
+
+  // Check if there was a previous build with this path.  If there was,
+  // return the bundle id from that build's metadata.json file.
+  private String checkPreviousBundleId(BundleBuildRequest request, BundleBuildResponse response) {
+    String basePath = _fileService.getBucketName();
+    String versionString = createVersionString(request, response);
+    String metadataFileName = basePath + File.separator + versionString
+        + File.separator + OUTPUT_DIR + File.separator + METADATA_FILENAME;
+    File metadataFile = new File(metadataFileName);
+    String bundleId = null;
+    if (metadataFile.exists()) {
+      bundleId = BundleBuildingUtil.getBundleId(metadataFileName);
+    }
+    return bundleId;
+  }
+
+  // Get the previous build's bundle id and update the metadata files to use
+  // the previous id rather than a newly generated one.
+  private void updateBundleId(BundleBuildRequest request, BundleBuildResponse response) {
+    String bundleId = checkPreviousBundleId(request,  response);
+    if (bundleId != null) {
+      // Update bundle id in outputs directory
+      String metadataFileName = response.getBundleRootDirectory() + File.separator
+          + OUTPUT_DIR + File.separator + METADATA_FILENAME;
+      BundleBuildingUtil.setBundleId(metadataFileName, bundleId);
+      // Update bundle id in data directory
+      metadataFileName = response.getBundleRootDirectory() + File.separator
+          + DATA_DIR + File.separator + METADATA_FILENAME;
+      BundleBuildingUtil.setBundleId(metadataFileName, bundleId);
+    }
+    return;
   }
 
   private StringBuffer listToFile(List<String> notInServiceDSCList) {
