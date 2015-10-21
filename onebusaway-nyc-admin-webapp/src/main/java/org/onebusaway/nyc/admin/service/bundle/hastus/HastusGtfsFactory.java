@@ -25,8 +25,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -105,6 +107,8 @@ public class HastusGtfsFactory {
   private Map<String, RouteStopSequence> _stopSequences = new HashMap<String, RouteStopSequence>();
 
   private Map<AgencyAndId, String> _serviceIdAndScheduleType = new HashMap<AgencyAndId, String>();
+
+  private Set<AgencyAndId> _timepointIds = new HashSet<AgencyAndId>();
 
   private Date _midnight;
   
@@ -350,6 +354,13 @@ public class HastusGtfsFactory {
       }
       directionIndex++;
     }
+
+    // Remove timepoints from stops.
+    for (AgencyAndId timepointId : _timepointIds) {
+      _log.info("Removing timepoint " + timepointId.toString());
+      Stop notReallyAStop = _dao.getStopForId(timepointId);
+      _dao.removeEntity(notReallyAStop);
+    }
   }
 
   
@@ -432,6 +443,7 @@ public class HastusGtfsFactory {
         // timepoint -- not for pickup/drop off
         stopTime.setDropOffType(1);
         stopTime.setPickupType(1);
+        _timepointIds.add(id(Long.toString(item.getStopId())));
       } else if ("A".equals(item.getBoarding())) {
         stopTime.setDropOffType(0);
         stopTime.setPickupType(1);
