@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.admin.service.impl;
 
 import org.onebusaway.nyc.admin.service.EmailService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -15,6 +16,8 @@ import com.amazonaws.services.simpleemail.model.SendEmailResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.web.context.ServletContextAware;
 
 import java.util.ArrayList;
@@ -32,6 +35,7 @@ import javax.servlet.ServletContext;
 public class EmailServiceImpl implements EmailService, ServletContextAware {
 
   private static Logger _log = LoggerFactory.getLogger(EmailServiceImpl.class);
+  private ConfigurationService configurationService;
   private AWSCredentials _credentials;
   AmazonSimpleEmailServiceAsyncClient _eClient;
   private String _username;
@@ -40,6 +44,16 @@ public class EmailServiceImpl implements EmailService, ServletContextAware {
   private Session _session;
   private Transport _transport;
   
+  private static final String SMTP_HOST_NOT_FOUND = "smtp host not found";
+  
+  /**
+   * @param configurationService the configurationService to set
+   */
+  @Autowired
+  public void setConfigurationService(ConfigurationService configurationService) {
+    this.configurationService = configurationService;
+  }
+
   @Override
   public void setSmtpUser(String user) {
     _username = user;
@@ -53,26 +67,49 @@ public class EmailServiceImpl implements EmailService, ServletContextAware {
   @Override
   public void setup() {
     try {
-      // AWS specifics
-      _credentials = new BasicAWSCredentials(_username, _password);
-      _eClient = new AmazonSimpleEmailServiceAsyncClient(_credentials);
-      // Java specifics
-    _properties = new Properties();
-    _properties.setProperty("mail.transport.protocol", "aws");
-    _properties.setProperty("mail.aws.user", _credentials.getAWSAccessKeyId());
-    _properties.setProperty("mail.aws.password", _credentials.getAWSSecretKey());
-    _session = Session.getInstance(_properties);
-    _transport = new AWSJavaMailTransport(_session, null);
-    
-
+      String mailSMTPServer = "";
+      String  mailSMTPServerPort = "";
+      // Try getting smtp host and port values from configurationService.
+      try {
+        mailSMTPServer = configurationService.getConfigurationValueAsString("admin.smtpHost", SMTP_HOST_NOT_FOUND);
+        mailSMTPServerPort = configurationService.getConfigurationValueAsString("admin.smtpPort", "25");
+      } catch(RemoteConnectFailureException e) {
+        _log.error("Setting smtp host to value : '" + SMTP_HOST_NOT_FOUND + "' due to failure to connect to TDM");
+        mailSMTPServer = SMTP_HOST_NOT_FOUND;
+        e.printStackTrace();
+      }
+      
+      // If smtp host name was not found, assume this should use AWS
+      _properties = new Properties();
+      boolean useSMTP = mailSMTPServer.equals(SMTP_HOST_NOT_FOUND) ? false : true;
+      if (useSMTP) {    // Configure for SMTP
+        _properties.setProperty("mail.transport.protocol","smtp");
+        _properties.setProperty("mail.smtp.starttls.enable","false");
+        _properties.setProperty("mail.smtp.host",mailSMTPServer);
+        _properties.setProperty("mail.smtp.auth","false");
+        _properties.setProperty("mail.debug","false");
+        _properties.setProperty("mail.smtp.port",mailSMTPServerPort);
+      } else {          // Configure for AWS
+        // AWS specifics
+        _credentials = new BasicAWSCredentials(_username, _password);
+        _eClient = new AmazonSimpleEmailServiceAsyncClient(_credentials);
+        // Java specifics
+        _properties.setProperty("mail.transport.protocol", "aws");
+        _properties.setProperty("mail.aws.user", _credentials.getAWSAccessKeyId());
+        _properties.setProperty("mail.aws.password", _credentials.getAWSSecretKey());
+      }
+      
+      _session = Session.getInstance(_properties);
+      Session session=Session.getDefaultInstance(_properties);
+      session.setDebug(false);
+      _transport = useSMTP ? _session.getTransport("smtp") : new AWSJavaMailTransport(_session, null);
     } catch (Exception ioe) {
       // log this heavily, but don't let it prevent context startup
       _log.error("EmailServiceImpl setup failed, likely due to missing or invalid credentials.");
       _log.error(ioe.toString());
-      
     }
-
   }
+  
   @Override
   public void sendAsync(String to, String from, String subject, StringBuffer messageBody) {
     List<String> toAddresses = new ArrayList<String>();
@@ -120,7 +157,7 @@ public class EmailServiceImpl implements EmailService, ServletContextAware {
       if (!_transport.isConnected()) {
         _transport.connect();
       }
-      _transport.sendMessage(msg, null);
+      _transport.send(msg);
     } catch (Exception e) {
       _log.error("sendJava failed", e);
     }

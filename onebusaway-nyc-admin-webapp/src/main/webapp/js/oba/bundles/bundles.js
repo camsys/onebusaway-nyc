@@ -190,6 +190,14 @@ jQuery(function() {
 	jQuery("#createDirectory #advancedOptions #expand").bind({
 		'click' : toggleAdvancedOptions	});
 
+	//initially hide the Request Id label if the Request Id is blank
+	if (jQuery("#prevalidate_id").text().length == 0) {
+		jQuery("#prevalidate_id_label").hide();
+	}
+	
+	//initially hide the Validation Progress label
+	jQuery("#prevalidate_progress").hide();
+	
 	//toggle validation progress list
 	jQuery("#prevalidateInputs #prevalidate_progress #expand").bind({
 		'click' : toggleValidationResultList});
@@ -260,7 +268,6 @@ function onUploadContinueClick() {
 }
 
 function onAgencyIdSelectClick() {
-	console.log("in onAgencySelectClick");
 	var idx = $(this).find(":selected").index();
 	$(this).closest('tr').find(".agencyId").val(agencyMetadata[idx].legacyId);
 	var url = agencyMetadata[idx].gtfsFeedUrl;
@@ -274,7 +281,6 @@ function onAgencyIdSelectClick() {
 	} else if (url.toLowerCase().startsWith("ftp")) {
 		protocol = "ftp";
 	}
-	console.log("protocol: " + protocol + ", previous protocol: " + previous_protocol)
 	if ((previous_protocol == "file" && protocol != "file")
 			|| (previous_protocol != "file" && protocol == "file")) {
 		var dataSource = $(this).closest('tr').find(".agencyDataSource");
@@ -385,10 +391,15 @@ function showBundleInfo(bundleInfo){
 		//Populating Pre-Validate Tab Fields
 		jQuery("#prevalidate_bundleName").val(bundleObj.validationResponse.bundleBuildName);
 		jQuery("#prevalidate_id").text(bundleObj.validationResponse.requestId);
+		if (jQuery("#prevalidate_id").text().length > 0) {
+			jQuery("#prevalidate_id_label").show();
+		}
 		setDivHtml(document.getElementById('prevalidate_resultList'), bundleObj.validationResponse.statusMessages);
 	}
 	
 	if (bundleObj.buildResponse == undefined) {
+		// Set Comments field to ""
+		jQuery("#commentBox #bundleComment").val("");
 		return;
 	}
 	
@@ -410,10 +421,12 @@ function showBundleInfo(bundleInfo){
 }
 function onSelectClick() {
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
-	console.log("onSelectClick bundleDir=" + bundleDir);
 	var actionName = "selectDirectory";
 	var copyDir = "";
 
+	// initially hide the Request Id label when picking a new bundle
+	jQuery("#prevalidate_id_label").hide();
+	
 	if (jQuery("#create").is(":checked")) {
 		// Check for valid bundle directory name
 		var bundleNameCheck = /^[a-zA-Z0-9\.\_\-]+$/;
@@ -477,18 +490,15 @@ function onSelectClick() {
 								insertAfterThis.after(newDirRow);
 							}
 						}			
-						console.log("after create Directory");
 						enableBuildButton();
 						enableResetButton();
 					}					
 					else {
-						console.log("selected is false");
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 						jQuery("#createDirectoryMessage").text(status.message).css("color", "red");
 						disableBuildButton();
 						disableResetButton();
 					}
-					console.log("continue");
 					var continueButton = jQuery("#create_continue");
 					enableContinueButton(continueButton);
 					var bundleDir = status.directoryName;
@@ -517,11 +527,9 @@ function onSelectClick() {
 
 function onUploadSelectedAgenciesClick() {
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
-	console.log("in onUploadSelectedAgenciesClick");
 	var cleanedDirs = [];
 	$('#agency_data .agencySelected').each(function() {
 		$this = $(this)
-		console.log("getting agency values");
 		var agencyId = $(this).find('.agencyIdSelect').val();
 		var agencyDataSourceType = $(this).find('.agencyDataSourceType').val();
 		var agencyProtocol = $(this).find('.agencyProtocol').val();
@@ -536,9 +544,6 @@ function onUploadSelectedAgenciesClick() {
 		} else {
 			cleanDir = "false";
 		}
-		console.log("next agency: " + agencyId + ", type: " + agencyDataSourceType
-				+ ", protocol: " + agencyProtocol
-				+ ", data source: " + agencyDataSource);
 		if (agencyProtocol != "file") {
 			var actionName = "uploadSourceData";	
 			jQuery.ajax({
@@ -604,11 +609,10 @@ function onAddAnotherAgencyClick() {
 	var metadata = "";
 	var url = "";
 	if (agencyMetadataAvailable) {
-	  console.log("adding metadata to new row");
 	  metadata = '<select class="agencyIdSelect">';
 	  for (var i=0; i<agencyMetadata.length; ++i) {
 		  metadata += '<option value="' + agencyMetadata[i].legacyId + '">'
-		  + agencyMetadata[i].legacyId + '</option>';
+		  + agencyMetadata[i].shortName + '</option>';
 	  }
 	  metadata += '</select>';
 	  url = agencyMetadata[0].gtfsFeedUrl;
@@ -794,6 +798,8 @@ function directoryOptionChanged() {
 		jQuery("#createDirectoryContents #directoryButton").attr("name","method:createDirectory");
 		jQuery("#selectExistingContents").hide();
 		jQuery('#copyDirectory').hide();
+		// Blank out the Comment box
+		jQuery("#commentBox #bundleComment").val("");
 	} 
 	else if(jQuery("#copy").is(":checked")) {
 		jQuery("#createDirectoryContents #directoryButton").val("Copy");
@@ -865,6 +871,7 @@ function onValidateClick() {
 		jQuery("#buildBundle_bundleName").val(bundleName);
 	}
 
+	jQuery("#prevalidate_progress").show();
 	jQuery("#prevalidate_exception").hide();
 	jQuery("#prevalidateInputs #validateBox #validateButton").attr("disabled", "disabled");
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
@@ -876,11 +883,17 @@ function onValidateClick() {
 			var bundleResponse = response;
 			if (bundleResponse != undefined) {
 				jQuery("#prevalidate_id").text(bundleResponse.id);
+				if (jQuery("#prevalidate_id").text().length > 0) {
+					jQuery("#prevalidate_id_label").show();
+				}
 				//jQuery("#prevalidate_resultList").text("calling...");
 				window.setTimeout(updateValidateStatus, 5000);
 			} else {
 				jQuery("#prevalidate_id").text(error);
 				jQuery("#prevalidate_resultList").text("error");
+				if (jQuery("#prevalidate_id").text().length > 0) {
+					jQuery("#prevalidate_id_label").show();
+				}
 			}
 		},
 		error: function(request) {
@@ -1049,12 +1062,14 @@ function bundleUrl() {
 			var bundleResponse = response;
 			if(bundleResponse.exception !=null) {
 				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
+				.text("(exception)")
 				.css("padding-left", "5px")
 				.css("font-size", "12px")
 				.addClass("adminLabel")
 				.css("color", "red");
 			} else {
 				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
+				.text(bundleResponse.bundleResultLink)
 				.css("padding-left", "5px")
 				.css("font-size", "12px")
 				.addClass("adminLabel")
@@ -1545,7 +1560,7 @@ function addUploadFileAgencyDropdown() {
 	console.log("starting addUploadFileAgencyDropdown");
 	agencyDropDown = $('<select class="agencyIdSelect">');
 	jQuery(agencyMetadata).each(function() {
-		agencyDropDown.append(jQuery("<option>").attr('value',this.legacyId).text(this.legacyId));
+		agencyDropDown.append(jQuery("<option>").attr('value',this.legacyId).text(this.shortName));
 	});
 	agencyDropDown.insertBefore("#agencyId");
 }

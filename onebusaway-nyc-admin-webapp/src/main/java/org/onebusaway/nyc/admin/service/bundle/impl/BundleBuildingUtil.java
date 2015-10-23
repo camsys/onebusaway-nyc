@@ -10,6 +10,7 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
@@ -25,7 +26,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
@@ -42,6 +45,10 @@ public class BundleBuildingUtil {
   }
   
   public String generateJsonMetadata(BundleBuildRequest request, BundleBuildResponse response) {
+    return generateJsonMetadata(request, response, null);
+  }
+
+  public String generateJsonMetadata(BundleBuildRequest request, BundleBuildResponse response, String bundleId) {
     File bundleDir = new File(response.getBundleDataDirectory());
     List<BundleFile> files = getBundleFilesWithSumsForDirectory(bundleDir, bundleDir);
     
@@ -52,8 +59,12 @@ public class BundleBuildingUtil {
     
     Bundle bundle = new Bundle();
 
-    bundle.setId(getBundleId(response.getBundleRootDirectory() + File.separator
+    if (bundleId != null) {
+      bundle.setId(bundleId);   // Use id from previous build
+    } else {
+      bundle.setId(getBundleId(response.getBundleRootDirectory() + File.separator
         + "data" + File.separator + "metadata.json"));
+    }
 
     bundle.setDataset(request.getBundleDirectory());
 
@@ -186,7 +197,9 @@ public class BundleBuildingUtil {
     return new Date(file.lastModified());
   }
   
-  private String getBundleId(String metadataFile) {
+  // Changed to public static to allow call 
+  // from BundleBuildingServiceImpl.checkBundleId(...)
+  public static String getBundleId(String metadataFile) {
     try {
       String bundleId = new JsonParser().parse(new FileReader(metadataFile)).getAsJsonObject().get(
           "id").getAsString();
@@ -194,6 +207,35 @@ public class BundleBuildingUtil {
     } catch (Exception e) {
     }
     return null;
+  }
+
+  // Set the bundle id in the specified metadata json files to the given value.
+  public static void setBundleId(String metadataFile, String bundleId) {
+    if (bundleId == null) {
+      return;
+    }
+    FileWriter metadataWriter = null;
+    try {
+      JsonObject metadataJson = new JsonParser().parse(new FileReader(metadataFile)).getAsJsonObject();
+      metadataJson.remove("id");
+      metadataJson.addProperty("id", bundleId);
+      String metadataString = metadataJson.toString();
+      metadataWriter = new FileWriter(metadataFile, false);
+      metadataWriter.write(metadataString);
+    } catch (IOException e) {
+      _log.info("Error writing metadata.json: " + e.getMessage());
+    } catch (Exception e) {
+      _log.error(e.getMessage());
+    } finally {
+      try {
+        if (metadataWriter != null) {
+          metadataWriter.close();
+        }
+      } catch (Exception e) {
+        _log.error(e.getMessage());
+      }
+    }
+    return;
   }
 
   private String getMd5ForFile(File file) {

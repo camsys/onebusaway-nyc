@@ -112,10 +112,10 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         && !"null".equals(request.getEmailAddress())) {
     	String from;
     	try {
-    		from = configurationService.getConfigurationValueAsString("admin.senderEmailAddress", "mtabuscis@mtabuscis.net");
+    		from = configurationService.getConfigurationValueAsString("admin.senderEmailAddress", "admintest@oba.sound.com");
     	} catch(RemoteConnectFailureException e) {
-    		_log.error("Setting from email address to default value : 'mtabuscis@mtabuscis.net' due to failure to connect to TDM");
-    		from = "mtabuscis@mtabuscis.net";
+    		_log.error("Setting from email address to default value : 'admin.oba.sound.com' due to failure to connect to TDM");
+    		from = "adminerror@oba.sound.com";
     		e.printStackTrace();
     	}
     	StringBuffer msg = new StringBuffer();
@@ -176,6 +176,10 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     if (servletContext != null) {
       String key = servletContext.getInitParameter("server.url");
       if (key != null) {
+        String port = servletContext.getInitParameter("admin.port");
+        if (port != null) {
+          key = key + ":" + port;
+        }
         setServerURL(key);
       }
       String instanceOverride = servletContext.getInitParameter("admin.instanceId");

@@ -216,6 +216,7 @@ public class NYCFileUtils {
       if (to.exists() && to.isDirectory()) {
         if (from.exists() && from.isDirectory()) {
           org.apache.commons.io.FileUtils.copyDirectory(from, to, true);
+          return;  // Added to prevent dupe dir.  JP 10/14/15
         }
         String file = this.parseFileName(from.toString());
         to = new File(to.toString() + File.separator + file);
