@@ -103,12 +103,6 @@ public class RecordValidationServiceImpl implements RecordValidationService {
 		CcLocationReport ccLocationReport = realTimeRecord.getCcLocationReport();
 		long vehicleId = ccLocationReport.getVehicle().getVehicleId();
 		
-		//Check vehicle and agency id
-		if(new Long(vehicleId) == null) {
-			log.error("Missing vehicle id for real time record");
-			isValid =  false;
-		}
-		
 		if(ccLocationReport.getVehicle().getAgencyId() == null) {
 			log.error("Missing agency id for real time record : {}", vehicleId);
 			isValid = false;
