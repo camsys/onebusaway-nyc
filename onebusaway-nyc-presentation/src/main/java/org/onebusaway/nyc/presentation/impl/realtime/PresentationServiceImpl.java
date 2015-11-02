@@ -1,5 +1,8 @@
 package org.onebusaway.nyc.presentation.impl.realtime;
 
+import javax.annotation.PostConstruct;
+
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -34,6 +37,20 @@ public class PresentationServiceImpl implements PresentationService {
 
   private Long _now = null;
   
+  int atStopThresholdInFeet;
+
+  int approachingThresholdInFeet;
+
+  int distanceAsStopsThresholdInFeet;
+
+  int distanceAsStopsThresholdInStops;
+
+  int distanceAsStopsMaximumThresholdInFeet;
+
+  boolean useTimePredictions;
+	
+  boolean firstLoad;
+  
   @Override
   public void setTime(long time) {
     _now = time;
@@ -45,7 +62,46 @@ public class PresentationServiceImpl implements PresentationService {
     else
       return System.currentTimeMillis();
   }
+  
+  @PostConstruct
+  public void start(){
+	  firstLoad = true;
+  }
+  
+	@Refreshable(dependsOn = { "display.atStopThresholdInFeet",
+			"display.approachingThresholdInFeet",
+			"display.distanceAsStopsTresholdInFeet",
+			"display.distanceAsStopsThresholdInStops",
+			"display.distanceAsStopsMaximumThresholdInFeet",
+			"display.useTimePredictions" })
+	protected void refreshCache() {
+		setAtStopThresholdInFeet(_configurationService
+				.getConfigurationValueAsInteger(
+						"display.atStopThresholdInFeet", 100));
 
+		setApproachingThresholdInFeet(approachingThresholdInFeet = _configurationService
+				.getConfigurationValueAsInteger(
+						"display.approachingThresholdInFeet", 500));
+
+		distanceAsStopsThresholdInFeet = _configurationService
+				.getConfigurationValueAsInteger(
+						"display.distanceAsStopsTresholdInFeet", 2640);
+
+		distanceAsStopsThresholdInStops = _configurationService
+				.getConfigurationValueAsInteger(
+						"display.distanceAsStopsThresholdInStops", 3);
+
+		distanceAsStopsMaximumThresholdInFeet = _configurationService
+				.getConfigurationValueAsInteger(
+						"display.distanceAsStopsMaximumThresholdInFeet", 2640);
+
+		useTimePredictions = Boolean.parseBoolean(_configurationService
+				.getConfigurationValueAsString("display.useTimePredictions",
+						"false"));
+		
+		_log.debug("Configuration values refreshed");
+	}
+  
   /**
    * Display time predictions if available from a third-party source. 
    *  
@@ -54,6 +110,10 @@ public class PresentationServiceImpl implements PresentationService {
    */
   @Override
   public Boolean useTimePredictionsIfAvailable() {
+	  if(firstLoad){
+		  refreshCache();
+		  firstLoad = false;
+	  }
 	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
   }
 
@@ -127,21 +187,11 @@ public class PresentationServiceImpl implements PresentationService {
   public String getPresentableDistance(Double distanceFromStop, Integer numberOfStopsAway, String approachingText, 
 	      String oneStopWord, String multipleStopsWord, String oneMileWord, String multipleMilesWord, String awayWord){
   	String r = "";
-
-	int atStopThresholdInFeet = 
-			  _configurationService.getConfigurationValueAsInteger("display.atStopThresholdInFeet", 100);    
-
-	int approachingThresholdInFeet = 
-			  _configurationService.getConfigurationValueAsInteger("display.approachingThresholdInFeet", 500);    
-
-	int distanceAsStopsThresholdInFeet = 
-			  _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsTresholdInFeet", 2640);    
-
-	int distanceAsStopsThresholdInStops = 
-			  _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsThresholdInStops", 3);    
-
-	int distanceAsStopsMaximumThresholdInFeet = 
-			  _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsMaximumThresholdInFeet", 2640);
+  	
+  	if(firstLoad){
+		refreshCache();
+		firstLoad = false;
+	}
     
     // meters->feet
     double feetAway = distanceFromStop * 3.2808399;
@@ -351,5 +401,48 @@ public class PresentationServiceImpl implements PresentationService {
     
     return true;
   }
+  
+  public int getAtStopThresholdInFeet() {
+	  return atStopThresholdInFeet;
+  }
+	
+  public void setAtStopThresholdInFeet(int atStopThresholdInFeet) {
+	  this.atStopThresholdInFeet = atStopThresholdInFeet;
+  }
+	
+  public int getApproachingThresholdInFeet() {
+	  return approachingThresholdInFeet;
+  }
+	
+  public void setApproachingThresholdInFeet(int approachingThresholdInFeet) {
+	  this.approachingThresholdInFeet = approachingThresholdInFeet;
+  }
+	
+  public int getDistanceAsStopsThresholdInFeet() {
+	  return distanceAsStopsThresholdInFeet;
+  }
+	
+  public void setDistanceAsStopsThresholdInFeet(int distanceAsStopsThresholdInFeet) {
+	  this.distanceAsStopsThresholdInFeet = distanceAsStopsThresholdInFeet;
+  }
+	
+  public int getDistanceAsStopsThresholdInStops() {
+	  return distanceAsStopsThresholdInStops;
+  }
+	
+  public void setDistanceAsStopsThresholdInStops(
+		int distanceAsStopsThresholdInStops) {
+	  this.distanceAsStopsThresholdInStops = distanceAsStopsThresholdInStops;
+  }
+	
+  public int getDistanceAsStopsMaximumThresholdInFeet() {
+	  return distanceAsStopsMaximumThresholdInFeet;
+  }
+	
+  public void setDistanceAsStopsMaximumThresholdInFeet(
+			int distanceAsStopsMaximumThresholdInFeet) {
+	  this.distanceAsStopsMaximumThresholdInFeet = distanceAsStopsMaximumThresholdInFeet;
+  }
+
 
 }
