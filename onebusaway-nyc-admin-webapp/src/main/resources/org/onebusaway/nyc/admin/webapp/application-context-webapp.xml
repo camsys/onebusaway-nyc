@@ -39,8 +39,8 @@
     <context:component-scan base-package="org.onebusaway.nyc.admin.service.impl" />
     <context:component-scan base-package="org.onebusaway.nyc.admin.job" />
     <context:component-scan base-package="org.onebusaway.nyc.admin.service.bundle.impl" />
-    
-    
+
+
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
 
     
@@ -110,6 +110,8 @@
    
    <bean id="bundleServerService" class="org.onebusaway.nyc.admin.service.server.impl.BundleServerServiceImpl" />
 
+   <bean id="wmataRssServiceAlertsService" class="org.onebusaway.nyc.admin.service.server.impl.WmataRssServiceAlertsSerivceImpl" />
+
    <bean id="keyTranslator" class="org.onebusaway.nyc.admin.util.ConfigurationKeyTranslator" />
    
    <bean id="loginEventListener" class="org.onebusaway.nyc.admin.event.handler.LoginEventListener" />
@@ -159,6 +161,6 @@
 	    <constructor-arg type="java.lang.String" value="http://tdm"/>
 	    <constructor-arg type="java.lang.Integer" value="80" />
 	    <constructor-arg type="java.lang.String" value="/api/" />
-	  </bean>
-  
+    </bean>
+
 </beans>

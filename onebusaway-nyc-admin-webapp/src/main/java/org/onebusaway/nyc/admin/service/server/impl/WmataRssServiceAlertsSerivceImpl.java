@@ -58,7 +58,7 @@ class WmataRssServiceAlertsSerivceImpl implements WmataRssServiceAlertsService {
     @Autowired
     private TransitDataService _transitDataService;
     private Map<String, String> routeShortNameToRouteIdMap;
-    private Map<String, ServiceAlertBean> alertMap = new HashMap<String, ServiceAlertBean>();
+    private Map<String, ServiceAlertBean> wmataAlertCache;
     private ObjectMapper mapper = new ObjectMapper();
 
     @PostConstruct
@@ -180,11 +180,12 @@ class WmataRssServiceAlertsSerivceImpl implements WmataRssServiceAlertsService {
                 if(routeShortNameToRouteIdMap == null)
                     return;
 
-                ListBean<ServiceAlertBean> activeAlerts = _transitDataService.getAllServiceAlertsForAgencyId(wmataAgencyId);
-                Map<String, ServiceAlertBean> currentWmataAlerts = new HashMap<String, ServiceAlertBean>();
-                for(ServiceAlertBean serviceAlertBean : activeAlerts.getList()){
-                    if(serviceAlertBean.getSource() != null && serviceAlertBean.getSource().equals("WMATA")){
-                        alertMap.put(serviceAlertBean.getId(), serviceAlertBean);
+                ListBean<ServiceAlertBean> currentObaAlerts = _transitDataService.getAllServiceAlertsForAgencyId(wmataAgencyId);
+                for(ServiceAlertBean serviceAlertBean : currentObaAlerts.getList()){
+                    if(!wmataAlertCache.keySet().contains(serviceAlertBean.getId())
+                            && serviceAlertBean.getSource() != null
+                            && serviceAlertBean.getSource().equals("WMATA")){
+                        wmataAlertCache.put(serviceAlertBean.getId(), serviceAlertBean);
                     }
                 }
 
@@ -208,35 +209,31 @@ class WmataRssServiceAlertsSerivceImpl implements WmataRssServiceAlertsService {
                     currentRssAlertMap.put(alert.getId(), alert);
                 }
 
-                Iterator<String> guidIter = alertMap.keySet().iterator();
+                Iterator<String> cachedAlertsGuidIter = wmataAlertCache.keySet().iterator();
                 //first, check for expired alerts and existing alerts that have been updated
-                while(guidIter.hasNext()){
-                    String guid = guidIter.next();
-                    boolean remove = false;
+                while(cachedAlertsGuidIter.hasNext()){
+                    String guid = cachedAlertsGuidIter.next();
                     if(!currentRssAlertMap.keySet().contains(guid)){
                         _log.info("Removing expired WMATA alert with guid " + guid);
-                        remove = true;
-                    }else{
-                        ServiceAlertBean currentAlert = alertMap.get(guid);
-                        ServiceAlertBean rssAlert = currentRssAlertMap.get(guid);
-                        String currentAlertString = mapper.writeValueAsString(currentAlert);
-                        String rssAlertString = mapper.writeValueAsString(rssAlert);
-                        if(!currentAlertString.equals(rssAlertString)) {
-                            _log.info("Updating WMATA alert with guid " + guid);
-                        }
-                    }
-                    if(remove){
                         _transitDataService.removeServiceAlert(guid);
-                        guidIter.remove();
+                        cachedAlertsGuidIter.remove();
+                    }else{
+                        ServiceAlertBean currentAlert = wmataAlertCache.get(guid);
+                        ServiceAlertBean rssAlert = currentRssAlertMap.get(guid);
+                        if(rssAlert.getCreationTime() > currentAlert.getCreationTime()) {
+                            _log.info("Updating WMATA alert with guid " + guid);
+                            wmataAlertCache.put(guid, rssAlert);
+                            _transitDataService.updateServiceAlert(rssAlert);
+                        }
                     }
                 }
 
                 //now create alerts for any new guids on the RSS feed
                 for(String currentRssGuid : currentRssAlertMap.keySet()){
-                    if(!alertMap.keySet().contains(currentRssGuid)){
+                    if(!wmataAlertCache.keySet().contains(currentRssGuid)){
                         _log.info("Creating WMATA alert with guid " + currentRssGuid);
                         _transitDataService.createServiceAlert(wmataAgencyId, currentRssAlertMap.get(currentRssGuid));
-                        alertMap.put(currentRssGuid, currentRssAlertMap.get(currentRssGuid));
+                        wmataAlertCache.put(currentRssGuid, currentRssAlertMap.get(currentRssGuid));
                     }
                 }
             } catch (Exception e) {
@@ -256,6 +253,7 @@ class WmataRssServiceAlertsSerivceImpl implements WmataRssServiceAlertsService {
                     mutableRouteMap.put(route.getShortName().toUpperCase(), route.getId());
                 }
                 routeShortNameToRouteIdMap = Collections.unmodifiableMap(mutableRouteMap);
+                wmataAlertCache = new HashMap<String, ServiceAlertBean>();
             } catch (Exception e) {
                 e.printStackTrace();
             }
