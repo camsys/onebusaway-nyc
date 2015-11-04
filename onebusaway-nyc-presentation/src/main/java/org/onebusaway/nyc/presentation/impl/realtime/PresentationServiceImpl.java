@@ -74,7 +74,7 @@ public class PresentationServiceImpl implements PresentationService {
 			"display.distanceAsStopsThresholdInStops",
 			"display.distanceAsStopsMaximumThresholdInFeet",
 			"display.useTimePredictions" })
-	protected void refreshCache() {
+	public void refreshCache() {
 		setAtStopThresholdInFeet(_configurationService
 				.getConfigurationValueAsInteger(
 						"display.atStopThresholdInFeet", 100));

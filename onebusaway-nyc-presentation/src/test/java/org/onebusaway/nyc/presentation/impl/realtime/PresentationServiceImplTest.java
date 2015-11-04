@@ -48,7 +48,7 @@ public class PresentationServiceImplTest {
     SiriDistanceExtension distances = new SiriDistanceExtension();
     distances.setDistanceFromCall(10.0 /FEET_TO_METERS);
     distances.setStopsFromCall(0);
-    
+    service.refreshCache();
     assertEquals(service.getPresentableDistance(distances), "at stop");
   }
   
@@ -57,7 +57,7 @@ public class PresentationServiceImplTest {
     SiriDistanceExtension distances = new SiriDistanceExtension();
     distances.setDistanceFromCall(10.0 /FEET_TO_METERS);
     distances.setStopsFromCall(1);
-    
+    service.refreshCache();
     assertEquals(service.getPresentableDistance(distances), "at stop");
   }
 
@@ -66,7 +66,7 @@ public class PresentationServiceImplTest {
     SiriDistanceExtension distances = new SiriDistanceExtension();
     distances.setDistanceFromCall(200.0 /FEET_TO_METERS);
     distances.setStopsFromCall(0);
-    
+    service.refreshCache();
     assertEquals(service.getPresentableDistance(distances), "approaching");
   }
   
@@ -75,7 +75,7 @@ public class PresentationServiceImplTest {
     SiriDistanceExtension distances = new SiriDistanceExtension();
     distances.setDistanceFromCall(100.0 /FEET_TO_METERS);
     distances.setStopsFromCall(2);
-    
+    service.refreshCache();
     assertEquals(service.getPresentableDistance(distances), "approaching");
   }
 
@@ -84,7 +84,7 @@ public class PresentationServiceImplTest {
     SiriDistanceExtension distances = new SiriDistanceExtension();
     distances.setDistanceFromCall(5280.0 /FEET_TO_METERS);
     distances.setStopsFromCall(0);
-    
+    service.refreshCache();
     assertEquals(service.getPresentableDistance(distances), "1.0 miles away");
   }
 
@@ -93,7 +93,7 @@ public class PresentationServiceImplTest {
     SiriDistanceExtension distances = new SiriDistanceExtension();
     distances.setDistanceFromCall(5280.0 /FEET_TO_METERS);
     distances.setStopsFromCall(4);
-    
+    service.refreshCache();
     assertEquals(service.getPresentableDistance(distances), "1.0 miles away");
   }
 
@@ -102,7 +102,7 @@ public class PresentationServiceImplTest {
     SiriDistanceExtension distances = new SiriDistanceExtension();
     distances.setDistanceFromCall((5280.0 * .25) /FEET_TO_METERS);
     distances.setStopsFromCall(2);
-    
+    service.refreshCache();
     assertEquals(service.getPresentableDistance(distances), "2 stops away");
   }
 
