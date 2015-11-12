@@ -13,6 +13,8 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Map.Entry;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,23 +73,40 @@ public class RestApiLibrary {
 		return new URL("http", _host, _port, url);
 	}	
 
-	public String getContentsOfUrlAsString(URL requestUrl) throws Exception {
-		URLConnection conn = requestUrl.openConnection();
-		conn.setConnectTimeout(connectionTimeout);
-		conn.setReadTimeout(readTimeout);
-		InputStream inStream = conn.getInputStream();
-		BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
-
-		StringBuilder output = new StringBuilder();
+	public String getContentsOfUrlAsString(URL requestUrl) throws IOException {
+		BufferedReader br = null;
+		InputStream inStream = null;
+		URLConnection conn = null;
 		
-		int cp;
-		while ((cp = br.read()) != -1) {
-			output.append((char) cp);
+		try{
+			conn = requestUrl.openConnection();
+			conn.setConnectTimeout(connectionTimeout);
+			conn.setReadTimeout(readTimeout);
+			inStream = conn.getInputStream();
+			br = new BufferedReader(new InputStreamReader(inStream));
+			StringBuilder output = new StringBuilder();
+			
+			int cp;
+			while ((cp = br.read()) != -1) {
+				output.append((char) cp);
+			}
+			
+			return output.toString();
 		}
-
-		br.close();
-		inStream.close();
-		return output.toString();
+		catch(IOException ioe){
+			String url = requestUrl != null ? requestUrl.toExternalForm() : "url unavailable";
+			log.error("Error getting contents of url: " + url);	
+			throw ioe;
+		}finally{
+			try{
+				if(br != null) br.close();
+				if(inStream != null) inStream.close();
+			}
+			catch(IOException ioe2){
+				log.error("Error closing connection");
+			}
+		}
+		
 	}
 
 	public ArrayList<JsonObject> getJsonObjectsForString(String string) throws Exception {
@@ -218,7 +237,12 @@ public class RestApiLibrary {
 	private HttpURLConnection getHttpURLConnection(URL requestUrl) {
 		HttpURLConnection conn = null;
 		try {
-			conn = (HttpURLConnection)requestUrl.openConnection();
+			if(requestUrl.getProtocol().toLowerCase().equals("https")){
+				conn = (HttpsURLConnection)requestUrl.openConnection();
+			}
+			else{
+				conn = (HttpURLConnection)requestUrl.openConnection();
+			}
 			conn.setRequestMethod("POST");
 			conn.setRequestProperty("Content-Type", "application/json");
 			conn.setUseCaches (false);
@@ -226,8 +250,11 @@ public class RestApiLibrary {
 		} catch (IOException e) {
 			log.error("Error opening Http Connection for url : {}", requestUrl.toString());
 			e.printStackTrace();
+		}finally {
+			if(conn != null) {
+				conn.disconnect();
+			}
 		}
-		
 		return conn;
 	}
 }
