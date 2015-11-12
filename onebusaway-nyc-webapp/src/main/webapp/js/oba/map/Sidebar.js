@@ -666,7 +666,7 @@ OBA.Sidebar = function() {
 				jQuery.history.init(function(hash) {
 					if(hash !== null && hash !== "") {
 						var searchInput = jQuery("#searchbar form input[type=text]");
-						searchInput.val(hash);
+						searchInput.val(decodeURIComponent(hash);
 						doSearch(hash);
 					} else {
 						// Launch wizard
