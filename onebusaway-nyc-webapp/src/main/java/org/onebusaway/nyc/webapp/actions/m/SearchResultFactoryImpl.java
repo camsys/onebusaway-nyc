@@ -353,16 +353,22 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
 		  String timeString = Math.round(minutes) + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
 
-		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-			  return "<strong>" + timeString + "</strong>, " + distance + " (Including expected layover time at the terminal)";
-		  } else if(progressStatus != null && progressStatus.getValue().contains("layover") ){
-			  if(journey.getOriginAimedDepartureTime() != null){
+		  if(progressStatus != null && progressStatus.getValue().contains("layover") ){
+			  
+			  if(journey.getOriginAimedDepartureTime() != null && 
+					  journey.getOriginAimedDepartureTime().getTime() < System.currentTimeMillis()){
+					  
 				  DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
 				  String originDepartTimeString = formatter.format(journey.getOriginAimedDepartureTime());
 				  return "<strong>" + timeString + "</strong>, " + distance + " (at the terminal, expected to depart at "+originDepartTimeString+")";
 			  }
-			  return "<strong>" + timeString + "</strong>, " + distance + " (at the terminal, departing soon)";
-		  } else {
+			  
+			  return "<strong>" + timeString + "</strong>, " + distance + " (at the terminal)";
+		  }
+		  else if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
+			  return "<strong>" + timeString + "</strong>, " + distance + " (+ scheduled layover at terminal)";
+	  	  }
+		  else {
 			  return "<strong>" + timeString + "</strong>" + ", " + distance;
 		  }
 	  }
@@ -386,25 +392,22 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     if (isStopContext && progressStatus != null
             && progressStatus.getValue().contains("layover")) {
    
-    	if(journey.getOriginAimedDepartureTime() != null) {
+    	if(journey.getOriginAimedDepartureTime() != null && journey.getOriginAimedDepartureTime().getTime() > System.currentTimeMillis()) {
         	DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
-        	
-        	if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
-        		message += "at terminal";
-        	} else {    			
-        		message += "at terminal, scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
-        	}
-        } else {
+    		message += "at terminal, scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
+    	}
+    	else{
         	message += "at terminal";
-        }
-    } else if (isStopContext && progressStatus != null
-        && progressStatus.getValue().contains("prevTrip")) {
+    	}
+        
+    } else if (isStopContext && progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
     	
-    	if(journey.getOriginAimedDepartureTime() != null) {
-        	DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
-        	message += "+ scheduled layover, departing the terminal at " 
-        					+ formatter.format(journey.getOriginAimedDepartureTime());
-    	}else{
+    	if(journey.getOriginAimedDepartureTime() != null && journey.getOriginAimedDepartureTime().getTime() > System.currentTimeMillis()) {
+    		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
+    		message += "+ scheduled layover, departing the terminal at " 
+					+ formatter.format(journey.getOriginAimedDepartureTime());
+    	}
+    	else{
     		message += "+ scheduled layover at terminal";
     	}
     }
