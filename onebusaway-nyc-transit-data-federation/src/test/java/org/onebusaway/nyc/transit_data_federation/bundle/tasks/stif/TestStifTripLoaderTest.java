@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -54,10 +55,12 @@ public class TestStifTripLoaderTest {
     Map<String, List<AgencyAndId>> mapping = loader.getTripMapping();
     assertTrue(mapping.containsKey("140"));
     List<AgencyAndId> trips = mapping.get("140");
-    AgencyAndId tripId = trips.get(0);
-    Trip trip = dao.getTripForId(tripId);
-    assertEquals(new AgencyAndId("MTA NYCT",
-        "20100627DA_003000_M14AD_0001_M14AD_1"), trip.getId());
+    
+    //check if dao and stif loader concur,
+    for (AgencyAndId atrip:trips) {
+    	assertTrue(dao.getTripForId(atrip) != null );
+    }
+
   }
   
   @Test
