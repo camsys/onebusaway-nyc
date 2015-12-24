@@ -498,7 +498,7 @@ OBA.Popups = (function() {
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
 							html += '<li class="arrival' + lastClass + '">' + timePrediction + '</li>';
 
-							// distance mode
+						// distance mode
 						} else {
 							if(layover === true) {
 								if(typeof monitoredVehicleJourney.OriginAimedDepartureTime !== 'undefined') {
@@ -513,7 +513,11 @@ OBA.Popups = (function() {
 									distance += " <span class='not_bold'>(at terminal)</span>";
 								}
 							} else if(wrapped === true) {
-								distance += " <span class='not_bold'>(+ scheduled layover at terminal)</span>";
+								if(departureTime.getTime() < updateTimestampReference) {
+									distance += " <span class='not_bold'>(+ scheduled layover at terminal)</span>";
+								} else {
+									distance += " <span class='not_bold'>(at terminal, scheduled to depart " + departureTime.format("h:MM TT") + ")</span>";
+								}
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
