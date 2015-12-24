@@ -31,6 +31,7 @@ OBA.Sign = function() {
 	var signPosition = url.indexOf("/sign/sign");
 	var baseUrl = url.substring(0, signPosition);
 
+	//do these actually get used?
 	var hostname = window.location.hostname;
 	var hostnamePosition = url.indexOf(hostname);
 	var obaApiBaseUrlPosition = url.indexOf("/", hostnamePosition);
@@ -289,9 +290,10 @@ OBA.Sign = function() {
 					.appendTo(row);
 			
 				// distance cell
+				var arrivalText = vehicleInfo.distanceAway + " " + vehicleInfo.arrivingIn;
 				jQuery('<td colspan="2"></td>')
 					.addClass("distance")
-					.text(vehicleInfo.distanceAway)
+					.text(arrivalText)
 					.appendTo(row);
 					
 				tableBody.append(row);				
@@ -359,8 +361,8 @@ OBA.Sign = function() {
 
 		var stopElement = getNewElementForStop(stopId);
 
-		var params = { OperatorRef: stopId.agency, MonitoringRef: stopId.id, StopMonitoringDetailLevel: "normal" };
-		jQuery.getJSON(baseUrl + "/" + OBA.Config.siriSMUrl, params, function(json) {	
+		var params = { OperatorRef: stopId.agency, MonitoringRef: stopId.id, StopMonitoringDetailLevel: "basic", version:"2" };
+		jQuery.getJSON(baseUrl + "/" + OBA.Config.siriSMUrl, params, function(json) {
 			//updateTimestamp(OBA.Util.ISO8601StringToDate(json.Siri.ServiceDelivery.ResponseTimestamp));
 			//hideError();
 
@@ -398,10 +400,13 @@ OBA.Sign = function() {
 				});
 				
 				var vehicleInfo = {};
-				vehicleInfo.distanceAway = journey.MonitoredCall.Extensions.Distances.PresentableDistance;
+				vehicleInfo.distanceAway = journey.MonitoredCall.ArrivalProximityText;
 				vehicleInfo.vehicleId = journey.VehicleRef.split("_")[1];
 				vehicleInfo.lineRef = journey.LineRef;
-				
+				var predictedTime = journey.MonitoredCall.ExpectedArrivalTime;
+				vehicleInfo.arrivingIn =  OBA.Util.ISO8601StringToDate(predictedTime);
+
+
 				headsignToDistanceAways[headsign].push(vehicleInfo);
 			});
 
