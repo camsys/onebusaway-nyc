@@ -100,7 +100,6 @@ public class StifTripLoaderSupport {
       int index = 0;
 
       for (Trip trip : allTrips) {
-
         if (index % 20000 == 0)
           _log.info("trip=" + index + " / " + allTrips.size());
         index++;
@@ -127,7 +126,6 @@ public class StifTripLoaderSupport {
   }
 
   TripIdentifier getTripAsIdentifier(final Trip trip) {
-
     String routeName = trip.getRoute().getId().getId();
     int startTime = -1, endTime = -1;
     String startStop;
@@ -139,12 +137,13 @@ public class StifTripLoaderSupport {
      * arrival times.
      */
     if (gtfsDao instanceof SpringHibernateGtfsRelationalDaoImpl) {
+//      _log.debug("finding trip " + trip.getId().getId() + "via hibernate");
       SpringHibernateGtfsRelationalDaoImpl dao = (SpringHibernateGtfsRelationalDaoImpl) gtfsDao;
       List<?> rows = (List<?>) dao.execute(new HibernateOperation() {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,
-            SQLException {
-          Query query = session.createQuery("SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 ORDER BY st.stopSequence ASC LIMIT 1");
+        SQLException {
+          Query query = session.createQuery("SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 AND st.pickUpType = 0ORDER BY st.stopSequence ASC LIMIT 1");
           query.setParameter("trip", trip);
           return query.list();
         }
@@ -156,20 +155,52 @@ public class StifTripLoaderSupport {
       rows = (List<?>) dao.execute(new HibernateOperation() {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,
-            SQLException {
-          Query query = session.createQuery("SELECT st.arrivalTime FROM StopTime st WHERE st.trip = :trip AND st.arrivalTime >= 0 ORDER BY st.stopSequence DESC LIMIT 1");
+        SQLException {
+          Query query = session.createQuery("SELECT st.arrivalTime FROM StopTime st WHERE st.trip = :trip AND st.arrivalTime >= 0 AND st.dropOffType = 0 ORDER BY st.stopSequence DESC LIMIT 1");
           query.setParameter("trip", trip);
           return query.list();
         }
       });
       values = (Object[]) rows.get(0);
       endTime = ((Integer) values[0]);
-    } else {
+    } 
+    else {
+//      _log.debug("finding trip " + trip.getId().getId() + "via java loop");
       List<StopTime> stopTimes = gtfsDao.getStopTimesForTrip(trip);
-      StopTime startStopTime = stopTimes.get(0);
+
+      // proposed fix for dealing with non-revenue stops as the first stop.
+      int actualFirstStop = 0;
+      boolean foundFirstStop = false;
+
+      while(!foundFirstStop) {
+        // pick up type 0 === allowed
+        if (stopTimes.get(actualFirstStop).getPickupType() == 0){
+             foundFirstStop = true;
+        }
+        // otherwise it's not the start time.
+        else {
+          actualFirstStop++;
+        }
+      }
+
+      StopTime startStopTime = stopTimes.get(actualFirstStop);
       startTime = startStopTime.getDepartureTime();
       startStop = startStopTime.getStop().getId().getId();
-      StopTime endStopTime = stopTimes.get(stopTimes.size() - 1);
+      
+      int actualLastStop = (stopTimes.size() - 1);
+      boolean foundLastStop = false;
+
+      while(!foundLastStop) {
+        if (stopTimes.get(actualLastStop).getDropOffType() == 0){
+             foundLastStop = true;
+        }
+        else {
+          actualLastStop--;
+        }
+      }
+      
+      // change this to stopTimes.size() - 1 to see test fail :)
+      StopTime endStopTime = stopTimes.get(actualLastStop);
       endTime = endStopTime.getArrivalTime();
     }
     String run = null;

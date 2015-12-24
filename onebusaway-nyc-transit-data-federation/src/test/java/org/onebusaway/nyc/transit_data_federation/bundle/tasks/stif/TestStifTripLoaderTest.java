@@ -27,6 +27,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -36,6 +40,14 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 
 public class TestStifTripLoaderTest {
+  //it's log, log, it's better than bad, it's good.
+  final static Logger _log = Logger.getRootLogger();
+  
+  @BeforeClass
+  public static void setUp() {
+    BasicConfigurator.configure();
+    _log.setLevel(Level.DEBUG);
+  }
   
   @Test
   public void testLoader() throws IOException {
@@ -56,17 +68,89 @@ public class TestStifTripLoaderTest {
     assertTrue(mapping.containsKey("140"));
     List<AgencyAndId> trips = mapping.get("140");
     
-    //check if dao and stif loader concur,
-    for (AgencyAndId atrip:trips) {
-    	assertTrue(dao.getTripForId(atrip) != null );
+    //check if dao and stif loader concur, ie all trips from the map must accessible from the GTFS dao.
+    for (AgencyAndId trip:trips) {
+    	assertTrue(dao.getTripForId(trip) != null );
     }
 
   }
   
   @Test
+  public void testNonRevenueFirstStop() throws IOException {
+    String stifFile = "stif.b_0001__.416188.sun";
+    String gtfsDir = "b1_gtfs";
+    
+    InputStream in = getClass().getResourceAsStream(stifFile);
+    String gtfs = getClass().getResource(gtfsDir).getFile();
+
+    GtfsReader reader = new GtfsReader();
+    GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
+    reader.setEntityStore(dao);
+    reader.setInputLocation(new File(gtfs));
+    
+    reader.run();
+
+    StifTripLoader loader = new StifTripLoader();
+    loader.setLogger(new MultiCSVLogger());
+    loader.setGtfsDao(dao);
+    
+    _log.info("reading stif");
+    loader.run(in, new File(stifFile));
+    Map<String, List<AgencyAndId>> mapping = loader.getTripMapping();
+    _log.info("done mapping stif");
+    
+    // get trip IDs by sign code. 
+    // 4013 has a non-rev first stop.
+    assertTrue(mapping.containsKey("4013"));
+    List<AgencyAndId> trips = mapping.get("4013");
+    
+    //check if dao and stif loader concur, ie all trips from the map must accessible from the GTFS dao.
+    for (AgencyAndId trip:trips) {
+      assertTrue(dao.getTripForId(trip) != null );
+    }
+
+  }
+  
+  @Test
+  public void testNonRevenueLastStop() throws IOException {
+    String stifFile = "stif.q_0004__.516151.sun";
+    String gtfsDir = "q4_gtfs";
+    
+    InputStream in = getClass().getResourceAsStream(stifFile);
+    String gtfs = getClass().getResource(gtfsDir).getFile();
+
+    GtfsReader reader = new GtfsReader();
+    GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
+    reader.setEntityStore(dao);
+    reader.setInputLocation(new File(gtfs));
+    
+    reader.run();
+
+    StifTripLoader loader = new StifTripLoader();
+    loader.setLogger(new MultiCSVLogger());
+    loader.setGtfsDao(dao);
+    
+    loader.run(in, new File(stifFile));
+    Map<String, List<AgencyAndId>> mapping = loader.getTripMapping();
+    
+    // 5041 has a non-rev last stop.
+    assertTrue(mapping.containsKey("5041"));
+    List<AgencyAndId> trips = mapping.get("5041");
+    
+    for (AgencyAndId trip:trips) {
+      assertTrue(dao.getTripForId(trip) != null );
+    }
+
+  }
+  
+  // modified to use the 2016 q4 data, saving a couple hundred megs in the repo. 
+  @Test
   public void testNonRevStopParsing() throws IOException {
-    InputStream in = getClass().getResourceAsStream("stif.q_0004__.513032.wkd.open.modified");
-    String gtfs = getClass().getResource("GTFS_SURFACE_Q_20130106_REV201303111037").getFile();
+    String stifFile = "stif.q_0004__.516151.sun";
+    String gtfsDir = "q4_gtfs";
+    
+    InputStream in = getClass().getResourceAsStream(stifFile);
+    String gtfs = getClass().getResource(gtfsDir).getFile();
 
     GtfsReader reader = new GtfsReader();
     GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
@@ -77,15 +161,15 @@ public class TestStifTripLoaderTest {
     StifTripLoader loader = new StifTripLoader();
     loader.setLogger(new MultiCSVLogger());
     loader.setGtfsDao(dao);
-    loader.run(in, new File("stif.q_0004__.513032.wkd.open.modified"));
+    loader.run(in, new File(stifFile));
     
     // After parsing the STIF trip containing a non-revenue stop,
     // it should result in the following GTFS trip ids being mapped:
-    //MTA NYCT_20130106EA_001800_Q04_0146_Q4_1
-    //MTA NYCT_20130106EE_001800_Q04_0146_Q4_1
+    //MTA NYCT_JA_A6-Sunday-001800_Q4_1 (first stop non-rev)
+    //MTA NYCT_JA_A6-Sunday-056000_MISC_428 (last stop non-rev)
     assertTrue(
-        loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_20130106EA_001800_Q04_0146_Q4_1"))
-        && loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_20130106EE_001800_Q04_0146_Q4_1")));
+        loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_JA_A6-Sunday-001800_Q4_1"))
+        && loader.getNonRevenueStopDataByTripId().containsKey(AgencyAndId.convertFromString("MTA NYCT_JA_A6-Sunday-056000_MISC_428")));
   }
 
   @Test
