@@ -1,8 +1,10 @@
 .project
 .classpath
 .settings
+*/.metadata/*
 */bin/*
 *~
 */local-hsqldb-db/*
 *.swp
 target
+Servers
