@@ -63,11 +63,11 @@ public class StifTask implements Runnable {
   private Logger _log = LoggerFactory.getLogger(StifTask.class);
 
   private GtfsMutableRelationalDao _gtfsMutableRelationalDao;
-  
+
   private StifTripLoader _loader = null;
 
   private List<File> _stifPaths = new ArrayList<File>();
-  
+
   private String _tripToDSCOverridePath;
 
   private Set<String> _notInServiceDscs = new HashSet<String>();
@@ -80,14 +80,14 @@ public class StifTask implements Runnable {
   private boolean fallBackToStifBlocks = false;
 
   private MultiCSVLogger csvLogger = null;
-  
+
   private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>();
 
   @Autowired
   public void setLogger(MultiCSVLogger logger) {
     this.csvLogger = logger;
   }
-  
+
   @Autowired
   public void setGtfsMutableRelationalDao(
       GtfsMutableRelationalDao gtfsMutableRelationalDao) {
@@ -108,7 +108,7 @@ public class StifTask implements Runnable {
   public void setNotInServiceDsc(String notInServiceDsc) {
     _notInServiceDscs.add(notInServiceDsc);
   }
-  
+
   public void setTripToDSCOverridePath(String path) {
     _tripToDSCOverridePath = path;
   }
@@ -135,7 +135,7 @@ public class StifTask implements Runnable {
       }
 
     }
-    
+
     computeBlocksFromRuns(_loader);
     warnOnMissingTrips();
 
@@ -150,18 +150,18 @@ public class StifTask implements Runnable {
         ObjectSerializationLibrary.writeObject(_bundle.getTripRunDataPath(),
             runsForTrip);
     } catch (IOException e) {
-          throw new IllegalStateException(e);
+      throw new IllegalStateException(e);
     }
-    
+
     // non revenue moves
     serializeNonRevenueMoveData(_loader.getRawStifData(), _loader.getGeographyRecordsByBoxId());
-    
+
     // non revenue stops
     serializeNonRevenueStopData(_loader.getNonRevenueStopDataByTripId());
 
     // dsc to trip map
     Map<String, List<AgencyAndId>> dscToTripMap = _loader.getTripMapping();
-    
+
     // Read in trip to dsc overrides if they exist
     if (_tripToDSCOverridePath != null) {
       Map<AgencyAndId, String> tripToDSCOverrides;
@@ -173,13 +173,13 @@ public class StifTask implements Runnable {
 
       // Add tripToDSCOverrides to dscToTripMap
       for (Map.Entry<AgencyAndId, String> entry : tripToDSCOverrides.entrySet()) {
-        
+
         if (_gtfsMutableRelationalDao.getTripForId(entry.getKey()) == null) {
           throw new IllegalStateException("Trip id " + entry.getKey() + " from trip ID to DSC overrides does not exist in bundle GTFS.");
         }
-        
+
         List<AgencyAndId> agencyAndIds;
-        
+
         // See if trips for this dsc are already in the map
         agencyAndIds = dscToTripMap.get(entry.getValue());
 
@@ -193,15 +193,15 @@ public class StifTask implements Runnable {
         agencyAndIds.add(entry.getKey());
       }
     }
-    
+
     Map<AgencyAndId, String> tripToDscMap = new HashMap<AgencyAndId, String>();
-    
+
     // Populate tripToDscMap based on dscToTripMap
     for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {
       String destinationSignCode = entry.getKey();
       List<AgencyAndId> tripIds = entry.getValue();
       for (AgencyAndId tripId : tripIds) {
-       tripToDscMap.put(tripId, destinationSignCode);
+        tripToDscMap.put(tripId, destinationSignCode);
       }
     }
 
@@ -227,31 +227,31 @@ public class StifTask implements Runnable {
 
       Set<AgencyAndId> routeIds = routeIdsByDsc.get(destinationSignCode);
       HashSet<String> set = new HashSet<String>();
-	  for (AgencyAndId aaid : tripIds){
-		  if (aaid != null){
-			  set.add(aaid.getAgencyId());
-		  }
-	  }
-	  for (String agencyId : set){
-		  csvLogger.log("dsc_statistics.csv", destinationSignCode,agencyId, tripIds.size(),(routeIds != null ? routeIds.size() : 0));
-	  }
+      for (AgencyAndId aaid : tripIds){
+        if (aaid != null){
+          set.add(aaid.getAgencyId());
+        }
+      }
+      for (String agencyId : set){
+        csvLogger.log("dsc_statistics.csv", destinationSignCode,agencyId, tripIds.size(),(routeIds != null ? routeIds.size() : 0));
+      }
     }
   }
 
   private void serializeNonRevenueMoveData(Map<ServiceCode, List<StifTrip>> nonRevenueMovesByServiceCode, 
-		  Map<AgencyAndId, GeographyRecord> nonRevenueMoveLocationsByBoxId) {
-	  try {
-	    if (_bundle != null) { // for unit tests
-	      ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueMovePath(), 
-	          nonRevenueMovesByServiceCode);
-	      ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueMoveLocationsPath(), 
-	          nonRevenueMoveLocationsByBoxId);
-	    }
-	  } catch (IOException e) {
-		  throw new IllegalStateException("error serializing non-revenue move/STIF data", e);
-	  }	  
+      Map<AgencyAndId, GeographyRecord> nonRevenueMoveLocationsByBoxId) {
+    try {
+      if (_bundle != null) { // for unit tests
+        ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueMovePath(), 
+            nonRevenueMovesByServiceCode);
+        ObjectSerializationLibrary.writeObject(_bundle.getNonRevenueMoveLocationsPath(), 
+            nonRevenueMoveLocationsByBoxId);
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException("error serializing non-revenue move/STIF data", e);
+    }	  
   }
-  
+
   private void serializeNonRevenueStopData(Map<AgencyAndId, List<NonRevenueStopData>> nonRevenueStopDataByTripId) {
     try {
       if (_bundle != null) // for unit tests
@@ -261,7 +261,7 @@ public class StifTask implements Runnable {
       throw new IllegalStateException("error serializing non-revenue move/STIF data", e);
     }
   }
-  
+
   private void serializeDSCData(Map<String, List<AgencyAndId>> dscToTripMap,
       Map<AgencyAndId, String> tripToDscMap, Set<String> inServiceDscs) {
     for (String notInServiceDsc : _notInServiceDscs) {
@@ -275,14 +275,14 @@ public class StifTask implements Runnable {
 
     try {
       if (_bundle != null) { // for unit tests
-          ObjectSerializationLibrary.writeObject(_bundle.getNotInServiceDSCs(), 
-              _notInServiceDscs);
+        ObjectSerializationLibrary.writeObject(_bundle.getNotInServiceDSCs(), 
+            _notInServiceDscs);
 
-          ObjectSerializationLibrary.writeObject(_bundle.getTripsForDSCIndex(), 
-              tripToDscMap);
+        ObjectSerializationLibrary.writeObject(_bundle.getTripsForDSCIndex(), 
+            tripToDscMap);
 
-          ObjectSerializationLibrary.writeObject(_bundle.getDSCForTripIndex(),
-              dscToTripMap);
+        ObjectSerializationLibrary.writeObject(_bundle.getDSCForTripIndex(),
+            dscToTripMap);
       }
     } catch (IOException e) {
       throw new IllegalStateException("error serializing DSC/STIF data", e);
@@ -310,7 +310,26 @@ public class StifTask implements Runnable {
     public TripWithStartTime(Trip trip) {
       this.trip = trip;
       List<StopTime> stopTimes = _gtfsMutableRelationalDao.getStopTimesForTrip(trip);
-      startTime = stopTimes.get(0).getDepartureTime();
+
+      // proposed fix for dealing with non-revenue stops as the first stop.
+
+      int actualFirstStop = 0;
+      boolean foundFirstStop = false;
+      _log.debug("finding start time for trip " + trip.getId().getId());
+      
+      while(!foundFirstStop) {
+        // pick up type 0 === allowed
+        if (stopTimes.get(actualFirstStop).getPickupType() == 0){
+          foundFirstStop = true;
+        }
+        // otherwise it's not the start time.
+        else {
+          actualFirstStop++;
+        }
+      }
+
+
+      startTime = stopTimes.get(actualFirstStop).getDepartureTime();
     }
 
     // this is just for creating bogus objects for searching
@@ -372,6 +391,7 @@ public class StifTask implements Runnable {
       HashMap<String, List<StifTrip>> tripsByRun = new HashMap<String, List<StifTrip>>();
       HashSet<StifTrip> unmatchedTrips = new HashSet<StifTrip>();
       ArrayList<StifTrip> pullouts = new ArrayList<StifTrip>();
+
       for (StifTrip trip : rawTrips) {
         String runId = trip.getRunIdWithDepot();
         List<StifTrip> byRun = tripsByRun.get(runId);
@@ -419,8 +439,8 @@ public class StifTask implements Runnable {
             csvLogger.log("non_pullin_without_next_movement.csv", lastTrip.id, lastTrip.path, lastTrip.lineNumber); 
 
             _log.warn("A non-pullin has no next run; some trips will end up with missing blocks"
-                    + " and the log will be messed up. The bad trip starts at " + lastTrip.firstStop + " at "
-                    + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
+                + " and the log will be messed up. The bad trip starts at " + lastTrip.firstStop + " at "
+                + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
             break;
           }
 
@@ -473,6 +493,7 @@ public class StifTask implements Runnable {
           lastTrip = trip;
           for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
             RawRunData rawRunData = loader.getRawRunDataByTrip().get(gtfsTrip);
+            
             String blockId;
             if (trip.agencyId.equals("MTA NYCT")) {
               blockId = gtfsTrip.getServiceId().getId() + "_" +
@@ -515,8 +536,8 @@ public class StifTask implements Runnable {
 
       for (StifTrip trip : unmatchedTrips) {
         _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey()
-            + " trip type " + trip.type
-            + " must not have an associated pullout");
+        + " trip type " + trip.type
+        + " must not have an associated pullout");
         for (Trip gtfsTrip : trip.getGtfsTrips()) {
           blockNo++;
           String blockId = gtfsTrip.getServiceId().getId() + "_"
@@ -548,7 +569,7 @@ public class StifTask implements Runnable {
         csvLogger.log("gtfs_trips_with_no_stif_match.csv", trip.getId(), loader.getSupport().getTripAsIdentifier(trip));
       }
     }
-    
+
     csvLogger.header("route_ids_with_no_trips.csv", "agency_id,route_id");
     for (Route route : _gtfsMutableRelationalDao.getAllRoutes()) {
       if (routesWithTrips.contains(route)) {
@@ -563,12 +584,12 @@ public class StifTask implements Runnable {
    * necessary; based on code from OTP with permission of copyright holder (OpenPlans). 
    */
   public static final <T, U> void addToMapSet(Map<T, Set<U>> mapList, T key, U value) {
-      Set<U> list = mapList.get(key);
-      if (list == null) {
-          list = new HashSet<U>();
-          mapList.put(key, list);
-      }
-      list.add(value);
+    Set<U> list = mapList.get(key);
+    if (list == null) {
+      list = new HashSet<U>();
+      mapList.put(key, list);
+    }
+    list.add(value);
   }
 
 
@@ -609,47 +630,47 @@ public class StifTask implements Runnable {
       loader.run(path);
     }
   }
-  
+
   private Map<AgencyAndId, String> loadTripToDSCOverrides(String path) throws Exception {
-    
+
     final Map<AgencyAndId, String> results = new HashMap<AgencyAndId, String>();
-    
+
     CSVListener listener = new CSVListener() {
-      
+
       int count = 0;
       int tripIdIndex;
       int dscIndex;
-      
+
       @Override
       public void handleLine(List<String> line) throws Exception {
-        
+
         if (line.size() != 2)
           throw new Exception("Each Trip ID to DSC CSV line must contain two columns.");
-        
+
         if (count == 0) {
           count++;
-          
+
           tripIdIndex = line.indexOf("trip_id");
           dscIndex = line.indexOf("dsc");
-          
+
           if(tripIdIndex == -1 || dscIndex == -1) {
             throw new Exception("Trip ID to DSC CSV must contain a header with column names 'trip_id' and 'dsc'.");
           }
-          
+
           return;
         }
-        
+
         results.put(AgencyAndIdLibrary.convertFromString(line.get(tripIdIndex)), line.get(dscIndex));
       }
     };
-    
+
     File source = new File(path);
-    
+
     CSVLibrary.parse(source, listener);
-    
+
     return results;
   }
-  
+
   private void readNotInServiceDscs() {
     if (_notInServiceDscPath != null) {
       try {
@@ -681,12 +702,12 @@ public class StifTask implements Runnable {
   public void setStifTripLoader(StifTripLoader loader) {
     _loader = loader;
   }
-  
+
   // for unit tests
   public void setCSVLogger(MultiCSVLogger logger) {
     this.csvLogger = logger;
   }
-  
+
   // package private for unit tests
   String truncateId(String id) {
     if (id == null) return null;

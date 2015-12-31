@@ -19,6 +19,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,107 +56,49 @@ public class TestStifTask {
 	}
 
 	@Test
-	public void testStifTask1() throws IOException{
+	public void testDscToTripMap() throws IOException{
 		assignAgency("MTA_NYCT", 0, 3);
 		assignAgency("MTABC", 4, 98);
 		assignDSC("7042", 0, 3);
-		assignDSC("7041", 4, 55);
-		assignDSC("7040", 56, 98);
+		assignDSC("7041", 4, 52);
+		assignDSC("7040", 53, 98);
+		
+		
+		String[] testSetZero = {"dsc","agency_id","number_of_trips_in_stif","number_of_distinct_route_ids_in_gtfs"};
+		String[] testSetOne =  {"7040","MTABC","46"};
+		String[] testSetTwo =  {"7041","MTABC","49"};
+		String[] testSetThree =  {"7042","MTA_NYCT","4"};
+		ArrayList<String[]> expectedTestSet = new ArrayList<String[]>();
+		expectedTestSet.add(testSetThree);
+		expectedTestSet.add(testSetTwo);
+		expectedTestSet.add(testSetOne);
+		expectedTestSet.add(testSetZero);
+		
 		task.logDSCStatistics(dscToTripMap, tripToDscMap);
 		
-		assertEquals(reader.readLine() , ( "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs" ));
-		String[] column;
-		column = reader.readLine().split(",");
-		assertEquals("7042", column[0]);
-		assertEquals("MTA_NYCT", column[1]);
-		assertEquals("4", column[2]);
-		column = reader.readLine().split(",");
-		assertEquals("7041", column[0]);
-		assertEquals("MTABC", column[1]);
-		assertEquals("52", column[2]);
-		column = reader.readLine().split(",");
-		assertEquals("7040", column[0]);
-		assertEquals("MTABC", column[1]);
-		assertEquals("43", column[2]);
-	}
-	
-	@Test
-	public void testStifTask2() throws IOException{
-		assignAgency("MTA_NYCT", 0, 55);
-		assignAgency("MTABC", 56, 98);
-		assignDSC("7042", 0, 3);
-		assignDSC("7041", 4, 55);
-		assignDSC("7040", 56, 98);
-		task.logDSCStatistics(dscToTripMap, tripToDscMap);
+		String line;
+		int count = 0;
+		int expectedCount = 4;
+		while((line = reader.readLine()) != null ){
+			String[] cols = line.split(",");
+			assertTrue("The line split length is incorrect / unexpected", cols.length == 4);
+			boolean visited = false;
+			for(String[] testcol : expectedTestSet){
+				if(testcol[0].equals(cols[0])){
+					visited = true;
+					for(int i=1; i<testcol.length; i++){
+						assertTrue("The column is unequal at pos in "+i+"in "+line +"expected "+ testcol[i], testcol[i].equals(cols[i]));
+					}
+				}
+			}
+			assertTrue("doesn't contain the line"+line, visited);
+			count++;
+		}
+		assertEquals("Unexpected line count from outgoing file", String.valueOf(count), String.valueOf(expectedCount));
 
-		assertEquals(reader.readLine() , ( "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs" ));
-		String[] column;
-		column = reader.readLine().split(",");
-		assertEquals("7042", column[0]);
-		assertEquals("MTA_NYCT", column[1]);
-		assertEquals("4", column[2]);
-		column = reader.readLine().split(",");
-		assertEquals("7041", column[0]);
-		assertEquals("MTA_NYCT", column[1]);
-		assertEquals("52", column[2]);
-		column = reader.readLine().split(",");
-		assertEquals("7040", column[0]);
-		assertEquals("MTABC", column[1]);
-		assertEquals("43", column[2]);
 	}
 	
-	@Test
-	public void testStifTask3() throws IOException{
-		assignAgency("MTA_NYCT", 0, 98);
-		assignDSC("7042", 0, 3);
-		assignDSC("7041", 4, 55);
-		assignDSC("7040", 56, 98);
-		task.logDSCStatistics(dscToTripMap, tripToDscMap);
-		
-		assertEquals(reader.readLine() , ( "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs" ));
-		String[] column;
-		column = reader.readLine().split(",");
-		assertEquals("7042", column[0]);
-		assertEquals("MTA_NYCT", column[1]);
-		assertEquals("4", column[2]);
-		column = reader.readLine().split(",");
-		assertEquals("7041", column[0]);
-		assertEquals("MTA_NYCT", column[1]);
-		assertEquals("52", column[2]);
-		column = reader.readLine().split(",");
-		assertEquals("7040", column[0]);
-		assertEquals("MTA_NYCT", column[1]);
-		assertEquals("43", column[2]);
-	}
-	
-	@Test
-	public void testStifTask4() throws IOException{
-		assignAgency("MTA_NYCT", 0, 49);
-		assignAgency("MTABC", 5, 98);
-		assignDSC("7042", 0, 3);
-		assignDSC("7041", 4, 55);
-		assignDSC("7040", 56, 98);
-		task.logDSCStatistics(dscToTripMap, tripToDscMap);
 
-		assertEquals(reader.readLine() , ( "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs" ));
-		String[] column;
-		column = reader.readLine().split(",");
-		assertEquals("7042", column[0]);
-		assertEquals("MTA_NYCT", column[1]);
-		assertEquals("4", column[2]);
-		column = reader.readLine().split(",");
-		assertEquals("7041", column[0]);
-		assertEquals("MTA_NYCT", column[1]);
-		assertEquals("52", column[2]);
-		column = reader.readLine().split(",");
-		assertEquals("7041", column[0]);
-		assertEquals("MTABC", column[1]);
-		assertEquals("52", column[2]);
-		column = reader.readLine().split(",");
-		assertEquals("7040", column[0]);
-		assertEquals("MTABC", column[1]);
-		assertEquals("43", column[2]);
-	}
 	
 	@Test
 	public void testTruncateId() {
@@ -173,11 +117,7 @@ public class TestStifTask {
 		assignDSC("7041", 4, 55);
 		assignDSC("7040", 56, 98);
 		task.logDSCStatistics(dscToTripMap, tripToDscMap);
-		
-		while ((currentLine = reader.readLine()) != null){
-			System.out.println(currentLine);
-		}
-		
+
 		initialize();
 		assignAgency("MTA_NYCT", 0, 49);
 		assignAgency("MTABC", 50, 98);
@@ -185,13 +125,13 @@ public class TestStifTask {
 		assignDSC("7041", 4, 55);
 		assignDSC("7040", 56, 98);
 		oldMethod(dscToTripMap, tripToDscMap);
-		System.out.println("\noldMethod: ");
-		while ((currentLine = reader.readLine()) != null){
-			System.out.println(currentLine);
-		}
-	}
 
+	}
+	
+	// assign dscs to mock trips. 
 	private void assignDSC(String dsc, int start, int end){
+		//start is the starting index of the mock trip with said dsc
+		//end is the last index of the mock trip
 		for(int i=start; i<=end; i++){
 			tripToDscMap.put(hash.get(i), dsc);
 			if (!dscToTripMap.containsKey(dsc))
@@ -199,6 +139,8 @@ public class TestStifTask {
 			dscToTripMap.get(dsc).add(hash.get(i));
 		}
 	}
+
+	//mock agency and id 
 	private void assignAgency(String agency, int start, int end){
 		for (int i=start; i<end; i++){
 			hash.put(i,new AgencyAndId(agency, Integer.toString(i)));
