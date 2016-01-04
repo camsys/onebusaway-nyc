@@ -29,16 +29,17 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.StifRe
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TimetableRecordFactory;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TripRecordFactory;
 
-/** 
- * Read records from a STIF file.  STIF is MTA's internal format for bus information.
+/**
+ * Read records from a STIF file. STIF is MTA's internal format for bus
+ * information.
  * 
  * All names are from the MTA's documentation for STIF, version 2.5.
  * 
- * This only supports a tiny subset of STIF -- just what we need for location matching.
- * We get the rest of the schedule data from GTFS.
+ * This only supports a tiny subset of STIF -- just what we need for location
+ * matching. We get the rest of the schedule data from GTFS.
  */
 public class StifRecordReader {
-	private static final int BUFFER_SIZE = 4096;
+	private static final int BUFFER_SIZE = 8192;
 	private InputStream inputStream;
 	private byte[] buffer = new byte[BUFFER_SIZE];
 	private int start = 0;
@@ -59,8 +60,8 @@ public class StifRecordReader {
 		inputStream = stream;
 	}
 
-	/** 
-	 * Read the next record from the STIF file.  Returns null at end-of-file 
+	/**
+	 * Read the next record from the STIF file. Returns null at end-of-file
 	 * */
 	public StifRecord read() throws IOException {
 		int recordStart;
@@ -82,20 +83,22 @@ public class StifRecordReader {
 				// beginning and refill
 				ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
 				if (start < BUFFER_SIZE) {
-	        bbuffer.put(buffer, start, BUFFER_SIZE - start);
-	        bufferEnd = bufferEnd - start;
+					bbuffer.put(buffer, start, BUFFER_SIZE - start);
+					bufferEnd = bufferEnd - start;
 				} else {
-				  //skip extra bytes (newlines) at the beginning of a block
-          bufferEnd = 0;
-				  inputStream.read(buffer, bufferEnd, start - BUFFER_SIZE);
+					// skip extra bytes (newlines) at the beginning of a block
+					bufferEnd = 0;
+					inputStream.read(buffer, bufferEnd, start - BUFFER_SIZE);
 				}
 				if (BUFFER_SIZE == bufferEnd) {
-				  //buffer is full and yet we want to read more.  Throw an exception
-				  throw new IOException("Too-long line trying to read STIF");
+					// buffer is full and yet we want to read more. Throw an
+					// exception
+					throw new IOException("Too-long line trying to read STIF");
 				}
-				int bytesRead = inputStream.read(buffer, bufferEnd, BUFFER_SIZE - bufferEnd);
+				int bytesRead = inputStream.read(buffer, bufferEnd, BUFFER_SIZE
+						- bufferEnd);
 				if (bytesRead == -1) {
-					//eof
+					// eof
 					if (start >= bufferEnd) {
 						return null;
 					} else {
