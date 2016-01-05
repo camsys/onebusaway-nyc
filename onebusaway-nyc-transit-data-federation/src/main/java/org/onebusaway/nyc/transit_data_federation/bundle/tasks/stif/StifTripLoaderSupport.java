@@ -175,7 +175,7 @@ public class StifTripLoaderSupport {
       try{
         while(!foundFirstStop) {
           // pick up type 0 === allowed
-          if (stopTimes.get(actualFirstStop).getPickupType() == 2){
+          if (stopTimes.get(actualFirstStop).getPickupType() == 0){
                foundFirstStop = true;
           }
           // otherwise it's not the start time.
