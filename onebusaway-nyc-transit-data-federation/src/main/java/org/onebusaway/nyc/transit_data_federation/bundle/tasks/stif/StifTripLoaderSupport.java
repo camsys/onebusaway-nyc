@@ -171,16 +171,20 @@ public class StifTripLoaderSupport {
       // proposed fix for dealing with non-revenue stops as the first stop.
       int actualFirstStop = 0;
       boolean foundFirstStop = false;
-
-      while(!foundFirstStop) {
-        // pick up type 0 === allowed
-        if (stopTimes.get(actualFirstStop).getPickupType() == 0){
-             foundFirstStop = true;
+      
+      try{
+        while(!foundFirstStop) {
+          // pick up type 0 === allowed
+          if (stopTimes.get(actualFirstStop).getPickupType() == 2){
+               foundFirstStop = true;
+          }
+          // otherwise it's not the start time.
+          else {
+            actualFirstStop++;
+          }
         }
-        // otherwise it's not the start time.
-        else {
-          actualFirstStop++;
-        }
+      } catch(IndexOutOfBoundsException e){
+        _log.error("No StopTime with PickupType value of 0 found", e);
       }
 
       StopTime startStopTime = stopTimes.get(actualFirstStop);
@@ -189,14 +193,18 @@ public class StifTripLoaderSupport {
       
       int actualLastStop = (stopTimes.size() - 1);
       boolean foundLastStop = false;
-
-      while(!foundLastStop) {
-        if (stopTimes.get(actualLastStop).getDropOffType() == 0){
-             foundLastStop = true;
+      
+      try{
+        while(!foundLastStop) {
+          if (stopTimes.get(actualLastStop).getDropOffType() == 0){
+               foundLastStop = true;
+          }
+          else {
+            actualLastStop--;
+          }
         }
-        else {
-          actualLastStop--;
-        }
+      } catch(IndexOutOfBoundsException e){
+        _log.error("No StopTime with DropOffType value of 0 found", e);
       }
       
       // change this to stopTimes.size() - 1 to see test fail :)

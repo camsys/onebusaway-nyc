@@ -317,17 +317,20 @@ public class StifTask implements Runnable {
       boolean foundFirstStop = false;
       _log.debug("finding start time for trip " + trip.getId().getId());
       
-      while(!foundFirstStop) {
-        // pick up type 0 === allowed
-        if (stopTimes.get(actualFirstStop).getPickupType() == 0){
-          foundFirstStop = true;
+      try{
+        while(!foundFirstStop) {
+          // pick up type 0 === allowed
+          if (stopTimes.get(actualFirstStop).getPickupType() == 0){
+            foundFirstStop = true;
+          }
+          // otherwise it's not the start time.
+          else {
+            actualFirstStop++;
+          }
         }
-        // otherwise it's not the start time.
-        else {
-          actualFirstStop++;
-        }
+      } catch (IndexOutOfBoundsException e) {
+        _log.error("No StopTime with PickupType value of 0 found", e);
       }
-
 
       startTime = stopTimes.get(actualFirstStop).getDepartureTime();
     }
