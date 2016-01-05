@@ -5,12 +5,17 @@ import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.custommonkey.xmlunit.Diff.*;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.ElementNameAndTextQualifier;
+import org.custommonkey.xmlunit.examples.RecursiveElementNameAndTextQualifier;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
@@ -62,7 +67,10 @@ public class ServiceAlertSubscriptionTest extends ServiceAlertSubscription {
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
     verify(webResourceWrapper).post(argument.capture(), same(TEST_ADDRESS));
     String value = argument.getValue();
-    assertEquals(EXPECTED_XML, value);
+    System.out.println(value);
+    Diff diff = new Diff(EXPECTED_XML, value);
+    diff.overrideElementQualifier(new RecursiveElementNameAndTextQualifier());
+	assertXMLEqual(diff, true);
 
   }
 
