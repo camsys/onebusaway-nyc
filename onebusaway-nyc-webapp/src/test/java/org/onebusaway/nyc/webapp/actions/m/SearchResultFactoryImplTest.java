@@ -86,7 +86,7 @@ public class SearchResultFactoryImplTest {
     
     assertEquals(2, alerts.size());
     String[] array = alerts.toArray(new String[] {});
-    System.out.println(array[1].toString());
+
     assertTrue(Arrays.asList(array).contains(TEST_DESCRIPTION));
     assertTrue(Arrays.asList(array).contains(TEST_DESCRIPTION2));
     assertEquals(ROUTE_ID, result.getId());
