@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.webapp.actions.m;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.internal.util.ArrayUtils;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
@@ -80,11 +83,13 @@ public class SearchResultFactoryImplTest {
     RouteResult result = runGetRouteResult(createServiceAlerts(new String[] {
         TEST_DESCRIPTION, TEST_DESCRIPTION2}, new String[] {TEST_SUMMARY}));
     Set<String> alerts = result.getServiceAlerts();
+    
     assertEquals(2, alerts.size());
     String[] array = alerts.toArray(new String[] {});
-    assertEquals(TEST_DESCRIPTION, array[0]);
-    assertEquals(TEST_DESCRIPTION2, array[1]);
-    assertEquals("name not expected", ROUTE_ID, result.getId());
+
+    assertTrue(Arrays.asList(array).contains(TEST_DESCRIPTION));
+    assertTrue(Arrays.asList(array).contains(TEST_DESCRIPTION2));
+    assertEquals(ROUTE_ID, result.getId());
   }
 
   @Test
@@ -128,8 +133,8 @@ public class SearchResultFactoryImplTest {
     Set<String> alerts = result.getAllRoutesAvailable().get(0).getServiceAlerts();
     assertEquals(2, alerts.size());
     String[] array = alerts.toArray(new String[] {});
-    assertEquals(TEST_DESCRIPTION, array[0]);
-    assertEquals(TEST_DESCRIPTION2, array[1]);
+    assertTrue(Arrays.asList(array).contains(TEST_DESCRIPTION));
+    assertTrue(Arrays.asList(array).contains(TEST_DESCRIPTION2));
     assertEquals("name not expected", TEST_STOP_ID, result.getId());
   }
 
