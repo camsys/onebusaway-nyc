@@ -480,16 +480,22 @@ OBA.Popups = (function() {
 							&& monitoredVehicleJourney.ProgressRate === "noProgress") {
 							stalled = true;
 						}
+						
+						var mvjDepartureTimeAsText = monitoredVehicleJourney.OriginAimedDepartureTime,
+							departureTimeAsDateTime = null;
+						
+						if(typeof mvjDepartureTimeAsText !== 'undefined'){
+							departureTimeAsDateTime = OBA.Util.ISO8601StringToDate(mvjDepartureTimeAsText);
+						}
 
 						// time mode
 						if(timePrediction != null) {
-							var departureTime = OBA.Util.ISO8601StringToDate(monitoredVehicleJourney.OriginAimedDepartureTime);
 							timePrediction += ", " + distance;
 							if(prevTrip === true){
 								timePrediction += " <span class='not_bold'>(Including expected layover time at the terminal)</span>";
 							}else if(layover === true) {
-								if(departureTime != null){
-									timePrediction += " <span class='not_bold'>(at the terminal, expected to depart at " + departureTime.format("h:MM TT") + ")</span>";
+								if(departureTimeAsDateTime){
+									timePrediction += " <span class='not_bold'>(at the terminal, expected to depart at " + departureTimeAsDateTime.format("h:MM TT") + ")</span>";
 								}else{
 									timePrediction += " <span class='not_bold'>(at the terminal, departing soon)</span>";
 								}
@@ -501,22 +507,20 @@ OBA.Popups = (function() {
 						// distance mode
 						} else {
 							if(layover === true) {
-								if(typeof monitoredVehicleJourney.OriginAimedDepartureTime !== 'undefined') {
-									var departureTime = OBA.Util.ISO8601StringToDate(monitoredVehicleJourney.OriginAimedDepartureTime);
-
-									if(departureTime.getTime() < updateTimestampReference) {
+								if(departureTimeAsDateTime) {
+									if(departureTimeAsDateTime.getTime() < updateTimestampReference) {
 										distance += " <span class='not_bold'>(at terminal)</span>";
 									} else {
-										distance += " <span class='not_bold'>(at terminal, scheduled to depart " + departureTime.format("h:MM TT") + ")</span>";
+										distance += " <span class='not_bold'>(at terminal, scheduled to depart " + departureTimeAsDateTime.format("h:MM TT") + ")</span>";
 									}
 								} else {
 									distance += " <span class='not_bold'>(at terminal)</span>";
 								}
 							} else if(wrapped === true) {
-								if(departureTime.getTime() < updateTimestampReference) {
+								if(departureTimeAsDateTime == null || departureTimeAsDateTime.getTime() < updateTimestampReference) {
 									distance += " <span class='not_bold'>(+ scheduled layover at terminal)</span>";
 								} else {
-									distance += " <span class='not_bold'>(at terminal, scheduled to depart " + departureTime.format("h:MM TT") + ")</span>";
+									distance += " <span class='not_bold'>(at terminal, scheduled to depart " + departureTimeAsDateTime.format("h:MM TT") + ")</span>";
 								}
 							}
 
