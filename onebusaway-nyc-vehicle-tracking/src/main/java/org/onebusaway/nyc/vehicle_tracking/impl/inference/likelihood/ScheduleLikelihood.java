@@ -23,8 +23,11 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
 import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
+
+import java.util.List;
 
 import org.apache.commons.math.util.FastMath;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +83,10 @@ public class ScheduleLikelihood implements SensorModelRule {
     	
     	// adjust positive schedule deviation cut off according to the trip duration
         if(!blockState.getRunTripEntry().getTripEntry().equals(null)){
-        	final double trip_sched_dev_cuttoff = ((blockState.getRunTripEntry().getTripEntry().getStopTimes().get(blockState.getRunTripEntry().getTripEntry().getStopTimes().size()-1).getDepartureTime() - blockState.getRunTripEntry().getTripEntry().getStopTimes().get(0).getArrivalTime()) * 2)/60;
+        	
+        	final List<StopTimeEntry> stopTimes = blockState.getRunTripEntry().getTripEntry().getStopTimes();
+        	
+        	final double trip_sched_dev_cuttoff = ((stopTimes.get(stopTimes.size()-1).getDepartureTime() - stopTimes.get(0).getArrivalTime()) * 2)/60;
         	
     		if(trip_sched_dev_cuttoff < DEFAULT_POS_SCHED_DEV_CUTOFF){
     			POS_SCHED_DEV_CUTOFF = trip_sched_dev_cuttoff;
