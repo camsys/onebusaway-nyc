@@ -112,5 +112,16 @@
 	<bean id="geocoderCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl">
 		<property name="disabled" value="${geocoder.cache.disabled}" />
 	</bean>
+	
+	<!-- Memcache for throttling -->
+    <bean id="memcachedClientThrottled" class="net.spy.memcached.spring.MemcachedClientFactoryBean">
+    	<property name="servers" value="apithrottlememcache:11211"/>
+    	<property name="protocol" value="BINARY"/>
+    	<property name="transcoder">
+        	<bean class="net.spy.memcached.transcoders.SerializingTranscoder">
+            	<property name="compressionThreshold" value="1024"/>
+        	</bean>
+    	</property>
+	</bean>
 
 </beans>

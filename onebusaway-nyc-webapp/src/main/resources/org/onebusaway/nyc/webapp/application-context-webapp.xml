@@ -33,6 +33,7 @@
     <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
 
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
+    <context:component-scan base-package="org.onebusaway.nyc.webapp.users.impl" /> <!-- for api throttling app -->
     <context:component-scan base-package="org.onebusaway.nyc.webapp.actions.api.siri.impl" />
     
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
