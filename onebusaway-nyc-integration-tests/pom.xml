@@ -181,12 +181,35 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Build a graph bundle using our integration-test data sources (currently, a reduced set of MTA data) -->
+            <!-- 2016 January Reduced Dataset-->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1.1</version>
                 <executions>
+                  <execution>
+                        <id>graph-builder-execution-2016Jan_ManBC_WkdOnly</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx1500m</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2016Jan_ManBC_WkdOnly.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2016Jan_ManBC_WkdOnly</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
 <!-- aprilv2 start -->
                     <execution>
                         <id>graph-builder-execution-2014April_Prod_r12_b01</id>
