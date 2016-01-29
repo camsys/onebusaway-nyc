@@ -191,6 +191,10 @@ public class AbstractTraceRunner {
 
           // TEST: block level inference subcases
           Boolean actualIsRunFormal = expectedResult.getActualIsRunFormal();
+          
+          if(actualIsRunFormal == null)
+        	  System.out.println("ACTUAL IS RUN FORMAL cannot be NULL");
+          
           assertTrue(actualIsRunFormal != null);
 
           if (actualIsRunFormal == true) {
