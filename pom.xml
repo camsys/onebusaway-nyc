@@ -7,7 +7,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>onebusaway-nyc</artifactId>
-    <version>2.18.0-SNAPSHOT</version>
+    <version>2.18.0</version>
     <packaging>pom</packaging>
     <name>onebusaway-nyc</name>
 
