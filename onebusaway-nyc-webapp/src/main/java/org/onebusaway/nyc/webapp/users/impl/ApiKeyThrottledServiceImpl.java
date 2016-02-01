@@ -22,6 +22,9 @@
  * 
  * TDM Variables:
  * 
+ * To enable Throttling... use tds.APIThrottlingEnabled = 1
+ * curl -X POST --data-ascii '{"config":{"value":"1"}}' http://tdm.CHANGEME/api/config/tds/tds.APIThrottlingEnabled/set --header "Content-Type:application/json"
+ * 
  * For throttling exceptions in api keys, insert a list of values in format 
  * "<API Key>,<Limit Exception, 0 for no limit>;<API Key>,<Limit Exception, 0 for no limit>;...;..."
  * curl -X POST --data-ascii '{"config":{"value":"CHANGEME"}}' http://tdm.CHANGEME/api/config/tds/tds.ApiThrottlingExceptions/set --header "Content-Type:application/json"
@@ -68,6 +71,8 @@ public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
   
   private int _hitsAllowedPerMinute = 0;
   
+  private int _TDMEnable = 0;
+  
   //more than 100 exceptions would be unexpected, even for a large deployment.  Remember that bans are handled separately.
   private Map<String, Integer> _exceptions = new HashMap<String, Integer>(100);
   
@@ -75,6 +80,8 @@ public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
   private void refreshConfigFromTDM(){
     
 	_lastTDMUpdate = System.currentTimeMillis();
+	
+	_TDMEnable = _config.getConfigurationValueAsInteger("tds.APIThrottlingEnabled", 0);
     
     _hitsAllowedPerMinute = _config.getConfigurationValueAsInteger("tds.AllowedApiCallsPerMinute", ALLOWED_HITS_PER_MINUTE);
     _log.info("Set allowed API hits allowed per minute to "+_hitsAllowedPerMinute);
@@ -113,15 +120,15 @@ public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
   
   @Override
   public boolean isAllowed(String key) {
-
+	  
     //we would only get here if the app is running, need to get the first setting from the TDM and refreshable won't work due to hessian connection to tdm
     if(_hitsAllowedPerMinute == 0 || (System.currentTimeMillis() - _lastTDMUpdate) > UPDATE_INTERVAL){
       refreshConfigFromTDM();
     }
     
-    //catch all
-    if(key == null || _client == null)
-      return true;
+	//catch all
+	if(key == null || _client == null || _TDMEnable < 1)
+	  return true;
     
     //is the user on the exception list?  if so, let's allow them if they're set to 0
     //banning is allowed in the general permissions page, therefore it isn't necessary to set that here
