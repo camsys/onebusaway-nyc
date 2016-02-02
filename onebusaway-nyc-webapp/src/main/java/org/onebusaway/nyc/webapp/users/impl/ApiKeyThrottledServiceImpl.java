@@ -43,12 +43,11 @@ package org.onebusaway.nyc.webapp.users.impl;
 
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottledService;
+import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottlingMemcacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import net.spy.memcached.MemcachedClient;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,9 +56,8 @@ public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
 
   private static Logger _log = LoggerFactory.getLogger(ApiKeyThrottledServiceImpl.class);
   
-  @Autowired(required=false)
-  @Qualifier("memcachedClientThrottled")
-  private MemcachedClient _client = null;
+  @Autowired
+  private ApiKeyThrottlingMemcacheService _memcache;
   
   @Autowired
   private ConfigurationService _config;
@@ -75,6 +73,11 @@ public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
   
   //more than 100 exceptions would be unexpected, even for a large deployment.  Remember that bans are handled separately.
   private Map<String, Integer> _exceptions = new HashMap<String, Integer>(100);
+  
+  public void setServicesForTesting(ConfigurationService cs, ApiKeyThrottlingMemcacheService mc){
+	  _memcache = mc;
+	  _config = cs;
+  }
   
   //Note refreshable won't help us here since the interface doesn't work over hessian for some reason
   private void refreshConfigFromTDM(){
@@ -127,7 +130,7 @@ public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
     }
     
 	//catch all
-	if(key == null || _client == null || _TDMEnable < 1)
+	if(key == null || _memcache == null || _TDMEnable < 1)
 	  return true;
     
     //is the user on the exception list?  if so, let's allow them if they're set to 0
@@ -146,7 +149,7 @@ public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
     long value = -1;
     try{
       //Incr does NOT reset the expiration every time, therefore this will expire after 60 seconds, regardless of updates to it
-      value = _client.incr(key, 1, 0, 60);//key, increment by, default if not there, expires in seconds
+      value = _memcache.incr(key, 1, 0, 60);//key, increment by, default if not there, expires in seconds
     }catch(Exception e){
       //Don't interrupt the request if we can't touch memcache right now... this could cause someone grief
       _log.info("There was an exception from the Memcache client, going to allow the api request through.");
