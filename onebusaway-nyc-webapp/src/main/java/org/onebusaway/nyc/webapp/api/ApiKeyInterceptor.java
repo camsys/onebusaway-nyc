@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.ServletActionContext;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottledService;
 import org.onebusaway.users.services.ApiKeyPermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,9 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
 
   @Autowired
   private RealtimeService _realtimeService;
+  
+  @Autowired
+  private ApiKeyThrottledService _throttledKeyService;
 
   @Override
   public String intercept(ActionInvocation invocation) throws Exception {
@@ -49,10 +53,21 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
 
     if (allowed != HttpServletResponse.SC_OK) {
       try {
-        _response = generateSiriResponse(new NotAuthorizedException(
-            (allowed == HttpServletResponse.SC_UNAUTHORIZED
-                ? "API key required."
-                : "API key is not authorized or rate exceeded.")));
+    	String reason = "";
+    	switch(allowed){
+    		case HttpServletResponse.SC_UNAUTHORIZED:
+    			reason = "API key required.";
+    			break;
+    	    case HttpServletResponse.SC_EXPECTATION_FAILED:
+    	    	reason = "API key request rate has been exceeded.";
+    			break;
+    	    case HttpServletResponse.SC_FORBIDDEN:
+    	    	reason = "API key is not authorized.";
+    			break;
+    	    default:
+    	    	reason = "A server error occurred.";
+    	}
+        _response = generateSiriResponse(new NotAuthorizedException(reason));
         HttpServletResponse servletResponse = ServletActionContext.getResponse();
         servletResponse.setStatus(allowed);
         servletResponse.getWriter().write(serializeResponse(servletResponse));
@@ -82,11 +97,16 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
     if (keys == null || keys.length == 0)
       return HttpServletResponse.SC_UNAUTHORIZED;
 
-    if (_keyService.getPermission(keys[0], "api"))
+    boolean isPermitted = _keyService.getPermission(keys[0], "api");
+    boolean notThrottled = _throttledKeyService.isAllowed(keys[0]);
+    
+    if (isPermitted && notThrottled)
       return HttpServletResponse.SC_OK;
-    else
+    else if(!notThrottled){
+      //we are throttled
+      return HttpServletResponse.SC_EXPECTATION_FAILED;
+    }else
       return HttpServletResponse.SC_FORBIDDEN;
-
   }
 
   @Autowired

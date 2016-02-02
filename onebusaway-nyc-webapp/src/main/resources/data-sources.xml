@@ -112,5 +112,21 @@
 	<bean id="geocoderCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl">
 		<property name="disabled" value="${geocoder.cache.disabled}" />
 	</bean>
-
+	
+	<!-- Memcache for throttling, comment out entirely to disable throttling in OBA API calls to SIRI -->
+	<!-- opTimeout in milliseconds, daemon can start daemon locally -->
+    
+    <bean id="memcachedClientThrottled" class="net.spy.memcached.spring.MemcachedClientFactoryBean">
+    	<property name="servers" value="apithrottlememcache:11211"/>
+    	<property name="protocol" value="BINARY"/>
+    	<property name="opTimeout" value="1500"/>
+    	<property name="failureMode" value="Cancel"/>
+    	<property name="transcoder">
+        	<bean class="net.spy.memcached.transcoders.SerializingTranscoder">
+            	<property name="compressionThreshold" value="1024"/>
+        	</bean>
+    	</property>
+    	<property name="daemon" value="false"/>
+	</bean>
+    
 </beans>
