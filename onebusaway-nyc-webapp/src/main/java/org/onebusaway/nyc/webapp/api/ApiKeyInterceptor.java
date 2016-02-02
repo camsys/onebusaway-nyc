@@ -57,10 +57,13 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
     	switch(allowed){
     		case HttpServletResponse.SC_UNAUTHORIZED:
     			reason = "API key required.";
+    			break;
     	    case HttpServletResponse.SC_EXPECTATION_FAILED:
     	    	reason = "API key request rate has been exceeded.";
+    			break;
     	    case HttpServletResponse.SC_FORBIDDEN:
     	    	reason = "API key is not authorized.";
+    			break;
     	    default:
     	    	reason = "A server error occurred.";
     	}
@@ -99,10 +102,10 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
     
     if (isPermitted && notThrottled)
       return HttpServletResponse.SC_OK;
-    else if(!isPermitted)
-      //throttled
+    else if(!notThrottled){
+      //we are throttled
       return HttpServletResponse.SC_EXPECTATION_FAILED;
-    else
+    }else
       return HttpServletResponse.SC_FORBIDDEN;
   }
 
