@@ -42,6 +42,10 @@ public interface RunService {
 		  RunTripEntry runTrip, long timestamp);
 
   public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip, int scheduledTime);
+  
+  public List<RunTripEntry> getRunTripEntriesForTripAndTime(TripEntry trip, int scheduledTime);
+  
+  public RunTripEntry getRunTripEntryForTripAndTimeNoRelief(TripEntry trip, int scheduleTime);
 
   /**
    * Inference engine
