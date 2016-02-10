@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -566,19 +567,23 @@ public class BlockStateService {
         final ScheduledBlockLocation location = thisMin.getMinElement();
         final BlockTripEntry activeTrip = location.getActiveTrip();
         final String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
-        final RunTripEntry rte = _runService.getRunTripEntryForTripAndTime(
-            activeTrip.getTrip(), location.getScheduledTime());
-
-        final BlockState state = new BlockState(instance, location, rte, dsc);
-        final BlockLocationKey key = new BlockLocationKey(instance, 0,
-            Double.POSITIVE_INFINITY);
-
-        BestBlockStates currentStates = results.get(key);
-        if (currentStates == null) {
-          currentStates = new BestBlockStates(Sets.newHashSet(state));
-          results.put(key, currentStates);
-        } else {
-          currentStates.getAllStates().add(state);
+        final int scheduledTime = location.getScheduledTime();
+        final List<RunTripEntry> rte = _runService.getRunTripEntriesForTripAndTime(
+	            activeTrip.getTrip(), scheduledTime);
+    	
+        for(RunTripEntry r : rte){
+        
+	        final BlockState state = new BlockState(instance, location, r, dsc);
+	        final BlockLocationKey key = new BlockLocationKey(instance, 0,
+	            Double.POSITIVE_INFINITY);
+	
+	        BestBlockStates currentStates = results.get(key);
+	        if (currentStates == null) {
+	          currentStates = new BestBlockStates(Sets.newHashSet(state));
+	          results.put(key, currentStates);
+	        } else {
+	          currentStates.getAllStates().add(state);
+	        }
         }
       }
     }
