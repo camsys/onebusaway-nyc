@@ -13,10 +13,13 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+
+import net.sf.ehcache.util.TimeUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.container.refresh.Refreshable;
@@ -53,6 +56,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 
+import eu.datex2.schema._1_0._1_0.Time;
+
 /**
  * A service that maps trips to runs and vice-versa.
  * 
@@ -61,7 +66,7 @@ import com.google.common.collect.TreeMultimap;
  */
 @Component
 public class RunServiceImpl implements RunService {
-	
+
   private Logger _log = LoggerFactory.getLogger(RunServiceImpl.class);
 
   private NycFederatedTransitDataBundle _bundle;
@@ -71,19 +76,19 @@ public class RunServiceImpl implements RunService {
   private Multimap<String, RunTripEntry> entriesByRun;
 
   private Multimap<String, RunTripEntry> entriesByBlock;
-  
+
   private Multimap<String, AgencyAndId> runIdsToRoutes;
-  
+
   private Multimap<String, AgencyAndId> runIdsToTripIds;
 
   private ListMultimap<String, RunTripEntry> entriesByRunNumber;
 
   private ListMultimap<AgencyAndId, RunTripEntry> entriesByTrip;
-  
+
   private BlockCalendarService blockCalendarService;
 
   private TransitGraphDao transitGraph;
-  
+
   private ScheduledBlockLocationService scheduledBlockLocationService;
 
   private ExtendedCalendarService extCalendarService;
@@ -179,10 +184,10 @@ public class RunServiceImpl implements RunService {
       }
     }
 
-    RunTripEntry rte = new RunTripEntry(trip, runNumber, runRoute, runDepot, reliefTime,
-        relief);
+    RunTripEntry rte = new RunTripEntry(trip, runNumber, runRoute, runDepot,
+        reliefTime, relief);
     entriesByRun.put(runId, rte);
-		entriesByRunNumber.put(runNumber, rte);
+    entriesByRunNumber.put(runNumber, rte);
     try {
       String rawBlockId = trip.getBlock().getId().toString();
       String agencyIdPrefix = rte.getTripEntry().getId().getAgencyId() + "_";
@@ -203,9 +208,9 @@ public class RunServiceImpl implements RunService {
   }
 
   public void setRunDataByTrip(Map<AgencyAndId, RunData> runDataByTrip) {
-	    this.runDataByTrip = runDataByTrip;
+    this.runDataByTrip = runDataByTrip;
   }
-  
+
   /**
    * PUBLIC METHODS
    */
@@ -238,7 +243,7 @@ public class RunServiceImpl implements RunService {
   public Collection<RunTripEntry> getRunTripEntriesForRun(String runId) {
     return entriesByRun.get(runId);
   }
-  
+
   @Override
   public Collection<RunTripEntry> getRunTripEntriesForBlock(String blockId) {
     return entriesByBlock.get(blockId);
@@ -250,9 +255,8 @@ public class RunServiceImpl implements RunService {
 
   @Override
   public TreeMultimap<Integer, String> getBestRunIdsForFuzzyId(
-      String reportedRunId)
-      throws IllegalArgumentException {
-    
+      String reportedRunId) throws IllegalArgumentException {
+
     TreeMultimap<Integer, String> matchedRTEs = TreeMultimap.create();
     Matcher reportedIdMatcher = reportedRunIdPattern.matcher(reportedRunId);
 
@@ -266,14 +270,14 @@ public class RunServiceImpl implements RunService {
      */
     String fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
         reportedIdMatcher.group(2));
-    
+
     /*
      * In the following we strip the runEntry's id down to the format of the
-     * reported id's, as best we can.  For MISC routes, we use the 
-     * convention that they enter 999 as the run route.
+     * reported id's, as best we can. For MISC routes, we use the convention
+     * that they enter 999 as the run route.
      */
     for (String runId : entriesByRun.keySet()) {
-      String[] runPieces= runId.split("-");
+      String[] runPieces = runId.split("-");
       String runRoute = runPieces[0];
       // must support MISC convention of MISC-YU-101
       String runNumber = null;
@@ -282,7 +286,7 @@ public class RunServiceImpl implements RunService {
       } else {
         runNumber = runPieces[1];
       }
-      
+
       Matcher runNumberMatcher = realRunNumberPattern.matcher(runNumber);
       if (runNumberMatcher.matches()) {
         runNumber = runNumberMatcher.group(1);
@@ -317,7 +321,7 @@ public class RunServiceImpl implements RunService {
 
       matchedRTEs.put(bestDist, runId);
     }
-    
+
     return matchedRTEs;
   }
 
@@ -418,6 +422,32 @@ public class RunServiceImpl implements RunService {
   }
   
   @Override
+  public List<RunTripEntry> getRunTripEntriesForTripAndTime(TripEntry trip,
+      int scheduleTime) {
+
+    // trip is potentially split into initial + relief
+    List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getId());
+
+    if (!bothTrips.isEmpty())
+      return bothTrips;
+    
+    return null;
+  }
+
+  @Override
+  public RunTripEntry getRunTripEntryForTripAndTimeNoRelief(TripEntry trip,
+      int scheduleTime) {
+    // trip is potentially split into initial + relief
+    List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getId());
+
+    if (!bothTrips.isEmpty()) {
+      return bothTrips.get(0);
+    }
+
+    return null;
+  }
+
+  @Override
   public Set<String> getRunIdsForTrip(TripEntry trip) {
     Set<String> ids = Sets.newHashSet();
     for (RunTripEntry rte : entriesByTrip.get(trip.getId())) {
@@ -442,12 +472,15 @@ public class RunServiceImpl implements RunService {
   }
 
   @Override
-  public Collection<? extends AgencyAndId> getTripIdsForRunId(String runId, String agencyId) {
-    if (agencyId == null) return runIdsToTripIds.get(runId); 
-    //Multimap<String, AgencyAndId>
+  public Collection<? extends AgencyAndId> getTripIdsForRunId(String runId,
+      String agencyId) {
+    if (agencyId == null)
+      return runIdsToTripIds.get(runId);
+    // Multimap<String, AgencyAndId>
     List<AgencyAndId> filtered = new ArrayList<AgencyAndId>();
     Collection<AgencyAndId> tripIds = runIdsToTripIds.get(runId);
-    if (tripIds == null) return filtered;
+    if (tripIds == null)
+      return filtered;
     for (AgencyAndId trip : tripIds) {
       if (trip.getAgencyId().equals(agencyId)) {
         filtered.add(trip);
@@ -459,7 +492,8 @@ public class RunServiceImpl implements RunService {
   @Override
   public Set<AgencyAndId> getRoutesForRunId(String runId) {
     Collection<AgencyAndId> routeIds = runIdsToRoutes.get(runId);
-    return Objects.firstNonNull(Sets.newHashSet(routeIds), Collections.<AgencyAndId>emptySet());
+    return Objects.firstNonNull(Sets.newHashSet(routeIds),
+        Collections.<AgencyAndId> emptySet());
   }
 
   @Override
@@ -469,12 +503,11 @@ public class RunServiceImpl implements RunService {
     for (AgencyAndId routeId : routeIds) {
       if (routeId.getAgencyId().equals(agencyId)) {
         filtered.add(routeId);
-      } 
+      }
     }
     return filtered;
   }
 
-  
   @Override
   public RunTripEntry getPreviousEntry(RunTripEntry before, long serviceDate) {
     GregorianCalendar calendar = new GregorianCalendar();
@@ -552,7 +585,7 @@ public class RunServiceImpl implements RunService {
     }
     return null;
   }
- 
+
   /**
    * PRIVATE METHODS
    */
@@ -577,7 +610,7 @@ public class RunServiceImpl implements RunService {
     }
     return null;
   }
-  
+
   private BlockInstance getBlockInstanceForRunTripEntry(RunTripEntry rte,
       Date serviceDate) {
 
@@ -595,4 +628,5 @@ public class RunServiceImpl implements RunService {
     }
     return bli;
   }
+
 }
