@@ -116,7 +116,7 @@
 	<!-- Memcache for throttling, comment out entirely to disable throttling in OBA API calls to SIRI -->
 	<!-- opTimeout in milliseconds, daemon can start daemon locally -->
     
-    <bean id="memcachedClientThrottled" class="net.spy.memcached.spring.MemcachedClientFactoryBean">
+    <!-- <bean id="memcachedClientThrottled" class="net.spy.memcached.spring.MemcachedClientFactoryBean">
     	<property name="servers" value="apithrottlememcache:11211"/>
     	<property name="protocol" value="BINARY"/>
     	<property name="opTimeout" value="1500"/>
@@ -127,6 +127,6 @@
         	</bean>
     	</property>
     	<property name="daemon" value="false"/>
-	</bean>
+	</bean> -->
     
 </beans>
