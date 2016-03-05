@@ -221,7 +221,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	}
 
 	@Override
-	public BundleItem getCurrentBundleMetadata() {
+	public synchronized BundleItem getCurrentBundleMetadata() {
 		return _applicableBundles.get(_currentBundleId);
 	}
 
