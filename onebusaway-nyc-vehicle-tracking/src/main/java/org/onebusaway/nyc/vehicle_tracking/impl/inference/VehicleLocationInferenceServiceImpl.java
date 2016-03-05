@@ -560,11 +560,15 @@ public class VehicleLocationInferenceServiceImpl implements
     final BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
 
     // active bundle was removed from BMS' list of active bundles
-    if (currentBundle == null)
-      return true;
+    if (currentBundle == null){
+    	_log.warn("Current Bundle is NULL");
+    	return true;
+    }
 
     if (_lastBundle != null) {
       result = !_lastBundle.getId().equals(currentBundle.getId());
+      if(result)
+    	  _log.warn("Current Bundle Id {} does not equal Last Bundle Id {}", currentBundle.getId(), _lastBundle.getId());
     }
 
     _lastBundle = currentBundle;
@@ -580,7 +584,9 @@ public class VehicleLocationInferenceServiceImpl implements
   private void verifyVehicleResultMappingToCurrentBundle() {
     if (!bundleHasChanged())
       return;
-
+    
+    _log.info("bundle has changed");
+    
     for (final AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
       try {
         final VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
