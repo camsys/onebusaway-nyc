@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct;
 import net.sf.ehcache.CacheManager;
 
 import org.onebusaway.container.refresh.RefreshService;
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -25,6 +26,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTrans
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
@@ -76,6 +78,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	private String _bundleRootPath = null;
 
 	protected BundleStoreService _bundleStore = null;
+	
+	private int bundleDiscoveryFrequencyMin = 15;
+  
+  private int bundleSwitchFrequencyMin = 60;
 
 	@Autowired
 	private NycTransitDataService _nycTransitDataService;
@@ -97,6 +103,9 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	@Autowired
 	private RefreshService _refreshService;
+	
+	@Autowired
+  private ConfigurationService _configurationService;
 
 	/******
 	 * Getters / Setters
@@ -183,6 +192,14 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 		changeBundle(bestBundle.getId());
 	}
+	
+	@Refreshable(dependsOn = {"tdm.bundleDiscoveryFrequencyMin", "tdm.bundleSwitchFrequencyMin"})
+  protected void refreshCache() {
+    bundleDiscoveryFrequencyMin = Integer.parseInt(_configurationService.getConfigurationValueAsString(
+        "tdm.bundleDiscoveryFrequencyMin", "15"));
+    bundleSwitchFrequencyMin = Integer.parseInt(_configurationService.getConfigurationValueAsString(
+        "tdm.bundleSwitchFrequencyMin", "60"));
+  }
 
 	@PostConstruct
 	protected void setup() throws Exception {
@@ -191,7 +208,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		} else {
 			_bundleStore = new TDMBundleStoreImpl(_bundleRootPath, _apiLibrary);      
 		}
-
+		refreshCache();
 		discoverBundles();
 		refreshApplicableBundles();
 		reevaluateBundleAssignment();
@@ -459,10 +476,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 				calendar.set(Calendar.MINUTE, minutes + 1);        
 
 			} else {
-				calendar.set(Calendar.MINUTE, 0);
-
-				int hour = calendar.get(Calendar.HOUR);
-				calendar.set(Calendar.HOUR, hour + 1);        
+			  int minutes = calendar.get(Calendar.MINUTE);
+        calendar.set(Calendar.MINUTE, minutes + bundleSwitchFrequencyMin);            
 			}
 
 			return calendar.getTime();
@@ -498,7 +513,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			calendar.set(Calendar.SECOND, 0);
 
 			int minute = calendar.get(Calendar.MINUTE);
-			calendar.set(Calendar.MINUTE, minute + 15);
+			calendar.set(Calendar.MINUTE, minute + bundleDiscoveryFrequencyMin);
 
 			return calendar.getTime();
 		}  
