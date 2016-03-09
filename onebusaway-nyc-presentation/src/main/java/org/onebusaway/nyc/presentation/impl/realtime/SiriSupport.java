@@ -110,22 +110,13 @@ public final class SiriSupport {
 			monitoredCallStopBean = currentVehicleTripStatus.getNextStop();
 		}
 		
-		//get predictions data for both the current and next trip (if available)
+		
 		List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTrip(currentVehicleTripStatus.getVehicleId(), currentVehicleTripStatus.getActiveTrip().getId());
 		List<TimepointPredictionRecord> nextTripPredictions = null;
-		TripBean nextTripBean = null;
-		for(int i=0; i<blockTrips.size(); i++){
-			//does this block trip match the active trip currently in progress, if so, lets get the next trip if it exists
-			if(blockTrips.get(i).getTrip().getId().equals(currentVehicleTripStatus.getActiveTrip().getId())){
-				if(i+1 < blockTrips.size()){
-					if(blockTrips.get(i+1) != null){
-						nextTripBean = blockTrips.get(i+1).getTrip();
-						if(nextTripBean != null){
-							nextTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTrip(currentVehicleTripStatus.getVehicleId(), nextTripBean.getId());
-						}
-					}
-				}
-			}
+
+		TripBean nextTripBean = getNextTrip(currentVehicleTripStatus, nycTransitDataService);
+		if(nextTripBean != null){
+			nextTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTrip(currentVehicleTripStatus.getVehicleId(), nextTripBean.getId());
 		}
 		
 		LineRefStructure lineRef = new LineRefStructure();
@@ -248,7 +239,7 @@ public final class SiriSupport {
 
 				if(thisTrip.getTrip().getId().equals(currentVehicleTripStatus.getActiveTrip().getId())) {    			
 					// just started new trip
-					if(currentVehicleTripStatus.getDistanceAlongTrip() < (0.5 * currentVehicleTripStatus.getTotalDistanceAlongTrip())) {
+					if(currentVehicleTripStatus.getDistanceAlongTrip() < (0.5 * currentVehicleTripStatus.getTotalDistanceAlongTrip()) && !progressStatuses.contains("prevTrip")) {
 						originDepartureStopTime = thisTrip.getBlockStopTimes().get(0);
 
 					// at end of previous trip
@@ -307,6 +298,26 @@ public final class SiriSupport {
 
 		return;
 	}
+	
+	 private TripBean getNextTrip(TripStatusBean currentVehicleTripStatus, NycTransitDataService nycTransitDataService){
+		  BlockInstanceBean blockInstance = 
+				  nycTransitDataService.getBlockInstance(currentVehicleTripStatus.getActiveTrip().getBlockId(), currentVehicleTripStatus.getServiceDate());
+
+		List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
+		TripBean nextTripBean = null;
+		for(int i=0; i<blockTrips.size(); i++){
+			//does this block trip match the active trip currently in progress, if so, lets get the next trip if it exists
+			if(blockTrips.get(i).getTrip().getId().equals(currentVehicleTripStatus.getActiveTrip().getId())){
+				if(i+1 < blockTrips.size()){
+					if(blockTrips.get(i+1) != null){
+						nextTripBean = blockTrips.get(i+1).getTrip();
+						break;
+					}
+				}
+			}
+		 }
+	    return nextTripBean;
+	  }
 
 	/***
 	 * PRIVATE NoLongerStatic METHODS

@@ -147,6 +147,10 @@
 	color: #8FC743;
 }
 
+#bustime .popup .vehicleId {
+	color: rgb(0,0,255);
+}
+
 .popup ul.otherRoutes li {
 	display: inline;
 	margin-right: 10px;
