@@ -1,0 +1,2 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+YOPB6-YO_B6-Saturday-10,0,0,0,0,0,1,0,20160409,20160702

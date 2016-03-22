@@ -137,13 +137,13 @@ public class StifTripLoaderSupport {
      * arrival times.
      */
     if (gtfsDao instanceof SpringHibernateGtfsRelationalDaoImpl) {
-//      _log.debug("finding trip " + trip.getId().getId() + "via hibernate");
+          //      _log.debug("finding trip " + trip.getId().getId() + "via hibernate");
       SpringHibernateGtfsRelationalDaoImpl dao = (SpringHibernateGtfsRelationalDaoImpl) gtfsDao;
       List<?> rows = (List<?>) dao.execute(new HibernateOperation() {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,
         SQLException {
-          Query query = session.createQuery("SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 AND st.pickUpType = 0ORDER BY st.stopSequence ASC LIMIT 1");
+          Query query = session.createQuery("SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 AND st.pickUpType = 0 ORDER BY st.stopSequence ASC LIMIT 1");
           query.setParameter("trip", trip);
           return query.list();
         }
@@ -165,7 +165,7 @@ public class StifTripLoaderSupport {
       endTime = ((Integer) values[0]);
     } 
     else {
-//      _log.debug("finding trip " + trip.getId().getId() + "via java loop");
+      //      _log.debug("finding trip " + trip.getId().getId() + "via java loop");
       List<StopTime> stopTimes = gtfsDao.getStopTimesForTrip(trip);
 
       // proposed fix for dealing with non-revenue stops as the first stop.
@@ -190,44 +190,50 @@ public class StifTripLoaderSupport {
       StopTime startStopTime = stopTimes.get(actualFirstStop);
       startTime = startStopTime.getDepartureTime();
       startStop = startStopTime.getStop().getId().getId();
-      
+
       int actualLastStop = (stopTimes.size() - 1);
       boolean foundLastStop = false;
       
       try{
         while(!foundLastStop) {
-          if (stopTimes.get(actualLastStop).getDropOffType() == 0){
-               foundLastStop = true;
+          // dropOffType == 0 when regularly scheduled. 
+          if (stopTimes.get(actualLastStop).getDropOffType() == 0 ){
+            foundLastStop = true;
+          }
+          //The BxM1 has a boarding only last stop? 
+          else if((stopTimes.get(actualLastStop).getDropOffType() == 1 && stopTimes.get(actualLastStop).getPickupType() == 0 )) {
+            _log.warn("Boarding only stop near end of trip. Possibly unsafe assumption of last stop on " + trip.getId());
+              foundLastStop = true;
           }
           else {
             actualLastStop--;
           }
         }
-      } catch(IndexOutOfBoundsException e){
-        _log.error("No StopTime with DropOffType value of 0 found", e);
+      }catch(IndexOutOfBoundsException e){
+          _log.error("No StopTime with DropOffType value of 0 found", e);
+        }
+
+        // change this to stopTimes.size() - 1 to see test fail :)
+        StopTime endStopTime = stopTimes.get(actualLastStop);
+        endTime = endStopTime.getArrivalTime();
       }
-      
-      // change this to stopTimes.size() - 1 to see test fail :)
-      StopTime endStopTime = stopTimes.get(actualLastStop);
-      endTime = endStopTime.getArrivalTime();
+      String run = null;
+      String[] parts = trip.getId().getId().toUpperCase().split("_");
+      if (parts.length > 2) {
+        //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
+        //their current trip id format.
+        //for MTA Bus Co, this is not necessary, we hope
+        //also works for new NYCT GTFS format.
+        String runRoute = parts[parts.length-2];
+        String runNumber = parts[parts.length-1];
+        run = runRoute + "-" + runNumber;
+      }
+      routeName = routeName.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
+      return new TripIdentifier(routeName, startTime, endTime, startStop, run, trip.getBlockId());
     }
-    String run = null;
-    String[] parts = trip.getId().getId().toUpperCase().split("_");
-    if (parts.length > 2) {
-      //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
-      //their current trip id format.
-      //for MTA Bus Co, this is not necessary, we hope
-      //also works for new NYCT GTFS format.
-      String runRoute = parts[parts.length-2];
-      String runNumber = parts[parts.length-1];
-      run = runRoute + "-" + runNumber;
+
+    public GtfsMutableRelationalDao getGtfsDao() {
+      return gtfsDao;
     }
-    routeName = routeName.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
-    return new TripIdentifier(routeName, startTime, endTime, startStop, run, trip.getBlockId());
-  }
 
-  public GtfsMutableRelationalDao getGtfsDao() {
-    return gtfsDao;
   }
-
-}
