@@ -18,15 +18,19 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-
-import org.codehaus.jackson.JsonNode;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.InputTask;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public abstract class InputQueueListenerTask extends QueueListenerTask {
+public abstract class InputQueueListenerTask extends QueueListenerTask implements InputTask{
+  
+  InputService _inputService;
 
   @SuppressWarnings("deprecation")
   public InputQueueListenerTask() {
@@ -37,22 +41,15 @@ public abstract class InputQueueListenerTask extends QueueListenerTask {
     final AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
     _mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
   }
-
-  public RealtimeEnvelope deserializeMessage(String contents) {
-    RealtimeEnvelope message = null;
-    try {
-      final JsonNode wrappedMessage = _mapper.readValue(contents,
-          JsonNode.class);
-      final String ccLocationReportString = wrappedMessage.get(
-          "RealtimeEnvelope").toString();
-      message = _mapper.readValue(ccLocationReportString.replace("vehiclepowerstate", "vehiclePowerState"),
-          RealtimeEnvelope.class);
-    } catch (final Exception e) {
-      _log.warn("Received corrupted message from queue; discarding: "
-          + e.getMessage());
-      _log.warn("Contents: " + contents);
-    }
-    return message;
+  
+  @Autowired
+  @Qualifier("queueInputService")
+  public void setInputService(InputService inputService){
+	  _inputService = inputService;
+  }
+  
+  public RealtimeEnvelope deserializeMessage(String contents){
+    return _inputService.deserializeMessage(contents);
   }
 
   @Override
@@ -108,6 +105,7 @@ public abstract class InputQueueListenerTask extends QueueListenerTask {
   @Override
   @PostConstruct
   public void setup() {
+	
     super.setup();
   }
 

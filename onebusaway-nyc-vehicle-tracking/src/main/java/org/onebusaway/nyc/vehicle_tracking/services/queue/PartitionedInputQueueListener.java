@@ -13,6 +13,6 @@ public interface PartitionedInputQueueListener {
    * @param contents
    * @return whether the message was processed successfully or not.
    */
-  public boolean processMessage(String address, byte[] buff);
+  public boolean processMessage(String address, byte[] buff) throws Exception;
 
 }

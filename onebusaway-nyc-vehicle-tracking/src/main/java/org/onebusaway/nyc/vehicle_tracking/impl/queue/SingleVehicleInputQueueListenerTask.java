@@ -3,9 +3,10 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CcLocationReport;
@@ -21,14 +22,11 @@ import javax.annotation.PreDestroy;
 public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
     implements PartitionedInputQueueListener {
 
-  private final String _vehicleId = "MTA NYCT_2827";
-
-  private VehicleLocationInferenceService _vehicleLocationService;
-
   @Autowired
-  public void setVehicleLocationService(
-      VehicleLocationInferenceService vehicleLocationService) {
-    _vehicleLocationService = vehicleLocationService;
+  @Qualifier("singleVehicleInputService")
+  @Override
+  public void setInputService(InputService inputService){
+	  _inputService = inputService;
   }
 
   @Override
@@ -37,28 +35,8 @@ public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
   }
 
   @Override
-  public boolean processMessage(String address, byte[] buff) {
-    final String contents = new String(buff);
-    final RealtimeEnvelope envelope = deserializeMessage(contents);
-
-    if (acceptMessage(envelope)) {
-      _vehicleLocationService.handleRealtimeEnvelopeRecord(envelope);
-      return true;
-    }
-
-    return false;
-  }
-
-  private boolean acceptMessage(RealtimeEnvelope envelope) {
-    if (envelope == null || envelope.getCcLocationReport() == null)
-      return false;
-
-    final CcLocationReport message = envelope.getCcLocationReport();
-    final CPTVehicleIden vehicleIdent = message.getVehicle();
-    final AgencyAndId vehicleId = new AgencyAndId(
-        vehicleIdent.getAgencydesignator(), vehicleIdent.getVehicleId() + "");
-
-    return _vehicleId.equals(vehicleId.toString());
+  public boolean processMessage(String address, byte[] buff) throws Exception {
+    return _inputService.processMessage(address, buff);
   }
 
   @Override

@@ -3,8 +3,11 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 
 import org.codehaus.jackson.JsonNode;
@@ -15,9 +18,12 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.InputTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.context.ServletContextAware;
 
 import tcip_final_3_0_5_1.CPTVehicleIden;
@@ -33,12 +39,12 @@ import tcip_final_3_0_5_1.CcLocationReport;
  *  To enable this uncomment the bean definition in data-sources.xml.
  *
  */
-public class FileInputTask implements ServletContextAware {
+public class FileInputTask implements ServletContextAware, InputTask{
 
   protected static Logger _log = LoggerFactory.getLogger(FileInputTask.class);
   
   private VehicleLocationInferenceService _vehicleLocationService;
-  private VehicleAssignmentService _vehicleAssignmentService;
+  private InputService _inputService;
   
   /*
    * Obtain dump_raw.sql via:
@@ -47,7 +53,8 @@ public class FileInputTask implements ServletContextAware {
    *  order by time_received" onebusaway_nyc >dump_raw.sql
    */
   private String filename = "/tmp/dump_raw.sql";
-  private String[] _depotPartitionKeys = null;
+  private String _depotPartitionKey;
+  private ExecutorService _executorService = null;
   
   @Autowired
   public void setVehicleLocationService(
@@ -56,63 +63,64 @@ public class FileInputTask implements ServletContextAware {
   }
   
   @Autowired
-  public void setVehicleAssignmentService(
-      VehicleAssignmentService vehicleAssignmentService) {
-    _vehicleAssignmentService = vehicleAssignmentService;
+  @Qualifier("fileInputService")
+  public void setInputService(
+      InputService inputService) {
+	  _inputService = inputService;
   }
   
   public void setFilename(String filename) {
     this.filename = filename;
   }
-
+  
   @Override
   public void setServletContext(ServletContext servletContext) {
     // check for depot partition keys in the servlet context
     if (servletContext != null) {
-      final String key = servletContext.getInitParameter("depot.partition.key");
-      _log.info("servlet context provied depot.partition.key=" + key);
-      
-      if (key != null) {
-        setDepotPartitionKey(key);
-      }
+    	setDepotPartitionKey(servletContext.getInitParameter("depot.partition.key"));
+      _log.info("servlet context provied depot.partition.key=" + _depotPartitionKey);
     }
   }
   
+  public void setDepotPartitionKey(String depotPartitionKey) {
+	  _depotPartitionKey = depotPartitionKey;
+  }
+  
+  public String getDepotPartitionKey(){
+	  return _depotPartitionKey;
+  }
+
   @PostConstruct
   public void execute() {
-    InsertionThread thread = new InsertionThread(_vehicleLocationService, _vehicleAssignmentService, _depotPartitionKeys, filename);
-    new Thread(thread).start();
+	  _inputService.setDepotPartitionKey(_depotPartitionKey);
+	  _executorService = Executors.newFixedThreadPool(1);
+	  startInsertionThread(); 
   }
   
-  public void setDepotPartitionKey(String depotPartitionKey) {
-    _log.info("depotPartitionKey=" + depotPartitionKey);
-    if (depotPartitionKey != null && !depotPartitionKey.isEmpty())
-      _depotPartitionKeys = depotPartitionKey.split(",");
-    else
-      _depotPartitionKeys = null;
+  @PreDestroy
+  public void destroy() {
+	  _executorService.shutdownNow();
   }
   
-  private static class InsertionThread implements Runnable {
+  public void startInsertionThread(){
+	  _executorService.execute(new InsertionThread(_vehicleLocationService, _inputService, filename));
+  }
+  
+  private class InsertionThread implements Runnable {
     private VehicleLocationInferenceService _vehicleLocationService;
-    private VehicleAssignmentService vehicleAssignmentService;
-    private String[] depotPartitionKeys = null;
     private String filename = null;
     private Reader inputReader = null;
     private StringBuffer currentRecord = new StringBuffer();
-    private final ObjectMapper mapper = new ObjectMapper();
     private long startTime = System.currentTimeMillis();
     private long firstRecordTime = 0;
+    private InputService inputService;
 
     public InsertionThread(VehicleLocationInferenceService vls, 
-        VehicleAssignmentService vas, 
-        String[] depotPartitionKeys, 
+        InputService inputService,
         String filename) {
       this._vehicleLocationService = vls;
-      this.vehicleAssignmentService = vas;
-      this.depotPartitionKeys = depotPartitionKeys;
+      this.inputService = inputService;
       this.filename = filename;
-      final AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
-      mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
     }
     
     public void run() {
@@ -149,67 +157,18 @@ public class FileInputTask implements ServletContextAware {
       record.setTimeReceived(now);
     }
 
-    private boolean acceptMessage(RealtimeEnvelope envelope) {
-      if (envelope == null || envelope.getCcLocationReport() == null)
-        return false;
-
-      final CcLocationReport message = envelope.getCcLocationReport();
-      final ArrayList<AgencyAndId> vehicleList = new ArrayList<AgencyAndId>();
-      
-      if(depotPartitionKeys == null)
-        return false;
-      
-      for (final String key : depotPartitionKeys) {
-        try {
-          vehicleList.addAll(vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));
-        } catch (final Exception e) {
-          _log.warn("Error fetching assigned vehicles for depot " + key
-              + "; will retry.");
-          continue;
-        }
-      }
-      
-      final CPTVehicleIden vehicleIdent = message.getVehicle();
-      final AgencyAndId vehicleId = new AgencyAndId(
-          vehicleIdent.getAgencydesignator(), vehicleIdent.getVehicleId() + "");
-
-      return vehicleList.contains(vehicleId);
-    }
     private void processResult(RealtimeEnvelope record) {
-      if (acceptMessage(record)) {
+      if (inputService.acceptMessage(record)) {
         _vehicleLocationService.handleRealtimeEnvelopeRecord(record);
       }
       
     }
-
     private RealtimeEnvelope parseCurrentRecord() throws Exception {
       String s = currentRecord.toString();
-      RealtimeEnvelope record = deserializeMessage(s);
+      RealtimeEnvelope record = inputService.deserializeMessage(s);
       return record;
     }
     
-    public RealtimeEnvelope deserializeMessage(String contents) {
-      RealtimeEnvelope message = null;
-      try {
-    	  contents = "{" + contents + "}";
-    	  contents = contents.replaceFirst("UUID.*UUID", "UUID");
-
-        final JsonNode wrappedMessage = mapper.readValue(contents,
-            JsonNode.class);
-        final String ccLocationReportString = wrappedMessage.get(
-            "RealtimeEnvelope").toString();
-        String msg = ccLocationReportString.replace("vehiclepowerstate", "vehiclePowerState");
-
-        message = mapper.readValue(msg,
-            RealtimeEnvelope.class);
-      } catch (final Exception e) {
-        _log.warn("Received corrupted message from queue; discarding: "
-            + e.getMessage());
-        _log.warn("Contents: " + contents);
-      }
-      return message;
-    }
-
     // advance record pointer
     private boolean next() throws Exception {
       currentRecord = new StringBuffer();

@@ -9,16 +9,12 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.codehaus.jackson.map.ObjectMapper;
-
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-
 import org.zeromq.ZMQ;
 
 /**
@@ -43,7 +39,7 @@ public abstract class QueueListenerTask {
 	protected ZMQ.Poller _poller = null;
 	protected int _countInterval = 10000;
 
-	public abstract boolean processMessage(String address, byte[] buff);
+	public abstract boolean processMessage(String address, byte[] buff) throws Exception;
 
 	public abstract void startListenerThread();
 
@@ -103,7 +99,7 @@ public abstract class QueueListenerTask {
 						processedCount++;
 
 					} catch(Exception ex) {
-						_log.error("#####>>>>> processMessage() failed, exception was: " + ex.getMessage());
+						_log.error("#####>>>>> processMessage() failed, exception was: " + ex.getMessage(), ex);
 					}
 						
 					Thread.yield();

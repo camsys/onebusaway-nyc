@@ -33,7 +33,7 @@ import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.util.git.GitRepositoryHelper;
 import org.onebusaway.nyc.util.model.GitRepositoryState;
-import org.onebusaway.nyc.vehicle_tracking.impl.queue.InputQueueListenerTask;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.InputTask;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 /**
  * Controller for git status. 
@@ -55,7 +55,7 @@ public class StatusController {
 	private OutputQueueSenderService queueSenderService;
 	
 	@Autowired
-	private InputQueueListenerTask queueListener;
+	private InputTask inputTask;
 	
 	
   @RequestMapping(value="/status.do", method=RequestMethod.GET)
@@ -77,8 +77,8 @@ public class StatusController {
 	  status.setOutputService(queueSenderService.getClass().getName());
 	  status.setHostname(queueSenderService.getPrimaryHostname());
 	  status.setPrimary(queueSenderService.getIsPrimaryInferenceInstance());
-	  status.setListenerTask(queueListener.getClass().getName());
-	  status.setDepotList(queueListener.getDepotPartitionKey());
+	  status.setListenerTask(inputTask.getClass().getName());
+	  status.setDepotList(inputTask.getDepotPartitionKey());
 	  status.setGitDescribe(gitState.getDescribe());
 	  status.setInstanceId(slurp(INSTANCE_ID_URL));
 	  status.setInstanceType(slurp(INSTANCE_TYPE_URL));
