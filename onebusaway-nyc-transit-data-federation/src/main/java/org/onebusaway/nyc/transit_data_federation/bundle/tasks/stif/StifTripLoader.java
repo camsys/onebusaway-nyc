@@ -27,6 +27,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import javax.annotation.PostConstruct;
+
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
@@ -95,6 +97,10 @@ public class StifTripLoader {
   @Autowired
   public void setGtfsDao(GtfsMutableRelationalDao dao) {
     support.setGtfsDao(dao);
+  }
+  
+  public void setExcludeNonRevenue(boolean _excludeNonRevenue) {
+    support.setExcludeNonRevenue(_excludeNonRevenue);
   }
 
   /**
@@ -529,7 +535,4 @@ public class StifTripLoader {
     return support;
   }
 
-  public void setSupport(StifTripLoaderSupport support) {
-    this.support = support;
-  }
 }
