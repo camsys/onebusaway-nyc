@@ -82,6 +82,8 @@ public class StifTask implements Runnable {
   private MultiCSVLogger csvLogger = null;
 
   private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>();
+  
+  private boolean _excludeNonRevenue = false;
 
   @Autowired
   public void setLogger(MultiCSVLogger logger) {
@@ -122,12 +124,14 @@ public class StifTask implements Runnable {
   }
 
   public void run() {
-
+    
+    
     if (_loader == null) {
       // we let the unit tests inject a custom loader
       _log.warn("creating loader with gtfs= " + _gtfsMutableRelationalDao + " and logger=" + csvLogger);
       _loader = new StifTripLoader();
       _loader.setGtfsDao(_gtfsMutableRelationalDao);
+      _loader.setExcludeNonRevenue(_excludeNonRevenue);
       _loader.setLogger(csvLogger);
 
       for (File path : _stifPaths) {
@@ -318,7 +322,7 @@ public class StifTask implements Runnable {
       _log.debug("finding start time for trip " + trip.getId().getId());
       
       try{
-        while(!foundFirstStop) {
+        while(!foundFirstStop && _excludeNonRevenue) {
           // pick up type 0 === allowed
           if (stopTimes.get(actualFirstStop).getPickupType() == 0){
             foundFirstStop = true;
@@ -709,6 +713,14 @@ public class StifTask implements Runnable {
   // for unit tests
   public void setCSVLogger(MultiCSVLogger logger) {
     this.csvLogger = logger;
+  }
+
+  public boolean isExcludeNonRevenue() {
+    return _excludeNonRevenue;
+  }
+
+  public void setExcludeNonRevenue(boolean excludeNonRevenue) {
+    _excludeNonRevenue = excludeNonRevenue;
   }
 
   // package private for unit tests

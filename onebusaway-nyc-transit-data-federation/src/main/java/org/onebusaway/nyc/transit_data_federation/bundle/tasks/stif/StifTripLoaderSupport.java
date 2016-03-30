@@ -51,6 +51,8 @@ public class StifTripLoaderSupport {
   private Map<String, String> stopIdsByLocation = new HashMap<String, String>();
 
   private int _totalTripCount;
+  
+  private boolean _excludeNonRevenue = true;
 
   public void setGtfsDao(GtfsMutableRelationalDao dao) {
     this.gtfsDao = dao;
@@ -143,7 +145,9 @@ public class StifTripLoaderSupport {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,
         SQLException {
-          Query query = session.createQuery("SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 AND st.pickUpType = 0 ORDER BY st.stopSequence ASC LIMIT 1");
+          String excludeNonRevenueSQL = "SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 AND st.pickUpType = 0 ORDER BY st.stopSequence ASC LIMIT 1";
+          String includeNonRevenueSQL = "SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 ORDER BY st.stopSequence ASC LIMIT 1";
+          Query query = _excludeNonRevenue ? session.createQuery(excludeNonRevenueSQL) : session.createQuery(includeNonRevenueSQL);
           query.setParameter("trip", trip);
           return query.list();
         }
@@ -156,7 +160,9 @@ public class StifTripLoaderSupport {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,
         SQLException {
-          Query query = session.createQuery("SELECT st.arrivalTime FROM StopTime st WHERE st.trip = :trip AND st.arrivalTime >= 0 AND st.dropOffType = 0 ORDER BY st.stopSequence DESC LIMIT 1");
+          String excludeNonRevenueSQL = "SELECT st.arrivalTime FROM StopTime st WHERE st.trip = :trip AND st.arrivalTime >= 0 AND st.dropOffType = 0 ORDER BY st.stopSequence DESC LIMIT 1";
+          String includeNonRevenueSQL = "SELECT st.arrivalTime FROM StopTime st WHERE st.trip = :trip AND st.arrivalTime >= 0 ORDER BY st.stopSequence DESC LIMIT 1";
+          Query query = _excludeNonRevenue ? session.createQuery(excludeNonRevenueSQL) : session.createQuery(includeNonRevenueSQL);
           query.setParameter("trip", trip);
           return query.list();
         }
@@ -173,7 +179,7 @@ public class StifTripLoaderSupport {
       boolean foundFirstStop = false;
       
       try{
-        while(!foundFirstStop) {
+        while(!foundFirstStop && _excludeNonRevenue) {
           // pick up type 0 === allowed
           if (stopTimes.get(actualFirstStop).getPickupType() == 0){
                foundFirstStop = true;
@@ -195,7 +201,7 @@ public class StifTripLoaderSupport {
       boolean foundLastStop = false;
       
       try{
-        while(!foundLastStop) {
+        while(!foundLastStop && _excludeNonRevenue) {
           // dropOffType == 0 when regularly scheduled. 
           if (stopTimes.get(actualLastStop).getDropOffType() == 0 ){
             foundLastStop = true;
@@ -234,6 +240,14 @@ public class StifTripLoaderSupport {
 
     public GtfsMutableRelationalDao getGtfsDao() {
       return gtfsDao;
+    }
+
+    public boolean isExcludeNonRevenue() {
+      return _excludeNonRevenue;
+    }
+
+    public void setExcludeNonRevenue(boolean excludeNonRevenue) {
+       _excludeNonRevenue = excludeNonRevenue;
     }
 
   }
