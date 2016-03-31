@@ -178,7 +178,7 @@ OBA.Sign = function() {
 	function initStop(stopId, initMonitor) {
 		var params = { stopId: stopId.agency + "_" + stopId.id };
 		jQuery.getJSON(baseUrl + "/" + OBA.Config.stopForId, params, function(json) {
-			stopInfo[stopId] = json.stop;
+			stopInfo[stopId.id] = json.stop;
 			jQuery.each(json.stop.routesAvailable, function(_, route) {
 				routeInfo[route.id] = route;
 			});
@@ -200,7 +200,7 @@ OBA.Sign = function() {
 			'<div>' +
 				'<div class="error"></div>' +
 				'<div class="header">' + 
-					'<div class="name"><h1>' + stopInfo[stopId].name + '</h1></div>' + 
+					'<div class="name"><h1>' + stopInfo[stopId.id].name + '</h1></div>' + 
 					' <div class="stop-id"><h2>Stop #' + stopId.id + '</h2></div>' +
 				'</div>' + 
 				'<div class="arrivals"><table></table></div>' +
