@@ -348,8 +348,32 @@ th {
 	padding: .5em;
     font-size: 1.4em;
     line-height: 1.1em;
-    width: 60%;
+    /* width: 60%; */
     border-bottom: 2px solid #999;
+}
+th.routeHeader {
+    text-align: center;
+    padding: .25em;
+    /*width: 10%;*/
+    /*border-right: 1px solid #999 */
+}
+th.headsignHeader {
+    text-align: center;
+    padding: .25em;
+    /* border-right: 1px solid #999 */
+}
+th.nextArrivalHeader {
+    text-align: right;
+    padding: .25em;
+    /* border-right: 1px solid #999 */
+}
+th.futureArrivalHeader {
+    text-align: center;
+    width: 10%;
+    font-size: 1.0em;
+    line-height: 0.9em;
+    padding: .1em;
+    /* border-right: 1px solid #999 */
 }
 td {
     vertical-align: middle;
@@ -380,11 +404,32 @@ span.stop-id {
     font-weight: normal;
     color: #666;
 }
+span.scheduled_arrival_indicator {
+    font-size: 0.8em;
+    font-weight: normal;
+    color: red;
+}
 td.distance {
     text-align: right;
     font-size: 1.2em;
     white-space: nowrap;
     padding: 0.2em 1em 0.2em 0;
+}
+td.additional_stops {
+	width: 75px;
+	padding: 0 0 0.1em 0;
+}
+div.prediction {
+	height: 100%;
+	line-height: 100%;
+	vertical-align: middle;
+	padding-top: 0px;
+	padding-right: 5px; 
+	padding-left: 0;
+	padding-bottom: 0;
+	margin: 0 0 0 0;
+	border: 0 0 0 0;
+	text-align: center;
 }
 p.alert {
 	display: block;
@@ -441,6 +486,30 @@ div.stop-id {
 	top: 90;
 	bottom: 0;
 	background: rgb(50,50,50);
+}
+
+.arrivals_body {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 0px;
+	margin-left: 0px;
+	background: rgb(50,50,50);
+	color: white;
+}
+
+.additional_stops {
+	font-size: 0.6em;
+	display: table-cell;
+	height: 75%;
+	float: right;
+}
+
+.arrivals_body .simply-scroll-clip {
+	width: 100%;
+	height: 100%;
 }
 
 .alerts {
@@ -562,7 +631,7 @@ div.stop-id {
 }
 
 /* landscape configurations */
-/*body.landscape.sizeTIS, 
+body.landscape.sizeTIS, 
 body.landscape.sizeTIS input, 
 body.landscape.sizeTIS textarea { font-size: 2.0em; }
 
@@ -576,10 +645,10 @@ body.landscape.size1000 textarea { font-size: 1.60em; }
 
 body.landscape.size1200, 
 body.landscape.size1200 input, 
-body.landscape.size1200 textarea { font-size: 2.2em; }*/
+body.landscape.size1200 textarea { font-size: 2.2em; }
 
 /* portrait configurations */
-/*body.portrait.size1000, 
+body.portrait.size1000, 
 body.portrait.size1000 input, 
 body.portrait.size1000 textarea { font-size: 0.9em; }
 
@@ -593,4 +662,4 @@ body.portrait.size1600 textarea { font-size: 1.5em; }
 
 body.portrait.size1900, 
 body.portrait.size1900 input, 
-body.portrait.size1900 textarea { font-size: 1.7em; }*/
+body.portrait.size1900 textarea { font-size: 1.7em; }
