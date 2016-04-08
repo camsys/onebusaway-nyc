@@ -28,6 +28,7 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Iterables;
@@ -41,6 +42,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   private ScheduledBlockLocationService _scheduledBlockLocationService;
   
   private BlocksFromObservationService _blocksFromObservationService;
+  
+  private VehicleStateLibrary _vehicleStateLibrary;
+  
+  private ApplicationContext _applicationContext;
 
   @Autowired
   public void setScheduledBlockService(
@@ -52,6 +57,22 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   public void setBlocksFromObservationService(
       BlocksFromObservationService blocksFromObservationService) {
     _blocksFromObservationService = blocksFromObservationService;
+  }
+  
+  @Autowired
+  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
+	_vehicleStateLibrary = vehicleStateLibrary;
+  }
+  
+  /**
+   * Usually, we shoudn't ever have a reference to ApplicationContext, but we
+   * need it for the prototype
+   * 
+   * @param applicationContext
+   */
+  @Autowired
+  public void setApplicationContext(ApplicationContext applicationContext) {
+	  _applicationContext = applicationContext;
   }
 
   @Override
@@ -111,7 +132,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         /*
          * Only start moving if it's supposed to be
          */
-        return new BlockStateObservation(parentBlockStateObs, obs);
+    	return (BlockStateObservation) _applicationContext.getBean(
+      		  "blockStateObservation",parentBlockStateObs, obs, _vehicleStateLibrary);
       } else {
         final double distAlongPrior = obs.getDistanceMoved();
         final double distAlongErrorSample = ParticleFactoryImpl.getLocalRng().nextGaussian()
@@ -123,7 +145,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       distAlongSample += parentDistAlong;
       
     } else {
-      return new BlockStateObservation(parentBlockStateObs, obs);
+      return (BlockStateObservation) _applicationContext.getBean(
+      		  "blockStateObservation",parentBlockStateObs, obs, _vehicleStateLibrary);
     }
 
     if (distAlongSample > parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance())
