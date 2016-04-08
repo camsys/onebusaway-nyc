@@ -75,6 +75,9 @@ public class VehicleInferenceInstance {
 
   @Autowired
   private BlockStateService _blockStateService;
+  
+  @Autowired
+  private VehicleStateLibrary _vehicleStateLibrary;
 
   private DestinationSignCodeService _destinationSignCodeService;
 
@@ -716,7 +719,7 @@ public class VehicleInferenceInstance {
         final boolean vehicleIsDetourEligible = _blockStateService.locationIsEligibleForDetour(
             activeTrip, location);
 
-        final boolean isLayoverEligible = VehicleStateLibrary.isAtPotentialLayoverSpot(blockState.getBlockState(), obs, true);
+        final boolean isLayoverEligible = _vehicleStateLibrary.isAtPotentialLayoverSpot(blockState.getBlockState(), obs, true);
         final boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(nycRecord.getDestinationSignCode());
         
         // vehicles on detour (but not layover) should be in_progress with status=deviated

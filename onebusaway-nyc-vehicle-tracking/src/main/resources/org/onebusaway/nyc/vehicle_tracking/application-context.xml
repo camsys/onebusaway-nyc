@@ -55,5 +55,10 @@
     scope="prototype">    
     <property name="model" ref="particleFilterModel" />
   </bean>
+  
+  <bean id="blockStateObservation" 
+  	class="org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation"
+    scope="prototype">    
+  </bean>
 
 </beans>

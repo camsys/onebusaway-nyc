@@ -21,6 +21,7 @@ import java.util.List;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -69,6 +70,8 @@ public class VehicleStateLibrary {
   private TransitGraphDao _transitGraphDao;
 
   private BlockIndexService _blockIndexService;
+  
+  private BlockStateService _blockStateService;
 
   @Autowired
   public void setBlockIndexService(BlockIndexService blockIndexService) {
@@ -84,6 +87,11 @@ public class VehicleStateLibrary {
   public void setBaseLocationService(BaseLocationService baseLocationService) {
     _baseLocationService = baseLocationService;
   }
+  
+  @Autowired
+  public void setBlockStateService(BlockStateService blockStateService){
+	  _blockStateService = blockStateService;
+  }
 
   /****
    * Vehicle State Methods
@@ -95,16 +103,16 @@ public class VehicleStateLibrary {
     return isAtBase;
   }
 
-  public static boolean isAtPotentialLayoverSpot(VehicleState state, Observation obs) {
+  public boolean isAtPotentialLayoverSpot(VehicleState state, Observation obs) {
     return isAtPotentialLayoverSpot(state.getBlockState(), obs);
   }
 
-  public static boolean isAtPotentialLayoverSpot(BlockState blockState,
+  public boolean isAtPotentialLayoverSpot(BlockState blockState,
       Observation obs) {
     return isAtPotentialLayoverSpot(blockState, obs, false);
   }
   
-  public static boolean isAtPotentialLayoverSpot(BlockState blockState,
+  public boolean isAtPotentialLayoverSpot(BlockState blockState,
       Observation obs, boolean optimistic) {
 
     /**
@@ -126,8 +134,12 @@ public class VehicleStateLibrary {
       return false;
 
     final BlockStopTimeEntry layoverSpot = getPotentialLayoverSpot(blockLocation, optimistic);
-    if (layoverSpot == null)
-      return false;
+    if (layoverSpot == null){
+    	final AgencyAndId blockId =  blockState.getBlockInstance().getBlock().getBlock().getId();
+  	  	final long blockServiceDate = blockState.getBlockInstance().getServiceDate();
+        final boolean isWithinLayoverTimeRange = _blockStateService.isWithinLayoverTimeRange(blockId,blockServiceDate,obs.getTime());
+        return isWithinLayoverTimeRange;
+    }
 
     final double dist = TurboButton.distance(obs.getLocation(),
         layoverSpot.getStopTime().getStop().getStopLocation());
@@ -143,7 +155,7 @@ public class VehicleStateLibrary {
    * @param blockInstance
    * @return whether the observation is within the search radius
    */
-  public static boolean isAtPotentialBlockTerminal(NycRawLocationRecord record,
+  public boolean isAtPotentialBlockTerminal(NycRawLocationRecord record,
       BlockInstance blockInstance) {
 
     final CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
@@ -255,7 +267,7 @@ public class VehicleStateLibrary {
 
     return false;
   }
-  private static BlockStopTimeEntry getPotentialLayoverSpot(
+  private BlockStopTimeEntry getPotentialLayoverSpot(
       ScheduledBlockLocation location) {
     return getPotentialLayoverSpot(location, false);
   }
@@ -269,7 +281,7 @@ public class VehicleStateLibrary {
    * @param optimistic be wildly optimistic about what stops could be a layover.
    * @return a stop on that block to consider for layovers
    */
-  private static BlockStopTimeEntry getPotentialLayoverSpot(
+  private BlockStopTimeEntry getPotentialLayoverSpot(
       ScheduledBlockLocation location, boolean optimistic) {
 
     final int time = location.getScheduledTime();
@@ -341,7 +353,6 @@ public class VehicleStateLibrary {
       if (tripChangesBetweenPrevAndNextStop(stopTimes, nextNextStop, location))
         return nextNextStop;
     }
-
     if (optimistic) {
       // if closestStop doesn't make sense, look to previous trip
       // we may have just switched to a new trip and the distance along block
@@ -374,7 +385,7 @@ public class VehicleStateLibrary {
   /****
    * Private Methods
    ****/
-  static private boolean tripChangesBetweenPrevAndNextStop(
+  private boolean tripChangesBetweenPrevAndNextStop(
       List<BlockStopTimeEntry> stopTimes, BlockStopTimeEntry nextStop,
       ScheduledBlockLocation location) {
 
@@ -386,7 +397,7 @@ public class VehicleStateLibrary {
         && isLayoverInRange(previousStop, nextStop, location);
   }
 
-  static private boolean isLayoverInRange(BlockStopTimeEntry prevStop,
+  private boolean isLayoverInRange(BlockStopTimeEntry prevStop,
       BlockStopTimeEntry nextStop, ScheduledBlockLocation location) {
 
     if (prevStop.getDistanceAlongBlock() <= location.getDistanceAlongBlock()

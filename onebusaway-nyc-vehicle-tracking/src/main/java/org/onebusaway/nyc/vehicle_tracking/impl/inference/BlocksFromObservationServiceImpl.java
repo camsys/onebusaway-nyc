@@ -30,14 +30,12 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObserv
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Iterables;
@@ -71,6 +69,10 @@ public class BlocksFromObservationServiceImpl implements
   private BlockStateService _blockStateService;
 
   private RunService _runService;
+  
+  private VehicleStateLibrary _vehicleStateLibrary;
+  
+  private ApplicationContext _applicationContext;
 
   @Autowired
   public void setObservationCache(ObservationCache observationCache) {
@@ -107,9 +109,25 @@ public class BlocksFromObservationServiceImpl implements
   public void setTripSearchTimeBeforeFirstStop(long tripSearchTimeBeforeFirstStop) {
 	_tripSearchTimeBeforeFirstStop = tripSearchTimeBeforeFirstStop;
   }
-
+  
   public void setTripSearchTimeAfterLastStop(long tripSearchTimeAfteLastStop) {
 	_tripSearchTimeAfterLastStop = tripSearchTimeAfteLastStop;
+  }
+  
+  @Autowired
+  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
+	_vehicleStateLibrary = vehicleStateLibrary;
+  }
+  
+  /**
+   * Usually, we shoudn't ever have a reference to ApplicationContext, but we
+   * need it for the prototype
+   * 
+   * @param applicationContext
+   */
+  @Autowired
+  public void setApplicationContext(ApplicationContext applicationContext) {
+	  _applicationContext = applicationContext;
   }
 
   /****
@@ -191,8 +209,8 @@ public class BlocksFromObservationServiceImpl implements
       if (observation.getRunResults().hasRunResults()
           || observation.hasValidDsc()) {
         for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
-          potentialBlockStatesInProgress.add(new BlockStateObservation(bs,
-              observation, true));
+          potentialBlockStatesInProgress.add((BlockStateObservation) _applicationContext.getBean(
+        		  "blockStateObservation",bs, observation, true, _vehicleStateLibrary));
           snappedBlocks.add(bs.getBlockInstance());
         }
   
@@ -212,7 +230,8 @@ public class BlocksFromObservationServiceImpl implements
         final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
         try {
           final BlockState bs = _blockStateService.getAsState(thisBIS, 0.0);
-          states.add(new BlockStateObservation(bs, observation, false));
+          states.add((BlockStateObservation) _applicationContext.getBean(
+        		  "blockStateObservation",bs, observation, false, _vehicleStateLibrary));
         } catch (final Exception e) {
           _log.warn(e.getMessage());
           continue;
@@ -235,7 +254,8 @@ public class BlocksFromObservationServiceImpl implements
       Observation obs, BlockInstance blockInstance, double distanceAlong) {
     final BlockState bs = _blockStateService.getAsState(blockInstance,
         distanceAlong);
-    return new BlockStateObservation(bs, obs, false);
+    return (BlockStateObservation) _applicationContext.getBean(
+  		  "blockStateObservation",bs, obs, false, _vehicleStateLibrary);
   }
 
   /****
@@ -281,7 +301,8 @@ public class BlocksFromObservationServiceImpl implements
       for (final BlockState bs : foundStates.getAllStates()) {
         final double dab = bs.getBlockLocation().getDistanceAlongBlock();
         if (dab < maxDab && dab > minDab) {
-          resStates.add(new BlockStateObservation(bs, observation, true));
+          resStates.add((BlockStateObservation) _applicationContext.getBean(
+        		  "blockStateObservation",bs, observation, true, _vehicleStateLibrary));
         }
       }
     } else {
@@ -313,7 +334,8 @@ public class BlocksFromObservationServiceImpl implements
     }
     if (foundStates != null) {
       for (final BlockState bs : foundStates.getAllStates()) {
-        resStates.add(new BlockStateObservation(bs, observation, true));
+        resStates.add((BlockStateObservation) _applicationContext.getBean(
+      		  "blockStateObservation",bs, observation, true, _vehicleStateLibrary));
       }
     }
     return Sets.newHashSet(resStates);
@@ -410,7 +432,8 @@ public class BlocksFromObservationServiceImpl implements
     final Set<BlockState> blockStates = _blockStateService.getBlockStatesForObservation(obs);
     final Set<BlockStateObservation> results = Sets.newHashSet();
     for (final BlockState blockState : blockStates) {
-      results.add(new BlockStateObservation(blockState, obs, true));
+      results.add((BlockStateObservation) _applicationContext.getBean(
+    		  "blockStateObservation",blockState, obs, true, _vehicleStateLibrary));
     }
     return results;
   }
@@ -420,7 +443,8 @@ public class BlocksFromObservationServiceImpl implements
       Observation obs, BlockInstance blockInstance, int newSchedTime) {
     final BlockState blockState = _blockStateService.getScheduledTimeAsState(
         blockInstance, newSchedTime);
-    return new BlockStateObservation(blockState, obs, false);
+    return (BlockStateObservation) _applicationContext.getBean(
+  		  "blockStateObservation",blockState, obs, false, _vehicleStateLibrary);
   }
 
 }

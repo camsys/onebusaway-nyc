@@ -15,6 +15,9 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripType;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.NonRevenueMoveData;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -52,7 +55,10 @@ public class JourneyStateTransitionModel {
       BlocksFromObservationService blocksFromObservationService) {
     _blocksFromObservationService = blocksFromObservationService;
   }
-
+  
+  @Autowired
+  BlockStateService _blockStateService;
+  
   public static boolean isDetour(BlockStateObservation newState,
       boolean hasSnappedStates, boolean hasNotMoved, VehicleState parentState) {
 
@@ -131,16 +137,19 @@ public class JourneyStateTransitionModel {
         parentState);
     final boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
     EVehiclePhase parentPhase = parentState != null ? parentState.getJourneyState().getPhase() : null;
-    
+
     if (blockState != null) {
+      
+      
       final double distanceAlong = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock();
       if (distanceAlong <= 0.0) {
-        if (isLayoverStopped && blockState.isAtPotentialLayoverSpot()) {
-          return JourneyState.layoverBefore();
-        } else {
-          // TODO: handle layover-in-motion here (possibly) to allow a moving layover_before
-          return JourneyState.deadheadBefore(null);
+        if (blockState.isAtPotentialLayoverSpot()) {
+        	return JourneyState.layoverBefore();
+        } else{  	
+        	// TODO: handle layover-in-motion here (possibly) to allow a moving layover_before
+        	return JourneyState.deadheadBefore(null);
         }
+ 
       } else if (distanceAlong > blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
         /*
          * Note: we changed this from >= because snapped deadhead-after states could be more

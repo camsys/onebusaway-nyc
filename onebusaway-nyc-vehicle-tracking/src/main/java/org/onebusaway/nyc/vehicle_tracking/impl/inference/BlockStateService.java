@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -766,6 +765,22 @@ public class BlockStateService {
 	  // conversion from http://gis.stackexchange.com/questions/14449/java-vividsolutions-jts-wgs-84-distance-to-meters
 	  _shapeIdToBufferedGeometryMap.put(shapePoints.getShapeId(), 
 			  lineGeo.buffer(_maximumDetourDistanceInMeters / (Math.PI/180) / 6378137));
+  }
+  
+
+  public boolean isWithinLayoverTimeRange(AgencyAndId blockId, long blockServiceDate, long time) {
+	long secondsPastMidnight = (time - blockServiceDate) / 1000;
+	
+	for(final BlockLayoverIndex blockLayoverIndex : _blockIndexService.getBlockLayoverIndicesForBlock(blockId)) {
+		int minArrival = blockLayoverIndex.getLayoverIntervalBlock().getRange().getMinArrival() - 600;
+		int maxDeparture = blockLayoverIndex.getLayoverIntervalBlock().getRange().getMaxDeparture() + 1200;
+		
+		if(minArrival <= secondsPastMidnight && secondsPastMidnight <= maxDeparture){
+			return true;
+		}
+	}
+	
+	return false;
   }
   
   /**

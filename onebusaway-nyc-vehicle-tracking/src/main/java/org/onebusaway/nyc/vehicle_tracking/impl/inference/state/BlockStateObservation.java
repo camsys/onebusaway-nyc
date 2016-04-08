@@ -3,6 +3,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -17,6 +19,7 @@ import com.google.common.collect.Ordering;
  * @author bwillard
  * 
  */
+
 public final class BlockStateObservation implements
     Comparable<BlockStateObservation> {
   final private BlockState _blockState;
@@ -39,8 +42,20 @@ public final class BlockStateObservation implements
   private final boolean _isRunFormal;
 
   private final boolean _isOnTrip;
-
-  public BlockStateObservation(BlockStateObservation state, Observation obs) {
+  
+  public BlockStateObservation(){
+	  _scheduleDeviation = 0.0;
+	  _obs = null;
+	  _isSnapped = false;
+	  _isOpAssigned = null;
+	  _isRunReported = null;
+	  _isAtPotentialLayoverSpot = false;
+	  _isRunFormal = false;
+	  _isOnTrip = false;
+	  _blockState = null;
+  }
+  
+  public BlockStateObservation(BlockStateObservation state, Observation obs, VehicleStateLibrary vehicleStateLibrary) {
     
     final String runId = state.getBlockState().getRunId();
     _blockState = state._blockState;
@@ -51,7 +66,7 @@ public final class BlockStateObservation implements
     _isRunFormal = _isOpAssigned == Boolean.TRUE
         || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0)
         ? true : false;
-    _isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);
+    _isAtPotentialLayoverSpot = vehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);
     _isSnapped = state._isSnapped;
     _obs = obs;
     _isOnTrip = state._isOnTrip;
@@ -64,8 +79,8 @@ public final class BlockStateObservation implements
 //        state._isRunFormal, state._isAtPotentialLayoverSpot, state._isSnapped,
 //        obs, state._isOnTrip);
   }
-
-  public BlockStateObservation(BlockState blockState, Observation obs, boolean isSnapped) {
+  
+  public BlockStateObservation(BlockState blockState, Observation obs, boolean isSnapped, VehicleStateLibrary vehicleStateLibrary) {
     Preconditions.checkNotNull(obs);
     _blockState = Preconditions.checkNotNull(blockState);
 
@@ -77,7 +92,7 @@ public final class BlockStateObservation implements
     _isRunFormal = _isOpAssigned == Boolean.TRUE
         || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0)
         ? true : false;
-    _isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);;
+    _isAtPotentialLayoverSpot = vehicleStateLibrary.isAtPotentialLayoverSpot(_blockState, obs);
     _isSnapped = isSnapped;
     _scheduleDeviation = computeScheduleDeviation(obs, blockState);
     _obs = obs;
