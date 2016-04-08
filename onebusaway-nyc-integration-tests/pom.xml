@@ -187,6 +187,29 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1.1</version>
                 <executions>
+                	<execution>
+                        <id>graph-builder-execution-2016Jan_Prod_r03_b6_A6_Sunday</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx1500m</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2016Jan_Prod_r03_b6_A6_Sunday.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2016Jan_Prod_r03_b6_A6_Sunday</argument>
+                            </arguments>
+                        </configuration>
+                  </execution>
                   <execution>
                         <id>graph-builder-execution-2016Jan_ManBC_WkdOnly</id>
                         <phase>pre-integration-test</phase>

@@ -44,6 +44,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4399_20131225_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4655_mtabus_as_nyct_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4855_export_trips_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_4878_b6_layover_easy_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5318_20101202T172138_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5558_layover_in_motion_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_5799_20121011_IntegrationTest;
@@ -73,6 +74,8 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	/*
 	 * Inference tests
 	 */
+	//2016Jan_Prod_r03_b6_A6_Sunday
+	Trace_4878_b6_layover_easy_IntegrationTest.class,
 	
 	//2016Jan_Prod
 	Trace_3947_Relief_Run_ID_IntegrationTest.class,
