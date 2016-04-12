@@ -83,7 +83,7 @@ public class StifTask implements Runnable {
 
   private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>();
   
-  private boolean _excludeNonRevenue = false;
+  private Boolean _excludeNonRevenue = true;
 
   @Autowired
   public void setLogger(MultiCSVLogger logger) {
@@ -715,11 +715,11 @@ public class StifTask implements Runnable {
     this.csvLogger = logger;
   }
 
-  public boolean isExcludeNonRevenue() {
+  public Boolean getExcludeNonRevenue() {
     return _excludeNonRevenue;
   }
 
-  public void setExcludeNonRevenue(boolean excludeNonRevenue) {
+  public void setExcludeNonRevenue(Boolean excludeNonRevenue) {
     _excludeNonRevenue = excludeNonRevenue;
   }
 
