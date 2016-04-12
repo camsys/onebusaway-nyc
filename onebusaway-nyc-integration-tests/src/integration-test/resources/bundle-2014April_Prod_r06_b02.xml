@@ -71,6 +71,7 @@
             value="${onebusaway_prefix}/src/integration-test/resources/bundle/stifs/2014April_Prod_r06_b02" />
 	    <property name="notInServiceDscPath"
             value="${onebusaway_prefix}/src/integration-test/resources/bundle/NotInServiceDSCs.txt" />
+        <property name="excludeNonRevenue" value="false" />
     </bean>
     <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
         <property name="taskName" value="stifLoaderTask" />
