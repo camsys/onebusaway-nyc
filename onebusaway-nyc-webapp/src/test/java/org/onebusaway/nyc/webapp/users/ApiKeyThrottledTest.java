@@ -2,14 +2,16 @@ package org.onebusaway.nyc.webapp.users;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.users.impl.ApiKeyThrottledServiceImpl;
-import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottlingMemcacheService;
+import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottlingCacheService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApiKeyThrottledTest {
@@ -76,7 +78,7 @@ public class ApiKeyThrottledTest {
 	}
     
     //create memcache
-    ApiKeyThrottlingMemcacheService m = new mockMemcacheService();
+    ApiKeyThrottlingCacheService m = new mockMemcacheService();
     apiThrottleService.setServicesForTesting(configurationService, m);
     
     for(int i = 0; i<5; i++){
@@ -102,7 +104,7 @@ public class ApiKeyThrottledTest {
 	}
     
     //create memcache
-    ApiKeyThrottlingMemcacheService m = new mockMemcacheService();
+    ApiKeyThrottlingCacheService m = new mockMemcacheService();
     apiThrottleService.setServicesForTesting(configurationService, m);
     
     for(int i = 0; i<5; i++){
@@ -154,7 +156,7 @@ public class ApiKeyThrottledTest {
 	  
   }
 
-  private class mockMemcacheService implements ApiKeyThrottlingMemcacheService{
+  private class mockMemcacheService implements ApiKeyThrottlingCacheService{
 
 	private HashMap<String, Integer> _hm = new HashMap<String, Integer>();
 	  
@@ -168,6 +170,35 @@ public class ApiKeyThrottledTest {
 		}
 		_hm.put(key, (int)defaul);
 		return defaul;
+	}
+
+	@Override
+	public boolean isCacheAvailable() {
+		return true;
+	}
+
+	@Override
+	public String getCacheHost() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setCacheHost(String cacheHost) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getCachePort() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setCachePort(String cachePort) {
+		// TODO Auto-generated method stub
+		
 	}
 	  
   }

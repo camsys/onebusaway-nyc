@@ -180,6 +180,8 @@
 				<create-apikey>false</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
 				<geocoder.cache.disabled>false</geocoder.cache.disabled>
+				<cache.host>sessions-memcache</cache.host>
+				<cache.port>11211</cache.port>
 			</properties>
 		</profile>
 		<profile>
@@ -195,6 +197,8 @@
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
 				<geocoder.cache.disabled>false</geocoder.cache.disabled>
+				<cache.host>sessions-memcache.dev.obanyc.com</cache.host>
+				<cache.port>11211</cache.port>
 			</properties>
 		</profile>
 		<profile>
@@ -210,6 +214,8 @@
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
 				<geocoder.cache.disabled>false</geocoder.cache.disabled>
+				<cache.host>sessions-memcache.dev.obanyc.com</cache.host>
+				<cache.port>11211</cache.port>
 			</properties>
 		</profile>
 		<profile>
@@ -226,6 +232,8 @@
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
 				<geocoder.cache.disabled>false</geocoder.cache.disabled>
+				<cache.host>sessions-memcache.dev.obanyc.com</cache.host>
+				<cache.port>11211</cache.port>
 			</properties>
 		</profile>
 		<profile>
@@ -242,6 +250,8 @@
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
 				<geocoder.cache.disabled>false</geocoder.cache.disabled>
+				<cache.host>sessions-memcache.dev.obanyc.com</cache.host>
+				<cache.port>11211</cache.port>
 			</properties>
 		</profile>
 	</profiles>
