@@ -47,7 +47,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * Create a mapping from Destination Sign Code (DSC) to GTFS Trip objects using
@@ -99,8 +98,8 @@ public class StifTripLoader {
     support.setGtfsDao(dao);
   }
   
-  public void setExcludeNonRevenue(boolean _excludeNonRevenue) {
-    support.setExcludeNonRevenue(_excludeNonRevenue);
+  public void setExcludeNonRevenue(Boolean excludeNonRevenue) {
+	 support.setExcludeNonRevenue(excludeNonRevenue);
   }
 
   /**
