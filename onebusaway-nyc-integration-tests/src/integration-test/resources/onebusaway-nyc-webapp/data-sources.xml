@@ -92,5 +92,9 @@
 	<bean id="geocoderCacheService" class="org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl">
 		<property name="disabled" value="true" />
 	</bean>
+	
+	<bean id="apiKeyThrottlingCacheService" class="org.onebusaway.nyc.webapp.users.impl.ApiKeyThrottlingMemcacheServiceImpl">
+		<property name="disabled" value="true" />
+	</bean>
 
 </beans>

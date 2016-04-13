@@ -26,6 +26,8 @@ public class ApiKeyThrottlingMemcacheServiceImpl implements
 	private String cacheHost = "sessions-memcache";
 	
 	private String cachePort = "11211";
+	
+	private Boolean disabled = false;
 
 	private static final int INTERVAL_SECONDS = 1000;
 
@@ -33,8 +35,10 @@ public class ApiKeyThrottlingMemcacheServiceImpl implements
 
 	@PostConstruct
 	private void setup() {
-		initializeMemcache();
-		startMemcacheCheck();
+		if(!disabled){
+			initializeMemcache();
+			startMemcacheCheck();
+		}
 	}
 
 	private void initializeMemcache() {
@@ -59,12 +63,12 @@ public class ApiKeyThrottlingMemcacheServiceImpl implements
 		}
 	}
 
-	public long incr(String key, int by, long defaul, int expiration) {
+	public long incr(String key, int by, long defaul, int expiration) throws NullPointerException {
 		return _cache.incr(key, by, defaul, expiration);
 	}
 
 	public boolean isCacheAvailable() {
-		return _cache == null;
+		return _cache != null;
 	}
 	
 	public String getCacheHost(){
@@ -81,6 +85,14 @@ public class ApiKeyThrottlingMemcacheServiceImpl implements
 
 	public void setCachePort(String cachePort){
 		this.cachePort = cachePort;
+	}
+	
+	public Boolean getDisabled(){
+		return disabled;
+	}
+
+	public void setDisabled(Boolean disabled){
+		this.disabled = disabled;
 	}
 
 	private class MemcacheCheckThread extends TimerTask {

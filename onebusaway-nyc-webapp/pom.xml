@@ -180,8 +180,8 @@
 				<create-apikey>false</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
 				<geocoder.cache.disabled>false</geocoder.cache.disabled>
-				<cache.host>sessions-memcache</cache.host>
-				<cache.port>11211</cache.port>
+				<api.cache.host>sessions-memcache</api.cache.host>
+				<api.cache.disabled>false</api.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -197,8 +197,8 @@
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
 				<geocoder.cache.disabled>false</geocoder.cache.disabled>
-				<cache.host>sessions-memcache.dev.obanyc.com</cache.host>
-				<cache.port>11211</cache.port>
+				<api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+				<api.cache.disabled>true</api.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -213,9 +213,8 @@
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
-				<geocoder.cache.disabled>false</geocoder.cache.disabled>
-				<cache.host>sessions-memcache.dev.obanyc.com</cache.host>
-				<cache.port>11211</cache.port>
+				<api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+				<api.cache.disabled>true</api.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -232,8 +231,8 @@
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
 				<geocoder.cache.disabled>false</geocoder.cache.disabled>
-				<cache.host>sessions-memcache.dev.obanyc.com</cache.host>
-				<cache.port>11211</cache.port>
+				<api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+				<api.cache.disabled>true</api.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
@@ -250,8 +249,8 @@
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
 				<geocoder.cache.disabled>false</geocoder.cache.disabled>
-				<cache.host>sessions-memcache.dev.obanyc.com</cache.host>
-				<cache.port>11211</cache.port>
+				<api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+				<api.cache.disabled>true</api.cache.disabled>
 			</properties>
 		</profile>
 	</profiles>

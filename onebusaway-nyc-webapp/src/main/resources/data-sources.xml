@@ -114,8 +114,8 @@
 	</bean>
 	
 	<bean id="apiKeyThrottlingCacheService" class="org.onebusaway.nyc.webapp.users.impl.ApiKeyThrottlingMemcacheServiceImpl">
-		<property name="cacheHost" value="${cache.host}" />
-		<property name="cachePort" value="${cache.port}" />
+		<property name="cacheHost" value="${api.cache.host}" />
+		<property name="disabled" value="${api.cache.disabled}" />
 	</bean>
     
 </beans>
