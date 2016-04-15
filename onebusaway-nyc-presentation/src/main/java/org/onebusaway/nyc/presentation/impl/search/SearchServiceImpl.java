@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -283,7 +284,8 @@ public class SearchServiceImpl implements SearchService {
 		if (q == null) {
 			return null;
 		}
-
+		
+		q = URLDecoder.decode(q);
 		q = q.trim();
 
 		List<String> tokens = new ArrayList<String>();
