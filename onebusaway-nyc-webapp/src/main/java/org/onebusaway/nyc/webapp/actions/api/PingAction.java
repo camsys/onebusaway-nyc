@@ -27,9 +27,19 @@ import com.google.gson.JsonParser;
 
 public class PingAction extends OneBusAwayNYCActionSupport {
   
+  /**
+	 * 
+	 */
+  private static final long serialVersionUID = -8210535045633625964L;
   private static Logger _log = LoggerFactory.getLogger(PingAction.class);
-  private static final String TRUE_STRING = "true";
   private TransitDataService _tds;
+  
+  public static final String TRUE = "true";
+  public static final String NEW_LINE = System.getProperty("line.separator");
+  
+  public static final String WEBAPP_IS_ONLINE = "Webapp is Online";
+  public static final String SMS_IS_ONLINE = "SMS Webapp is Online";
+  public static final String API_IS_ONLINE = "API Webapp is Online";
   
   @Autowired
   public void setTransitDataService(TransitDataService tds) {
@@ -54,18 +64,15 @@ public class PingAction extends OneBusAwayNYCActionSupport {
   
   public String getPing() throws RuntimeException {
     try {
-      List<AgencyWithCoverageBean> count = _tds.getAgenciesWithCoverage();
-      String smsUrl = _config.getConfigurationValueAsString("sms.pingUrl", "http://localhost:8080/onebusaway-nyc-sms-webapp/index.action");
+      StringBuilder sb = new StringBuilder(5);
       
-      if (count == null || count.isEmpty()) {
-        _log.error("Ping action found agencies = " + count);
-        throw new ServletException("No agencies supported in current bundle");
-      }
-      if(!isSucessful(smsUrl)){
-    	throw new ServletException("SMS Url " + smsUrl + " is not responding");
-      }
+      sb.append(getWebappStatus());
+      sb.append(NEW_LINE);
+      sb.append(getSmsWebappStatus());
+      sb.append(NEW_LINE);
+      sb.append(getApiWebappStatus());
       
-      return "" + count.size();      
+      return sb.toString();      
       
     } catch (Throwable t) {
       _log.error("Ping action failed with ", t);
@@ -73,13 +80,47 @@ public class PingAction extends OneBusAwayNYCActionSupport {
     }
   }
   
-  private boolean isSucessful(String url){
+  private String getWebappStatus() throws ServletException{
+	  List<AgencyWithCoverageBean> count = _tds.getAgenciesWithCoverage();
+	  if (count == null || count.isEmpty()){
+		  _log.error("Ping action found agencies = " + count);
+		  throw new ServletException("No agencies supported in current bundle");
+	  }
+	  return WEBAPP_IS_ONLINE;
+  }
+  
+  private String getSmsWebappStatus() throws ServletException{
+	  String smsUrl = _config.getConfigurationValueAsString("sms.pingUrl", "http://localhost:8080/onebusaway-nyc-sms-webapp/index.action");
+	  if(!isSmsWebappQuerySucessful(smsUrl)){
+    	throw new ServletException("SMS Url " + smsUrl + " is not responding");
+      }
+	  return SMS_IS_ONLINE;
+  }
+  
+  private boolean isSmsWebappQuerySucessful(String url){
+	  return isAlive(url, SUCCESS, TRUE);
+  }
+  
+  private String getApiWebappStatus() throws ServletException{
+	  String apiUrl = _config.getConfigurationValueAsString("apiWebapp.pingUrl", "http://localhost:8080/onebusaway-nyc-api-webapp/api/ping");
+	  if(!isApiWebappQuerySucessful(apiUrl)){
+    	throw new ServletException("Api Webapp Url " + apiUrl + " is not responding");
+      }
+	  return API_IS_ONLINE;
+  }
+  
+  private boolean isApiWebappQuerySucessful(String url){
+	  return isAlive(url, SUCCESS, TRUE);
+  }
+  
+  private boolean isAlive(String url, String jsonSuccessKey, String jsonSuccessValue){
 	  try{
 		  JSONObject json = new JSONObject(IOUtils.toString(new URL(url)));
-		  String success = json.get(SUCCESS).toString();
-		  return success.equals(TRUE_STRING);
+		  String success = json.get(jsonSuccessKey).toString();
+		  return success.equals(jsonSuccessValue);
 	  } catch(Exception e){
 		  return false;
-	  }
-  } 
+	  }  
+  }
+  
 }
