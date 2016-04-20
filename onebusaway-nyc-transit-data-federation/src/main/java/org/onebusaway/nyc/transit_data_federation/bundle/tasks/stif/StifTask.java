@@ -388,7 +388,7 @@ public class StifTask implements Runnable {
         "stif_trips_without_pullout.csv",
         "stif_trip,stif_filename,stif_trip_record_line_num,gtfs_trip_id,synthesized_block_id");
     csvLogger.header("matched_trips_gtfs_stif.csv", "agency_id,gtfs_service_id,service_id,blockId,tripId,dsc,firstStop,"+
-        "firstStopTime,lastStop,lastStopTime,runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute,routeId");
+        "firstStopTime,lastStop,lastStopTime,runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute,routeId,busType");
 
     Map<ServiceCode, List<StifTrip>> rawData = loader.getRawStifData();
     for (Map.Entry<ServiceCode, List<StifTrip>> entry : rawData.entrySet()) {
