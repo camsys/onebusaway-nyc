@@ -610,7 +610,7 @@ public class StifTask implements Runnable {
         gtfsServiceId, trip.serviceCode, blockId, tripId, trip.getDsc(), trip.firstStop,
         trip.firstStopTime, trip.lastStop, trip.lastStopTime, trip.runId,
         trip.reliefRunId, trip.recoveryTime, trip.firstTripInSequence,
-        trip.lastTripInSequence, trip.getSignCodeRoute(), routeId);
+        trip.lastTripInSequence, trip.getSignCodeRoute(), routeId, trip.busType);
   }
 
   private void warnOnMissingTrips() {

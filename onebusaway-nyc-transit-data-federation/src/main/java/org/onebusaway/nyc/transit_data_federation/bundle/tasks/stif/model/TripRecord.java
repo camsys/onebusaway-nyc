@@ -39,8 +39,17 @@ public class TripRecord implements StifRecord {
   private boolean firstTripInSequence;
   private String depotCode;
   private String gtfsTripId;
+  private char busType;
 
-  public void setSignCode(String signCode) {
+  public char getBusType() {
+	return busType;
+}
+
+public void setBusType(char busType) {
+	this.busType = busType;
+}
+
+public void setSignCode(String signCode) {
     this.signCode = signCode.replaceAll("^0+", "");
   }
 

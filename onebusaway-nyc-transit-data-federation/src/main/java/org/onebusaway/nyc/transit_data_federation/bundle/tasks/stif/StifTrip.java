@@ -41,15 +41,17 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
   public String depot;
   public String nextTripOperatorDepot;
   public String agencyId;
+  public char busType;
 
 
   public StifTrip(String runId, String reliefRunId, String nextRun,
-      StifTripType type, String dsc) {
+      StifTripType type, String dsc, char busType) {
     this.runId = runId;
     this.reliefRunId = reliefRunId;
     this.nextRun = nextRun;
     this.type = type;
     this.dsc = dsc;
+    this.busType = busType;
   }
 
   // this is just for creating bogus objects for searching
@@ -104,4 +106,5 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
     }
     return nextRun + "-" + nextTripOperatorDepot;
   }
+  
 }
