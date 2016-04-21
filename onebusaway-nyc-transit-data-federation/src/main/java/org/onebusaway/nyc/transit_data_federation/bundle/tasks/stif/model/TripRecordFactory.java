@@ -82,7 +82,11 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
         }
       }),
       new FieldDef(83 - 79, "relief location", null),
-      new FieldDef(84 - 83, "bus type code", null),
+      new FieldDef(84 - 83, "bus type code", new TripFieldSetter() {
+    	  public void setField(TripRecord record){
+    		  record.setBusType(getCharData());
+    	  }
+      }),
       new FieldDef(88 - 84, "sign code", new TripFieldSetter() {
         public void setField(TripRecord record) {
           record.setSignCode(getStringData());

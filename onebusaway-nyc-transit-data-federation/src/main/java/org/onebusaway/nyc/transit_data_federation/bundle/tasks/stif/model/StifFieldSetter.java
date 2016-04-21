@@ -25,46 +25,57 @@ public abstract class StifFieldSetter<T extends StifRecord> {
 		this.end = end;
 	}
 	public abstract void setField(T record);
-	
+
 	public String getStringDataUppercased() {
-	  return getStringData().toUpperCase();
+		return getStringData().toUpperCase();
 	}
-	
+
+	public char getCharData(){
+		String data = getStringData();
+
+		if (data.length() == 1){
+			return data.charAt(0);
+		}
+		else{
+			return ' ';
+		}
+
+	}
 	public String getStringData() {
-	  if (start > bytes.length) {
-	    return "";
-	  }
-	  if (end > bytes.length) {
-	    return new String(bytes, start, bytes.length - start).trim();
-	  }
+		if (start > bytes.length) {
+			return "";
+		}
+		if (end > bytes.length) {
+			return new String(bytes, start, bytes.length - start).trim();
+		}
 		return new String(bytes, start, end - start).trim();
 	}
 
-  public int getInteger() {
-    return Integer.parseInt(getStringData());
-  }
+	public int getInteger() {
+		return Integer.parseInt(getStringData());
+	}
 
-  public int getIntegerSafe() {
-    String data = getStringData();
-    try {
-      return Integer.parseInt(data);
-    } catch (NumberFormatException e) {
-      return -1;
-    }
-  }
+	public int getIntegerSafe() {
+		String data = getStringData();
+		try {
+			return Integer.parseInt(data);
+		} catch (NumberFormatException e) {
+			return -1;
+		}
+	}
 
-  public int getTimeFromCentiminutesSafe() {
-    // function modified to round centiminute values with fractional seconds appropriately. 
-    float centiminutes = (float)getIntegerSafe();
-    
-    if (centiminutes == -1) {
-      return -1;
-    }
-    
-    return (int)Math.round(((centiminutes * 60.0) / 100.0));
-  }
+	public int getTimeFromCentiminutesSafe() {
+		// function modified to round centiminute values with fractional seconds appropriately. 
+		float centiminutes = (float)getIntegerSafe();
 
-	
+		if (centiminutes == -1) {
+			return -1;
+		}
+
+		return (int)Math.round(((centiminutes * 60.0) / 100.0));
+	}
+
+
 	public float getDecimalFixedPoint(int digits) {
 		while(bytes[start] == ' ') {
 			start += 1;
@@ -78,9 +89,10 @@ public abstract class StifFieldSetter<T extends StifRecord> {
 	}
 
 	public boolean getBoolean() {
-	  while(bytes[start] == ' ') {
-	    start++;
-	  }
-	  return bytes[start] == 'Y';
+		while(bytes[start] == ' ') {
+			start++;
+		}
+		return bytes[start] == 'Y';
 	}
 }
+

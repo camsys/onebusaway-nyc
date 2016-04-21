@@ -243,7 +243,7 @@ public class StifTripLoader {
             StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
                 tripRecord.getReliefRunId(),
                 tripRecord.getNextTripOperatorRunId(),
-                StifTripType.byValue(tripType), tripRecord.getSignCode());
+                StifTripType.byValue(tripType), tripRecord.getSignCode(), tripRecord.getBusType());
             stifTrip.agencyId = agencyId;
             stifTrip.serviceCode = serviceCode;
             stifTrip.depot = tripRecord.getDepotCode();
@@ -286,7 +286,7 @@ public class StifTripLoader {
           StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
               tripRecord.getReliefRunId(),
               tripRecord.getNextTripOperatorRunId(),
-              StifTripType.byValue(tripType), tripRecord.getSignCode());
+              StifTripType.byValue(tripType), tripRecord.getSignCode(), tripRecord.getBusType());
           stifTrip.agencyId = agencyId;
           stifTrip.serviceCode = serviceCode;
           stifTrip.depot = tripRecord.getDepotCode();
