@@ -8,7 +8,7 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
-
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 @ParentPackage("json-default")
-//@Result(type="json")
 @Result(type="json", params={"callbackParameter", "callback"})
 public class StopsOnRouteForDirectionAction extends OneBusAwayNYCActionSupport {
 
@@ -68,7 +67,11 @@ public class StopsOnRouteForDirectionAction extends OneBusAwayNYCActionSupport {
         
         if(!stopGroupBean.getStopIds().isEmpty()) {
           for(String stopId : stopGroupBean.getStopIds()) {
-            _stops.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId)));
+        	  String agencyId = AgencyAndIdLibrary.convertFromString(_routeId).getAgencyId();
+	          if (_nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId,
+	                  stopsForRoute.getRoute().getId(), stopGroupBean.getId())) {
+	            _stops.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId)));
+	          }
           }
         }
       }

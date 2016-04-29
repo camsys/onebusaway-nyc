@@ -55,8 +55,10 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 
 					ListBean<String> stopIds = _transitDataService.getStopIdsForAgencyId(agency);
 					for (String stopId : stopIds.getList()) {
-						AgencyAndId agencyAndId = AgencyAndIdLibrary.convertFromString(stopId);
-						generateInputsForString(tmpSuggestions, agencyAndId.getId(), null);
+						if (_transitDataService.stopHasRevenueService(agency, stopId)) {
+							AgencyAndId agencyAndId = AgencyAndIdLibrary.convertFromString(stopId);
+							generateInputsForString(tmpSuggestions, agencyAndId.getId(), null);
+						}
 					}
 				}
 				suggestions = tmpSuggestions;

@@ -82,6 +82,7 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.services.ScheduleHelperService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -601,6 +602,16 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	public ListBean<TripProblemReportSummaryBean> getTripProblemReportSummariesByGrouping(
 			TripProblemReportQueryBean arg0, ETripProblemGroupBy arg1) {
 		return _transitDataService.getTripProblemReportSummariesByGrouping(arg0, arg1);
+	}
+
+	@Override
+	public Boolean stopHasRevenueServiceOnRoute(String agencyId, String stopId, String routeId, String directionId) {
+		return _scheduledServiceService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
+	}
+
+	@Override
+	public Boolean stopHasRevenueService(String agencyId, String stopId) {
+		return _scheduledServiceService.stopHasRevenueService(agencyId, stopId); 
 	}
 
 }

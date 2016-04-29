@@ -21,6 +21,7 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,6 +132,11 @@ public class SearchServiceImpl implements SearchService {
 
 		// Iterate through each stop and see if it adds additional routes for a direction to our final results.
 		for (StopBean stopBean : stops.getStops()) {
+			
+			String agencyId = AgencyAndIdLibrary.convertFromString(stopBean.getId()).getAgencyId();
+			if (!_nycTransitDataService.stopHasRevenueService(agencyId, stopBean.getId())) {
+				continue;
+			}
 
 			// Get the stop bean that is actually inside this search result. We kept track of it earlier.
 			//StopBean stopBean = stopBeanBySearchResult.get(stopResult);
@@ -406,12 +412,21 @@ public class SearchServiceImpl implements SearchService {
 
 		// try to find a stop ID for all known agencies
 		List<StopBean> matches = stopsForId(stopQuery);
+		
+		
 
-		if (matches.size() == 1)
-			results.addMatch(resultFactory.getStopResult(matches.get(0), results.getRouteFilter()));
+		if (matches.size() == 1){
+			String agencyId = AgencyAndIdLibrary.convertFromString(matches.get(0).getId()).getAgencyId();
+			if(_nycTransitDataService.stopHasRevenueService(agencyId, matches.get(0).getId())){
+				results.addMatch(resultFactory.getStopResult(matches.get(0), results.getRouteFilter()));
+			}
+		}
 		else {
 			for (StopBean match : matches) {
-				results.addSuggestion(resultFactory.getStopResult(match, results.getRouteFilter()));
+				String agencyId = AgencyAndIdLibrary.convertFromString(match.getId()).getAgencyId();
+				if(_nycTransitDataService.stopHasRevenueService(agencyId, match.getId())){
+					results.addSuggestion(resultFactory.getStopResult(match, results.getRouteFilter()));
+				}
 			}
 		}
 	}

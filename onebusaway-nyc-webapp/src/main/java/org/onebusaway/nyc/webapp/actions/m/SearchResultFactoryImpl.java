@@ -122,9 +122,12 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
         if (!stopGroupBean.getStopIds().isEmpty()) {
           stopsOnRoute = new ArrayList<StopOnRoute>();
 
-          for (String stopId : stopGroupBean.getStopIds()) {
-            stopsOnRoute.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId),
-                stopIdAndDirectionToDistanceAwayStringMap.get(stopId + "_" + stopGroupBean.getId())));
+          for (String stopId : stopGroupBean.getStopIds()) { 
+        	  if (_nycTransitDataService.stopHasRevenueServiceOnRoute((routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
+                      stopId, routeBean.getId(), stopGroupBean.getId())) {
+                stopsOnRoute.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId),
+            		stopIdAndDirectionToDistanceAwayStringMap.get(stopId + "_" + stopGroupBean.getId())));
+              }  
           }
         }
 

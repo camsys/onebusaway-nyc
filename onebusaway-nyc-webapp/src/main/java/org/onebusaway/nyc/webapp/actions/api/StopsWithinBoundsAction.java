@@ -15,27 +15,33 @@
  */
 package org.onebusaway.nyc.webapp.actions.api;
 
+import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.logging.TimerLoggingService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.model.StopOnRoute;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
-
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @ParentPackage("json-default")
-//@Result(type="json")
 @Result(type="json", params={"callbackParameter", "callback"})
 public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
+  
+  private static Logger _log = LoggerFactory
+	      .getLogger(StopsWithinBoundsAction.class);
 
   @Autowired
   private NycTransitDataService _nycTransitDataService;
@@ -65,10 +71,19 @@ public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
     queryBean.setBounds(_bounds);
     queryBean.setMaxCount(200);    
     
-    StopsBean stops = _nycTransitDataService.getStops(queryBean);
+    StopsBean stops = null;
+    try{
+    	stops = _nycTransitDataService.getStops(queryBean);
+    } catch (OutOfServiceAreaServiceException e) {
+        _log.error(" invalid results: ", e);
+        return SUCCESS;
+      }
     
     for(StopBean stop : stops.getStops()) {
-      _stops.add(new StopOnRoute(stop));
+    	String agencyId = AgencyAndIdLibrary.convertFromString(stop.getId()).getAgencyId();
+        if (_nycTransitDataService.stopHasRevenueService(agencyId, stop.getId())){
+        	_stops.add(new StopOnRoute(stop));
+        } 
     }
     
     return SUCCESS;
