@@ -18,7 +18,6 @@ package org.onebusaway.nyc.webapp.actions.api;
 import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.logging.TimerLoggingService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.model.StopOnRoute;
 import org.onebusaway.transit_data.model.SearchQueryBean;
@@ -83,7 +82,7 @@ public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
     	String agencyId = AgencyAndIdLibrary.convertFromString(stop.getId()).getAgencyId();
         if (_nycTransitDataService.stopHasRevenueService(agencyId, stop.getId())){
         	_stops.add(new StopOnRoute(stop));
-        } 
+        }
     }
     
     return SUCCESS;

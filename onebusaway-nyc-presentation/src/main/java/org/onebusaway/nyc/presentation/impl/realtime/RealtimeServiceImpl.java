@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupport.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
@@ -15,6 +16,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
@@ -26,6 +28,7 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
@@ -168,39 +171,45 @@ public class RealtimeServiceImpl implements RealtimeService {
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls, long currentTime) {
     List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
-    for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
-      TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
-      TripBean tripBeanForAd = adBean.getTrip();
+	    for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
+	      TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
+	      TripBean tripBeanForAd = adBean.getTrip();
+	      final RouteBean routeBean = tripBeanForAd.getRoute();
+	      
+	      if(statusBeanForCurrentTrip == null)
+	    	  continue;
+	
+	      if(!_presentationService.include(statusBeanForCurrentTrip) || !_presentationService.include(adBean, statusBeanForCurrentTrip))
+	          continue;
+	      
+	      if(!_nycTransitDataService.stopHasRevenueServiceOnRoute((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), 
+	    		  stopId, routeBean.getId(), adBean.getTrip().getDirectionId()))
+    		  continue;
 
-      if(statusBeanForCurrentTrip == null)
-    	  continue;
-
-      if(!_presentationService.include(statusBeanForCurrentTrip) || !_presentationService.include(adBean, statusBeanForCurrentTrip))
-          continue;
-
-      MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
-      stopVisit.setRecordedAtTime(new Date(statusBeanForCurrentTrip.getLastUpdateTime()));
-      
-      stopVisit.setMonitoredVehicleJourney(new MonitoredVehicleJourneyStructure());
-      SiriSupport ss = new SiriSupport();
-      ss.fillMonitoredVehicleJourney(stopVisit.getMonitoredVehicleJourney(), 
-    	  tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), OnwardCallsMode.STOP_MONITORING,
-    	  _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime);
-
-      output.add(stopVisit);
-    }
+	      MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
+	      stopVisit.setRecordedAtTime(new Date(statusBeanForCurrentTrip.getLastUpdateTime()));
+	      
+	      stopVisit.setMonitoredVehicleJourney(new MonitoredVehicleJourneyStructure());
+	      SiriSupport ss = new SiriSupport();
+	      ss.fillMonitoredVehicleJourney(stopVisit.getMonitoredVehicleJourney(), 
+	    	  tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), OnwardCallsMode.STOP_MONITORING,
+	    	  _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime);
+	
+	      output.add(stopVisit);
+	    }
+	    
+	    Collections.sort(output, new Comparator<MonitoredStopVisitStructure>() {
+	      public int compare(MonitoredStopVisitStructure arg0, MonitoredStopVisitStructure arg1) {
+	        try {
+	          SiriExtensionWrapper wrapper0 = (SiriExtensionWrapper)arg0.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getAny();
+	          SiriExtensionWrapper wrapper1 = (SiriExtensionWrapper)arg1.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getAny();
+	          return wrapper0.getDistances().getDistanceFromCall().compareTo(wrapper1.getDistances().getDistanceFromCall());
+	        } catch(Exception e) {
+	          return -1;
+	        }
+	      }
+	    });
     
-    Collections.sort(output, new Comparator<MonitoredStopVisitStructure>() {
-      public int compare(MonitoredStopVisitStructure arg0, MonitoredStopVisitStructure arg1) {
-        try {
-          SiriExtensionWrapper wrapper0 = (SiriExtensionWrapper)arg0.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getAny();
-          SiriExtensionWrapper wrapper1 = (SiriExtensionWrapper)arg1.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getAny();
-          return wrapper0.getDistances().getDistanceFromCall().compareTo(wrapper1.getDistances().getDistanceFromCall());
-        } catch(Exception e) {
-          return -1;
-        }
-      }
-    });
     
     return output;
   }
