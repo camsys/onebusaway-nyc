@@ -213,6 +213,7 @@
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
+				<geocoder.cache.disabled>false</geocoder.cache.disabled>
 				<api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
 				<api.cache.disabled>true</api.cache.disabled>
 			</properties>
