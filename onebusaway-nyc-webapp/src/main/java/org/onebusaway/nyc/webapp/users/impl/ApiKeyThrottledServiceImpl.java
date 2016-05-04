@@ -48,8 +48,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
@@ -62,13 +64,11 @@ public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
   @Autowired
   private ConfigurationService _config;
   
-  private static final int ALLOWED_HITS_PER_MINUTE = 60;//60 by default or 1 per second
-  private static final long UPDATE_INTERVAL = 3600000L;//60000 = 1 minute, 3600000L is 60 minutes or an hour
   
+  private static final int ALLOWED_HITS_PER_MINUTE = 60; //60 by default or 1 per second
+  private static final long UPDATE_INTERVAL = TimeUnit.MINUTES.toMillis(5);
   private long _lastTDMUpdate = 0;
-  
   private int _hitsAllowedPerMinute = 0;
-  
   private int _TDMEnable = 0;
   
   //more than 100 exceptions would be unexpected, even for a large deployment.  Remember that bans are handled separately.
