@@ -92,6 +92,6 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   }
   
   public String getShowVehicleIdInStopPopup() {
-    return _configurationService.getConfigurationValueAsString("display.showVehicleIdInStopPopup", "true");
+    return _configurationService.getConfigurationValueAsString("display.showVehicleIdInStopPopup", "false");
   }
 }
