@@ -66,6 +66,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   private RealtimeService _realtimeService;
 
   private NycTransitDataService _nycTransitDataService;
+  
+  private static final String PROGRESS_LAYOVER = "layover";
+  private static final String PROGRESS_PREV_TRIP = "prevTrip";
 
   public SearchResultFactoryImpl(NycTransitDataService nycTransitDataService,
       RealtimeService realtimeService, ConfigurationService configurationService) {
@@ -352,29 +355,36 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
 		  String timeString = Math.round(minutes) + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
+		  String timeAndDistance = "<strong>" + timeString + "</strong>," + distance;
+		  
+		  Date originDepartureTime = journey.getOriginAimedDepartureTime();
 
-		  if(progressStatus != null && progressStatus.getValue().contains("layover") ){
-			  
-			  if(journey.getOriginAimedDepartureTime() != null && 
-					  journey.getOriginAimedDepartureTime().getTime() < System.currentTimeMillis()){
-					  
-				  DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
-				  String originDepartTimeString = formatter.format(journey.getOriginAimedDepartureTime());
-				  return "<strong>" + timeString + "</strong>, " + distance + " (at the terminal, expected to depart at "+originDepartTimeString+")";
+		  if(isLayover(progressStatus)){
+			  if(isDepartureOnSchedule(originDepartureTime)){
+				  return timeAndDistance + " (at terminal, scheduled to depart at " + 
+						  getFormattedOriginAimedDepartureTime(originDepartureTime) + ")";
 			  }
 			  
-			  return "<strong>" + timeString + "</strong>, " + distance + " (at the terminal)";
+			  return timeAndDistance + " (at terminal)";
 		  }
-		  else if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-			  return "<strong>" + timeString + "</strong>, " + distance + " (+ scheduled layover at terminal)";
+		  else if(isPrevTrip(progressStatus)) {
+			  if(isDepartureOnSchedule(originDepartureTime)) {
+		    		return timeAndDistance + " (+ layover, scheduled to depart terminal at " 
+		    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
+		    	}
+		    	else{
+		    		return timeAndDistance + " (+ scheduled layover at terminal)";
+		    	}
 	  	  }
 		  else {
-			  return "<strong>" + timeString + "</strong>" + ", " + distance;
+			  return timeAndDistance;
 		  }
 	  }
 	  
 	  return null;
-  }	  
+  }
+  
+  
   
   private String getPresentableDistance(
       MonitoredVehicleJourneyStructure journey, long updateTime,
@@ -387,25 +397,22 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     String distance = "<strong>" + distanceExtension.getPresentableDistance() + "</strong>";
 
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
+    Date originDepartureTime = journey.getOriginAimedDepartureTime();
 
     // at terminal label only appears in stop results
-    if (isStopContext && progressStatus != null
-            && progressStatus.getValue().contains("layover")) {
-   
-    	if(journey.getOriginAimedDepartureTime() != null && journey.getOriginAimedDepartureTime().getTime() > System.currentTimeMillis()) {
-        	DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
-    		message += "at terminal, scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
+    if (isStopContext && isLayover(progressStatus)) {
+    	if(isDepartureOnSchedule(originDepartureTime)) {
+    		message += "at terminal, scheduled to depart at " 
+    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
     	}
     	else{
         	message += "at terminal";
     	}
         
-    } else if (isStopContext && progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-    	
-    	if(journey.getOriginAimedDepartureTime() != null && journey.getOriginAimedDepartureTime().getTime() > System.currentTimeMillis()) {
-    		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
-    		message += "+ scheduled layover, departing the terminal at " 
-					+ formatter.format(journey.getOriginAimedDepartureTime());
+    } else if (isStopContext && isPrevTrip(progressStatus)) {
+    	if(isDepartureOnSchedule(originDepartureTime)) {
+    		message += "+ layover, scheduled to depart terminal at " 
+    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
     	}
     	else{
     		message += "+ scheduled layover at terminal";
@@ -428,5 +435,22 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       return distance + " (" + message + ")";
     else
       return distance;
+  }
+  
+  private boolean isLayover(NaturalLanguageStringStructure progressStatus){
+	  return progressStatus != null && progressStatus.getValue().contains(PROGRESS_LAYOVER);
+  }
+  
+  private boolean isPrevTrip(NaturalLanguageStringStructure progressStatus){
+	  return progressStatus != null && progressStatus.getValue().contains(PROGRESS_PREV_TRIP);
+  }
+  
+  private boolean isDepartureOnSchedule(Date departureDate){
+	  return departureDate != null && departureDate.getTime() > System.currentTimeMillis();
+  }
+  
+  private String getFormattedOriginAimedDepartureTime(Date originAimedDepartureTime){
+	  DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
+	  return formatter.format(originAimedDepartureTime);
   }
 }
