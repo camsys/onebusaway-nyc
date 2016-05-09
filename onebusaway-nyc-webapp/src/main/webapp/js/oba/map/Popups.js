@@ -466,6 +466,13 @@ OBA.Popups = (function() {
 					}
 
 					if(typeof monitoredVehicleJourney.MonitoredCall !== 'undefined') {
+						
+						// Scheduled Departure Text
+						var layoverSchedDepartureText = "";
+						var layoverLateDepartureText = " <span class='not_bold'>(at terminal)</span>";
+						var prevTripSchedDepartureText = "";
+						var prevTripLateDepartureText = " <span class='not_bold'>(+ scheduled layover at terminal)</span>";
+						
 						var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
 						
 						var timePrediction = null;
@@ -496,9 +503,15 @@ OBA.Popups = (function() {
 						
 						var mvjDepartureTimeAsText = monitoredVehicleJourney.OriginAimedDepartureTime,
 							departureTimeAsDateTime = null;
-					
+						
+						var isDepartureOnSchedule = false;
+						
 						if(typeof mvjDepartureTimeAsText !== 'undefined'){
 							departureTimeAsDateTime = OBA.Util.ISO8601StringToDate(mvjDepartureTimeAsText);
+							isDepartureOnSchedule = departureTimeAsDateTime && departureTimeAsDateTime.getTime() >= updateTimestampReference;
+							
+							layoverSchedDepartureText = " <span class='not_bold'>(at terminal, scheduled to depart at " + departureTimeAsDateTime.format("h:MM TT") + ")</span>";
+							prevTripSchedDepartureText = " <span class='not_bold'>(+layover, scheduled to depart terminal at " + departureTimeAsDateTime.format("h:MM TT") + ")</span>";	
 						}
 						
 						// If realtime data is available and config is set, add vehicleID
@@ -509,36 +522,39 @@ OBA.Popups = (function() {
 						
 						// time mode
 						if(timePrediction != null) {
-
-								timePrediction += ", " + distance;
-								if(prevTrip === true){
-									timePrediction += " <span class='not_bold'>(Including expected layover time at the terminal)</span>";
-								}else if(layover === true) {
-									if(departureTimeAsDateTime){
-										timePrediction += " <span class='not_bold'>(at the terminal, expected to depart at " + departureTimeAsDateTime.format("h:MM TT") + ")</span>";
-									}else{
-										timePrediction += " <span class='not_bold'>(at the terminal, departing soon)</span>";
-									}
+							timePrediction += ", " + distance;
+							if(layover === true) {
+								if(isDepartureOnSchedule){
+									timePrediction += layoverSchedDepartureText;
+								}else{
+									timePrediction += layoverLateDepartureText;
 								}
-								
-							
+							}
+							else if(prevTrip === true){
+								if(isDepartureOnSchedule){
+									timePrediction += prevTripSchedDepartureText;
+								} else {
+									timePrediction += prevTripLateDepartureText;
+								}
+							}
+
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
 							html += '<li class="arrival' + lastClass + '">' + timePrediction + '</li>';
 
 						// distance mode
 						} else {
 							if(layover === true) {
-								if(departureTimeAsDateTime && departureTimeAsDateTime.getTime() >= updateTimestampReference) {
-									distance += " <span class='not_bold'>(at terminal, scheduled to depart " + departureTimeAsDateTime.format("h:MM TT") + ")</span>";
+								if(isDepartureOnSchedule) {
+									distance += layoverSchedDepartureText;
 								} else {
-									distance += " <span class='not_bold'>(at terminal, departing soon)</span>";
+									distance += layoverLateDepartureText;
 								}
 							} 
 							else if(prevTrip == true) {
-								if(departureTimeAsDateTime && departureTimeAsDateTime.getTime() >= updateTimestampReference) {
-									distance += " <span class='not_bold'>(scheduled to depart " + departureTimeAsDateTime.format("h:MM TT") + ")</span>";
+								if(isDepartureOnSchedule){
+									distance += prevTripSchedDepartureText;
 								} else {
-									distance += " <span class='not_bold'>(departing soon)</span>";
+									distance += prevTripLateDepartureText;
 								}
 							}
 
