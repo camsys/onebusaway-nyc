@@ -58,38 +58,34 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
   
 	@Refreshable(dependsOn = { "tds.timePredictionQueueHost", "tds.timePredictionQueuePort", "tds.timePredictionQueueName" })
 	public void startListenerThread() {
-		
 		if (_initialized == true) {
 			_log.warn("Configuration service tried to reconfigure prediction input queue reader; this service is not reconfigurable once started.");
 			return;
 		}
-		reinitializeQueue();
-		_initialized = true;
-	}
-	
-	@Override
-	protected void reinitializeQueue() {
+
 		if (!useTimePredictionsIfAvailable()) {
-			  _log.error("time predictions disabled -- exiting");
-			  return;
-			}
-			
-			String host = getQueueHost();
-			String queueName = getQueueName();
-			Integer port = getQueuePort();
+		  _log.error("time predictions disabled -- exiting");
+		  return;
+		}
+		
+		String host = getQueueHost();
+		String queueName = getQueueName();
+		Integer port = getQueuePort();
 
-			if (host == null) {
-				_log.info("Prediction input queue is not attached; input hostname was not available via configuration service.");
-				return;
-			}
+		if (host == null) {
+			_log.info("Prediction input queue is not attached; input hostname was not available via configuration service.");
+			return;
+		}
 
-			_log.info("time prediction input queue listening on " + host + ":" + port + ", queue=" + queueName);
+		_log.info("time prediction input queue listening on " + host + ":" + port + ", queue=" + queueName);
 
-			try {
-				initializeQueue(host, queueName, port);
-			} catch (InterruptedException ie) {
-				return;
-			}
+		try {
+			initializeQueue(host, queueName, port);
+		} catch (InterruptedException ie) {
+			return;
+		}
+
+		_initialized = true;
 	}
 
 }

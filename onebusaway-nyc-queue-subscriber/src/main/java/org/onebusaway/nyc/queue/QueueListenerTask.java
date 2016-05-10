@@ -88,40 +88,33 @@ public abstract class QueueListenerTask {
 		  _log.warn("ReadThread for queue " + getQueueName() + " starting");
 		  
 			while (!Thread.currentThread().isInterrupted()) {
-				try{
-					_zmqPoller.poll(-1); // microseconds for 2.2, milliseconds for 3.0
-				
-				
-					if (_zmqPoller.pollin(0)) {
-						System.out.println("Polling");		
-						String address = new String(_zmqSocket.recv(0));
-						byte[] buff = _zmqSocket.recv(0);
-	
-						try {
-							processMessage(address, buff);
-							processedCount++;
-	
-						} catch(Exception ex) {
-							_log.error("#####>>>>> processMessage() failed, exception was: " + ex.getMessage(), ex);
-						}
-							
-						Thread.yield();
+			  _zmqPoller.poll(1000 * 1000); // microseconds for 2.2, milliseconds for 3.0
+				if (_zmqPoller.pollin(0)) {
+
+					String address = new String(_zmqSocket.recv(0));
+					byte[] buff = _zmqSocket.recv(0);
+
+					try {
+						processMessage(address, buff);
+						processedCount++;
+
+					} catch(Exception ex) {
+						_log.error("#####>>>>> processMessage() failed, exception was: " + ex.getMessage(), ex);
 					}
-	
-					if (processedCount > _countInterval) {
-					  long timeInterval = (new Date().getTime() - markTimestamp.getTime()); 
-						_log.info(getQueueDisplayName()
-								+ " input queue: processed " + _countInterval + " messages in "
-								+ (timeInterval/1000) 
-								+ " seconds. (" + (1000.0 * processedCount/timeInterval) 
-								+ ") records/second");
-	
-						markTimestamp = new Date();
-						processedCount = 0;
-					}
-				}catch(Exception e){
-					_log.error("PROBLEM _________________________________________________________");
-					//reinitializeQueue();
+						
+					Thread.yield();
+				}
+
+				if (processedCount > _countInterval) {
+				  long timeInterval = (new Date().getTime() - markTimestamp.getTime()); 
+					_log.info(getQueueDisplayName()
+							+ " input queue: processed " + _countInterval + " messages in "
+							+ (timeInterval/1000) 
+							+ " seconds. (" + (1000.0 * processedCount/timeInterval) 
+							+ ") records/second");
+
+					markTimestamp = new Date();
+					processedCount = 0;
 				}
 
 				
