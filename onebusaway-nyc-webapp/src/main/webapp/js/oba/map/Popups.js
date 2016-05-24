@@ -504,9 +504,11 @@ OBA.Popups = (function() {
 						var mvjDepartureTimeAsText = monitoredVehicleJourney.OriginAimedDepartureTime,
 							departureTimeAsDateTime = null;
 						
+						var isDepartureTimeAvailable = false;
 						var isDepartureOnSchedule = false;
 						
 						if(typeof mvjDepartureTimeAsText !== 'undefined'){
+							isDepartureTimeAvailable = true;
 							departureTimeAsDateTime = OBA.Util.ISO8601StringToDate(mvjDepartureTimeAsText);
 							isDepartureOnSchedule = departureTimeAsDateTime && departureTimeAsDateTime.getTime() >= updateTimestampReference;
 							
@@ -523,18 +525,21 @@ OBA.Popups = (function() {
 						// time mode
 						if(timePrediction != null) {
 							timePrediction += ", " + distance;
-							if(layover === true) {
-								if(isDepartureOnSchedule){
-									timePrediction += layoverSchedDepartureText;
-								}else{
-									timePrediction += layoverLateDepartureText;
+							
+							if(isDepartureTimeAvailable){
+								if(layover === true) {
+									if(isDepartureOnSchedule){
+										timePrediction += layoverSchedDepartureText;
+									}else{
+										timePrediction += layoverLateDepartureText;
+									}
 								}
-							}
-							else if(prevTrip === true){
-								if(isDepartureOnSchedule){
-									timePrediction += prevTripSchedDepartureText;
-								} else {
-									timePrediction += prevTripLateDepartureText;
+								else if(prevTrip === true){
+									if(isDepartureOnSchedule){
+										timePrediction += prevTripSchedDepartureText;
+									} else {
+										timePrediction += prevTripLateDepartureText;
+									}
 								}
 							}
 
@@ -543,18 +548,20 @@ OBA.Popups = (function() {
 
 						// distance mode
 						} else {
-							if(layover === true) {
-								if(isDepartureOnSchedule) {
-									distance += layoverSchedDepartureText;
-								} else {
-									distance += layoverLateDepartureText;
-								}
-							} 
-							else if(prevTrip == true) {
-								if(isDepartureOnSchedule){
-									distance += prevTripSchedDepartureText;
-								} else {
-									distance += prevTripLateDepartureText;
+							if(isDepartureTimeAvailable){
+								if(layover === true) {
+									if(isDepartureOnSchedule) {
+										distance += layoverSchedDepartureText;
+									} else {
+										distance += layoverLateDepartureText;
+									}
+								} 
+								else if(prevTrip == true) {
+									if(isDepartureOnSchedule){
+										distance += prevTripSchedDepartureText;
+									} else {
+										distance += prevTripLateDepartureText;
+									}
 								}
 							}
 

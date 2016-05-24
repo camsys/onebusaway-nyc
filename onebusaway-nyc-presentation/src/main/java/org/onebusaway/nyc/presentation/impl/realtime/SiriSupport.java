@@ -245,7 +245,15 @@ public final class SiriSupport {
 					// at end of previous trip
 					} else {
 						if(nextTrip != null) {
-							originDepartureStopTime = nextTrip.getBlockStopTimes().get(0);
+							int blockStopTimesLastIndex = thisTrip.getBlockStopTimes().size() - 1;
+							BlockStopTimeBean currentTripFinalStopTime = thisTrip.getBlockStopTimes().get(blockStopTimesLastIndex);
+
+							int currentTripLastStopArrivalTime = currentTripFinalStopTime.getStopTime().getArrivalTime();
+							int nextTripFirstStopDepartureTime = nextTrip.getBlockStopTimes().get(0).getStopTime().getDepartureTime();
+							
+							if(nextTripFirstStopDepartureTime - currentTripLastStopArrivalTime > 60){
+								originDepartureStopTime = nextTrip.getBlockStopTimes().get(0);
+							}
 						}
 					}
 

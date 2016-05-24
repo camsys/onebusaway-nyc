@@ -362,7 +362,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  
 		  Date originDepartureTime = journey.getOriginAimedDepartureTime();
 
-		  if(isLayover(progressStatus)){
+		  if(originDepartureTime != null && isLayover(progressStatus)){
 			  if(isDepartureOnSchedule(originDepartureTime)){
 				  return timeAndDistance + " (at terminal, scheduled to depart at " + 
 						  getFormattedOriginAimedDepartureTime(originDepartureTime) + ")";
@@ -370,7 +370,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 			  
 			  return timeAndDistance + " (at terminal)";
 		  }
-		  else if(isPrevTrip(progressStatus)) {
+		  else if(originDepartureTime != null && isPrevTrip(progressStatus)) {
 			  if(isDepartureOnSchedule(originDepartureTime)) {
 		    		return timeAndDistance + " (+ layover, scheduled to depart terminal at " 
 		    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
@@ -401,25 +401,27 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
     Date originDepartureTime = journey.getOriginAimedDepartureTime();
-
-    // at terminal label only appears in stop results
-    if (isStopContext && isLayover(progressStatus)) {
-    	if(isDepartureOnSchedule(originDepartureTime)) {
-    		message += "at terminal, scheduled to depart at " 
-    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
-    	}
-    	else{
-        	message += "at terminal";
-    	}
-        
-    } else if (isStopContext && isPrevTrip(progressStatus)) {
-    	if(isDepartureOnSchedule(originDepartureTime)) {
-    		message += "+ layover, scheduled to depart terminal at " 
-    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
-    	}
-    	else{
-    		message += "+ scheduled layover at terminal";
-    	}
+    
+    if(originDepartureTime != null){
+	    // at terminal label only appears in stop results
+	    if (isStopContext && isLayover(progressStatus)) {
+	    	if(isDepartureOnSchedule(originDepartureTime)) {
+	    		message += "at terminal, scheduled to depart at " 
+	    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
+	    	}
+	    	else{
+	        	message += "at terminal";
+	    	}
+	        
+	    } else if (isStopContext && isPrevTrip(progressStatus)) {
+	    	if(isDepartureOnSchedule(originDepartureTime)) {
+	    		message += "+ layover, scheduled to depart terminal at " 
+	    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
+	    	}
+	    	else{
+	    		message += "+ scheduled layover at terminal";
+	    	}
+	    }
     }
     	
     int staleTimeout = _configurationService.getConfigurationValueAsInteger(
