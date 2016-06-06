@@ -27,8 +27,7 @@
 
 	<title><s:property value="getText('main.title')"/><s:property value="title" /></title>
 	
-  	<s:set var="favicon" value="getText('favicon.url')" />
-  	<link rel="shortcut icon" href="${favicon}" type="image/x-icon"/>
+  	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
   	<s:url var="url" value="/css/mobile/mobile.css">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
