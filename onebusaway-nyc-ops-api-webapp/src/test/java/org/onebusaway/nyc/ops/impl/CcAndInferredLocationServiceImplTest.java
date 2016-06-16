@@ -1,41 +1,26 @@
 package org.onebusaway.nyc.ops.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
 
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.omg.CORBA.portable.InputStream;
 import org.onebusaway.nyc.ops.util.OpsApiLibrary;
 import org.onebusaway.nyc.report.api.json.JsonTool;
 import org.onebusaway.nyc.report.api.json.LowerCaseWDashesGsonJsonTool;
-import org.onebusaway.nyc.report.impl.CcAndInferredLocationFilter;
 import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.impl.RecordValidationServiceImpl;
-import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
-import org.onebusaway.nyc.report.model.CcLocationReportRecord;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.test.util.ReflectionTestUtils;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
