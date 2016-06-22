@@ -13,8 +13,12 @@ public class DSCServiceManager {
 	public void setNotInServiceDsc(String notInServiceDsc) {
 		_notInServiceDscs.add(notInServiceDsc);
 	}
-
+	
 	public void setNotInServiceDscs(List<String> notInServiceDscs) {
+		_notInServiceDscs.addAll(notInServiceDscs);
+	}
+
+	public void setNotInServiceDscs(Set<String> notInServiceDscs) {
 		_notInServiceDscs.addAll(notInServiceDscs);
 	}
 

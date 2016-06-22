@@ -16,22 +16,22 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.Servic
 import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class StifLoaderImpl {
 
-	@Autowired
-	private AbnormalStifDataLoggerImpl _abnormalDataLogger;
-
 	private Logger _log = LoggerFactory.getLogger(StifLoaderImpl.class);
 
+	private AbnormalStifDataLoggerImpl _abnormalDataLogger;
+	public void setAbnormalStifDataLoggerImpl(AbnormalStifDataLoggerImpl a){
+		_abnormalDataLogger = a;
+	}
+	
 	// for unit tests
 	private StifTripLoader _loader = null;
 	public void setStifTripLoader(StifTripLoader loader) {
 		_loader = loader;
 	}
 
-	@Autowired
 	private GtfsMutableRelationalDao _gtfsMutableRelationalDao;
 
 	public void setGtfsMutableRelationalDao(GtfsMutableRelationalDao gtfsMutableRelationalDao) {

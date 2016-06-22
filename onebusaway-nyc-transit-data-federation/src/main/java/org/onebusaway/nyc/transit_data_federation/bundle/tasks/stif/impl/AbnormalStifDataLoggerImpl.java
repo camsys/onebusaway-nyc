@@ -5,17 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTrip;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class AbnormalStifDataLoggerImpl {
 	
 	  private MultiCSVLogger csvLogger = null;
 	  
-	  @Autowired
 	  public void setLogger(MultiCSVLogger logger) {
 	    this.csvLogger = logger;
 	  }

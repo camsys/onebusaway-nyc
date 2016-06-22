@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.NonRevenueStopData;
@@ -16,14 +15,15 @@ import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class StifTaskBundleWriterImpl {
 
 	private Logger _log = LoggerFactory.getLogger(StifTaskBundleWriterImpl.class);
 	
-	@Autowired 
 	private NycFederatedTransitDataBundle _bundle;
+	public void setNycFederatedTransitDataBundle(NycFederatedTransitDataBundle nb){
+		_bundle = nb;
+	}
 
 	public void storeTripRunData(StifLoaderImpl loader){
 		//store trip run mapping in bundle

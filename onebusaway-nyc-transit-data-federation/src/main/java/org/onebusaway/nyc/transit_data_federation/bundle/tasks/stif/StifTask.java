@@ -16,18 +16,19 @@
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
+import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.AbnormalStifDataLoggerImpl;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.DSCOverrideHandler;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.DSCServiceManager;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifAggregatorImpl;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifLoaderImpl;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifTaskBundleWriterImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifTaskControllerImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,36 +43,41 @@ import java.util.Set;
  */
 public class StifTask implements Runnable {
 
-	@Autowired
-	private StifLoaderImpl _stifLoader;
+	private GtfsMutableRelationalDao _gtfsMutableRelationalDao;
 
-	@Autowired
-	private StifAggregatorImpl _stifAggregator;
+	private StifTripLoader _loader = null;
 
-	@Autowired
-	private StifTaskBundleWriterImpl _stifBundleWriter;
+	private List<File> _stifPaths = new ArrayList<File>();
 
-	@Autowired
-	private DSCOverrideHandler _dscOverrideHandler;
-	
-	@Autowired
-	private AbnormalStifDataLoggerImpl _abnormalDataLogger;
-	
-	@Autowired
-	private DSCServiceManager _dscSvcMgr;
+	private String _tripToDSCOverridePath;
 
-	private Logger _log = LoggerFactory.getLogger(StifTask.class);
+	private Set<String> _notInServiceDscs = new HashSet<String>();
 
+	private File _notInServiceDscPath;
+
+	@Autowired 
+	private NycFederatedTransitDataBundle _bundle;
 
 	private boolean fallBackToStifBlocks = false;
-	public void setFallBackToStifBlocks(boolean fallBackToStifBlocks) {
-		this.fallBackToStifBlocks = fallBackToStifBlocks;
+
+	private MultiCSVLogger csvLogger = null;
+
+	private Boolean _excludeNonRevenue = true;
+
+	@Autowired
+	public void setLogger(MultiCSVLogger logger) {
+		this.csvLogger = logger;
+	}
+
+	@Autowired
+	public void setGtfsMutableRelationalDao(
+			GtfsMutableRelationalDao gtfsMutableRelationalDao) {
+		_gtfsMutableRelationalDao = gtfsMutableRelationalDao;
 	}
 
 	/**
 	 * The path of the directory containing STIF files to process
 	 */
-	private List<File> _stifPaths = new ArrayList<File>();
 	public void setStifPath(File path) {
 		_stifPaths.add(path);
 	}
@@ -80,53 +86,72 @@ public class StifTask implements Runnable {
 		_stifPaths.addAll(paths);
 	}
 
-
-	public void run() {
-
-		_stifLoader.load(_stifPaths);
-		_stifAggregator.setStifLoader(_stifLoader);
-		_stifAggregator.computeBlocksFromRuns();
-		_stifLoader.warnOnMissingTrips();
-
-		if (fallBackToStifBlocks) {
-			_stifLoader.loadStifBlocks();
-		}
-
-		//bundletodo
-		_stifBundleWriter.storeTripRunData(_stifLoader);
-
-		// dsc to trip map
-		Map<String, List<AgencyAndId>> dscToTripMap = _stifLoader.getTripMapping();
-
-		// Read in trip to dsc overrides if they exist
-		dscToTripMap = _dscOverrideHandler.handleOverride(_stifLoader, dscToTripMap);
-
-		Map<AgencyAndId, String> tripToDscMap = createTripToDSCMapping(dscToTripMap);
-
-		Set<String> inServiceDscs = new HashSet<String>();
-		_abnormalDataLogger.logDSCStatistics(dscToTripMap, tripToDscMap, _stifAggregator.getRoutesByDSC());
-
-		int withoutMatch = _stifLoader.getTripsWithoutMatchCount();
-		int total = _stifLoader.getTripsCount();
-
-		_log.info("stif trips without match: " + withoutMatch + " / " + total);
-
-		_dscSvcMgr.readNotInServiceDscs();
-		_stifBundleWriter.serializeDSCData(dscToTripMap, tripToDscMap, inServiceDscs, _dscSvcMgr.getNotInServiceDSCs());
+	public void setNotInServiceDsc(String notInServiceDsc) {
+		_notInServiceDscs.add(notInServiceDsc);
 	}
 
+	public void setTripToDSCOverridePath(String path) {
+		_tripToDSCOverridePath = path;
+	}
 
-	public Map<AgencyAndId, String> createTripToDSCMapping(Map<String, List<AgencyAndId>> dscToTripMap){
-		Map<AgencyAndId, String> tripToDscMap = new HashMap<AgencyAndId, String>();
-		// Populate tripToDscMap based on dscToTripMap
-		for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {
-			String destinationSignCode = entry.getKey();
-			List<AgencyAndId> tripIds = entry.getValue();
-			for (AgencyAndId tripId : tripIds) {
-				tripToDscMap.put(tripId, destinationSignCode);
-			}
-		}
-		return tripToDscMap;
+	public void setNotInServiceDscs(List<String> notInServiceDscs) {
+		_notInServiceDscs.addAll(notInServiceDscs);
+	}
+
+	public void setNotInServiceDscPath(File notInServiceDscPath) {
+		_notInServiceDscPath = notInServiceDscPath;
+	}
+
+	private StifLoaderImpl stifLoader = new StifLoaderImpl();
+	private StifAggregatorImpl stifAggregator = new StifAggregatorImpl();
+	private StifTaskBundleWriterImpl stifBundleWriter = new StifTaskBundleWriterImpl();
+	private DSCOverrideHandler dscOverrideHandler = new DSCOverrideHandler();
+	private AbnormalStifDataLoggerImpl abnormalDataLogger = new AbnormalStifDataLoggerImpl();
+	private DSCServiceManager dscSvcMgr = new DSCServiceManager();
+	private StifTaskControllerImpl stci = new StifTaskControllerImpl();
+
+	public void init(){
+
+		stci.set_abnormalDataLogger(abnormalDataLogger);
+		stci.set_dscOverrideHandler(dscOverrideHandler);
+		stci.set_dscSvcMgr(dscSvcMgr);
+		stci.set_stifAggregator(stifAggregator);
+		stci.set_stifBundleWriter(stifBundleWriter);
+		stci.set_stifLoader(stifLoader);
+		stci.setFallBackToStifBlocks(fallBackToStifBlocks);
+		stci.setStifPaths(_stifPaths);
+
+		stifLoader.setAbnormalStifDataLoggerImpl(abnormalDataLogger);
+		stifLoader.setExcludeNonRevenue(_excludeNonRevenue);
+		stifLoader.setGtfsMutableRelationalDao(_gtfsMutableRelationalDao);
+		stifLoader.setStifTripLoader(_loader);
+
+		stifAggregator.setAbnormalStifDataLoggerImpl(abnormalDataLogger);
+		stifAggregator.setStifLoader(stifLoader);
+
+		stifBundleWriter.setNycFederatedTransitDataBundle(_bundle);
+
+		dscOverrideHandler.setTripToDSCOverridePath(_tripToDSCOverridePath);
+
+		abnormalDataLogger.setLogger(csvLogger);
+
+		dscSvcMgr.setNotInServiceDscs(_notInServiceDscs);
+		dscSvcMgr.setNotInServiceDscPath(_notInServiceDscPath);
+
+	}
+
+	//for unit tests, passthroughs
+	public void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,
+			Map<AgencyAndId, String> tripToDscMap) {
+		abnormalDataLogger.setLogger(csvLogger);
+		abnormalDataLogger.logDSCStatistics(dscToTripMap, tripToDscMap, stifAggregator.getRouteIdsByDsc());
+	}
+
+	//start the process!
+	public void run() {
+		//start up all subclasses and then run them since the bundle builder calls us a certain way! -Phil
+		init();//set variables as per whoever called us
+		stci.run();//run the stif task
 	}
 
 }

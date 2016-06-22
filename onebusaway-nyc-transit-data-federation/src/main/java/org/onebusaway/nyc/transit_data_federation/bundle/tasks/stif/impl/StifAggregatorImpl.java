@@ -20,7 +20,6 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.Servic
 import org.opentripplanner.common.model.P2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class StifAggregatorImpl {
 
@@ -28,9 +27,11 @@ public class StifAggregatorImpl {
 
 	private Logger _log = LoggerFactory.getLogger(StifAggregatorImpl.class);
 
-	@Autowired
 	private AbnormalStifDataLoggerImpl _AbnormalStifDataLogger;
-
+	public void setAbnormalStifDataLoggerImpl(AbnormalStifDataLoggerImpl a){
+		_AbnormalStifDataLogger = a;
+	}
+	
 	private StifLoaderImpl _stifLoader;
 	public void setStifLoader(StifLoaderImpl sl){
 		_stifLoader = sl;
@@ -41,6 +42,10 @@ public class StifAggregatorImpl {
 	private HashMap<String, List<StifTrip>> tripsByRun = new HashMap<String, List<StifTrip>>();
 	private HashSet<StifTrip> unmatchedTrips = new HashSet<StifTrip>();
 	private HashSet<Trip> usedGtfsTrips = new HashSet<Trip>();
+	
+	public HashMap<String, Set<AgencyAndId>> getRouteIdsByDsc(){
+		return routeIdsByDsc;
+	}
 	
 	public void computeBlocksFromRuns() {
 		int blockNo = 0;
@@ -251,7 +256,8 @@ public class StifAggregatorImpl {
 		}
 	}
 
-	private String truncateId(String id) {
+	//static for unit tests
+	public static String truncateId(String id) {
 		if (id == null) return null;
 		return id.replaceAll("[aeiouy\\s]", "");
 	}
