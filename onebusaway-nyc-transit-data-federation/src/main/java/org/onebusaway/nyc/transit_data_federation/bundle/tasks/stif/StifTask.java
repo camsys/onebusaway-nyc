@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 /**
  * Load STIF data, including the mapping between destination sign codes and trip
  * ids, into the database
@@ -48,8 +50,19 @@ public class StifTask implements Runnable {
 	private StifTripLoader _loader = null;
 
 	private List<File> _stifPaths = new ArrayList<File>();
+	
+	private StifLoaderImpl stifLoader = new StifLoaderImpl();
+	private StifAggregatorImpl stifAggregator = new StifAggregatorImpl();
+	private StifTaskBundleWriterImpl stifBundleWriter = new StifTaskBundleWriterImpl();
+	private DSCOverrideHandler dscOverrideHandler = new DSCOverrideHandler();
+	private AbnormalStifDataLoggerImpl abnormalDataLogger = new AbnormalStifDataLoggerImpl();
+	private DSCServiceManager dscSvcMgr = new DSCServiceManager();
+	private StifTaskControllerImpl stci = new StifTaskControllerImpl();
 
 	private String _tripToDSCOverridePath;
+	public void setStifTripLoader(StifTripLoader loader) {
+		_loader = loader;
+	}
 
 	private Set<String> _notInServiceDscs = new HashSet<String>();
 
@@ -60,7 +73,24 @@ public class StifTask implements Runnable {
 
 	private boolean fallBackToStifBlocks = false;
 
+	/**
+	 * Whether blocks should come be computed from runs (true) or read from the STIF (false)
+	 * @return
+	 */
+	public boolean usesFallBackToStifBlocks() {
+		return fallBackToStifBlocks;
+	}
+
+	public void setFallBackToStifBlocks(boolean fallBackToStifBlocks) {
+		this.fallBackToStifBlocks = fallBackToStifBlocks;
+	}
+
+
 	private MultiCSVLogger csvLogger = null;
+	// for unit tests
+	public void setCSVLogger(MultiCSVLogger logger) {
+		this.csvLogger = logger;
+	}
 
 	private Boolean _excludeNonRevenue = true;
 
@@ -102,16 +132,26 @@ public class StifTask implements Runnable {
 		_notInServiceDscPath = notInServiceDscPath;
 	}
 
-	private StifLoaderImpl stifLoader = new StifLoaderImpl();
-	private StifAggregatorImpl stifAggregator = new StifAggregatorImpl();
-	private StifTaskBundleWriterImpl stifBundleWriter = new StifTaskBundleWriterImpl();
-	private DSCOverrideHandler dscOverrideHandler = new DSCOverrideHandler();
-	private AbnormalStifDataLoggerImpl abnormalDataLogger = new AbnormalStifDataLoggerImpl();
-	private DSCServiceManager dscSvcMgr = new DSCServiceManager();
-	private StifTaskControllerImpl stci = new StifTaskControllerImpl();
-
+	@PostConstruct
 	public void init(){
+		
+		stifBundleWriter.setNycFederatedTransitDataBundle(_bundle);
 
+		dscOverrideHandler.setTripToDSCOverridePath(_tripToDSCOverridePath);
+		
+		dscSvcMgr.setNotInServiceDscs(_notInServiceDscs);
+		dscSvcMgr.setNotInServiceDscPath(_notInServiceDscPath);
+
+		abnormalDataLogger.setLogger(csvLogger);
+		
+		stifLoader.setAbnormalStifDataLoggerImpl(abnormalDataLogger);
+		stifLoader.setExcludeNonRevenue(_excludeNonRevenue);
+		stifLoader.setGtfsMutableRelationalDao(_gtfsMutableRelationalDao);
+		stifLoader.setStifTripLoader(_loader);
+
+		stifAggregator.setAbnormalStifDataLoggerImpl(abnormalDataLogger);
+		stifAggregator.setStifLoader(stifLoader);
+		
 		stci.set_abnormalDataLogger(abnormalDataLogger);
 		stci.set_dscOverrideHandler(dscOverrideHandler);
 		stci.set_dscSvcMgr(dscSvcMgr);
@@ -121,36 +161,17 @@ public class StifTask implements Runnable {
 		stci.setFallBackToStifBlocks(fallBackToStifBlocks);
 		stci.setStifPaths(_stifPaths);
 
-		stifLoader.setAbnormalStifDataLoggerImpl(abnormalDataLogger);
-		stifLoader.setExcludeNonRevenue(_excludeNonRevenue);
-		stifLoader.setGtfsMutableRelationalDao(_gtfsMutableRelationalDao);
-		stifLoader.setStifTripLoader(_loader);
-
-		stifAggregator.setAbnormalStifDataLoggerImpl(abnormalDataLogger);
-		stifAggregator.setStifLoader(stifLoader);
-
-		stifBundleWriter.setNycFederatedTransitDataBundle(_bundle);
-
-		dscOverrideHandler.setTripToDSCOverridePath(_tripToDSCOverridePath);
-
-		abnormalDataLogger.setLogger(csvLogger);
-
-		dscSvcMgr.setNotInServiceDscs(_notInServiceDscs);
-		dscSvcMgr.setNotInServiceDscPath(_notInServiceDscPath);
-
 	}
 
 	//for unit tests, passthroughs
 	public void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,
 			Map<AgencyAndId, String> tripToDscMap) {
-		abnormalDataLogger.setLogger(csvLogger);
 		abnormalDataLogger.logDSCStatistics(dscToTripMap, tripToDscMap, stifAggregator.getRouteIdsByDsc());
 	}
 
 	//start the process!
 	public void run() {
 		//start up all subclasses and then run them since the bundle builder calls us a certain way! -Phil
-		init();//set variables as per whoever called us
 		stci.run();//run the stif task
 	}
 

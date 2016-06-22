@@ -15,6 +15,14 @@ public class AbnormalStifDataLoggerImpl {
 	  
 	  public void setLogger(MultiCSVLogger logger) {
 	    this.csvLogger = logger;
+	    
+	    try{
+			createHeaders();
+		}catch(RuntimeException e){
+			e.printStackTrace();
+			//We may create many classes of this type but the headers will throw an exception if the file already exists
+			//this will just ignore the issue, since it isn't an issue that we care about.
+		}
 	  }
 	  
 	  public MultiCSVLogger getLogger(){
@@ -29,19 +37,19 @@ public class AbnormalStifDataLoggerImpl {
 		  csvLogger.log(file, args);
 	  }
 	  
-	  public void createHeaders(){
+	  public void createHeaders() throws RuntimeException{
 		  csvLogger.header("non_pullin_without_next_movement.csv", "stif_trip,stif_filename,stif_trip_record_line_num");
 		  csvLogger.header(
 		        "stif_trips_without_pullout.csv",
 		        "stif_trip,stif_filename,stif_trip_record_line_num,gtfs_trip_id,synthesized_block_id");
 		  csvLogger.header("matched_trips_gtfs_stif.csv", "agency_id,gtfs_service_id,service_id,blockId,tripId,dsc,firstStop,"+
 		        "firstStopTime,lastStop,lastStopTime,runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute,routeId,busType");
+		  csvLogger.header("dsc_statistics.csv", "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs");
 	  }
 	
 	  // package private for unit testing
 	  public void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,
 	      Map<AgencyAndId, String> tripToDscMap, HashMap<String, Set<AgencyAndId>> routeIdsByDsc) {
-	    csvLogger.header("dsc_statistics.csv", "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs");
 	    for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {
 	      String destinationSignCode = entry.getKey();
 	      List<AgencyAndId> tripIds = entry.getValue();
@@ -64,7 +72,7 @@ public class AbnormalStifDataLoggerImpl {
 	   */
 	  public void dumpBlockDataForTrip(StifTrip trip, String gtfsServiceId,
 	      String tripId, String blockId, String routeId) {
-
+		  
 	    csvLogger.log("matched_trips_gtfs_stif.csv", trip.agencyId,
 	        gtfsServiceId, trip.serviceCode, blockId, tripId, trip.getDsc(), trip.firstStop,
 	        trip.firstStopTime, trip.lastStop, trip.lastStopTime, trip.runId,

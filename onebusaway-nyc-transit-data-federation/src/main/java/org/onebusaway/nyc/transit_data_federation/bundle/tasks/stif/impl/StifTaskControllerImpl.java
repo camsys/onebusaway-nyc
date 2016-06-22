@@ -97,7 +97,7 @@ public class StifTaskControllerImpl implements Runnable {
 
 
 	public void run() {
-
+		
 		_stifLoader.load(_stifPaths);
 		_stifAggregator.setStifLoader(_stifLoader);
 		_stifAggregator.computeBlocksFromRuns();

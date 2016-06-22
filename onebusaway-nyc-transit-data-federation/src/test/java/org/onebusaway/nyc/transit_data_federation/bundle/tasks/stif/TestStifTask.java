@@ -53,6 +53,7 @@ public class TestStifTask {
 		reader = new BufferedReader(new FileReader(file));
 		dscToTripMap = new HashMap<String, List<AgencyAndId>>();
 		tripToDscMap = new HashMap<AgencyAndId, String>();
+		task.init();//post contstruct doesn't work with tests
 	}
 
 	@Test

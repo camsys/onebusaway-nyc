@@ -19,10 +19,14 @@ public class DSCOverrideHandler {
 	  }
 	
 	public Map<String, List<AgencyAndId>> handleOverride(StifLoaderImpl stifLoader, Map<String, List<AgencyAndId>> dscToTripMap){
+		if(_tripToDSCOverridePath == null)
+			return dscToTripMap;
+		
 		Map<AgencyAndId, String> tripToDSCOverrides;
 	      try {
 	        tripToDSCOverrides = loadTripToDSCOverrides(_tripToDSCOverridePath);
 	      } catch (Exception e) {
+	    	  e.printStackTrace();
 	        throw new IllegalStateException(e);
 	      }
 
