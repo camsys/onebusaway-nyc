@@ -83,7 +83,7 @@ public class StifAggregatorImpl {
 						break;
 
 					StifTrip trip = trips.get(index);
-					if(!validateTripIsDifferent(lastTrip, trip, index, nextTripStartTime, nextRunId, trips))
+					if(validateTripIsDifferent(lastTrip, trip, index, nextTripStartTime, nextRunId, trips))
 						break;
 					lastTrip = trip;
 					matchGTFSToSTIF(lastTrip, trip, pullout, blockIds);
