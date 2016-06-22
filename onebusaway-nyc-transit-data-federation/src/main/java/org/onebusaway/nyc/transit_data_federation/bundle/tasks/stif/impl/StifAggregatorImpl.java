@@ -79,7 +79,7 @@ public class StifAggregatorImpl {
 					@SuppressWarnings("unchecked")
 					int index = Collections.binarySearch(trips, nextTripStartTime, new RawTripComparator());
 
-					if(!validateTripExists(index, nextRunId, lastTrip, trips.size()))
+					if(validateTripExists(index, nextRunId, lastTrip, trips.size()))
 						break;
 
 					StifTrip trip = trips.get(index);
