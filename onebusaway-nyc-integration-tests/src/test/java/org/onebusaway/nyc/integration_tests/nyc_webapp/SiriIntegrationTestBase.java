@@ -28,6 +28,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.onebusaway.nyc.integration_tests.TraceSupport;
@@ -51,6 +53,10 @@ public class SiriIntegrationTestBase {
   private Date _date = null;
   
   private String _trace;
+  
+  private String getNycWebappPort (){
+    return System.getProperty("org.onebusaway.webapp.port", "9000");
+  }
 
   public SiriIntegrationTestBase(String trace) {
     _trace = trace;
@@ -77,11 +83,7 @@ public class SiriIntegrationTestBase {
         + "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId="
         + bundleId + "&time=" + DateLibrary.getTimeAsIso8601String(date);
 
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(url);
-    client.executeMethod(get);
-
-    String response = get.getResponseBodyAsString();
+    String response = getResponseForURL(url);
     if (!response.equals("OK"))
       throw new Exception("Bundle switch failed!");
   }
@@ -92,17 +94,16 @@ public class SiriIntegrationTestBase {
 			  "org.onebusaway.transit_data_federation_webapp.port", "9905");
 
 	  String url = "http://localhost:" + federationPort + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location-simulation!cancelAll.do";
-
-	  HttpClient client = new HttpClient();
-	  GetMethod get = new GetMethod(url);
-	  client.executeMethod(get);
+	  
+	  @SuppressWarnings("unused")
+    String r = getResponseForURL(url);
   }
   
+
+  
   protected HashMap<String,Object> getVmResponse(Map<String, String> params) throws IOException {
-    HttpClient client = new HttpClient();
-    String port = System.getProperty("org.onebusaway.webapp.port", "9000");
-    String url = null;
-    url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?";
+    String port = getNycWebappPort();
+    String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?";
     if (!params.containsKey(("key"))) {
         params.put("key", "TEST");
     }
@@ -112,39 +113,16 @@ public class SiriIntegrationTestBase {
   }
 
     url = appendParamsToUrl(url, params);
-    System.out.println(url);
     
-    GetMethod get = new GetMethod(url);
-    _log.debug(url);
-    client.executeMethod(get);
-
-    String response = get.getResponseBodyAsString();
+    String response = getResponseForURL(url); 
     _log.debug(response);
-    JsonFactory factory = new JsonFactory(); 
-    ObjectMapper mapper = new ObjectMapper(factory); 
-    TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {}; 
-    HashMap<String,Object> o = mapper.readValue(response, typeRef); 
-
-    return o;
-
+    return getHashMapFromJsonResponse(response);
   }
   
-  private String appendParamsToUrl(String url, Map<String, String> params) {
-    if (params == null) return url;
-    StringBuffer result = new StringBuffer();
-    result.append(url);
-    
-    for (String key : params.keySet()) {
-      result.append(key).append("=").append(params.get(key)).append("&");
-    }
-    
-    return result.substring(0, result.length()-1); // truncate trailing "&"
-  }
-
+  
   protected HashMap<String,Object> getVmResponse(String operatorId, String vId) throws IOException, HttpException {
-
-	  HttpClient client = new HttpClient();
-	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
+  
+	  String port = getNycWebappPort();
 	  String url = null;
 	  if (operatorId == null && vId == null) {
 	    // open ended call
@@ -152,35 +130,54 @@ public class SiriIntegrationTestBase {
 	  } else {
 	    url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel=calls&MonitoringRef=" + vId + "&time=" + _time;
 	  }
-	  GetMethod get = new GetMethod(url);
-	  client.executeMethod(get);
-	  _log.debug(url);
-	  String response = get.getResponseBodyAsString();
-	  _log.debug(response);
-	  JsonFactory factory = new JsonFactory(); 
-	  ObjectMapper mapper = new ObjectMapper(factory); 
-	  TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {}; 
-	  HashMap<String,Object> o = mapper.readValue(response, typeRef); 
 
-	  return o;
+	  String response = getResponseForURL(url);
+
+	  _log.debug(response); 
+
+	  return getHashMapFromJsonResponse(response);
   }
 
+  protected HashMap<String,Object> getVmV2Response(String operatorId, String vId, String detailLevel) throws IOException, HttpException {
+    
+    String port = getNycWebappPort();
+    String url = null;
+    if (operatorId == null && vId == null) {
+      // open ended call
+      url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&version=2&VehicleMonitoringDetailLevel="+ detailLevel +"&time=" + _time;
+    } else {
+      url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&version=2&OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel="+ detailLevel +"&MonitoringRef=" + vId + "&time=" + _time;
+    }
+
+    String response = getResponseForURL(url);
+
+    _log.debug(response); 
+
+    return getHashMapFromJsonResponse(response);
+  }
+  
   protected HashMap<String,Object> getSmResponse(String operatorId, String mRef) throws IOException, HttpException {
-
-	  HttpClient client = new HttpClient();
-	  String port = System.getProperty("org.onebusaway.webapp.port", "9000");
+	  
+	  String port = getNycWebappPort();
 	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?key=TEST&StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
-	  GetMethod get = new GetMethod(url);
-	  client.executeMethod(get);
 	  _log.debug(url);
-	  String response = get.getResponseBodyAsString();
-	  _log.debug(response);
-	  JsonFactory factory = new JsonFactory(); 
-	  ObjectMapper mapper = new ObjectMapper(factory); 
-	  TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {}; 
-	  HashMap<String,Object> o = mapper.readValue(response, typeRef); 
+	  String response = getResponseForURL(url);
+	  
+	  _log.debug(response); 
 
-	  return o;
+	  return getHashMapFromJsonResponse(response);
+  }
+
+  protected HashMap<String,Object> getSmV2Response(String operatorId, String mRef, String detailLevel) throws IOException, HttpException {
+    
+    String port = getNycWebappPort();
+    String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?key=TEST&StopMonitoringDetailLevel="+ detailLevel +"&MonitoringRef=" + mRef + "&time=" + _time;
+    _log.debug(url);
+    String response = getResponseForURL(url);
+    
+    _log.debug(response); 
+
+    return getHashMapFromJsonResponse(response);
   }
   
   public void loadRecords() throws Throwable {
@@ -220,5 +217,33 @@ public class SiriIntegrationTestBase {
 		  break;
 	  }
   }
+  
+  private String getResponseForURL (String url) throws HttpException, IOException{
+    HttpClient client = new HttpClient();
+    GetMethod get = new GetMethod(url);
+    _log.debug(url);
+    client.executeMethod(get);
+    return get.getResponseBodyAsString();
+  }
+  private HashMap<String,Object> getHashMapFromJsonResponse (String response) throws JsonParseException, JsonMappingException, IOException{
+    JsonFactory factory = new JsonFactory(); 
+    ObjectMapper mapper = new ObjectMapper(factory); 
+    TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {}; 
+    HashMap<String,Object> o = mapper.readValue(response, typeRef);
+    return o;
+  }
+  
+  private String appendParamsToUrl(String url, Map<String, String> params) {
+    if (params == null) return url;
+    StringBuffer result = new StringBuffer();
+    result.append(url);
+    
+    for (String key : params.keySet()) {
+      result.append(key).append("=").append(params.get(key)).append("&");
+    }
+    
+    return result.substring(0, result.length()-1); // truncate trailing "&"
+  }
+
 
 }

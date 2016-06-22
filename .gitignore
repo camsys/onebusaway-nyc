@@ -8,3 +8,5 @@
 *.swp
 target
 Servers
+.recommenders
+onebusaway-nyc-integration-tests/build

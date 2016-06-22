@@ -294,6 +294,8 @@ public final class SiriSupportV2 {
 		
 		
 		// detail level - minimal
+		if (detailLevel.equals(DetailLevel.MINIMUM) || detailLevel.equals(DetailLevel.BASIC)
+		    || detailLevel.equals(DetailLevel.NORMAL)|| detailLevel.equals(DetailLevel.CALLS)){
 		monitoredVehicleJourney.getPublishedLineName().add(routeShortName);
 		monitoredVehicleJourney.getDestinationName().add(headsign);
 		monitoredVehicleJourney.setMonitored(currentVehicleTripStatus
@@ -302,7 +304,7 @@ public final class SiriSupportV2 {
 		monitoredVehicleJourney.setBearing((float) currentVehicleTripStatus
 						.getOrientation());
 		monitoredVehicleJourney.setVehicleLocation(location);
-		
+		}
 		
 		// detail level - basic
 		if (detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
