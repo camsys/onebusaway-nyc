@@ -132,6 +132,15 @@ public class StifTask implements Runnable {
 		_notInServiceDscPath = notInServiceDscPath;
 	}
 
+	public Boolean getExcludeNonRevenue() {
+		return _excludeNonRevenue;
+	}
+
+	public void setExcludeNonRevenue(Boolean excludeNonRevenue) {
+		_excludeNonRevenue = excludeNonRevenue;
+	}
+
+
 	@PostConstruct
 	public void init(){
 		
