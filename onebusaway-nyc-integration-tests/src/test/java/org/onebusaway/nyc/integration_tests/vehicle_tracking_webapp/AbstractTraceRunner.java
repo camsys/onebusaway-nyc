@@ -141,6 +141,8 @@ public class AbstractTraceRunner {
     File trace = new File("src/integration-test/resources/traces/" + _trace);
     List<NycTestInferredLocationRecord> expectedResults = _traceSupport.readRecords(trace);
 
+    System.out.println("Starting trace " + _trace);
+    
     // run to get inferred results
     String taskId = _traceSupport.uploadTraceForSimulation(trace, false);
 

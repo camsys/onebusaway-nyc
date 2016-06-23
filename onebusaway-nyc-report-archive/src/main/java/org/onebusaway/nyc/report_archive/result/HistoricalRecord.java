@@ -30,7 +30,8 @@ public class HistoricalRecord {
 	private String depotId;
 	private String serviceDate;
 	private String inferredRunId;
-	private String assignedRunId;
+  private String assignedRunId;
+  private String assignedBlockId;
 	private String inferredBlockId;
 	private String inferredTripId;
 	private String inferredRouteId;
@@ -264,7 +265,19 @@ public class HistoricalRecord {
 	public void setAssignedRunId(String assignedRunId) {
 		this.assignedRunId = assignedRunId;
 	}
-	/**
+  /**
+   * @return the assignedBlockId
+   */
+  public String getAssignedBlockId() {
+    return assignedBlockId;
+  }
+  /**
+   * @param assignedBlockId the assignedBlockId to set
+   */
+  public void setAssignedBlockId(String assignedBlockId) {
+    this.assignedBlockId = assignedBlockId;
+  }
+  /**
 	 * @return the inferredBlockId
 	 */
 	public String getInferredBlockId() {

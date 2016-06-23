@@ -21,6 +21,7 @@ import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
+import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
@@ -106,6 +107,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	
 	@Autowired
   private ConfigurationService _configurationService;
+  
+   // This is only used when logging block info at bundle change.
+   @Autowired
+   private CalendarService _calendarService;
 
 	/******
 	 * Getters / Setters

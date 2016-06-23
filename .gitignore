@@ -8,3 +8,7 @@
 *.swp
 target
 Servers
+*.sublime-*
+.DS_Store
+.metadata
+Servers

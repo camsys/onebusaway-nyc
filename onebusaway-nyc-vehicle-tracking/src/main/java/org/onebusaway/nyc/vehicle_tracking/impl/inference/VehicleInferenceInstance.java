@@ -33,6 +33,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationServi
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehiclePulloutService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
@@ -50,6 +51,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
@@ -84,6 +86,10 @@ public class VehicleInferenceInstance {
 
   private RunService _runService;
 
+  private VehiclePulloutService _pulloutService;
+
+  private BlockCalendarService _blockCalendarService;
+
   private long _automaticResetWindow = 20 * 60 * 1000;
 
   private Observation _previousObservation = null;
@@ -107,6 +113,16 @@ public class VehicleInferenceInstance {
   @Autowired
   public void setRunService(RunService runService) {
     _runService = runService;
+  }
+
+  @Autowired
+  public void setPulloutService(VehiclePulloutService pulloutService) {
+    _pulloutService = pulloutService;
+  }
+
+  @Autowired
+  public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
+    _blockCalendarService = blockCalendarService;
   }
 
   @Autowired
@@ -274,9 +290,21 @@ public class VehicleInferenceInstance {
           _previousObservation.getRunResults());
     }
 
+    String assignedBlockId = _pulloutService.getAssignedBlockId(record.getVehicleId());
+    
+    BlockInstance blockInstance = null;
+    if (assignedBlockId != null) {
+      ServiceDate serviceDate = new ServiceDate(new Date(timestamp));
+      blockInstance = _blockCalendarService.getBlockInstance(
+          AgencyAndId.convertFromString(assignedBlockId),
+          serviceDate.getAsDate().getTime());
+      _log.info("VehicleInferenceInstance: blockInstance: " + blockInstance);
+    }
+    boolean hasValidAssignedBlockId = (blockInstance != null);
+    
     final Observation observation = new Observation(timestamp, record,
         lastValidDestinationSignCode, atBase, atTerminal, outOfService,
-        hasValidDsc, _previousObservation, routeIds, runResults);
+        hasValidDsc, _previousObservation, routeIds, runResults, assignedBlockId, hasValidAssignedBlockId);
 
     if (_previousObservation != null)
       _previousObservation.clearPreviousObservation();
@@ -466,6 +494,7 @@ public class VehicleInferenceInstance {
     record.setLastUpdateTime(_lastUpdateTime);
     record.setLastLocationUpdateTime(_lastLocationUpdateTime);
     record.setAssignedRunId(obs.getOpAssignedRunId());
+    record.setAssignedBlockId(obs.getAssignedBlockId());
     record.setMostRecentObservedDestinationSignCode(nycRawRecord.getDestinationSignCode());
     record.setLastObservedLatitude(nycRawRecord.getLatitude());
     record.setLastObservedLongitude(nycRawRecord.getLongitude());
@@ -657,6 +686,8 @@ public class VehicleInferenceInstance {
     record.setOperatorId(nycRecord.getOperatorId());
     record.setReportedRunId(RunTripEntry.createId(nycRecord.getRunRouteId(),
         nycRecord.getRunNumber()));
+    
+    record.setAssignedBlockId(obs.getAssignedBlockId());
 
     final EVehiclePhase phase = journeyState.getPhase();
     if (phase != null)

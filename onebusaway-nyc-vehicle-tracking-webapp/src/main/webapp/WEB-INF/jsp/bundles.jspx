@@ -30,6 +30,7 @@ table.data td {
 </head>
 <body>
 
+<a href="${pageContext.request.contextPath}" style="float: right;">Home</a>
 <h2>Bundles</h2>
 
 	<p>
