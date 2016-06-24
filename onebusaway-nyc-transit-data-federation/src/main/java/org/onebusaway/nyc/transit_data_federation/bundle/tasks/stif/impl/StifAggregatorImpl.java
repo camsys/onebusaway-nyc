@@ -23,298 +23,318 @@ import org.slf4j.LoggerFactory;
 
 public class StifAggregatorImpl {
 
-	private static final int MAX_BLOCK_ID_LENGTH = 64;
+  private static final int MAX_BLOCK_ID_LENGTH = 64;
 
-	private Logger _log = LoggerFactory.getLogger(StifAggregatorImpl.class);
+  private Logger _log = LoggerFactory.getLogger(StifAggregatorImpl.class);
 
-	private AbnormalStifDataLoggerImpl _AbnormalStifDataLogger;
-	public void setAbnormalStifDataLoggerImpl(AbnormalStifDataLoggerImpl a){
-		_AbnormalStifDataLogger = a;
-	}
-	
-	private StifLoaderImpl _stifLoader;
-	public void setStifLoader(StifLoaderImpl sl){
-		_stifLoader = sl;
-	}
+  private AbnormalStifDataLoggerImpl _AbnormalStifDataLogger;
+  public void setAbnormalStifDataLoggerImpl(AbnormalStifDataLoggerImpl a){
+    _AbnormalStifDataLogger = a;
+  }
 
-	private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>();
-	private ArrayList<StifTrip> pullouts = new ArrayList<StifTrip>();
-	private HashMap<String, List<StifTrip>> tripsByRun = new HashMap<String, List<StifTrip>>();
-	private HashSet<StifTrip> unmatchedTrips = new HashSet<StifTrip>();
-	private HashSet<Trip> usedGtfsTrips = new HashSet<Trip>();
-	
-	public HashMap<String, Set<AgencyAndId>> getRouteIdsByDsc(){
-		return routeIdsByDsc;
-	}
-	
-	public void computeBlocksFromRuns() {
-		int blockNo = 0;
-		Map<ServiceCode, List<StifTrip>> rawData = _stifLoader.getRawStifData();
-		for (Map.Entry<ServiceCode, List<StifTrip>> entry : rawData.entrySet()) {
-			List<StifTrip> rawTrips = entry.getValue();
-			determineTripDetails(rawTrips);
-			for (StifTrip pullout : pullouts) {
-				blockNo ++;
-				StifTrip lastTrip = pullout;
-				int i = 0;
-				HashSet<P2<String>> blockIds = new HashSet<P2<String>>();
-				while (lastTrip.type != StifTripType.PULLIN) {
-					unmatchedTrips.remove(lastTrip);
-					if (++i > 200) {
-						infiniteLoopMessage(lastTrip);
-						break;
-					}
+  private StifLoaderImpl _stifLoader;
+  public void setStifLoader(StifLoaderImpl sl){
+    _stifLoader = sl;
+  }
 
-					String nextRunId = getNextRunID(lastTrip);
-					if (nextRunId == null)
-						break;
+  private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>();
+  private ArrayList<StifTrip> pullouts = new ArrayList<StifTrip>();
+  private HashMap<String, List<StifTrip>> tripsByRun = new HashMap<String, List<StifTrip>>();
+  private HashSet<StifTrip> unmatchedTrips = new HashSet<StifTrip>();
+  private HashSet<Trip> usedGtfsTrips = new HashSet<Trip>();
 
-					List<StifTrip> trips = tripsByRun.get(nextRunId);
-					if (trips == null) {
-						_log.warn("No trips for run " + nextRunId);
-						break;
-					}
+  private HashSet<Route> routesWithTrips = new HashSet<Route>();
 
-					int nextTripStartTime = lastTrip.listedLastStopTime + lastTrip.recoveryTime * 60;
-					@SuppressWarnings("unchecked")
-					int index = Collections.binarySearch(trips, nextTripStartTime, new RawTripComparator());
+  public HashMap<String, Set<AgencyAndId>> getRouteIdsByDsc(){
+    return routeIdsByDsc;
+  }
 
-					if(validateTripExists(index, nextRunId, lastTrip, trips.size()))
-						break;
+  public void computeBlocksFromRuns() {
+    int blockNo = 0;
+    Map<ServiceCode, List<StifTrip>> rawData = _stifLoader.getRawStifData();
+    for (Map.Entry<ServiceCode, List<StifTrip>> entry : rawData.entrySet()) {
+      List<StifTrip> rawTrips = entry.getValue();
+      populateTripDetails(rawTrips);
+      // for each pull-out, start a new block
+      for (StifTrip pullout : pullouts) {
 
-					StifTrip trip = trips.get(index);
-					if(validateTripIsDifferent(lastTrip, trip, index, nextTripStartTime, nextRunId, trips))
-						break;
-					lastTrip = trip;
-					matchGTFSToSTIF(lastTrip, trip, pullout, blockIds);
-				}
+        //			  _log.debug("pullout: " + pullout.toString() + " unmatched trips size" + unmatchedTrips.size());
+        blockNo ++;
+        StifTrip lastTrip = pullout;
+        int i = 0;
+        HashSet<P2<String>> blockIds = new HashSet<P2<String>>();
 
-				unmatchedTrips.remove(lastTrip);
-				dumpBlocksOut(blockIds, lastTrip, pullout);
-			}
-			handleUnmatchedTrips(blockNo, entry);
-		}
-		determineIfRoutesAreInStif();
-	}
+        while (lastTrip.type != StifTripType.PULLIN) {
+          unmatchedTrips.remove(lastTrip);
+          if (++i > 200) {
+            infiniteLoopMessage(lastTrip);
+            break;
+          }
 
-	public void determineTripDetails(List<StifTrip> rawTrips){
-		for (StifTrip trip : rawTrips) {
-			String runId = trip.getRunIdWithDepot();
-			List<StifTrip> byRun = tripsByRun.get(runId);
-			if (byRun == null) {
-				byRun = new ArrayList<StifTrip>();
-				tripsByRun.put(runId, byRun);
-			}
-			unmatchedTrips.add(trip);
-			byRun.add(trip);
-			if (trip.type == StifTripType.PULLOUT) {
-				pullouts.add(trip);
-			}
-			if (trip.type == StifTripType.DEADHEAD && 
-					trip.listedFirstStopTime == trip.listedLastStopTime + trip.recoveryTime) {
-				_log.warn("Zero-length deadhead.  If this immediately follows a pullout, "
-						+ "tracing might fail.  If it does, we will mark some trips as trips "
-						+ "without pullout.");
-			}
-		}
-		for (List<StifTrip> byRun : tripsByRun.values()) {
-			Collections.sort(byRun);
-		}
-	}
+          String nextRunId = getNextRunID(lastTrip);
+          if (nextRunId == null){
+            _log.debug("no next run id for " + lastTrip.toString());
+            break;
+          }
+          List<StifTrip> trips = tripsByRun.get(nextRunId);
+          if (trips == null) {
+            _log.warn("No trips for run " + nextRunId);
+            break;
+          }
 
-	public void infiniteLoopMessage(StifTrip lastTrip){
-		_log.warn("We seem to be caught in an infinite loop; this is usually caused\n"
-				+ "by two trips on the same run having the same start time.  Since nobody\n"
-				+ "can be in two places at once, this is an error in the STIF.  Some trips\n"
-				+ "will end up with missing blocks and the log will be screwed up.  A \n"
-				+ "representative trip starts at "
-				+ lastTrip.firstStop
-				+ " at " + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
-	}
+          int nextTripStartTime = lastTrip.listedLastStopTime + lastTrip.recoveryTime * 60;
+          @SuppressWarnings("unchecked")
+          int index = Collections.binarySearch(trips, nextTripStartTime, new RawTripComparator());
 
-	public String getNextRunID(StifTrip lastTrip){
-		// the depot may differ from the pullout depot
-		String nextRunId = lastTrip.getNextRunIdWithDepot();
-		if (nextRunId == null) {
-			_AbnormalStifDataLogger.log("non_pullin_without_next_movement.csv", lastTrip.id, lastTrip.path, lastTrip.lineNumber); 
+          _log.debug("checking for trip " + trips.get(index).toString());
+          if(!validateTripExists(index, nextRunId, lastTrip, trips.size())){
+            break;
+          }
 
-			_log.warn("A non-pullin has no next run; some trips will end up with missing blocks"
-					+ " and the log will be messed up. The bad trip starts at " + lastTrip.firstStop + " at "
-					+ lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
-		}
-		return nextRunId;
-	}
+          StifTrip trip = trips.get(index);
+          if(!isTripDifferent(lastTrip, trip, index, nextTripStartTime, nextRunId, trips)){
+            break;
+          }
+          lastTrip = trip;
+          matchGTFSToSTIF(lastTrip, trip, pullout, blockIds);
+        }
 
-	public boolean validateTripExists(int index, String nextRunId, StifTrip lastTrip, int trips_size){
-		if (index < 0) {
-			index = -(index + 1);
-		}
-		if (index >= trips_size) {
-			_log.warn("The preceding trip says that the run "
-					+ nextRunId
-					+ " is next, but there are no trips after "
-					+ lastTrip.firstStopTime
-					+ ", so some trips will end up with missing blocks."
-					+ " The last trip starts at " + lastTrip.firstStop + " at "
-					+ lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
-			return false;
-		}
-		return true;
-	}
+        unmatchedTrips.remove(lastTrip);
+        dumpBlocksOut(blockIds, lastTrip, pullout);
+      }
+      logUnmatchedTrip(blockNo, entry);
+    }
+    determineIfRoutesAreInStif();
+  }
 
-	public boolean validateTripIsDifferent(StifTrip lastTrip, StifTrip trip, int index, int nextTripStartTime, String nextRunId, List<StifTrip> trips){
-		if (trip == lastTrip) {
-			//we have two trips with the same start time -- usually one is a pullout of zero-length
-			//we don't know if we got the first one or the last one, since Collections.binarySearch
-			//makes no guarantees
-			if (index > 0 && trips.get(index-1).listedFirstStopTime == nextTripStartTime) {
-				index --;
-				trip = trips.get(index);
-			} else if (index < trips.size() - 1 && trips.get(index+1).listedFirstStopTime == nextTripStartTime) {
-				index ++;
-			} else {
-				_log.warn("The preceding trip says that the run "
-						+ nextRunId
-						+ " is next, and that the next trip should start at " + nextTripStartTime
-						+ ". As it happens, *this* trip starts at that time, but no other trips on"
-						+ " this run do, so some trips will end up with missing blocks."
-						+ " The last trip starts at " + lastTrip.firstStop + " at "
-						+ lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
-				return false;
-			}
-		}
-		return true;
-	}
+  public void populateTripDetails(List<StifTrip> rawTrips){
+    for (StifTrip trip : rawTrips) {
+      String runId = trip.getRunIdWithDepot();
+      List<StifTrip> byRun = tripsByRun.get(runId);
+      if (byRun == null) {
+        byRun = new ArrayList<StifTrip>();
+        tripsByRun.put(runId, byRun);
+      }
+      unmatchedTrips.add(trip);
+      byRun.add(trip);
+      if (trip.type == StifTripType.PULLOUT) {
+        pullouts.add(trip);
+      }
+      if (trip.type == StifTripType.DEADHEAD && 
+          trip.listedFirstStopTime == trip.listedLastStopTime + trip.recoveryTime) {
+        _log.warn("Zero-length deadhead.  If this immediately follows a pullout, "
+            + "tracing might fail.  If it does, we will mark some trips as trips "
+            + "without pullout.");
+      }
+    }
+    for (List<StifTrip> byRun : tripsByRun.values()) {
+      Collections.sort(byRun);
+    }
+  }
 
-	public void matchGTFSToSTIF(StifTrip lastTrip, StifTrip trip, StifTrip pullout, HashSet<P2<String>> blockIds){
-		for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
-			RawRunData rawRunData = _stifLoader.getRawRunDataByTrip().get(gtfsTrip);
+  public void infiniteLoopMessage(StifTrip lastTrip){
+    _log.warn("We seem to be caught in an infinite loop; this is usually caused\n"
+        + "by two trips on the same run having the same start time.  Since nobody\n"
+        + "can be in two places at once, this is an error in the STIF.  Some trips\n"
+        + "will end up with missing blocks and the log will be screwed up.  A \n"
+        + "representative trip starts at "
+        + lastTrip.firstStop
+        + " at " + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
+  }
 
-			String blockId;
-			if (trip.agencyId.equals("MTA NYCT")) {
-				blockId = gtfsTrip.getServiceId().getId() + "_" +
-						trip.serviceCode.getLetterCode() + "_" +
-						rawRunData.getDepotCode() + "_" +
-						pullout.firstStopTime + "_" +
-						pullout.runId;
-			} else {
-				blockId = gtfsTrip.getServiceId().getId() + "_" + trip.blockId;
-			}
+  public String getNextRunID(StifTrip lastTrip){
+    // the depot may differ from the pullout depot
+    String nextRunId = lastTrip.getNextRunIdWithDepot();
+    if (nextRunId == null) {
+      _AbnormalStifDataLogger.log("non_pullin_without_next_movement.csv", lastTrip.id, lastTrip.path, lastTrip.lineNumber); 
 
-			blockId = blockId.intern();
-			blockIds.add(new P2<String>(blockId, gtfsTrip.getServiceId().getId()));
-			gtfsTrip.setBlockId(blockId);
-			_stifLoader.getGtfsMutableRelationalDao().updateEntity(gtfsTrip);
+      _log.warn("A non-pullin has no next run; some trips will end up with missing blocks"
+          + " and the log will be messed up. The bad trip starts at " + lastTrip.firstStop + " at "
+          + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
+    }
+    return nextRunId;
+  }
 
-			AgencyAndId routeId = gtfsTrip.getRoute().getId();
-			addToMapSet(routeIdsByDsc, trip.getDsc(), routeId);
-			_AbnormalStifDataLogger.dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
-					gtfsTrip.getId().getId(), blockId, routeId.getId());
+  public boolean validateTripExists(int index, String nextRunId, StifTrip lastTrip, int trips_size){
+    if (index < 0) {
+      index = -(index + 1);
+    }
+    if (index >= trips_size) {
+      _log.warn("The preceding trip says that the run "
+          + nextRunId
+          + " is next, but there are no trips after "
+          + lastTrip.firstStopTime
+          + ", so some trips will end up with missing blocks."
+          + " The last trip starts at " + lastTrip.firstStop + " at "
+          + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
+      return false;
+    }
+    return true;
+  }
 
-			usedGtfsTrips.add(gtfsTrip);
-		}
-		if (lastTrip.type == StifTripType.DEADHEAD) {
-			for (P2<String> blockId : blockIds) {
-				String tripId = String.format("deadhead_%s_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.lastStop, lastTrip.runId);
-				_AbnormalStifDataLogger.dumpBlockDataForTrip(lastTrip, blockId.getSecond(), tripId, blockId.getFirst(), "no gtfs trip");
-			}
-		}
-	}
+  public boolean isTripDifferent(StifTrip lastTrip, StifTrip trip, int index, int nextTripStartTime, String nextRunId, List<StifTrip> trips){
+    if (trip == lastTrip) {
+      //we have two trips with the same start time -- usually one is a pull-out of zero-length
+      //we don't know if we got the first one or the last one, since Collections.binarySearch
+      //makes no guarantees
+      if ((index > 0 && trips.get(index-1).listedFirstStopTime == nextTripStartTime) 
+          || (index < trips.size() - 1 && trips.get(index+1).listedFirstStopTime == nextTripStartTime)){
+        // we're good
+      } else {
+        _log.warn("The preceding trip says that the run "
+            + nextRunId
+            + " is next, and that the next trip should start at " + nextTripStartTime
+            + ". As it happens, *this* trip starts at that time, but no other trips on"
+            + " this run do, so some trips will end up with missing blocks."
+            + " The last trip starts at " + lastTrip.firstStop + " at "
+            + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
+        return false;
+      }
+    }
+    return true;
+  }
 
-	public void dumpBlocksOut(HashSet<P2<String>> blockIds, StifTrip lastTrip, StifTrip pullout){
-		for (P2<String> blockId : blockIds) {
-			String pulloutTripId = String.format("pullout_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.runId);
-			_AbnormalStifDataLogger.dumpBlockDataForTrip(pullout, blockId.getSecond(), pulloutTripId , blockId.getFirst(), "no gtfs trip");
-			String pullinTripId = String.format("pullin_%s_%s_%s_%s", blockId.getSecond(), lastTrip.lastStop, lastTrip.lastStopTime, lastTrip.runId);
-			_AbnormalStifDataLogger.dumpBlockDataForTrip(lastTrip, blockId.getSecond(), pullinTripId, blockId.getFirst(), "no gtfs trip");
-		}
-	}
+  public void matchGTFSToSTIF(StifTrip lastTrip, StifTrip trip, StifTrip pullout, HashSet<P2<String>> blockIds){
+    for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
+      RawRunData rawRunData = _stifLoader.getRawRunDataByTrip().get(gtfsTrip);
 
-	public void handleUnmatchedTrips(int blockNo, Entry<ServiceCode, List<StifTrip>> entry){
-		for (StifTrip trip : unmatchedTrips) {
-			_log.warn("STIF trip: " + trip + " on schedule " + entry.getKey()
-			+ " trip type " + trip.type
-			+ " must not have an associated pullout");
-			for (Trip gtfsTrip : trip.getGtfsTrips()) {
-				blockNo++;
-				String blockId = gtfsTrip.getServiceId().getId() + "_"
-						+ trip.serviceCode.getLetterCode() + "_" + trip.firstStop + "_"
-						+ trip.firstStopTime + "_" + trip.runId.replace("-", "_")
-						+ blockNo + "_orphn";
-				if (blockId.length() > MAX_BLOCK_ID_LENGTH) {
-					blockId = truncateId(blockId);
-				}
-				_log.warn("Generating single-trip block id for GTFS trip: "
-						+ gtfsTrip.getId() + " : " + blockId);
-				gtfsTrip.setBlockId(blockId);
-				_AbnormalStifDataLogger.dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
-						gtfsTrip.getId().getId(), blockId, gtfsTrip.getRoute().getId().getId());
-				_AbnormalStifDataLogger.log("stif_trips_without_pullout.csv", trip.id, trip.path,
-						trip.lineNumber, gtfsTrip.getId(), blockId);
-				usedGtfsTrips.add(gtfsTrip);
-			}
-		}
-	}
+      String blockId;
+      if (trip.agencyId.equals("MTA NYCT")) {
+        blockId = gtfsTrip.getServiceId().getId() + "_" +
+            trip.serviceCode.getLetterCode() + "_" +
+            rawRunData.getDepotCode() + "_" +
+            pullout.firstStopTime + "_" +
+            pullout.runId;
+      } else {
+        blockId = gtfsTrip.getServiceId().getId() + "_" + trip.blockId;
+      }
 
-	//static for unit tests
-	public static String truncateId(String id) {
-		if (id == null) return null;
-		return id.replaceAll("[aeiouy\\s]", "");
-	}
+      blockId = blockId.intern();
+      blockIds.add(new P2<String>(blockId, gtfsTrip.getServiceId().getId()));
+      gtfsTrip.setBlockId(blockId);
+      _stifLoader.getGtfsMutableRelationalDao().updateEntity(gtfsTrip);
 
-	public <T, U> void addToMapSet(Map<T, Set<U>> mapList, T key, U value) {
-		Set<U> list = mapList.get(key);
-		if (list == null) {
-			list = new HashSet<U>();
-			mapList.put(key, list);
-		}
-		list.add(value);
-	}
+      AgencyAndId routeId = gtfsTrip.getRoute().getId();
+      addToMapSet(routeIdsByDsc, trip.getDsc(), routeId);
+      _AbnormalStifDataLogger.dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
+          gtfsTrip.getId().getId(), blockId, routeId.getId());
 
-	public void determineIfRoutesAreInStif() {
-		HashSet<Route> routesWithTrips = new HashSet<Route>();
-		_AbnormalStifDataLogger.header("gtfs_trips_with_no_stif_match.csv", "gtfs_trip_id,stif_trip");
-		Collection<Trip> allTrips = _stifLoader.getGtfsMutableRelationalDao().getAllTrips();
-		for (Trip trip : allTrips) {
-			if (usedGtfsTrips.contains(trip)) {
-				routesWithTrips.add(trip.getRoute());
-			} else {
-				_AbnormalStifDataLogger.log("gtfs_trips_with_no_stif_match.csv", trip.getId(), _stifLoader.getSupport().getTripAsIdentifier(trip));
-			}
-		}
+      usedGtfsTrips.add(gtfsTrip);
+    }
+    if (lastTrip.type == StifTripType.DEADHEAD) {
+      for (P2<String> blockId : blockIds) {
+        String tripId = String.format("deadhead_%s_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.lastStop, lastTrip.runId);
+        _AbnormalStifDataLogger.dumpBlockDataForTrip(lastTrip, blockId.getSecond(), tripId, blockId.getFirst(), "no gtfs trip");
+      }
+    }
+  }
 
-		_AbnormalStifDataLogger.header("route_ids_with_no_trips.csv", "agency_id,route_id");
-		for (Route route : _stifLoader.getGtfsMutableRelationalDao().getAllRoutes()) {
-			if (routesWithTrips.contains(route)) {
-				continue;
-			}
-			_AbnormalStifDataLogger.log("route_ids_with_no_trips.csv", route.getId().getAgencyId(), route.getId().getId());
-		}
-	}
+  public void dumpBlocksOut(HashSet<P2<String>> blockIds, StifTrip lastTrip, StifTrip pullout){
+    for (P2<String> blockId : blockIds) {
+      String pulloutTripId = String.format("pullout_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.runId);
+      _AbnormalStifDataLogger.dumpBlockDataForTrip(pullout, blockId.getSecond(), pulloutTripId , blockId.getFirst(), "no gtfs trip");
+      String pullinTripId = String.format("pullin_%s_%s_%s_%s", blockId.getSecond(), lastTrip.lastStop, lastTrip.lastStopTime, lastTrip.runId);
+      _AbnormalStifDataLogger.dumpBlockDataForTrip(lastTrip, blockId.getSecond(), pullinTripId, blockId.getFirst(), "no gtfs trip");
+    }
+  }
 
-	public HashMap<String, Set<AgencyAndId>> getRoutesByDSC(){
-		return routeIdsByDsc;
-	}
-	
-	@SuppressWarnings("rawtypes")
-	private class RawTripComparator implements Comparator {
-		@Override
-		public int compare(Object o1, Object o2) {
-			if (o1 instanceof Integer) {
-				if (o2 instanceof Integer) {
-					return ((Integer) o1) - ((Integer) o2);
-				} else {
-					StifTrip trip = (StifTrip) o2;
-					return ((Integer) o1) - trip.listedFirstStopTime;
-				}
-			} else {
-				if (o2 instanceof Integer) {
-					return ((StifTrip) o1).listedFirstStopTime - ((Integer) o2);
-				} else {
-					StifTrip trip = (StifTrip) o2;
-					return ((StifTrip) o1).listedFirstStopTime - trip.listedFirstStopTime;
-				}
-			}
-		}
-	}
+  public void logUnmatchedTrip(int blockNo, Entry<ServiceCode, List<StifTrip>> entry){
+    for (StifTrip trip : unmatchedTrips) {
+      _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey()
+      + " trip type " + trip.type
+      + " must not have an associated pullout");
+      for (Trip gtfsTrip : trip.getGtfsTrips()) {
+        blockNo++;
+        String blockId = gtfsTrip.getServiceId().getId() + "_"
+            + trip.serviceCode.getLetterCode() + "_" + trip.firstStop + "_"
+            + trip.firstStopTime + "_" + trip.runId.replace("-", "_")
+            + blockNo + "_orphn";
+        if (blockId.length() > MAX_BLOCK_ID_LENGTH) {
+          blockId = truncateId(blockId);
+        }
+        _log.warn("Generating single-trip block id for GTFS trip: "
+            + gtfsTrip.getId() + " : " + blockId);
+        gtfsTrip.setBlockId(blockId);
+        _AbnormalStifDataLogger.dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
+            gtfsTrip.getId().getId(), blockId, gtfsTrip.getRoute().getId().getId());
+        _AbnormalStifDataLogger.log("stif_trips_without_pullout.csv", trip.id, trip.path,
+            trip.lineNumber, gtfsTrip.getId(), blockId);
+        usedGtfsTrips.add(gtfsTrip);
+      }
+    }
+  }
+
+  //static for unit tests
+  public static String truncateId(String id) {
+    if (id == null) return null;
+    return id.replaceAll("[aeiouy\\s]", "");
+  }
+
+  public <T, U> void addToMapSet(Map<T, Set<U>> mapList, T key, U value) {
+    Set<U> list = mapList.get(key);
+    if (list == null) {
+      list = new HashSet<U>();
+      mapList.put(key, list);
+    }
+    list.add(value);
+  }
+
+  public void determineIfRoutesAreInStif() {
+
+    _AbnormalStifDataLogger.header("gtfs_trips_with_no_stif_match.csv", "gtfs_trip_id,stif_trip");
+    Collection<Trip> allTrips = _stifLoader.getGtfsMutableRelationalDao().getAllTrips();
+    for (Trip trip : allTrips) {
+      if (usedGtfsTrips.contains(trip)) {
+        routesWithTrips.add(trip.getRoute());
+      } else {
+        _AbnormalStifDataLogger.log("gtfs_trips_with_no_stif_match.csv", trip.getId(), _stifLoader.getSupport().getTripAsIdentifier(trip));
+      }
+    }
+
+    _AbnormalStifDataLogger.header("route_ids_with_no_trips.csv", "agency_id,route_id");
+    for (Route route : _stifLoader.getGtfsMutableRelationalDao().getAllRoutes()) {
+      if (routesWithTrips.contains(route)) {
+        continue;
+      }
+      _AbnormalStifDataLogger.log("route_ids_with_no_trips.csv", route.getId().getAgencyId(), route.getId().getId());
+    }
+  }
+
+  public HashMap<String, Set<AgencyAndId>> getRoutesByDSC(){
+    return routeIdsByDsc;
+  }
+
+  @SuppressWarnings("rawtypes")
+  private class RawTripComparator implements Comparator {
+    @Override
+    public int compare(Object o1, Object o2) {
+      if (o1 instanceof Integer) {
+        if (o2 instanceof Integer) {
+          return ((Integer) o1) - ((Integer) o2);
+        } else {
+          StifTrip trip = (StifTrip) o2;
+          return ((Integer) o1) - trip.listedFirstStopTime;
+        }
+      } else {
+        if (o2 instanceof Integer) {
+          return ((StifTrip) o1).listedFirstStopTime - ((Integer) o2);
+        } else {
+          StifTrip trip = (StifTrip) o2;
+          return ((StifTrip) o1).listedFirstStopTime - trip.listedFirstStopTime;
+        }
+      }
+    }
+  }
+  // unit test methods
+  public int getMatchedGtfsTripsCount(){
+    return usedGtfsTrips.size();
+  }
+  
+  public int getRoutesWithTripsCount() {
+    return routesWithTrips.size();
+  }
+
+  public int getUnmatchedTripsSize() {
+    return unmatchedTrips.size();
+  }
 }
