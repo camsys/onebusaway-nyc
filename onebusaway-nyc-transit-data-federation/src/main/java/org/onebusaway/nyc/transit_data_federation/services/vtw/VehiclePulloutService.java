@@ -1,7 +1,11 @@
-package org.onebusaway.nyc.transit_data_federation.services.tdm;
+package org.onebusaway.nyc.transit_data_federation.services.vtw;
+
+import javax.xml.bind.JAXBException;
+import javax.xml.stream.XMLStreamException;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 
+import tcip_final_4_0_0.ObaSchPullOutList;
 import tcip_final_4_0_0.SCHPullInOutInfo;
 
 /**
@@ -19,4 +23,8 @@ public interface VehiclePulloutService {
   public SCHPullInOutInfo getVehiclePullout(AgencyAndId vehicle);
 
   public String getAssignedBlockId(AgencyAndId vehicleId);
+  
+  public ObaSchPullOutList getFromXml(String xml) throws XMLStreamException, JAXBException;
+  
+  public String getAsXml(ObaSchPullOutList o) throws JAXBException;
 }

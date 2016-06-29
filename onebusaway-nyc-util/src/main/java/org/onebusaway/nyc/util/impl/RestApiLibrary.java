@@ -54,6 +54,16 @@ public class RestApiLibrary {
 	}
 
 	public URL buildUrl(String baseObject, String... params) throws Exception {
+		String url = buildUrlParams(baseObject, params);
+		return new URL("http", _host, _port, url);
+	}
+	
+	public URL buildSSLUrl(String baseObject, String... params) throws Exception {
+		String url = buildUrlParams(baseObject, params);
+		return new URL("https", _host, _port, url);
+	}	
+	
+	private String buildUrlParams(String baseObject, String... params){
 		String url = _apiPrefix;
 
 		url += baseObject;
@@ -67,10 +77,10 @@ public class RestApiLibrary {
 					url += "/";
 			}
 		}
-
-		return new URL("http", _host, _port, url);
-	}	
-
+		
+		return url;
+	}
+	
 	public String getContentsOfUrlAsString(URL requestUrl) throws IOException {
 		BufferedReader br = null;
 		InputStream inStream = null;
