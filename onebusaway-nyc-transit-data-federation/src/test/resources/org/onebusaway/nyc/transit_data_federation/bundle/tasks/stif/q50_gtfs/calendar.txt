@@ -1,0 +1,2 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+ECPA6-EC_A6-Weekday-10-SDon,1,1,1,1,1,0,0,20160104,20160401

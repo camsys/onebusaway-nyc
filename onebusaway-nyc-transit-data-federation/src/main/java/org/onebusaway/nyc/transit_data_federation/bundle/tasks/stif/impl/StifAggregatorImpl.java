@@ -51,14 +51,19 @@ public class StifAggregatorImpl {
 
   public void computeBlocksFromRuns() {
     int blockNo = 0;
+
     Map<ServiceCode, List<StifTrip>> rawData = _stifLoader.getRawStifData();
+    //    _log.debug("number of service codes " +rawData.size() + ":" + rawData.keySet().toString());
+
     for (Map.Entry<ServiceCode, List<StifTrip>> entry : rawData.entrySet()) {
       List<StifTrip> rawTrips = entry.getValue();
+
       populateTripDetails(rawTrips);
+
       // for each pull-out, start a new block
       for (StifTrip pullout : pullouts) {
+        //      _log.debug("pullout " + pullout.toString() + " unmatched trips size" + unmatchedTrips.size());
 
-        //			  _log.debug("pullout: " + pullout.toString() + " unmatched trips size" + unmatchedTrips.size());
         blockNo ++;
         StifTrip lastTrip = pullout;
         int i = 0;
@@ -72,11 +77,13 @@ public class StifAggregatorImpl {
           }
 
           String nextRunId = getNextRunID(lastTrip);
+
           if (nextRunId == null){
             _log.debug("no next run id for " + lastTrip.toString());
             break;
           }
           List<StifTrip> trips = tripsByRun.get(nextRunId);
+
           if (trips == null) {
             _log.warn("No trips for run " + nextRunId);
             break;
@@ -86,15 +93,24 @@ public class StifAggregatorImpl {
           @SuppressWarnings("unchecked")
           int index = Collections.binarySearch(trips, nextTripStartTime, new RawTripComparator());
 
-          _log.debug("checking for trip " + trips.get(index).toString());
-          if(!validateTripExists(index, nextRunId, lastTrip, trips.size())){
+          //binarySearch on a list returns a negative number when the search key is not found.
+          if (index < 0) {
+            index = -(index + 1);
+            _log.debug("index reset to " + index);
+          }
+
+          if(!tripExists(index, nextRunId, lastTrip, trips.size())){
+            _log.debug(index + " next run " + nextRunId + " trip " + lastTrip.toString() + " size " + trips.size());
             break;
           }
 
           StifTrip trip = trips.get(index);
+
           if(!isTripDifferent(lastTrip, trip, index, nextTripStartTime, nextRunId, trips)){
+            _log.debug(lastTrip.toString() + " and " + trip.toString() +" not different");
             break;
           }
+
           lastTrip = trip;
           matchGTFSToSTIF(lastTrip, trip, pullout, blockIds);
         }
@@ -109,18 +125,20 @@ public class StifAggregatorImpl {
 
   public void populateTripDetails(List<StifTrip> rawTrips){
     for (StifTrip trip : rawTrips) {
+
       String runId = trip.getRunIdWithDepot();
-      List<StifTrip> byRun = tripsByRun.get(runId);
-      if (byRun == null) {
-        byRun = new ArrayList<StifTrip>();
-        tripsByRun.put(runId, byRun);
+      List<StifTrip> tripsForThisRun = tripsByRun.get(runId);
+
+      if (tripsForThisRun == null) {
+        tripsForThisRun = new ArrayList<StifTrip>();
+        tripsByRun.put(runId, tripsForThisRun);
       }
+
       unmatchedTrips.add(trip);
-      byRun.add(trip);
+      tripsForThisRun.add(trip);
       if (trip.type == StifTripType.PULLOUT) {
         pullouts.add(trip);
-      }
-      if (trip.type == StifTripType.DEADHEAD && 
+      }else if (trip.type == StifTripType.DEADHEAD && 
           trip.listedFirstStopTime == trip.listedLastStopTime + trip.recoveryTime) {
         _log.warn("Zero-length deadhead.  If this immediately follows a pullout, "
             + "tracing might fail.  If it does, we will mark some trips as trips "
@@ -130,16 +148,17 @@ public class StifAggregatorImpl {
     for (List<StifTrip> byRun : tripsByRun.values()) {
       Collections.sort(byRun);
     }
+
   }
 
   public void infiniteLoopMessage(StifTrip lastTrip){
-    _log.warn("We seem to be caught in an infinite loop; this is usually caused\n"
+    _log.warn("\n We seem to be caught in an infinite loop; this is usually caused\n"
         + "by two trips on the same run having the same start time.  Since nobody\n"
         + "can be in two places at once, this is an error in the STIF.  Some trips\n"
         + "will end up with missing blocks and the log will be screwed up.  A \n"
         + "representative trip starts at "
-        + lastTrip.firstStop
-        + " at " + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
+        + lastTrip.firstStop + " of type " + lastTrip.type
+        + "\n at " + lastTrip.firstStopTime + " on " + lastTrip.getRunIdWithDepot() + " on " + lastTrip.serviceCode);
   }
 
   public String getNextRunID(StifTrip lastTrip){
@@ -155,10 +174,8 @@ public class StifAggregatorImpl {
     return nextRunId;
   }
 
-  public boolean validateTripExists(int index, String nextRunId, StifTrip lastTrip, int trips_size){
-    if (index < 0) {
-      index = -(index + 1);
-    }
+  public boolean tripExists(int index, String nextRunId, StifTrip lastTrip, int trips_size){
+
     if (index >= trips_size) {
       _log.warn("The preceding trip says that the run "
           + nextRunId
@@ -177,9 +194,13 @@ public class StifAggregatorImpl {
       //we have two trips with the same start time -- usually one is a pull-out of zero-length
       //we don't know if we got the first one or the last one, since Collections.binarySearch
       //makes no guarantees
-      if ((index > 0 && trips.get(index-1).listedFirstStopTime == nextTripStartTime) 
-          || (index < trips.size() - 1 && trips.get(index+1).listedFirstStopTime == nextTripStartTime)){
-        // we're good
+      if (index > 0 && trips.get(index-1).listedFirstStopTime == nextTripStartTime){
+        index--;
+        trip = trips.get(index);
+      }
+
+      else if (index < trips.size() - 1 && trips.get(index+1).listedFirstStopTime == nextTripStartTime){
+        index++;
       } else {
         _log.warn("The preceding trip says that the run "
             + nextRunId
@@ -197,6 +218,7 @@ public class StifAggregatorImpl {
   public void matchGTFSToSTIF(StifTrip lastTrip, StifTrip trip, StifTrip pullout, HashSet<P2<String>> blockIds){
     for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
       RawRunData rawRunData = _stifLoader.getRawRunDataByTrip().get(gtfsTrip);
+
 
       String blockId;
       if (trip.agencyId.equals("MTA NYCT")) {
@@ -283,9 +305,12 @@ public class StifAggregatorImpl {
 
     _AbnormalStifDataLogger.header("gtfs_trips_with_no_stif_match.csv", "gtfs_trip_id,stif_trip");
     Collection<Trip> allTrips = _stifLoader.getGtfsMutableRelationalDao().getAllTrips();
+
     for (Trip trip : allTrips) {
       if (usedGtfsTrips.contains(trip)) {
-        routesWithTrips.add(trip.getRoute());
+        if (!routesWithTrips.contains(trip.getRoute())) {
+              routesWithTrips.add(trip.getRoute());
+          }
       } else {
         _AbnormalStifDataLogger.log("gtfs_trips_with_no_stif_match.csv", trip.getId(), _stifLoader.getSupport().getTripAsIdentifier(trip));
       }
@@ -308,20 +333,37 @@ public class StifAggregatorImpl {
   private class RawTripComparator implements Comparator {
     @Override
     public int compare(Object o1, Object o2) {
-      if (o1 instanceof Integer) {
+//      _log.debug("comparing " + o1.toString() + " and " + o2.toString());
+      if (o1 instanceof StifTrip){
+        StifTrip trip1 = ((StifTrip) o1);
+        
+        if (o2 instanceof Integer) {
+          if (trip1.listedFirstStopTime == (Integer) o2
+              && trip1.type == StifTripType.PULLOUT){
+            // o1 is trip (and a pullout), o2 is an int. Both have the same start time.
+            // RETURN PULLOUT FIRST
+            return -1;
+          }else {
+            // o1 is a trip, o2 is an int
+            return trip1.listedFirstStopTime - ((Integer) o2);
+          }
+          
+        } else {
+          // o1 and o2 are trips
+          StifTrip trip2 = (StifTrip) o2;
+          return (trip1.listedFirstStopTime - trip2.listedFirstStopTime);
+        }} 
+      //  both o1 and o2 are ints
+      else if (o1 instanceof Integer) {
         if (o2 instanceof Integer) {
           return ((Integer) o1) - ((Integer) o2);
-        } else {
-          StifTrip trip = (StifTrip) o2;
-          return ((Integer) o1) - trip.listedFirstStopTime;
+        } else {         
+          // o11 is an int, o2 is a StifTrip  
+          StifTrip trip2 = (StifTrip) o2;
+          return ((Integer) o1) - trip2.listedFirstStopTime;
         }
       } else {
-        if (o2 instanceof Integer) {
-          return ((StifTrip) o1).listedFirstStopTime - ((Integer) o2);
-        } else {
-          StifTrip trip = (StifTrip) o2;
-          return ((StifTrip) o1).listedFirstStopTime - trip.listedFirstStopTime;
-        }
+        return 0;
       }
     }
   }
@@ -329,7 +371,7 @@ public class StifAggregatorImpl {
   public int getMatchedGtfsTripsCount(){
     return usedGtfsTrips.size();
   }
-  
+
   public int getRoutesWithTripsCount() {
     return routesWithTrips.size();
   }

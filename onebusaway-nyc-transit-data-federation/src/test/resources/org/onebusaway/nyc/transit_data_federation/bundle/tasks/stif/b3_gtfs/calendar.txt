@@ -1,0 +1,2 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+UP_B4-Sunday,0,0,0,0,0,0,1,20140406,20140622
