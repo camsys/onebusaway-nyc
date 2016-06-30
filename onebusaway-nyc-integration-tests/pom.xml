@@ -187,7 +187,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1.1</version>
                 <executions>
-                  <execution>
+                 <!--  <execution>
                         <id>graph-builder-execution-2016Jan_ManBC_WkdOnly</id>
                         <phase>pre-integration-test</phase>
                         <goals>
@@ -210,7 +210,7 @@
                             </arguments>
                         </configuration>
                     </execution>
-<!-- aprilv2 start -->
+aprilv2 start
                     <execution>
                         <id>graph-builder-execution-2014April_Prod_r12_b01</id>
                         <phase>pre-integration-test</phase>
@@ -234,8 +234,8 @@
                             </arguments>
                         </configuration>
                     </execution>
-<!-- aprilv2 end -->
-<!-- april start -->
+aprilv2 end
+april start
                     <execution>
                         <id>graph-builder-execution-2014April_Prod_r06_b02</id>
                         <phase>pre-integration-test</phase>
@@ -259,7 +259,7 @@
                             </arguments>
                         </configuration>
                     </execution>
-<!-- april end -->
+april end
                     <execution>
                         <id>graph-builder-execution-2014Jan_AllCity_r09_b3</id>
                         <phase>pre-integration-test</phase>
@@ -282,7 +282,7 @@
                                 <argument>${project.build.directory}/transit-data-bundle/2014Jan_AllCity_r09_b3</argument>
                             </arguments>
                         </configuration>
-                    </execution>
+                    </execution> -->
                     <execution>
                         <id>graph-builder-execution-2013Sept_Prod_r08_b04</id>
                         <phase>pre-integration-test</phase>
@@ -306,7 +306,7 @@
                             </arguments>
                         </configuration>
                     </execution>
-                    <execution>
+                    <!-- <execution>
                         <id>graph-builder-execution-2013Sept_AllCity_r15_b02</id>
                         <phase>pre-integration-test</phase>
                         <goals>
@@ -512,7 +512,7 @@
                                 <argument>${project.build.directory}/transit-data-bundle/2013June_Prod_r03_b02</argument>
                             </arguments>
                         </configuration>
-                    </execution>
+                    </execution> -->
 		</executions>
             </plugin>
 	    <!-- Start up an embedded database for sharing the user database between webapps --> 

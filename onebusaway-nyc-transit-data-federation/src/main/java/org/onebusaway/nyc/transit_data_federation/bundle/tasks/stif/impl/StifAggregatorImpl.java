@@ -96,7 +96,7 @@ public class StifAggregatorImpl {
           //binarySearch on a list returns a negative number when the search key is not found.
           if (index < 0) {
             index = -(index + 1);
-            _log.debug("index reset to " + index);
+//            _log.debug("index reset to " + index);
           }
 
           if(!tripExists(index, nextRunId, lastTrip, trips.size())){

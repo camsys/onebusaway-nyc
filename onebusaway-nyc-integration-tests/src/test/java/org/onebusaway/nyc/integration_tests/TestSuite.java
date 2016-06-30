@@ -73,70 +73,70 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	/*
 	 * Inference tests
 	 */
-	
-	//2016Jan_Prod
-	Trace_3947_Relief_Run_ID_IntegrationTest.class,
-	
-	// 2014April_Prod_r12_b01
-	Trace_4655_mtabus_as_nyct_IntegrationTest.class,
-	
-	// 2014April_Prod_r06_b02
-	Trace_4855_export_trips_IntegrationTest.class,
-	Trace_6844_deadhead_IntegrationTest.class,
-	
-	// 2014Jan_AllCity_r09_b3
-	Trace_3088_in_progress_IntegrationTest.class,
-	Trace_2782_deadhead_nyct_bus_as_mta_IntegrationTest.class,
-  // 2013June_Prod_r04_b03
-	Trace_5558_layover_in_motion_IntegrationTest.class,
+  //	
+  //	//2016Jan_Prod
+  //	Trace_3947_Relief_Run_ID_IntegrationTest.class,
+  //	
+  //	// 2014April_Prod_r12_b01
+  //	Trace_4655_mtabus_as_nyct_IntegrationTest.class,
+  //	
+  //	// 2014April_Prod_r06_b02
+  //	Trace_4855_export_trips_IntegrationTest.class,
+  //	Trace_6844_deadhead_IntegrationTest.class,
+  //	
+  //	// 2014Jan_AllCity_r09_b3
+  //	Trace_3088_in_progress_IntegrationTest.class,
+  //	Trace_2782_deadhead_nyct_bus_as_mta_IntegrationTest.class,
+  //  // 2013June_Prod_r04_b03
+  //	Trace_5558_layover_in_motion_IntegrationTest.class,
 	
   // 2013Sept_Prod_r08_b04
 	Trace_4399_20131225_IntegrationTest.class,
 	SiriScheduleDeviation_IntegrationTest.class,
-
-	// 2013Sept_AllCity_r15_b02
-	Trace_9527_Q_MISC_IntegrationTest.class,
-	
-	// September_Bronx_r10_b03
-	Trace_324_20121004_IntegrationTest.class,
-	Trace_5799_20121011_IntegrationTest.class,
-	Trace_7659_20121010_IntegrationTest.class,
-	Trace_7726_20121010_IntegrationTest.class,
-	Trace_5725_20120919T101417_IntegrationTest.class,
-	Trace_4257_20120907_IntegrationTest.class,
-	Trace_4264_20120907T162054_IntegrationTest.class,
-
-	// b63-winter 10
-	Trace_0927_20101209T124742_IntegrationTest.class,
-	Trace_1325_20101215T014845_IntegrationTest.class,
-	Trace_1379_20101211T010025_IntegrationTest.class,
-	Trace_1404_20101210T034249_IntegrationTest.class,
-	Trace_3649_20101125T121801_IntegrationTest.class,
-	Trace_5318_20101202T172138_IntegrationTest.class,
-	Trace_7560_20101122T084226_IntegrationTest.class,
-	Trace_7560_20101122T221007_IntegrationTest.class,
-	Trace_7560_20101123T031734_IntegrationTest.class,
-	Trace_7560_20101127T003153_IntegrationTest.class,
-	Trace_7564_20101201T010042_IntegrationTest.class,
-	Trace_7564_20101202T034055_IntegrationTest.class,
-	Trace_7564_20101202T114909_IntegrationTest.class,
-
-	// 2012Jan_SIB63M34_r20_b01
-	Trace_2423_20120111_091352_092348_IntegrationTest.class,    
-
-	// 2012July_r04_b02
-	Trace_2433_20120723_IntegrationTest.class,
-	Trace_4111_20120717_IntegrationTest.class,
-	Trace_6333_20120717_IntegrationTest.class,
-	Trace_3819_20120829_220004_222001_IntegrationTest.class,
-
-	// si
-	Trace_2711_20111208_054046_102329_IntegrationTest.class,
-	Trace_2782_20111202_211038_222038_IntegrationTest.class,
-	Trace_4138_20111207_150000_220000_IntegrationTest.class,
-	Trace_4255_20111215_183433_183932_IntegrationTest.class,
-	Trace_6154_20111214_123000_143500_IntegrationTest.class,
-	Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest.class,  	
+//
+//	// 2013Sept_AllCity_r15_b02
+//	Trace_9527_Q_MISC_IntegrationTest.class,
+//	
+//	// September_Bronx_r10_b03
+//	Trace_324_20121004_IntegrationTest.class,
+//	Trace_5799_20121011_IntegrationTest.class,
+//	Trace_7659_20121010_IntegrationTest.class,
+//	Trace_7726_20121010_IntegrationTest.class,
+//	Trace_5725_20120919T101417_IntegrationTest.class,
+//	Trace_4257_20120907_IntegrationTest.class,
+//	Trace_4264_20120907T162054_IntegrationTest.class,
+//
+//	// b63-winter 10
+//	Trace_0927_20101209T124742_IntegrationTest.class,
+//	Trace_1325_20101215T014845_IntegrationTest.class,
+//	Trace_1379_20101211T010025_IntegrationTest.class,
+//	Trace_1404_20101210T034249_IntegrationTest.class,
+//	Trace_3649_20101125T121801_IntegrationTest.class,
+//	Trace_5318_20101202T172138_IntegrationTest.class,
+//	Trace_7560_20101122T084226_IntegrationTest.class,
+//	Trace_7560_20101122T221007_IntegrationTest.class,
+//	Trace_7560_20101123T031734_IntegrationTest.class,
+//	Trace_7560_20101127T003153_IntegrationTest.class,
+//	Trace_7564_20101201T010042_IntegrationTest.class,
+//	Trace_7564_20101202T034055_IntegrationTest.class,
+//	Trace_7564_20101202T114909_IntegrationTest.class,
+//
+//	// 2012Jan_SIB63M34_r20_b01
+//	Trace_2423_20120111_091352_092348_IntegrationTest.class,    
+//
+//	// 2012July_r04_b02
+//	Trace_2433_20120723_IntegrationTest.class,
+//	Trace_4111_20120717_IntegrationTest.class,
+//	Trace_6333_20120717_IntegrationTest.class,
+//	Trace_3819_20120829_220004_222001_IntegrationTest.class,
+//
+//	// si
+//	Trace_2711_20111208_054046_102329_IntegrationTest.class,
+//	Trace_2782_20111202_211038_222038_IntegrationTest.class,
+//	Trace_4138_20111207_150000_220000_IntegrationTest.class,
+//	Trace_4255_20111215_183433_183932_IntegrationTest.class,
+//	Trace_6154_20111214_123000_143500_IntegrationTest.class,
+//	Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest.class,  	
 
 	// paired down (SI) version of 2013June_Prod_r03_b02
 	Trace_7040_layover_oosdsc_formal_IntegrationTest.class,

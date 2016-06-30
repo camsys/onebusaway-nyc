@@ -36,6 +36,10 @@ public class StifAggregatorImplTest {
   public void testComputeBlocksFromRuns() {
     StifAggregatorImpl agg = new StifAggregatorImpl();
     StifLoaderImpl sl = new StifLoaderImpl();
+    MultiCSVLogger logger = new MultiCSVLogger();
+
+    AbnormalStifDataLoggerImpl a = new AbnormalStifDataLoggerImpl();
+    a.setLogger(logger);
     
     InputStream in = getClass().getResourceAsStream("stif.q_0004__.516151.sun");
     String gtfs = getClass().getResource("q4_gtfs").getFile();
@@ -53,18 +57,12 @@ public class StifAggregatorImplTest {
       fail("Exception when loading GTFS");
     }
     
-    StifTripLoader loader = new StifTripLoader();
-    loader.setLogger(new MultiCSVLogger());
-    loader.setGtfsDao(dao);
+    StifTripLoader loader = getStifTripLoader(logger, dao);
     loader.run(in, new File("stif.q_0004__.516151.sun"));
     
     sl.setStifTripLoader(loader);
     agg.setStifLoader(sl);
-       
-    AbnormalStifDataLoggerImpl a = new AbnormalStifDataLoggerImpl();
-    MultiCSVLogger logger = new MultiCSVLogger();
-    a.setLogger(logger);
-    
+          
     agg.setAbnormalStifDataLoggerImpl(a);
     
     agg.computeBlocksFromRuns();
@@ -80,6 +78,7 @@ public class StifAggregatorImplTest {
   public void testComputeBlocksFromInterlinedRuns() {
     StifAggregatorImpl agg = new StifAggregatorImpl();
     StifLoaderImpl sl = new StifLoaderImpl();
+    MultiCSVLogger logger = new MultiCSVLogger();
     
     String stifFile = "stif.Q_50____.714166.wkd.open";
     String stifFile2 = "stif.BXBX23__.714167.wkd.open";
@@ -100,9 +99,7 @@ public class StifAggregatorImplTest {
       fail("Exception when loading GTFS");
     }
     
-    StifTripLoader loader = new StifTripLoader();
-    loader.setLogger(new MultiCSVLogger());
-    loader.setGtfsDao(dao);
+    StifTripLoader loader = getStifTripLoader(logger, dao);
     InputStream in = getClass().getResourceAsStream(stifFile);
     loader.run(in, new File(stifFile));
     InputStream in2 = getClass().getResourceAsStream(stifFile2);
@@ -112,7 +109,6 @@ public class StifAggregatorImplTest {
     agg.setStifLoader(sl);
        
     AbnormalStifDataLoggerImpl a = new AbnormalStifDataLoggerImpl();
-    MultiCSVLogger logger = new MultiCSVLogger();
     a.setLogger(logger);
     
     agg.setAbnormalStifDataLoggerImpl(a);
@@ -171,8 +167,7 @@ public class StifAggregatorImplTest {
   }
   
   /*
-   * There is something up with the data for the April 2014 pick.
-   * It is particularly evident in the College Point depot, but the depot is huge.
+   * This test includes 12 blocks without pullouts-- they are in the as-assigned set
    *  
    */
   @Test
@@ -219,6 +214,50 @@ public class StifAggregatorImplTest {
     assertEquals(12,agg.getUnmatchedTripsSize());
   }
 
+  /*
+   * This one should have no problems. 
+   */
+  @Test
+  public void testComputeBlocksFromRunsBronxNewYears() {
+    StifAggregatorImpl agg = new StifAggregatorImpl();
+    StifLoaderImpl sl = new StifLoaderImpl();
+    AbnormalStifDataLoggerImpl a = new AbnormalStifDataLoggerImpl();
+    MultiCSVLogger logger = new MultiCSVLogger();
+    a.setLogger(logger);
+    
+    String gtfsDir = "2013Sept_Bronx_gtfs";
+        
+    String gtfs = getClass().getResource(gtfsDir).getFile();
+    
+    GtfsReader reader = new GtfsReader();
+    GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
+    reader.setEntityStore(dao);
+    sl.setGtfsMutableRelationalDao(dao);
+    sl.setAbnormalStifDataLoggerImpl(a);
+       
+    try {
+      reader.setInputLocation(new File(gtfs));
+      reader.run();
+    } catch (IOException e) {
+      e.printStackTrace();
+      fail("Exception when loading GTFS");
+    }
+    
+    StifTripLoader loader = getStifTripLoader(logger, dao);
+    sl.setStifTripLoader(loader);    
+   
+    String stifs = getClass().getResource("2013Sept_Bronx_stif").getFile();
+    File stifFiles = new File(stifs);
+    
+    agg.setAbnormalStifDataLoggerImpl(a);
+    sl.loadStif(stifFiles, loader);
+    agg.setStifLoader(sl);
+    agg.computeBlocksFromRuns();
+    
+    assert(agg.getMatchedGtfsTripsCount() > 0);
+    assertEquals(42,agg.getRoutesWithTripsCount());
+    assertEquals(0,agg.getUnmatchedTripsSize());
+  }
 
   private StifTripLoader getStifTripLoader(MultiCSVLogger logger,
       GtfsRelationalDaoImpl dao) {
