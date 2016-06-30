@@ -37,7 +37,7 @@ public class VehiclePulloutServiceImplTest {
   @Before
   public void prepare(){
 	  MockitoAnnotations.initMocks(this);
-	  this.service.setup();
+	  this.service.setupJaxbContext();
   }
 
   @Test
@@ -48,7 +48,7 @@ public class VehiclePulloutServiceImplTest {
 
     String xml = service.getAsXml(o);
     
-    when(mockApiLibrary.getContentsOfUrlAsString("uts","active","tcip")).thenReturn(xml);
+    when(mockApiLibrary.getContentsOfUrlAsString("uts","active","tcip","")).thenReturn(xml);
         
     service.refreshData();
 
@@ -83,7 +83,7 @@ public class VehiclePulloutServiceImplTest {
     
     String xml = service.getAsXml(o);
 
-    when(mockApiLibrary.getContentsOfUrlAsString("uts","active","tcip")).thenReturn(xml);
+    when(mockApiLibrary.getContentsOfUrlAsString("uts","active","tcip","")).thenReturn(xml);
     
     service.refreshData();
     
