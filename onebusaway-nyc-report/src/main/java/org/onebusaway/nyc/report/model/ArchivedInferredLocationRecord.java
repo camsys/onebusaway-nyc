@@ -158,6 +158,9 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = true, name = "assigned_run_id", length = 16)
   private String assignedRunId = null;
 
+  @Column(nullable = true, name = "assigned_block_id", length = 32)
+  private String assignedBlockId = null;
+
   public ArchivedInferredLocationRecord() {
   }
 
@@ -224,6 +227,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setInferredOperatorId(managementBean.getLastInferredOperatorId());
     setInferredRunId(managementBean.getInferredRunId());
     setAssignedRunId(managementBean.getAssignedRunId());
+    setAssignedBlockId(managementBean.getAssignedBlockId());
 
     // TDS Fields
     setNextScheduledStopId(message.getNextScheduledStopId());
@@ -493,6 +497,14 @@ public Double getPreviousScheduledStopDistance() {
 public void setPreviousScheduledStopDistance(
 		Double previousScheduledStopDistance) {
 	this.previousScheduledStopDistance = previousScheduledStopDistance;
+}
+
+public String getAssignedBlockId() {
+  return assignedBlockId;
+}
+
+public void setAssignedBlockId(String assignedBlockId) {
+  this.assignedBlockId = assignedBlockId;
 }
 
 }

@@ -26,8 +26,8 @@
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
 
     <import resource="classpath:org/onebusaway/nyc/vehicle_tracking/application-context.xml" />
-
     <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.webapp.controllers"/>
     <context:component-scan base-package="org.onebusaway.nyc.transit_data_manager.siri"/>
+    <bean id="vehiclePulloutService" class="org.onebusaway.nyc.transit_data_federation.impl.vtw.VehiclePulloutServiceImpl" />
 
 </beans>

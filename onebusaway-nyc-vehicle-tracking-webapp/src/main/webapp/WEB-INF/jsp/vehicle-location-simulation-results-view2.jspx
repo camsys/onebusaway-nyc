@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:form="http://www.springframework.org/tags/form"
+	xmlns:jsp="http://java.sun.com/JSP/Page">
+<jsp:directive.page contentType="text/html" />
+<head>
+<title>Vehicle Location Simulations - Results View</title>
+</head>
+<style>
+table {
+	border-collapse: collapse;
+}
+
+table {
+	font-family: Andale Mono, monospace;
+	font-size: smaller;
+}
+
+table td, table th {
+	border: 1px solid #eee;
+	word-break: break-word;
+	padding: 3px;
+}
+
+table tr.actual td {
+	border-top: 2px solid black;
+}
+
+table tr.inferred td {
+	border-bottom: 2px solid black;
+}
+
+table a {
+	text-decoration: none;
+}
+
+table a:hover {
+  text-decoration: underline;
+}
+
+td.dsc {
+  width: 3em;
+}
+
+.difference {
+  background-color: #ffa8a8;
+}
+
+</style>
+<body>
+	<p style="float: right;">
+		<a href="vehicle-location-simulation.do">Back to Vehicle Location
+			Simulation Console</a>| <a download="results_${filename}"
+			href="vehicle-location-simulation!task-result-records.do?taskId=${taskId}">CSV
+			Results Records</a>
+	</p>
+	<h2>Journey Summaries</h2>
+	<div style="clear: both;"></div>
+	<p>First row is actual/expected, second row is inferred.</p>
+	<table>
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Timestamp</th>
+				<th>Vehicle ID</th>
+				<th>DSC</th>
+				<th>Trip</th>
+				<th>Block</th>
+				<th>Sched. Time</th>
+				<th>Phase</th>
+				<th>Status</th>
+        <th>DAB</th>
+        <th>Assigned block id</th>
+			</tr>
+		</thead>
+		<tbody>
+			<c:forEach items="${records}" var="record">
+				<tr class="actual">
+					<!-- preamble -->
+					<td><a
+						href="vehicle-location-simulation!task-details.do?taskId=${taskId}&amp;recordNumber=${record.recordNumber}">
+							<c:out value="${record.recordNumber}" />
+					</a></td>
+					<td><fmt:formatDate pattern="yyyy-MM-dd HH:mm:ss Z"
+							timeZone="EST" value="${record.timestampAsDate}" /></td>
+					<td><c:out value="${record.vehicleId}" /></td>
+
+					<!-- actual, aka expected -->
+					<td class="dsc"><c:out value="${record.dsc}" /></td>
+
+					<td class="trip"><c:out value="${record.actualTripId}" /></td>
+					<td class="block"><c:out value="${record.actualBlockId}" /></td>
+					<c:set value="NA" var="actualSchedTimeFormat" />
+					<c:if test="${record.actualScheduleTime &gt;0}">
+						<c:set value="${record.actualScheduleTime/60.0}"
+							var="actualSchedMins" />
+						<c:set value="${actualSchedMins / 60.0}" var="actualSchedHours" />
+						<fmt:formatNumber maxFractionDigits="0" pattern="00"
+							value="${actualSchedMins % 60}" var="actualSchedMinsDisp" />
+						<fmt:formatNumber maxFractionDigits="0" pattern="#0"
+							value="${fn:substringBefore(actualSchedHours, '.')}"
+							var="actualSchedHoursDisp" />
+						<c:set value="${actualSchedHoursDisp}:${actualSchedMinsDisp}"
+							var="actualSchedTimeFormat" />
+					</c:if>
+					<td><c:out value="${actualSchedTimeFormat}" /></td>
+					<td><c:out value="${fn:replace(record.actualPhase, '_', ' ')}" />
+					</td>
+					<td><c:out value="${record.actualStatus}" /></td>
+					
+					<c:set var="actualDab" value="${record.actualDistanceAlongBlock}" />
+					<c:if test="${!Double.isNaN(record.actualDistanceAlongBlock)}">
+	          <fmt:formatNumber maxFractionDigits="1"
+	            value="${record.actualDistanceAlongBlock}" var="actualDab" />
+					</c:if>
+					<td><c:out value="${actualDab}" /></td>
+					<td></td>
+				</tr>
+
+				<tr class="inferred">
+					<!-- inferred -->
+					<td><c:out value="${record.reportedRunId}" /></td>
+					<td colspan="2"><a
+						href="http://maps.google.com/maps/?q=${record.lat},${record.lon}">
+							<c:out value="${record.lat}" />, <c:out value="${record.lon}" />
+					</a></td>
+					<td class="dsc"><c:out value="${record.inferredDsc}" /></td>
+
+					<c:set value="" var="bgcolor1" />
+					<c:if
+						test="${not empty record.actualTripId &amp;&amp; !fn:contains(record.inferredTripId, record.actualTripId)}">
+						<c:set value="difference" var="bgcolor1" />
+					</c:if>
+					<td class="trip ${bgcolor1}"><c:out
+							value="${record.inferredTripId}" /></td>
+
+          <c:set value="" var="bgcolor1" />
+          <c:if
+            test="${not empty record.actualBlockId &amp;&amp; !fn:contains(record.inferredBlockId, record.actualBlockId)}">
+            <c:set value="difference" var="bgcolor1" />
+          </c:if>
+					<td class="block ${bgcolor1}"><c:out value="${record.inferredBlockId}" />
+					</td>
+
+					<c:set value="NA" var="infSchedTimeFormat" />
+					<c:if test="${record.inferredScheduleTime &gt;0}">
+						<c:set value="${record.inferredScheduleTime/60.0}"
+							var="infSchedMins" />
+						<c:set value="${infSchedMins / 60.0}" var="infSchedHours" />
+						<fmt:formatNumber maxFractionDigits="0" pattern="00"
+							value="${infSchedMins % 60}" var="infSchedMinsDisp" />
+						<fmt:formatNumber maxFractionDigits="0" pattern="#0"
+							value="${fn:substringBefore(infSchedHours, '.')}"
+							var="infSchedHoursDisp" />
+						<c:set value="${infSchedHoursDisp}:${infSchedMinsDisp}"
+							var="infSchedTimeFormat" />
+					</c:if>
+					<td><c:out value="${infSchedTimeFormat}" /></td>
+					<c:set value="#ff6347" var="bgcolor2" />
+					<c:set
+						value="${ empty record.actualPhase || fn:contains(record.actualPhase, record.inferredPhase) }"
+						var="t1" />
+					<c:set value="${ fn:contains(record.actualPhase, 'DEADHEAD') }"
+						var="t2" />
+					<c:set value="${ fn:contains(record.inferredPhase, 'DEADHEAD') }"
+						var="t3" />
+					<c:if test="${t1 || (t2 &amp;&amp; t3)}">
+						<c:set value="" var="bgcolor2" />
+					</c:if>
+					<td bgcolor="${bgcolor2}"><c:out
+							value="${fn:replace(record.inferredPhase, '_', ' ')}" /></td>
+					<td><c:out value="${record.inferredStatus}" /></td>
+					<fmt:formatNumber maxFractionDigits="1"
+						value="${record.inferredDistanceAlongBlock}" var="infDab" />
+					<td><c:out value="${infDab}" /></td>
+					<td><c:out value="${record.assignedBlockId}"/></td>
+				</tr>
+			</c:forEach>
+		</tbody>
+	</table>
+</body>
+</html>

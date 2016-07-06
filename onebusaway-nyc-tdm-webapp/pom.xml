@@ -34,9 +34,14 @@
             <version>2.20.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-nyc-tcip-api</artifactId>
-            <version>2.2.1</version>
+          <groupId>org.onebusaway</groupId>
+          <artifactId>onebusaway-tcip-api-v30</artifactId>
+          <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+          <groupId>org.onebusaway</groupId>
+          <artifactId>onebusaway-tcip-api-v40</artifactId>
+          <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>
@@ -135,6 +140,12 @@
       		<artifactId>servlet-api</artifactId>
       		<scope>provided</scope>
     	</dependency>      
+        <dependency>
+            <groupId>net.javacrumbs.json-unit</groupId>
+            <artifactId>json-unit</artifactId>
+            <version>1.5.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <profiles>
         <profile>
@@ -146,6 +157,7 @@
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+                <tdm.rtPipoFilename>/vehicle_pipo/RtSchPullinPulloutList.json</tdm.rtPipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
@@ -163,6 +175,7 @@
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>UTSPUPUFULL.txt</tdm.pipoFilename>
+                <tdm.rtPipoFilename>/vehicle_pipo/RtSchPullinPulloutList.json</tdm.rtPipoFilename>
                 <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>${tdm.dataPath}/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
@@ -189,6 +202,7 @@
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}\depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}\dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
+                <tdm.rtPipoFilename>RtSchPullinPulloutList.json</tdm.rtPipoFilename>
                 <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile />
@@ -216,6 +230,7 @@
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+                <tdm.rtPipoFilename>/vehicle_pipo/RtSchPullinPulloutList.json</tdm.rtPipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
@@ -243,6 +258,7 @@
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+                <tdm.rtPipoFilename>/vehicle_pipo/RtSchPullinPulloutList.json</tdm.rtPipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
@@ -270,6 +286,7 @@
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+                <tdm.rtPipoFilename>/vehicle_pipo/RtSchPullinPulloutList.json</tdm.rtPipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>
@@ -313,6 +330,7 @@
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+                <tdm.rtPipoFilename>/vehicle_pipo/RtSchPullinPulloutList.json</tdm.rtPipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>${tdm.home}/depot_ids.csv</tdm.depotIdTranslationConfigFile>

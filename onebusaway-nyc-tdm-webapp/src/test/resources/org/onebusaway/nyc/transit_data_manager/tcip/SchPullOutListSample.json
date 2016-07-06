@@ -1,0 +1,67 @@
+{
+    "errorCode":"1",
+    "errorDescription":"Test error description",
+    "beginDate": "2011-06-01",
+    "beginTime": "04:59:00.000",
+    "created": "2011-06-01T04:59:00.000-04:00",
+    "deactivation": "2040-01-04T23:59:00.000-05:00",
+    "endDate": "2011-06-01",
+    "endTime": "00:49:00.000",
+    "noNameSpaceSchemaLocation": "http://www.aptatcip.com/APTA-TCIP-S-01%204.0_files/Schema%20Set.zip",
+    "pull-outs": {
+        "pull-out": [
+            {
+                "block": {
+                    "id": "MTA NYCT_20120206_CSLT_S56_001"
+                },
+                "date": "2011-06-01",
+                "garage": {
+                    "agdesig": "MTA NYCT",
+                    "id": "CSLT"
+                },
+                "operator": {
+                    "ag": 2008,
+                    "desig": "TA859007",
+                    "id": "859007"
+                },
+                "pull-in": false,
+                "run": {
+                    "id": "S56-001"
+                },
+                "time": "2011-06-01T04:59:00.000-04:00",
+                "vehicle": {
+                    "ag": 2008,
+                    "id": "7777"
+                }
+            },
+            {
+                "block": {
+                    "id": "MTA NYCT_20120206_CSLT_S56_001"
+                },
+                "date": "2011-06-01",
+                "garage": {
+                    "agdesig": "MTA NYCT",
+                    "id": "CSLT"
+                },
+                "pull-in": true,
+                "run": {
+                    "id": "S56-001"
+                },
+                "time": "2011-06-02T00:49:00.000-04:00",
+                "vehicle": {
+                    "ag": 2008,
+                    "id": "7777"
+                }
+            }
+        ]
+    },
+    "schVersion": "TCIP 4.0",
+    "sourceapp": "YardBoss",
+    "subscriptionInfo": {
+        "expirationTime": "19:00:00.000",
+        "publisherIdentifier": 0,
+        "requestIdentifier": 1,
+        "requestedType": "Event",
+        "subscriberIdentifier": 0
+    }
+}

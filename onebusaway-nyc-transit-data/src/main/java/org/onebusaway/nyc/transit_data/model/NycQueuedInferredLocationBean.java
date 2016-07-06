@@ -89,6 +89,8 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	private String inferredDirectionId;
 	
 	private Long lastLocationUpdateTime;
+
+  private String assignedBlockId;
 	
 
 	public NycQueuedInferredLocationBean() {}
@@ -365,6 +367,14 @@ public class NycQueuedInferredLocationBean implements Serializable {
 		return new BigDecimal(doubleVal).setScale(decimalPlaces, BigDecimal.ROUND_HALF_UP).doubleValue();
 		
 	}
+
+  public void setAssignedBlockId(String assignedBlockId) {
+    this.assignedBlockId = assignedBlockId;
+  }
+  
+  public String getAssignedBlockId() {
+    return assignedBlockId;
+  }
 
 }
 
