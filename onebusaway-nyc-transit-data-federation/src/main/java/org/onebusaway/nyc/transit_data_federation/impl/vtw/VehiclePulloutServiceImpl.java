@@ -100,7 +100,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 	  startUpdateProcess();
   }
   
-  private void setupJaxbContext(){
+  public void setupJaxbContext(){
 	  try {
 		  context = JAXBContext.newInstance(
     		  ObaSchPullOutList.class);
