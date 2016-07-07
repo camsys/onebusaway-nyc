@@ -259,6 +259,50 @@ public class StifAggregatorImplTest {
     assertEquals(0,agg.getUnmatchedTripsSize());
   }
 
+  
+  @Test
+  public void testComputeBlocksFromRunsBronxSept() {
+	    StifAggregatorImpl agg = new StifAggregatorImpl();
+	    StifLoaderImpl sl = new StifLoaderImpl();
+	    AbnormalStifDataLoggerImpl a = new AbnormalStifDataLoggerImpl();
+	    MultiCSVLogger logger = new MultiCSVLogger();
+	    a.setLogger(logger);
+	    
+	    String gtfsDir = "2013Sept_Bronx_All_gtfs";
+	        
+	    String gtfs = getClass().getResource(gtfsDir).getFile();
+	    
+	    GtfsReader reader = new GtfsReader();
+	    GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
+	    reader.setEntityStore(dao);
+	    sl.setGtfsMutableRelationalDao(dao);
+	    sl.setAbnormalStifDataLoggerImpl(a);
+	       
+	    try {
+	      reader.setInputLocation(new File(gtfs));
+	      reader.run();
+	    } catch (IOException e) {
+	      e.printStackTrace();
+	      fail("Exception when loading GTFS");
+	    }
+	    
+	    StifTripLoader loader = getStifTripLoader(logger, dao);
+	    sl.setStifTripLoader(loader);    
+	   
+	    String stifs = getClass().getResource("2013Sept_Bronx_All_stif").getFile();
+	    File stifFiles = new File(stifs);
+	    
+	    agg.setAbnormalStifDataLoggerImpl(a);
+	    sl.loadStif(stifFiles, loader);
+	    agg.setStifLoader(sl);
+	    agg.computeBlocksFromRuns();
+	    
+	    assert(agg.getMatchedGtfsTripsCount() > 0);
+	    assertEquals(1,agg.getRoutesWithTripsCount());
+	    assertEquals(0,agg.getUnmatchedTripsSize());
+	  }
+
+  
   private StifTripLoader getStifTripLoader(MultiCSVLogger logger,
       GtfsRelationalDaoImpl dao) {
     StifTripLoader loader = new StifTripLoader();
