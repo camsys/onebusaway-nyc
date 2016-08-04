@@ -63,6 +63,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7564_20101202T114909_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7659_20121010_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7726_20121010_IntegrationTest;
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_9458_20160706_flips_trip_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_9527_Q_MISC_IntegrationTest;
 
 @RunWith(Suite.class)
@@ -73,6 +74,9 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	/*
 	 * Inference tests
 	 */
+	
+	//2016April_Prod_r01_b05 (Route M20)
+	Trace_9458_20160706_flips_trip_IntegrationTest.class,
 	
 	//2016Jan_Prod
 	Trace_3947_Relief_Run_ID_IntegrationTest.class,
@@ -87,10 +91,10 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	// 2014Jan_AllCity_r09_b3
 	Trace_3088_in_progress_IntegrationTest.class,
 	Trace_2782_deadhead_nyct_bus_as_mta_IntegrationTest.class,
-  // 2013June_Prod_r04_b03
+	// 2013June_Prod_r04_b03
 	Trace_5558_layover_in_motion_IntegrationTest.class,
 	
-  // 2013Sept_Prod_r08_b04
+	// 2013Sept_Prod_r08_b04
 	Trace_4399_20131225_IntegrationTest.class,
 	SiriScheduleDeviation_IntegrationTest.class,
 
