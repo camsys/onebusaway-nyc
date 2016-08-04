@@ -13,9 +13,9 @@
     <name>onebusaway-nyc-integration-tests</name>
 
     <properties>
-        <tomcat-version>5.5.29</tomcat-version>
+        <tomcat-version>7.0.70</tomcat-version>
         <cargo.jvmargs>-Xmx7G -XX:MaxPermSize=256m -Duser.timezone=America/New_York</cargo.jvmargs>
-        <cargo.logging>low</cargo.logging>
+        <cargo.logging>high</cargo.logging>
         <hsqldb.port>9930</hsqldb.port>
 
 		<!-- Useful for debugging: leaves cargo running but doesn't run the tests -->
@@ -182,14 +182,14 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- 2016 January Reduced Dataset-->
+            
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1.1</version>
                 <executions>
-                  <execution>
-                        <id>graph-builder-execution-2016Jan_ManBC_WkdOnly</id>
+                	<execution>
+                        <id>graph-builder-execution-2016April_Prod_r01_b05</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -206,12 +206,35 @@
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2016April_Prod_r01_b05.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2016April_Prod_r01_b05</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                  <execution>
+                        <id>graph-builder-execution-2016Jan_ManBC_WkdOnly</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                            	 <argument>-Xdebug</argument>
+                                <argument>-Xmx1500m</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle-2016Jan_ManBC_WkdOnly.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle/2016Jan_ManBC_WkdOnly</argument>
                             </arguments>
                         </configuration>
                     </execution>
-<!-- aprilv2 start -->
                     <execution>
                         <id>graph-builder-execution-2014April_Prod_r12_b01</id>
                         <phase>pre-integration-test</phase>
@@ -235,8 +258,6 @@
                             </arguments>
                         </configuration>
                     </execution>
-<!-- aprilv2 end -->
-<!-- april start -->
                     <execution>
                         <id>graph-builder-execution-2014April_Prod_r06_b02</id>
                         <phase>pre-integration-test</phase>
@@ -260,7 +281,7 @@
                             </arguments>
                         </configuration>
                     </execution>
-<!-- april end -->
+
                     <execution>
                         <id>graph-builder-execution-2014Jan_AllCity_r09_b3</id>
                         <phase>pre-integration-test</phase>
@@ -544,7 +565,7 @@
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
                 <artifactId>cargo-maven2-plugin</artifactId>
-                <version>1.4.14</version>
+                <version>1.5.0</version>
 <!-- start container -->
                 <configuration>
                     <container>
@@ -552,7 +573,7 @@
                         <log>${java.io.tmpdir}/cargo-webapp.log</log>
                         <output>${java.io.tmpdir}/cargo-webapp.out</output>
                         <append>true</append>
-                        <containerId>tomcat5x</containerId>
+                        <containerId>tomcat7x</containerId>
                         <zipUrlInstaller>
                             <url>http://developer.onebusaway.org/dist/apache-tomcat-${tomcat-version}.zip</url>
                         </zipUrlInstaller>
