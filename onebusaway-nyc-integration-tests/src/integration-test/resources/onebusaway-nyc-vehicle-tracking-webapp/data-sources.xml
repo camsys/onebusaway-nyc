@@ -13,12 +13,7 @@
       <constructor-arg type="java.lang.String" value="/api/" />
     </bean>
     
-    <bean id="pullOutApiLibrary" class="org.onebusaway.nyc.util.impl.vtw.PullOutApiLibrary" >
-      <constructor-arg type="java.lang.String" value=""/>
-      <constructor-arg type="java.lang.Integer" value="443" />
-      <constructor-arg type="java.lang.String" value="/yardtrek-cron/" />
-      <constructor-arg type="java.lang.Boolean" value="true" />
-    </bean>
+    <bean id="vehiclePulloutService" class="org.onebusaway.nyc.transit_data_federation.impl.vtw.DummyVehiclePulloutService" />
 
     <!-- Database Connection Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
