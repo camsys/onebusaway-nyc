@@ -130,8 +130,6 @@
             </snapshots>
         </repository>
 -->
-<!-- this is inheritied implicitly -->
-<!--
         <repository>
             <id>snapshots.nexus.onebusaway.org</id>
             <url>http://nexus.onebusaway.org/content/repositories/snapshots/</url>
@@ -152,7 +150,6 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
--->
     </repositories>
 
     <pluginRepositories>
