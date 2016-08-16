@@ -35,8 +35,10 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +106,9 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	@Autowired
 	private RefreshService _refreshService;
+	
+	@Autowired
+	NearbyStopsBeanService _nearbyStopsBeanService;
 	
 	@Autowired
   private ConfigurationService _configurationService;
@@ -360,8 +365,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 		// need to do after bundle is ready so TDS can not block
 		removeAndRebuildCache();
-		_log.info("Cache rebuild complete.");
-
+		
 		return;
 	}
 
@@ -375,52 +379,71 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	private void removeAndRebuildCache() {
 	  // give subclasses a chance to do work
 	  timingHook();
+		clearCache();
+		rebuildCache();
+	}
+	
+	private void clearCache(){
+	  _log.info("Clearing all caches...");
+    for(CacheManager cacheManager : CacheManager.ALL_CACHE_MANAGERS) {
+      _log.info("Found " + cacheManager.getName()); 
+      for(String cacheName : cacheManager.getCacheNames()) {
+        _log.info(" > Clearing Cache: " + cacheName);
+        cacheManager.getCache(cacheName).flush();
+        cacheManager.clearAllStartingWith(cacheName);
+      }
+      cacheManager.clearAll();
+    }
+    _log.info("Cache clearing complete!");
+	}
+	
+	private void rebuildCache(){
+	  _log.info("Rebuilding caches...");
+    try {
+      
+      List<AgencyWithCoverageBean> agenciesWithCoverage = _nycTransitDataService.getAgenciesWithCoverage();
+      for (AgencyWithCoverageBean agencyWithCoverage : agenciesWithCoverage) {
+        AgencyBean agency = agencyWithCoverage.getAgency();
+        
+        ListBean<String> stopIds = _nycTransitDataService.getStopIdsForAgencyId(agency.getId());
+        for (String stopId : stopIds.getList()) {
+          _nearbyStopsBeanService.getNearbyStops(_nycTransitDataService.getStop(stopId), 100);
+        }
 
-		_log.info("Clearing all caches...");
-		for(CacheManager cacheManager : CacheManager.ALL_CACHE_MANAGERS) { 
-			_log.info("Found " + cacheManager.getName());
-			
-			for(String cacheName : cacheManager.getCacheNames()) {
-				_log.info(" > Cache: " + cacheName);
-				cacheManager.getCache(cacheName).flush();
-				cacheManager.clearAllStartingWith(cacheName);
-			}
-			
-			cacheManager.clearAll(); // why not?
-		}
-		
-		// Rebuild cache
-		try {
-			List<AgencyWithCoverageBean> agenciesWithCoverage = _nycTransitDataService.getAgenciesWithCoverage();
+        ListBean<String> routeIds = _nycTransitDataService.getRouteIdsForAgencyId(agency.getId());
+        for (String routeId : routeIds.getList()) {
+          _nycTransitDataService.getStopsForRoute(routeId);
+        }
+      }
 
-			for (AgencyWithCoverageBean agencyWithCoverage : agenciesWithCoverage) {
-				AgencyBean agency = agencyWithCoverage.getAgency();
+      Set<AgencyAndId> shapeIds = new HashSet<AgencyAndId>();
+      for (TripEntry trip : _transitGraphDao.getAllTrips()) {
+        AgencyAndId shapeId = trip.getShapeId();
+        if (shapeId != null && shapeId.hasValues())
+          shapeIds.add(shapeId);
+      }
 
-				ListBean<String> stopIds = _nycTransitDataService.getStopIdsForAgencyId(agency.getId());
-				for (String stopId : stopIds.getList()) {
-					_nycTransitDataService.getStop(stopId);
-				}
-
-				ListBean<String> routeIds = _nycTransitDataService.getRouteIdsForAgencyId(agency.getId());
-				for (String routeId : routeIds.getList()) {
-					_nycTransitDataService.getStopsForRoute(routeId);
-				}
-			}
-
-			Set<AgencyAndId> shapeIds = new HashSet<AgencyAndId>();
-			for (TripEntry trip : _transitGraphDao.getAllTrips()) {
-				AgencyAndId shapeId = trip.getShapeId();
-				if (shapeId != null && shapeId.hasValues())
-					shapeIds.add(shapeId);
-			}
-
-			for (AgencyAndId shapeId : shapeIds) {
-				_nycTransitDataService.getShapeForId(AgencyAndIdLibrary.convertToString(shapeId));
-			}
-			_log.info("cache clearing complete!");
-		} catch (Exception e) {
-			_log.error("Exception during cache rebuild: ", e.getMessage());
-		}
+      for (AgencyAndId shapeId : shapeIds) {
+        _nycTransitDataService.getShapeForId(AgencyAndIdLibrary.convertToString(shapeId));
+      }
+      
+      listCacheNames(); 
+      
+      _log.info("Cache rebuild complete!");
+ 
+    } catch (Exception e) {
+      _log.error("Exception during cache rebuild: ", e.getMessage());
+    }
+  }
+	
+	private void listCacheNames(){
+	  for(CacheManager cacheManager : CacheManager.ALL_CACHE_MANAGERS) { 
+      _log.info("Found " + cacheManager.getName());
+      
+      for(String cacheName : cacheManager.getCacheNames()) {
+        _log.info(" > Cache: " + cacheName);
+      }
+    }
 	}
 
 	private void removeDeadInferenceThreads() {
