@@ -120,6 +120,7 @@
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
+                <tdm.port>80</tdm.port>
                 <service.alerts.url>http://tdm/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <bundle.location>/mnt/obanyc/oba-bundle</bundle.location>
@@ -147,6 +148,7 @@
                 <!-- <ie.listener>PartitionedInputQueueListenerTask</ie.listener>-->
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.port>80</tdm.port>
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
@@ -177,6 +179,7 @@
                  -->
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.port>80</tdm.port>
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
@@ -239,6 +242,7 @@
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.port>80</tdm.port>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
