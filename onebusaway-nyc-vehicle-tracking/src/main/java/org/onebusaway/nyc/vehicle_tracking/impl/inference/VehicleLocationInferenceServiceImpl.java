@@ -48,7 +48,7 @@ import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
-import org.onebusaway.nyc.transit_data_federation.impl.vtw.DummyVehiclePulloutService;
+import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyVehiclePulloutService;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;

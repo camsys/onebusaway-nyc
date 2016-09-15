@@ -29,10 +29,16 @@
             <props>
                 <!-- Set this to a path where you want to store your bundles. -->
                 <prop key="bundle.location">${bundle.location}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
+        <property name="order" value="-2" />
+        <property name="properties">
+            <props>
                 <!-- true = DO NOT automatically download bundles from the TDM -->
                 <prop key="bundle.mode.standalone">${bundle.mode.standalone}</prop>
-                <prop key="tdm.port">${tdm.port}</prop>
-                <prop key="tdm.url">${tdm.url}</prop>
             </props>
         </property>
     </bean>
@@ -54,15 +60,7 @@
       <constructor-arg type="java.lang.String" value="${tdm.url}" />
     </bean>
     
-    <bean id="pullOutApiLibrary" class="org.onebusaway.nyc.util.impl.vtw.PullOutApiLibrary" >
-      <constructor-arg type="java.lang.String" value="${pipo.host}"/>
-      <constructor-arg type="java.lang.Integer" value="443" />
-      <constructor-arg type="java.lang.String" value="/yardtrek-cron/" />
-      <constructor-arg type="java.lang.Boolean" value="true" />
-    </bean>
     
-    <bean id="vehiclePulloutService" class="org.onebusaway.nyc.transit_data_federation.impl.vtw.VehiclePulloutServiceImpl" />
-
 	<!-- Input Queue Configuration -->
 	<!-- This option listens to the queue with pilot and SI data on it. -->
 	

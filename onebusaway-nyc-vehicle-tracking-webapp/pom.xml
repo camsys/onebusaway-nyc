@@ -131,7 +131,6 @@
                 <log4j.appender>ROLL</log4j.appender>
                 <particle.filter.debug>false</particle.filter.debug>
                 <timePredictions.disable>true</timePredictions.disable>
-                <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
             </properties>
         </profile>
         <profile>
@@ -162,7 +161,6 @@
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
                  <timePredictions.disable>true</timePredictions.disable>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
           </properties>
         </profile>
         <profile>
@@ -175,6 +173,7 @@
 <!--
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 -->
+                
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                  <!--
                 <ie.listener>SingleVehicleInputQueueListenerTask</ie.listener>
@@ -194,7 +193,6 @@
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
                  <timePredictions.disable>false</timePredictions.disable>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
           </properties>
         </profile>
         <profile>
@@ -209,8 +207,6 @@
                 <!-- <ie.listener>PartitionedInputQueueListenerTask</ie.listener> -->
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host />
-                <tdm.port />
-                <tdm.url />
 <!-- 
                 <tdm.host>tdm.dev.obanyc.com</tdm.host> 
                 <tdm.port>80</tdm.port>
@@ -229,7 +225,6 @@
 <!--                  <particle.filter.debug>false</particle.filter.debug> -->
                  <particle.filter.debug>true</particle.filter.debug>
                  <timePredictions.disable>true</timePredictions.disable>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
           </properties>
         </profile>
         <profile>
@@ -258,7 +253,6 @@
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
                  <timePredictions.disable>true</timePredictions.disable>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
           </properties>
         </profile>
 
