@@ -41,8 +41,6 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   private static Logger _log = LoggerFactory.getLogger(VehiclePulloutServiceImpl.class);
 
   private ScheduledFuture<VehiclePulloutServiceImpl.UpdateThread> _updateTask = null;
-  
-  private boolean _enabled;
 
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
@@ -78,7 +76,6 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
       String errorCode = schPulloutList.getErrorCode();
       if (errorCode != null && !errorCode.equals("0")){
         if (errorCode.equalsIgnoreCase("1")) {
-          _log.debug(response);
           _log.warn("Pullout list contained no pullouts.");
           return;
         }
@@ -113,9 +110,8 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   }
   
   private void startUpdateProcess() {
-	  Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("tdm.vehiclePipoRefreshInterval", 60);
 	  if (_updateTask==null) {
-		  setUpdateFrequency(updateIntervalSecs);
+		  setUpdateFrequency(60); //1min
 	  }
   }
   
@@ -124,9 +120,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     if (_updateTask != null) {
       _updateTask.cancel(true);
     }
-    if(_enabled){
-    	_updateTask = _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), seconds * 1000);
-    }
+    _updateTask = _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), seconds * 1000);
   }
 
   private class UpdateThread extends TimerTask {
@@ -141,13 +135,12 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     }
   }
 
-  @Refreshable(dependsOn = {"tdm.vehiclePipoRefreshInterval", "tdm.vehiclePipoServiceEnabled"})
+  @Refreshable(dependsOn = "tdm.vehiclePipoRefreshInterval")
   private void configChanged() {
-    Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("tdm.vehiclePipoRefreshInterval", null);
-    _enabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("tdm.vehiclePipoServiceEnabled", "false"));
-    
-    if (updateIntervalSecs != null) {
-      setUpdateFrequency(updateIntervalSecs);
+    Integer updateInterval = _configurationService.getConfigurationValueAsInteger("tdm.vehiclePipoRefreshInterval", null);
+
+    if (updateInterval != null) {
+      setUpdateFrequency(updateInterval);
     }
   }
 
