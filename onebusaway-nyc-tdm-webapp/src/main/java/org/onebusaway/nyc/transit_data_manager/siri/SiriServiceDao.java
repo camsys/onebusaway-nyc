@@ -33,8 +33,9 @@ public class SiriServiceDao implements SiriServicePersister {
   @Override
   public boolean saveOrUpdateServiceAlert(ServiceAlertBean serviceAlertBean) {
     boolean isNew = false;
-    ServiceAlertRecord record = getServiceAlertByServiceAlertId(serviceAlertBean.getId());
-    if (record != null) {
+    List<ServiceAlertRecord> records = getServiceAlertsByServiceAlertId(serviceAlertBean.getId());
+    if (records.size() > 0) {
+      ServiceAlertRecord record = records.get(0);
       record.setUpdatedAt(new Date());
       record.setDeleted(false);
       _template.saveOrUpdate(record.updateFrom(serviceAlertBean));
@@ -51,23 +52,22 @@ public class SiriServiceDao implements SiriServicePersister {
   @Transactional(rollbackFor = Throwable.class)
   @Override
   public ServiceAlertBean deleteServiceAlertById(String serviceAlertId) {
-    ServiceAlertRecord record = getServiceAlertByServiceAlertId(serviceAlertId);
-    if (record == null)
+    List<ServiceAlertRecord> records = getServiceAlertsByServiceAlertId(serviceAlertId);
+    if (records.size() == 0)
       return null;
-    record.setDeleted(true);
-    record.setUpdatedAt(new Date());
-    _template.saveOrUpdate(record);
-    return ServiceAlertRecord.toBean(record);
+    for(ServiceAlertRecord record: records){
+      record.setDeleted(true);
+      record.setUpdatedAt(new Date());
+    }
+    _template.saveOrUpdateAll(records);
+    return ServiceAlertRecord.toBean(records.get(0));
   }
 
-  private ServiceAlertRecord getServiceAlertByServiceAlertId(
+  private List<ServiceAlertRecord> getServiceAlertsByServiceAlertId(
       String serviceAlertId) {
     List<ServiceAlertRecord> list = _template.find(
         "from ServiceAlertRecord where service_alert_id=?", serviceAlertId);
-    if (list.size() > 0)
-      return list.get(0);
-    else
-      return null;
+    return list;
   }
 
   @Override
