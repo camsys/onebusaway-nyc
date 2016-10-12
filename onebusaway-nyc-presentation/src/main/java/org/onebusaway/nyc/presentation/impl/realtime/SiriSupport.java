@@ -380,9 +380,7 @@ public final class SiriSupport {
 				}
 			}
 
-			HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();	   
 			for(BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
-				int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStopTime().getStop());
 
 				// block trip stops away--on this trip, only after we've passed the stop, 
 				// on future trips, count always.
@@ -405,7 +403,7 @@ public final class SiriSupport {
 						getOnwardCallStructure(stopTime.getStopTime().getStop(), presentationService, 
 								stopTime.getDistanceAlongBlock() - blockTrip.getDistanceAlongBlock(), 
 								stopTime.getDistanceAlongBlock() - distanceOfVehicleAlongBlock, 
-								visitNumber, blockTripStopsAfterTheVehicle - 1,
+								blockTripStopsAfterTheVehicle - 1,
 								stopLevelPredictions.get(stopPredictionKey), responseTimestamp));
 
 				onwardCallsAdded++;
@@ -512,11 +510,10 @@ public final class SiriSupport {
 
 	private static OnwardCallStructure getOnwardCallStructure(StopBean stopBean, 
 			PresentationService presentationService, 
-			double distanceOfCallAlongTrip, double distanceOfVehicleFromCall, int visitNumber, int index,
+			double distanceOfCallAlongTrip, double distanceOfVehicleFromCall, int index,
 			SiriSupportPredictionTimepointRecord prediction, long responseTimestamp) {
 
 		OnwardCallStructure onwardCallStructure = new OnwardCallStructure();
-		onwardCallStructure.setVisitNumber(BigInteger.valueOf(visitNumber));
 
 		StopPointRefStructure stopPointRef = new StopPointRefStructure();
 		stopPointRef.setValue(stopBean.getId());
@@ -525,14 +522,21 @@ public final class SiriSupport {
 		NaturalLanguageStringStructure stopPoint = new NaturalLanguageStringStructure();
 		stopPoint.setValue(stopBean.getName());
 		onwardCallStructure.setStopPointName(stopPoint);
+		
+		boolean isNearFirstStop = false;
+		if (distanceOfCallAlongTrip < 100) isNearFirstStop = true;
 
 		if(prediction != null) {
 			if (prediction.getTimepointPredictionRecord().getTimepointPredictedTime() < responseTimestamp) {
-				onwardCallStructure.setExpectedArrivalTime(new Date(responseTimestamp)); 
+				if (!isNearFirstStop) { onwardCallStructure.setExpectedArrivalTime(new Date(responseTimestamp));}
+				else {
 				onwardCallStructure.setExpectedDepartureTime(new Date(responseTimestamp));
+				}
 			} else {
-				onwardCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedTime()));
+				if (!isNearFirstStop) {	onwardCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedTime()));}
+				else {
 				onwardCallStructure.setExpectedDepartureTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedTime()));
+				}
 			}
 		}
 
