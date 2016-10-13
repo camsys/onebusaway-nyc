@@ -246,15 +246,12 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 		  
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
 		  String timeString = Math.round(minutes) + " min" + ((Math.abs(minutes) != 1) ? "s." : ".");
-		  
-		  boolean prevTrip = progressStatus.getValue().contains("prevTrip");
-		  boolean layover = progressStatus.getValue().contains("layover");
 				  
 		  // if wrapped, only show prediction, if not wrapped, show both
-		  if(progressStatus != null && prevTrip) {
+		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
 		    return timeString;
 		  } 
-		  else if(progressStatus != null && layover){
+		  else if(progressStatus != null && progressStatus.getValue().contains("layover")){
 		    return getPresentableDistance(journey, updateTime, isStopContext);
 		  }
 		  else {
