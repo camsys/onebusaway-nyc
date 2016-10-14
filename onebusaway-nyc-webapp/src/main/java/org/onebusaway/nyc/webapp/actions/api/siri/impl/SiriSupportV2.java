@@ -91,7 +91,7 @@ import org.slf4j.LoggerFactory;
 public final class SiriSupportV2 {
 
 	private static Logger _log = LoggerFactory.getLogger(SiriSupportV2.class);
-	
+
 	public enum OnwardCallsMode {
 		VEHICLE_MONITORING, STOP_MONITORING
 	}
@@ -130,23 +130,23 @@ public final class SiriSupportV2 {
 		}
 
 		/**********************************************/
-		
+
 		//Route ID
 		LineRefStructure lineRef = new LineRefStructure();
 		lineRef.setValue(framedJourneyTripBean.getRoute().getId());
-		
+
 		DirectionRefStructure directionRef = new DirectionRefStructure();
 		directionRef.setValue(framedJourneyTripBean.getDirectionId());
-		
+
 		//Route Short Name
 		NaturalLanguageStringStructure routeShortName = new NaturalLanguageStringStructure();
 		routeShortName.setValue(framedJourneyTripBean.getRoute().getShortName());
-		
+
 		//Agency Id
 		OperatorRefStructure operatorRef = new OperatorRefStructure();
 		operatorRef.setValue(AgencySupportLibrary
 				.getAgencyForId(framedJourneyTripBean.getRoute().getId()));
-		
+
 		//Framed Journey
 		FramedVehicleJourneyRefStructure framedJourney = new FramedVehicleJourneyRefStructure();
 		DataFrameRefStructure dataFrame = new DataFrameRefStructure();
@@ -154,15 +154,15 @@ public final class SiriSupportV2 {
 				currentVehicleTripStatus.getServiceDate()));
 		framedJourney.setDataFrameRef(dataFrame);
 		framedJourney.setDatedVehicleJourneyRef(framedJourneyTripBean.getId());
-		
+
 		//Shape Id
 		JourneyPatternRefStructure journeyPattern = new JourneyPatternRefStructure();
 		journeyPattern.setValue(framedJourneyTripBean.getShapeId());
-		
+
 		//Destination
 		NaturalLanguageStringStructure headsign = new NaturalLanguageStringStructure();
 		headsign.setValue(framedJourneyTripBean.getTripHeadsign());
-		
+
 		// Vehicle Id
 		VehicleRefStructure vehicleRef = new VehicleRefStructure();
 		vehicleRef.setValue(currentVehicleTripStatus.getVehicleId());
@@ -170,7 +170,7 @@ public final class SiriSupportV2 {
 		// Set Origin and Destination stops from Block trips. 
 		StopBean lastStop = new StopBean();
 		JourneyPlaceRefStructure origin = new JourneyPlaceRefStructure();
-		
+
 		for (int i = 0; i < blockTrips.size(); i++) {
 			BlockTripBean blockTrip = blockTrips.get(i);
 
@@ -179,14 +179,14 @@ public final class SiriSupportV2 {
 				List<BlockStopTimeBean> stops = blockTrip.getBlockStopTimes();
 
 				origin.setValue(stops.get(0).getStopTime().getStop().getId());
-				
+
 				lastStop = stops.get(stops.size() - 1).getStopTime()
 						.getStop();
 				break;
 			}
 		}
-		
-		
+
+
 		// location
 		// if vehicle is detected to be on detour, use actual lat/lon, not
 		// snapped location.
@@ -233,7 +233,7 @@ public final class SiriSupportV2 {
 				&& (presentationService.isInLayover(currentVehicleTripStatus) || !framedJourneyTripBean
 						.getId().equals(
 								currentVehicleTripStatus.getActiveTrip()
-										.getId()))) {
+								.getId()))) {
 			BlockStopTimeBean originDepartureStopTime = null;
 
 			for (int t = 0; t < blockTrips.size(); t++) {
@@ -291,40 +291,40 @@ public final class SiriSupportV2 {
 					currentVehicleTripStatus, monitoredCallStopBean,
 					presentationService, nycTransitDataService,
 					stopIdToPredictionRecordMap, detailLevel, responseTimestamp);
-		
-		
+
+
 		// detail level - minimal
 		if (detailLevel.equals(DetailLevel.MINIMUM) || detailLevel.equals(DetailLevel.BASIC)
-		    || detailLevel.equals(DetailLevel.NORMAL)|| detailLevel.equals(DetailLevel.CALLS)){
-		monitoredVehicleJourney.getPublishedLineName().add(routeShortName);
-		monitoredVehicleJourney.getDestinationName().add(headsign);
-		monitoredVehicleJourney.setMonitored(currentVehicleTripStatus
-						.isPredicted());
-		monitoredVehicleJourney.setVehicleRef(vehicleRef);
-		monitoredVehicleJourney.setBearing((float) currentVehicleTripStatus
-						.getOrientation());
-		monitoredVehicleJourney.setVehicleLocation(location);
+				|| detailLevel.equals(DetailLevel.NORMAL)|| detailLevel.equals(DetailLevel.CALLS)){
+			monitoredVehicleJourney.getPublishedLineName().add(routeShortName);
+			monitoredVehicleJourney.getDestinationName().add(headsign);
+			monitoredVehicleJourney.setMonitored(currentVehicleTripStatus
+					.isPredicted());
+			monitoredVehicleJourney.setVehicleRef(vehicleRef);
+			monitoredVehicleJourney.setBearing((float) currentVehicleTripStatus
+					.getOrientation());
+			monitoredVehicleJourney.setVehicleLocation(location);
 		}
-		
+
 		// detail level - basic
 		if (detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
 			monitoredVehicleJourney.setFramedVehicleJourneyRef(framedJourney);
 			monitoredVehicleJourney.setDirectionRef(directionRef);
-			
+
 			// since LineRef is fully qualified with operatorref, moving OperatorRef to normal detail
 			//monitoredVehicleJourney.setOperatorRef(operatorRef);
-			
-			
+
+
 			DestinationRefStructure dest = new DestinationRefStructure();
 			dest.setValue(lastStop.getId());
 			monitoredVehicleJourney.setDestinationRef(dest);
-			
+
 			monitoredVehicleJourney.setLineRef(lineRef);
 			monitoredVehicleJourney.setProgressRate(getProgressRateForPhaseAndStatus(
-								currentVehicleTripStatus.getStatus(),
-								currentVehicleTripStatus.getPhase()));
+					currentVehicleTripStatus.getStatus(),
+					currentVehicleTripStatus.getPhase()));
 		}
-		
+
 		// detail level - normal
 		if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
 			monitoredVehicleJourney.setOperatorRef(operatorRef);
@@ -338,7 +338,7 @@ public final class SiriSupportV2 {
 			monitoredVehicleJourney.setOriginRef(origin);
 			monitoredVehicleJourney.setJourneyPatternRef(journeyPattern);
 		}	
-		
+
 		// onward calls
 		if (detailLevel.equals(DetailLevel.CALLS)){
 			if (!presentationService.isOnDetour(currentVehicleTripStatus))
@@ -348,7 +348,7 @@ public final class SiriSupportV2 {
 						nycTransitDataService, stopIdToPredictionRecordMap,
 						maximumOnwardCalls, responseTimestamp);
 		}
-		
+
 
 		// situations
 		fillSituations(monitoredVehicleJourney, currentVehicleTripStatus);
@@ -363,7 +363,7 @@ public final class SiriSupportV2 {
 			DetailLevel detailLevel, 
 			long currentTime
 			) {
-		
+
 		StopBean stopBean = stopRouteDirection.getStop();
 		List<RouteForDirection> routeDirections = stopRouteDirection.getRouteDirections();
 
@@ -373,23 +373,23 @@ public final class SiriSupportV2 {
 
 		// Set Route and Direction
 		Lines lines = new Lines();
-		
+
 		for (RouteForDirection routeDirection : routeDirections){
-			
+
 			String directionId = routeDirection.getDirectionId();
 			String routeId = routeDirection.getRouteId();
-			
-			
+
+
 			LineRefStructure line = new LineRefStructure();
 			line.setValue(routeId);
 
 			DirectionRefStructure direction = new DirectionRefStructure();
 			direction.setValue(directionId);
-			
+
 			LineDirectionStructure lineDirection = new LineDirectionStructure();
 			lineDirection.setDirectionRef(direction);
 			lineDirection.setLineRef(line);
-			
+
 			lines.getLineRefOrLineDirection().add(lineDirection);
 
 		}
@@ -417,58 +417,58 @@ public final class SiriSupportV2 {
 		}
 
 		annotatedStopPoint.setStopPointRef(stopPointRef);
-		
+
 		return true;
 	}
-	
+
 	public static boolean fillAnnotatedLineStructure(
 			AnnotatedLineStructure annotatedLineStructure,
 			RouteResult routeResult,
 			Map<Filters, String> filters, 
 			DetailLevel detailLevel,
 			long currentTime) {
-		
+
 		Directions directions = new Directions();
-		
+
 		// Set Line Value
 		LineRefStructure line = new LineRefStructure();
 		line.setValue(routeResult.getId());
-		
+
 		NaturalLanguageStringStructure lineName = new NaturalLanguageStringStructure();
 		lineName.setValue(routeResult.getShortName());
-		
-		
+
+
 		// DETAIL - minimum: Return only the name and identifier of stops
 		//ideally, this would return only stops with scheduled service
 		annotatedLineStructure.setLineRef(line);
 		annotatedLineStructure.getLineName().add(lineName);
 		annotatedLineStructure.setDirections(directions);
 		annotatedLineStructure.setMonitored(true);
-		
+
 		// Loop through Direction Ids
 		for(RouteDirection direction : routeResult.getDirections()){
-			
+
 			// Check for existing stops in direction
 			if(direction == null | direction.getStops().size() == 0)
 				continue;
-			
+
 			String directionId = direction.getDirectionId();
 
 			// Journey patterns - holds stop points for direction
 			JourneyPattern pattern = new JourneyPattern();
 			JourneyPatterns patterns = new JourneyPatterns();
-			
+
 			// Directions
 			DirectionRefStructure dirRefStructure = new DirectionRefStructure();
 			dirRefStructure.setValue(directionId);
-			
+
 			RouteDirectionStructure routeDirectionStructure = new RouteDirectionStructure();
 			NaturalLanguageStringStructure directionName = new NaturalLanguageStringStructure();
-			
+
 			directionName.setValue(direction.getDestination());
 			routeDirectionStructure.getDirectionName().add(directionName);
 			directions.getDirection().add(routeDirectionStructure);
-			
+
 			// Destination
 			Destinations destinations = new Destinations();
 			AnnotatedDestinationStructure annotatedDest = new AnnotatedDestinationStructure();
@@ -487,62 +487,62 @@ public final class SiriSupportV2 {
 			for(StopOnRoute stop : direction.getStops()){
 				if(stop.getHasUpcomingScheduledStop() != null && stop.getHasUpcomingScheduledStop())
 					scheduledStops.add(stop);
-				
+
 				allStops.add(stop);
 			}
-	
+
 			// DETAIL -- normal: Return name, identifier and coordinates of the stop.??
 			// my interpretation is that normal returns the list of stops with coordinates and their polylines
 			//ideally, this would return only stops with scheduled service
-			
+
 			if (detailLevel.equals(DetailLevel.NORMAL)){
-				
+
 				for(int i = 0; i < scheduledStops.size(); i++){
-					
+
 					StopOnRoute stop = direction.getStops().get(i);
 
 					BigDecimal stopLat = new BigDecimal(stop.getLatitude());
 					BigDecimal stopLon = new BigDecimal(stop.getLongitude());
-					
+
 					LocationStructure location = new LocationStructure();
 					location.setLongitude(stopLon.setScale(6, BigDecimal.ROUND_HALF_DOWN));
 					location.setLatitude(stopLat.setScale(6, BigDecimal.ROUND_HALF_DOWN));
-					
+
 					StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
 					pointInPattern.setLocation(location);
 					pointInPattern.setOrder(BigInteger.valueOf(i));
 					NaturalLanguageStringStructure stopName = new NaturalLanguageStringStructure();
 					stopName.setValue(stop.getName());
 					pointInPattern.getStopName().add(stopName);
-					
+
 					StopPointRefStructure spr = new StopPointRefStructure();
 					spr.setValue(stop.getId());
-					
+
 					stopsInPattern.getStopPointInPattern().add(pointInPattern);
 				}
-				
+
 			}
-			
+
 			// DETAIL -- stops: Return name, identifier and coordinates of the stop.??
 			// my interpretation is that normal returns the list of stops with coordinates and their polylines
 			//ideally, this would return both stops with scheduled and unscheduled service
-			
+
 			if (detailLevel.equals(DetailLevel.STOPS) || detailLevel.equals(DetailLevel.FULL)){
 				for(int i = 0; i < allStops.size(); i++){
-					
+
 					StopOnRoute stop = direction.getStops().get(i);
 					Boolean hasUpcomingScheduledService = stop.getHasUpcomingScheduledStop();
-					
+
 					BigDecimal stopLat = new BigDecimal(stop.getLatitude());
 					BigDecimal stopLon = new BigDecimal(stop.getLongitude());
-					
+
 					LocationStructure location = new LocationStructure();
 					location.setLongitude(stopLon.setScale(6, BigDecimal.ROUND_HALF_DOWN));
 					location.setLatitude(stopLat.setScale(6, BigDecimal.ROUND_HALF_DOWN));
-					
+
 					StopPointRefStructure spr = new StopPointRefStructure();
 					spr.setValue(stop.getId());
-					
+
 					StopPointInPatternStructure pointInPattern = new StopPointInPatternStructure();
 					pointInPattern.setLocation(location);
 					pointInPattern.setOrder(BigInteger.valueOf(i));
@@ -550,19 +550,19 @@ public final class SiriSupportV2 {
 					stopName.setValue(stop.getName());
 					pointInPattern.getStopName().add(stopName);
 					pointInPattern.setStopPointRef(spr);
-					
+
 					stopsInPattern.getStopPointInPattern().add(pointInPattern);
-					
+
 					// HasUpcomingService Extension
 					SiriUpcomingServiceExtension upcomingService = new SiriUpcomingServiceExtension();
 					upcomingService.setUpcomingScheduledService(hasUpcomingScheduledService);
-					
+
 					ExtensionsStructure upcomingServiceExtensions = new ExtensionsStructure();
 					upcomingServiceExtensions.setAny(upcomingService);
 					pointInPattern.setExtensions(upcomingServiceExtensions);
 				}
 			}
-			
+
 			String includePolylineFilter = filters.get(Filters.INCLUDE_POLYLINES);
 			if(includePolylineFilter != null && passFilter("true",includePolylineFilter)){
 				// Polyline Extension
@@ -570,19 +570,19 @@ public final class SiriSupportV2 {
 				for(String polyline : direction.getPolylines()){
 					polylines.getPolylines().add(polyline);
 				}
-				
+
 				ExtensionsStructure PolylineExtension = new ExtensionsStructure();
 				PolylineExtension.setAny(polylines);
 				routeDirectionStructure.setExtensions(PolylineExtension);
 			}
-			
+
 			routeDirectionStructure.setJourneyPatterns(patterns);
 			pattern.setStopsInPattern(stopsInPattern);
 			patterns.getJourneyPattern().add(pattern);
 			routeDirectionStructure.setDirectionRef(dirRefStructure);
 
 		}
-			
+
 		return true;
 	}
 
@@ -653,10 +653,7 @@ public final class SiriSupportV2 {
 				}
 			}
 
-			HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();
 			for (BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
-				int visitNumber = getVisitNumber(visitNumberForStopMap,
-						stopTime.getStopTime().getStop());
 
 				// block trip stops away--on this trip, only after we've passed
 				// the stop,
@@ -677,18 +674,18 @@ public final class SiriSupportV2 {
 				}
 
 				monitoredVehicleJourney
-						.getOnwardCalls()
-						.getOnwardCall()
-						.add(getOnwardCallStructure(
-								stopTime.getStopTime().getStop(),
-								presentationService,
-								stopTime.getDistanceAlongBlock()
-										- blockTrip.getDistanceAlongBlock(),
-								stopTime.getDistanceAlongBlock()
-										- distanceOfVehicleAlongBlock,
-								visitNumber, blockTripStopsAfterTheVehicle - 1,
-								stopLevelPredictions.get(stopTime.getStopTime()
-										.getStop().getId()), responseTimestamp));
+				.getOnwardCalls()
+				.getOnwardCall()
+				.add(getOnwardCallStructure(
+						stopTime.getStopTime().getStop(),
+						presentationService,
+						stopTime.getDistanceAlongBlock()
+						- blockTrip.getDistanceAlongBlock(),
+						stopTime.getDistanceAlongBlock()
+						- distanceOfVehicleAlongBlock,
+						 blockTripStopsAfterTheVehicle - 1,
+						stopLevelPredictions.get(stopTime.getStopTime()
+								.getStop().getId()), responseTimestamp));
 
 				onwardCallsAdded++;
 
@@ -777,19 +774,19 @@ public final class SiriSupportV2 {
 						.equals(monitoredCallStopBean.getId())) {
 					if (!presentationService.isOnDetour(tripStatus)) {
 						monitoredVehicleJourney
-								.setMonitoredCall(getMonitoredCallStructure(
-										stopTime.getStopTime().getStop(),
-										presentationService,
-										stopTime.getDistanceAlongBlock()
-												- blockTrip
-														.getDistanceAlongBlock(),
-										stopTime.getDistanceAlongBlock()
-												- distanceOfVehicleAlongBlock,
-										visitNumber,
-										blockTripStopsAfterTheVehicle - 1,
-										stopLevelPredictions.get(stopTime
-												.getStopTime().getStop()
-												.getId()), detailLevel, responseTimestamp));
+						.setMonitoredCall(getMonitoredCallStructure(
+								stopTime.getStopTime().getStop(),
+								presentationService,
+								stopTime.getDistanceAlongBlock()
+								- blockTrip
+								.getDistanceAlongBlock(),
+								stopTime.getDistanceAlongBlock()
+								- distanceOfVehicleAlongBlock,
+								visitNumber,
+								blockTripStopsAfterTheVehicle - 1,
+								stopLevelPredictions.get(stopTime
+										.getStopTime().getStop()
+										.getId()), detailLevel, responseTimestamp));
 					}
 
 					// we found our monitored call--stop
@@ -822,11 +819,10 @@ public final class SiriSupportV2 {
 	private static OnwardCallStructure getOnwardCallStructure(
 			StopBean stopBean, PresentationService presentationService,
 			double distanceOfCallAlongTrip, double distanceOfVehicleFromCall,
-			int visitNumber, int index, TimepointPredictionRecord prediction,
+			int index, TimepointPredictionRecord prediction,
 			long responseTimestamp) {
 
 		OnwardCallStructure onwardCallStructure = new OnwardCallStructure();
-		onwardCallStructure.setVisitNumber(BigInteger.valueOf(visitNumber));
 
 		StopPointRefStructure stopPointRef = new StopPointRefStructure();
 		stopPointRef.setValue(stopBean.getId());
@@ -836,32 +832,39 @@ public final class SiriSupportV2 {
 		stopPoint.setValue(stopBean.getName());
 		onwardCallStructure.getStopPointName().add(stopPoint);
 
+		boolean isNearFirstStop = false;
+		if (distanceOfCallAlongTrip < 100) isNearFirstStop = true;
+
 		if (prediction != null) {
 			if (prediction.getTimepointPredictedTime() < responseTimestamp) {
 				// TODO - LCARABALLO - should this be setExpectedArrivalTime?
-				onwardCallStructure.setExpectedArrivalTime(DateUtil
-						.toXmlGregorianCalendar(responseTimestamp));
-				onwardCallStructure.setExpectedDepartureTime(DateUtil
-						.toXmlGregorianCalendar(responseTimestamp));
+				if (!isNearFirstStop) {
+					onwardCallStructure.setExpectedArrivalTime(DateUtil.toXmlGregorianCalendar(responseTimestamp));
+				}
+				else{
+					onwardCallStructure.setExpectedDepartureTime(DateUtil.toXmlGregorianCalendar(responseTimestamp));
+				}
 			} else {
-				onwardCallStructure.setExpectedArrivalTime(DateUtil
-						.toXmlGregorianCalendar(prediction
-								.getTimepointPredictedTime()));
-				onwardCallStructure.setExpectedDepartureTime(DateUtil
-						.toXmlGregorianCalendar(prediction
-								.getTimepointPredictedTime()));
+				if (!isNearFirstStop){
+					onwardCallStructure.setExpectedArrivalTime(DateUtil
+							.toXmlGregorianCalendar(prediction.getTimepointPredictedTime()));
+				} 
+				else {
+					onwardCallStructure.setExpectedDepartureTime(DateUtil
+							.toXmlGregorianCalendar(prediction.getTimepointPredictedTime()));
+				}
 			}
 		}
-		
+
 		// Distances
 		NaturalLanguageStringStructure presentableDistance = new NaturalLanguageStringStructure();
 		presentableDistance.setValue(presentationService
 				.getPresentableDistance(distanceOfVehicleFromCall, index));
-		
+
 		onwardCallStructure.setNumberOfStopsAway(BigInteger.valueOf(index));
 		onwardCallStructure.setDistanceFromStop(new BigDecimal(distanceOfVehicleFromCall).toBigInteger());
 		onwardCallStructure.setArrivalProximityText(presentableDistance);
-		
+
 		// siri extensions
 		// TODO - LCARABALLO - Distance Along Route Might Still need Extension
 		/*SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
@@ -893,7 +896,7 @@ public final class SiriSupportV2 {
 
 		StopPointRefStructure stopPointRef = new StopPointRefStructure();
 		stopPointRef.setValue(stopBean.getId());
-		
+
 
 		NaturalLanguageStringStructure stopPoint = new NaturalLanguageStringStructure();
 		stopPoint.setValue(stopBean.getName());
@@ -922,7 +925,7 @@ public final class SiriSupportV2 {
 			}
 
 		}
-		
+
 		// siri extensions
 		// TODO - LCARABALLO - Distance Along Route Might Still need Extension
 		/*SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
@@ -935,26 +938,26 @@ public final class SiriSupportV2 {
 
 		distances.setCallDistanceAlongRoute(Double.valueOf(df
 				.format(distanceOfCallAlongTrip)));
-	
+
 		wrapper.setDistances(distances);
 		distancesExtensions.setAny(wrapper);
 		monitoredCallStructure.setExtensions(distancesExtensions);*/
-		
+
 		// distances
 		NaturalLanguageStringStructure presentableDistance = new NaturalLanguageStringStructure();
 		presentableDistance.setValue(presentationService
 				.getPresentableDistance(distanceOfVehicleFromCall, index));
-		
+
 		monitoredCallStructure.setNumberOfStopsAway(BigInteger.valueOf(index));
 		monitoredCallStructure.setDistanceFromStop(new BigDecimal(distanceOfVehicleFromCall).toBigInteger());
 		monitoredCallStructure.setArrivalProximityText(presentableDistance);
-		
-		
+
+
 		// basic 
 		if (detailLevel.equals(DetailLevel.BASIC)|| detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
 			monitoredCallStructure.getStopPointName().add(stopPoint);
 		}
-		
+
 		// normal
 		if(detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
 			monitoredCallStructure.setStopPointRef(stopPointRef);
@@ -1001,15 +1004,15 @@ public final class SiriSupportV2 {
 		return ProgressRateEnumeration.UNKNOWN;
 	}
 
-	
+
 	public static boolean passFilter(String value, String filterValue){
 		if (StringUtils.isNotBlank(filterValue)
 				&& !value.equalsIgnoreCase(filterValue.trim()))
 			return false;
-		
+
 		return true;
 	}
-	
+
 	public static Integer convertToNumeric(String param, Integer defaultValue){
 		Integer numericValue = defaultValue;
 		try {
