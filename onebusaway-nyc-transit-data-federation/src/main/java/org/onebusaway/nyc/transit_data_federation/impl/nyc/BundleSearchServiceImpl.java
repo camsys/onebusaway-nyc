@@ -103,7 +103,6 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 		return tmpSuggestions;
 	}
 	
-	@Autowired
 	public void setDisableInit(boolean disableInit) {
 		_disableInit = disableInit;
 	}
