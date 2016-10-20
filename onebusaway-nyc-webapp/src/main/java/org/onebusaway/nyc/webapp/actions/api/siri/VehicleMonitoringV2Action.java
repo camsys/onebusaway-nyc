@@ -66,6 +66,8 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
   
   private static final String VEHICLE_REF = "VehicleRef";
   
+  private static final String VERSION = "V2";
+  
   private Siri _response;
   
   private String _cachedResponse = null;
@@ -210,7 +212,7 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
       try {
       gaLabel = "All Vehicles";
       
-      int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type);
+      int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type, VERSION);
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
       if (!_siriCacheService.containsKey(hashKey)) {

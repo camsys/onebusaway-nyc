@@ -40,17 +40,17 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, String> {
     }
     _log.info("done");
   }
-
-  private Integer hash(int maximumOnwardCalls, List<String> agencies, String outputType){
-    // Use properties of a TreeSet to obtain consistent ordering of like combinations of agencies
-    TreeSet<String> set = new TreeSet<String>(agencies);
-    return maximumOnwardCalls + set.toString().hashCode() + outputType.hashCode();
+  
+  private Integer hash(int maximumOnwardCalls, List<String> agencies, String outputType, String version){
+	// Use properties of a TreeSet to obtain consistent ordering of like combinations of agencies
+	TreeSet<String> set = new TreeSet<String>(agencies);
+	return maximumOnwardCalls + set.toString().hashCode() + outputType.hashCode() + version.hashCode();
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public Integer hash(Object...factors){
-    return hash((Integer)factors[0], (List<String>)factors[1], (String)factors[2]);  
+    return hash((Integer)factors[0], (List<String>)factors[1], (String)factors[2], (String)factors[3]);  
   }
 
   public void store(Integer key, String value) {
