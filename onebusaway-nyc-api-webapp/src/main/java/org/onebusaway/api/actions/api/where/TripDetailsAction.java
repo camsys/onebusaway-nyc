@@ -16,6 +16,8 @@
 package org.onebusaway.api.actions.api.where;
 
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
@@ -23,10 +25,18 @@ import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 import org.onebusaway.api.model.transit.TripDetailsV2Bean;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.transit_data.model.AgencyBean;
+import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.TripStopTimeBean;
+import org.onebusaway.transit_data.model.TripStopTimesBean;
+import org.onebusaway.transit_data.model.schedule.StopTimeBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
@@ -106,21 +116,39 @@ public class TripDetailsAction extends ApiActionSupport {
     query.setTripId(_id);
     if( _serviceDate != null)
       query.setServiceDate(_serviceDate.getTime());
-    query.setTime(_time.getTime());
-    query.setVehicleId(_vehicleId);
+      query.setTime(_time.getTime());
+      query.setVehicleId(_vehicleId);
     
-    TripDetailsInclusionBean inclusion = query.getInclusion();
-    inclusion.setIncludeTripBean(_includeTrip);
-    inclusion.setIncludeTripSchedule(_includeSchedule);
-    inclusion.setIncludeTripStatus(_includeStatus);
+      TripDetailsInclusionBean inclusion = query.getInclusion();
+      inclusion.setIncludeTripBean(_includeTrip);
+      inclusion.setIncludeTripSchedule(_includeSchedule);
+      inclusion.setIncludeTripStatus(_includeStatus);
 
-    TripDetailsBean trip = _service.getSingleTripDetails(query);
+      TripDetailsBean tripDetails = _service.getSingleTripDetails(query);
 
-    if (trip == null)
+    if (tripDetails == null)
       return setResourceNotFoundResponse();
+    
+    TripStopTimesBean stopTimes = tripDetails.getSchedule();
+
+    if(stopTimes != null)
+      removeNonRevenueStops(stopTimes);
 
     BeanFactoryV2 factory = getBeanFactoryV2();
-    EntryWithReferencesBean<TripDetailsV2Bean> response = factory.getResponse(trip);
+    EntryWithReferencesBean<TripDetailsV2Bean> response = factory.getResponse(tripDetails);
     return setOkResponse(response);
+  }
+
+  private void removeNonRevenueStops(TripStopTimesBean stopTimes){
+	List<TripStopTimeBean> tripStopTimeBeans = stopTimes.getStopTimes();
+	Iterator<TripStopTimeBean> tripStopTimeIterator = tripStopTimeBeans.iterator();
+    while(tripStopTimeIterator.hasNext()){
+      TripStopTimeBean stopTime = tripStopTimeIterator.next(); 
+      StopBean stop = stopTime.getStop();
+      String agencyId = AgencyAndIdLibrary.convertFromString(stop.getId()).getAgencyId();
+      if(Boolean.TRUE.equals(_service.stopHasRevenueService(agencyId, stop.getId())))
+        continue;
+	  tripStopTimeIterator.remove();
+    }  
   }
 }
