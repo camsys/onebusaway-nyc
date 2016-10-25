@@ -88,4 +88,12 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 		_initialized = true;
 	}
 
+	@Override
+	public void startDNSCheckThread() {
+	  if (!useTimePredictionsIfAvailable()) {
+	    _log.error("time predictions disabled -- exiting");
+	    return;
+	  } 
+	  super.startDNSCheckThread();
+	}
 }
