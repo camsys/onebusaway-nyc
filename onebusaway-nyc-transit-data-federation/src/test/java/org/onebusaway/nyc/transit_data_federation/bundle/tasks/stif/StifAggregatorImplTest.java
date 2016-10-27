@@ -5,9 +5,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -299,7 +296,14 @@ public class StifAggregatorImplTest {
 	    
 	    assert(agg.getMatchedGtfsTripsCount() > 0);
 	    assertEquals(1,agg.getRoutesWithTripsCount());
+//	    if (agg.getUnmatchedTripsSize() > 0){
+//	    	Object[] trips = agg.getUnmatchedTrips().toArray();
+//	    	for (Object o: trips){
+//	    		System.out.println(o.toString());
+//	    	}
+//	    }
 	    assertEquals(0,agg.getUnmatchedTripsSize());
+	    
 	  }
 
   

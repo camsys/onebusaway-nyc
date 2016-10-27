@@ -41,12 +41,17 @@ public class StifAggregatorImpl {
   private ArrayList<StifTrip> pullouts = new ArrayList<StifTrip>();
   private HashMap<String, List<StifTrip>> tripsByRun = new HashMap<String, List<StifTrip>>();
   private HashSet<StifTrip> unmatchedTrips = new HashSet<StifTrip>();
+
   private HashSet<Trip> usedGtfsTrips = new HashSet<Trip>();
 
   private HashSet<Route> routesWithTrips = new HashSet<Route>();
 
   public HashMap<String, Set<AgencyAndId>> getRouteIdsByDsc(){
     return routeIdsByDsc;
+  }
+  
+  public HashSet<StifTrip> getUnmatchedTrips() {
+	return unmatchedTrips;
   }
 
   public void computeBlocksFromRuns() {
@@ -61,8 +66,9 @@ public class StifAggregatorImpl {
       populateTripDetails(rawTrips);
 
       // for each pull-out, start a new block
+//      _log.debug(pullouts.size() + " pullouts on " + entry.getKey().toString());
       for (StifTrip pullout : pullouts) {
-        //      _log.debug("pullout " + pullout.toString() + " unmatched trips size" + unmatchedTrips.size());
+//              _log.debug("pullout " + pullout.toString() + " unmatched trips size" + unmatchedTrips.size());
 
         blockNo ++;
         StifTrip lastTrip = pullout;
@@ -92,11 +98,11 @@ public class StifAggregatorImpl {
           int nextTripStartTime = lastTrip.listedLastStopTime + lastTrip.recoveryTime * 60;
           @SuppressWarnings("unchecked")
           int index = Collections.binarySearch(trips, nextTripStartTime, new RawTripComparator());
-
+          
           //binarySearch on a list returns a negative number when the search key is not found.
           if (index < 0) {
             index = -(index + 1);
-//            _log.debug("index reset to " + index);
+            _log.debug("index reset to " + index);
           }
 
           if(!tripExists(index, nextRunId, lastTrip, trips.size())){
@@ -110,11 +116,10 @@ public class StifAggregatorImpl {
             _log.debug(lastTrip.toString() + " and " + trip.toString() +" not different");
             break;
           }
-
+          
           lastTrip = trip;
           matchGTFSToSTIF(lastTrip, trip, pullout, blockIds);
         }
-
         unmatchedTrips.remove(lastTrip);
         dumpBlocksOut(blockIds, lastTrip, pullout);
       }
@@ -124,8 +129,9 @@ public class StifAggregatorImpl {
   }
 
   public void populateTripDetails(List<StifTrip> rawTrips){
+	  tripsByRun.clear();
+	  pullouts.clear();
     for (StifTrip trip : rawTrips) {
-
       String runId = trip.getRunIdWithDepot();
       List<StifTrip> tripsForThisRun = tripsByRun.get(runId);
 
@@ -138,13 +144,15 @@ public class StifAggregatorImpl {
       tripsForThisRun.add(trip);
       if (trip.type == StifTripType.PULLOUT) {
         pullouts.add(trip);
-      }else if (trip.type == StifTripType.DEADHEAD && 
-          trip.listedFirstStopTime == trip.listedLastStopTime + trip.recoveryTime) {
-        _log.warn("Zero-length deadhead.  If this immediately follows a pullout, "
-            + "tracing might fail.  If it does, we will mark some trips as trips "
-            + "without pullout.");
+      }
+      else if (trip.type == StifTripType.DEADHEAD && 
+    		  trip.listedFirstStopTime == trip.listedLastStopTime + trip.recoveryTime) {
+		        _log.warn("Zero-length deadhead.  If this immediately follows a pullout, "
+		            + "tracing might fail.  If it does, we will mark some trips as trips "
+		            + "without pullout.");
       }
     }
+    
     for (List<StifTrip> byRun : tripsByRun.values()) {
       Collections.sort(byRun);
     }
