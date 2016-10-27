@@ -32,6 +32,20 @@
 	<!-- to our resource list; we need more control over the initialization of the TDF application container, so we -->
 	<!-- brought the directives from that file into this one and control them here in an NYC specific way. -->
 	<import resource="classpath:org/onebusaway/container/application-context.xml" />
+    
+    <bean id="nearbyStopsBeanServiceCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">
+      <property name="cacheManager" ref="cacheManager" />
+      <property name="cacheName"
+        value="org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService.getNearbyStop" />
+      <property name="maxElementsInMemory" value="10000" />
+      <property name="eternal" value="true" />
+      <property name="overflowToDisk" value="false" />
+      <property name="diskPersistent" value="false" />
+    </bean>
+    
+    <bean id="nearbyStopsBeanServiceImpl" class="org.onebusaway.transit_data_federation.impl.beans.NearbyStopsBeanServiceImpl">
+      <property name="nearbyStopsCache" ref="nearbyStopsBeanServiceCache" />
+    </bean>
 
 	<!-- Common Services -->
 	<bean id="shapePointsLibrary" class="org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary" />

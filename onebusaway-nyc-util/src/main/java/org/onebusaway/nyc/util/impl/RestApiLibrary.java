@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.util.impl;
 
 import java.io.BufferedReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -11,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -19,15 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 
 public class RestApiLibrary {
   
-  private static int DEFAULT_READ_TIMEOUT = 60 * 1000;
-  private static int DEFAULT_CONNECTION_TIMEOUT = 60 * 1000;
+  private static int DEFAULT_READ_TIMEOUT = Integer.parseInt(System.getProperty("oba.defaultReadTimeout", "60000")); // 60 * 1000;
+  private static int DEFAULT_CONNECTION_TIMEOUT = Integer.parseInt(System.getProperty("oba.defaultConnectTimeout", "60000")); // 60 * 1000;
 
 	private String _host = null;
 
@@ -56,6 +54,16 @@ public class RestApiLibrary {
 	}
 
 	public URL buildUrl(String baseObject, String... params) throws Exception {
+		String url = buildUrlParams(baseObject, params);
+		return new URL("http", _host, _port, url);
+	}
+	
+	public URL buildSSLUrl(String baseObject, String... params) throws Exception {
+		String url = buildUrlParams(baseObject, params);
+		return new URL("https", _host, _port, url);
+	}	
+	
+	private String buildUrlParams(String baseObject, String... params){
 		String url = _apiPrefix;
 
 		url += baseObject;
@@ -69,10 +77,10 @@ public class RestApiLibrary {
 					url += "/";
 			}
 		}
-
-		return new URL("http", _host, _port, url);
-	}	
-
+		
+		return url;
+	}
+	
 	public String getContentsOfUrlAsString(URL requestUrl) throws IOException {
 		BufferedReader br = null;
 		InputStream inStream = null;
@@ -144,6 +152,14 @@ public class RestApiLibrary {
 
 		return output;
 	}
+	
+  public List<JsonObject> getJsonObjectsForStringNoCheck(String string) {
+    JsonParser parser = new JsonParser();
+    ArrayList<JsonObject> output = new ArrayList<JsonObject>();
+    output.add((JsonObject)parser.parse(string));
+    return output;
+  }
+
 
 	/**
 	 * Writes config value to the given URL
@@ -257,4 +273,5 @@ public class RestApiLibrary {
 		}
 		return conn;
 	}
+
 }

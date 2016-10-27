@@ -38,29 +38,29 @@ public class HistoricalRecordResultTransformer implements ResultTransformer{
 		record.setVehicleId((Integer)tuple[14]);
 		record.setManufacturerData((String)tuple[15]);
 		record.setRequestId((Integer)tuple[16]);
-		
 		record.setDepotId((String)tuple[17]);
 		record.setServiceDate(toISODate((Date)tuple[18]));
 		record.setInferredRunId((String)tuple[19]);
 		record.setAssignedRunId((String)tuple[20]);
 		record.setInferredBlockId((String)tuple[21]);
-		record.setInferredTripId((String)tuple[22]);
-		record.setInferredRouteId((String)tuple[23]);
-		record.setInferredDirectionId((String)tuple[24]);
-		record.setInferredDestSignCode((Integer)tuple[25]);
-		record.setInferredLatitude((BigDecimal)tuple[26]);
-		record.setInferredLongitude((BigDecimal)tuple[27]);
-		record.setInferredPhase((String)tuple[28]);
-		record.setInferredStatus((String)tuple[29]);
+		record.setAssignedBlockId((String)tuple[22]);
+		record.setInferredTripId((String)tuple[23]);
+		record.setInferredRouteId((String)tuple[24]);
+		record.setInferredDirectionId((String)tuple[25]);
+		record.setInferredDestSignCode((Integer)tuple[26]);
+		record.setInferredLatitude((BigDecimal)tuple[27]);
+		record.setInferredLongitude((BigDecimal)tuple[28]);
+		record.setInferredPhase((String)tuple[29]);
+		record.setInferredStatus((String)tuple[30]);
 		//Fix for OBANYC-1905. Boolean value cannot be null
-		record.setInferenceIsFormal(tuple[30] == null ? Boolean.FALSE : (Boolean)tuple[30]);
-		record.setDistanceAlongBlock((BigDecimal)tuple[31]);
-		record.setDistanceAlongTrip((BigDecimal)tuple[32]);
-		record.setNextScheduledStopId((String)tuple[33]);
-		record.setNextScheduledStopDistance((BigDecimal)tuple[34]);
-		record.setPreviousScheduledStopId((String)tuple[35]);
-		record.setPreviousScheduledStopDistance((BigDecimal)tuple[36]);
-		record.setScheduleDeviation((Integer)tuple[37]);
+		record.setInferenceIsFormal(tuple[31] == null ? Boolean.FALSE : (Boolean)tuple[31]);
+		record.setDistanceAlongBlock((BigDecimal)tuple[32]);
+		record.setDistanceAlongTrip((BigDecimal)tuple[33]);
+		record.setNextScheduledStopId((String)tuple[34]);
+		record.setNextScheduledStopDistance((BigDecimal)tuple[35]);
+		record.setPreviousScheduledStopId((String)tuple[36]);
+		record.setPreviousScheduledStopDistance((BigDecimal)tuple[37]);
+		record.setScheduleDeviation((Integer)tuple[38]);
 		
 		return record;
 	}

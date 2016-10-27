@@ -24,10 +24,14 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.Relief
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
+import org.onebusaway.nyc.transit_data_manager.api.barcode.QrCodeGeneratorResource;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -44,6 +48,8 @@ public class TripsResource {
 
   public TripsResource() throws IOException {
   }
+  
+  private static Logger _log = LoggerFactory.getLogger(TripsResource.class);
 
   private RunService _runService;
 
@@ -153,9 +159,18 @@ public class TripsResource {
 	      TripEntry tripEntry = entry.getTripEntry();
 	      ServiceIdActivation serviceIds = new ServiceIdActivation(
 	          tripEntry.getServiceId());
-
-	      if (extCalendarService.areServiceIdsActiveOnServiceDate(serviceIds,
-	          serviceDate)) {
+	      
+	      boolean hasActiveServiceIds = false;
+	      
+	      try{
+	        hasActiveServiceIds = extCalendarService.areServiceIdsActiveOnServiceDate(serviceIds,
+            serviceDate);
+	      }
+	      catch(NullPointerException npe){
+	        _log.warn("No active Service Ids on "  + serviceDate);
+	      }
+	      
+	      if (hasActiveServiceIds) {
 
 	        Map<String, Object> trip = new HashMap<String, Object>();
 

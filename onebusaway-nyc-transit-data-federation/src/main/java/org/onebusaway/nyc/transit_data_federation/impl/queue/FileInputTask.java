@@ -1,11 +1,9 @@
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
-import java.io.FileReader;
+import java.io.File;
 import java.io.Reader;
 import java.sql.Date;
-
 import javax.annotation.PostConstruct;
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
@@ -19,10 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Populate the TDS from a JSON file. The expected input looks like this:
  * 
  * <pre>
- *  {'status': 'default', 'distanceAlongBlock': None, 'tripId': None, 'vehicleId': 'MTA NYCT_339', 'blockId': None, 'recordTimestamp': 1372455001000L, 'inferredLatitude': '40.652985', 'serviceDate': 0L, 'phase': 'DEADHEAD_BEFORE', 'inferredLongitude': '-73.999039'} {'status': 'default', 'distanceAlongBlock': 22472.939858083413, 'tripId': 'MTA NYCT_20130407CA_100300_SBS12_0103_SBS12_228', 'vehicleId': 'MTA NYCT_1231', 'blockId': 'MTA NYCT_BX_20130407CA_C_GH_55560_SBS12-228', 'recordTimestamp': 1372455001000L, 'inferredLatitude': '40.858017', 'serviceDate': 1372392000000L, 'phase': 'DEADHEAD_DURING', 'inferredLongitude': '-73.826607'}
+ *  [{'status': 'default', 'distanceAlongBlock': None, 'tripId': None, 'vehicleId': 'MTA NYCT_339', 'blockId': None, 'recordTimestamp': 1372455001000, 'inferredLatitude': '40.652985', 'serviceDate': 0, 'phase': 'DEADHEAD_BEFORE', 'inferredLongitude': '-73.999039'}, {'status': 'default', 'distanceAlongBlock': 22472.939858083413, 'tripId': 'MTA NYCT_20130407CA_100300_SBS12_0103_SBS12_228', 'vehicleId': 'MTA NYCT_1231', 'blockId': 'MTA NYCT_BX_20130407CA_C_GH_55560_SBS12-228', 'recordTimestamp': 1372455001000, 'inferredLatitude': '40.858017', 'serviceDate': 1372392000000, 'phase': 'DEADHEAD_DURING', 'inferredLongitude': '-73.826607'}]
  * </pre>
- * 
- * Sadly this is not newline delimited, but that can easily be changed.
  * 
  */
 public class FileInputTask {
@@ -31,7 +27,7 @@ public class FileInputTask {
 
 	@Autowired
 	private VehicleLocationListener _vehicleLocationListener;
-  private String adjustTime = "false";
+  private String adjustTime = "true";
 	private String filename = "/tmp/queue_log.json";
 
 	public void setFilename(String filename) {
@@ -82,10 +78,16 @@ public class FileInputTask {
 		public String toString() {
 		  Date stamp = new Date(recordTimestamp);
 		  Date update = new Date(timeOfLocationUpdate);
-		  return vehicleId + "(" + lon + ", " + lat + ") " + new Date(recordTimestamp) 
-		  + ":" + new Date(timeOfLocationUpdate) + " trip=" + tripId 
-		  + " block=" + blockId + " phase=" + phase + " status=" + status;
-		  
+		  return "{" + 
+		         " vehicle_id=" + vehicleId + 
+		         " lat_lon=(" + lon + ", " + lat + ")" + 
+		         " timestamp=" + stamp + 
+		         " location_update_time=" + update + 
+		         " trip=" + tripId + 
+		         " block=" + blockId + 
+		         " phase=" + phase + 
+		         " status=" + status + 
+		         " }";
 		}
 		
 		public String getVehicleId() {
@@ -189,6 +191,7 @@ public class FileInputTask {
     private boolean _isAdjustTime = true;
     private long startTime = System.currentTimeMillis();
     private long firstRecordTime = 0;
+    private Record[] records;
 
     public InsertionThread(VehicleLocationListener vehicleLocationListener, String filename, boolean adjustTime) {
       _vehicleLocationListener = vehicleLocationListener;
@@ -208,96 +211,41 @@ public class FileInputTask {
     
     
     public void doRun() {
+      
       try {
-      _log.info("FileInputTask sleeping for bundle load");
+        _log.info("FileInputTask sleeping for bundle load");
         Thread.currentThread().sleep(45 * 1000);
-        open();
-      _log.debug("starting run");
-      while (next()) {
-        Record record = parseCurrentRecord();
-        processResult(record);
-      }
-      } catch (Throwable t) {
+        openJson();
+        _log.info("starting run");
+  	    for(Record record : records){
+  	      record = postProcess(record);
+  	      processResult(record);
+  	    }
+      } 
+      catch (Throwable t) {
         _log.error("InsertionThread stopped for exception", t);
       }
+      
       try {
         _log.info("stopping run");
-        close();
         reset();
       } catch (Exception buryIt) {
         // bury
       }
-
-      
     }
     
-    private void reset() {
-      startTime = System.currentTimeMillis();
-      firstRecordTime = 0;
-    }
-
-    // advance record pointer
-    private boolean next() throws Exception {
-      currentRecord = new StringBuffer();
-      int i;
-      while ((i = inputReader.read()) > 0) {
-        char c = (char) i;
-        if (c == '}') {
-          currentRecord.append(c);
-          // read last space
-          inputReader.read();
-          _log.debug("currentRecord=|" + currentRecord + "|");
-          return true;
-        } else {
-          currentRecord.append(c);
-        }
-      }
-      return false;
-    }
-
-    // parse the current json string into a record object
-    private Record parseCurrentRecord() throws Exception {
-      String s = preProcessRecord(currentRecord.toString());
-      //_log.info("s=|" + s + "|");
-      Record record = mapper.readValue(s, Record.class);
-      if (record.getVehicleId().endsWith("_448")) {
-          //_log.info(record.getVehicleId());
-          //_log.info(record.toString());
-        _log.info(currentRecord.toString());
-          record = postProcess(record);
-          _log.info(record.toString());
-      } else {
-        record = postProcess(record);
-      }
-      return record;
-    }
-
-    // fixup common invalid JSON mistakes
-    private String preProcessRecord(String s) {
-      s = s.replace('\'', '"');
-      s = s.replace("\"distanceAlongBlock\": None",
-          "\"distanceAlongBlock\": \"NaN\"");
-      s = s.replace("\"tripId\": None", "\"tripId\": null");
-      s = s.replace("\"blockId\": None", "\"blockId\": null");
-      s = s.replace("L, \"inferredLatitude\"", ", \"inferredLatitude\"");
-      s = s.replace("L, \"phase\"", ", \"phase\"");
-      return s;
+    private void openJson() throws Exception {
+      _log.info("opening file=" + _filename);
+      records = mapper.readValue(new File(_filename), Record[].class);
     }
 
     // fixup invalid records to protect the TDS
     private Record postProcess(Record record) throws Exception {
-      final String NULL_RECORD = "None";
+      
       if (record == null)
         return null;
-      if (NULL_RECORD.equals(record.getDistanceAlongBlock()))
-        record.setDistanceAlongBlock(Double.NaN);
-      if (NULL_RECORD.equals(record.getTripId()))
-        record.setTripId(null);
-      if (NULL_RECORD.equals(record.getBlockId()))
-        record.setBlockId(null);
-      if (0L == record.getServiceDate())
-        record.setServiceDate(System.currentTimeMillis());
       
+      replaceNoneValues(record);
       
       if (_isAdjustTime) {
         // startTime -- program boot
@@ -309,20 +257,34 @@ public class FileInputTask {
           firstRecordTime = record.getRecordTimestamp();
         }
         long dataOffset = record.getRecordTimestamp() - firstRecordTime;
+
         while (dataOffset > localOffset) {
-        Thread.sleep(250);
+          Thread.sleep(250);
           now = System.currentTimeMillis();
           localOffset = now - startTime;
         }
 
-        record.setRecordTimestamp(now);
-        record.setTimeOfLocationUpdate(now);
-        record.setServiceDate(now);
+        //record.setRecordTimestamp(now);
+        //record.setServiceDate(now);
+        
+        // You have to use the record time stamp in order for the Block Location Services to work correctly
+        record.setTimeOfLocationUpdate(record.getRecordTimestamp());
       }
       
       return record;
     }
-
+    
+    private void replaceNoneValues(Record record){
+      final String NULL_RECORD = "None";
+      if (NULL_RECORD.equals(record.getDistanceAlongBlock()))
+        record.setDistanceAlongBlock(Double.NaN);
+      if (NULL_RECORD.equals(record.getTripId()))
+        record.setTripId(null);
+      if (NULL_RECORD.equals(record.getBlockId()))
+        record.setBlockId(null);
+      if (0L == record.getServiceDate())
+        record.setServiceDate(System.currentTimeMillis());
+    }
     
     // populate the VLR and pass to the TDS
     private void processResult(Record record) {
@@ -341,23 +303,17 @@ public class FileInputTask {
       vlr.setCurrentLocationLon(record.getInferredLongitude());
       vlr.setPhase(record.getPhase());
       vlr.setStatus(record.getStatus());
+      vlr.setTripId(AgencyAndIdLibrary.convertFromString(record.getTripId()));
       try {
       _vehicleLocationListener.handleVehicleLocationRecord(vlr);
       } catch (Throwable t) {
-	_log.info("vlr " + failCount + " insertion failed for vehicle:" + record.getVehicleId());
+        _log.info("vlr " + failCount + " insertion failed for vehicle:" + record.getVehicleId());
       }
     }
-
-    // perform file handling
-    private void open() throws Exception {
-      _log.info("opening file=" + _filename);
-      inputReader = new FileReader(_filename);
-    }
-
-    // perform file handling cleanup
-    private void close() throws Exception {
-      if (inputReader != null)
-        inputReader.close();
+    
+    private void reset() {
+      startTime = System.currentTimeMillis();
+      firstRecordTime = 0;
     }
 
   }

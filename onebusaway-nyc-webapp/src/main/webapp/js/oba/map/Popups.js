@@ -523,7 +523,7 @@ OBA.Popups = (function() {
 						}
 						
 						// time mode
-						if(timePrediction != null) {
+						if(timePrediction != null && !layover) {
 							timePrediction += ", " + distance;
 							
 							if(isDepartureTimeAvailable){

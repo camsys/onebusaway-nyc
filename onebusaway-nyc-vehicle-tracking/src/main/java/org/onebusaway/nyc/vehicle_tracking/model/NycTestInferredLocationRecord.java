@@ -108,6 +108,9 @@ public class NycTestInferredLocationRecord implements Serializable {
   private String inferredBlockId;
 
   @CsvField(optional = true)
+  private String assignedBlockId;
+
+  @CsvField(optional = true)
   private double actualScheduleDeviation;
 
   @CsvField(optional = true)
@@ -515,5 +518,13 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public void setAssignedRunId(String assignedRunId) {
     this.assignedRunId = assignedRunId;
+  }
+
+  public String getAssignedBlockId() {
+    return assignedBlockId;
+  }
+
+  public void setAssignedBlockId(String assignedBlockId) {
+    this.assignedBlockId = assignedBlockId;
   }
 }

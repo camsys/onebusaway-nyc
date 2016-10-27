@@ -1,0 +1,166 @@
+{
+  "errorCode": "0",
+  "errorDescription": "None",
+  "subscriptionInfo": {
+    "requestedType": "Event",
+    "expirationTime": "17:51:26.000",
+    "requestIdentifier": 1,
+    "subscriberIdentifier": 0,
+    "publisherIdentifier": 0
+  },
+  "beginDate": "2015-06-29",
+  "beginTime": "17:51:00.000",
+  "endDate": "2015-06-29",
+  "endTime": "22:51:00.000",
+  "pull-outs": {
+    "pull-out": [
+      {
+        "pull-in": true,
+        "garage": {
+          "id": "KBGT",
+          "agdesig": "MTA NYCT"
+        },
+        "vehicle": {
+          "id": "5698",
+          "ag": 2008
+        },
+        "operator": {
+          "id": "001663",
+          "ag": 2008,
+          "desig": "MTA NYCT001663"
+        },
+        "date": "2015-06-22",
+        "time": "2015-06-22T10:52:00.000-04:00",
+        "run": {
+          "id": "11"
+        },
+        "block": {
+          "id": "KB_E5-Sunday_D_KB_21180_BX9-11"
+        }
+      },
+      {
+        "pull-in": true,
+        "garage": {
+          "id": "MCHT",
+          "agdesig": "MTA NYCT"
+        },
+        "vehicle": {
+          "id": "1264",
+          "ag": 2008
+        },
+        "operator": {
+          "id": "010897",
+          "ag": 2008,
+          "desig": "MTA NYCT010897"
+        },
+        "date": "2015-06-22",
+        "time": "2015-06-22T19:47:00.000-04:00",
+        "run": {
+          "id": "13"
+        },
+        "block": {
+          "id": "OF_B5-Sunday_D_OF_40380_SBS15-13"
+        }
+      },
+      {
+        "pull-in": false,
+        "garage": {
+          "id": "MJQT",
+          "agdesig": "MTA NYCT"
+        },
+        "vehicle": {
+          "ag": 2008
+        },
+        "operator": {
+          "id": "011018",
+          "ag": 2008,
+          "desig": "MTA NYCT011018"
+        },
+        "date": "2015-06-22",
+        "time": "2015-06-22T14:23:00.000-04:00",
+        "run": {
+          "id": "20"
+        },
+        "block": {
+          "id": "MQ_B5-Weekday_C_MQ_51780_M79-20"
+        }
+      },
+      {
+        "pull-in": true,
+        "garage": {
+          "id": "MJQT",
+          "agdesig": "MTA NYCT"
+        },
+        "vehicle": {
+          "id": "3937",
+          "ag": 2008
+        },
+        "operator": {
+          "id": "M28152",
+          "ag": 2008,
+          "desig": "MTA NYCTM28152"
+        },
+        "date": "2015-06-22",
+        "time": "2015-06-22T18:08:00.000-04:00",
+        "run": {
+          "id": "17"
+        },
+        "block": {
+          "id": "MQ_B5-Weekday_C_MQ_29220_M31-17"
+        }
+      },
+      {
+        "pull-in": false,
+        "garage": {
+          "id": "100T",
+          "agdesig": "MTA NYCT"
+        },
+        "vehicle": {
+          "ag": 2008
+        },
+        "operator": {
+          "id": "M30669",
+          "ag": 2008,
+          "desig": "MTA NYCTM30669"
+        },
+        "date": "2015-06-22",
+        "time": "2015-06-22T07:57:00.000-04:00",
+        "run": {
+          "id": "29"
+        },
+        "block": {
+          "id": "OH_B5-Saturday_A_OH_42180_M15-29"
+        }
+      },
+      {
+        "pull-in": true,
+        "garage": {
+          "id": "LGAT",
+          "agdesig": "MTABC"
+        },
+        "vehicle": {
+          "id": "3142",
+          "ag": 2008
+        },
+        "operator": {
+          "id": "B03631",
+          "ag": 2008,
+          "desig": "MTABCB03631"
+        },
+        "date": "2015-06-22",
+        "time": "2015-06-22T10:25:00.000-04:00",
+        "run": {
+          "id": "851"
+        },
+        "block": {
+          "id": "LGPB5-LG_B5-Weekday-10_1586445"
+        }
+      }
+    ]
+  },
+  "created": "2015-06-29T17:51:26.914-04:00",
+  "schVersion": "TCIP 4.0",
+  "sourceapp": "Yard Trek",
+  "noNameSpaceSchemaLocation": "http:\/\/www.aptatcip.com\/APTA-TCIP-S-01%204.0_files\/Schema%20Set.zip",
+  "deactivation": "2040-01-04T23:59:00.000-05:00"
+}

@@ -69,15 +69,31 @@ public class TransitDataManagerApiLibrary {
 	  return _restApiLibrary.log(baseObject, component, priority, message);
   }
   
-  public List<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {		
-    if (_restApiLibrary == null)
+  public List<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {    
+    String responseJson = getContentsOfUrlAsString(baseObject, params);
+    if (responseJson == null)
       return Collections.emptyList();
+
+    return _restApiLibrary.getJsonObjectsForString(responseJson);
+  }
+
+  public List<JsonObject> getItemsForRequestNoCheck(String baseObject, String... params) throws Exception {    
+    String responseJson = getContentsOfUrlAsString(baseObject, params);    
+    if (responseJson == null)
+      return Collections.emptyList();
+
+    return _restApiLibrary.getJsonObjectsForStringNoCheck(responseJson);
+  }
+
+  private String getContentsOfUrlAsString(String baseObject, String... params)
+      throws Exception {
+    if (_restApiLibrary == null)
+      return null;
     URL requestUrl = _restApiLibrary.buildUrl(baseObject, params);
     _log.info("Requesting " + requestUrl);
 
-    String responseJson = _restApiLibrary.getContentsOfUrlAsString(requestUrl);    
-
-    return _restApiLibrary.getJsonObjectsForString(responseJson);
+    String responseJson = _restApiLibrary.getContentsOfUrlAsString(requestUrl);
+    return responseJson;
   }
 
   /**

@@ -75,6 +75,8 @@ public class NycVehicleManagementStatusBean implements Serializable {
 
 	// the run ID provided by the operator assignment service
 	private String assignedRunId;
+	
+	private String assignedBlockId;
 
 	public String getUUID() {
 		return uuid;
@@ -203,5 +205,13 @@ public class NycVehicleManagementStatusBean implements Serializable {
 	public void setAssignedRunId(String assignedRunId) {
 		this.assignedRunId = assignedRunId;
 	}
+
+  public String getAssignedBlockId() {
+    return assignedBlockId;
+  }
+
+  public void setAssignedBlockId(String assignedBlockId) {
+    this.assignedBlockId = assignedBlockId;
+  }
 
 }

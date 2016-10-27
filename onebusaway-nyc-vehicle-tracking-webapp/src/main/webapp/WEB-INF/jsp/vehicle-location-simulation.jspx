@@ -26,10 +26,15 @@
 #stepRecordIndex {
 	width: 2em
 }
+table td, table th {
+  border: 1px solid #eee;
+  padding: 3px;
+}
 </style>
 </head>
 <body>
 
+<a href="${pageContext.request.contextPath}" style="float: right;">Home</a>
 <h2>Active Simulations</h2>
 <p><a href="vehicle-location-simulation!cancelAll.do">Cancel All Simulations</a></p>
 <jsp:include page="vehicle-location-simulation-summaries-snippet.jspx" />

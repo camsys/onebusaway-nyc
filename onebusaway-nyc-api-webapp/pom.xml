@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.onebusaway</groupId>
         <artifactId>onebusaway-nyc</artifactId>
-        <version>2.20.0-SNAPSHOT</version>
+        <version>2.22.0-SNAPSHOT</version>
     </parent>
     <artifactId>onebusaway-nyc-api-webapp</artifactId>
     <packaging>war</packaging>
@@ -20,12 +20,12 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-api-core</artifactId>
-            <version>2.20.0-SNAPSHOT</version>
+            <version>2.22.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-presentation</artifactId>
-            <version>2.20.0-SNAPSHOT</version>
+            <version>2.22.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -128,9 +128,9 @@
         <profile>
             <id>local-front-end</id>
             <properties>
-                <tds.path>http://app1.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <vtms.path>http://app1.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-                <config.path>http://app1.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <tds.path>http://app.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>                
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <dummy.permissions />
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>

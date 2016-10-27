@@ -116,7 +116,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
     _log.info("call 2 took " + vmTime2);
     assert(vmTime2 < vmTime1);
 
-    final int MAX_VM_TIME = 350; // slow build server!
+    final int MAX_VM_TIME = 2000; // slow build server!
     // caching will still be faster than the small data set
     assertTrue("vmTime2=" + vmTime2 + " not less than " + MAX_VM_TIME, vmTime2 < MAX_VM_TIME);
     

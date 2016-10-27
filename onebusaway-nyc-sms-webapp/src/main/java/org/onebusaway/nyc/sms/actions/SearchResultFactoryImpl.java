@@ -250,7 +250,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 		  // if wrapped, only show prediction, if not wrapped, show both
 		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
 		    return timeString;
-		  } else {
+		  } 
+		  else if(progressStatus != null && progressStatus.getValue().contains("layover")){
+		    return getPresentableDistance(journey, updateTime, isStopContext);
+		  }
+		  else {
 		    return timeString + ", " + distance;
 		  }
 	  }

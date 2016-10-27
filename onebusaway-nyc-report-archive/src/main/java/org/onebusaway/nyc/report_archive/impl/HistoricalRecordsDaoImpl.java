@@ -57,7 +57,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 				"cc.operator_id_designator, cc.route_id_designator, cc.run_id_designator, cc.dest_sign_code, " +
 				"cc.emergency_code, cc.latitude, cc.longitude, cc.nmea_sentence_gprmc, cc.nmea_sentence_gpgga, " +
 				"cc.speed, cc.direction_deg, cc.vehicle_id, cc.manufacturer_data, cc.request_id, inf.depot_id, inf.service_date, " +
-				"inf.inferred_run_id, inf.assigned_run_id, inf.inferred_block_id, inf.inferred_trip_id, " +
+				"inf.inferred_run_id, inf.assigned_run_id, inf.inferred_block_id, inf.assigned_block_id, inf.inferred_trip_id, " +
 				"inf.inferred_route_id, inf.inferred_direction_id, inf.inferred_dest_sign_code, inf.inferred_latitude, " +
 				"inf.inferred_longitude, inf.inferred_phase, inf.inferred_status, inf.inference_is_formal, " +
 				"inf.distance_along_block, inf.distance_along_trip, inf.next_scheduled_stop_id, inf.next_scheduled_stop_distance, " +

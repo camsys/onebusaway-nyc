@@ -10,3 +10,6 @@ target
 Servers
 .recommenders
 onebusaway-nyc-integration-tests/build
+*.sublime-*
+.DS_Store
+.metadata

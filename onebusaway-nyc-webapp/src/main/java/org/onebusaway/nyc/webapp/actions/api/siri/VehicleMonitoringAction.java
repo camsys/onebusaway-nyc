@@ -68,6 +68,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   @Autowired
   protected ConfigurationService _configurationService;
   
+  private static final String VERSION = "V1";
+  
   private Siri _response;
   
   private String _cachedResponse = null;
@@ -235,7 +237,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       try {
       gaLabel = "All Vehicles";
       
-      int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type);
+      int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type, VERSION);
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
       if (!_siriCacheService.containsKey(hashKey)) {

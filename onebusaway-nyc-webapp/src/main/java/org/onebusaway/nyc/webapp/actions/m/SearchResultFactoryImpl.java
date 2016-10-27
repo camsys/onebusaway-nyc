@@ -355,6 +355,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
 		  SiriDistanceExtension distanceExtension = wrapper.getDistances();
 		  String distance = distanceExtension.getPresentableDistance();
+		  String distanceBold = "<strong>" + distance + "</strong>";
 
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
 		  String timeString = Math.round(minutes) + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
@@ -364,19 +365,19 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
 		  if(originDepartureTime != null && isLayover(progressStatus)){
 			  if(isDepartureOnSchedule(originDepartureTime)){
-				  return timeAndDistance + " (at terminal, scheduled to depart at " + 
+				  return distanceBold + " (at terminal, scheduled to depart at " + 
 						  getFormattedOriginAimedDepartureTime(originDepartureTime) + ")";
 			  }
 			  
-			  return timeAndDistance + " (at terminal)";
+			  return distanceBold + " (at terminal)";
 		  }
 		  else if(originDepartureTime != null && isPrevTrip(progressStatus)) {
 			  if(isDepartureOnSchedule(originDepartureTime)) {
-		    		return timeAndDistance + " (+ layover, scheduled to depart terminal at " 
+		    		return distanceBold + " (+ layover, scheduled to depart terminal at " 
 		    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
 		    	}
 		    	else{
-		    		return timeAndDistance + " (+ scheduled layover at terminal)";
+		    		return distanceBold + " (+ scheduled layover at terminal)";
 		    	}
 	  	  }
 		  else {

@@ -34,11 +34,15 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 
 	private Map<String,List<String>> suggestions = Collections.synchronizedMap(new HashMap<String, List<String>>());
 
+	private boolean _disableInit = false;
+	
 	@PostConstruct
 	@Refreshable(dependsOn = { 
 		      RefreshableResources.ROUTE_COLLECTIONS_DATA, 
 		      RefreshableResources.TRANSIT_GRAPH })
 	public void init() {
+		if (_disableInit)
+			return;
 		Runnable initThread = new Runnable() {
 			@Override
 			public void run() {
@@ -97,5 +101,9 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 		if (tmpSuggestions.size() > 10)
 			tmpSuggestions = tmpSuggestions.subList(0, 10);
 		return tmpSuggestions;
+	}
+	
+	public void setDisableInit(boolean disableInit) {
+		_disableInit = disableInit;
 	}
 }

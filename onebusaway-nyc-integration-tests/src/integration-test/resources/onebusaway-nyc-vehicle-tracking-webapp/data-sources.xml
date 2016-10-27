@@ -12,6 +12,8 @@
       <constructor-arg type="java.lang.Integer" value="80" />
       <constructor-arg type="java.lang.String" value="/api/" />
     </bean>
+    
+    <bean id="vehiclePulloutService" class="org.onebusaway.nyc.transit_data_federation.impl.vtw.DummyVehiclePulloutService" />
 
     <!-- Database Connection Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
