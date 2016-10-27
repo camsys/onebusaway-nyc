@@ -17,6 +17,7 @@ package org.onebusaway.api.model.transit;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -79,12 +80,16 @@ import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 public class BeanFactoryV2 {
 
   private boolean _includeReferences = true;
 
   private boolean _includeConditionDetails = true;
+  
+  private boolean _excludeNonRevenueStops = true;
 
   private ReferencesBean _references = new ReferencesBean();
 
@@ -93,6 +98,8 @@ public class BeanFactoryV2 {
   private String _applicationKey;
 
   private Locale _locale;
+  
+  private TransitDataService _service;
 
   public BeanFactoryV2(boolean includeReferences) {
     _includeReferences = includeReferences;
@@ -113,6 +120,10 @@ public class BeanFactoryV2 {
 
   public void setLocale(Locale locale) {
     _locale = locale;
+  }
+  
+  public void setTransitDataService(TransitDataService service) {
+    _service = service;
   }
 
   /****
@@ -351,6 +362,9 @@ public class BeanFactoryV2 {
     List<TripStopTimeV2Bean> instances = new ArrayList<TripStopTimeV2Bean>();
     for (TripStopTimeBean sti : tripStopTimes.getStopTimes()) {
 
+      if (_excludeNonRevenueStops && isNonRevenueStop(sti))
+        continue;
+      
       TripStopTimeV2Bean stiBean = new TripStopTimeV2Bean();
       stiBean.setArrivalTime(sti.getArrivalTime());
       stiBean.setDepartureTime(sti.getDepartureTime());
@@ -456,6 +470,8 @@ public class BeanFactoryV2 {
 
     List<BlockStopTimeV2Bean> blockStopTimes = new ArrayList<BlockStopTimeV2Bean>();
     for (BlockStopTimeBean blockStopTime : blockTrip.getBlockStopTimes()) {
+      if (_excludeNonRevenueStops && isNonRevenueStop(blockStopTime))
+        continue;
       BlockStopTimeV2Bean stopTimeBean = getBlockStopTime(blockStopTime);
       blockStopTimes.add(stopTimeBean);
     }
@@ -1066,4 +1082,78 @@ public class BeanFactoryV2 {
 
     return true;
   }
-}
+  
+  /****
+   * Filter non revenue stops
+   ****/
+  
+  public void filterNonRevenueStops(StopsBean bean) {
+    filterNonRevenueStops(bean.getStops());
+  }
+  
+  public void filterNonRevenueStops(StopsForRouteBean bean) {
+    filterNonRevenueStopGroupingBeans(bean.getRoute().getAgency().getId(), bean.getStopGroupings());
+    filterNonRevenueStops(bean.getStops());
+  }
+  
+  public List<String> filterNonRevenueStopIds(String agencyId, List<String> stopIds) {
+    Iterator<String> iter = stopIds.iterator();
+    while(iter.hasNext())
+      if (!_service.stopHasRevenueService(agencyId, iter.next()))
+          iter.remove();
+    return stopIds;
+  }
+  
+  private boolean isNonRevenueStop(TripStopTimeBean stopTime) {
+    return isNonRevenueStop(stopTime.getStop());
+  }
+  
+  private boolean isNonRevenueStop(BlockStopTimeBean bst) {
+    return isNonRevenueStop(bst.getStopTime().getStop());
+  }
+  
+  private boolean isNonRevenueStop(StopBean stop) {
+    String agencyId = AgencyAndIdLibrary.convertFromString(
+        stop.getId()).getAgencyId();
+    return !_service.stopHasRevenueService(agencyId, stop.getId());
+  }
+  
+  private void filterNonRevenueStops(List<StopBean> stops) {
+    Iterator<StopBean> stopIter = stops.iterator();
+    while (stopIter.hasNext()) {
+      if (isNonRevenueStop(stopIter.next()))
+          stopIter.remove();
+    }
+  }
+  
+  private StopGroupBean filterNonRevenueStopGroup(String agencyId, StopGroupBean group) {
+      List<String> stopIds = filterNonRevenueStopIds(agencyId, group.getStopIds());
+      group.setStopIds(stopIds);
+      if (group.getSubGroups() != null) {
+        List<StopGroupBean> subGroups = filterNonRevenueStopGroups(agencyId, group.getSubGroups());
+        if (!subGroups.isEmpty())
+          group.setSubGroups(subGroups);
+        else
+          group.setSubGroups(null);
+      }
+      if (group.getStopIds().isEmpty() && group.getSubGroups() == null)
+        return null;
+      return group;
+  }
+  
+  private List<StopGroupBean> filterNonRevenueStopGroups(String agencyId, List<StopGroupBean> groups) {
+      Iterator<StopGroupBean> iter = groups.iterator();
+      while (iter.hasNext()) {
+        StopGroupBean group = filterNonRevenueStopGroup(agencyId, iter.next());
+        if (group == null)
+          iter.remove();
+      }
+      return groups;
+  }
+  
+  private void filterNonRevenueStopGroupingBeans(String agencyId, List<StopGroupingBean> groupings) {
+    for (StopGroupingBean grouping : groupings)
+      filterNonRevenueStopGroups(agencyId, grouping.getStopGroups());
+  }
+  
+} 

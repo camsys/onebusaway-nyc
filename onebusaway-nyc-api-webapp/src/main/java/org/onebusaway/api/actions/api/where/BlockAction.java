@@ -64,7 +64,7 @@ public class BlockAction extends ApiActionSupport {
     if (block == null)
       return setResourceNotFoundResponse();
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
+    BeanFactoryV2 factory = getBeanFactoryV2(_service);
     EntryWithReferencesBean<BlockV2Bean> response = factory.getBlockResponse(block);
     return setOkResponse(response);
   }

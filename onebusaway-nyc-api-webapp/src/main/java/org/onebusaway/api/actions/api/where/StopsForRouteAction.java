@@ -69,10 +69,11 @@ public class StopsForRouteAction extends ApiActionSupport {
     if (result == null)
       return setResourceNotFoundResponse();
 
+    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    factory.filterNonRevenueStops(result);
     if (isVersion(V1)) {
       return setOkResponse(result);
     } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
       return setOkResponse(factory.getResponse(result,_includePolylines));
     } else {
       return setUnknownVersionResponse();

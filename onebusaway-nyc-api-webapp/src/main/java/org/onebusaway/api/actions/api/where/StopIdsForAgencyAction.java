@@ -57,7 +57,8 @@ public class StopIdsForAgencyAction extends ApiActionSupport {
       return setUnknownVersionResponse();
     
     ListBean<String> stopIds = _service.getStopIdsForAgencyId(_id);
-    BeanFactoryV2 factory = getBeanFactoryV2();
+    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    factory.filterNonRevenueStopIds(_id, stopIds.getList());
     return setOkResponse(factory.getEntityIdsResponse(stopIds));
   }
 }

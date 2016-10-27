@@ -128,27 +128,10 @@ public class TripDetailsAction extends ApiActionSupport {
 
     if (tripDetails == null)
       return setResourceNotFoundResponse();
-    
-    TripStopTimesBean stopTimes = tripDetails.getSchedule();
 
-    if(stopTimes != null)
-      removeNonRevenueStops(stopTimes);
-
-    BeanFactoryV2 factory = getBeanFactoryV2();
+    BeanFactoryV2 factory = getBeanFactoryV2(_service);
     EntryWithReferencesBean<TripDetailsV2Bean> response = factory.getResponse(tripDetails);
     return setOkResponse(response);
   }
 
-  private void removeNonRevenueStops(TripStopTimesBean stopTimes){
-	List<TripStopTimeBean> tripStopTimeBeans = stopTimes.getStopTimes();
-	Iterator<TripStopTimeBean> tripStopTimeIterator = tripStopTimeBeans.iterator();
-    while(tripStopTimeIterator.hasNext()){
-      TripStopTimeBean stopTime = tripStopTimeIterator.next(); 
-      StopBean stop = stopTime.getStop();
-      String agencyId = AgencyAndIdLibrary.convertFromString(stop.getId()).getAgencyId();
-      if(Boolean.TRUE.equals(_service.stopHasRevenueService(agencyId, stop.getId())))
-        continue;
-	  tripStopTimeIterator.remove();
-    }  
-  }
 }

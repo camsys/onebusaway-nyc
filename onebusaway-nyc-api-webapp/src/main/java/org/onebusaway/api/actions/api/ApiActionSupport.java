@@ -23,6 +23,7 @@ import org.onebusaway.api.actions.OneBusAwayApiActionSupport;
 import org.onebusaway.api.impl.MaxCountSupport;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
+import org.onebusaway.transit_data.services.TransitDataService;
 
 import com.opensymphony.xwork2.ModelDriven;
 
@@ -86,6 +87,12 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
   protected BeanFactoryV2 getBeanFactoryV2(MaxCountSupport maxCount) {
     BeanFactoryV2 factory = getBeanFactoryV2();
     factory.setMaxCount(maxCount);
+    return factory;
+  }
+  
+  protected BeanFactoryV2 getBeanFactoryV2(TransitDataService service) {
+    BeanFactoryV2 factory = getBeanFactoryV2();
+    factory.setTransitDataService(service);
     return factory;
   }
 
