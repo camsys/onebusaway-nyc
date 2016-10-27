@@ -304,7 +304,7 @@
                                 <argument>${project.build.directory}/transit-data-bundle/2014Jan_AllCity_r09_b3</argument>
                             </arguments>
                         </configuration>
-                    </execution> -->
+                    </execution> 
                     <execution>
                         <id>graph-builder-execution-2013Sept_Prod_r08_b04</id>
                         <phase>pre-integration-test</phase>
