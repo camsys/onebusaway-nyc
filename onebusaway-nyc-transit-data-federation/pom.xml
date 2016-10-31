@@ -80,11 +80,9 @@
 			<version>2.0</version>
 		</dependency>        
         <dependency>
-            <groupId>org.zeromq</groupId>
-            <artifactId>jzmq</artifactId>
-            <version>053c2d7</version>
-            <type>jar</type>
-            <scope>compile</scope>
+          <groupId>org.zeromq</groupId>
+          <artifactId>jeromq</artifactId>
+          <version>0.3.6</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
