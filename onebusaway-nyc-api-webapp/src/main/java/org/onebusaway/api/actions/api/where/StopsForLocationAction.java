@@ -123,10 +123,11 @@ public class StopsForLocationAction extends ApiActionSupport {
   }
 
   private DefaultHttpHeaders transformResult(StopsBean result) {
+    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    factory.filterNonRevenueStops(result);
     if (isVersion(V1)) {
       return setOkResponse(result);
     } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
       return setOkResponse(factory.getResponse(result));
     } else {
       return setUnknownVersionResponse();

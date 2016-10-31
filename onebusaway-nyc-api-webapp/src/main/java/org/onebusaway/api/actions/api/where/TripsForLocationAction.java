@@ -128,7 +128,7 @@ public class TripsForLocationAction extends ApiActionSupport {
     inclusion.setIncludeTripSchedule(_includeSchedule);
     inclusion.setIncludeTripStatus(_includeStatus);
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
+    BeanFactoryV2 factory = getBeanFactoryV2(_service);
 
     try {
       ListBean<TripDetailsBean> trips = _service.getTripsForBounds(query);

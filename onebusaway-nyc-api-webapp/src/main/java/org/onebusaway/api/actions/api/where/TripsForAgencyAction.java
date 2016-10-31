@@ -112,7 +112,7 @@ public class TripsForAgencyAction extends ApiActionSupport {
     inclusion.setIncludeTripStatus(_includeStatus);
     inclusion.setIncludeTripSchedule(_includeSchedule);
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
+    BeanFactoryV2 factory = getBeanFactoryV2(_service);
 
     try {
       ListBean<TripDetailsBean> trips = _service.getTripsForAgency(query);
