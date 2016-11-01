@@ -16,6 +16,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.busAssignment.NewDataSet;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.busAssignment.NewDataSet.Table;
@@ -79,6 +80,13 @@ public class XMLBusDepotAssignsInputConverter implements
     MtaBusDepotAssignment depAssign = null;
     while (tableIt.hasNext()) {
       Table tableDepotAssign = tableIt.next();
+      
+      if (StringUtils.isEmpty(tableDepotAssign.getBUSNUMBER()) 
+          || StringUtils.isEmpty(tableDepotAssign.getDEPOT())) {
+        _log.warn("Found invalid table: " + tableDepotAssign);
+        continue;
+      }
+      
       depAssign = new MtaBusDepotAssignment();
       depAssign.setAgencyId(mappingTool.getAgencyIdFromAgency(tableDepotAssign.getAGENCY()));
       if (tableDepotAssign.getBUSNUMBER().matches("[0-9]*")){
