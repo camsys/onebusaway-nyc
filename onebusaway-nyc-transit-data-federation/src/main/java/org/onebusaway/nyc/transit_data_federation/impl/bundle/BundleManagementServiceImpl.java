@@ -407,7 +407,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
         
         ListBean<String> stopIds = _nycTransitDataService.getStopIdsForAgencyId(agency.getId());
         for (String stopId : stopIds.getList()) {
-          _nearbyStopsBeanService.getNearbyStops(_nycTransitDataService.getStop(stopId), 100);
+          _nycTransitDataService.getStop(stopId);
         }
 
         ListBean<String> routeIds = _nycTransitDataService.getRouteIdsForAgencyId(agency.getId());
