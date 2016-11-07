@@ -16,6 +16,19 @@
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
 
+     
+    <bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping" />
+    <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
+
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" />
+    <bean class="org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter" />
+
+    <context:component-scan base-package="org.onebusaway.nyc.transit_data_federation.webapp.controllers" />
+  	
+  	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/" />
+    </bean>
+
     <bean name="/transit-data-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
         <property name="service" ref="nycTransitDataServiceImpl" />
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
