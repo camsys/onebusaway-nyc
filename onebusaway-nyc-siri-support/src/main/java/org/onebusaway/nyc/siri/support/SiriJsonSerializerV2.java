@@ -1,21 +1,5 @@
 package org.onebusaway.nyc.siri.support;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.map.BeanPropertyDefinition;
-import org.codehaus.jackson.map.JsonSerializer;
-import org.codehaus.jackson.map.Module;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-import org.codehaus.jackson.map.introspect.BasicBeanDescription;
-import org.codehaus.jackson.map.ser.BeanSerializer;
-import org.codehaus.jackson.map.ser.BeanSerializerModifier;
-import org.codehaus.jackson.map.ser.std.BeanSerializerBase;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.springframework.util.ReflectionUtils;
 
 import uk.org.siri.siri_2.Siri;
@@ -26,6 +10,8 @@ import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
 
 /** 
  * Serializer for XSD-generated SIRI classes, creating JSON in the format suitable

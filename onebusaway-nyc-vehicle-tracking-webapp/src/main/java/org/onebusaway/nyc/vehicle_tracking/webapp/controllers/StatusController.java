@@ -30,11 +30,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.util.git.GitRepositoryHelper;
 import org.onebusaway.nyc.util.model.GitRepositoryState;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputTask;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Controller for git status. 
  *

@@ -3,8 +3,9 @@ package org.onebusaway.nyc.transit_data_federation.impl.queue;
 import java.io.File;
 import java.io.Reader;
 import java.sql.Date;
+
 import javax.annotation.PostConstruct;
-import org.codehaus.jackson.map.ObjectMapper;
+
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -12,6 +13,8 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Populate the TDS from a JSON file. The expected input looks like this:

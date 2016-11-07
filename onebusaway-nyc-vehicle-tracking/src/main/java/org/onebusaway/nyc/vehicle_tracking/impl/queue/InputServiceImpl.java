@@ -4,20 +4,18 @@ import java.util.ArrayList;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
-import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.base.CharMatcher;
 
 import tcip_final_3_0_5_1.CPTVehicleIden;
@@ -48,8 +46,8 @@ public abstract class InputServiceImpl {
 	@PostConstruct
 	public void setup() {
 		_mapper = new ObjectMapper();
-		final AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
-		_mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
+		final AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
+		_mapper.setAnnotationIntrospector(introspector);
 	}
 
 	public boolean processMessage(String address, byte[] buff) throws Exception {

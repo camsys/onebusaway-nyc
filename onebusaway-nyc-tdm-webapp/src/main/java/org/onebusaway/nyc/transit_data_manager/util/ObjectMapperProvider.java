@@ -1,9 +1,10 @@
 package org.onebusaway.nyc.transit_data_manager.util;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.PropertyNamingStrategy;
-import org.codehaus.jackson.map.ser.StdSerializerProvider;
 import org.onebusaway.nyc.transit_data_manager.config.AllLowerWithDashesNamingStrategy;
+import org.onebusaway.nyc.transit_data_manager.config.NullSerializer;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
 /**
  * Utility to providers jackson object mapper.
@@ -22,15 +23,15 @@ public class ObjectMapperProvider {
 	    // Basically it sets up a serializer for null values, so that they are
 	    // mapped to an empty string.
 
-	    ObjectMapper m = new ObjectMapper();
+	    ObjectMapper mapper = new ObjectMapper();
 	    
-	    StdSerializerProvider sp = new StdSerializerProvider();
-	    m.setSerializerProvider(sp);
+	    mapper.getSerializerProvider().setNullValueSerializer(new NullSerializer());
 	    
 	    PropertyNamingStrategy pns = new AllLowerWithDashesNamingStrategy();
-	    m.setPropertyNamingStrategy(pns);
+	    mapper.setPropertyNamingStrategy(pns);
 
-	    return m;
+	    return mapper;
 	}
-
 }
+
+

@@ -4,9 +4,6 @@ import org.onebusaway.nyc.transit_data_manager.bundle.model.ConfigDeployStatus;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDeployer;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.MappingJsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

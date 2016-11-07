@@ -19,8 +19,8 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -72,9 +72,8 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 		// use JAXB annotations so that we pick up anything from the
 		// auto-generated XML classes
 		// generated from XSDs
-		AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
-		_mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
-
+		AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
+		_mapper.setAnnotationIntrospector(introspector);
 	}
 
 	@PreDestroy

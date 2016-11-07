@@ -1,8 +1,9 @@
 package org.onebusaway.nyc.vehicle_tracking.services.queue;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public interface InputService {
