@@ -46,7 +46,7 @@ public abstract class InputServiceImpl {
 	@PostConstruct
 	public void setup() {
 		_mapper = new ObjectMapper();
-		final AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
+		final AnnotationIntrospector introspector = new JaxbAnnotationIntrospector(_mapper.getTypeFactory());
 		_mapper.setAnnotationIntrospector(introspector);
 	}
 

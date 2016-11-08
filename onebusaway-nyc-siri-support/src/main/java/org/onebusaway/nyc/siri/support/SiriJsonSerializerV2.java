@@ -10,8 +10,25 @@ import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.ser.BeanSerializer;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.impl.ObjectIdWriter;
 import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 /** 
  * Serializer for XSD-generated SIRI classes, creating JSON in the format suitable
@@ -21,6 +38,92 @@ import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
  *
  */
 public class SiriJsonSerializerV2 {
+  
+  public String getJson(Siri siri) throws Exception {    
+    return getJson(siri, null);
+  }
+  
+  public String getJson(Siri siri, String callback) throws Exception {    
+    ObjectMapper mapper = new ObjectMapper();    
+    mapper.setSerializationInclusion(Include.NON_NULL);
+    mapper.configure(SerializationFeature.INDENT_OUTPUT, false);
+    mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);   
+    
+    mapper.setDateFormat(new RFC822SimpleDateFormat());
+
+    mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(
+			mapper.getTypeFactory()));
+
+    mapper.registerModule(new JacksonModule());
+
+    String output = "";
+
+    if(callback != null)
+      output = callback + "(";
+
+    output += mapper.writeValueAsString(siri);
+
+    if(callback != null)
+      output += ")";
+
+    return output;
+  }
+  
+  private static class RFC822SimpleDateFormat extends SimpleDateFormat {
+    private static final long serialVersionUID = 1L;
+
+    public RFC822SimpleDateFormat() {
+      super("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    }
+    
+    @Override
+    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos) {
+      StringBuffer sb = super.format(date, toAppendTo, pos);
+      sb.insert(sb.length() - 2, ":");
+      return sb;
+    }
+  }
+  
+  private static class JacksonModule extends Module {
+    @SuppressWarnings("deprecation")
+	private final static Version VERSION = new Version(1,0,0, null);
+    
+    @Override
+    public String getModuleName() {
+      return "CustomSerializer";
+    }
+
+    @Override
+    public Version version() {
+      return VERSION;
+    }
+
+    @Override
+    public void setupModule(SetupContext context) {
+      context.addBeanSerializerModifier(new CustomBeanSerializerModifier());
+    }
+  }
+  
+  private static class CustomBeanSerializerModifier extends BeanSerializerModifier {
+
+    public JsonSerializer<?> modifySerializer(SerializationConfig config,
+    		BeanDescription beanDesc, JsonSerializer<?> serializer) {
+      
+      if(serializer instanceof BeanSerializer) {
+        List<BeanPropertyDefinition> properties = beanDesc.findProperties();
+        for(BeanPropertyDefinition property : properties) {
+          if(property.getName().equals("value") || property.getName().equals("any")) {
+            String fieldName = property.getField().getName();
+            if(fieldName != null)
+              return super.modifySerializer(config, beanDesc, new CustomValueObjectSerializer((BeanSerializer)serializer, fieldName));
+          }
+        }
+        
+      }
+      
+      return super.modifySerializer(config, beanDesc, serializer);
+    }
+  }
   
   private static class CustomValueObjectSerializer extends BeanSerializerBase {
 
@@ -47,94 +150,32 @@ public class SiriJsonSerializerV2 {
         jgen.writeNull();
       }
     }
+
+	@Override
+	public BeanSerializerBase withObjectIdWriter(ObjectIdWriter objectIdWriter) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected BeanSerializerBase withIgnorals(Set<String> toIgnore) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected BeanSerializerBase asArraySerializer() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public BeanSerializerBase withFilterId(Object filterId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
   }
-  
-  private static class CustomBeanSerializerModifier extends BeanSerializerModifier {
 
-    @Override
-    public JsonSerializer<?> modifySerializer(SerializationConfig config,
-        BasicBeanDescription beanDesc, JsonSerializer<?> serializer) {
-      
-      if(serializer instanceof BeanSerializer) {
-        List<BeanPropertyDefinition> properties = beanDesc.findProperties();
-        for(BeanPropertyDefinition property : properties) {
-          if(property.getName().equals("value") || property.getName().equals("any")) {
-            String fieldName = property.getField().getName();
-            if(fieldName != null)
-              return super.modifySerializer(config, beanDesc, new CustomValueObjectSerializer((BeanSerializer)serializer, fieldName));
-          }
-        }
-        
-      }
-      
-      return super.modifySerializer(config, beanDesc, serializer);
-    }
-  }
-  
-  private static class JacksonModule extends Module {
-    private final static Version VERSION = new Version(1,0,0, null);
-    
-    @Override
-    public String getModuleName() {
-      return "CustomSerializer";
-    }
-
-    @Override
-    public Version version() {
-      return VERSION;
-    }
-
-    @Override
-    public void setupModule(SetupContext context) {
-      context.addBeanSerializerModifier(new CustomBeanSerializerModifier());
-    }
-  }
-  
-  private static class RFC822SimpleDateFormat extends SimpleDateFormat {
-    private static final long serialVersionUID = 1L;
-
-    public RFC822SimpleDateFormat() {
-      super("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-    }
-    
-    @Override
-    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos) {
-      StringBuffer sb = super.format(date, toAppendTo, pos);
-      sb.insert(sb.length() - 2, ":");
-      return sb;
-    }
-  }
-
-  public String getJson(Siri siri) throws Exception {    
-    return getJson(siri, null);
-  }
-  
-  public String getJson(Siri siri, String callback) throws Exception {    
-    ObjectMapper mapper = new ObjectMapper();    
-    mapper.setSerializationInclusion(Inclusion.NON_NULL);
-    mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, false);
-    mapper.configure(SerializationConfig.Feature.WRAP_ROOT_VALUE, true);   
-    
-    mapper.setDateFormat(new RFC822SimpleDateFormat());
-
-    AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
-    SerializationConfig config = mapper.getSerializationConfig().withAnnotationIntrospector(introspector);
-    mapper.setSerializationConfig(config);
-
-    mapper.registerModule(new JacksonModule());
-
-    String output = "";
-
-    if(callback != null)
-      output = callback + "(";
-
-    output += mapper.writeValueAsString(siri);
-
-    if(callback != null)
-      output += ")";
-
-    return output;
-  }  
   
 }

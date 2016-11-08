@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.onebusaway.nyc.util.git.GitRepositoryHelper;
 import org.onebusaway.nyc.util.model.GitRepositoryState;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Controller for git status. 
  *

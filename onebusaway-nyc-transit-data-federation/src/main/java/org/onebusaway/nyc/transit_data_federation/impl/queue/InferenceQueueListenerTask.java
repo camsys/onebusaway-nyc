@@ -72,8 +72,8 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 		// use JAXB annotations so that we pick up anything from the
 		// auto-generated XML classes
 		// generated from XSDs
-		AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
-		_mapper.setAnnotationIntrospector(introspector);
+		_mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(
+				_mapper.getTypeFactory()));
 	}
 
 	@PreDestroy

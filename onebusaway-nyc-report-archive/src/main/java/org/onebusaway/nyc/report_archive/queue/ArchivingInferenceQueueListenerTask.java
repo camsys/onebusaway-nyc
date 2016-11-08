@@ -1,10 +1,10 @@
 package org.onebusaway.nyc.report_archive.queue;
 
 import java.util.Date;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.codehaus.jackson.map.DeserializationConfig;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.services.InferencePersistenceService;
@@ -15,6 +15,8 @@ import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListe
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
 
 public class ArchivingInferenceQueueListenerTask extends
     InferenceQueueListenerTask {
@@ -135,7 +137,7 @@ public class ArchivingInferenceQueueListenerTask extends
     super.setup();
 
     // make parsing lenient
-    _mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,
+    _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
   }
 

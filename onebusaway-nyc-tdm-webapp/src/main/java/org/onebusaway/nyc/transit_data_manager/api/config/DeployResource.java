@@ -3,13 +3,16 @@ package org.onebusaway.nyc.transit_data_manager.api.config;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.ConfigDeployStatus;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDeployer;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.StringWriter;

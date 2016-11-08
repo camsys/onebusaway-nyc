@@ -2,21 +2,25 @@ package org.onebusaway.nyc.siri.support;
 
 import org.springframework.util.ReflectionUtils;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
 import com.fasterxml.jackson.databind.introspect.BasicBeanDescription;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.ser.BeanSerializer;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.impl.ObjectIdWriter;
 import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import uk.org.siri.siri.Siri;
 
@@ -26,6 +30,7 @@ import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /** 
  * Serializer for XSD-generated SIRI classes, creating JSON in the format suitable
@@ -36,53 +41,48 @@ import java.util.List;
  */
 public class SiriJsonSerializer {
   
-  private static class CustomValueObjectSerializer extends BeanSerializerBase {
-
-    private String fieldName = null;
-    
-    protected CustomValueObjectSerializer(BeanSerializer src, String fieldName) {
-      super(src);
-      this.fieldName = fieldName;
-    }
-
-    @Override
-    public void serialize(Object bean, JsonGenerator jgen,
-        SerializerProvider provider) throws IOException, JsonGenerationException {
-      
-      try {
-        Class<? extends Object> beanClass = bean.getClass();
-        Field valueField = ReflectionUtils.findField(beanClass, fieldName);
-        valueField.setAccessible(true);
-
-        Object value = valueField.get(bean);
-  
-        provider.defaultSerializeValue(value, jgen);
-      } catch(Exception e) {
-        jgen.writeNull();
-      }
-    }
-    
+  public String getJson(Siri siri) throws Exception {    
+	  return getJson(siri, null);
   }
   
-  private static class CustomBeanSerializerModifier extends BeanSerializerModifier {
+  public String getJson(Siri siri, String callback) throws Exception {    
+    ObjectMapper mapper = new ObjectMapper();    
+    mapper.setSerializationInclusion(Include.NON_NULL);
+    mapper.configure(SerializationFeature.INDENT_OUTPUT, false);
+    mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);   
+    
+    mapper.setDateFormat(new RFC822SimpleDateFormat());
 
+    mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(
+			mapper.getTypeFactory()));
+
+    mapper.registerModule(new JacksonModule());
+
+    String output = "";
+
+    if(callback != null)
+      output = callback + "(";
+
+    output += mapper.writeValueAsString(siri);
+
+    if(callback != null)
+      output += ")";
+
+    return output;
+  }
+  
+  private static class RFC822SimpleDateFormat extends SimpleDateFormat {
+    private static final long serialVersionUID = 1L;
+
+    public RFC822SimpleDateFormat() {
+      super("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    }
+    
     @Override
-    public JsonSerializer<?> modifySerializer(SerializationConfig config,
-        BasicBeanDescription beanDesc, JsonSerializer<?> serializer) {
-      
-      if(serializer instanceof BeanSerializer) {
-        List<BeanPropertyDefinition> properties = beanDesc.findProperties();
-        for(BeanPropertyDefinition property : properties) {
-          if(property.getName().equals("value") || property.getName().equals("any")) {
-            String fieldName = property.getField().getName();
-            if(fieldName != null)
-              return super.modifySerializer(config, beanDesc, new CustomValueObjectSerializer((BeanSerializer)serializer, fieldName));
-          }
-        }
-        
-      }
-      
-      return super.modifySerializer(config, beanDesc, serializer);
+    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos) {
+      StringBuffer sb = super.format(date, toAppendTo, pos);
+      sb.insert(sb.length() - 2, ":");
+      return sb;
     }
   }
   
@@ -105,50 +105,75 @@ public class SiriJsonSerializer {
     }
   }
   
-  private static class RFC822SimpleDateFormat extends SimpleDateFormat {
-    private static final long serialVersionUID = 1L;
-
-    public RFC822SimpleDateFormat() {
-      super("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-    }
-    
-    @Override
-    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos) {
-      StringBuffer sb = super.format(date, toAppendTo, pos);
-      sb.insert(sb.length() - 2, ":");
-      return sb;
-    }
-  }
-
-  public String getJson(Siri siri) throws Exception {    
-    return getJson(siri, null);
+  private static class CustomBeanSerializerModifier extends BeanSerializerModifier {
+	  @Override
+	  public JsonSerializer<?> modifySerializer(SerializationConfig config,
+	            BeanDescription beanDesc, JsonSerializer<?> serializer) {
+		  if(serializer instanceof BeanSerializer) {
+	        List<BeanPropertyDefinition> properties = beanDesc.findProperties();
+	        for(BeanPropertyDefinition property : properties) {
+	          if(property.getName().equals("value") || property.getName().equals("any")) {
+	            String fieldName = property.getField().getName();
+	            if(fieldName != null)
+	              return super.modifySerializer(config, beanDesc, new CustomValueObjectSerializer((BeanSerializer)serializer, fieldName));
+	          }
+	        }
+		  }
+		  return super.modifySerializer(config, beanDesc, serializer);
+	  }
   }
   
-  public String getJson(Siri siri, String callback) throws Exception {    
-    ObjectMapper mapper = new ObjectMapper();    
-    mapper.setSerializationInclusion(Inclusion.NON_NULL);
-    mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, false);
-    mapper.configure(SerializationConfig.Feature.WRAP_ROOT_VALUE, true);   
+  
+  private static class CustomValueObjectSerializer extends BeanSerializerBase {
+
+    private String fieldName = null;
     
-    mapper.setDateFormat(new RFC822SimpleDateFormat());
+    protected CustomValueObjectSerializer(BeanSerializer src, String fieldName) {
+      super(src);
+      this.fieldName = fieldName;
+    }
 
-    AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
-    SerializationConfig config = mapper.getSerializationConfig().withAnnotationIntrospector(introspector);
-    mapper.setSerializationConfig(config);
+    public void serialize(Object bean, JsonGenerator jgen,
+        SerializerProvider provider) throws IOException, JsonGenerationException {
+      
+      try {
+        Class<? extends Object> beanClass = bean.getClass();
+        Field valueField = ReflectionUtils.findField(beanClass, fieldName);
+        valueField.setAccessible(true);
 
-    mapper.registerModule(new JacksonModule());
+        Object value = valueField.get(bean);
+  
+        provider.defaultSerializeValue(value, jgen);
+      } catch(Exception e) {
+        jgen.writeNull();
+      }
+    }
 
-    String output = "";
+	@Override
+	public BeanSerializerBase withObjectIdWriter(ObjectIdWriter objectIdWriter) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    if(callback != null)
-      output = callback + "(";
+	@Override
+	protected BeanSerializerBase withIgnorals(Set<String> toIgnore) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    output += mapper.writeValueAsString(siri);
+	@Override
+	protected BeanSerializerBase asArraySerializer() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    if(callback != null)
-      output += ")";
+	@Override
+	public BeanSerializerBase withFilterId(Object filterId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+    
+  }
 
-    return output;
-  }  
   
 }

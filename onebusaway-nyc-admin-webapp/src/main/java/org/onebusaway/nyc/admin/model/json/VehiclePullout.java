@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.admin.model.json;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 /**
  * Holds vehicle pullout/pullin information
