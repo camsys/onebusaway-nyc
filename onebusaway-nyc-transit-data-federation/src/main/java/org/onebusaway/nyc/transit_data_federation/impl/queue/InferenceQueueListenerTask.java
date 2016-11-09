@@ -19,13 +19,14 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 public abstract class InferenceQueueListenerTask extends QueueListenerTask {
+	
 
 	protected abstract void processResult(NycQueuedInferredLocationBean inferredResult, String contents);
 
@@ -36,7 +37,6 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 			if (address == null || !address.equals(getQueueName())) {
 				return false;
 			}
-
 			
 			NycQueuedInferredLocationBean inferredResult = _mapper.readValue(contents, NycQueuedInferredLocationBean.class);
 			processResult(inferredResult, contents);
@@ -72,6 +72,7 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 		// use JAXB annotations so that we pick up anything from the
 		// auto-generated XML classes
 		// generated from XSDs
+		ObjectMapper _mapper = new ObjectMapper();
 		_mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(
 				_mapper.getTypeFactory()));
 	}
