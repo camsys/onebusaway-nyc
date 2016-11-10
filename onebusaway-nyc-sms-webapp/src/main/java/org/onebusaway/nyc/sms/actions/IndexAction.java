@@ -119,6 +119,8 @@ public class IndexAction extends SessionedIndexAction {
       // We are all set, let the existing stop results be processed given the route command string
     } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && StringUtils.isNumeric(commandString)) {
       // We are all set, let the existing stop results be processed given the number (which is the users choice of stop) command string
+    } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && "N".equals(commandString)) {
+      // We are all set, show neighboring stops
     } else if ((queryString == null || queryString.isEmpty()) && commandString != null && _searchResults != null && _searchResults.getSuggestions().size() > 0) {
       // We have suggestions with a command string for picking one of them or paginating
     } else if (queryString == null || queryString.isEmpty()) {
