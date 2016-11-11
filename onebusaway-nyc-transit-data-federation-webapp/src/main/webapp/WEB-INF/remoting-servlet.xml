@@ -18,16 +18,21 @@
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd
            http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
+
 	<mvc:annotation-driven />
     <context:component-scan base-package="org.onebusaway.nyc.transit_data_federation.webapp.controllers" />
   	<mvc:interceptors>
-    	<bean class="org.onebusaway.nyc.transit_data_federation.webapp.controllers.BundleManagementInterceptor" />	
+	  	<mvc:interceptor>
+	        <mvc:mapping path="/bundles**.do" />
+	        <bean class="org.onebusaway.nyc.transit_data_federation.webapp.controllers.BundleManagementInterceptor" />	
+	    </mvc:interceptor>
   	</mvc:interceptors>
+  	
   	
   	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/jsp/" />
     </bean>
-
+ 
     <bean name="/transit-data-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
         <property name="service" ref="nycTransitDataServiceImpl" />
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
