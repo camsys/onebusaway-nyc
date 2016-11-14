@@ -242,9 +242,11 @@
 	
 			<!-- Include the Google ad -->
 			<c:import url="includes/ad.jspx" />
-		
+			
+			<div id="psa_element">${psa}</div>
 		</div>
 		<div class="container clear"><!-- jspx --></div>
+		
 	  	<s:url var="url" value="/css/img/google_logo.png"></s:url>
 		<div id="google_translate_element">Google Translate <img id="icon" src="${url}" /></div>
     </div>

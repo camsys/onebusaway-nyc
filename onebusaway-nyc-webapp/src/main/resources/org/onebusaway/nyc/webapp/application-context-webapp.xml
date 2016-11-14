@@ -65,4 +65,6 @@
     	<property name="key" value="TEST" />
     </bean>
     
+    <bean class="org.onebusaway.nyc.webapp.psa.MessageServiceImpl" />
+    
 </beans>
