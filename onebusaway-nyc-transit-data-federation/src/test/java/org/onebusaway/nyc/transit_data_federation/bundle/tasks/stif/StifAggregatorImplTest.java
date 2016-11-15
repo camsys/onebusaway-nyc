@@ -5,18 +5,24 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripLoader;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.AbnormalStifDataLoggerImpl;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifAggregatorImpl;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifLoaderImpl;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.SupplimentalTripInformation;
+import static org.mockito.Mockito.*;
 
 
 public class StifAggregatorImplTest {
@@ -64,9 +70,18 @@ public class StifAggregatorImplTest {
     
     agg.computeBlocksFromRuns();
     
+    
+    
     assertEquals(174, agg.getMatchedGtfsTripsCount());
     assertEquals(1,agg.getRoutesWithTripsCount());
     assertEquals(0,agg.getUnmatchedTripsSize());
+    
+    HashMap<AgencyAndId, SupplimentalTripInformation> suppTripInfo = agg.getSupplimentalTripInfo();
+    SupplimentalTripInformation suppTrip = suppTripInfo.get(new AgencyAndId("MTA NYCT", "JA_A6-Sunday-001800_Q4_1"));
+    
+    assertEquals("E", suppTrip.getDirection());
+    assertEquals(StifTripType.REVENUE, suppTrip.getTripType());
+    assertEquals("R".charAt(0), suppTrip.getBusType());
   }
   
   
@@ -254,6 +269,19 @@ public class StifAggregatorImplTest {
     assert(agg.getMatchedGtfsTripsCount() > 0);
     assertEquals(42,agg.getRoutesWithTripsCount());
     assertEquals(0,agg.getUnmatchedTripsSize());
+    
+    HashMap<AgencyAndId, SupplimentalTripInformation> suppTripInfo = agg.getSupplimentalTripInfo();
+    SupplimentalTripInformation suppTrip = suppTripInfo.get(new AgencyAndId("MTA NYCT", "KB_Y4-Weekday-033500_BX1_103"));
+    
+    assertEquals("S", suppTrip.getDirection());
+    assertEquals(StifTripType.REVENUE, suppTrip.getTripType());
+    assertEquals("A".charAt(0), suppTrip.getBusType());
+    
+    suppTrip = suppTripInfo.get(new AgencyAndId("MTA NYCT", "GH_Y4-Weekday-133000_BX238_38"));
+    
+    assertEquals("E", suppTrip.getDirection());
+    assertEquals(StifTripType.REVENUE, suppTrip.getTripType());
+    assertEquals("R".charAt(0), suppTrip.getBusType());
   }
 
   
@@ -296,15 +324,27 @@ public class StifAggregatorImplTest {
 	    
 	    assert(agg.getMatchedGtfsTripsCount() > 0);
 	    assertEquals(1,agg.getRoutesWithTripsCount());
-//	    if (agg.getUnmatchedTripsSize() > 0){
-//	    	Object[] trips = agg.getUnmatchedTrips().toArray();
-//	    	for (Object o: trips){
-//	    		System.out.println(o.toString());
-//	    	}
-//	    }
 	    assertEquals(0,agg.getUnmatchedTripsSize());
 	    
 	  }
+  
+  //@Test
+  public void testAddToSupplimentalTripInfo(){
+	  StifAggregatorImpl a = new StifAggregatorImpl();
+	  
+	  AgencyAndId tripId = new AgencyAndId("A", "B");
+	
+	  //TBD find out how to mock Trips
+	  Trip mockTrip = mock(Trip.class);
+	  when(mockTrip.getId()).thenReturn(tripId);
+	  
+	  StifTrip mockStifTrip = new StifTrip("run1", "run1", "run2", StifTripType.REVENUE, "1234", "R".charAt(0), "E");
+	  a.addToSupplimentalTripInfo(mockTrip, mockStifTrip);
+	  
+	  SupplimentalTripInformation suppInfo = a.getSupplimentalTripInfo().get(tripId);
+	  assertEquals(suppInfo.getDirection(), "E");
+	  assertEquals(suppInfo.getBusType(), "R".charAt(0));
+  }
 
   
   private StifTripLoader getStifTripLoader(MultiCSVLogger logger,

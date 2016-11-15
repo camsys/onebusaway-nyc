@@ -51,6 +51,7 @@ public class TestStifRecordReaderTest {
 	      TripRecord trip = (TripRecord) record;
 	      assertEquals("11559238", trip.getBlockNumber());
 	      assertEquals("M14AD", trip.getRunRoute());
+	      assertEquals("E", trip.getDirection());
 	      StifRecord lastRecord = record;
 	      while (record != null) {
 	    	  lastRecord = record;

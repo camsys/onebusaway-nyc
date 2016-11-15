@@ -17,6 +17,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.RawRunData;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTrip;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripType;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.SupplimentalTripInformation;
 import org.opentripplanner.common.model.P2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,14 +38,16 @@ public class StifAggregatorImpl {
     _stifLoader = sl;
   }
 
-  private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>();
-  private ArrayList<StifTrip> pullouts = new ArrayList<StifTrip>();
-  private HashMap<String, List<StifTrip>> tripsByRun = new HashMap<String, List<StifTrip>>();
-  private HashSet<StifTrip> unmatchedTrips = new HashSet<StifTrip>();
+  private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>(20000);
+  private ArrayList<StifTrip> pullouts = new ArrayList<StifTrip>(20000);
+  private HashMap<String, List<StifTrip>> tripsByRun = new HashMap<String, List<StifTrip>>(20000);
+  private HashSet<StifTrip> unmatchedTrips = new HashSet<StifTrip>(1024);
 
-  private HashSet<Trip> usedGtfsTrips = new HashSet<Trip>();
+  private HashSet<Trip> usedGtfsTrips = new HashSet<Trip>(1000000);
 
-  private HashSet<Route> routesWithTrips = new HashSet<Route>();
+  private HashSet<Route> routesWithTrips = new HashSet<Route>(500);
+  
+  private HashMap<AgencyAndId, SupplimentalTripInformation> tripInfo = new HashMap<AgencyAndId, SupplimentalTripInformation>(1000000);
 
   public HashMap<String, Set<AgencyAndId>> getRouteIdsByDsc(){
     return routeIdsByDsc;
@@ -128,7 +131,7 @@ public class StifAggregatorImpl {
     determineIfRoutesAreInStif();
   }
 
-  public void populateTripDetails(List<StifTrip> rawTrips){
+  private void populateTripDetails(List<StifTrip> rawTrips){
 	  tripsByRun.clear();
 	  pullouts.clear();
     for (StifTrip trip : rawTrips) {
@@ -182,7 +185,7 @@ public class StifAggregatorImpl {
     return nextRunId;
   }
 
-  public boolean tripExists(int index, String nextRunId, StifTrip lastTrip, int trips_size){
+  private boolean tripExists(int index, String nextRunId, StifTrip lastTrip, int trips_size){
 
     if (index >= trips_size) {
       _log.warn("The preceding trip says that the run "
@@ -250,6 +253,7 @@ public class StifAggregatorImpl {
           gtfsTrip.getId().getId(), blockId, routeId.getId());
 
       usedGtfsTrips.add(gtfsTrip);
+      addToSupplimentalTripInfo(gtfsTrip, trip);
     }
     if (lastTrip.type == StifTripType.DEADHEAD) {
       for (P2<String> blockId : blockIds) {
@@ -259,7 +263,13 @@ public class StifAggregatorImpl {
     }
   }
 
-  public void dumpBlocksOut(HashSet<P2<String>> blockIds, StifTrip lastTrip, StifTrip pullout){
+  // public for testing :/
+  public void addToSupplimentalTripInfo(Trip gtfsTrip, StifTrip trip){
+	  SupplimentalTripInformation _sti = new SupplimentalTripInformation(trip.type, trip.busType, trip.direction);
+	  tripInfo.put(gtfsTrip.getId(), _sti);
+  }
+  
+  private void dumpBlocksOut(HashSet<P2<String>> blockIds, StifTrip lastTrip, StifTrip pullout){
     for (P2<String> blockId : blockIds) {
       String pulloutTripId = String.format("pullout_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.runId);
       _AbnormalStifDataLogger.dumpBlockDataForTrip(pullout, blockId.getSecond(), pulloutTripId , blockId.getFirst(), "no gtfs trip");
@@ -268,7 +278,7 @@ public class StifAggregatorImpl {
     }
   }
 
-  public void logUnmatchedTrip(int blockNo, Entry<ServiceCode, List<StifTrip>> entry){
+  private void logUnmatchedTrip(int blockNo, Entry<ServiceCode, List<StifTrip>> entry){
     for (StifTrip trip : unmatchedTrips) {
       _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey()
       + " trip type " + trip.type
@@ -300,7 +310,7 @@ public class StifAggregatorImpl {
     return id.replaceAll("[aeiouy\\s]", "");
   }
 
-  public <T, U> void addToMapSet(Map<T, Set<U>> mapList, T key, U value) {
+  private <T, U> void addToMapSet(Map<T, Set<U>> mapList, T key, U value) {
     Set<U> list = mapList.get(key);
     if (list == null) {
       list = new HashSet<U>();
@@ -309,7 +319,7 @@ public class StifAggregatorImpl {
     list.add(value);
   }
 
-  public void determineIfRoutesAreInStif() {
+  private void determineIfRoutesAreInStif() {
 
     _AbnormalStifDataLogger.header("gtfs_trips_with_no_stif_match.csv", "gtfs_trip_id,stif_trip");
     Collection<Trip> allTrips = _stifLoader.getGtfsMutableRelationalDao().getAllTrips();
@@ -386,5 +396,9 @@ public class StifAggregatorImpl {
 
   public int getUnmatchedTripsSize() {
     return unmatchedTrips.size();
+  }
+
+  public HashMap<AgencyAndId, SupplimentalTripInformation> getSupplimentalTripInfo() {
+	return tripInfo;
   }
 }

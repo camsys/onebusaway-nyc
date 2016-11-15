@@ -128,6 +128,7 @@ public class StifTaskControllerImpl implements Runnable {
 
 		_dscSvcMgr.readNotInServiceDscs();
 		_stifBundleWriter.serializeDSCData(dscToTripMap, tripToDscMap, inServiceDscs, _dscSvcMgr.getNotInServiceDSCs());
+		_stifBundleWriter.serializeSupplimentalTripInformation(_stifAggregator.getSupplimentalTripInfo());
 	}
 
 
