@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import javax.annotation.PostConstruct;
@@ -41,6 +42,7 @@ public abstract class InputQueueListenerTask extends QueueListenerTask implement
      */
 	  final AnnotationIntrospector introspector = new JaxbAnnotationIntrospector(_mapper.getTypeFactory());
 	  _mapper.setAnnotationIntrospector(introspector);
+	  _mapper.registerModule(new AfterburnerModule());
   }
   
   @Autowired

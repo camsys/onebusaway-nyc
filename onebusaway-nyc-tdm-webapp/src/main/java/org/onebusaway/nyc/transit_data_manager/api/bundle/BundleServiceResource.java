@@ -43,6 +43,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.sun.jersey.core.header.ContentDisposition;
 
 @Path("/bundle")
@@ -53,6 +54,8 @@ public class BundleServiceResource {
   private static final String DEFAULT_BUNDLE_STAGING_DIRECTORY = "activebundles";
 
   private static Logger _log = LoggerFactory.getLogger(BundleServiceResource.class);
+  
+  private final ObjectMapper _mapper = new ObjectMapper();
 
   private ExecutorService _executorService = null;
   @Autowired
@@ -68,6 +71,7 @@ public class BundleServiceResource {
 
   @PostConstruct
   public void setup() {
+	  _mapper.registerModule(new AfterburnerModule());
       _executorService = Executors.newFixedThreadPool(1);
   }
   
@@ -203,8 +207,7 @@ public class BundleServiceResource {
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(jsonGenerator, list);
+      _mapper.writeValue(jsonGenerator, list);
       return Response.ok(sw.toString()).build();
     } catch (Exception e) {
       _log.error("exception serializing response:", e);
@@ -233,8 +236,8 @@ public class BundleServiceResource {
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(jsonGenerator, status);
+      
+      _mapper.writeValue(jsonGenerator, status);
       return Response.ok(sw.toString()).build();
     } catch (Exception e) {
       _log.error("exception serializing response:", e);
@@ -255,8 +258,7 @@ public class BundleServiceResource {
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(jsonGenerator, status);
+      _mapper.writeValue(jsonGenerator, status);
       return Response.ok(sw.toString()).build();
     } catch (Exception e) {
       _log.error("exception serializing response:", e);

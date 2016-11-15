@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ser.BeanSerializer;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.impl.ObjectIdWriter;
 import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 /** 
@@ -44,7 +45,8 @@ public class SiriJsonSerializerV2 {
   }
   
   public String getJson(Siri siri, String callback) throws Exception {    
-    ObjectMapper mapper = new ObjectMapper();    
+    ObjectMapper mapper = new ObjectMapper(); 
+    
     mapper.setSerializationInclusion(Include.NON_NULL);
     mapper.configure(SerializationFeature.INDENT_OUTPUT, false);
     mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);   
@@ -55,6 +57,7 @@ public class SiriJsonSerializerV2 {
 			mapper.getTypeFactory()));
 
     mapper.registerModule(new JacksonModule());
+    mapper.registerModule(new AfterburnerModule());
 
     String output = "";
 
@@ -158,12 +161,6 @@ public class SiriJsonSerializerV2 {
 	}
 
 	@Override
-	protected BeanSerializerBase withIgnorals(Set<String> toIgnore) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	protected BeanSerializerBase asArraySerializer() {
 		// TODO Auto-generated method stub
 		return null;
@@ -171,6 +168,12 @@ public class SiriJsonSerializerV2 {
 
 	@Override
 	public BeanSerializerBase withFilterId(Object filterId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected BeanSerializerBase withIgnorals(String[] arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 public class OpsInferenceQueueListenerTask extends
     InferenceQueueListenerTask {
@@ -165,7 +166,6 @@ public class OpsInferenceQueueListenerTask extends
     }
   }
 
-
   @SuppressWarnings("unchecked")
   @PostConstruct
   public void setup() {
@@ -174,6 +174,7 @@ public class OpsInferenceQueueListenerTask extends
     // make parsing lenient
     _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
+    _mapper.registerModule(new AfterburnerModule());
     
    // get current state from backup ops api or archiver
     try {

@@ -10,6 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.onebusaway.nyc.admin.comparator.InferredPhaseComparator;
@@ -42,6 +44,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 
 /**
@@ -64,6 +67,11 @@ public class VehicleStatusServiceImpl implements VehicleStatusService {
 	
 	private int lastJsonHash;
 	private Map<String, VehiclePullout> pullouts = new ConcurrentHashMap<String, VehiclePullout>();
+	
+	@PostConstruct
+	public void setup(){
+		mapper.registerModule(new AfterburnerModule());
+	}
 
 	private class UpdateThread implements Runnable {
 		String json;

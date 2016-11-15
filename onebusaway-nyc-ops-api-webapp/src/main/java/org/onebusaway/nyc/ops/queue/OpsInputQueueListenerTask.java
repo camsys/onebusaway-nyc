@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 public class OpsInputQueueListenerTask extends QueueListenerTask {
@@ -54,6 +55,7 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
      */
 	  _mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(
 				_mapper.getTypeFactory()));
+	  _mapper.registerModule(new AfterburnerModule());	 
   }
 
   public RealtimeEnvelope deserializeMessage(String contents) {

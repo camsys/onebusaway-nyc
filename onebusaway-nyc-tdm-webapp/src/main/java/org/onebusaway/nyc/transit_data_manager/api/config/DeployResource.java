@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -41,6 +42,8 @@ public class DeployResource {
   private static final String DEPOT_PATH = "depot_id_map";
   private static final String DSC_PATH = "destination_sign_codes";
   private static Logger _log = LoggerFactory.getLogger(DeployResource.class);
+  
+  private final ObjectMapper _mapper = new ObjectMapper();
 
   @Autowired
   private ConfigurationService configurationService;
@@ -52,6 +55,7 @@ public class DeployResource {
   
   @PostConstruct
   public void setup() {
+	  _mapper.registerModule(new AfterburnerModule());
       _executorService = Executors.newFixedThreadPool(1);
   }
 
@@ -72,8 +76,7 @@ public class DeployResource {
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(jsonGenerator, list);
+      _mapper.writeValue(jsonGenerator, list);
       return Response.ok(sw.toString()).build();
     } catch (Exception e) {
       _log.error("exception serializing response:", e);
@@ -94,8 +97,7 @@ public class DeployResource {
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(jsonGenerator, list);
+      _mapper.writeValue(jsonGenerator, list);
       return Response.ok(sw.toString()).build();
     } catch (Exception e) {
       _log.error("exception serializing response:", e);
@@ -118,8 +120,7 @@ public class DeployResource {
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(jsonGenerator, status);
+      _mapper.writeValue(jsonGenerator, status);
       return Response.ok(sw.toString()).build();
     } catch (Exception e) {
       _log.error("exception serializing response:", e);
@@ -149,8 +150,7 @@ public class DeployResource {
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(jsonGenerator, status);
+      _mapper.writeValue(jsonGenerator, status);
       return Response.ok(sw.toString()).build();
     } catch (Exception e) {
       _log.error("exception serializing response:", e);

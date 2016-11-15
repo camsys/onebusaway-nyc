@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 public class ArchivingInputQueueListenerTask extends QueueListenerTask {
@@ -64,6 +65,7 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
      */
 	_mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(
 			_mapper.getTypeFactory()));
+	_mapper.registerModule(new AfterburnerModule());
 
   }
 

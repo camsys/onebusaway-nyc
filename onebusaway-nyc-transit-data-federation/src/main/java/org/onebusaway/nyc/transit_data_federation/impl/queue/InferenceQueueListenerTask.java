@@ -20,6 +20,7 @@ import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import javax.annotation.PostConstruct;
@@ -75,6 +76,7 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 		ObjectMapper _mapper = new ObjectMapper();
 		_mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(
 				_mapper.getTypeFactory()));
+		_mapper.registerModule(new AfterburnerModule());
 	}
 
 	@PreDestroy

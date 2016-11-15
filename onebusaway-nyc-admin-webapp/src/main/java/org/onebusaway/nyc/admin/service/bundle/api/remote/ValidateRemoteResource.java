@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -45,8 +46,9 @@ public class ValidateRemoteResource extends AuthenticatedResource {
   private BundleValidationService _validateService;
 
   @PostConstruct
-  public void setup() {
-        _executorService = Executors.newFixedThreadPool(1);
+  public void setup(){
+	  _mapper.registerModule(new AfterburnerModule());
+      _executorService = Executors.newFixedThreadPool(1);
   }
 
   @Path("/{bundleDirectory}/{bundleName}/{id}/create")

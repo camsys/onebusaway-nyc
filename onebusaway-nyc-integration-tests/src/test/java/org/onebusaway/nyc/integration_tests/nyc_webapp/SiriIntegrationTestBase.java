@@ -39,6 +39,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 public class SiriIntegrationTestBase {
 	  
@@ -228,7 +229,8 @@ public class SiriIntegrationTestBase {
   }
   private HashMap<String,Object> getHashMapFromJsonResponse (String response) throws JsonParseException, JsonMappingException, IOException{
     JsonFactory factory = new JsonFactory(); 
-    ObjectMapper mapper = new ObjectMapper(factory); 
+    ObjectMapper mapper = new ObjectMapper(factory);
+    mapper.registerModule(new AfterburnerModule());
     TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {}; 
     HashMap<String,Object> o = mapper.readValue(response, typeRef);
     return o;

@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 public class ArchivingInferenceQueueListenerTask extends
     InferenceQueueListenerTask {
@@ -139,6 +140,7 @@ public class ArchivingInferenceQueueListenerTask extends
     // make parsing lenient
     _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
+    _mapper.registerModule(new AfterburnerModule());
   }
 
   @PreDestroy

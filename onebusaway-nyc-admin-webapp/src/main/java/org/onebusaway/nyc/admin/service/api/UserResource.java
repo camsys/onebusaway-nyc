@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -22,6 +23,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 /**
  * Provides API methods for user operations
@@ -35,6 +37,11 @@ public class UserResource {
 	private UserManagementService userManagementService;
 	private final ObjectMapper mapper = new ObjectMapper();
 	private static Logger log = LoggerFactory.getLogger(UserResource.class);
+	
+	@PostConstruct
+	private void setup(){
+		mapper.registerModule(new AfterburnerModule());
+	}
 	
 	@GET
 	@Produces("application/json")

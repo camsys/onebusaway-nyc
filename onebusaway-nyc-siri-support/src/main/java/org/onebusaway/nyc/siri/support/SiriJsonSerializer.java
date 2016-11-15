@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ser.BeanSerializer;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.impl.ObjectIdWriter;
 import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import uk.org.siri.siri.Siri;
@@ -57,6 +58,7 @@ public class SiriJsonSerializer {
 			mapper.getTypeFactory()));
 
     mapper.registerModule(new JacksonModule());
+    mapper.registerModule(new AfterburnerModule());
 
     String output = "";
 
@@ -155,7 +157,6 @@ public class SiriJsonSerializer {
 		return null;
 	}
 
-	@Override
 	protected BeanSerializerBase withIgnorals(Set<String> toIgnore) {
 		// TODO Auto-generated method stub
 		return null;
@@ -169,6 +170,12 @@ public class SiriJsonSerializer {
 
 	@Override
 	public BeanSerializerBase withFilterId(Object filterId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected BeanSerializerBase withIgnorals(String[] arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}

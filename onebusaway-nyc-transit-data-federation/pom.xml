@@ -88,6 +88,10 @@
 		    <groupId>com.fasterxml.jackson.module</groupId>
 		    <artifactId>jackson-module-jaxb-annotations</artifactId>
 		</dependency>
+		    <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-afterburner</artifactId>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -103,6 +107,7 @@
             <artifactId>onebusaway-siri-api-v20</artifactId>
             <version>${onebusaway.siri_2.version}</version>
         </dependency>
+        
     </dependencies>
 
     <build>

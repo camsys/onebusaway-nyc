@@ -5,6 +5,7 @@ import org.onebusaway.nyc.transit_data_manager.config.NullSerializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 /**
  * Utility to providers jackson object mapper.
@@ -25,6 +26,7 @@ public class ObjectMapperProvider {
 
 	    ObjectMapper mapper = new ObjectMapper();
 	    
+	    mapper.registerModule(new AfterburnerModule());	    
 	    mapper.getSerializerProvider().setNullValueSerializer(new NullSerializer());
 	    
 	    PropertyNamingStrategy pns = new AllLowerWithDashesNamingStrategy();

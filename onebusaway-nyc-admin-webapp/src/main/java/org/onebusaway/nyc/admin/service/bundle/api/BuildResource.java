@@ -3,6 +3,7 @@ package org.onebusaway.nyc.admin.service.bundle.api;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 @Path("/build/")
 @Component
@@ -40,6 +42,11 @@ public class BuildResource extends AuthenticatedResource {
 	
 	private final ObjectMapper _mapper = new ObjectMapper();
 	private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
+	
+	@PostConstruct
+	public void setup(){
+		_mapper.registerModule(new AfterburnerModule());
+	}
 
 	@Path("/{bundleDirectory}/{bundleName}/{email}/{bundleStartDate}/{bundleEndDate}/create")
 	@GET

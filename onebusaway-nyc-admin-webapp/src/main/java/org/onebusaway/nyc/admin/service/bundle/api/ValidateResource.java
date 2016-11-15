@@ -12,9 +12,11 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 import java.io.StringWriter;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -35,6 +37,11 @@ public class ValidateResource extends AuthenticatedResource {
 
   @Autowired
   private BundleRequestService _bundleService;
+  
+  @PostConstruct
+  public void setup(){
+	  _mapper.registerModule(new AfterburnerModule());
+  }
 
   @Path("/{bundleDirectory}/{bundleName}/create")
   @GET

@@ -37,6 +37,7 @@ import tcip_final_4_0_0.SchPullOutList.PullOuts;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 /*
@@ -76,6 +77,7 @@ public class PullInPullOutTest {
 		JaxbAnnotationModule module = new JaxbAnnotationModule();
 		ObjectMapper m = new ObjectMapper();
 		m.registerModule(module);
+		m.registerModule(new AfterburnerModule());
 		m.setSerializationInclusion(Include.NON_NULL);
 		
 		String s = m.writeValueAsString(pullOuts);

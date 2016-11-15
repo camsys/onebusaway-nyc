@@ -31,6 +31,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 public class BundleServerServiceImpl implements BundleServerService, ServletContextAware {
 
@@ -54,6 +55,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 	public void setEc2Password(String password) {
 		_password = password;
 	}
+	
 
 	@PostConstruct
 	@Override
@@ -65,6 +67,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 		  _log.error("BundleServerServiceImpl setup failed, likely due to missing or invalid credentials");
 			_log.error("BundleServerService setup failed:", t);
 		}
+		_mapper.registerModule(new AfterburnerModule());
 
   }
   

@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 /**
  * Populate the TDS from a JSON file. The expected input looks like this:
@@ -200,6 +201,7 @@ public class FileInputTask {
       _vehicleLocationListener = vehicleLocationListener;
       _filename = filename;
       _isAdjustTime = adjustTime;
+      mapper.registerModule(new AfterburnerModule());
     }
     
     public void run() {

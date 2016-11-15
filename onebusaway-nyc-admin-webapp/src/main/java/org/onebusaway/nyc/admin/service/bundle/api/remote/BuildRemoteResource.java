@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 @Path("/build/remote")
 @Component
@@ -47,6 +48,7 @@ public class BuildRemoteResource extends AuthenticatedResource {
   
   @PostConstruct
   public void setup() {
+	  	_mapper.registerModule(new AfterburnerModule());
         _executorService = Executors.newFixedThreadPool(1);
   }
 

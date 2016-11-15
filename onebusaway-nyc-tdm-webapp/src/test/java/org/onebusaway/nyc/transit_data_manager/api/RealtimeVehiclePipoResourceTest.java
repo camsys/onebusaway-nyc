@@ -46,6 +46,7 @@ import tcip_final_3_0_5_1.SCHRunIden;
 import tcip_final_4_0_0.ObaSchPullOutList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 public class RealtimeVehiclePipoResourceTest {
@@ -426,6 +427,7 @@ public class RealtimeVehiclePipoResourceTest {
     JaxbAnnotationModule module = new JaxbAnnotationModule();
     ObjectMapper m = new ObjectMapper();
     m.registerModule(module);
+    m.registerModule(new AfterburnerModule());
     return m;
   }
 
