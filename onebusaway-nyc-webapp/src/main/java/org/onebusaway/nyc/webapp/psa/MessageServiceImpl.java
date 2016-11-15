@@ -58,8 +58,7 @@ public class MessageServiceImpl implements MessageService {
       return new PublicServiceAnnouncement[] {};
     }
   }
-
-  @PostConstruct
+  
   private void fillCache() {
     _log.info("Filling public service announcement cache");
     PublicServiceAnnouncement[] psas = getPsas();
