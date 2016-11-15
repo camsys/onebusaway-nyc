@@ -60,4 +60,8 @@ public class NycFederatedTransitDataBundle {
   public File getTripRunDataPath() {
     return new File(_path, "TripRunData.obj");
   }
+
+public File getSupplimentalTrioInfo() {
+	return new File(_path, "SupplimentalTripInfo.obj");
+}
 }

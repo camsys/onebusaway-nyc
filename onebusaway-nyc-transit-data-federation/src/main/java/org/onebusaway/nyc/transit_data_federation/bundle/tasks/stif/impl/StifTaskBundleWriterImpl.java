@@ -12,6 +12,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTrip;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.GeographyRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.SupplimentalTripInformation;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,16 @@ public class StifTaskBundleWriterImpl {
 		}
 	}
 	
+	public void serializeSupplimentalTripInformation(Map<AgencyAndId, SupplimentalTripInformation> tripInfo) {
+		try {
+			if (_bundle != null) {
+				ObjectSerializationLibrary.writeObject(_bundle.getSupplimentalTrioInfo(), tripInfo);
+			}
+		} catch (IOException e) {
+			throw new IllegalStateException("error serializing supplimental trip info", e);
+		}
+	}
+	
 	public void serializeDSCData(Map<String, List<AgencyAndId>> dscToTripMap,
 			Map<AgencyAndId, String> tripToDscMap, Set<String> inServiceDscs, Set<String> notInServiceDscs) {
 		for (String notInServiceDsc : notInServiceDscs) {
@@ -92,5 +103,5 @@ public class StifTaskBundleWriterImpl {
 			throw new IllegalStateException("error serializing DSC/STIF data", e);
 		}
 	}
-
+	
 }

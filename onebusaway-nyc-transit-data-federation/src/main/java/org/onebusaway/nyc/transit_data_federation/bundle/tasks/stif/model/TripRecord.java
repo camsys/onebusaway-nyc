@@ -16,257 +16,270 @@
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model;
 
 public class TripRecord implements StifRecord {
-  private String signCode;
-  private String blockNumber;
-  private int originTime;
-  private int tripType;
-  private int destinationTime;
-  private String originLocation;
-  private String signCodeRoute;
-  private String reliefRun;
-  private String runNumber;
-  private String previousRunNumber;
-  private int reliefTime;
-  private String reliefRunRoute;
-  private String runRoute;
-  private String nextTripOperatorRunNumber;
-  private String nextTripOperatorRunRoute;
-  private String nextTripOperatorDepotCode;
-  private String previousRunRoute;
-  private String destinationLocation;
-  private int recoveryTime;
-  private boolean lastTripInSequence;
-  private boolean firstTripInSequence;
-  private String depotCode;
-  private String gtfsTripId;
-  private char busType;
+	private String signCode;
+	private String blockNumber;
+	private int originTime;
+	private int tripType;
+	private int destinationTime;
+	private String originLocation;
+	private String signCodeRoute;
+	private String reliefRun;
+	private String runNumber;
+	private String previousRunNumber;
+	private int reliefTime;
+	private String reliefRunRoute;
+	private String runRoute;
+	private String nextTripOperatorRunNumber;
+	private String nextTripOperatorRunRoute;
+	private String nextTripOperatorDepotCode;
+	private String previousRunRoute;
+	private String destinationLocation;
+	private int recoveryTime;
+	private boolean lastTripInSequence;
+	private boolean firstTripInSequence;
+	private String depotCode;
+	private String gtfsTripId;
+	private char busType;
+	private String direction;
+	
+	public String toString() {
+		return "tripRecord of " + gtfsTripId + " on " + runRoute + runNumber + " direction:" + direction; 
+	}
 
-  public char getBusType() {
-	return busType;
-}
+	public char getBusType() {
+		return busType;
+	}
 
-public void setBusType(char busType) {
-	this.busType = busType;
-}
+	public void setBusType(char busType) {
+		this.busType = busType;
+	}
 
-public void setSignCode(String signCode) {
-    this.signCode = signCode.replaceAll("^0+", "");
-  }
+	public void setSignCode(String signCode) {
+		this.signCode = signCode.replaceAll("^0+", "");
+	}
 
-  public String getSignCode() {
-    return signCode;
-  }
+	public String getSignCode() {
+		return signCode;
+	}
 
-  public void setBlockNumber(String blockNumber) {
-    if (!"".equals(blockNumber))
-      this.blockNumber = blockNumber;
-  }
+	public void setBlockNumber(String blockNumber) {
+		if (!"".equals(blockNumber))
+			this.blockNumber = blockNumber;
+	}
 
-  public String getBlockNumber() {
-    return blockNumber;
-  }
+	public String getBlockNumber() {
+		return blockNumber;
+	}
 
-  public void setOriginTime(int seconds) {
-    this.originTime = seconds;
-  }
+	public void setOriginTime(int seconds) {
+		this.originTime = seconds;
+	}
 
-  public int getOriginTime() {
-    return originTime;
-  }
+	public int getOriginTime() {
+		return originTime;
+	}
 
-  public void setTripType(int tripType) {
-    this.tripType = tripType;
-  }
+	public void setTripType(int tripType) {
+		this.tripType = tripType;
+	}
 
-  public int getTripType() {
-    return tripType;
-  }
+	public int getTripType() {
+		return tripType;
+	}
 
-  public void setDestinationTime(int destinationTime) {
-    this.destinationTime = destinationTime;
-  }
+	public void setDestinationTime(int destinationTime) {
+		this.destinationTime = destinationTime;
+	}
 
-  public int getDestinationTime() {
-    return destinationTime;
-  }
+	public int getDestinationTime() {
+		return destinationTime;
+	}
 
-  public void setOriginLocation(String originLocation) {
-    this.originLocation = originLocation;
-  }
+	public void setOriginLocation(String originLocation) {
+		this.originLocation = originLocation;
+	}
 
-  public String getOriginLocation() {
-    return originLocation;
-  }
+	public String getOriginLocation() {
+		return originLocation;
+	}
 
-  public String getSignCodeRoute() {
-    return signCodeRoute;
-  }
+	public String getSignCodeRoute() {
+		return signCodeRoute;
+	}
 
-  public void setSignCodeRoute(String signCodeRoute) {
-    this.signCodeRoute = signCodeRoute.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
-  }
+	public void setSignCodeRoute(String signCodeRoute) {
+		this.signCodeRoute = signCodeRoute.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
+	}
 
-  public String getReliefRunNumber() {
-    if (reliefRun == null) {
-      return runNumber;
-    }
-    return reliefRun;
-  }
+	public String getReliefRunNumber() {
+		if (reliefRun == null) {
+			return runNumber;
+		}
+		return reliefRun;
+	}
 
-  public void setReliefRunNumber(String run) {
-    this.reliefRun = run;
-  }
+	public void setReliefRunNumber(String run) {
+		this.reliefRun = run;
+	}
 
-  public String getRunNumber() {
-    return runNumber;
-  }
+	public String getRunNumber() {
+		return runNumber;
+	}
 
-  public void setRunNumber(String run) {
-    this.runNumber = run;
-  }
+	public void setRunNumber(String run) {
+		this.runNumber = run;
+	}
 
-  public String getPreviousRunNumber() {
-    return previousRunNumber;
-  }
+	public String getPreviousRunNumber() {
+		return previousRunNumber;
+	}
 
-  public String getPreviousRunRoute() {
-    return previousRunRoute;
-  }
+	public String getPreviousRunRoute() {
+		return previousRunRoute;
+	}
 
-  public String getPreviousRunId() {
-    return RunTripEntry.createId(getPreviousRunRoute(), getPreviousRunNumber());
-  }
+	public String getPreviousRunId() {
+		return RunTripEntry.createId(getPreviousRunRoute(), getPreviousRunNumber());
+	}
 
-  public void setPreviousRunNumber(String previousRun) {
-    this.previousRunNumber = previousRun;
-  }
+	public void setPreviousRunNumber(String previousRun) {
+		this.previousRunNumber = previousRun;
+	}
 
-  public void setReliefTime(int reliefTime) {
-    this.reliefTime = reliefTime;
-  }
+	public void setReliefTime(int reliefTime) {
+		this.reliefTime = reliefTime;
+	}
 
-  public int getReliefTime() {
-    return reliefTime;
-  }
+	public int getReliefTime() {
+		return reliefTime;
+	}
 
-  public String getRunRoute() {
-    return runRoute;
-  }
+	public String getRunRoute() {
+		return runRoute;
+	}
 
-  public String getReliefRunRoute() {
-    return reliefRunRoute;
-  }
+	public String getReliefRunRoute() {
+		return reliefRunRoute;
+	}
 
-  public String getRunId() {
-    return RunTripEntry.createId(getRunRoute(), getRunNumber());
-  }
+	public String getRunId() {
+		return RunTripEntry.createId(getRunRoute(), getRunNumber());
+	}
 
-  public String getRunIdWithDepot() {
-    if ("MISC".equals(getRunRoute())) {
-      return RunTripEntry.createId(getRunRoute() + "-" + getDepotCode(), getRunNumber());
-    }
-    return RunTripEntry.createId(getRunRoute(), getRunNumber());
-  }
-  
-  public String getReliefRunId() {
-    return RunTripEntry.createId(getReliefRunRoute(), getReliefRunNumber());
-  }
+	public String getRunIdWithDepot() {
+		if ("MISC".equals(getRunRoute())) {
+			return RunTripEntry.createId(getRunRoute() + "-" + getDepotCode(), getRunNumber());
+		}
+		return RunTripEntry.createId(getRunRoute(), getRunNumber());
+	}
 
-  public void setReliefRunRoute(String reliefRunRoute) {
-    this.reliefRunRoute = reliefRunRoute;
-  }
+	public String getReliefRunId() {
+		return RunTripEntry.createId(getReliefRunRoute(), getReliefRunNumber());
+	}
 
-  public void setRunRoute(String runRoute) {
-    this.runRoute = runRoute;
-  }
+	public void setReliefRunRoute(String reliefRunRoute) {
+		this.reliefRunRoute = reliefRunRoute;
+	}
 
-  public void setNextTripOperatorRunNumber(String runNumber) {
-    this.nextTripOperatorRunNumber = runNumber;
-  }
+	public void setRunRoute(String runRoute) {
+		this.runRoute = runRoute;
+	}
 
-  public String getNextTripOperatorRunId() {
-    return RunTripEntry.createId(getNextTripOperatorRunRoute(),
-        getNextTripOperatorRunNumber());
-  }
+	public void setNextTripOperatorRunNumber(String runNumber) {
+		this.nextTripOperatorRunNumber = runNumber;
+	}
 
-  public String getNextTripOperatorRunIdWithDepot() {
-    if ("MISC".equals(getNextTripOperatorRunRoute())) {
-      return RunTripEntry.createId(getNextTripOperatorRunRoute() + "-" + getDepotCode(), getNextTripOperatorRunNumber());
-    }
-    return RunTripEntry.createId(getNextTripOperatorRunRoute(), getNextTripOperatorRunNumber());
-  }
+	public String getNextTripOperatorRunId() {
+		return RunTripEntry.createId(getNextTripOperatorRunRoute(),
+				getNextTripOperatorRunNumber());
+	}
 
-  
-  public String getNextTripOperatorRunNumber() {
-    return nextTripOperatorRunNumber;
-  }
+	public String getNextTripOperatorRunIdWithDepot() {
+		if ("MISC".equals(getNextTripOperatorRunRoute())) {
+			return RunTripEntry.createId(getNextTripOperatorRunRoute() + "-" + getDepotCode(), getNextTripOperatorRunNumber());
+		}
+		return RunTripEntry.createId(getNextTripOperatorRunRoute(), getNextTripOperatorRunNumber());
+	}
 
-  public String getNextTripOperatorRunRoute() {
-    return nextTripOperatorRunRoute;
-  }
 
-  public void setNextTripOperatorRunRoute(String route) {
-    this.nextTripOperatorRunRoute = route;
-  }
+	public String getNextTripOperatorRunNumber() {
+		return nextTripOperatorRunNumber;
+	}
 
-  public void setPreviousRunRoute(String route) {
-    this.previousRunRoute = route;
-  }
+	public String getNextTripOperatorRunRoute() {
+		return nextTripOperatorRunRoute;
+	}
 
-  public String getDestinationLocation() {
-    return destinationLocation;
-  }
+	public void setNextTripOperatorRunRoute(String route) {
+		this.nextTripOperatorRunRoute = route;
+	}
 
-  public void setDestinationLocation(String destinationLocation) {
-    this.destinationLocation = destinationLocation;
-  }
+	public void setPreviousRunRoute(String route) {
+		this.previousRunRoute = route;
+	}
 
-  public int getRecoveryTime() {
-    return recoveryTime;
-  }
+	public String getDestinationLocation() {
+		return destinationLocation;
+	}
 
-  public void setRecoveryTime(int recoveryTime) {
-    this.recoveryTime = recoveryTime;
-  }
+	public void setDestinationLocation(String destinationLocation) {
+		this.destinationLocation = destinationLocation;
+	}
 
-  public void setLastTripInSequence(boolean last) {
-    this.lastTripInSequence = last;
-  }
+	public int getRecoveryTime() {
+		return recoveryTime;
+	}
 
-  public void setFirstTripInSequence(boolean first) {
-    this.firstTripInSequence = first;
-  }
+	public void setRecoveryTime(int recoveryTime) {
+		this.recoveryTime = recoveryTime;
+	}
 
-  public boolean isFirstTripInSequence() {
-    return firstTripInSequence;
-  }
+	public void setLastTripInSequence(boolean last) {
+		this.lastTripInSequence = last;
+	}
 
-  public boolean isLastTripInSequence() {
-    return lastTripInSequence;
-  }
+	public void setFirstTripInSequence(boolean first) {
+		this.firstTripInSequence = first;
+	}
 
-  public String getDepotCode() {
-    return depotCode;
-  }
+	public boolean isFirstTripInSequence() {
+		return firstTripInSequence;
+	}
 
-  public void setDepotCode(String depotCode) {
-    this.depotCode = depotCode;
-  }
+	public boolean isLastTripInSequence() {
+		return lastTripInSequence;
+	}
 
-  public void setGtfsTripId(String gtfsTripId) {
-    this.gtfsTripId = gtfsTripId;
-  }
+	public String getDepotCode() {
+		return depotCode;
+	}
 
-  public String getGtfsTripId() {
-    return gtfsTripId;
-  }
+	public void setDepotCode(String depotCode) {
+		this.depotCode = depotCode;
+	}
 
-  public String getNextTripOperatorDepotCode() {
-    return nextTripOperatorDepotCode;
-  }
-  
-  public void setNextTripOperatorDepotCode(String depotCode) {
-    this.nextTripOperatorDepotCode = depotCode;
-  }
+	public void setGtfsTripId(String gtfsTripId) {
+		this.gtfsTripId = gtfsTripId;
+	}
+
+	public String getGtfsTripId() {
+		return gtfsTripId;
+	}
+
+	public String getNextTripOperatorDepotCode() {
+		return nextTripOperatorDepotCode;
+	}
+
+	public void setNextTripOperatorDepotCode(String depotCode) {
+		this.nextTripOperatorDepotCode = depotCode;
+	}
+
+	public void setDirection(String stringData) {
+		this.direction = stringData;
+	}
+
+	public String getDirection() {
+		return direction;
+	}
 
 }

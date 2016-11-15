@@ -34,6 +34,8 @@ public final class NycRefreshableResources {
 
   public static final String RUN_DATA = "__run_data";
 
+  public static final String SUPPLIMENTAL_TRIP_DATA = "__supplimental_trip_info";
+
   private NycRefreshableResources() {}
 
 }
