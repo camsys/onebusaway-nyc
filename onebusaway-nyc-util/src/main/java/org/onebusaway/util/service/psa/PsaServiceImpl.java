@@ -1,12 +1,11 @@
-package org.onebusaway.nyc.admin.service.psa;
+package org.onebusaway.util.service.psa;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
-import org.onebusaway.nyc.admin.model.PublicServiceAnnouncement;
+import org.onebusaway.nyc.util.model.PublicServiceAnnouncement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class PsaServiceImpl implements PsaService {
@@ -41,14 +40,6 @@ public class PsaServiceImpl implements PsaService {
     
     _dao.deleteAll(toDelete);
     _dao.saveOrUpdate(toSave);
-  }
-  
-  @Override
-  public PublicServiceAnnouncement getRandomPsa() {
-    List<PublicServiceAnnouncement> psas = getAllPsas();
-    int i = new Random().nextInt(psas.size());
-    PublicServiceAnnouncement psa = psas.get(i);
-    return psa;
   }
 
 }
