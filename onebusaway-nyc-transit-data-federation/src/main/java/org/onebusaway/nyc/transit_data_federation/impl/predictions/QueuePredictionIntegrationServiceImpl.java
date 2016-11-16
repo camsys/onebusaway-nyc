@@ -1,12 +1,17 @@
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -41,6 +46,22 @@ public class QueuePredictionIntegrationServiceImpl extends
   private static final int DEFAULT_CACHE_TIMEOUT = 2 * 60; // seconds
   private static final String CACHE_TIMEOUT_KEY = "tds.prediction.expiry";
   
+  private static final String DEFAULT_STOP_ID = "0";
+  private static final String DEFAULT_VEHICLE_ID = "0";
+  private static final String DEFAULT_QUEUE_COUNT = "false";
+  
+  private static final String LOG_VEHICLE_ID = "tds.prediction.logVehicleId";
+  private static final String LOG_STOP_ID = "tds.prediction.logStopId";
+  private static final String LOG_QUEUE_COUNT = "tds.prediction.enableLogQueueCount";
+  
+  private static String _vehicleId;
+  private static String _stopId;
+  private Boolean _enableQueueCount;
+  
+  Date markTimestamp = new Date();
+  int processedCount = 0;
+  int _countInterval = 10000;
+  
   @Autowired
   private NycTransitDataService _transitDataService;
   
@@ -62,7 +83,7 @@ public class QueuePredictionIntegrationServiceImpl extends
     }
     return _cache;
   }
-
+  
   @Refreshable(dependsOn = {CACHE_TIMEOUT_KEY})
   private synchronized void refreshCache() {
     if (_cache == null) return; // nothing to do
@@ -78,15 +99,23 @@ public class QueuePredictionIntegrationServiceImpl extends
     _log.info("done");
   }
   
+  @Refreshable(dependsOn = {LOG_VEHICLE_ID, LOG_STOP_ID, LOG_QUEUE_COUNT})
+  private synchronized void refreshLoggingConfig() {
+    _vehicleId = _configurationService.getConfigurationValueAsString(LOG_VEHICLE_ID, DEFAULT_VEHICLE_ID);
+    _stopId = _configurationService.getConfigurationValueAsString(LOG_STOP_ID, DEFAULT_STOP_ID);
+    _enableQueueCount = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString(LOG_QUEUE_COUNT, DEFAULT_QUEUE_COUNT));
+  }
+  
 	@Override
 	protected void processResult(FeedMessage message) {
-	  List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();  
+	  
+	  List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
 	  String tripId = null;
 	  String vehicleId = null;
 	  Map<String, Long> stopTimeMap = new HashMap<String, Long>();
 	  // convert FeedMessage to TimepointPredictionRecord
 	  for (GtfsRealtime.FeedEntity entity : message.getEntityList()) {
-	    
+		
 	    TripUpdate tu = entity.getTripUpdate();
 	    if (!tu.getVehicle().getId().equals(vehicleId)
 	        || !tu.getTrip().getTripId().equals(tripId)) {
@@ -94,6 +123,8 @@ public class QueuePredictionIntegrationServiceImpl extends
 	    }
 	    tripId = tu.getTrip().getTripId();
 	    vehicleId = tu.getVehicle().getId();
+	    
+	   
 
 	    for (StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
 	      TimepointPredictionRecord tpr = new TimepointPredictionRecord();
@@ -102,6 +133,34 @@ public class QueuePredictionIntegrationServiceImpl extends
 	      tpr.setTimepointPredictedTime(stu.getArrival().getTime());
 	      Long scheduledTime = stopTimeMap.get(stu.getStopId());
 	      
+	      String logMessage = "";
+	      
+	      if(containsId(stu.getStopId(), getStopId())){
+		      logMessage += "Stop Id: " + stu.getStopId();
+		      
+		      logMessage += " Time: " + getTime(stu.getArrival().getTime());
+		  	  if (vehicleId != null) {
+			  	logMessage += ". Vehicle Id: " + vehicleId;
+		  	  }
+			  else{
+			  	logMessage += " Vehicle Id is blank";
+			  }
+		  	_log.info(logMessage);
+	      }
+	      
+	      if(containsId(vehicleId, getVehicleId())){
+		      logMessage += "Stop Id: " + stu.getStopId();
+		      
+		      logMessage += " Time: " + getTime(stu.getArrival().getTime());
+		  	  if (vehicleId != null) {
+			  	logMessage += ". Vehicle Id: " + vehicleId;
+		  	  }
+			  else{
+			  	logMessage += " Vehicle Id is blank";
+			  }
+		  	_log.info(logMessage);
+	      }
+		  	
 	      if (scheduledTime != null) {
 	        tpr.setTimepointScheduledTime(scheduledTime);
 	        predictionRecords.add(tpr);
@@ -112,7 +171,20 @@ public class QueuePredictionIntegrationServiceImpl extends
 		    // place in cache if we were able to extract a vehicle id
 		    getCache().put(hash(vehicleId, tripId), predictionRecords);
 		}
-	    
+	  }
+	  if(getQueueCount()){
+		  processedCount++;
+		  if (processedCount > _countInterval) {
+			  	long timeInterval = (new Date().getTime() - markTimestamp.getTime()); 
+				_log.info(getQueueDisplayName()
+						+ " predictions queue: processed " + _countInterval + " messages in "
+						+ (timeInterval/1000) 
+						+ " seconds. (" + (1000.0 * processedCount/timeInterval) 
+						+ ") records/second");
+	
+				markTimestamp = new Date();
+				processedCount = 0;
+		  }
 	  }
 	}
 	
@@ -167,6 +239,45 @@ public class QueuePredictionIntegrationServiceImpl extends
   public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
       String VehicleId, String TripId) {
     return getCache().getIfPresent(hash(VehicleId, TripId));
+  }
+  
+  private String getTime(Long milliseconds){
+	  SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+	  Calendar calendar = Calendar.getInstance();
+	  calendar.setTimeInMillis(milliseconds);
+	  return sdf.format(calendar.getTime()); 
+  }
+  
+  private boolean containsId(String idWithPrefix, String configId){
+	  int i = idWithPrefix.lastIndexOf('_');
+	  if (i >= 0) {
+	      String id = idWithPrefix.substring(i+1);
+	      if(id.equals(configId)){
+	    	  return true;
+	      }
+	  }
+	  return false;
+  }
+  
+  private String getStopId(){
+	  if(_stopId == null){
+		  refreshLoggingConfig();
+	  }
+	  return _stopId;
+  }
+  
+  private String getVehicleId(){
+	  if(_vehicleId == null){
+		  refreshLoggingConfig();
+	  }
+	  return _vehicleId;
+  }
+
+  private boolean getQueueCount(){
+	  if(_enableQueueCount == null){
+		  refreshLoggingConfig();
+	  }
+	  return _enableQueueCount;
   }
 
 }
