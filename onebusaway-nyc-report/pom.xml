@@ -68,7 +68,6 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.0</version>
         </dependency>
         <dependency>
           <groupId>org.onebusaway</groupId>
