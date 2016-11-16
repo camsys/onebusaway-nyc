@@ -23,11 +23,20 @@
 	<title>Admin Webapp</title>
 	<s:url var="url" value="/css/admin.css"/>
 	<link rel="stylesheet" type="text/css" href="${url}" />
-	
+
+	<s:url var="url" value="/css/jquery-ui.css" />
+	<link rel="stylesheet" type="text/css" href="${url}" />
+
 	<s:url var="url" value="/js/lib/jquery.js" />
 	<script type="text/javascript" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
+
+	<s:url var="url" value="/js/lib/jquery.ui.js" />
+	<script type="text/javascript" src="${url}">
+		<!-- //prevent jspx minimization -->
+	</script>
+
 	<s:url var="url" value="/js/oba/edit-psa.js" />
 	<script type="text/javascript" src="${url}">
 	<!-- //prevent jspx minimization -->
@@ -42,15 +51,17 @@
 			<s:set var="num" value="%{#stat.count-1}" />
 			<div id="form${num}">
 				<s:hidden name="psas[%{#stat.count-1}].id" value="%{#psa.id}" />
-				<s:textarea label="edit" name="psas[%{#stat.count-1}].text" value="%{#psa.text}" />
-				<a href='#' onclick="remove('#form${num}')">Delete</a>
+				<s:textarea cssClass="ui-widget ui-widget-content ui-corner-all" label="edit" name="psas[%{#stat.count-1}].text" value="%{#psa.text}" cssStyle="width:30em;"/>
+				<button onclick="remove('#form${num}')" class="ui-button" title="Delete">
+					<span class="ui-icon ui-icon-closethick"></span> Delete
+				</button>
 			</div>
 		</s:iterator>
 		<div>
-			<s:submit method="add" value="Add new row" />
+			<s:submit cssClass="ui-button" method="add" value="Add new row" />
 		</div>
 		<div>
-			<s:submit value="Save" />
+			<s:submit cssClass="ui-button" value="Save" />
 		</div>
 	</s:form>
 </body>
