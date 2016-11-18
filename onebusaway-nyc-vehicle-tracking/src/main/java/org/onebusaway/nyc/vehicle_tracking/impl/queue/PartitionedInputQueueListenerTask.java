@@ -43,6 +43,11 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   public void setDepotPartitionKey(String depotPartitionKey) {
 	  _depotPartitionKey = depotPartitionKey;
   }
+  
+  @Override
+  public String getDepotPartitionKey() {
+    return _depotPartitionKey;
+  }
 
   @Override
   public boolean processMessage(String address, byte[] buff) throws Exception{

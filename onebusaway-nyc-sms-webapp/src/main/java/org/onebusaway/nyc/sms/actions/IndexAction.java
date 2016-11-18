@@ -17,8 +17,10 @@ package org.onebusaway.nyc.sms.actions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -72,7 +74,7 @@ public class IndexAction extends SessionedIndexAction {
   private JGoogleAnalyticsTracker _googleAnalytics = null;
   
   private String _response = null;
-  
+    
   @Override
   public void initializeSession(String sessionId) {
     
@@ -99,15 +101,26 @@ public class IndexAction extends SessionedIndexAction {
     String commandString = getCommand(_query);
     String queryString = getQuery(_query);
 
+    if (!"R".equals(commandString)) {
+      _lastCommandString = commandString;
+    }
+    
     if(queryString != null && !queryString.isEmpty()) {
       _lastQuery = queryString;
       _searchResults = _searchService.getSearchResults(queryString, _resultFactory);
     } else if (commandString != null && commandString.equals("R") && _lastQuery != null && !_lastQuery.isEmpty()) {
-      _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
+      if (_lastCommandString != null) {
+        commandString = _lastCommandString;
+      }
+      if (_searchResults == null) {
+        _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
+      }
     } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && getRoutesInSearchResults().contains(commandString)) {
       // We are all set, let the existing stop results be processed given the route command string
     } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && StringUtils.isNumeric(commandString)) {
       // We are all set, let the existing stop results be processed given the number (which is the users choice of stop) command string
+    } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && "N".equals(commandString)) {
+      // We are all set, show neighboring stops
     } else if ((queryString == null || queryString.isEmpty()) && commandString != null && _searchResults != null && _searchResults.getSuggestions().size() > 0) {
       // We have suggestions with a command string for picking one of them or paginating
     } else if (queryString == null || queryString.isEmpty()) {
@@ -168,7 +181,7 @@ public class IndexAction extends SessionedIndexAction {
           
         // one or more paginated stops
         } else if("StopResult".equals(_searchResults.getResultType())) {
-          if (commandString != null && commandString.equals("N")) {
+          if ((commandString != null && commandString.equals("N")) || unfilteredDirections()) {
             
             _response = directionDisambiguationResponse();
             
@@ -196,6 +209,9 @@ public class IndexAction extends SessionedIndexAction {
             
           } else if(StringUtils.isNumeric(commandString)) {
             
+            // Save so it is refreshed we still have it.
+            List<SearchResult> oldMatches = new ArrayList<SearchResult>(_searchResults.getMatches());
+            
             StopResult selectedStop = (StopResult)_searchResults.getMatches().get(Integer.parseInt(commandString) - 1);
             _searchResults.getMatches().clear();
             _searchResults.getMatches().add(selectedStop);
@@ -208,7 +224,8 @@ public class IndexAction extends SessionedIndexAction {
             }
            
             _response = singleStopResponse(null);
-            _searchResults = null;
+            _searchResults.getMatches().clear();
+            _searchResults.getMatches().addAll(oldMatches);
             
           } else if(_searchResults.getMatches().size() > 1) {
             
@@ -589,27 +606,30 @@ public class IndexAction extends SessionedIndexAction {
     List<String> choices = new ArrayList<String>();
     List<String> choiceNumbers = new ArrayList<String>();
     
-    for (SearchResult searchResult : _searchResults.getMatches()) {
-      StopResult stopResult = (StopResult)searchResult;
+    // Reshape search results: split search results per-direction
+    List<SearchResult> directionSearchResults = new ArrayList<SearchResult>();
+  
+    Iterator<SearchResult> results = _searchResults.getMatches().iterator();
+    while(results.hasNext()) {
+      StopResult stopResult = (StopResult) results.next();
       
-      RouteAtStop routeAtStopInFilter = (RouteAtStop)CollectionUtils.find(stopResult.getRoutesAvailable(), new Predicate() {
-        
-        @Override
-        public boolean evaluate(Object object) {
-          RouteAtStop routeAtStop = (RouteAtStop)object;
-          if (routeAtStop.getRoute().equals(_searchResults.getRouteFilter().toArray()[0])) {
-            return true;
-          }
-          return false;
-        }
-      });
+      RouteAtStop routeAtStopInFilter = findRouteAtStop(stopResult);
       
-      String destination = routeAtStopInFilter.getDirections().get(0).getDestination();
+      for (RouteDirection routeDirection : routeAtStopInFilter.getDirections()) {
+        // New stop result
+        RouteAtStop rs = new RouteAtStop(routeAtStopInFilter.getRoute(), Collections.singletonList(routeDirection));
+        StopResult newStopResult = new StopResult(stopResult.getStop(), Collections.singletonList(rs), stopResult.matchesRouteIdFilter());
+        directionSearchResults.add(newStopResult);
+        String destination = routeDirection.getDestination();
+        int choiceNumber = directionSearchResults.indexOf(newStopResult) + 1;
+        choiceNumbers.add(String.valueOf(choiceNumber));
+        choices.add(choiceNumber + ") " + destination);
+      }
       
-      int choiceNumber = _searchResults.getMatches().indexOf(searchResult) + 1;
-      choiceNumbers.add(String.valueOf(choiceNumber));
-      choices.add(choiceNumber + ") " + destination);
+      results.remove();
     }
+    
+    _searchResults.getMatches().addAll(directionSearchResults);
     
     String footer = "Send:\n";
     footer += StringUtils.join(choiceNumbers, " or ");
@@ -650,6 +670,33 @@ public class IndexAction extends SessionedIndexAction {
     }
     
     return header + body + footer;
+  }
+  
+  private RouteAtStop findRouteAtStop(StopResult stopResult) {
+    return (RouteAtStop)CollectionUtils.find(stopResult.getRoutesAvailable(), new Predicate() {
+      
+      @Override
+      public boolean evaluate(Object object) {
+        RouteAtStop routeAtStop = (RouteAtStop)object;
+        if (routeAtStop.getRoute().equals(_searchResults.getRouteFilter().toArray()[0])) {
+          return true;
+        }
+        return false;
+      }
+    });
+  }
+  
+  private boolean unfilteredDirections() {
+    if (_searchResults.getRouteFilter().isEmpty())
+      return false;
+    Iterator<SearchResult> results = _searchResults.getMatches().iterator();
+    while(results.hasNext()) {
+      StopResult stopResult = (StopResult) results.next();
+      RouteAtStop routeAtStop = findRouteAtStop(stopResult);
+      if (routeAtStop != null && !routeAtStop.getDirections().isEmpty() && routeAtStop.getDirections().size() > 1)
+        return true;
+    }
+    return false;
   }
       
   private String singleStopResponse(String message) throws Exception {
@@ -954,6 +1001,7 @@ public class IndexAction extends SessionedIndexAction {
         return false;
       }
     });
+    
   }
   
   /**

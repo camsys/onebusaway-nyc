@@ -62,6 +62,15 @@
         <sec:logout invalidate-session="true" logout-url="/logout.action" />
     </sec:http>
     
+    <bean id="psaHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
+        <property name="target" value="hibernateAnnotatedClasses" />
+        <property name="values">
+            <list>
+                <value>org.onebusaway.nyc.util.model.PublicServiceAnnouncement</value>
+            </list>
+        </property>
+    </bean>
+    
  
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
@@ -111,5 +120,9 @@
    <bean id="logoutEventListener" class="org.onebusaway.nyc.admin.event.handler.LogoutEventListener" />
    
    <bean id="jsonTool" class="com.google.gson.Gson" />
+   
+   <bean class="org.onebusaway.util.service.psa.PsaDaoImpl" />
+   
+   <bean class="org.onebusaway.util.service.psa.PsaServiceImpl" />
    
 </beans>

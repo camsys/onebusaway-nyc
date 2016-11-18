@@ -70,10 +70,10 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-          <groupId>quartz</groupId>
-          <artifactId>quartz</artifactId>
-          <version>1.5.2</version>
-          </dependency>
+		    <groupId>org.quartz-scheduler</groupId>
+		    <artifactId>quartz</artifactId>
+		    <version>2.2.3</version>
+		</dependency>
 		<!-- OneBusAway Dependencies -->
 		<dependency>
 			<groupId>org.onebusaway</groupId>

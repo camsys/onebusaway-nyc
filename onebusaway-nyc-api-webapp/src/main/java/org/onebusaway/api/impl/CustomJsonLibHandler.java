@@ -70,8 +70,7 @@ public class CustomJsonLibHandler implements ContentTypeHandler {
         value = jsonArray.toString();
       } else {
         JSONObject jsonObject = JSONObject.fromObject(obj);
-        
-        value = jsonObject.toString().replace("\\\\", "\\");
+        value = jsonObject.toString();
       }
     }
 

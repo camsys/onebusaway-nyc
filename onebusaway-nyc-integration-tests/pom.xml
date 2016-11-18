@@ -599,7 +599,7 @@
                         </goals>
                         <configuration>
                             <configuration>
-                                <home>${project.build.directory}/tomcat5x/onebusaway-nyc-vehicle-tracking-webapp</home>
+                                <home>${project.build.directory}/tomcat7x/onebusaway-nyc-vehicle-tracking-webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
 										<!-- Use this to attach the debugger to the VTW running within cargo -->
@@ -634,7 +634,7 @@
                         <configuration>
 
                             <configuration>
-                                <home>${project.build.directory}/tomcat5x/webapp</home>
+                                <home>${project.build.directory}/tomcat7x/webapp</home>
                                 <properties>
 				    <onebusaway_prefix>${basedir}</onebusaway_prefix>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
@@ -680,10 +680,10 @@
                         </goals>
                         <configuration>
 			  <container>
-			    <containerId>tomcat5x</containerId>
+			    <containerId>tomcat7x</containerId>
 			  </container>
                             <configuration>
-                                <home>${project.build.directory}/tomcat5x/webapp</home>
+                                <home>${project.build.directory}/tomcat7x/webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
                                     <cargo.servlet.port>${org.onebusaway.webapp.port}</cargo.servlet.port>
@@ -705,10 +705,10 @@
                         </goals>
                         <configuration>
 			  <container>
-			    <containerId>tomcat5x</containerId>
+			    <containerId>tomcat7x</containerId>
 			  </container>
                             <configuration>
-                                <home>${project.build.directory}/tomcat5x/onebusaway-nyc-vehicle-tracking-webapp</home>
+                                <home>${project.build.directory}/tomcat7x/onebusaway-nyc-vehicle-tracking-webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
                                     <cargo.servlet.port>${org.onebusaway.transit_data_federation_webapp.port}</cargo.servlet.port>

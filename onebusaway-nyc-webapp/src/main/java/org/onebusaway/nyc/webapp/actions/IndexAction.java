@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.webapp.psa.MessageService;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,6 +41,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   
   @Autowired
   private RealtimeService _realtimeService;
+  
+  @Autowired
+  private MessageService _messageService;
 
   public String getGoogleMapsClientId() {
     return _configurationService.getConfigurationValueAsString("display.googleMapsClientId", "");
@@ -57,7 +61,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     List<ServiceAlertBean> results = _realtimeService.getServiceAlertsGlobal();
     return (results != null && results.size() > 0) ? results : null;
   }
-
+  
+  public String getPsa() {
+    return _messageService.getMessage();
+  }
+  
   @Override
   public String execute() throws Exception {
     ActionContext context = ActionContext.getContext();
