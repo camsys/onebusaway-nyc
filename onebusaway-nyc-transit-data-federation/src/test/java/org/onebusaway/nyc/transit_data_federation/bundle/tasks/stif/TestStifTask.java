@@ -20,16 +20,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifAggregatorImpl;
+
 import static org.junit.Assert.*;
 
 public class TestStifTask {
@@ -53,6 +53,7 @@ public class TestStifTask {
 		reader = new BufferedReader(new FileReader(file));
 		dscToTripMap = new HashMap<String, List<AgencyAndId>>();
 		tripToDscMap = new HashMap<AgencyAndId, String>();
+		task.init();//post contstruct doesn't work with tests
 	}
 
 	@Test
@@ -102,11 +103,11 @@ public class TestStifTask {
 	
 	@Test
 	public void testTruncateId() {
-	  assertNull(task.truncateId(null));
-	  assertEquals("", task.truncateId(""));
-	  assertEquals("", task.truncateId(" aeiouy"));
-	  assertEquals("MTABC_CPPA4-CP_A4-Wkd-10-SDn_E_450082_61200_QM5_805_rphn_39918", task.truncateId("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450082_61200_QM5_805_orphan_39918"));
-	  assertTrue(task.truncateId("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450082_61200_QM5_805_orphan_39918").length() < 64);
+	  assertNull(StifAggregatorImpl.truncateId(null));
+	  assertEquals("", StifAggregatorImpl.truncateId(""));
+	  assertEquals("", StifAggregatorImpl.truncateId(" aeiouy"));
+	  assertEquals("MTABC_CPPA4-CP_A4-Wkd-10-SDn_E_450082_61200_QM5_805_rphn_39918", StifAggregatorImpl.truncateId("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450082_61200_QM5_805_orphan_39918"));
+	  assertTrue(StifAggregatorImpl.truncateId("MTABC_CPPA4-CP_A4-Weekday-10-SDon_E_ 450082_61200_QM5_805_orphan_39918").length() < 64);
 	}
 	
 	//@Test

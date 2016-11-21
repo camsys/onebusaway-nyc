@@ -61,6 +61,21 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
 
   @Override
   public int compareTo(StifTrip o) {
+    // prioritize pullout trips before revenue or deadhead trips
+    if (o.firstStopTime == firstStopTime 
+        && type == StifTripType.PULLOUT
+        && ( o.type == StifTripType.DEADHEAD 
+          || o.type == StifTripType.REVENUE 
+            )){
+      return -1;
+    } else if (o.firstStopTime == firstStopTime
+        && o.type == StifTripType.PULLOUT
+        && ( type == StifTripType.DEADHEAD
+          || type == StifTripType.REVENUE) 
+        ){
+      return 1;
+    }
+    
     return firstStopTime - o.firstStopTime;
   }
 

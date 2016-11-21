@@ -127,7 +127,7 @@ public class StifTripLoaderSupport {
     return stopIdsByLocation.get(originLocation);
   }
 
-  TripIdentifier getTripAsIdentifier(final Trip trip) {
+  public TripIdentifier getTripAsIdentifier(final Trip trip) {
     String routeName = trip.getRoute().getId().getId();
     int startTime = -1, endTime = -1;
     String startStop;
@@ -228,7 +228,7 @@ public class StifTripLoaderSupport {
       String run = null;
       String[] parts = trip.getId().getId().toUpperCase().split("_");
       if (parts.length > 2) {
-        //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
+        //hack the run out of the trip id.  This depends on the MTA maintaining
         //their current trip id format.
         //for MTA Bus Co, this is not necessary, we hope
         //also works for new NYCT GTFS format.

@@ -18,12 +18,13 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,13 +32,13 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifLoaderImpl;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 
 public class TestStifTripLoaderTest {
@@ -47,7 +48,7 @@ public class TestStifTripLoaderTest {
   @BeforeClass
   public static void setUp() {
     BasicConfigurator.configure();
-    _log.setLevel(Level.DEBUG);
+    _log.setLevel(Level.INFO);
   }
   
   @Test
@@ -95,10 +96,10 @@ public class TestStifTripLoaderTest {
     loader.setLogger(new MultiCSVLogger());
     loader.setGtfsDao(dao);
     
-    _log.info("reading stif");
+    _log.debug("reading stif");
     loader.run(in, new File(stifFile));
     Map<String, List<AgencyAndId>> mapping = loader.getTripMapping();
-    _log.info("done mapping stif");
+    _log.debug("done mapping stif");
     
     // get trip IDs by sign code. 
     // 4013 has a non-rev first stop.
@@ -230,6 +231,7 @@ public class TestStifTripLoaderTest {
     for (AgencyAndId trip:trips) {
       assertTrue(dao.getTripForId(trip) != null );
     }
+    
 
   }
   
@@ -266,7 +268,7 @@ public class TestStifTripLoaderTest {
     assertEquals("CS", strips.get(1).nextTripOperatorDepot);
     assertEquals("FP", strips.get(2).depot);
     assertEquals("FP", strips.get(2).nextTripOperatorDepot);
- 
-  }
+    
 
+  }
 }
