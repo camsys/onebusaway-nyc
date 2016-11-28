@@ -465,7 +465,7 @@
                                 <argument>${project.build.directory}/transit-data-bundle/si</argument>
                             </arguments>
                         </configuration>
-                    </execution>
+                    </execution> -->
                     <execution>
                         <id>graph-builder-execution-2012Jan_SIB63M34_r20_b01</id>
                         <phase>pre-integration-test</phase>
@@ -488,7 +488,7 @@
                                 <argument>${project.build.directory}/transit-data-bundle/2012Jan_SIB63M34_r20_b01</argument>
                             </arguments>
                         </configuration>
-                    </execution>                
+                    </execution>           
                     <execution>
                         <id>graph-builder-execution-2013June_Prod_r04_b03</id>
                         <phase>pre-integration-test</phase>
@@ -534,7 +534,7 @@
                                 <argument>${project.build.directory}/transit-data-bundle/2013June_Prod_r03_b02</argument>
                             </arguments>
                         </configuration>
-                    </execution> -->
+                    </execution> 
 		</executions>
             </plugin>
 	    <!-- Start up an embedded database for sharing the user database between webapps --> 
