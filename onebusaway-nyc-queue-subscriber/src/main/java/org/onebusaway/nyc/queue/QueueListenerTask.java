@@ -11,8 +11,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.onebusaway.nyc.queue.DNSResolver;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

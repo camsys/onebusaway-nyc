@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.jsp.JspException;
 
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.wiki.model.NycWikiPageWrapper;
 import org.onebusaway.wiki.api.WikiDocumentService;

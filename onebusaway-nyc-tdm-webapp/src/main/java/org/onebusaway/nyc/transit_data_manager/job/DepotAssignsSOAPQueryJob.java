@@ -9,7 +9,7 @@ import javax.xml.soap.*;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;

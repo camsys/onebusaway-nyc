@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.cache.Cache;

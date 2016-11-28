@@ -18,16 +18,13 @@ package org.onebusaway.nyc.presentation.impl.routes;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.onebusaway.nyc.presentation.comparator.AgencyAndRouteComparator;
-import org.onebusaway.nyc.presentation.comparator.AlphanumComparator;
 import org.onebusaway.nyc.presentation.comparator.RouteComparator;
-import org.onebusaway.nyc.presentation.impl.realtime.PresentationServiceImpl;
 import org.onebusaway.nyc.presentation.service.routes.RouteListService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.slf4j.Logger;

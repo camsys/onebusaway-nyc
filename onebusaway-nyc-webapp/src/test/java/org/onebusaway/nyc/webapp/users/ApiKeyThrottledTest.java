@@ -9,7 +9,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.users.impl.ApiKeyThrottledServiceImpl;
 import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottlingCacheService;
 
@@ -117,7 +117,7 @@ public class ApiKeyThrottledTest {
   }
   
   //mock configuration service that I can work with
-  private class ConfigurationServiceMockImpl implements ConfigurationService{
+  private class ConfigurationServiceMockImpl implements ConfigurationService {
 
 	private Map<String, String> map = new HashMap<String, String>();
 	  
@@ -132,6 +132,14 @@ public class ApiKeyThrottledTest {
 	public Float getConfigurationValueAsFloat(String configurationItemKey, Float defaultValue) {
 		if(map.containsKey(configurationItemKey)){
 			return Float.parseFloat(map.get(configurationItemKey));
+		}
+		return defaultValue;
+	}
+
+	@Override
+	public Double getConfigurationValueAsDouble(String configurationItemKey, Double defaultValue) {
+		if(map.containsKey(configurationItemKey)){
+			return Double.parseDouble(map.get(configurationItemKey));
 		}
 		return defaultValue;
 	}

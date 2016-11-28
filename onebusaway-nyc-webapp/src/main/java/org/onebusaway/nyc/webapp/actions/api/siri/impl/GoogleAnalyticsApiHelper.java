@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.webapp.actions.api.siri.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class GoogleAnalyticsApiHelper {

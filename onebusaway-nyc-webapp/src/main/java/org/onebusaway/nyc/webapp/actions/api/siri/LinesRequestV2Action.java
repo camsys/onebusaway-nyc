@@ -18,18 +18,10 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.siri.support.SiriUpcomingServiceExtension;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.ServiceAlertsHelperV2;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
-import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri_2.AnnotatedLineStructure;
-import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.ExtensionsStructure;
 import uk.org.siri.siri_2.LinesDeliveryStructure;

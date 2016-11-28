@@ -21,13 +21,12 @@ import javax.xml.stream.XMLStreamReader;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.vtw.VehiclePulloutService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.vtw.PullOutApiLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.stereotype.Component;
 
 import tcip_final_4_0_0.CPTVehicleIden;
 import tcip_final_4_0_0.ObaSchPullOutList;

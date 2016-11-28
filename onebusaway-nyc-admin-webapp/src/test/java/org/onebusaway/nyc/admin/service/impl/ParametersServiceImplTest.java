@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.nyc.admin.service.ParametersService;
 import org.onebusaway.nyc.admin.util.ConfigurationKeyTranslator;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 
 /**
  * Tests {@link ParametersService}

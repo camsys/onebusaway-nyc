@@ -1,9 +1,8 @@
 package org.onebusaway.nyc.webapp.actions.admin.vehiclestatus;
 
 import org.onebusaway.nyc.admin.model.ui.VehicleDetail;
-import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
 import org.onebusaway.nyc.admin.service.VehicleStatusService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 
 import org.slf4j.Logger;
