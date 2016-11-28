@@ -524,25 +524,14 @@ OBA.Popups = (function() {
 						
 						// time mode
 						if(timePrediction != null && !layover) {
-							timePrediction += ", " + distance;
-							
-							if(isDepartureTimeAvailable){
-								if(layover === true) {
-									if(isDepartureOnSchedule){
-										timePrediction += layoverSchedDepartureText;
-									}else{
-										timePrediction += layoverLateDepartureText;
-									}
-								}
-								else if(prevTrip === true){
-									if(isDepartureOnSchedule){
-										timePrediction += prevTripSchedDepartureText;
-									} else {
-										timePrediction += prevTripLateDepartureText;
-									}
-								}
+							timePrediction += ", " + distance;				
+							if(isDepartureTimeAvailable && prevTrip === true){
+								if(isDepartureOnSchedule){
+									timePrediction += prevTripSchedDepartureText;
+								} else {
+									timePrediction += prevTripLateDepartureText;
+								}	
 							}
-
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
 							html += '<li class="arrival' + lastClass + '">' + timePrediction + '</li>';
 
@@ -564,6 +553,12 @@ OBA.Popups = (function() {
 									}
 								}
 							}
+							else{
+								if(layover === true){
+									distance += layoverLateDepartureText;
+								}
+							}
+
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
 							html += '<li class="arrival' + lastClass + '">' + distance + '</li>';
