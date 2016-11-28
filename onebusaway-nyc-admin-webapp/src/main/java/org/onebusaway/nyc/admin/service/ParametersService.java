@@ -2,7 +2,7 @@ package org.onebusaway.nyc.admin.service;
 
 import java.util.Map;
 
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 
 /**
  * Saves admin parameter values on TDM server. Uses {@link ConfigurationService} to persist new 

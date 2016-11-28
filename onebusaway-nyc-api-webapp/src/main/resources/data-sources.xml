@@ -17,7 +17,7 @@
     
     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="${config.path}/remoting/configuration-service"/>
-        <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
+        <property name="serviceInterface" value="org.onebusaway.util.services.configuration.ConfigurationService" />
     </bean>
 
 	<!-- Added for eclipse use, change "validate" to "create" on initial startup, then change back -Phil -->

@@ -8,7 +8,7 @@ import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.EmailService;
 import org.onebusaway.nyc.admin.service.server.BundleServerService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

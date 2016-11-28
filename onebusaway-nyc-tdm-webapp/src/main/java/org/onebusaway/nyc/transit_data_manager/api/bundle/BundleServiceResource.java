@@ -32,7 +32,7 @@ import org.onebusaway.nyc.transit_data_manager.bundle.BundlesListMessage;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.Bundle;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.BundleDeployStatus;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;

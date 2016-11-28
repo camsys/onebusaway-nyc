@@ -17,7 +17,7 @@
     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl"
             value="http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/remoting/configuration-service" />
-        <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
+        <property name="serviceInterface" value="org.onebusaway.util.services.configuration.ConfigurationService" />
     </bean>
 
     <bean id="apiKeyValidationService" class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl">

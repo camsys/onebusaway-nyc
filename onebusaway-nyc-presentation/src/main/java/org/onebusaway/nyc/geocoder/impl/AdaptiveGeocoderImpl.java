@@ -22,8 +22,7 @@ import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
 import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -54,7 +53,7 @@ public class AdaptiveGeocoderImpl extends EnterpriseFilteredGeocoderBase {
   		if (geocoderInstance.equals("google") && (geocoder == null || !geocoder.getClass().equals(EnterpriseGoogleGeocoderImpl.class))) {
   			EnterpriseGoogleGeocoderImpl impl = new EnterpriseGoogleGeocoderImpl();
             impl.setResultBiasingBounds(_resultBiasingBounds);
-            impl.setConfiguration((ConfigurationServiceImpl) _configurationService);
+            impl.setConfiguration(_configurationService);
             geocoder = impl;
   		} else if (geocoderInstance.equals("bing") && (geocoder == null || !geocoder.getClass().equals(EnterpriseBingGeocoderImpl.class))) {
   			EnterpriseBingGeocoderImpl impl = new EnterpriseBingGeocoderImpl();

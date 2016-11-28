@@ -2,7 +2,7 @@ package org.onebusaway.nyc.transit_data_manager.api.config;
 
 import org.onebusaway.nyc.transit_data_manager.bundle.model.ConfigDeployStatus;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDeployer;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;

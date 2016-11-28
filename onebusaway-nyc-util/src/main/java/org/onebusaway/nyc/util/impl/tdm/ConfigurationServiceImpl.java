@@ -9,7 +9,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.container.refresh.RefreshService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +17,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import com.google.gson.JsonObject;
 
-public class ConfigurationServiceImpl implements ConfigurationService,
-		org.onebusaway.util.services.configuration.ConfigurationService {
-
+public class ConfigurationServiceImpl implements ConfigurationService {
 
 	private static Logger _log = LoggerFactory.getLogger(ConfigurationServiceImpl.class);
 

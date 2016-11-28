@@ -53,7 +53,7 @@
 
     <bean name="/configuration-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
         <property name="service" ref="configurationService" />
-        <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
+        <property name="serviceInterface" value="org.onebusaway.util.services.configuration.ConfigurationService" />
     </bean>
     
 	<!-- For Integration Testing -->

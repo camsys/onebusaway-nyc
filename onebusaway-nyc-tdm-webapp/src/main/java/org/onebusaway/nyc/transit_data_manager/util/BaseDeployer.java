@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.util;
 
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.FileUtility;
 
 import com.amazonaws.auth.AWSCredentials;

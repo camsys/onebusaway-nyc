@@ -1,29 +1,20 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.List;
 
 import javax.servlet.ServletException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.struts2.ServletActionContext;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 public class PingAction extends OneBusAwayNYCActionSupport {
   

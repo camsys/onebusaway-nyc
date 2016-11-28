@@ -41,7 +41,7 @@
  */
 package org.onebusaway.nyc.webapp.users.impl;
 
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottledService;
 import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottlingCacheService;
 import org.slf4j.Logger;
