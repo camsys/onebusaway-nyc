@@ -16,7 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.utility.DateLibrary;
 
 import org.apache.commons.lang3.StringUtils;

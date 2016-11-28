@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
 import org.onebusaway.utility.DateLibrary;
 

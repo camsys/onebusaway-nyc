@@ -24,7 +24,9 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.transit_data.model.config.BundleMetadata;
+import org.onebusaway.transit_data_federation.impl.config.BundleConfigDao;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
 import org.onebusaway.util.services.configuration.ConfigurationService;
@@ -54,8 +56,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  *
  */
 @SuppressWarnings("rawtypes")
-public class BundleManagementServiceImpl implements BundleManagementService
-{
+public class BundleManagementServiceImpl implements BundleManagementService,
+		org.onebusaway.transit_data_federation.services.bundle.BundleManagementService {
 
 	// how long to wait for inference threads to exit before forcefully stopping them
 	// when the command to change the bundle has been received.
@@ -64,6 +66,8 @@ public class BundleManagementServiceImpl implements BundleManagementService
   private static final int MAX_EXPECTED_THREADS = 3000;
 
 	private static Logger _log = LoggerFactory.getLogger(BundleManagementServiceImpl.class);
+
+	protected BundleConfigDao _bundleConfigDao;
 
 	private List<BundleItem> _allBundles = new ArrayList<BundleItem>();
 
@@ -212,6 +216,11 @@ public class BundleManagementServiceImpl implements BundleManagementService
         "tdm.bundleSwitchFrequencyMin", "60"));
   }
 
+	@Autowired
+	public void setBundleConfigDao(BundleConfigDao bundleConfigDao) {
+		_bundleConfigDao = bundleConfigDao;
+	}
+
 	@PostConstruct
 	protected void setup() throws Exception {
 		if(_standaloneMode == true) {
@@ -238,6 +247,39 @@ public class BundleManagementServiceImpl implements BundleManagementService
 	/******
 	 * Service methods
 	 ******/
+
+	@Override
+	public String getActiveBundleId() {
+
+		if (_bundleConfigDao == null) {
+			if(_currentBundleId == null){
+				_log.error("config error:  bundleConfigDao is null");
+				return null;
+			}
+			else{
+				_log.warn("config error:  bundleConfigDao is null, returning currentBundleId value instead.");
+				_log.debug("Legacy Bundle most likely not detected");
+				return _currentBundleId;
+			}
+		}
+
+		if (_bundleConfigDao.getBundleMetadata() == null) {
+			_log.error("data error:  getBundleMetadata is null");
+			return Integer.toString((_bundleRootPath.hashCode()));
+		}
+
+		return _bundleConfigDao.getBundleMetadata().getId();
+	}
+
+	@Override
+	public BundleMetadata getBundleMetadata() {
+		if (_bundleConfigDao == null) {
+			_log.error("config error:  bundleConfigDao is null");
+			return null;
+		}
+		return _bundleConfigDao.getBundleMetadata();
+	}
+
 	@Override
 	public List<BundleItem> getAllKnownBundles() {
 		return _allBundles;
