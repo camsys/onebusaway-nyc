@@ -80,7 +80,7 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
     if( keys == null || keys.length == 0)
       return false;
 
-    return _keyService.getPermission(keys[0], "api");
+    return _keyService.getPermission(keys[0], "api") == ApiKeyPermissionService.Status.AUTHORIZED;
   }
 
   private String unauthorized(ActionInvocation invocation, String reason) throws IOException {

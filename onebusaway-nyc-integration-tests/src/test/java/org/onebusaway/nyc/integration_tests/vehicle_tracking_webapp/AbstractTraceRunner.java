@@ -32,10 +32,10 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.integration_tests.TraceSupport;
+import org.onebusaway.nyc.util.DistanceLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
-import org.opentripplanner.routing.impl.DistanceLibrary;
 
 import com.vividsolutions.jts.geom.Coordinate;
 

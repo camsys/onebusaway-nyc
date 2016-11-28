@@ -36,7 +36,6 @@ import org.onebusaway.api.model.transit.service_alerts.SituationConditionDetails
 import org.onebusaway.api.model.transit.service_alerts.SituationConsequenceV2Bean;
 import org.onebusaway.api.model.transit.service_alerts.SituationV2Bean;
 import org.onebusaway.api.model.transit.service_alerts.TimeRangeV2Bean;
-import org.onebusaway.api.model.transit.tripplanning.MinTravelTimeToStopV2Bean;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
