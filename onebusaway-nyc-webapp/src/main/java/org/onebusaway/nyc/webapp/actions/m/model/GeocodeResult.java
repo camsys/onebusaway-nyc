@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.webapp.actions.m.model;
 
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 
 /**
@@ -12,9 +12,9 @@ import org.onebusaway.nyc.presentation.model.SearchResult;
  */
 public class GeocodeResult implements SearchResult {
 
-	private NycGeocoderResult result;
+	private EnterpriseGeocoderResult result;
 
-	public GeocodeResult(NycGeocoderResult result) {
+	public GeocodeResult(EnterpriseGeocoderResult result) {
 		this.result = result;
 	}
 

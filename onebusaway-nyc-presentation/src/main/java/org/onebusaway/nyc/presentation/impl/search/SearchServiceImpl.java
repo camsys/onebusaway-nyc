@@ -1,11 +1,11 @@
 package org.onebusaway.nyc.presentation.impl.search;
 
 import org.onebusaway.exceptions.NoSuchStopServiceException;
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.presentation.comparator.RouteComparator;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
@@ -67,7 +67,7 @@ public class SearchServiceImpl implements SearchService {
 	private static final int MAX_STOPS = 10;
 
 	@Autowired
-	private NycGeocoderService _geocoderService;
+	private EnterpriseGeocoderService _geocoderService;
 
 	@Autowired
 	private NycTransitDataService _nycTransitDataService;
@@ -433,9 +433,9 @@ public class SearchServiceImpl implements SearchService {
 	}
 
 	private void tryAsGeocode(SearchResultCollection results, String query, SearchResultFactory resultFactory) {
-		List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(query);
+		List<EnterpriseGeocoderResult> geocoderResults = _geocoderService.enterpriseGeocode(query);
 
-		for (NycGeocoderResult result : geocoderResults) {
+		for (EnterpriseGeocoderResult result : geocoderResults) {
 			if (geocoderResults.size() == 1) {
 				results.addMatch(resultFactory.getGeocoderResult(result, results.getRouteFilter()));
 			} else {

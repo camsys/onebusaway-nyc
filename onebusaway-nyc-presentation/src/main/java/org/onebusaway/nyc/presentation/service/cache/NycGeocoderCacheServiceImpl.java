@@ -6,14 +6,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-public class NycGeocoderCacheServiceImpl extends NycCacheService<String, List<NycGeocoderResult>> {
+public class NycGeocoderCacheServiceImpl extends NycCacheService<String, List<EnterpriseGeocoderResult>> {
 
   private static final int DEFAULT_CACHE_TIMEOUT = 3600;
   private static final String GEOCODER_CACHE_TIMEOUT_KEY = "cache.expiry.geocoder";
@@ -21,7 +21,7 @@ public class NycGeocoderCacheServiceImpl extends NycCacheService<String, List<Ny
   @Autowired
   private ConfigurationService _configurationService;
 
-  public synchronized Cache<String, List<NycGeocoderResult>> getCache() {
+  public synchronized Cache<String, List<EnterpriseGeocoderResult>> getCache() {
     return getCache(_configurationService.getConfigurationValueAsInteger(GEOCODER_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT), "GEOCODER", true);
   }
 
@@ -31,11 +31,11 @@ public class NycGeocoderCacheServiceImpl extends NycCacheService<String, List<Ny
     if (_cache == null) return;
     int timeout = _configurationService.getConfigurationValueAsInteger(GEOCODER_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
     _log.info("rebuilding GEOCODER cache with " + _cache.size() + " entries after refresh with timeout=" + timeout + "...");
-    ConcurrentMap<String, List<NycGeocoderResult>> map = _cache.asMap();
+    ConcurrentMap<String, List<EnterpriseGeocoderResult>> map = _cache.asMap();
     _cache = CacheBuilder.newBuilder()
         .expireAfterWrite(timeout, TimeUnit.SECONDS)
         .build();
-    for (Entry<String, List<NycGeocoderResult>> entry : map.entrySet()) {
+    for (Entry<String, List<EnterpriseGeocoderResult>> entry : map.entrySet()) {
       _cache.put(entry.getKey(), entry.getValue());
     }
     _log.info("done");
@@ -50,7 +50,7 @@ public class NycGeocoderCacheServiceImpl extends NycCacheService<String, List<Ny
     return hash((String) factors[0]);
   }
 
-  public void store(String key, List<NycGeocoderResult> value) {
+  public void store(String key, List<EnterpriseGeocoderResult> value) {
     int timeout = _configurationService.getConfigurationValueAsInteger(
         GEOCODER_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
     super.store(key, value, timeout);

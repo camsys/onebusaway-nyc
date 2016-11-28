@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
@@ -75,7 +75,7 @@ public class AbstractSearchResultFactoryImplTest extends AbstractSearchResultFac
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult,
+  public SearchResult getGeocoderResult(EnterpriseGeocoderResult geocodeResult,
       Set<RouteBean> routeFilter) {
     // TODO Auto-generated method stub
     return null;

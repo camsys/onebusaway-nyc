@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
 import org.onebusaway.nyc.presentation.impl.search.AbstractSearchResultFactoryImpl;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
@@ -247,7 +247,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeFilter) {
+  public SearchResult getGeocoderResult(EnterpriseGeocoderResult geocodeResult, Set<RouteBean> routeFilter) {
     return new GeocodeResult(geocodeResult);
   }
 
