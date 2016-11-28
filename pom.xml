@@ -15,14 +15,15 @@
       <nyc_site_id>build.staging.obanyc.com</nyc_site_id>
       <nyc_site_deployment_base>scp://${nyc_site_id}/var/www/sites/developer/modules</nyc_site_deployment_base>
       <nyc_site_url>${site_deployment_base}/${project.name}/${project.version}</nyc_site_url>
-    	<onebusaway.gtfs.version>1.2.6</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
+
+    	<onebusaway.gtfs.version>1.3.12-SNAPSHOT</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
     	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
     	<onebusaway.siri_2.version>1.0.3</onebusaway.siri_2.version>
-    	<onebusaway.csv-entities.version>1.0.3</onebusaway.csv-entities.version>
+    	<onebusaway.csv-entities.version>1.1.6</onebusaway.csv-entities.version>
     	<struts.version>2.3.16.3</struts.version>
       <jetty.version>6.1.26</jetty.version>
       <spring.version>3.2.17.RELEASE</spring.version>
-      <onebusaway.app-modules.version>1.1.13.6-SNAPSHOT</onebusaway.app-modules.version>
+      <onebusaway.app-modules.version>1.1.15.35-cs-SNAPSHOT</onebusaway.app-modules.version>
       <gitDescribe>99999</gitDescribe>
       <xwiki.version>2.3.1</xwiki.version>
 		<xwiki.integration.version>0.0.2</xwiki.integration.version>
@@ -598,12 +599,12 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.5.6</version>
+                <version>1.7.5</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
-                <version>1.5.6</version>
+                <version>1.7.5</version>
             </dependency>
             <dependency>
                 <groupId>log4j</groupId>

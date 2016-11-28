@@ -98,8 +98,9 @@ public class QueuePredictionIntegrationServiceImpl extends
 	    for (StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
 	      TimepointPredictionRecord tpr = new TimepointPredictionRecord();
 	      // this validates the Agency_StopID convention
-	      tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId())); 
-	      tpr.setTimepointPredictedTime(stu.getArrival().getTime());
+	      tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId()));
+	      tpr.setTimepointPredictedArrivalTime(stu.getArrival().getTime());
+          tpr.setTimepointPredictedDepartureTime(stu.getDeparture().getTime());
 	      Long scheduledTime = stopTimeMap.get(stu.getStopId());
 	      
 	      if (scheduledTime != null) {

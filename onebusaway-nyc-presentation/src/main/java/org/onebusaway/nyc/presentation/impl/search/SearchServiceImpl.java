@@ -25,6 +25,7 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.net.URLDecoder;
@@ -46,7 +47,7 @@ import java.util.regex.Pattern;
  * @author jmaki
  *
  */
-@Component
+@Component("nycSearchServiceImpl")
 public class SearchServiceImpl implements SearchService {
 
 	// the pattern of what can be leftover after prefix/suffix matching for a

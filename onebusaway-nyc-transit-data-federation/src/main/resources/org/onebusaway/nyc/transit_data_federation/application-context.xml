@@ -50,11 +50,30 @@
 	<!-- Common Services -->
 	<bean id="shapePointsLibrary" class="org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary" />
 
-	<import resource="classpath:org/onebusaway/transit_data_federation/application-context-otp.xml" />
-
 	<context:component-scan base-package="org.onebusaway.transit_data_federation.impl" />
 
 	<bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
 
-	<bean id="tripPlannerConstants" class="org.onebusaway.transit_data_federation.model.tripplanner.TripPlannerConstants" />
+	<!-- Taken from org/onebusaway/transit_data_federation/application-context-services.xml -->
+	<bean id="transitDataServiceTemplate" class="org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl" />
+
+	<bean id="transitDataFederationHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
+		<property name="target" value="hibernateAnnotatedClasses" />
+		<property name="values">
+			<list>
+				<value>org.onebusaway.transit_data_federation.impl.realtime.BlockLocationRecord</value>
+				<value>org.onebusaway.transit_data_federation.impl.realtime.history.ScheduleDeviationHistory</value>
+				<value>org.onebusaway.transit_data_federation.impl.reporting.StopProblemReportRecord</value>
+				<value>org.onebusaway.transit_data_federation.impl.reporting.TripProblemReportRecord</value>
+				<value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertRecord</value>
+				<value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertLocalizedString</value>
+				<value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertTimeRange</value>
+				<value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertsSituationAffectsClause</value>
+				<value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertSituationConsequenceClause</value>
+			</list>
+		</property>
+	</bean>
+
+
+
 </beans>

@@ -836,7 +836,7 @@ public final class SiriSupportV2 {
 		if (distanceOfCallAlongTrip < 100) isNearFirstStop = true;
 
 		if (prediction != null) {
-			if (prediction.getTimepointPredictedTime() < responseTimestamp) {
+			if (prediction.getTimepointPredictedArrivalTime() < responseTimestamp) {
 				// TODO - LCARABALLO - should this be setExpectedArrivalTime?
 				if (!isNearFirstStop) {
 					onwardCallStructure.setExpectedArrivalTime(DateUtil.toXmlGregorianCalendar(responseTimestamp));
@@ -847,11 +847,11 @@ public final class SiriSupportV2 {
 			} else {
 				if (!isNearFirstStop){
 					onwardCallStructure.setExpectedArrivalTime(DateUtil
-							.toXmlGregorianCalendar(prediction.getTimepointPredictedTime()));
+							.toXmlGregorianCalendar(prediction.getTimepointPredictedArrivalTime()));
 				} 
 				else {
 					onwardCallStructure.setExpectedDepartureTime(DateUtil
-							.toXmlGregorianCalendar(prediction.getTimepointPredictedTime()));
+							.toXmlGregorianCalendar(prediction.getTimepointPredictedDepartureTime()));
 				}
 			}
 		}
@@ -903,7 +903,7 @@ public final class SiriSupportV2 {
 
 		if (prediction != null) {
 			// do not allow predicted times to be less than ResponseTimestamp
-			if (prediction.getTimepointPredictedTime() < responseTimestamp) {
+			if (prediction.getTimepointPredictedArrivalTime() < responseTimestamp) {
 				/*
 				 * monitoredCall has less precision than onwardCall (date vs.
 				 * timestamp) which results in a small amount of error when
@@ -918,10 +918,10 @@ public final class SiriSupportV2 {
 			} else {
 				monitoredCallStructure.setExpectedArrivalTime(DateUtil
 						.toXmlGregorianCalendar(prediction
-								.getTimepointPredictedTime()));
+								.getTimepointPredictedArrivalTime()));
 				monitoredCallStructure.setExpectedDepartureTime(DateUtil
 						.toXmlGregorianCalendar(prediction
-								.getTimepointPredictedTime()));
+								.getTimepointPredictedDepartureTime()));
 			}
 
 		}

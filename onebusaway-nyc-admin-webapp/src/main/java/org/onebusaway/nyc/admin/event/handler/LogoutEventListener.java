@@ -5,8 +5,8 @@ import org.onebusaway.nyc.util.logging.LoggingService;
 import org.onebusaway.users.model.IndexedUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.security.context.SecurityContext;
-import org.springframework.security.ui.session.HttpSessionDestroyedEvent;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.web.session.HttpSessionDestroyedEvent;
 
 /**
  * Calls {@link LoggingService} to log 'logout' event 
@@ -27,7 +27,7 @@ public class LogoutEventListener implements ApplicationListener<HttpSessionDestr
 	}
 	
 	/**
-	 * @param loggingSevice the loggingSevice to set
+	 * @param loggingService the loggingService to set
 	 */
 	@Autowired
 	public void setLoggingService(LoggingService loggingService) {

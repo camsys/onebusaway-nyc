@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
  * @author asutula
  *
  */
-@Component
+@Component("nycBundleSearchServiceImpl")
 public class BundleSearchServiceImpl implements BundleSearchService {
 
 	@Autowired
