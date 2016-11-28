@@ -83,9 +83,7 @@
         <property name="bundleStoreRoot" value="${bundle.location}" />
         <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
-
-    <bean class="org.onebusaway.nyc.transit_data_federation.impl.bundle.AppmodsBundleManagementServiceImpl" />
-
+    
     <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
         <property name="serviceAlertsUrl" value="${service.alerts.url}" />
         <property name="subscriptionPath" value="${service.alerts.subscription.path}" />        

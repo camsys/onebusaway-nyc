@@ -27,7 +27,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTrans
 import org.onebusaway.transit_data.model.config.BundleMetadata;
 import org.onebusaway.transit_data_federation.impl.config.BundleConfigDao;
 import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
-import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
 import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
@@ -56,8 +56,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  *
  */
 @SuppressWarnings("rawtypes")
-public class BundleManagementServiceImpl implements BundleManagementService,
-		org.onebusaway.transit_data_federation.services.bundle.BundleManagementService {
+public class BundleManagementServiceImpl implements BundleManagementService {
 
 	// how long to wait for inference threads to exit before forcefully stopping them
 	// when the command to change the bundle has been received.
