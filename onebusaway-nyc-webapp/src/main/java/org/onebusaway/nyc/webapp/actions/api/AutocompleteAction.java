@@ -19,8 +19,8 @@ import java.util.List;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ public class AutocompleteAction extends OneBusAwayNYCActionSupport {
   private NycTransitDataService _nycTransitDataService;
 
   @Autowired
-  private NycGeocoderService _geocoderService;
+  private EnterpriseGeocoderService _geocoderService;
 
   private List<String> suggestions = null;
 
@@ -56,7 +56,7 @@ public class AutocompleteAction extends OneBusAwayNYCActionSupport {
     suggestions = _nycTransitDataService.getSearchSuggestions(null, _term.toLowerCase());
 
     if (suggestions.size() == 0 && _term.length() >= 3) {
-    	List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(_term);
+    	List<EnterpriseGeocoderResult> geocoderResults = _geocoderService.enterpriseGeocode(_term);
       if (geocoderResults.size() > 0) {
         for (int i = 0; i < 10; i++) {
           suggestions.add(geocoderResults.get(i).getFormattedAddress());

@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.webapp.actions.api.model;
 
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 
 import java.util.List;
@@ -14,11 +14,11 @@ import java.util.List;
  */
 public class GeocodeResult implements SearchResult {
 
-	private NycGeocoderResult result;
+	private EnterpriseGeocoderResult result;
 
 	private List<SearchResult> nearbyRoutes;
 
-	public GeocodeResult(NycGeocoderResult result, List<SearchResult> nearbyRoutes) {
+	public GeocodeResult(EnterpriseGeocoderResult result, List<SearchResult> nearbyRoutes) {
 		this.result = result;
 		this.nearbyRoutes = nearbyRoutes;
 	}

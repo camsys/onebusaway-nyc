@@ -15,48 +15,56 @@
  */
 package org.onebusaway.nyc.geocoder.impl;
 
+import org.onebusaway.geocoder.enterprise.impl.EnterpriseBingGeocoderImpl;
+import org.onebusaway.geocoder.enterprise.impl.EnterpriseFilteredGeocoderBase;
+import org.onebusaway.geocoder.enterprise.impl.EnterpriseGoogleGeocoderImpl;
 import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
 import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderService;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
+import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * An implementation of OBA's geocoder class to plug into front-end apps that
  * require it.
  */
-
-public class AdaptiveGeocoderImpl extends FilteredGeocoderBase implements EnterpriseGeocoderService {
+public class AdaptiveGeocoderImpl extends EnterpriseFilteredGeocoderBase {
 
   @Autowired
   NycGeocoderCacheServiceImpl _geocoderCacheService;
 
-  NycGeocoderService geocoder;
+  @Autowired
+  private ConfigurationService _configurationService;
 
-	public List<NycGeocoderResult> nycGeocode(String location) {
+  EnterpriseGeocoderService geocoder;
+
+  private CoordinateBounds _resultBiasingBounds = null;
+
+  public void setResultBiasingBounds(CoordinateBounds bounds) {
+    _resultBiasingBounds = bounds;
+  }
+
+  public List<EnterpriseGeocoderResult> enterpriseGeocode(String location) {
     if (!_geocoderCacheService.containsKey(location)) {
       String geocoderInstance = _configurationService.getConfigurationValueAsString("display.geocoderInstance", "google");
-  		if (geocoderInstance.equals("google") && (geocoder == null || !geocoder.getClass().equals(GoogleGeocoderImpl.class))) {
-  			geocoder = new GoogleGeocoderImpl(this);
-  		} else if (geocoderInstance.equals("bing") && (geocoder == null || !geocoder.getClass().equals(BingGeocoderImpl.class))) {
-  			geocoder = new BingGeocoderImpl(this);
+  		if (geocoderInstance.equals("google") && (geocoder == null || !geocoder.getClass().equals(EnterpriseGoogleGeocoderImpl.class))) {
+  			EnterpriseGoogleGeocoderImpl impl = new EnterpriseGoogleGeocoderImpl();
+            impl.setResultBiasingBounds(_resultBiasingBounds);
+            impl.setConfiguration((ConfigurationServiceImpl) _configurationService);
+            geocoder = impl;
+  		} else if (geocoderInstance.equals("bing") && (geocoder == null || !geocoder.getClass().equals(EnterpriseBingGeocoderImpl.class))) {
+  			EnterpriseBingGeocoderImpl impl = new EnterpriseBingGeocoderImpl();
+            impl.setResultBiasingBounds(_resultBiasingBounds);
+            geocoder = impl;
       }
-  		_geocoderCacheService.store(location, geocoder.nycGeocode(location));
+  		_geocoderCacheService.store(location, geocoder.enterpriseGeocode(location));
     }
     return _geocoderCacheService.retrieve(location);
   }
 
-    @Override
-    public List<EnterpriseGeocoderResult> enterpriseGeocode(String location) {
-        List<NycGeocoderResult> nyc = nycGeocode(location);
-        List<EnterpriseGeocoderResult> results = new ArrayList<EnterpriseGeocoderResult>();
-        for (NycGeocoderResult r : nyc) {
-            results.add((EnterpriseGeocoderResult) r);
-        }
-        return results;
-    }
+
 }
