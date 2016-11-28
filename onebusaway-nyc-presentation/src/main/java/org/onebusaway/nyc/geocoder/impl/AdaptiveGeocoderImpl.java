@@ -15,11 +15,14 @@
  */
 package org.onebusaway.nyc.geocoder.impl;
 
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderService;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.presentation.service.cache.NycGeocoderCacheServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,7 +30,7 @@ import java.util.List;
  * require it.
  */
 
-public class AdaptiveGeocoderImpl extends FilteredGeocoderBase {
+public class AdaptiveGeocoderImpl extends FilteredGeocoderBase implements EnterpriseGeocoderService {
 
   @Autowired
   NycGeocoderCacheServiceImpl _geocoderCacheService;
@@ -46,4 +49,14 @@ public class AdaptiveGeocoderImpl extends FilteredGeocoderBase {
     }
     return _geocoderCacheService.retrieve(location);
   }
+
+    @Override
+    public List<EnterpriseGeocoderResult> enterpriseGeocode(String location) {
+        List<NycGeocoderResult> nyc = nycGeocode(location);
+        List<EnterpriseGeocoderResult> results = new ArrayList<EnterpriseGeocoderResult>();
+        for (NycGeocoderResult r : nyc) {
+            results.add((EnterpriseGeocoderResult) r);
+        }
+        return results;
+    }
 }

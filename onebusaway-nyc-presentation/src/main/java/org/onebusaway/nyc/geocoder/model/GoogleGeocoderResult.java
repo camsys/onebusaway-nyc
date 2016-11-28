@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.geocoder.model;
 
+import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
 import org.onebusaway.geocoder.impl.GoogleAddressComponent;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -23,7 +24,7 @@ import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import java.io.Serializable;
 import java.util.HashMap;
 
-public class GoogleGeocoderResult implements NycGeocoderResult, Serializable {
+public class GoogleGeocoderResult implements NycGeocoderResult, Serializable, EnterpriseGeocoderResult {
 
 	private static final long serialVersionUID = 1L;
 

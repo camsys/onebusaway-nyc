@@ -17,7 +17,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import com.google.gson.JsonObject;
 
-public class ConfigurationServiceImpl implements ConfigurationService {
+public class ConfigurationServiceImpl implements ConfigurationService,
+		org.onebusaway.util.services.configuration.ConfigurationService {
+
 
 	private static Logger _log = LoggerFactory.getLogger(ConfigurationServiceImpl.class);
 
@@ -57,7 +59,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 
 	public void refreshConfiguration() throws Exception {
-		List<JsonObject> configurationItems = 
+		List<JsonObject> configurationItems =
 				_transitDataManagerApiLibrary.getItemsForRequest("config", "list");
 
 		for(JsonObject configItem : configurationItems) {
@@ -65,7 +67,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			String configValue = configItem.get("value").getAsString();           
 
 			updateConfigurationMap(configKey, configValue);
-		} 
+		}
 	}
 
 	private class UpdateThread implements Runnable {
@@ -123,6 +125,21 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		} catch (Exception any) {
 		  _log.error("getConfigurationValueAsFloat(" + configurationItemKey + ", " + defaultValue + ") exception:", any);
 		  return defaultValue;
+		}
+	}
+
+	@Override
+	public Double getConfigurationValueAsDouble(String configurationItemKey, Double defaultValue) {
+		try {
+			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
+			String valueAsString = getConfigurationValueAsString(configurationItemKey, defaultValueAsString);
+			if (valueAsString == null) return defaultValue;
+			return Double.parseDouble(valueAsString);
+		} catch(NumberFormatException ex) {
+			return defaultValue;
+		} catch (Exception any) {
+			_log.error("getConfigurationValueAsFloat(" + configurationItemKey + ", " + defaultValue + ") exception:", any);
+			return defaultValue;
 		}
 	}
 

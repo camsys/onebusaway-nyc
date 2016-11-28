@@ -31,6 +31,8 @@
     <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
     <import resource="classpath:org/onebusaway/presentation/application-context.xml" />
     <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
+    <import resource="classpath:org/onebusaway/nyc/util/application-context.xml" />
+
 
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
     <context:component-scan base-package="org.onebusaway.nyc.webapp.users.impl" /> <!-- for api throttling app -->

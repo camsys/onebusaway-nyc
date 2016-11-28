@@ -97,7 +97,7 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
     if (keys == null || keys.length == 0)
       return HttpServletResponse.SC_UNAUTHORIZED;
 
-    boolean isPermitted = _keyService.getPermission(keys[0], "api");
+    boolean isPermitted = _keyService.getPermission(keys[0], "api") == ApiKeyPermissionService.Status.AUTHORIZED;
     boolean notThrottled = _throttledKeyService.isAllowed(keys[0]);
     
     if (isPermitted && notThrottled)

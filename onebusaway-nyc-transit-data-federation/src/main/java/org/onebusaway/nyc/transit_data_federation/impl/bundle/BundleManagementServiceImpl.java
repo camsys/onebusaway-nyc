@@ -54,7 +54,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  *
  */
 @SuppressWarnings("rawtypes")
-public class BundleManagementServiceImpl implements BundleManagementService {
+public class BundleManagementServiceImpl implements BundleManagementService
+{
 
 	// how long to wait for inference threads to exit before forcefully stopping them
 	// when the command to change the bundle has been received.
@@ -328,13 +329,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTIONS_DATA);
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTION_SEARCH_DATA);
 			_refreshService.refresh(RefreshableResources.STOP_SEARCH_DATA);
-			_refreshService.refresh(RefreshableResources.WALK_PLANNER_GRAPH);
 			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA);
 			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_SERVICE);
-			_refreshService.refresh(RefreshableResources.STOP_TRANSFER_DATA);
 			_refreshService.refresh(RefreshableResources.SHAPE_GEOSPATIAL_INDEX);
 			_refreshService.refresh(RefreshableResources.STOP_GEOSPATIAL_INDEX);
-			_refreshService.refresh(RefreshableResources.TRANSFER_PATTERNS);
 			_refreshService.refresh(RefreshableResources.NARRATIVE_DATA);
 
 			_refreshService.refresh(NycRefreshableResources.DESTINATION_SIGN_CODE_DATA);

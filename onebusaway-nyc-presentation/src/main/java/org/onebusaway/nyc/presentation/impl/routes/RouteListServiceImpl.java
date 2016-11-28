@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
 /**
  *
  */
-@Component
+@Component("nycRouteListService")
 public class RouteListServiceImpl implements RouteListService {
 	
     @Autowired

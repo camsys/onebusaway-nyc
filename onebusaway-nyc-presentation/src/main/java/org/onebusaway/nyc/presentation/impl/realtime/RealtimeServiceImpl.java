@@ -41,7 +41,7 @@ import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
  * @author jmaki
  *
  */
-@Component
+@Component("nycRealtimeService")
 public class RealtimeServiceImpl implements RealtimeService {
 
   @Autowired

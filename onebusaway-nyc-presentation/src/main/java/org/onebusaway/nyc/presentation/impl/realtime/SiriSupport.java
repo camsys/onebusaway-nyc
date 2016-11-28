@@ -527,15 +527,15 @@ public final class SiriSupport {
 		if (distanceOfCallAlongTrip < 100) isNearFirstStop = true;
 
 		if(prediction != null) {
-			if (prediction.getTimepointPredictionRecord().getTimepointPredictedTime() < responseTimestamp) {
+			if (prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime() < responseTimestamp) {
 				if (!isNearFirstStop) { onwardCallStructure.setExpectedArrivalTime(new Date(responseTimestamp));}
 				else {
 				onwardCallStructure.setExpectedDepartureTime(new Date(responseTimestamp));
 				}
 			} else {
-				if (!isNearFirstStop) {	onwardCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedTime()));}
+				if (!isNearFirstStop) {	onwardCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime()));}
 				else {
-				onwardCallStructure.setExpectedDepartureTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedTime()));
+				onwardCallStructure.setExpectedDepartureTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedDepartureTime()));
 				}
 			}
 		}
@@ -579,7 +579,7 @@ public final class SiriSupport {
 
 		if(prediction != null) {
 			// do not allow predicted times to be less than ResponseTimestamp
-			if (prediction.getTimepointPredictionRecord().getTimepointPredictedTime() < responseTimestamp) {
+			if (prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime() < responseTimestamp) {
 				/*
 				 * monitoredCall has less precision than onwardCall (date vs. timestamp)
 				 * which results in a small amount of error when converting back to timestamp.
@@ -589,8 +589,8 @@ public final class SiriSupport {
 				monitoredCallStructure.setExpectedArrivalTime(new Date(responseTimestamp + 1000)); 
 				monitoredCallStructure.setExpectedDepartureTime(new Date(responseTimestamp + 1000));
 			} else {
-				monitoredCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedTime()));
-				monitoredCallStructure.setExpectedDepartureTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedTime()));
+				monitoredCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime()));
+				monitoredCallStructure.setExpectedDepartureTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedDepartureTime()));
 			}
 			
 		}

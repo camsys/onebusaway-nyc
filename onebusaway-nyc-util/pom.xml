@@ -38,6 +38,11 @@
     	<artifactId>onebusaway-container</artifactId>
     	<version>${onebusaway.app-modules.version}</version>
     </dependency>
+      <dependency>
+          <groupId>org.onebusaway</groupId>
+          <artifactId>onebusaway-util</artifactId>
+          <version>${onebusaway.app-modules.version}</version>
+      </dependency>
     <dependency>
     	<groupId>org.mockito</groupId>
     	<artifactId>mockito-all</artifactId>

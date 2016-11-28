@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceImpl;
@@ -51,11 +50,8 @@ import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.ScheduledBlockLocationBean;
-import org.onebusaway.transit_data.model.oba.LocalSearchResult;
-import org.onebusaway.transit_data.model.oba.MinTravelTimeToStopsBean;
-import org.onebusaway.transit_data.model.oba.TimedPlaceBean;
+import org.onebusaway.transit_data.model.config.BundleMetadata;
 import org.onebusaway.transit_data.model.problems.ETripProblemGroupBy;
-import org.onebusaway.transit_data.model.problems.PlannedTripProblemReportBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportQueryBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportSummaryBean;
@@ -68,11 +64,6 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
-import org.onebusaway.transit_data.model.tripplanning.ConstraintsBean;
-import org.onebusaway.transit_data.model.tripplanning.ItinerariesBean;
-import org.onebusaway.transit_data.model.tripplanning.TransitLocationBean;
-import org.onebusaway.transit_data.model.tripplanning.TransitShedConstraintsBean;
-import org.onebusaway.transit_data.model.tripplanning.VertexBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
@@ -82,12 +73,13 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.services.ScheduleHelperService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+@Primary
 @Component
 class NycTransitDataServiceImpl implements NycTransitDataService {
 	
@@ -293,30 +285,6 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public ItinerariesBean getItinerariesBetween(TransitLocationBean arg0,
-			TransitLocationBean arg1, long arg2, ConstraintsBean arg3)
-					throws ServiceException {
-		blockUntilBundleIsReady();
-		return _transitDataService.getItinerariesBetween(arg0, arg1, arg2, arg3);
-	}
-
-	@Override
-	public List<TimedPlaceBean> getLocalPaths(String arg0, ConstraintsBean arg1,
-			MinTravelTimeToStopsBean arg2, List<LocalSearchResult> arg3)
-					throws ServiceException {
-		blockUntilBundleIsReady();
-		return _transitDataService.getLocalPaths(arg0, arg1, arg2, arg3);
-	}
-
-	@Override
-	public MinTravelTimeToStopsBean getMinTravelTimeToStopsFrom(
-			CoordinatePoint arg0, long arg1, TransitShedConstraintsBean arg2)
-					throws ServiceException {
-		blockUntilBundleIsReady();
-		return _transitDataService.getMinTravelTimeToStopsFrom(arg0, arg1, arg2);
-	}
-
-	@Override
 	public RouteBean getRouteForId(String arg0) throws ServiceException {
 		blockUntilBundleIsReady();
 		return _transitDataService.getRouteForId(arg0);
@@ -447,13 +415,6 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public ListBean<VertexBean> getStreetGraphForRegion(double arg0, double arg1,
-			double arg2, double arg3) throws ServiceException {
-		blockUntilBundleIsReady();
-		return _transitDataService.getStreetGraphForRegion(arg0, arg1, arg2, arg3);
-	}
-
-	@Override
 	public TripBean getTrip(String arg0) throws ServiceException {
 		blockUntilBundleIsReady();
 		return _transitDataService.getTrip(arg0);
@@ -555,14 +516,6 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public void reportProblemWithPlannedTrip(TransitLocationBean arg0,
-			TransitLocationBean arg1, long arg2, ConstraintsBean arg3,
-			PlannedTripProblemReportBean arg4) {
-		blockUntilBundleIsReady();
-		_transitDataService.reportProblemWithPlannedTrip(arg0, arg1, arg2, arg3, arg4);    
-	}
-
-	@Override
 	public void reportProblemWithStop(StopProblemReportBean arg0) {
 		blockUntilBundleIsReady();
 		_transitDataService.reportProblemWithStop(arg0);    
@@ -614,4 +567,13 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 		return _scheduledServiceService.stopHasRevenueService(agencyId, stopId); 
 	}
 
+	@Override
+	public BundleMetadata getBundleMetadata() {
+		return _transitDataService.getBundleMetadata();
+	}
+
+	@Override
+	public List<StopBean> getAllRevenueStops(AgencyWithCoverageBean agencyWithCoverageBean) {
+		return _transitDataService.getAllRevenueStops(agencyWithCoverageBean);
+	}
 }

@@ -96,8 +96,8 @@ class DummyScheduleBasedPredictionGenerationServiceImpl implements PredictionGen
         TimepointPredictionRecord tpr = new TimepointPredictionRecord();
         tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(blockStopTime.getStopTime().getStop().getId()));
         tpr.setTimepointScheduledTime(tripStatus.getServiceDate() + blockStopTime.getStopTime().getArrivalTime() * 1000);
-        tpr.setTimepointPredictedTime(Math.round(tripStatus.getServiceDate() + (blockStopTime.getStopTime().getArrivalTime() * 1000) + (tripStatus.getScheduleDeviation() * 1000)));
-        
+        tpr.setTimepointPredictedArrivalTime(Math.round(tripStatus.getServiceDate() + (blockStopTime.getStopTime().getArrivalTime() * 1000) + (tripStatus.getScheduleDeviation() * 1000)));
+        tpr.setTimepointPredictedDepartureTime(Math.round(tripStatus.getServiceDate() + (blockStopTime.getStopTime().getDepartureTime() * 1000) + (tripStatus.getScheduleDeviation() * 1000)));
         predictionRecords.add(tpr);
       }
 
