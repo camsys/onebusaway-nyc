@@ -120,7 +120,7 @@
 	</bean>
 
 	<!-- quartz scheduling for persistence of webservice data -->
-	<bean name="persistJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+	<bean name="persistJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 		<property name="jobClass" value="org.onebusaway.nyc.transit_data_manager.job.TDMDataPersisterJob" />
 		<property name="jobDataAsMap">
 			<map>
@@ -128,24 +128,26 @@
       			<entry key="depotDataPersistenceService" value-ref="depotDataPersistenceService"/>
      		</map>
 		</property>
+		<property name="durability" value="true" />
 	</bean>
 	
-	<bean id="persistTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="persistTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="persistJob" />
 		<property name="cronExpression" value="0 10 4 * * ?" />
 	</bean>
 	
-	<bean name="depotAssignsSoapQueryJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+	<bean name="depotAssignsSoapQueryJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 		<property name="jobClass" value="org.onebusaway.nyc.transit_data_manager.job.DepotAssignsSOAPQueryJob" />
 		<property name="jobDataAsMap">
 			<map>
 				<entry key="configurationService" value-ref="configurationService"/>
 				<entry key="depotFileDir" value-ref="depotFileDir"/>
-     		</map>
+     		</map>		
 		</property>
+		<property name="durability" value="true" />
 	</bean>
 
-	<bean id="depotAssignsSoapQueryTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="depotAssignsSoapQueryTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="depotAssignsSoapQueryJob" />
 		<property name="cronExpression" value="0 0 * * * ?" />
 	</bean>
