@@ -3,7 +3,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.bundle;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 

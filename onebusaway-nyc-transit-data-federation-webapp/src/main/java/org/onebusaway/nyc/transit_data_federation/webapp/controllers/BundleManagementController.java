@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.utility.DateLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
