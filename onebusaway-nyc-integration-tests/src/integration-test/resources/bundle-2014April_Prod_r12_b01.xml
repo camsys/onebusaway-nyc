@@ -112,4 +112,12 @@
         <property name="task" ref="summarizeCSVTask" />
     </bean>
 
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException">false</prop>
+            </props>
+        </property>
+    </bean>
+
 </beans>
