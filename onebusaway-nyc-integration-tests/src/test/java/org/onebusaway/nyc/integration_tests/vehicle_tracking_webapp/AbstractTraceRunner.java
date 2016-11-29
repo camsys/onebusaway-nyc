@@ -31,8 +31,8 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.integration_tests.TraceSupport;
-import org.onebusaway.nyc.util.DistanceLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
@@ -334,7 +334,7 @@ public class AbstractTraceRunner {
                   "IN_PROGRESS")) {
             System.out.println("LOCATION: expected=" + reportedLocation
                 + ", inferred=" + ourLocation);
-            assertTrue(DistanceLibrary.distance(reportedLocation, ourLocation) <= 500 * 2);
+            assertTrue(distance(reportedLocation, ourLocation) <= 500 * 2);
           }
         }
 
@@ -349,6 +349,10 @@ public class AbstractTraceRunner {
       break;
     }
 
+  }
+
+  private static final double distance(Coordinate a, Coordinate b) {
+    return SphericalGeometryLibrary.distance(a.getOrdinate(0), a.getOrdinate(1), b.getOrdinate(0), b.getOrdinate(1));
   }
 
 }
