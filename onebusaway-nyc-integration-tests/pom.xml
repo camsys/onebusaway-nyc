@@ -328,7 +328,7 @@
                             </arguments>
                         </configuration>
                     </execution>
-                    <!-- <execution>
+                    <execution>
                         <id>graph-builder-execution-2013Sept_AllCity_r15_b02</id>
                         <phase>pre-integration-test</phase>
                         <goals>
@@ -465,7 +465,7 @@
                                 <argument>${project.build.directory}/transit-data-bundle/si</argument>
                             </arguments>
                         </configuration>
-                    </execution> -->
+                    </execution>
                     <execution>
                         <id>graph-builder-execution-2012Jan_SIB63M34_r20_b01</id>
                         <phase>pre-integration-test</phase>
