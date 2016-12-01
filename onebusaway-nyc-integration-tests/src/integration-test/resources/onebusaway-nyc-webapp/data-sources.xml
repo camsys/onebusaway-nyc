@@ -22,7 +22,8 @@
 
 	<!-- Transit Data Service -->
 	<bean id="nycTransitDataService"
-		class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+		class="org.springframework.remoting.caucho.HessianProxyFactoryBean"
+		primary="true">
 		<property name="serviceUrl"
 			value="http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
 		<property name="serviceInterface"
