@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.onebusaway.collections.tuple.Pair;
+import org.onebusaway.collections.tuple.Tuples;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Route;
 import org.onebusaway.gtfs.model.Trip;
@@ -17,7 +20,6 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.RawRunData;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTrip;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripType;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
-import org.opentripplanner.common.model.P2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +75,7 @@ public class StifAggregatorImpl {
         blockNo ++;
         StifTrip lastTrip = pullout;
         int i = 0;
-        HashSet<P2<String>> blockIds = new HashSet<P2<String>>();
+        HashSet<Pair<String>> blockIds = new HashSet<Pair<String>>();
 
         while (lastTrip.type != StifTripType.PULLIN) {
           unmatchedTrips.remove(lastTrip);
@@ -223,7 +225,7 @@ public class StifAggregatorImpl {
     return true;
   }
 
-  public void matchGTFSToSTIF(StifTrip lastTrip, StifTrip trip, StifTrip pullout, HashSet<P2<String>> blockIds){
+  public void matchGTFSToSTIF(StifTrip lastTrip, StifTrip trip, StifTrip pullout, HashSet<Pair<String>> blockIds){
     for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
       RawRunData rawRunData = _stifLoader.getRawRunDataByTrip().get(gtfsTrip);
 
@@ -240,7 +242,7 @@ public class StifAggregatorImpl {
       }
 
       blockId = blockId.intern();
-      blockIds.add(new P2<String>(blockId, gtfsTrip.getServiceId().getId()));
+      blockIds.add(Tuples.pair(blockId, gtfsTrip.getServiceId().getId()));
       gtfsTrip.setBlockId(blockId);
       _stifLoader.getGtfsMutableRelationalDao().updateEntity(gtfsTrip);
 
@@ -252,15 +254,15 @@ public class StifAggregatorImpl {
       usedGtfsTrips.add(gtfsTrip);
     }
     if (lastTrip.type == StifTripType.DEADHEAD) {
-      for (P2<String> blockId : blockIds) {
+      for (Pair<String> blockId : blockIds) {
         String tripId = String.format("deadhead_%s_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.lastStop, lastTrip.runId);
         _AbnormalStifDataLogger.dumpBlockDataForTrip(lastTrip, blockId.getSecond(), tripId, blockId.getFirst(), "no gtfs trip");
       }
     }
   }
 
-  public void dumpBlocksOut(HashSet<P2<String>> blockIds, StifTrip lastTrip, StifTrip pullout){
-    for (P2<String> blockId : blockIds) {
+  public void dumpBlocksOut(HashSet<Pair<String>> blockIds, StifTrip lastTrip, StifTrip pullout){
+    for (Pair<String> blockId : blockIds) {
       String pulloutTripId = String.format("pullout_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.runId);
       _AbnormalStifDataLogger.dumpBlockDataForTrip(pullout, blockId.getSecond(), pulloutTripId , blockId.getFirst(), "no gtfs trip");
       String pullinTripId = String.format("pullin_%s_%s_%s_%s", blockId.getSecond(), lastTrip.lastStop, lastTrip.lastStopTime, lastTrip.runId);
