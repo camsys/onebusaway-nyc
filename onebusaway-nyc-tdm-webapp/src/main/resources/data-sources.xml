@@ -60,7 +60,7 @@
 				<prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
 				<prop key="blockLocationServiceImpl.locationInterpolation">false</prop>
 				<prop key="cacheManager.cacheManagerName">org.onebusaway.tdm_bundle_webapp.cacheManager</prop>
-				<prop key="bundleSearchServiceImpl.disableInit">true</prop>
+				<prop key="nycBundleSearchServiceImpl.disableInit">true</prop>
 			</props>
 		</property>
 	</bean>
