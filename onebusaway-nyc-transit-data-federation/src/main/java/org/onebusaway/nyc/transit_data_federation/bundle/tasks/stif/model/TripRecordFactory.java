@@ -38,7 +38,11 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
           record.setOriginTime(getTimeFromCentiminutesSafe());
         }
       }),
-      new FieldDef(17 - 15, "direction", null),
+      new FieldDef(17 - 15, "direction", new TripFieldSetter() {
+    	  public void setField(TripRecord record) {
+    	  record.setDirection(getStringData());
+    	  }
+      }),
       new FieldDef(19 - 17, "trip type", new TripFieldSetter() {
         public void setField(TripRecord record) {
           record.setTripType(getInteger());

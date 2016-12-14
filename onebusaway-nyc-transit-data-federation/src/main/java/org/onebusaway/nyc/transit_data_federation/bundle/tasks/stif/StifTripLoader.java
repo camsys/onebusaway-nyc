@@ -27,9 +27,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import javax.annotation.PostConstruct;
-
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
@@ -216,6 +213,7 @@ public class StifTripLoader {
               // prepare for next trip
               tripLineNumber = lineNumber;
               tripRecord = (TripRecord) record;
+                       
               firstNonRevEventRecord = lastNonRevEventRecord = null;
               eventRecord = firstEventRecord = null;
             } else {
@@ -260,11 +258,13 @@ public class StifTripLoader {
           String runId = tripRecord.getRunIdWithDepot();
           String reliefRunId = tripRecord.getReliefRunId();
           String nextOperatorRunId = tripRecord.getNextTripOperatorRunIdWithDepot();
-
+          
+          
           StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
               tripRecord.getReliefRunId(),
               tripRecord.getNextTripOperatorRunId(),
-              StifTripType.byValue(tripType), tripRecord.getSignCode(), tripRecord.getBusType());
+              StifTripType.byValue(tripType), tripRecord.getSignCode(), tripRecord.getBusType(), tripRecord.getDirection());
+          
           stifTrip.agencyId = agencyId;
           stifTrip.serviceCode = serviceCode;
           stifTrip.depot = tripRecord.getDepotCode();
@@ -286,6 +286,7 @@ public class StifTripLoader {
           stifTrip.path = path;
           stifTrip.lineNumber = tripLineNumber;
           stifTrip.blockId = tripRecord.getBlockNumber();
+          
           rawData.get(serviceCode).add(stifTrip);
 
           String destSignCode = tripRecord.getSignCode();
@@ -459,7 +460,7 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
 	StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
 	    tripRecord.getReliefRunId(),
 	    tripRecord.getNextTripOperatorRunId(),
-	    StifTripType.byValue(tripType), tripRecord.getSignCode(), tripRecord.getBusType());
+	    StifTripType.byValue(tripType), tripRecord.getSignCode(), tripRecord.getBusType(), tripRecord.getDirection());
 	stifTrip.agencyId = agencyId;
 	stifTrip.serviceCode = serviceCode;
 	stifTrip.depot = tripRecord.getDepotCode();
