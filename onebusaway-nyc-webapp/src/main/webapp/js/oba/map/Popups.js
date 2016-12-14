@@ -523,7 +523,7 @@ OBA.Popups = (function() {
 						}
 						
 						// time mode
-						if(timePrediction != null && !layover) {
+						if(timePrediction != null) {
 							timePrediction += ", " + distance;
 							
 							if(isDepartureTimeAvailable){
@@ -540,6 +540,11 @@ OBA.Popups = (function() {
 									} else {
 										timePrediction += prevTripLateDepartureText;
 									}
+								}
+							}
+							else{
+								if(layover === true) {
+									timePrediction += layoverLateDepartureText;	
 								}
 							}
 
