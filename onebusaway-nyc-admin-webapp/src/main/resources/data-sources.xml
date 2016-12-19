@@ -110,4 +110,6 @@
 		<property name="disabled" value="${geocoder.cache.disabled}" />
 	</bean>
 	
+	<bean id="gtfsValidationService" class="org.onebusaway.nyc.admin.service.bundle.impl.JavaGtfsValidationServiceImpl" />
+	
 </beans>

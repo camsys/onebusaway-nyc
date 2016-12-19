@@ -1,25 +1,34 @@
 package org.onebusaway.nyc.admin.service.bundle.impl;
 
+import org.apache.commons.io.IOUtils;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.model.ServiceDateRange;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleValidationService;
+import org.onebusaway.nyc.admin.service.bundle.GtfsValidationService;
 import org.onebusaway.nyc.admin.util.FileUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -28,13 +37,19 @@ public class BundleValidationServiceImpl implements BundleValidationService {
   private static final String OUTPUT_DIR = "outputs";
   private static final String BUILD_DIR = "builds";
   private static final int CHUNK_SIZE = 1024;
-  private static final String TRANSIT_FEED = "transitfeed-1.2.11";
+
   private static Logger _log = LoggerFactory.getLogger(BundleValidationServiceImpl.class);
   private FileService _fileService;
+  GtfsValidationService _gtfsValidationService;
 
   @Autowired
   public void setFileService(FileService service) {
     _fileService = service;
+  }
+  
+  @Autowired
+  public void setGtfsValidationService(GtfsValidationService gtfsValidationService){
+	  _gtfsValidationService = gtfsValidationService;
   }
 
   @Override
@@ -197,54 +212,31 @@ public class BundleValidationServiceImpl implements BundleValidationService {
           response.addStatusMessage("downloading " + s3Key);
           _log.info("downloading " + s3Key);
           String gtfsZipFileName = _fileService.get(s3Key, tmpDir);
-          String outputFile = gtfsZipFileName + ".html";
+          String outputFile = gtfsZipFileName + _gtfsValidationService.getOutputExtension();
           response.addStatusMessage("validating " + s3Key);
           _log.info("validating " + s3Key);
-          installAndValidateGtfs(gtfsZipFileName,
-              outputFile);
+          if(installAndValidateGtfs(gtfsZipFileName,
+              outputFile) != 0){
+        	  _log.error("Failed to successfully validate: " + gtfsZipFileName);
+        	  response.addStatusMessage("validation failed for " + s3Key);
+        	  continue;
+          }
           _log.info("results of " + gtfsZipFileName + " at " + outputFile);
           response.addValidationFile(new FileUtils().parseFileName(outputFile));
           upload(request, response);
           response.addStatusMessage("complete");
         }
-
-  }
+  } 
+  
+	  
   
   @Override
   public int validateGtfs(String gtfsZipFileName, String outputFile) {
-    Process process = null;
-    try {
-      String tmpDir = System.getProperty("java.io.tmpdir") + File.separator
-          + TRANSIT_FEED;
-      String[] cmds = {
-        tmpDir + File.separator + "feedvalidator.py",
-        "-n",
-        "-m",
-        "--service_gap_interval=1",
-        "--output=" + outputFile,
-        gtfsZipFileName
-      };
-      debugCmds(cmds);
-      process = Runtime.getRuntime().exec(cmds);
-      return process.waitFor();
-    } catch (Exception e) {
-      _log.error(e.toString());
-      String msg = e.getMessage();
-      if (msg != null && e.getMessage().indexOf("error=2,") > 0) {
-        return 2; // File Not Found
-      }
-      _log.error(e.toString());
-      throw new RuntimeException(e);
-    }
+	  return _gtfsValidationService.validateGtfs(gtfsZipFileName, outputFile);
   }
 
   public void downloadFeedValidator() {
-    String tmpDir = System.getProperty("java.io.tmpdir");
-    FileUtils fs = new FileUtils(tmpDir);
-    String url = "http://googletransitdatafeed.googlecode.com/files/"
-        + TRANSIT_FEED + ".tar.gz";
-    fs.wget(url);
-    fs.tarzxf(tmpDir + File.separatorChar + TRANSIT_FEED + ".tar.gz");
+	  _gtfsValidationService.downloadFeedValidator();
   }
 
   public void upload(BundleRequest request, BundleResponse response) {
@@ -269,10 +261,5 @@ public class BundleValidationServiceImpl implements BundleValidationService {
   private String escapeFilename(String s) {
     return FileUtils.escapeFilename(s);
   }
-  
-  private void debugCmds(String[] array) {
-    FileUtils.debugCmds(array);
-  }
-  
   
 }
