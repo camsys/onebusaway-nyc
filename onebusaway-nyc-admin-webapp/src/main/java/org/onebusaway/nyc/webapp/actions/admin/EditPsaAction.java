@@ -4,9 +4,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.struts2.convention.annotation.Action;
-import org.onebusaway.nyc.util.model.PublicServiceAnnouncement;
+import org.onebusaway.nyc.admin.model.PublicServiceAnnouncement;
+import org.onebusaway.nyc.admin.service.psa.PsaService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
-import org.onebusaway.util.service.psa.PsaService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class EditPsaAction extends OneBusAwayNYCAdminActionSupport {

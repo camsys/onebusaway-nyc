@@ -66,7 +66,7 @@
         <property name="target" value="hibernateAnnotatedClasses" />
         <property name="values">
             <list>
-                <value>org.onebusaway.nyc.util.model.PublicServiceAnnouncement</value>
+                <value>org.onebusaway.nyc.admin.model.PublicServiceAnnouncement</value>
             </list>
         </property>
     </bean>
@@ -121,8 +121,8 @@
    
    <bean id="jsonTool" class="com.google.gson.Gson" />
    
-   <bean class="org.onebusaway.util.service.psa.PsaDaoImpl" />
+   <bean class="org.onebusaway.nyc.admin.service.psa.PsaDaoImpl" />
    
-   <bean class="org.onebusaway.util.service.psa.PsaServiceImpl" />
+   <bean class="org.onebusaway.nyc.admin.service.psa.PsaServiceImpl" />
    
 </beans>

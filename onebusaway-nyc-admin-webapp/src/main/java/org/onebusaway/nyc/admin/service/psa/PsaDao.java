@@ -1,9 +1,9 @@
-package org.onebusaway.util.service.psa;
+package org.onebusaway.nyc.admin.service.psa;
 
 import java.util.Collection;
 import java.util.List;
 
-import org.onebusaway.nyc.util.model.PublicServiceAnnouncement;
+import org.onebusaway.nyc.admin.model.PublicServiceAnnouncement;
 
 public interface PsaDao {
   void saveOrUpdate(PublicServiceAnnouncement psa);

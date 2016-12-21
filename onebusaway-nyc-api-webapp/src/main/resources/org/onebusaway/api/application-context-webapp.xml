@@ -37,18 +37,5 @@
   <aop:aspectj-autoproxy />
 
   <context:component-scan base-package="org.onebusaway.api.impl" />
-
-  <bean id="psaHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
-    <property name="target" value="hibernateAnnotatedClasses" />
-    <property name="values">
-      <list>
-        <value>org.onebusaway.nyc.util.model.PublicServiceAnnouncement</value>
-      </list>
-    </property>
-  </bean>
-
-  <bean class="org.onebusaway.util.service.psa.PsaDaoImpl" />
-   
-  <bean class="org.onebusaway.util.service.psa.PsaServiceImpl" />
   
 </beans>

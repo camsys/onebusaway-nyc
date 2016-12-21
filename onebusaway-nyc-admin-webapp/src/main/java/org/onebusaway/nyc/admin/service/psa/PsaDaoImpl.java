@@ -1,11 +1,13 @@
-package org.onebusaway.util.service.psa;
+package org.onebusaway.nyc.admin.service.psa;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.DetachedCriteria;
-import org.onebusaway.nyc.util.model.PublicServiceAnnouncement;
+import org.hibernate.criterion.Projections;
+import org.onebusaway.nyc.admin.model.PublicServiceAnnouncement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

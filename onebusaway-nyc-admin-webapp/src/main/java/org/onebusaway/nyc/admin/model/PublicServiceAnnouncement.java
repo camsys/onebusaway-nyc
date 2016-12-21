@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.util.model;
+package org.onebusaway.nyc.admin.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
