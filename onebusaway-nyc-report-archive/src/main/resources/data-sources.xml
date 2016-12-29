@@ -82,7 +82,7 @@
        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
   </bean>
   
-	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="annotatedClasses">
 			<list>
@@ -96,7 +96,7 @@
 			<props>
 				<prop key="hibernate.connection.pool_size">1</prop>
 				<prop key="hibernate.current_session_context_class">thread</prop>
-				<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+				<prop key="hibernate.cache.provider_class">org.hibernate.cache.internal.NoCachingRegionFactory</prop>
 				<prop key="hibernate.show_sql">false</prop>
 				<prop key="hibernate.hbm2ddl.auto">validate</prop>
         <prop key="hibernate.jdbc.batch_size">1000</prop>
@@ -106,7 +106,7 @@
 		</property>
 	</bean>
 	
-	<bean id="slaveSessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+	<bean id="slaveSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
 		<property name="dataSource" ref="slaveDataSource" />
 		<property name="annotatedClasses">
 			<list>
@@ -120,7 +120,7 @@
 			<props>
 				<prop key="hibernate.connection.pool_size">1</prop>
 				<prop key="hibernate.current_session_context_class">thread</prop>
-				<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+				<prop key="hibernate.cache.provider_class">org.hibernate.cache.internal.NoCachingRegionFactory</prop>
 				<prop key="hibernate.hbm2ddl.auto">validate</prop>
        	<prop key="hibernate.jdbc.batch_size">1000</prop>
        	<prop key="hibernate.order_inserts">false</prop>
