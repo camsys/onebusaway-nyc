@@ -24,10 +24,9 @@ import org.onebusaway.users.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.security.providers.encoding.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Default implementation of {@link UserManagementService}
@@ -37,7 +36,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserManagementServiceImpl implements UserManagementService {
 
-	private HibernateTemplate hibernateTemplate;
+	private SessionFactory _sessionFactory;
 	private StandardAuthoritiesService authoritiesService;
 	private UserDao userDao;
 	private UserService userService;
@@ -45,46 +44,28 @@ public class UserManagementServiceImpl implements UserManagementService {
 	
 	
 	private static final Logger log = LoggerFactory.getLogger(UserManagementServiceImpl.class);
-	
-	@Override
-	@SuppressWarnings("unchecked")
-	public List<String> getUserNames(final String searchString) {
-		
-		final String hql = "select ui.id.value from UserIndex ui where ui.id.value like :searchString and " + 
-			 "ui.id.type = 'username'";
-		
-		List<String> matchingUserNames = hibernateTemplate.execute(new HibernateCallback<List<String>>() {
 
-			@Override
-			public List<String> doInHibernate(Session session)
-					throws HibernateException, SQLException {
-				Query query = session.createQuery(hql);
-				query.setParameter("searchString", "%" +searchString + "%");
-				return query.list();
-			}
-		});
-		
+	@Override
+	@Transactional(readOnly=true)
+	public List<String> getUserNames(final String searchString) {
+		String hql = "select ui.id.value from UserIndex ui where ui.id.value like :searchString and " +
+				"ui.id.type = 'username'";
+		Query query = getSession().createQuery(hql);
+		query.setParameter("searchString", "%" +searchString + "%");
 		log.debug("Returning user names matching with string : {}", searchString);
-		
-		return matchingUserNames;
+		return query.list();
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public UserDetail getUserDetail(final String userName) {
-		List<User> users = hibernateTemplate.execute(new HibernateCallback<List<User>>() {
 
-			@SuppressWarnings("unchecked")
-			@Override
-			public List<User> doInHibernate(Session session)
-					throws HibernateException, SQLException {
-				Criteria criteria = session.createCriteria(User.class)
-						.createCriteria("userIndices")
-						.add(Restrictions.like("id.value", userName));
-				List<User> users = criteria.list();
-				return users;
-			}
-		});
-		
+		Criteria criteria = getSession().createCriteria(User.class)
+							.createCriteria("userIndices")
+							.add(Restrictions.like("id.value", userName));
+
+		List<User> users = criteria.list();
+
 		UserDetail userDetail = null;
 		
 		if(!users.isEmpty()) {
@@ -115,6 +96,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	}
 
 	@Override
+	@Transactional
 	public void disableOperatorRole(User user) {
 		UserRole operatorRole = authoritiesService.getUserRoleForName(StandardAuthoritiesService.USER);
 		
@@ -146,9 +128,10 @@ public class UserManagementServiceImpl implements UserManagementService {
 	}
 	
 	@Override
+	@Transactional
 	public boolean updateUser(UserDetail userDetail) {
 		
-		User user = userService.getUserForId(userDetail.getId());
+		User user = userDao.getUserForId(userDetail.getId());
 		
 		if(user == null) {
 			log.info("User '{}' does not exist in the system", userDetail.getUserName());
@@ -174,8 +157,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 	}
 	
 	@Override
+	@Transactional
 	public boolean deactivateUser(UserDetail userDetail) {
-		User user = userService.getUserForId(userDetail.getId());
+		User user = userDao.getUserForId(userDetail.getId());
 		
 		if(user == null) {
 			log.info("User '{}' does not exist in the system", userDetail.getUserName());
@@ -235,7 +219,11 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	@Autowired
 	public void setSesssionFactory(SessionFactory sessionFactory) {
-		hibernateTemplate = new HibernateTemplate(sessionFactory);
+		_sessionFactory = sessionFactory;
+	}
+
+	private Session getSession(){
+		return _sessionFactory.getCurrentSession();
 	}
 
 	/**

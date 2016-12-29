@@ -16,26 +16,13 @@
 package org.onebusaway.nyc.report.impl;
 import static org.junit.Assert.*;
 
-import org.onebusaway.nyc.report.impl.CcLocationCache;
-import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
-import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.AnnotationConfiguration;
-import org.hibernate.cfg.Configuration;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
 
 
 public class CcLocationCacheTest {

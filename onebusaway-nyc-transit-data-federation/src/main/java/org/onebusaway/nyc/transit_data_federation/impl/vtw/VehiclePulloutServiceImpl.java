@@ -40,7 +40,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   private static Logger _log = LoggerFactory.getLogger(VehiclePulloutServiceImpl.class);
 
-  private ScheduledFuture<VehiclePulloutServiceImpl.UpdateThread> _updateTask = null;
+  private ScheduledFuture<?> _updateTask = null;
   
   private boolean _enabled;
 

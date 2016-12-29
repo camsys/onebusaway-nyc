@@ -1,50 +1,59 @@
 package org.onebusaway.util.service.psa;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
 import org.onebusaway.nyc.util.model.PublicServiceAnnouncement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 
 public class PsaDaoImpl implements PsaDao {
 
   protected static Logger _log = LoggerFactory.getLogger(PublicServiceAnnouncement.class);
-  private HibernateTemplate _template;
+  private SessionFactory _sessionFactory;
   
   @Autowired
   public void setSessionFactory(SessionFactory sessionFactory) {
-    _template = new HibernateTemplate(sessionFactory);
+    _sessionFactory = sessionFactory;
+  }
+
+  private Session getSession(){
+    return _sessionFactory.getCurrentSession();
   }
   
   @Override
   public void saveOrUpdate(PublicServiceAnnouncement psa) {
-    _template.saveOrUpdate(psa);
+    getSession().saveOrUpdate(psa);
   }
   
   @Override
   public void saveOrUpdate(Collection<PublicServiceAnnouncement> psas) {
-    _template.saveOrUpdateAll(psas);
+    Session session = getSession();
+    for(Iterator<PublicServiceAnnouncement> it = psas.iterator(); it.hasNext();){
+      session.saveOrUpdate(it.next());
+    }
   }
   
   @Override
   public void delete(PublicServiceAnnouncement psa) {
-    _template.delete(psa);
+    getSession().delete(psa);
   }
   
   @Override
   public void deleteAll(Collection<PublicServiceAnnouncement> psas) {
-    _template.deleteAll(psas);
+    Session session = getSession();
+    for(Iterator<PublicServiceAnnouncement> it = psas.iterator(); it.hasNext();){
+      session.delete(it.next());
+    }
   }
  
-  @Override 
+  @Override
   public List<PublicServiceAnnouncement> getAllPsas() {
-    DetachedCriteria crit = DetachedCriteria.forClass(PublicServiceAnnouncement.class);
-    return _template.findByCriteria(crit);
+    return getSession().createCriteria(PublicServiceAnnouncement.class).list();
   }
 
 }

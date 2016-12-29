@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -23,9 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Default implementation of {@link HistoricalRecordsDao}
@@ -37,7 +35,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 
 	private static Logger log = LoggerFactory.getLogger(HistoricalRecordsDaoImpl.class);
 	
-	private HibernateTemplate hibernateTemplate;
+	private SessionFactory _sessionFactory;
 	private ConfigurationService configurationService;
 	
 	private static final String SPACE = " ";
@@ -47,6 +45,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
   protected static final int DEFAULT_QUERY_TIMEOUT = 10 * 60; // 10 minutes
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<HistoricalRecord> getHistoricalRecords(
 			final Map<CcAndInferredLocationFilter, Object> filter) {
 		
@@ -75,8 +74,8 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		/*
 		 * for the historical query, the vehicle and time join out performs the equivalent of the uuid join
 		 */
-    sql.append("LEFT OUTER JOIN obanyc_inferredlocation inf " +
-        "ON cc.vehicle_id = inf.vehicle_id AND cc.time_reported = inf.time_reported ");
+    	sql.append("LEFT OUTER JOIN obanyc_inferredlocation inf " +
+       		 "ON cc.vehicle_id = inf.vehicle_id AND cc.time_reported = inf.time_reported ");
 		
 		//add parameters to the query
 		sql = addDateBoundary(sql, "cc.time_received", filter.get(CcAndInferredLocationFilter.START_DATE));
@@ -84,36 +83,24 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		sql = addQueryParams(filter, ccLocationAlias, inferredLocationAlias, sql);
 
 		sql = order(sql, "cc.time_received", "desc");
-		
-		sql = addRecordLimit(sql, filter.get(CcAndInferredLocationFilter.RECORDS));
 
 		final String sqlQuery = sql.toString();
 		
 		final Integer timeout = (Integer) (filter.get(CcAndInferredLocationFilter.TIMEOUT) == null? DEFAULT_QUERY_TIMEOUT: filter.get(CcAndInferredLocationFilter.TIMEOUT));
-		
-		List<HistoricalRecord> results = hibernateTemplate.execute(
-				new HibernateCallback<List<HistoricalRecord>>() {
 
-			@SuppressWarnings("unchecked")
-			@Override
-			public List<HistoricalRecord> doInHibernate(Session session) throws HibernateException,
-					SQLException {
-				
-				Query query = buildQuery(filter, sqlQuery, session);
+		Query query = buildQuery(filter, sqlQuery);
 
-				log.debug("Executing query(" + timeout + ") : " + sqlQuery);
-				query.setTimeout(timeout); // in seconds
-				return query.list();
-			}
+		addRecordLimit(query, filter.get(CcAndInferredLocationFilter.RECORDS));
 
-		});
-		
-		return results;
+		log.debug("Executing query(" + timeout + ") : " + sqlQuery);
+		query.setTimeout(timeout); // in seconds
+		return query.list();
 	}
 	
 	private Query buildQuery(final Map<CcAndInferredLocationFilter, Object> filter,
-			final String sqlQuery, Session session) {
-		Query query = session.createSQLQuery(sqlQuery);
+			final String sqlQuery) {
+
+		Query query = getSession().createSQLQuery(sqlQuery);
 
 		setDateParameters(query, filter);
 		
@@ -187,7 +174,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 		return sql;
 	}
 	
-	private StringBuilder addRecordLimit(StringBuilder sql, Object maxRecords) {
+	private void addRecordLimit(Query query, Object maxRecords) {
 		Integer recordLimit = configurationService.getConfigurationValueAsInteger(
 				"operational-api.historicalRecordLimit", MAX_RECORD_LIMIT);
 		Integer limitValue = recordLimit;
@@ -199,15 +186,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 				limitValue = recordLimitFromParameter;
 			}
 		}
-		
-		// MYSQL prefers the SQL syntax to the hibernateTemplate
-		if (IS_MYSQL) {
-		  sql.append(" limit ").append(limitValue).append(" ");
-		} else {
-		  hibernateTemplate.setMaxResults(limitValue);
-		}
-		
-		return sql;
+		query.setMaxResults(limitValue);
 	}
 	
 	private StringBuilder addInferredPhase(StringBuilder sql, String field,
@@ -379,7 +358,11 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
 	@Autowired
 	@Qualifier("slaveSessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
-		hibernateTemplate = new HibernateTemplate(sessionFactory);
+		_sessionFactory = sessionFactory;
+	}
+
+	private Session getSession(){
+		return _sessionFactory.getCurrentSession();
 	}
 
 	/**

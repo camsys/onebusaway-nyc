@@ -35,7 +35,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   private volatile Map<AgencyAndId, String> _vehicleIdToDepotMap = 
 		  new HashMap<AgencyAndId, String>();
 
-  private ScheduledFuture<VehicleAssignmentServiceImpl.UpdateThread> _updateTask = null;
+  private ScheduledFuture<?> _updateTask = null;
 
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;

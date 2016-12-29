@@ -7,12 +7,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Level;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
@@ -35,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -48,8 +50,8 @@ public class VehicleAndCrewDataPersistenceServiceImpl implements VehicleAndCrewD
 	private VehiclePullInOutDataProviderService vehiclePullInOutDataProviderService;
 	private CrewAssignmentDataProviderService crewAssignmentDataProviderService;
 	private DepotIdTranslator depotIdTranslator;
-	private HibernateTemplate hibernateTemplate;
 	private LoggingService loggingService;
+	private SessionFactory _sessionFactory;
 	
 	private static final Logger log = LoggerFactory.getLogger(VehicleAndCrewDataPersistenceServiceImpl.class);
 	
@@ -64,6 +66,7 @@ public class VehicleAndCrewDataPersistenceServiceImpl implements VehicleAndCrewD
 	}
 	
 	@Override
+	@Transactional
 	public void saveVehiclePulloutData() throws DataAccessResourceFailureException {
 		List<VehiclePipoRecord> vehicleRecords = new ArrayList<VehiclePipoRecord>();
 		
@@ -82,7 +85,10 @@ public class VehicleAndCrewDataPersistenceServiceImpl implements VehicleAndCrewD
 		log.info("Persisting {} vehicle pullout records", vehicleRecords.size());
 
 		try {
-			hibernateTemplate.saveOrUpdateAll(vehicleRecords);
+			Session session = getSession();
+			for(Iterator<VehiclePipoRecord> it = vehicleRecords.iterator(); it.hasNext();){
+				session.saveOrUpdate(it.next());
+			}
 			String message = "Persisted " + vehicleRecords.size() + " vehicle pullout records";
 			log(message);
 		} catch(DataAccessException e) {
@@ -93,6 +99,7 @@ public class VehicleAndCrewDataPersistenceServiceImpl implements VehicleAndCrewD
 	}
 
 	@Override
+	@Transactional
 	public void saveCrewAssignmentData() throws DataAccessResourceFailureException {
 		List<CrewAssignmentRecord> crewAssignments = new ArrayList<CrewAssignmentRecord>();
 		
@@ -126,7 +133,10 @@ public class VehicleAndCrewDataPersistenceServiceImpl implements VehicleAndCrewD
 		log.info("Persisting {} crew assignment records", crewAssignments.size());
 
 		try {
-			hibernateTemplate.saveOrUpdateAll(crewAssignments);
+			Session session = getSession();
+			for(Iterator<CrewAssignmentRecord> it = crewAssignments.iterator(); it.hasNext();){
+				session.saveOrUpdate(it.next());
+			}
 			String message = "Persisted " + crewAssignments.size() + " crew assignment records";
 			log(message);
 		} catch(DataAccessException e) {
@@ -212,8 +222,13 @@ public class VehicleAndCrewDataPersistenceServiceImpl implements VehicleAndCrewD
 	@Autowired
 	@Qualifier("archiveSessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
-		this.hibernateTemplate = new HibernateTemplate(sessionFactory);
+		_sessionFactory = sessionFactory;
 	}
+
+	private Session getSession(){
+		return _sessionFactory.getCurrentSession();
+	}
+
 
 	/**
 	 * @param loggingService the loggingService to set
