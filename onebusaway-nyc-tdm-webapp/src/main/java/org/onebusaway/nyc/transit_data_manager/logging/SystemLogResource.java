@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,7 +35,8 @@ import org.springframework.stereotype.Component;
 public class SystemLogResource {
 	
 	private ObjectMapper mapper;
-	private HibernateTemplate hibernateTemplate;
+
+	private SessionFactory _sessionFactory;
 	
 	private static final Logger log = LoggerFactory.getLogger(SystemLogResource.class);
 	
@@ -59,7 +59,7 @@ public class SystemLogResource {
 			
 			SystemLogRecord logRecord = buildSystemLogRecord(logMessage);
 			
-			hibernateTemplate.saveOrUpdate(logRecord);
+			_sessionFactory.getCurrentSession().saveOrUpdate(logRecord);
 			
 			message.setStatus("OK");
 			
@@ -99,7 +99,7 @@ public class SystemLogResource {
 	@Autowired
 	@Qualifier("archiveSessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
-		hibernateTemplate = new HibernateTemplate(sessionFactory);
+		_sessionFactory = sessionFactory;
 	}
 
 }

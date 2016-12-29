@@ -27,8 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +34,7 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 
 	protected static Logger _log = LoggerFactory.getLogger(ArchiveCcAndInferredLocationDaoImpl.class);
 
-	private HibernateTemplate _template;
+	private SessionFactory _sessionFactory;
 	
 	private static final String SPACE = " ";
 
@@ -57,55 +55,63 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 	@Autowired
 	@Qualifier("sessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
-		_template = new HibernateTemplate(sessionFactory);
+		_sessionFactory = sessionFactory;
 	}
 
-	public HibernateTemplate getHibernateTemplate() {
-		return _template;
+	public Session getSession() {
+		return _sessionFactory.getCurrentSession();
 	}
 
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecord(ArchivedInferredLocationRecord record) {
-		_template.saveOrUpdate(record);
+		getSession().saveOrUpdate(record);
 		
 		CcLocationReportRecord cc = findRealtimeRecord(record);
 		if (cc != null) {
 			CcAndInferredLocationRecord lastKnown = new CcAndInferredLocationRecord(
 					record, cc);
-			_template.saveOrUpdate(lastKnown);
+			getSession().saveOrUpdate(lastKnown);
 		}
 
-		_template.flush();
-		_template.clear();
+		getSession().flush();
+		getSession().clear();
 	}
 
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecords(ArchivedInferredLocationRecord... records) {
-		List<ArchivedInferredLocationRecord> inferredLocationRecords = getInferredLocationRecords(records);
+		List<ArchivedInferredLocationRecord> ArchivedInferredLocationRecord = getInferredLocationRecords(records);
 		Collection<CcAndInferredLocationRecord> lastKnownRecords = getLastKnownRecords(records);
-		
-		_template.saveOrUpdateAll(inferredLocationRecords);
-		_template.saveOrUpdateAll(lastKnownRecords);
-		_template.flush();
-		_template.clear();
+
+		for(ArchivedInferredLocationRecord ilr : ArchivedInferredLocationRecord){
+			getSession().saveOrUpdate(ilr);
+		}
+
+		for(CcAndInferredLocationRecord lkr : lastKnownRecords){
+			getSession().saveOrUpdate(lkr);
+		}
+
+		getSession().flush();
+		getSession().clear();
 	}
 	
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecord(CcAndInferredLocationRecord record) {
-		_template.saveOrUpdate(record);
-		_template.flush();
-		_template.clear();
+		getSession().saveOrUpdate(record);
+		getSession().flush();
+		getSession().clear();
 	}
 	
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecords(Collection<CcAndInferredLocationRecord> records) {		
-		_template.saveOrUpdateAll(records);
-		_template.flush();
-		_template.clear();
+		for(CcAndInferredLocationRecord record : records){
+			getSession().saveOrUpdate(record);
+		}
+		getSession().flush();
+		getSession().clear();
 	}
 	
 	protected List<ArchivedInferredLocationRecord> getInferredLocationRecords(ArchivedInferredLocationRecord[] records){
@@ -170,24 +176,12 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		hql = queryBuilder.order(hql, "vehicleId", null);
 
 		final StringBuilder hqlQuery = hql;
-		
-		List<CcAndInferredLocationRecord> list = _template.execute(
-				new HibernateCallback<List<CcAndInferredLocationRecord>>() {
 
-			@SuppressWarnings("unchecked")
-			@Override
-			public List<CcAndInferredLocationRecord> doInHibernate(Session session) throws HibernateException,
-					SQLException {
-				
-				Query query = buildQuery(filter, hqlQuery, session);
+		Query query = buildQuery(filter, hqlQuery);
 
-				_log.debug("Executing query : " + hqlQuery.toString());
-				
-				return query.list();
-			}
-		});
+		_log.debug("Executing query : " + hqlQuery.toString());
 
-		return list;
+		return query.list();
 	}
 
 	@Override
@@ -197,14 +191,12 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		if (vehicleId == null) {
 			return null;
 		}
-
-		return _template.get(CcAndInferredLocationRecord.class, vehicleId);
+		return (CcAndInferredLocationRecord) getSession().get(CcAndInferredLocationRecord.class, vehicleId);
 	}
 	
 	
-	private Query buildQuery(Map<CcAndInferredLocationFilter, String> filter, StringBuilder hqlQuery,
-			Session session) {
-		Query query = session.createQuery(hqlQuery.toString());
+	private Query buildQuery(Map<CcAndInferredLocationFilter, String> filter, StringBuilder hqlQuery) {
+		Query query = getSession().createQuery(hqlQuery.toString());
 		
 		setNamedParamter(query, CcAndInferredLocationFilter.DEPOT_ID, 
 				filter.get(CcAndInferredLocationFilter.DEPOT_ID));
@@ -299,10 +291,10 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 			Date timeReceived) {
 		InvalidLocationRecord ilr = new InvalidLocationRecord(content, error,
 				timeReceived);
-		_template.saveOrUpdate(ilr);
+		getSession().saveOrUpdate(ilr);
 		// clear from level one cache
-		_template.flush();
-		_template.evict(ilr);
+		getSession().flush();
+		getSession().evict(ilr);
 	}
 
 	@Override

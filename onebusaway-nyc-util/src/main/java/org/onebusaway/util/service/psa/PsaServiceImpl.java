@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.onebusaway.nyc.util.model.PublicServiceAnnouncement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 public class PsaServiceImpl implements PsaService {
   
@@ -18,11 +19,13 @@ public class PsaServiceImpl implements PsaService {
   }
   
   @Override
+  @Transactional(readOnly = true)
   public List<PublicServiceAnnouncement> getAllPsas() {
     return _dao.getAllPsas();
   }
 
   @Override
+  @Transactional(rollbackFor = Throwable.class)
   public void refreshPsas(List<PublicServiceAnnouncement> psas) {
     List<PublicServiceAnnouncement> oldPsas = _dao.getAllPsas();
     List<PublicServiceAnnouncement> toDelete = new ArrayList<PublicServiceAnnouncement>();
