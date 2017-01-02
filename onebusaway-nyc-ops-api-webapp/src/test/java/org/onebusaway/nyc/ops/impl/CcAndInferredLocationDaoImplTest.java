@@ -17,6 +17,7 @@ package org.onebusaway.nyc.ops.impl;
 
 import static org.junit.Assert.*;
 
+import org.hibernate.Transaction;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.ServiceRegistryBuilder;
 import org.onebusaway.nyc.ops.impl.CcAndInferredLocationDaoImpl;
@@ -26,11 +27,9 @@ import org.onebusaway.nyc.report.impl.RecordValidationServiceImpl;
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 
 import org.junit.After;
@@ -54,11 +53,11 @@ public class  CcAndInferredLocationDaoImplTest {
   @Before
   public void setup() throws IOException {
 
-    Configuration config = new Configuration();
-    config = config.configure("org/onebusaway/nyc/ops/hibernate-configuration.xml");
-    ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(
-    config.getProperties()). buildServiceRegistry();
-    _sessionFactory = config.buildSessionFactory(serviceRegistry);
+      Configuration config = new Configuration();
+      config = config.configure("org/onebusaway/nyc/ops/hibernate-configuration.xml");
+      ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(
+              config.getProperties()). buildServiceRegistry();
+      _sessionFactory = config.buildSessionFactory(serviceRegistry);
 
     _cache = new CcLocationCache(10);
     
@@ -78,7 +77,7 @@ public class  CcAndInferredLocationDaoImplTest {
   @Test
   public void test() throws Exception {
 
-    getSession().beginTransaction();
+    Transaction t = getSession().beginTransaction();
 
     assertEquals(0, getNumberOfRecords());
 
@@ -123,6 +122,8 @@ public class  CcAndInferredLocationDaoImplTest {
     }
     
     assertTrue(foundMatch);
+
+    t.commit();
   }
   
   private CcLocationReportRecord getCcRecord() {
