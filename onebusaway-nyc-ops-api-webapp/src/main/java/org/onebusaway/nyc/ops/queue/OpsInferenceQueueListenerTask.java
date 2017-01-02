@@ -184,7 +184,7 @@ public class OpsInferenceQueueListenerTask extends
 	}
 
     if (_statusTask == null) {
-    	_statusTask = _taskScheduler.scheduleWithFixedDelay(new StatusThread(),
+    	_statusTask = (ScheduledFuture<StatusThread>) _taskScheduler.scheduleWithFixedDelay(new StatusThread(),
         STATUS_INTERVAL_MINUTES * 60 * 1000);
     }
     

@@ -27,7 +27,7 @@ public abstract class NycCacheService<K, V> {
   protected Cache<K, V> _cache;
 
   @SuppressWarnings("rawtypes")
-  private ScheduledFuture<NycCacheService.StatusThread> _statusTask = null;
+  private ScheduledFuture<NycCacheService<K, V>.StatusThread> _statusTask = null;
 
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
@@ -138,7 +138,7 @@ public abstract class NycCacheService<K, V> {
   @PostConstruct
   private void startStatusTask() {
     if (_statusTask == null) {
-      _statusTask = _taskScheduler.scheduleWithFixedDelay(new StatusThread(),
+      _statusTask = (ScheduledFuture<StatusThread>) _taskScheduler.scheduleWithFixedDelay(new StatusThread(),
           STATUS_INTERVAL_MINUTES * 60 * 1000);
     }
   }
