@@ -12,10 +12,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.zeromq.ZMQ;
+import org.zeromq.ZMQForwarder;
 
 import org.junit.Test;
-import org.onebusaway.nyc.queue_broker.ZMQForwarder;
-
 import static org.junit.Assert.*;
 
 /**
