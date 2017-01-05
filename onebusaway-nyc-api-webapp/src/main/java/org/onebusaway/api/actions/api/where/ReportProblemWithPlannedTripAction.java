@@ -27,6 +27,7 @@ import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.ItineraryV2BeanFactory;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.presentation.impl.StackInterceptor.AddToStack;
 import org.onebusaway.transit_data.model.problems.PlannedTripProblemReportBean;
 import org.onebusaway.transit_data.model.tripplanning.ConstraintsBean;
@@ -140,9 +141,9 @@ public class ReportProblemWithPlannedTripAction extends ApiActionSupport {
   public DefaultHttpHeaders index() throws IOException, ServiceException {
 
     if (_time == 0)
-      _time = System.currentTimeMillis();
+      _time = SystemTime.currentTimeMillis();
     if (_constraints.getCurrentTime() == -1)
-      _constraints.setCurrentTime(System.currentTimeMillis());
+      _constraints.setCurrentTime(SystemTime.currentTimeMillis());
 
     BeanFactoryV2 factory = getBeanFactoryV2();
     ItineraryV2BeanFactory itineraryFactory = new ItineraryV2BeanFactory(

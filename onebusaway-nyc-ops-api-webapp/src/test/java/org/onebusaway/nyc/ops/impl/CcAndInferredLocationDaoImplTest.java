@@ -24,6 +24,7 @@ import org.onebusaway.nyc.report.impl.RecordValidationServiceImpl;
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -136,7 +137,7 @@ public class  CcAndInferredLocationDaoImplTest {
       cc.setRouteIdDesignator("rteIdDesignator");
       cc.setRunIdDesignator("runIdDesignator");
       cc.setSpeed(new BigDecimal("5.6"));
-      cc.setTimeReceived(new Date(System.currentTimeMillis()));
+      cc.setTimeReceived(new Date(SystemTime.currentTimeMillis()));
       cc.setVehicleAgencyDesignator("vehicleAgencyDesignator");
       cc.setVehicleAgencyId(789);
       cc.setNmeaSentenceGPGGA("$GPRMC,105850.00,A,4038.445646,N,07401.094043,W,002.642,128.77,220611,,,A*7C");
@@ -152,7 +153,7 @@ public class  CcAndInferredLocationDaoImplTest {
     record.setTimeReported(new Date(123456789L));
     record.setVehicleId(120);
     record.setAgencyId("NYC");
-    record.setArchiveTimeReceived(new Date(System.currentTimeMillis()));
+    record.setArchiveTimeReceived(new Date(SystemTime.currentTimeMillis()));
     record.setServiceDate(new Date(20111010L));
     record.setScheduleDeviation(1);
     record.setInferredBlockId("1");

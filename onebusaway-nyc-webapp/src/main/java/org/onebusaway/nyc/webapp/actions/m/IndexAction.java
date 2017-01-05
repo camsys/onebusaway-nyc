@@ -31,6 +31,7 @@ import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
@@ -225,7 +226,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   public String getCacheBreaker() {
-    return String.valueOf(System.currentTimeMillis());
+    return String.valueOf(SystemTime.currentTimeMillis());
   }
 
   public boolean getQueryIsEmpty() {

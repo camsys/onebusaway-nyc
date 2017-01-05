@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;
 
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.presentation.impl.NextActionSupport;
 import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.services.CurrentUserService;
@@ -41,7 +42,7 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
     if(time != null) {
       return time;
     } else {
-      return System.currentTimeMillis();
+      return SystemTime.currentTimeMillis();
     }
   }
   
@@ -97,7 +98,7 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
   }
 
   public String getCacheBreaker() {
-	  return String.valueOf(System.currentTimeMillis());
+	  return String.valueOf(SystemTime.currentTimeMillis());
   }
 
   protected UserBean getCurrentUser() {

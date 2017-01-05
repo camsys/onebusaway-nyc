@@ -13,6 +13,7 @@ import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializer;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.ListBean;
@@ -65,7 +66,7 @@ public class RealtimeServiceImpl implements RealtimeService {
     if(_now != null)
       return _now;
     else
-      return System.currentTimeMillis();
+      return SystemTime.currentTimeMillis();
   }
 
   @Autowired

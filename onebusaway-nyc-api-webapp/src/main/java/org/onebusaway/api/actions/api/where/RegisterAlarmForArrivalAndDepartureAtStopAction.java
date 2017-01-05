@@ -20,6 +20,7 @@ import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.services.AlarmDetails;
 import org.onebusaway.api.services.AlarmService;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.presentation.impl.StackInterceptor.AddToStack;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureForStopQueryBean;
 import org.onebusaway.transit_data.model.RegisterAlarmQueryBean;
@@ -87,7 +88,7 @@ public class RegisterAlarmForArrivalAndDepartureAtStopAction extends
       return setValidationErrorsResponse();
 
     if (_query.getTime() == 0)
-      _query.setTime(System.currentTimeMillis());
+      _query.setTime(SystemTime.currentTimeMillis());
     
     AlarmDetails details = _alarmService.alterAlarmQuery(_alarm, _data);
 

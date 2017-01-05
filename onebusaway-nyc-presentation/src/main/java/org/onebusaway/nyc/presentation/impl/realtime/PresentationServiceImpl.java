@@ -6,6 +6,7 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
@@ -60,7 +61,7 @@ public class PresentationServiceImpl implements PresentationService {
     if(_now != null)
       return _now;
     else
-      return System.currentTimeMillis();
+      return SystemTime.currentTimeMillis();
   }
   
   @PostConstruct

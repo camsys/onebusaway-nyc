@@ -10,7 +10,7 @@ import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.impl.BundleValidationServiceImpl;
 import org.onebusaway.nyc.admin.service.server.impl.BundleServerServiceImpl;
 import org.onebusaway.nyc.admin.util.FileUtils;
-
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ public class BundleRequestServiceImplTest {
       @Override
       public List<String[]> listBundleDirectories(int maxResults) {
         ArrayList<String[]> list = new ArrayList<String[]>();
-        String[] columns = {"2012April/", "", "" + System.currentTimeMillis()};
+        String[] columns = {"2012April/", "", "" + SystemTime.currentTimeMillis()};
         list.add(columns);
         return list;
       }

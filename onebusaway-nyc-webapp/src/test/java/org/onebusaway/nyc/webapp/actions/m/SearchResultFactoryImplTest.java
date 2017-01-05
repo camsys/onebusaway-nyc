@@ -25,6 +25,7 @@ import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.m.model.StopResult;
 import org.onebusaway.transit_data.model.NameBean;
@@ -55,7 +56,7 @@ public class SearchResultFactoryImplTest {
   private static final String TEST_DESTINATION_NAME = "destination name";
   private static final String TEST_STOP_ID = "test stop id";
   private static final String TEST_PRESENTABLE_DISTANCE = "test presentable distance";
-  private static final long TEST_TIME = System.currentTimeMillis();
+  private static final long TEST_TIME = SystemTime.currentTimeMillis();
 
   @Mock
   private ConfigurationService _configurationService;

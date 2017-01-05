@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
@@ -100,7 +101,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
   private int _particleParentSize = 2;
   
-  private final long creationTime = System.currentTimeMillis();
+  private final long creationTime = SystemTime.currentTimeMillis();
 
   public SimulatorTask() {
   }
@@ -165,7 +166,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
   public void addRecord(NycTestInferredLocationRecord record) {
     if (_shiftStartTime) {
       if (_records.isEmpty())
-        _startTimeOffset = System.currentTimeMillis() - record.getTimestamp();
+        _startTimeOffset = SystemTime.currentTimeMillis() - record.getTimestamp();
       record.setTimestamp(record.getTimestamp() + _startTimeOffset);
     }
 

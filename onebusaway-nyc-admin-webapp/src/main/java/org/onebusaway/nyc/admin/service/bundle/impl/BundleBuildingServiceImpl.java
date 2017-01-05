@@ -603,7 +603,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     String bundleName = request.getBundleName();
     _log.info("createVersionString found bundleName=" + bundleName);
     if (bundleName == null || bundleName.length() == 0) {
-      bundleName = "b" + System.currentTimeMillis();
+      bundleName = "b" + SystemTime.currentTimeMillis();
     }
     return request.getBundleDirectory() + File.separator + 
         _fileService.getBuildPath() +  File.separator +

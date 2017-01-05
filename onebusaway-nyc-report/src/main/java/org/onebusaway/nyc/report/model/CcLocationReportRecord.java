@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.report.model;
 
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -156,7 +156,7 @@ public class CcLocationReportRecord implements Serializable {
     setRunIdDesignator(message.getRunID().getDesignator());
     setSpeed(convertSpeed(message.getSpeed()));
     setTimeReported(convertTime(message.getTimeReported(), zoneOffset));
-    setArchiveTimeReceived(new Date(System.currentTimeMillis()));
+    setArchiveTimeReceived(new Date(SystemTime.currentTimeMillis()));
     setTimeReceived(new Date(envelope.getTimeReceived()));
     setVehicleAgencyDesignator(message.getVehicle().getAgencydesignator());
     setVehicleAgencyId(message.getVehicle().getAgencyId().intValue());

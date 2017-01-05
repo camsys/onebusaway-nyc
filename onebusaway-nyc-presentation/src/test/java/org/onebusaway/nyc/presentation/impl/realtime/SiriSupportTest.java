@@ -11,6 +11,7 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupport.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RouteBean.Builder;
 import org.onebusaway.transit_data.model.StopBean;
@@ -52,7 +53,7 @@ public class SiriSupportTest {
     MonitoredVehicleJourney journey = new MonitoredVehicleJourney();
     SiriSupport ss = new SiriSupport();
     ss.fillMonitoredVehicleJourney(journey, trip.getTrip(), trip.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
-        presentationService, nycTransitDataService, 0, System.currentTimeMillis());
+        presentationService, nycTransitDataService, 0, SystemTime.currentTimeMillis());
     
     assertNotNull(journey);
     List<SituationRefStructure> situationRefs = journey.getSituationRef();

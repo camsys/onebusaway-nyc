@@ -33,6 +33,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.onebusaway.nyc.integration_tests.TraceSupport;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.utility.DateLibrary;
@@ -188,7 +189,7 @@ public class SiriIntegrationTestBase {
 	  String taskId = _traceSupport.uploadTraceForSimulation(trace, true);
 
 	  // Wait for the task to complete
-	  long t = System.currentTimeMillis();
+	  long t = SystemTime.currentTimeMillis();
 	  int prevRecordCount = -1;
 
 	  while (true) {
@@ -199,14 +200,14 @@ public class SiriIntegrationTestBase {
 
 		  if (actual.size() < expected.size()) {
 
-			  if (t + _maxTimeout < System.currentTimeMillis()) {
+			  if (t + _maxTimeout < SystemTime.currentTimeMillis()) {
 				  fail("waited but never received enough records: expected="
 						  + expected.size() + " actual=" + actual.size());
 			  }
 
 			  // We reset our timeout if the record count is growing
 			  if (actual.size() > prevRecordCount) {
-				  t = System.currentTimeMillis();
+				  t = SystemTime.currentTimeMillis();
 				  prevRecordCount = actual.size();
 			  }
 

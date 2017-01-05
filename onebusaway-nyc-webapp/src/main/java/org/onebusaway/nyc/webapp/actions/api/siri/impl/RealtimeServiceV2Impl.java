@@ -18,6 +18,7 @@ import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializerV2;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializerV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.OnwardCallsMode;
@@ -91,7 +92,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		if (_now != null)
 			return _now;
 		else
-			return System.currentTimeMillis();
+			return SystemTime.currentTimeMillis();
 	}
 
 	@Autowired
@@ -800,11 +801,11 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	        
 	        // TODO - Re-evaluate the best method to determine upcoming scheduled service
 	        Boolean routeHasUpcomingScheduledService = 
-	            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), directionId);
+	            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), SystemTime.currentTimeMillis(), routeBean.getId(), directionId);
 
 	        // if there are buses on route, always have "scheduled service"
 	        Boolean routeHasVehiclesInService = 
-	      		  getVehiclesInServiceForRoute(routeBean.getId(), directionId, System.currentTimeMillis());
+	      		  getVehiclesInServiceForRoute(routeBean.getId(), directionId, SystemTime.currentTimeMillis());
 
 	        if(routeHasVehiclesInService) {
 	        	routeHasUpcomingScheduledService = true;
@@ -829,7 +830,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	        	  
 	        	  Boolean stopHasUpcomingScheduledService = _nycTransitDataService.stopHasUpcomingScheduledService(
 	            	  (routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
-	                  System.currentTimeMillis(), stopBean.getId(), routeBean.getId(),
+	                  SystemTime.currentTimeMillis(), stopBean.getId(), routeBean.getId(),
 	                  stopGroupBean.getId());  
 	        	  stopsOnRoute.add(new StopOnRoute(stopBean, stopHasUpcomingScheduledService));
 	          }
@@ -876,7 +877,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 							.stopHasUpcomingScheduledService((route
 									.getAgency() != null ? route
 									.getAgency().getId() : null), 
-							System.currentTimeMillis(), 
+							SystemTime.currentTimeMillis(), 
 							stop.getId(), 
 							stopsForRoute.getRoute().getId(), 
 							directionId
