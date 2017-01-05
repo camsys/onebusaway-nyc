@@ -22,6 +22,7 @@ import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class VehicleLocationRecordForVehicleAction extends ApiActionSupport {
 
   private String _id;
 
-  private long _time = System.currentTimeMillis();
+  private long _time = SystemTime.currentTimeMillis();
 
   public VehicleLocationRecordForVehicleAction() {
     super(V2);

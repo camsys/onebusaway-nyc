@@ -28,6 +28,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.onebusaway.nyc.sms.services.SessionManager;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -132,7 +133,7 @@ public class SessionManagerImpl implements SessionManager {
     public synchronized boolean isValidAfterTouch() {
       if (!_valid)
         return false;
-      _lastAccess = System.currentTimeMillis();
+      _lastAccess = SystemTime.currentTimeMillis();
       return true;
     }
 
@@ -152,7 +153,7 @@ public class SessionManagerImpl implements SessionManager {
 
     public void run() {
 
-      long minTime = System.currentTimeMillis() - _sessionTimeout * 1000;
+      long minTime = SystemTime.currentTimeMillis() - _sessionTimeout * 1000;
 
       Iterator<ContextEntry> it = _contextEntriesByKey.values().iterator();
 

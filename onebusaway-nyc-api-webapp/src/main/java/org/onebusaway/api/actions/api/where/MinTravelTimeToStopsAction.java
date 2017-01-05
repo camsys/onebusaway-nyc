@@ -27,6 +27,7 @@ import org.onebusaway.api.model.transit.tripplanning.MinTravelTimeToStopV2Bean;
 import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.presentation.impl.StackInterceptor.AddToStack;
 import org.onebusaway.transit_data.model.oba.MinTravelTimeToStopsBean;
 import org.onebusaway.transit_data.model.tripplanning.TransitShedConstraintsBean;
@@ -102,7 +103,7 @@ public class MinTravelTimeToStopsAction extends ApiActionSupport {
       return setValidationErrorsResponse();
 
     if (_time == 0)
-      _time = System.currentTimeMillis();
+      _time = SystemTime.currentTimeMillis();
 
     CoordinatePoint location = new CoordinatePoint(_lat, _lon);
 

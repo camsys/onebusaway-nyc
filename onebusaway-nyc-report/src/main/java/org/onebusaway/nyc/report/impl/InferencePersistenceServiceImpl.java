@@ -14,6 +14,7 @@ import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.services.CcAndInferredLocationDao;
 import org.onebusaway.nyc.report.services.CloudWatchService;
 import org.onebusaway.nyc.report.services.InferencePersistenceService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,7 +104,7 @@ public class InferencePersistenceServiceImpl implements
     }
 
     private void logLatency(List<ArchivedInferredLocationRecord> reports) {
-      long now = System.currentTimeMillis();
+      long now = SystemTime.currentTimeMillis();
       if (reports.size() > 0) {
         StringBuffer sb = new StringBuffer();
         sb.append("inf drained ");

@@ -16,6 +16,7 @@ import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report.services.RecordValidationService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
   // offset of timezone (-04:00 or -05:00)
   private String _zoneOffset = null;
   private String _systemTimeZone = null;
-  private long zoneOffsetWindow = System.currentTimeMillis();
+  private long zoneOffsetWindow = SystemTime.currentTimeMillis();
 
   public OpsInputQueueListenerTask() {
     /*
@@ -153,10 +154,10 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
                 + "required database constraints", vehicleId);
       }
       
-      if (System.currentTimeMillis() - zoneOffsetWindow > 60 * 60 * 1000) {
+      if (SystemTime.currentTimeMillis() - zoneOffsetWindow > 60 * 60 * 1000) {
         // reset zoneoffset once an hour
         _zoneOffset = null;
-        zoneOffsetWindow = System.currentTimeMillis();
+        zoneOffsetWindow = SystemTime.currentTimeMillis();
       }
     } catch (Throwable t) {
       _log.error("Exception processing contents= " + contents, t);

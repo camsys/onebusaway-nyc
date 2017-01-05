@@ -20,6 +20,7 @@ import org.onebusaway.nyc.report.services.InferencePersistenceService;
 import org.onebusaway.nyc.report.services.RecordValidationService;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,7 +101,7 @@ public class OpsInferenceQueueListenerTask extends
   // this method must throw exceptions to force a transaction rollback
   protected void processResult(NycQueuedInferredLocationBean inferredResult,
       String contents) {
-    long timeReceived = System.currentTimeMillis();
+    long timeReceived = SystemTime.currentTimeMillis();
     ArchivedInferredLocationRecord locationRecord = null;
 
     if (_log.isDebugEnabled())

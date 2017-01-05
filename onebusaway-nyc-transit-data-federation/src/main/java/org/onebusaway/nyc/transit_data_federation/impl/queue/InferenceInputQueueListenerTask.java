@@ -19,6 +19,7 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -89,7 +90,7 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 	}
 
 	protected long computeTimeDifference(long timestamp) {
-		return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds
+		return (SystemTime.currentTimeMillis() - timestamp) / 1000; // output in seconds
 	}
 
 	@Override

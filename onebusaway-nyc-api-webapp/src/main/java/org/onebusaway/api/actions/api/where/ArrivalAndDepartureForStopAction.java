@@ -21,6 +21,7 @@ import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureForStopQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
@@ -101,7 +102,7 @@ public class ArrivalAndDepartureForStopAction extends ApiActionSupport {
       return setValidationErrorsResponse();
 
     if (_query.getTime() == 0)
-      _query.setTime(System.currentTimeMillis());
+      _query.setTime(SystemTime.currentTimeMillis());
 
     ArrivalAndDepartureBean result = _service.getArrivalAndDepartureForStop(_query);
 

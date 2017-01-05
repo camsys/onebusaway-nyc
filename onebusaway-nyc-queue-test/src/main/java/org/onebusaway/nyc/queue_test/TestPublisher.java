@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.onebusaway.nyc.queue.IPublisher;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
@@ -127,7 +128,7 @@ public class TestPublisher implements IPublisher {
   }
 
   long getTimeReceived() {
-    return System.currentTimeMillis();
+    return SystemTime.currentTimeMillis();
   }
 
   private class SendThread implements Runnable {

@@ -202,7 +202,7 @@ public class SearchResultFactoryImplTest {
 		when(monCall.getExtensions()).thenReturn(extensions);
 		when(monVehJourney.getMonitoredCall()).thenReturn(monCall);
 
-		when(_realtimeService.getMonitoredStopVisitsForStop(TEST_STOP_ID, 0, System.currentTimeMillis())).thenReturn(
+		when(_realtimeService.getMonitoredStopVisitsForStop(TEST_STOP_ID, 0, SystemTime.currentTimeMillis())).thenReturn(
 				monitoredStopVisits);
 
 		when(

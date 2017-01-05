@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,22 +50,22 @@ public class BundleServerServiceImplTest {
   @Test
   public void testStart() throws Exception {
     String instanceId = serverService.start("i-instance");
-    long start = System.currentTimeMillis();
+    long start = SystemTime.currentTimeMillis();
     String dns = serverService.pollPublicDns(instanceId, 60);
-    long end = System.currentTimeMillis();
+    long end = SystemTime.currentTimeMillis();
     _log.debug("found dns=" + dns + " after " + (end-start)/1000 + " seconds");
     String ip = serverService.findPublicIp(instanceId);
     _log.debug("found ip=" + ip);
     assertNotNull(ip);
     
-    start = System.currentTimeMillis();
+    start = SystemTime.currentTimeMillis();
 
     int count = 0;
     while (!serverService.ping(instanceId) && count < 60) {
       Thread.sleep(1000);
       count++;
     }
-    end = System.currentTimeMillis();
+    end = SystemTime.currentTimeMillis();
     _log.debug("ping=" + serverService.ping(instanceId) + " after " + (end-start)/1000 + " seconds");
     serverService.stop(instanceId);
   }

@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data.model.problems.EProblemReportStatus;
 import org.onebusaway.transit_data.model.problems.StopProblemReportBean;
 import org.onebusaway.transit_data.services.TransitDataService;
@@ -78,7 +79,7 @@ public class ReportProblemWithStopAction extends ApiActionSupport {
     if (hasErrors())
       return setValidationErrorsResponse();
 
-    _model.setTime(System.currentTimeMillis());
+    _model.setTime(SystemTime.currentTimeMillis());
     _model.setStatus(EProblemReportStatus.NEW);
     _service.reportProblemWithStop(_model);
 

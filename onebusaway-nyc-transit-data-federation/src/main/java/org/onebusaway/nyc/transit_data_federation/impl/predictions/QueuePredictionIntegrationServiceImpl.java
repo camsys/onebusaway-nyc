@@ -14,6 +14,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.TimeQueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
@@ -203,7 +204,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 		if (_serviceTime != null) {
 			return _serviceTime;
 		}
-		return System.currentTimeMillis();
+		return SystemTime.currentTimeMillis();
 	}
 	@Override
 	public void updatePredictionsForVehicle(AgencyAndId vehicleId) {
@@ -238,7 +239,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	}
 
 	private void logPredictionLatency(FeedMessage message){
-		long currentTime = System.currentTimeMillis();
+		long currentTime = SystemTime.currentTimeMillis();
 		Long messageTimeStamp = message.getHeader().getTimestamp();
 		if (messageTimeStamp != null && messageTimeStamp > 0) {
 			predictionRecordCount++;
@@ -283,7 +284,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	}
 
 	protected long computeTimeDifference(long timestamp) {
-		return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds
+		return (SystemTime.currentTimeMillis() - timestamp) / 1000; // output in seconds
 	}
 
 	public void setTransitDataService(TransitDataService transitDataService) {

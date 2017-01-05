@@ -205,7 +205,7 @@ public class RealtimeServiceTest {
  	DetailLevel detailLevel = DetailLevel.NORMAL;
  	
     // 	Time
-    long time = System.currentTimeMillis();
+    long time = SystemTime.currentTimeMillis();
     
     // Filters
     Map<Filters, String> filters = new HashMap<Filters, String>();
@@ -295,7 +295,7 @@ public class RealtimeServiceTest {
  	DetailLevel detailLevel = DetailLevel.NORMAL;
  	
     // 	Time
-    long time = System.currentTimeMillis();
+    long time = SystemTime.currentTimeMillis();
     
     // Filters
     Map<Filters, String> filters = new HashMap<Filters, String>();

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -100,7 +101,7 @@ public class SpringPlugin extends PlayPlugin implements BeanSource {
                 Thread.currentThread().setContextClassLoader(Play.classloader);
                 try {
                     applicationContext.refresh();
-                    startDate = System.currentTimeMillis();
+                    startDate = SystemTime.currentTimeMillis();
                 } catch (BeanCreationException e) {
                     Throwable ex = e.getCause();
                     if (ex instanceof PlayException) {

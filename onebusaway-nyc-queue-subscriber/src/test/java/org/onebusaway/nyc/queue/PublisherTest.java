@@ -22,6 +22,7 @@ import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.queue.Publisher;
 import org.junit.Test;
 import lrms_final_09_07.Angle;
@@ -46,7 +47,7 @@ public class PublisherTest {
   public void testOutput() {
       RealtimeEnvelope re = new RealtimeEnvelope();
       re.setUUID(new UUID().toString());
-      re.setTimeReceived(System.currentTimeMillis());
+      re.setTimeReceived(SystemTime.currentTimeMillis());
       re.setCcLocationReport(buildCcLocationReport());
       Gson gson = new Gson();
       gson.toJson(re);

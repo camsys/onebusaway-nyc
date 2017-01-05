@@ -24,6 +24,7 @@ import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.VehicleStatusV2Bean;
 import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
@@ -71,7 +72,7 @@ public class VehiclesForAgencyAction extends ApiActionSupport {
     if (hasErrors())
       return setValidationErrorsResponse();
 
-    long time = System.currentTimeMillis();
+    long time = SystemTime.currentTimeMillis();
     if (_time != 0)
       time = _time;
 

@@ -5,6 +5,7 @@ import java.io.Reader;
 import java.sql.Date;
 import javax.annotation.PostConstruct;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -189,7 +190,7 @@ public class FileInputTask {
     private int failCount = 0;
     private String _filename = null;
     private boolean _isAdjustTime = true;
-    private long startTime = System.currentTimeMillis();
+    private long startTime = SystemTime.currentTimeMillis();
     private long firstRecordTime = 0;
     private Record[] records;
 
@@ -250,7 +251,7 @@ public class FileInputTask {
       if (_isAdjustTime) {
         // startTime -- program boot
         // now -- right now
-        long now = System.currentTimeMillis();
+        long now = SystemTime.currentTimeMillis();
         long localOffset = now - startTime;
         // firstRecordTime: lazy init to first record received time
         if (firstRecordTime == 0) {
@@ -260,7 +261,7 @@ public class FileInputTask {
 
         while (dataOffset > localOffset) {
           Thread.sleep(250);
-          now = System.currentTimeMillis();
+          now = SystemTime.currentTimeMillis();
           localOffset = now - startTime;
         }
 
@@ -283,7 +284,7 @@ public class FileInputTask {
       if (NULL_RECORD.equals(record.getBlockId()))
         record.setBlockId(null);
       if (0L == record.getServiceDate())
-        record.setServiceDate(System.currentTimeMillis());
+        record.setServiceDate(SystemTime.currentTimeMillis());
     }
     
     // populate the VLR and pass to the TDS
@@ -312,7 +313,7 @@ public class FileInputTask {
     }
     
     private void reset() {
-      startTime = System.currentTimeMillis();
+      startTime = SystemTime.currentTimeMillis();
       firstRecordTime = 0;
     }
 

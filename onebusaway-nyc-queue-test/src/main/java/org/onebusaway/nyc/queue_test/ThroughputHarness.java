@@ -10,6 +10,7 @@ import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.zeromq.ZMQ;
 
 import tcip_3_0_5_local.NMEA;
@@ -88,16 +89,16 @@ public class ThroughputHarness {
     setupMappers();
 
     int vehicleCount = 0;
-    long timeStamp = System.currentTimeMillis();
+    long timeStamp = SystemTime.currentTimeMillis();
     int sent = 0;
     while (!Thread.currentThread().isInterrupted()) {
-      long now = System.currentTimeMillis();
+      long now = SystemTime.currentTimeMillis();
       if ((now - timeStamp) > 1000) {
         // 1 second has passed, reset
         System.out.println("sent " + sent + " messages in " + (now - timeStamp)
             + " milliseconds.");
         sent = 0;
-        timeStamp = System.currentTimeMillis();
+        timeStamp = SystemTime.currentTimeMillis();
       } else if (sent < sends) {
         // not throttled, send
         String uuid = createUUID();

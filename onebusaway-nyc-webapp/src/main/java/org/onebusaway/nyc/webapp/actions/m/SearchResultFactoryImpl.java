@@ -34,6 +34,7 @@ import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteDirection;
@@ -109,12 +110,12 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
         // service in this direction
         Boolean hasUpcomingScheduledService = _nycTransitDataService.routeHasUpcomingScheduledService(
         	(routeBean.getAgency()!=null?routeBean.getAgency().getId():null),	
-            System.currentTimeMillis(), routeBean.getId(),
+            SystemTime.currentTimeMillis(), routeBean.getId(),
             stopGroupBean.getId());
 
         // if there are buses on route, always have "scheduled service"
         Boolean routeHasVehiclesInService = 
-      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
+      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), SystemTime.currentTimeMillis());
 
         if(routeHasVehiclesInService) {
       	  hasUpcomingScheduledService = true;
@@ -193,7 +194,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
           // service in this direction
           Boolean hasUpcomingScheduledService = _nycTransitDataService.stopHasUpcomingScheduledService(
         	  (routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
-              System.currentTimeMillis(), stopBean.getId(), routeBean.getId(),
+              SystemTime.currentTimeMillis(), stopBean.getId(), routeBean.getId(),
               stopGroupBean.getId());
 
           // if there are buses on route, always have "scheduled service"
@@ -259,7 +260,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
-        stopBean.getId(), 0, System.currentTimeMillis());
+        stopBean.getId(), 0, SystemTime.currentTimeMillis());
 
     for (MonitoredStopVisitStructure visit : visitList) {
       String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
@@ -304,7 +305,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     // stop visits
     List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(
-        routeBean.getId(), null, 0, System.currentTimeMillis());
+        routeBean.getId(), null, 0, SystemTime.currentTimeMillis());
 
     // build map of stop IDs to list of distance strings
     for (VehicleActivityStructure journey : journeyList) {
@@ -343,7 +344,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 	  }
 	  
 	  int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
-	  long age = (System.currentTimeMillis() - updateTime) / 1000;
+	  long age = (SystemTime.currentTimeMillis() - updateTime) / 1000;
 
 	  if (age > staleTimeout) {
 		  return null;
@@ -427,7 +428,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     	
     int staleTimeout = _configurationService.getConfigurationValueAsInteger(
         "display.staleTimeout", 120);
-    long age = (System.currentTimeMillis() - updateTime) / 1000;
+    long age = (SystemTime.currentTimeMillis() - updateTime) / 1000;
 
     if (age > staleTimeout) {
       if (message.length() > 0) {
@@ -452,7 +453,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
   
   private boolean isDepartureOnSchedule(Date departureDate){
-	  return departureDate != null && departureDate.getTime() > System.currentTimeMillis();
+	  return departureDate != null && departureDate.getTime() > SystemTime.currentTimeMillis();
   }
   
   private String getFormattedOriginAimedDepartureTime(Date originAimedDepartureTime){

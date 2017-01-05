@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -60,7 +61,7 @@ public class UpdateVehicleLocationController {
       @RequestParam(required = false, defaultValue = "false") boolean saveResults)
       throws ParseException {
 
-    long t = System.currentTimeMillis();
+    long t = SystemTime.currentTimeMillis();
 
     if (time != null && ! time.trim().isEmpty()) {
       Date date = _format.parse(time);

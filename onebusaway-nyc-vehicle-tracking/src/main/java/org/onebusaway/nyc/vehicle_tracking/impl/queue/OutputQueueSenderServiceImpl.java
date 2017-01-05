@@ -19,6 +19,7 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 
 import org.codehaus.jackson.JsonGenerator;
@@ -187,7 +188,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
       try {
         while (!Thread.currentThread().isInterrupted()) {
-          final long markTimestamp = System.currentTimeMillis();
+          final long markTimestamp = SystemTime.currentTimeMillis();
           if (_isPrimaryInferenceInstance) {
             final String msg = getHeartbeatMessage(getPrimaryHostname(),
                 markTimestamp, _interval);

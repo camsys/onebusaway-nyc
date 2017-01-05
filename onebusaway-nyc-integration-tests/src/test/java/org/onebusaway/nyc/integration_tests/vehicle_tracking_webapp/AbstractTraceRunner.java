@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.integration_tests.TraceSupport;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
@@ -146,7 +147,7 @@ public class AbstractTraceRunner {
     // run to get inferred results
     String taskId = _traceSupport.uploadTraceForSimulation(trace, false);
 
-    long t = System.currentTimeMillis();
+    long t = SystemTime.currentTimeMillis();
     int prevRecordCount = -1;
     while (true) {
       List<NycTestInferredLocationRecord> ourResults = _traceSupport.getSimulationResults(taskId);
@@ -156,14 +157,14 @@ public class AbstractTraceRunner {
       // wait for all records to come in
       if (ourResults.size() < expectedResults.size()) {
 
-        if (t + _maxTimeout < System.currentTimeMillis()) {
+        if (t + _maxTimeout < SystemTime.currentTimeMillis()) {
           fail("waited but never received enough records: expected="
               + expectedResults.size() + " actual=" + ourResults.size());
         }
 
         // We reset our timeout if the record count is growing
         if (ourResults.size() > prevRecordCount) {
-          t = System.currentTimeMillis();
+          t = SystemTime.currentTimeMillis();
           prevRecordCount = ourResults.size();
         }
 

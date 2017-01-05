@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.admin.util;
 
 import org.onebusaway.nyc.util.impl.FileUtility;
-
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.h2.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -194,7 +194,7 @@ public class FileUtils {
 
   public String createTmpDirectory() {
     String tmpDir = System.getProperty("java.io.tmpdir") + File.separator
-        + "tmp" + System.currentTimeMillis();
+        + "tmp" + SystemTime.currentTimeMillis();
     boolean created = new File(tmpDir).mkdir();
     // if directory already exists, try again
     if (!created) {

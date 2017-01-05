@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.util.impl.FileUtility;
+import org.onebusaway.nyc.util.time.SystemTime;
 
 public class DscManualUploadDateTimestampFilePickerTest {
 
@@ -23,7 +24,7 @@ public class DscManualUploadDateTimestampFilePickerTest {
   @Before
   public void setUp() throws Exception {
     String tmpDirStr = System.getProperty("java.io.tmpdir") + File.separator
-        + "tmp" + System.currentTimeMillis();
+        + "tmp" + SystemTime.currentTimeMillis();
     boolean created = new File(tmpDirStr).mkdir();
     assertTrue(created);
     tmpDir = new File(tmpDirStr);

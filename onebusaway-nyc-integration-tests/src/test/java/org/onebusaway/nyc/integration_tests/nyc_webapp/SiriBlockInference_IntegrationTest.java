@@ -27,6 +27,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,9 +92,9 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
    */
   @Test
   public void testOpenVM() throws HttpException, IOException {
-    long start = System.currentTimeMillis();
+    long start = SystemTime.currentTimeMillis();
     HashMap<String, Object> vmResponse1 = getVmResponse(null, null);
-    long end = System.currentTimeMillis();
+    long end = SystemTime.currentTimeMillis();
     long vmTime1 = (end - start);
     // assuming we are the first call to the cache
     _log.info("call took " + vmTime1);
@@ -109,9 +110,9 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
     assertTrue(mvj.get("BlockRef") != null);
     
     // now make the same call expecting it to be cached
-    start = System.currentTimeMillis();
+    start = SystemTime.currentTimeMillis();
     HashMap<String, Object> vmResponse2 = getVmResponse(null, null);
-    end = System.currentTimeMillis();
+    end = SystemTime.currentTimeMillis();
     long vmTime2 = (end - start);
     _log.info("call 2 took " + vmTime2);
     assert(vmTime2 < vmTime1);
