@@ -42,6 +42,7 @@
 package org.onebusaway.nyc.webapp.users.impl;
 
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottledService;
 import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottlingCacheService;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
   //Note refreshable won't help us here since the interface doesn't work over hessian for some reason
   private void refreshConfigFromTDM(){
     
-	_lastTDMUpdate = System.currentTimeMillis();
+	_lastTDMUpdate = SystemTime.currentTimeMillis();
 	
 	_TDMEnable = _config.getConfigurationValueAsInteger("tds.APIThrottlingEnabled", 0);
     
@@ -125,7 +126,7 @@ public class ApiKeyThrottledServiceImpl implements ApiKeyThrottledService {
   public boolean isAllowed(String key) {
 	  
     //we would only get here if the app is running, need to get the first setting from the TDM and refreshable won't work due to hessian connection to tdm
-    if(_hitsAllowedPerMinute == 0 || (System.currentTimeMillis() - _lastTDMUpdate) > UPDATE_INTERVAL){
+    if(_hitsAllowedPerMinute == 0 || (SystemTime.currentTimeMillis() - _lastTDMUpdate) > UPDATE_INTERVAL){
       refreshConfigFromTDM();
     }
     

@@ -26,6 +26,7 @@ import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.junit.Test;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.TimeBean;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.utility.DateLibrary;
 
 public class CurrentTimeActionTest {
@@ -35,7 +36,7 @@ public class CurrentTimeActionTest {
 
     CurrentTimeAction action = new CurrentTimeAction();
 
-    long t = System.currentTimeMillis();
+    long t = SystemTime.currentTimeMillis();
 
     DefaultHttpHeaders headers = action.index();
     assertEquals(200, headers.getStatus());

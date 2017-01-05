@@ -21,6 +21,7 @@ import org.onebusaway.nyc.transit_data_federation.impl.queue.TimeQueueListenerTa
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionCacheService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
@@ -267,7 +268,7 @@ public class QueuePredictionIntegrationServiceImpl extends
     	}
     	
     	private void logPredictionLatency(FeedMessage message){
-    		long currentTime = System.currentTimeMillis();
+    		long currentTime = SystemTime.currentTimeMillis();
     		Long messageTimeStamp = message.getHeader().getTimestamp();
     		if (messageTimeStamp != null && messageTimeStamp > 0) {
 				predictionRecordCount++;
@@ -312,14 +313,14 @@ public class QueuePredictionIntegrationServiceImpl extends
     	}
     	
     	protected long computeTimeDifference(long timestamp) {
-    		return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds															
+    		return (SystemTime.currentTimeMillis() - timestamp) / 1000; // output in seconds															
     	}
     	
     	private Map<String, Long> loadScheduledTimes(String vehicleId, String tripId) {
     		
     		Map<String, Long> map = new HashMap<String, Long>();
     		VehicleStatusBean vehicleStatus = _transitDataService
-    				.getVehicleForAgency(vehicleId, System.currentTimeMillis());
+    				.getVehicleForAgency(vehicleId, SystemTime.currentTimeMillis());
 
     		if (vehicleStatus == null) {
     			return map;

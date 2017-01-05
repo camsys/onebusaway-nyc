@@ -34,7 +34,7 @@ public class DwhTest {
   }
 
   public long getTime() {
-    return System.currentTimeMillis();
+    return SystemTime.currentTimeMillis();
   }
 
 }

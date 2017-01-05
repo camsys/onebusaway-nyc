@@ -26,6 +26,7 @@ package org.onebusaway.nyc.report.model;
 
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -166,7 +167,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
   public ArchivedInferredLocationRecord(NycQueuedInferredLocationBean message,
       String contents) {
-    this(message, contents, System.currentTimeMillis());
+    this(message, contents, SystemTime.currentTimeMillis());
   }
   
   public ArchivedInferredLocationRecord(NycQueuedInferredLocationBean message,

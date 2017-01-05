@@ -19,6 +19,7 @@ import org.onebusaway.nyc.transit_data_federation.services.predictions.Predictio
 import org.onebusaway.nyc.util.impl.RestApiLibrary;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
 import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 
@@ -43,7 +44,7 @@ public class InferenceInputQueueListenerTaskTest {
 
 	private NycQueuedInferredLocationBean inferredResult;
 	private InferenceInputQueueListenerTask task;
-	private Long timestamp = new Long(System.currentTimeMillis());
+	private Long timestamp = new Long(SystemTime.currentTimeMillis());
 	private VehicleLocationListener listener;
 	private PredictionIntegrationService pService;
 

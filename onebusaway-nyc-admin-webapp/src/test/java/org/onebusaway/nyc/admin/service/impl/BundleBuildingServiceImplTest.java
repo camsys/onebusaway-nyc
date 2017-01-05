@@ -8,7 +8,7 @@ import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.bundle.impl.BundleBuildingServiceImpl;
 import org.onebusaway.nyc.admin.util.FileUtils;
-
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -50,17 +50,17 @@ public class BundleBuildingServiceImplTest {
       @Override
       public List<String[]> listBundleDirectories(int maxResults) {
         ArrayList<String[]> list = new ArrayList<String[]>();
-        String[] columns0 = {"2012April", "", "" + System.currentTimeMillis()};
+        String[] columns0 = {"2012April", "", "" + SystemTime.currentTimeMillis()};
         list.add(columns0);
-        String[] columns1 = {"2012Jan", "", "" + System.currentTimeMillis()};
+        String[] columns1 = {"2012Jan", "", "" + SystemTime.currentTimeMillis()};
         list.add(columns1);
-        String[] columns2 = {"2011April", "", "" + System.currentTimeMillis()};
+        String[] columns2 = {"2011April", "", "" + SystemTime.currentTimeMillis()};
         list.add(columns2);
-        String[] columns3 = {"2011Jan", "", "" + System.currentTimeMillis()};
+        String[] columns3 = {"2011Jan", "", "" + SystemTime.currentTimeMillis()};
         list.add(columns3);
-        String[] columns4 = {"2010April", "", "" + System.currentTimeMillis()};
+        String[] columns4 = {"2010April", "", "" + SystemTime.currentTimeMillis()};
         list.add(columns4);
-        String[] columns5 = {"2010Jan", "", "" + System.currentTimeMillis()};
+        String[] columns5 = {"2010Jan", "", "" + SystemTime.currentTimeMillis()};
         list.add(columns5);
         return list;
       }
@@ -136,7 +136,7 @@ public class BundleBuildingServiceImplTest {
     assertNotNull(request.getTmpDirectory());
     assertNotNull(request.getBundleDirectory());
     BundleBuildResponse response = new BundleBuildResponse(""
-        + System.currentTimeMillis());
+        + SystemTime.currentTimeMillis());
     assertEquals(0, response.getStatusList().size());
 
     // step 1

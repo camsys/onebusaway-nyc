@@ -55,6 +55,7 @@ import org.onebusaway.nyc.transit_data_federation.services.predictions.Predictio
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -883,7 +884,7 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   private long computeTimeDifference(long timestamp) {
-    return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds
+    return (SystemTime.currentTimeMillis() - timestamp) / 1000; // output in seconds
   }
 
   private boolean isValidRecord(AgencyAndId vid, Long timeReceived) {

@@ -36,6 +36,7 @@ import org.onebusaway.nyc.sms.actions.model.RouteResult;
 import org.onebusaway.nyc.sms.actions.model.StopResult;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
@@ -88,11 +89,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
           continue;
         
         Boolean hasUpcomingScheduledService = 
-            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
+            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), SystemTime.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
         // if there are buses on route, always have "scheduled service"
         Boolean routeHasVehiclesInService = 
-      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
+      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), SystemTime.currentTimeMillis());
 
         if(routeHasVehiclesInService) {
       	  hasUpcomingScheduledService = true;
@@ -143,7 +144,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
               distanceAwayStringsByDistanceFromStopAndRouteAndDirection.get(routeBean.getId() + "_" + stopGroupBean.getId());
           
           Boolean hasUpcomingScheduledService = 
-              _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
+              _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), SystemTime.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
 
           // if there are buses on route, always have "scheduled service"
           if(distanceAwayStringsByDistanceFromStop != null && !distanceAwayStringsByDistanceFromStop.isEmpty()) {
@@ -179,7 +180,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = 
-      _realtimeService.getMonitoredStopVisitsForStop(stopBean.getId(), 0, System.currentTimeMillis());  
+      _realtimeService.getMonitoredStopVisitsForStop(stopBean.getId(), 0, SystemTime.currentTimeMillis());  
     
     for(MonitoredStopVisitStructure visit : visitList) {
       // on detour? don't show it. 
@@ -231,7 +232,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 	  
 	  // if data is old, no predictions
 	  int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
-	  long age = (System.currentTimeMillis() - updateTime) / 1000;
+	  long age = (SystemTime.currentTimeMillis() - updateTime) / 1000;
 
 	  if (age > staleTimeout) {
 		  return null;
@@ -293,7 +294,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     }
     
     int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
-    long age = (System.currentTimeMillis() - updateTime) / 1000;
+    long age = (SystemTime.currentTimeMillis() - updateTime) / 1000;
 
     if(age > staleTimeout) {
       if(message.length() > 0) {

@@ -18,7 +18,7 @@ package org.onebusaway.nyc.report_archive.impl;
 import static org.junit.Assert.*;
 
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
-
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
@@ -83,8 +83,8 @@ public class CcLocationReportDaoImplTest {
     report.setRouteIdDesignator("rteIdDesignator");
     report.setRunIdDesignator("runIdDesignator");
     report.setSpeed(new BigDecimal("5.6"));
-    report.setTimeReported(new Date(System.currentTimeMillis()));
-    report.setTimeReceived(new Date(System.currentTimeMillis()));
+    report.setTimeReported(new Date(SystemTime.currentTimeMillis()));
+    report.setTimeReceived(new Date(SystemTime.currentTimeMillis()));
     report.setVehicleAgencyDesignator("vehicleAgencyDesignator");
     report.setVehicleAgencyId(789);
     report.setVehicleId(120);

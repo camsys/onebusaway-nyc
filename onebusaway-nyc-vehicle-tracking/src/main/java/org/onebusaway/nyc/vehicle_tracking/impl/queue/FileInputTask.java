@@ -17,6 +17,7 @@ import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputTask;
@@ -111,7 +112,7 @@ public class FileInputTask implements ServletContextAware, InputTask{
     private String filename = null;
     private Reader inputReader = null;
     private StringBuffer currentRecord = new StringBuffer();
-    private long startTime = System.currentTimeMillis();
+    private long startTime = SystemTime.currentTimeMillis();
     private long firstRecordTime = 0;
     private InputService inputService;
 
@@ -141,7 +142,7 @@ public class FileInputTask implements ServletContextAware, InputTask{
     	return;
       // startTime -- program boot
       // now -- right now
-      long now = System.currentTimeMillis();
+      long now = SystemTime.currentTimeMillis();
       long localOffset = now - startTime;
       // firstRecordTime: lazy init to first record received time
       if (firstRecordTime == 0) {
@@ -150,7 +151,7 @@ public class FileInputTask implements ServletContextAware, InputTask{
       long dataOffset = record.getTimeReceived()- firstRecordTime;
       while (dataOffset > localOffset) {
     	Thread.sleep(250);
-        now = System.currentTimeMillis();
+        now = SystemTime.currentTimeMillis();
         localOffset = now - startTime;
       }
       
