@@ -4,8 +4,6 @@ import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -40,9 +38,6 @@ public abstract class QueueListenerTask {
 	protected ZMQ.Socket _socket = null;
 	protected ZMQ.Poller _poller = null;
 	protected int _countInterval = 10000;
-	
-  private ReadThread _readThread;
-  private Future<?> _readThreadFuture;
 
 	public abstract boolean processMessage(String address, byte[] buff) throws Exception;
 
@@ -83,8 +78,6 @@ public abstract class QueueListenerTask {
 
 		private ZMQ.Poller _zmqPoller = null;
 
-		private boolean _notifyShutdown = false;
-		
 		public ReadThread(ZMQ.Socket socket, ZMQ.Poller poller) {
 			_zmqSocket = socket;
 			_zmqPoller = poller;
@@ -94,7 +87,7 @@ public abstract class QueueListenerTask {
 		public void run() {
 		  _log.warn("ReadThread for queue " + getQueueName() + " starting");
 		  
-			while (!_notifyShutdown) {
+			while (!Thread.currentThread().isInterrupted()) {
 			  _zmqPoller.poll(1000 * 1000); // microseconds for 2.2, milliseconds for 3.0
 				if (_zmqPoller.pollin(0)) {
 
@@ -128,10 +121,6 @@ public abstract class QueueListenerTask {
 			}
 			_log.error("Thread loop Interrupted, exiting");
 		}
-		
-		public void notifyShutdown() {
-		  _notifyShutdown = true;
-		}
 	}
 
 	@PostConstruct
@@ -154,7 +143,7 @@ public abstract class QueueListenerTask {
 			return;
 		}
 	}
-	
+
 	// (re)-initialize ZMQ with the given args
 	protected synchronized void initializeQueue(String host, String queueName,
 			Integer port) throws InterruptedException {
@@ -166,22 +155,10 @@ public abstract class QueueListenerTask {
 		}
 
 		if (_socket != null) {
-		  
-		  // Notify read thread to shut down and wait.
-			_readThread.notifyShutdown();
-			try {
-			  _readThreadFuture.get(1, TimeUnit.SECONDS);
-			} catch (Exception e) {
-			  _log.error("Read thread did not complete cleanly: " + e.getMessage());
-      } 
-			
-			// Shut down service.
 			_executorService.shutdownNow();
-		  _executorService.awaitTermination(1, TimeUnit.SECONDS);
-			
-		  _log.debug("_executorService.isTerminated="
+			Thread.sleep(1 * 1000);
+			_log.debug("_executorService.isTerminated="
 					+ _executorService.isTerminated());
-
 			_socket.close();
 			_executorService = Executors.newFixedThreadPool(1);
 		}
@@ -192,8 +169,7 @@ public abstract class QueueListenerTask {
 		_socket.connect(bind);
 		_socket.subscribe(queueName.getBytes());
 
-		_readThread = new ReadThread(_socket, _poller);
-		_readThreadFuture = _executorService.submit(_readThread);
+		_executorService.execute(new ReadThread(_socket, _poller));
 
 		_log.warn("queue " + queueName + " is listening on " + bind);
 		_initialized = true;
@@ -201,6 +177,7 @@ public abstract class QueueListenerTask {
 	}
 
 	private class DNSCheckThread extends TimerTask {
+
 		@Override
 		public void run() {
 			try {
