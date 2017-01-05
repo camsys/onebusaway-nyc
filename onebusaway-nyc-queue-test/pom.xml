@@ -18,8 +18,9 @@
     </dependency>
     <dependency>
       <groupId>org.zeromq</groupId>
-      <artifactId>jeromq</artifactId>
-      <version>0.3.6</version>
+      <artifactId>jzmq</artifactId>
+      <version>053c2d7</version><!-- git revision -->
+      <scope>compile</scope>
     </dependency>
     <!-- build servlet -->
     <dependency>
