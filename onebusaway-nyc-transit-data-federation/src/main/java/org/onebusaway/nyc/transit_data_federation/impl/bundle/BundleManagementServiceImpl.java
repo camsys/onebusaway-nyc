@@ -84,7 +84,9 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	
 	private int bundleDiscoveryFrequencyMin = 15;
   
-  private int bundleSwitchFrequencyMin = 60;
+	private int bundleSwitchFrequencyMin = 60;
+	
+	private int bundleSwitchFrequencyHour = 1;
 
 	@Autowired
 	private NycTransitDataService _nycTransitDataService;
@@ -203,13 +205,15 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		changeBundle(bestBundle.getId());
 	}
 	
-	@Refreshable(dependsOn = {"tdm.bundleDiscoveryFrequencyMin", "tdm.bundleSwitchFrequencyMin"})
-  protected void refreshCache() {
-    bundleDiscoveryFrequencyMin = Integer.parseInt(_configurationService.getConfigurationValueAsString(
-        "tdm.bundleDiscoveryFrequencyMin", "15"));
-    bundleSwitchFrequencyMin = Integer.parseInt(_configurationService.getConfigurationValueAsString(
-        "tdm.bundleSwitchFrequencyMin", "60"));
-  }
+	@Refreshable(dependsOn = {"tdm.bundleDiscoveryFrequencyMin", "tdm.bundleSwitchFrequencyMin", "tdm.bundleSwitchFrequencyHour"})
+	protected void refreshCache() {
+	    bundleDiscoveryFrequencyMin = Integer.parseInt(_configurationService.getConfigurationValueAsString(
+	        "tdm.bundleDiscoveryFrequencyMin", "15"));
+	    bundleSwitchFrequencyMin = Integer.parseInt(_configurationService.getConfigurationValueAsString(
+	        "tdm.bundleSwitchFrequencyMin", "60"));
+	    bundleSwitchFrequencyHour = Integer.parseInt(_configurationService.getConfigurationValueAsString(
+	            "tdm.bundleSwitchFrequencyHour", "1"));
+	}
 
 	@PostConstruct
 	protected void setup() throws Exception {
@@ -233,6 +237,30 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_taskScheduler.schedule(switchThread, switchThread);
 		}
 	}	
+
+	public int getBundleDiscoveryFrequencyMin() {
+		return bundleDiscoveryFrequencyMin;
+	}
+
+	public void setBundleDiscoveryFrequencyMin(int bundleDiscoveryFrequencyMin) {
+		this.bundleDiscoveryFrequencyMin = bundleDiscoveryFrequencyMin;
+	}
+
+	public int getBundleSwitchFrequencyMin() {
+		return bundleSwitchFrequencyMin;
+	}
+
+	public void setBundleSwitchFrequencyMin(int bundleSwitchFrequencyMin) {
+		this.bundleSwitchFrequencyMin = bundleSwitchFrequencyMin;
+	}
+	
+	public int getBundleSwitchFrequencyHour() {
+		return bundleSwitchFrequencyHour;
+	}
+
+	public void setBundleSwitchFrequencyHour(int bundleSwitchFrequencyHour) {
+		this.bundleSwitchFrequencyHour = bundleSwitchFrequencyHour;
+	}
 
 	/******
 	 * Service methods
@@ -492,24 +520,38 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 				lastTime = new Date();
 			}
 
-			Calendar calendar = new GregorianCalendar();
-			calendar.setTime(lastTime);
-			calendar.set(Calendar.MILLISECOND, 0);
-			calendar.set(Calendar.SECOND, 1); // go into the next hour/day
-
-			// if we have no current bundle, keep retrying every minute
-			// to see if we're just waiting for the clock to rollover to the next day
-			if(_applicableBundles.size() > 0 && _currentBundleId == null) {
-				int minutes = calendar.get(Calendar.MINUTE);
-				calendar.set(Calendar.MINUTE, minutes + 1);        
-
-			} else {
-			  int minutes = calendar.get(Calendar.MINUTE);
-        calendar.set(Calendar.MINUTE, minutes + bundleSwitchFrequencyMin);            
-			}
-
-			return calendar.getTime();
+			return getNextBundleSwitchTime(lastTime);
 		}   
+	}
+	
+	public Date getNextBundleSwitchTime(Date lastExecutionTime){
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTime(lastExecutionTime);
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.SECOND, 1); // go into the next hour/day
+
+		// if we have no current bundle, keep retrying every minute
+		// to see if we're just waiting for the clock to rollover to the next day
+		if(_applicableBundles.size() > 0 && _currentBundleId == null) {
+			int minutes = calendar.get(Calendar.MINUTE);
+			calendar.set(Calendar.MINUTE, minutes + 1);        
+
+		} else {
+			calendar.set(Calendar.MINUTE, bundleSwitchFrequencyMin);            
+		}
+		
+		
+		if(_applicableBundles.size() > 0 && _currentBundleId == null) {
+			int minutes = calendar.get(Calendar.MINUTE);
+			calendar.set(Calendar.MINUTE, minutes + 1);        
+
+		} else {
+			calendar.set(Calendar.MINUTE, 0);
+			int hour = calendar.get(Calendar.HOUR);
+			calendar.set(Calendar.HOUR, hour + bundleSwitchFrequencyHour);        
+		}
+
+		return calendar.getTime();
 	}
 
 	protected class BundleDiscoveryUpdateThread extends TimerTask implements Trigger {
@@ -531,19 +573,33 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		@Override
 		public Date nextExecutionTime(TriggerContext arg0) {
 			Date lastTime = arg0.lastScheduledExecutionTime();
+			
 			if(lastTime == null) {
 				lastTime = new Date();
 			}
 
-			Calendar calendar = new GregorianCalendar();
-			calendar.setTime(lastTime);
-			calendar.set(Calendar.MILLISECOND, 0);
-			calendar.set(Calendar.SECOND, 0);
-
-			int minute = calendar.get(Calendar.MINUTE);
-			calendar.set(Calendar.MINUTE, minute + bundleDiscoveryFrequencyMin);
-
-			return calendar.getTime();
+			return getNextBundleDiscoveryTime(lastTime);
 		}  
+	}
+	
+	public Date getNextBundleDiscoveryTime(Date lastExecutionTime){
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTime(lastExecutionTime);
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.SECOND, 0);
+		
+		int minute = calendar.get(Calendar.MINUTE);
+		int nextExecutionMinute = getNextExecutionMinute(bundleDiscoveryFrequencyMin, minute);
+		calendar.set(Calendar.MINUTE, nextExecutionMinute);
+
+		return calendar.getTime();
+	}
+	
+	public int getNextExecutionMinute(int frequency, int currentMinute){
+		int occurances = currentMinute / frequency;
+		if(occurances < 1){
+			return frequency;
+		}
+		return frequency * (occurances + 1);	
 	}
 }
