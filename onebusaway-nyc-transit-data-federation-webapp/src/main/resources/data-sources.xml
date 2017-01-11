@@ -79,6 +79,14 @@
         </property>
     </bean>
     
+    <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="tdm.host">${tdm.host}</prop>
+            </props>
+        </property>
+    </bean>
+    
     <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
         <property name="bundleStoreRoot" value="${bundle.location}" />
         <property name="standaloneMode" value="${bundle.mode.standalone}" />

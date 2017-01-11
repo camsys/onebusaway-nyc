@@ -31,6 +31,7 @@
                 <prop key="bundle.location">${bundle.location}</prop>
                 <!-- true = DO NOT automatically download bundles from the TDM -->
                 <prop key="bundle.mode.standalone">${bundle.mode.standalone}</prop>
+                <prop key="tdm.host">${tdm.host}</prop>
                 <prop key="tdm.port">${tdm.port}</prop>
                 <prop key="tdm.url">${tdm.url}</prop>
             </props>
