@@ -3,6 +3,8 @@ package org.onebusaway.nyc.util.time;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.impl.tdm.ManualConfigurationServiceImpl;
 import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,17 +21,12 @@ public class SystemTime {
 
   public static final String TIME_ENABLED_KEY = "tdm.systemTime.enabled";
   public static final String TIME_ADJUSTMENT_KEY = "tdm.systemTime.adjustment";
-  public static final String TDM_HOST_KEY = "tdm.host";
-  public static final String TDM_PORT_KEY = "tdm.port";
- 
 
   private static final int POLL_INTERVAL = 60; // seconds
   // construct a single instance per JVM
   private static SystemTime INSTANCE = new SystemTime();
-
-  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
-  private String _host = null; // no path configured for TDM by default
-  private Integer _port = null; // no port configured for TDM by default
+  
+  private ConfigurationService _configurationService = null;
   private String _enabled = "false"; // turned off by default
   private long adjustment = 0; // by default there is no adjustment
   
@@ -40,15 +37,7 @@ public class SystemTime {
     new Thread(uw).start();
   }
   public static long currentTimeMillis() {
-    return SystemTime.currentTimeMillis() + INSTANCE.adjustment;
-  }
-
-  public static void setHost(String url) {
-    INSTANCE._host = url;
-  }
-  
-  public static void setPort(Integer port) {
-    INSTANCE._port = port;
+    return System.currentTimeMillis() + INSTANCE.adjustment;
   }
 
   public static void setEnabled(String enabledFlag) {
@@ -66,48 +55,32 @@ public class SystemTime {
 
   private long refreshAdjustment() throws Exception {
     
-	refreshTDMConfigValues();
+	refreshConfigValues();
 	  
     if (!isEnabled()) {
-      return 0;
-    }
-    if (getHostUrl() == null) {
       return 0;
     }
     
     return getAdjustment();
   }
   
-  private void refreshTDMConfigValues() throws Exception{
-	  if(_transitDataManagerApiLibrary == null){
-	    	_transitDataManagerApiLibrary = new TransitDataManagerApiLibrary(getHostUrl(), getPort(), null);
+  private void refreshConfigValues() throws Exception{
+	  
+	  if(_configurationService == null){
+		  _configurationService = new ManualConfigurationServiceImpl();
 	  }
-	    
-	  List<JsonObject> configurationItems = 
-			  _transitDataManagerApiLibrary.getItemsForRequest("config", "list");
-	    
-	    
-	  for(JsonObject configItem : configurationItems) {
-		
-		String configKey = configItem.get("key").getAsString();
-		
-		if(configKey.equalsIgnoreCase(TIME_ENABLED_KEY))
-			setEnabled(configItem.get("value").getAsString());
-		
-		if(configKey.equalsIgnoreCase(TIME_ADJUSTMENT_KEY))
-			setAdjustment(getConfigItemAsLong(configItem));
-		
-		if(configKey.equalsIgnoreCase(TDM_HOST_KEY))
-			setHost(configItem.get("value").getAsString());
-		
-		if(configKey.equalsIgnoreCase(TDM_PORT_KEY))
-			setPort(getConfigItemAsInteger(configItem));
-	  } 
+	  
+	  _configurationService.refreshConfiguration();
+	  
+	  setEnabled(_configurationService.getConfigurationValueAsString(TIME_ENABLED_KEY, "false"));
+	  
+	  String adjustment = _configurationService.getConfigurationValueAsString(TIME_ADJUSTMENT_KEY, "0");
+	  setAdjustment(getConfigItemAsLong(adjustment));
   }
   
-  private Long getConfigItemAsLong(JsonElement configItem){
+  private Long getConfigItemAsLong(String value){
 	  try{
-		  Long configItemAsLong = Long.parseLong(configItem.getAsString());
+		  Long configItemAsLong = Long.parseLong(value);
 		  return configItemAsLong;
 	  }
 	  catch(NumberFormatException nfe){
@@ -116,60 +89,6 @@ public class SystemTime {
 	  }
   }
   
-  private Integer getConfigItemAsInteger(JsonElement configItem){
-	  try{
-		  Integer configItemAsInteger = Integer.valueOf(configItem.getAsString());
-		  return configItemAsInteger;
-	  }
-	  catch(NumberFormatException nfe){
-		  _log.error("failed to convert config value into Integer", nfe);
-		  return null;  
-	  }	  
-  }
-
-  private String getHostUrl() {
-    String host = null;
-    // option 1:  read tdm.host from system env
-    host = getHostUrlFromSystemProperty();
-    if (StringUtils.isNotBlank(host))
-      return host;
-    // option 2:  spring injection
-    if (StringUtils.isNotBlank(_host)) {
-      return _host;
-    }
-
-    // option 3:  let if fail -- the default is not to configure this
-    return null;
-  }
-
-  private String getHostUrlFromSystemProperty() {
-    return System.getProperty(TDM_HOST_KEY);
-  }
-  
-  private Integer getPort() {
-    Integer port = null;
-    // option 1:  read tdm.port from system env
-    port = getPortFromSystemProperty();
-    if (port != null && port > 0)
-      return port;
-    // option 2:  spring injection
-    if (_port != null && port > 0) {
-      return _port;
-    }
-
-    // option 3:  let if fail -- the default is not to configure this
-    return null;
-  }
-  
-  private Integer getPortFromSystemProperty() {
-	  try{
-		  Integer port =  Integer.valueOf(System.getProperty(TDM_PORT_KEY));
-		  return port;
-	  }
-	  catch(Exception e){
-		  return null;
-	  } 
-  }
 
 
   /**
@@ -191,16 +110,15 @@ public class SystemTime {
 
     @Override
     public void run() {
-
+      
+      try {
+    	  refreshConfigValues();
+      } catch (Exception e) {
+    	  _log.error("Unable to retrieve TDM configuration values",e);
+	  }
+      
       if (INSTANCE.isEnabled()) {
-        if (StringUtils.isNotBlank(getHostUrl())) {
-          _log.warn("SystemTime Adjustment enabled.  Polling "
-                  + getHostUrl() + " every " + POLL_INTERVAL + " seconds");
-        } else {
-          _log.error("SystemTime Adjustment enabled but no endpoint ULR configured!"
-          + "  Please set -Dtdm.host=tdm -Dtdm.port=80 or equivalent.  Exiting.");
-          return;
-        }
+        _log.warn("SystemTime Adjustment enabled.  Polling configuration service every " + POLL_INTERVAL + " seconds");
       } else {
         _log.info("SystemTime Adjustment disabled.  Exiting.");
         return;

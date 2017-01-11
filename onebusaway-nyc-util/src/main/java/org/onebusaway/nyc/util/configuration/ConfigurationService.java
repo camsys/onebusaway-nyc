@@ -36,9 +36,12 @@ public interface ConfigurationService {
   public void setConfigurationValue(String component, String configurationItemKey, 
 		  String value) throws Exception;
   
+  
   /**
    * Get a collection of all key value pairs stored in tdm_config.xml on TDM server
    * @return collection of all config key value pairs
    */
   public Map<String, String> getConfiguration();
+  
+  public void refreshConfiguration() throws Exception;
 }
