@@ -17,7 +17,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import com.google.gson.JsonObject;
 
-public class ConfigurationServiceImpl implements ConfigurationService {
+public class ConfigurationServiceImpl extends BaseConfiguration implements ConfigurationService {
 
 	private static Logger _log = LoggerFactory.getLogger(ConfigurationServiceImpl.class);
 
