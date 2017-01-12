@@ -26,7 +26,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -46,7 +45,6 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.vtw.DummyVehiclePulloutService;
@@ -82,7 +80,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TransitGrap
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -90,7 +87,6 @@ import tcip_3_0_5_local.NMEA;
 import tcip_final_3_0_5_1.CcLocationReport;
 import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
 
-import com.amazonaws.services.cloudwatch.model.StandardUnit;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
@@ -360,7 +356,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
     final DateTime time = XML_DATE_TIME_FORMAT.parseDateTime(message.getTimeReported());
     r.setTime(time.getMillis());
-    r.setTimeReceived(new Date().getTime());
+    r.setTimeReceived(SystemTime.currentTimeMillis());
 
     // validate timestamp from bus--for debugging only
     final String RMCSentence = r.getRmc();
