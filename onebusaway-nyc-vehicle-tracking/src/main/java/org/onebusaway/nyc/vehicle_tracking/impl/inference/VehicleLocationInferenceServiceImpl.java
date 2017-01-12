@@ -356,7 +356,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
     final DateTime time = XML_DATE_TIME_FORMAT.parseDateTime(message.getTimeReported());
     r.setTime(time.getMillis());
-    r.setTimeReceived(new Date().getTime());
+    r.setTimeReceived(SystemTime.currentTimeMillis());
 
     // validate timestamp from bus--for debugging only
     final String RMCSentence = r.getRmc();
