@@ -34,6 +34,9 @@
                 <prop key="tdm.host">${tdm.host}</prop>
                 <prop key="tdm.port">${tdm.port}</prop>
                 <prop key="tdm.url">${tdm.url}</prop>
+                <prop key="oba.systemTime.host">${tdm.host}</prop>
+                <prop key="oba.systemTime.enabled.apiPath">api/config/tdm/tdm.systemTime.enabled/get</prop>
+                <prop key="oba.systemTime.adjustment.apiPath">api/config/tdm/tdm.systemTime.adjustment/get</prop>
             </props>
         </property>
     </bean>
