@@ -153,6 +153,12 @@ public class ApiKeyThrottledTest {
 	public Map<String, String> getConfiguration() {
 		return map;
 	}
+
+	@Override
+	public void refreshConfiguration() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
 	  
   }
 
