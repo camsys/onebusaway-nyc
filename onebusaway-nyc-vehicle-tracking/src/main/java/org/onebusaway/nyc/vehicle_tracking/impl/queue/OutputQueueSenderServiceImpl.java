@@ -159,7 +159,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
         }
 
         if (processedCount > _countInterval) {
-          long timeInterval = (new Date().getTime() - markTimestamp.getTime());
+          long timeInterval = (SystemTime.currentTimeMillis() - markTimestamp.getTime());
           _log.warn("Inference output queue(primary="
               + _isPrimaryInferenceInstance + "): processed " + _countInterval + " messages in "
               + (timeInterval / 1000)

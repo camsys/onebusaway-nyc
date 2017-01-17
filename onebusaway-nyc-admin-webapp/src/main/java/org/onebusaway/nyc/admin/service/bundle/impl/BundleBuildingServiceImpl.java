@@ -16,6 +16,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.SummarizeCSVTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.logging.LoggingService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
