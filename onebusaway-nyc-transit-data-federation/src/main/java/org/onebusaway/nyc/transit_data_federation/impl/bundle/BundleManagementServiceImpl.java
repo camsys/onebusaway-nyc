@@ -531,16 +531,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		calendar.set(Calendar.SECOND, 1); // go into the next hour/day
 
 		// if we have no current bundle, keep retrying every minute
-		// to see if we're just waiting for the clock to rollover to the next day
-		if(_applicableBundles.size() > 0 && _currentBundleId == null) {
-			int minutes = calendar.get(Calendar.MINUTE);
-			calendar.set(Calendar.MINUTE, minutes + 1);        
-
-		} else {
-			calendar.set(Calendar.MINUTE, bundleSwitchFrequencyMin);            
-		}
-		
-		
+		// to see if we're just waiting for the clock to rollover to the next day		
 		if(_applicableBundles.size() > 0 && _currentBundleId == null) {
 			int minutes = calendar.get(Calendar.MINUTE);
 			calendar.set(Calendar.MINUTE, minutes + 1);        
