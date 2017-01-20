@@ -27,10 +27,13 @@ jQuery(function() {
 			function(){ 
 				/* no-op */
 			});
-	
+
 	//Load config parameters from the server
 	getConfigParameters();
-	
+
+    $(".datetime").datetimepicker();
+    $("#playbackDateValueUI").change(setPlaybackTime);
+
 	//Listen to change event and mark inputs as changed
 	$("input").bind("keyup propertychange paste", function() {
 		$(this).addClass("changed");
@@ -91,6 +94,7 @@ function updateParametersView(configParameters) {
 			}
 		}
 	}
+	setPlaybackUi();
 }
 
 function resetToPrevious() {
@@ -102,7 +106,7 @@ function resetToPrevious() {
 
 function saveParameters() {
 	var data = buildData();
-	
+
 	if(data != null) {
 		$.ajax({
 			url: "parameters!saveParameters.action",
@@ -183,5 +187,19 @@ function clearChanges() {
 	$("#results input[type='button']").attr("disabled", "disabled").css("color", "#999999");
 }
 
+function setPlaybackTime() {
+	var startDate = new Date($("#playbackDateValueUI").val());
+	var now = new Date();
+	var delta = startDate - now;
+	$("#playbackDateValue").val(delta);
+	$("#playbackDateValue").trigger("propertychange");
+}
 
-
+function setPlaybackUi() {
+	var delta = parseInt($("#playbackDateValue").val()); // note probably negative
+	var now = new Date().getTime();
+	var dateMs = new Date(now + delta);
+	var dateUi = $.datepicker.formatDate("mm/dd/yy", dateMs) + " "
+		+ $.datepicker.formatTime("hh:mm", {hour: dateMs.getHours(), minute: dateMs.getMinutes()});
+	$("#playbackDateValueUI").val(dateUi);
+}

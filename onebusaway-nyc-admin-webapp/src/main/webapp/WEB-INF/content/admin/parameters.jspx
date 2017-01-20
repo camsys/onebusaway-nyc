@@ -29,6 +29,11 @@
 	<link rel="stylesheet" type="text/css" href="${url}">
 		<!-- //prevent jspx minimization -->
 	</link>
+
+	<s:url var="url" value="/css/jquery-ui-timepicker-addon.css" />
+	<link rel="stylesheet" type="text/css" href="${url}">
+		<!-- //prevent jspx minimization -->
+	</link>
 	
 	<s:url var="url" value="/js/lib/jquery.js" />
 	<script type="text/javascript" src="${url}">
@@ -43,6 +48,11 @@
 	<s:url var="url" value="/js/lib/jquery.numeric.js" />
 	<script type="text/javascript" src="${url}">
 	<!-- //prevent jspx minimization -->
+	</script>
+
+	<s:url var="url" value="/js/lib/jquery-ui-timepicker-addon.js" />
+	<script type="text/javascript" src="${url}">
+        <!-- //prevent jspx minimization -->
 	</script>
 	
 	<s:url var="url" value="/js/oba/parameters.js" />
@@ -432,6 +442,34 @@
 										<input type="text" id="apiMaxRecordLimitValue" class="propertyValue positiveInteger"/>
 									</div>
 								</div>
+							</div>
+						</li>
+						<li>
+							<h3><a href="#" class="heading">Module: Playback</a></h3>
+							<div id="playbackSection">
+								<div id="playbackOn" class="propertyHolder">
+									<label class="propertyHeader">Playback Functionality Enabled</label>
+									<div class="propertyDescription">
+										<p>Turn the playback feature on or off. Should be <span>true</span>
+											or <span>false</span>.</p>
+									</div>
+									<div>
+										<input type="hidden" id="playbackOnKey" value="tdmSystemTimeEnabledKey" />
+										<input type="text" id="playbackOnValue" class="propertyValue" pattern="true|false" />
+									</div>
+								</div>
+								<div id="playbackDate" class="propertyHolder rightProperty">
+									<label class="propertyHeader">Playback Start Time</label>
+									<div class="propertyDescription">
+										<p>The time that playback should be started from.</p>
+									</div>
+									<div>
+										<input type="hidden" id="playbackDateKey" value="tdmSystemTimeAdjustmentKey" />
+										<input type="text" id="playbackDateValue" style="display:none;" />
+										<input type="datetime" id="playbackDateValueUI" class="datetime" />
+									</div>
+								</div>
+
 							</div>
 						</li>
 					</ul>

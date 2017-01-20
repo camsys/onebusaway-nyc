@@ -46,6 +46,8 @@ public class ConfigurationKeyTranslator {
 		configToUIKeys.put("tds.inputQueueHost", "tdsInputQueueHostKey");
 		configToUIKeys.put("operational-api.host", "opsApiHostKey");
 		configToUIKeys.put("operational-api.historicalRecordLimit", "opsApiMaxRecordLimitKey");
+		configToUIKeys.put("tdm.systemTime.enabled", "tdmSystemTimeEnabledKey");
+		configToUIKeys.put("tdm.systemTime.adjustment", "tdmSystemTimeAdjustmentKey");
 		
 		//Create another map with inverse mapping that is ui to config keys
 		uiToConfigKeys = configToUIKeys.inverse();
