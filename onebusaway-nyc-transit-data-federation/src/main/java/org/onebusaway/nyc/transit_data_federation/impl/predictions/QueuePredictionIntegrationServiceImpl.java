@@ -111,7 +111,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	@Override
 	public void setup() {
 		super.setup();
-		if(!getDisable()){
+		if(!Boolean.TRUE.equals(Boolean.parseBoolean(getDisable()))){
 			refreshPredictionQueueThreadCount();
 			initializePredictionQueue();
 		}
