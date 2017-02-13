@@ -151,7 +151,7 @@ public class StifTask implements Runnable {
 		dscSvcMgr.setNotInServiceDscs(_notInServiceDscs);
 		dscSvcMgr.setNotInServiceDscPath(_notInServiceDscPath);
 
-		abnormalDataLogger.setLogger(csvLogger);
+		
 		
 		stifLoader.setAbnormalStifDataLoggerImpl(abnormalDataLogger);
 		stifLoader.setExcludeNonRevenue(_excludeNonRevenue);
@@ -180,6 +180,7 @@ public class StifTask implements Runnable {
 
 	//start the process!
 	public void run() {
+		abnormalDataLogger.setLogger(csvLogger);
 		//start up all subclasses and then run them since the bundle builder calls us a certain way! -Phil
 		stci.run();//run the stif task
 	}
