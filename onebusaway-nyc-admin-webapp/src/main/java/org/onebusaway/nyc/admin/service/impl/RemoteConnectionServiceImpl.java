@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,6 +47,8 @@ public class RemoteConnectionServiceImpl implements RemoteConnectionService {
 			connection.setDoOutput(true);
 			connection.setReadTimeout(getConnectionReadTimeout());
 			content = fromJson(connection);
+		} catch (ConnectException e){
+			log.error("Connection timed out when connecting to " +url + ". Exception : " +e);
 		} catch (MalformedURLException e) {
 			log.error("Exception connecting to " +url + ". The url might be malformed");
 			e.printStackTrace();
