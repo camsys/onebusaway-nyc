@@ -24,6 +24,8 @@
  */
 package org.onebusaway.nyc.report.model;
 
+import org.onebusaway.csv_entities.schema.DateFieldMappingFactory;
+import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.hibernate.annotations.AccessType;
@@ -59,10 +61,13 @@ public class ArchivedInferredLocationRecord implements Serializable {
   // This will come from NycVehicleManagementStatusBean
   @Index(name = "UUID")
   @Column(nullable = false, name = "UUID", length = 36)
+  @CsvField(name = "UUID")
   private String uuid;
 
   // Fields from NycQueuedInferredLocationBean
   @Column(nullable = false, name = "time_reported")
+  @CsvField(mapping = DateFieldMappingFactory.class)
+  @DateFieldMappingFactory.DateFormatAnnotation("yyyy-MM-dd HH:mm:ss")
   private Date timeReported;
 
   @Column(nullable = false, name = "vehicle_id")
@@ -75,9 +80,13 @@ public class ArchivedInferredLocationRecord implements Serializable {
   // Matches archive_time_received in CcLocationReport
   @Column(nullable = false, name = "archive_time_received")
   @Index(name = "archive_time_received")
+  @CsvField(mapping = DateFieldMappingFactory.class)
+  @DateFieldMappingFactory.DateFormatAnnotation("yyyy-MM-dd HH:mm:ss")
   private Date archiveTimeReceived;
 
   @Column(nullable = false, name = "service_date")
+  @CsvField(mapping = DateFieldMappingFactory.class)
+  @DateFieldMappingFactory.DateFormatAnnotation("yyyy-MM-dd HH:mm:ss")
   private Date serviceDate;
 
   @Column(nullable = true, name = "schedule_deviation")
@@ -246,6 +255,74 @@ public class ArchivedInferredLocationRecord implements Serializable {
     	setLastLocationUpdateTime(managementBean.getLastLocationUpdateTime());
   }
 
+  public NycQueuedInferredLocationBean toNycQueuedInferredLocationBean() {
+
+    NycQueuedInferredLocationBean message = new NycQueuedInferredLocationBean();
+
+    message.setRecordTimestamp(getTimeReported().getTime());
+
+    // Split vehicle id string to vehicle integer and agency designator string
+    message.setVehicleId(String.format("%s_%d", getAgencyId(), getVehicleId()));
+
+    message.setServiceDate(getServiceDate().getTime());
+    message.setScheduleDeviation(getScheduleDeviation());
+
+    Double distance = getDistanceAlongBlock();
+    if (distance == null)
+      distance = Double.NaN;
+    message.setDistanceAlongBlock(distance);
+
+    message.setDistanceAlongTrip(getDistanceAlongTrip());
+
+    BigDecimal latitude = getInferredLatitude();
+    if (latitude == null)
+      message.setInferredLatitude(Double.NaN);
+    else
+      message.setInferredLatitude(latitude.doubleValue());
+
+    BigDecimal longitude = getInferredLongitude();
+    if (longitude == null)
+      message.setInferredLongitude(Double.NaN);
+    else
+      message.setInferredLongitude(longitude.doubleValue());
+
+    message.setPhase(getInferredPhase());
+    message.setStatus(getInferredStatus());
+    message.setRouteId(getInferredRouteId());
+
+    NycVehicleManagementStatusBean managementBean = new NycVehicleManagementStatusBean();
+    managementBean.setUUID(getUUID());
+    managementBean.setLastUpdateTime(getLastUpdateTime());
+
+    Integer inferredDsc = getInferredDestSignCode();
+    if (inferredDsc != null)
+      managementBean.setLastInferredDestinationSignCode(inferredDsc.toString());
+    managementBean.setInferenceIsFormal(isInferenceIsFormal());
+    managementBean.setDepotId(getDepotId());
+    managementBean.setEmergencyFlag(isEmergencyFlag());
+    managementBean.setLastInferredOperatorId(getInferredOperatorId());
+    managementBean.setInferredRunId(getInferredRunId());
+    managementBean.setAssignedRunId(getAssignedRunId());
+    managementBean.setAssignedBlockId(getAssignedBlockId());
+
+    message.setManagementRecord(managementBean);
+
+    // TDS Fields
+    message.setNextScheduledStopId(getNextScheduledStopId());
+    message.setNextScheduledStopDistance(getNextScheduledStopDistance());
+    message.setPreviousScheduledStopId(getPreviousScheduledStopId());
+    message.setPreviousScheduledStopDistance(getPreviousScheduledStopDistance());
+    message.setInferredBlockId(getInferredBlockId());
+    message.setInferredTripId(getInferredTripId());
+    message.setInferredRouteId(getInferredRouteId());
+    message.setInferredDirectionId(getInferredDirectionId());
+    message.setScheduleDeviation(getScheduleDeviation());
+
+    message.setLastLocationUpdateTime(getLastLocationUpdateTime());
+
+    return message;
+  }
+
   public Long getId() {
     return id;
   }
@@ -259,6 +336,11 @@ public class ArchivedInferredLocationRecord implements Serializable {
   }
 
   public void setUUID(String uuid) {
+    this.uuid = uuid;
+  }
+
+  // necessary for CSV deserialization
+  public void setUuid(String uuid) {
     this.uuid = uuid;
   }
 

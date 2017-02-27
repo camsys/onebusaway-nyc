@@ -17,6 +17,9 @@ import javax.persistence.Table;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.onebusaway.csv_entities.schema.DateFieldMappingFactory;
+import org.onebusaway.csv_entities.schema.annotations.CsvField;
+import org.onebusaway.csv_entities.schema.annotations.CsvFields;
 import org.onebusaway.transit_data.model.service_alerts.ESeverity;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
@@ -58,12 +61,14 @@ public class ServiceAlertRecord implements Serializable {
   private long creationTime;
 
   @Column(name = "active_windows_json", length = 512)
+  @CsvField(optional = true)
   private String activeWindows; // List<TimeRangeBean>
 
   @Column(name = "publication_windows_json", length = 512)
   private String publicationWindows; // List<TimeRangeBean>
 
   @Column(name = "reason", length = 64)
+  @CsvField(optional = true)
   private String reason;
 
   @Column(name = "summaries_json", length = 512)
@@ -73,6 +78,7 @@ public class ServiceAlertRecord implements Serializable {
   private String descriptions; // List<NaturalLanguageStringBean>
 
   @Column(name = "urls_json", length = 512)
+  @CsvField(optional = true)
   private String urls; // List<NaturalLanguageStringBean>
 
   @Column(name = "all_affects_json", length = 512)
@@ -82,12 +88,16 @@ public class ServiceAlertRecord implements Serializable {
   private String consequences; // List<SituationConsequenceBean>
 
   @Column(name = "severity", length = 64)
+  @CsvField(optional = true)
   private String severity; // ESeverity
 
   @Column(name = "created_at")
+  @CsvField(mapping = DateFieldMappingFactory.class, optional = true)
+  @DateFieldMappingFactory.DateFormatAnnotation("yyyy-MM-dd HH:mm:ss")
   private Date createdAt;
 
   @Column(name = "updated_at")
+  @CsvField(optional = true)
   private Date updatedAt;
 
   @Column(name = "deleted")
