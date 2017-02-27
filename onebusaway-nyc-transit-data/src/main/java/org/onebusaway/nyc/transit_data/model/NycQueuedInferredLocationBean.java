@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -376,5 +379,28 @@ public class NycQueuedInferredLocationBean implements Serializable {
     return assignedBlockId;
   }
 
+  // from nyc-predictions VehicleLocationRecord.getVehicleLocationRecordBean()
+  public VehicleLocationRecord toVehicleLocationRecord() {
+
+	  VehicleLocationRecord vlr = new VehicleLocationRecord();
+	  vlr.setVehicleId(AgencyAndId.convertFromString(getVehicleId()));
+	  vlr.setTimeOfRecord(getRecordTimestamp());
+	  vlr.setTimeOfLocationUpdate(getRecordTimestamp());
+	  vlr.setBlockId(AgencyAndId.convertFromString(getBlockId()));
+	  vlr.setTripId(AgencyAndId.convertFromString(getTripId()));
+	  if(getServiceDate() == null){
+		vlr.setServiceDate(0);
+	  } else {
+	  	vlr.setServiceDate(getServiceDate());
+	  }
+	  vlr.setDistanceAlongBlock(getDistanceAlongBlock());
+	  vlr.setCurrentLocationLat(getInferredLatitude().doubleValue());
+	  vlr.setCurrentLocationLon(getInferredLongitude().doubleValue());
+	  vlr.setPhase(EVehiclePhase.valueOf(getPhase()));
+	  vlr.setStatus(getStatus());
+	  // no run ID (it's set in predictions version)
+
+	  return vlr;
+	}
 }
 
