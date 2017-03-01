@@ -27,12 +27,6 @@
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-transit-data</artifactId>
 			<version>2.22.9</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>onebusaway-csv-entities</artifactId>
-					<groupId>org.onebusaway</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
@@ -43,12 +37,6 @@
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-report</artifactId>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>onebusaway-csv-entities</artifactId>
-					<groupId>org.onebusaway</groupId>
-				</exclusion>
-			</exclusions>
 			<version>2.22.9</version>
 		</dependency>
 		<dependency>
@@ -62,10 +50,12 @@
 			<artifactId>onebusaway-gtfs-realtime-api</artifactId>
 			<version>1.1.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.onebusaway</groupId>
-			<artifactId>onebusaway-csv-entities</artifactId>
-			<version>1.1.7-SNAPSHOT</version>
+			<artifactId>onebusaway-transit-data-federation-builder</artifactId>
+			<version>${onebusaway.app-modules.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 

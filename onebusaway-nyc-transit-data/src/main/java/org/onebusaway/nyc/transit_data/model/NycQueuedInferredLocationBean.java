@@ -386,8 +386,13 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	  vlr.setVehicleId(AgencyAndId.convertFromString(getVehicleId()));
 	  vlr.setTimeOfRecord(getRecordTimestamp());
 	  vlr.setTimeOfLocationUpdate(getRecordTimestamp());
-	  vlr.setBlockId(AgencyAndId.convertFromString(getBlockId()));
-	  vlr.setTripId(AgencyAndId.convertFromString(getTripId()));
+
+	  String blockId = (getBlockId() != null) ? getBlockId() : getInferredBlockId();
+	  vlr.setBlockId(AgencyAndId.convertFromString(blockId));
+
+	  String tripId = (getTripId() != null) ? getTripId() : getInferredTripId();
+	  vlr.setTripId(AgencyAndId.convertFromString(tripId));
+
 	  if(getServiceDate() == null){
 		vlr.setServiceDate(0);
 	  } else {

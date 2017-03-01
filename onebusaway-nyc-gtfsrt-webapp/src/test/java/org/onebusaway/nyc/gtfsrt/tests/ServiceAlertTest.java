@@ -42,41 +42,41 @@ public class ServiceAlertTest extends TestCase {
         if (feed.hasCause())
             assertCauseMatches(bean.getReason(), feed.getCause());
         else
-            assertTrue(bean.getReason() == null);
+            assertNull(bean.getReason());
 
         if (feed.hasEffect())
             assertEffectMatches(bean.getConsequences(), feed.getEffect());
         else
-            assertTrue(bean.getConsequences() == null);
+            assertNull(bean.getConsequences());
 
         if (feed.hasUrl())
             assertLanguageStringsMatch(bean.getUrls(), feed.getUrl());
         else
-            assertTrue(bean.getUrls() == null);
+            assertNull(bean.getUrls());
 
         if (feed.hasHeaderText())
             assertLanguageStringsMatch(bean.getSummaries(), feed.getHeaderText());
         else
-            assertTrue(bean.getSummaries() == null);
+            assertNull(bean.getSummaries());
 
         if (feed.hasDescriptionText())
             assertLanguageStringsMatch(bean.getDescriptions(), feed.getDescriptionText());
         else
-            assertTrue(bean.getDescriptions() == null);
+            assertNull(bean.getDescriptions());
     }
 
     private static void assertActivePeriodMatches(List<TimeRangeBean> windows, List<TimeRange> periods) {
         if (windows == null || windows.isEmpty()) {
-            assert(periods == null || periods.isEmpty());
+            assertTrue(periods == null || periods.isEmpty());
         }
-        assert (windows.size() == periods.size());
+        assertEquals(windows.size(), periods.size());
 
         for (TimeRangeBean window : windows) {
             boolean foundMatch = false;
             for (TimeRange period : periods) {
                 foundMatch |= windowPeriodMatch(window, period);
             }
-            assert(foundMatch);
+            assertTrue(foundMatch);
         }
     }
 
@@ -96,15 +96,15 @@ public class ServiceAlertTest extends TestCase {
 
     private static void assertInformedEntityMatches(List<SituationAffectsBean> affects, List<EntitySelector> entities) {
         if (affects == null || affects.isEmpty()) {
-            assert(entities == null || entities.isEmpty());
+            assertTrue(entities == null || entities.isEmpty());
         }
-        assert (affects.size() == entities.size());
+        assertEquals(affects.size(), entities.size());
         for (SituationAffectsBean bean : affects) {
             boolean foundMatch = false;
             for (EntitySelector entity : entities) {
                 foundMatch |= affectsEntityMatch(bean, entity);
             }
-           assert(foundMatch);
+           assertTrue(foundMatch);
         }
     }
 
@@ -129,7 +129,7 @@ public class ServiceAlertTest extends TestCase {
     }
 
     private static void assertCauseMatches(String reason, Alert.Cause cause) {
-        assert(cause.toString().equals(reason));
+        assertEquals(cause.toString(), reason);
     }
 
     private static void assertEffectMatches(List<SituationConsequenceBean> consequences, Alert.Effect effect) {
@@ -138,18 +138,18 @@ public class ServiceAlertTest extends TestCase {
             EEffect beanEffect = bean.getEffect();
             foundMatch |= beanEffect.toString().equals(effect.toString());
         }
-       assert(foundMatch);
+       assertTrue(foundMatch);
     }
 
     private static void assertLanguageStringsMatch(List<NaturalLanguageStringBean> beans, TranslatedString translatedString) {
         List<TranslatedString.Translation> translations = translatedString.getTranslationList();
-        assert(translations.size() == beans.size());
+        assertEquals(translations.size(), beans.size());
         for (NaturalLanguageStringBean bean : beans) {
             boolean foundMatch = false;
             for (TranslatedString.Translation ts : translations) {
                 foundMatch |= bean.getLang().equals(ts.getLanguage()) && bean.getValue().equals(ts.getText());
             }
-            assert(foundMatch);
+            assertTrue(foundMatch);
         }
     }
 }
