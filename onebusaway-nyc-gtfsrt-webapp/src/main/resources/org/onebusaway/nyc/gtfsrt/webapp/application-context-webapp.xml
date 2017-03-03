@@ -27,5 +27,5 @@
     <context:annotation-config />
 
     <import resource="classpath:org/onebusaway/nyc/transit_data_federation/application-context.xml" />
-
+    <context:component-scan base-package="org.onebusaway.nyc.gtfsrt.impl" />
 </beans>
