@@ -18,7 +18,9 @@ public abstract class RecordReader<T> {
     public List<T> getRecords(String filename, Class klass) {
         final List<T> records = new ArrayList<T>();
         CsvEntityReader reader = new CsvEntityReader();
-        reader.setTokenizerStrategy(new DelimiterTokenizerStrategy("\t"));
+        DelimiterTokenizerStrategy strategy = new DelimiterTokenizerStrategy("\t");
+        strategy.setReplaceLiteralNullValues(true);
+        reader.setTokenizerStrategy(strategy);
         reader.addEntityHandler(new EntityHandler() {
             @Override
             public void handleEntity(Object o) {
