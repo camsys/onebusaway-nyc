@@ -6,7 +6,9 @@ import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
 
     private TripDetailsService _tripDetailsService;
