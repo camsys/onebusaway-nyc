@@ -47,6 +47,7 @@
             <props>
                 <prop key="cacheManager.cacheManagerName">org.onebusaway.nyc_webapp_gtfsrt.cacheManager</prop>
                 <prop key="vehicleUpdateServiceImpl.agencyId">MTA NYCT</prop>
+                <prop key="tripUpdateServiceImpl.agencyId">MTA NYCT</prop>
             </props>
         </property>
     </bean>
@@ -67,7 +68,7 @@
 
     <!-- define which TDM to use -->
     <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
-        <constructor-arg type="java.lang.String" value="tdm.dev.obanyc.com"/>
+        <constructor-arg type="java.lang.String" value="tdm.prod.obanyc.com"/>
         <constructor-arg type="java.lang.Integer" value="80" />
         <constructor-arg type="java.lang.String" value="/api/" />
     </bean>
