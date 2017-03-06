@@ -4,9 +4,7 @@ import com.google.transit.realtime.GtfsRealtime.*;
 import junit.framework.TestCase;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.gtfsrt.impl.TripDetailsServiceImpl;
 import org.onebusaway.nyc.gtfsrt.impl.VehicleUpdateFeedBuilderImpl;
-import org.onebusaway.nyc.gtfsrt.service.TripDetailsService;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.nyc.gtfsrt.tds.MockTransitDataService;
 import org.onebusaway.nyc.gtfsrt.util.InferredLocationReader;
@@ -30,16 +28,12 @@ public abstract class VehiclePositionTest extends TestCase {
 
     private TransitDataService _transitDataService;
 
-    private TripDetailsService _tripDetailsService;
 
     public VehiclePositionTest(String gtfsFile, String defaultAgencyId, String blockTripMapFile, String inferenceFile) {
 
         _transitDataService = new MockTransitDataService(defaultAgencyId, gtfsFile, blockTripMapFile);
         _inferenceFile = inferenceFile;
 
-        TripDetailsServiceImpl tripDetailsService = new TripDetailsServiceImpl();
-        tripDetailsService.setTransitDataService(_transitDataService);
-        _tripDetailsService = tripDetailsService;
 
         VehicleUpdateFeedBuilderImpl feedBuilder = new VehicleUpdateFeedBuilderImpl();
         //feedBuilder.setTripDetailsService(tripDetailsService);

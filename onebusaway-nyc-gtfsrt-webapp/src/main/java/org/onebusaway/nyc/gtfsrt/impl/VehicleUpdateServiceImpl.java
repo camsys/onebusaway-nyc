@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime.*;
-import org.onebusaway.nyc.gtfsrt.service.TripDetailsService;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.ListBean;
@@ -23,7 +22,6 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
 
     private VehicleUpdateFeedBuilder _feedBuilder;
     private NycTransitDataService _transitDataService;
-    private TripDetailsService _tripDetailsService;
     private String _agencyId = "";
 
     private static final Logger _log = LoggerFactory.getLogger(VehicleUpdateServiceImpl.class);
@@ -36,11 +34,6 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
     @Autowired
     public void setTransitDataService(NycTransitDataService transitDataService) {
         _transitDataService = transitDataService;
-    }
-
-    @Autowired
-    public void setTripDetailsService(TripDetailsService tripDetailsService) {
-        _tripDetailsService = tripDetailsService;
     }
 
     public void setAgencyId(String agencyId) {
