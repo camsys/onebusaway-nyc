@@ -9,7 +9,6 @@ import org.onebusaway.nyc.gtfsrt.impl.VehicleUpdateFeedBuilderImpl;
 import org.onebusaway.nyc.gtfsrt.service.TripDetailsService;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.nyc.gtfsrt.tds.MockTransitDataService;
-import org.onebusaway.nyc.gtfsrt.util.BlockTripMapReader;
 import org.onebusaway.nyc.gtfsrt.util.InferredLocationReader;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -20,7 +19,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEnt
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import java.util.List;
-import java.util.Map;
 
 public abstract class VehiclePositionTest extends TestCase {
 
@@ -44,7 +42,7 @@ public abstract class VehiclePositionTest extends TestCase {
         _tripDetailsService = tripDetailsService;
 
         VehicleUpdateFeedBuilderImpl feedBuilder = new VehicleUpdateFeedBuilderImpl();
-        feedBuilder.setTripDetailsService(tripDetailsService);
+        //feedBuilder.setTripDetailsService(tripDetailsService);
         _feedBuilder = feedBuilder;
 
     }
@@ -57,14 +55,14 @@ public abstract class VehiclePositionTest extends TestCase {
         for (VehicleLocationRecordBean record : records) {
             _transitDataService.submitVehicleLocation(record);
             TripDetailsBean td = getTripDetails(record);
-            VehiclePosition position = _feedBuilder.getVehicleUpdateFromInferredLocation(record);
+            VehiclePosition position = null;//_feedBuilder.makeVehicleUpdate(record);
             assertVehiclePositionMatches(record, td, position);
             assertStopInfoMatches(td, position);
         }
     }
 
     private TripDetailsBean getTripDetails(VehicleLocationRecordBean rec) {
-        return _tripDetailsService.getTripDetailsForVehicleLocationRecord(rec);
+        return null;//_tripDetailsService.getTripDetailsForVehicleStatus(rec);
     }
 
     private void assertVehiclePositionMatches(VehicleLocationRecordBean record, TripDetailsBean td, VehiclePosition vehiclePosition) {

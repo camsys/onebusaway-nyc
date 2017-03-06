@@ -47,12 +47,6 @@
 
 		<dependency>
 			<groupId>org.onebusaway</groupId>
-			<artifactId>onebusaway-gtfs-realtime-api</artifactId>
-			<version>1.1.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-transit-data-federation-builder</artifactId>
 			<version>${onebusaway.app-modules.version}</version>
 			<scope>test</scope>

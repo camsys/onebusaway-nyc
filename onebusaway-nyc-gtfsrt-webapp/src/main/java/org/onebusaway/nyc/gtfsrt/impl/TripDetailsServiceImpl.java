@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.gtfsrt.impl;
 
 import org.onebusaway.nyc.gtfsrt.service.TripDetailsService;
-import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
@@ -22,11 +22,12 @@ public class TripDetailsServiceImpl implements TripDetailsService {
     }
 
     @Override
-    public TripDetailsBean getTripDetailsForVehicleLocationRecord(VehicleLocationRecordBean bean) {
+    public TripDetailsBean getTripDetailsForVehicleStatus(VehicleStatusBean bean) {
         // potentially could cache this for performance reasons if necessary
         TripForVehicleQueryBean query = new TripForVehicleQueryBean();
         query.setVehicleId(bean.getVehicleId());
-        query.setTime(new Date(bean.getTimeOfLocationUpdate()));
+        //query.setTime(new Date(bean.getTimeOfLocationUpdate()));
         return _transitDataService.getTripDetailsForVehicleAndTime(query);
     }
+
 }
