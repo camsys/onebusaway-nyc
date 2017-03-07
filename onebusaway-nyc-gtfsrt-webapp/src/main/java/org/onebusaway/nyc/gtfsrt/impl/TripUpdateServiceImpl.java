@@ -7,6 +7,8 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
+import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,17 +47,23 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
             if (vehicle.getTrip() == null)
                 continue;
 
-            List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), vehicle.getTrip().getId());
+            int tripSequence = vehicle.getTripStatus().getBlockTripSequence();
+            BlockInstanceBean block =  _transitDataService.getBlockInstance(vehicle.getTrip().getBlockId(), vehicle.getTripStatus().getServiceDate());
+            List<BlockTripBean> trips = block.getBlockConfiguration().getTrips();
 
-            if (tprs == null)
-                continue;
+            for (int i = tripSequence; i < trips.size(); i++) {
+                String tripId = trips.get(i).getTrip().getId();
+                List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), tripId);
+                if (tprs == null)
+                    break;
 
-            GtfsRealtime.TripUpdate tu  = _feedBuilder.makeTripUpdate(vehicle, tprs);
+                GtfsRealtime.TripUpdate tu  = _feedBuilder.makeTripUpdate(vehicle, tprs);
 
-            FeedEntity.Builder entity = FeedEntity.newBuilder();
-            entity.setTripUpdate(tu);
-            entity.setId(tu.getTrip().getTripId());
-            entities.add(entity.build());
+                FeedEntity.Builder entity = FeedEntity.newBuilder();
+                entity.setTripUpdate(tu);
+                entity.setId(tu.getTrip().getTripId());
+                entities.add(entity.build());
+            }
 
         }
 
