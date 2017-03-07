@@ -18,6 +18,7 @@ public class GtfsRealtimeController {
 
     private FeedMessageService _vehicleUpdateService;
     private FeedMessageService _tripUpdateService;
+    private FeedMessageService _serviceAlertService;
 
     @Autowired
     @Qualifier("vehicleUpdateServiceImpl")
@@ -29,6 +30,12 @@ public class GtfsRealtimeController {
     @Qualifier("tripUpdateServiceImpl")
     public void setTripUpdateService(FeedMessageService tripUpdateService) {
         _tripUpdateService = tripUpdateService;
+    }
+
+    @Autowired
+    @Qualifier("serviceAlertServiceImpl")
+    public void setServiceAlertService(FeedMessageService serviceAlertService) {
+        _serviceAlertService = serviceAlertService;
     }
 
     @RequestMapping(value = "/vehiclePositions")
@@ -44,6 +51,14 @@ public class GtfsRealtimeController {
                                     @RequestParam(value = "debug", defaultValue = "false") boolean debug)
             throws IOException {
         FeedMessage msg = _tripUpdateService.getFeedMessage();
+        writeFeed(response, msg, debug);
+    }
+
+    @RequestMapping(value = "/alerts")
+    public void getAlerts(HttpServletResponse response,
+                          @RequestParam(value = "debug", defaultValue = "false") boolean debug)
+        throws IOException {
+        FeedMessage msg = _serviceAlertService.getFeedMessage();
         writeFeed(response, msg, debug);
     }
 

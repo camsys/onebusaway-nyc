@@ -11,6 +11,7 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
 
     private FeedMessage message;
     long timestamp = -1;
+    private String _agencyId;
 
     @Override
     public FeedMessage getFeedMessage() {
@@ -36,6 +37,14 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
 
     protected long getTime() {
         return timestamp;
+    }
+
+    public String getAgencyId() {
+        return _agencyId;
+    }
+
+    public void setAgencyId(String agencyId) {
+        _agencyId = agencyId;
     }
 
     protected abstract List<FeedEntity> getEntities();
