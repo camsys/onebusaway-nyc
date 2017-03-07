@@ -8,9 +8,11 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class ServiceAlertFeedBuilderImpl implements ServiceAlertFeedBuilder {
     @Override
     public Alert getAlertFromServiceAlert(ServiceAlertBean alert) {

@@ -20,7 +20,6 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
 
     private TripUpdateFeedBuilder _feedBuilder;
     private NycTransitDataService _transitDataService;
-    private String _agencyId = "";
 
     private static final Logger _log = LoggerFactory.getLogger(TripUpdateServiceImpl.class);
 
@@ -34,14 +33,10 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         _transitDataService = transitDataService;
     }
 
-    public void setAgencyId(String agencyId) {
-        _agencyId = agencyId;
-    }
-
     @Override
     protected List<FeedEntity> getEntities() {
         long time = getTime();
-        ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(_agencyId, time);
+        ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(getAgencyId(), time);
 
         List<FeedEntity> entities = new ArrayList<FeedEntity>();
 
