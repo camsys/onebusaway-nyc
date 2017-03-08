@@ -23,8 +23,8 @@ public class GtfsRealtimeLibrary {
         return trip;
     }
 
-    public static TripDescriptor.Builder makeTripDescriptor(VehicleStatusBean vehicle) {
-        return makeTripDescriptor(vehicle.getTrip(), vehicle.getTripStatus());
+    public static TripDescriptor.Builder makeTripDescriptor(TripBean tb, VehicleStatusBean vehicle) {
+        return makeTripDescriptor(tb, vehicle.getTripStatus());
     }
 
     public static Position.Builder makePosition(VehicleLocationRecordBean record) {

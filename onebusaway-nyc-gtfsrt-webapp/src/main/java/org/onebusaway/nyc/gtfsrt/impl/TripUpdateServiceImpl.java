@@ -11,6 +11,7 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,12 +73,12 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
             List<BlockTripBean> trips = block.getBlockConfiguration().getTrips();
 
             for (int i = tripSequence; i < trips.size(); i++) {
-                String tripId = trips.get(i).getTrip().getId();
-                List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), tripId);
+                TripBean trip = trips.get(i).getTrip();
+                List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), trip.getId());
                 if (tprs == null)
                     break;
 
-                GtfsRealtime.TripUpdate tu  = _feedBuilder.makeTripUpdate(vehicle, tprs);
+                GtfsRealtime.TripUpdate tu  = _feedBuilder.makeTripUpdate(trip, vehicle, tprs);
 
                 FeedEntity.Builder entity = FeedEntity.newBuilder();
                 entity.setTripUpdate(tu);
