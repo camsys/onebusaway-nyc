@@ -22,7 +22,7 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         timestamp = time;
         FeedMessage.Builder builder = FeedMessage.newBuilder();
 
-        for (FeedEntity entity : getEntities())
+        for (FeedEntity.Builder entity : getEntities())
             if (entity != null)
                 builder.addEntity(entity);
 
@@ -47,5 +47,5 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         _agencyId = agencyId;
     }
 
-    protected abstract List<FeedEntity> getEntities();
+    protected abstract List<FeedEntity.Builder> getEntities();
 }
