@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.gtfsrt.impl;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class TripUpdateServiceImpl extends AbstractFeedMessageService {
@@ -35,6 +38,23 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         _transitDataService = transitDataService;
     }
 
+    private Cache<String, BlockInstanceBean> _blockCache = CacheBuilder.newBuilder()
+            .maximumSize(10000)
+            .expireAfterWrite(60, TimeUnit.MINUTES)
+            .build();
+
+    private BlockInstanceBean getBlock(VehicleStatusBean vehicle) {
+        String blockId = vehicle.getTrip().getBlockId();
+        long serviceDate = vehicle.getTripStatus().getServiceDate();
+        String key = blockId + " " + Long.toString(serviceDate);
+        BlockInstanceBean block = _blockCache.getIfPresent(key);
+        if (block == null) {
+            block =  _transitDataService.getBlockInstance(blockId, serviceDate);
+            _blockCache.put(key, block);
+        }
+        return block;
+    }
+
     @Override
     protected List<FeedEntity.Builder> getEntities() {
         long time = getTime();
@@ -48,7 +68,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
                 continue;
 
             int tripSequence = vehicle.getTripStatus().getBlockTripSequence();
-            BlockInstanceBean block =  _transitDataService.getBlockInstance(vehicle.getTrip().getBlockId(), vehicle.getTripStatus().getServiceDate());
+            BlockInstanceBean block = getBlock(vehicle);
             List<BlockTripBean> trips = block.getBlockConfiguration().getTrips();
 
             for (int i = tripSequence; i < trips.size(); i++) {
