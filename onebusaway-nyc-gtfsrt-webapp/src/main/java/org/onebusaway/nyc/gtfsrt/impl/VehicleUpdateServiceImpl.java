@@ -36,11 +36,11 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
     }
 
     @Override
-    protected List<FeedEntity> getEntities() {
+    protected List<FeedEntity.Builder> getEntities() {
         long time = getTime();
         ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(getAgencyId(), time);
 
-        List<FeedEntity> entities = new ArrayList<FeedEntity>();
+        List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
         long nMissing = 0;
 
@@ -58,7 +58,7 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
             FeedEntity.Builder entity = FeedEntity.newBuilder();
             entity.setVehicle(pos);
             entity.setId(pos.getVehicle().getId());
-            entities.add(entity.build());
+            entities.add(entity);
 
         }
 

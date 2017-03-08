@@ -29,8 +29,8 @@ public class ServiceAlertServiceImpl extends AbstractFeedMessageService {
     }
 
     @Override
-    protected List<FeedEntity> getEntities() {
-        List<FeedEntity> ret = new ArrayList<FeedEntity>();
+    protected List<FeedEntity.Builder> getEntities() {
+        List<FeedEntity.Builder> ret = new ArrayList<FeedEntity.Builder>();
         ListBean<ServiceAlertBean> serviceAlertBeans = _transitDataService.getAllServiceAlertsForAgencyId(getAgencyId());
         int id = 0;
         for (ServiceAlertBean bean : serviceAlertBeans.getList()) {
@@ -38,7 +38,7 @@ public class ServiceAlertServiceImpl extends AbstractFeedMessageService {
             FeedEntity.Builder entity = FeedEntity.newBuilder();
             entity.setAlert(alert);
             entity.setId(Integer.toString(++id));
-            ret.add(entity.build());
+            ret.add(entity);
         }
         return ret;
     }

@@ -36,11 +36,11 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
     }
 
     @Override
-    protected List<FeedEntity> getEntities() {
+    protected List<FeedEntity.Builder> getEntities() {
         long time = getTime();
         ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(getAgencyId(), time);
 
-        List<FeedEntity> entities = new ArrayList<FeedEntity>();
+        List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
         for (VehicleStatusBean vehicle : vehicles.getList()) {
 
@@ -62,7 +62,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
                 FeedEntity.Builder entity = FeedEntity.newBuilder();
                 entity.setTripUpdate(tu);
                 entity.setId(tu.getTrip().getTripId());
-                entities.add(entity.build());
+                entities.add(entity);
             }
 
         }
