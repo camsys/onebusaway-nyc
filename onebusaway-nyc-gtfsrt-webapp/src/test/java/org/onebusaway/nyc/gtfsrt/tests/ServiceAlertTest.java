@@ -30,12 +30,12 @@ public class ServiceAlertTest extends TestCase {
         assertFalse(records.isEmpty());
 
         for (ServiceAlertBean bean : records) {
-            Alert alert = feedBuilder.getAlertFromServiceAlert(bean);
+            Alert.Builder alert = feedBuilder.getAlertFromServiceAlert(bean);
             assertServiceAlertMatches(bean, alert);
         }
     }
 
-    private static void assertServiceAlertMatches(ServiceAlertBean bean, Alert feed) {
+    private static void assertServiceAlertMatches(ServiceAlertBean bean, Alert.Builder feed) {
         assertActivePeriodMatches(bean.getPublicationWindows(), feed.getActivePeriodList());
         assertInformedEntityMatches(bean.getAllAffects(), feed.getInformedEntityList());
 
