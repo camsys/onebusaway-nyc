@@ -15,8 +15,6 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
     @Override
     public VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record) {
         VehiclePosition.Builder position = VehiclePosition.newBuilder();
-        if (record == null)
-            return null;
         position.setTrip(makeTripDescriptor(status));
         position.setPosition(makePosition(record));
         position.setVehicle(makeVehicleDescriptor(record));
