@@ -7,22 +7,16 @@ import java.util.List;
 
 public abstract class AbstractFeedMessageService implements FeedMessageService {
 
-    private static final int REFRESH_INTERVAL_MS = 30000;
-
     private FeedMessage message;
-    long timestamp = -1;
     private String _agencyId;
 
     @Override
     public FeedMessage getFeedMessage() {
         long time = System.currentTimeMillis();
-        if (timestamp + REFRESH_INTERVAL_MS >= time && message != null)
-            return message;
 
-        timestamp = time;
         FeedMessage.Builder builder = FeedMessage.newBuilder();
 
-        for (FeedEntity.Builder entity : getEntities())
+        for (FeedEntity.Builder entity : getEntities(time))
             if (entity != null)
                 builder.addEntity(entity);
 
@@ -35,10 +29,6 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         return message;
     }
 
-    protected long getTime() {
-        return timestamp;
-    }
-
     public String getAgencyId() {
         return _agencyId;
     }
@@ -47,5 +37,5 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         _agencyId = agencyId;
     }
 
-    protected abstract List<FeedEntity.Builder> getEntities();
+    protected abstract List<FeedEntity.Builder> getEntities(long time);
 }

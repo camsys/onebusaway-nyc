@@ -50,15 +50,14 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         String key = blockId + " " + Long.toString(serviceDate);
         BlockInstanceBean block = _blockCache.getIfPresent(key);
         if (block == null) {
-            block =  _transitDataService.getBlockInstance(blockId, serviceDate);
+            block = _transitDataService.getBlockInstance(blockId, serviceDate);
             _blockCache.put(key, block);
         }
         return block;
     }
 
     @Override
-    protected List<FeedEntity.Builder> getEntities() {
-        long time = getTime();
+    protected List<FeedEntity.Builder> getEntities(long time) {
         ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(getAgencyId(), time);
 
         List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
