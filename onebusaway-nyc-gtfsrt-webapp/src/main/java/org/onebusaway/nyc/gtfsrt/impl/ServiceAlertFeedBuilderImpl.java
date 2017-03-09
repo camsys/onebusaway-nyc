@@ -31,15 +31,6 @@ public class ServiceAlertFeedBuilderImpl implements ServiceAlertFeedBuilder {
             }
         }
 
-        if (alert.getReason() != null) {
-            for (Alert.Cause cause : Alert.Cause.values()) {
-                if (cause.toString().equals(alert.getReason())) {
-                    rtAlert.setCause(cause);
-                    break;
-                }
-            }
-        }
-
         if (alert.getConsequences() != null && !alert.getConsequences().isEmpty()) {
             SituationConsequenceBean cb = alert.getConsequences().get(0);
             // Effect and EEffect perfectly match string values
@@ -72,12 +63,23 @@ public class ServiceAlertFeedBuilderImpl implements ServiceAlertFeedBuilder {
 
     private static EntitySelector.Builder informedEntity(SituationAffectsBean bean) {
         EntitySelector.Builder builder = EntitySelector.newBuilder();
+
+        // If there is a trip ID or a direction ID, use a TripDescriptor (no duplicate route info)
+        if (bean.getTripId() != null || bean.getDirectionId() != null) {
+            TripDescriptor.Builder td = TripDescriptor.newBuilder();
+            if (bean.getTripId() != null)
+                td.setTripId(bean.getTripId());
+            if (bean.getRouteId() != null)
+                td.setRouteId(bean.getRouteId());
+            if (bean.getDirectionId() != null)
+                td.setDirectionId(Integer.parseInt(bean.getDirectionId()));
+            builder.setTrip(td);
+        } else if (bean.getRouteId() != null) {
+            builder.setRouteId(bean.getRouteId());
+        }
+
         if (bean.getAgencyId() != null)
             builder.setAgencyId(bean.getAgencyId());
-        if (bean.getRouteId() != null)
-            builder.setRouteId(bean.getRouteId());
-        if (bean.getTripId() != null)
-            builder.setTrip(TripDescriptor.newBuilder().setTripId(bean.getTripId()));
         if (bean.getStopId() != null)
             builder.setStopId(bean.getStopId());
         return builder;
