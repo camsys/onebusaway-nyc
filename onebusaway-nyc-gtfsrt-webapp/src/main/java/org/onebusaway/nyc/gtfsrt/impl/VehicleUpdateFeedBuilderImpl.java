@@ -13,7 +13,7 @@ import static org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary.*;
 public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
 
     @Override
-    public VehiclePosition makeVehicleUpdate(VehicleLocationRecordBean record, TripDetailsBean td) {
+    public VehiclePosition.Builder makeVehicleUpdate(VehicleLocationRecordBean record, TripDetailsBean td) {
         VehiclePosition.Builder position = VehiclePosition.newBuilder();
         if (record == null)
             return null;
@@ -23,7 +23,7 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
         position.setTimestamp(record.getTimeOfRecord()/1000);
         position.setStopId(td.getStatus().getNextStop().getId());
 
-        return position.build();
+        return position;
     }
 
 }

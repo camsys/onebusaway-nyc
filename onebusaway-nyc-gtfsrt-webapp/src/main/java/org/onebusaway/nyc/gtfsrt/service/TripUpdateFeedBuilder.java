@@ -8,6 +8,6 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import java.util.List;
 
 public interface TripUpdateFeedBuilder {
-    GtfsRealtime.TripUpdate makeTripUpdate(TripBean trip, VehicleStatusBean vehicle,
+    GtfsRealtime.TripUpdate.Builder makeTripUpdate(TripBean trip, VehicleStatusBean vehicle,
                                            List<TimepointPredictionRecord> records);
 }
