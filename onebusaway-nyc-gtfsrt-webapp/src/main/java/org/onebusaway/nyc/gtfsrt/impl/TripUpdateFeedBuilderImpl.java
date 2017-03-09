@@ -22,8 +22,8 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
         tripUpdate.setTrip(makeTripDescriptor(trip, vehicle));
         tripUpdate.setVehicle(makeVehicleDescriptor(vehicle));
 
-        //tripUpdate.setTimestamp(vehicle.getLastUpdateTime()/1000);
-        //tripUpdate.setDelay((int)vehicle.getTripStatus().getScheduleDeviation());
+        tripUpdate.setTimestamp(vehicle.getLastUpdateTime()/1000);
+        tripUpdate.setDelay((int)vehicle.getTripStatus().getScheduleDeviation());
 
         for (TimepointPredictionRecord tpr : records) {
             tripUpdate.addStopTimeUpdate(makeStopTimeUpdate(tpr));
