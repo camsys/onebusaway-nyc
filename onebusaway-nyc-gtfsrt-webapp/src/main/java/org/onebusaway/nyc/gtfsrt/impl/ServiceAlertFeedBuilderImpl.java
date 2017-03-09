@@ -15,7 +15,7 @@ import java.util.List;
 @Component
 public class ServiceAlertFeedBuilderImpl implements ServiceAlertFeedBuilder {
     @Override
-    public Alert getAlertFromServiceAlert(ServiceAlertBean alert) {
+    public Alert.Builder getAlertFromServiceAlert(ServiceAlertBean alert) {
 
         Alert.Builder rtAlert = Alert.newBuilder();
 
@@ -58,32 +58,32 @@ public class ServiceAlertFeedBuilderImpl implements ServiceAlertFeedBuilder {
             rtAlert.setDescriptionText(translatedString(alert.getDescriptions()));
         }
 
-        return rtAlert.build();
+        return rtAlert;
     }
 
-    private static TimeRange range(TimeRangeBean range) {
+    private static TimeRange.Builder range(TimeRangeBean range) {
         TimeRange.Builder builder = TimeRange.newBuilder();
         if (range.getFrom() > 0)
             builder.setStart(range.getFrom()/1000);
         if (range.getTo() > 0)
             builder.setEnd(range.getTo()/1000);
-        return builder.build();
+        return builder;
     }
 
-    private static EntitySelector informedEntity(SituationAffectsBean bean) {
+    private static EntitySelector.Builder informedEntity(SituationAffectsBean bean) {
         EntitySelector.Builder builder = EntitySelector.newBuilder();
         if (bean.getAgencyId() != null)
             builder.setAgencyId(bean.getAgencyId());
         if (bean.getRouteId() != null)
             builder.setRouteId(bean.getRouteId());
         if (bean.getTripId() != null)
-            builder.setTrip(TripDescriptor.newBuilder().setTripId(bean.getTripId()).build());
+            builder.setTrip(TripDescriptor.newBuilder().setTripId(bean.getTripId()));
         if (bean.getStopId() != null)
             builder.setStopId(bean.getStopId());
-        return builder.build();
+        return builder;
     }
 
-    private static TranslatedString translatedString(List<NaturalLanguageStringBean> beans) {
+    private static TranslatedString.Builder translatedString(List<NaturalLanguageStringBean> beans) {
         TranslatedString.Builder string = TranslatedString.newBuilder();
         for (NaturalLanguageStringBean bean : beans) {
             TranslatedString.Translation.Builder tr = TranslatedString.Translation.newBuilder();
@@ -91,6 +91,6 @@ public class ServiceAlertFeedBuilderImpl implements ServiceAlertFeedBuilder {
             tr.setText(bean.getValue());
             string.addTranslation(tr);
         }
-        return string.build();
+        return string;
     }
 }

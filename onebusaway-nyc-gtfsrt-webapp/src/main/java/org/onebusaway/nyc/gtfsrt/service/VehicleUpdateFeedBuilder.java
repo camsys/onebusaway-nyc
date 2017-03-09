@@ -6,5 +6,5 @@ import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 
 public interface VehicleUpdateFeedBuilder {
 
-    GtfsRealtime.VehiclePosition makeVehicleUpdate(VehicleLocationRecordBean status, TripDetailsBean td);
+    GtfsRealtime.VehiclePosition.Builder makeVehicleUpdate(VehicleLocationRecordBean status, TripDetailsBean td);
 }

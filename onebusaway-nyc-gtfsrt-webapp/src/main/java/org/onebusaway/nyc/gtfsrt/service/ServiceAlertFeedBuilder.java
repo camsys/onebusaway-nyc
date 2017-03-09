@@ -5,5 +5,5 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 public interface ServiceAlertFeedBuilder {
 
-    GtfsRealtime.Alert getAlertFromServiceAlert(ServiceAlertBean alert);
+    GtfsRealtime.Alert.Builder getAlertFromServiceAlert(ServiceAlertBean alert);
 }

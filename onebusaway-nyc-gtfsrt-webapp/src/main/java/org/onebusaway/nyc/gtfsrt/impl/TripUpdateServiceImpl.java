@@ -77,7 +77,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
                 if (tprs == null)
                     break;
 
-                GtfsRealtime.TripUpdate tu  = _feedBuilder.makeTripUpdate(trip, vehicle, tprs);
+                GtfsRealtime.TripUpdate.Builder tu  = _feedBuilder.makeTripUpdate(trip, vehicle, tprs);
 
                 FeedEntity.Builder entity = FeedEntity.newBuilder();
                 entity.setTripUpdate(tu);

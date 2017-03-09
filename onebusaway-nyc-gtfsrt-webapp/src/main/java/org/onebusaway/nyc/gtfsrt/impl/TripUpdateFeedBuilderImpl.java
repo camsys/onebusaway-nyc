@@ -16,7 +16,7 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
 
 
     @Override
-    public TripUpdate makeTripUpdate(TripBean trip, VehicleStatusBean vehicle, List<TimepointPredictionRecord> records) {
+    public TripUpdate.Builder makeTripUpdate(TripBean trip, VehicleStatusBean vehicle, List<TimepointPredictionRecord> records) {
         TripUpdate.Builder tripUpdate = TripUpdate.newBuilder();
 
         tripUpdate.setTrip(makeTripDescriptor(trip, vehicle));
@@ -29,7 +29,7 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
             tripUpdate.addStopTimeUpdate(makeStopTimeUpdate(tpr));
         }
 
-        return tripUpdate.build();
+        return tripUpdate;
     }
 
 

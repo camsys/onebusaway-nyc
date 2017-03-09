@@ -52,7 +52,7 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
             }
             TripDetailsBean td = getTripDetails(vehicle);
 
-            VehiclePosition pos = _feedBuilder.makeVehicleUpdate(vlr, td);
+            VehiclePosition.Builder pos = _feedBuilder.makeVehicleUpdate(vlr, td);
 
             FeedEntity.Builder entity = FeedEntity.newBuilder();
             entity.setVehicle(pos);
