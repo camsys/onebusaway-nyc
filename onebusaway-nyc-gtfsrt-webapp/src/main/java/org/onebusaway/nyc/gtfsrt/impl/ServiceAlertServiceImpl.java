@@ -32,12 +32,11 @@ public class ServiceAlertServiceImpl extends AbstractFeedMessageService {
     protected List<FeedEntity.Builder> getEntities() {
         List<FeedEntity.Builder> ret = new ArrayList<FeedEntity.Builder>();
         ListBean<ServiceAlertBean> serviceAlertBeans = _transitDataService.getAllServiceAlertsForAgencyId(getAgencyId());
-        int id = 0;
         for (ServiceAlertBean bean : serviceAlertBeans.getList()) {
             Alert alert = _feedBuilder.getAlertFromServiceAlert(bean);
             FeedEntity.Builder entity = FeedEntity.newBuilder();
             entity.setAlert(alert);
-            entity.setId(Integer.toString(++id));
+            entity.setId(bean.getId());
             ret.add(entity);
         }
         return ret;
