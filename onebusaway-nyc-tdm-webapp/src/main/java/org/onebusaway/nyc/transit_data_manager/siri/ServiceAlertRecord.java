@@ -58,6 +58,7 @@ public class ServiceAlertRecord implements Serializable {
   private String serviceAlertId;
 
   @Column(nullable = false, name = "creation_time")
+  @CsvField(optional = true)
   private long creationTime;
 
   @Column(name = "active_windows_json", length = 512)
