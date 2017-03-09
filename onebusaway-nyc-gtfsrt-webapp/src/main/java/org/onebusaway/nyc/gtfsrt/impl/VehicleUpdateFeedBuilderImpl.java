@@ -2,8 +2,8 @@ package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.springframework.stereotype.Component;
 
 
@@ -13,15 +13,15 @@ import static org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary.*;
 public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
 
     @Override
-    public VehiclePosition.Builder makeVehicleUpdate(VehicleLocationRecordBean record, TripDetailsBean td) {
+    public VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record) {
         VehiclePosition.Builder position = VehiclePosition.newBuilder();
         if (record == null)
             return null;
-        position.setTrip(makeTripDescriptor(td.getTrip(), td.getStatus()));
+        position.setTrip(makeTripDescriptor(status));
         position.setPosition(makePosition(record));
         position.setVehicle(makeVehicleDescriptor(record));
         position.setTimestamp(record.getTimeOfRecord()/1000);
-        position.setStopId(td.getStatus().getNextStop().getId());
+        position.setStopId(status.getTripStatus().getNextStop().getId());
 
         return position;
     }

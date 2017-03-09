@@ -2,12 +2,10 @@ package org.onebusaway.nyc.gtfsrt.util;
 
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.joda.time.LocalDate;
-import org.joda.time.YearMonthDay;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 public class GtfsRealtimeLibrary {
@@ -25,6 +23,10 @@ public class GtfsRealtimeLibrary {
 
     public static TripDescriptor.Builder makeTripDescriptor(TripBean tb, VehicleStatusBean vehicle) {
         return makeTripDescriptor(tb, vehicle.getTripStatus());
+    }
+
+    public static TripDescriptor.Builder makeTripDescriptor(VehicleStatusBean vehicle) {
+        return makeTripDescriptor(vehicle.getTrip(), vehicle.getTripStatus());
     }
 
     public static Position.Builder makePosition(VehicleLocationRecordBean record) {
