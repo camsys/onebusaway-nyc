@@ -113,18 +113,31 @@ public class ServiceAlertTest extends TestCase {
             return false;
         if (affects.getAgencyId() != null && !affects.getAgencyId().equals(entity.getAgencyId()))
             return false;
-        if ((affects.getRouteId() != null) != entity.hasRouteId())
+        if ((affects.getRouteId() != null) != (entity.hasRouteId() || entity.getTrip().hasRouteId()))
             return false;
-        if (affects.getRouteId() != null && !affects.getRouteId().equals(entity.getRouteId()))
+        if (affects.getRouteId() != null && entity.hasRouteId() && !affects.getRouteId().equals(entity.getRouteId()))
             return false;
-        if ((affects.getTripId() != null) != entity.hasTrip())
-            return false;
-        if (entity.hasTrip() && !entity.getTrip().getTripId().equals(affects.getTripId()))
+        if ((affects.getTripId() != null || affects.getDirectionId() != null) != entity.hasTrip())
             return false;
         if ((affects.getStopId() != null) != entity.hasStopId())
             return false;
         if (entity.hasStopId() && !affects.getStopId().equals(entity.getStopId()))
             return false;
+        if (entity.hasTrip()) {
+            TripDescriptor td = entity.getTrip();
+            if (td.hasTripId() != (affects.getTripId() != null))
+                return false;
+            if (td.hasTripId() && (!td.getTripId().equals(affects.getTripId())))
+                return false;
+            if (td.hasRouteId() != (affects.getRouteId() != null))
+                return false;
+            if (td.hasRouteId() && !td.getRouteId().equals(affects.getRouteId()))
+                return false;
+            if (td.hasDirectionId() != (affects.getDirectionId() != null))
+                return false;
+            if (td.hasDirectionId() && (!Integer.toString(td.getDirectionId()).equals(affects.getDirectionId())))
+                return false;
+        }
         return true;
     }
 

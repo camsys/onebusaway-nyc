@@ -19,7 +19,8 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
         position.setPosition(makePosition(record));
         position.setVehicle(makeVehicleDescriptor(record));
         position.setTimestamp(record.getTimeOfRecord()/1000);
-        position.setStopId(status.getTripStatus().getNextStop().getId());
+        if (status.getTripStatus().getNextStop() != null)
+            position.setStopId(status.getTripStatus().getNextStop().getId());
 
         return position;
     }
