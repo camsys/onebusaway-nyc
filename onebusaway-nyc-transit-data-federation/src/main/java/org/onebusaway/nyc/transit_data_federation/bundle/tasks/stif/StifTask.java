@@ -171,6 +171,10 @@ public class StifTask implements Runnable {
 		stci.setStifPaths(_stifPaths);
 
 	}
+	//for unit tests
+	public void setAbnormalDataLoggerCsvLogger(){
+		abnormalDataLogger.setLogger(csvLogger);
+	}
 
 	//for unit tests, passthroughs
 	public void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,

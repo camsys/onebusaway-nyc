@@ -49,7 +49,8 @@ public class TestStifTask {
 		csvLogger = new MultiCSVLogger();
 		file.delete();
 		file.createNewFile();
-		task.setLogger(csvLogger);
+		task.setCSVLogger(csvLogger);
+		task.setAbnormalDataLoggerCsvLogger();
 		reader = new BufferedReader(new FileReader(file));
 		dscToTripMap = new HashMap<String, List<AgencyAndId>>();
 		tripToDscMap = new HashMap<AgencyAndId, String>();
