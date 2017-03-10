@@ -142,6 +142,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
   private String depotId;
 
   @Column(nullable = true, name = "inferred_operator_id", length = 16)
+  @CsvField(optional = true)
   private String inferredOperatorId;
 
   @Column(nullable = true, name = "inferred_run_id", length = 16)
@@ -168,6 +169,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
   private String assignedRunId = null;
 
   @Column(nullable = true, name = "assigned_block_id", length = 32)
+  @CsvField(optional = true)
   private String assignedBlockId = null;
 
   public ArchivedInferredLocationRecord() {

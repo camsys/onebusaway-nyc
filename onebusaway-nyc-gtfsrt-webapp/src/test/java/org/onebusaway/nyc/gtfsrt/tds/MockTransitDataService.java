@@ -8,7 +8,6 @@ import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Route;
-import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
@@ -74,8 +73,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import java.io.File;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -117,7 +114,6 @@ public class MockTransitDataService implements NycTransitDataService {
             if (blockId != null)
                 trip.setBlockId(blockId);
         }
-
     }
 
     @Override
@@ -216,8 +212,25 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public VehicleStatusBean getVehicleForAgency(String s, long l) {
-        throw new UnsupportedOperationException();
+    public VehicleStatusBean getVehicleForAgency(String id, long time) {
+        VehicleLocationRecordBean vlrb = _vehicleLocations.get(id);
+        VehicleStatusBean vsb = new VehicleStatusBean();
+        vsb.setLastUpdateTime(vlrb.getTimeOfRecord());
+        vsb.setLastLocationUpdateTime(vlrb.getTimeOfLocationUpdate());
+        vsb.setLocation(vlrb.getCurrentLocation());
+        vsb.setPhase(vlrb.getPhase());
+        vsb.setStatus(vlrb.getStatus());
+        vsb.setVehicleId(vlrb.getVehicleId());
+
+        TripForVehicleQueryBean query = new TripForVehicleQueryBean();
+        query.setVehicleId(id);
+        query.setTime(new Date(time));
+        TripDetailsBean tdb = getTripDetailsForVehicleAndTime(query);
+
+        vsb.setTrip(tdb.getTrip());
+        vsb.setTripStatus(tdb.getStatus());
+
+        return vsb;
     }
 
     @Override
@@ -547,23 +560,23 @@ public class MockTransitDataService implements NycTransitDataService {
         status.setDistanceAlongTrip(distanceAlongTrip);
 
         // set next stop
-        Iterator<StopTime> stopTimes = _dao.getStopTimesForTrip(trip).iterator();
-        int seq = -1;
-        double distance = 0;
-        StopTime st = null;
-        while (stopTimes.hasNext()) {
-            st = stopTimes.next();
-            if (seq >= st.getStopSequence())
-                throw new IllegalArgumentException("bad stop times: not in sequence");
-            if (!st.isShapeDistTraveledSet())
-                throw new IllegalArgumentException("bad stop times: no shape dist");
-            seq = st.getStopSequence();
-            distance += st.getShapeDistTraveled();
-            if (distance > distanceAlongTrip)
-              break;
-        }
-        if (st != null)
-            status.setNextStop(stopBean(st.getStop()));
+//        Iterator<StopTime> stopTimes = _dao.getStopTimesForTrip(trip).iterator();
+//        int seq = -1;
+//        double distance = 0;
+//        StopTime st = null;
+//        while (stopTimes.hasNext()) {
+//            st = stopTimes.next();
+//            if (seq >= st.getStopSequence())
+//                throw new IllegalArgumentException("bad stop times: not in sequence");
+//            if (!st.isShapeDistTraveledSet())
+//                throw new IllegalArgumentException("bad stop times: no shape dist");
+//            seq = st.getStopSequence();
+//            distance += st.getShapeDistTraveled();
+//            if (distance > distanceAlongTrip)
+//              break;
+//        }
+//        if (st != null)
+//            status.setNextStop(stopBean(st.getStop()));
 
         return status;
     }
