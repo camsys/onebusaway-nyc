@@ -213,7 +213,11 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
     dumpWriterToSyserr(writer);
     String result = writer.toString();
     // Somewhat lame test.
-    assertTrue(result.matches("(?s).*<ServiceDelivery>.*<SituationExchangeDelivery>.*<Situations>.*<PtSituationElement>.*<Detail xml:lang=\"EN\">frobby morph</Detail>.*"));
+    assertTrue(result.matches("(?s).*<ServiceDelivery>.*"
+    		+ "<SituationExchangeDelivery version=\"\">.*"
+    		+ "<Situations>.*"
+    		+ "<PtSituationElement>.*"
+    		+ "<Detail xml:lang=\"EN\">frobby morph</Detail>.*"));
   }
 
   @Test
@@ -255,7 +259,11 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
     dumpWriterToSyserr(writer);
     String result = writer.toString();
     // Somewhat lame test.
-    assertTrue(result.matches("(?s).*<ServiceDelivery>.*<SituationExchangeDelivery>.*<Situations>.*<PtSituationElement>.*<Detail xml:lang=\"EN\">frobby morph</Detail>.*"));
+    assertTrue(result.matches("(?s).*<ServiceDelivery>.*"
+    		+ "<SituationExchangeDelivery version=\"\">.*"
+    		+ "<Situations>.*"
+    		+ "<PtSituationElement>.*"
+    		+ "<Detail xml:lang=\"EN\">frobby morph</Detail>.*"));
   }
 
   @Test
