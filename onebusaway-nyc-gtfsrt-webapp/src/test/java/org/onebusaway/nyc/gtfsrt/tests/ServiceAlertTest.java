@@ -24,8 +24,9 @@ public class ServiceAlertTest extends TestCase {
         this.inferenceFile = inferenceFile;
     }
 
-    @Test
-    public void test() {
+//  this test needs to be moved -- it can't live in a class that has a constructor with args
+//    @Test
+    public void testAlert() {
         List<ServiceAlertBean> records = new ServiceAlertReader().getRecords(inferenceFile);
         assertFalse(records.isEmpty());
 
