@@ -218,7 +218,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   private class ValidateThread implements Runnable {
     private static final int MAX_COUNT = 3600; //(5 hours at 5 second increments)
     private static final int MAX_PING_COUNT = 60; //(5 minutes at 5 second increments)
-    private static final int MAX_ERRORS = 20;
+    private static final int MAX_ERRORS = 30;
     private BundleRequest _request;
     private BundleResponse _response;
     private int pingCount = 0;
@@ -301,7 +301,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     }
 
     private boolean isComplete(BundleResponse response) {
-      if (response == null && errorCount < MAX_ERRORS) {
+      if (response == null && errorCount <= MAX_ERRORS) {
         errorCount++;
         return false;
       } else if (response == null && errorCount > MAX_ERRORS) {
@@ -323,7 +323,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   private class BuildThread implements Runnable {
     private static final int MAX_COUNT = 3600; // 5 hours at 5 second increments
     private static final int MAX_PING_COUNT = 60; // 5 minutes
-    private static final int MAX_ERRORS = 20;
+    private static final int MAX_ERRORS = 30;
     private BundleBuildRequest _request;
     private BundleBuildResponse _response;
     private int errorCount = 0;
@@ -415,7 +415,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     }
     
     private boolean isComplete(BundleBuildResponse response) {
-      if (response == null && errorCount < MAX_ERRORS) {
+      if (response == null && errorCount <= MAX_ERRORS) {
         errorCount++;
         return false;
       } else if (response == null && errorCount > MAX_ERRORS) {
