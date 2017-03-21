@@ -211,7 +211,7 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 
 		ObjectListing listing = null;
 		do {
-			if (listing == null) { 
+			if (listing == null) {
 				listing = _s3.listObjects(request);
 				if (listing.getCommonPrefixes() != null) {
 					// short circuit if common prefixes works

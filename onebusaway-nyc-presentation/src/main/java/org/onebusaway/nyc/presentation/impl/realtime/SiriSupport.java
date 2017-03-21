@@ -36,6 +36,8 @@ import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.org.siri.siri.BlockRefStructure;
 import uk.org.siri.siri.DataFrameRefStructure;
 import uk.org.siri.siri.DestinationRefStructure;
@@ -111,12 +113,13 @@ public final class SiriSupport {
 		}
 		
 		
-		List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTrip(currentVehicleTripStatus.getVehicleId(), currentVehicleTripStatus.getActiveTrip().getId());
+		List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTrip(currentVehicleTripStatus.getVehicleId(), currentVehicleTripStatus);
 		List<TimepointPredictionRecord> nextTripPredictions = null;
 
 		TripBean nextTripBean = getNextTrip(currentVehicleTripStatus, nycTransitDataService);
 		if(nextTripBean != null){
-			nextTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTrip(currentVehicleTripStatus.getVehicleId(), nextTripBean.getId());
+			// TODO!  Next trip support!
+//			nextTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTrip(currentVehicleTripStatus.getVehicleId(), );
 		}
 		
 		LineRefStructure lineRef = new LineRefStructure();

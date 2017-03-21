@@ -106,7 +106,11 @@ public class QueuePredictionIntegrationServiceImpl extends
 				getConfigurationValueAsInteger(PREDICTION_QUEUE_THREAD_COUNT, DEFAULT_PREDICTION_QUEUE_THREAD_COUNT);
 		reinitializePredictionQueue();
 	}
-	
+
+	public boolean isEnabled() {
+		return !Boolean.TRUE.equals(Boolean.parseBoolean(getDisable()));
+	}
+
 	@PostConstruct
 	@Override
 	public void setup() {
