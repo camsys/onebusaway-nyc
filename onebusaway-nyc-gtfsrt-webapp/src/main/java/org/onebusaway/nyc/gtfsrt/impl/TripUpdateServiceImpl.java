@@ -73,7 +73,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
 
             for (int i = tripSequence; i < trips.size(); i++) {
                 TripBean trip = trips.get(i).getTrip();
-                List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), trip.getId());
+                List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), vehicle.getTripStatus());
                 if (tprs == null)
                     break;
 
