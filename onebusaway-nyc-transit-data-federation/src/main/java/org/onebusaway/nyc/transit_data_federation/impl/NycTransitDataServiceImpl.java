@@ -82,7 +82,7 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.services.ScheduleHelperService;
+import org.onebusaway.transit_data_federation.services.PredictionHelperService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +107,9 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Autowired
 	private BundleSearchServiceImpl _bundleSearchService;
+
+	@Autowired
+	private PredictionHelperService _predictionHelperService;
 
 	private int _blockedRequestCounter = 0;
 
@@ -144,13 +147,19 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	public List<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
 			TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
-		return _predictionIntegrationService.getPredictionsForTrip(tripStatus);
+		if (_predictionIntegrationService.isEnabled()) {
+			return _predictionIntegrationService.getPredictionsForTrip(tripStatus);
+		}
+		return _predictionHelperService.getPredictionRecordsForTrip(agencyId, tripStatus);
 	}
 	
-	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId,
-			String TripId) {
+	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
+			TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
-		return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(VehicleId, TripId);
+		if (_predictionIntegrationService.isEnabled()) {
+			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus.getActiveTrip().getId());
+		}
+		return _predictionHelperService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus);
 	}
 
 	@Override

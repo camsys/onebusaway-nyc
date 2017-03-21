@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.onebusaway.federations.annotations.FederatedByAgencyIdMethod;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 /**
@@ -30,8 +31,8 @@ import org.onebusaway.transit_data.services.TransitDataService;
  *
  */
 public interface NycTransitDataService extends TransitDataService {
-	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId,
-			String TripId);
+	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
+			TripStatusBean tripStatus);
 	
 	  /**
 	   * Given a stop, route, and direction, test if that stop has revenue service

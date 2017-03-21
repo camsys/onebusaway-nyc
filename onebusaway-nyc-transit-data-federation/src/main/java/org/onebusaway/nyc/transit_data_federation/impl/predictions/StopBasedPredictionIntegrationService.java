@@ -44,10 +44,18 @@ class StopBasedPredictionIntegrationService implements PredictionIntegrationServ
   @Autowired
   private PredictionGenerationService _predictionGenerationService;
 
+  public boolean isEnabled() {
+    return true;
+  }
+
   public void setPredictionGenerationService(PredictionGenerationService predictionGenerationService) {
     _predictionGenerationService = predictionGenerationService;
   }
-  
+
+  public void acceptPredictionsForVehicle(AgencyAndId vehicleId, String tripId, List<TimepointPredictionRecord> tprs) {
+    // no op
+  }
+
   private Map<String, List<TimepointPredictionRecord>> _predictionRecordsByVehicle =
       new HashMap<String, List<TimepointPredictionRecord>>();
   
