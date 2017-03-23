@@ -7,36 +7,38 @@ import java.util.List;
 
 public abstract class AbstractFeedMessageService implements FeedMessageService {
 
-    private static final int REFRESH_INTERVAL_MS = 30000;
+    public static final int DEFAULT_CACHE_EXPIRY_SECONDS = 10;
 
-    private FeedMessage message;
-    long timestamp = -1;
     private String _agencyId;
+    private long _generatedTime = 0l;
+    private int _cacheExpirySeconds = DEFAULT_CACHE_EXPIRY_SECONDS;
+    private FeedMessage _cache = null;
 
-    @Override
-    public FeedMessage getFeedMessage() {
-        long time = System.currentTimeMillis();
-        if (timestamp + REFRESH_INTERVAL_MS >= time && message != null)
-            return message;
-
-        timestamp = time;
-        FeedMessage.Builder builder = FeedMessage.newBuilder();
-
-        for (FeedEntity.Builder entity : getEntities())
-            if (entity != null)
-                builder.addEntity(entity);
-
-        FeedHeader.Builder header = FeedHeader.newBuilder();
-        header.setGtfsRealtimeVersion("1.0");
-        header.setTimestamp(time/1000);
-        header.setIncrementality(FeedHeader.Incrementality.FULL_DATASET);
-        builder.setHeader(header);
-        message = builder.build();
-        return message;
+    public void setCacheExpirySeconds(int seconds) {
+        _cacheExpirySeconds = seconds;
     }
 
-    protected long getTime() {
-        return timestamp;
+    @Override
+    public synchronized FeedMessage getFeedMessage() {
+        long time = System.currentTimeMillis();
+
+        if (isCacheExpired(time)) {
+            FeedMessage.Builder builder = FeedMessage.newBuilder();
+
+            for (FeedEntity.Builder entity : getEntities(time))
+                if (entity != null)
+                    builder.addEntity(entity);
+
+            FeedHeader.Builder header = FeedHeader.newBuilder();
+            header.setGtfsRealtimeVersion("1.0");
+            header.setTimestamp(time / 1000);
+            header.setIncrementality(FeedHeader.Incrementality.FULL_DATASET);
+            builder.setHeader(header);
+            FeedMessage message = builder.build();
+            _cache = message;
+            _generatedTime = time;
+        }
+        return _cache;
     }
 
     public String getAgencyId() {
@@ -47,5 +49,10 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         _agencyId = agencyId;
     }
 
-    protected abstract List<FeedEntity.Builder> getEntities();
+    private boolean isCacheExpired(long now) {
+        if (_cache == null) return true;
+        return (now - _generatedTime) > _cacheExpirySeconds * 1000;
+    }
+
+    protected abstract List<FeedEntity.Builder> getEntities(long time);
 }
