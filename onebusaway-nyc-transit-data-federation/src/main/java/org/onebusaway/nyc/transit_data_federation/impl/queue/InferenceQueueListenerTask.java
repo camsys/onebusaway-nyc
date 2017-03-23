@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
+import org.codehaus.jackson.map.ObjectReader;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
@@ -28,6 +29,11 @@ import javax.annotation.PreDestroy;
 public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 
 	protected abstract void processResult(NycQueuedInferredLocationBean inferredResult, String contents);
+	protected ObjectReader _reader;
+
+	public InferenceQueueListenerTask() {
+		_reader = _mapper.reader(NycQueuedInferredLocationBean.class);
+	}
 
 	@Override
 	public boolean processMessage(String address, byte[] buff) {
@@ -37,8 +43,8 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 				return false;
 			}
 
-			
-			NycQueuedInferredLocationBean inferredResult = _mapper.readValue(contents, NycQueuedInferredLocationBean.class);
+			// jackson advice:  prefer reader over mapper
+			NycQueuedInferredLocationBean inferredResult = _reader.readValue(contents);
 			processResult(inferredResult, contents);
 			
 			return true;
