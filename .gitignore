@@ -18,3 +18,6 @@ matched_trips_gtfs_stif.csv
 non_pullin_without_next_movement.csv
 route_ids_with_no_trips.csv
 stif_trips_without_pullout.csv
+*.iml
+*.iws
+.idea
