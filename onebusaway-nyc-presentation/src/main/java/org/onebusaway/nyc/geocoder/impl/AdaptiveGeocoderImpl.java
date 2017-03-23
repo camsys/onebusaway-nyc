@@ -41,9 +41,11 @@ public class AdaptiveGeocoderImpl extends FilteredGeocoderBase {
   			geocoder = new GoogleGeocoderImpl(this);
   		} else if (geocoderInstance.equals("bing") && (geocoder == null || !geocoder.getClass().equals(BingGeocoderImpl.class))) {
   			geocoder = new BingGeocoderImpl(this);
-  		} else if (geocoderInstance.equals("nyc") && (geocoder == null || !geocoder.getClass().equals(NycCustomGeocoderImpl.class))) {
-  			geocoder = new NycCustomGeocoderImpl(this);
-      }
+  		} else if (geocoderInstance.equals("nyc-autocomplete") && (geocoder == null || !geocoder.getClass().equals(NycAutocompleteAdapterImpl.class))) {
+  			geocoder = new NycAutocompleteAdapterImpl(this);
+  		} else if (geocoderInstance.equals("nyc-geocode") && (geocoder == null || !geocoder.getClass().equals(NycGeocodeAdapterImpl.class))) {
+  			geocoder = new NycGeocodeAdapterImpl(this);
+  		}
   		_geocoderCacheService.store(location, geocoder.nycGeocode(location));
     }
     return _geocoderCacheService.retrieve(location);

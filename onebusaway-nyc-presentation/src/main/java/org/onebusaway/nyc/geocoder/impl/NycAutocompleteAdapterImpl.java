@@ -31,20 +31,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A geocoder that works against Bing's REST-ful API. 
+ * A geocoder that works against NYC Geocoder API Adapter REST-ful API. 
  * @author lcaraballo
  *
  */
-public class NycCustomGeocoderImpl extends FilteredGeocoderBase {
+public class NycAutocompleteAdapterImpl extends FilteredGeocoderBase {
 
-  private static Logger _log = LoggerFactory.getLogger(NycCustomGeocoderImpl.class);
+  private static Logger _log = LoggerFactory.getLogger(NycAutocompleteAdapterImpl.class);
 
   private static final String GEOCODE_URL_PREFIX = "http://localhost:8180/autocomplete";
   
   private static final Gson gson = new Gson();
   
-  public NycCustomGeocoderImpl(){}
-  public NycCustomGeocoderImpl(FilteredGeocoderBase template){
+  public NycAutocompleteAdapterImpl(){}
+  public NycAutocompleteAdapterImpl(FilteredGeocoderBase template){
 	  super(template);
   }
   
