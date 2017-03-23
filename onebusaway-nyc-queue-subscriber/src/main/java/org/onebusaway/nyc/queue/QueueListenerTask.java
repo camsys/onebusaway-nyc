@@ -86,9 +86,10 @@ public abstract class QueueListenerTask {
 		@Override
 		public void run() {
 		  _log.warn("ReadThread for queue " + getQueueName() + " starting");
-		  
+
 			while (!Thread.currentThread().isInterrupted()) {
-			  _zmqPoller.poll(10 * 1000); // microseconds for 2.2, milliseconds for 3.0
+				// prefer a java sleep to a native block
+				_zmqPoller.poll(0 * 1000); // microseconds for 2.2, milliseconds for 3.0
 				if (_zmqPoller.pollin(0)) {
 
 					String address = new String(_zmqSocket.recv(0));
