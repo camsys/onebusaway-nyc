@@ -51,7 +51,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	private static final String CHECK_PREDICTION_AGE = "display.checkPredictionAge";
 	private static final String CHECK_PREDICTION_LATENCY = "display.checkPredictionLatency";
 	private static final String PREDICTION_QUEUE_THREAD_COUNT = "tds.predictionQueueThreadCount";
-	private static final int DEFAULT_PREDICTION_QUEUE_THREAD_COUNT = 4;
+	private static final int DEFAULT_PREDICTION_QUEUE_THREAD_COUNT = 1;
 	
 	private static final long MESSAGE_WAIT_MILLISECONDS = 1 * 1000;
 
