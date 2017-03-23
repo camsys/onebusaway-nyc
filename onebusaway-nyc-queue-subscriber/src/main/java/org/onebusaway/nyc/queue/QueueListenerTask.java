@@ -88,7 +88,7 @@ public abstract class QueueListenerTask {
 		  _log.warn("ReadThread for queue " + getQueueName() + " starting");
 		  
 			while (!Thread.currentThread().isInterrupted()) {
-			  _zmqPoller.poll(1000 * 1000); // microseconds for 2.2, milliseconds for 3.0
+			  _zmqPoller.poll(10 * 1000); // microseconds for 2.2, milliseconds for 3.0
 				if (_zmqPoller.pollin(0)) {
 
 					String address = new String(_zmqSocket.recv(0));
@@ -103,6 +103,13 @@ public abstract class QueueListenerTask {
 					}
 						
 					Thread.yield();
+				} else {
+					try {
+						Thread.sleep(100 * 1000);
+					} catch (InterruptedException e) {
+						_log.warn("exiting...");
+						return;
+					}
 				}
 
 				if (processedCount > _countInterval) {
