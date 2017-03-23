@@ -105,7 +105,7 @@ public abstract class QueueListenerTask {
 					Thread.yield();
 				} else {
 					try {
-						Thread.sleep(100 * 1000);
+						Thread.sleep(100);
 					} catch (InterruptedException e) {
 						_log.warn("exiting...");
 						return;
