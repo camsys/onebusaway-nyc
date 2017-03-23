@@ -25,7 +25,6 @@ public abstract class QueueListenerTask {
 
 	protected static Logger _log = LoggerFactory
 			.getLogger(QueueListenerTask.class);
-	private static final int THREAD_PAUSE_MILLIS = 250;
 	@Autowired
 	protected ConfigurationService _configurationService;
 	@Autowired
@@ -89,7 +88,7 @@ public abstract class QueueListenerTask {
 		  _log.warn("ReadThread for queue " + getQueueName() + " starting");
 		  
 			while (!Thread.currentThread().isInterrupted()) {
-			  _zmqPoller.poll(100 * 1000); // microseconds for ZMQ2.2, milliseconds for ZMQ3.0
+			  _zmqPoller.poll(1000 * 1000); // microseconds for 2.2, milliseconds for 3.0
 				if (_zmqPoller.pollin(0)) {
 
 					String address = new String(_zmqSocket.recv(0));
@@ -102,15 +101,8 @@ public abstract class QueueListenerTask {
 					} catch(Exception ex) {
 						_log.error("#####>>>>> processMessage() failed, exception was: " + ex.getMessage(), ex);
 					}
-
-				} else {
-					try {
-						// no messages -- be nice to the CPU
-						Thread.sleep(THREAD_PAUSE_MILLIS);
-					} catch (InterruptedException e) {
-						_log.info("exiting...");
-						return;
-					}
+						
+					Thread.yield();
 				}
 
 				if (processedCount > _countInterval) {
