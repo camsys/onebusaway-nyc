@@ -41,6 +41,8 @@ public class AdaptiveGeocoderImpl extends FilteredGeocoderBase {
   			geocoder = new GoogleGeocoderImpl(this);
   		} else if (geocoderInstance.equals("bing") && (geocoder == null || !geocoder.getClass().equals(BingGeocoderImpl.class))) {
   			geocoder = new BingGeocoderImpl(this);
+  		} else if (geocoderInstance.equals("nyc") && (geocoder == null || !geocoder.getClass().equals(NycCustomGeocoderImpl.class))) {
+  			geocoder = new NycCustomGeocoderImpl(this);
       }
   		_geocoderCacheService.store(location, geocoder.nycGeocode(location));
     }
