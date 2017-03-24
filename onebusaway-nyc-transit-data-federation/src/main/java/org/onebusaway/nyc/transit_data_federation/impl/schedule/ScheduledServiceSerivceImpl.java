@@ -1,10 +1,14 @@
 package org.onebusaway.nyc.transit_data_federation.impl.schedule;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.schedule.ScheduledServiceService;
+import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.StopTimeService.EFrequencyStopTimeBehavior;
@@ -40,6 +44,13 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
 
   @Autowired
   private TransitGraphDao _transitGraphDao;
+
+  private Map<String, Boolean> _stopServiceCache = new HashMap<String, Boolean>();
+
+  @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
+  public void refresh() {
+    _stopServiceCache.clear();
+  }
 
   @Override
   public Boolean routeHasUpcomingScheduledService(long time, String _routeId, String directionId) {    
@@ -106,8 +117,21 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
     return false;
   }
 
-  @Override
-  public Boolean stopHasRevenueServiceOnRoute(String agencyId, String stopId,
+    private String hash(String agencyId, String stopId, String routeId, String directionId) {
+      return agencyId + "_" + stopId + "_" + routeId + "_" + directionId;
+    }
+    @Override
+    public Boolean stopHasRevenueServiceOnRoute(String agencyId, String stopId,
+                                                String routeId, String directionId) {
+        String key = hash(agencyId, stopId, routeId, directionId);
+        if (!_stopServiceCache.containsKey(key)) {
+            Boolean value = _stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
+            _stopServiceCache.put(key, value);
+        }
+        return _stopServiceCache.get(key);
+    }
+
+  private Boolean _stopHasRevenueServiceOnRoute(String agencyId, String stopId,
           String routeId, String directionId) {
       AgencyAndId stop = AgencyAndIdLibrary.convertFromString(stopId);
       StopEntry stopEntry = _transitGraphDao.getStopEntryForId(stop);            
