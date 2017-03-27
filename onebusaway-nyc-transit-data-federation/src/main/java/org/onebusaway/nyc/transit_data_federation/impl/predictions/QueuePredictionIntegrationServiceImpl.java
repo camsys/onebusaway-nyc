@@ -22,10 +22,16 @@ import org.onebusaway.nyc.transit_data_federation.services.predictions.Predictio
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.TripStopTimeBean;
+import org.onebusaway.transit_data.model.TripStopTimesBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -228,7 +234,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	    		  		    TripUpdate tu = entity.getTripUpdate();
 	    		  		    if (!tu.getVehicle().getId().equals(vehicleId)
 	    		  		        || !tu.getTrip().getTripId().equals(tripId)) {
-	    		  		      stopTimeMap = loadScheduledTimes(tu.getVehicle().getId(), tu.getTrip().getTripId());
+	    		  		      stopTimeMap = loadScheduledTimesFaster(tu.getVehicle().getId(), tu.getTrip().getTripId());
 	    		  		    }
 	    		  		    tripId = tu.getTrip().getTripId();
 	    		  		    vehicleId = tu.getVehicle().getId();
@@ -260,7 +266,34 @@ public class QueuePredictionIntegrationServiceImpl extends
 	    	}
 	    	_log.error("PredictionResultTask thread loop interrupted, exiting");
     	}
-    	
+
+		private Map<String, Long> loadScheduledTimesFaster(String vehicleId, String tripId) {
+			Map<String, Long> map = new HashMap<String, Long>();
+			//TripBean trip = _transitDataService.getTrip(tripId);
+			TripDetailsQueryBean tqb = new TripDetailsQueryBean();
+			tqb.setTripId(tripId);
+			tqb.setTime(System.currentTimeMillis());
+			tqb.setVehicleId(vehicleId);
+			tqb.setInclusion(new TripDetailsInclusionBean(false, true, true));
+			ListBean<TripDetailsBean> tripDetails = _transitDataService.getTripDetails(tqb);
+			Long serviceDate = null;
+			if (tripDetails.getList().get(0).getStatus() != null) {
+				serviceDate = tripDetails.getList().get(0).getStatus().getServiceDate();
+			} else {
+				// TDS doesn't know of trip status, no need to store prediction
+				return map;
+			}
+			assert(tripDetails.getList().size() == 1);
+			TripStopTimesBean schedule = tripDetails.getList().get(0).getSchedule();
+
+			for (TripStopTimeBean stopTime : schedule.getStopTimes()) {
+
+				map.put(stopTime.getStop().getId(),
+						serviceDate + stopTime.getArrivalTime() * 1000);
+			}
+
+			return map;
+		}
     	public void notifyShutdown() {
     		_notifyShutdown = true;
     	}
