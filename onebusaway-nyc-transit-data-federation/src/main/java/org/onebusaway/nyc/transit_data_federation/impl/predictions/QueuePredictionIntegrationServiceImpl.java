@@ -16,6 +16,7 @@ import javax.annotation.PreDestroy;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.TimeQueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionCacheService;
@@ -29,6 +30,7 @@ import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
@@ -78,7 +80,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	
 	private PredictionResultTask[] _predictionResultTask;
 	private Future<?>[] _predictionResultFuture;
-	
+	private boolean _notifyShutdown = false;
 
 
 	@Autowired
@@ -198,17 +200,19 @@ public class QueuePredictionIntegrationServiceImpl extends
     	private int predictionRecordCount = 0;
     	private int predictionRecordCountInterval = 2000;
     	private long predictionRecordAverageLatency = 0;
-    	private boolean _notifyShutdown = false;
+		private int total = 0;
+		private int matched = 0;
     	
     	public PredictionResultTask(int threadNumber) {
     		this.threadNumber = threadNumber;
     	}
     	
     	public void run() {
-	    	while (!_notifyShutdown) {
+	    	while (!_notifyShutdown && !Thread.interrupted()) {
 	    		try {
-	    			 
-	    			 FeedMessage message =_predictionMessageQueue.take();
+
+	    			// refactored from take to poll for a clean shutdown
+	    			 FeedMessage message =_predictionMessageQueue.poll(1, TimeUnit.SECONDS);
 	    			 
 	    			 if(message != null){
 		    			 
@@ -240,6 +244,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	    		  		    vehicleId = tu.getVehicle().getId();
 
 	    		  		    for (StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
+							  total++;
 	    		  		      TimepointPredictionRecord tpr = new TimepointPredictionRecord();
 	    		  		      // this validates the Agency_StopID convention
 	    		  		      tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId())); 
@@ -247,9 +252,11 @@ public class QueuePredictionIntegrationServiceImpl extends
 	    		  		      Long scheduledTime = stopTimeMap.get(stu.getStopId());
 	    		  		      
 	    		  		      if (scheduledTime != null) {
+	    		  		      	matched++;
 	    		  		        tpr.setTimepointScheduledTime(scheduledTime);
 	    		  		        predictionRecords.add(tpr);
 	    		  		      }
+	    		  		      debugTotal();
 	    		  		    }
 	    		  		    
 	    		  		    if (vehicleId != null) {
@@ -267,37 +274,17 @@ public class QueuePredictionIntegrationServiceImpl extends
 	    	_log.error("PredictionResultTask thread loop interrupted, exiting");
     	}
 
-		private Map<String, Long> loadScheduledTimesFaster(String vehicleId, String tripId) {
-			Map<String, Long> map = new HashMap<String, Long>();
-			//TripBean trip = _transitDataService.getTrip(tripId);
-			TripDetailsQueryBean tqb = new TripDetailsQueryBean();
-			tqb.setTripId(tripId);
-			tqb.setTime(System.currentTimeMillis());
-			tqb.setVehicleId(vehicleId);
-			tqb.setInclusion(new TripDetailsInclusionBean(false, true, true));
-			ListBean<TripDetailsBean> tripDetails = _transitDataService.getTripDetails(tqb);
-			Long serviceDate = null;
-			if (tripDetails.getList().get(0).getStatus() != null) {
-				serviceDate = tripDetails.getList().get(0).getStatus().getServiceDate();
-			} else {
-				// TDS doesn't know of trip status, no need to store prediction
-				return map;
+    	private void debugTotal() {
+    		if (total % 10000 == 0) {
+    			_log.info("matched " + matched + " of " + total + " (" + (1.0 * matched/total) * 100. + ")");
+    			total = 0;
+    			matched = 0;
 			}
-			assert(tripDetails.getList().size() == 1);
-			TripStopTimesBean schedule = tripDetails.getList().get(0).getSchedule();
-
-			for (TripStopTimeBean stopTime : schedule.getStopTimes()) {
-
-				map.put(stopTime.getStop().getId(),
-						serviceDate + stopTime.getArrivalTime() * 1000);
-			}
-
-			return map;
 		}
-    	public void notifyShutdown() {
-    		_notifyShutdown = true;
-    	}
-    	
+
+		public void notifyShutdown() {
+			_notifyShutdown = true;
+		}
     	private boolean enableCheckPredictionLatency() {
     		if (_checkPredictionLatency == null) {
     			refreshConfig();
@@ -353,8 +340,36 @@ public class QueuePredictionIntegrationServiceImpl extends
     	protected long computeTimeDifference(long timestamp) {
     		return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds															
     	}
-    	
-    	private Map<String, Long> loadScheduledTimes(String vehicleId, String tripId) {
+
+
+		private Map<String, Long> loadScheduledTimesFaster(String vehicleId, String tripId) {
+			Map<String, Long> map = new HashMap<String, Long>();
+			TripDetailsQueryBean tqb = new TripDetailsQueryBean();
+			tqb.setTripId(tripId);
+			tqb.setTime(System.currentTimeMillis());
+			tqb.setVehicleId(vehicleId);
+			tqb.setInclusion(new TripDetailsInclusionBean(true, true, true));
+			ListBean<TripDetailsBean> tripDetails = _transitDataService.getTripDetails(tqb);
+			Long serviceDate = null;
+			if (tripDetails.getList().get(0).getStatus() != null) {
+				serviceDate = tripDetails.getList().get(0).getStatus().getServiceDate();
+			} else {
+				// TDS doesn't know of trip status, no need to store prediction
+				return map;
+			}
+			TripStopTimesBean schedule = tripDetails.getList().get(0).getSchedule();
+
+			for (TripStopTimeBean stopTime : schedule.getStopTimes()) {
+
+				map.put(stopTime.getStop().getId(),
+						serviceDate
+						+ stopTime.getArrivalTime() * 1000);
+			}
+
+			return map;
+		}
+
+		private Map<String, Long> loadScheduledTimes(String vehicleId, String tripId) {
     		
     		Map<String, Long> map = new HashMap<String, Long>();
     		VehicleStatusBean vehicleStatus = _transitDataService
@@ -390,6 +405,7 @@ public class QueuePredictionIntegrationServiceImpl extends
     										+ (bst.getStopTime().getArrivalTime() * 1000));
     					}
     				}
+    				foundActiveTrip = true;
     			}
     		}
     		
