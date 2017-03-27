@@ -276,7 +276,9 @@ public class QueuePredictionIntegrationServiceImpl extends
 
     	private void debugTotal() {
     		if (total % 10000 == 0) {
-    			_log.info("matched " + matched + " of " + total + " (" + (1.0 * matched/total) * 100. + ")");
+    			if (_log.isDebugEnabled()) {
+					_log.debug("matched " + matched + " of " + total + " (" + (1.0 * matched / total) * 100. + ")");
+				}
     			total = 0;
     			matched = 0;
 			}
