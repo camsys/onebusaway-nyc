@@ -350,7 +350,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 			tqb.setTripId(tripId);
 			tqb.setTime(System.currentTimeMillis());
 			tqb.setVehicleId(vehicleId);
-			tqb.setInclusion(new TripDetailsInclusionBean(true, true, true));
+			tqb.setInclusion(new TripDetailsInclusionBean(false, true, true));
 			ListBean<TripDetailsBean> tripDetails = _transitDataService.getTripDetails(tqb);
 			Long serviceDate = null;
 			if (tripDetails.getList().get(0).getStatus() != null) {
