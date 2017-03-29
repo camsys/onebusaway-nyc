@@ -214,7 +214,7 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
     String result = writer.toString();
     // Somewhat lame test.
     assertTrue(result.matches("(?s).*<ServiceDelivery>.*"
-    		+ "<SituationExchangeDelivery version=\"\">.*"
+    		+ "<SituationExchangeDelivery>.*"
     		+ "<Situations>.*"
     		+ "<PtSituationElement>.*"
     		+ "<Detail xml:lang=\"EN\">frobby morph</Detail>.*"));
@@ -260,7 +260,7 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
     String result = writer.toString();
     // Somewhat lame test.
     assertTrue(result.matches("(?s).*<ServiceDelivery>.*"
-    		+ "<SituationExchangeDelivery version=\"\">.*"
+    		+ "<SituationExchangeDelivery>.*"
     		+ "<Situations>.*"
     		+ "<PtSituationElement>.*"
     		+ "<Detail xml:lang=\"EN\">frobby morph</Detail>.*"));
