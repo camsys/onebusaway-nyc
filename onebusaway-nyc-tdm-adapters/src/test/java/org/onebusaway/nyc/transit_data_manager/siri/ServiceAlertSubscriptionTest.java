@@ -26,9 +26,9 @@ public class ServiceAlertSubscriptionTest extends ServiceAlertSubscription {
   private static final String TEST_ADDRESS = "http://localhost/foo/bar";
   private static final String TEST_SERVICE_ALERT_ID = "MTA NYC_101";
 
-  String EXPECTED_XML = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Siri version=\"\" xmlns:ns2=\"http://www.ifopt.org.uk/acsb\" "
+  String EXPECTED_XML = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Siri xmlns:ns2=\"http://www.ifopt.org.uk/acsb\" "
       + "xmlns:ns4=\"http://datex2.eu/schema/1_0/1_0\" xmlns:ns3=\"http://www.ifopt.org.uk/ifopt\" xmlns=\"http://www.siri.org.uk/siri\">"
-      + "<ServiceDelivery><ProducerRef>test</ProducerRef><SituationExchangeDelivery version=\"\"><Situations><PtSituationElement><SituationNumber>"
+      + "<ServiceDelivery><ProducerRef>test</ProducerRef><SituationExchangeDelivery><Situations><PtSituationElement><SituationNumber>"
       + "MTA NYC_101</SituationNumber><Summary xml:lang=\"EN\">summary</Summary><Description xml:lang=\"EN\">description</Description><Affects>"
       + "<VehicleJourneys><AffectedVehicleJourney><LineRef>test route id</LineRef></AffectedVehicleJourney></VehicleJourneys></Affects>"
       + "</PtSituationElement><PtSituationElement><SituationNumber>MTA NYCT_1000</SituationNumber><Progress>closed</Progress></PtSituationElement>"
