@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
+import org.onebusaway.nyc.transit_data_manager.util.NycSiriUtil;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
@@ -34,7 +35,7 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
         "summaryText", "descriptionText    ", "    MTA NYCT_123",
         "2011-11-08T00:00:00.000Z", "", "MTA NYCT_B63", "statusType");
     SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
-    ServiceAlertBean serviceAlertBean = getPtSituationAsServiceAlertBean(
+    ServiceAlertBean serviceAlertBean = NycSiriUtil.getPtSituationAsServiceAlertBean(
         ptSituation, endpointDetails);
     assertNotNull(serviceAlertBean.getSummaries());
     assertEquals("summaryText",
@@ -69,14 +70,14 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
     ptSituation.setAffects(affects);
     
     SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
-    ServiceAlertBean serviceAlertBean = getPtSituationAsServiceAlertBean(
+    ServiceAlertBean serviceAlertBean = NycSiriUtil.getPtSituationAsServiceAlertBean(
         ptSituation, endpointDetails);
     
     List<SituationAffectsBean> allAffects = serviceAlertBean.getAllAffects();
     assertNotNull(allAffects);
     assertEquals(1, allAffects.size());
     SituationAffectsBean bean = allAffects.get(0);
-    assertEquals(NycSiriService.ALL_OPERATORS, bean.getAgencyId());
+    assertEquals(NycSiriUtil.ALL_OPERATORS, bean.getAgencyId());
   }
 
   @Test
