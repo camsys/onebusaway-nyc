@@ -15,7 +15,7 @@ import java.util.SortedSet;
 
 public class BlockTripMap {
     private GtfsRelationalDao _dao;
-    private SortedSetMultimap<String, TestTripEntryImpl> _blockTripMap;
+    private SortedSetMultimap<String, TripEntryImplStub> _blockTripMap;
 
     private static final Comparator<String> KEY_CMP = new Comparator<String>() {
         @Override
@@ -24,9 +24,9 @@ public class BlockTripMap {
         }
     };
 
-    private final Comparator<TestTripEntryImpl> VAL_CMP = new Comparator<TestTripEntryImpl> () {
+    private final Comparator<TripEntryImplStub> VAL_CMP = new Comparator<TripEntryImplStub> () {
         @Override
-        public int compare(TestTripEntryImpl o1, TestTripEntryImpl o2) {
+        public int compare(TripEntryImplStub o1, TripEntryImplStub o2) {
             StopTime st1 = _dao.getStopTimesForTrip(o1.getTrip()).get(0);
             StopTime st2 = _dao.getStopTimesForTrip(o2.getTrip()).get(0);
             return st1.getDepartureTime() - st2.getDepartureTime();
@@ -58,8 +58,8 @@ public class BlockTripMap {
                 && s.getServiceId().equals(t.getServiceId());
     }
 
-    private TestTripEntryImpl toTestTripEntryImpl (Trip trip) {
-        TestTripEntryImpl entry = new TestTripEntryImpl(trip);
+    private TripEntryImplStub toTestTripEntryImpl (Trip trip) {
+        TripEntryImplStub entry = new TripEntryImplStub(trip);
         double distance = 0;
         for (StopTime st : _dao.getStopTimesForTrip(trip)) {
             distance += st.getShapeDistTraveled(); // ft or meters
