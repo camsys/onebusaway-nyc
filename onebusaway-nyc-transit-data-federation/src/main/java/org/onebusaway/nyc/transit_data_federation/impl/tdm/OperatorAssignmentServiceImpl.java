@@ -32,6 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 /**
  * A component that fetches operator assignment data from the TDM and provides it to the IE upon request.
@@ -203,6 +204,14 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	preCache();
     if (_updateTask==null) {
       setUpdateFrequency(30 * 60); // 30m
+    }
+  }
+
+  @PreDestroy
+  public void destroy() {
+    _log.info("destroy");
+    if (_taskScheduler != null) {
+      _taskScheduler.shutdown();
     }
   }
 
