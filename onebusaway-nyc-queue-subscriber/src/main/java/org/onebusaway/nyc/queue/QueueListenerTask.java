@@ -108,7 +108,7 @@ public abstract class QueueListenerTask {
 					try {
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
-						_log.warn("exiting...");
+						_log.warn("exiting (interrupted) " + getQueueName());
 						return;
 					}
 				}
@@ -127,7 +127,7 @@ public abstract class QueueListenerTask {
 
 				
 			}
-			_log.error("Thread loop Interrupted, exiting");
+			_log.error("Thread loop Interrupted, exiting queue " + getQueueName());
 		}
 	}
 
@@ -141,7 +141,10 @@ public abstract class QueueListenerTask {
 
 	@PreDestroy
 	public void destroy() {
+		_log.info("destroy " + getQueueName());
 		_executorService.shutdownNow();
+		if (_taskScheduler != null)
+			_taskScheduler.shutdown();
 	}
 
 	protected void reinitializeQueue() {

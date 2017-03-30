@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ScheduledFuture;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -126,6 +127,14 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     }
     if(_enabled){
     	_updateTask = _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), seconds * 1000);
+    }
+  }
+
+  @PreDestroy
+  public void destroy() {
+    _log.info("destroy");
+    if (_taskScheduler != null) {
+      _taskScheduler.shutdown();
     }
   }
 

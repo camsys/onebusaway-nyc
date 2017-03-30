@@ -23,6 +23,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ScheduledFuture;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 @Component
 public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
@@ -103,6 +104,14 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
     		updateVehicleIdToDepotMap(_depotToVehicleIdListMap.get(depotId), list, depotId);
     		_depotToVehicleIdListMap.put(depotId, list);  	
       }
+    }
+  }
+
+  @PreDestroy
+  public void destroy() {
+    _log.info("destroy");
+    if (_taskScheduler != null) {
+      _taskScheduler.shutdown();
     }
   }
 
