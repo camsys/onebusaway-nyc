@@ -14,6 +14,7 @@ import java.util.TimerTask;
 import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import net.sf.ehcache.CacheManager;
 
@@ -593,4 +594,13 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		}
 		return frequency * (occurances + 1);	
 	}
+
+	@PreDestroy
+	public void destroy() {
+		_log.info("destroy");
+		if (_taskScheduler != null) {
+			_taskScheduler.shutdown();
+		}
+	}
+
 }
