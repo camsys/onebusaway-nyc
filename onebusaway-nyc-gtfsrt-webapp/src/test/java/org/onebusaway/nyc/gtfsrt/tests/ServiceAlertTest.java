@@ -15,7 +15,16 @@ import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
 
 import java.util.List;
 
-public class ServiceAlertTest extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * abstract to surefire will not try to execute.  Intended to be
+ * subclassed by test cases.
+ */
+public abstract class ServiceAlertTest {
     private String inferenceFile;
 
     private ServiceAlertFeedBuilder feedBuilder = new ServiceAlertFeedBuilderImpl();
@@ -24,9 +33,7 @@ public class ServiceAlertTest extends TestCase {
         this.inferenceFile = inferenceFile;
     }
 
-//  this test needs to be moved -- it can't live in a class that has a constructor with args
-//    @Test
-    public void testAlert() {
+    public void test() {
         List<ServiceAlertBean> records = new ServiceAlertReader().getRecords(inferenceFile);
         assertFalse(records.isEmpty());
 

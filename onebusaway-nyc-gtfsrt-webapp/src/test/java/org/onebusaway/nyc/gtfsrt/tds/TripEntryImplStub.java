@@ -12,12 +12,12 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import java.util.List;
 
-public class TestTripEntryImpl implements TripEntry {
+public class TripEntryImplStub implements TripEntry {
 
     private Trip trip;
     private double tripDistance;
 
-    public TestTripEntryImpl(Trip trip) {
+    public TripEntryImplStub(Trip trip) {
         this.trip = trip;
     }
 
