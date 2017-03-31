@@ -24,7 +24,7 @@ import org.onebusaway.users.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.providers.encoding.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,6 +108,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	}
 	
 	@Override
+	@Transactional
 	public boolean createUser(String userName, String password, boolean admin) {
 		UserIndex userIndex = userService.getOrCreateUserForUsernameAndPassword(userName, password);
 
@@ -140,7 +141,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 		//Update user password
 		if(StringUtils.isNotBlank(userDetail.getPassword())) {
-			String credentials = passwordEncoder.encodePassword(userDetail.getPassword(), userDetail.getUserName());
+			String credentials = passwordEncoder.encode(userDetail.getPassword());
 			for(UserIndex userIndex : user.getUserIndices()) {
 				userIndex.setCredentials(credentials);
 			}
