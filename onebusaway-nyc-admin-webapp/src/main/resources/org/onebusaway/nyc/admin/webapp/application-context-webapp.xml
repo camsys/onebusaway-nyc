@@ -19,9 +19,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:sec="http://www.springframework.org/schema/security"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
-           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
-           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.0.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
            
     <!-- This turns on automatic annotation configuration -->
     <context:annotation-config />
@@ -44,8 +44,8 @@
     
     <bean id="createAdmin" class="org.onebusaway.nyc.webapp.actions.admin.usermanagement.RegisterUserAction"
      	  init-method="init">
-      <property name="username" value="admin"/>
-      <property name="password" value="admin"/>
+      <property name="username" value="test"/>
+      <property name="password" value="test"/>
       <property name="admin" value="true"/>
     </bean>
     
@@ -55,12 +55,19 @@
       <property name="password" value="operator"/>
     </bean>
     
-    <sec:http>
+    <sec:http auto-config="false" entry-point-ref="loginUrlAuthenticationEntryPoint">
         <sec:intercept-url pattern="/admin/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
-        <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1" />
+        <!-- <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1" /> -->
         <sec:remember-me user-service-ref="userDetailsServiceImpl" />
         <sec:logout invalidate-session="true" logout-url="/logout.action" />
+        <sec:custom-filter position="BASIC_AUTH_FILTER" ref="everyLastLoginAuthenticationFilter"/>
+        <sec:custom-filter position="FORM_LOGIN_FILTER" ref="userIndexAuthenticationFilter"/>
     </sec:http>
+    
+    <bean id="loginUrlAuthenticationEntryPoint"
+ 		class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+  		<property name="loginFormUrl" value="/login.action?forbidden=true" />
+ 	</bean>
     
     <bean id="psaHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
         <property name="target" value="hibernateAnnotatedClasses" />
@@ -75,15 +82,15 @@
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
-		        <prop key="userIndexAuthenticationFilter.defaultTargetUrl">/admin</prop>
-		        <prop key="userIndexAuthenticationFilter.authenticationFailureUrl">/login.action?failure=true</prop>
-		        <prop key="everyLastLoginAuthenticationFilter.defaultTargetUrl">/admin</prop>
-		        <prop key="everyLastLoginAuthenticationFilter.authenticationFailureUrl">/login.action?failure=true</prop>
+		        <prop key="userIndexAuthenticationFilter.successHandler.defaultTargetUrl">/admin</prop>
+		        <prop key="userIndexAuthenticationFilter.failureHandler.defaultFailureUrl">/login.action?failure=true</prop>
+		        <prop key="everyLastLoginAuthenticationFilter.successHandler.defaultTargetUrl">/admin</prop>
+		        <prop key="everyLastLoginAuthenticationFilter.failureHandler.defaultFailureUrl">/login.action?failure=true</prop>
 		        <prop key="resourceServiceImpl.prefix">/resource.action?id=</prop>            
         	</props>
         </property>
     </bean>
-    
+
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
     	<property name="order" value="-2" />
     	<property name="properties">
