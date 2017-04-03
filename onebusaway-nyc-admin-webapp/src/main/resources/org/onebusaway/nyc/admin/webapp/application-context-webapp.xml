@@ -57,8 +57,7 @@
     
     <sec:http auto-config="false" entry-point-ref="loginUrlAuthenticationEntryPoint">
         <sec:intercept-url pattern="/admin/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
-        <!-- <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1" /> -->
-        <sec:remember-me user-service-ref="userDetailsServiceImpl" />
+        <sec:remember-me />
         <sec:logout invalidate-session="true" logout-url="/logout.action" />
         <sec:custom-filter position="BASIC_AUTH_FILTER" ref="everyLastLoginAuthenticationFilter"/>
         <sec:custom-filter position="FORM_LOGIN_FILTER" ref="userIndexAuthenticationFilter"/>
@@ -77,13 +76,13 @@
             </list>
         </property>
     </bean>
-    
  
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
 		        <prop key="userIndexAuthenticationFilter.successHandler.defaultTargetUrl">/admin</prop>
 		        <prop key="userIndexAuthenticationFilter.failureHandler.defaultFailureUrl">/login.action?failure=true</prop>
+		        <prop key="userIndexAuthenticationFilter.postOnly">false</prop>
 		        <prop key="everyLastLoginAuthenticationFilter.successHandler.defaultTargetUrl">/admin</prop>
 		        <prop key="everyLastLoginAuthenticationFilter.failureHandler.defaultFailureUrl">/login.action?failure=true</prop>
 		        <prop key="resourceServiceImpl.prefix">/resource.action?id=</prop>            
