@@ -223,7 +223,7 @@
     	<module>onebusaway-nyc-ops-api-webapp</module>
     	<module>onebusaway-nyc-report</module>
         <module>onebusaway-nyc-gtfsrt-webapp</module>
-        <module>onebusaway-nyc-gtfsrt-services</module>
+        <module>onebusaway-nyc-gtfsrt</module>
 <!-- this only needs to be built on changes, which are rare -->
 <!--
     	<module>onebusaway-nyc-tcip-api</module>
