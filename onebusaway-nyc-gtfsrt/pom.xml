@@ -7,10 +7,10 @@
 		<version>2.22.10-rt-SNAPSHOT</version>
 	</parent>
 	<groupId>org.onebusaway</groupId>
-	<artifactId>onebusaway-nyc-gtfsrt-services</artifactId>
-	<packaging>pom</packaging>
+	<artifactId>onebusaway-nyc-gtfsrt</artifactId>
+	<packaging>jar</packaging>
 
-	<name>onebusaway-nyc-gtfsrt-services</name>
+	<name>onebusaway-nyc-gtfsrt</name>
 
 	<repositories>
 		<!-- Required for the xwiki-rendering-macros -->
@@ -86,7 +86,7 @@
 
 
 	<build>
-		<finalName>onebusaway-nyc-gtfsrt-webapp</finalName>
+		<finalName>onebusaway-nyc-gtfsrt</finalName>
 		<plugins>
 			<plugin>
 				<groupId>pl.project13.maven</groupId>
@@ -113,14 +113,6 @@
 						<dirty>-dirty</dirty>
 						<forceLongFormat>false</forceLongFormat>
 					</gitDescribe>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.mortbay.jetty</groupId>
-				<artifactId>maven-jetty-plugin</artifactId>
-				<version>${jetty.version}</version>
-				<configuration>
-					<contextPath>/</contextPath>
 				</configuration>
 			</plugin>
 		</plugins>
