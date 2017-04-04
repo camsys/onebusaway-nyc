@@ -225,6 +225,7 @@
         <module>onebusaway-nyc-gtfsrt-webapp</module>
         <module>onebusaway-nyc-gtfsrt-lib</module>
         <module>onebusaway-nyc-gtfsrt-integration-tests</module>
+        <module>onebusaway-nyc-gtfsrt</module>
 <!-- this only needs to be built on changes, which are rare -->
 <!--
     	<module>onebusaway-nyc-tcip-api</module>

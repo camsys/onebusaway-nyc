@@ -15,7 +15,7 @@ public class AbstractInputRunner {
 
 
     public AbstractInputRunner(String datasetId, String bundleId, String date) throws Exception {
-        setBundle(bundleId, date);
+        //setBundle(bundleId, date);
         loadInference(datasetId);
         loadTimePredictions(datasetId);
         loadServiceAlerts(datasetId);

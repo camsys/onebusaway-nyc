@@ -135,6 +135,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 				// this validates the Agency_StopID convention
 				tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId()));
 				tpr.setTimepointPredictedTime(stu.getArrival().getTime());
+//				tpr.setStopSequence(stu.getStopSequence()); // 0-indexed stop sequence
 				Long scheduledTime = stopTimeMap.get(stu.getStopId());
 
 				if (scheduledTime != null) {
