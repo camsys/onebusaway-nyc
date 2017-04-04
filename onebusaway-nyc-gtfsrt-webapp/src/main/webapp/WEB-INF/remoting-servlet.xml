@@ -23,9 +23,29 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-  
-    <context:component-scan base-package="org.onebusaway.nyc.gtfsrt.controller" />
 
 	<mvc:annotation-driven />
+    <context:component-scan base-package="org.onebusaway.nyc.gtfsrt.controller" />
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/bundles**.do" />
+			<bean class="org.onebusaway.nyc.gtfsrt.controller.BundleManagementInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp/" />
+	</bean>
+
+	<bean name="/transit-data-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
+		<property name="service" ref="nycTransitDataServiceImpl" />
+		<property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
+	</bean>
+
+	<bean name="/configuration-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
+		<property name="service" ref="configurationService" />
+		<property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
+	</bean>
+
 
 </beans>
