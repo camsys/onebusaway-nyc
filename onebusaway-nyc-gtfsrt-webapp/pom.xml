@@ -43,6 +43,11 @@
 			<artifactId>onebusaway-nyc-tdm-adapters</artifactId>
 			<version>2.22.10-rt-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-nyc-gtfsrt-lib</artifactId>
+			<version>2.22.10-rt-SNAPSHOT</version>
+		</dependency>
 
 		<dependency>
 			<groupId>mysql</groupId>
