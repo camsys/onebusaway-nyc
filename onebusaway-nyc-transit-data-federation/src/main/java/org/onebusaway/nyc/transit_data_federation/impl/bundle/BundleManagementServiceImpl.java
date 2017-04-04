@@ -178,12 +178,22 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		_applicableBundles.clear();
 
 		for(BundleItem bundle : _allBundles) {
-			if(bundle.isApplicableToDate(getServiceDate())) {
+			if(bundle.isApplicableToDate(getServiceDate()) || isBatchMode()) {
 				_log.info("Bundle " + bundle.getId() + " is active for today; adding to list of active bundles.");
 
 				_applicableBundles.put(bundle.getId(), bundle);
 			}
 		}
+	}
+
+	public boolean isBatchMode() {
+		// test system property to see if we are running in batch (integration-test) mode
+		// and hence all bundles are applicable
+		if ("true".equals(System.getProperty("org.onebusaway.nyc.tdm.bundle.batchmode"))) {
+			_log.info("batch mode on!");
+			return true;
+		}
+		return false;
 	}
 
 	/**
