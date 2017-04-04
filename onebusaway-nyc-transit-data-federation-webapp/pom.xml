@@ -83,9 +83,9 @@
               <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <bundle.location>/mnt/obanyc/oba-bundle</bundle.location>
+                <bundle.location>/var/lib/oba/nyc-tds/bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
-                <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
+                <tdm.host>tdm.dev.obanyc.com</tdm.host><!-- assumes domain is set in resolv.conf -->
                 <service.alerts.url>http://tdm/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <log4j.appender>ROLL</log4j.appender>

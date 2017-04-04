@@ -15,7 +15,7 @@
       <nyc_site_id>build.staging.obanyc.com</nyc_site_id>
       <nyc_site_deployment_base>scp://${nyc_site_id}/var/www/sites/developer/modules</nyc_site_deployment_base>
       <nyc_site_url>${site_deployment_base}/${project.name}/${project.version}</nyc_site_url>
-    	<onebusaway.gtfs.version>1.2.6</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
+    	<onebusaway.gtfs.version>1.2.6.1-SNAPSHOT</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
     	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
     	<onebusaway.siri_2.version>1.0.3</onebusaway.siri_2.version>
     	<onebusaway.csv-entities.version>1.0.3</onebusaway.csv-entities.version>
@@ -27,7 +27,7 @@
       <xwiki.version>2.3.1</xwiki.version>
         <xwiki.integration.version>0.0.2</xwiki.integration.version>
         <protobuf.version>2.6.1</protobuf.version>
-
+        <aws.version>1.3.9</aws.version>
     </properties>
 
     <repositories>
@@ -224,6 +224,7 @@
     	<module>onebusaway-nyc-report</module>
         <module>onebusaway-nyc-gtfsrt-webapp</module>
         <module>onebusaway-nyc-gtfsrt-lib</module>
+        <module>onebusaway-nyc-gtfsrt-integration-tests</module>
 <!-- this only needs to be built on changes, which are rare -->
 <!--
     	<module>onebusaway-nyc-tcip-api</module>
@@ -602,12 +603,12 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.5.6</version>
+                <version>1.7.5</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
-                <version>1.5.6</version>
+                <version>1.7.5</version>
             </dependency>
             <dependency>
                 <groupId>log4j</groupId>

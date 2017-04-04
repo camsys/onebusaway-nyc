@@ -51,9 +51,24 @@
 
     <alias name="dataSource" alias="mutableDataSource" />
 
-    
+
+    <bean id="nyc_gtfs" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+        <property name="tripUpdatesUrl" value="http://gtfsrt.dev.obanyc.com:8080/tripUpdates" />
+        <!--<property name="vehiclePositionsUrl" value="http://gtfsrt.dev.obanyc.com:8080/vehiclePositions" />-->
+        <!--<property name="alertsUrl" value="http://gtfsrt.dev.obanyc.com:8080/alerts" />-->
+        <property name="refreshInterval" value="10"/>
+        <property name="stripAgencyPrefixesFromFeed" value="true" />
+        <property name="agencyIds">
+        <list>
+            <value>MTA NYCT</value>
+            <value>MTABC</value>
+            <value>MTA</value>
+        </list>
+        </property>
+
+    </bean>
 	<!-- Input Queue Configuration -->
-  	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
+  	<!--<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />-->
 	<!--  for debugging purposes, the TDS can be populated via a JSON file -->
 
 <!--
@@ -63,9 +78,12 @@
 -->
 	<!--  Time Queue Configuration -->
 	<!--  This option integrates with an external time prediction queue -->
-	<bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
-	<property name="disable" value="false"/>
-	</bean>
+	<!--<bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">-->
+	<!--<property name="disable" value="false"/>-->
+	<!--</bean>-->
+    <bean id="timeInputQueueDisable" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
+        <property name="disable" value="true"/>
+    </bean>
 
 	<!-- Other Stuff: -->
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
@@ -88,5 +106,8 @@
         <property name="serviceAlertsUrl" value="${service.alerts.url}" />
         <property name="subscriptionPath" value="${service.alerts.subscription.path}" />        
     </bean>
-        
+
+    <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />
+    <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
+
 </beans>
