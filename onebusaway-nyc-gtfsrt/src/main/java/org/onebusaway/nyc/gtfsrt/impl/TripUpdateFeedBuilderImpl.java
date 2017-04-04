@@ -12,12 +12,17 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarServi
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary.*;
 
@@ -31,6 +36,8 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
     private ScheduledBlockLocationService _scheduledBlockLocationService;
 
     private BlockCalendarService _blockCalendarService;
+
+    private TransitGraphDao _transitGraphDao;
 
     private boolean _useEffectiveScheduleTime = false;
 
@@ -49,6 +56,11 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
         _blockCalendarService = blockCalendarService;
     }
 
+    @Autowired
+    public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
+        _transitGraphDao = transitGraphDao;
+    }
+
     public void setUseEffectiveScheduleTime(boolean useEffectiveScheduleTime) {
         _useEffectiveScheduleTime = useEffectiveScheduleTime;
     }
@@ -65,11 +77,30 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
         double delay = useEffectiveScheduleTime() ? getEffectiveScheduleTime(trip, vehicle) : vehicle.getTripStatus().getScheduleDeviation();
         tripUpdate.setDelay((int) delay);
 
+        TripEntry tripEntry = _transitGraphDao.getTripEntryForId(AgencyAndId.convertFromString(trip.getId()));
+        // It is probably true that tripEntry.getStopTimes().get(i).getSequence() = i, but perhaps not,
+        // because of StopTimeEntriesFactory.removeDuplicateStopTimes()
+        Map<Integer, Integer> stopSequenceToGtfsSequence = getSequenceMap(tripEntry);
+
         for (TimepointPredictionRecord tpr : records) {
-            tripUpdate.addStopTimeUpdate(makeStopTimeUpdate(tpr));
+            int stopSequence = tpr.getStopSequence();
+            int gtfsSequence = -1;
+            if (stopSequenceToGtfsSequence.get(stopSequence) != null)
+                gtfsSequence = stopSequenceToGtfsSequence.get(stopSequence);
+            tripUpdate.addStopTimeUpdate(makeStopTimeUpdate(tpr, gtfsSequence));
         }
 
         return tripUpdate;
+    }
+
+    private Map<Integer, Integer> getSequenceMap(TripEntry tripEntry) {
+        Map<Integer, Integer> sequenceMap = new HashMap<Integer, Integer>();
+        if (tripEntry != null) {
+            for (StopTimeEntry stopTime : tripEntry.getStopTimes()) {
+                sequenceMap.put(stopTime.getSequence(), stopTime.getGtfsSequence());
+            }
+        }
+        return sequenceMap;
     }
 
     // see appmods GtfsRealtimeTripLibrary:870
