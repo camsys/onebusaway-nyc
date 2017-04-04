@@ -77,7 +77,7 @@
             <props>
                 <prop key="webapp.api.url">${webapp.api.url}</prop>
                 <prop key="tdm.host">${tdm.host}</prop>
-                <prop key="front-end.version">${git.commit.id}</prop>
+                <prop key="front-end.version">v1</prop>
             </props>
         </property>
     </bean>

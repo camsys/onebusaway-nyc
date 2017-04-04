@@ -137,7 +137,7 @@
 			<artifactId>esapi</artifactId>
 			<version>2.1.0</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
@@ -169,19 +169,19 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-				<vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-				<config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+				<tds.path>http://localhost:8181/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+				<vtms.path>http://localhost:8181/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+				<config.path>http://localhost:8181/onebusaway-nyc-transit-data-federation-webapp</config.path>
 				<archive.path>http://archive/onebusaway-nyc-report-archive</archive.path><!-- 
 					assumes domain is set in resolv.conf -->
-				<tdm.host>tdm</tdm.host><!-- assumes domain is set -->
+				<tdm.host>tdm.dev.obanyc.com</tdm.host><!-- assumes domain is set -->
 				<webapp.api.url />
 				<log4j.appender>ROLL</log4j.appender>
-				<create-apikey>false</create-apikey>
+				<create-apikey>true</create-apikey>
 				<siri.cache.disabled>false</siri.cache.disabled>
 				<geocoder.cache.disabled>false</geocoder.cache.disabled>
 				<api.cache.host>sessions-memcache</api.cache.host>
-				<api.cache.disabled>false</api.cache.disabled>
+				<api.cache.disabled>true</api.cache.disabled>
 			</properties>
 		</profile>
 		<profile>
