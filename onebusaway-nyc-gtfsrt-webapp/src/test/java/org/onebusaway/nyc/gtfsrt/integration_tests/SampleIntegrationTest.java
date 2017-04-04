@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.integration_tests;
+package org.onebusaway.nyc.gtfsrt.integration_tests;
 
 /**
  * First pass at a GTFS-RT integration test.

@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.integration_tests;
+package org.onebusaway.nyc.gtfsrt.integration_tests;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
