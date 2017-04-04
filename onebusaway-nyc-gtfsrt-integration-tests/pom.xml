@@ -1,0 +1,291 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>onebusaway-nyc</artifactId>
+        <groupId>org.onebusaway</groupId>
+        <version>2.22.10-rt-SNAPSHOT</version>
+    </parent>
+    <groupId>org.onebusaway</groupId>
+    <artifactId>onebusaway-nyc-gtfsrt-integration-tests</artifactId>
+    <!-- THIS NEEDS TO BE A WAR FOR THE INTEGRATIONS TESTS TO COMPLETELY RUN -->
+    <!-- todo -->
+    <packaging>pom</packaging>
+    <name>onebusaway-nyc-gtfsrt-integration-tests</name>
+
+    <properties>
+        <tomcat-version>7.0.70</tomcat-version>
+        <cargo.logging>high</cargo.logging>
+        <!-- Useful for debugging: leaves cargo running but doesn't run the tests -->
+        <pauseDuringIntegrationTest>true</pauseDuringIntegrationTest>
+
+        <!-- This value is in milliseconds, so 5 minutes... thing run slow on the CI server sometimes -->
+        <ping_timeout>300000</ping_timeout>
+        <org.onebusaway.webapp.port>9000</org.onebusaway.webapp.port>
+        <org.onebusaway.webapp.ajp_port>9001</org.onebusaway.webapp.ajp_port>
+        <org.onebusaway.webapp.rmi_port>9002</org.onebusaway.webapp.rmi_port>
+        <cargo.jvmargs>-Xmx7G -XX:MaxPermSize=256m -Duser.timezone=America/New_York</cargo.jvmargs>
+	<hsqldb.port>9930</hsqldb.port>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-gtfsrt-webapp</artifactId>
+            <version>2.22.10-rt-SNAPSHOT</version>
+            <type>war</type>
+        </dependency>
+        <!-- for nycBundle -->
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
+            <version>2.22.10-rt-SNAPSHOT</version>
+        </dependency>
+        <!-- to build bundles -->
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-transit-data-federation-builder</artifactId>
+            <version>${onebusaway.app-modules.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>apache-log4j-extras</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>onebusaway-nyc-gtfsrt-integration-tests</finalName>
+        <plugins>
+        <!-- prevent war file uploads to optimize build -->
+        <plugin>
+            <artifactId>maven-install-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>default-install</id>
+                    <phase>none</phase>
+                </execution>
+            </executions>
+        </plugin>
+            <!-- Start up an embedded database for sharing the user database between webapps -->
+            <plugin>
+                <groupId>org.onebusaway.plugins</groupId>
+                <artifactId>maven-hsqldb-plugin</artifactId>
+                <!-- version 1.0.1 supports hsqldb 2.3.2 -->
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>user-database-start</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <deleteOnEntry>true</deleteOnEntry>
+                            <dbName>${project.build.directory}/org_onebusaway_database_users</dbName>
+                            <port>${hsqldb.port}</port>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- don't deploy this to repo -->
+        <plugin>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <configuration>
+                <skip>true</skip>
+            </configuration>
+        </plugin>
+            <!-- Configure integration test system properties -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*.*</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Allows you to attach a debugger to the individual trace classes as they run. -->
+                            <!-- <debugForkedProcess>true</debugForkedProcess> -->
+                            <excludes>
+                                <exclude>none</exclude>
+                            </excludes>
+                            <includes>
+                                <include>**/*TestSuite*.java</include>
+                            </includes>
+                            <systemPropertyVariables>
+                                <!--
+                                <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
+                                <org.onebusaway.webapp.port>${org.onebusaway.api_webapp.port}</org.onebusaway.webapp.port>
+                                -->
+                                <pauseDuringIntegrationTest>${pauseDuringIntegrationTest}</pauseDuringIntegrationTest>
+                            </systemPropertyVariables>
+                            <argLine>${argLine}</argLine>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- We create custom integration-test versions of all the webapp wars that include custom resources and data-sources
+                for our integration-testing setup -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/integration-test/assemblies/onebusaway-nyc-gtfsrt-webapp.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- start build bundles -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <executions>
+            <execution>
+            <id>graph-builder-execution-2016Jan_ManBC_WkdOnly</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+                <goal>exec</goal>
+            </goals>
+                <configuration>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-Xdebug</argument>
+                        <argument>-Xmx1500m</argument>
+                        <argument>-classpath</argument>
+                        <classpath />
+                        <argument>-Dlog4j.configuration=/tmp/log4j-stdout.xml</argument>
+                        <argument>-Donebusaway_prefix=${basedir}</argument>
+                        <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                        <argument>-onlyIfDoesNotExist</argument>
+                        <argument>-additionalResourcesDirectory</argument>
+                        <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                        <argument>${basedir}/src/integration-test/resources/bundle-2016Jan_ManBC_WkdOnly.xml</argument>
+                        <argument>${project.build.directory}/transit-data-bundle/2016Jan_ManBC_WkdOnly</argument>
+                    </arguments>
+                </configuration>
+            </execution>
+        </executions>
+            </plugin>
+            <!-- end build bundles -->
+
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
+                <version>1.6.2</version>
+                <!-- start container -->
+                <configuration>
+                    <container>
+                        <!-- use this when debugging cargo -->
+                        <!--<log>${java.io.tmpdir}/cargo-gtfsrt-webapp.log</log>-->
+                        <log>/tmp/cargo-gtfsrt-webapp.log</log>
+                        <!--<output>${java.io.tmpdir}/cargo-gtfsrt-webapp.out</output>-->
+                        <output>/tmp/cargo-gtfsrt-webapp.out</output>
+                        <append>true</append>
+                        <containerId>tomcat7x</containerId>
+                        <zipUrlInstaller>
+                            <url>http://developer.onebusaway.org/dist/apache-tomcat-${tomcat-version}.zip</url>
+                        </zipUrlInstaller>
+                        <systemProperties>
+                            <onebusaway_prefix>${basedir}</onebusaway_prefix>
+                            <hsqldb.port>${hsqldb.port}</hsqldb.port>
+                            <!--
+                            <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
+                            -->
+			    <java.library.path>/usr/local/lib</java.library.path>
+                            <org.onebusaway.nyc.tdm.bundle.batchmode>true</org.onebusaway.nyc.tdm.bundle.batchmode>
+                        </systemProperties>
+                    </container>
+                    <deployables>
+                        <!-- dont deploy integration-tests -->
+                    </deployables>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>start-container-nyc-gtfsrt-webapp</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                        <configuration>
+                            <configuration>
+                                <home>${project.build.directory}/tomcat7x/onebusaway-nyc-gtfsrt-webapp</home>
+                                <properties>
+                                    <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
+                                    <!-- Use this to attach the debugger to the VTW running within cargo -->
+                                    <!-- <cargo.jvmargs>${cargo.jvmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044</cargo.jvmargs> -->
+                                    <cargo.servlet.port>${org.onebusaway.webapp.port}</cargo.servlet.port>
+                                    <cargo.tomcat.ajp.port>${org.onebusaway.webapp.ajp_port}</cargo.tomcat.ajp.port>
+                                    <cargo.rmi.port>${org.onebusaway.webapp.rmi_port}</cargo.rmi.port>
+                                    -->
+                                    <cargo.logging>${cargo.logging}</cargo.logging>
+                                </properties>
+                            </configuration>
+                            <deployables>
+                                <deployable>
+                                    <groupId>org.onebusaway</groupId>
+                                    <artifactId>onebusaway-nyc-gtfsrt-webapp</artifactId>
+                                    <type>war</type>
+                                    <properties>
+                                        <context>onebusaway-nyc-gtfsrt-webapp</context>
+                                    </properties>
+                                    <location>${project.build.directory}/onebusaway-nyc-gtfsrt-integration-tests-onebusaway-nyc-gtfsrt-webapp.war</location>
+                                    <pingURL>http://localhost:${org.onebusaway.webapp.port}/onebusaway-nyc-gtfsrt-webapp/</pingURL>
+                                    <pingTimeout>${ping_timeout}</pingTimeout>
+                                </deployable>
+                            </deployables>
+                        </configuration>
+                    </execution>
+                    <!-- The hooks to shutdown the webapps after integration testing -->
+                    <execution>
+                        <id>stop-container-gtfsrt-webapp</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                        <configuration>
+                            <container>
+                                <containerId>tomcat7x</containerId>
+                            </container>
+                            <configuration>
+                                <home>${project.build.directory}/tomcat7x/onebusaway-nyc-gtfsrt-webapp</home>
+                                <properties>
+                                    <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
+                                    <cargo.servlet.port>${org.onebusaway.webapp.port}</cargo.servlet.port>
+                                    <cargo.tomcat.ajp.port>${org.onebusaway.webapp.ajp_port}</cargo.tomcat.ajp.port>
+                                    <cargo.rmi.port>${org.onebusaway.webapp.rmi_port}</cargo.rmi.port>
+                                    <cargo.logging>${cargo.logging}</cargo.logging>
+                                </properties>
+                            </configuration>
+                            <deployables>
+                                <!-- dont deploy intergration-tests -->
+                            </deployables>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
