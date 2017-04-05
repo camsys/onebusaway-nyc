@@ -67,13 +67,6 @@
             <artifactId>commons-httpclient</artifactId>
             <version>3.0.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-transit-data-federation-builder</artifactId>
-            <version>1.1.15.37-cs-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
