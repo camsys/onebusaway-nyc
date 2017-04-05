@@ -58,6 +58,21 @@
             <groupId>log4j</groupId>
             <artifactId>apache-log4j-extras</artifactId>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-transit-data-federation-builder</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

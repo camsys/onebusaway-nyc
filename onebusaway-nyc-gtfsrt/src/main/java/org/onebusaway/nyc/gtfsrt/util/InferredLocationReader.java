@@ -15,6 +15,10 @@ public class InferredLocationReader extends RecordReader<VehicleLocationRecordBe
         return getRecords(filename, ArchivedInferredLocationRecord.class);
     }
 
+    public List<VehicleLocationRecordBean> getRecordsFromText(String csv) {
+        return getRecordsFromText(csv, ArchivedInferredLocationRecord.class);
+    }
+
     @Override
     public VehicleLocationRecordBean convert(Object o) {
         NycQueuedInferredLocationBean irb = ((ArchivedInferredLocationRecord) o).toNycQueuedInferredLocationBean();

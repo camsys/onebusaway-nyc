@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.gtfsrt.model;
+package org.onebusaway.nyc.gtfsrt.model.test;
 
 public class BlockTripEntry {
     private String blockId;

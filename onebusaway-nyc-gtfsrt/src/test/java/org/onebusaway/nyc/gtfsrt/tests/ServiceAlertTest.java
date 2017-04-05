@@ -1,8 +1,6 @@
 package org.onebusaway.nyc.gtfsrt.tests;
 
 import com.google.transit.realtime.GtfsRealtime.*;
-import junit.framework.TestCase;
-import org.junit.Test;
 import org.onebusaway.nyc.gtfsrt.impl.ServiceAlertFeedBuilderImpl;
 import org.onebusaway.nyc.gtfsrt.service.ServiceAlertFeedBuilder;
 import org.onebusaway.nyc.gtfsrt.util.ServiceAlertReader;
