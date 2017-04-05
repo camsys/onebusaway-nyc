@@ -13,6 +13,7 @@ public class AbstractInputRunner {
 
 
     public static final String INFERENCE_TYPE = "inference";
+    public static final String PROTOCOL_BUFFER_TYPE = "pb";
 
     public AbstractInputRunner(String datasetId, String bundleId, String date) throws Exception {
         setBundle(bundleId, date);
@@ -26,17 +27,27 @@ public class AbstractInputRunner {
 
     }
 
+    private void loadTimePredictions(String datasetId) throws Exception {
+        String resourceName = getFilenameFromPrefix(datasetId, PROTOCOL_BUFFER_TYPE);
+        new WebController().setTimePredictionRecords(getResourceAsStream(resourceName));
+    }
+
     private InputStream getInferenceInput(String prefix) {
         String resourceName = getInferenceFilename(prefix);
+        return getResourceAsStream(resourceName);
+    }
+    private InputStream getResourceAsStream(String resourceName) {
         System.out.println("resource=" + resourceName);
         InputStream is = this.getClass().getResourceAsStream(resourceName);
         if (is == null) {
-            throw new NullPointerException("prefix '" + prefix
-                    + "' and resource '" + resourceName
+            throw new NullPointerException(
+                    "resource '" + resourceName
                     + "' did not match data on class path");
         }
         return this.getClass().getResourceAsStream(resourceName);
+
     }
+
     private String getInferenceFilename(String prefix) {
         return getFilenameFromPrefix(prefix, INFERENCE_TYPE);
     }
@@ -54,13 +65,12 @@ public class AbstractInputRunner {
     private String getExtensionForType(String type) {
         if (INFERENCE_TYPE.equals(type)) {
             return ".tsv";
+        } else if (PROTOCOL_BUFFER_TYPE.equals(type)) {
+            return ".pb";
         }
         return ".txt";
     }
 
-    private void loadTimePredictions(String datasetId) {
-
-    }
 
     private void loadServiceAlerts(String datasetId) {
 

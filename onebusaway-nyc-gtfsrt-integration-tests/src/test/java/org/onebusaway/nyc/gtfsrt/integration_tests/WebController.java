@@ -17,11 +17,23 @@ import java.util.Date;
 public class WebController {
 
     public void setBundle(String bundleId, Date date) throws Exception {
+        get("/change-bundle.do?bundleId="
+                + bundleId + "&time=" + DateLibrary.getTimeAsIso8601String(date));
+    }
+
+    public void setVehicleLocationRecords(InputStream data) throws Exception {
+        post("/input/vehicleLocationRecords", data);
+    }
+
+    public void setTimePredictionRecords(InputStream data) throws Exception {
+        post("/input/timePredictionRecords", data);
+    }
+
+    private void get(String apiPathAndEncodedParams) throws Exception {
         String port = getPort();
         String context = getContext();
         String url = "http://localhost:" + port + context
-                + "/change-bundle.do?bundleId="
-                + bundleId + "&time=" + DateLibrary.getTimeAsIso8601String(date);
+                + apiPathAndEncodedParams;
 
         System.out.println("url=" + url);
         HttpClient client = new HttpClient();
@@ -31,12 +43,11 @@ public class WebController {
         validateSuccess(get);
     }
 
-
-    public void setVehicleLocationRecords(InputStream data) throws Exception {
+    private void post(String apiPath, InputStream data) throws Exception {
         String port = getPort();
         String context = getContext();
         String url = "http://localhost:" + port + context
-                + "/input/vehicleLocationRecords";
+                + apiPath;
 
         System.out.println("url=" + url);
         HttpClient client = new HttpClient();
@@ -44,7 +55,6 @@ public class WebController {
         postMethod.setRequestEntity(new InputStreamRequestEntity(data));
         client.executeMethod(postMethod);
         validateSuccess(postMethod);
-
     }
 
     private void validateSuccess(HttpMethod method) throws Exception {
