@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.gtfsrt.util;
 
-import org.onebusaway.nyc.gtfsrt.model.BlockTripEntry;
+import org.onebusaway.nyc.gtfsrt.model.test.BlockTripEntry;
 
 import java.util.HashMap;
 import java.util.Map;
