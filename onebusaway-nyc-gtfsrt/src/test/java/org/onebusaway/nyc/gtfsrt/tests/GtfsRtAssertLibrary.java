@@ -10,8 +10,7 @@ public class GtfsRtAssertLibrary {
   public static void assertTripDescriptorMatches(TripBean bean, GtfsRealtime.TripDescriptor desc) {
     assertEquals(bean.getId(), desc.getTripId());
     assertEquals(bean.getRoute().getId(), desc.getRouteId());
-    // TODO apparently we are using an old version of gtfs-rt that doesn't have directon (fix)
-    // TODO start_time, start_date
+    assertEquals(bean.getDirectionId(), Integer.toString(desc.getDirectionId()));
   }
 
   public static void assertVehicleDescriptorMatches(VehicleLocationRecordBean record, GtfsRealtime.VehicleDescriptor desc) {
