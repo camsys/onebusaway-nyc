@@ -71,13 +71,13 @@ public class GtfsRealtimeLibrary {
         return vehicle;
     }
 
-    public static TripUpdate.StopTimeUpdate.Builder makeStopTimeUpdate(TimepointPredictionRecord tpr, int gtfsSequence) {
+    public static TripUpdate.StopTimeUpdate.Builder makeStopTimeUpdate(TimepointPredictionRecord tpr) {
         TripUpdate.StopTimeUpdate.Builder builder = TripUpdate.StopTimeUpdate.newBuilder();
         builder.setStopId(tpr.getTimepointId().toString());
         builder.setArrival(makeStopTimeEvent(tpr.getTimepointPredictedTime()/1000));
         builder.setDeparture(makeStopTimeEvent(tpr.getTimepointPredictedTime()/1000)); // TODO: different?
-        if (gtfsSequence >= 0)
-            builder.setStopSequence(gtfsSequence);
+        if (tpr.getStopSequence() >= 0)
+            builder.setStopSequence(tpr.getStopSequence());
         return builder;
     }
 

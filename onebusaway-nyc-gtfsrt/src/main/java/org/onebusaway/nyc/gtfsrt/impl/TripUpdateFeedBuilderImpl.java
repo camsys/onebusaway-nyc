@@ -2,6 +2,7 @@ package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
@@ -12,6 +13,7 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarServi
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
+import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -37,8 +39,6 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
 
     private BlockCalendarService _blockCalendarService;
 
-    private TransitGraphDao _transitGraphDao;
-
     private boolean _useEffectiveScheduleTime = false;
 
     @Autowired
@@ -56,11 +56,6 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
         _blockCalendarService = blockCalendarService;
     }
 
-    @Autowired
-    public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
-        _transitGraphDao = transitGraphDao;
-    }
-
     public void setUseEffectiveScheduleTime(boolean useEffectiveScheduleTime) {
         _useEffectiveScheduleTime = useEffectiveScheduleTime;
     }
@@ -76,32 +71,13 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
 
         double delay = useEffectiveScheduleTime() ? getEffectiveScheduleTime(trip, vehicle) : vehicle.getTripStatus().getScheduleDeviation();
         tripUpdate.setDelay((int) delay);
-
-        TripEntry tripEntry = _transitGraphDao.getTripEntryForId(AgencyAndId.convertFromString(trip.getId()));
-        // It is probably true that tripEntry.getStopTimes().get(i).getSequence() = i, but perhaps not,
-        // because of StopTimeEntriesFactory.removeDuplicateStopTimes()
-        Map<Integer, Integer> stopSequenceToGtfsSequence = getSequenceMap(tripEntry);
-
         for (TimepointPredictionRecord tpr : records) {
-            int stopSequence = tpr.getStopSequence();
-            int gtfsSequence = -1;
-            if (stopSequenceToGtfsSequence.get(stopSequence) != null)
-                gtfsSequence = stopSequenceToGtfsSequence.get(stopSequence);
-            tripUpdate.addStopTimeUpdate(makeStopTimeUpdate(tpr, gtfsSequence));
+            tripUpdate.addStopTimeUpdate(makeStopTimeUpdate(tpr));
         }
 
         return tripUpdate;
     }
 
-    private Map<Integer, Integer> getSequenceMap(TripEntry tripEntry) {
-        Map<Integer, Integer> sequenceMap = new HashMap<Integer, Integer>();
-        if (tripEntry != null) {
-            for (StopTimeEntry stopTime : tripEntry.getStopTimes()) {
-                sequenceMap.put(stopTime.getSequence(), stopTime.getGtfsSequence());
-            }
-        }
-        return sequenceMap;
-    }
 
     // see appmods GtfsRealtimeTripLibrary:870
     private double getEffectiveScheduleTime(TripBean trip, VehicleStatusBean vehicle) {

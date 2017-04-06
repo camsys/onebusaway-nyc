@@ -14,10 +14,11 @@ public class Subscriber {
 	public static final String PORT_KEY = "mq.port";
 	public static final String TOPIC_KEY = "mq.topic";
 	public static final String PBDIR_KEY = "pb.dir";
+	public static final String PB_LIMIT_KEY = "pb.limit";
 	private static final String DEFAULT_HOST = "queue.staging.obanyc.com";
 	private static final int DEFAULT_PORT = 5563;
 	private static final String DEFAULT_TOPIC = "bhs_queue";
-	private static final String DEFAULT_PBDIR = null;
+	private static final int DEFAULT_PB_LIMIT = -1;
 
 	public static void main(String[] args) {
 
@@ -47,10 +48,20 @@ public class Subscriber {
 			pbdir = System.getProperty(PBDIR_KEY);
 		}
 
+		int pblimit = DEFAULT_PB_LIMIT;
+		if (System.getProperty(PB_LIMIT_KEY) != null) {
+			try {
+				pblimit = Integer.parseInt(System.getProperty(PB_LIMIT_KEY));
+			} catch (NumberFormatException nfe) {
+				pblimit = DEFAULT_PB_LIMIT;
+			}
+		}
+
 		String bind = "tcp://" + host + ":" + port;
 		subscriber.connect(bind);
 		subscriber.subscribe(topic.getBytes());
 		System.out.println("listening on " + bind);
+		int nprocess = 0;
 		while (true) {
 			// Read envelope with address
 			String address = new String(subscriber.recv(0));
@@ -60,6 +71,10 @@ public class Subscriber {
 				process(address, new String(contents));
 			else
 				processToDir(pbdir, address, contents);
+
+			nprocess++;
+			if (pblimit > 0 && nprocess >= pblimit)
+				break;
 		}
 	}
 	private static void process(String address, String contents) {

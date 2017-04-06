@@ -403,6 +403,10 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	  vlr.setCurrentLocationLon(getInferredLongitude().doubleValue());
 	  vlr.setPhase(EVehiclePhase.valueOf(getPhase()));
 	  vlr.setStatus(getStatus());
+
+	  if (getScheduleDeviation() != null)
+	  	vlr.setScheduleDeviation(getScheduleDeviation().doubleValue());
+
 	  // no run ID (it's set in predictions version)
 
 	  return vlr;

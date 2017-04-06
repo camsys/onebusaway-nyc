@@ -20,6 +20,8 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.onebusaway.nyc.gtfsrt.tests.GtfsRtAssertLibrary.*;
+
 public abstract class VehiclePositionTest extends TestCase {
 
     private static final double TOLERANCE = 0.00001;
@@ -64,13 +66,6 @@ public abstract class VehiclePositionTest extends TestCase {
         assertEquals(record.getTimeOfRecord(), vehiclePosition.getTimestamp()*1000);
     }
 
-    private void assertTripDescriptorMatches(TripBean bean, TripDescriptor desc) {
-        assertEquals(bean.getId(), desc.getTripId());
-        assertEquals(bean.getRoute().getId(), desc.getRouteId());
-        // TODO apparently we are using an old version of gtfs-rt that doesn't have directon (fix)
-        // TODO start_time, start_date
-    }
-
     private void assertPositionMatches(VehicleLocationRecordBean record, Position pos) {
         assertEquals(record.getCurrentLocation().getLat(), pos.getLatitude(), TOLERANCE);
         assertEquals(record.getCurrentLocation().getLon(), pos.getLongitude(), TOLERANCE);
@@ -78,9 +73,6 @@ public abstract class VehiclePositionTest extends TestCase {
             assertEquals(record.getCurrentOrientation(), pos.getBearing(), TOLERANCE);
     }
 
-    private void assertVehicleDescriptorMatches(VehicleLocationRecordBean record, VehicleDescriptor desc) {
-        assertEquals(record.getVehicleId(), desc.getId());
-    }
     private void assertStopInfoMatches(VehicleStatusBean status, VehiclePosition.Builder vp) {
         // the relationship of the current stop (identified by stop_id and
         // current_stop_sequence) to the vehicle's position defaults to IN_TRANSIT_TO
