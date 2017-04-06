@@ -35,6 +35,8 @@ public class GtfsRealtimeLibrary {
         TripDescriptor.Builder trip = TripDescriptor.newBuilder();
         trip.setTripId(tb.getId());
         trip.setRouteId(tb.getRoute().getId());
+        int direction = Integer.parseInt(tb.getDirectionId());
+        trip.setDirectionId(direction);
 
         // start date - YYYYMMDD
         LocalDate ld = new LocalDate(status.getServiceDate());
