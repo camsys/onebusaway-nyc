@@ -51,37 +51,32 @@
             </props>
         </property>
     </bean>
-    <!--<bean id="bundleManagementService"-->
-          <!--class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">-->
-        <!--<property name="bundleStoreRoot" value="${bundle.location}" />-->
-        <!--<property name="standaloneMode" value="${bundle.mode.standalone}" />-->
-    <!--</bean>-->
     <bean id="bundleManagementService"
           class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-        <property name="bundleStoreRoot" value="/var/lib/oba/nyc-gtfsrt/" />
-        <property name="standaloneMode" value="true" />
+        <property name="bundleStoreRoot" value="/var/lib/oba/nyc-gtfsrt" />
+        <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
     <!-- Input Queue Configuration -->
-    <!--<bean id="inferenceInputQueue"-->
-          <!--class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask"-->
-            <!--destroy-method="destroy"-->
-    <!--/>-->
+    <bean id="inferenceInputQueue"
+          class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask"
+            destroy-method="destroy"
+    />
 
     <!--  Time Queue Configuration -->
     <!--  This option integrates with an external time prediction queue -->
     <bean id="timeInputQueue"
             class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl"
             destroy-method="destroy">
-        <property name="disable" value="true"/>
+        <property name="disable" value="false"/>
     </bean>
 
     <!-- Service alerts. -->
 
-    <!--<bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">-->
-        <!--<property name="serviceAlertsUrl" value="${service.alerts.url}" />-->
-        <!--<property name="subscriptionPath" value="${service.alerts.subscription.path}" />-->
-    <!--</bean>-->
+    <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
+        <property name="serviceAlertsUrl" value="${service.alerts.url}" />
+        <property name="subscriptionPath" value="${service.alerts.subscription.path}" />
+    </bean>
 
     <!-- define which TDM to use -->
     <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
