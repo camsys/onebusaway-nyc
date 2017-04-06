@@ -73,6 +73,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import java.io.File;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -167,7 +168,8 @@ public class MockTransitDataService implements NycTransitDataService {
 
     @Override
     public TripBean getTrip(String s) throws ServiceException {
-        throw new UnsupportedOperationException();
+        Trip trip = _dao.getTripForId(AgencyAndId.convertFromString(s));
+        return tripBean(trip);
     }
 
     @Override
@@ -177,7 +179,15 @@ public class MockTransitDataService implements NycTransitDataService {
 
     @Override
     public ListBean<TripDetailsBean> getTripDetails(TripDetailsQueryBean tripDetailsQueryBean) throws ServiceException {
-        throw new UnsupportedOperationException();
+        String vehicleId = tripDetailsQueryBean.getVehicleId();
+        VehicleLocationRecordBean vlrb = _vehicleLocations.get(vehicleId);
+        if (vlrb == null)
+            return null;
+
+        AgencyAndId tripId = AgencyAndId.convertFromString(tripDetailsQueryBean.getTripId());
+        Trip trip = _dao.getTripForId(tripId);
+        List<TripDetailsBean> ret = Collections.singletonList(tripDetailsBean(trip, vlrb));
+        return new ListBean<TripDetailsBean>(ret, false);
     }
 
     @Override
@@ -501,6 +511,12 @@ public class MockTransitDataService implements NycTransitDataService {
 
     // Helper functions
 
+    public List<StopTime> getStopTimesForTrip(TripBean bean) {
+
+        Trip trip = _dao.getTripForId(new AgencyAndId("MTA NYCT", bean.getId()));
+        return _dao.getStopTimesForTrip(trip);
+    }
+    
     private TripBean tripBean(Trip trip) {
         TripBean bean = new TripBean();
         bean.setBlockId(trip.getBlockId());
@@ -591,6 +607,7 @@ public class MockTransitDataService implements NycTransitDataService {
         TripStopTimesBean schedule = new TripStopTimesBean();
         for (StopTime stopTime : _dao.getStopTimesForTrip(trip)) {
             TripStopTimeBean bean = new TripStopTimeBean();
+            bean.setStop(stopBean(stopTime.getStop()));
             bean.setArrivalTime(stopTime.getArrivalTime());
             bean.setDepartureTime(stopTime.getDepartureTime());
             bean.setDistanceAlongTrip(stopTime.getShapeDistTraveled()); // todo units

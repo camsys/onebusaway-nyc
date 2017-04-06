@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.gtfsrt.tds;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
@@ -10,12 +11,14 @@ import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TripEntryImplStub implements TripEntry {
 
     private Trip trip;
     private double tripDistance;
+    private List<StopTimeEntry> stopTimeEntries;
 
     public TripEntryImplStub(Trip trip) {
         this.trip = trip;
@@ -58,6 +61,8 @@ public class TripEntryImplStub implements TripEntry {
 
     @Override
     public List<StopTimeEntry> getStopTimes() {
+        if (stopTimeEntries != null)
+            return stopTimeEntries;
         throw new UnsupportedOperationException();
     }
 

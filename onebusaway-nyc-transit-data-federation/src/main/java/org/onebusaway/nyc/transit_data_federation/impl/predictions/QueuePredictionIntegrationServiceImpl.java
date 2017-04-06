@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.TimeQueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -22,6 +21,7 @@ import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 import com.google.common.cache.Cache;
@@ -31,6 +31,7 @@ import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Listen for (queue), cache, and return time predictions.
@@ -48,7 +49,8 @@ public class QueuePredictionIntegrationServiceImpl extends
 	private static final String DEFAULT_FALSE = "false";
 
 	@Autowired
-	private NycTransitDataService _transitDataService;
+	@Qualifier("nycTransitDataServiceImpl")
+	private TransitDataService _transitDataService;
 
 	@Autowired
 	private ConfigurationService _configurationService;
@@ -105,7 +107,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	}
 
 	@Override
-	protected void processResult(FeedMessage message) {
+	public void processResult(FeedMessage message) {
 		if (enableCheckPredictionAge()) {
 			logPredictionLatency(message);
 		}
@@ -135,7 +137,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 				// this validates the Agency_StopID convention
 				tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId()));
 				tpr.setTimepointPredictedTime(stu.getArrival().getTime());
-//				tpr.setStopSequence(stu.getStopSequence()); // 0-indexed stop sequence
+				tpr.setStopSequence(stu.getStopSequence()); // gtfs stop sequence
 				Long scheduledTime = stopTimeMap.get(stu.getStopId());
 
 				if (scheduledTime != null) {
@@ -262,5 +264,13 @@ public class QueuePredictionIntegrationServiceImpl extends
 
 	protected long computeTimeDifference(long timestamp) {
 		return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds
+	}
+
+	public void setTransitDataService(TransitDataService transitDataService) {
+		_transitDataService = transitDataService;
+	}
+
+	public void setConfigurationService(ConfigurationService configurationService) {
+		_configurationService = configurationService;
 	}
 }
