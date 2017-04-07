@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.integration_tests;
+package org.onebusaway.nyc.gtfsrt.integration_tests;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -15,7 +15,7 @@ public class AbstractInputRunner {
 
 
     public AbstractInputRunner(String datasetId, String bundleId, String date) throws Exception {
-        setBundle(bundleId, date);
+        //setBundle(bundleId, date);
         loadInference(datasetId);
         loadTimePredictions(datasetId);
         loadServiceAlerts(datasetId);
