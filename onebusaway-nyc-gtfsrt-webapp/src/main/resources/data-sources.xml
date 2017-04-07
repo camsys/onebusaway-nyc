@@ -36,8 +36,7 @@
      <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
         <property name="properties">
             <props>
-                <prop key="tdm.host">tdm.dev.obanyc.com</prop>
-                <prop key="front-end.version">snapshot</prop>
+                <prop key="tdm.host">${tdm.host}</prop>
             </props>
         </property>
     </bean>
@@ -54,8 +53,8 @@
     </bean>
     <bean id="bundleManagementService"
           class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-        <property name="bundleStoreRoot" value="/tmp/nyc-gtfsrt-bundle" />
-        <property name="standaloneMode" value="false" />
+        <property name="bundleStoreRoot" value="${bundle.location}" />
+        <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
     <!-- Input Queue Configuration -->
@@ -67,18 +66,18 @@
         <property name="disable" value="false"/>
     </bean>
 
-    <!-- Service alerts. TODO change to ${service.alerts.url} and ${service.alerts.subscription.path} -->
+    <!-- Service alerts. -->
 
     <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
-        <property name="serviceAlertsUrl" value="http://tdm.dev.obanyc.com/siri/situation-exchange" />
-        <property name="subscriptionPath" value="/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange" />
+        <property name="serviceAlertsUrl" value="${service.alerts.url}" />
+        <property name="subscriptionPath" value="${service.alerts.subscription.path}" />
     </bean>
 
     <!-- define which TDM to use -->
     <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
-        <constructor-arg type="java.lang.String" value="tdm.dev.obanyc.com"/>
-        <constructor-arg type="java.lang.Integer" value="80" />
-        <constructor-arg type="java.lang.String" value="/api/" />
+        <constructor-arg type="java.lang.String" value="${tdm.host}"/>
+        <constructor-arg type="java.lang.Integer" value="${tdm.port}" />
+        <constructor-arg type="java.lang.String" value="${tdm.url}" />
     </bean>
 
 </beans>
