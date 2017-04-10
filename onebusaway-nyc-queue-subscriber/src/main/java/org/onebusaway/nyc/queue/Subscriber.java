@@ -82,8 +82,13 @@ public class Subscriber {
 	}
 
 	private static void processToDir(String dir, String address, byte[] contents) {
-		File file = new File(dir + "/" + toDate(new Date()) + ".pb");
-		file.getParentFile().mkdirs();
+		writeToFile(dir + "/" + toDate(new Date()) + ".pb", contents);
+	}
+
+	protected static void writeToFile(String filename, byte[] contents) {
+		File file = new File(filename);
+		if (file.getParentFile() != null)
+			file.getParentFile().mkdirs();
 		try {
 			DataOutputStream dos = new DataOutputStream(new FileOutputStream(file));
 			dos.write(contents);
