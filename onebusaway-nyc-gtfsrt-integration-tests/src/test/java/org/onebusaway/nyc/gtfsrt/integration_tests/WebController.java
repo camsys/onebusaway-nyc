@@ -9,6 +9,8 @@ import org.onebusaway.utility.DateLibrary;
 
 import java.io.InputStream;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Controller to absract actions against gtfsrt-webapp from the
@@ -23,6 +25,12 @@ public class WebController {
 
     public void setVehicleLocationRecords(InputStream data) throws Exception {
         post("/input/vehicleLocationRecords", data);
+    }
+
+    public void setTimePredictionRecordsTime(Date serviceDate) throws Exception {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("time", String.valueOf(serviceDate.getTime()));
+        post("/input/timePredictionRecordsTime", params);
     }
 
     public void setTimePredictionRecords(InputStream data) throws Exception {
@@ -43,6 +51,22 @@ public class WebController {
         validateSuccess(get);
     }
 
+    private void post(String apiPath, Map<String, String> params) throws Exception {
+        String port = getPort();
+        String context = getContext();
+        String url = "http://localhost:" + port + context
+                + apiPath;
+
+        System.out.println("url=" + url);
+        HttpClient client = new HttpClient();
+        PostMethod postMethod = new PostMethod(url);
+        for (String key : params.keySet()) {
+            postMethod.addParameter(key, params.get(key));
+        }
+        client.executeMethod(postMethod);
+        validateSuccess(postMethod);
+    }
+
     private void post(String apiPath, InputStream data) throws Exception {
         String port = getPort();
         String context = getContext();
@@ -59,7 +83,7 @@ public class WebController {
 
     private void validateSuccess(HttpMethod method) throws Exception {
         String response = method.getResponseBodyAsString();
-        if (!response.equals("OK") && 302 != method.getStatusCode())
+        if (!response.equals("OK") && 200 != method.getStatusCode())
             throw new Exception("Request failed! "
                     + method.getURI()
                     + ": (" + method.getStatusCode()
@@ -76,15 +100,4 @@ public class WebController {
                 "org.onebusaway.webapp.context", "/onebusaway-nyc-gtfsrt-webapp");
     }
 
-//    private static class InputPartSource implements PartSource{
-//        private InputStream _streamData;
-//        public InputPartSource(InputStream data) {
-//            _streamData = data;
-//        }
-//        public long getLength() { return -1; }
-//        public String getFileName() { return "vehicleLocationRecords.tsv"; }
-//        public InputStream createInputStream() throws IOException {
-//            return _streamData;
-//        }
-//    }
 }

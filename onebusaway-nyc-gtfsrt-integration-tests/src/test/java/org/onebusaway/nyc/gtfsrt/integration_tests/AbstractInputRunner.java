@@ -13,12 +13,12 @@ public class AbstractInputRunner {
 
 
     public static final String INFERENCE_TYPE = "inference";
-    public static final String PROTOCOL_BUFFER_TYPE = "pb";
+    public static final String PROTOCOL_BUFFER_TYPE = "tripUpdate";
 
     public AbstractInputRunner(String datasetId, String bundleId, String date) throws Exception {
         setBundle(bundleId, date);
         loadInference(datasetId);
-        loadTimePredictions(datasetId);
+        loadTimePredictions(datasetId, date);
         loadServiceAlerts(datasetId);
     }
 
@@ -27,9 +27,12 @@ public class AbstractInputRunner {
 
     }
 
-    private void loadTimePredictions(String datasetId) throws Exception {
+    private void loadTimePredictions(String datasetId, String date) throws Exception {
         String resourceName = getFilenameFromPrefix(datasetId, PROTOCOL_BUFFER_TYPE);
-        new WebController().setTimePredictionRecords(getResourceAsStream(resourceName));
+        WebController wc = new WebController();
+
+        wc.setTimePredictionRecordsTime(DateLibrary.getIso8601StringAsTime(date));
+        wc.setTimePredictionRecords(getResourceAsStream(resourceName));
     }
 
     private InputStream getInferenceInput(String prefix) {

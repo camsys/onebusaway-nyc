@@ -48,6 +48,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	private static final String CHECK_PREDICTION_LATENCY = "display.checkPredictionLatency";
 	private static final String DEFAULT_FALSE = "false";
 
+
 	@Autowired
 	@Qualifier("nycTransitDataServiceImpl")
 	private TransitDataService _transitDataService;
@@ -64,7 +65,12 @@ public class QueuePredictionIntegrationServiceImpl extends
 	private int predictionRecordCount = 0;
 	private int predictionRecordCountInterval = 2000;
 	private long predictionRecordAverageLatency = 0;
+	private Long _serviceTime = null; // leave empty for now, set for tests
 
+
+	public void setCheckPredictionAge(Boolean checkAge) {
+		_checkPredictionAge = checkAge;
+	}
 
 	private synchronized Cache<String, List<TimepointPredictionRecord>> getCache() {
 		if (_cache == null) {
@@ -163,12 +169,15 @@ public class QueuePredictionIntegrationServiceImpl extends
 		//TripBean trip = _transitDataService.getTrip(tripId);
 		TripDetailsQueryBean tqb = new TripDetailsQueryBean();
 		tqb.setTripId(tripId);
-		tqb.setTime(System.currentTimeMillis());
+		tqb.setTime(getTime());
 		tqb.setVehicleId(vehicleId);
 		tqb.setInclusion(new TripDetailsInclusionBean(false, true, true));
 		ListBean<TripDetailsBean> tripDetails = _transitDataService.getTripDetails(tqb);
 		Long serviceDate = null;
-		if (tripDetails.getList().get(0).getStatus() != null) {
+		if (tripDetails != null
+				&& tripDetails.getList() != null
+				&& !tripDetails.getList().isEmpty()
+				&& tripDetails.getList().get(0).getStatus() != null) {
 			serviceDate = tripDetails.getList().get(0).getStatus().getServiceDate();
 		} else {
 			// TDS doesn't know of trip status, no need to store prediction
@@ -184,6 +193,17 @@ public class QueuePredictionIntegrationServiceImpl extends
 		}
 
 		return map;
+	}
+
+	public void setTime(Long time) {
+		_serviceTime = time;
+	}
+
+	public long getTime() {
+		if (_serviceTime != null) {
+			return _serviceTime;
+		}
+		return System.currentTimeMillis();
 	}
 	@Override
 	public void updatePredictionsForVehicle(AgencyAndId vehicleId) {
