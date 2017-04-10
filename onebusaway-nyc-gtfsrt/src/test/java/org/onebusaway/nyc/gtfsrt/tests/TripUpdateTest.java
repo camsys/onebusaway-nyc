@@ -86,7 +86,7 @@ public abstract class TripUpdateTest {
         assertEquals(status.getTripStatus().getScheduleDeviation(), delay, TOLERANCE);
     }
 
-    private void assertStopTimeUpdatesMatchTprs(List<TimepointPredictionRecord> records, List<TripUpdate.StopTimeUpdate> stus) {
+    protected void assertStopTimeUpdatesMatchTprs(List<TimepointPredictionRecord> records, List<TripUpdate.StopTimeUpdate> stus) {
         assertEquals(records.size(), stus.size());
         Map<AgencyAndId, TimepointPredictionRecord> tprByStop = MappingLibrary.mapToValue(records, "timepointId");
         for (TripUpdate.StopTimeUpdate stu : stus) {
