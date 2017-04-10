@@ -10,11 +10,14 @@ import org.onebusaway.transit_data.services.TransitDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
@@ -35,7 +38,7 @@ public class InputController {
     private QueuePredictionIntegrationServiceImpl _predictionService;
 
     @RequestMapping(value = "/input/vehicleLocationRecords", method = RequestMethod.POST)
-    public ModelAndView addVehicleLocationRecords(@RequestBody String tsv) throws Exception {
+    public ResponseEntity addVehicleLocationRecords(@RequestBody String tsv) throws Exception {
 
         List<VehicleLocationRecordBean> records = new InferredLocationReader().getRecordsFromText(tsv);
         int count = 0;
@@ -45,15 +48,30 @@ public class InputController {
             VehicleStatusBean status = _transitDataService.getVehicleForAgency(record.getVehicleId(), record.getTimeOfRecord());
         }
         _log.info("" + count + " records processed!");
-        // todo this is just general success
-        return new ModelAndView("redirect:/bundles-change.jspx");
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/input/timePredictionRecordsTime", method = RequestMethod.POST)
+    public ResponseEntity addTimePredictionRecords(@RequestParam String time) throws Exception {
+        try {
+            _predictionService.setTime(Long.parseLong(time));
+        } catch (Exception any) {
+            _log.error("issue processing timePredictionRecords:", any);
+            throw any;
+        }
+        _log.info("Time prediction time set");
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "/input/timePredictionRecords", method = RequestMethod.POST)
-    public ModelAndView addTimePredictionRecords(@RequestBody byte[] buff) throws Exception {
-        boolean success = _predictionService.processMessage(QUEUE_ADDRESS, buff);
-        _log.info("Time prediction(s) processed? " + success);
-        // todo this is just general success
-        return new ModelAndView("redirect:/bundles-change.jspx");
+    public ResponseEntity addTimePredictionRecords(@RequestBody byte[] buff) throws Exception {
+        try {
+            _predictionService.processResult(GtfsRealtime.FeedMessage.parseFrom(buff));
+        } catch (Exception any) {
+            _log.error("issue processing timePredictionRecords:", any);
+            throw any;
+        }
+        _log.info("Time prediction(s) processed");
+        return new ResponseEntity(HttpStatus.OK);
     }
 }
