@@ -20,6 +20,9 @@ import org.onebusaway.nyc.gtfsrt.model.test.BlockTripEntry;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Read a TSV of the format "block_id   trip_id".
+ */
 public class BlockTripMapReader extends RecordReader<BlockTripEntry> {
 
     @Override
@@ -27,6 +30,12 @@ public class BlockTripMapReader extends RecordReader<BlockTripEntry> {
         return (BlockTripEntry) o;
     }
 
+    /**
+     * Get a map from trip to block from a TSV.
+     *
+     * @param filename file to read from
+     * @return map from trip ID to block ID.
+     */
     public Map<String, String> getTripToBlockMap(String filename) {
         Map<String, String> map = new HashMap<String, String>();
         for (BlockTripEntry e : getRecords(filename, BlockTripEntry.class)) {

@@ -96,6 +96,9 @@ import java.util.SortedSet;
 
 import static org.junit.Assert.fail;
 
+/**
+ * GTFS-backed TransitDataService for testing. Not all methods are implemented.
+ */
 public class MockTransitDataService implements NycTransitDataService {
 
     private GtfsRelationalDao _dao;

@@ -24,12 +24,27 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 import java.util.List;
 
+/**
+ * Read {@link VehicleLocationRecordBean} objects from a TSV.
+ */
 public class InferredLocationReader extends RecordReader<VehicleLocationRecordBean> {
 
+    /**
+     * Get @{link VehicleLocationRecordBean} objects from a file.
+     *
+     * @param filename file to read from
+     * @return records
+     */
     public List<VehicleLocationRecordBean> getRecords(String filename) {
         return getRecords(filename, ArchivedInferredLocationRecord.class);
     }
 
+    /**
+     * Get @{link VehicleLocationRecordBean} objects from a string.
+     *
+     * @param csv text to read from
+     * @return records
+     */
     public List<VehicleLocationRecordBean> getRecordsFromText(String csv) {
         return getRecordsFromText(csv, ArchivedInferredLocationRecord.class);
     }

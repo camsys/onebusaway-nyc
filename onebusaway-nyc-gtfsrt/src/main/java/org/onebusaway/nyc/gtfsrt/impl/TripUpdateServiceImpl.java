@@ -36,6 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Build TripUpdate feed for current time.
+ */
 @Component
 public class TripUpdateServiceImpl extends AbstractFeedMessageService {
 

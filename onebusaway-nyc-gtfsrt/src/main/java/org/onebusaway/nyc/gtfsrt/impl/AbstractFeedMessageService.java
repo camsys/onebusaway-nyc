@@ -20,6 +20,9 @@ import org.onebusaway.nyc.gtfsrt.service.FeedMessageService;
 
 import java.util.List;
 
+/**
+ * Includes shared logic for FeedMessageServices. Builds the FeedMessage given a list of FeedEntities.
+ */
 public abstract class AbstractFeedMessageService implements FeedMessageService {
 
     public static final int DEFAULT_CACHE_EXPIRY_SECONDS = 10;

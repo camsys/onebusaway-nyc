@@ -15,6 +15,12 @@
  */
 package org.onebusaway.nyc.gtfsrt.model.test;
 
+/**
+ * Associate a blockId and tripId. The trip is a member of the block.
+ *
+ * Primarily used for testing, because NYC bus GTFS does not include blocks, so this data must be
+ * reconstructed from archived data.
+ */
 public class BlockTripEntry {
     private String blockId;
     private String tripId;

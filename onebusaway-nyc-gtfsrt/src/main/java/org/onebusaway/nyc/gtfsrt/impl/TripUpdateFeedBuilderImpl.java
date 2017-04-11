@@ -17,7 +17,6 @@ package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
@@ -28,18 +27,12 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarServi
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
-import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
-import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary.*;
 
@@ -54,6 +47,12 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
 
     private BlockCalendarService _blockCalendarService;
 
+    /**
+     * true if TripUpdate delay should be set based on the effective schedule time (calculated as
+     * the difference between the current time and the linear-interpolated schedule time).
+     * false if delay should be based on scheduleAdherence, which may take into account
+     * travel time estimates (default).
+     */
     private boolean _useEffectiveScheduleTime = false;
 
     @Autowired
@@ -95,6 +94,17 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
 
 
     // see appmods GtfsRealtimeTripLibrary:870
+
+    /**
+     * Calculate effective schedule time for a trip and vehicle status.
+     *
+     * Effective schedule time is the difference between the time of the record and the linear-interpolated
+     * schedule time.
+     *
+     * @param trip the trip
+     * @param vehicle the vehicle
+     * @return effective schedule time
+     */
     private double getEffectiveScheduleTime(TripBean trip, VehicleStatusBean vehicle) {
         double deviation = vehicle.getTripStatus().getScheduleDeviation();
         long serviceDate = vehicle.getTripStatus().getServiceDate();
