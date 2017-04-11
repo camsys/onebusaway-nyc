@@ -5,17 +5,25 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.zeromq.ZMQ;
 
 public class TripUpdateSubscriber {
-	public static final String HOST_KEY = "mq.host";
-	public static final String PORT_KEY = "mq.port";
-	public static final String TOPIC_KEY = "mq.topic";
+	private static final String HOST_KEY = "mq.host";
+	private static final String PORT_KEY = "mq.port";
+	private static final String TOPIC_KEY = "mq.topic";
+	private static final String SINGLE_MODE_KEY = "tu.single";
+	private static final String ROUTE_KEY = "tu.route";
+	private static final String OUTPUT_DIR_KEY = "tu.output";
 	private static final String DEFAULT_HOST = "queue.dev.obanyc.com";
 	private static final int DEFAULT_PORT = 5569;
 	private static final String DEFAULT_TOPIC = "time";
+	private static final String DEFAULT_OUTPUT = ".";
+	private static final String DEFAULT_SINGLE_MODE = "false";
 
 	public static void main(String[] args) {
 
-		String route = args[0];
-		String output = args[1];
+		String route = System.getProperty(ROUTE_KEY);
+		String outputDir = System.getProperty(OUTPUT_DIR_KEY, DEFAULT_OUTPUT);
+		boolean singleMode = Boolean.parseBoolean(System.getProperty(SINGLE_MODE_KEY, DEFAULT_SINGLE_MODE));
+
+		System.out.println("listen for route " + route + ", writing to dir " + outputDir + ", singleMode=" + singleMode);
 
 		// Prepare our context and subscriber
 		ZMQ.Context context = ZMQ.context(1);
@@ -39,13 +47,18 @@ public class TripUpdateSubscriber {
 				FeedMessage message = FeedMessage.parseFrom(contents);
 				FeedEntity entity = message.getEntity(0);
 				if (entity.hasTripUpdate()) {
-					AgencyAndId routeId = AgencyAndId.convertFromString(entity.getTripUpdate().getTrip().getRouteId());
-					if (routeId.getId().equals(route)) {
+					TripUpdate tripUpdate = entity.getTripUpdate();
+					AgencyAndId routeId = AgencyAndId.convertFromString(tripUpdate.getTrip().getRouteId());
+					if (route == null || routeId.getId().equals(route)) {
 						// name by trip
-						AgencyAndId tripId = AgencyAndId.convertFromString(entity.getTripUpdate().getTrip().getTripId());
-						String filename = output + "/" + tripId.getId() + ".pb";
-						System.out.println("writing TU to " + filename);
+						AgencyAndId tripId = AgencyAndId.convertFromString(tripUpdate.getTrip().getTripId());
+						long timestamp = message.getHeader().getTimestamp()/1000;
+						String vehicle = AgencyAndId.convertFromString(tripUpdate.getVehicle().getId()).getId();
+						String filename = outputDir + "/" + tripId.getId() + ".pb";
+						System.out.println("timestamp=" + timestamp + " vehicleid=" + vehicle + " filename=" + filename);
 						Subscriber.writeToFile(filename, contents);
+						if (singleMode)
+							break;
 					}
 				}
 				else {
