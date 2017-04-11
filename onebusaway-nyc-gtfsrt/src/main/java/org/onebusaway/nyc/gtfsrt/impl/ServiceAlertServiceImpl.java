@@ -26,6 +26,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Build the service alerts feed for the current time.
+ */
 @Component
 public class ServiceAlertServiceImpl extends AbstractFeedMessageService {
 

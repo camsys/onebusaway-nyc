@@ -18,6 +18,9 @@ package org.onebusaway.nyc.gtfsrt.service;
 import com.google.transit.realtime.GtfsRealtime;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
+/**
+ * Convert OBA ServiceAlert to GTFS-RT alerts.
+ */
 public interface ServiceAlertFeedBuilder {
 
     GtfsRealtime.Alert.Builder getAlertFromServiceAlert(ServiceAlertBean alert);

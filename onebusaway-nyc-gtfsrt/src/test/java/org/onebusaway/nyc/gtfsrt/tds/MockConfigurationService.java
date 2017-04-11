@@ -19,6 +19,9 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
 import java.util.Map;
 
+/**
+ * Mock out configuration service: simply return the defaults.
+ */
 public class MockConfigurationService implements ConfigurationService {
   @Override
   public String getConfigurationValueAsString(String configurationItemKey, String defaultValue) {

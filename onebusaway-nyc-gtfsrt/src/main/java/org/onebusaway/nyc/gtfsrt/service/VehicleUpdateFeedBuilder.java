@@ -19,6 +19,9 @@ import com.google.transit.realtime.GtfsRealtime;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 
+/**
+ * Convert OBA model classes to GTFS-RT VehiclePosition
+ */
 public interface VehicleUpdateFeedBuilder {
 
     GtfsRealtime.VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record);

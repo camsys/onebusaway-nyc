@@ -17,6 +17,12 @@ package org.onebusaway.nyc.gtfsrt.service;
 
 import com.google.transit.realtime.GtfsRealtime;
 
+/**
+ * Interface for a provider of FeedMessages, e.g. TripUpdate, VehiclePosition, or Alert feeds.
+ */
 public interface FeedMessageService {
+    /**
+     * @return the FeedMessage for the current time
+     */
     GtfsRealtime.FeedMessage getFeedMessage();
 }

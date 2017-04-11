@@ -21,6 +21,9 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 
 import static org.junit.Assert.*;
 
+/**
+ * Contains shared testing logic that OBA model classes match RT classes.
+ */
 public class GtfsRtAssertLibrary {
   public static void assertTripDescriptorMatches(TripBean bean, GtfsRealtime.TripDescriptor desc) {
     assertEquals(bean.getId(), desc.getTripId());

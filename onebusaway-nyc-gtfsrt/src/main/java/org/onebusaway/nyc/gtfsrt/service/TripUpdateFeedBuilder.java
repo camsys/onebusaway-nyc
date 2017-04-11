@@ -22,6 +22,9 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 
 import java.util.List;
 
+/**
+ * Convert OBA model classes to GTFS-RT TripUpdate.
+ */
 public interface TripUpdateFeedBuilder {
     GtfsRealtime.TripUpdate.Builder makeTripUpdate(TripBean trip, VehicleStatusBean vehicle,
                                            List<TimepointPredictionRecord> records);

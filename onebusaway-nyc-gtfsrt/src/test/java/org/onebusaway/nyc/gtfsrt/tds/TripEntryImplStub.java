@@ -27,6 +27,9 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import java.util.List;
 
+/**
+ * Implementation of TripEntry backed by a GTFS Trip. (not fully implemented)
+ */
 public class TripEntryImplStub implements TripEntry {
 
     private Trip trip;

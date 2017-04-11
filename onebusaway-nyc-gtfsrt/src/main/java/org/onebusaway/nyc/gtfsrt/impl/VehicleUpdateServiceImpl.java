@@ -29,6 +29,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Build VehicleUpdate feed for current time.
+ */
 @Component
 public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
 

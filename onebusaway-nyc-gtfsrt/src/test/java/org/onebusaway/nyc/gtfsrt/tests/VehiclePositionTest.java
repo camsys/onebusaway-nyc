@@ -37,6 +37,9 @@ import java.util.List;
 
 import static org.onebusaway.nyc.gtfsrt.tests.GtfsRtAssertLibrary.*;
 
+/**
+ * Test that OBA models match a VehiclePosition. Should be subclassed to test a particular instance.
+ */
 public abstract class VehiclePositionTest extends TestCase {
 
     private static final double TOLERANCE = 0.00001;

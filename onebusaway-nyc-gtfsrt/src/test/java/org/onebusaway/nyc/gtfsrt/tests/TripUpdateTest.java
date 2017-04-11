@@ -41,6 +41,9 @@ import java.util.Map;
 import static org.junit.Assert.*;
 import static org.onebusaway.nyc.gtfsrt.tests.GtfsRtAssertLibrary.*;
 
+/**
+ * Test that OBA models match a TripUpdate. Should be subclassed to test a particular instance.
+ */
 public abstract class TripUpdateTest {
 
     private static final double TOLERANCE = 0.00001;

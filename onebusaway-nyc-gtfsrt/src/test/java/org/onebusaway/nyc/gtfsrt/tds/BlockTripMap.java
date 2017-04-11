@@ -28,6 +28,9 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.SortedSet;
 
+/**
+ * Store a mapping between blocks and trips, as MTA bus GTFS does not include block_ids.
+ */
 public class BlockTripMap {
     private GtfsRelationalDao _dao;
     private SortedSetMultimap<String, TripEntryImplStub> _blockTripMap;
@@ -53,6 +56,11 @@ public class BlockTripMap {
         _blockTripMap = TreeMultimap.create(KEY_CMP, VAL_CMP);
     }
 
+    /**
+     * Given a trip, return all the trips in the block that the trip belongs to, ordered by start date.
+     * @param trip given trip
+     * @return sorted set of trips in block
+     */
     public SortedSet<? extends TripEntry> getOrderedBlockTripsForTrip(Trip trip) {
         String block = trip.getBlockId();
         if (block == null)

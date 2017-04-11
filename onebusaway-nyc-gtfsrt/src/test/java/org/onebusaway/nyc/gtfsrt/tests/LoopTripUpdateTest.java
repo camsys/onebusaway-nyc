@@ -27,6 +27,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Test that a looping trip (trip which has the same stop in two positions) is handled correctly.
+ */
 public class LoopTripUpdateTest extends TripUpdateTest {
 
   public LoopTripUpdateTest() {

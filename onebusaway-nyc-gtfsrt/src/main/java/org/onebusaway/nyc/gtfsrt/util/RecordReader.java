@@ -27,10 +27,23 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Shared logic for reading archived data into OBA model classes.
+ *
+ * @param <T> the model class which should be returned
+ */
 public abstract class RecordReader<T> {
 
     private static final Logger _log = LoggerFactory.getLogger(RecordReader.class);
 
+    /**
+     * Read records from file.
+     *
+     * @param filename name of file
+     * @param klass archived class, instances of which are serialized in TSV. (Note this may be a different
+     *              type than the models which will be returned.)
+     * @return list
+     */
     public List<T> getRecords(String filename, Class klass) {
         final List<T> records = new ArrayList<T>();
         CsvEntityReader reader = new CsvEntityReader();
@@ -52,6 +65,14 @@ public abstract class RecordReader<T> {
         return records;
     }
 
+    /**
+     * Read records from text.
+     *
+     * @param text TSV text
+     * @param klass archived class, instances of which are serialized in TSV. (Note this may be a different
+     *              type than the models which will be returned.)
+     * @return list
+     */
     public List<T> getRecordsFromText(String text, Class klass) {
         final List<T> records = new ArrayList<T>();
         CsvEntityReader reader = new CsvEntityReader();
@@ -72,5 +93,11 @@ public abstract class RecordReader<T> {
         return records;
     }
 
+    /**
+     * Convert a deserialized archive class into the desired model class.
+     *
+     * @param o Object to convert.
+     * @return model
+     */
     public abstract T convert(Object o);
 }

@@ -20,8 +20,17 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import java.util.List;
 
+/**
+ * Read archived ServiceAlertBeans from a TSV.
+ */
 public class ServiceAlertReader extends RecordReader<ServiceAlertBean> {
 
+    /**
+     * Get ServiceAlertBeans from a TSV of archived ServiceAlertRecords.
+     *
+     * @param filename name of file
+     * @return list of ServiceAlertBeans.
+     */
     public List<ServiceAlertBean> getRecords(String filename) {
         return super.getRecords(filename, ServiceAlertRecord.class);
     }
