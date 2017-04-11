@@ -9,6 +9,7 @@ import org.onebusaway.nyc.admin.service.bundle.impl.JavaGtfsValidationServiceImp
 import org.onebusaway.nyc.admin.service.bundle.impl.PythonGtfsValidationServiceImpl;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -85,6 +86,7 @@ public class BundleValidationServiceImplTest {
 
   }
 
+  @Ignore
   @Test
   public void testPythonValidateGtfs() throws Exception {
 	GtfsValidationService validationService = new PythonGtfsValidationServiceImpl();
@@ -110,6 +112,7 @@ public class BundleValidationServiceImplTest {
     
   }
   
+  @Ignore
   @Test
   public void testJavaValidateGtfs() throws Exception {
 	GtfsValidationService validationService = new JavaGtfsValidationServiceImpl();
