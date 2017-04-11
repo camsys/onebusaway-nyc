@@ -28,6 +28,7 @@ import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -76,8 +77,9 @@ public class  ArchiveCcAndInferredLocationDaoImplTest {
   
   @Test
   public void test() throws Exception {
-    getSession().beginTransaction();
-    assertEquals(0, getNumberOfRecords());
+	Transaction t = getSession().beginTransaction();
+    
+	assertEquals(0, getNumberOfRecords());
 
     CcLocationReportRecord bhs = getCcRecord();
     _cache.put(bhs); // this happens via ArchivingInputQueueListener 
@@ -123,6 +125,8 @@ public class  ArchiveCcAndInferredLocationDaoImplTest {
     }
     
     assertTrue(foundMatch);
+    
+    t.commit();
   }
   
   private CcLocationReportRecord getCcRecord() {
