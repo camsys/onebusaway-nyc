@@ -72,5 +72,5 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         return (now - _generatedTime) > _cacheExpirySeconds * 1000;
     }
 
-    protected abstract List<FeedEntity.Builder> getEntities(long time);
+    public abstract List<FeedEntity.Builder> getEntities(long time);
 }
