@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.gtfsrt.tests;
 
 import com.google.transit.realtime.GtfsRealtime;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 
@@ -26,8 +27,8 @@ import static org.junit.Assert.*;
  */
 public class GtfsRtAssertLibrary {
   public static void assertTripDescriptorMatches(TripBean bean, GtfsRealtime.TripDescriptor desc) {
-    assertEquals(bean.getId(), desc.getTripId());
-    assertEquals(bean.getRoute().getId(), desc.getRouteId());
+    assertEquals(AgencyAndId.convertFromString(bean.getId()).getId(), desc.getTripId());
+    assertEquals(AgencyAndId.convertFromString(bean.getRoute().getId()).getId(), desc.getRouteId());
     assertEquals(bean.getDirectionId(), Integer.toString(desc.getDirectionId()));
   }
 

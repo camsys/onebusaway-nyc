@@ -43,7 +43,7 @@ public class LoopTripUpdateTest extends TripUpdateTest {
     for (GtfsRealtime.TripUpdate.StopTimeUpdate stu : stus) {
       TimepointPredictionRecord tpr = tprByStop.get(stu.getStopSequence());
       assertNotNull(tpr);
-      assertEquals(tpr.getTimepointId().toString(), stu.getStopId());
+      assertEquals(tpr.getTimepointId().getId(), stu.getStopId());
       assertEquals(tpr.getStopSequence(), stu.getStopSequence());
       long time = tpr.getTimepointPredictedTime()/1000;
       assertTrue(stu.hasArrival() || stu.hasDeparture());

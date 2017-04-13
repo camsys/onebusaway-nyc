@@ -106,13 +106,12 @@ public abstract class TripUpdateTest {
 
     protected void assertStopTimeUpdatesMatchTprs(List<TimepointPredictionRecord> records, List<TripUpdate.StopTimeUpdate> stus) {
         assertEquals(records.size(), stus.size());
-        Map<AgencyAndId, TimepointPredictionRecord> tprByStop = MappingLibrary.mapToValue(records, "timepointId");
+        Map<AgencyAndId, TimepointPredictionRecord> tprByStop = MappingLibrary.mapToValue(records, "timepointId.id");
         for (TripUpdate.StopTimeUpdate stu : stus) {
-            TimepointPredictionRecord tpr = tprByStop.get(AgencyAndId.convertFromString(stu.getStopId()));
+            TimepointPredictionRecord tpr = tprByStop.get(stu.getStopId());
             assertNotNull(tpr);
-            assertEquals(tpr.getTimepointId().toString(), stu.getStopId());
-            // TODO - uncomment this once stop sequence is fixed
-            //assertEquals(tpr.getStopSequence(), stu.getStopSequence());
+            assertEquals(tpr.getTimepointId().getId(), stu.getStopId());
+            assertEquals(tpr.getStopSequence(), stu.getStopSequence());
             long time = tpr.getTimepointPredictedTime()/1000;
             assertTrue(stu.hasArrival() || stu.hasDeparture());
             if (stu.hasArrival())
@@ -129,8 +128,7 @@ public abstract class TripUpdateTest {
         for (int i = 0; i < stopTimes.size(); i++) {
             StopTime st = stopTimes.get(i);
             TripUpdate.StopTimeUpdate stu = stus.get(i);
-            // TODO - uncomment this once stop sequence is fixed
-            //assertEquals(st.getStopSequence(), stu.getStopSequence());
+            assertEquals(st.getStopSequence(), stu.getStopSequence());
         }
     }
 
@@ -142,9 +140,9 @@ public abstract class TripUpdateTest {
         while (iter.hasNext()) {
             List<StopTime> ret = new ArrayList<StopTime>();
             int i = 0;
-            while (!st.getStop().getId().toString().equals(stus.get(i).getStopId()) && iter.hasNext())
+            while (!st.getStop().getId().getId().equals(stus.get(i).getStopId()) && iter.hasNext())
                 st = iter.next();
-            while (st != null && i < stus.size() && st.getStop().getId().toString().equals(stus.get(i).getStopId())) {
+            while (st != null && i < stus.size() && st.getStop().getId().getId().equals(stus.get(i).getStopId())) {
                 ret.add(st);
                 st = iter.hasNext() ? iter.next() : null;
                 i++;

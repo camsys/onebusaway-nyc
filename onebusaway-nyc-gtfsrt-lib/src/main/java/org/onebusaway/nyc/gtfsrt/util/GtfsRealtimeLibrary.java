@@ -17,6 +17,7 @@ package org.onebusaway.nyc.gtfsrt.util;
 
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.joda.time.LocalDate;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -33,8 +34,8 @@ import java.util.List;
 public class GtfsRealtimeLibrary {
     public static TripDescriptor.Builder makeTripDescriptor(TripBean tb, TripStatusBean status) {
         TripDescriptor.Builder trip = TripDescriptor.newBuilder();
-        trip.setTripId(tb.getId());
-        trip.setRouteId(tb.getRoute().getId());
+        trip.setTripId(id(tb.getId()));
+        trip.setRouteId(id(tb.getRoute().getId()));
         int direction = Integer.parseInt(tb.getDirectionId());
         trip.setDirectionId(direction);
 
@@ -75,7 +76,7 @@ public class GtfsRealtimeLibrary {
 
     public static TripUpdate.StopTimeUpdate.Builder makeStopTimeUpdate(TimepointPredictionRecord tpr) {
         TripUpdate.StopTimeUpdate.Builder builder = TripUpdate.StopTimeUpdate.newBuilder();
-        builder.setStopId(tpr.getTimepointId().toString());
+        builder.setStopId(tpr.getTimepointId().getId());
         builder.setArrival(makeStopTimeEvent(tpr.getTimepointPredictedTime()/1000));
         builder.setDeparture(makeStopTimeEvent(tpr.getTimepointPredictedTime()/1000)); // TODO: different?
         if (tpr.getStopSequence() >= 0)
@@ -167,5 +168,9 @@ public class GtfsRealtimeLibrary {
             string.addTranslation(tr);
         }
         return string;
+    }
+
+    private static String id(String agencyAndId) {
+        return AgencyAndId.convertFromString(agencyAndId).getId();
     }
 }
