@@ -8,6 +8,16 @@
     <!-- Provides support for specifying "${some.java.system.property}" for bean values -->
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
 
+    <!-- be lenient for bad shapes -->
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException">false</prop>
+            </props>
+        </property>
+        <property name="order" value="-3" />
+    </bean>
+
     <bean id="bundle" class="org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle">
       <property name="path" value="${bundlePath}" />
     </bean>
@@ -19,24 +29,47 @@
     <bean id="gtfs-bundles" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundles">
         <property name="bundles">
             <list>
-                <ref bean="GTFS_MTABC" />
-				<ref bean="google_transit_manhattan" />
+                <!--<ref bean="google_transit_bronx" />-->
+                <ref bean="google_transit_brooklyn" />
+                <!--<ref bean="google_transit_manhattan" />-->
                 <ref bean="gtfs_mta_stub" />
+                <!--<ref bean="google_transit_queens" />-->
+                <!--<ref bean="google_transit_staten_island" />-->
             </list>
         </property>
     </bean>
 
-    
+    <bean id="google_transit_bronx" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="defaultAgencyId" value="MTA" />
+        <property name="path"
+                  value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2017April_Prod_rt_test/google_transit_bronx.zip" />
+    </bean>
+    <bean id="google_transit_brooklyn" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="defaultAgencyId" value="MTA" />
+        <property name="path"
+                  value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2017April_Prod_rt_test/google_transit_brooklyn.zip" />
+    </bean>
     <bean id="google_transit_manhattan" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="defaultAgencyId" value="MTA" />
+        <property name="path"
+                  value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2017April_Prod_rt_test/google_transit_manhattan.zip" />
+    </bean>
+    <bean id="google_transit_queens" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="defaultAgencyId" value="MTA" />
+        <property name="path"
+                  value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2017April_Prod_rt_test/google_transit_queens.zip" />
+    </bean>
+
+    <bean id="google_transit_staten_island" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
 		<property name="defaultAgencyId" value="MTA" /> 
         <property name="path" 
-        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2016Jan_ManBC_WkdOnly/google_transit_manhattan.zip" />
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2017April_Prod_rt_test/google_transit_staten_island.zip" />
     </bean>
-    <bean id="GTFS_MTABC" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
-		<property name="defaultAgencyId" value="MTA" /> 
-        <property name="path" 
-        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2016Jan_ManBC_WkdOnly/GTFS_MTABC.zip" />
-    </bean>
+    <!--<bean id="GTFS_MTABC" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">-->
+		<!--<property name="defaultAgencyId" value="MTA" /> -->
+        <!--<property name="path" -->
+        	<!--value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2017April_Prod_rt_test/GTFS_MTABC.zip" />-->
+    <!--</bean>-->
 	<bean id="gtfs_mta_stub" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
         <property name="defaultAgencyId" value="MTA" />
         <property name="path" 
@@ -69,7 +102,7 @@
     <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">
         <property name="logger" ref="multiCSVLogger"/>
         <property name="stifPath"
-            value="${onebusaway_prefix}/src/integration-test/resources/bundle/stifs/2016Jan_ManBC_WkdOnly" />
+            value="${onebusaway_prefix}/src/integration-test/resources/bundle/stifs/2017April_Prod_rt_test" />
 	    <property name="notInServiceDscPath"
             value="${onebusaway_prefix}/src/integration-test/resources/bundle/NotInServiceDSCs.txt" />
     </bean>

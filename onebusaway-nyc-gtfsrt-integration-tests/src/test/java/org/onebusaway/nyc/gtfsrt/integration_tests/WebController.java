@@ -37,11 +37,12 @@ public class WebController {
         post("/input/timePredictionRecords", data);
     }
 
-    private void get(String apiPathAndEncodedParams) throws Exception {
+    public InputStream get(String apiPathWithEncodedParams) throws Exception {
         String port = getPort();
         String context = getContext();
+
         String url = "http://localhost:" + port + context
-                + apiPathAndEncodedParams;
+                + apiPathWithEncodedParams;
 
         System.out.println("url=" + url);
         HttpClient client = new HttpClient();
@@ -49,6 +50,36 @@ public class WebController {
         client.executeMethod(get);
 
         validateSuccess(get);
+
+        return get.getResponseBodyAsStream();
+
+    }
+
+
+
+    public InputStream get(Map<String, String> params, String apiPathNoParams) throws Exception {
+        String port = getPort();
+        String context = getContext();
+        
+        apiPathNoParams = addParamsToPath(apiPathNoParams, params);
+        
+        String url = "http://localhost:" + port + context
+                + apiPathNoParams;
+
+
+        System.out.println("url=" + url);
+        HttpClient client = new HttpClient();
+        GetMethod get = new GetMethod(url);
+        for (String key : params.keySet()) {
+            System.out.println("adding param " + key + " = " + params.get(key));
+            client.getParams().setParameter(key, params.get(key));
+        }
+        client.executeMethod(get);
+
+        validateSuccess(get);
+
+        return get.getResponseBodyAsStream();
+
     }
 
     private void post(String apiPath, Map<String, String> params) throws Exception {
@@ -89,6 +120,27 @@ public class WebController {
                     + ": (" + method.getStatusCode()
                     + ":" + method.getStatusText() + ")");
 
+    }
+
+    private String addParamsToPath(String path, Map<String, String> params) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(path);
+        boolean containsParams = false;
+        if (params != null && !params.isEmpty()) {
+            if (path.contains("?"))
+                containsParams = true;
+
+            for (String key : params.keySet()) {
+                if (!containsParams) {
+                    sb.append("?").append(key).append("=").append(params.get(key));
+                    containsParams = true;
+                } else {
+                    sb.append("&").append(key).append("=").append(params.get(key));
+                }
+            }
+
+        }
+        return sb.toString();
     }
 
     private String getPort() {
