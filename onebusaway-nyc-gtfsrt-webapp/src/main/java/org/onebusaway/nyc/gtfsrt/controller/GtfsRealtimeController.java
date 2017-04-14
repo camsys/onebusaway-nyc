@@ -55,25 +55,28 @@ public class GtfsRealtimeController {
 
     @RequestMapping(value = "/vehiclePositions")
     public void getVehiclePositions(HttpServletResponse response,
-                                    @RequestParam(value = "debug", defaultValue = "false") boolean debug)
+                                    @RequestParam(value = "debug", defaultValue = "false") boolean debug,
+                                    @RequestParam(value = "time") Long time)
             throws IOException {
-        FeedMessage msg = _vehicleUpdateService.getFeedMessage();
+        FeedMessage msg = _vehicleUpdateService.getFeedMessage(time);
         writeFeed(response, msg, debug);
     }
 
     @RequestMapping(value = "/tripUpdates")
     public void getTripUpdates(HttpServletResponse response,
-                                    @RequestParam(value = "debug", defaultValue = "false") boolean debug)
+                                    @RequestParam(value = "debug", defaultValue = "false") boolean debug,
+                                    @RequestParam(value = "time") Long time)
             throws IOException {
-        FeedMessage msg = _tripUpdateService.getFeedMessage();
+        FeedMessage msg = _tripUpdateService.getFeedMessage(time);
         writeFeed(response, msg, debug);
     }
 
     @RequestMapping(value = "/alerts")
     public void getAlerts(HttpServletResponse response,
-                          @RequestParam(value = "debug", defaultValue = "false") boolean debug)
+                          @RequestParam(value = "debug", defaultValue = "false") boolean debug,
+                          @RequestParam(value = "time") Long time)
         throws IOException {
-        FeedMessage msg = _serviceAlertService.getFeedMessage();
+        FeedMessage msg = _serviceAlertService.getFeedMessage(time);
         writeFeed(response, msg, debug);
     }
 

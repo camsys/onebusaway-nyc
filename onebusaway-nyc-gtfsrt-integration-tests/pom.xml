@@ -173,7 +173,7 @@
                 <version>1.1.1</version>
                 <executions>
             <execution>
-            <id>graph-builder-execution-2016Jan_ManBC_WkdOnly</id>
+            <id>graph-builder-execution-2017April_Prod_rt_test</id>
             <phase>pre-integration-test</phase>
             <goals>
                 <goal>exec</goal>
@@ -182,7 +182,7 @@
                     <executable>java</executable>
                     <arguments>
                         <argument>-Xdebug</argument>
-                        <argument>-Xmx1500m</argument>
+                        <argument>-Xmx6g</argument>
                         <argument>-classpath</argument>
                         <classpath />
                         <argument>-Dlog4j.configuration=/tmp/log4j-stdout.xml</argument>
@@ -191,8 +191,8 @@
                         <argument>-onlyIfDoesNotExist</argument>
                         <argument>-additionalResourcesDirectory</argument>
                         <argument>${basedir}/src/integration-test/resources/bundle</argument>
-                        <argument>${basedir}/src/integration-test/resources/bundle-2016Jan_ManBC_WkdOnly.xml</argument>
-                        <argument>${project.build.directory}/transit-data-bundle/2016Jan_ManBC_WkdOnly</argument>
+                        <argument>${basedir}/src/integration-test/resources/bundle-2017April_Prod_rt_test.xml</argument>
+                        <argument>${project.build.directory}/transit-data-bundle/2017April_Prod_rt_test</argument>
                     </arguments>
                 </configuration>
             </execution>

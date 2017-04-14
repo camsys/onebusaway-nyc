@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -76,14 +77,17 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
 
     @Override
     public List<FeedEntity.Builder> getEntities(long time) {
+        _log.debug("getEntities(" + new Date(time) + "), agencyId=" + getAgencyId());
         ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(getAgencyId(), time);
-
+        _log.debug("found " + vehicles.getList().size() + " vehicles");
         List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
         for (VehicleStatusBean vehicle : vehicles.getList()) {
 
-            if (vehicle.getTrip() == null)
+            if (vehicle.getTrip() == null) {
+                _log.warn("no trip for vehicle=" + vehicle.getVehicleId());
                 continue;
+            }
 
             int tripSequence = vehicle.getTripStatus().getBlockTripSequence();
             BlockInstanceBean block = getBlock(vehicle);
@@ -92,8 +96,10 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
             for (int i = tripSequence; i < trips.size(); i++) {
                 TripBean trip = trips.get(i).getTrip();
                 List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), vehicle.getTripStatus());
-                if (tprs == null)
+                if (tprs == null) {
+                    _log.debug("no tprs for time=" + new Date(time));
                     break;
+                }
 
                 GtfsRealtime.TripUpdate.Builder tu  = _feedBuilder.makeTripUpdate(trip, vehicle, tprs);
 
@@ -104,7 +110,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
             }
 
         }
-
+        _log.debug("returning " + entities.size() + " entities");
         return entities;
     }
 

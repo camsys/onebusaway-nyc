@@ -25,4 +25,5 @@ public interface FeedMessageService {
      * @return the FeedMessage for the current time
      */
     GtfsRealtime.FeedMessage getFeedMessage();
+    GtfsRealtime.FeedMessage getFeedMessage(Long time);
 }
