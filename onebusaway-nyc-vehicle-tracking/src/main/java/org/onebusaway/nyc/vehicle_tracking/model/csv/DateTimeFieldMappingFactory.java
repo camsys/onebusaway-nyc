@@ -26,6 +26,7 @@ import org.onebusaway.csv_entities.schema.EntitySchemaFactory;
 import org.onebusaway.csv_entities.schema.FieldMapping;
 import org.onebusaway.csv_entities.schema.FieldMappingFactory;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -39,6 +40,10 @@ public class DateTimeFieldMappingFactory implements FieldMappingFactory {
 
   static {
     _format.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+  }
+
+  public DateFormat getFormat() {
+    return _format;
   }
 
   @Override
@@ -68,7 +73,7 @@ public class DateTimeFieldMappingFactory implements FieldMappingFactory {
 
       try {
 
-        final Date valueAsDate = _format.parse(valueAsString);
+        final Date valueAsDate = getFormat().parse(valueAsString);
         final Class<?> type = object.getPropertyType(_objFieldName);
 
         if (type.equals(Long.class) || type.equals(Long.TYPE))
@@ -90,7 +95,7 @@ public class DateTimeFieldMappingFactory implements FieldMappingFactory {
       final Object obj = object.getPropertyValue(_objFieldName);
       final Date valueAsDate = obj instanceof Long ? new Date(
           ((Long) obj).longValue()) : (Date) obj;
-      final String valueAsString = _format.format(valueAsDate);
+      final String valueAsString = getFormat().format(valueAsDate);
       csvValues.put(_csvFieldName, valueAsString);
     }
   }

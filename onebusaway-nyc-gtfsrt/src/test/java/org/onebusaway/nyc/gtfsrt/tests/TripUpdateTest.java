@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.gtfsrt.tests;
 
+import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.junit.Test;
 import org.onebusaway.collections.MappingLibrary;
@@ -34,6 +35,8 @@ import org.onebusaway.transit_data.services.TransitDataService;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +102,8 @@ public abstract class TripUpdateTest {
         assertVehicleDescriptorMatches(vlrb, tripUpdate.getVehicle());
         assertStopTimeUpdatesMatchTprs(records, tripUpdate.getStopTimeUpdateList());
         assertStopTimeUpdatesMatchTrip(trip, tripUpdate.getStopTimeUpdateList());
+
+        assertReasonableTimestamp(tripUpdate);
     }
 
     private void assertDelayMatches(VehicleStatusBean status, int delay) {
@@ -152,5 +157,17 @@ public abstract class TripUpdateTest {
                 return ret;
         }
         return null;
+    }
+
+    private void assertReasonableTimestamp(TripUpdateOrBuilder tu) {
+        long minStu = Long.MAX_VALUE;
+        for (TripUpdate.StopTimeUpdate stu : tu.getStopTimeUpdateList()) {
+            long time = stu.hasArrival() ? stu.getArrival().getTime() : stu.getDeparture().getTime();
+            minStu = Math.min(minStu, time);
+        }
+        long timestamp = tu.getTimestamp();
+        System.out.println("timestamp = " + timestamp + " minstu = " + minStu);
+        assertTrue(timestamp <= minStu);
+        assertTrue(minStu - timestamp < 3600);
     }
 }
