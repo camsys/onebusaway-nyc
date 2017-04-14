@@ -89,6 +89,7 @@ public abstract class TripUpdateTest {
         String vehicleId = status.getVehicleId();
         String tripId = msg.getEntity(0).getTripUpdate().getTrip().getTripId();
 
+        _predictionIntegrationService.setTime(vlrb.getTimeOfRecord());
         _predictionIntegrationService.processResult(msg);
         List<TimepointPredictionRecord> records = _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripId);
         assertFalse(records.isEmpty());

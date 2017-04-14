@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +121,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 		if (enableCheckPredictionAge() &&
 				isPredictionRecordPastAgeLimit(message)) {
 			// Drop old messages
+			_log.warn("dropping old message=" + message);
 			return;
 		}
 
@@ -134,6 +136,8 @@ public class QueuePredictionIntegrationServiceImpl extends
 			if (!tu.getVehicle().getId().equals(vehicleId)
 					|| !tu.getTrip().getTripId().equals(tripId)) {
 				stopTimeMap = loadScheduledTimes(tu.getVehicle().getId(), tu.getTrip().getTripId());
+			} else {
+				_log.warn("missing vehicle or trip for update=" + tu);
 			}
 			tripId = tu.getTrip().getTripId();
 			vehicleId = tu.getVehicle().getId();
@@ -149,6 +153,10 @@ public class QueuePredictionIntegrationServiceImpl extends
 				if (scheduledTime != null) {
 					tpr.setTimepointScheduledTime(scheduledTime);
 					predictionRecords.add(tpr);
+				} else {
+					_log.info("could not find stopTime for update with header time ="
+							+ new Date(entity.getTripUpdate().getTimestamp()*1000)
+					+ " and arrival=" + new Date(stu.getArrival().getTime()));
 				}
 			}
 
@@ -166,7 +174,6 @@ public class QueuePredictionIntegrationServiceImpl extends
 
 	private Map<String, Long> loadScheduledTimes(String vehicleId, String tripId) {
 		Map<String, Long> map = new HashMap<String, Long>();
-		//TripBean trip = _transitDataService.getTrip(tripId);
 		TripDetailsQueryBean tqb = new TripDetailsQueryBean();
 		tqb.setTripId(tripId);
 		tqb.setTime(getTime());
@@ -181,6 +188,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 			serviceDate = tripDetails.getList().get(0).getStatus().getServiceDate();
 		} else {
 			// TDS doesn't know of trip status, no need to store prediction
+			_log.info("no trip found for " + vehicleId + ":" + tripId + " at time=" + new Date(getTime()));
 			return map;
 		}
 		assert(tripDetails.getList().size() == 1);
@@ -213,11 +221,13 @@ public class QueuePredictionIntegrationServiceImpl extends
 	@Override
 	public List<TimepointPredictionRecord> getPredictionsForTrip(
 			TripStatusBean tripStatus) {
+		_log.info("call(" + tripStatus.getVehicleId() + "," + tripStatus.getActiveTrip().getId());
 		return getCache().getIfPresent(hash(tripStatus.getVehicleId(), tripStatus.getActiveTrip().getId()));
 	}
 
 	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
 			String VehicleId, String TripId) {
+		_log.info("call(" + VehicleId + "," + TripId);
 		return getCache().getIfPresent(hash(VehicleId, TripId));
 	}
 

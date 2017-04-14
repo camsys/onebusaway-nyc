@@ -5,6 +5,6 @@ package org.onebusaway.nyc.gtfsrt.integration_tests;
  */
 public class SampleIntegrationTest extends AbstractInputRunner {
     public SampleIntegrationTest() throws Exception {
-        super("3901", "2016Jan_ManBC_WkdOnly", "2016-06-02T13:00:00EDT");
+        super("20170412_7198", "2017April_Prod_rt_test", "2017-04-12T11:05:00EDT");
     }
 }

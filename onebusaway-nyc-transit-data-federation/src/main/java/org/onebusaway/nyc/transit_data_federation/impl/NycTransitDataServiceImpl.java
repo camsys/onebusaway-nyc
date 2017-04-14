@@ -157,8 +157,10 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 			TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
 		if (_predictionIntegrationService.isEnabled()) {
+			_log.info("using prediction integration service (" + vehicleId + ", " + tripStatus.getActiveTrip().getId());
 			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus.getActiveTrip().getId());
 		}
+		_log.warn("using default helper service");
 		return _predictionHelperService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus);
 	}
 
