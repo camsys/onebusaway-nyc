@@ -254,8 +254,8 @@ public class MockTransitDataService implements NycTransitDataService {
         query.setTime(new Date(time));
         TripDetailsBean tdb = getTripDetailsForVehicleAndTime(query);
 
-        vsb.setTrip(tdb.getTrip());
-        vsb.setTripStatus(tdb.getStatus());
+            vsb.setTrip(tdb.getTrip());
+            vsb.setTripStatus(tdb.getStatus());
 
         return vsb;
     }

@@ -47,7 +47,7 @@
     <bean id="google_transit_brooklyn" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
         <property name="defaultAgencyId" value="MTA" />
         <property name="path"
-                  value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2017April_Prod_rt_test/google_transit_brooklyn.zip" />
+                  value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/2017April_Prod_rt_test/google_transit_brooklyn_B47.zip" />
     </bean>
     <bean id="google_transit_manhattan" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
         <property name="defaultAgencyId" value="MTA" />

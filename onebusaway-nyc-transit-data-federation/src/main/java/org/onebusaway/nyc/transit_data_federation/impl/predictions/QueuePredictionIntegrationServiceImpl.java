@@ -163,31 +163,17 @@ public class QueuePredictionIntegrationServiceImpl extends
 			if (vehicleId != null) {
 				// place in cache if we were able to extract a vehicle id
 				getCache().put(hash(vehicleId, tripId), predictionRecords);
-				_log.info("cached(" + pruneVehicleId(vehicleId) + ", " + pruneTripId(tripId) + ")=" + predictionRecords);
 			}
 
 		}
 	}
 
 	private String hash(String vehicleId, String tripId) {
-		return pruneVehicleId(vehicleId) + "-" + pruneTripId(tripId);
+		return vehicleId + "-" + tripId;
 	}
 
-	private String pruneTripId(String tripId) {
-		if (tripId.startsWith("MTA NYCT_"))
-			tripId = tripId.replace("MTA NYCT_", "");
-		return tripId;
-
-	}
-	private String pruneVehicleId(String vehicleId) {
-		if (vehicleId.startsWith("MTA "))
-			vehicleId = vehicleId.replace("MTA ", "");
-		return vehicleId;
-	}
 	private Map<String, Long> loadScheduledTimes(String vehicleId, String tripId) {
 		Map<String, Long> map = new HashMap<String, Long>();
-		tripId = pruneTripId(tripId);
-		vehicleId = pruneVehicleId(vehicleId);
 		TripDetailsQueryBean tqb = new TripDetailsQueryBean();
 		tqb.setTripId(tripId);
 		tqb.setTime(getTime());

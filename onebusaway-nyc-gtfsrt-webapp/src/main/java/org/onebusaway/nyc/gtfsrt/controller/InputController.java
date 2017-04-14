@@ -61,6 +61,14 @@ public class InputController {
             count++;
             _transitDataService.submitVehicleLocation(record);
             VehicleStatusBean status = _transitDataService.getVehicleForAgency(record.getVehicleId(), record.getTimeOfRecord());
+            // dump out some message if the status didn't come back as expected
+            if (status.getTripStatus() != null && status.getTripStatus().getActiveTrip() != null)
+                _log.warn("status=" + status.getVehicleId() + ":" + status.getTripStatus().getActiveTrip().getId());
+            else if (status.getTripStatus() == null){
+                _log.warn("status=" + status.getVehicleId() + " has null trip status");
+            } else if (status.getTripStatus().getActiveTrip() == null) {
+                _log.warn("status=" + status.getVehicleId() + " has no active trip");
+            }
         }
         _log.info("" + count + " records processed!");
         return new ResponseEntity(HttpStatus.OK);
