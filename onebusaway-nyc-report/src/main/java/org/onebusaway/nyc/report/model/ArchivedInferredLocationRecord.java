@@ -24,7 +24,6 @@
  */
 package org.onebusaway.nyc.report.model;
 
-import org.onebusaway.csv_entities.schema.DateFieldMappingFactory;
 import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
@@ -33,6 +32,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Index;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.UTCDateTimeFieldMappingFactory;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -66,8 +66,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
   // Fields from NycQueuedInferredLocationBean
   @Column(nullable = false, name = "time_reported")
-  @CsvField(mapping = DateFieldMappingFactory.class)
-  @DateFieldMappingFactory.DateFormatAnnotation("yyyy-MM-dd HH:mm:ss")
+  @CsvField(mapping = UTCDateTimeFieldMappingFactory.class)
   private Date timeReported;
 
   @Column(nullable = false, name = "vehicle_id")
@@ -80,13 +79,11 @@ public class ArchivedInferredLocationRecord implements Serializable {
   // Matches archive_time_received in CcLocationReport
   @Column(nullable = false, name = "archive_time_received")
   @Index(name = "archive_time_received")
-  @CsvField(mapping = DateFieldMappingFactory.class)
-  @DateFieldMappingFactory.DateFormatAnnotation("yyyy-MM-dd HH:mm:ss")
+  @CsvField(mapping = UTCDateTimeFieldMappingFactory.class)
   private Date archiveTimeReceived;
 
   @Column(nullable = false, name = "service_date")
-  @CsvField(mapping = DateFieldMappingFactory.class)
-  @DateFieldMappingFactory.DateFormatAnnotation("yyyy-MM-dd HH:mm:ss")
+  @CsvField(mapping = UTCDateTimeFieldMappingFactory.class)
   private Date serviceDate;
 
   @Column(nullable = true, name = "schedule_deviation")
