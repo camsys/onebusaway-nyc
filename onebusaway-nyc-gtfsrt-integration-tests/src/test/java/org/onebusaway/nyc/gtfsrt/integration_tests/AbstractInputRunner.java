@@ -69,7 +69,6 @@ public class AbstractInputRunner {
         return getResourceAsStream(resourceName);
     }
     private InputStream getResourceAsStream(String resourceName) {
-        System.out.println("resource=" + resourceName);
         InputStream is = this.getClass().getResourceAsStream(resourceName);
         if (is == null) {
             throw new NullPointerException(
@@ -116,7 +115,7 @@ public class AbstractInputRunner {
 
     @Test
     public void testRun() throws Throwable {
-        System.out.println("here we go!");
+        // Subclasses do the work
     }
 
 }
