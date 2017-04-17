@@ -55,7 +55,8 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
 
             FeedHeader.Builder header = FeedHeader.newBuilder();
             header.setGtfsRealtimeVersion("1.0");
-            header.setTimestamp(System.currentTimeMillis() / 1000);
+            long headerTime = requestTime != null ? requestTime : System.currentTimeMillis();
+            header.setTimestamp(headerTime / 1000);
             header.setIncrementality(FeedHeader.Incrementality.FULL_DATASET);
             builder.setHeader(header);
             FeedMessage message = builder.build();
