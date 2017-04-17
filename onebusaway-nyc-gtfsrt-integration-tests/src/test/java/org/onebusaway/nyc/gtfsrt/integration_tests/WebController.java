@@ -71,7 +71,6 @@ public class WebController {
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(url);
         for (String key : params.keySet()) {
-            System.out.println("adding param " + key + " = " + params.get(key));
             client.getParams().setParameter(key, params.get(key));
         }
         client.executeMethod(get);
