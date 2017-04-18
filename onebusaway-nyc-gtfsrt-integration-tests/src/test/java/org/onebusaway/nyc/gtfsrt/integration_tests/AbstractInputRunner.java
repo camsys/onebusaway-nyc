@@ -3,6 +3,8 @@ package org.onebusaway.nyc.gtfsrt.integration_tests;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.util.InferredLocationReader;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -10,6 +12,9 @@ import org.onebusaway.utility.DateLibrary;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,18 +33,21 @@ public class AbstractInputRunner {
     public static final String INFERENCE_TYPE = "inference";
     public static final String PROTOCOL_BUFFER_TYPE = "tripUpdate";
 
+    private static final double MAX_LOCATION_DISTANCE = 300.0;
+
     public AbstractInputRunner(String datasetId, String bundleId, String date) throws Exception {
         setBundle(bundleId, date);
         loadInference(datasetId);
         loadTimePredictions(datasetId, date);
         loadServiceAlerts(datasetId);
-        verify(datasetId,  bundleId, date);
+        verifyTU(datasetId,  bundleId, date);
+        verifyVP(datasetId,  bundleId, date);
     }
 
-    private void verify(String datasetId, String bundleId, String date) throws Exception {
+    private void verifyTU(String datasetId, String bundleId, String date) throws Exception {
         // load the vehicle
         List<VehicleLocationRecordBean> vlrbs = getInferenceRecords(datasetId);
-        VehicleLocationRecordBean vehicleRecord = vlrbs.get(vlrbs.size() - 1);
+        VehicleLocationRecordBean vehicleRecord = findBestLocationRecord(vlrbs, DateLibrary.getIso8601StringAsTime(date));
         String vehicleId = vehicleRecord.getVehicleId();
         // load the trip
         String tripId = deagency(vehicleRecord.getTripId());
@@ -50,7 +58,7 @@ public class AbstractInputRunner {
         // parse
         Map<String, String> params = new HashMap<String, String>();
         params.put("time", String.valueOf(DateLibrary.getIso8601StringAsTime(date).getTime()));
-        FeedMessage feed = readUrl(params);
+        FeedMessage feed = readTUUrl(params);
         assertNotNull(feed);
         assertEquals(1, feed.getEntityCount());
         FeedEntity entity = feed.getEntity(0);
@@ -78,6 +86,37 @@ public class AbstractInputRunner {
         }
     }
 
+    private void verifyVP(String datasetId, String bundleId, String date) throws Exception {
+        List<VehicleLocationRecordBean> vlrbs = getInferenceRecords(datasetId);
+        VehicleLocationRecordBean vlrb = findBestLocationRecord(vlrbs, DateLibrary.getIso8601StringAsTime(date));
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("time", String.valueOf(DateLibrary.getIso8601StringAsTime(date).getTime()));
+        FeedMessage feed = readVPUrl(params);
+        assertEquals(1, feed.getEntityCount());
+        FeedEntity entity = feed.getEntity(0);
+        assertTrue(entity.hasVehicle());
+        VehiclePosition vp = entity.getVehicle();
+        assertEquals(vlrb.getVehicleId(), vp.getVehicle().getId());
+        CoordinatePoint rtPt = new CoordinatePoint(vp.getPosition().getLatitude(), vp.getPosition().getLongitude());
+        double distance = SphericalGeometryLibrary.distance(vlrb.getCurrentLocation(), rtPt);
+        assertTrue(distance < MAX_LOCATION_DISTANCE);
+        assertEquals(deagency(vlrb.getTripId()), vp.getTrip().getTripId());
+    }
+
+    private VehicleLocationRecordBean findBestLocationRecord(List<VehicleLocationRecordBean> records, Date date) {
+        Collections.sort(records, new Comparator<VehicleLocationRecordBean>() {
+            @Override
+            public int compare(VehicleLocationRecordBean o1, VehicleLocationRecordBean o2) {
+                return (int) (o1.getTimeOfRecord() - o2.getTimeOfRecord());
+            }
+        });
+        long time = date.getTime()/1000;
+        for (VehicleLocationRecordBean vlrb : records)
+            if (vlrb.getTimeOfRecord() > time)
+                return vlrb;
+        return records.get(records.size() - 1);
+    }
+
     private List<VehicleLocationRecordBean> getInferenceRecords(String datasetId) throws Exception {
         String input = IOUtils.toString(getInferenceInput(datasetId));
         return new InferredLocationReader().getRecordsFromText(input);
@@ -88,8 +127,13 @@ public class AbstractInputRunner {
         return FeedMessage.parseFrom(getResourceAsStream(resourceName));
     }
 
-    private FeedMessage readUrl(Map<String, String> params) throws Exception {
+    private FeedMessage readTUUrl(Map<String, String> params) throws Exception {
         InputStream is = new WebController().get(params, "/tripUpdates");
+        return FeedMessage.parseFrom(is);
+    }
+
+    private FeedMessage readVPUrl(Map<String, String> params) throws Exception {
+        InputStream is = new WebController().get(params, "/vehiclePositions");
         return FeedMessage.parseFrom(is);
     }
 
