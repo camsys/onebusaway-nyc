@@ -31,9 +31,14 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
     private long _generatedTime = 0l;
     private int _cacheExpirySeconds = DEFAULT_CACHE_EXPIRY_SECONDS;
     private FeedMessage _cache = null;
+    private boolean _disableCache = false;
 
     public void setCacheExpirySeconds(int seconds) {
         _cacheExpirySeconds = seconds;
+    }
+
+    public void setDisableCache(boolean disableCache) {
+        _disableCache = disableCache;
     }
 
     @Override
@@ -46,7 +51,7 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         if (requestTime != null && requestTime > 0)
             time = requestTime;
 
-        if (isCacheExpired(time)) {
+        if (_disableCache || isCacheExpired(time)) {
             FeedMessage.Builder builder = FeedMessage.newBuilder();
 
             for (FeedEntity.Builder entity : getEntities(time))
