@@ -1,16 +1,23 @@
 package org.onebusaway.nyc.gtfsrt.integration_tests;
 
-import com.google.transit.realtime.GtfsRealtime;
+import com.google.transit.realtime.GtfsRealtime.*;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.gtfsrt.util.InferredLocationReader;
+import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.utility.DateLibrary;
 
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  *
@@ -31,25 +38,59 @@ public class AbstractInputRunner {
 
     private void verify(String datasetId, String bundleId, String date) throws Exception {
         // load the vehicle
-        String vehicleId = datasetId.substring(datasetId.lastIndexOf("_")+1);
-        assertEquals("7198", vehicleId);
+        List<VehicleLocationRecordBean> vlrbs = getInferenceRecords(datasetId);
+        VehicleLocationRecordBean vehicleRecord = vlrbs.get(vlrbs.size() - 1);
+        String vehicleId = vehicleRecord.getVehicleId();
         // load the trip
+        String tripId = deagency(vehicleRecord.getTripId());
         // load the stops
+        FeedMessage predFeed = getPredictions(datasetId);
+        List<TripUpdate.StopTimeUpdate> predictions = predFeed.getEntity(0).getTripUpdate().getStopTimeUpdateList();
         // query gtfs-rt
         // parse
         Map<String, String> params = new HashMap<String, String>();
         params.put("time", String.valueOf(DateLibrary.getIso8601StringAsTime(date).getTime()));
-        GtfsRealtime.FeedMessage feed = readUrl(params);
+        FeedMessage feed = readUrl(params);
         assertNotNull(feed);
         assertEquals(1, feed.getEntityCount());
+        FeedEntity entity = feed.getEntity(0);
+        assertTrue(entity.hasTripUpdate());
+        TripUpdate tripUpdate = entity.getTripUpdate();
         // assert vehicle
+        assertEquals(vehicleId, tripUpdate.getVehicle().getId());
         // assert trip
+        assertEquals(tripId, tripUpdate.getTrip().getTripId());
         // assert each prediction
+        assertEquals(predictions.size(), tripUpdate.getStopTimeUpdateCount());
+        for (int i = 0; i < predictions.size(); i++) {
+            TripUpdate.StopTimeUpdate predictionStu = predictions.get(i);
+            TripUpdate.StopTimeUpdate feedStu = tripUpdate.getStopTimeUpdate(i);
+            assertEquals(deagency(predictionStu.getStopId()), feedStu.getStopId());
+            assertEquals(predictionStu.hasArrival(), feedStu.hasArrival());
+            // note feed from predictions engine has times in ms
+            if (predictionStu.hasArrival()) {
+                assertEquals(predictionStu.getArrival().getTime()/1000, feedStu.getArrival().getTime());
+            }
+            assertEquals(predictionStu.hasDeparture(), feedStu.hasDeparture());
+            if (predictionStu.hasDeparture()) {
+                assertEquals(predictionStu.getDeparture().getTime()/1000, feedStu.getDeparture().getTime());
+            }
+        }
     }
 
-    private GtfsRealtime.FeedMessage readUrl(Map<String, String> params) throws Exception {
+    private List<VehicleLocationRecordBean> getInferenceRecords(String datasetId) throws Exception {
+        String input = IOUtils.toString(getInferenceInput(datasetId));
+        return new InferredLocationReader().getRecordsFromText(input);
+    }
+
+    private FeedMessage getPredictions(String datasetId) throws Exception {
+        String resourceName = getFilenameFromPrefix(datasetId, PROTOCOL_BUFFER_TYPE);
+        return FeedMessage.parseFrom(getResourceAsStream(resourceName));
+    }
+
+    private FeedMessage readUrl(Map<String, String> params) throws Exception {
         InputStream is = new WebController().get(params, "/tripUpdates");
-        return GtfsRealtime.FeedMessage.parseFrom(is);
+        return FeedMessage.parseFrom(is);
     }
 
     private void loadInference(String datasetId) throws Exception {
@@ -118,4 +159,8 @@ public class AbstractInputRunner {
         // Subclasses do the work
     }
 
+    // take out agency component from AgencyAndId string
+    private static String deagency(String id) {
+        return AgencyAndId.convertFromString(id).getId();
+    }
 }

@@ -34,6 +34,11 @@
             <version>2.22.10-rt-SNAPSHOT</version>
             <type>war</type>
         </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-gtfsrt</artifactId>
+            <version>2.22.10-rt-SNAPSHOT</version>
+        </dependency>
         <!-- for nycBundle -->
         <dependency>
             <groupId>org.onebusaway</groupId>
