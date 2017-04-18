@@ -48,30 +48,23 @@
                 <prop key="vehicleUpdateServiceImpl.agencyId">MTA NYCT</prop>
                 <prop key="tripUpdateServiceImpl.agencyId">MTA NYCT</prop>
                 <prop key="serviceAlertServiceImpl.agencyId">MTA NYCT</prop>
+                <prop key="vehicleUpdateServiceImpl.disableCache">true</prop>
+                <prop key="tripUpdateServiceImpl.disableCache">true</prop>
+                <prop key="serviceAlertServiceImpl.disableCache">true</prop>
             </props>
         </property>
     </bean>
-    <!--<bean id="bundleManagementService"-->
-          <!--class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">-->
-        <!--<property name="bundleStoreRoot" value="${bundle.location}" />-->
-        <!--<property name="standaloneMode" value="${bundle.mode.standalone}" />-->
-    <!--</bean>-->
-    <!--<bean id="bundleManagementService"-->
-          <!--class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">-->
-        <!--<property name="bundleStoreRoot" value="/var/lib/oba/nyc-gtfsrt/" />-->
-        <!--<property name="standaloneMode" value="true" />-->
-    <!--</bean>-->
     <bean id="bundleManagementService"
           class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-        <property name="bundleStoreRoot" value="/Users/sbrown/src/nyc/onebusaway-nyc/onebusaway-nyc-gtfsrt-integration-tests/target/transit-data-bundle" />
-        <property name="standaloneMode" value="true" />
+        <property name="bundleStoreRoot" value="${bundle.location}" />
+        <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
     <!-- Input Queue Configuration -->
-    <!--<bean id="inferenceInputQueue"-->
-          <!--class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask"-->
-            <!--destroy-method="destroy"-->
-    <!--/>-->
+    <bean id="inferenceInputQueue"
+          class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask"
+            destroy-method="destroy"
+    />
 
     <!--  Time Queue Configuration -->
     <!--  This option integrates with an external time prediction queue -->
@@ -79,15 +72,14 @@
             class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl"
             destroy-method="destroy">
         <property name="checkPredictionAge" value="false"/>
-        <property name="disable" value="true"/>
     </bean>
 
     <!-- Service alerts. -->
 
-    <!--<bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">-->
-        <!--<property name="serviceAlertsUrl" value="${service.alerts.url}" />-->
-        <!--<property name="subscriptionPath" value="${service.alerts.subscription.path}" />-->
-    <!--</bean>-->
+    <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
+        <property name="serviceAlertsUrl" value="${service.alerts.url}" />
+        <property name="subscriptionPath" value="${service.alerts.subscription.path}" />
+    </bean>
 
     <!-- define which TDM to use -->
     <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >

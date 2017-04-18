@@ -56,7 +56,7 @@ public class GtfsRealtimeController {
     @RequestMapping(value = "/vehiclePositions")
     public void getVehiclePositions(HttpServletResponse response,
                                     @RequestParam(value = "debug", defaultValue = "false") boolean debug,
-                                    @RequestParam(value = "time") Long time)
+                                    @RequestParam(value = "time", required = false) Long time)
             throws IOException {
         FeedMessage msg = _vehicleUpdateService.getFeedMessage(time);
         writeFeed(response, msg, debug);
@@ -65,7 +65,7 @@ public class GtfsRealtimeController {
     @RequestMapping(value = "/tripUpdates")
     public void getTripUpdates(HttpServletResponse response,
                                     @RequestParam(value = "debug", defaultValue = "false") boolean debug,
-                                    @RequestParam(value = "time") Long time)
+                                    @RequestParam(value = "time", required = false) Long time)
             throws IOException {
         FeedMessage msg = _tripUpdateService.getFeedMessage(time);
         writeFeed(response, msg, debug);
@@ -74,7 +74,7 @@ public class GtfsRealtimeController {
     @RequestMapping(value = "/alerts")
     public void getAlerts(HttpServletResponse response,
                           @RequestParam(value = "debug", defaultValue = "false") boolean debug,
-                          @RequestParam(value = "time") Long time)
+                          @RequestParam(value = "time", required = false) Long time)
         throws IOException {
         FeedMessage msg = _serviceAlertService.getFeedMessage(time);
         writeFeed(response, msg, debug);
