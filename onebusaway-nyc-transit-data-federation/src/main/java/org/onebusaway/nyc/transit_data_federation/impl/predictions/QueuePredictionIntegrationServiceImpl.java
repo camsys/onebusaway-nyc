@@ -68,7 +68,6 @@ public class QueuePredictionIntegrationServiceImpl extends
 	private long predictionRecordAverageLatency = 0;
 	private Long _serviceTime = null; // leave empty for now, set for tests
 
-
 	public void setCheckPredictionAge(Boolean checkAge) {
 		_checkPredictionAge = checkAge;
 	}
@@ -233,7 +232,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 
 	@Override
 	public boolean isEnabled() {
-		return !"true".equalsIgnoreCase(getDisable());
+		return getStatus().equals(Status.ENABLED) || getStatus().equals(Status.TESTING);
 	}
 
 	public void destroy() {

@@ -7,8 +7,14 @@ import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 
 public abstract class TimeQueueListenerTask extends QueueListenerTask {
 
+		public enum Status {
+			ENABLED, // read from queue
+			TESTING, // don't read from queue, but allow cache to be read.
+			DISABLED; // totally disabled
+		};
+
   protected abstract void processResult(FeedMessage message);
-	
+
 	@Override
 	public boolean processMessage(String address, byte[] buff) {
 		try {
@@ -45,19 +51,19 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
     return "timePrediction";
   }
   
-  private String disable = "false";
+  private Status status = Status.ENABLED;
   
-  public String getDisable(){
-	  return this.disable;
+  public Status getStatus(){
+	  return status;
   }
   
-  public void setDisable(String disable) {
-    this.disable = disable;
-  }
+ 	public void setStatus(Status status) {
+  	this.status = status;
+		}
   
   @Refreshable(dependsOn = { "display.useTimePredictions" })
   public Boolean useTimePredictionsIfAvailable() {
-    if (Boolean.TRUE.equals(Boolean.parseBoolean(disable))) return false;
+    if (!Status.ENABLED.equals(status)) return false;
     return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
   }
   
