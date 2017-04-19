@@ -48,9 +48,9 @@
                 <prop key="vehicleUpdateServiceImpl.agencyId">MTA NYCT</prop>
                 <prop key="tripUpdateServiceImpl.agencyId">MTA NYCT</prop>
                 <prop key="serviceAlertServiceImpl.agencyId">MTA NYCT</prop>
-                <prop key="vehicleUpdateServiceImpl.disableCache">true</prop>
+                <!--<prop key="vehicleUpdateServiceImpl.disableCache">true</prop>
                 <prop key="tripUpdateServiceImpl.disableCache">true</prop>
-                <prop key="serviceAlertServiceImpl.disableCache">true</prop>
+                <prop key="serviceAlertServiceImpl.disableCache">true</prop>-->
             </props>
         </property>
     </bean>
