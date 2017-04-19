@@ -120,7 +120,6 @@ public class QueuePredictionIntegrationServiceImpl extends
 		if (enableCheckPredictionAge() &&
 				isPredictionRecordPastAgeLimit(message)) {
 			// Drop old messages
-			_log.warn("dropping old message=" + message);
 			return;
 		}
 
@@ -135,8 +134,6 @@ public class QueuePredictionIntegrationServiceImpl extends
 			if (!tu.getVehicle().getId().equals(vehicleId)
 					|| !tu.getTrip().getTripId().equals(tripId)) {
 				stopTimeMap = loadScheduledTimes(tu.getVehicle().getId(), tu.getTrip().getTripId());
-			} else {
-				_log.warn("missing vehicle or trip for update=" + tu);
 			}
 			tripId = tu.getTrip().getTripId();
 			vehicleId = tu.getVehicle().getId();
@@ -152,10 +149,6 @@ public class QueuePredictionIntegrationServiceImpl extends
 				if (scheduledTime != null) {
 					tpr.setTimepointScheduledTime(scheduledTime);
 					predictionRecords.add(tpr);
-				} else {
-					_log.info("could not find stopTime for update with header time ="
-							+ new Date(entity.getTripUpdate().getTimestamp()*1000)
-					+ " and arrival=" + new Date(stu.getArrival().getTime()));
 				}
 			}
 
@@ -220,13 +213,11 @@ public class QueuePredictionIntegrationServiceImpl extends
 	@Override
 	public List<TimepointPredictionRecord> getPredictionsForTrip(
 			TripStatusBean tripStatus) {
-		_log.info("call(" + tripStatus.getVehicleId() + "," + tripStatus.getActiveTrip().getId());
 		return getCache().getIfPresent(hash(tripStatus.getVehicleId(), tripStatus.getActiveTrip().getId()));
 	}
 
 	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
 			String VehicleId, String TripId) {
-		_log.info("call(" + VehicleId + "," + TripId);
 		return getCache().getIfPresent(hash(VehicleId, TripId));
 	}
 
