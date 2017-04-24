@@ -130,7 +130,7 @@
                 <depot.partition.key />
                 <log4j.appender>ROLL</log4j.appender>
                 <particle.filter.debug>false</particle.filter.debug>
-                <timePredictions.disable>true</timePredictions.disable>
+                <timePredictions.status>DISABLED</timePredictions.status>
                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
             </properties>
         </profile>
@@ -161,7 +161,7 @@
                  <depot.partition.key />
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
-                 <timePredictions.disable>true</timePredictions.disable>
+                 <timePredictions.status>DISABLED</timePredictions.status>
                  <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
           </properties>
         </profile>
@@ -193,7 +193,7 @@
                  <depot.partition.key />
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
-                 <timePredictions.disable>false</timePredictions.disable>
+                 <timePredictions.status>DISABLED</timePredictions.status>
                  <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
           </properties>
         </profile>
@@ -228,7 +228,7 @@
                  <log4j.appender>stdout</log4j.appender>
 <!--                  <particle.filter.debug>false</particle.filter.debug> -->
                  <particle.filter.debug>true</particle.filter.debug>
-                 <timePredictions.disable>true</timePredictions.disable>
+                 <timePredictions.status>DISABLED</timePredictions.status>
                  <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
           </properties>
         </profile>
@@ -257,7 +257,7 @@
                  <depot.partition.key>YU</depot.partition.key>
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
-                 <timePredictions.disable>true</timePredictions.disable>
+                 <timePredictions.status>DISABLED</timePredictions.status>
                  <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
           </properties>
         </profile>
