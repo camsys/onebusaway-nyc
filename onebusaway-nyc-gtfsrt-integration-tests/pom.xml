@@ -25,7 +25,7 @@
         <org.onebusaway.webapp.ajp_port>9001</org.onebusaway.webapp.ajp_port>
         <org.onebusaway.webapp.rmi_port>9002</org.onebusaway.webapp.rmi_port>
         <cargo.jvmargs>-Xmx7G -XX:MaxPermSize=256m -Duser.timezone=America/New_York</cargo.jvmargs>
-	<hsqldb.port>9930</hsqldb.port>
+	<hsqldb.port>9940</hsqldb.port>
     </properties>
     <dependencies>
         <dependency>
