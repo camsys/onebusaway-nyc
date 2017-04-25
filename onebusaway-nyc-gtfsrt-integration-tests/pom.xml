@@ -213,10 +213,8 @@
                 <configuration>
                     <container>
                         <!-- use this when debugging cargo -->
-                        <!--<log>${java.io.tmpdir}/cargo-gtfsrt-webapp.log</log>-->
-                        <log>/tmp/cargo-gtfsrt-webapp.log</log>
-                        <!--<output>${java.io.tmpdir}/cargo-gtfsrt-webapp.out</output>-->
-                        <output>/tmp/cargo-gtfsrt-webapp.out</output>
+                        <log>${java.io.tmpdir}/cargo-gtfsrt-webapp.log</log>
+                        <output>${java.io.tmpdir}/cargo-gtfsrt-webapp.out</output>
                         <append>true</append>
                         <containerId>tomcat7x</containerId>
                         <zipUrlInstaller>
