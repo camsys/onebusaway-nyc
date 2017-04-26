@@ -252,6 +252,7 @@
                                     <cargo.tomcat.ajp.port>${org.onebusaway.webapp.ajp_port}</cargo.tomcat.ajp.port>
                                     <cargo.rmi.port>${org.onebusaway.webapp.rmi_port}</cargo.rmi.port>
                                     <cargo.logging>${cargo.logging}</cargo.logging>
+                                    <timeout>${ping_timeout}</timeout>
                                 </properties>
                             </configuration>
                             <deployables>
