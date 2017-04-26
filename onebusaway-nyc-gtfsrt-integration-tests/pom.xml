@@ -226,7 +226,7 @@
                             <!--
                             <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
                             -->
-			    <java.library.path>/usr/local/lib</java.library.path>
+			                <java.library.path>/usr/local/lib</java.library.path>
                             <org.onebusaway.nyc.tdm.bundle.batchmode>true</org.onebusaway.nyc.tdm.bundle.batchmode>
                         </systemProperties>
                     </container>
@@ -251,8 +251,8 @@
                                     <cargo.servlet.port>${org.onebusaway.webapp.port}</cargo.servlet.port>
                                     <cargo.tomcat.ajp.port>${org.onebusaway.webapp.ajp_port}</cargo.tomcat.ajp.port>
                                     <cargo.rmi.port>${org.onebusaway.webapp.rmi_port}</cargo.rmi.port>
-                                    -->
                                     <cargo.logging>${cargo.logging}</cargo.logging>
+                                    <timeout>${ping_timeout}</timeout>
                                 </properties>
                             </configuration>
                             <deployables>

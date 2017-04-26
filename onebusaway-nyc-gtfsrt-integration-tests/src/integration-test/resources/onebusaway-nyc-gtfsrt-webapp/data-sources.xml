@@ -68,8 +68,8 @@
     <!-- Service alerts. -->
 
     <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
-        <property name="serviceAlertsUrl" value="http://tdm.dev.obanyc.com/siri/situation-exchange" />
-        <property name="subscriptionPath" value=":8080/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange" />
+        <!--<property name="serviceAlertsUrl" value="http://tdm.dev.obanyc.com/siri/situation-exchange" />-->
+        <!--<property name="subscriptionPath" value=":8080/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange" />-->
     </bean>
 
     <!-- define which TDM to use -->
