@@ -32,9 +32,7 @@
         	<unpackOptions>
             	<excludes>
                 	<exclude>WEB-INF/classes/data-sources.xml</exclude>
-<!--
                 	<exclude>WEB-INF/classes/log4j.xml</exclude>
--->
             	</excludes>
         	</unpackOptions>
             <scope>runtime</scope>
