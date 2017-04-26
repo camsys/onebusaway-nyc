@@ -12,6 +12,7 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.Message;
 import org.onebusaway.nyc.transit_data_manager.util.DateUtility;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * System wide resource to provide logging service. When requested, it performs logging of caller actions
@@ -59,7 +61,7 @@ public class SystemLogResource {
 			
 			SystemLogRecord logRecord = buildSystemLogRecord(logMessage);
 			
-			_sessionFactory.getCurrentSession().saveOrUpdate(logRecord);
+			saveLogRecord(logRecord);
 			
 			message.setStatus("OK");
 			
@@ -75,6 +77,10 @@ public class SystemLogResource {
 			message.setStatus("ERROR");
 			message.setMessageText("I/O error parsing message JSON content");
 			e.printStackTrace();
+		} catch(HibernateException hibernateException) {
+			message.setStatus("ERROR");
+			message.setMessageText("Error saving SystemLogRecord");
+			hibernateException.printStackTrace();
 		}
 		
 		log.info("Returning response text");
@@ -94,6 +100,11 @@ public class SystemLogResource {
 	
 	private Date getDate() {
 		return DateUtility.getTodaysDateTime();
+	}
+	
+	@Transactional("archiveDB")
+	private void saveLogRecord(SystemLogRecord logRecord) {
+		_sessionFactory.getCurrentSession().saveOrUpdate(logRecord);
 	}
 
 	@Autowired
