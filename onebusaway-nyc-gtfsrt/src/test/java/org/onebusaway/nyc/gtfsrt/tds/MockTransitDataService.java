@@ -140,6 +140,11 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
+    public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId, String tripId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Boolean stopHasRevenueServiceOnRoute(String agencyId, String stopId, String routeId, String directionId) {
         throw new UnsupportedOperationException();
     }

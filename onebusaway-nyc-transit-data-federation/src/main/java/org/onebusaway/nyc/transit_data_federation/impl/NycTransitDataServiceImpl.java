@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.transit_data_federation.impl;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -160,6 +161,14 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus.getActiveTrip().getId());
 		}
 		return _predictionHelperService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus);
+	}
+
+	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
+			String tripId) {
+		if (_predictionIntegrationService.isEnabled()) {
+			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripId);
+		}
+		return Collections.emptyList();
 	}
 
 	@Override

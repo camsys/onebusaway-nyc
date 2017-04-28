@@ -3,6 +3,7 @@ package org.onebusaway.nyc.gtfsrt.tests;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.impl.TripUpdateServiceImpl;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -52,6 +53,8 @@ public class TripUpdateServiceImplTest {
     BlockInstanceBean block = blockInstance(blockTrip("trip"));
     when(tds.getAllVehiclesForAgency("agency", 0)).thenReturn(UnitTestSupport.listBean(vsb));
     when(tds.getBlockInstance("block", 0)).thenReturn(block);
+    when(tds.getPredictionRecordsForVehicleAndTrip("vehicle", "trip"))
+            .thenReturn(Collections.singletonList(tpr("stop", 0, 0)));
     List<FeedEntity.Builder> ret = service.getEntities(0);
     assertEquals(1, ret.size());
     FeedEntity.Builder fe = ret.get(0);
@@ -59,11 +62,29 @@ public class TripUpdateServiceImplTest {
   }
 
   @Test
-  public void testTripUpdateMultipleTripsOnBlock() {
+  public void testTripUpdateMultipleTripsOnBlockOnePred() {
     VehicleStatusBean vsb = vehicleStatus("vehicle", "block", 0);
     BlockInstanceBean block = blockInstance(blockTrip("trip0"), blockTrip("trip1"));
     when(tds.getAllVehiclesForAgency("agency", 0)).thenReturn(UnitTestSupport.listBean(vsb));
     when(tds.getBlockInstance("block", 0)).thenReturn(block);
+    when(tds.getPredictionRecordsForVehicleAndTrip("vehicle", "trip0"))
+            .thenReturn(Collections.singletonList(tpr("stop", 0, 0)));
+    List<FeedEntity.Builder> ret = service.getEntities(0);
+    assertEquals(1, ret.size());
+    Collections.sort(ret, ALPHABETIC_BY_ID);
+    assertTrip("trip0", ret.get(0));
+  }
+
+  @Test
+  public void testTripUpdateMultipleTripsOnBlockTwoPreds() {
+    VehicleStatusBean vsb = vehicleStatus("vehicle", "block", 0);
+    BlockInstanceBean block = blockInstance(blockTrip("trip0"), blockTrip("trip1"));
+    when(tds.getAllVehiclesForAgency("agency", 0)).thenReturn(UnitTestSupport.listBean(vsb));
+    when(tds.getBlockInstance("block", 0)).thenReturn(block);
+    when(tds.getPredictionRecordsForVehicleAndTrip("vehicle", "trip0"))
+            .thenReturn(Collections.singletonList(tpr("stop", 0, 0)));
+    when(tds.getPredictionRecordsForVehicleAndTrip("vehicle", "trip1"))
+            .thenReturn(Collections.singletonList(tpr("stop", 0, 0)));
     List<FeedEntity.Builder> ret = service.getEntities(0);
     assertEquals(2, ret.size());
     Collections.sort(ret, ALPHABETIC_BY_ID);
@@ -77,6 +98,8 @@ public class TripUpdateServiceImplTest {
     BlockInstanceBean block = blockInstance(blockTrip("trip0"), blockTrip("trip1"));
     when(tds.getAllVehiclesForAgency("agency", 0)).thenReturn(UnitTestSupport.listBean(vsb));
     when(tds.getBlockInstance("block", 0)).thenReturn(block);
+    when(tds.getPredictionRecordsForVehicleAndTrip("vehicle", "trip1"))
+            .thenReturn(Collections.singletonList(tpr("stop", 0, 0)));
     List<FeedEntity.Builder> ret = service.getEntities(0);
     assertEquals(1, ret.size());
     assertTrip("trip1", ret.get(0));
@@ -104,6 +127,15 @@ public class TripUpdateServiceImplTest {
     vsb.setTrip(new TripBean());
     vsb.getTrip().setBlockId(block);
     return vsb;
+  }
+
+  private TimepointPredictionRecord tpr(String stop, int sequence, int time) {
+    TimepointPredictionRecord tpr = new TimepointPredictionRecord();
+    tpr.setStopSequence(sequence);
+    tpr.setTimepointId(new AgencyAndId("agency", stop));
+    tpr.setTimepointPredictedTime(time);
+    tpr.setTimepointScheduledTime(time);
+    return tpr;
   }
 
   private void assertTrip(String trip, FeedEntityOrBuilder fe) {
