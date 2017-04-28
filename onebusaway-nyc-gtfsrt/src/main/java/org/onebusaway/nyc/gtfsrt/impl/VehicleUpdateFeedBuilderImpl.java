@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime.*;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -34,8 +35,10 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
         position.setPosition(makePosition(record));
         position.setVehicle(makeVehicleDescriptor(record));
         position.setTimestamp(record.getTimeOfRecord()/1000);
-        if (status.getTripStatus().getNextStop() != null)
-            position.setStopId(status.getTripStatus().getNextStop().getId());
+        if (status.getTripStatus().getNextStop() != null) {
+            AgencyAndId id = AgencyAndId.convertFromString(status.getTripStatus().getNextStop().getId());
+            position.setStopId(id.getId());
+        }
 
         return position;
     }

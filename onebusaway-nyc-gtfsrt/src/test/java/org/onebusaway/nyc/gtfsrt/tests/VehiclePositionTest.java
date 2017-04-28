@@ -96,8 +96,10 @@ public abstract class VehiclePositionTest extends TestCase {
         // current_stop_sequence) to the vehicle's position defaults to IN_TRANSIT_TO
         if (status.getTripStatus().getNextStop() == null)
             return;
-        if (!vp.hasCurrentStatus() || vp.getCurrentStatus().equals(VehiclePosition.VehicleStopStatus.IN_TRANSIT_TO))
-            assertEquals(status.getTripStatus().getNextStop().getId(), vp.getStopId());
+        if (!vp.hasCurrentStatus() || vp.getCurrentStatus().equals(VehiclePosition.VehicleStopStatus.IN_TRANSIT_TO)) {
+            String stopId = AgencyAndId.convertFromString(status.getTripStatus().getNextStop().getId()).getId();
+            assertEquals(stopId, vp.getStopId());
+        }
         else
             throw new UnsupportedOperationException("Not implemented");
 

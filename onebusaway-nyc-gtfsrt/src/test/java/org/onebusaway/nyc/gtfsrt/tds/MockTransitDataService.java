@@ -254,8 +254,8 @@ public class MockTransitDataService implements NycTransitDataService {
         query.setTime(new Date(time));
         TripDetailsBean tdb = getTripDetailsForVehicleAndTime(query);
 
-            vsb.setTrip(tdb.getTrip());
-            vsb.setTripStatus(tdb.getStatus());
+        vsb.setTrip(tdb.getTrip());
+        vsb.setTripStatus(tdb.getStatus());
 
         return vsb;
     }
@@ -592,24 +592,17 @@ public class MockTransitDataService implements NycTransitDataService {
         double distanceAlongTrip = vlrb.getDistanceAlongBlock() - getAccumulatedBlockDistanceForTrip(trip);
         status.setDistanceAlongTrip(distanceAlongTrip);
 
+        long secondsIntoDay = (time - vlrb.getServiceDate())/1000;
+        long scheduleTimeForLocation = secondsIntoDay - (long) vlrb.getScheduleDeviation();
         // set next stop
-//        Iterator<StopTime> stopTimes = _dao.getStopTimesForTrip(trip).iterator();
-//        int seq = -1;
-//        double distance = 0;
-//        StopTime st = null;
-//        while (stopTimes.hasNext()) {
-//            st = stopTimes.next();
-//            if (seq >= st.getStopSequence())
-//                throw new IllegalArgumentException("bad stop times: not in sequence");
-//            if (!st.isShapeDistTraveledSet())
-//                throw new IllegalArgumentException("bad stop times: no shape dist");
-//            seq = st.getStopSequence();
-//            distance += st.getShapeDistTraveled();
-//            if (distance > distanceAlongTrip)
-//              break;
-//        }
-//        if (st != null)
-//            status.setNextStop(stopBean(st.getStop()));
+        List<StopTime> stopTimes = _dao.getStopTimesForTrip(trip);
+        for (StopTime st : stopTimes) {
+            // If arrival at stop is after the scheduled time to be at this location, we found the next stop
+            if (st.getArrivalTime() >= scheduleTimeForLocation) {
+                status.setNextStop(stopBean(st.getStop()));
+                break;
+            }
+        }
 
         return status;
     }
