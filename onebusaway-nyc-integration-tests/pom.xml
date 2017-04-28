@@ -611,7 +611,7 @@
 		    </deployables>
 
                     <!-- Don't wait around once the container has been started -->
-                    <wait>false</wait><!-- now deprecated -->
+
                 </configuration>
                 <executions>
                     <execution>

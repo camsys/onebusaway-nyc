@@ -9,8 +9,7 @@
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-gtfsrt-integration-tests</artifactId>
     <!-- THIS NEEDS TO BE A WAR FOR THE INTEGRATIONS TESTS TO COMPLETELY RUN -->
-    <!-- todo -->
-    <packaging>pom</packaging>
+    <packaging>war</packaging>
     <name>onebusaway-nyc-gtfsrt-integration-tests</name>
 
     <properties>
@@ -120,6 +119,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- this exclude disables running during the test phase -->
                     <excludes>
                         <exclude>**/*.*</exclude>
                     </excludes>
@@ -157,6 +157,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <phase>pre-integration-test</phase>
@@ -177,34 +178,38 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1.1</version>
                 <executions>
-            <execution>
-            <id>graph-builder-execution-2017April_Prod_rt_test</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-                <goal>exec</goal>
-            </goals>
-                <configuration>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Xdebug</argument>
-                        <argument>-Xmx6g</argument>
-                        <argument>-classpath</argument>
-                        <classpath />
-                        <argument>-Dlog4j.configuration=/tmp/log4j-stdout.xml</argument>
-                        <argument>-Donebusaway_prefix=${basedir}</argument>
-                        <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
-                        <argument>-onlyIfDoesNotExist</argument>
-                        <argument>-additionalResourcesDirectory</argument>
-                        <argument>${basedir}/src/integration-test/resources/bundle</argument>
-                        <argument>${basedir}/src/integration-test/resources/bundle-2017April_Prod_rt_test.xml</argument>
-                        <argument>${project.build.directory}/transit-data-bundle/2017April_Prod_rt_test</argument>
-                    </arguments>
-                </configuration>
-            </execution>
-        </executions>
+                    <execution>
+                        <id>graph-builder-execution-2017April_Prod_rt_test</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xdebug</argument>
+                                <argument>-Xmx6g</argument>
+                                <argument>-classpath</argument>
+                                <classpath/>
+                                <argument>-Dlog4j.configuration=/tmp/log4j-stdout.xml</argument>
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>
+                                    org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain
+                                </argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2017April_Prod_rt_test.xml
+                                </argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2017April_Prod_rt_test
+                                </argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <!-- end build bundles -->
-
+            <!-- start cargo -->
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
                 <artifactId>cargo-maven2-plugin</artifactId>
@@ -226,12 +231,13 @@
                             <!--
                             <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
                             -->
-			                <java.library.path>/usr/local/lib</java.library.path>
+                            <java.library.path>/usr/local/lib</java.library.path>
                             <org.onebusaway.nyc.tdm.bundle.batchmode>true</org.onebusaway.nyc.tdm.bundle.batchmode>
                         </systemProperties>
                     </container>
                     <deployables>
                         <!-- dont deploy integration-tests -->
+                        <deployer/>
                     </deployables>
                 </configuration>
                 <executions>
@@ -256,6 +262,8 @@
                                 </properties>
                             </configuration>
                             <deployables>
+                                <!-- don't deploy integration tests -->
+                                <deployer />
                                 <deployable>
                                     <groupId>org.onebusaway</groupId>
                                     <artifactId>onebusaway-nyc-gtfsrt-webapp</artifactId>
@@ -263,8 +271,12 @@
                                     <properties>
                                         <context>onebusaway-nyc-gtfsrt-webapp</context>
                                     </properties>
-                                    <location>${project.build.directory}/onebusaway-nyc-gtfsrt-integration-tests-onebusaway-nyc-gtfsrt-webapp.war</location>
-                                    <pingURL>http://localhost:${org.onebusaway.webapp.port}/onebusaway-nyc-gtfsrt-webapp/</pingURL>
+                                    <location>
+                                        ${project.build.directory}/onebusaway-nyc-gtfsrt-integration-tests-onebusaway-nyc-gtfsrt-webapp.war
+                                    </location>
+                                    <pingURL>
+                                        http://localhost:${org.onebusaway.webapp.port}/onebusaway-nyc-gtfsrt-webapp/
+                                    </pingURL>
                                     <pingTimeout>${ping_timeout}</pingTimeout>
                                 </deployable>
                             </deployables>
@@ -292,12 +304,14 @@
                                 </properties>
                             </configuration>
                             <deployables>
-                                <!-- dont deploy intergration-tests -->
+                                <!-- dont deploy integration-tests -->
+                                <deployable />
                             </deployables>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <!-- end cargo -->
         </plugins>
     </build>
 </project>

@@ -14,6 +14,8 @@
         http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
         http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.0.xsd">
 
+    <!-- this comes from the integration test assembly -->
+
     <!-- Database Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
@@ -62,7 +64,7 @@
     <bean id="timeInputQueue"
             class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl"
             destroy-method="destroy">
-        <property name="status" value="DISABLED"/>
+        <property name="status" value="TESTING"/>
     </bean>
 
     <!-- Service alerts. -->

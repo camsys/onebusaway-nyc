@@ -14,18 +14,19 @@
         http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
         http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.0.xsd">
 
+    <!-- this file comes from onebusaway-nyc-gtfsrt-webapp -->
     <!-- Database Configuration -->
 
     <bean id="dataSource"
           class="org.springframework.jndi.JndiObjectFactoryBean">
       <property name="jndiName"
-                value="java:comp/env/jdbc/appDB"/>   
+                value="java:comp/env/jdbc/appDB"/>
       <property name="lookupOnStartup"
-                value="true"/>   
+                value="true"/>
       <property name="cache"
-                value="true"/>   
+                value="true"/>
       <property name="proxyInterface"
-                value="javax.sql.DataSource"/>   
+                value="javax.sql.DataSource"/>
       <property name="resourceRef"
                 value="true" />
     </bean>
