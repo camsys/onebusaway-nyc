@@ -180,7 +180,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 			serviceDate = tripDetails.getList().get(0).getStatus().getServiceDate();
 		} else {
 			// TDS doesn't know of trip status, no need to store prediction
-			_log.info("no trip found for " + vehicleId + ":" + tripId + " at time=" + new Date(getTime()));
+			_log.debug("no trip found for " + vehicleId + ":" + tripId + " at time=" + new Date(getTime()));
 			return map;
 		}
 		assert(tripDetails.getList().size() == 1);
