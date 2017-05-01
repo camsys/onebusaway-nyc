@@ -41,9 +41,6 @@
         <property name="properties">
             <props>
                 <prop key="cacheManager.cacheManagerName">org.onebusaway.nyc_webapp_gtfsrt.cacheManager</prop>
-                <prop key="vehicleUpdateServiceImpl.agencyId">MTA NYCT</prop>
-                <prop key="tripUpdateServiceImpl.agencyId">MTA NYCT</prop>
-                <prop key="serviceAlertServiceImpl.agencyId">MTA NYCT</prop>
             </props>
         </property>
     </bean>
