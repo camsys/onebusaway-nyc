@@ -18,6 +18,7 @@ package org.onebusaway.nyc.gtfsrt.impl;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.onebusaway.nyc.gtfsrt.service.ServiceAlertFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,13 +50,16 @@ public class ServiceAlertServiceImpl extends AbstractFeedMessageService {
     @Override
     public List<FeedEntity.Builder> getEntities(long time) {
         List<FeedEntity.Builder> ret = new ArrayList<FeedEntity.Builder>();
-        ListBean<ServiceAlertBean> serviceAlertBeans = _transitDataService.getAllServiceAlertsForAgencyId(getAgencyId());
-        for (ServiceAlertBean bean : serviceAlertBeans.getList()) {
-            Alert.Builder alert = _feedBuilder.getAlertFromServiceAlert(bean);
-            FeedEntity.Builder entity = FeedEntity.newBuilder();
-            entity.setAlert(alert);
-            entity.setId(bean.getId());
-            ret.add(entity);
+        for (AgencyWithCoverageBean ab : _transitDataService.getAgenciesWithCoverage()) {
+            String agencyId = ab.getAgency().getId();
+            ListBean<ServiceAlertBean> serviceAlertBeans = _transitDataService.getAllServiceAlertsForAgencyId(agencyId);
+            for (ServiceAlertBean bean : serviceAlertBeans.getList()) {
+                Alert.Builder alert = _feedBuilder.getAlertFromServiceAlert(bean);
+                FeedEntity.Builder entity = FeedEntity.newBuilder();
+                entity.setAlert(alert);
+                entity.setId(bean.getId());
+                ret.add(entity);
+            }
         }
         return ret;
     }

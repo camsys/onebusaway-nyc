@@ -22,7 +22,6 @@ import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
-import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
@@ -33,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -77,12 +77,13 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
 
     @Override
     public List<FeedEntity.Builder> getEntities(long time) {
-        _log.debug("getEntities(" + new Date(time) + "), agencyId=" + getAgencyId());
-        ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(getAgencyId(), time);
-        _log.debug("found " + vehicles.getList().size() + " vehicles");
+        _log.debug("getEntities(" + new Date(time) + ")");
+
+        Collection<VehicleStatusBean> vehicles = getAllVehicles(_transitDataService, time);
+        _log.debug("found " + vehicles.size() + " vehicles");
         List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
-        for (VehicleStatusBean vehicle : vehicles.getList()) {
+        for (VehicleStatusBean vehicle : vehicles) {
 
             if (vehicle.getTrip() == null) {
                 _log.warn("no trip for vehicle=" + vehicle.getVehicleId());

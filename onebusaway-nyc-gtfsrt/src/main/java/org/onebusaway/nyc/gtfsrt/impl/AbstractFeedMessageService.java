@@ -17,7 +17,13 @@ package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.onebusaway.nyc.gtfsrt.service.FeedMessageService;
+import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
+import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.services.TransitDataService;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -27,7 +33,6 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
 
     public static final int DEFAULT_CACHE_EXPIRY_SECONDS = 10;
 
-    private String _agencyId;
     private long _generatedTime = 0l;
     private int _cacheExpirySeconds = DEFAULT_CACHE_EXPIRY_SECONDS;
     private FeedMessage _cache = null;
@@ -71,17 +76,19 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         return _cache;
     }
 
-    public String getAgencyId() {
-        return _agencyId;
-    }
-
-    public void setAgencyId(String agencyId) {
-        _agencyId = agencyId;
-    }
-
     private boolean isCacheExpired(long now) {
         if (_cache == null) return true;
         return (now - _generatedTime) > _cacheExpirySeconds * 1000;
+    }
+
+    public Collection<VehicleStatusBean> getAllVehicles(TransitDataService tds, long time) {
+        List<VehicleStatusBean> vehicles = new ArrayList<VehicleStatusBean>();
+        for (AgencyWithCoverageBean bean : tds.getAgenciesWithCoverage()) {
+            String agency = bean.getAgency().getId();
+            ListBean<VehicleStatusBean> lb = tds.getAllVehiclesForAgency(agency, time);
+            vehicles.addAll(lb.getList());
+        }
+        return vehicles;
     }
 
     public abstract List<FeedEntity.Builder> getEntities(long time);

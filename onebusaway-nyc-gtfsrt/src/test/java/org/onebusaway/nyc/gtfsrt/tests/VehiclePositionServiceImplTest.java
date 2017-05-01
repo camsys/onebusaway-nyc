@@ -37,11 +37,11 @@ public class VehiclePositionServiceImplTest {
     };
 
     tds = mock(NycTransitDataService.class);
+    when(tds.getAgenciesWithCoverage()).thenReturn(UnitTestSupport.agenciesWithCoverage("agency"));
 
     service = new VehicleUpdateServiceImpl();
     service.setFeedBuilder(feedBuilder);
     service.setTransitDataService(tds);
-    service.setAgencyId("agency");
   }
 
   @Test

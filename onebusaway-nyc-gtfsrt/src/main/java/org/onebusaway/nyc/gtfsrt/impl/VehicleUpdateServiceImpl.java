@@ -18,7 +18,6 @@ package org.onebusaway.nyc.gtfsrt.impl;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.slf4j.Logger;
@@ -27,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -52,13 +52,13 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
 
     @Override
     public List<FeedEntity.Builder> getEntities(long time) {
-        ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(getAgencyId(), time);
+        Collection<VehicleStatusBean> vehicles = getAllVehicles(_transitDataService, time);
 
         List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
         long nMissing = 0;
 
-        for (VehicleStatusBean vehicle : vehicles.getList()) {
+        for (VehicleStatusBean vehicle : vehicles) {
 
             if (vehicle.getTrip() == null) {
                 continue;
