@@ -137,4 +137,8 @@
         <qualifier value="slaveDB"/>
     </bean>
 	
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+    <tx:annotation-driven transaction-manager="transactionManagerSlave"/>
+	
+	
 </beans>

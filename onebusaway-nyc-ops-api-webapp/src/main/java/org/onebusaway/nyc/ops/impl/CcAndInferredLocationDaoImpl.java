@@ -59,7 +59,7 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		return _sessionFactory.getCurrentSession();
 	}
 
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value = "transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecord(ArchivedInferredLocationRecord record) {
 		CcLocationReportRecord cc = findRealtimeRecord(record);
@@ -70,14 +70,14 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		}
 	}
 
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value = "transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecords(ArchivedInferredLocationRecord... records) {
 		Collection<CcAndInferredLocationRecord> lastKnownRecords = getLastKnownRecords(records);
 		saveOrUpdateRecords(lastKnownRecords);
 	}
 	
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value = "transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecord(CcAndInferredLocationRecord record) {
 		getSession().saveOrUpdate(record);
@@ -85,7 +85,7 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		getSession().clear();
 	}
 	
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value = "transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecords(Collection<CcAndInferredLocationRecord> records) {
 		for(CcAndInferredLocationRecord record : records){
@@ -95,7 +95,7 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		getSession().clear();
 	}
 	
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value = "transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public Integer getCcAndInferredLocationCount() {		
 		Integer resultCount = null;
@@ -110,7 +110,7 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		return resultCount;
 	}
 	
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value = "transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public Integer getArchiveInferredLocationCount() {		
 		Integer resultCount = null;
@@ -125,7 +125,7 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		return resultCount;
 	}
 	
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value = "transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public Integer getCcLocationReportRecordCount() {		
 		Integer resultCount = null;
@@ -175,6 +175,7 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		return realtime;
 	}
 
+	@Transactional(value = "transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public List<CcAndInferredLocationRecord> getAllLastKnownRecords(
 			final Map<CcAndInferredLocationFilter, String> filter) {
@@ -205,6 +206,7 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		return query.list();
 	}
 
+	@Transactional(value = "transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public CcAndInferredLocationRecord getLastKnownRecordForVehicle(
 			Integer vehicleId) throws Exception {
