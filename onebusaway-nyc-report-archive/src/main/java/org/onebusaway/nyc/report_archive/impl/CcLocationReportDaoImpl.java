@@ -36,7 +36,7 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 		return _sessionFactory.getCurrentSession();
 	}
 	
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value="transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateReport(CcLocationReportRecord report) {
 		getSession().saveOrUpdate(report);
@@ -44,7 +44,7 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 		getSession().clear();
 	}
 
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value="transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateReports(CcLocationReportRecord... reports) {
 		List<CcLocationReportRecord> list = new ArrayList<CcLocationReportRecord>(
@@ -57,7 +57,7 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Transactional(readOnly = true)
+	@Transactional(value="transactionManager", readOnly = true)
 	public int getNumberOfReports() {
 		@SuppressWarnings("rawtypes")
 		Query query = getSession().createQuery("select count(*) from CcLocationReportRecord");
@@ -66,7 +66,7 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 	}
 
 	@Override
-	@Transactional(rollbackFor = Throwable.class, propagation = Propagation.REQUIRES_NEW)
+	@Transactional(value="transactionManager", rollbackFor = Throwable.class, propagation = Propagation.REQUIRES_NEW)
 	public void handleException(String content, Throwable error,
 			Date timeReceived) {
 		InvalidLocationRecord ilr = new InvalidLocationRecord(content, error,

@@ -62,7 +62,7 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		return _sessionFactory.getCurrentSession();
 	}
 
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value="transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecord(ArchivedInferredLocationRecord record) {
 		getSession().saveOrUpdate(record);
@@ -78,7 +78,7 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		getSession().clear();
 	}
 
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value="transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecords(ArchivedInferredLocationRecord... records) {
 		List<ArchivedInferredLocationRecord> ArchivedInferredLocationRecord = getInferredLocationRecords(records);
@@ -96,7 +96,7 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		getSession().clear();
 	}
 	
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value="transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecord(CcAndInferredLocationRecord record) {
 		getSession().saveOrUpdate(record);
@@ -104,7 +104,7 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		getSession().clear();
 	}
 	
-	@Transactional(rollbackFor = Throwable.class)
+	@Transactional(value="transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecords(Collection<CcAndInferredLocationRecord> records) {		
 		for(CcAndInferredLocationRecord record : records){
