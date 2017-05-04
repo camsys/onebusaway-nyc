@@ -102,7 +102,7 @@ public class SystemLogResource {
 		return DateUtility.getTodaysDateTime();
 	}
 	
-	@Transactional("archiveDB")
+	@Transactional("transactionManagerArchive")
 	private void saveLogRecord(SystemLogRecord logRecord) {
 		_sessionFactory.getCurrentSession().saveOrUpdate(logRecord);
 	}

@@ -66,7 +66,7 @@ public class VehicleAndCrewDataPersistenceServiceImpl implements VehicleAndCrewD
 	}
 	
 	@Override
-	@Transactional("archiveDB")
+	@Transactional("transactionManagerArchive")
 	public void saveVehiclePulloutData() throws DataAccessResourceFailureException {
 		List<VehiclePipoRecord> vehicleRecords = new ArrayList<VehiclePipoRecord>();
 		
@@ -99,7 +99,7 @@ public class VehicleAndCrewDataPersistenceServiceImpl implements VehicleAndCrewD
 	}
 
 	@Override
-	@Transactional("archiveDB")
+	@Transactional("transactionManagerArchive")
 	public void saveCrewAssignmentData() throws DataAccessResourceFailureException {
 		List<CrewAssignmentRecord> crewAssignments = new ArrayList<CrewAssignmentRecord>();
 		
