@@ -53,7 +53,7 @@ public class DepotDataPersistenceServiceImpl implements DepotDataPersistenceServ
 	}
 	
 	@Override
-	@Transactional("archiveDB")
+	@Transactional("transactionManagerArchive")
 	public void saveDepotData() throws DataAccessResourceFailureException {
 		VehicleDepotData depotData = depotDataProviderService.getVehicleDepotData(depotIdTranslator);
 		List<CPTFleetSubsetGroup> depotGroup = depotData.getAllDepotGroups();
