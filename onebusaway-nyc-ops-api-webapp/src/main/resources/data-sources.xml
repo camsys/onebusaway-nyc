@@ -53,9 +53,17 @@
   <bean id="output_queue" class="org.onebusaway.nyc.ops.queue.OpsInferenceQueueListenerTask">
   </bean>
 	
-	<!-- Database Connection Configuration -->   
+	<!-- Database Connection Configuration -->
+	
+	 <bean id="hsqlDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	    <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+	    <property name="url" value="jdbc:hsqldb:mem:onebusaway_temporary"/>
+	    <property name="username" value="sa"/>
+	    <property name="password" value=""/>
+   	 </bean>
+	   
 	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
-		<!-- <property name="dataSource" ref="cacheDataSource" /> -->
+		<property name="dataSource" ref="hsqlDataSource" />
 		<property name="annotatedClasses">
 			<list>
 				<value>org.onebusaway.nyc.report.model.CcLocationReportRecord</value>
@@ -72,10 +80,6 @@
 		       	<prop key="hibernate.order_inserts">false</prop>
 		       	<prop key="hibernate.order_updates">false</prop>
 		       	<prop key="hibernate.show_sql">false</prop>
-		       	<prop key="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</prop>
-		       	<prop key="hibernate.connection.url">jdbc:hsqldb:mem:onebusaway_temporary</prop>
-		       	<prop key="hibernate.connection.username">sa</prop>
-		       	<prop key="hibernate.connection.password"></prop>    	
 		       	<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>              	
 			</props>
 		</property>
