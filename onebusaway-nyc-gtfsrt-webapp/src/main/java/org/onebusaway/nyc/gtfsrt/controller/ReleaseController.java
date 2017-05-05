@@ -27,7 +27,7 @@ public class ReleaseController {
 
   private GitRepositoryState gitState = null;
 
-  @RequestMapping(value = "/release", method = RequestMethod.GET, produces = "application/json")
+  @RequestMapping(value = "/api/release", method = RequestMethod.GET, produces = "application/json")
   @ResponseBody
   public GitRepositoryState getRelease() {
     if (gitState == null) {
