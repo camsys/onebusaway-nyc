@@ -47,6 +47,7 @@ public class HistoricalRecordsResource {
 			@QueryParam(value="timeout") final Integer timeout) {
 		
 		log.info("Starting getHistoricalRecords");
+		long now = System.currentTimeMillis();
 		
 		Map<CcAndInferredLocationFilter, Object> filters = addFilterParameters(depotId, 
 				inferredRouteId, inferredPhase, vehicleId, vehicleAgencyId, boundingBox, 
@@ -56,27 +57,29 @@ public class HistoricalRecordsResource {
 		HistoricalRecordsMessage historicalRecordMessage = new HistoricalRecordsMessage();
 		try {
 		  historicalRecords = historicalRecordsDao.getHistoricalRecords(filters);
-	    historicalRecordMessage.setRecords(historicalRecords);
-	    historicalRecordMessage.setStatus("OK");
+		    historicalRecordMessage.setRecords(historicalRecords);
+		    historicalRecordMessage.setStatus("OK");
 
 		} catch (UncategorizedSQLException sql) {
 		  // here we make the assumption that an exception means query timeout
-      historicalRecordMessage.setRecords(null);
-      historicalRecordMessage.setStatus("QUERY_TIMEOUT");
-		  
+	      historicalRecordMessage.setRecords(null);
+	      historicalRecordMessage.setStatus("QUERY_TIMEOUT");
 		}
-		
-		
+
 		String outputJson;
 		try {
 			outputJson = getObjectAsJsonString(historicalRecordMessage);
 		} catch (IOException e1) {
+			log.error("Unable to complete request, query took " + (System.currentTimeMillis() - now)  + "ms");
+			log.error(filtersToString(filters));
 			throw new WebApplicationException(e1, Response.Status.INTERNAL_SERVER_ERROR);
 		}
 		
 		Response response = Response.ok(outputJson, "application/json").build();
 		
-		log.info("Returning response from getHistoricalRecords");
+		log.info("Returning response from getHistoricalRecords, query took " + (System.currentTimeMillis() - now)  + "ms");
+		log.info(filtersToString(filters));
+		
 		return response;
 	}
 	
@@ -134,6 +137,32 @@ public class HistoricalRecordsResource {
 		if (outputJson == null) throw new IOException("After using jsontool to write json, output was still null.");
 
 		return outputJson;
+	}
+	
+	private String filtersToString(Map<CcAndInferredLocationFilter, Object> filter){
+		
+		int parameterCount = 1;
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append("Parameters : [ ");
+		
+		for (Map.Entry<CcAndInferredLocationFilter, Object> entry : filter.entrySet())
+		{	
+			if(entry.getValue() != null){
+				sb.append(entry.getValue().toString());
+				sb.append("=");
+				sb.append(entry.getKey().getValue());
+				
+				if(parameterCount < filter.entrySet().size()){
+					sb.append(", ");
+				}
+			}
+			parameterCount++;
+		}
+		
+		sb.append(" ]");
+		
+		return sb.toString();
 	}
 
 	/**
