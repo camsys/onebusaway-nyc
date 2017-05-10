@@ -8,12 +8,14 @@ import javax.annotation.PostConstruct;
 
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.services.CcAndInferredLocationDao;
+import org.onebusaway.nyc.report.services.CloudWatchService;
 import org.onebusaway.nyc.report.services.InferencePersistenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import com.amazonaws.services.cloudwatch.model.StandardUnit;
 
 /**
 * Manage the persistence of inference records. Handles the need to save in
@@ -24,16 +26,23 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class InferencePersistenceServiceImpl implements
     InferencePersistenceService {
   private static Logger _log = LoggerFactory.getLogger(InferencePersistenceServiceImpl.class);
+  private final int QUEUE_CAPACITY = 200000;
 
   private CcAndInferredLocationDao _locationDao;
+  private CloudWatchService _cloudWatchService;
 
   @Autowired
   public void setLocationDao(CcAndInferredLocationDao locationDao) {
     this._locationDao = locationDao;
   }
+  
+  @Autowired
+  public void setCloudWatchService(CloudWatchService cloudWatchService) {
+    this._cloudWatchService = cloudWatchService;
+  }
 
   private ArrayBlockingQueue<ArchivedInferredLocationRecord> messages = new ArrayBlockingQueue<ArchivedInferredLocationRecord>(
-      100000);
+		  QUEUE_CAPACITY);
 
   private int _batchSize;
 
@@ -47,7 +56,9 @@ public class InferencePersistenceServiceImpl implements
   @PostConstruct
   public void setup() {
     final SaveThread saveThread = new SaveThread();
+    final QueueMonitorThread queueMonitorThread = new QueueMonitorThread();
     _taskScheduler.scheduleWithFixedDelay(saveThread, 1000); // every second
+    _taskScheduler.scheduleWithFixedDelay(queueMonitorThread, 1000 * 60); // every minute
   }
 
   @Override
@@ -108,6 +119,17 @@ public class InferencePersistenceServiceImpl implements
       }
 
     }
+  }
+  
+  private class QueueMonitorThread implements Runnable {
+
+	    @Override
+	    public void run() {	    	
+    	  int usedCapicitySize = QUEUE_CAPACITY - messages.remainingCapacity();
+    	  double usedCapacityPct = (usedCapicitySize/QUEUE_CAPACITY) * 100;
+    	  _cloudWatchService.publishMetric("UsedArchiveBufferCapacity", StandardUnit.Percent, usedCapacityPct);
+    	  _log.info(messages.remainingCapacity() + " out of " + QUEUE_CAPACITY + " remaning capacity in archived record buffer.");  
+	    }
   }
 
 }
