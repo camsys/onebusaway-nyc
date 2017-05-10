@@ -36,5 +36,7 @@
   <bean id="infPersistorService" class="org.onebusaway.nyc.report.impl.InferencePersistenceServiceImpl">
     <property name="batchSize" value="1000" />
   </bean>
+  
+  <bean id="cloudWatchService" class="org.onebusaway.nyc.report.impl.CloudWatchServiceImpl" />
 
 </beans>
