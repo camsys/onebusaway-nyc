@@ -149,9 +149,9 @@ public class HistoricalRecordsResource {
 		for (Map.Entry<CcAndInferredLocationFilter, Object> entry : filter.entrySet())
 		{	
 			if(entry.getValue() != null){
-				sb.append(entry.getValue().toString());
-				sb.append("=");
 				sb.append(entry.getKey().getValue());
+				sb.append("=");
+				sb.append(entry.getValue().toString());
 				
 				if(parameterCount < filter.entrySet().size()){
 					sb.append(", ");
