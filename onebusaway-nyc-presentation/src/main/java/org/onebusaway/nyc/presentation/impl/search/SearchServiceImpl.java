@@ -4,6 +4,7 @@ import org.onebusaway.exceptions.NoSuchStopServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.geocoder.model.NycCustomGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.presentation.comparator.RouteComparator;
@@ -280,6 +281,10 @@ public class SearchServiceImpl implements SearchService {
 		}
 
 		if (results.isEmpty()) {
+			tryAsLatLong(results, normalizedQuery, resultFactory);
+		}
+
+		if (results.isEmpty()) {
 			tryAsGeocode(results, normalizedQuery, resultFactory);
 		}
 
@@ -357,6 +362,19 @@ public class SearchServiceImpl implements SearchService {
 		}
 
 		return normalizedQuery.trim();
+	}
+
+	private void tryAsLatLong(SearchResultCollection results, String latLongQuery, SearchResultFactory resultFactory) {
+		Pattern pat = Pattern.compile("^(-?[0-9]+\\.[0-9]+),(-?[0-9]+\\.[0-9]+)$");
+		Matcher matcher = pat.matcher(latLongQuery);
+		if (!matcher.matches())
+			return;
+		double lat = Double.parseDouble(matcher.group(1));
+		double lon = Double.parseDouble(matcher.group(2));
+		NycCustomGeocoderResult result = new NycCustomGeocoderResult();
+		result.setLatitude(lat);
+		result.setLongitude(lon);
+		results.addMatch(resultFactory.getGeocoderResult(result, results.getRouteFilter()));
 	}
 
 	private void tryAsRoute(SearchResultCollection results, String routeQuery, SearchResultFactory resultFactory) {
