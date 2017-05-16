@@ -146,7 +146,7 @@ OBA.Sidebar = function() {
 			var neighborhood = location.neighborhood;
 			
 		    // sidebar item
-			var link = jQuery("<a href='#" + location.latitude + "%2C" + location.longitude + "'></a>")
+			var link = jQuery("<a href='#" + encodeURIComponent(address) + "'></a>")
 							.text(address);
 
 			var listItem = jQuery("<li></li>")
