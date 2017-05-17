@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -87,14 +88,17 @@ import org.onebusaway.transit_data_federation.services.PredictionHelperService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 @Component
 class NycTransitDataServiceImpl implements NycTransitDataService {
 	
 	private static Logger _log = LoggerFactory.getLogger(NycTransitDataServiceImpl.class);
 
-	@Autowired
+	@Resource
 	private TransitDataService _transitDataService;
 
 	@Autowired
@@ -154,17 +158,18 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 		return _predictionHelperService.getPredictionRecordsForTrip(agencyId, tripStatus);
 	}
 	
-	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
-			TripStatusBean tripStatus) {
+	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripStatus(String vehicleId,
+																					   TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
 		if (_predictionIntegrationService.isEnabled()) {
-			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus.getActiveTrip().getId());
-		}
-		return _predictionHelperService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus);
+				return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus.getActiveTrip().getId());
+			}
+			return _predictionHelperService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus);
 	}
 
 	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
-			String tripId) {
+																				 String tripId) {
+		blockUntilBundleIsReady();
 		if (_predictionIntegrationService.isEnabled()) {
 			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripId);
 		}

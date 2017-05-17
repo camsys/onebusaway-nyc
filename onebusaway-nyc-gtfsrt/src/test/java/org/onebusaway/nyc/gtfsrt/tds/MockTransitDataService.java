@@ -135,7 +135,7 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId, TripStatusBean tripStatus) {
+    public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripStatus(String vehicleId, TripStatusBean tripStatus) {
         throw new UnsupportedOperationException();
     }
 

@@ -31,11 +31,11 @@ import org.onebusaway.transit_data.services.TransitDataService;
  *
  */
 public interface NycTransitDataService extends TransitDataService {
-	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
-			TripStatusBean tripStatus);
+	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripStatus(String vehicleId,
+																					   TripStatusBean tripStatus);
 
 	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
-			String tripId);
+																				 String tripId);
 	
 	  /**
 	   * Given a stop, route, and direction, test if that stop has revenue service

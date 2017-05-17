@@ -243,15 +243,14 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       if (!_siriCacheService.containsKey(hashKey)) {
         for (String agency : agencyIds) {
           ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
-              agency, currentTimestamp);
+                    agency, currentTimestamp);
 
           for (VehicleStatusBean v : vehicles.getList()) {
-            VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-                v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
-
-            if (activity != null) {
-              activities.add(activity);
-            }
+              VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
+                      v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
+              if (activity != null) {
+                activities.add(activity);
+              }
           }
         }
         // There is no input (route id) to validate, so pass null error
@@ -273,8 +272,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     
     try {
       this._servletResponse.getWriter().write(getVehicleMonitoring());
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Throwable t) {
+      _log.error("exception in vehicle monitoring:", t);
     }
 
     return null;
