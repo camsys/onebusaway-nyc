@@ -174,7 +174,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
       return -1;
     }
     // 2 is the return code if process not found/file not found on exec
-    if (returnCode == 2) {
+    if (returnCode == 2 || returnCode == 1) {
       // try installing if that failed
       _log.info("downloading feed validator");
       downloadFeedValidator();

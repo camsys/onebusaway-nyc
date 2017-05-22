@@ -112,7 +112,7 @@ public class BundleValidationServiceImplTest {
     
   }
   
-  @Ignore
+
   @Test
   public void testJavaValidateGtfs() throws Exception {
 	GtfsValidationService validationService = new JavaGtfsValidationServiceImpl();
