@@ -14,11 +14,17 @@
  * the License.
  */
 
-jQuery(function() {
-	
-	jQuery("#generateQRCode").on("click", handleSingleQRCodeClick);
-	jQuery("#generateQRCodeBatch").on("click", handleBatchQRCodeClick);
-});
+//jQuery(function() { 
+
+// jQuery("#generateQRCode").on("click", handleSingleQRCodeClick); 
+// jQuery("#generateQRCodeBatch").on("click", handleBatchQRCodeClick); 
+//}); 
+jQuery(document).ready(function() { 
+
+        //jQuery("#generateQRCode").on("click", handleSingleQRCodeClick); 
+        //jQuery("#generateQRCodeBatch").on("click", handleBatchQRCodeClick); 
+        handleBatchQRCodeClick(); 
+}); 
 
 function handleSingleQRCodeClick() {
 	//Hide Batch QR code generation section and show single QR code section
