@@ -3,8 +3,12 @@ package org.onebusaway.nyc.report.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.services.CcAndInferredLocationDao;
@@ -30,6 +34,10 @@ public class InferencePersistenceServiceImpl implements
 
   private CcAndInferredLocationDao _locationDao;
   private CloudWatchService _cloudWatchService;
+  
+  private ScheduledExecutorService _executor;
+  private int QUEUE_MONITOR_INITIAL_DELAY = 60;
+  private int QUEUE_MONITOR_FREQUENCY = 60;
 
   @Autowired
   public void setLocationDao(CcAndInferredLocationDao locationDao) {
@@ -52,13 +60,21 @@ public class InferencePersistenceServiceImpl implements
 
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
+  
 
   @PostConstruct
   public void setup() {
+	_executor = Executors.newSingleThreadScheduledExecutor();
     final SaveThread saveThread = new SaveThread();
     final QueueMonitorThread queueMonitorThread = new QueueMonitorThread();
     _taskScheduler.scheduleWithFixedDelay(saveThread, 1000); // every second
-    _taskScheduler.scheduleWithFixedDelay(queueMonitorThread, 1000 * 60); // every minute
+    _executor.scheduleAtFixedRate(queueMonitorThread, QUEUE_MONITOR_INITIAL_DELAY, 
+    		QUEUE_MONITOR_FREQUENCY, TimeUnit.SECONDS);
+  }
+  
+  @PreDestroy
+  public void stop() {
+    _executor.shutdownNow();
   }
 
   @Override
