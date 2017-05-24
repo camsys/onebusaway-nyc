@@ -225,6 +225,17 @@ html, body {
 	text-decoration: none;
 }
 
+.logoutButton {
+	background: none;
+	border: none;
+	text-decoration: underline;
+	cursor: pointer;
+	padding-left: 10px;
+	padding-right: 10px;
+	float: right;
+	color: white;
+	font: 13px/1.231 helvetica,arial,clean,sans-serif;
+}
 
 
 

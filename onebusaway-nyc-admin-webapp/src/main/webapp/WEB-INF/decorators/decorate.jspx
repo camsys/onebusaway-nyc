@@ -37,7 +37,6 @@
 		</s:url>
 	  <link rel="stylesheet" type="text/css" href="${url}"/>
 
-	  
 	  <decorator:head />
 	</head>
 	
@@ -53,8 +52,17 @@
 				</div>
 				<s:if test="!anonymousUser">
 					<div id="navigation">
-						<s:url var="url" namespace="/" action="logout"></s:url>
-						<s:a href="%{url}">Logout</s:a>
+						<s:url var="url" namespace="/" action="logout" />
+						<s:form action="%{url}"
+								   method="post">
+							<input type="submit"
+								   class="logoutButton"
+								   value="Logout" />
+							<input type="hidden"
+								   id="csrfField"
+								   name="${_csrf.parameterName}"
+								   value="${_csrf.token}"/>
+						</s:form>
 						<s:url var="url" namespace="/admin" action="index"/>
 						<a href="${url}">Back To Welcome</a>
 					</div>
@@ -65,4 +73,8 @@
 	    	</div>
 		</div>
 	</body>
+	<s:url var="url" value="/js/oba/csrf.js" />
+	<script type="text/javascript" src="${url}">
+        <!-- //prevent jspx minimization -->
+	</script>
 </html>
