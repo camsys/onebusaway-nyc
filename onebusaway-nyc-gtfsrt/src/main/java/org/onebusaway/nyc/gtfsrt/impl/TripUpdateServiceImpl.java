@@ -86,7 +86,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         for (VehicleStatusBean vehicle : vehicles) {
 
             if (vehicle.getTrip() == null) {
-                _log.warn("no trip for vehicle=" + vehicle.getVehicleId());
+                _log.debug("no trip for vehicle=" + vehicle.getVehicleId());
                 continue;
             }
 
