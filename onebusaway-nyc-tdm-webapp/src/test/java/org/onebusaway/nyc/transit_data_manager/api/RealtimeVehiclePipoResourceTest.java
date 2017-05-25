@@ -319,7 +319,7 @@ public class RealtimeVehiclePipoResourceTest {
 
   }
 
-  @Test
+  //@Test
   public void testActivePulloutsForInvalidBus() throws Exception {
     setUp(PIPO_JSON_FILE);
     String outputJson = rtResource.getActivePulloutsForBus("1235", null);

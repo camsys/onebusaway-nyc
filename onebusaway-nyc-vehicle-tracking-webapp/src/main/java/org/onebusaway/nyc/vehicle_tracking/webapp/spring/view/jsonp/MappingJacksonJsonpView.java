@@ -1,13 +1,13 @@
 package org.onebusaway.nyc.vehicle_tracking.webapp.spring.view.jsonp;
 
-import org.springframework.web.servlet.view.json.MappingJacksonJsonView;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class MappingJacksonJsonpView extends MappingJacksonJsonView {
+public class MappingJacksonJsonpView extends MappingJackson2JsonView {
 
   /**
    * Default content type. Overridable as bean property.
