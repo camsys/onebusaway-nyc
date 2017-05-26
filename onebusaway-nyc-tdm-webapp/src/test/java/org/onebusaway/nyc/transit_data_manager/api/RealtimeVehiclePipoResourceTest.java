@@ -16,6 +16,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.javacrumbs.jsonunit.JsonAssert;
+import net.javacrumbs.jsonunit.core.Option;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -34,7 +36,6 @@ import org.onebusaway.nyc.transit_data_manager.api.service.RealtimeVehiclePipoSe
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.VehiclePipoUploadsFilePicker;
 import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutDataProviderServiceImpl;
 import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutService;
-import org.onebusaway.nyc.transit_data_manager.api.vehiclepipo.service.VehiclePullInOutServiceImpl;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool;
 
@@ -319,14 +320,12 @@ public class RealtimeVehiclePipoResourceTest {
 
   }
 
-  //@Test
+  @Test
   public void testActivePulloutsForInvalidBus() throws Exception {
     setUp(PIPO_JSON_FILE);
     String outputJson = rtResource.getActivePulloutsForBus("1235", null);
-    assertEquals("{\"errorCode\":\"2\",\"errorDescription\":\"intentionalBlank: No pullouts found for query.\","
-    		+ "\"languages\":null,\"pull-outs\":{\"pull-out\":[]},\"created\":null,\"schVersion\":null,"
-    		+ "\"sourceapp\":null,\"sourceip\":null,\"sourceport\":null,\"noNameSpaceSchemaLocation\":null,"
-    		+ "\"activation\":null,\"deactivation\":null}", outputJson);
+    JsonAssert.assertJsonEquals("{\"errorCode\":\"2\",\"errorDescription\":\"intentionalBlank: No pullouts found for query.\","
+    		+ "\"pull-outs\":{\"pull-out\":[]}}", outputJson, JsonAssert.when(Option.TREATING_NULL_AS_ABSENT));
   }
 
   // TODO - Is this test no longer applicable?
