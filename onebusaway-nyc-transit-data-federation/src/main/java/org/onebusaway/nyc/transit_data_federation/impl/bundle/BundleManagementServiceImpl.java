@@ -172,7 +172,12 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	}
 
 	public void discoverBundles() throws Exception {
-		_allBundles = _bundleStore.getBundles();
+		// bundle validity is checked in bundle store
+		List<BundleItem> potentialBundles = _bundleStore.getBundles();
+		if (potentialBundles != null && !potentialBundles.isEmpty())
+			_allBundles = potentialBundles;
+		else
+			_log.error("No valid bundles from bundle store.");
 	}
 
 	/**

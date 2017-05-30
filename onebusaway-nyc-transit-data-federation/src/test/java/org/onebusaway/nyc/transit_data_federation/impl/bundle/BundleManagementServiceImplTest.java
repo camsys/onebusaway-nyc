@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_federation.impl.bundle;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.when;
 
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
@@ -15,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -239,5 +241,24 @@ public class BundleManagementServiceImplTest extends BundleManagementServiceImpl
 	  actualBundleDiscoveryTime = super.getNextBundleDiscoveryTime(currentDateTime); 
 	  assertEquals(expectedBundleDiscoveryTime, actualBundleDiscoveryTime);
   }
-  
+
+  @Test
+  public void testBundleSwitchingNoValidBundles() throws Exception {
+    super.setServiceDate(ServiceDate.parseString("20110101"));
+
+    super.refreshApplicableBundles();
+    super.reevaluateBundleAssignment();
+
+    assertEquals(super.getCurrentBundleMetadata().getId(), "test0");
+
+    when(mockBundleStoreService.getBundles())
+            .thenReturn(Collections.<BundleItem>emptyList());
+
+    super.discoverBundles();
+    super.refreshApplicableBundles();
+    super.reevaluateBundleAssignment();
+
+    assertNotNull(super.getCurrentBundleMetadata());
+    assertEquals(super.getCurrentBundleMetadata().getId(), "test0");
+  }
 }
