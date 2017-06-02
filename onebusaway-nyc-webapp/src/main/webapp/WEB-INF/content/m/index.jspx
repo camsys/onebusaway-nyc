@@ -58,10 +58,7 @@
 		</s:form>
 
 		<small>TIP: Enter an intersection, bus route or bus stop code.</small>
-		<small>${psa}</small>
 	</div>
-	
-	
 	
 	<s:if test="globalServiceAlerts!=null">
 		<div id="global-alerts" class="global-alerts">

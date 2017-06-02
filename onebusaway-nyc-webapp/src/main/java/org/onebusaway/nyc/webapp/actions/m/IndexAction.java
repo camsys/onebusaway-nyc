@@ -36,7 +36,6 @@ import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.m.model.StopResult;
-import org.onebusaway.nyc.webapp.psa.MessageService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,9 +55,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
   @Autowired
   private SearchService _searchService;
-  
-  @Autowired
-  private MessageService _messageService;
 
   private SearchResultCollection _results = new SearchResultCollection();
 
@@ -299,10 +295,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     } else {
       return null;
     }
-  }
-  
-  public String getPsa() {
-    return _messageService.getMessage();
   }
 
 }
