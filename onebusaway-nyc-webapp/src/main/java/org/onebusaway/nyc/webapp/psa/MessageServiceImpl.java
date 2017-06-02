@@ -27,7 +27,8 @@ public class MessageServiceImpl implements MessageService {
   
   private ConfigurationService _service;
 
-  private Map<Integer, PublicServiceAnnouncement> _psaCache;
+  private Map<Integer, PublicServiceAnnouncement> _psaCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS)
+          .<Integer, PublicServiceAnnouncement>build().asMap();
 
   private int _nPsas = 0;
 
@@ -38,20 +39,10 @@ public class MessageServiceImpl implements MessageService {
 
   @Override
   public String getMessage() {
-    PublicServiceAnnouncement psa = null;
-    int tries = 0;
-    while ((_nPsas == 0 || (psa = getRandomPsa()) == null) && tries == 0) {
+    PublicServiceAnnouncement psa;
+    while (_nPsas == 0 || (psa = getRandomPsa()) == null)
       fillCache();
-      tries++;
-    }
-    return psa == null ? "" : psa.getText();
-  }
-
-  // Cannot do this as post construct because config service may not be up yet
-  private void initCache() {
-    int min = _service.getConfigurationValueAsInteger("display.psaCacheMin", 60);
-    _psaCache = CacheBuilder.newBuilder().expireAfterWrite(min, TimeUnit.MINUTES)
-            .<Integer, PublicServiceAnnouncement>build().asMap();
+    return psa.getText();
   }
 
   private PublicServiceAnnouncement[] getPsas() {
@@ -67,12 +58,8 @@ public class MessageServiceImpl implements MessageService {
       return new PublicServiceAnnouncement[] {};
     }
   }
-
+  
   private void fillCache() {
-
-    if (_psaCache == null)
-      initCache();
-
     _log.info("Filling public service announcement cache");
     PublicServiceAnnouncement[] psas = getPsas();
     if (psas == null) {

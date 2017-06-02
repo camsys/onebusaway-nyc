@@ -38,7 +38,6 @@ public class EditPsaAction extends OneBusAwayNYCAdminActionSupport {
   
   @Action("add")
   public String add() {
-    _psas.removeAll(Collections.singletonList(null));
     _psas.add(new PublicServiceAnnouncement());
     return SUCCESS;
   }
