@@ -14,16 +14,9 @@
  * the License.
  */
 
-//jQuery(function() { 
-
-// jQuery("#generateQRCode").on("click", handleSingleQRCodeClick); 
-// jQuery("#generateQRCodeBatch").on("click", handleBatchQRCodeClick); 
-//}); 
 jQuery(document).ready(function() { 
-
-        //jQuery("#generateQRCode").on("click", handleSingleQRCodeClick); 
-        //jQuery("#generateQRCodeBatch").on("click", handleBatchQRCodeClick); 
-        handleBatchQRCodeClick(); 
+        jQuery("#generateQRCode").click(handleSingleQRCodeClick); 
+        jQuery("#generateQRCodeBatch").click(handleBatchQRCodeClick); 
 }); 
 
 function handleSingleQRCodeClick() {
