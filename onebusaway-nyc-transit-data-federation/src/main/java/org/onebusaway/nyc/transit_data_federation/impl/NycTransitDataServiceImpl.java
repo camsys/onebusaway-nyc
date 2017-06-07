@@ -629,12 +629,14 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Override
 	public Boolean stopHasRevenueServiceOnRoute(String agencyId, String stopId, String routeId, String directionId) {
-		return _scheduledServiceService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
+		//return _scheduledServiceService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
+		return true;
 	}
 
 	@Override
 	public Boolean stopHasRevenueService(String agencyId, String stopId) {
-		return _scheduledServiceService.stopHasRevenueService(agencyId, stopId); 
+		//return _scheduledServiceService.stopHasRevenueService(agencyId, stopId);
+		return true;
 	}
 
 }
