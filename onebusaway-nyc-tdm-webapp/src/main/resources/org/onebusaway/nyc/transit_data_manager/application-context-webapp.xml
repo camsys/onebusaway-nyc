@@ -126,4 +126,6 @@
   
   <bean id="depotDataPersistenceService" class="org.onebusaway.nyc.transit_data_manager.persistence.service.impl.DepotDataPersistenceServiceImpl" />
   
+  <bean id="systemLogPersistenceService" class="org.onebusaway.nyc.transit_data_manager.persistence.service.impl.SystemLogPersistenceServiceImpl" />
+  
 </beans>
