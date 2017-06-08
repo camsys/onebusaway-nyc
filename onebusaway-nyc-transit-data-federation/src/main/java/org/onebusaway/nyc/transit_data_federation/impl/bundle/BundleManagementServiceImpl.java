@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -89,10 +88,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	private int bundleSwitchFrequencyMin = 60;
 	
 	private int bundleSwitchFrequencyHour = 1;
-
-	// This is to fix the deadlock problem on startup in some versions of Spring.
-	// see https://issuetracker.camsys.com/browse/OBANYC-2543
-	private ReentrantLock _bundleAccessLock = new ReentrantLock();
 
 	@Autowired
 	private NycTransitDataService _nycTransitDataService;
@@ -243,7 +238,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		} else {
 			_bundleStore = new TDMBundleStoreImpl(_bundleRootPath, _apiLibrary);      
 		}
-
 		refreshCache();
 		discoverBundles();
 		refreshApplicableBundles();
@@ -305,7 +299,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	// Can messages be processed using this bundle and current state?
 	@Override
 	public Boolean bundleIsReady() {
-		return _bundleIsReady || _bundleAccessLock.isHeldByCurrentThread();
+		return _bundleIsReady;
 	}
 
 	// register inference processing thread with the bundle manager--
@@ -410,14 +404,13 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		_log.info("Garbage collection after bundle switch complete.");
 
 		_currentBundleId = bundleId;
-
-		// use lock so TDS can not block, but other threads cannot access
-		_bundleAccessLock.lock();
-		removeAndRebuildCache();
-		_bundleAccessLock.unlock();
-
-		_bundleIsReady = true;
+		_bundleIsReady = true;	
 		_log.info("New bundle is now ready.");
+
+		// need to do after bundle is ready so TDS can not block
+		removeAndRebuildCache();
+		
+		return;
 	}
 
 	// some kind of event notification system camsys setup? 
