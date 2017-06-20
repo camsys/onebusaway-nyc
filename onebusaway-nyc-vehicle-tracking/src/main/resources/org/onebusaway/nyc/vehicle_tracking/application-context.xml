@@ -55,5 +55,9 @@
     scope="prototype">    
     <property name="model" ref="particleFilterModel" />
   </bean>
-
+  
+  <bean id="cloudWatchService" class="org.onebusaway.nyc.vehicle_tracking.impl.monitoring.CloudWatchServiceImpl" />
+	
+  <bean id="nullBlockStateMap" class="org.onebusaway.nyc.vehicle_tracking.impl.monitoring.NullBlockStateRouteMap" />
+  
 </beans>

@@ -26,6 +26,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -80,6 +81,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TransitGrap
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -87,6 +89,7 @@ import tcip_3_0_5_local.NMEA;
 import tcip_final_3_0_5_1.CcLocationReport;
 import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
 
+import com.amazonaws.services.cloudwatch.model.StandardUnit;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
@@ -130,7 +133,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Autowired
   protected ConfigurationService _configurationService;
-
+  
   private BundleItem _lastBundle = null;
 
   private ExecutorService _executorService;
@@ -140,7 +143,7 @@ public class VehicleLocationInferenceServiceImpl implements
   private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 12);
 
   private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
-
+    
   private final ConcurrentMap<AgencyAndId, Long> _timeReceivedByVehicleId = new ConcurrentHashMap<AgencyAndId, Long>(
       10000);
 
@@ -183,8 +186,9 @@ public class VehicleLocationInferenceServiceImpl implements
 
     _log.info("Creating thread pool of size=" + _numberOfProcessingThreads);
     _executorService = Executors.newFixedThreadPool(_numberOfProcessingThreads);
+    
   }
-
+  
   @PreDestroy
   public void stop() {
     _executorService.shutdownNow();
