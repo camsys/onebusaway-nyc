@@ -40,6 +40,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSumm
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.monitoring.NullBlockStateRouteMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.BadProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
@@ -61,7 +62,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
@@ -105,6 +105,9 @@ public class VehicleInferenceInstance {
   private Multiset<Particle> _badParticles;
 
   private ParticleFilter<Observation> _particleFilter;
+  
+  @Autowired
+  private NullBlockStateRouteMap _nullBlockStateRouteMap;
 
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
@@ -305,7 +308,7 @@ public class VehicleInferenceInstance {
     final Observation observation = new Observation(timestamp, record,
         lastValidDestinationSignCode, atBase, atTerminal, outOfService,
         hasValidDsc, _previousObservation, routeIds, runResults, assignedBlockId, hasValidAssignedBlockId);
-
+    
     if (_previousObservation != null)
       _previousObservation.clearPreviousObservation();
 
@@ -472,6 +475,27 @@ public class VehicleInferenceInstance {
       final double distanceAlongTrip = blockLocation.getDistanceAlongBlock()
           - activeTrip.getDistanceAlongBlock();
       record.setDistanceAlongTrip(distanceAlongTrip);
+    }
+    else if (obs != null && obs.hasValidDsc()){
+    	try{
+    		final int dsc = Integer.valueOf(obs.getRecord().getDestinationSignCode());
+    		if(dsc > 50){
+    			_nullBlockStateRouteMap.increment(obs.getRecord().getDestinationSignCode());
+	        	_log.info("[\n"
+	    			+ "OpAssigned Run Id : " + obs.getOpAssignedRunId() + ",\n"
+	    			+ "Dest Sign Code : " +  obs.getRecord().getDestinationSignCode() + ",\n"
+	    			+ "Operator : " +  obs.getRecord().getOperatorId() + ",\n"
+	    			+ "Distance Moved : " +  obs.getDistanceMoved() + ",\n"
+	    			+ "Operator Id : " + obs.getRecord().getOperatorId() + ",\n"
+	    			+ "Vehicle Id : " + obs.getRecord().getVehicleId() + ",\n"
+	    			+ "Run Route Id : " + obs.getRecord().getRunRouteId() + "\n"
+	    			+ "]");
+    		}
+
+    	} catch(NumberFormatException nfe){
+    		_log.warn("Unable to convert DSC: " + obs.getRecord().getDestinationSignCode() + " into an integer.");
+    	}
+  	  
     }
 
     return record;
