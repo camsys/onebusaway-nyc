@@ -488,7 +488,7 @@ public class VehicleLocationSimulationController {
   public ModelAndView activeBlocksAndRecordsForTask(@RequestParam() int taskId,
       HttpServletResponse response) throws IOException {
 
-    return new ModelAndView("vehicle-location-simulation-map.jspx");
+    return new ModelAndView("vehicle-location-simulation-map.jspx", null);
   }
   
   @RequestMapping(value = "/vehicle-location-simulation!block.do", method = RequestMethod.GET)
