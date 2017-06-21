@@ -32,7 +32,7 @@ public class SiriServiceDao implements SiriServicePersister {
     return _sessionFactory.getCurrentSession();
   }
 
-  @Transactional(value="transactionManagerApp", rollbackFor = Throwable.class)
+  @Transactional(rollbackFor = Throwable.class)
   @Override
   public boolean saveOrUpdateServiceAlert(ServiceAlertBean serviceAlertBean) {
     boolean isNew = false;
@@ -52,7 +52,7 @@ public class SiriServiceDao implements SiriServicePersister {
     return isNew;
   }
 
-  @Transactional(value="transactionManagerApp",rollbackFor = Throwable.class)
+  @Transactional(rollbackFor = Throwable.class)
   @Override
   public ServiceAlertBean deleteServiceAlertById(String serviceAlertId) {
     List<ServiceAlertRecord> records = getServiceAlertsByServiceAlertId(serviceAlertId);
@@ -78,13 +78,11 @@ public class SiriServiceDao implements SiriServicePersister {
     return query.list();
   }
 
-  @Transactional(value="transactionManagerApp",rollbackFor = Throwable.class)
   @Override
   public List<ServiceAlertBean> getAllActiveServiceAlerts() {
     return getServiceAlerts("from ServiceAlertRecord r where r.deleted = false");
   }
 
-  @Transactional(value="transactionManagerApp",rollbackFor = Throwable.class)
   @Override
   public List<ServiceAlertBean> getAllServiceAlerts() {
     return getServiceAlerts("from ServiceAlertRecord");
@@ -103,7 +101,7 @@ public class SiriServiceDao implements SiriServicePersister {
     return results;
   }
 
-  @Transactional(value="transactionManagerApp",rollbackFor = Throwable.class)
+  @Transactional(rollbackFor = Throwable.class)
   @Override
   public void saveOrUpdateSubscription(ServiceAlertSubscription subscription) {
     // This is not the most efficient way to do this.  FIXME
@@ -121,14 +119,13 @@ public class SiriServiceDao implements SiriServicePersister {
     getSession().saveOrUpdate(subscription);
   }
 
-  @Transactional(value="transactionManagerApp",rollbackFor = Throwable.class)
+  @Transactional(rollbackFor = Throwable.class)
   @Override
   public void deleteSubscription(ServiceAlertSubscription subscription) {
     getSession().delete(subscription);
     getSession().flush();
   }
 
-  @Transactional(value="transactionManagerApp",rollbackFor = Throwable.class)
   @Override
   public List<ServiceAlertSubscription> getAllActiveSubscriptions() {
     Query query = getSession().createQuery("from ServiceAlertSubscription");
