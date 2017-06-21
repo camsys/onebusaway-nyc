@@ -154,7 +154,6 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		return realtime;
 	}
 
-	@Transactional(value="transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public List<CcAndInferredLocationRecord> getAllLastKnownRecords(
 			final Map<CcAndInferredLocationFilter, String> filter) {
@@ -185,7 +184,6 @@ public class ArchiveCcAndInferredLocationDaoImpl implements CcAndInferredLocatio
 		return query.list();
 	}
 
-	@Transactional(value="transactionManager", rollbackFor = Throwable.class)
 	@Override
 	public CcAndInferredLocationRecord getLastKnownRecordForVehicle(
 			Integer vehicleId) throws Exception {
