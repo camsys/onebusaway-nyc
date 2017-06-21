@@ -15,7 +15,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.Message;
-import org.onebusaway.nyc.transit_data_manager.persistence.service.SystemLogPersistenceService;
 import org.onebusaway.nyc.transit_data_manager.util.DateUtility;
 import org.onebusaway.nyc.transit_data_manager.util.ObjectMapperProvider;
 import org.slf4j.Logger;
@@ -38,11 +37,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class SystemLogResource {
 	
 	private ObjectMapper mapper;
+
+	private SessionFactory _sessionFactory;
 	
 	private static final Logger log = LoggerFactory.getLogger(SystemLogResource.class);
-	
-	@Autowired
-	private SystemLogPersistenceService _systemLogService;
 	
 	public SystemLogResource() {
 		mapper = ObjectMapperProvider.getObjectMapper();
@@ -63,7 +61,7 @@ public class SystemLogResource {
 			
 			SystemLogRecord logRecord = buildSystemLogRecord(logMessage);
 			
-			_systemLogService.saveLogRecord(logRecord);
+			saveLogRecord(logRecord);
 			
 			message.setStatus("OK");
 			
@@ -102,6 +100,17 @@ public class SystemLogResource {
 	
 	private Date getDate() {
 		return DateUtility.getTodaysDateTime();
+	}
+	
+	@Transactional("transactionManagerArchive")
+	private void saveLogRecord(SystemLogRecord logRecord) {
+		_sessionFactory.getCurrentSession().saveOrUpdate(logRecord);
+	}
+
+	@Autowired
+	@Qualifier("archiveSessionFactory")
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		_sessionFactory = sessionFactory;
 	}
 
 }
