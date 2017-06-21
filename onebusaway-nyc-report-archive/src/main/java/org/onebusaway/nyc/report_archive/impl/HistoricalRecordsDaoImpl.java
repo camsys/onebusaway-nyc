@@ -45,7 +45,7 @@ public class HistoricalRecordsDaoImpl implements HistoricalRecordsDao {
   protected static final int DEFAULT_QUERY_TIMEOUT = 10 * 60; // 10 minutes
 	
 	@Override
-	@Transactional(value = "slaveDB", readOnly = true)
+	@Transactional(readOnly = true)
 	public List<HistoricalRecord> getHistoricalRecords(
 			final Map<CcAndInferredLocationFilter, Object> filter) {
 		
