@@ -133,7 +133,7 @@ public class CloudWatchServiceImpl implements CloudWatchService, ServletContextA
 				cloudWatch.setEndpoint(endPoint);
 				this.cloudWatch = cloudWatch;
 			} else {
-				_log.error("Cannot create Amazon Cloudwatch client. Either accessKey or" +
+				_log.error("Cannot create Amazon Cloudwatch client. Either accessKey or " +
 						"secretKey is not set.");
 			}
 			

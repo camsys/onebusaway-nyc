@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
 import org.onebusaway.nyc.vehicle_tracking.services.monitoring.CloudWatchService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.amazonaws.services.cloudwatch.model.StandardUnit;
@@ -21,6 +23,9 @@ public class NullBlockStateRouteMap {
 	  private CloudWatchService _cloudWatchService;
 	
 	  private final ConcurrentMap<String, AtomicDouble> _nullBlockStateRoutes = new ConcurrentHashMap<String, AtomicDouble>(10000);
+	  
+	  protected static final Logger _log = LoggerFactory
+				.getLogger(NullBlockStateRouteMap.class);
 	  
 	  @PostConstruct
 	  public void setup(){
@@ -45,6 +50,7 @@ public class NullBlockStateRouteMap {
 	  private class MonitoringThread extends TimerTask {
 		@Override
 		public void run() {
+			_log.info("Posting null block state dscs to cloud watch");
 			try{
 				for(String dsc: _nullBlockStateRoutes.keySet()){
 					Double nullBlockStatesCount = _nullBlockStateRoutes.get(dsc).doubleValue();
@@ -54,7 +60,7 @@ public class NullBlockStateRouteMap {
 					}
 				}
 			}catch(Exception e){
-				e.printStackTrace();
+				_log.error("Error posting null block state dscs to cloud watch", e);
 			}
 		}
 	  }
