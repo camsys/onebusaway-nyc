@@ -101,7 +101,7 @@ public class ServiceAlertRecord implements Serializable {
   @CsvField(optional = true)
   private Date updatedAt;
 
-  @Column(name = "deleted", columnDefinition="BIT")
+  @Column(name = "deleted")
   private boolean deleted;
 
   transient static private GsonBuilder gbuilder;

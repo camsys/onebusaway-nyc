@@ -194,7 +194,7 @@ public class CcAndInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "inferred_status", length = 32)
   private String inferredStatus;
 
-  @Column(nullable = false, name = "inference_is_formal", columnDefinition="BIT")
+  @Column(nullable = false, name = "inference_is_formal")
   private boolean inferenceIsFormal;
 
   @Column(nullable = true, columnDefinition = "DECIMAL(14,6)", name = "distance_along_block")

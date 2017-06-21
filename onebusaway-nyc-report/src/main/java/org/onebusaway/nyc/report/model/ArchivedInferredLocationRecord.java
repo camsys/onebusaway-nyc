@@ -129,10 +129,10 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = true, name = "inferred_dest_sign_code")
   private Integer inferredDestSignCode;
 
-  @Column(nullable = false, name = "inference_is_formal", columnDefinition="BIT")
+  @Column(nullable = false, name = "inference_is_formal")
   private boolean inferenceIsFormal;
 
-  @Column(nullable = false, name = "emergency_flag", columnDefinition="BIT")
+  @Column(nullable = false, name = "emergency_flag")
   private boolean emergencyFlag;
 
   @Column(nullable = true, name = "depot_id", length = 16)
