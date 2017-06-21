@@ -67,9 +67,6 @@
 						
 						</div>
 				    </div>
-					<input type="hidden"
-						   name="${_csrf.parameterName}"
-						   value="${_csrf.token}"/>
 				</s:form>
 			</div>
 			<div id="batchCodes">
@@ -85,9 +82,6 @@
 							<label class="required">*</label> 
 						</div>
 						<s:submit name="submit" value="Generate" cssClass="qrSubmit" />
-						<input type="hidden"
-							   name="${_csrf.parameterName}"
-							   value="${_csrf.token}"/>
 					</div> 
 				</s:form>
 			</div>

@@ -63,9 +63,6 @@
 		<div>
 			<s:submit cssClass="ui-button" value="Save" />
 		</div>
-		<input type="hidden"
-			   name="${_csrf.parameterName}"
-			   value="${_csrf.token}"/>
 	</s:form>
 </body>
 </html>

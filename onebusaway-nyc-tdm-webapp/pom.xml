@@ -41,7 +41,7 @@
         <dependency>
           <groupId>org.onebusaway</groupId>
           <artifactId>onebusaway-tcip-api-v40</artifactId>
-          <version>1.0.2</version>
+          <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>

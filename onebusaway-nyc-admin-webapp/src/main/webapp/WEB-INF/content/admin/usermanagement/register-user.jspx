@@ -69,9 +69,6 @@ function clearForm() {
 						</s:if>
 						<s:actionerror/>
 					</div>
-					<input type="hidden"
-						   name="${_csrf.parameterName}"
-						   value="${_csrf.token}"/>
 				</s:form>
 				<div class="backToMenu">
 					<s:url var="url" value="manage-users.action" />
