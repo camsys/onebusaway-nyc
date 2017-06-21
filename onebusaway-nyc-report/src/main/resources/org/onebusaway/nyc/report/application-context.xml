@@ -33,7 +33,7 @@
     </property>
   </bean>
   
-  <bean id="infPersistorService" class="org.onebusaway.nyc.report.impl.InferencePersistenceServiceImpl">
+   <bean id="infPersistorService" class="org.onebusaway.nyc.report.impl.InferencePersistenceServiceImpl">
     <property name="batchSize" value="1000" />
   </bean>
   

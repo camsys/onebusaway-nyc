@@ -84,12 +84,7 @@
 			</props>
 		</property>
 	</bean>
-	
-	 <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
-        <property name="sessionFactory" ref="sessionFactory" />
-        <qualifier value="sessionFactory"/>
-    </bean>
-	
-    <tx:annotation-driven transaction-manager="transactionManager"/>
 
+	
+	
 </beans>
