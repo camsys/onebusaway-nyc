@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,24 +26,24 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 
 	protected static Logger _log = LoggerFactory
 			.getLogger(CcLocationReportDaoImpl.class);
-	private SessionFactory _sessionFactory;
+	private HibernateTemplate _template;
 	
 	@Autowired
 	@Qualifier("sessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
-		_sessionFactory = sessionFactory;
+		_template = new HibernateTemplate(sessionFactory);
 	}
 
-	public Session getSession() {
-		return _sessionFactory.getCurrentSession();
+	public HibernateTemplate getHibernateTemplate() {
+		return _template;
 	}
 	
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateReport(CcLocationReportRecord report) {
-		getSession().saveOrUpdate(report);
-		getSession().flush();
-		getSession().clear();
+		_template.saveOrUpdate(report);
+		_template.flush();
+		_template.clear();
 	}
 
 	@Transactional(rollbackFor = Throwable.class)
@@ -50,18 +52,25 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 		List<CcLocationReportRecord> list = new ArrayList<CcLocationReportRecord>(
 				reports.length);
 		for (CcLocationReportRecord report : reports) {
-			getSession().saveOrUpdate(report);
+			list.add(report);
 		}
-		getSession().flush();
-		getSession().clear();
+
+		_template.saveOrUpdateAll(list);
+		_template.flush();
+		_template.clear();
 	}
 
 	@SuppressWarnings("unchecked")
-	@Transactional(readOnly = true)
 	public int getNumberOfReports() {
 		@SuppressWarnings("rawtypes")
-		Query query = getSession().createQuery("select count(*) from CcLocationReportRecord");
-		Long count = (Long) query.uniqueResult();
+		Long count = (Long) _template.execute(new HibernateCallback() {
+			public Object doInHibernate(Session session)
+					throws HibernateException {
+				Query query = session
+						.createQuery("select count(*) from CcLocationReportRecord");
+				return (Long) query.uniqueResult();
+			}
+		});
 		return count.intValue();
 	}
 
@@ -71,10 +80,10 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 			Date timeReceived) {
 		InvalidLocationRecord ilr = new InvalidLocationRecord(content, error,
 				timeReceived);
-		getSession().saveOrUpdate(ilr);
+		_template.saveOrUpdate(ilr);
 		// clear from level one cache
-		getSession().flush();
-		getSession().evict(ilr);
+		_template.flush();
+		_template.evict(ilr);
 	}
 
 }

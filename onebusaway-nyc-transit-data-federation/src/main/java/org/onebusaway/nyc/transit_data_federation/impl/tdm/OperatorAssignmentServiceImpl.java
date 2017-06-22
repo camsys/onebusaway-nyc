@@ -53,7 +53,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
   private volatile Map<ServiceDate, HashMap<String, OperatorAssignmentItem>> _serviceDateToOperatorListMap = 
 		  new HashMap<ServiceDate, HashMap<String, OperatorAssignmentItem>>();
 
-  private ScheduledFuture<?> _updateTask = null;
+  private ScheduledFuture<OperatorAssignmentServiceImpl.UpdateThread> _updateTask = null;
 
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;

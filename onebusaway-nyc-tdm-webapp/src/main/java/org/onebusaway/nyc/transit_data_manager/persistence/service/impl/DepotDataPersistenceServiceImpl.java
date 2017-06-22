@@ -4,12 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Level;
 import org.hibernate.SessionFactory;
-import org.hibernate.Session;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.VehicleDepotData;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicle;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
@@ -24,8 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 
-import org.springframework.transaction.annotation.Transactional;
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 
 /**
@@ -37,8 +35,8 @@ public class DepotDataPersistenceServiceImpl implements DepotDataPersistenceServ
 
 	private DepotDataProviderService depotDataProviderService;
 	private DepotIdTranslator depotIdTranslator;
+	private HibernateTemplate hibernateTemplate;
 	private LoggingService loggingService;
-	private SessionFactory _sessionFactory;
 	
 	private static final Logger log = LoggerFactory.getLogger(DepotDataPersistenceServiceImpl.class);
 	
@@ -53,7 +51,6 @@ public class DepotDataPersistenceServiceImpl implements DepotDataPersistenceServ
 	}
 	
 	@Override
-    @Transactional
 	public void saveDepotData() throws DataAccessResourceFailureException {
 		VehicleDepotData depotData = depotDataProviderService.getVehicleDepotData(depotIdTranslator);
 		List<CPTFleetSubsetGroup> depotGroup = depotData.getAllDepotGroups();
@@ -69,10 +66,7 @@ public class DepotDataPersistenceServiceImpl implements DepotDataPersistenceServ
 		log.info("Persisting {} depot records", depotRecords.size());
 		
 		try {
-		    Session session = getSession();
-		    for(Iterator<DepotRecord> it = depotRecords.iterator(); it.hasNext();) {
-                session.saveOrUpdate(it.next());
-            }
+			hibernateTemplate.saveOrUpdateAll(depotRecords);
 			String message = "Persisted " + depotRecords.size() + " depot records";
 			log(message);
 		} catch(DataAccessException e) {
@@ -116,12 +110,8 @@ public class DepotDataPersistenceServiceImpl implements DepotDataPersistenceServ
 	@Autowired
 	@Qualifier("archiveSessionFactory")
 	public void setSessionFactory(SessionFactory sessionFactory) {
-		_sessionFactory = sessionFactory;
+		this.hibernateTemplate = new HibernateTemplate(sessionFactory);
 	}
-
-	private Session getSession(){
-	    return _sessionFactory.getCurrentSession();
-    }
 
 	/**
 	 * @param loggingService the loggingService to set
