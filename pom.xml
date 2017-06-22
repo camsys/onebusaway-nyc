@@ -21,8 +21,8 @@
     	<onebusaway.csv-entities.version>1.0.3</onebusaway.csv-entities.version>
     	<struts.version>2.3.32</struts.version>
       <jetty.version>6.1.26</jetty.version>
-      <spring.version>4.0.9.RELEASE</spring.version>
-      <onebusaway.app-modules.version>1.1.13.10-SNAPSHOT</onebusaway.app-modules.version>
+      <spring.version>3.2.17.RELEASE</spring.version> 
+      <onebusaway.app-modules.version>1.1.13.10-test-SNAPSHOT</onebusaway.app-modules.version>
       <gitDescribe>99999</gitDescribe>
       <xwiki.version>2.3.1</xwiki.version>
         <xwiki.integration.version>0.0.2</xwiki.integration.version>
@@ -224,6 +224,7 @@
     	<module>onebusaway-nyc-report</module>
         <module>onebusaway-nyc-gtfsrt-webapp</module>
         <module>onebusaway-nyc-gtfsrt-lib</module>
+        <module>onebusaway-nyc-gtfsrt-integration-tests</module>
         <module>onebusaway-nyc-gtfsrt</module>
 <!-- this only needs to be built on changes, which are rare -->
 <!--
