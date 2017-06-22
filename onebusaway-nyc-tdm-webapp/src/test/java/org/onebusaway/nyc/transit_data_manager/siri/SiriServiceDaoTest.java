@@ -20,12 +20,9 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.List;
 
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
+import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,11 +37,9 @@ public class SiriServiceDaoTest {
   @Before
   public void setup() throws IOException {
 
-    Configuration config = new Configuration();
+    Configuration config = new AnnotationConfiguration();
     config = config.configure("org/onebusaway/nyc/transit_data_manager/hibernate-configuration.xml");
-    ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(
-    config.getProperties()). buildServiceRegistry();
-    _sessionFactory = config.buildSessionFactory(serviceRegistry);
+    _sessionFactory = config.buildSessionFactory();
 
     _dao = new SiriServiceDao();
     _dao.setSessionFactory(_sessionFactory);
@@ -58,15 +53,12 @@ public class SiriServiceDaoTest {
 
   @Test
   public void testSave() {
-    Transaction t = getSession().beginTransaction();
     ServiceAlertBean bean = ServiceAlertsTestSupport.createServiceAlertBean("my test id");
     _dao.saveOrUpdateServiceAlert(bean);
-    t.commit();
   }
 
   @Test
   public void testDeleteByServiceAlertId() {
-    Transaction t = getSession().beginTransaction();
     String id = "my test id2";
     ServiceAlertBean bean = ServiceAlertsTestSupport.createServiceAlertBean(id);
     _dao.saveOrUpdateServiceAlert(bean);
@@ -78,11 +70,6 @@ public class SiriServiceDaoTest {
         fail("Still found service alert with id");
       }
     }
-    t.commit();
-  }
-
-  private Session getSession(){
-    return _sessionFactory.getCurrentSession();
   }
 
 }

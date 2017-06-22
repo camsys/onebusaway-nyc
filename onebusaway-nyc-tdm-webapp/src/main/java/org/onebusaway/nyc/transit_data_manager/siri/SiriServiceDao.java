@@ -73,7 +73,7 @@ public class SiriServiceDao implements SiriServicePersister {
   private List<ServiceAlertRecord> getServiceAlertsByServiceAlertId(
       String serviceAlertId) {
     Query query = getSession().createQuery(
-        "FROM ServiceAlertRecord where service_alert_id = :serviceAlertId");
+        "from ServiceAlertRecord r where r.service_alert_id = :serviceAlertId");
     query.setString("serviceAlertId", serviceAlertId);
     return query.list();
   }

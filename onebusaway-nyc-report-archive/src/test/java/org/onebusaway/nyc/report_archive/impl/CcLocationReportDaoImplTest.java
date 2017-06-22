@@ -17,14 +17,10 @@ package org.onebusaway.nyc.report_archive.impl;
 
 import static org.junit.Assert.*;
 
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
-import org.junit.Ignore;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -53,11 +49,9 @@ public class CcLocationReportDaoImplTest {
   @Before
   public void setup() throws IOException {
 
-    Configuration config = new Configuration();
+    Configuration config = new AnnotationConfiguration();
     config = config.configure("org/onebusaway/nyc/report_archive/hibernate-configuration.xml");
-    ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(
-    config.getProperties()). buildServiceRegistry();
-    _sessionFactory = config.buildSessionFactory(serviceRegistry);
+    _sessionFactory = config.buildSessionFactory();
 
     _dao = new CcLocationReportDaoImpl();
     _dao.setSessionFactory(_sessionFactory);
@@ -72,13 +66,12 @@ public class CcLocationReportDaoImplTest {
 
   @Test
   public void testSave() {
-    Transaction t = getSession().beginTransaction();
 
     assertEquals(0, _dao.getNumberOfReports());
 
     CcLocationReportRecord report = new CcLocationReportRecord();
-	report.setUUID("foo");
-	report.setArchiveTimeReceived(new Date(122345l));
+		report.setUUID("foo");
+		report.setArchiveTimeReceived(new Date(122345l));
     report.setDataQuality(new Byte("4"));
     report.setDestSignCode(123);
     report.setDirectionDeg(new BigDecimal("10.1"));
@@ -100,8 +93,6 @@ public class CcLocationReportDaoImplTest {
     report.setRawMessage("This is a standin for the raw message");
     _dao.saveOrUpdateReport(report);
     assertEquals(1, _dao.getNumberOfReports());
-
-    t.commit();
   }
 
   @Test
@@ -113,12 +104,11 @@ public class CcLocationReportDaoImplTest {
 
   @Test
   public void testConstructor() {
-      Transaction t = getSession().beginTransaction();
-      RealtimeEnvelope envelope = new RealtimeEnvelope();
-	  envelope.setUUID("foo");
-      envelope.setTimeReceived(122345l);
+			RealtimeEnvelope envelope = new RealtimeEnvelope();
+			envelope.setUUID("foo");
+			envelope.setTimeReceived(122345l);
       CcLocationReport m = new CcLocationReport();
-      envelope.setCcLocationReport(m);
+			envelope.setCcLocationReport(m);
       m.setRequestId(1205);
       m.setDataQuality(new SPDataQuality());
       m.getDataQuality().setQualitativeIndicator("4");
@@ -160,19 +150,12 @@ public class CcLocationReportDaoImplTest {
 	      assertEquals(s, r.getNmeaSentenceGPRMC());
 	  }
       }
-      t.commit();
   }
 
     @Test
     public void TestHandleException() {
-      Transaction t = getSession().beginTransaction();
-	  Throwable throwable = new Throwable();
-	  _dao.handleException("content", throwable, null);
-	  _dao.handleException("content2", throwable, new Date());
-	  t.commit();
-    }
-
-    private Session getSession(){
-        return _sessionFactory.getCurrentSession();
+	Throwable t = new Throwable();
+	_dao.handleException("content", t, null);
+	_dao.handleException("content2", t, new Date());
     }
 }

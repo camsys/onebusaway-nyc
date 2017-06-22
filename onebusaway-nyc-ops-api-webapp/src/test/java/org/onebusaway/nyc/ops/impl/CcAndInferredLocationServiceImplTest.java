@@ -9,10 +9,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.nyc.ops.util.OpsApiLibrary;
@@ -22,6 +18,7 @@ import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.impl.RecordValidationServiceImpl;
 import org.onebusaway.nyc.report.model.CcAndInferredLocationRecord;
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 
 import org.junit.After;
@@ -44,13 +41,9 @@ public class CcAndInferredLocationServiceImplTest {
 	  @Before
 	  public void setup() throws Exception {
 		MockitoAnnotations.initMocks(this);
-
-	  	Configuration config = new Configuration();
-	  	config = config.configure("org/onebusaway/nyc/ops/hibernate-configuration.xml");
-	  	ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(
-	  	config.getProperties()). buildServiceRegistry();
-	  	_sessionFactory = config.buildSessionFactory(serviceRegistry);
-
+	    Configuration config = new AnnotationConfiguration();
+	    config = config.configure("org/onebusaway/nyc/ops/hibernate-configuration.xml");
+	    _sessionFactory = config.buildSessionFactory();
 	    _jsonTool = new LowerCaseWDashesGsonJsonTool(false);
 	    _service = new CcAndInferredLocationServiceImpl();
 
@@ -75,9 +68,6 @@ public class CcAndInferredLocationServiceImplTest {
 	  
 	  @Test
 	  public void serviceTest() throws Exception {
-
-	  	Transaction t = getSession().beginTransaction();
-
 		ArrayList<CcAndInferredLocationRecord> records = (ArrayList<CcAndInferredLocationRecord>) _service.getAllLastKnownRecords();
 	    CcAndInferredLocationRecord record = records.get(0);
 	    
@@ -113,13 +103,7 @@ public class CcAndInferredLocationServiceImplTest {
 	    assertEquals(new Double(2664.283320458455), record.getDistanceAlongTrip());
 	    assertEquals(new Integer(66), record.getScheduleDeviation());
 	    assertEquals("B44-24", record.getAssignedRunId());
-
-	    t.commit();
 	  }
-
-	private Session getSession(){
-		return _sessionFactory.getCurrentSession();
-	}
 
 }
 
