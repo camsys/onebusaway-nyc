@@ -78,7 +78,7 @@
 				<tdm.port>80</tdm.port>
 				<tdm.url>/api/</tdm.url>
 				<service.alerts.url>http://tdm/siri/situation-exchange</service.alerts.url>
-				<service.alerts.subscription.path>:8080/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
+				<service.alerts.subscription.path>:8080/siri/situation-exchange</service.alerts.subscription.path>
 				<log4j.appender>ROLL</log4j.appender>
 			</properties>
 		</profile>
@@ -92,7 +92,7 @@
 				<bundle.mode.standalone>false</bundle.mode.standalone>
 				<log4j.appender>stdout</log4j.appender>
 				<service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
-				<service.alerts.subscription.path>/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+				<service.alerts.subscription.path>:8080/siri/situation-exchange</service.alerts.subscription.path>
 			</properties>
 		</profile>
 		<profile>
@@ -109,7 +109,7 @@
                                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 -->
 				<service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
-				<service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
+				<service.alerts.subscription.path>:8080/siri/situation-exchange</service.alerts.subscription.path>
 				<log4j.appender>stdout</log4j.appender>
 			</properties>
 		</profile>
@@ -137,7 +137,7 @@
 				<bundle.mode.standalone>true</bundle.mode.standalone>
 				<log4j.appender>stdout</log4j.appender>
 				<service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
-				<service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
+				<service.alerts.subscription.path>:8080/siri/situation-exchange</service.alerts.subscription.path>
 			</properties>
 		</profile>
 		<profile>
