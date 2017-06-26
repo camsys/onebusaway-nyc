@@ -17,7 +17,8 @@
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
     	classpath:data-sources.xml
-		classpath:org/onebusaway/nyc/gtfsrt/webapp/application-context-webapp.xml
+		  classpath:org/onebusaway/nyc/gtfsrt/webapp/application-context-webapp.xml
+		  classpath:org/onebusaway/nyc/tdm_adapters/application-context.xml
 	</param-value>
 	</context-param>
 
