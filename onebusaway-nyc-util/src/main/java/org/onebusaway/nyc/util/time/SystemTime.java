@@ -20,7 +20,7 @@ public class SystemTime {
   public static final String TIME_ENABLED_KEY = "tdm.systemTime.enabled";
   public static final String TIME_ADJUSTMENT_KEY = "tdm.systemTime.adjustment";
   public static final String TDM_HOST_KEY = "tdm.host";
-  public static final String TDM_PORT_KEY = "tdm.port";
+  public static final String TDM_PORT_KEY = "tdm.port"; 
  
 
   private static final int POLL_INTERVAL = 60; // seconds
