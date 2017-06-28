@@ -18,6 +18,7 @@ import org.onebusaway.nyc.report.api.json.JsonTool;
 import org.onebusaway.nyc.report.impl.CcAndInferredLocationFilter;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecord;
 import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,7 @@ public class HistoricalRecordsResource {
 			@QueryParam(value="timeout") final Integer timeout) {
 		
 		log.info("Starting getHistoricalRecords");
-		long now = System.currentTimeMillis();
+		long now = SystemTime.currentTimeMillis();
 		
 		Map<CcAndInferredLocationFilter, Object> filters = addFilterParameters(depotId, 
 				inferredRouteId, inferredPhase, vehicleId, vehicleAgencyId, boundingBox, 

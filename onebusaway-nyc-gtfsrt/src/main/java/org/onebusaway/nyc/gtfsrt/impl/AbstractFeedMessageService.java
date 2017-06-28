@@ -16,7 +16,9 @@
 package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime.*;
+
 import org.onebusaway.nyc.gtfsrt.service.FeedMessageService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
@@ -52,7 +54,7 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
     }
         @Override
     public synchronized FeedMessage getFeedMessage(Long requestTime) {
-        long time = System.currentTimeMillis();
+        long time = SystemTime.currentTimeMillis();
         if (requestTime != null && requestTime > 0)
             time = requestTime;
 
@@ -65,7 +67,7 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
 
             FeedHeader.Builder header = FeedHeader.newBuilder();
             header.setGtfsRealtimeVersion("1.0");
-            long headerTime = requestTime != null ? requestTime : System.currentTimeMillis();
+            long headerTime = requestTime != null ? requestTime : SystemTime.currentTimeMillis();
             header.setTimestamp(headerTime / 1000);
             header.setIncrementality(FeedHeader.Incrementality.FULL_DATASET);
             builder.setHeader(header);

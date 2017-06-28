@@ -2,6 +2,7 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.time.SystemTime;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Produces;
+
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
@@ -37,7 +39,7 @@ public class TripsForRouteController {
 
         TripsForRouteQueryBean query = new TripsForRouteQueryBean();
         query.setRouteId(id);
-        query.setTime(System.currentTimeMillis());
+        query.setTime(SystemTime.currentTimeMillis());
         query.setMaxCount(VTW_MAX_COUNT); // this would typically use MaxCount but NYC doesn't support it
 
 
