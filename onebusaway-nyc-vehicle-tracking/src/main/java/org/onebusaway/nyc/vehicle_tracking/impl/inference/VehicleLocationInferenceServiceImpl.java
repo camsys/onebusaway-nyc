@@ -140,8 +140,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private int _skippedUpdateLogCounter = 0;
 
-  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 12);
-
+  private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 20);
+  
   private final ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
     
   private final ConcurrentMap<AgencyAndId, Long> _timeReceivedByVehicleId = new ConcurrentHashMap<AgencyAndId, Long>(
