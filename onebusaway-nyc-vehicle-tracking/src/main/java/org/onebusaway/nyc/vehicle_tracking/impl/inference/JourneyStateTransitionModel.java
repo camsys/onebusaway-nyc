@@ -22,12 +22,15 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JourneyStateTransitionModel {
 
+  private final Logger _log = LoggerFactory.getLogger(JourneyStateTransitionModel.class);
   /*
    * Time (seconds) that the vehicle needs to be not moving in order to be a layover.
    */
@@ -172,11 +175,21 @@ public class JourneyStateTransitionModel {
           }
         } else {
           if (blockState.isOnTrip()) {
-            if (isDetour)
+            if (isDetour) {
+              if (obs.getRecord().getDestinationSignCode().equals(blockState.getBlockState().getDestinationSignCode())) {
+                _log.info("vehicle " + obs.getRecord().getVehicleId() + " with DSC "
+                        + blockState.getBlockState().getDestinationSignCode()
+                        + " on trip with Detour");
+              }
               return JourneyState.deadheadDuring(true);
-            else if (obs.hasOutOfServiceDsc())
+            } else if (obs.hasOutOfServiceDsc()) {
+              if (obs.getRecord().getDestinationSignCode().equals(blockState.getBlockState().getDestinationSignCode())) {
+                _log.info("vehicle " + obs.getRecord().getVehicleId() + " with DSC "
+                        + blockState.getBlockState().getDestinationSignCode()
+                        + " on trip with OOS DSC");
+              }
               return JourneyState.deadheadDuring(isDetour);
-            else
+            } else
               return adjustInProgressTransition(parentPhase, blockState, isDetour, isLayoverStopped);
           } else {
         	/* 
@@ -191,7 +204,12 @@ public class JourneyStateTransitionModel {
             		&& blockState.isAtPotentialLayoverSpot() && blockState.isRunFormal()) {
             	return JourneyState.layoverDuring(false);
             } else {
-            	return JourneyState.deadheadDuring(false);
+              if (obs.getRecord().getDestinationSignCode().equals(blockState.getBlockState().getDestinationSignCode())) {
+                _log.debug("vehicle " + obs.getRecord().getVehicleId() + " with DSC "
+                        + blockState.getBlockState().getDestinationSignCode()
+                        + " on trip with parent layover");
+              }
+              return JourneyState.deadheadDuring(false);
             }
           }
         }

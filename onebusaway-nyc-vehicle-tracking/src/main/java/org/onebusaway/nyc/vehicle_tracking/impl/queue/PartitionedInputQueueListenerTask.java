@@ -41,7 +41,9 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   
   @Override
   public void setDepotPartitionKey(String depotPartitionKey) {
-	  _depotPartitionKey = depotPartitionKey;
+    if (depotPartitionKey == null) return;
+    _log.info("depot = " + depotPartitionKey);
+    _depotPartitionKey = depotPartitionKey;
   }
   
   @Override

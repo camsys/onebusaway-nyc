@@ -464,6 +464,7 @@ public class BlockStateService {
     	  List<BlockInstance> instances = 
     			  _blockCalendarService.getActiveBlocksInTimeRange(indices, layoverIndices, frequencyIndices, 
     					  timeFrom.getTime(), timeTo.getTime());
+    	  _log.info("building blockInstances for " + record.getVehicleId());
 
     	  for(BlockInstance instance : instances) {    
     		  for(BlockTripEntry blockTrip : instance.getBlock().getTrips()) {
@@ -488,8 +489,10 @@ public class BlockStateService {
     			   */
     			  if (_requireDSCImpliedRoutes) {
     				  if (!observation.getImpliedRouteCollections()
-    						  .contains(blockTrip.getTrip().getRouteCollection().getId()))
-    					  continue;
+    						  .contains(blockTrip.getTrip().getRouteCollection().getId())) {
+    				    _log.info("discard for route=" + blockTrip.getTrip().getRouteCollection().getId());
+                        continue;
+                      }
     			  }
 
     			  if (_requireRunMatchesForNullDSC) {

@@ -97,8 +97,10 @@ public abstract class InputServiceImpl {
 		final CcLocationReport message = envelope.getCcLocationReport();
 		final ArrayList<AgencyAndId> vehicleList = new ArrayList<AgencyAndId>();
 
-		if (_depotPartitionKeys == null)
+		if (_depotPartitionKeys == null) {
+			_log.error("no depots configured");
 			return false;
+		}
 
 		for (final String key : _depotPartitionKeys) {
 			try {
@@ -116,7 +118,9 @@ public abstract class InputServiceImpl {
 				vehicleIdent.getAgencydesignator(), vehicleIdent.getVehicleId()
 						+ "");
 
-		return vehicleList.contains(vehicleId);
+		boolean found = vehicleList.contains(vehicleId);
+		if (found) _log.debug("accepted " + vehicleId);
+		return found;
 	}
 	
 	public String getDepotPartitionKey() {
