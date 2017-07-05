@@ -37,7 +37,7 @@
       <property name="cacheManager" ref="cacheManager" />
       <property name="cacheName"
         value="org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService.getNearbyStop" />
-      <property name="maxElementsInMemory" value="10000" />
+      <property name="maxElementsInMemory" value="20000" />
       <property name="eternal" value="true" />
       <property name="overflowToDisk" value="false" />
       <property name="diskPersistent" value="false" />
