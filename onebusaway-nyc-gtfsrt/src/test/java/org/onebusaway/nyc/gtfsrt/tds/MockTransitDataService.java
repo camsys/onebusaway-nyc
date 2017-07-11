@@ -609,8 +609,8 @@ public class MockTransitDataService implements NycTransitDataService {
         status.setPhase(vlrb.getPhase());
 
         VehicleOccupancyRecord vehicleOccupancyRecord = _vehicleOccupancyCache.get(vlrb.getVehicleId());
-        if (vehicleOccupancyRecord != null) {
-            status.setOccupancyStatus(vehicleOccupancyRecord.getOccupancyStatus());
+        if (vehicleOccupancyRecord != null && vehicleOccupancyRecord.getOccupancyStatus() != null) {
+            status.setOccupancyStatus(vehicleOccupancyRecord.getOccupancyStatus().valueOf());
         }
 
         double distanceAlongTrip = vlrb.getDistanceAlongBlock() - getAccumulatedBlockDistanceForTrip(trip);
