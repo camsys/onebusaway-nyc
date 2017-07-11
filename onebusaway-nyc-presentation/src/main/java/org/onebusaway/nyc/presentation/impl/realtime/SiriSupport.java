@@ -508,12 +508,15 @@ public final class SiriSupport {
         mvj.setOccupancy(mapOccupancyStatusToEnumeration(tsb.getOccupancyStatus()));
 	}
 
-	private static OccupancyEnumeration mapOccupancyStatusToEnumeration(OccupancyStatus status) {
+	private static OccupancyEnumeration mapOccupancyStatusToEnumeration(Integer occupancyStatusInteger) {
 
-		if (status == null) {
+		if (occupancyStatusInteger == null) {
 			return null;
 		}
-		switch (status) {
+
+		OccupancyStatus occupancyStatus = OccupancyStatus.toEnum(occupancyStatusInteger);
+
+		switch (occupancyStatus) {
 			case UNKNOWN:
 				return null;
 			case EMPTY:
