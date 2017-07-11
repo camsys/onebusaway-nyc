@@ -28,6 +28,7 @@ import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
@@ -36,6 +37,7 @@ import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.org.siri.siri.BlockRefStructure;
@@ -59,6 +61,7 @@ import uk.org.siri.siri.SituationRefStructure;
 import uk.org.siri.siri.SituationSimpleRefStructure;
 import uk.org.siri.siri.StopPointRefStructure;
 import uk.org.siri.siri.VehicleRefStructure;
+import uk.org.siri.siri.OccupancyEnumeration;
 
 public final class SiriSupport {
 
@@ -295,9 +298,12 @@ public final class SiriSupport {
 		}
 		
 		// monitored call
-		if(!presentationService.isOnDetour(currentVehicleTripStatus))
-			fillMonitoredCall(monitoredVehicleJourney, blockInstance, currentVehicleTripStatus, monitoredCallStopBean, 
-				presentationService, nycTransitDataService, stopIdToPredictionRecordMap, responseTimestamp);
+		if(!presentationService.isOnDetour(currentVehicleTripStatus)) {
+			fillMonitoredCall(monitoredVehicleJourney, blockInstance, currentVehicleTripStatus, monitoredCallStopBean,
+					presentationService, nycTransitDataService, stopIdToPredictionRecordMap, responseTimestamp);
+
+			fillOccupancy(monitoredVehicleJourney, currentVehicleTripStatus);
+		}
 
 		// onward calls
 		if(!presentationService.isOnDetour(currentVehicleTripStatus))
@@ -362,7 +368,6 @@ public final class SiriSupport {
 			if(!foundActiveTrip) {
 				if(currentVehicleTripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
 					distanceOfVehicleAlongBlock += currentVehicleTripStatus.getDistanceAlongTrip();
-
 					foundActiveTrip = true;
 				} else {
 					// a block trip's distance along block is the *beginning* of that block trip along the block
@@ -486,6 +491,7 @@ public final class SiriSupport {
 										visitNumber, blockTripStopsAfterTheVehicle - 1,
 										stopLevelPredictions.get(stopPredictionKey),
 										responseTimestamp));
+
 					}
 
 					// we found our monitored call--stop
@@ -494,6 +500,37 @@ public final class SiriSupport {
 			}    	
 		}
 	}
+
+	private static void fillOccupancy(MonitoredVehicleJourneyStructure mvj, TripStatusBean tsb) {
+		if (tsb == null || tsb.getVehicleId() ==  null) {
+			return;
+		}
+        mvj.setOccupancy(mapOccupancyStatusToEnumeration(tsb.getOccupancyStatus()));
+	}
+
+	private static OccupancyEnumeration mapOccupancyStatusToEnumeration(OccupancyStatus status) {
+
+		if (status == null) {
+			return null;
+		}
+		switch (status) {
+			case UNKNOWN:
+				return null;
+			case EMPTY:
+			case MANY_SEATS_AVAILABLE:
+			case FEW_SEATS_AVAILABLE:
+				return OccupancyEnumeration.SEATS_AVAILABLE;
+			case STANDING_ROOM_ONLY:
+				return OccupancyEnumeration.STANDING_AVAILABLE;
+			case FULL:
+			case CRUSHED_STANDING_ROOM_ONLY:
+			case NOT_ACCEPTING_PASSENGERS:
+				return OccupancyEnumeration.FULL;
+			default:
+				return null;
+		}
+	}
+
 
 	private void fillSituations(MonitoredVehicleJourneyStructure monitoredVehicleJourney, TripStatusBean tripStatus) {
 		if (tripStatus == null || tripStatus.getSituations() == null || tripStatus.getSituations().isEmpty()) {

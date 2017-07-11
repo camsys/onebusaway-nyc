@@ -26,6 +26,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
@@ -33,6 +34,7 @@ import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManageme
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.transit_data_federation.services.schedule.ScheduledServiceService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -601,6 +603,16 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	public void resetVehicleLocation(String arg0) {
 		blockUntilBundleIsReady();
 		_transitDataService.resetVehicleLocation(arg0);    
+	}
+
+	@Override
+	public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord) {
+		_transitDataService.addVehicleOccupancyRecord(vehicleOccupancyRecord);
+	}
+
+	@Override
+	public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+		return _transitDataService.getVehicleOccupancyRecordForVehicleId(vehicleId);
 	}
 
 	@Override

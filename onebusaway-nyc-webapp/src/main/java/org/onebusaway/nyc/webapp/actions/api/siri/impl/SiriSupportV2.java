@@ -41,6 +41,7 @@ import org.onebusaway.nyc.webapp.actions.api.siri.model.StopOnRoute;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirection;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
@@ -50,6 +51,8 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import uk.org.siri.siri_2.OccupancyEnumeration;
 import uk.org.siri.siri_2.AnnotatedDestinationStructure;
 import uk.org.siri.siri_2.AnnotatedLineStructure;
 import uk.org.siri.siri_2.AnnotatedLineStructure.Destinations;
@@ -117,6 +120,7 @@ public final class SiriSupportV2 {
 			List<TimepointPredictionRecord> stopLevelPredictions,
 			DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters) {
+
 		BlockInstanceBean blockInstance = nycTransitDataService
 				.getBlockInstance(currentVehicleTripStatus.getActiveTrip()
 						.getBlockId(), currentVehicleTripStatus
@@ -727,6 +731,10 @@ public final class SiriSupportV2 {
 					distanceOfVehicleAlongBlock += tripStatus
 							.getDistanceAlongTrip();
 
+					fillOccupancy(monitoredVehicleJourney,
+							nycTransitDataService,
+							AgencyAndIdLibrary.convertFromString( tripStatus.getVehicleId()));
+
 					foundActiveTrip = true;
 				} else {
 					// a block trip's distance along block is the *beginning* of
@@ -787,12 +795,41 @@ public final class SiriSupportV2 {
 								stopLevelPredictions.get(stopTime
 										.getStopTime().getStop()
 										.getId()), detailLevel, responseTimestamp));
+
 					}
 
 					// we found our monitored call--stop
 					return;
 				}
 			}
+		}
+	}
+
+	private static void fillOccupancy(MonitoredVehicleJourneyStructure mvj, NycTransitDataService tds, AgencyAndId vehicleId) {
+		if (vehicleId == null) {
+			return;
+		}
+		VehicleOccupancyRecord vor = tds.getVehicleOccupancyRecordForVehicleId(vehicleId);
+		mvj.setOccupancy(mapOccupancyStatusToEnumeration(vor));
+	}
+
+	private static OccupancyEnumeration mapOccupancyStatusToEnumeration(VehicleOccupancyRecord vor) {
+		if (vor == null) return null;
+		switch (vor.getOccupancyStatus()) {
+			case UNKNOWN:
+				return null;
+			case EMPTY:
+			case MANY_SEATS_AVAILABLE:
+			case FEW_SEATS_AVAILABLE:
+				return OccupancyEnumeration.SEATS_AVAILABLE;
+			case STANDING_ROOM_ONLY:
+				return OccupancyEnumeration.STANDING_AVAILABLE;
+			case FULL:
+			case CRUSHED_STANDING_ROOM_ONLY:
+			case NOT_ACCEPTING_PASSENGERS:
+				return OccupancyEnumeration.FULL;
+			default:
+				return null;
 		}
 	}
 

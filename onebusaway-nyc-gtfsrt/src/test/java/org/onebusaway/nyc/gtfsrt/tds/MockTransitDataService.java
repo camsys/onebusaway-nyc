@@ -68,6 +68,7 @@ import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateBean;
 import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateQueryBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.model.tripplanning.ConstraintsBean;
@@ -90,6 +91,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -288,6 +290,18 @@ public class MockTransitDataService implements NycTransitDataService {
     @Override
     public void resetVehicleLocation(String s) {
         _vehicleLocations.remove(s);
+    }
+
+    private Map<AgencyAndId, VehicleOccupancyRecord> _vehicleOccupancyCache
+            = new HashMap<AgencyAndId, VehicleOccupancyRecord>();
+    @Override
+    public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord) {
+        _vehicleOccupancyCache.put(vehicleOccupancyRecord.getVehicleId(), vehicleOccupancyRecord);
+    }
+
+    @Override
+    public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+        return _vehicleOccupancyCache.get(vehicleId);
     }
 
     @Override
@@ -593,6 +607,11 @@ public class MockTransitDataService implements NycTransitDataService {
         status.setOrientation(vlrb.getCurrentOrientation());
         status.setStatus(vlrb.getStatus());
         status.setPhase(vlrb.getPhase());
+
+        VehicleOccupancyRecord vehicleOccupancyRecord = _vehicleOccupancyCache.get(vlrb.getVehicleId());
+        if (vehicleOccupancyRecord != null) {
+            status.setOccupancyStatus(vehicleOccupancyRecord.getOccupancyStatus());
+        }
 
         double distanceAlongTrip = vlrb.getDistanceAlongBlock() - getAccumulatedBlockDistanceForTrip(trip);
         status.setDistanceAlongTrip(distanceAlongTrip);
