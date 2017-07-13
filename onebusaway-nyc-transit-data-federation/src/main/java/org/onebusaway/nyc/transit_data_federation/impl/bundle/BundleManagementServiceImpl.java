@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
@@ -26,6 +27,7 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleFileItem;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
@@ -40,7 +42,6 @@ import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundl
 import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	private static Logger _log = LoggerFactory.getLogger(BundleManagementServiceImpl.class);
 
 	private List<BundleItem> _allBundles = new ArrayList<BundleItem>();
+	
+	private HashMap<String, BundleItem> _allBundlesMap = new HashMap<String, BundleItem>();
 
 	protected HashMap<String, BundleItem> _applicableBundles = new HashMap<String, BundleItem>();
 
@@ -84,11 +87,15 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	protected BundleStoreService _bundleStore = null;
 	
+	protected BundleStoreService _localBundleStore = null;
+	
 	private int bundleDiscoveryFrequencyMin = 15;
   
 	private int bundleSwitchFrequencyMin = 60;
 	
 	private int bundleSwitchFrequencyHour = 1;
+	
+	private boolean bundleCleanupEnabled = false;
 
 	// This is to fix the deadlock problem on startup in some versions of Spring.
 	// see https://issuetracker.camsys.com/browse/OBANYC-2543
@@ -186,6 +193,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	 */
 	public synchronized void refreshApplicableBundles() {
 		_applicableBundles.clear();
+		_allBundlesMap.clear();
 
 		for(BundleItem bundle : _allBundles) {
 			if(bundle.isApplicableToDate(getServiceDate()) || isBatchMode()) {
@@ -193,6 +201,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 				_applicableBundles.put(bundle.getId(), bundle);
 			}
+			_allBundlesMap.put(bundle.getId(),bundle);
 		}
 	}
 
@@ -226,7 +235,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		changeBundle(bestBundle.getId());
 	}
 	
-	@Refreshable(dependsOn = {"tdm.bundleDiscoveryFrequencyMin", "tdm.bundleSwitchFrequencyMin", "tdm.bundleSwitchFrequencyHour"})
+	@Refreshable(dependsOn = {"tdm.bundleDiscoveryFrequencyMin", "tdm.bundleSwitchFrequencyMin", "tdm.bundleSwitchFrequencyHour", "tds.bundleCleanupEnabled"})
 	protected void refreshCache() {
 	    bundleDiscoveryFrequencyMin = Integer.parseInt(_configurationService.getConfigurationValueAsString(
 	        "tdm.bundleDiscoveryFrequencyMin", "15"));
@@ -234,6 +243,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	        "tdm.bundleSwitchFrequencyMin", "60"));
 	    bundleSwitchFrequencyHour = Integer.parseInt(_configurationService.getConfigurationValueAsString(
 	            "tdm.bundleSwitchFrequencyHour", "1"));
+	    bundleCleanupEnabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString(
+	    		"tds.bundleCleanupEnabled", "false"));
 	}
 
 	@PostConstruct
@@ -241,13 +252,17 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		if(_standaloneMode == true) {
 			_bundleStore = new LocalBundleStoreImpl(_bundleRootPath);
 		} else {
-			_bundleStore = new TDMBundleStoreImpl(_bundleRootPath, _apiLibrary);      
+			_bundleStore = new TDMBundleStoreImpl(_bundleRootPath, _apiLibrary);
+			_localBundleStore = new LocalBundleStoreImpl(_bundleRootPath);
 		}
 
 		refreshCache();
 		discoverBundles();
 		refreshApplicableBundles();
 		reevaluateBundleAssignment();
+		if(!_standaloneMode && bundleCleanupEnabled){
+			cleanupBundles();
+		}
 
 		if(_taskScheduler != null) {
 			_log.info("Starting bundle discovery and switch threads...");
@@ -256,6 +271,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_taskScheduler.schedule(discoveryThread, discoveryThread);
 
 			BundleSwitchUpdateThread switchThread = new BundleSwitchUpdateThread();
+			_taskScheduler.schedule(switchThread, switchThread);
+			
 			_taskScheduler.schedule(switchThread, switchThread);
 		}
 	}	
@@ -529,7 +546,11 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		public void run() {     
 			try {
 				refreshApplicableBundles();
-				reevaluateBundleAssignment();  
+				reevaluateBundleAssignment();
+				if(!_standaloneMode && bundleCleanupEnabled){
+					cleanupBundles();
+				}
+				
 			} catch(Exception e) {
 				_log.error("Error re-evaluating bundle assignment: " + e.getMessage());
 				e.printStackTrace();
@@ -616,7 +637,19 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		}
 		return frequency * (occurances + 1);	
 	}
-
+	
+	public void cleanupBundles() {
+		try{
+			for(BundleItem bundle : _localBundleStore.getBundles()) {			
+				if(_allBundlesMap.get(bundle.getId()) == null){
+					_bundleStore.deleteBundle(bundle.getId());
+				}
+			}
+		} catch(Exception e){
+			_log.warn("Unable to cleanup bundles",e);
+		}
+	}
+	
 	@PreDestroy
 	public void destroy() {
 		_log.info("destroy");

@@ -6,7 +6,6 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
 import org.onebusaway.utility.ObjectSerializationLibrary;
-
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +25,8 @@ public class LocalBundleStoreImpl implements BundleStoreService {
 	private static Logger _log = LoggerFactory.getLogger(LocalBundleStoreImpl.class);
 
 	private String _bundleRootPath = null;
+	
+	private BundleStoreUtil _bundleStoreUtil = new BundleStoreUtil();
 
 	public LocalBundleStoreImpl(String bundleRootPath) {
 		_bundleRootPath = bundleRootPath;
@@ -96,6 +97,11 @@ public class LocalBundleStoreImpl implements BundleStoreService {
 		}
 
 		return output;
+	}
+	
+	@Override
+	public void deleteBundle(String bundleId) throws Exception{
+		_bundleStoreUtil.deleteBundle(_bundleRootPath, bundleId);
 	}
 
 }

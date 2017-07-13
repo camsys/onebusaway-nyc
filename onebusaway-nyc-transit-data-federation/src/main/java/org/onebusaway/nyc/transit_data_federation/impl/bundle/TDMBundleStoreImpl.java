@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.transit_data_federation.impl.bundle;
 
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
-
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleFileItem;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
@@ -42,6 +41,8 @@ public class TDMBundleStoreImpl implements BundleStoreService {
 	private String _bundleRootPath = null;
 
 	private TransitDataManagerApiLibrary _apiLibrary;
+	
+	private BundleStoreUtil _bundleStoreUtil = new BundleStoreUtil();
 
 	public TDMBundleStoreImpl(String bundleRootPath, TransitDataManagerApiLibrary apiLibrary) {
 		_bundleRootPath = bundleRootPath;
@@ -227,6 +228,11 @@ public class TDMBundleStoreImpl implements BundleStoreService {
 		} // for each bundle
 
 		return output;
+	}
+	
+	@Override
+	public void deleteBundle(String bundleId) throws Exception{
+		_bundleStoreUtil.deleteBundle(_bundleRootPath, bundleId);
 	}
 
 }

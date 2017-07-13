@@ -13,6 +13,8 @@ import java.util.List;
 public interface BundleStoreService {
   
   public List<BundleItem> getBundles() throws Exception;
+
+  void deleteBundle(String bundleId) throws Exception;
   
 }
 
