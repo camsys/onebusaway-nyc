@@ -160,6 +160,8 @@ public final class SiriSupport {
 		monitoredVehicleJourney.setProgressRate(getProgressRateForPhaseAndStatus(
 				currentVehicleTripStatus.getStatus(), currentVehicleTripStatus.getPhase()));
 
+		fillOccupancy(monitoredVehicleJourney, currentVehicleTripStatus);
+
 		// origin-destination
 		for(int i = 0; i < blockTrips.size(); i++) {
 			BlockTripBean blockTrip = blockTrips.get(i);
@@ -301,8 +303,6 @@ public final class SiriSupport {
 		if(!presentationService.isOnDetour(currentVehicleTripStatus)) {
 			fillMonitoredCall(monitoredVehicleJourney, blockInstance, currentVehicleTripStatus, monitoredCallStopBean,
 					presentationService, nycTransitDataService, stopIdToPredictionRecordMap, responseTimestamp);
-
-			fillOccupancy(monitoredVehicleJourney, currentVehicleTripStatus);
 		}
 
 		// onward calls

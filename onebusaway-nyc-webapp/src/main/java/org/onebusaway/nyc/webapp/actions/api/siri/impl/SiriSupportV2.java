@@ -327,6 +327,12 @@ public final class SiriSupportV2 {
 			monitoredVehicleJourney.setProgressRate(getProgressRateForPhaseAndStatus(
 					currentVehicleTripStatus.getStatus(),
 					currentVehicleTripStatus.getPhase()));
+
+			fillOccupancy(monitoredVehicleJourney,
+					nycTransitDataService,
+					currentVehicleTripStatus);
+
+
 		}
 
 		// detail level - normal
@@ -731,10 +737,6 @@ public final class SiriSupportV2 {
 					distanceOfVehicleAlongBlock += tripStatus
 							.getDistanceAlongTrip();
 
-					fillOccupancy(monitoredVehicleJourney,
-							nycTransitDataService,
-							AgencyAndIdLibrary.convertFromString( tripStatus.getVehicleId()));
-
 					foundActiveTrip = true;
 				} else {
 					// a block trip's distance along block is the *beginning* of
@@ -805,11 +807,17 @@ public final class SiriSupportV2 {
 		}
 	}
 
-	private static void fillOccupancy(MonitoredVehicleJourneyStructure mvj, NycTransitDataService tds, AgencyAndId vehicleId) {
-		if (vehicleId == null) {
+	private static void fillOccupancy(MonitoredVehicleJourneyStructure mvj, NycTransitDataService tds, TripStatusBean vehicleStatus) {
+		if (vehicleStatus == null
+				|| vehicleStatus.getActiveTrip() == null
+				|| vehicleStatus.getActiveTrip().getRoute() ==  null) {
 			return;
 		}
-		VehicleOccupancyRecord vor = tds.getVehicleOccupancyRecordForVehicleId(vehicleId);
+		VehicleOccupancyRecord vor =
+				tds.getVehicleOccupancyRecordForVehicleIdAndRoute(
+						AgencyAndId.convertFromString(vehicleStatus.getVehicleId()),
+						vehicleStatus.getActiveTrip().getRoute().getId(),
+						vehicleStatus.getActiveTrip().getDirectionId());
 		mvj.setOccupancy(mapOccupancyStatusToEnumeration(vor));
 	}
 

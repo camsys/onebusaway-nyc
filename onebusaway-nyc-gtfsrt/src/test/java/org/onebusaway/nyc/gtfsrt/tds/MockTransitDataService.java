@@ -300,7 +300,12 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+    public VehicleOccupancyRecord getLastVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+        return _vehicleOccupancyCache.get(vehicleId);
+    }
+
+    @Override
+    public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId) {
         return _vehicleOccupancyCache.get(vehicleId);
     }
 

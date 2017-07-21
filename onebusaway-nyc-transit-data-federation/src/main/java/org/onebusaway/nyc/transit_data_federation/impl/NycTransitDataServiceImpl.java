@@ -610,9 +610,15 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 		_transitDataService.addVehicleOccupancyRecord(vehicleOccupancyRecord);
 	}
 
+
 	@Override
-	public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
-		return _transitDataService.getVehicleOccupancyRecordForVehicleId(vehicleId);
+	public VehicleOccupancyRecord getLastVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+		return _transitDataService.getLastVehicleOccupancyRecordForVehicleId(vehicleId);
+	}
+
+	@Override
+	public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId) {
+		return _transitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(vehicleId, routeId, directionId);
 	}
 
 	@Override
