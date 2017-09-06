@@ -90,7 +90,6 @@ import org.onebusaway.transit_data_federation.services.PredictionHelperService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -647,14 +646,12 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Override
 	public Boolean stopHasRevenueServiceOnRoute(String agencyId, String stopId, String routeId, String directionId) {
-		//return _scheduledServiceService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
-		return true;
+	  return _transitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
 	}
 
 	@Override
 	public Boolean stopHasRevenueService(String agencyId, String stopId) {
-		//return _scheduledServiceService.stopHasRevenueService(agencyId, stopId);
-		return true;
+	  return _transitDataService.stopHasRevenueService(agencyId, stopId);
 	}
 
 }

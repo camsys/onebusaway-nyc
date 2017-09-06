@@ -46,6 +46,31 @@
     <bean id="nearbyStopsBeanServiceImpl" class="org.onebusaway.transit_data_federation.impl.beans.NearbyStopsBeanServiceImpl">
       <property name="nearbyStopsCache" ref="nearbyStopsBeanServiceCache" />
     </bean>
+    
+    <bean id="stopHasRevenueCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">
+    <property name="cacheManager" ref="cacheManager" />
+    <property name="cacheName"
+      value="org.onebusaway.transit_data_federation.services.nonrevenue.NonRevenueSearchService.stopHasRevenueService" />
+    <property name="maxElementsInMemory" value="20000" />
+    <property name="eternal" value="true" />
+    <property name="overflowToDisk" value="false" />
+    <property name="diskPersistent" value="false" />
+  </bean>
+  
+  <bean id="stopHasRevenueOnRouteCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">
+    <property name="cacheManager" ref="cacheManager" />
+    <property name="cacheName"
+      value="org.onebusaway.transit_data_federation.services.nonrevenue.NonRevenueSearchService.stopHasRevenueServiceOnRouteCache" />
+    <property name="maxElementsInMemory" value="200000" />
+    <property name="eternal" value="true" />
+    <property name="overflowToDisk" value="false" />
+    <property name="diskPersistent" value="false" />
+  </bean>
+  
+  <bean id="nonRevenueSearchServiceImpl" class="org.onebusaway.transit_data_federation.impl.nonrevenue.NonRevenueSearchServiceImpl">
+    <property name="stopHasRevenueServiceCache" ref="stopHasRevenueCache" />
+    <property name="stopHasRevenueServiceOnRouteCache" ref="stopHasRevenueOnRouteCache" />
+  </bean>
 
 	<!-- Common Services -->
 	<bean id="shapePointsLibrary" class="org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary" />

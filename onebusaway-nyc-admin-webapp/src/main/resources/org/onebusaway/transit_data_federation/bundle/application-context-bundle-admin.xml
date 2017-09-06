@@ -91,21 +91,31 @@
 
   <bean id="tripGraphTask" class="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.TransitGraphTask" />
 
-  <!-- -->
+	<!-- Revenue Stop Route -->
+
+  <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="revenue_stop_route" />
+    <property name="afterTaskName" value="transit_graph" />
+    <property name="task" ref="revenueStopRoutesTask" />
+  </bean>
+  <bean id="revenueStopRoutesTask" class="org.onebusaway.transit_data_federation.bundle.tasks.GenerateNonRevenueStopRoutesTask" />
+
+  <!-- Block Indices Task -->
 
   <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="block_indices" />
-    <property name="afterTaskName" value="transit_graph" />
+    <property name="afterTaskName" value="revenue_stop_route" />
     <property name="task" ref="blockIndicesTask" />
   </bean>
 
   <bean id="blockIndicesTask" class="org.onebusaway.transit_data_federation.bundle.tasks.block_indices.BlockIndicesTask" />
 
+
   <!-- Narratives Task -->
 
   <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="narratives" />
-    <property name="afterTaskName" value="block_indices" />
+    <property name="afterTaskName" value="non_revenue_stop_route" />
     <property name="task" ref="narrativesTask" />
   </bean>
 
@@ -243,6 +253,9 @@
   </bean>
 
   <bean id="blockLocationHistoryTask" class="org.onebusaway.transit_data_federation.bundle.tasks.history.BlockLocationHistoryTask" />
+  
+  
+ 
 
   <!-- Pre Cache -->
 
