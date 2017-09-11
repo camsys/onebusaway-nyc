@@ -98,7 +98,7 @@
     <property name="afterTaskName" value="transit_graph" />
     <property name="task" ref="revenueStopRoutesTask" />
   </bean>
-  <bean id="revenueStopRoutesTask" class="org.onebusaway.transit_data_federation.bundle.tasks.GenerateNonRevenueStopRoutesTask" />
+  <bean id="revenueStopRoutesTask" class="org.onebusaway.transit_data_federation.bundle.tasks.GenerateRevenueStopRoutesTask" />
 
   <!-- Block Indices Task -->
 
@@ -115,7 +115,7 @@
 
   <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="narratives" />
-    <property name="afterTaskName" value="non_revenue_stop_route" />
+    <property name="afterTaskName" value="block_indices" />
     <property name="task" ref="narrativesTask" />
   </bean>
 
