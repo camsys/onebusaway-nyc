@@ -403,6 +403,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_refreshService.refresh(RefreshableResources.STOP_GEOSPATIAL_INDEX);
 			_refreshService.refresh(RefreshableResources.TRANSFER_PATTERNS);
 			_refreshService.refresh(RefreshableResources.NARRATIVE_DATA);
+			_refreshService.refresh(RefreshableResources.REVENUE_STOP_ROUTE_INDEX);
 
 			_refreshService.refresh(NycRefreshableResources.DESTINATION_SIGN_CODE_DATA);
 			_refreshService.refresh(NycRefreshableResources.TERMINAL_DATA);
