@@ -87,6 +87,7 @@ import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.PredictionHelperService;
+import org.onebusaway.transit_data_federation.services.revenue.RevenueSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,6 +117,9 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Autowired
 	private PredictionHelperService _predictionHelperService;
+	
+	@Autowired
+	private RevenueSearchService _revenueSearchService;
 
 	private int _blockedRequestCounter = 0;
 
@@ -646,12 +650,12 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Override
 	public Boolean stopHasRevenueServiceOnRoute(String agencyId, String stopId, String routeId, String directionId) {
-	  return _transitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
+	  return _revenueSearchService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
 	}
 
 	@Override
 	public Boolean stopHasRevenueService(String agencyId, String stopId) {
-	  return _transitDataService.stopHasRevenueService(agencyId, stopId);
+	  return _revenueSearchService.stopHasRevenueService(agencyId, stopId);
 	}
 
 }
