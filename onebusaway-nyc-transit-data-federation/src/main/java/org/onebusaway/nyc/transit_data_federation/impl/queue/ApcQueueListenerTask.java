@@ -18,6 +18,8 @@ package org.onebusaway.nyc.transit_data_federation.impl.queue;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
+
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,20 +47,33 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
 
     public Boolean useApcIfAvailable() {
         if (!Status.ENABLED.equals(status)) return false;
-        return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useApc", "false"));
+        return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useApc", ""));
     }
 
 
     @Override
-    public boolean processMessage(String address, byte[] buff) throws Exception {
-        String contents = new String(buff);
-        try {
-            if (address == null || !address.equals(getQueueName()) || ! useApcIfAvailable()) {
-                _log.warn("rejected message for queue " + address);
-                return false;
-            }
+    public boolean processMessage(String contents, byte[] buff) throws Exception {        
+      
+      /*
+         * TODO Need to refactor this. 
+          Contents should contain topic and buff should contain message. 
+          Currently contents and buff both contain message therefore 
+          topic must get parsed out from the message body.
+          */
+      
+        if(StringUtils.isBlank(contents)){
+          _log.warn("rejected message, message is empty");
+          return false;
+        }   
+        
+        String message[] = contents.split(getQueueName());
+        if (message.length <= 1 || ! useApcIfAvailable()) {
+          _log.warn("rejected message for queue " + contents);
+          return false;
+        }
 
-            NycVehicleLoadBean bean = _mapper.readValue(contents, NycVehicleLoadBean.class);
+        try {
+            NycVehicleLoadBean bean = _mapper.readValue(message[1], NycVehicleLoadBean.class);
             processResult(bean, contents);
             return true;
         } catch (Exception any) {
