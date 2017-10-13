@@ -142,20 +142,20 @@ public class GtfsRealtimeLibrary {
         if (bean.getTripId() != null || bean.getDirectionId() != null) {
             TripDescriptor.Builder td = TripDescriptor.newBuilder();
             if (bean.getTripId() != null)
-                td.setTripId(bean.getTripId());
+                td.setTripId(id(bean.getTripId()));
             if (bean.getRouteId() != null)
-                td.setRouteId(bean.getRouteId());
+                td.setRouteId(id(bean.getRouteId()));
             if (bean.getDirectionId() != null)
                 td.setDirectionId(Integer.parseInt(bean.getDirectionId()));
             builder.setTrip(td);
         } else if (bean.getRouteId() != null) {
-            builder.setRouteId(bean.getRouteId());
+            builder.setRouteId(id(bean.getRouteId()));
         }
 
         if (bean.getAgencyId() != null)
             builder.setAgencyId(bean.getAgencyId());
         if (bean.getStopId() != null)
-            builder.setStopId(bean.getStopId());
+            builder.setStopId(id(bean.getStopId()));
         return builder;
     }
 

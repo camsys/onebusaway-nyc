@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.gtfsrt.tests;
 
 import com.google.transit.realtime.GtfsRealtime.*;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.impl.ServiceAlertFeedBuilderImpl;
 import org.onebusaway.nyc.gtfsrt.service.ServiceAlertFeedBuilder;
 import org.onebusaway.nyc.gtfsrt.util.ServiceAlertReader;
@@ -136,23 +137,23 @@ public abstract class ServiceAlertTest {
             return false;
         if ((affects.getRouteId() != null) != (entity.hasRouteId() || entity.getTrip().hasRouteId()))
             return false;
-        if (affects.getRouteId() != null && entity.hasRouteId() && !affects.getRouteId().equals(entity.getRouteId()))
+        if (affects.getRouteId() != null && entity.hasRouteId() && !id(affects.getRouteId()).equals(entity.getRouteId()))
             return false;
         if ((affects.getTripId() != null || affects.getDirectionId() != null) != entity.hasTrip())
             return false;
         if ((affects.getStopId() != null) != entity.hasStopId())
             return false;
-        if (entity.hasStopId() && !affects.getStopId().equals(entity.getStopId()))
+        if (entity.hasStopId() && !id(affects.getStopId()).equals(entity.getStopId()))
             return false;
         if (entity.hasTrip()) {
             TripDescriptor td = entity.getTrip();
             if (td.hasTripId() != (affects.getTripId() != null))
                 return false;
-            if (td.hasTripId() && (!td.getTripId().equals(affects.getTripId())))
+            if (td.hasTripId() && (!td.getTripId().equals(id(affects.getTripId()))))
                 return false;
             if (td.hasRouteId() != (affects.getRouteId() != null))
                 return false;
-            if (td.hasRouteId() && !td.getRouteId().equals(affects.getRouteId()))
+            if (td.hasRouteId() && !td.getRouteId().equals(id(affects.getRouteId())))
                 return false;
             if (td.hasDirectionId() != (affects.getDirectionId() != null))
                 return false;
@@ -185,5 +186,9 @@ public abstract class ServiceAlertTest {
             }
             assertTrue(foundMatch);
         }
+    }
+
+    private static String id(String id) {
+        return AgencyAndId.convertFromString(id).getId();
     }
 }
