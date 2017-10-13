@@ -11,6 +11,7 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.realtime.api.OccupancyStatus;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class VehiclePositionServiceImplTest {
   public void setup() {
     VehicleUpdateFeedBuilder feedBuilder = new VehicleUpdateFeedBuilder() {
       @Override
-      public VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record) {
+      public VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record, OccupancyStatus occupancy) {
         return VehiclePosition.newBuilder()
                 .setVehicle(VehicleDescriptor.newBuilder().setId(status.getVehicleId()));
       }
