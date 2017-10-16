@@ -152,6 +152,9 @@ public class GtfsRealtimeLibrary {
             builder.setRouteId(id(bean.getRouteId()));
         }
 
+        if (bean.getRouteId() != null) {
+            builder.setAgencyId(AgencyAndId.convertFromString(bean.getRouteId()).getAgencyId());
+        }
         if (bean.getAgencyId() != null)
             builder.setAgencyId(bean.getAgencyId());
         if (bean.getStopId() != null)
