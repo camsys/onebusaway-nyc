@@ -93,14 +93,17 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
     
     private OccupancyStatus getOccupancyStatus(VehicleStatusBean vehicleStatus){
       TripStatusBean tripStatus = vehicleStatus.getTripStatus();
-      VehicleOccupancyRecord vor =
-          _transitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(
-              AgencyAndId.convertFromString(tripStatus.getVehicleId()), 
-              tripStatus.getActiveTrip().getRoute().getId(),
-              tripStatus.getActiveTrip().getDirectionId());
       
-      if(vor != null)
-        return vor.getOccupancyStatus();
+      if(tripStatus != null){
+        VehicleOccupancyRecord vor =
+            _transitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(
+                AgencyAndId.convertFromString(tripStatus.getVehicleId()), 
+                tripStatus.getActiveTrip().getRoute().getId(),
+                tripStatus.getActiveTrip().getDirectionId());
+      
+        if(vor != null)
+          return vor.getOccupancyStatus();
+      }
       
       return null;
       
