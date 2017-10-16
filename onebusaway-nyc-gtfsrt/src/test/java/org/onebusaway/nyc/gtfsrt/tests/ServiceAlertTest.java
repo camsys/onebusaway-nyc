@@ -131,9 +131,13 @@ public abstract class ServiceAlertTest {
     }
 
     private static boolean affectsEntityMatch(SituationAffectsBean affects, EntitySelector entity) {
-        if ((affects.getAgencyId() != null) != entity.hasAgencyId())
+        String beanAgencyId = affects.getAgencyId();
+        if (beanAgencyId == null && affects.getRouteId() != null) {
+            beanAgencyId = AgencyAndId.convertFromString(affects.getRouteId()).getAgencyId();
+        }
+        if ((beanAgencyId != null) != entity.hasAgencyId())
             return false;
-        if (affects.getAgencyId() != null && !affects.getAgencyId().equals(entity.getAgencyId()))
+        if (beanAgencyId != null && !beanAgencyId.equals(entity.getAgencyId()))
             return false;
         if ((affects.getRouteId() != null) != (entity.hasRouteId() || entity.getTrip().hasRouteId()))
             return false;
