@@ -17,6 +17,9 @@ package org.onebusaway.nyc.transit_data.model;
 
 import org.onebusaway.realtime.api.OccupancyStatus;
 
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.onebusaway.nyc.transit_data.serialization.OccupancyDeserializer;
+
 import java.io.Serializable;
 /**
  * An "over the wire", queued APC result--gets passed between the APC infrastructure
@@ -28,9 +31,7 @@ import java.io.Serializable;
  */
 public class NycVehicleLoadBean implements Serializable {
 
-    /**
-     *
-     */
+ 
     private static final long serialVersionUID = 1L;
 
     // for consistency, epoch ms in GMT
@@ -50,7 +51,11 @@ public class NycVehicleLoadBean implements Serializable {
     private String direction;
 
     //estimated count for debugging only
-    private int estimatedCount;
+    @JsonDeserialize(using = OccupancyDeserializer.class)
+    private Integer estimatedCount;
+    
+
+    public NycVehicleLoadBean(){}
 
     public NycVehicleLoadBean(NycVehicleLoadBeanBuilder b) {
         this.vehicleId = b.vehicleId;

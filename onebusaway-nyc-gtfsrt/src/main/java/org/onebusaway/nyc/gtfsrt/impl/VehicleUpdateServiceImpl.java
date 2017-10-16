@@ -16,10 +16,16 @@
 package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime.*;
+
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.realtime.api.OccupancyStatus;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,8 +75,9 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
                 nMissing++;
                 continue;
             }
-
-            VehiclePosition.Builder pos = _feedBuilder.makeVehicleUpdate(vehicle, vlr);
+            
+            OccupancyStatus occupancy = getOccupancyStatus(vehicle);
+            VehiclePosition.Builder pos = _feedBuilder.makeVehicleUpdate(vehicle, vlr, occupancy);
 
             FeedEntity.Builder entity = FeedEntity.newBuilder();
             entity.setVehicle(pos);
@@ -82,6 +89,21 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
         _log.info("{} VehicleStatusBeans are missing VLRs", nMissing);
 
         return entities;
+    }
+    
+    private OccupancyStatus getOccupancyStatus(VehicleStatusBean vehicleStatus){
+      TripStatusBean tripStatus = vehicleStatus.getTripStatus();
+      VehicleOccupancyRecord vor =
+          _transitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(
+              AgencyAndId.convertFromString(tripStatus.getVehicleId()), 
+              tripStatus.getActiveTrip().getRoute().getId(),
+              tripStatus.getActiveTrip().getDirectionId());
+      
+      if(vor != null)
+        return vor.getOccupancyStatus();
+      
+      return null;
+      
     }
 
 }

@@ -66,6 +66,11 @@
     <bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
         <property name="status" value="ENABLED"/>
     </bean>
+    
+    <!--  APC Queue Configuration -->
+    <bean id="apcInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.nyc.ApcIntegrationServiceImpl">
+        <property name="status" value="ENABLED"/>
+    </bean>
 
 	<!-- Other Stuff: -->
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">

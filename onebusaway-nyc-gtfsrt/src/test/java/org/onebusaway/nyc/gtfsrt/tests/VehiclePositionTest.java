@@ -70,7 +70,7 @@ public abstract class VehiclePositionTest extends TestCase {
         for (VehicleLocationRecordBean record : records) {
             _transitDataService.submitVehicleLocation(record);
             VehicleStatusBean status = _transitDataService.getVehicleForAgency(record.getVehicleId(), record.getTimeOfRecord());
-            VehiclePosition.Builder position = _feedBuilder.makeVehicleUpdate(status, record);
+            VehiclePosition.Builder position = _feedBuilder.makeVehicleUpdate(status, record, null);
             assertVehiclePositionMatches(status, record, position);
             assertStopInfoMatches(status, position);
         }
