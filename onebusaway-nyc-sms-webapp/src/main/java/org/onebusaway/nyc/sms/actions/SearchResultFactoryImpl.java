@@ -52,260 +52,293 @@ import uk.org.siri.siri.NaturalLanguageStringStructure;
 
 public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
-  private static final boolean HTMLIZE_NEWLINES = false;
+	private static final boolean HTMLIZE_NEWLINES = false;
 
-  private ConfigurationService _configurationService;
+	private ConfigurationService _configurationService;
 
-  private RealtimeService _realtimeService;
-    
-  private NycTransitDataService _nycTransitDataService;
+	private RealtimeService _realtimeService;
 
-  public SearchResultFactoryImpl(NycTransitDataService nycTransitDataService, 
-      RealtimeService realtimeService, ConfigurationService configurationService) {
-    _nycTransitDataService = nycTransitDataService;
-    _realtimeService = realtimeService;
-    _configurationService = configurationService;
-  }
+	private NycTransitDataService _nycTransitDataService;
 
-  @Override
-  public SearchResult getRouteResultForRegion(RouteBean routeBean) { 
-    return null;
-  }
-  
-  @Override
-  public SearchResult getRouteResult(RouteBean routeBean) {    
-    List<RouteDirection> directions = new ArrayList<RouteDirection>();
-    
-    StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
+	public SearchResultFactoryImpl(NycTransitDataService nycTransitDataService, 
+			RealtimeService realtimeService, ConfigurationService configurationService) {
+		_nycTransitDataService = nycTransitDataService;
+		_realtimeService = realtimeService;
+		_configurationService = configurationService;
+	}
 
-    List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
-    for (StopGroupingBean stopGroupingBean : stopGroupings) {
-      for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
-        NameBean name = stopGroupBean.getName();
-        String type = name.getType();
+	@Override
+	public SearchResult getRouteResultForRegion(RouteBean routeBean) { 
+		return null;
+	}
 
-        if (!type.equals("destination"))
-          continue;
-        
-        Boolean hasUpcomingScheduledService = 
-            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
+	@Override
+	public SearchResult getRouteResult(RouteBean routeBean) {    
+		List<RouteDirection> directions = new ArrayList<RouteDirection>();
 
-        // if there are buses on route, always have "scheduled service"
-        Boolean routeHasVehiclesInService = 
-      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
+		StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
-        if(routeHasVehiclesInService) {
-      	  hasUpcomingScheduledService = true;
-        }
+		List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
+		for (StopGroupingBean stopGroupingBean : stopGroupings) {
+			for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
+				NameBean name = stopGroupBean.getName();
+				String type = name.getType();
 
-        // service alerts for this route + direction
-        List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
-        List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-        populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
+				if (!type.equals("destination"))
+					continue;
 
-        directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, null, serviceAlertDescriptions));
-      }
-    }
-    
-    return new RouteResult(routeBean, directions);
-  }
+				Boolean hasUpcomingScheduledService = 
+						_nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
-  @Override
-  public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
-    List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
-    boolean matchesRouteIdFilter = false;
-    
-    HashMap<String, HashMap<Double, String>> distanceAwayStringsByDistanceFromStopAndRouteAndDirection = 
-        getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(stopBean);
-    
-    for(RouteBean routeBean : stopBean.getRoutes()) {
-      if((routeFilter == null || routeFilter.isEmpty()) || routeFilter != null && routeFilter.contains(routeBean)) {
-        matchesRouteIdFilter = true;
-      }
-      
-      StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
-      
-      List<RouteDirection> directions = new ArrayList<RouteDirection>();
-      List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
-      for (StopGroupingBean stopGroupingBean : stopGroupings) {
-        for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
-          NameBean name = stopGroupBean.getName();
-          String type = name.getType();
+				// if there are buses on route, always have "scheduled service"
+				Boolean routeHasVehiclesInService = 
+						_realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
 
-          if (!type.equals("destination"))
-            continue;
-        
-          // filter out route directions that don't stop at this stop
-          if(!stopGroupBean.getStopIds().contains(stopBean.getId()))
-            continue;
+				if(routeHasVehiclesInService) {
+					hasUpcomingScheduledService = true;
+				}
 
-          HashMap<Double, String> distanceAwayStringsByDistanceFromStop = 
-              distanceAwayStringsByDistanceFromStopAndRouteAndDirection.get(routeBean.getId() + "_" + stopGroupBean.getId());
-          
-          Boolean hasUpcomingScheduledService = 
-              _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
+				// service alerts for this route + direction
+				List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
+				List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
+				populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
 
-          // if there are buses on route, always have "scheduled service"
-          if(distanceAwayStringsByDistanceFromStop != null && !distanceAwayStringsByDistanceFromStop.isEmpty()) {
-        	  hasUpcomingScheduledService = true;
-          }
+				directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, null, serviceAlertDescriptions));
+			}
+		}
 
-          // service alerts for this route + direction
-          List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
-          List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-          populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
-          
-          directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, distanceAwayStringsByDistanceFromStop, serviceAlertDescriptions));
-        }
-      }
+		return new RouteResult(routeBean, directions);
+	}
 
-      RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions);
-      routesAtStop.add(routeAtStop);
-    }
+	@Override
+	public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
+		List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
+		boolean matchesRouteIdFilter = false;
 
-    return new StopResult(stopBean, routesAtStop, matchesRouteIdFilter);
-  }
+		HashMap<String, HashMap<Double, String>> distanceAwayStringsByDistanceFromStopAndRouteAndDirection = 
+				getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(stopBean);
 
-  @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeFilter) {
-    return new GeocodeResult(geocodeResult);   
-  }
+		for(RouteBean routeBean : stopBean.getRoutes()) {
+			if((routeFilter == null || routeFilter.isEmpty()) || routeFilter != null && routeFilter.contains(routeBean)) {
+				matchesRouteIdFilter = true;
+			}
 
-  /*** 
-   * PRIVATE METHODS
-   */
-  private HashMap<String, HashMap<Double, String>> getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(StopBean stopBean) {
-    HashMap<String, HashMap<Double, String>> result = new HashMap<String, HashMap<Double, String>>();
+			StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
-    // stop visits
-    List<MonitoredStopVisitStructure> visitList = 
-      _realtimeService.getMonitoredStopVisitsForStop(stopBean.getId(), 0, System.currentTimeMillis());  
-    
-    for(MonitoredStopVisitStructure visit : visitList) {
-      // on detour? don't show it. 
-      MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
-      if(monitoredCall == null)
-        continue;
+			List<RouteDirection> directions = new ArrayList<RouteDirection>();
+			List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
+			for (StopGroupingBean stopGroupingBean : stopGroupings) {
+				for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
+					NameBean name = stopGroupBean.getName();
+					String type = name.getType();
 
-      String distance = getPresentableDistance(visit.getMonitoredVehicleJourney(),
-    		  visit.getRecordedAtTime().getTime(), true);
+					if (!type.equals("destination"))
+						continue;
 
-      String timePrediction = getPresentableTime(visit.getMonitoredVehicleJourney(),
-    		  visit.getRecordedAtTime().getTime(), true);
+					// filter out route directions that don't stop at this stop
+					if(!stopGroupBean.getStopIds().contains(stopBean.getId()))
+						continue;
 
-      SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
-      SiriDistanceExtension distanceExtension = wrapper.getDistances();    
+					HashMap<Double, String> distanceAwayStringsByDistanceFromStop = 
+							distanceAwayStringsByDistanceFromStopAndRouteAndDirection.get(routeBean.getId() + "_" + stopGroupBean.getId());
 
-      String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
-      String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
-      String key = routeId + "_" + directionId;
+					Boolean hasUpcomingScheduledService = 
+							_nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
 
-      HashMap<Double, String> map = result.get(key);
-      if(map == null) {
-        map = new HashMap<Double,String>();
-      }
-      
-      if(timePrediction != null) {
-        map.put(distanceExtension.getDistanceFromCall(), timePrediction);
-      } else {
-        map.put(distanceExtension.getDistanceFromCall(), distance);
-      }
+					// if there are buses on route, always have "scheduled service"
+					if(distanceAwayStringsByDistanceFromStop != null && !distanceAwayStringsByDistanceFromStop.isEmpty()) {
+						hasUpcomingScheduledService = true;
+					}
 
-      result.put(key, map);
-    }
-    
-    return result;
-  }
-  
-  private String getPresentableTime(
-		  MonitoredVehicleJourneyStructure journey, long updateTime,
-	      boolean isStopContext) {
+					// service alerts for this route + direction
+					List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
+					List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
+					populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
 
-	  NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
-	  MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
-	  
-	  // only show predictions in stop-level contexts
-	  if(!isStopContext) {
-		  return null;
-	  }
-	  
-	  // if data is old, no predictions
-	  int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
-	  long age = (System.currentTimeMillis() - updateTime) / 1000;
+					directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, distanceAwayStringsByDistanceFromStop, serviceAlertDescriptions));
+				}
+			}
 
-	  if (age > staleTimeout) {
-		  return null;
-	  }
-	  
-	  if(monitoredCall.getExpectedArrivalTime() != null) {
-		  long predictedArrival = monitoredCall.getExpectedArrivalTime().getTime();
+			RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions);
+			routesAtStop.add(routeAtStop);
+		}
 
-		  SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
-		  SiriDistanceExtension distanceExtension = wrapper.getDistances();
-		  String distance = distanceExtension.getPresentableDistance();
-		  
-		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
-		  String timeString = Math.round(minutes) + " min" + ((Math.abs(minutes) != 1) ? "s." : ".");
-				  
-		  // if wrapped, only show prediction, if not wrapped, show both
-		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-		    return timeString;
-		  } 
-		  else if(progressStatus != null && progressStatus.getValue().contains("layover")){
-		    return getPresentableDistance(journey, updateTime, isStopContext);
-		  }
-		  else {
-		    return timeString + ", " + distance;
-		  }
-	  }
-	  
-	  return null;
-  }	  
-  
-  private String getPresentableDistance(MonitoredVehicleJourneyStructure journey, long updateTime, boolean isStopContext) {
-    MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
-    SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
-    SiriDistanceExtension distanceExtension = wrapper.getDistances();    
-    
-    String message = "";    
-    String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mile", "miles", "");
+		return new StopResult(stopBean, routesAtStop, matchesRouteIdFilter);
+	}
 
-    NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
-    
-    // wrapped label only appears in stop results
-    if(isStopContext) {    	
-    	if(progressStatus != null && progressStatus.getValue().contains("layover")) {
-    	   	if(journey.getOriginAimedDepartureTime() != null) {
-        		DateFormat formatter = new SimpleDateFormat("h:mm");
+	@Override
+	public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeFilter) {
+		return new GeocodeResult(geocodeResult);   
+	}
 
-        		if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
-            		message += "@term.";
-        		} else {
-            		message += "@term. sched. dep. " + 
-            				formatter.format(journey.getOriginAimedDepartureTime());
-        		}
-        	} else {
-        		message += "@term.";
-        	}
-    	} else if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-    		message += "+layover@term.";
-    	}
-    }
-    
-    int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
-    long age = (System.currentTimeMillis() - updateTime) / 1000;
+	/*** 
+	 * PRIVATE METHODS
+	 */
+	private HashMap<String, HashMap<Double, String>> getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(StopBean stopBean) {
+		HashMap<String, HashMap<Double, String>> result = new HashMap<String, HashMap<Double, String>>();
 
-    if(age > staleTimeout) {
-      if(message.length() > 0) {
-        message += ", ";
-      }
-      
-      message += "old";
-    }
+		// stop visits
+		List<MonitoredStopVisitStructure> visitList = 
+				_realtimeService.getMonitoredStopVisitsForStop(stopBean.getId(), 0, System.currentTimeMillis());  
 
-    if(message.length() > 0)
-      return distance + "(" + message + ")";
-    else
-      return distance;
-  }
+		for(MonitoredStopVisitStructure visit : visitList) {
+			// on detour? don't show it. 
+			MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
+			if(monitoredCall == null)
+				continue;
+
+			String distance = getPresentableDistance(visit.getMonitoredVehicleJourney(),
+					visit.getRecordedAtTime().getTime(), true);
+
+			String timePrediction = getPresentableTime(visit.getMonitoredVehicleJourney(),
+					visit.getRecordedAtTime().getTime(), true);
+
+			SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
+			SiriDistanceExtension distanceExtension = wrapper.getDistances();    
+
+			String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
+			String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
+			String key = routeId + "_" + directionId;
+
+			HashMap<Double, String> map = result.get(key);
+			if(map == null) {
+				map = new HashMap<Double,String>();
+			}
+
+			if(timePrediction != null) {
+				map.put(distanceExtension.getDistanceFromCall(), timePrediction);
+			} else {
+				map.put(distanceExtension.getDistanceFromCall(), distance);
+			}
+
+			result.put(key, map);
+		}
+
+		return result;
+	}
+
+	private String getPresentableOccupancy(
+			MonitoredVehicleJourneyStructure journey, long updateTime,
+			boolean isStopContext) {
+
+		//NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
+		//MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
+
+		// only show load in stop-level contexts
+		if(!isStopContext) {
+			return "";
+		}
+
+		// if data is old, no occupancy
+		int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+		long age = (System.currentTimeMillis() - updateTime) / 1000;
+
+		if (age > staleTimeout) {
+			return "";
+		}
+
+		if(journey.getOccupancy() != null) {
+			String loadOccupancy = journey.getOccupancy().toString();
+			
+			//TODO: Modify output load text here
+			
+			return loadOccupancy;
+		}else
+			return "";
+
+	}
+	
+	private String getPresentableTime(
+			MonitoredVehicleJourneyStructure journey, long updateTime,
+			boolean isStopContext) {
+
+		NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
+		MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
+
+		// only show predictions in stop-level contexts
+		if(!isStopContext) {
+			return null;
+		}
+
+		// if data is old, no predictions
+		int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+		long age = (System.currentTimeMillis() - updateTime) / 1000;
+
+		if (age > staleTimeout) {
+			return null;
+		}
+
+		if(monitoredCall.getExpectedArrivalTime() != null) {
+			long predictedArrival = monitoredCall.getExpectedArrivalTime().getTime();
+
+			SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
+			SiriDistanceExtension distanceExtension = wrapper.getDistances();
+			String distance = distanceExtension.getPresentableDistance();
+			String loadOccupancy = getPresentableOccupancy(journey, updateTime, isStopContext);
+			
+			double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
+			String timeString = Math.round(minutes) + " min" + ((Math.abs(minutes) != 1) ? "s." : ".");
+
+			// if wrapped, only show prediction, if not wrapped, show both
+			if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
+				return timeString+" "+loadOccupancy;
+			} 
+			else if(progressStatus != null && progressStatus.getValue().contains("layover")){
+				return getPresentableDistance(journey, updateTime, isStopContext);
+			}
+			else {
+				return timeString + ", " + distance +", "+loadOccupancy;
+			}
+		}
+
+		return null;
+	}	  
+
+	private String getPresentableDistance(MonitoredVehicleJourneyStructure journey, long updateTime, boolean isStopContext) {
+		MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
+		SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
+		SiriDistanceExtension distanceExtension = wrapper.getDistances();    
+
+		String message = "";    
+		String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mile", "miles", "");
+		String loadOccupancy = getPresentableOccupancy(journey, updateTime, isStopContext);
+		
+		NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
+
+		// wrapped label only appears in stop results
+		if(isStopContext) {    	
+			if(progressStatus != null && progressStatus.getValue().contains("layover")) {
+				if(journey.getOriginAimedDepartureTime() != null) {
+					DateFormat formatter = new SimpleDateFormat("h:mm");
+
+					if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
+						message += "@term.";
+					} else {
+						message += "@term. sched. dep. " + 
+								formatter.format(journey.getOriginAimedDepartureTime());
+					}
+				} else {
+					message += "@term.";
+				}
+			} else if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
+				message += "+layover@term.";
+			}
+		}
+
+		int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
+		long age = (System.currentTimeMillis() - updateTime) / 1000;
+
+		if(age > staleTimeout) {
+			if(message.length() > 0) {
+				message += ", ";
+			}
+
+			message += "old";
+		}
+
+		if(message.length() > 0)
+			return distance + "(" + message + ")";
+		else
+			return distance + " "+loadOccupancy;
+	}
 }
