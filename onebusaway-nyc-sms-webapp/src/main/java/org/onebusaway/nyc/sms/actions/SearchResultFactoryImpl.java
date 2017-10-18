@@ -221,9 +221,6 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 			MonitoredVehicleJourneyStructure journey, long updateTime,
 			boolean isStopContext) {
 
-		//NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
-		//MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
-
 		// only show load in stop-level contexts
 		if(!isStopContext) {
 			return "";
@@ -239,8 +236,12 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
 		if(journey.getOccupancy() != null) {
 			String loadOccupancy = journey.getOccupancy().toString();
-			
+		
 			//TODO: Modify output load text here
+			if(loadOccupancy.equals("seatsAvailable"))
+				loadOccupancy = "Seats Available";
+			else if (loadOccupancy.equals("full"))
+				loadOccupancy = "Full";
 			
 			return loadOccupancy;
 		}else
