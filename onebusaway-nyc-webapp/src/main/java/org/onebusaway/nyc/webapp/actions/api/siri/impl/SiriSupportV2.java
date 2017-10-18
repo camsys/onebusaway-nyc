@@ -807,17 +807,17 @@ public final class SiriSupportV2 {
 		}
 	}
 
-	private static void fillOccupancy(MonitoredVehicleJourneyStructure mvj, NycTransitDataService tds, TripStatusBean vehicleStatus) {
-		if (vehicleStatus == null
-				|| vehicleStatus.getActiveTrip() == null
-				|| vehicleStatus.getActiveTrip().getRoute() ==  null) {
+	private static void fillOccupancy(MonitoredVehicleJourneyStructure mvj, NycTransitDataService tds, TripStatusBean tripStatus) {
+		if (tripStatus == null
+				|| tripStatus.getActiveTrip() == null
+				|| tripStatus.getActiveTrip().getRoute() ==  null) {
 			return;
 		}
 		VehicleOccupancyRecord vor =
 				tds.getVehicleOccupancyRecordForVehicleIdAndRoute(
-						AgencyAndId.convertFromString(vehicleStatus.getVehicleId()),
-						vehicleStatus.getActiveTrip().getRoute().getId(),
-						vehicleStatus.getActiveTrip().getDirectionId());
+						AgencyAndId.convertFromString(tripStatus.getVehicleId()),
+						tripStatus.getActiveTrip().getRoute().getId(),
+						tripStatus.getActiveTrip().getDirectionId());
 		mvj.setOccupancy(mapOccupancyStatusToEnumeration(vor));
 	}
 
