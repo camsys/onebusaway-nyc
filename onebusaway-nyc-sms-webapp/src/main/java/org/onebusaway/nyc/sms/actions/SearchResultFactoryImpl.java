@@ -236,12 +236,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
 		if(journey.getOccupancy() != null) {
 			String loadOccupancy = journey.getOccupancy().toString();
-		
+			loadOccupancy = loadOccupancy.toUpperCase();
 			//TODO: Modify output load text here
-			if(loadOccupancy.equals("seatsAvailable"))
-				loadOccupancy = "Seats Available";
-			else if (loadOccupancy.equals("full"))
-				loadOccupancy = "Full";
+			if(loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE"))
+				loadOccupancy = "seats available";
+			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE"))
+				loadOccupancy = "almost full";
+			else if (loadOccupancy.equals("FULL"))
+				loadOccupancy = "full";
 			
 			return loadOccupancy;
 		}else
@@ -282,7 +284,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
 			// if wrapped, only show prediction, if not wrapped, show both
 			if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-				return timeString+" "+loadOccupancy;
+				return timeString+", "+loadOccupancy;
 			} 
 			else if(progressStatus != null && progressStatus.getValue().contains("layover")){
 				return getPresentableDistance(journey, updateTime, isStopContext);
