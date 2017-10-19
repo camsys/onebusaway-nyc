@@ -22,7 +22,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
+
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
@@ -30,6 +33,7 @@ import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
@@ -40,6 +44,7 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import uk.org.siri.siri.BlockRefStructure;
 import uk.org.siri.siri.DataFrameRefStructure;
 import uk.org.siri.siri.DestinationRefStructure;
@@ -160,7 +165,7 @@ public final class SiriSupport {
 		monitoredVehicleJourney.setProgressRate(getProgressRateForPhaseAndStatus(
 				currentVehicleTripStatus.getStatus(), currentVehicleTripStatus.getPhase()));
 
-		fillOccupancy(monitoredVehicleJourney, currentVehicleTripStatus);
+		fillOccupancy(monitoredVehicleJourney, nycTransitDataService, currentVehicleTripStatus);
 
 		// origin-destination
 		for(int i = 0; i < blockTrips.size(); i++) {
@@ -312,7 +317,11 @@ public final class SiriSupport {
 
 		// situations
 		fillSituations(monitoredVehicleJourney, currentVehicleTripStatus);
-
+		
+		if(monitoredVehicleJourney.getOccupancy() != null){
+		  System.out.println("Has OCCUPANCY: " + monitoredVehicleJourney.getVehicleRef().getValue());
+		}
+		
 		return;
 	}
 	
@@ -501,12 +510,39 @@ public final class SiriSupport {
 		}
 	}
 
-	private static void fillOccupancy(MonitoredVehicleJourneyStructure mvj, TripStatusBean tsb) {
-		if (tsb == null || tsb.getVehicleId() ==  null) {
-			return;
-		}
-        mvj.setOccupancy(mapOccupancyStatusToEnumeration(tsb.getOccupancyStatus()));
+	private static void fillOccupancy(MonitoredVehicleJourneyStructure mvj, NycTransitDataService tds, TripStatusBean tripStatus) {
+	  if (tripStatus == null
+        || tripStatus.getActiveTrip() == null
+        || tripStatus.getActiveTrip().getRoute() ==  null) {
+      return;
+    }
+    VehicleOccupancyRecord vor =
+        tds.getVehicleOccupancyRecordForVehicleIdAndRoute(
+            AgencyAndId.convertFromString(tripStatus.getVehicleId()),
+            tripStatus.getActiveTrip().getRoute().getId(),
+            tripStatus.getActiveTrip().getDirectionId());
+    mvj.setOccupancy(mapOccupancyStatusToEnumeration(vor));
 	}
+	
+	private static OccupancyEnumeration mapOccupancyStatusToEnumeration(VehicleOccupancyRecord vor) {
+    if (vor == null) return null;
+    switch (vor.getOccupancyStatus()) {
+      case UNKNOWN:
+        return null;
+      case EMPTY:
+      case MANY_SEATS_AVAILABLE:
+      case FEW_SEATS_AVAILABLE:
+        return OccupancyEnumeration.SEATS_AVAILABLE;
+      case STANDING_ROOM_ONLY:
+        return OccupancyEnumeration.STANDING_AVAILABLE;
+      case FULL:
+      case CRUSHED_STANDING_ROOM_ONLY:
+      case NOT_ACCEPTING_PASSENGERS:
+        return OccupancyEnumeration.FULL;
+      default:
+        return null;
+    }
+  }
 
 	private static OccupancyEnumeration mapOccupancyStatusToEnumeration(Integer occupancyStatusInteger) {
 
