@@ -332,9 +332,9 @@ OBA.Sign = function() {
 				row.etaCount++;
 				if (typeof vehicleInfo.timePrediction != 'undefined') {
 					row.timePredictions.push(vehicleInfo.timePrediction);
-					row.etas.push(vehicleInfo.timePrediction);
+					row.etas.push(vehicleInfo.timePrediction+vehicleInfo.occupancyLoad);
 				} else {
-					row.etas.push(vehicleInfo.distanceAway);
+					row.etas.push(vehicleInfo.distanceAway+vehicleInfo.occupancyLoad);
 				}
 				row.distanceAways.push(vehicleInfo.distanceAway);
 				
@@ -345,7 +345,7 @@ OBA.Sign = function() {
 		
 		jQuery.each(table, function(_, rowInfo) {
 				var row = jQuery("<tr></tr>");
-
+			
 				if((_ + 1) === table.length) {
 					row.addClass("last");
 				}
@@ -438,6 +438,22 @@ OBA.Sign = function() {
 			.appendTo("#footer");
 	}
 	
+	function getOccupancyForBus(MonitoredVehicleJourney){
+	
+		   if(MonitoredVehicleJourney.Occupancy === undefined)
+			   return '';
+		
+		   var occupancyLoad = "N/A";
+		   
+		   if(MonitoredVehicleJourney.Occupancy == "seatsAvailable")
+			   occupancyLoad = "Seats Available";
+		   else if(MonitoredVehicleJourney.Occupancy == "full")
+		       occupancyLoad = "Full";
+		   
+		   return '<br>('+occupancyLoad+')';
+		
+		}
+	
 	function showError(textStatus) {
 		
 		jQuery("#content").html("").empty();
@@ -528,6 +544,8 @@ OBA.Sign = function() {
 				vehicleInfo.vehicleId = journey.VehicleRef.split("_")[1];
 				vehicleInfo.lineRef = journey.LineRef;
 				vehicleInfo.monitored = journey.Monitored;
+				
+				vehicleInfo.occupancyLoad = getOccupancyForBus(journey)
 				if (typeof journey.MonitoredCall.ExpectedDepartureTime != 'undefined') {
 					//vehicleInfo.expectedDepartureTime = OBA.Util.ISO8601StringToDate(journey.MonitoredCall.ExpectedDepartureTime);
 					vehicleInfo.timePrediction = OBA.Util.getArrivalEstimateForISOString(

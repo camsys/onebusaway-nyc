@@ -360,7 +360,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
 		  String timeString = Math.round(minutes) + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
 		  String timeAndDistance = "<strong>" + timeString + "</strong>," + distance;
-		  
+		  String loadOccupancy = getPresentableOccupancy(journey, updateTime);
+		    
 		  Date originDepartureTime = journey.getOriginAimedDepartureTime();
 
 		  if(originDepartureTime != null && isLayover(progressStatus)){
@@ -381,7 +382,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		    	}
 	  	  }
 		  else {
-			  return timeAndDistance;
+			  return timeAndDistance + loadOccupancy;
 		  }
 	  }
 	  
@@ -389,6 +390,35 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
   
   
+  private String getPresentableOccupancy(
+			MonitoredVehicleJourneyStructure journey, long updateTime) {
+	  	
+
+		// if data is old, no occupancy
+		int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+		long age = (System.currentTimeMillis() - updateTime) / 1000;
+
+		if (age > staleTimeout) {
+			return "";
+		}
+		
+		if(journey.getOccupancy() != null) {
+			
+			String loadOccupancy = journey.getOccupancy().toString();
+			loadOccupancy = loadOccupancy.toUpperCase();
+			//TODO: Modify output load text here
+			if(loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE"))
+				loadOccupancy = "seats available";
+			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE"))
+				loadOccupancy = "almost full";
+			else if (loadOccupancy.equals("FULL"))
+				loadOccupancy = "full";
+			
+			return "<strong>, ("+loadOccupancy+")</strong>" ;
+		}else
+			return "";
+
+	}
   
   private String getPresentableDistance(
       MonitoredVehicleJourneyStructure journey, long updateTime,
@@ -399,7 +429,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     String message = "";
     String distance = "<strong>" + distanceExtension.getPresentableDistance() + "</strong>";
-
+    String loadOccupancy = getPresentableOccupancy(journey, updateTime);
+    
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
     Date originDepartureTime = journey.getOriginAimedDepartureTime();
     
@@ -440,7 +471,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     if (message.length() > 0)
       return distance + " (" + message + ")";
     else
-      return distance;
+      return distance + loadOccupancy;
   }
   
   private boolean isLayover(NaturalLanguageStringStructure progressStatus){

@@ -251,7 +251,7 @@ OBA.Popups = (function() {
 		// (end header)
 		html += '</p>';
 		html += '</div>';
-		
+		html += getOccupancyForBus(activity.MonitoredVehicleJourney);
 		// service available at stop
 		if(typeof activity.MonitoredVehicleJourney.MonitoredCall === 'undefined' && (
 			(typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined'
@@ -322,6 +322,41 @@ OBA.Popups = (function() {
 		return content.get(0);
 	}
 
+	function getOccupancy(MonitoredVehicleJourney){
+		  
+		   if(MonitoredVehicleJourney.Occupancy === undefined)
+			   return '';
+		 
+		   var occupancyLoad = "N/A";
+		   
+		   if(MonitoredVehicleJourney.Occupancy == "seatsAvailable")
+			   occupancyLoad = "Seats Available";
+		   else if(MonitoredVehicleJourney.Occupancy == "full")
+		       occupancyLoad = "Full";
+		   
+		   return occupancyLoad;
+		}
+		
+	
+	function getOccupancyForBus(MonitoredVehicleJourney){
+	    var occupancyLoad = getOccupancy(MonitoredVehicleJourney);
+	    if (occupancyLoad == '')
+			return '';
+		else
+			return '<p><span class="service">Occupancy: </span> <span class="occupancy">'+occupancyLoad+'</span> </p>';
+			
+	}
+	
+	function getOccupancyForStop(MonitoredVehicleJourney){
+		var occupancyLoad = getOccupancy(MonitoredVehicleJourney);
+		if (occupancyLoad == '')
+			return '';
+		else
+			return ', ('+occupancyLoad.toLowerCase()+')';
+	}
+	
+	
+	
 	function getStopContentForResponse(r, popupContainerId, marker, routeFilter) {
 		var siri = r.siri;
 		var stopResult = r.stop;
@@ -474,6 +509,7 @@ OBA.Popups = (function() {
 						var prevTripLateDepartureText = " <span class='not_bold'>(+ scheduled layover at terminal)</span>";
 						
 						var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
+						var loadOccupancy = getOccupancyForStop(monitoredVehicleJourney);
 						
 						var timePrediction = null;
 						if(typeof monitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime !== 'undefined' 
@@ -524,7 +560,7 @@ OBA.Popups = (function() {
 						
 						// time mode
 						if(timePrediction != null) {
-							timePrediction += ", " + distance;
+							timePrediction += ", " + distance + loadOccupancy;
 							
 							if(isDepartureTimeAvailable){
 								if(layover === true) {
