@@ -73,6 +73,12 @@
 	font-weight: bold;
 }
 
+.popup .occupancy {
+	height: 16px;
+	font-weight: bold;	
+	margin-top: 3px;
+}
+
 .popup .meta.stale {
   	color: #d12020;
 }
