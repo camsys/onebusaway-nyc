@@ -81,10 +81,10 @@
 		<ul>
 			<li class="fixed_width_instruction"><s:property value="getText('sign.first.instruction')"/></li>
 			<li class="instructions_number">1</li>
+			<li class="fixed_width_instruction"><s:property value="getText('sign.second.instruction')"/></li>
+			<li class="instructions_number">2</li>
 			<li>TEXT</li>
 			<li id="text1"><!-- //prevent jspx minimization --></li>
-			<li class="instructions_number">2</li>
-			<li class="fixed_width_instruction"><s:property value="getText('sign.second.instruction')"/></li>
 		</ul>
 	</div>
 	<div id="clock">
