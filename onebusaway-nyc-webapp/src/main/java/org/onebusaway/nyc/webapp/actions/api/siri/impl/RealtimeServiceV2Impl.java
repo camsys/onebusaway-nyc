@@ -293,26 +293,27 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			MonitoredVehicleJourneyStructure mvjourney = new MonitoredVehicleJourneyStructure();
 			stopVisit.setMonitoredVehicleJourney(mvjourney);
 			
+			
+		// FILTERS
+      AgencyAndId thisRouteId = AgencyAndIdLibrary
+          .convertFromString(tripBeanForAd.getRoute().getId());
+     
+      String thisDirectionId = tripBeanForAd.getDirectionId();
+
+      if (routeIds.size() > 0 && !routeIds.contains(thisRouteId))
+        continue;
+
+      if (directionId != null && !thisDirectionId.equals(directionId))
+        continue;
+      
+			
 			SiriSupportV2.fillMonitoredVehicleJourney(
 					mvjourney, tripBeanForAd,
 					statusBeanForCurrentTrip, adBean.getStop(),
 					OnwardCallsMode.STOP_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
 					timePredictionRecords, detailLevel, currentTime, filters);
-			
-			
-			// FILTERS
-			AgencyAndId thisRouteId = AgencyAndIdLibrary
-					.convertFromString(mvjourney.getLineRef().getValue());
-			String thisDirectionId = mvjourney.getDirectionRef().getValue();
 
-			if (routeIds.size() > 0 && !routeIds.contains(thisRouteId))
-				continue;
-
-			if (directionId != null && !thisDirectionId.equals(directionId))
-				continue;
-			
-			
 			// Monitored Stop Visits
 			Map<String, MonitoredStopVisitStructure> visitsMap = new HashMap<String, MonitoredStopVisitStructure>();
 			
