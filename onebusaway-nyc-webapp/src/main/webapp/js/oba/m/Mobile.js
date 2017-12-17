@@ -26,20 +26,11 @@ OBA.Mobile = (function() {
 			delay: 250,
 			minLength: 3,
 			select: function(event, ui) {
-				if(ui.item) {
-					if (ui.item.value != ui.item.label) {
-						searchInput.val(ui.item.label);
-						// update location field
-						if (locationField !== null)
-							locationField.val(ui.item.value);
-						if (typeField !== null)
-							typeField.val("location");
-					} else {
-						searchInput.val(ui.item.value);
-					}
-					searchForm.submit();
-				}
-			}
+		        if(ui.item){
+		        	searchInput.val(ui.item.value);
+		        	searchForm.submit();
+		        }
+		    }
 		});
 		
 		// Close the autocomplete list when the form is submitted

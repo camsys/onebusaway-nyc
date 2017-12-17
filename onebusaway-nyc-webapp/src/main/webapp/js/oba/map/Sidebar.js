@@ -67,24 +67,17 @@ OBA.Sidebar = function() {
 			delay: 250,
 			minLength: 3,
 			select: function(event, ui) {
-				if(ui.item) {
-					// Make sure the input has the value selected from the suggestions and initiate the search
-					searchInput.val(ui.item.label);
-					// if search hasn't changed, force the search again to make panning, etc. happen
+		        if(ui.item){
+		        	// Make sure the input has the value selected from the suggestions and initiate the search
+		        	searchInput.val(ui.item.value);
+		        	// if search hasn't changed, force the search again to make panning, etc. happen
 					if (window.location.hash !== "#" + searchInput.val()) {
-						jQuery.history.load(JSON.stringify(ui.item));
+						jQuery.history.load(searchInput.val());	
 					} else {
-						doSearch(ui.item.value);
+						doSearch(searchInput.val());
 					}
-				}
-				return false; // do not overwrite with item.value
-			},
-			focus: function(event, ui) {
-				if (ui.item) {
-					searchInput.val(ui.item.label);
-				}
-				return false;
-			}
+		        }
+		    }
 		});
 		
 		searchForm.submit(function(e) {
@@ -152,7 +145,7 @@ OBA.Sidebar = function() {
 			var address = location.formattedAddress;
 			var neighborhood = location.neighborhood;
 			
-			// sidebar item
+		    // sidebar item
 			var link = jQuery("<a href='#" + encodeURIComponent(address) + "'></a>")
 							.text(address);
 
@@ -672,19 +665,11 @@ OBA.Sidebar = function() {
 				// deep link handler
 				jQuery.history.init(function(hash) {
 					if(hash !== null && hash !== "") {
-						var data = decodeURIComponent(hash);
-						var label = data;
-						var value = hash;
-						if (data.indexOf("}") > 0) {
-							var d = JSON.parse(data);
-							label = d.label;
-							value = d.value;
-						}
 						var searchInput = jQuery("#searchbar form input[type=text]");
-						searchInput.val(label);
-						doSearch(value);
+						searchInput.val(decodeURIComponent(hash));
+						doSearch(hash);
 					} else {
-						// Launch wizard,
+						// Launch wizard
 						(wizard !== null) ? null : wizard = OBA.Wizard(routeMap);
 					}
 				});
