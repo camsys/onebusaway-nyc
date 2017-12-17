@@ -33,19 +33,12 @@ OBA.Mobile = (function() {
 						if (locationField !== null)
 							locationField.val(ui.item.value);
 						if (typeField !== null)
-							typeField.val("geocode");
+							typeField.val("location");
 					} else {
 						searchInput.val(ui.item.value);
 					}
 					searchForm.submit();
-					return false;
 				}
-			},
-			focus: function (event, ui) {
-				if (ui.item) {
-					searchInput.val(ui.item.label);
-				}
-				return false;
 			}
 		});
 		
