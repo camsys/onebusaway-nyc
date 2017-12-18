@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.math.BigInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -177,20 +178,15 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		Collections.sort(output, new Comparator<VehicleActivityStructure>() {
 			public int compare(VehicleActivityStructure arg0,
 					VehicleActivityStructure arg1) {
-				try {
-					SiriExtensionWrapper wrapper0 = (SiriExtensionWrapper) arg0
-							.getMonitoredVehicleJourney().getMonitoredCall()
-							.getExtensions().getAny();
-					SiriExtensionWrapper wrapper1 = (SiriExtensionWrapper) arg1
-							.getMonitoredVehicleJourney().getMonitoredCall()
-							.getExtensions().getAny();
-					return wrapper0
-							.getDistances()
-							.getDistanceFromCall()
-							.compareTo(
-									wrapper1.getDistances()
-											.getDistanceFromCall());
-				} catch (Exception e) {
+				try{
+					BigInteger distanceFromStop0 = arg0.getMonitoredVehicleJourney().getMonitoredCall()
+					.getDistanceFromStop();
+					
+					BigInteger distanceFromStop1 = arg1.getMonitoredVehicleJourney().getMonitoredCall()
+							.getDistanceFromStop();
+					
+					return distanceFromStop0.compareTo(distanceFromStop1);
+				} catch(Exception e){
 					return -1;
 				}
 			}
@@ -369,20 +365,15 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		Collections.sort(output, new Comparator<MonitoredStopVisitStructure>() {
 			public int compare(MonitoredStopVisitStructure arg0,
 					MonitoredStopVisitStructure arg1) {
-				try {
-					SiriExtensionWrapper wrapper0 = (SiriExtensionWrapper) arg0
-							.getMonitoredVehicleJourney().getMonitoredCall()
-							.getExtensions().getAny();
-					SiriExtensionWrapper wrapper1 = (SiriExtensionWrapper) arg1
-							.getMonitoredVehicleJourney().getMonitoredCall()
-							.getExtensions().getAny();
-					return wrapper0
-							.getDistances()
-							.getDistanceFromCall()
-							.compareTo(
-									wrapper1.getDistances()
-											.getDistanceFromCall());
-				} catch (Exception e) {
+				try{
+					BigInteger distanceFromStop0 = arg0.getMonitoredVehicleJourney().getMonitoredCall()
+					.getDistanceFromStop();
+					
+					BigInteger distanceFromStop1 = arg1.getMonitoredVehicleJourney().getMonitoredCall()
+							.getDistanceFromStop();
+					
+					return distanceFromStop0.compareTo(distanceFromStop1);
+				} catch(Exception e){
 					return -1;
 				}
 			}
