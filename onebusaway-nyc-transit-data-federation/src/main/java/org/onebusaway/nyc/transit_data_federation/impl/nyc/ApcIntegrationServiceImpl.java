@@ -35,7 +35,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
     @Override
     protected void processResult(NycVehicleLoadBean message, String contents) {
-        _log.info("found message=" + message + " for contents=" + contents);
+        _log.debug("found message=" + message + " for contents=" + contents);
         VehicleOccupancyRecord vor = toVehicleOccupancyRecord(message);
         _listener.handleVehicleOccupancyRecord(vor);
     }
