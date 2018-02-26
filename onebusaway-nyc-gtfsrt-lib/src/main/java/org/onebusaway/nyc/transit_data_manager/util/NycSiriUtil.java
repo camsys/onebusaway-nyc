@@ -15,9 +15,11 @@
  */
 package org.onebusaway.nyc.transit_data_manager.util;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_manager.model.ExtendedServiceAlertBean;
 import org.onebusaway.siri.AffectedApplicationStructure;
 import org.onebusaway.siri.OneBusAwayAffects;
 import org.onebusaway.siri.OneBusAwayAffectsStructure;
@@ -83,6 +85,26 @@ public class NycSiriUtil {
     return beans;
   }
 
+  public static List<ExtendedServiceAlertBean> getSiriAsExtendedServiceAlertBeans(Siri siri) {
+    List<ExtendedServiceAlertBean> beans = new ArrayList<ExtendedServiceAlertBean>();
+
+    for (SituationExchangeDeliveryStructure s : siri.getServiceDelivery().getSituationExchangeDelivery()) {
+      SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
+      SituationExchangeDeliveryStructure.Situations situations = s.getSituations();
+      if (situations != null) {
+        for (PtSituationElementStructure ptSituation : situations.getPtSituationElement()) {
+
+          ExtendedServiceAlertBean bean = getPtSituationAsExtendedServiceAlertBean(
+                  ptSituation, endpointDetails);
+          beans.add(bean);
+        }
+      }
+    }
+
+    return beans;
+  }
+
+
   public static ServiceAlertBean getPtSituationAsServiceAlertBean(
           PtSituationElementStructure ptSituation,
           SiriEndpointDetails endpointDetails) {
@@ -114,6 +136,23 @@ public class NycSiriUtil {
     }
 
     return serviceAlert;
+  }
+
+  public static ExtendedServiceAlertBean getPtSituationAsExtendedServiceAlertBean(
+          PtSituationElementStructure ptSituation,
+          SiriEndpointDetails endpointDetails) {
+    ExtendedServiceAlertBean extendedServiceAlert = new ExtendedServiceAlertBean();
+    try {
+      ServiceAlertBean serviceAlert = getPtSituationAsServiceAlertBean(ptSituation, endpointDetails);
+      handleReasons(ptSituation, serviceAlert);
+
+      BeanUtils.copyProperties(extendedServiceAlert, serviceAlert);
+      handleMessagePriority(ptSituation, extendedServiceAlert);
+    } catch (Exception e) {
+      _log.error("Failed to copy service alert bean to extended service alert bean" + e.getMessage());
+    }
+
+    return extendedServiceAlert;
   }
 
   private static void handleDescriptions(PtSituationElementStructure ptSituation,
@@ -159,9 +198,20 @@ public class NycSiriUtil {
   }
 
   @SuppressWarnings("unused")
-  private void handlReasons(PtSituationElementStructure ptSituation,
+  private static void handleReasons(PtSituationElementStructure ptSituation,
                             ServiceAlertBean serviceAlert) {
-    throw new RuntimeException("handleReasons not implemented");
+    if(ptSituation.getReasonName() != null &&
+            StringUtils.isNotBlank(ptSituation.getReasonName().getValue()))
+      serviceAlert.setReason(ptSituation.getReasonName().getValue());
+
+  }
+
+  @SuppressWarnings("unused")
+  private static void handleMessagePriority(PtSituationElementStructure ptSituation,
+                                    ExtendedServiceAlertBean serviceAlert) {
+    if(ptSituation.getPriority() != null)
+      serviceAlert.setMessagePriority(ptSituation.getPriority());
+
   }
 
   private static void handleAffects(PtSituationElementStructure ptSituation,
