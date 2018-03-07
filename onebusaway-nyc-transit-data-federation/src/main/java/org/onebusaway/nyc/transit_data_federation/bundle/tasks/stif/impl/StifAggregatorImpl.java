@@ -285,10 +285,16 @@ public class StifAggregatorImpl {
       + " must not have an associated pullout");
       for (Trip gtfsTrip : trip.getGtfsTrips()) {
         blockNo++;
-        String blockId = gtfsTrip.getServiceId().getId() + "_"
-            + trip.serviceCode.getLetterCode() + "_" + trip.firstStop + "_"
-            + trip.firstStopTime + "_" + trip.runId.replace("-", "_")
-            + blockNo + "_orphn";
+        String blockId = "err_" + System.currentTimeMillis() + "_orphn";
+        try {
+          blockId = gtfsTrip.getServiceId().getId() + "_"
+                  + trip.serviceCode.getLetterCode() + "_" + trip.firstStop + "_"
+                  + trip.firstStopTime + "_" + trip.runId.replace("-", "_")
+                  + blockNo + "_orphn";
+        } catch (Exception any) {
+          _log.error("STIF trip: " + trip + " fatal error");
+          _log.error("gtfsTrip caused exception:" + gtfsTrip);
+        }
         if (blockId.length() > MAX_BLOCK_ID_LENGTH) {
           blockId = truncateId(blockId);
         }
