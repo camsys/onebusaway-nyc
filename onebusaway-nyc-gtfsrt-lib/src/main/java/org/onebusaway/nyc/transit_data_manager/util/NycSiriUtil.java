@@ -66,7 +66,7 @@ public class NycSiriUtil {
 
   private static Logger _log = LoggerFactory.getLogger(NycSiriUtil.class);
 
-  public static List<ServiceAlertBean> getSiriAsServiceAlertBeans(Siri siri) {
+  public static List<ServiceAlertBean> getSiriAsServiceAlertBeans(Siri siri, boolean ignorePlannedPtSituations) {
     List<ServiceAlertBean> beans = new ArrayList<ServiceAlertBean>();
 
     for (SituationExchangeDeliveryStructure s : siri.getServiceDelivery().getSituationExchangeDelivery()) {
@@ -75,9 +75,11 @@ public class NycSiriUtil {
       if (situations != null) {
         for (PtSituationElementStructure ptSituation : situations.getPtSituationElement()) {
 
-          ServiceAlertBean bean = getPtSituationAsServiceAlertBean(
-                  ptSituation, endpointDetails);
-          beans.add(bean);
+          if(!ignorePlannedPtSituations || (ignorePlannedPtSituations && !ptSituation.isPlanned())){
+            ServiceAlertBean bean = getPtSituationAsServiceAlertBean(
+                    ptSituation, endpointDetails);
+            beans.add(bean);
+          }
         }
       }
     }
@@ -85,7 +87,11 @@ public class NycSiriUtil {
     return beans;
   }
 
-  public static List<ExtendedServiceAlertBean> getSiriAsExtendedServiceAlertBeans(Siri siri) {
+  public static List<ServiceAlertBean> getSiriAsServiceAlertBeans(Siri siri) {
+    return getSiriAsServiceAlertBeans(siri, false);
+  }
+
+  public static List<ExtendedServiceAlertBean> getSiriAsExtendedServiceAlertBeans(Siri siri, boolean ignorePlannedPtSituations) {
     List<ExtendedServiceAlertBean> beans = new ArrayList<ExtendedServiceAlertBean>();
 
     for (SituationExchangeDeliveryStructure s : siri.getServiceDelivery().getSituationExchangeDelivery()) {
@@ -94,14 +100,20 @@ public class NycSiriUtil {
       if (situations != null) {
         for (PtSituationElementStructure ptSituation : situations.getPtSituationElement()) {
 
-          ExtendedServiceAlertBean bean = getPtSituationAsExtendedServiceAlertBean(
-                  ptSituation, endpointDetails);
-          beans.add(bean);
+          if(!ignorePlannedPtSituations || (ignorePlannedPtSituations && !ptSituation.isPlanned())){
+            ExtendedServiceAlertBean bean = getPtSituationAsExtendedServiceAlertBean(
+                    ptSituation, endpointDetails);
+            beans.add(bean);
+          }
         }
       }
     }
 
     return beans;
+  }
+
+  public static List<ExtendedServiceAlertBean> getSiriAsExtendedServiceAlertBeans(Siri siri) {
+    return getSiriAsExtendedServiceAlertBeans(siri, false);
   }
 
 
