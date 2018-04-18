@@ -61,7 +61,10 @@
         <sec:logout invalidate-session="true" logout-url="/logout.action" logout-success-url="/" />
         <sec:custom-filter position="BASIC_AUTH_FILTER" ref="everyLastLoginAuthenticationFilter"/>
         <sec:custom-filter position="FORM_LOGIN_FILTER" ref="userIndexAuthenticationFilter"/>
+        <sec:csrf request-matcher-ref="csrfSecurityRequestMatcher"/>
     </sec:http>
+    
+    <bean id="csrfSecurityRequestMatcher" class="org.onebusaway.nyc.admin.util.CsrfSecurityRequestMatcher" />
     
     <bean id="loginUrlAuthenticationEntryPoint"
  		class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
