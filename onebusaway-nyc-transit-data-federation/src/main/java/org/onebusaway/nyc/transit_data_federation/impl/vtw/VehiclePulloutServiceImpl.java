@@ -89,11 +89,16 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
       }
       List<SCHPullInOutInfo> pulloutList = schPulloutList.getPullOuts().getPullOut();
       for (SCHPullInOutInfo pullInOutInfo: pulloutList) {
-        CPTVehicleIden v = pullInOutInfo.getVehicle();
-        _vehicleIdToPullouts.put(new AgencyAndId(v.getAgdesig(), v.getId()), pullInOutInfo);
+        String agencyId = pullInOutInfo.getGarage().getAgdesig();
+        String vehicleId = pullInOutInfo.getVehicle().getId(); 
+        if(agencyId == null || vehicleId == null){
+          _log.warn("Unable to add pipo info, missing agencyId {} or vehicleId {}", agencyId, vehicleId);
+          continue;
+        }
+        _vehicleIdToPullouts.put(new AgencyAndId(agencyId, vehicleId), pullInOutInfo);
       }
     } catch (Exception e) {
-      _log.error(e.getMessage());
+      _log.error("Unable to process vehicle pipo information", e);
       throw e;
     }
   }
