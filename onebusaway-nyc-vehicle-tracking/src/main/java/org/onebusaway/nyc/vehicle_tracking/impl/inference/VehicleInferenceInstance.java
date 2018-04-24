@@ -292,16 +292,25 @@ public class VehicleInferenceInstance {
       runResults = updateRunIdMatches(record,
           _previousObservation.getRunResults());
     }
-
-    String assignedBlockId = _pulloutService.getAssignedBlockId(record.getVehicleId());
+    
+    final AgencyAndId vehicleId = record.getVehicleId();
+    String assignedBlockId = null;
+    String agencyId = null;
+    String blockId = null;
+    
+    if(vehicleId != null){
+      agencyId = vehicleId.getAgencyId();
+      assignedBlockId = _pulloutService.getAssignedBlockId(vehicleId);
+      blockId = agencyId + "_" + assignedBlockId;
+    }
     
     BlockInstance blockInstance = null;
-    if (assignedBlockId != null) {
+    if (agencyId != null && assignedBlockId != null) {
       ServiceDate serviceDate = new ServiceDate(new Date(timestamp));
       blockInstance = _blockCalendarService.getBlockInstance(
-          AgencyAndId.convertFromString(assignedBlockId),
+          AgencyAndId.convertFromString(blockId),
           serviceDate.getAsDate().getTime());
-      _log.info("VehicleInferenceInstance: blockInstance: " + blockInstance);
+      _log.debug("VehicleInferenceInstance: blockInstance: " + blockInstance);
     }
     boolean hasValidAssignedBlockId = (blockInstance != null);
     
