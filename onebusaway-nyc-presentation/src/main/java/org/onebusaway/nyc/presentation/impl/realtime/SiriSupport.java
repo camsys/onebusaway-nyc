@@ -31,6 +31,7 @@ import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -69,6 +70,12 @@ import uk.org.siri.siri.VehicleRefStructure;
 import uk.org.siri.siri.OccupancyEnumeration;
 
 public final class SiriSupport {
+
+	private ConfigurationService _configurationService;
+
+	public SiriSupport(ConfigurationService configurationService){
+		_configurationService = configurationService;
+	}
 
 	public enum OnwardCallsMode {
 		VEHICLE_MONITORING,
@@ -111,8 +118,11 @@ public final class SiriSupport {
 			TripBean framedJourneyTripBean, TripStatusBean currentVehicleTripStatus, StopBean monitoredCallStopBean, OnwardCallsMode onwardCallsMode,
 			PresentationService presentationService, NycTransitDataService nycTransitDataService,
 			int maximumOnwardCalls, long responseTimestamp) {
-		BlockInstanceBean blockInstance =
-					nycTransitDataService.getBlockInstance(currentVehicleTripStatus.getActiveTrip().getBlockId(), currentVehicleTripStatus.getServiceDate());
+
+		BlockInstanceBean blockInstance = nycTransitDataService
+				.getBlockInstance(currentVehicleTripStatus.getActiveTrip()
+						.getBlockId(), currentVehicleTripStatus
+						.getServiceDate());
 
 		List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
 
@@ -124,10 +134,15 @@ public final class SiriSupport {
 		List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTripStatus(currentVehicleTripStatus.getVehicleId(), currentVehicleTripStatus);
 		List<TimepointPredictionRecord> nextTripPredictions = null;
 
-		TripBean nextTripBean = getNextTrip(currentVehicleTripStatus, nycTransitDataService);
-		if(nextTripBean != null){
-			// TODO!  Next trip support!
-//			nextTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTrip(currentVehicleTripStatus.getVehicleId(), );
+		TripBean nextTripBean = null;
+		if(_configurationService != null &&
+				Boolean.parseBoolean(_configurationService.getConfigurationValueAsString(
+						"display.showNextTripPredictions", "false"))) {
+			nextTripBean = getNextTrip(currentVehicleTripStatus, nycTransitDataService);
+			if (nextTripBean != null) {
+				// TODO!  Next trip support!
+				nextTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTrip(currentVehicleTripStatus.getVehicleId(), nextTripBean.getId());
+			}
 		}
 		
 		LineRefStructure lineRef = new LineRefStructure();
