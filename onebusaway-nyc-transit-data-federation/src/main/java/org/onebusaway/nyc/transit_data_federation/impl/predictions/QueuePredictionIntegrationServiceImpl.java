@@ -295,4 +295,9 @@ public class QueuePredictionIntegrationServiceImpl extends
 	public void setConfigurationService(ConfigurationService configurationService) {
 		_configurationService = configurationService;
 	}
+
+	// for testing
+	void setCache(Cache<String, List<TimepointPredictionRecord>> cache) {
+		_cache = cache;
+	}
 }
