@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.gtfsrt.tests;
 
-import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.junit.Test;
 import org.onebusaway.collections.MappingLibrary;
@@ -35,8 +34,6 @@ import org.onebusaway.transit_data.services.TransitDataService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -83,27 +80,38 @@ public abstract class TripUpdateTest {
 
         VehicleStatusBean status = _transitDataService.getVehicleForAgency(vlrb.getVehicleId(), vlrb.getTimeOfRecord());
 
-
         FeedMessage msg = FeedMessage.parseFrom(this.getClass().getResourceAsStream("/" + _pbFile));
 
         String vehicleId = status.getVehicleId();
-        String tripId = msg.getEntity(0).getTripUpdate().getTrip().getTripId();
 
         _predictionIntegrationService.setTime(vlrb.getTimeOfRecord());
         _predictionIntegrationService.processResult(msg);
-        List<TimepointPredictionRecord> records = _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripId);
-        assertFalse(records.isEmpty());
 
-        TripBean trip = _transitDataService.getTrip(tripId);
+        List<String> tripIds = getTripIds(msg);
 
-        TripUpdate.Builder tripUpdate = _feedBuilder.makeTripUpdate(trip, status, records);
-        assertTripDescriptorMatches(trip, tripUpdate.getTrip());
-        assertDelayMatches(status, tripUpdate.getDelay());
-        assertVehicleDescriptorMatches(vlrb, tripUpdate.getVehicle());
-        assertStopTimeUpdatesMatchTprs(records, tripUpdate.getStopTimeUpdateList());
-        assertStopTimeUpdatesMatchTrip(trip, tripUpdate.getStopTimeUpdateList());
+        assertEquals(getExpectedNumberOfTrips(), tripIds.size());
 
-        assertReasonableTimestamp(tripUpdate);
+        for (String tripId : tripIds) {
+
+            List<TimepointPredictionRecord> records = _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripId);
+            assertFalse(records.isEmpty());
+
+            TripBean trip = _transitDataService.getTrip(tripId);
+
+            TripUpdate.Builder tripUpdate = _feedBuilder.makeTripUpdate(trip, status, records);
+            assertTripDescriptorMatches(trip, tripUpdate.getTrip());
+            assertDelayMatches(status, tripUpdate.getDelay());
+            assertVehicleDescriptorMatches(vlrb, tripUpdate.getVehicle());
+            assertIncreasingStopTimeUpdates(tripUpdate.getStopTimeUpdateList());
+            assertStopTimeUpdatesMatchTprs(records, tripUpdate.getStopTimeUpdateList());
+            assertStopTimeUpdatesMatchTrip(trip, tripUpdate.getStopTimeUpdateList());
+
+            assertReasonableTimestamp(tripUpdate);
+        }
+    }
+
+    int getExpectedNumberOfTrips() {
+        return 1;
     }
 
     private void assertDelayMatches(VehicleStatusBean status, int delay) {
@@ -135,6 +143,7 @@ public abstract class TripUpdateTest {
             StopTime st = stopTimes.get(i);
             TripUpdate.StopTimeUpdate stu = stus.get(i);
             assertEquals(st.getStopSequence(), stu.getStopSequence());
+            assertEquals(st.getStop().getId().getId(), stu.getStopId());
         }
     }
 
@@ -166,8 +175,29 @@ public abstract class TripUpdateTest {
             minStu = Math.min(minStu, time);
         }
         long timestamp = tu.getTimestamp();
-        System.out.println("timestamp = " + timestamp + " minstu = " + minStu);
         assertTrue(timestamp <= minStu);
         assertTrue(minStu - timestamp < 3600);
+    }
+
+    private List<String> getTripIds(FeedMessage message) {
+        List<String> tripIds = new ArrayList<String>();
+        for (FeedEntity entity : message.getEntityList()) {
+            if (entity.hasTripUpdate()) {
+                String tripId = entity.getTripUpdate().getTrip().getTripId();
+                tripIds.add(tripId);
+            }
+        }
+        return tripIds;
+    }
+
+    private void assertIncreasingStopTimeUpdates(List<TripUpdate.StopTimeUpdate> updates) {
+        long time = 0;
+        int sequence = -1;
+        for (TripUpdate.StopTimeUpdate update : updates) {
+            assertTrue(time < update.getDeparture().getTime());
+            assertTrue(sequence < update.getStopSequence());
+            time = update.getDeparture().getTime();
+            sequence = update.getStopSequence();
+        }
     }
 }

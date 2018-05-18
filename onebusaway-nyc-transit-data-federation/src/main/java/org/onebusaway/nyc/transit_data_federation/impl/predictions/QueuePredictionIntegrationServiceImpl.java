@@ -123,12 +123,14 @@ public class QueuePredictionIntegrationServiceImpl extends
 			return;
 		}
 
-		List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
 		String tripId = null;
 		String vehicleId = null;
 		Map<String, Long> stopTimeMap = new HashMap<String, Long>();
+
 		// convert FeedMessage to TimepointPredictionRecord
 		for (GtfsRealtime.FeedEntity entity : message.getEntityList()) {
+
+			List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
 
 			TripUpdate tu = entity.getTripUpdate();
 			if (!tu.getVehicle().getId().equals(vehicleId)
@@ -218,7 +220,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 
 	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
 			String VehicleId, String TripId) {
-		return getCache().getIfPresent(hash(VehicleId, TripId));
+			return getCache().getIfPresent(hash(VehicleId, TripId));
 	}
 
 	@Override
