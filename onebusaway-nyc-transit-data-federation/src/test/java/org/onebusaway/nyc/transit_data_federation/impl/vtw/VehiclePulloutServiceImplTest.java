@@ -18,6 +18,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.impl.vtw.VehiclePulloutServiceImpl;
 import org.onebusaway.nyc.util.impl.vtw.PullOutApiLibrary;
 
+import tcip_final_4_0_0.CPTTransitFacilityIden;
 import tcip_final_4_0_0.CPTVehicleIden;
 import tcip_final_4_0_0.ObaSchPullOutList;
 import tcip_final_4_0_0.SCHBlockIden;
@@ -76,6 +77,10 @@ public class VehiclePulloutServiceImplTest {
     pullinoutinfo.setVehicle(vehicle);
     vehicle.setAgdesig("MTA");
     vehicle.setId("7788");
+
+    CPTTransitFacilityIden garage = new CPTTransitFacilityIden();
+    pullinoutinfo.setGarage(garage);
+    garage.setAgdesig("MTA");
     
     SCHBlockIden block = new SCHBlockIden();
     pullinoutinfo.setBlock(block);
