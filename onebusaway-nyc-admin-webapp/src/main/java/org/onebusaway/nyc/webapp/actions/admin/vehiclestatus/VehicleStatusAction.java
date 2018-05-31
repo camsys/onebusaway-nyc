@@ -62,6 +62,14 @@ public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 		return configurationService.getConfigurationValueAsString("display.googleMapsClientId", "");    
 	}
 
+	public String getGoogleMapsApiKey() {
+		return configurationService.getConfigurationValueAsString("display.googleMapsApiKey", "");
+	 }
+
+	public String getGoogleMapsChannel() {
+		return configurationService.getConfigurationValueAsString("display.googleMapsChannel", "");
+	}
+
 	public String getVehicleData() {
 		List<VehicleStatus> vehiclesPerPage = null;
 		List<VehicleStatus> vehicleStatusRecords = null;

@@ -57,6 +57,14 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return _configurationService.getConfigurationValueAsString("display.mapInstance", "google");
   }
 
+  public String getGoogleMapsApiKey() {
+    return _configurationService.getConfigurationValueAsString("display.googleMapsApiKey", "");
+  }
+
+  public String getGoogleMapsChannel() {
+    return _configurationService.getConfigurationValueAsString("display.googleMapsChannel", "");
+  }
+
   public List<ServiceAlertBean> getGlobalServiceAlerts() {
     List<ServiceAlertBean> results = _realtimeService.getServiceAlertsGlobal();
     return (results != null && results.size() > 0) ? results : null;
