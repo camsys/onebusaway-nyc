@@ -40,6 +40,7 @@ import org.onebusaway.api.model.transit.tripplanning.MinTravelTimeToStopV2Bean;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
@@ -100,7 +101,7 @@ public class BeanFactoryV2 {
 
   private Locale _locale;
   
-  private TransitDataService _service;
+  private NycTransitDataService _service;
 
   public BeanFactoryV2(boolean includeReferences) {
     _includeReferences = includeReferences;
@@ -123,7 +124,7 @@ public class BeanFactoryV2 {
     _locale = locale;
   }
   
-  public void setTransitDataService(TransitDataService service) {
+  public void setTransitDataService(NycTransitDataService service) {
     _service = service;
   }
 

@@ -23,6 +23,7 @@ import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 import org.onebusaway.api.model.transit.TripDetailsV2Bean;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
@@ -39,7 +40,7 @@ public class TripForVehicleAction extends ApiActionSupport {
   private static final int V2 = 2;
 
   @Autowired
-  private TransitDataService _service;
+  private NycTransitDataService _service;
 
   private String _id;
 
