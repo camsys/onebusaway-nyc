@@ -261,6 +261,12 @@ public class RealtimeServiceImpl implements RealtimeService {
 		  if(routeId != null && !adBean.getTrip().getRoute().getId().equals(routeId))
 			  continue;
 
+		  // check for non revenue stops
+          if(!_nycTransitDataService.stopHasRevenueServiceOnRoute(
+                  statusBean.getActiveTrip().getRoute().getAgency().getId(),stopId, routeId, statusBean.getActiveTrip().getDirectionId())){
+              continue;
+          }
+
 		  return true;
 	  }
 
@@ -270,7 +276,7 @@ public class RealtimeServiceImpl implements RealtimeService {
   /**
    * SERVICE ALERTS METHODS
    */
-  
+
   @Override
   public List<ServiceAlertBean> getServiceAlertsForRoute(String routeId) {
     return getServiceAlertsForRouteAndDirection(routeId, null); 
