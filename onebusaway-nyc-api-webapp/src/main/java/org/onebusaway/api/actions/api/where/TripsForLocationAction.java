@@ -27,6 +27,7 @@ import org.onebusaway.api.model.transit.TripDetailsV2Bean;
 import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
@@ -45,7 +46,7 @@ public class TripsForLocationAction extends ApiActionSupport {
   private static final double MAX_BOUNDS_RADIUS = 20000.0;
 
   @Autowired
-  private TransitDataService _service;
+  private NycTransitDataService _service;
   
   private SearchBoundsFactory _searchBoundsFactory = new SearchBoundsFactory(MAX_BOUNDS_RADIUS);
 

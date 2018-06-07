@@ -49,7 +49,7 @@ public class TripDetailsAction extends ApiActionSupport {
   private static final int V2 = 2;
 
   @Autowired
-  private TransitDataService _service;
+  private NycTransitDataService _service;
 
   private String _id;
 

@@ -26,6 +26,7 @@ import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
@@ -45,7 +46,7 @@ public class StopsForLocationAction extends ApiActionSupport {
   private static final double DEFAULT_SEARCH_RADIUS_WITH_QUERY = 10 * 1000;
 
   @Autowired
-  private TransitDataService _service;
+  private NycTransitDataService _service;
 
   private double _lat;
 

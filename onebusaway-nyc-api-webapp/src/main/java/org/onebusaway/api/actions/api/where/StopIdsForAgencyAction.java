@@ -18,6 +18,7 @@ package org.onebusaway.api.actions.api.where;
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class StopIdsForAgencyAction extends ApiActionSupport {
   private static final int V2 = 2;
 
   @Autowired
-  private TransitDataService _service;
+  private NycTransitDataService _service;
 
   private String _id;
 
