@@ -408,13 +408,13 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 			loadOccupancy = loadOccupancy.toUpperCase();
 			//TODO: Modify output load text here
 			if(loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE"))
-				loadOccupancy = "seats available";
-			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE"))
-				loadOccupancy = "almost full";
+				loadOccupancy = "<icon class='apcicong'> </icon>";
+			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE") || loadOccupancy.equals("STANDING_AVAILABLE"))
+				loadOccupancy = "<icon class='apcicony'> </icon>";
 			else if (loadOccupancy.equals("FULL"))
-				loadOccupancy = "full";
+				loadOccupancy = "<icon class='apciconr'> </icon>";
 			
-			return "<strong>, ("+loadOccupancy+")</strong>" ;
+			return " " +loadOccupancy;
 		}else
 			return "";
 

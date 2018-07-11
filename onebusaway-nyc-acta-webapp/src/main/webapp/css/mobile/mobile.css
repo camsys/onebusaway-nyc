@@ -384,6 +384,30 @@ small {
 	visibility: hidden;
 }
 
+.popup .apcicong {
+	background-image: url("img/apcicong.png");
+	background-repeat: no-repeat;
+	height: 18px;
+	width: 29px;
+	display: inline-block;
+}
+
+.popup .apcicony {
+	background-image: url("img/apcicony.png");
+	background-repeat: no-repeat;
+	height: 18px;
+	width: 29px;
+	display: inline-block;
+}
+
+.popup .apciconr {
+	background-image: url("img/apciconr.png");
+	background-repeat: no-repeat;
+	height: 18px;
+	width: 29px;
+	display: inline-block;
+}
+
 .arrivalsOnRoute li {
 	margin-left: 10px;
 	padding-left: 16px;

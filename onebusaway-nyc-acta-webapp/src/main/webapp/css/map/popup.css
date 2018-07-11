@@ -79,6 +79,22 @@
 	margin-top: 3px;
 }
 
+.popup .apcicong {
+	background-image: url("img/apcicong.png");
+	background-repeat: no-repeat;
+	height: 12px;
+	width: 25px;
+	display: inline-block;
+}
+
+.popup .apciconr {
+	background-image: url("img/apciconr.png");
+	background-repeat: no-repeat;
+	height: 12px;
+	width: 25px;
+	display: inline-block;
+}
+
 .popup .meta.stale {
   	color: #d12020;
 }

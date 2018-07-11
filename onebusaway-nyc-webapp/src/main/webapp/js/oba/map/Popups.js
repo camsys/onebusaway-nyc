@@ -330,9 +330,9 @@ OBA.Popups = (function() {
 		   var occupancyLoad = "N/A";
 		   
 		   if(MonitoredVehicleJourney.Occupancy == "seatsAvailable")
-			   occupancyLoad = "Seats Available";
+			   occupancyLoad = '<span class="apcicong"> </span>';
 		   else if(MonitoredVehicleJourney.Occupancy == "full")
-		       occupancyLoad = "Full";
+			   occupancyLoad = '<span class="apcicong"> </span>';
 		   
 		   return occupancyLoad;
 		}
@@ -352,7 +352,7 @@ OBA.Popups = (function() {
 		if (occupancyLoad == '')
 			return '';
 		else
-			return ', ('+occupancyLoad.toLowerCase()+')';
+			return occupancyLoad;
 	}
 	
 	
@@ -560,8 +560,8 @@ OBA.Popups = (function() {
 						
 						// time mode
 						if(timePrediction != null) {
-							timePrediction += ", " + distance + loadOccupancy;
-							
+							//timePrediction += ", " + distance + loadOccupancy;
+							timePrediction += " " + loadOccupancy;
 							if(isDepartureTimeAvailable){
 								if(layover === true) {
 									if(isDepartureOnSchedule){
