@@ -1,5 +1,8 @@
 package org.onebusaway.nyc.queue;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -113,6 +116,26 @@ public class Publisher implements IPublisher {
 
 	long getTimeReceived() {
 		return System.currentTimeMillis();
+	}
+
+	String getRmcDate(String realtime){
+		int rmcIndex = realtime.lastIndexOf("$GPRMC");
+		int endRmcIndex = realtime.indexOf("\"",rmcIndex);
+		String rmc[] = realtime.substring(rmcIndex, endRmcIndex).split(",");
+		return rmc[9];
+	}
+
+	boolean isRmcDateValid(String date){
+		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
+		try {
+			Date rmcDate = sdf.parse(date);
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.WEEK_OF_YEAR, -1000);
+			return cal.getTime().before(rmcDate);
+		} catch (ParseException e) {
+			_log.warn("Unable to parse rmc date " + date, e);
+		}
+		return false;
 	}
 
 	private class SendThread implements Runnable {
