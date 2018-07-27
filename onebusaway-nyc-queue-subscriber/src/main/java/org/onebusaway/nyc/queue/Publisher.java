@@ -29,6 +29,7 @@ public class Publisher implements IPublisher {
 	private ZMQ.Context context;
 	private ZMQ.Socket envelopeSocket;
 	private String topic;
+	private static final int TWO_MIN_MILLIS = 60*2*1000;
 
 	public Publisher(String topic) {
 		this.topic = topic;
@@ -174,7 +175,7 @@ public class Publisher implements IPublisher {
 
 		timeReceivedTime = (int) (timeReceived.getTime() % (24*60*60*1000L));
 		rmcTime = (int) (rmcDate.getTime() % (24*60*60*1000L));
-		return (timeReceivedTime - rmcTime < (60*5*1000));
+		return (timeReceivedTime - rmcTime < (TWO_MIN_MILLIS));
 	}
 
 	void replaceRmcDate(String[] rmcData, Date timeReceived){
