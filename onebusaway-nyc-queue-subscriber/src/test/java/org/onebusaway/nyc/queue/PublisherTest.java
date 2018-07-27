@@ -226,12 +226,12 @@ public class PublisherTest {
 
         Calendar cal = Calendar.getInstance();
         Date currentTime = cal.getTime();
-        cal.add(Calendar.MINUTE, -4);
+        cal.add(Calendar.MINUTE, -1);
         assertTrue(p.isRmcTimeValid( cal.getTime(), currentTime));
 
         Calendar cal2 = Calendar.getInstance();
         Date currentTime2 = cal2.getTime();
-        cal2.add(Calendar.MINUTE, -5);
+        cal2.add(Calendar.MINUTE, -2);
         assertFalse(p.isRmcTimeValid( cal2.getTime(), currentTime2));
     }
 
