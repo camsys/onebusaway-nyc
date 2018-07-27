@@ -35,9 +35,11 @@ import tcip_3_0_5_local.NMEA;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -165,20 +167,27 @@ public class PublisherTest {
       assertEquals(null, envelope);
   }
 
-  @Test
-  public void testGetRmcDate(){
-      Publisher p = new Publisher("topic") {
-          String generateUUID() {
-              return "foo";
-          }
-          long getTimeReceived() {
-              return 1234567;
-          }
-      };
+    @Test
+    public void testGetRmcDateTime() throws ParseException {
+        Publisher p = new Publisher("topic") {
+            String generateUUID() {
+                return "foo";
+            }
+            long getTimeReceived() {
+                return 1234567;
+            }
+        };
 
-      String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,180718,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
-      assertEquals("180718",p.getRmcDate(ccmessage));
-  }
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss.S");
+        String dateInString = "18-07-2018 03:58:57.677";
+        Date expectedDate = sdf.parse(dateInString);
+
+        String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,180718,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
+        String[] rmcData = p.getRmcData(new StringBuffer(ccmessage));
+        Date actualDate = p.getRmcDateTime(rmcData);
+
+        assertEquals(expectedDate, actualDate);
+    }
 
   @Test
   public void testRmcDateIsValid(){
@@ -193,19 +202,75 @@ public class PublisherTest {
 
        Calendar cal = Calendar.getInstance();
        cal.add(Calendar.WEEK_OF_YEAR, -999);
-       SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
-       String rmcDate = sdf.format(cal.getTime());
 
-       assertTrue(p.isRmcDateValid(rmcDate));
+       assertTrue(p.isRmcDateValid(cal.getTime()));
 
        Calendar cal2 = Calendar.getInstance();
        cal2.add(Calendar.WEEK_OF_YEAR, -1000);
        SimpleDateFormat sdf2 = new SimpleDateFormat("ddMMyy");
        String rmcDate2 = sdf2.format(cal2.getTime());
 
-       assertFalse(p.isRmcDateValid(rmcDate2));
-       
+       assertFalse(p.isRmcDateValid(cal2.getTime()));
   }
+
+    @Test
+    public void testRmcTimeIsValid(){
+        Publisher p = new Publisher("topic") {
+            String generateUUID() {
+                return "foo";
+            }
+            long getTimeReceived() {
+                return 1234567;
+            }
+        };
+
+        Calendar cal = Calendar.getInstance();
+        Date currentTime = cal.getTime();
+        cal.add(Calendar.MINUTE, -4);
+        assertTrue(p.isRmcTimeValid( cal.getTime(), currentTime));
+
+        Calendar cal2 = Calendar.getInstance();
+        Date currentTime2 = cal2.getTime();
+        cal2.add(Calendar.MINUTE, -5);
+        assertFalse(p.isRmcTimeValid( cal2.getTime(), currentTime2));
+    }
+
+    @Test
+    public void testReplaceRmcData() throws ParseException {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        Publisher p = new Publisher("topic") {
+            String generateUUID() {
+                return "foo";
+            }
+            long getTimeReceived() {
+                return 1532712063123L;
+            }
+        };
+
+        // REPLACE DATE AND TIME
+        long timeReceived = 1532712063123L; // Friday, July 27, 2018 5:21:03.123 PM
+
+        // Original Date Time - July 18, 1990 03:58:57.677
+        String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,180790,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
+
+        // Expected Date Time - July 27, 2018 05:21:03.123 PM
+        String expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,052103.123,A,4036.98481,N,07401.86405,W,000.0,196.6,270718,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
+        String actualCcMessage = p.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
+
+        assertEquals(expectedCcMessage, actualCcMessage);
+
+        // REPLACE DATE ONLY
+        timeReceived = 1532668923000L; //  Friday, July 27, 2018 05:22:03 AM
+
+        // Original Time - 05:21:04.100
+        ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,052104.100,A,4036.98481,N,07401.86405,W,000.0,196.6,180790,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
+
+        // Expected Time - 05:21:04.100
+        expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,052104.100,A,4036.98481,N,07401.86405,W,000.0,196.6,270718,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
+        actualCcMessage = p.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
+
+        assertEquals(expectedCcMessage, actualCcMessage);
+    }
 
   private CcLocationReport buildCcLocationReport() {
       CcLocationReport m = new CcLocationReport();

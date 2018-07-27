@@ -8,6 +8,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTimeComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
@@ -98,11 +100,14 @@ public class Publisher implements IPublisher {
 			return null;
 
 		StringBuffer prefix = new StringBuffer();
+
+
 		prefix.append("{\"RealtimeEnvelope\": {\"UUID\":\"")
 				.append(generateUUID()).append("\",\"timeReceived\": ")
 				.append(timeReceived).append(",")
 				.append(removeLastBracket(realtime)).append("}}");
-		return prefix.toString();
+
+		return replaceInvalidRmcDateTime(prefix, timeReceived);
 	}
 
 	String removeLastBracket(String s) {
@@ -118,24 +123,68 @@ public class Publisher implements IPublisher {
 		return System.currentTimeMillis();
 	}
 
-	String getRmcDate(String realtime){
-		int rmcIndex = realtime.lastIndexOf("$GPRMC");
-		int endRmcIndex = realtime.indexOf("\"",rmcIndex);
-		String rmc[] = realtime.substring(rmcIndex, endRmcIndex).split(",");
-		return rmc[9];
+	String replaceInvalidRmcDateTime(StringBuffer realtime, long timeReceived){
+		try {
+			String[] rmcData = getRmcData(realtime);
+
+			Date rmcDateTime = getRmcDateTime(rmcData);
+			if(!isRmcDateValid(rmcDateTime)){
+				Date timeReceivedDate = new Date(timeReceived);
+				replaceRmcDate(rmcData, timeReceivedDate);
+				if(!isRmcTimeValid(rmcDateTime, timeReceivedDate)){
+					replaceRmcTime(rmcData, timeReceivedDate);
+				}
+				String rmcDataString = StringUtils.join(rmcData, ",");
+				replaceRmcData(realtime, rmcDataString);
+			}
+		}catch (Exception e){
+			_log.warn("Unable to replace invalid rmc date time", e);
+		}
+		return realtime.toString();
 	}
 
-	boolean isRmcDateValid(String date){
+	void replaceRmcData(StringBuffer realtime, String rmcDataString){
+		int rmcIndex = realtime.lastIndexOf("$GPRMC");
+		int endRmcIndex = realtime.indexOf("\"",rmcIndex);
+		realtime.replace(rmcIndex, endRmcIndex, rmcDataString);
+	}
+
+	String [] getRmcData(StringBuffer realtime) throws StringIndexOutOfBoundsException{
+		int rmcIndex = realtime.lastIndexOf("$GPRMC");
+		int endRmcIndex = realtime.indexOf("\"",rmcIndex);
+		return realtime.substring(rmcIndex, endRmcIndex).split(",");
+	}
+
+	Date getRmcDateTime(String[] rmcData) throws ParseException {
+		String rmcDateTime = rmcData[9] + " " + rmcData[1];
+		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy hhmmss.S");
+		Date date = sdf.parse(rmcDateTime);
+		return date;
+	}
+
+	boolean isRmcDateValid(Date rmcDate){
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.WEEK_OF_YEAR, -1000);
+		return cal.getTime().before(rmcDate);
+	}
+
+	boolean isRmcTimeValid(Date rmcDate, Date timeReceived){
+		int rmcTime;
+		int timeReceivedTime;
+
+		timeReceivedTime = (int) (timeReceived.getTime() % (24*60*60*1000L));
+		rmcTime = (int) (rmcDate.getTime() % (24*60*60*1000L));
+		return (timeReceivedTime - rmcTime < (60*5*1000));
+	}
+
+	void replaceRmcDate(String[] rmcData, Date timeReceived){
 		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
-		try {
-			Date rmcDate = sdf.parse(date);
-			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.WEEK_OF_YEAR, -1000);
-			return cal.getTime().before(rmcDate);
-		} catch (ParseException e) {
-			_log.warn("Unable to parse rmc date " + date, e);
-		}
-		return false;
+		rmcData[9] = sdf.format(timeReceived);
+	}
+
+	void replaceRmcTime(String[] rmcData, Date timeReceived){
+		SimpleDateFormat sdf = new SimpleDateFormat("hhmmss.S");
+		rmcData[1] = sdf.format(timeReceived);
 	}
 
 	private class SendThread implements Runnable {
