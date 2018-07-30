@@ -356,7 +356,6 @@ public class VehicleLocationInferenceServiceImpl implements
           r.setRmc(sentence);
       }
     }
-
     final DateTime time = XML_DATE_TIME_FORMAT.parseDateTime(message.getTimeReported());
     r.setTime(time.getMillis());
     r.setTimeReceived(new Date().getTime());
@@ -375,9 +374,9 @@ public class VehicleLocationInferenceServiceImpl implements
             formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 
             final Date fromDRU = formatter.parse(datePart + " " + timePart);
-            final long differenceInSeconds = (fromDRU.getTime() - time.getMillis()) / 1000;
+            final long differenceInSeconds = Math.abs(fromDRU.getTime() - time.getMillis()) / 1000;
 
-            if (differenceInSeconds > 30 * 60) { // 30m
+            if (differenceInSeconds > 1 * 60) { // 1 min
               _log.debug("Vehicle "
                   + vehicleId
                   + " has significant time difference between time from DRU and time from record\n"
@@ -385,6 +384,9 @@ public class VehicleLocationInferenceServiceImpl implements
                   + "Difference in hours: " + (differenceInSeconds / 60 / 60)
                   + "\n" + "Raw timestamp: " + message.getTimeReported() + "\n"
                   + "From RMC: " + datePart + " " + timePart);
+
+              r.setTime(fromDRU.getTime());
+
             }
           } catch (final ParseException e) {
             _log.debug("Unparseable date: " + datePart + " " + timePart);
