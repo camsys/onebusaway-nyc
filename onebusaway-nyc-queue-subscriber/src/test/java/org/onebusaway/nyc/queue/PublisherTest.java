@@ -166,7 +166,7 @@ public class PublisherTest {
   }
 
     @Test
-    public void testMissingRmc(){
+    public void testMissingRmcData(){
         Publisher p = new Publisher("topic") {
             String generateUUID() {
                 return "foo";
@@ -175,7 +175,17 @@ public class PublisherTest {
                 return 1234567;
             }
         };
+
+        // Test Missing RMC String
         String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
+        assertNull(p.getRmcData(new StringBuffer(ccmessage)));
+
+        // Test Missing Date
+        ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
+        assertNull(p.getRmcData(new StringBuffer(ccmessage)));
+
+        // Test Missing Time
+        ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,,A,4036.98481,N,07401.86405,W,000.0,196.6,180718,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
         assertNull(p.getRmcData(new StringBuffer(ccmessage)));
     }
 

@@ -156,7 +156,7 @@ public class Publisher implements IPublisher {
 		int endRmcIndex = realtime.indexOf("\"",rmcIndex);
 		if(rmcIndex != -1 && endRmcIndex != -1){
 			String[] rmcParts = realtime.substring(rmcIndex, endRmcIndex).split(",");
-			if(rmcParts.length == 13)
+			if(rmcParts.length == 13 && rmcParts[1].length() >= 6 && rmcParts[9].length() >= 6)
 				return rmcParts;
 		}
 		return null;
