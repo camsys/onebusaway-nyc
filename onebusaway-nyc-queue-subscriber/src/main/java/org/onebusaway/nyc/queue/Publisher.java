@@ -127,16 +127,17 @@ public class Publisher implements IPublisher {
 	String replaceInvalidRmcDateTime(StringBuffer realtime, long timeReceived){
 		try {
 			String[] rmcData = getRmcData(realtime);
-
-			Date rmcDateTime = getRmcDateTime(rmcData);
-			if(!isRmcDateValid(rmcDateTime)){
-				Date timeReceivedDate = new Date(timeReceived);
-				replaceRmcDate(rmcData, timeReceivedDate);
-				if(!isRmcTimeValid(rmcDateTime, timeReceivedDate)){
-					replaceRmcTime(rmcData, timeReceivedDate);
+			if(rmcData != null) {
+				Date rmcDateTime = getRmcDateTime(rmcData);
+				if (!isRmcDateValid(rmcDateTime)) {
+					Date timeReceivedDate = new Date(timeReceived);
+					replaceRmcDate(rmcData, timeReceivedDate);
+					if (!isRmcTimeValid(rmcDateTime, timeReceivedDate)) {
+						replaceRmcTime(rmcData, timeReceivedDate);
+					}
+					String rmcDataString = StringUtils.join(rmcData, ",");
+					replaceRmcData(realtime, rmcDataString);
 				}
-				String rmcDataString = StringUtils.join(rmcData, ",");
-				replaceRmcData(realtime, rmcDataString);
 			}
 		}catch (Exception e){
 			_log.warn("Unable to replace invalid rmc date time", e);
@@ -150,10 +151,15 @@ public class Publisher implements IPublisher {
 		realtime.replace(rmcIndex, endRmcIndex, rmcDataString);
 	}
 
-	String [] getRmcData(StringBuffer realtime) throws StringIndexOutOfBoundsException{
+	String [] getRmcData(StringBuffer realtime){
 		int rmcIndex = realtime.lastIndexOf("$GPRMC");
 		int endRmcIndex = realtime.indexOf("\"",rmcIndex);
-		return realtime.substring(rmcIndex, endRmcIndex).split(",");
+		if(rmcIndex != -1 && endRmcIndex != -1){
+			String[] rmcParts = realtime.substring(rmcIndex, endRmcIndex).split(",");
+			if(rmcParts.length == 13)
+				return rmcParts;
+		}
+		return null;
 	}
 
 	Date getRmcDateTime(String[] rmcData) throws ParseException {
