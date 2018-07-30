@@ -376,7 +376,7 @@ public class VehicleLocationInferenceServiceImpl implements
             final Date fromDRU = formatter.parse(datePart + " " + timePart);
             final long differenceInSeconds = Math.abs(fromDRU.getTime() - time.getMillis()) / 1000;
 
-            if (differenceInSeconds > 1 * 60) { // 1 min
+            if (differenceInSeconds > 30) { // 30 sec
               _log.debug("Vehicle "
                   + vehicleId
                   + " has significant time difference between time from DRU and time from record\n"
