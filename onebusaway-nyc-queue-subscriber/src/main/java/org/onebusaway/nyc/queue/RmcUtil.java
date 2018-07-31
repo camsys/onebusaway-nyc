@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class RmcUtil {
@@ -85,17 +86,20 @@ public class RmcUtil {
     Date getRmcDateTime(String[] rmcData) throws ParseException {
         String rmcDateTime = rmcData[9] + " " + rmcData[1];
         SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy hhmmss.S");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         Date date = sdf.parse(rmcDateTime);
         return date;
     }
 
     void replaceRmcDate(String[] rmcData, Date timeReceived){
         SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         rmcData[9] = sdf.format(timeReceived);
     }
 
     void replaceRmcTime(String[] rmcData, Date timeReceived){
         SimpleDateFormat sdf = new SimpleDateFormat("hhmmss.S");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         rmcData[1] = sdf.format(timeReceived);
     }
 
@@ -113,11 +117,12 @@ public class RmcUtil {
 
     boolean isTimeReportedValid(String timeReported, Date rmcDateTime){
 
-        if(timeReported.length() < 26){
+        if(timeReported.length() < 10){
             return false;
         }
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SXXX");
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
             Date timeReportedDateTime = sdf.parse(timeReported);
             long diffInMillis = Math.abs(rmcDateTime.getTime() - timeReportedDateTime.getTime());
             if(TimeUnit.MILLISECONDS.toSeconds(diffInMillis) > 30){
@@ -135,6 +140,7 @@ public class RmcUtil {
         int endTimeReportedIndex = realtime.indexOf(",", timeReportedIndex) - 1;
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SXXX");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         String rmcDateString = sdf.format(rmcDate);
         rmcDateString = StringUtils.replace(rmcDateString, "Z", "-00:00");
 

@@ -182,7 +182,9 @@ public class PublisherTest {
 
     @Test
     public void testGetRmcDateTime() throws ParseException {
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
         SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss.S");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         String dateInString = "18-07-2018 03:58:57.677";
         Date expectedDate = sdf.parse(dateInString);
 
@@ -195,6 +197,7 @@ public class PublisherTest {
 
     @Test
     public void testRmcDateIsValid() throws ParseException {
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
         Publisher p = new Publisher("topic") {
             String generateUUID() {
                 return "foo";
@@ -225,6 +228,7 @@ public class PublisherTest {
 
     @Test
     public void testRmcTimeIsValid(){
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
         Calendar cal = Calendar.getInstance();
         Date currentTime = cal.getTime();
         cal.add(Calendar.SECOND, -30);
@@ -238,7 +242,7 @@ public class PublisherTest {
 
     @Test
     public void testReplaceRmcData() throws ParseException {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
         Publisher p = new Publisher("topic") {
             String generateUUID() {
                 return "foo";
@@ -274,7 +278,7 @@ public class PublisherTest {
     }
     @Test
     public void testGetTimeReported() throws ParseException {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
 
         String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,180790,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
         String expectedTimeReported = "2018-07-18T03:58:58.0-00:00";
@@ -287,7 +291,7 @@ public class PublisherTest {
 
     @Test
     public void testReplaceTimeReported() {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
         Publisher p = new Publisher("topic") {
             String generateUUID() {
                 return "foo";
@@ -311,7 +315,7 @@ public class PublisherTest {
 
     @Test
     public void testIsTimeReportedValid() throws ParseException {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
         Publisher p = new Publisher("topic") {
             String generateUUID() {
                 return "foo";
