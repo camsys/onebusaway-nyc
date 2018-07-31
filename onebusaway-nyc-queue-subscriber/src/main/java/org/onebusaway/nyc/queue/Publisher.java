@@ -7,9 +7,9 @@ import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTimeComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
@@ -30,6 +30,7 @@ public class Publisher implements IPublisher {
 	private ZMQ.Socket envelopeSocket;
 	private String topic;
 	private static final int THIRTY_SEC_MILLIS = 30*1000;
+	private RmcUtil rmcUtil = new RmcUtil();
 
 	public Publisher(String topic) {
 		this.topic = topic;
@@ -37,7 +38,7 @@ public class Publisher implements IPublisher {
 
 	/**
 	 * Bind ZeroMQ to the given host and port using the specified protocol.
-	 * 
+	 *
 	 * @param protocol
 	 *            "tcp" for example
 	 * @param host
@@ -79,7 +80,7 @@ public class Publisher implements IPublisher {
 	/**
 	 * Publish a message to a topic. Be aware that fist message may be lost as
 	 * subscriber will not connect in time.
-	 * 
+	 *
 	 * @param message
 	 *            the content of the message
 	 */
@@ -101,14 +102,13 @@ public class Publisher implements IPublisher {
 			return null;
 
 		StringBuffer prefix = new StringBuffer();
-
-
+		
 		prefix.append("{\"RealtimeEnvelope\": {\"UUID\":\"")
 				.append(generateUUID()).append("\",\"timeReceived\": ")
 				.append(timeReceived).append(",")
 				.append(removeLastBracket(realtime)).append("}}");
 
-		return replaceInvalidRmcDateTime(prefix, timeReceived);
+		return rmcUtil.replaceInvalidRmcDateTime(prefix, timeReceived);
 	}
 
 	String removeLastBracket(String s) {
@@ -122,76 +122,6 @@ public class Publisher implements IPublisher {
 
 	long getTimeReceived() {
 		return System.currentTimeMillis();
-	}
-
-	String replaceInvalidRmcDateTime(StringBuffer realtime, long timeReceived){
-		try {
-			String[] rmcData = getRmcData(realtime);
-			if(rmcData != null) {
-				Date rmcDateTime = getRmcDateTime(rmcData);
-				if (!isRmcDateValid(rmcDateTime)) {
-					Date timeReceivedDate = new Date(timeReceived);
-					replaceRmcDate(rmcData, timeReceivedDate);
-					if (!isRmcTimeValid(rmcDateTime, timeReceivedDate)) {
-						replaceRmcTime(rmcData, timeReceivedDate);
-					}
-					String rmcDataString = StringUtils.join(rmcData, ",");
-					replaceRmcData(realtime, rmcDataString);
-				}
-			}
-		}catch (Exception e){
-			_log.warn("Unable to replace invalid rmc date time", e);
-		}
-		return realtime.toString();
-	}
-
-	void replaceRmcData(StringBuffer realtime, String rmcDataString){
-		int rmcIndex = realtime.lastIndexOf("$GPRMC");
-		int endRmcIndex = realtime.indexOf("\"",rmcIndex);
-		realtime.replace(rmcIndex, endRmcIndex, rmcDataString);
-	}
-
-	String [] getRmcData(StringBuffer realtime){
-		int rmcIndex = realtime.lastIndexOf("$GPRMC");
-		int endRmcIndex = realtime.indexOf("\"",rmcIndex);
-		if(rmcIndex != -1 && endRmcIndex != -1){
-			String[] rmcParts = realtime.substring(rmcIndex, endRmcIndex).split(",");
-			if(rmcParts.length == 13 && rmcParts[1].length() >= 6 && rmcParts[9].length() >= 6)
-				return rmcParts;
-		}
-		return null;
-	}
-
-	Date getRmcDateTime(String[] rmcData) throws ParseException {
-		String rmcDateTime = rmcData[9] + " " + rmcData[1];
-		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy hhmmss.S");
-		Date date = sdf.parse(rmcDateTime);
-		return date;
-	}
-
-	boolean isRmcDateValid(Date rmcDate){
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.WEEK_OF_YEAR, -1000);
-		return cal.getTime().before(rmcDate);
-	}
-
-	boolean isRmcTimeValid(Date rmcDate, Date timeReceived){
-		int rmcTime;
-		int timeReceivedTime;
-
-		timeReceivedTime = (int) (timeReceived.getTime() % (24*60*60*1000L));
-		rmcTime = (int) (rmcDate.getTime() % (24*60*60*1000L));
-		return (timeReceivedTime - rmcTime <= (THIRTY_SEC_MILLIS));
-	}
-
-	void replaceRmcDate(String[] rmcData, Date timeReceived){
-		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
-		rmcData[9] = sdf.format(timeReceived);
-	}
-
-	void replaceRmcTime(String[] rmcData, Date timeReceived){
-		SimpleDateFormat sdf = new SimpleDateFormat("hhmmss.S");
-		rmcData[1] = sdf.format(timeReceived);
 	}
 
 	private class SendThread implements Runnable {
