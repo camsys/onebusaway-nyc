@@ -384,9 +384,7 @@ public class VehicleLocationInferenceServiceImpl implements
                   + "Difference in hours: " + (differenceInSeconds / 60 / 60)
                   + "\n" + "Raw timestamp: " + message.getTimeReported() + "\n"
                   + "From RMC: " + datePart + " " + timePart);
-
-              r.setTime(fromDRU.getTime());
-
+              
             }
           } catch (final ParseException e) {
             _log.debug("Unparseable date: " + datePart + " " + timePart);
