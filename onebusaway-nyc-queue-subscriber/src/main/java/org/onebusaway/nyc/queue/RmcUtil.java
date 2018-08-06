@@ -20,23 +20,26 @@ public class RmcUtil {
             String[] rmcData = getRmcData(realtime);
             String timeReported = getTimeReported(realtime);
             if(rmcData != null) {
-                // Fix RMC Date
+                // Fix RMC Date (1024 Weeks)
                 Date rmcDateTime = getRmcDateTime(rmcData);
                 if (!isRmcDateValid(rmcDateTime, timeReceived)) {
                     Date timeReceivedDate = new Date(timeReceived);
                     replaceRmcDate(rmcData, timeReceivedDate);
+
+                    // Fix Rmc Time
                     if (!isRmcTimeValid(rmcDateTime, timeReceivedDate)) {
                         replaceRmcTime(rmcData, timeReceivedDate);
                     }
                     String rmcDataString = StringUtils.join(rmcData, ",");
                     rmcDataString = processNewCRC(rmcDataString);
                     replaceRmcData(realtime, rmcDataString);
-                }
-                // Fix Time Reported
-                rmcData = getRmcData(realtime);
-                rmcDateTime = getRmcDateTime(rmcData);
-                if(!isTimeReportedValid(timeReported, rmcDateTime)){
-                    replaceTimeReported(realtime, rmcDateTime);
+
+                    // Fix Time Reported
+                    rmcData = getRmcData(realtime);
+                    rmcDateTime = getRmcDateTime(rmcData);
+                    if(!isTimeReportedValid(timeReported, rmcDateTime)){
+                        replaceTimeReported(realtime, rmcDateTime);
+                    }
                 }
             }
         }catch (Exception e){
