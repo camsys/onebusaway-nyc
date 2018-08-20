@@ -15,7 +15,7 @@ public class RmcUtil {
     private static final int THIRTY_SEC_MILLIS = 30*1000;
     private static Logger _log = LoggerFactory.getLogger(RmcUtil.class);
 
-    String replaceInvalidRmcDateTime(StringBuffer realtime, long timeReceived){
+    public static String replaceInvalidRmcDateTime(StringBuffer realtime, long timeReceived){
         try {
             String[] rmcData = getRmcData(realtime);
             String timeReported = getTimeReported(realtime);
@@ -49,7 +49,7 @@ public class RmcUtil {
     }
 
 
-    String [] getRmcData(StringBuffer realtime){
+    static String [] getRmcData(StringBuffer realtime){
         int rmcIndex = realtime.lastIndexOf("$GPRMC");
         int endRmcIndex = realtime.indexOf("\"",rmcIndex);
         if(rmcIndex != -1 && endRmcIndex != -1){
@@ -60,7 +60,7 @@ public class RmcUtil {
         return null;
     }
 
-    boolean isRmcDateValid(Date rmcDate, long timeReceived){
+    static boolean isRmcDateValid(Date rmcDate, long timeReceived){
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(timeReceived);
         cal.add(Calendar.WEEK_OF_YEAR, -1024);
@@ -71,7 +71,7 @@ public class RmcUtil {
         return !(cal.get(cal.WEEK_OF_YEAR) == cal2.get(cal2.WEEK_OF_YEAR));
     }
 
-    boolean isRmcTimeValid(Date rmcDate, Date timeReceived){
+    static boolean isRmcTimeValid(Date rmcDate, Date timeReceived){
         int rmcTime;
         int timeReceivedTime;
 
@@ -80,13 +80,13 @@ public class RmcUtil {
         return (timeReceivedTime - rmcTime <= (THIRTY_SEC_MILLIS));
     }
 
-    void replaceRmcData(StringBuffer realtime, String rmcDataString){
+    static void replaceRmcData(StringBuffer realtime, String rmcDataString){
         int rmcIndex = realtime.lastIndexOf("$GPRMC");
         int endRmcIndex = realtime.indexOf("\"",rmcIndex);
         realtime.replace(rmcIndex, endRmcIndex, rmcDataString);
     }
 
-    Date getRmcDateTime(String[] rmcData) throws ParseException {
+    static Date getRmcDateTime(String[] rmcData) throws ParseException {
         String rmcDateTime = rmcData[9] + " " + rmcData[1];
         SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy hhmmss.S");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -94,19 +94,19 @@ public class RmcUtil {
         return date;
     }
 
-    void replaceRmcDate(String[] rmcData, Date timeReceived){
+    static void replaceRmcDate(String[] rmcData, Date timeReceived){
         SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         rmcData[9] = sdf.format(timeReceived);
     }
 
-    void replaceRmcTime(String[] rmcData, Date timeReceived){
+    static void replaceRmcTime(String[] rmcData, Date timeReceived){
         SimpleDateFormat sdf = new SimpleDateFormat("hhmmss.S");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         rmcData[1] = sdf.format(timeReceived);
     }
 
-    String getTimeReported(StringBuffer realtime) {
+    static String getTimeReported(StringBuffer realtime) {
         String timeReportedText = "\"time-reported\":\"";
         int timeReportedIndex = realtime.lastIndexOf(timeReportedText);
         int endTimeReportedIndex = realtime.indexOf(",", timeReportedIndex);
@@ -118,7 +118,7 @@ public class RmcUtil {
         return null;
     }
 
-    boolean isTimeReportedValid(String timeReported, Date rmcDateTime){
+    static boolean isTimeReportedValid(String timeReported, Date rmcDateTime){
 
         if(timeReported.length() < 10){
             return false;
@@ -137,7 +137,7 @@ public class RmcUtil {
         return true;
     }
 
-    void replaceTimeReported(StringBuffer realtime, Date rmcDate) {
+    static void replaceTimeReported(StringBuffer realtime, Date rmcDate) {
         String timeReportedText = "\"time-reported\":\"";
         int timeReportedIndex = realtime.lastIndexOf(timeReportedText) + timeReportedText.length();
         int endTimeReportedIndex = realtime.indexOf(",", timeReportedIndex) - 1;

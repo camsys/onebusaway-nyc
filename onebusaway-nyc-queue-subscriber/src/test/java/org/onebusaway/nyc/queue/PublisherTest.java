@@ -45,8 +45,6 @@ import static org.junit.Assert.*;
 
 public class PublisherTest {
 
-    RmcUtil rmcUtil = new RmcUtil();
-
     @Test
     public void testOutput() {
         RealtimeEnvelope re = new RealtimeEnvelope();
@@ -169,15 +167,15 @@ public class PublisherTest {
     public void testMissingRmcData(){
         // Test Missing RMC String
         String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
-        assertNull(rmcUtil.getRmcData(new StringBuffer(ccmessage)));
+        assertNull(RmcUtil.getRmcData(new StringBuffer(ccmessage)));
 
         // Test Missing Date
         ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
-        assertNull(rmcUtil.getRmcData(new StringBuffer(ccmessage)));
+        assertNull(RmcUtil.getRmcData(new StringBuffer(ccmessage)));
 
         // Test Missing Time
         ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,,A,4036.98481,N,07401.86405,W,000.0,196.6,180718,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
-        assertNull(rmcUtil.getRmcData(new StringBuffer(ccmessage)));
+        assertNull(RmcUtil.getRmcData(new StringBuffer(ccmessage)));
     }
 
     @Test
@@ -189,8 +187,8 @@ public class PublisherTest {
         Date expectedDate = sdf.parse(dateInString);
 
         String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,180718,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
-        String[] rmcData = rmcUtil.getRmcData(new StringBuffer(ccmessage));
-        Date actualDate = rmcUtil.getRmcDateTime(rmcData);
+        String[] rmcData = RmcUtil.getRmcData(new StringBuffer(ccmessage));
+        Date actualDate = RmcUtil.getRmcDateTime(rmcData);
 
         assertEquals(expectedDate, actualDate);
     }
@@ -210,7 +208,7 @@ public class PublisherTest {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(1532712063123L);
         cal.add(Calendar.WEEK_OF_YEAR, -1023);
-        assertTrue(rmcUtil.isRmcDateValid(cal.getTime(), p.getTimeReceived()));
+        assertTrue(RmcUtil.isRmcDateValid(cal.getTime(), p.getTimeReceived()));
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SXXX");
 
@@ -218,12 +216,12 @@ public class PublisherTest {
         cal2.setTimeInMillis(1532712063123L);
         cal2.add(Calendar.WEEK_OF_YEAR, -1024);
         System.out.println(cal2.getTime());
-        assertFalse(rmcUtil.isRmcDateValid(cal2.getTime(), p.getTimeReceived()));
+        assertFalse(RmcUtil.isRmcDateValid(cal2.getTime(), p.getTimeReceived()));
 
         Calendar cal3 = Calendar.getInstance();
         cal3.setTimeInMillis(1532712063123L);
         cal3.add(Calendar.WEEK_OF_YEAR, -1025);
-        assertTrue(rmcUtil.isRmcDateValid(cal3.getTime(), p.getTimeReceived()));
+        assertTrue(RmcUtil.isRmcDateValid(cal3.getTime(), p.getTimeReceived()));
     }
 
     @Test
@@ -232,12 +230,12 @@ public class PublisherTest {
         Calendar cal = Calendar.getInstance();
         Date currentTime = cal.getTime();
         cal.add(Calendar.SECOND, -30);
-        assertTrue(rmcUtil.isRmcTimeValid( cal.getTime(), currentTime));
+        assertTrue(RmcUtil.isRmcTimeValid( cal.getTime(), currentTime));
 
         Calendar cal2 = Calendar.getInstance();
         Date currentTime2 = cal2.getTime();
         cal2.add(Calendar.SECOND, -31);
-        assertFalse(rmcUtil.isRmcTimeValid( cal2.getTime(), currentTime2));
+        assertFalse(RmcUtil.isRmcTimeValid( cal2.getTime(), currentTime2));
     }
 
     @Test
@@ -260,7 +258,7 @@ public class PublisherTest {
 
         // Expected Date Time - July 27, 2018 05:21:03.123 PM
         String expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-27T05:21:03.123-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,052103.123,A,4036.98481,N,07401.86405,W,000.0,196.6,270718,,,A*7a\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
-        String actualCcMessage = rmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
+        String actualCcMessage = RmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
 
         assertEquals(expectedCcMessage, actualCcMessage);
 
@@ -272,7 +270,7 @@ public class PublisherTest {
 
         // Expected Time - 05:21:50.100
         expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-27T05:21:50.100-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,052150.100,A,4036.98481,N,07401.86405,W,000.0,196.6,270718,,,A*7d\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
-        actualCcMessage = rmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
+        actualCcMessage = RmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
 
         assertEquals(expectedCcMessage, actualCcMessage);
     }
@@ -282,11 +280,11 @@ public class PublisherTest {
 
         String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,180790,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
         String expectedTimeReported = "2018-07-18T03:58:58.0-00:00";
-        assertEquals(expectedTimeReported, rmcUtil.getTimeReported(new StringBuffer(ccmessage)));
+        assertEquals(expectedTimeReported, RmcUtil.getTimeReported(new StringBuffer(ccmessage)));
 
         ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,180790,,,A*7d\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
-        System.out.println(rmcUtil.getTimeReported(new StringBuffer(ccmessage)));
-        assertNull(rmcUtil.getTimeReported(new StringBuffer(ccmessage)));
+        System.out.println(RmcUtil.getTimeReported(new StringBuffer(ccmessage)));
+        assertNull(RmcUtil.getTimeReported(new StringBuffer(ccmessage)));
     }
 
     @Test
@@ -305,7 +303,7 @@ public class PublisherTest {
         String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,180790,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
 
         StringBuffer originalCcMessage = new StringBuffer(ccmessage);
-        rmcUtil.replaceTimeReported(originalCcMessage, rmcDate);
+        RmcUtil.replaceTimeReported(originalCcMessage, rmcDate);
 
         String expectedCcmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-27T17:21:03.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,035857.677,A,4036.98481,N,07401.86405,W,000.0,196.6,180790,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
 
@@ -327,8 +325,8 @@ public class PublisherTest {
 
         Date rmcDate = new Date(p.getTimeReceived()); // Friday, July 27, 2018 5:21:03.000 PM
 
-        assertFalse(rmcUtil.isTimeReportedValid("2018-07-27T17:21:34.0-00:00", rmcDate));
-        assertTrue(rmcUtil.isTimeReportedValid("2018-07-27T17:21:01.0-00:00", rmcDate));
+        assertFalse(RmcUtil.isTimeReportedValid("2018-07-27T17:21:34.0-00:00", rmcDate));
+        assertTrue(RmcUtil.isTimeReportedValid("2018-07-27T17:21:01.0-00:00", rmcDate));
     }
 
 
