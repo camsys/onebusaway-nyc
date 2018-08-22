@@ -29,8 +29,6 @@ public class Publisher implements IPublisher {
 	private ZMQ.Context context;
 	private ZMQ.Socket envelopeSocket;
 	private String topic;
-	private static final int THIRTY_SEC_MILLIS = 30*1000;
-	private RmcUtil rmcUtil = new RmcUtil();
 
 	public Publisher(String topic) {
 		this.topic = topic;
@@ -108,7 +106,13 @@ public class Publisher implements IPublisher {
 				.append(timeReceived).append(",")
 				.append(removeLastBracket(realtime)).append("}}");
 
-		return rmcUtil.replaceInvalidRmcDateTime(prefix, timeReceived);
+		try{
+			return RmcUtil.replaceInvalidRmcDateTime(prefix, timeReceived);
+		}catch(Exception e){
+			_log.warn("unable to replace invalid rmc date", e);
+			return prefix.toString();
+		}
+
 	}
 
 	String removeLastBracket(String s) {

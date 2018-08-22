@@ -15,36 +15,35 @@ public class RmcUtil {
     private static final int THIRTY_SEC_MILLIS = 30*1000;
     private static Logger _log = LoggerFactory.getLogger(RmcUtil.class);
 
-    public static String replaceInvalidRmcDateTime(StringBuffer realtime, long timeReceived){
-        try {
-            String[] rmcData = getRmcData(realtime);
-            String timeReported = getTimeReported(realtime);
-            if(rmcData != null) {
-                // Fix RMC Date (1024 Weeks)
-                Date rmcDateTime = getRmcDateTime(rmcData);
-                if (!isRmcDateValid(rmcDateTime, timeReceived)) {
-                    Date timeReceivedDate = new Date(timeReceived);
-                    replaceRmcDate(rmcData, timeReceivedDate);
+    public static String replaceInvalidRmcDateTime(StringBuffer realtime, long timeReceived) throws ParseException {
 
-                    // Fix Rmc Time
-                    if (!isRmcTimeValid(rmcDateTime, timeReceivedDate)) {
-                        replaceRmcTime(rmcData, timeReceivedDate);
-                    }
-                    String rmcDataString = StringUtils.join(rmcData, ",");
-                    rmcDataString = processNewCRC(rmcDataString);
-                    replaceRmcData(realtime, rmcDataString);
+        StringBuffer realtimeLocal = new StringBuffer(realtime);
+        String[] rmcData = getRmcData(realtimeLocal);
+        String timeReported = getTimeReported(realtimeLocal);
+        if(rmcData != null) {
+            // Fix RMC Date (1024 Weeks)
+            Date rmcDateTime = getRmcDateTime(rmcData);
+            if (!isRmcDateValid(rmcDateTime, timeReceived)) {
+                Date timeReceivedDate = new Date(timeReceived);
+                replaceRmcDate(rmcData, timeReceivedDate);
 
-                    // Fix Time Reported
-                    rmcData = getRmcData(realtime);
-                    rmcDateTime = getRmcDateTime(rmcData);
-                    if(!isTimeReportedValid(timeReported, rmcDateTime)){
-                        replaceTimeReported(realtime, rmcDateTime);
-                    }
+                // Fix Rmc Time
+                if (!isRmcTimeValid(rmcDateTime, timeReceivedDate)) {
+                    replaceRmcTime(rmcData, timeReceivedDate);
+                }
+                String rmcDataString = StringUtils.join(rmcData, ",");
+                rmcDataString = processNewCRC(rmcDataString);
+                replaceRmcData(realtime, rmcDataString);
+
+                // Fix Time Reported
+                rmcData = getRmcData(realtime);
+                rmcDateTime = getRmcDateTime(rmcData);
+                if(!isTimeReportedValid(timeReported, rmcDateTime)){
+                    replaceTimeReported(realtime, rmcDateTime);
                 }
             }
-        }catch (Exception e){
-            _log.warn("Unable to replace invalid rmc date time", e);
         }
+
         return realtime.toString();
     }
 
