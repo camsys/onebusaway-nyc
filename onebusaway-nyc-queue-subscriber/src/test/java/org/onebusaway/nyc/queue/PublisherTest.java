@@ -251,13 +251,13 @@ public class PublisherTest {
         };
 
         // REPLACE DATE AND TIME
-        long timeReceived = 1532712063123L; // Friday, July 27, 2018 5:21:03.123 PM
+        long timeReceived = 1532712063123L; // Friday, July 27, 2018 1:21:03.123 PM
 
         // Original Date Time - Mon Dec 1 16:24:13 EST 1998
         String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,052103.677,A,4036.98481,N,07401.86405,W,000.0,196.6,111298,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
 
-        // Expected Date Time - July 27, 2018 05:21:03.123 PM
-        String expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-27T05:21:03.123-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,052103.123,A,4036.98481,N,07401.86405,W,000.0,196.6,270718,,,A*7a\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
+        // Expected Date Time - July 27, 2018 01:21:03.123 PM
+        String expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-27T13:21:03.123-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,132103.123,A,4036.98481,N,07401.86405,W,000.0,196.6,270718,,,A*7d\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
         String actualCcMessage = RmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
 
         assertEquals(expectedCcMessage, actualCcMessage);

@@ -95,13 +95,14 @@ public class RmcUtil {
 
     static void replaceRmcDate(String[] rmcData, Date timeReceived){
         SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
-        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
         rmcData[9] = sdf.format(timeReceived);
     }
 
     static void replaceRmcTime(String[] rmcData, Date timeReceived){
-        SimpleDateFormat sdf = new SimpleDateFormat("hhmmss.S");
-        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        SimpleDateFormat sdf = new SimpleDateFormat("HHmmss.S");
+        sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+        String time = sdf.format(timeReceived);
         rmcData[1] = sdf.format(timeReceived);
     }
 
