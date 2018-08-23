@@ -102,7 +102,6 @@ public class RmcUtil {
     static void replaceRmcTime(String[] rmcData, Date timeReceived){
         SimpleDateFormat sdf = new SimpleDateFormat("HHmmss.S");
         sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
-        String time = sdf.format(timeReceived);
         rmcData[1] = sdf.format(timeReceived);
     }
 
