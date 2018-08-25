@@ -88,7 +88,7 @@ public class RmcUtil {
 
     Date getRmcDateTime(String[] rmcData) throws ParseException {
         String rmcDateTime = rmcData[9] + " " + rmcData[1];
-        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy hhmmss.S");
+        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy HHmmss.S");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         Date date = sdf.parse(rmcDateTime);
         return date;
@@ -101,7 +101,7 @@ public class RmcUtil {
     }
 
     void replaceRmcTime(String[] rmcData, Date timeReceived){
-        SimpleDateFormat sdf = new SimpleDateFormat("hhmmss.S");
+        SimpleDateFormat sdf = new SimpleDateFormat("HHmmss.S");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         rmcData[1] = sdf.format(timeReceived);
     }
