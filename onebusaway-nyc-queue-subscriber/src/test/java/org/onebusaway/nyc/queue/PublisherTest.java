@@ -252,13 +252,13 @@ public class PublisherTest {
         };
 
         // REPLACE DATE AND TIME
-        long timeReceived = 1532712063123L; // Friday, July 27, 2018 1:21:03.123 PM
+        long timeReceived = 1532712063123L; // Friday, July 27, 2018 5:21:03.123 PM GMT
 
         // Original Date Time - Mon Dec 1 16:24:13 EST 1998
         String ccmessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-18T03:58:58.0-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,052103.677,A,4036.98481,N,07401.86405,W,000.0,196.6,111298,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
 
-        // Expected Date Time - July 27, 2018 01:21:03.123 PM
-        String expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-27T13:21:03.123-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,132103.123,A,4036.98481,N,07401.86405,W,000.0,196.6,270718,,,A*7d\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
+        // Expected Date Time - July 27, 2018 05:21:03.123 PM GMT
+        String expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":1008,\"vehicle\":{\"vehicle-id\":242,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-07-27T17:21:03.123-00:00\",\"latitude\":40616413,\"longitude\":-74031067,\"direction\":{\"deg\":196.6},\"speed\":30,\"manufacturer-data\":\"BMV54616\",\"operatorID\":{\"operator-id\":0,\"designator\":\"460003\"},\"runID\":{\"run-id\":0,\"designator\":\"49\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"8\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,172103.123,A,4036.98481,N,07401.86405,W,000.0,196.6,270718,,,A*79\",\"$GPGGA,035857.677,4036.98481,N,07401.86405,W,1,09,1.07,00037.6,M,-034.3,M,,*60\"]},\"vehiclePowerState\":1}}}";
         String actualCcMessage = RmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
 
         assertEquals(expectedCcMessage, actualCcMessage);
@@ -328,7 +328,7 @@ public class PublisherTest {
 
         RmcUtil.replaceTimeReported(realtime, rmcDateTime);
 
-        String expectedRealtime = "{\"RealtimeEnvelope\": {\"UUID\":\"12345\",\"timeReceived\": 1532712063000,\"CcLocationReport\":{\"request-id\":104,\"vehicle\":{\"vehicle-id\":2217,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-08-23T08:59:43.797-00:00\",\"latitude\":40607790,\"longitude\":-74088940,\"direction\":{\"deg\":102.40},\"speed\":9.0,\"manufacturer-data\":\"VFTP155-602-912\",\"operatorID\":{\"operator-id\":0,\"designator\":\"541861\"},\"runID\":{\"run-id\":0,\"designator\":\"304\"},\"destSignCode\":7354,\"routeID\":{\"route-id\":0,\"route-designator\":\"35\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,125943.797,A,4036.467433,N,07405.336401,W,007.849,102.40,230818,,,A*4d\",\"GPGGA,125941.000,4036.46743,N,07405.33640,W,1,10,01.1,+00039.0,M,,M,,*4D\"]},\"vehiclePowerState\":1}}}}";
+        String expectedRealtime = "{\"RealtimeEnvelope\": {\"UUID\":\"12345\",\"timeReceived\": 1532712063000,\"CcLocationReport\":{\"request-id\":104,\"vehicle\":{\"vehicle-id\":2217,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2018-08-23T12:59:43.797-00:00\",\"latitude\":40607790,\"longitude\":-74088940,\"direction\":{\"deg\":102.40},\"speed\":9.0,\"manufacturer-data\":\"VFTP155-602-912\",\"operatorID\":{\"operator-id\":0,\"designator\":\"541861\"},\"runID\":{\"run-id\":0,\"designator\":\"304\"},\"destSignCode\":7354,\"routeID\":{\"route-id\":0,\"route-designator\":\"35\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,125943.797,A,4036.467433,N,07405.336401,W,007.849,102.40,230818,,,A*4d\",\"GPGGA,125941.000,4036.46743,N,07405.33640,W,1,10,01.1,+00039.0,M,,M,,*4D\"]},\"vehiclePowerState\":1}}}}";
 
         assertEquals(expectedRealtime,realtime.toString());
 
