@@ -16,6 +16,8 @@
  */
 package org.onebusaway.api.impl;
 
+import com.opensymphony.xwork2.ActionInvocation;
+import com.opensymphony.xwork2.DefaultActionInvocation;
 import org.onebusaway.api.actions.api.ValidationErrorBean;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.TimeBean;
@@ -84,88 +86,115 @@ import com.thoughtworks.xstream.XStream;
 
 import org.apache.struts2.rest.handler.XStreamHandler;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+
 public class CustomXStreamHandler extends XStreamHandler {
 
   @Override
-  protected XStream createXStream() {
-    XStream xstream = super.createXStream();
-    xstream.setMode(XStream.NO_REFERENCES);
-    xstream.alias("response", ResponseBean.class);
-    xstream.alias("validationError", ValidationErrorBean.class);
-    xstream.alias("time", TimeBean.class);
-    xstream.alias("stop", StopBean.class);
-    xstream.alias("route", RouteBean.class);
-    xstream.alias("arrivalAndDeparture", ArrivalAndDepartureBean.class);
-    xstream.alias("arrivalAndDeparture", ArrivalAndDepartureBeanV1.class);
-    xstream.alias("encodedPolyline", EncodedPolylineBean.class);
-    xstream.alias("encodedPolygon", EncodedPolygonBean.class);
-    xstream.alias("stopGrouping", StopGroupingBean.class);
-    xstream.alias("stopGroup", StopGroupBean.class);
-    xstream.alias("agency-with-coverage", AgencyWithCoverageBean.class);
-    xstream.alias("calendar-days", StopCalendarDaysBean.class);
-
-    xstream.alias("entryWithReferences", EntryWithReferencesBean.class);
-    xstream.alias("listWithReferences", ListWithReferencesBean.class);
-    xstream.alias("listWithRangeAndReferences",
-        ListWithRangeAndReferencesBean.class);
-    xstream.alias("references", ReferencesBean.class);
-
-    xstream.alias("agency", AgencyV2Bean.class);
-    xstream.alias("route", RouteV2Bean.class);
-    xstream.alias("stop", StopV2Bean.class);
-    xstream.alias("trip", TripV2Bean.class);
-    xstream.alias("tripDetails", TripDetailsV2Bean.class);
-    xstream.alias("blockInstance", BlockInstanceV2Bean.class);
-    xstream.alias("block", BlockV2Bean.class);
-    xstream.alias("blockConfiguration", BlockConfigurationV2Bean.class);
-    xstream.alias("blockTrip", BlockTripV2Bean.class);
-    xstream.alias("blockStopTime", BlockStopTimeV2Bean.class);
-    xstream.alias("stopTime", StopTimeV2Bean.class);
-    xstream.alias("tripStopTime", TripStopTimeV2Bean.class);
-    xstream.alias("stopSchedule", StopScheduleV2Bean.class);
-    xstream.alias("stopRouteSchedule", StopRouteScheduleV2Bean.class);
-    xstream.alias("stopRouteDirectionSchedule",
-        StopRouteDirectionScheduleV2Bean.class);
-    xstream.alias("scheduleStopTime", ScheduleStopTimeInstanceV2Bean.class);
-    xstream.alias("scheduleFrequency", ScheduleFrequencyInstanceV2Bean.class);
-    xstream.alias("stopCalendarDay", StopCalendarDayV2Bean.class);
-    xstream.alias("stopWithArrivalsAndDepartures",
-        StopWithArrivalsAndDeparturesV2Bean.class);
-    xstream.alias("arrivalAndDeparture", ArrivalAndDepartureV2Bean.class);
-    xstream.alias("agencyWithCoverage", AgencyWithCoverageV2Bean.class);
-    xstream.alias("stopsForRoute", StopsForRouteV2Bean.class);
-    xstream.alias("vehicleLocationRecord", VehicleLocationRecordV2Bean.class);
-    xstream.alias("vehicleStatus", VehicleStatusV2Bean.class);
-
-    xstream.alias("situation", SituationV2Bean.class);
-    xstream.alias("affects", SituationAffectsV2Bean.class);
-    xstream.alias("agency", SituationAffectedAgencyV2Bean.class);
-    xstream.alias("stop", SituationAffectedStopV2Bean.class);
-    xstream.alias("vehicleJourney", SituationAffectedVehicleJourneyV2Bean.class);
-    xstream.alias("call", SituationAffectedCallV2Bean.class);
-    xstream.alias("application", SituationAffectedApplicationV2Bean.class);
-    xstream.alias("consequence", SituationConsequenceV2Bean.class);
-    xstream.alias("conditionDetails", SituationConditionDetailsV2Bean.class);
-
-    xstream.alias("timeRange", TimeRangeV2Bean.class);
-
-    xstream.alias("itineraries", ItinerariesV2Bean.class);
-    xstream.alias("itinerary", ItineraryV2Bean.class);
-    xstream.alias("location", LocationV2Bean.class);
-    xstream.alias("leg", LegV2Bean.class);
-    xstream.alias("transitLeg", TransitLegV2Bean.class);
-    xstream.alias("streetLeg", StreetLegV2Bean.class);
-
-    xstream.alias("timeInterval", TimeIntervalV2.class);
-
-    xstream.alias("minTravelTimeToStop", MinTravelTimeToStopV2Bean.class);
-
-    xstream.alias("graphResult", GraphResultV2Bean.class);
-    xstream.alias("vertex", VertexV2Bean.class);
-    xstream.alias("edge", EdgeV2Bean.class);
-
-    xstream.alias("currentVehicleEstimate", CurrentVehicleEstimateV2Bean.class);
-
+  protected XStream createXStream(ActionInvocation actionInvocation) {
+    XStream xstream = super.createXStream(actionInvocation);
+    processXStreamAliases(xstream);
     return xstream;
   }
+
+  protected XStream createTestXStream() {
+    XStream xstream = super.createXStream();
+    processXStreamAliases(xstream);
+    return xstream;
+  }
+
+  private void processXStreamAliases(XStream xstream) {
+      xstream.setMode(XStream.NO_REFERENCES);
+      xstream.alias("response", ResponseBean.class);
+      xstream.alias("validationError", ValidationErrorBean.class);
+      xstream.alias("time", TimeBean.class);
+      xstream.alias("stop", StopBean.class);
+      xstream.alias("route", RouteBean.class);
+      xstream.alias("arrivalAndDeparture", ArrivalAndDepartureBean.class);
+      xstream.alias("arrivalAndDeparture", ArrivalAndDepartureBeanV1.class);
+      xstream.alias("encodedPolyline", EncodedPolylineBean.class);
+      xstream.alias("encodedPolygon", EncodedPolygonBean.class);
+      xstream.alias("stopGrouping", StopGroupingBean.class);
+      xstream.alias("stopGroup", StopGroupBean.class);
+      xstream.alias("agency-with-coverage", AgencyWithCoverageBean.class);
+      xstream.alias("calendar-days", StopCalendarDaysBean.class);
+
+      xstream.alias("entryWithReferences", EntryWithReferencesBean.class);
+      xstream.alias("listWithReferences", ListWithReferencesBean.class);
+      xstream.alias("listWithRangeAndReferences",
+              ListWithRangeAndReferencesBean.class);
+      xstream.alias("references", ReferencesBean.class);
+
+      xstream.alias("agency", AgencyV2Bean.class);
+      xstream.alias("route", RouteV2Bean.class);
+      xstream.alias("stop", StopV2Bean.class);
+      xstream.alias("trip", TripV2Bean.class);
+      xstream.alias("tripDetails", TripDetailsV2Bean.class);
+      xstream.alias("blockInstance", BlockInstanceV2Bean.class);
+      xstream.alias("block", BlockV2Bean.class);
+      xstream.alias("blockConfiguration", BlockConfigurationV2Bean.class);
+      xstream.alias("blockTrip", BlockTripV2Bean.class);
+      xstream.alias("blockStopTime", BlockStopTimeV2Bean.class);
+      xstream.alias("stopTime", StopTimeV2Bean.class);
+      xstream.alias("tripStopTime", TripStopTimeV2Bean.class);
+      xstream.alias("stopSchedule", StopScheduleV2Bean.class);
+      xstream.alias("stopRouteSchedule", StopRouteScheduleV2Bean.class);
+      xstream.alias("stopRouteDirectionSchedule",
+              StopRouteDirectionScheduleV2Bean.class);
+      xstream.alias("scheduleStopTime", ScheduleStopTimeInstanceV2Bean.class);
+      xstream.alias("scheduleFrequency", ScheduleFrequencyInstanceV2Bean.class);
+      xstream.alias("stopCalendarDay", StopCalendarDayV2Bean.class);
+      xstream.alias("stopWithArrivalsAndDepartures",
+              StopWithArrivalsAndDeparturesV2Bean.class);
+      xstream.alias("arrivalAndDeparture", ArrivalAndDepartureV2Bean.class);
+      xstream.alias("agencyWithCoverage", AgencyWithCoverageV2Bean.class);
+      xstream.alias("stopsForRoute", StopsForRouteV2Bean.class);
+      xstream.alias("vehicleLocationRecord", VehicleLocationRecordV2Bean.class);
+      xstream.alias("vehicleStatus", VehicleStatusV2Bean.class);
+
+      xstream.alias("situation", SituationV2Bean.class);
+      xstream.alias("affects", SituationAffectsV2Bean.class);
+      xstream.alias("agency", SituationAffectedAgencyV2Bean.class);
+      xstream.alias("stop", SituationAffectedStopV2Bean.class);
+      xstream.alias("vehicleJourney", SituationAffectedVehicleJourneyV2Bean.class);
+      xstream.alias("call", SituationAffectedCallV2Bean.class);
+      xstream.alias("application", SituationAffectedApplicationV2Bean.class);
+      xstream.alias("consequence", SituationConsequenceV2Bean.class);
+      xstream.alias("conditionDetails", SituationConditionDetailsV2Bean.class);
+
+      xstream.alias("timeRange", TimeRangeV2Bean.class);
+
+      xstream.alias("itineraries", ItinerariesV2Bean.class);
+      xstream.alias("itinerary", ItineraryV2Bean.class);
+      xstream.alias("location", LocationV2Bean.class);
+      xstream.alias("leg", LegV2Bean.class);
+      xstream.alias("transitLeg", TransitLegV2Bean.class);
+      xstream.alias("streetLeg", StreetLegV2Bean.class);
+
+      xstream.alias("timeInterval", TimeIntervalV2.class);
+
+      xstream.alias("minTravelTimeToStop", MinTravelTimeToStopV2Bean.class);
+
+      xstream.alias("graphResult", GraphResultV2Bean.class);
+      xstream.alias("vertex", VertexV2Bean.class);
+      xstream.alias("edge", EdgeV2Bean.class);
+
+      xstream.alias("currentVehicleEstimate", CurrentVehicleEstimateV2Bean.class);
+  }
+    public String fromObjectTest(Object obj, String resultCode, Writer out) throws IOException {
+        if (obj != null) {
+            XStream xstream = this.createTestXStream();
+            xstream.toXML(obj, out);
+        }
+
+        return null;
+    }
+
+    public void toObjectTest(Reader in, Object target) {
+        XStream xstream = this.createTestXStream();
+        xstream.fromXML(in, target);
+    }
+
 }
