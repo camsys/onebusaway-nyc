@@ -97,4 +97,8 @@
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />
     <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
 
+    <bean id="gtfsSometimesHandler" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandlerImpl" />
+    <bean id="gtfsSometimesClient" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesJsonClientImpl">
+        <property name="url" value="http://gtfs-editor.dev.obanyc.com/api/gtfs-servicechange/list" />
+    </bean>
 </beans>
