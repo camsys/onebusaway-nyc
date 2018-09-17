@@ -339,11 +339,16 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
+		changeBundle(bundleId, false);
+	}
+
+	@Override
+	public void changeBundle(String bundleId, boolean forceReload) throws Exception {
 		if(bundleId == null || !_applicableBundles.containsKey(bundleId)) {
 			throw new Exception("Bundle " + bundleId + " is not valid or does not exist.");
 		}
 
-		if(bundleId.equals(_currentBundleId)) {
+		if(bundleId.equals(_currentBundleId) && !forceReload) {
 			_log.info("Received command to change to " + bundleId + "; bundle is already active.");
 			return;
 		}

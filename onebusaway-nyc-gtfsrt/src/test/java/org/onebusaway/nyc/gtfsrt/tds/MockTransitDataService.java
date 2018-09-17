@@ -551,6 +551,12 @@ public class MockTransitDataService implements NycTransitDataService {
         throw new UnsupportedOperationException();
     }
 
+    // Not implemented
+    @Override
+    public Boolean reloadBundle() {
+        return false;
+    }
+
     // Helper functions
 
     public List<StopTime> getStopTimesForTrip(TripBean bean) {

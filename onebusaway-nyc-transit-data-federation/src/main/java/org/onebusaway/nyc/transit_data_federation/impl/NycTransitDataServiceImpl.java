@@ -95,7 +95,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
-@Component
+@Component(value = "nycTransitDataServiceImpl")
 class NycTransitDataServiceImpl implements NycTransitDataService {
 	
 	private static Logger _log = LoggerFactory.getLogger(NycTransitDataServiceImpl.class);
@@ -658,4 +658,16 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	  return _revenueSearchService.stopHasRevenueService(agencyId, stopId);
 	}
 
+	@Override
+	public Boolean reloadBundle() {
+		blockUntilBundleIsReady();
+		String bundleId = getActiveBundleId();
+		try {
+			_bundleManagementService.changeBundle(bundleId, true);
+			return true;
+		} catch (Exception e) {
+			_log.error("Error reloading bundle, {}", e);
+		}
+		return false;
+	}
 }
