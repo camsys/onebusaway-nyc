@@ -17,11 +17,10 @@ package org.onebusaway.nyc.presentation.impl.realtime;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Month;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -446,7 +445,7 @@ public final class SiriSupport {
 								stopTime.getDistanceAlongBlock() - blockTrip.getDistanceAlongBlock(), 
 								stopTime.getDistanceAlongBlock() - distanceOfVehicleAlongBlock, 
 								blockTripStopsAfterTheVehicle - 1,
-								stopLevelPredictions.get(stopPredictionKey), responseTimestamp));
+								stopLevelPredictions.get(stopPredictionKey), responseTimestamp, stopTime.getStopTime().getArrivalTime()));
 
 				onwardCallsAdded++;
 
@@ -524,7 +523,7 @@ public final class SiriSupport {
 										stopTime.getDistanceAlongBlock() - distanceOfVehicleAlongBlock, 
 										visitNumber, blockTripStopsAfterTheVehicle - 1,
 										stopLevelPredictions.get(stopPredictionKey),
-										responseTimestamp));
+										responseTimestamp, stopTime.getStopTime().getArrivalTime()));
 
 					}
 
@@ -612,10 +611,10 @@ public final class SiriSupport {
 		}
 	}
 
-	private static OnwardCallStructure getOnwardCallStructure(StopBean stopBean, 
-			PresentationService presentationService, 
-			double distanceOfCallAlongTrip, double distanceOfVehicleFromCall, int index,
-			SiriSupportPredictionTimepointRecord prediction, long responseTimestamp) {
+	private static OnwardCallStructure getOnwardCallStructure(StopBean stopBean,
+															  PresentationService presentationService,
+															  double distanceOfCallAlongTrip, double distanceOfVehicleFromCall, int index,
+															  SiriSupportPredictionTimepointRecord prediction, long responseTimestamp, int arrivalTime) {
 
 		OnwardCallStructure onwardCallStructure = new OnwardCallStructure();
 
@@ -644,6 +643,14 @@ public final class SiriSupport {
 			}
 		}
 
+		Calendar calendar = Calendar.getInstance(); // gets a calendar using the default time zone and locale.
+		int year = calendar.get(Calendar.YEAR);
+		int month = calendar.get(Calendar.MONTH);
+		int day = calendar.get(Calendar.DATE);
+		calendar.set(year, month, day, 0, 0, 0);
+		calendar.add(Calendar.SECOND, arrivalTime);
+		onwardCallStructure.setAimedArrivalTime(calendar.getTime());
+
 		// siri extensions
 		SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
 		ExtensionsStructure distancesExtensions = new ExtensionsStructure();
@@ -665,10 +672,10 @@ public final class SiriSupport {
 		return onwardCallStructure;
 	}
 
-	private MonitoredCallStructure getMonitoredCallStructure(StopBean stopBean, 
-			PresentationService presentationService, 
-			double distanceOfCallAlongTrip, double distanceOfVehicleFromCall, int visitNumber, int index,
-			SiriSupportPredictionTimepointRecord prediction, long responseTimestamp) {
+	private MonitoredCallStructure getMonitoredCallStructure(StopBean stopBean,
+															 PresentationService presentationService,
+															 double distanceOfCallAlongTrip, double distanceOfVehicleFromCall, int visitNumber, int index,
+															 SiriSupportPredictionTimepointRecord prediction, long responseTimestamp, int arrivalTime) {
 
 		MonitoredCallStructure monitoredCallStructure = new MonitoredCallStructure();
 		monitoredCallStructure.setVisitNumber(BigInteger.valueOf(visitNumber));
@@ -698,6 +705,14 @@ public final class SiriSupport {
 			}
 			
 		}
+
+		Calendar calendar = Calendar.getInstance(); // gets a calendar using the default time zone and locale.
+		int year = calendar.get(Calendar.YEAR);
+		int month = calendar.get(Calendar.MONTH);
+		int day = calendar.get(Calendar.DATE);
+		calendar.set(year, month, day, 0, 0, 0);
+		calendar.add(Calendar.SECOND, arrivalTime);
+		monitoredCallStructure.setAimedArrivalTime(calendar.getTime());
 		
 		// siri extensions
 		SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
