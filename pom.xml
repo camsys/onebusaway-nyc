@@ -676,8 +676,8 @@
 
             <dependency>
                 <groupId>com.caucho</groupId>
-                <artifactId>resin-hessian</artifactId>
-                <version>3.1.6</version>
+                <artifactId>hessian</artifactId>
+                <version>4.0.38</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
