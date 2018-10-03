@@ -168,7 +168,8 @@ public class BlockStateService {
   @PostConstruct
   @Refreshable(dependsOn = {
       RefreshableResources.TRANSIT_GRAPH, 
-      RefreshableResources.NARRATIVE_DATA})
+      RefreshableResources.NARRATIVE_DATA,
+      RefreshableResources.BLOCK_SHAPE_DATA})
   public void setup() throws IOException, ClassNotFoundException {
     buildShapeSpatialIndex();
   }
