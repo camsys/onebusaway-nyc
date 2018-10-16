@@ -490,7 +490,7 @@ public class VehicleInferenceInstance {
     		final int dsc = Integer.valueOf(obs.getRecord().getDestinationSignCode());
     		if(dsc > 50){
     			_nullBlockStateRouteMap.increment(obs.getRecord().getDestinationSignCode());
-	        	_log.info("[\n"
+	        	_log.debug("[\n"
 	    			+ "OpAssigned Run Id : " + obs.getOpAssignedRunId() + ",\n"
 	    			+ "Dest Sign Code : " +  obs.getRecord().getDestinationSignCode() + ",\n"
 	    			+ "Operator : " +  obs.getRecord().getOperatorId() + ",\n"
