@@ -86,6 +86,7 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandler;
 import org.onebusaway.transit_data_federation.services.PredictionHelperService;
 import org.onebusaway.transit_data_federation.services.revenue.RevenueSearchService;
 import org.slf4j.Logger;
@@ -121,6 +122,9 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	@Autowired
 	private RevenueSearchService _revenueSearchService;
 
+	@Autowired(required = false)
+	private GtfsSometimesHandler _gtfsSometimesHandler;
+
 	private int _blockedRequestCounter = 0;
 
 	/**
@@ -130,12 +134,18 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	 */
 	private void blockUntilBundleIsReady() {
 		try {
-			while(_bundleManagementService != null && !_bundleManagementService.bundleIsReady()) {
+			boolean gtfsSometimes = false;
+			while((_bundleManagementService != null && !_bundleManagementService.bundleIsReady())
+					|| (_gtfsSometimesHandler != null && (gtfsSometimes = _gtfsSometimesHandler.isApplying()))) {
 				_blockedRequestCounter++;
 
 				// only print this every 25 times so we don't fill up the logs!
 				if(_blockedRequestCounter > 25) {
-					_log.warn("Bundle is not ready or none is loaded--we've blocked 25 TDS requests since last log event.");
+					if (gtfsSometimes) {
+						_log.warn("GTFS-sometimes application in progress--we've blocked 25 TDS requests since last log event.");
+					} else {
+						_log.warn("Bundle is not ready or none is loaded--we've blocked 25 TDS requests since last log event.");
+					}
 					_blockedRequestCounter = 0;
 				}
 
