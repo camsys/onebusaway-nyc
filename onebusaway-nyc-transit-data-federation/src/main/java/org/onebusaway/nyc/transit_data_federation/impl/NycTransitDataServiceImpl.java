@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -86,7 +85,7 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandler;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.GtfsSometimesHandler;
 import org.onebusaway.transit_data_federation.services.PredictionHelperService;
 import org.onebusaway.transit_data_federation.services.revenue.RevenueSearchService;
 import org.slf4j.Logger;
