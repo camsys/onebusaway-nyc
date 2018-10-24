@@ -666,17 +666,4 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	public Boolean stopHasRevenueService(String agencyId, String stopId) {
 	  return _revenueSearchService.stopHasRevenueService(agencyId, stopId);
 	}
-
-	@Override
-	public Boolean reloadBundle() {
-		blockUntilBundleIsReady();
-		String bundleId = getActiveBundleId();
-		try {
-			_bundleManagementService.changeBundle(bundleId, true);
-			return true;
-		} catch (Exception e) {
-			_log.error("Error reloading bundle, {}", e);
-		}
-		return false;
-	}
 }

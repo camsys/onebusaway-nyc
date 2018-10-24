@@ -16,8 +16,6 @@ public interface BundleManagementService {
   
   public void changeBundle(String bundleId) throws Exception;
 
-  public void changeBundle(String bundleId, boolean forceReload) throws Exception;
-
   public BundleItem getCurrentBundleMetadata();
 
   public List<BundleItem> getAllKnownBundles();

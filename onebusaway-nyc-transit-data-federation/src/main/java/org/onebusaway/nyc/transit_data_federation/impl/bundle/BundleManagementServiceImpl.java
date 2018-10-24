@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
@@ -27,7 +26,6 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleFileItem;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
@@ -339,16 +337,11 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
-		changeBundle(bundleId, false);
-	}
-
-	@Override
-	public void changeBundle(String bundleId, boolean forceReload) throws Exception {
 		if(bundleId == null || !_applicableBundles.containsKey(bundleId)) {
 			throw new Exception("Bundle " + bundleId + " is not valid or does not exist.");
 		}
 
-		if(bundleId.equals(_currentBundleId) && !forceReload) {
+		if(bundleId.equals(_currentBundleId)) {
 			_log.info("Received command to change to " + bundleId + "; bundle is already active.");
 			return;
 		}
