@@ -126,12 +126,11 @@
 
     <!-- GTFS-Sometimes -->
     <context:component-scan base-package="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl"/>
+    <context:component-scan base-package="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph"/>
     <bean id="gtfsSometimesClient" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesJsonClientImpl">
         <property name="url" value="http://gtfs-editor.dev.obanyc.com/api/gtfs-servicechange/list" />
         <property name="transitDataService" ref="nycTransitDataServiceImpl" />
     </bean>
-    <bean class="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.StopTimeEntriesFactory" />
-    <bean class="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary" />
 
     <import resource="${siri.service.config}"/>
         
