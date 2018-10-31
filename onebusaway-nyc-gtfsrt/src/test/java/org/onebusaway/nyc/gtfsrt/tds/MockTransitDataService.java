@@ -551,15 +551,9 @@ public class MockTransitDataService implements NycTransitDataService {
         throw new UnsupportedOperationException();
     }
 
-    // Not implemented
-    public Boolean reloadBundle() {
-        return false;
-    }
-
     // Helper functions
 
     public List<StopTime> getStopTimesForTrip(TripBean bean) {
-
         Trip trip = _dao.getTripForId(new AgencyAndId("MTA NYCT", bean.getId()));
         return _dao.getStopTimesForTrip(trip);
     }
