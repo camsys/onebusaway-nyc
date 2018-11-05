@@ -329,11 +329,15 @@ OBA.Popups = (function() {
 		 
 		   var occupancyLoad = "N/A";
 		   
+		   console.log('occupancy: '+ MonitoredVehicleJourney.Occupancy);
+		   
 		   if(MonitoredVehicleJourney.Occupancy == "seatsAvailable")
 			   occupancyLoad = '<span class="apcicong"> </span>';
+		   else if(MonitoredVehicleJourney.Occupancy == "standingAvailable")
+			   occupancyLoad = '<span class="apcicony"> </span>';
 		   else if(MonitoredVehicleJourney.Occupancy == "full")
-			   occupancyLoad = '<span class="apcicong"> </span>';
-		   
+			   occupancyLoad = '<span class="apciconr"> </span>';
+		  
 		   return occupancyLoad;
 		}
 		
@@ -560,8 +564,8 @@ OBA.Popups = (function() {
 						
 						// time mode
 						if(timePrediction != null) {
-							//timePrediction += ", " + distance + loadOccupancy;
-							timePrediction += " " + loadOccupancy;
+							timePrediction += ", " + distance + loadOccupancy;
+							
 							if(isDepartureTimeAvailable){
 								if(layover === true) {
 									if(isDepartureOnSchedule){

@@ -384,27 +384,27 @@ small {
 	visibility: hidden;
 }
 
-.popup .apcicong {
+.apcicong {
 	background-image: url("img/apcicong.png");
 	background-repeat: no-repeat;
 	height: 18px;
-	width: 29px;
+	width: 15px;
 	display: inline-block;
 }
 
-.popup .apcicony {
+.apcicony {
 	background-image: url("img/apcicony.png");
 	background-repeat: no-repeat;
 	height: 18px;
-	width: 29px;
+	width: 15px;
 	display: inline-block;
 }
 
-.popup .apciconr {
+.apciconr {
 	background-image: url("img/apciconr.png");
 	background-repeat: no-repeat;
 	height: 18px;
-	width: 29px;
+	width: 15px;
 	display: inline-block;
 }
 

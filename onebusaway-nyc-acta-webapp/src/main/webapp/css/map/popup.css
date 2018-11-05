@@ -83,7 +83,15 @@
 	background-image: url("img/apcicong.png");
 	background-repeat: no-repeat;
 	height: 12px;
-	width: 25px;
+	width: 10px;
+	display: inline-block;
+}
+
+.popup .apcicony {
+	background-image: url("img/apcicony.png");
+	background-repeat: no-repeat;
+	height: 12px;
+	width: 10px;
 	display: inline-block;
 }
 
@@ -91,7 +99,7 @@
 	background-image: url("img/apciconr.png");
 	background-repeat: no-repeat;
 	height: 12px;
-	width: 25px;
+	width: 10px;
 	display: inline-block;
 }
 
