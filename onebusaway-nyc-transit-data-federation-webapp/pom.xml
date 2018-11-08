@@ -102,6 +102,7 @@
                 <service.alerts.url>http://tdm/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <log4j.appender>ROLL</log4j.appender>
+                <gtfs.editor.host>gtfs-editor</gtfs.editor.host>
             </properties>
         </profile>
         <profile>
@@ -113,6 +114,7 @@
                 <log4j.appender>stdout</log4j.appender>
                 <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
             </properties>
         </profile>
         <profile>
@@ -129,6 +131,7 @@
                 <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <log4j.appender>stdout</log4j.appender>
+                <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
             </properties>
         </profile>
         <profile>
@@ -141,6 +144,7 @@
                 <service.alerts.url />
                 <service.alerts.subscription.path />
                 <log4j.appender>stdout</log4j.appender>
+                <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
             </properties>
         </profile>
         <profile>
@@ -152,6 +156,7 @@
                 <log4j.appender>stdout</log4j.appender>
                 <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
             </properties>
         </profile>
         <profile>
@@ -163,6 +168,7 @@
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <log4j.appender>stdout</log4j.appender>
+                <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
             </properties>
         </profile>
     </profiles>
