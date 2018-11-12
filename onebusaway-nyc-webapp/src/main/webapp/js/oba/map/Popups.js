@@ -329,11 +329,15 @@ OBA.Popups = (function() {
 		 
 		   var occupancyLoad = "N/A";
 		   
-		   if(MonitoredVehicleJourney.Occupancy == "seatsAvailable")
-			   occupancyLoad = "Seats Available";
-		   else if(MonitoredVehicleJourney.Occupancy == "full")
-		       occupancyLoad = "Full";
+		   console.log('occupancy: '+ MonitoredVehicleJourney.Occupancy);
 		   
+		   if(MonitoredVehicleJourney.Occupancy == "seatsAvailable")
+			   occupancyLoad = '<span class="apcicong"> </span>';
+		   else if(MonitoredVehicleJourney.Occupancy == "standingAvailable")
+			   occupancyLoad = '<span class="apcicony"> </span>';
+		   else if(MonitoredVehicleJourney.Occupancy == "full")
+			   occupancyLoad = '<span class="apciconr"> </span>';
+		  
 		   return occupancyLoad;
 		}
 		
@@ -352,7 +356,7 @@ OBA.Popups = (function() {
 		if (occupancyLoad == '')
 			return '';
 		else
-			return ', ('+occupancyLoad.toLowerCase()+')';
+			return occupancyLoad;
 	}
 	
 	
