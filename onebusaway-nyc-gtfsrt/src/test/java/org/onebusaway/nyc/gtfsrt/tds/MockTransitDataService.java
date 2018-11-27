@@ -554,7 +554,6 @@ public class MockTransitDataService implements NycTransitDataService {
     // Helper functions
 
     public List<StopTime> getStopTimesForTrip(TripBean bean) {
-
         Trip trip = _dao.getTripForId(new AgencyAndId("MTA NYCT", bean.getId()));
         return _dao.getStopTimesForTrip(trip);
     }

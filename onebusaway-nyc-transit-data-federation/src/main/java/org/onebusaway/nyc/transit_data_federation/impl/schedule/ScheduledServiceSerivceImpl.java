@@ -47,7 +47,8 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
 
   private Map<String, Boolean> _stopServiceCache = new HashMap<String, Boolean>();
 
-  @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
+  @Refreshable(dependsOn = { RefreshableResources.TRANSIT_GRAPH,
+          RefreshableResources.BLOCK_INDEX_DATA_GRAPH })
   public void refresh() {
     _stopServiceCache.clear();
   }

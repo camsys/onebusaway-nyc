@@ -121,6 +121,17 @@
         <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
+    <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />
+    <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
+
+    <!-- GTFS-Sometimes -->
+    <context:component-scan base-package="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl"/>
+    <context:component-scan base-package="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph"/>
+    <bean id="gtfsSometimesClient" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesJsonClientImpl">
+        <property name="url" value="http://${gtfs.editor.host}/api/gtfs-servicechange/list" />
+        <property name="transitDataService" ref="nycTransitDataServiceImpl" />
+    </bean>
+
     <import resource="${siri.service.config}"/>
         
 </beans>
