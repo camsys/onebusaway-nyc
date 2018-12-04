@@ -217,6 +217,7 @@
         <module>onebusaway-nyc-queue-http-proxy</module>
         <module>onebusaway-nyc-queue-test</module>
         <module>onebusaway-nyc-queue-subscriber</module>
+        <module>onebusaway-nyc-queue-apc</module>
         <module>onebusaway-nyc-report-archive</module>
     	<module>onebusaway-nyc-util</module>
     	<module>onebusaway-nyc-admin-webapp</module>
@@ -261,6 +262,7 @@
                 <module>onebusaway-nyc-queue-http-proxy</module>
                 <module>onebusaway-nyc-queue-test</module>
                 <module>onebusaway-nyc-queue-subscriber</module>
+                <module>onebusaway-nyc-queue-apc</module>
                 <module>onebusaway-nyc-report-archive</module>
                 <module>onebusaway-nyc-admin-webapp</module>
                 <module>onebusaway-nyc-acta-webapp</module>
