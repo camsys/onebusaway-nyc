@@ -53,27 +53,18 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
 
     @Override
     public boolean processMessage(String contents, byte[] buff) throws Exception {        
-      
-      /*
-         * TODO Need to refactor this. 
-          Contents should contain topic and buff should contain message. 
-          Currently contents and buff both contain message therefore 
-          topic must get parsed out from the message body.
-          */
-      
+
         if(StringUtils.isBlank(contents)){
           _log.warn("rejected message, message is empty");
           return false;
         }   
-        
-        String message[] = contents.split(getQueueName());
-        if (message.length <= 1 || ! useApcIfAvailable()) {
-          _log.warn("rejected message for queue " + contents);
-          return false;
+
+        if(!getQueueName().endsWith(contents)) {
+            _log.warn("rejected message for queue " + contents);
         }
 
         try {
-            NycVehicleLoadBean bean = _mapper.readValue(message[1], NycVehicleLoadBean.class);
+            NycVehicleLoadBean bean = _mapper.readValue(contents, NycVehicleLoadBean.class);
             processResult(bean, contents);
             return true;
         } catch (Exception any) {
