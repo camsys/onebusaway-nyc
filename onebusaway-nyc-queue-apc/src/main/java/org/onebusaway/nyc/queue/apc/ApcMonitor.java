@@ -44,14 +44,8 @@ public class ApcMonitor extends QueueListenerTask {
             return false;
         }
 
-        String message[] = contents.split(getQueueName());
-        if (message.length <= 1) {
-            log("rejected message for queue " + contents);
-            return false;
-        }
-
         try {
-            NycVehicleLoadBean bean = _mapper.readValue(message[1], NycVehicleLoadBean.class);
+            NycVehicleLoadBean bean = _mapper.readValue(buff, NycVehicleLoadBean.class);
             processResult(bean, contents);
         } catch (Exception any) {
             log("received corrupted APC message from queue; discarding: " + any.getMessage(), any);
@@ -161,13 +155,10 @@ public class ApcMonitor extends QueueListenerTask {
         PutMetricDataRequest request = buildMetricData("QueueListenerOccupancy", "Count", 1., buildDimensions("vehicleId=" + vor.getVehicleId()));
         try {
             if (vor.getOccupancyStatus().valueOf() != -1) {
-                log("pushing vehicleId=" + vor.getVehicleId() + " / "
-                        + vor.getRouteId()
-                        + " (" + vor.getOccupancyStatus().valueOf()
-                        + ") with latency of " + (now - received));
+                logCSV(vor, now);
                 cloudWatch.putMetricData(request);
             } else {
-                log("dropping vehicleId=" + vor.getVehicleId() + " with UNKNOWN status");
+                logCSV(vor, now);
             }
 
         } catch (Exception any) {
@@ -222,12 +213,29 @@ public class ApcMonitor extends QueueListenerTask {
     }
 
     private void log(String s) {
-        System.out.println(new Date() + ": " + s);
+        System.out.println(new Date() + "[INFO]: " + s);
     }
 
     private void log(String s, Exception any) {
         log(s);
         any.printStackTrace();
+    }
+    private void logCSV(VehicleOccupancyRecord vor, long now) {
+        StringBuffer record = new StringBuffer();
+        record.append(now)
+                .append(",")
+                .append(vor.getVehicleId())
+                .append(",")
+                .append(vor.getRouteId())
+                .append(",")
+                .append(vor.getDirectionId())
+                .append(",")
+                .append(vor.getOccupancyStatus().toString())
+                .append(",")
+                .append(vor.getTimestamp().getTime()*1000)
+                .append(",")
+                .append( (now - vor.getTimestamp().getTime()*1000));
+        System.out.println(record.toString());
     }
 
 
