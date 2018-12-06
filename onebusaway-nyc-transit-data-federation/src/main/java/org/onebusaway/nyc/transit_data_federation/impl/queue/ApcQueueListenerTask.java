@@ -65,11 +65,11 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
 
         try {
             NycVehicleLoadBean bean = _mapper.readValue(contents, NycVehicleLoadBean.class);
-            processResult(bean, contents);
+            processResult(bean, new String(buff));
             return true;
         } catch (Exception any) {
             _log.warn("received corrupted APC message from queue; discarding: " + any.getMessage(), any);
-            _log.warn("Contents=|" + contents + "|, buff=|" + buff + "|");
+            _log.warn("Contents=|" + contents + "|, buff=|" + new String(buff) + "|");
             return false;
         }
     }
