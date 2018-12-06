@@ -6,9 +6,9 @@
     <version>2.26.1-SNAPSHOT</version>
   </parent>
   <groupId>org.onebusaway</groupId>
-  <artifactId>onebusaway-nyc-queue-subscriber</artifactId>
+  <artifactId>onebusaway-nyc-queue-apc</artifactId>
   <packaging>jar</packaging>
-  <name>onebusaway-nyc-queue-subscriber</name>
+  <name>onebusaway-nyc-queue-apc</name>
   <dependencies>
     <!-- for configuration service -->
     <dependency>
@@ -59,14 +59,56 @@
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
-      <artifactId>onebusaway-gtfs-realtime-api</artifactId>
-      <version>1.2.3</version>
+      <artifactId>onebusaway-nyc-queue-subscriber</artifactId>
+      <version>2.26.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
-      <artifactId>onebusaway-gtfs</artifactId>
-      <version>${onebusaway.gtfs.version}</version>
+      <artifactId>onebusaway-nyc-transit-data</artifactId>
+      <version>2.26.1-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commmons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.onebusaway</groupId>-->
+      <!--<artifactId>onebusaway-gtfs-realtime-api</artifactId>-->
+      <!--<version>1.2.3</version>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>org.onebusaway</groupId>-->
+      <!--<artifactId>onebusaway-gtfs</artifactId>-->
+      <!--<version>${onebusaway.gtfs.version}</version>-->
+    <!--</dependency>-->
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk</artifactId>
+      <version>1.6.12</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-core-asl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-mapper-asl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commmons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
   </dependencies>
   <profiles>
     <profile>
@@ -75,7 +117,7 @@
          <activeByDefault>true</activeByDefault>
       </activation>
       <build>
-        <finalName>onebusaway-nyc-queue-subscriber</finalName>
+        <finalName>onebusaway-nyc-queue-apc</finalName>
         <plugins>
           <plugin>
             <artifactId>maven-jar-plugin</artifactId>
@@ -84,7 +126,7 @@
               <archive>
                 <manifest>
                   <addClasspath>true</addClasspath>
-                  <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
+                  <mainClass>org.onebusaway.nyc.queue.apc.ApcMonitor</mainClass>
                 </manifest>
               </archive>
             </configuration>
@@ -97,7 +139,7 @@
               </descriptorRefs>
               <archive>
                 <manifest>
-                  <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
+                  <mainClass>org.onebusaway.nyc.queue.apc.ApcMonitor</mainClass>
                 </manifest>
               </archive>
             </configuration>
@@ -117,7 +159,7 @@
     <profile>
       <id>have-zmq</id>
       <build>
-        <finalName>onebusaway-nyc-queue-subscriber</finalName>
+        <finalName>onebusaway-nyc-queue-apc</finalName>
         <plugins>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
@@ -130,7 +172,7 @@
                   <goal>java</goal>
                 </goals>
                 <configuration>
-                  <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
+                  <mainClass>org.onebusaway.nyc.queue.apc.ApcMonitor</mainClass>
                   <arguments />
                 </configuration>
               </execution>
@@ -142,7 +184,7 @@
               <archive>
                 <manifest>
                   <addClasspath>true</addClasspath>
-                  <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
+                  <mainClass>org.onebusaway.nyc.queue.apc.ApcMonitor</mainClass>
                 </manifest>
               </archive>
             </configuration>
@@ -155,49 +197,7 @@
               </descriptorRefs>
               <archive>
                 <manifest>
-                  <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
-                </manifest>
-              </archive>
-            </configuration>
-            <executions>
-              <execution>
-                <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                <phase>package</phase> <!-- bind to the packaging phase -->
-                <goals>
-                  <goal>single</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>gtfsrt</id>
-      <build>
-        <finalName>onebusaway-nyc-queue-subscriber</finalName>
-        <plugins>
-          <plugin>
-            <artifactId>maven-jar-plugin</artifactId>
-
-            <configuration>
-              <archive>
-                <manifest>
-                  <addClasspath>true</addClasspath>
-                  <mainClass>org.onebusaway.nyc.queue.TripUpdateSubscriber</mainClass>
-                </manifest>
-              </archive>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <configuration>
-              <descriptorRefs>
-                <descriptorRef>jar-with-dependencies</descriptorRef>
-              </descriptorRefs>
-              <archive>
-                <manifest>
-                  <mainClass>org.onebusaway.nyc.queue.TripUpdateSubscriber</mainClass>
+                  <mainClass>org.onebusaway.nyc.queue.apc.ApcMonitor</mainClass>
                 </manifest>
               </archive>
             </configuration>
