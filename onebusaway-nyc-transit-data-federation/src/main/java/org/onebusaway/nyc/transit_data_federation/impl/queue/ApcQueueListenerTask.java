@@ -64,7 +64,7 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
         }
 
         try {
-            NycVehicleLoadBean bean = _mapper.readValue(contents, NycVehicleLoadBean.class);
+            NycVehicleLoadBean bean = _mapper.readValue(new String(buff), NycVehicleLoadBean.class);
             processResult(bean, new String(buff));
             return true;
         } catch (Exception any) {
