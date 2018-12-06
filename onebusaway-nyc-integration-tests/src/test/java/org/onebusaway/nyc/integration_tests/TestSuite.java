@@ -17,6 +17,7 @@ package org.onebusaway.nyc.integration_tests;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import org.onebusaway.nyc.integration_tests.nyc_webapp.GtfsSometimesIntegrationTest;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriBlockInference_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriBlockLayoverInference_IntegrationTest;
 import org.onebusaway.nyc.integration_tests.nyc_webapp.SiriScheduleDeviation_IntegrationTest;
@@ -78,30 +79,30 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	
 	//2016April_Prod_r01_b05 (Route M20)
 	Trace_9458_20160706_flips_trip_IntegrationTest.class,
-	
+
 	//2016Jan_Prod
 	Trace_3947_Relief_Run_ID_IntegrationTest.class,
-	
+
 	// 2014April_Prod_r12_b01
 	Trace_4655_mtabus_as_nyct_IntegrationTest.class,
-	
+
 	// 2014April_Prod_r06_b02
 	Trace_4855_export_trips_IntegrationTest.class,
 	Trace_6844_deadhead_IntegrationTest.class,
-	
+
 	// 2014Jan_AllCity_r09_b3
 	Trace_3088_in_progress_IntegrationTest.class,
 	Trace_2782_deadhead_nyct_bus_as_mta_IntegrationTest.class,
 	// 2013June_Prod_r04_b03
 	Trace_5558_layover_in_motion_IntegrationTest.class,
-	
+
 	// 2013Sept_Prod_r08_b04
 	Trace_4399_20131225_IntegrationTest.class,
 	SiriScheduleDeviation_IntegrationTest.class,
 
 	// 2013Sept_AllCity_r15_b02
 	Trace_9527_Q_MISC_IntegrationTest.class,
-	
+
 	// September_Bronx_r10_b03
 	Trace_324_20121004_IntegrationTest.class,
 	Trace_5799_20121011_IntegrationTest.class,
@@ -127,7 +128,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	Trace_7564_20101202T114909_IntegrationTest.class,
 
 	// 2012Jan_SIB63M34_r20_b01
-	Trace_2423_20120111_091352_092348_IntegrationTest.class,    
+	Trace_2423_20120111_091352_092348_IntegrationTest.class,
 
 	// 2012July_r04_b02
 	Trace_2433_20120723_IntegrationTest.class,
@@ -141,7 +142,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	Trace_4138_20111207_150000_220000_IntegrationTest.class,
 	Trace_4255_20111215_183433_183932_IntegrationTest.class,
 	Trace_6154_20111214_123000_143500_IntegrationTest.class,
-	Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest.class,  	
+	Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest.class,
 
 	// paired down (SI) version of 2013June_Prod_r03_b02
 	Trace_7040_layover_oosdsc_formal_IntegrationTest.class,
@@ -156,6 +157,7 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_
 	SiriBlockLayoverInference_IntegrationTest.class,
 
 	SiriTripInference_IntegrationTest.class,
-	SiriTripLayoverInference_IntegrationTest.class
+	SiriTripLayoverInference_IntegrationTest.class,
+	GtfsSometimesIntegrationTest.class
 })
 public class TestSuite {}

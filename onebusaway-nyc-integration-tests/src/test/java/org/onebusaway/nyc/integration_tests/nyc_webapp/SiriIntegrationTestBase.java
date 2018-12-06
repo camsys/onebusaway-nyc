@@ -99,8 +99,6 @@ public class SiriIntegrationTestBase {
     String r = getResponseForURL(url);
   }
   
-
-  
   protected HashMap<String,Object> getVmResponse(Map<String, String> params) throws IOException {
     String port = getNycWebappPort();
     String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?";
@@ -179,9 +177,23 @@ public class SiriIntegrationTestBase {
 
     return getHashMapFromJsonResponse(response);
   }
-  
-  public void loadRecords() throws Throwable {
-	  File trace = new File("src/integration-test/resources/traces/" + _trace);
+
+    protected HashMap<String,Object> getStopForIdResponse(String operatorId, String mRef) throws IOException, HttpException {
+        String port = getNycWebappPort();
+        String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/stop-for-id?key=TEST" + "&stopId=" + operatorId + "_" + mRef + "&time=" + _date.getTime();
+        _log.debug(url);
+        String response = getResponseForURL(url);
+        _log.debug(response);
+        return getHashMapFromJsonResponse(response);
+    }
+
+
+    public void loadRecords() throws Throwable {
+      loadRecords(_trace);
+    }
+
+    public void loadRecords(String traceFile) throws Throwable {
+	  File trace = new File("src/integration-test/resources/traces/" + traceFile);
 	  List<NycTestInferredLocationRecord> expected = _traceSupport
 			  .readRecords(trace);
 
