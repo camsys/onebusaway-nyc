@@ -69,7 +69,7 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
             return true;
         } catch (Exception any) {
             _log.warn("received corrupted APC message from queue; discarding: " + any.getMessage(), any);
-            _log.warn("Contents=" + contents);
+            _log.warn("Contents=|" + contents + "|, buff=|" + buff + "|");
             return false;
         }
     }
