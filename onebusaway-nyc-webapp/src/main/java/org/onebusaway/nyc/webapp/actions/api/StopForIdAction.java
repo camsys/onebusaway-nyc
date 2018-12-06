@@ -73,12 +73,16 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
     if(_stopId == null) {
       return SUCCESS;
     }
-    
+
+    long time = getTime();
+
     StopBean stop = _nycTransitDataService.getStop(_stopId);    
 
     if(stop == null) {
       return SUCCESS;
     }
+
+    _realtimeService.setTime(time);
 
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     for(RouteBean routeBean : stop.getRoutes()) {
@@ -102,12 +106,12 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
 	            continue;
 	
 	          Boolean hasUpcomingScheduledService = 
-	        		  _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stop.getId(), 
+	        		  _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), time, stop.getId(),
 	        				  routeBean.getId(), stopGroupBean.getId());
 	
 	          // if there are buses on route, always have "scheduled service"
 	          Boolean routeHasVehiclesInService = 
-	        		  _realtimeService.getVehiclesInServiceForStopAndRoute(stop.getId(), routeBean.getId(), System.currentTimeMillis());
+	        		  _realtimeService.getVehiclesInServiceForStopAndRoute(stop.getId(), routeBean.getId(), time);
 	
 	          if(routeHasVehiclesInService) {
 	        	  hasUpcomingScheduledService = true;
@@ -125,7 +129,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
     _result = new StopResult(stop, routesAtStop);
 
     List<MonitoredStopVisitStructure> visits = 
-        _realtimeService.getMonitoredStopVisitsForStop(_stopId, 0, System.currentTimeMillis());
+        _realtimeService.getMonitoredStopVisitsForStop(_stopId, 0, time);
 
     _response = generateSiriResponse(visits, AgencyAndIdLibrary.convertFromString(_stopId));
     
