@@ -112,8 +112,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
         return SUCCESS;
       }
 
-      String query = ("geocode".equals(_type) && _location != null) ? getLocationString() : _q;
-      _results = _searchService.getSearchResults(query, factory);
+      _results = _searchService.getSearchResults(_q, factory);
 
       // do a bit of a hack with location matches--since we have no map to show
       // locations on,
@@ -306,7 +305,4 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return _messageService.getMessage();
   }
 
-  private String getLocationString() {
-    return String.format("%g,%g", _location.getLat(), _location.getLon());
-  }
 }

@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.webapp.actions.api;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
@@ -24,7 +23,6 @@ import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.nyc.webapp.actions.api.model.AutocompleteItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @ParentPackage("json-default")
@@ -40,7 +38,7 @@ public class AutocompleteAction extends OneBusAwayNYCActionSupport {
   @Autowired
   private NycGeocoderService _geocoderService;
 
-  private List<AutocompleteItem> suggestions = null;
+  private List<String> suggestions = null;
 
   private String _term = null;
 
@@ -55,13 +53,13 @@ public class AutocompleteAction extends OneBusAwayNYCActionSupport {
     if (_term == null || _term.isEmpty() )
       return SUCCESS;
 
-    suggestions = stringsToAutocomplete(_nycTransitDataService.getSearchSuggestions(null, _term.toLowerCase()));
+    suggestions = _nycTransitDataService.getSearchSuggestions(null, _term.toLowerCase());
 
     if (suggestions.size() == 0 && _term.length() >= 3) {
     	List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(_term);
       if (geocoderResults.size() > 0) {
         for (int i = 0; i < 10; i++) {
-          suggestions.add(geocodeToAutocomplete(geocoderResults.get(i)));
+          suggestions.add(geocoderResults.get(i).getFormattedAddress());
           if (i + 1 == geocoderResults.size())
             break;
         }
@@ -73,20 +71,8 @@ public class AutocompleteAction extends OneBusAwayNYCActionSupport {
   /** 
    * VIEW METHODS
    */
-  public List<AutocompleteItem> getSuggestions() {
+  public List<String> getSuggestions() {
     return suggestions;
   }
 
-  private static List<AutocompleteItem> stringsToAutocomplete(List<String> suggestions) {
-    List<AutocompleteItem> items = new ArrayList<AutocompleteItem>();
-    for (String s : suggestions) {
-      items.add(new AutocompleteItem(s, s));
-    }
-    return items;
-  }
-
-  private static AutocompleteItem geocodeToAutocomplete(NycGeocoderResult result) {
-    String latlong = String.format("%g,%g", result.getLatitude(), result.getLongitude());
-    return new AutocompleteItem(result.getFormattedAddress(), latlong);
-  }
 }

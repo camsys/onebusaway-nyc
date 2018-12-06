@@ -29,6 +29,8 @@ public class Publisher implements IPublisher {
 	private ZMQ.Context context;
 	private ZMQ.Socket envelopeSocket;
 	private String topic;
+	private static final int THIRTY_SEC_MILLIS = 30*1000;
+	private RmcUtil rmcUtil = new RmcUtil();
 
 	public Publisher(String topic) {
 		this.topic = topic;
@@ -100,14 +102,14 @@ public class Publisher implements IPublisher {
 			return null;
 
 		StringBuffer prefix = new StringBuffer();
-		
+
 		prefix.append("{\"RealtimeEnvelope\": {\"UUID\":\"")
 				.append(generateUUID()).append("\",\"timeReceived\": ")
 				.append(timeReceived).append(",")
 				.append(removeLastBracket(realtime)).append("}}");
 
 		try{
-			return RmcUtil.replaceInvalidRmcDateTime(prefix, timeReceived);
+			return rmcUtil.replaceInvalidRmcDateTime(prefix, timeReceived);
 		}catch(Exception e){
 			_log.warn("unable to replace invalid rmc date", e);
 			return prefix.toString();

@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.security.auth.login.Configuration;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BundleSearchService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
@@ -22,7 +24,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Proposes suggestions to the user based on bundle content--e.g. stop ID and route short names.
- * 
+ *
  * @author asutula
  *
  */
@@ -32,14 +34,19 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 	@Autowired
 	private NycTransitDataService _transitDataService = null;
 
+	@Autowired
+	private ConfigurationService _configurationService;
+
 	private Map<String,List<String>> suggestions = Collections.synchronizedMap(new HashMap<String, List<String>>());
 
 	private boolean _disableInit = false;
-	
+
+	private int maxSearchResults = 20;
+
 	@PostConstruct
-	@Refreshable(dependsOn = { 
-		      RefreshableResources.ROUTE_COLLECTIONS_DATA, 
-		      RefreshableResources.TRANSIT_GRAPH })
+	@Refreshable(dependsOn = {
+			RefreshableResources.ROUTE_COLLECTIONS_DATA,
+			RefreshableResources.TRANSIT_GRAPH })
 	public void init() {
 		if (_disableInit)
 			return;
@@ -47,7 +54,7 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 			@Override
 			public void run() {
 				Map<String,List<String>> tmpSuggestions = Collections.synchronizedMap(new HashMap<String, List<String>>());
-				
+
 
 				Map<String, List<CoordinateBounds>> agencies = _transitDataService.getAgencyIdsWithCoverageArea();
 				for (String agency : agencies.keySet()) {
@@ -70,6 +77,24 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 		};
 
 		new Thread(initThread).start();
+	}
+
+	public int getMaxSearchResults() {
+		return maxSearchResults;
+	}
+
+	public void setMaxSearchResults(int maxSearchResults) {
+		this.maxSearchResults = maxSearchResults;
+	}
+
+	@SuppressWarnings("unused")
+	@Refreshable(dependsOn = "tdm.maxSearchResults")
+	private void configChanged() {
+		Integer maxSearchResults = _configurationService.getConfigurationValueAsInteger("tdm.maxSearchResults", 20);
+
+		if (maxSearchResults != null) {
+			setMaxSearchResults(maxSearchResults);
+		}
 	}
 
 	private void generateInputsForString(Map<String,List<String>> tmpSuggestions, String string, String splitRegex) {
@@ -98,11 +123,11 @@ public class BundleSearchServiceImpl implements BundleSearchService {
 		List<String> tmpSuggestions = this.suggestions.get(input);
 		if (tmpSuggestions == null)
 			tmpSuggestions = new ArrayList<String>();
-		if (tmpSuggestions.size() > 10)
-			tmpSuggestions = tmpSuggestions.subList(0, 10);
+		if (tmpSuggestions.size() > getMaxSearchResults())
+			tmpSuggestions = tmpSuggestions.subList(0, getMaxSearchResults());
 		return tmpSuggestions;
 	}
-	
+
 	public void setDisableInit(boolean disableInit) {
 		_disableInit = disableInit;
 	}
