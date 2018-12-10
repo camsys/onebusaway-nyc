@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.impl.TripUpdateServiceImpl;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
@@ -13,6 +14,8 @@ import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 import java.util.Arrays;
@@ -23,12 +26,15 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TripUpdateServiceImplTest {
   private TripUpdateServiceImpl service;
   private NycTransitDataService tds;
+  private PresentationService presentationService;
 
   @Before
   public void setup() {
@@ -39,12 +45,18 @@ public class TripUpdateServiceImplTest {
       }
     };
 
+    presentationService = mock(PresentationService.class);
+    when(presentationService.include(any(TripStatusBean.class))).thenReturn(Boolean.TRUE);
+    doNothing().when(presentationService).setTime(any(Long.class));
+
     tds = mock(NycTransitDataService.class);
     when(tds.getAgenciesWithCoverage()).thenReturn(UnitTestSupport.agenciesWithCoverage("agency"));
+    when(tds.getTripDetailsForVehicleAndTime(any(TripForVehicleQueryBean.class))).thenReturn(new TripDetailsBean());
 
     service = new TripUpdateServiceImpl();
     service.setFeedBuilder(feedBuilder);
     service.setTransitDataService(tds);
+    service.setPresentationService(presentationService);
   }
 
   @Test
