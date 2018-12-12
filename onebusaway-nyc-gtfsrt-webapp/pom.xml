@@ -73,6 +73,10 @@
 		</dependency>
 	</dependencies>
 
+	<properties>
+		<geocoder.cache.disabled>true</geocoder.cache.disabled>
+	</properties>
+
 	<profiles>
 		<!--  bundle location profiles -->
 		<profile>
