@@ -17,13 +17,18 @@ package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.onebusaway.nyc.gtfsrt.service.FeedMessageService;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
+import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -81,14 +86,43 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         return (now - _generatedTime) > _cacheExpirySeconds * 1000;
     }
 
-    public Collection<VehicleStatusBean> getAllVehicles(TransitDataService tds, long time) {
+    public Collection<VehicleStatusBean> getAllVehicles(TransitDataService tds, PresentationService ps, long time) {
         List<VehicleStatusBean> vehicles = new ArrayList<VehicleStatusBean>();
         for (AgencyWithCoverageBean bean : tds.getAgenciesWithCoverage()) {
             String agency = bean.getAgency().getId();
             ListBean<VehicleStatusBean> lb = tds.getAllVehiclesForAgency(agency, time);
-            vehicles.addAll(lb.getList());
+            for(VehicleStatusBean vsb : lb.getList()){
+                if(includeVehicle(tds,ps,vsb,time)){
+                    vehicles.add(vsb);
+                }
+            }
         }
         return vehicles;
+    }
+
+    public boolean includeVehicle(TransitDataService tds, PresentationService presentationService,
+                                  VehicleStatusBean vehicleStatus, long time){
+        TripDetailsBean tripDetails = getTripForVehicle(tds, vehicleStatus, time);
+        presentationService.setTime(time);
+        if (tripDetails == null || !presentationService.include(tripDetails.getStatus())){
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
+    }
+
+    private TripDetailsBean getTripForVehicle(TransitDataService tds, VehicleStatusBean vehicleStatus, long time){
+        TripForVehicleQueryBean query = new TripForVehicleQueryBean();
+        query.setTime(new Date(time));
+        query.setVehicleId(vehicleStatus.getVehicleId());
+
+        TripDetailsInclusionBean inclusion = new TripDetailsInclusionBean();
+        inclusion.setIncludeTripStatus(true);
+        inclusion.setIncludeTripBean(true);
+        query.setInclusion(inclusion);
+
+        TripDetailsBean tripDetailsForCurrentTrip = tds.getTripDetailsForVehicleAndTime(query);
+
+        return tripDetailsForCurrentTrip;
     }
 
     public abstract List<FeedEntity.Builder> getEntities(long time);
