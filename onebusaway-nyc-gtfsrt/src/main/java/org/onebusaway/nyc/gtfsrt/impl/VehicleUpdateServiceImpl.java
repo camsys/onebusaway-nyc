@@ -76,10 +76,6 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
 
         for (VehicleStatusBean vehicle : vehicles) {
 
-            if (!includeVehicle(_transitDataService, _presentationService, vehicle, time)) {
-                continue;
-            }
-
             VehicleLocationRecordBean vlr = _transitDataService.getVehicleLocationRecordForVehicleId(vehicle.getVehicleId(), time);
             if (vlr == null) {
                 nMissing++;
