@@ -104,7 +104,7 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
                                   VehicleStatusBean vehicleStatus, long time){
         TripDetailsBean tripDetails = getTripForVehicle(tds, vehicleStatus, time);
         presentationService.setTime(time);
-        if (tripDetails == null || !presentationService.include(tripDetails.getStatus())){
+        if (tripDetails == null || !presentationService.include(tripDetails.getStatus()) || vehicleStatus.getTrip() == null){
             return Boolean.FALSE;
         }
         return Boolean.TRUE;
