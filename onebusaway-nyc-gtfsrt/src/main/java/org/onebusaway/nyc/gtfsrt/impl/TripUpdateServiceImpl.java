@@ -93,11 +93,6 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
 
         for (VehicleStatusBean vehicle : vehicles) {
 
-            if (vehicle.getTrip() == null) {
-                _log.warn("no trip for vehicle=" + vehicle.getVehicleId());
-                continue;
-            }
-
             int tripSequence = vehicle.getTripStatus().getBlockTripSequence();
             BlockInstanceBean block = getBlock(vehicle);
             List<BlockTripBean> trips = block.getBlockConfiguration().getTrips();
