@@ -19,6 +19,7 @@ import com.google.transit.realtime.GtfsRealtime.*;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -43,6 +44,7 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
 
     private VehicleUpdateFeedBuilder _feedBuilder;
     private NycTransitDataService _transitDataService;
+    private PresentationService _presentationService;
 
     private static final Logger _log = LoggerFactory.getLogger(VehicleUpdateServiceImpl.class);
 
@@ -56,9 +58,14 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
         _transitDataService = transitDataService;
     }
 
+    @Autowired
+    public void setPresentationService(PresentationService presentationService) {
+        _presentationService = presentationService;
+    }
+
     @Override
     public List<FeedEntity.Builder> getEntities(long time) {
-        Collection<VehicleStatusBean> vehicles = getAllVehicles(_transitDataService, time);
+        Collection<VehicleStatusBean> vehicles = getAllVehicles(_transitDataService, _presentationService, time);
 
         List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
@@ -66,16 +73,12 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
 
         for (VehicleStatusBean vehicle : vehicles) {
 
-            if (vehicle.getTrip() == null) {
-                continue;
-            }
-
             VehicleLocationRecordBean vlr = _transitDataService.getVehicleLocationRecordForVehicleId(vehicle.getVehicleId(), time);
             if (vlr == null) {
                 nMissing++;
                 continue;
             }
-            
+
             OccupancyStatus occupancy = getOccupancyStatus(vehicle);
             VehiclePosition.Builder pos = _feedBuilder.makeVehicleUpdate(vehicle, vlr, occupancy);
 
@@ -90,7 +93,7 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
 
         return entities;
     }
-    
+
     private OccupancyStatus getOccupancyStatus(VehicleStatusBean vehicleStatus){
       TripStatusBean tripStatus = vehicleStatus.getTripStatus();
       
