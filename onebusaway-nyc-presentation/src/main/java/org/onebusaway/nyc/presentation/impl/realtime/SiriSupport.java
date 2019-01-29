@@ -424,6 +424,15 @@ public final class SiriSupport {
 					}
 				}
 
+				// Not including non-revenue stops
+				String agencyId = AgencySupportLibrary.getAgencyForId(currentVehicleTripStatus.getActiveTrip().getRoute().getId());
+				String stopId = stopTime.getStopTime().getStop().getId();
+				String routeId = currentVehicleTripStatus.getActiveTrip().getRoute().getId();
+				String directionId = currentVehicleTripStatus.getActiveTrip().getDirectionId();
+
+				if (!nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId))
+					continue;
+
 				// block trip stops away--on this trip, only after we've passed the stop, 
 				// on future trips, count always.
 				if(currentVehicleTripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
