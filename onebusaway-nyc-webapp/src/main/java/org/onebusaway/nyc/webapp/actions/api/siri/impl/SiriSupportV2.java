@@ -665,16 +665,13 @@ public final class SiriSupportV2 {
 
 			for (BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
 
-				// check for non-revenue stops for onward calls
-				if(currentVehicleTripStatus.getActiveTrip().getRoute() != null) {
-					String agencyId = currentVehicleTripStatus.getActiveTrip().getRoute().getAgency().getId();
-					String routeId = currentVehicleTripStatus.getActiveTrip().getRoute().getId();
-					String directionId = currentVehicleTripStatus.getActiveTrip().getDirectionId();
-					String stopId  = stopTime.getStopTime().getStop().getId();
-					if (!nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId)){
-						continue;
-					}
-				}
+				// Not including non-revenue stops
+				String agencyId    = AgencySupportLibrary.getAgencyForId(currentVehicleTripStatus.getActiveTrip().getRoute().getId());
+				String stopId      = stopTime.getStopTime().getStop().getId();
+				String routeId     = currentVehicleTripStatus.getActiveTrip().getRoute().getId();
+				String directionId = currentVehicleTripStatus.getActiveTrip().getDirectionId();
+				if (!nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId))
+					continue;
 
 				// block trip stops away--on this trip, only after we've passed
 				// the stop,
