@@ -270,7 +270,6 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 			TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
 			TripBean tripBeanForAd = adBean.getTrip();
-			final RouteBean routeBean = tripBeanForAd.getRoute();
 
 			if (statusBeanForCurrentTrip == null)
 				continue;
@@ -278,10 +277,6 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			if (!_presentationService.include(statusBeanForCurrentTrip)
 					|| !_presentationService.include(adBean,
 							statusBeanForCurrentTrip))
-				continue;
-
-			if(!_nycTransitDataService.stopHasRevenueServiceOnRoute((routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
-					stopId, routeBean.getId(), adBean.getTrip().getDirectionId()))
 				continue;
 
 			MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
@@ -582,10 +577,12 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					&& !adBean.getTrip().getRoute().getId().equals(routeId))
 				continue;
 
-			// check for non-revenue stops
-			if(!_nycTransitDataService.stopHasRevenueServiceOnRoute(statusBean.getActiveTrip().getRoute().getAgency().getId(),stopId, routeId, statusBean.getActiveTrip().getDirectionId())){
+			// not considering non-revenue
+			String directionId = adBean.getTrip().getDirectionId();
+			String agencyId = adBean.getTrip().getRoute().getAgency().getId();
+
+			if(!_nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId))
 				continue;
-			}
 
 			return true;
 		}

@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -40,6 +41,7 @@ import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
+import org.onebusaway.transit_data_federation.services.revenue.RevenueSearchService;
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.DirectionRefStructure;
 import uk.org.siri.siri_2.LineDirectionStructure;
@@ -71,6 +73,10 @@ public class RealtimeServiceTest {
   
   @Mock
   private ConfigurationService configurationService;
+
+  @Mock
+  private RevenueSearchService revenueSearchService;
+
   
   RouteBean routeBean;
   List<RouteBean> routes;
@@ -153,7 +159,7 @@ public class RealtimeServiceTest {
     when(transitDataService.getRouteForId("MTA NYCT_M102")).thenReturn(routeBean);
     when(transitDataService.getStopsForRoute("MTA NYCT_M102")).thenReturn(stopsForRouteBean);
     when(transitDataService.stopHasUpcomingScheduledService(anyString(), anyLong(), anyString(), anyString(), anyString())).thenReturn(true);
-    
+
     LineDirectionStructure lds = new LineDirectionStructure();
     DirectionRefStructure drs = new DirectionRefStructure();
     LineRefStructure lrs = new LineRefStructure();
@@ -304,6 +310,17 @@ public class RealtimeServiceTest {
     AnnotatedStopPointStructure actualStopPoint = actualResult.get(true).get(0);
 
     assertTrue(isEqual(mockStopPoint, actualStopPoint));
+
+  }
+
+  @Test
+  public void testNonRevenueStops() {
+
+    when(revenueSearchService.stopHasRevenueServiceOnRoute(any(String.class), any(String.class), any(String.class), any(String.class))).thenReturn(false);
+    when(revenueSearchService.stopHasRevenueService(any(String.class), any(String.class))).thenReturn(false);
+
+    assertFalse(transitDataService.stopHasRevenueService("MTA NYCT", stopBean.getId()));
+    assertFalse(transitDataService.stopHasRevenueServiceOnRoute("MTA NYCT", stopBean.getId(), routeBean.getId(), stopBean.getDirection()));
 
   }
   
