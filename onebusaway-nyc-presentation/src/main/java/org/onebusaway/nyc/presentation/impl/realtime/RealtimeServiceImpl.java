@@ -261,11 +261,12 @@ public class RealtimeServiceImpl implements RealtimeService {
 		  if(routeId != null && !adBean.getTrip().getRoute().getId().equals(routeId))
 			  continue;
 
-		  // check for non revenue stops
-          if(!_nycTransitDataService.stopHasRevenueServiceOnRoute(
-                  statusBean.getActiveTrip().getRoute().getAgency().getId(),stopId, routeId, statusBean.getActiveTrip().getDirectionId())){
-              continue;
-          }
+		  // not considering non-revenue stops
+		  String directionId = statusBean.getActiveTrip().getDirectionId();
+		  String agencyId = statusBean.getActiveTrip().getRoute().getAgency().getId();
+
+      if(!_nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId))
+        continue;
 
 		  return true;
 	  }
