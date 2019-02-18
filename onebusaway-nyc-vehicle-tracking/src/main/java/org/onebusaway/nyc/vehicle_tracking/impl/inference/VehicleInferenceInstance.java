@@ -307,10 +307,14 @@ public class VehicleInferenceInstance {
     BlockInstance blockInstance = null;
     if (agencyId != null && assignedBlockId != null) {
       ServiceDate serviceDate = new ServiceDate(new Date(timestamp));
-      blockInstance = _blockCalendarService.getBlockInstance(
-          AgencyAndId.convertFromString(blockId),
-          serviceDate.getAsDate().getTime());
-      _log.debug("VehicleInferenceInstance: blockInstance: " + blockInstance);
+      try {
+        blockInstance = _blockCalendarService.getBlockInstance(
+                AgencyAndId.convertFromString(blockId),
+                serviceDate.getAsDate().getTime());
+        _log.debug("VehicleInferenceInstance: blockInstance: " + blockInstance);
+      } catch (IllegalArgumentException iae){
+        _log.warn("Invalid Assigned Block Id", iae);
+      }
     }
     boolean hasValidAssignedBlockId = (blockInstance != null);
     
