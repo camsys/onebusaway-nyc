@@ -469,6 +469,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       transProb.addResultAsAnd(nullStateLikelihood.likelihood(context));
       transProb.addResultAsAnd(nullLocationLikelihood.likelihood(context));
       transProb.addResultAsAnd(movedLikelihood.likelihood(context));
+      transProb.addResultAsAnd(blockLikelihood.likelihood(context));
       newParticle = new Particle(timestamp, parent.getElement(), 0.0, nullState);
       newParticle.setResult(transProb);
       final double logWeight = parent.getElement().getLogWeight()
