@@ -301,7 +301,7 @@ public class VehicleInferenceInstance {
     if(vehicleId != null){
       agencyId = vehicleId.getAgencyId();
       assignedBlockId = _pulloutService.getAssignedBlockId(vehicleId);
-      blockId = agencyId + "_" + assignedBlockId;
+      blockId = assignedBlockId;
     }
     
     BlockInstance blockInstance = null;

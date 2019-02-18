@@ -30,9 +30,10 @@ public class DummyVehiclePulloutService implements
   @Override
   public String getAssignedBlockId(AgencyAndId vehicle) {
     SCHPullInOutInfo info = getVehiclePullout(vehicle);
+    String agency = vehicle.getAgencyId();
     String id = null;
-    if (info != null && info.getBlock() != null) {
-      id = info.getBlock().getId();
+    if (info != null && info.getBlock() != null && agency != null) {
+      id = agency + AgencyAndId.ID_SEPARATOR + info.getBlock().getId();
     }
     _log.info("getAssignedBlockId for " + vehicle + " returning " + id);
     return id;

@@ -176,10 +176,11 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   @Override
   public String getAssignedBlockId(AgencyAndId vehicleId) {
     SCHPullInOutInfo info = getVehiclePullout(vehicleId);
-    if (info==null || info.getBlock()==null) {
+    String agency = vehicleId.getAgencyId();
+    if (info==null || info.getBlock()==null || agency == null) {
       return null;
-    }    
-    return info.getBlock().getId();
+    }
+    return agency + AgencyAndId.ID_SEPARATOR + info.getBlock().getId();
   }
   
   public String getAsXml(ObaSchPullOutList o) throws JAXBException{
