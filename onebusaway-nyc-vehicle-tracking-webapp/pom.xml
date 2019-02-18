@@ -143,7 +143,7 @@
                 <log4j.appender>ROLL</log4j.appender>
                 <particle.filter.debug>false</particle.filter.debug>
                 <timePredictions.status>DISABLED</timePredictions.status>
-                <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
+                <pipo.host>yardtrek.mtabuscis.net</pipo.host>
                 <gtfs.editor.host>gtfs-editor</gtfs.editor.host>
             </properties>
         </profile>
@@ -175,7 +175,7 @@
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
                  <timePredictions.status>DISABLED</timePredictions.status>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
+                 <pipo.host>yardtrek.mtabuscis.net</pipo.host>
                  <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
           </properties>
         </profile>
@@ -208,7 +208,7 @@
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
                  <timePredictions.status>DISABLED</timePredictions.status>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
+                 <pipo.host>yardtrek.mtabuscis.net</pipo.host>
                  <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
           </properties>
         </profile>
@@ -244,7 +244,7 @@
 <!--                  <particle.filter.debug>false</particle.filter.debug> -->
                  <particle.filter.debug>true</particle.filter.debug>
                  <timePredictions.status>DISABLED</timePredictions.status>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
+                 <pipo.host>yardtrek.mtabuscis.net</pipo.host>
                  <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
           </properties>
         </profile>
@@ -274,7 +274,7 @@
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
                  <timePredictions.status>DISABLED</timePredictions.status>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
+                 <pipo.host>yardtrek.mtabuscis.net</pipo.host>
                  <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
           </properties>
         </profile>
