@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 public class BlockLikelihood implements SensorModelRule {
 
   public static enum BLOCK_INFO_STATE {
-    NO_BLOCK_INFO, BLOCK_MATCH, NO_BLOCK_MATCH, BLOCK_INFO_NO_BLOCK,
+    NO_BLOCK_INFO, BLOCK_MATCH, BLOCK_INFO_NO_BLOCK, BLOCK_INFO_NOT_VALID, NO_BLOCK_MATCH
   };
 
   @Override
@@ -41,18 +41,23 @@ public class BlockLikelihood implements SensorModelRule {
       case NO_BLOCK_INFO:
         result.addResultAsAnd("no block info", 1d);
         return result;
+      case BLOCK_INFO_NOT_VALID:
+        result.addResultAsAnd("block-info, but invalid block", 1d);
+        return result;
       case BLOCK_MATCH:
-        result.addResultAsAnd("block match", (7d/20d));
+        result.addResultAsAnd("block match", 1d);
         return result;
       case NO_BLOCK_MATCH:
-        result.addResultAsAnd("no block match", (5d/20d));
+        result.addResultAsAnd("no block match", (2d/20d));
         return result;
       case BLOCK_INFO_NO_BLOCK:
-        result.addResultAsAnd("block-info, but no block", (2d/20d));
+        result.addResultAsAnd("block info, but no block", (1d/20d));
         return result;
+
       default:
         return null;
     }
+    
   }
 
   public static BLOCK_INFO_STATE getBlockInfoState(Context context) {
@@ -78,9 +83,9 @@ public class BlockLikelihood implements SensorModelRule {
     if (StringUtils.isEmpty(assignedBlockId)) {
       result = BLOCK_INFO_STATE.NO_BLOCK_INFO;
     } else if (!obs.hasValidAssignedBlockId()) {
-      result = BLOCK_INFO_STATE.BLOCK_INFO_NO_BLOCK;
+      result = BLOCK_INFO_STATE.BLOCK_INFO_NOT_VALID;
     } else if (inferredBlockId == null) {
-      result = BLOCK_INFO_STATE.NO_BLOCK_MATCH;
+      result = BLOCK_INFO_STATE.BLOCK_INFO_NO_BLOCK;
     } else if (StringUtils.equals(assignedBlockId, inferredBlockId)) {
       result = BLOCK_INFO_STATE.BLOCK_MATCH;
     }
