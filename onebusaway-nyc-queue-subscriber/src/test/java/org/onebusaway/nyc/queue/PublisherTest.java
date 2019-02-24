@@ -207,23 +207,31 @@ public class PublisherTest {
             } // Friday, July 27, 2018 5:21:03.123 PM
         };
 
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(1532712063123L);
-        cal.add(Calendar.WEEK_OF_YEAR, -1023);
-        assertTrue(rmcUtil.isRmcDateValid(cal.getTime(), p.getTimeReceived()));
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SXXX");
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTimeInMillis(1532712063123L);
+        cal1.add(Calendar.WEEK_OF_YEAR, -1022);
+        assertTrue(rmcUtil.isRmcDateValid(cal1.getTime(), p.getTimeReceived()));
 
         Calendar cal2 = Calendar.getInstance();
         cal2.setTimeInMillis(1532712063123L);
-        cal2.add(Calendar.WEEK_OF_YEAR, -1024);
-        System.out.println(cal2.getTime());
+        cal2.add(Calendar.WEEK_OF_YEAR, -1023);
         assertFalse(rmcUtil.isRmcDateValid(cal2.getTime(), p.getTimeReceived()));
 
         Calendar cal3 = Calendar.getInstance();
         cal3.setTimeInMillis(1532712063123L);
-        cal3.add(Calendar.WEEK_OF_YEAR, -1025);
-        assertTrue(rmcUtil.isRmcDateValid(cal3.getTime(), p.getTimeReceived()));
+        cal3.add(Calendar.WEEK_OF_YEAR, -1024);
+        System.out.println(cal3.getTime());
+        assertFalse(rmcUtil.isRmcDateValid(cal3.getTime(), p.getTimeReceived()));
+
+        Calendar cal4 = Calendar.getInstance();
+        cal4.setTimeInMillis(1532712063123L);
+        cal4.add(Calendar.WEEK_OF_YEAR, -1025);
+        assertFalse(rmcUtil.isRmcDateValid(cal4.getTime(), p.getTimeReceived()));
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(1532712063123L);
+        cal.add(Calendar.WEEK_OF_YEAR, -1026);
+        assertTrue(rmcUtil.isRmcDateValid(cal.getTime(), p.getTimeReceived()));
     }
 
     @Test
@@ -243,16 +251,8 @@ public class PublisherTest {
     @Test
     public void testReplaceRmcData() throws ParseException {
         TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
-        Publisher p = new Publisher("topic") {
-            String generateUUID() {
-                return "foo";
-            }
-            long getTimeReceived() {
-                return 1532712063123L;
-            }
-        };
 
-        // REPLACE DATE AND TIME
+       // REPLACE DATE AND TIME
         long timeReceived = 1532712063123L; // Friday, July 27, 2018 5:21:03.123 PM
 
         // Original Date Time - Mon Dec 1 16:24:13 EST 1998
@@ -275,6 +275,20 @@ public class PublisherTest {
         actualCcMessage = rmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
 
         assertEquals(expectedCcMessage, actualCcMessage);
+
+
+        // REPLACE DATE ONLY
+        timeReceived = 1550980860000L; //  Sunday, February 24, 2019 4:01:00 AM GMT
+
+        // Original Time - 04:00:55.00
+        ccmessage = "{\"CcLocationReport\":{\"request-id\":1947,\"vehicle\":{\"vehicle-id\":287,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2019-02-24T03:49:46.681-00:00\",\"latitude\":40881487,\"longitude\":-73848863,\"direction\":{\"deg\":159.49},\"speed\":64,\"manufacturer-data\":\"VFTP155-603-348\",\"operatorID\":{\"operator-id\":0,\"designator\":\"41339\"},\"runID\":{\"run-id\":0,\"designator\":\"120\"},\"destSignCode\":3311,\"routeID\":{\"route-id\":0,\"route-designator\":\"31\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPGGA,040055.000,4052.88924,N,07350.93179,W,1,09,01.0,+00048.0,M,,M,,*43\",\"$GPRMC,040055.00,A,4052.889241,N,07350.931792,W,015.134,159.49,110799,,,A*76\"]},\"vehiclepowerstate\":1}}}";
+
+        // Expected Date Time - Sunday February 24, 2019 4:01:00 AM GMT
+        expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":1947,\"vehicle\":{\"vehicle-id\":287,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2019-02-24T04:00:55.0-00:00\",\"latitude\":40881487,\"longitude\":-73848863,\"direction\":{\"deg\":159.49},\"speed\":64,\"manufacturer-data\":\"VFTP155-603-348\",\"operatorID\":{\"operator-id\":0,\"designator\":\"41339\"},\"runID\":{\"run-id\":0,\"designator\":\"120\"},\"destSignCode\":3311,\"routeID\":{\"route-id\":0,\"route-designator\":\"31\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPGGA,040055.000,4052.88924,N,07350.93179,W,1,09,01.0,+00048.0,M,,M,,*43\",\"$GPRMC,040055.00,A,4052.889241,N,07350.931792,W,015.134,159.49,240219,,,A*7d\"]},\"vehiclepowerstate\":1}}}";
+        actualCcMessage = rmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
+
+        assertEquals(expectedCcMessage, actualCcMessage);
+
     }
     @Test
     public void testGetTimeReported() throws ParseException {
