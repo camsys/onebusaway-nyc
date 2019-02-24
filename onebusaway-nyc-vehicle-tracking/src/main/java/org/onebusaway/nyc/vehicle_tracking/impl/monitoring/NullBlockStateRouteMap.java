@@ -29,7 +29,7 @@ public class NullBlockStateRouteMap {
 	  
 	  @PostConstruct
 	  public void setup(){
-		  startMonitoringThread();
+	  	//startMonitoringThread();
 	  }
 	  
 	  public void increment(String dsc){
