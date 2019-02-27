@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -105,7 +106,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
 
-  private static final long MIN_RECORD_INTERVAL = 3 * 1000; // 5 seconds
+  private static final long MIN_RECORD_INTERVAL = 3 * 1000; // 3 seconds
 
   @Autowired
   private ObservationCache _observationCache;
@@ -137,6 +138,8 @@ public class VehicleLocationInferenceServiceImpl implements
   private BundleItem _lastBundle = null;
 
   private ExecutorService _executorService;
+
+  private ThreadPoolExecutor _threadPoolExecutor;
 
   private int _skippedUpdateLogCounter = 0;
 
@@ -185,8 +188,9 @@ public class VehicleLocationInferenceServiceImpl implements
           "numberOfProcessingThreads must be positive");
 
     _log.info("Creating thread pool of size=" + _numberOfProcessingThreads);
-    _executorService = Executors.newFixedThreadPool(_numberOfProcessingThreads);
-    
+    _threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(_numberOfProcessingThreads);
+    _executorService = _threadPoolExecutor;
+
   }
   
   @PreDestroy
@@ -770,6 +774,14 @@ public class VehicleLocationInferenceServiceImpl implements
     				_outputQueueSenderService.enqueue(record);
     			}
     		}
+            if (_threadPoolExecutor != null && _threadPoolExecutor.getCompletedTaskCount() % 1000 == 0) {
+              _log.warn("processing " + _threadPoolExecutor.getActiveCount()
+                      + " of " +  _numberOfProcessingThreads
+                      + " with " + _vehicleInstancesByVehicleId.size()
+                      + " active vehicles and " + _bundleManagementService.getInferenceProcessingThreadQueueSize()
+                      + " outstanding threads not reaped"
+              );
+            }
     	} catch (final ProjectionException e) {
     		// discard this one
     	} catch (final Throwable ex) {

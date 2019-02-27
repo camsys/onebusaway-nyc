@@ -335,6 +335,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		}
 	}
 
+	public int getInferenceProcessingThreadQueueSize() {
+		return _inferenceProcessingThreads.size();
+	}
+
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
 		if(bundleId == null || !_applicableBundles.containsKey(bundleId)) {
