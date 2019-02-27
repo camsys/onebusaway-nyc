@@ -27,6 +27,9 @@ public interface BundleManagementService {
 
   // thread reference keepers
   public void registerInferenceProcessingThread(Future thread);
+
+  // expose to metrics
+  public int getInferenceProcessingThreadQueueSize();
   
 }
 
