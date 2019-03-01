@@ -30,9 +30,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObserv
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
@@ -71,6 +68,10 @@ public class BlocksFromObservationServiceImpl implements
   private BlockStateService _blockStateService;
 
   private RunService _runService;
+
+  private long noPotentialTripsCount = 0;
+
+  private long potentialTripRequestsCount = 0;
 
   @Autowired
   public void setObservationCache(ObservationCache observationCache) {
@@ -393,7 +394,13 @@ public class BlocksFromObservationServiceImpl implements
           trip.getBlock().getId(), timeFrom, timeTo);
       potentialBlocks.addAll(instances);
     }
-
+    if (potentialBlocks.isEmpty()) noPotentialTripsCount++;
+    potentialTripRequestsCount++;
+    if (potentialTripRequestsCount % 100 == 0) {
+      _log.info("potential miss rate: " + ((double) noPotentialTripsCount / potentialTripRequestsCount)*100 + "%");
+      noPotentialTripsCount = 0;
+      potentialTripRequestsCount = 0;
+    }
   }
 
   @Override
