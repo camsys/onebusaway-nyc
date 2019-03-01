@@ -67,7 +67,11 @@ public class RmcUtil {
         Calendar cal2 = Calendar.getInstance();
         cal2.setTime(rmcDate);
 
-        return !(cal.get(cal.WEEK_OF_YEAR) == cal2.get(cal2.WEEK_OF_YEAR));
+        int cal1Week = cal.get(cal.WEEK_OF_YEAR);
+        int cal2Week = cal2.get(cal2.WEEK_OF_YEAR);
+        int calWeekDiff = Math.abs(cal1Week - cal2Week);
+
+        return calWeekDiff > 1;
     }
 
     static boolean isRmcTimeValid(Date rmcDate, Date timeReceived){
