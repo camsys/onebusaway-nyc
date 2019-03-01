@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -149,6 +150,10 @@ public class VehicleLocationInferenceServiceImpl implements
     
   private final ConcurrentMap<AgencyAndId, Long> _timeReceivedByVehicleId = new ConcurrentHashMap<AgencyAndId, Long>(
       10000);
+
+  private final ConcurrentMap<AgencyAndId, Long> _timeSpentByVehicleId = new ConcurrentHashMap<AgencyAndId, Long>(
+          10000);
+
 
   private ApplicationContext _applicationContext;
 
@@ -721,6 +726,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
     @Override
     public void run() {
+      long start = System.currentTimeMillis();
+      long stop = 0;
     	try {
     		if (_simulation) {
     			setupSimulationBeforeRun();
@@ -774,13 +781,19 @@ public class VehicleLocationInferenceServiceImpl implements
     				_outputQueueSenderService.enqueue(record);
     			}
     		}
+    		stop = System.currentTimeMillis();
+          _timeSpentByVehicleId.put(_vehicleId, (stop - start));
+
             if (_threadPoolExecutor != null && _threadPoolExecutor.getCompletedTaskCount() % 1000 == 0) {
               _log.warn("processing " + _threadPoolExecutor.getActiveCount()
                       + " of " +  _numberOfProcessingThreads
                       + " with " + _vehicleInstancesByVehicleId.size()
                       + " active vehicles and " + _bundleManagementService.getInferenceProcessingThreadQueueSize()
                       + " outstanding threads not reaped"
+                      + " with avg processing time " + computeProcessingTime(_timeSpentByVehicleId.values())
+                      + "ms"
               );
+              _timeSpentByVehicleId.clear();
             }
     	} catch (final ProjectionException e) {
     		// discard this one
@@ -791,6 +804,13 @@ public class VehicleLocationInferenceServiceImpl implements
     	}
     }
 
+    private double computeProcessingTime(Collection<Long> pTimes) {
+      long sum = 0;
+      for (Long pTime : pTimes) {
+        sum += pTime;
+      }
+      return (double)sum / pTimes.size();
+    }
     /**
      * If we're running within a simulation context, we need to stub some services into inference instance
      * so that we can deliver data from the trace file.
