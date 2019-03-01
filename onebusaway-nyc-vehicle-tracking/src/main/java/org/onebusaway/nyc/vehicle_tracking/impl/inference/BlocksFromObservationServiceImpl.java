@@ -396,7 +396,7 @@ public class BlocksFromObservationServiceImpl implements
     }
     if (potentialBlocks.isEmpty()) noPotentialTripsCount++;
     potentialTripRequestsCount++;
-    if (potentialTripRequestsCount % 100 == 0) {
+    if (potentialTripRequestsCount % 1000 == 0) {
       _log.info("potential miss rate: " + ((double) noPotentialTripsCount / potentialTripRequestsCount)*100 + "%");
       noPotentialTripsCount = 0;
       potentialTripRequestsCount = 0;
