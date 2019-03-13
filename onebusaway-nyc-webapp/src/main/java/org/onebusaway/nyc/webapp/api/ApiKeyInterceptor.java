@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.ServletActionContext;
+import org.apache.xpath.operations.Bool;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottledService;
 import org.onebusaway.users.services.ApiKeyPermissionService;
@@ -97,7 +98,8 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
     if (keys == null || keys.length == 0)
       return HttpServletResponse.SC_UNAUTHORIZED;
 
-    boolean isPermitted = _keyService.getPermission(keys[0], "api");
+    boolean isPermitted = checkIsPermitted(_keyService.getPermission(keys[0], "api"));
+
     boolean notThrottled = _throttledKeyService.isAllowed(keys[0]);
     
     if (isPermitted && notThrottled)
@@ -107,6 +109,13 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
       return HttpServletResponse.SC_EXPECTATION_FAILED;
     }else
       return HttpServletResponse.SC_FORBIDDEN;
+  }
+
+  private boolean checkIsPermitted(ApiKeyPermissionService.Status api) {
+      if(api != null && api.equals(ApiKeyPermissionService.Status.AUTHORIZED)){
+        return Boolean.TRUE;
+      }
+      return Boolean.FALSE;
   }
 
   @Autowired
