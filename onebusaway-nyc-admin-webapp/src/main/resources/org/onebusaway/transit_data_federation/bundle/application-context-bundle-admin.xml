@@ -42,6 +42,18 @@
  
   <bean id="modifications" class="org.onebusaway.transit_data_federation.model.modifications.Modifications" />
 
+  <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" >
+    <constructor-arg type="java.lang.String" value="admin"/>
+    <constructor-arg type="java.lang.Integer" value="9999" />
+    <constructor-arg type="java.lang.String" value="/api/" />
+  </bean>
+
+  <bean id="bundleManagementService" class="org.onebusaway.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
+    <property name="bundleStoreRoot" value="/no/such/directory" />
+    <property name="standaloneMode" value="true" />
+    <property name="builderMode" value="true" />
+  </bean>
+
   <context:component-scan base-package="org.onebusaway.transit_data_federation.bundle.tasks" />
 
   <!-- Task Definitions -->
