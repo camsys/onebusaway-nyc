@@ -86,8 +86,11 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
     </dependency>
-
-
+    <dependency>
+      <groupId>xmlunit</groupId>
+      <artifactId>xmlunit</artifactId>
+      <version>1.6</version>
+    </dependency>
 
     <dependency>
       <groupId>org.onebusaway</groupId>
