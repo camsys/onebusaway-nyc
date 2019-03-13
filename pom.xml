@@ -15,7 +15,7 @@
       <nyc_site_id>build.staging.obanyc.com</nyc_site_id>
       <nyc_site_deployment_base>scp://${nyc_site_id}/var/www/sites/developer/modules</nyc_site_deployment_base>
       <nyc_site_url>${site_deployment_base}/${project.name}/${project.version}</nyc_site_url>
-    	<onebusaway.gtfs.version>1.2.6.2</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
+    	<onebusaway.gtfs.version>1.3.61</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
     	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
     	<onebusaway.siri_2.version>1.0.3</onebusaway.siri_2.version>
     	<onebusaway.csv-entities.version>1.0.3</onebusaway.csv-entities.version>
