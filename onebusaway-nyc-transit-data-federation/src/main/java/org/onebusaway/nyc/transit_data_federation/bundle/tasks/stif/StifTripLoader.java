@@ -345,6 +345,8 @@ public class StifTripLoader {
           List<Trip> filtered = new ArrayList<Trip>();
           /* filter trips by schedule or (for MTABC) GTFS trip ID */
           for (Trip gtfsTrip : trips) {
+            gtfsTrip.getDirectionId();
+            gtfsTrip.getId().getId();
             if (gtfsTrip.getId().getId().equals(tripRecord.getGtfsTripId())) {
               addGtfsTrip(path, tripLineNumber, tripRecord, runId, reliefRunId, nextOperatorRunId,
                   stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
