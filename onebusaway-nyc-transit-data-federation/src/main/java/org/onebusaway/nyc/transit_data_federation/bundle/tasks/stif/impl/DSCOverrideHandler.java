@@ -57,7 +57,7 @@ public class DSCOverrideHandler {
 	public Map<AgencyAndId, String> loadTripToDSCOverrides(String path) throws Exception {
 
 		final Map<AgencyAndId, String> results = new HashMap<AgencyAndId, String>();
-
+		CSVLibrary library = new CSVLibrary();
 		CSVListener listener = new CSVListener() {
 
 			int count = 0;
@@ -89,7 +89,7 @@ public class DSCOverrideHandler {
 
 		File source = new File(path);
 
-		CSVLibrary.parse(source, listener);
+		library.parse(source, listener);
 
 		return results;
 	}
