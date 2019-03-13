@@ -62,6 +62,17 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>releases-obaweb-repo</id>
+            <name>OneBusAway OBAWEB Release Repo</name>
+            <url>http://repo.obaweb.org:8080/archiva/repository/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
 <!-- cached by nyc-cache -->
 <!--
         <repository>
