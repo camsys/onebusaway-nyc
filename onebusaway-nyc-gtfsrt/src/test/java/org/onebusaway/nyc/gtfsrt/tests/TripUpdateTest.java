@@ -126,7 +126,7 @@ public abstract class TripUpdateTest {
             assertNotNull(tpr);
             assertEquals(tpr.getTimepointId().getId(), stu.getStopId());
             assertEquals(tpr.getStopSequence(), stu.getStopSequence());
-            long time = tpr.getTimepointPredictedTime()/1000;
+            long time = tpr.getTimepointPredictedArrivalTime()/1000;
             assertTrue(stu.hasArrival() || stu.hasDeparture());
             if (stu.hasArrival())
                 assertEquals(time, stu.getArrival().getTime());

@@ -145,7 +145,7 @@ public class TripUpdateServiceImplTest {
     TimepointPredictionRecord tpr = new TimepointPredictionRecord();
     tpr.setStopSequence(sequence);
     tpr.setTimepointId(new AgencyAndId("agency", stop));
-    tpr.setTimepointPredictedTime(time);
+    tpr.setTimepointPredictedArrivalTime(time);
     tpr.setTimepointScheduledTime(time);
     return tpr;
   }

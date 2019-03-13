@@ -144,7 +144,8 @@ public class QueuePredictionIntegrationServiceImpl extends
 				TimepointPredictionRecord tpr = new TimepointPredictionRecord();
 				// this validates the Agency_StopID convention
 				tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(stu.getStopId()));
-				tpr.setTimepointPredictedTime(stu.getArrival().getTime());
+				tpr.setTimepointPredictedArrivalTime(stu.getArrival().getTime());
+				tpr.setTimepointPredictedDepartureTime(stu.getDeparture().getTime());
 				tpr.setStopSequence(stu.getStopSequence()); // gtfs stop sequence
 				Long scheduledTime = stopTimeMap.get(stu.getStopId());
 

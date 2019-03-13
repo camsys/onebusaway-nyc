@@ -77,8 +77,8 @@ public class GtfsRealtimeLibrary {
     public static TripUpdate.StopTimeUpdate.Builder makeStopTimeUpdate(TimepointPredictionRecord tpr) {
         TripUpdate.StopTimeUpdate.Builder builder = TripUpdate.StopTimeUpdate.newBuilder();
         builder.setStopId(tpr.getTimepointId().getId());
-        builder.setArrival(makeStopTimeEvent(tpr.getTimepointPredictedTime()/1000));
-        builder.setDeparture(makeStopTimeEvent(tpr.getTimepointPredictedTime()/1000)); // TODO: different?
+        builder.setArrival(makeStopTimeEvent(tpr.getTimepointPredictedArrivalTime()/1000));
+        builder.setDeparture(makeStopTimeEvent(tpr.getTimepointPredictedDepartureTime()/1000)); // TODO: different?
         if (tpr.getStopSequence() >= 0)
             builder.setStopSequence(tpr.getStopSequence());
         return builder;

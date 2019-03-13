@@ -20,13 +20,10 @@ import org.onebusaway.nyc.transit_data_federation.services.predictions.Predictio
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
-import org.onebusaway.transit_data.model.TripStopTimesBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.impl.realtime.mybus.TimepointPrediction;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -75,9 +72,12 @@ public class ScheduleBasedPredictionIntegrationServiceImpl implements Prediction
             tpr.setStopSequence(stopTime.getGtfsSequence());
             tpr.setTimepointId(AgencyAndId.convertFromString(stopTime.getStop().getId()));
             // tpr time is milliseconds unix epoch time
-            long time = tripDetails.getServiceDate() + (stopTime.getDepartureTime() * 1000);
-            tpr.setTimepointPredictedTime(time);
-            tpr.setTimepointScheduledTime(time);
+            long arrivalTime = tripDetails.getServiceDate() + (stopTime.getArrivalTime() * 1000);
+            long departureTime = tripDetails.getServiceDate() + (stopTime.getDepartureTime() * 1000);
+
+            tpr.setTimepointPredictedArrivalTime(arrivalTime);
+            tpr.setTimepointPredictedDepartureTime(departureTime);
+            tpr.setTimepointScheduledTime(stopTime.getArrivalTime());
             predictions.add(tpr);
         }
         return predictions;

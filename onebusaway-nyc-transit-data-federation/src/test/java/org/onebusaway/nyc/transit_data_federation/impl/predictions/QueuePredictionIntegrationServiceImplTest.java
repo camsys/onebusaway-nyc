@@ -72,7 +72,7 @@ public class QueuePredictionIntegrationServiceImplTest {
     TimepointPredictionRecord record = records.get(0);
     assertEquals(new AgencyAndId("1", "stop1"), record.getTimepointId());
     assertEquals(1, record.getStopSequence());
-    assertEquals(1, record.getTimepointPredictedTime());
+    assertEquals(1, record.getTimepointPredictedArrivalTime());
   }
 
   @Test
@@ -93,14 +93,14 @@ public class QueuePredictionIntegrationServiceImplTest {
     TimepointPredictionRecord record1 = records1.get(0);
     assertEquals(new AgencyAndId("1", "stop1"), record1.getTimepointId());
     assertEquals(1, record1.getStopSequence());
-    assertEquals(1, record1.getTimepointPredictedTime());
+    assertEquals(1, record1.getTimepointPredictedArrivalTime());
 
     List<TimepointPredictionRecord> records2 = service.getPredictionRecordsForVehicleAndTrip("vehicle1", "trip2");
     assertEquals(1, records2.size());
     TimepointPredictionRecord record2 = records2.get(0);
     assertEquals(new AgencyAndId("1", "stop2"), record2.getTimepointId());
     assertEquals(1, record2.getStopSequence());
-    assertEquals(1, record2.getTimepointPredictedTime());
+    assertEquals(1, record2.getTimepointPredictedArrivalTime());
   }
 
   private TripUpdate.Builder getTripUpdate(String tripId, String stopId) {
