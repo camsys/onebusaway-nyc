@@ -2,7 +2,7 @@ package org.onebusaway.nyc.admin.util;
 
 import org.onebusaway.nyc.util.impl.FileUtility;
 
-import org.h2.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
