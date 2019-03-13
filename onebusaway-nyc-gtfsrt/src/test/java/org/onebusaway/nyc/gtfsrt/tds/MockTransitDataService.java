@@ -26,38 +26,19 @@ import org.onebusaway.gtfs.model.Route;
 import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.nyc.gtfsrt.util.BlockTripMapReader;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
-import org.onebusaway.transit_data.model.AgencyBean;
-import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
-import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
-import org.onebusaway.transit_data.model.ArrivalAndDepartureForStopQueryBean;
-import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
-import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.model.RegisterAlarmQueryBean;
-import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.model.RoutesBean;
-import org.onebusaway.transit_data.model.SearchQueryBean;
-import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data.model.StopScheduleBean;
-import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
-import org.onebusaway.transit_data.model.StopsBean;
-import org.onebusaway.transit_data.model.StopsForRouteBean;
-import org.onebusaway.transit_data.model.StopsWithArrivalsAndDeparturesBean;
-import org.onebusaway.transit_data.model.TripStopTimeBean;
-import org.onebusaway.transit_data.model.TripStopTimesBean;
-import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.OccupancyStatusBean;
+import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.ScheduledBlockLocationBean;
-import org.onebusaway.transit_data.model.oba.LocalSearchResult;
-import org.onebusaway.transit_data.model.oba.MinTravelTimeToStopsBean;
-import org.onebusaway.transit_data.model.oba.TimedPlaceBean;
+import org.onebusaway.transit_data.model.config.BundleMetadata;
 import org.onebusaway.transit_data.model.problems.ETripProblemGroupBy;
-import org.onebusaway.transit_data.model.problems.PlannedTripProblemReportBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportQueryBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportSummaryBean;
@@ -70,12 +51,8 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
-import org.onebusaway.transit_data.model.tripplanning.ConstraintsBean;
-import org.onebusaway.transit_data.model.tripplanning.ItinerariesBean;
-import org.onebusaway.transit_data.model.tripplanning.TransitLocationBean;
-import org.onebusaway.transit_data.model.tripplanning.TransitShedConstraintsBean;
-import org.onebusaway.transit_data.model.tripplanning.VertexBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
@@ -157,6 +134,21 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
+    public List<StopBean> getAllRevenueStops(AgencyWithCoverageBean agencyWithCoverageBean) {
+        return null;
+    }
+
+    @Override
+    public ListBean<ConsolidatedStopMapBean> getAllConsolidatedStops() {
+        return null;
+    }
+
+    @Override
+    public ListBean<ServiceAlertRecordBean> getAllServiceAlertRecordsForAgencyId(String s) {
+        return null;
+    }
+
+    @Override
     public List<AgencyWithCoverageBean> getAgenciesWithCoverage() throws ServiceException {
         throw new UnsupportedOperationException();
     }
@@ -189,6 +181,11 @@ public class MockTransitDataService implements NycTransitDataService {
     @Override
     public StopsForRouteBean getStopsForRoute(String s) throws ServiceException {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public StopsForRouteBean getStopsForRouteForServiceDate(String s, ServiceDate serviceDate) throws ServiceException {
+        return null;
     }
 
     @Override
@@ -278,6 +275,11 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
+    public VehicleLocationRecordBean getVehiclePositionForVehicleId(String s) {
+        return null;
+    }
+
+    @Override
     public ListBean<VehicleLocationRecordBean> getVehicleLocationRecords(VehicleLocationRecordQueryBean vehicleLocationRecordQueryBean) {
         throw new UnsupportedOperationException();
     }
@@ -362,7 +364,17 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
+    public StopsBean getStopsByName(String s) throws ServiceException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public StopBean getStop(String s) throws ServiceException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public StopBean getStopForServiceDate(String s, ServiceDate serviceDate) throws ServiceException {
         throw new UnsupportedOperationException();
     }
 
@@ -387,27 +399,27 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public ItinerariesBean getItinerariesBetween(TransitLocationBean transitLocationBean, TransitLocationBean transitLocationBean1, long l, ConstraintsBean constraintsBean) throws ServiceException {
+    public List<OccupancyStatusBean> getHistoricalRidershipForStop(HistoricalOccupancyByStopQueryBean historicalOccupancyByStopQueryBean) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void reportProblemWithPlannedTrip(TransitLocationBean transitLocationBean, TransitLocationBean transitLocationBean1, long l, ConstraintsBean constraintsBean, PlannedTripProblemReportBean plannedTripProblemReportBean) {
+    public List<OccupancyStatusBean> getAllHistoricalRiderships(long l) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public ListBean<VertexBean> getStreetGraphForRegion(double v, double v1, double v2, double v3) throws ServiceException {
+    public List<OccupancyStatusBean> getHistoricalRidershipsForTrip(AgencyAndId agencyAndId, long l) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public MinTravelTimeToStopsBean getMinTravelTimeToStopsFrom(CoordinatePoint coordinatePoint, long l, TransitShedConstraintsBean transitShedConstraintsBean) throws ServiceException {
+    public List<OccupancyStatusBean> getHistoricalRidershipsForRoute(AgencyAndId agencyAndId, long l) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public List<TimedPlaceBean> getLocalPaths(String s, ConstraintsBean constraintsBean, MinTravelTimeToStopsBean minTravelTimeToStopsBean, List<LocalSearchResult> list) throws ServiceException {
+    public List<OccupancyStatusBean> getHistoricalRiderships(AgencyAndId agencyAndId, AgencyAndId agencyAndId1, AgencyAndId agencyAndId2, long l) {
         throw new UnsupportedOperationException();
     }
 
@@ -418,6 +430,11 @@ public class MockTransitDataService implements NycTransitDataService {
 
     @Override
     public void updateServiceAlert(ServiceAlertBean serviceAlertBean) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ServiceAlertBean copyServiceAlert(String s, ServiceAlertBean serviceAlertBean) {
         throw new UnsupportedOperationException();
     }
 
@@ -448,7 +465,7 @@ public class MockTransitDataService implements NycTransitDataService {
 
     @Override
     public void reportProblemWithStop(StopProblemReportBean stopProblemReportBean) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -478,7 +495,7 @@ public class MockTransitDataService implements NycTransitDataService {
 
     @Override
     public void reportProblemWithTrip(TripProblemReportBean tripProblemReportBean) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -524,6 +541,11 @@ public class MockTransitDataService implements NycTransitDataService {
     @Override
     public String getActiveBundleId() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public BundleMetadata getBundleMetadata() {
+        return null;
     }
 
     @Override
