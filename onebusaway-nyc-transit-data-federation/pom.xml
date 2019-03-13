@@ -105,6 +105,11 @@
             <artifactId>onebusaway-siri-api-v20</artifactId>
             <version>${onebusaway.siri_2.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
+        </dependency>
     </dependencies>
 
     <build>
