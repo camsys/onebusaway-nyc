@@ -23,9 +23,9 @@ import java.util.Map;
 
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
@@ -34,31 +34,13 @@ import org.onebusaway.nyc.transit_data_federation.services.predictions.Predictio
 import org.onebusaway.nyc.transit_data_federation.services.schedule.ScheduledServiceService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
-import org.onebusaway.transit_data.model.AgencyBean;
-import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
-import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
-import org.onebusaway.transit_data.model.ArrivalAndDepartureForStopQueryBean;
-import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
-import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.model.RegisterAlarmQueryBean;
-import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.model.RoutesBean;
-import org.onebusaway.transit_data.model.SearchQueryBean;
-import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data.model.StopScheduleBean;
-import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
-import org.onebusaway.transit_data.model.StopsBean;
-import org.onebusaway.transit_data.model.StopsForRouteBean;
-import org.onebusaway.transit_data.model.StopsWithArrivalsAndDeparturesBean;
-import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.OccupancyStatusBean;
+import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.ScheduledBlockLocationBean;
-import org.onebusaway.transit_data.model.oba.LocalSearchResult;
-import org.onebusaway.transit_data.model.oba.MinTravelTimeToStopsBean;
-import org.onebusaway.transit_data.model.oba.TimedPlaceBean;
+import org.onebusaway.transit_data.model.config.BundleMetadata;
 import org.onebusaway.transit_data.model.problems.ETripProblemGroupBy;
-import org.onebusaway.transit_data.model.problems.PlannedTripProblemReportBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportQueryBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportSummaryBean;
@@ -70,12 +52,8 @@ import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateQueryBea
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
-import org.onebusaway.transit_data.model.tripplanning.ConstraintsBean;
-import org.onebusaway.transit_data.model.tripplanning.ItinerariesBean;
-import org.onebusaway.transit_data.model.tripplanning.TransitLocationBean;
-import org.onebusaway.transit_data.model.tripplanning.TransitShedConstraintsBean;
-import org.onebusaway.transit_data.model.tripplanning.VertexBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
@@ -85,12 +63,11 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.GtfsSometimesHandler;
-import org.onebusaway.transit_data_federation.services.PredictionHelperService;
-import org.onebusaway.transit_data_federation.services.revenue.RevenueSearchService;
+import org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
@@ -103,7 +80,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	private static Logger _log = LoggerFactory.getLogger(NycTransitDataServiceImpl.class);
 
 	@Resource
-	private TransitDataService _transitDataService;
+	private TransitDataServiceTemplateImpl _transitDataService;
 
 	@Autowired
 	private BundleManagementService _bundleManagementService;
@@ -112,19 +89,11 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	private PredictionIntegrationService _predictionIntegrationService;
 
 	@Autowired
-	private ScheduledServiceService _scheduledServiceService;
-
-	@Autowired
+	@Qualifier("NycBundleSearchService")
 	private BundleSearchServiceImpl _bundleSearchService;
 
-	@Autowired
-	private PredictionHelperService _predictionHelperService;
-	
-	@Autowired
-	private RevenueSearchService _revenueSearchService;
-
-	@Autowired(required = false)
-	private GtfsSometimesHandler _gtfsSometimesHandler;
+	/*@Autowired(required = false)
+	private GtfsSometimesHandler _gtfsSometimesHandler;*/
 
 	private int _blockedRequestCounter = 0;
 
@@ -133,7 +102,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	 * methods of the TDS and NYC-TDS below to ensure all calls to those bundle-backed methods succeed (i.e. the bundle is ready
 	 * to be queried.)
 	 */
-	private void blockUntilBundleIsReady() {
+	/*private void blockUntilBundleIsReady() {
 		try {
 			boolean gtfsSometimes = false;
 			while((_bundleManagementService != null && !_bundleManagementService.bundleIsReady())
@@ -158,6 +127,26 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 		} catch(InterruptedException e) {
 			return;
 		}
+	}*/
+	private void blockUntilBundleIsReady() {
+		try {
+			while(_bundleManagementService != null && !_bundleManagementService.bundleIsReady()) {
+				_blockedRequestCounter++;
+
+				// only print this every 25 times so we don't fill up the logs!
+				if(_blockedRequestCounter > 25) {
+					_log.warn("Bundle is not ready or none is loaded--we've blocked 25 TDS requests since last log event.");
+					_blockedRequestCounter = 0;
+				}
+
+				synchronized(this) {
+					Thread.sleep(250);
+					Thread.yield();
+				}
+			}
+		} catch(InterruptedException e) {
+			return;
+		}
 	}
 
 	/****
@@ -171,16 +160,16 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 		if (_predictionIntegrationService.isEnabled()) {
 			return _predictionIntegrationService.getPredictionsForTrip(tripStatus);
 		}
-		return _predictionHelperService.getPredictionRecordsForTrip(agencyId, tripStatus);
+		return _transitDataService.getPredictionRecordsForTrip(agencyId, tripStatus);
 	}
 	
 	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripStatus(String vehicleId,
 																					   TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
 		if (_predictionIntegrationService.isEnabled()) {
-				return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus.getActiveTrip().getId());
-			}
-			return _predictionHelperService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus);
+			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus.getActiveTrip().getId());
+		}
+		return _transitDataService.getPredictionRecordsForTrip(vehicleId, tripStatus);
 	}
 
 	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
@@ -206,15 +195,20 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
+	public BundleMetadata getBundleMetadata() {
+		return null;
+	}
+
+	@Override
 	public Boolean routeHasUpcomingScheduledService(String agencyId, long time, String routeId, String directionId)  {
 		blockUntilBundleIsReady();
-		return _scheduledServiceService.routeHasUpcomingScheduledService(time, routeId, directionId);
+		return _transitDataService.routeHasUpcomingScheduledService(agencyId, time, routeId, directionId);
 	}
 
 	@Override
 	public Boolean stopHasUpcomingScheduledService(String agencyId, long time, String stopId, String routeId, String directionId) {
 		blockUntilBundleIsReady();
-		return _scheduledServiceService.stopHasUpcomingScheduledService(time, stopId, routeId, directionId);
+		return _transitDataService.stopHasUpcomingScheduledService(agencyId, time, stopId, routeId, directionId);
 	}
 
 	@Override
@@ -332,27 +326,33 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public ItinerariesBean getItinerariesBetween(TransitLocationBean arg0,
-			TransitLocationBean arg1, long arg2, ConstraintsBean arg3)
-					throws ServiceException {
+	public List<OccupancyStatusBean> getHistoricalRidershipForStop(HistoricalOccupancyByStopQueryBean query) {
 		blockUntilBundleIsReady();
-		return _transitDataService.getItinerariesBetween(arg0, arg1, arg2, arg3);
+		return _transitDataService.getHistoricalRidershipForStop(query);
 	}
 
 	@Override
-	public List<TimedPlaceBean> getLocalPaths(String arg0, ConstraintsBean arg1,
-			MinTravelTimeToStopsBean arg2, List<LocalSearchResult> arg3)
-					throws ServiceException {
+	public List<OccupancyStatusBean> getAllHistoricalRiderships(long serviceDate) {
 		blockUntilBundleIsReady();
-		return _transitDataService.getLocalPaths(arg0, arg1, arg2, arg3);
+		return _transitDataService.getAllHistoricalRiderships(serviceDate);
 	}
 
 	@Override
-	public MinTravelTimeToStopsBean getMinTravelTimeToStopsFrom(
-			CoordinatePoint arg0, long arg1, TransitShedConstraintsBean arg2)
-					throws ServiceException {
+	public List<OccupancyStatusBean> getHistoricalRidershipsForTrip(AgencyAndId tripId, long serviceDate) {
 		blockUntilBundleIsReady();
-		return _transitDataService.getMinTravelTimeToStopsFrom(arg0, arg1, arg2);
+		return _transitDataService.getHistoricalRidershipsForTrip(tripId, serviceDate);
+	}
+
+	@Override
+	public List<OccupancyStatusBean> getHistoricalRidershipsForRoute(AgencyAndId routeId, long serviceDate) {
+		blockUntilBundleIsReady();
+		return _transitDataService.getHistoricalRidershipsForRoute(routeId,serviceDate);
+	}
+
+	@Override
+	public List<OccupancyStatusBean> getHistoricalRiderships(AgencyAndId routeId, AgencyAndId tripId, AgencyAndId stopId, long serviceDate) {
+		blockUntilBundleIsReady();
+		return _transitDataService.getHistoricalRiderships(routeId, tripId, stopId, serviceDate);
 	}
 
 	@Override
@@ -431,6 +431,12 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
+	public StopBean getStopForServiceDate(String stopId, ServiceDate serviceDate) throws ServiceException {
+		blockUntilBundleIsReady();
+		return _transitDataService.getStopForServiceDate(stopId, serviceDate);
+	}
+
+	@Override
 	public ListBean<String> getStopIdsForAgencyId(String arg0) {
 		blockUntilBundleIsReady();
 		return _transitDataService.getStopIdsForAgencyId(arg0);
@@ -471,10 +477,22 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
+	public StopsBean getStopsByName(String stopName) throws ServiceException {
+		blockUntilBundleIsReady();
+		return _transitDataService.getStopsByName(stopName);
+	}
+
+	@Override
 	public StopsForRouteBean getStopsForRoute(String arg0)
 			throws ServiceException {
 		blockUntilBundleIsReady();
 		return _transitDataService.getStopsForRoute(arg0);
+	}
+
+	@Override
+	public StopsForRouteBean getStopsForRouteForServiceDate(String routeId, ServiceDate serviceDate) throws ServiceException {
+		blockUntilBundleIsReady();
+		return _transitDataService.getStopsForRouteForServiceDate(routeId, serviceDate);
 	}
 
 	@Override
@@ -483,13 +501,6 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 					throws ServiceException {
 		blockUntilBundleIsReady();
 		return _transitDataService.getStopsWithArrivalsAndDepartures(arg0, arg1);
-	}
-
-	@Override
-	public ListBean<VertexBean> getStreetGraphForRegion(double arg0, double arg1,
-			double arg2, double arg3) throws ServiceException {
-		blockUntilBundleIsReady();
-		return _transitDataService.getStreetGraphForRegion(arg0, arg1, arg2, arg3);
 	}
 
 	@Override
@@ -568,6 +579,12 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
+	public VehicleLocationRecordBean getVehiclePositionForVehicleId(String vehicleId) {
+		blockUntilBundleIsReady();
+		return _transitDataService.getVehiclePositionForVehicleId(vehicleId);
+	}
+
+	@Override
 	public ListBean<VehicleLocationRecordBean> getVehicleLocationRecords(
 			VehicleLocationRecordQueryBean arg0) {
 		blockUntilBundleIsReady();
@@ -594,23 +611,15 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public void reportProblemWithPlannedTrip(TransitLocationBean arg0,
-			TransitLocationBean arg1, long arg2, ConstraintsBean arg3,
-			PlannedTripProblemReportBean arg4) {
+	public void reportProblemWithStop(StopProblemReportBean stopProblemReport) {
 		blockUntilBundleIsReady();
-		_transitDataService.reportProblemWithPlannedTrip(arg0, arg1, arg2, arg3, arg4);    
+		_transitDataService.reportProblemWithStop(stopProblemReport);
 	}
 
 	@Override
-	public void reportProblemWithStop(StopProblemReportBean arg0) {
+	public void reportProblemWithTrip(TripProblemReportBean tripProblemReport) {
 		blockUntilBundleIsReady();
-		_transitDataService.reportProblemWithStop(arg0);    
-	}
-
-	@Override
-	public void reportProblemWithTrip(TripProblemReportBean arg0) {
-		blockUntilBundleIsReady();
-		_transitDataService.reportProblemWithTrip(arg0);    
+		_transitDataService.reportProblemWithTrip(tripProblemReport);
 	}
 
 	@Override
@@ -621,17 +630,20 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Override
 	public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord) {
+		blockUntilBundleIsReady();
 		_transitDataService.addVehicleOccupancyRecord(vehicleOccupancyRecord);
 	}
 
 
 	@Override
 	public VehicleOccupancyRecord getLastVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+		blockUntilBundleIsReady();
 		return _transitDataService.getLastVehicleOccupancyRecordForVehicleId(vehicleId);
 	}
 
 	@Override
 	public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId) {
+		blockUntilBundleIsReady();
 		return _transitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(vehicleId, routeId, directionId);
 	}
 
@@ -648,24 +660,51 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public void updateTripProblemReport(TripProblemReportBean arg0) {
+	public ServiceAlertBean copyServiceAlert(String agencyId, ServiceAlertBean situation) {
 		blockUntilBundleIsReady();
-		_transitDataService.updateTripProblemReport(arg0);
+		return _transitDataService.copyServiceAlert(agencyId, situation);
+	}
+
+	@Override
+	public void updateTripProblemReport(TripProblemReportBean tripProblemReport) {
+		blockUntilBundleIsReady();
+		_transitDataService.updateTripProblemReport(tripProblemReport);
 	}
 
 	@Override
 	public ListBean<TripProblemReportSummaryBean> getTripProblemReportSummariesByGrouping(
-			TripProblemReportQueryBean arg0, ETripProblemGroupBy arg1) {
-		return _transitDataService.getTripProblemReportSummariesByGrouping(arg0, arg1);
+			TripProblemReportQueryBean query, ETripProblemGroupBy groupBy) {
+		blockUntilBundleIsReady();
+		return _transitDataService.getTripProblemReportSummariesByGrouping(query, groupBy);
 	}
 
 	@Override
 	public Boolean stopHasRevenueServiceOnRoute(String agencyId, String stopId, String routeId, String directionId) {
-	  return _revenueSearchService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
+		blockUntilBundleIsReady();
+		return _transitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
 	}
 
 	@Override
 	public Boolean stopHasRevenueService(String agencyId, String stopId) {
-	  return _revenueSearchService.stopHasRevenueService(agencyId, stopId);
+		blockUntilBundleIsReady();
+	  	return _transitDataService.stopHasRevenueService(agencyId, stopId);
+	}
+
+	@Override
+	public List<StopBean> getAllRevenueStops(AgencyWithCoverageBean agency) {
+		blockUntilBundleIsReady();
+		return _transitDataService.getAllRevenueStops(agency);
+	}
+
+	@Override
+	public ListBean<ConsolidatedStopMapBean> getAllConsolidatedStops() {
+		blockUntilBundleIsReady();
+		return _transitDataService.getAllConsolidatedStops();
+	}
+
+	@Override
+	public ListBean<ServiceAlertRecordBean> getAllServiceAlertRecordsForAgencyId(String agencyId) {
+		blockUntilBundleIsReady();
+		return _transitDataService.getAllServiceAlertRecordsForAgencyId(agencyId);
 	}
 }

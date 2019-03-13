@@ -17,7 +17,6 @@ package org.onebusaway.nyc.transit_data.services;
 
 import java.util.List;
 
-import org.onebusaway.federations.annotations.FederatedByAgencyIdMethod;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
