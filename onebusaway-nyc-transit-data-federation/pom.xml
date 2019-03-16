@@ -77,13 +77,11 @@
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-		</dependency>        
+		</dependency>
         <dependency>
             <groupId>org.zeromq</groupId>
-            <artifactId>jzmq</artifactId>
-            <version>053c2d7</version>
-            <type>jar</type>
-            <scope>compile</scope>
+            <artifactId>jeromq</artifactId>
+            <version>0.3.4</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
