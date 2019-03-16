@@ -3,7 +3,7 @@ package org.onebusaway.nyc.queue_broker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
-import zmq.SocketBase;
+import org.zeromq.ZMQForwarder;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,7 +59,9 @@ public class SimpleBroker {
     logger.info("publishing to queue at " + outBind);
     publisher.bind(outBind);
 
-    ZMQ.proxy(subscriber, publisher, null);
+    _executorService = Executors.newFixedThreadPool(1);
+    ZMQForwarder broker = new ZMQForwarder(context, subscriber, publisher);
+    _executorService.execute(broker);
 
   }
 
