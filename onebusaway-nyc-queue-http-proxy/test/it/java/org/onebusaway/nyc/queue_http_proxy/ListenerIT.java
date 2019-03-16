@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.zeromq.ZMQ;
-import org.zeromq.ZMQForwarder;
-
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -72,9 +70,7 @@ public class ListenerIT {
     publisher.bind(outBind);
     _executorService = Executors.newFixedThreadPool(1);
     //background the ZMQForwarder (broker appliance)
-    ZMQForwarder broker = new ZMQForwarder(context, subscriber, publisher);
-    _executorService.execute(broker);
-    
+    ZMQ.proxy(subscriber,publisher,null);
     }
     
     private void sleep(int seconds) {
