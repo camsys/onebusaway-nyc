@@ -17,6 +17,7 @@ public class SimpleBroker {
 
   private static final int DEFAULT_IN_PORT = 5566;
   private static final int DEFAULT_OUT_PORT = 5567;
+  private static final int HWM_VALUE = 10000; // High Water Mark
   private ExecutorService _executorService = null;
   private int inPort;
   private int outPort;
@@ -54,6 +55,10 @@ public class SimpleBroker {
     subscriber.subscribe(new byte[0]); // was inTopic.getBytes()
 
     ZMQ.Socket publisher = context.socket(ZMQ.PUB);
+
+    //Set to prevent broker memory from growing indefinitely if client falls behind
+    publisher.setHWM(HWM_VALUE);
+
     String outBind = "tcp://*:" + outPort;
 
     logger.info("publishing to queue at " + outBind);
