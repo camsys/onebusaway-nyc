@@ -413,25 +413,10 @@ public final class SiriSupport {
 			}
 
 			for(BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
-				// check for non-revenue stops for onward calls
-				if(currentVehicleTripStatus.getActiveTrip().getRoute() != null) {
-					String agencyId = currentVehicleTripStatus.getActiveTrip().getRoute().getAgency().getId();
-					String routeId = currentVehicleTripStatus.getActiveTrip().getRoute().getId();
-					String directionId = currentVehicleTripStatus.getActiveTrip().getDirectionId();
-					String stopId  = stopTime.getStopTime().getStop().getId();
-					if (!nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId)){
-						continue;
-					}
-				}
 
-				// Not including non-revenue stops
-				String agencyId = AgencySupportLibrary.getAgencyForId(currentVehicleTripStatus.getActiveTrip().getRoute().getId());
-				String stopId = stopTime.getStopTime().getStop().getId();
-				String routeId = currentVehicleTripStatus.getActiveTrip().getRoute().getId();
-				String directionId = currentVehicleTripStatus.getActiveTrip().getDirectionId();
-
-				if (!nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId))
+				if(isNonRevenueStop(nycTransitDataService, currentVehicleTripStatus, stopTime)){
 					continue;
+				}
 
 				// block trip stops away--on this trip, only after we've passed the stop, 
 				// on future trips, count always.
@@ -502,9 +487,12 @@ public final class SiriSupport {
 				}
 			}
 
-			HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();	   
+			HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();
+
+			boolean useNextRevenueStop = false;
 
 			for(BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
+
 				int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStopTime().getStop());
 
 				// block trip stops away--on this trip, only after we've passed the stop, 
@@ -523,8 +511,12 @@ public final class SiriSupport {
 				}
 
 				// monitored call
-				if(stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())) {    
+				if(stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId()) || useNextRevenueStop) {
 					if(!presentationService.isOnDetour(tripStatus)) {
+						if(isNonRevenueStop(nycTransitDataService, tripStatus, stopTime)){
+							useNextRevenueStop = true;
+						}
+
 						SiriSupportPredictionTimepointRecord ssptr = new SiriSupportPredictionTimepointRecord();
 						String stopPredictionKey = ssptr.getKey(blockTrip.getTrip().getId(), stopTime.getStopTime().getStop().getId());
 						monitoredVehicleJourney.setMonitoredCall(
@@ -542,6 +534,19 @@ public final class SiriSupport {
 				}
 			}    	
 		}
+	}
+
+	private boolean isNonRevenueStop(NycTransitDataService nycTransitDataService, TripStatusBean tripStatus, BlockStopTimeBean stopTime) {
+		// Not including non-revenue stops
+		String agencyId = AgencySupportLibrary.getAgencyForId(tripStatus.getActiveTrip().getRoute().getId());
+		String routeId = tripStatus.getActiveTrip().getRoute().getId();
+		String directionId = tripStatus.getActiveTrip().getDirectionId();
+		String stopId = stopTime.getStopTime().getStop().getId();
+		boolean checkForNonRevenue = agencyId != null && routeId != null && directionId != null && stopId != null;
+		if(checkForNonRevenue) {
+			return !nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
+		}
+		return Boolean.FALSE;
 	}
 
 	private static void fillOccupancy(MonitoredVehicleJourneyStructure mvj, NycTransitDataService tds, TripStatusBean tripStatus) {
