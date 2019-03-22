@@ -467,6 +467,7 @@ public final class SiriSupport {
 		int blockTripStopsAfterTheVehicle = 0; 
 
 		boolean foundActiveTrip = false;
+
 		for(int i = 0; i < blockTrips.size(); i++) {
 			BlockTripBean blockTrip = blockTrips.get(i);
 
@@ -488,10 +489,17 @@ public final class SiriSupport {
 			}
 
 			HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();
-
 			boolean useNextRevenueStop = false;
 
 			for(BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
+
+				if(stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())){
+					useNextRevenueStop = true;
+				}
+
+				if(isNonRevenueStop(nycTransitDataService, tripStatus, stopTime)){
+					continue;
+				}
 
 				int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStopTime().getStop());
 
@@ -510,15 +518,14 @@ public final class SiriSupport {
 					blockTripStopsAfterTheVehicle++;
 				}
 
-				// monitored call
-				if(stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId()) || useNextRevenueStop) {
-					if(!presentationService.isOnDetour(tripStatus)) {
-						if(isNonRevenueStop(nycTransitDataService, tripStatus, stopTime)){
-							useNextRevenueStop = true;
-						}
 
+
+				// monitored call
+				if(useNextRevenueStop) {
+					if(!presentationService.isOnDetour(tripStatus)) {
 						SiriSupportPredictionTimepointRecord ssptr = new SiriSupportPredictionTimepointRecord();
 						String stopPredictionKey = ssptr.getKey(blockTrip.getTrip().getId(), stopTime.getStopTime().getStop().getId());
+
 						monitoredVehicleJourney.setMonitoredCall(
 								getMonitoredCallStructure(stopTime.getStopTime().getStop(), presentationService, 
 										stopTime.getDistanceAlongBlock() - blockTrip.getDistanceAlongBlock(), 
