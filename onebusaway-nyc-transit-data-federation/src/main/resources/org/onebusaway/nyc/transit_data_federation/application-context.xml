@@ -82,4 +82,9 @@
 	<bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
 
 	<bean id="tripPlannerConstants" class="org.onebusaway.transit_data_federation.model.tripplanner.TripPlannerConstants" />
+
+    <!-- GTFS Sometimes -->
+    <context:component-scan base-package="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl"/>
+    <context:component-scan base-package="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph"/>
+
 </beans>
