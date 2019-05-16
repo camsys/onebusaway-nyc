@@ -71,8 +71,6 @@ import uk.org.siri.siri.OccupancyEnumeration;
 
 public final class SiriSupport {
 
-	private static Logger _log = LoggerFactory.getLogger(SiriSupport.class);
-
 	private ConfigurationService _configurationService;
 
 	public SiriSupport(ConfigurationService configurationService){
@@ -338,7 +336,7 @@ public final class SiriSupport {
 		fillSituations(monitoredVehicleJourney, currentVehicleTripStatus);
 		
 		if(monitoredVehicleJourney.getOccupancy() != null){
-			_log.debug("Has OCCUPANCY: " + monitoredVehicleJourney.getVehicleRef().getValue());
+		  System.out.println("Has OCCUPANCY: " + monitoredVehicleJourney.getVehicleRef().getValue());
 		}
 		
 		return;
@@ -497,6 +495,10 @@ public final class SiriSupport {
 
 			for(BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
 
+				if(stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())){
+					useNextRevenueStop = true;
+				}
+
 				if(isNonRevenueStop(nycTransitDataService, tripStatus, stopTime)){
 					continue;
 				}
@@ -518,9 +520,7 @@ public final class SiriSupport {
 					blockTripStopsAfterTheVehicle++;
 				}
 
-				if (monitoredCallStopBean == null || stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())) {
-					useNextRevenueStop = true;
-				}
+
 
 				// monitored call
 				if(useNextRevenueStop) {

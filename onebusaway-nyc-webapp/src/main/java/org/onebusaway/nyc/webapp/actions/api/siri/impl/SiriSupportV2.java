@@ -768,6 +768,10 @@ public final class SiriSupportV2 {
 
 			for (BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
 
+				if(stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())){
+					useNextRevenueStop = true;
+				}
+
 				if(isNonRevenueStop(nycTransitDataService, tripStatus, stopTime)){
 					continue;
 				}
@@ -792,10 +796,6 @@ public final class SiriSupportV2 {
 					// all stops
 				} else {
 					blockTripStopsAfterTheVehicle++;
-				}
-
-				if(monitoredCallStopBean == null || stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())){
-					useNextRevenueStop = true;
 				}
 
 				// monitored call
