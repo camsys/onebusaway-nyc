@@ -54,7 +54,7 @@ public enum ServiceCode {
 		mapServiceCode("H", MLK);
 		mapServiceCode("I", PRESIDENTS_DAY);
 		mapServiceCode("J", GOOD_FRIDAY);
-		mapServiceCode("K", MEMORIAL_DAY);
+		mapServiceCode("L", MEMORIAL_DAY);
 		mapServiceCode("M", JULY_FOURTH);
 		mapServiceCode("N", LABOR_DAY);
 		mapServiceCode("O", COLUMBUS_DAY);
