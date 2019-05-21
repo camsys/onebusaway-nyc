@@ -21,3 +21,8 @@ stif_trips_without_pullout.csv
 *.iml
 *.iws
 .idea
+onebusaway-nyc-acta-webapp/overlays/
+
+onebusaway-nyc-gtfsrt-integration-tests/overlays/
+
+onebusaway-nyc-integration-tests/overlays/
