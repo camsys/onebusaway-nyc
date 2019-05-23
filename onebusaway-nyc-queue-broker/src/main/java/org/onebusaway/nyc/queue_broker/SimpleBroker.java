@@ -17,7 +17,7 @@ public class SimpleBroker {
 
   private static final int DEFAULT_IN_PORT = 5566;
   private static final int DEFAULT_OUT_PORT = 5567;
-  private static final int HWM_VALUE = 10000; // High Water Mark
+  private static final int HWM_VALUE = 50000; // High Water Mark
   private ExecutorService _executorService = null;
   private int inPort;
   private int outPort;
