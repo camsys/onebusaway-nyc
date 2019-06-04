@@ -39,6 +39,11 @@ public class MockConfigurationService implements ConfigurationService {
   }
 
   @Override
+  public Boolean getConfigurationValueAsBoolean(String configurationItemKey, Boolean defaultValue) {
+    return defaultValue;
+  }
+
+  @Override
   public void setConfigurationValue(String component, String configurationItemKey, String value) throws Exception {
     throw new IllegalArgumentException("not implemented");
   }

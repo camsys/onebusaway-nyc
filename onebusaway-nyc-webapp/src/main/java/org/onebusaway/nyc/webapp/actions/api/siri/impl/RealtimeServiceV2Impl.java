@@ -127,7 +127,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	@Override
 	public List<VehicleActivityStructure> getVehicleActivityForRoute(
 			String routeId, String directionId, int maximumOnwardCalls, DetailLevel detailLevel,
-			long currentTime) {
+			long currentTime, boolean showApc) {
 		List<VehicleActivityStructure> output = new ArrayList<VehicleActivityStructure>();
 
 		boolean useTimePredictionsIfAvailable = _presentationService
@@ -170,7 +170,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetails.getTrip(), tripDetails.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, detailLevel, currentTime, null);
+					timePredictionRecords, detailLevel, currentTime, null, showApc);
 
 			output.add(activity);
 		}
@@ -197,7 +197,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public VehicleActivityStructure getVehicleActivityForVehicle(
-			String vehicleId, int maximumOnwardCalls, DetailLevel detailLevel, long currentTime) {
+			String vehicleId, int maximumOnwardCalls, DetailLevel detailLevel, long currentTime, boolean showApc) {
 
 		boolean useTimePredictionsIfAvailable = _presentationService
 				.useTimePredictionsIfAvailable();
@@ -238,7 +238,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetailsForCurrentTrip.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, detailLevel,currentTime, null);
+					timePredictionRecords, detailLevel,currentTime, null, showApc);
 
 			return output;
 		}
@@ -249,7 +249,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	@Override
 	public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(
 			String stopId, int maximumOnwardCalls, DetailLevel detailLevel, 
-			long currentTime, List<AgencyAndId> routeIds, Map<Filters, String> filters) {
+			long currentTime, List<AgencyAndId> routeIds, Map<Filters, String> filters, boolean showApc) {
 		List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
 		boolean useTimePredictionsIfAvailable = _presentationService
@@ -312,7 +312,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					statusBeanForCurrentTrip, adBean.getStop(),
 					OnwardCallsMode.STOP_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, detailLevel, currentTime, filters);
+					timePredictionRecords, detailLevel, currentTime, filters, showApc);
 
 			// Monitored Stop Visits
 			Map<String, MonitoredStopVisitStructure> visitsMap = new HashMap<String, MonitoredStopVisitStructure>();
