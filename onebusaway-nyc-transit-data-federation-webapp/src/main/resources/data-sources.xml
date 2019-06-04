@@ -69,7 +69,7 @@
     
     <!--  APC Queue Configuration -->
     <bean id="apcInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.nyc.ApcIntegrationServiceImpl">
-        <property name="status" value="DISABLED"/>
+        <property name="status" value="ENABLED"/>
     </bean>
 
 	<!-- Other Stuff: -->
