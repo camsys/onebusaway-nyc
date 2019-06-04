@@ -98,7 +98,9 @@ public class RealtimeServiceImpl implements RealtimeService {
    * SIRI METHODS
    */
   @Override
-  public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, String directionId, int maximumOnwardCalls, long currentTime) {
+  public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, String directionId,
+                                                                   int maximumOnwardCalls, long currentTime,
+                                                                   boolean showApc) {
     List<VehicleActivityStructure> output = new ArrayList<VehicleActivityStructure>();
     
     ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId, currentTime);
@@ -121,7 +123,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       SiriSupport ss = new SiriSupport(_configurationService);
       ss.fillMonitoredVehicleJourney(activity.getMonitoredVehicleJourney(), 
           tripDetails.getTrip(), tripDetails.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
-          _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime);
+          _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime, showApc);
             
       output.add(activity);
     }
@@ -142,7 +144,8 @@ public class RealtimeServiceImpl implements RealtimeService {
   }
 
   @Override
-  public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, int maximumOnwardCalls, long currentTime) {    
+  public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, int maximumOnwardCalls,
+                                                               long currentTime, boolean showApc) {
   
 	TripForVehicleQueryBean query = new TripForVehicleQueryBean();
     query.setTime(new Date(currentTime));
@@ -165,7 +168,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       SiriSupport ss = new SiriSupport(_configurationService);
       ss.fillMonitoredVehicleJourney(output.getMonitoredVehicleJourney(), 
     	  tripDetailsForCurrentTrip.getTrip(), tripDetailsForCurrentTrip.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
-    	  _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime);
+    	  _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime, showApc);
 
       return output;
     }
@@ -174,7 +177,8 @@ public class RealtimeServiceImpl implements RealtimeService {
   }
 
   @Override
-  public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls, long currentTime) {
+  public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls,
+                                                                         long currentTime, boolean showApc) {
     List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
 	    for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
@@ -199,7 +203,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 	      SiriSupport ss = new SiriSupport(_configurationService);
 	      ss.fillMonitoredVehicleJourney(stopVisit.getMonitoredVehicleJourney(), 
 	    	  tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), OnwardCallsMode.STOP_MONITORING,
-	    	  _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime);
+	    	  _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime, showApc);
 	
 	      output.add(stopVisit);
 	    }

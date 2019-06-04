@@ -35,7 +35,8 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	public static final String MAX_ONWARD_CALLS = "MaximumNumberOfCallsOnwards";
 	public static final String MAX_STOP_VISITS = "MaximumStopVisits";
 	public static final String MIN_STOP_VISITS = "MinimumStopVisitsPerLine";
-	
+	public static final String SHOW_APC = "ShowApc";
+
 	public static final double MAX_BOUNDS_DISTANCE= 500;
 	public static final double MAX_BOUNDS_RADIUS= 250;
 	

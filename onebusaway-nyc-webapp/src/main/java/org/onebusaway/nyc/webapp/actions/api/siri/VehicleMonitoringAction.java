@@ -172,7 +172,9 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         maximumOnwardCalls = Integer.MAX_VALUE;
       }
     }
-    
+
+    boolean showApc = Boolean.parseBoolean(_request.getParameter("ShowApc"));
+
     String gaLabel = null;
     
     // *** CASE 1: single vehicle, ignore any other filters
@@ -184,7 +186,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       
       for (AgencyAndId vehicleId : vehicleIds) {
         VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-            vehicleId.toString(), maximumOnwardCalls, currentTimestamp);
+            vehicleId.toString(), maximumOnwardCalls, currentTimestamp, showApc);
 
         if (activity != null) {
           activities.add(activity);
@@ -204,7 +206,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       for (AgencyAndId routeId : routeIds) {
         
         List<VehicleActivityStructure> activitiesForRoute = _realtimeService.getVehicleActivityForRoute(
-            routeId.toString(), directionId, maximumOnwardCalls, currentTimestamp);
+            routeId.toString(), directionId, maximumOnwardCalls, currentTimestamp, showApc);
         if (activitiesForRoute != null) {
           activities.addAll(activitiesForRoute);
         }
@@ -249,7 +251,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
           for (VehicleStatusBean v : vehicles.getList()) {
               VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-                      v.getVehicleId(), maximumOnwardCalls, currentTimestamp);
+                      v.getVehicleId(), maximumOnwardCalls, currentTimestamp, showApc);
               if (activity != null) {
                 activities.add(activity);
               }

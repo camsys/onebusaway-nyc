@@ -32,9 +32,15 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 	OBA.Config.shortCode='<s:text name="sms.shortcode" />';
 	OBA.Config.signDefaultAgencyId='<s:text name="sign.default.agency.id" />';
 	OBA.Config.showVehicleIdInStopPopup=<s:property value="showVehicleIdInStopPopup" />;
+	OBA.Config.showApc=<s:property value="showApc" />;
 
 	OBA.Config.siriSMUrl = "api/siri/stop-monitoring.json?key=" + OBA.Config.obaApiKey;
 	OBA.Config.siriVMUrl = "api/siri/vehicle-monitoring.json?key=" + OBA.Config.obaApiKey;
+
+	if(OBA.Config.showApc &amp;&amp; OBA.Config.showApc === true){
+		OBA.Config.siriSMUrl += '&amp;ShowApc=true';
+		OBA.Config.siriVMUrl += '&amp;ShowApc=true';
+	}
 	
 	OBA.Config.infoBubbleFooterFunction = function(type, query) {
 			var html = '';
