@@ -25,6 +25,9 @@ public interface ConfigurationService {
   
   public Integer getConfigurationValueAsInteger(String configurationItemKey,
 	      Integer defaultValue);
+
+  public Boolean getConfigurationValueAsBoolean(String configurationItemKey,
+                                                  Boolean defaultValue);
   
   /**
    * Set a value for the given configuration key as a string.
