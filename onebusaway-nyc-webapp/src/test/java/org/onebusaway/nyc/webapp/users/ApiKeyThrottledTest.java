@@ -144,6 +144,14 @@ public class ApiKeyThrottledTest {
 		return defaultValue;
 	}
 
+  	@Override
+  	public Boolean getConfigurationValueAsBoolean(String configurationItemKey, Boolean defaultValue) {
+	  	if(map.containsKey(configurationItemKey)){
+		  	return Boolean.parseBoolean(map.get(configurationItemKey));
+	  	}
+	  	return defaultValue;
+  	}
+
 	@Override
 	public void setConfigurationValue(String component, String configurationItemKey, String value) throws Exception {
 		map.put(configurationItemKey, value);

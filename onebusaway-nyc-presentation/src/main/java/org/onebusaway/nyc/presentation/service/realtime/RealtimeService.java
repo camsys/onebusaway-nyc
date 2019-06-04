@@ -21,13 +21,13 @@ public interface RealtimeService {
   
   
   public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, 
-      int maximumOnwardCalls, long currentTime);
+      int maximumOnwardCalls, long currentTime, boolean showApc);
   
   public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, 
-	      String directionId, int maximumOnwardCalls, long currentTime);
+	      String directionId, int maximumOnwardCalls, long currentTime, boolean showApc);
 	    
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, 
-      int maximumOnwardCalls, long currentTime);  
+      int maximumOnwardCalls, long currentTime, boolean showApc);
 
   
   public boolean getVehiclesInServiceForRoute(String routeId, String directionId, long currentTime);

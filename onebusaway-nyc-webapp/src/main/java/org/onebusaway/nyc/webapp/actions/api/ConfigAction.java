@@ -54,6 +54,10 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   public String getObaApiKey() {
     return _configurationService.getConfigurationValueAsString("display.obaApiKey", "OBANYC");    
   }
+
+  public boolean getShowApc() {
+    return _configurationService.getConfigurationValueAsBoolean("display.showApc", Boolean.FALSE);
+  }
   
   public String getMapBounds() {
     List<AgencyWithCoverageBean> agencyWithCoverageBeans = _nycTransitDataService.getAgenciesWithCoverage();

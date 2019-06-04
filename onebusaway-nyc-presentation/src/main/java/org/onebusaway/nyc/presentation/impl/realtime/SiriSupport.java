@@ -117,7 +117,7 @@ public final class SiriSupport {
 	public void fillMonitoredVehicleJourney(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
 			TripBean framedJourneyTripBean, TripStatusBean currentVehicleTripStatus, StopBean monitoredCallStopBean, OnwardCallsMode onwardCallsMode,
 			PresentationService presentationService, NycTransitDataService nycTransitDataService,
-			int maximumOnwardCalls, long responseTimestamp) {
+			int maximumOnwardCalls, long responseTimestamp, boolean showApc) {
 
 		BlockInstanceBean blockInstance = nycTransitDataService
 				.getBlockInstance(currentVehicleTripStatus.getActiveTrip()
@@ -180,7 +180,9 @@ public final class SiriSupport {
 		monitoredVehicleJourney.setProgressRate(getProgressRateForPhaseAndStatus(
 				currentVehicleTripStatus.getStatus(), currentVehicleTripStatus.getPhase()));
 
-		fillOccupancy(monitoredVehicleJourney, nycTransitDataService, currentVehicleTripStatus);
+		if(showApc) {
+            fillOccupancy(monitoredVehicleJourney, nycTransitDataService, currentVehicleTripStatus);
+        }
 
 		// origin-destination
 		for(int i = 0; i < blockTrips.size(); i++) {

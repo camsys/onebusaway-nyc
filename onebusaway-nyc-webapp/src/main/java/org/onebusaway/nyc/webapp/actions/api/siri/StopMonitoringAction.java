@@ -91,6 +91,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
     _realtimeService.setTime(responseTimestamp);
 
+    boolean showApc = Boolean.parseBoolean(_request.getParameter("ShowApc"));
+
     String directionId = _request.getParameter("DirectionRef");
     
     // We need to support the user providing no agency id which means 'all agencies'.
@@ -206,7 +208,9 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       if (!stopId.hasValues()) continue;
       
       // Stop ids can only be valid here because we only added valid ones to stopIds.
-      List<MonitoredStopVisitStructure> visitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(), maximumOnwardCalls, responseTimestamp);
+      List<MonitoredStopVisitStructure> visitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(),
+              maximumOnwardCalls, responseTimestamp, showApc);
+
       if (visitsForStop != null) visits.addAll(visitsForStop); 
     }
     

@@ -2,6 +2,7 @@ package org.onebusaway.nyc.sms.actions;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -202,7 +203,7 @@ public class SearchResultFactoryImplTest {
 		when(monCall.getExtensions()).thenReturn(extensions);
 		when(monVehJourney.getMonitoredCall()).thenReturn(monCall);
 
-		when(_realtimeService.getMonitoredStopVisitsForStop(TEST_STOP_ID, 0, System.currentTimeMillis())).thenReturn(
+		when(_realtimeService.getMonitoredStopVisitsForStop(TEST_STOP_ID, 0, System.currentTimeMillis(), anyBoolean())).thenReturn(
 				monitoredStopVisits);
 
 		when(
