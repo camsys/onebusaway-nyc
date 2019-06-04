@@ -139,6 +139,18 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 
 	@Override
+	public Boolean getConfigurationValueAsBoolean(String configurationItemKey, Boolean defaultValue) {
+		try {
+			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
+			String valueAsString = getConfigurationValueAsString(configurationItemKey, defaultValueAsString);
+			if (valueAsString == null) return defaultValue;
+			return Boolean.parseBoolean(valueAsString);
+		} catch(Exception any) {
+			return defaultValue;
+		}
+	}
+
+	@Override
 	public void setConfigurationValue(String component, String configurationItemKey, String value) 
 			throws Exception {
 		if(StringUtils.isBlank(value) || value.equals("null")) {
