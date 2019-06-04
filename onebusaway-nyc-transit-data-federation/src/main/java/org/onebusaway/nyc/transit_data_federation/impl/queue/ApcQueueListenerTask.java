@@ -47,7 +47,7 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
 
     public Boolean useApcIfAvailable() {
         if (!Status.ENABLED.equals(status)) return false;
-        return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useApc", ""));
+        return _configurationService.getConfigurationValueAsBoolean("tds.useApc", Boolean.FALSE);
     }
 
 
@@ -75,7 +75,7 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
     }
 
     @Override
-    @Refreshable(dependsOn = { "tds.apcQueueHost", "tds.apcQueuePort", "tds.apcQueueName" })
+    @Refreshable(dependsOn = { "tds.apcQueueHost", "tds.apcQueuePort", "tds.apcQueueName", "tds.useApc" })
     public void startListenerThread() {
         if (_initialized == true) {
             _log.warn("Configuration service tried to reconfigure apc input queue reader; this service is not reconfigurable once started.");

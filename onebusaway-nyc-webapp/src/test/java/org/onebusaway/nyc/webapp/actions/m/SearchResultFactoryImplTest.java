@@ -2,9 +2,7 @@ package org.onebusaway.nyc.webapp.actions.m;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -223,7 +221,7 @@ public class SearchResultFactoryImplTest {
     when(monCall.getExtensions()).thenReturn(extensions );
     when(monVehJourney.getMonitoredCall()).thenReturn(monCall );
     
-    when(_realtimeService.getMonitoredStopVisitsForStop(eq(TEST_STOP_ID), eq(0), anyLong())).thenReturn(monitoredStopVisits );
+    when(_realtimeService.getMonitoredStopVisitsForStop(eq(TEST_STOP_ID), eq(0), anyLong(), anyBoolean())).thenReturn(monitoredStopVisits );
 
     when(_nycTransitDataService.getStopsForRoute(anyString())).thenReturn(
         stopsForRouteBean);

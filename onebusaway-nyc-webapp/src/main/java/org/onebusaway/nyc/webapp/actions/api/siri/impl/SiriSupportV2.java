@@ -119,7 +119,8 @@ public final class SiriSupportV2 {
 			int maximumOnwardCalls,
 			List<TimepointPredictionRecord> stopLevelPredictions,
 			DetailLevel detailLevel,
-			long responseTimestamp, Map<Filters, String> filters) {
+			long responseTimestamp, Map<Filters, String> filters,
+			boolean showApc) {
 
 		BlockInstanceBean blockInstance = nycTransitDataService
 				.getBlockInstance(currentVehicleTripStatus.getActiveTrip()
@@ -328,9 +329,11 @@ public final class SiriSupportV2 {
 					currentVehicleTripStatus.getStatus(),
 					currentVehicleTripStatus.getPhase()));
 
-			fillOccupancy(monitoredVehicleJourney,
-					nycTransitDataService,
-					currentVehicleTripStatus);
+			if(showApc) {
+				fillOccupancy(monitoredVehicleJourney,
+						nycTransitDataService,
+						currentVehicleTripStatus);
+			}
 
 
 		}

@@ -52,7 +52,7 @@ public class SiriSupportTest {
     MonitoredVehicleJourney journey = new MonitoredVehicleJourney();
     SiriSupport ss = new SiriSupport(null);
     ss.fillMonitoredVehicleJourney(journey, trip.getTrip(), trip.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
-        presentationService, nycTransitDataService, 0, System.currentTimeMillis());
+        presentationService, nycTransitDataService, 0, System.currentTimeMillis(), Boolean.FALSE);
     
     assertNotNull(journey);
     List<SituationRefStructure> situationRefs = journey.getSituationRef();

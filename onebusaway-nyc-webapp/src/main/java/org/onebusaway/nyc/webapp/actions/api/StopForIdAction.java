@@ -26,6 +26,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteDirection;
@@ -53,6 +54,9 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
 
   @Autowired
   private NycTransitDataService _nycTransitDataService;
+
+  @Autowired
+  private ConfigurationService _configurationService;
 
   private ObjectMapper _mapper = new ObjectMapper();    
 
@@ -124,8 +128,10 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
 
     _result = new StopResult(stop, routesAtStop);
 
-    List<MonitoredStopVisitStructure> visits = 
-        _realtimeService.getMonitoredStopVisitsForStop(_stopId, 0, System.currentTimeMillis());
+    Boolean showApc = _configurationService.getConfigurationValueAsBoolean("display.showApc", Boolean.FALSE);
+
+    List<MonitoredStopVisitStructure> visits =
+        _realtimeService.getMonitoredStopVisitsForStop(_stopId, 0, System.currentTimeMillis(), showApc);
 
     _response = generateSiriResponse(visits, AgencyAndIdLibrary.convertFromString(_stopId));
     
