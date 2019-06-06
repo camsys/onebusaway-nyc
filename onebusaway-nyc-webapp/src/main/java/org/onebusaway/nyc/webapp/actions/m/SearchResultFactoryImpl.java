@@ -359,7 +359,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
 		  SiriDistanceExtension distanceExtension = wrapper.getDistances();
 		  String distance = distanceExtension.getPresentableDistance();
-		  String distanceBold = "<strong>" + distance + "</strong>";
+		  //add space to the distance so that occupancy lines up correctly with time [pjm]
+		  String distanceBold = " <strong>" + distance + "</strong>";
 
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
 		  String timeString = Math.round(minutes) + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
@@ -411,12 +412,18 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 			String loadOccupancy = journey.getOccupancy().toString();
 			loadOccupancy = loadOccupancy.toUpperCase();
 			//TODO: Modify output load text here
-			if(loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE"))
-				loadOccupancy = "<icon class='apcicong'> </icon>";
-			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE") || loadOccupancy.equals("STANDING_AVAILABLE"))
-				loadOccupancy = "<icon class='apcicony'> </icon>";
-			else if (loadOccupancy.equals("FULL"))
-				loadOccupancy = "<icon class='apciconr'> </icon>";
+			if(loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE")){
+				loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotG'></span> <span class='apcTextG'>Seats Available</span></div>";
+				//loadOccupancy = "<icon class='apcicong'> </icon>";
+			}
+			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE") || loadOccupancy.equals("STANDING_AVAILABLE")){
+				loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotY'></span> <span class='apcTextY'>Limited Seating</span></div>";
+				//loadOccupancy = "<icon class='apcicony'> </icon>";
+			}
+			else if (loadOccupancy.equals("FULL")){
+				loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotR'></span> <span class='apcTextR'>Standing Room Only</span></div>";
+				//loadOccupancy = "<icon class='apciconr'> </icon>";
+			}
 			
 			return " " +loadOccupancy;
 		}else
@@ -432,7 +439,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     SiriDistanceExtension distanceExtension = wrapper.getDistances();
 
     String message = "";
-    String distance = "<strong>" + distanceExtension.getPresentableDistance() + "</strong>";
+    //add space to the distance so that occupancy lines up correctly with time [pjm]
+    String distance = " <strong>" + distanceExtension.getPresentableDistance() + "</strong>";
     String loadOccupancy = getPresentableOccupancy(journey, updateTime);
     
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();

@@ -329,7 +329,7 @@ OBA.Popups = (function() {
 		return content.get(0);
 	}
 
-	function getOccupancy(MonitoredVehicleJourney){
+	function getOccupancy(MonitoredVehicleJourney, addDashedLine){
 		  
 		   if(MonitoredVehicleJourney.Occupancy === undefined)
 			   return '';
@@ -338,19 +338,37 @@ OBA.Popups = (function() {
 		   
 		   console.log('occupancy: '+ MonitoredVehicleJourney.Occupancy);
 		   
-		   if(MonitoredVehicleJourney.Occupancy == "seatsAvailable")
-			   occupancyLoad = '<span class="apcicong"> </span>';
-		   else if(MonitoredVehicleJourney.Occupancy == "standingAvailable")
-			   occupancyLoad = '<span class="apcicony"> </span>';
-		   else if(MonitoredVehicleJourney.Occupancy == "full")
-			   occupancyLoad = '<span class="apciconr"> </span>';
+		   if(MonitoredVehicleJourney.Occupancy == "seatsAvailable"){
+			   occupancyLoad = '<span class="apcDotG"></span>'+
+			   '<span id="apcTextG">Seats Available</span>';
+			   if(addDashedLine == true){
+				   occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadG.png"></div>';
+			   }
+			   //occupancyLoad = '<span class="apcicong"> </span>';
+		   }
+		   else if(MonitoredVehicleJourney.Occupancy == "standingAvailable"){
+			   occupancyLoad = '<span class="apcDotY"></span>'+
+			   '<span id="apcTextY">Limited Seating</span>';
+			   if(addDashedLine == true){
+				   occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadY.png"></div>';
+			   }
+			   //occupancyLoad = '<span class="apcicony"> </span>';
+		   }
+		   else if(MonitoredVehicleJourney.Occupancy == "full"){
+			   occupancyLoad = '<span class="apcDotR"></span>'+
+			   '<span id="apcTextR">Standing Room Only</span>';
+			   if(addDashedLine == true){
+				   occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadR.png"></div>';
+			   }
+			   //occupancyLoad = '<span class="apciconr"> </span>';
+		   }
 		  
 		   return occupancyLoad;
 		}
 		
 	
 	function getOccupancyForBus(MonitoredVehicleJourney){
-	    var occupancyLoad = getOccupancy(MonitoredVehicleJourney);
+	    var occupancyLoad = getOccupancy(MonitoredVehicleJourney, true);
 	    if (occupancyLoad == '')
 			return '';
 		else
@@ -359,7 +377,7 @@ OBA.Popups = (function() {
 	}
 	
 	function getOccupancyForStop(MonitoredVehicleJourney){
-		var occupancyLoad = getOccupancy(MonitoredVehicleJourney);
+		var occupancyLoad = getOccupancy(MonitoredVehicleJourney, false);
 		if (occupancyLoad == '')
 			return '';
 		else
