@@ -20,6 +20,7 @@ import com.google.transit.realtime.GtfsRealtime.VehiclePosition;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -27,16 +28,26 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary.*;
 
 @Component
 public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
 	
 	private NycTransitDataService _transitDataService;
+
+	private ConfigurationService _configurationService;
 	
 	@Autowired
     public void setTransitDataService(NycTransitDataService transitDataService) {
         _transitDataService = transitDataService;
+    }
+
+    @Autowired
+    public void setConfigurationService(ConfigurationService configurationService){
+	    _configurationService = configurationService;
     }
 
     @Override
@@ -48,7 +59,7 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
         position.setVehicle(makeVehicleDescriptor(record));
         position.setTimestamp(record.getTimeOfRecord()/1000);
         
-        if(getGtfsrtOccupancy(status) != null){
+        if(showApc() && getGtfsrtOccupancy(status) != null){
             position.setOccupancyStatus(getGtfsrtOccupancy(status));
         }
         
@@ -64,5 +75,16 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
        if(status.getOccupancyStatus() == null)
           return null;
        return com.google.transit.realtime.GtfsRealtime.VehiclePosition.OccupancyStatus.valueOf(status.getOccupancyStatus().valueOf());
+    }
+
+    public boolean showApc(){
+        String apc = _configurationService.getConfigurationValueAsString("display.validApcKeys", "");
+        List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
+        for(String key : keys){
+            if(key.trim().equals("*")){
+                return true;
+            }
+        }
+        return false;
     }
 }
