@@ -45,9 +45,11 @@ import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.StopMonitoringDeliveryStructure;
 
+import javax.servlet.http.HttpServletRequest;
+
 public class StopForIdAction extends OneBusAwayNYCActionSupport {
     
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2L;
 
   @Autowired
   private RealtimeService _realtimeService;
@@ -55,8 +57,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
   @Autowired
   private NycTransitDataService _nycTransitDataService;
 
-  @Autowired
-  private ConfigurationService _configurationService;
+  HttpServletRequest _request;
 
   private ObjectMapper _mapper = new ObjectMapper();    
 
@@ -128,7 +129,8 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
 
     _result = new StopResult(stop, routesAtStop);
 
-    Boolean showApc = _configurationService.getConfigurationValueAsBoolean("display.showApc", Boolean.FALSE);
+    Boolean showApc = _realtimeService.showApc();
+
 
     List<MonitoredStopVisitStructure> visits =
         _realtimeService.getMonitoredStopVisitsForStop(_stopId, 0, System.currentTimeMillis(), showApc);

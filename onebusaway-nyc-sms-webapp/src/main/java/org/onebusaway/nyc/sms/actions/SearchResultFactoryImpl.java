@@ -177,7 +177,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 	private HashMap<String, HashMap<Double, String>> getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(StopBean stopBean) {
 		HashMap<String, HashMap<Double, String>> result = new HashMap<String, HashMap<Double, String>>();
 
-		Boolean showApc = _configurationService.getConfigurationValueAsBoolean("display.showApc", Boolean.FALSE);
+		Boolean showApc = _realtimeService.showApc();
 
 		// stop visits
 		List<MonitoredStopVisitStructure> visitList = 
