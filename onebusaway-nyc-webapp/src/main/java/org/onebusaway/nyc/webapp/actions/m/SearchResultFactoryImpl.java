@@ -257,7 +257,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     
     Map<String, List<String>> results = new HashMap<String, List<String>>();
 
-    Boolean showApc = _configurationService.getConfigurationValueAsBoolean("display.showApc", Boolean.FALSE);
+    Boolean showApc = _realtimeService.showApc();
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
@@ -304,7 +304,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       RouteBean routeBean) {
     Map<String, List<String>> result = new HashMap<String, List<String>>();
 
-    Boolean showApc = _configurationService.getConfigurationValueAsBoolean("display.showApc", Boolean.FALSE);
+    Boolean showApc = _realtimeService.showApc();
 
       // stop visits
     List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(

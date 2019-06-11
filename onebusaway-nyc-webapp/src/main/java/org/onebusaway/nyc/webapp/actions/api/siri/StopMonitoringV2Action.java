@@ -104,7 +104,7 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 		String maxOnwardCallsParam = _request.getParameter(MAX_ONWARD_CALLS);
 		String maxStopVisitsParam = _request.getParameter(MAX_STOP_VISITS);
 		String minStopVisitsParam = _request.getParameter(MIN_STOP_VISITS);
-		boolean showApc = Boolean.parseBoolean(_request.getParameter(SHOW_APC));
+		boolean showApc = _realtimeService.showApc(_request.getParameter(KEY));
 
 		// Error Strings
 		String routeIdsErrorString = "";

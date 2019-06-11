@@ -91,7 +91,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
     _realtimeService.setTime(responseTimestamp);
 
-    boolean showApc = Boolean.parseBoolean(_request.getParameter("ShowApc"));
+    boolean showApc = _realtimeService.showApc(_request.getParameter("key"));
 
     String directionId = _request.getParameter("DirectionRef");
     

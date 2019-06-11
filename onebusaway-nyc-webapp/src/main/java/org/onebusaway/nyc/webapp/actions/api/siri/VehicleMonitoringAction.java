@@ -2,9 +2,9 @@
  * Copyright 2010, OpenPlans Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -14,12 +14,7 @@
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -54,11 +49,11 @@ import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
 
 @ParentPackage("onebusaway-webapp-api")
 public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
-    implements ServletRequestAware, ServletResponseAware {
+        implements ServletRequestAware, ServletResponseAware {
 
   private static final long serialVersionUID = 1L;
   protected static Logger _log = LoggerFactory.getLogger(VehicleMonitoringAction.class);
-  
+
   @Autowired
   public NycTransitDataService _nycTransitDataService;
 
@@ -67,17 +62,17 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   @Autowired
   protected ConfigurationService _configurationService;
-  
+
   private static final String VERSION = "V1";
-  
+
   private Siri _response;
-  
+
   private String _cachedResponse = null;
 
   private ServiceAlertsHelper _serviceAlertsHelper = new ServiceAlertsHelper();
 
   HttpServletRequest _request;
-  
+
   private HttpServletResponse _servletResponse;
 
   // See urlrewrite.xml as to how this is set. Which means this action doesn't
@@ -86,9 +81,9 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   @Resource(name="siriCacheService")
   private NycCacheService<Integer, String> _siriCacheService;
-  
+
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
-  
+
   public void setType(String type) {
     _type = type;
   }
@@ -98,19 +93,22 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
     long currentTimestamp = getTime();
     _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
-    
+
     _realtimeService.setTime(currentTimestamp);
-    
+
+    String apiKey = _request.getParameter("key");
+
+
     String directionId = _request.getParameter("DirectionRef");
-    
+
     // We need to support the user providing no agency id which means 'all agencies'.
     // So, this array will hold a single agency if the user provides it or all
-    // agencies if the user provides none. We'll iterate over them later while 
+    // agencies if the user provides none. We'll iterate over them later while
     // querying for vehicles and routes
     List<String> agencyIds = new ArrayList<String>();
 
     String agencyId = _request.getParameter("OperatorRef");
-    
+
     if (agencyId != null) {
       agencyIds.add(agencyId);
     } else {
@@ -133,7 +131,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         }
       }
     }
-    
+
     List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
     String routeIdErrorString = "";
     if (_request.getParameter("LineRef") != null) {
@@ -171,45 +169,45 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       }
     }
 
-    boolean showApc = Boolean.parseBoolean(_request.getParameter("ShowApc"));
+    boolean showApc = _realtimeService.showApc(_request.getParameter("key"));
 
     String gaLabel = null;
-    
+
     // *** CASE 1: single vehicle, ignore any other filters
     if (vehicleIds.size() > 0) {
-      
+
       gaLabel = _request.getParameter("VehicleRef");
-      
+
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-      
+
       for (AgencyAndId vehicleId : vehicleIds) {
         VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-            vehicleId.toString(), maximumOnwardCalls, currentTimestamp, showApc);
+                vehicleId.toString(), maximumOnwardCalls, currentTimestamp, showApc);
 
         if (activity != null) {
           activities.add(activity);
         }
       }
-      
+
       // No vehicle id validation, so we pass null for error
       _response = generateSiriResponse(activities, null, null, currentTimestamp);
 
       // *** CASE 2: by route, using direction id, if provided
     } else if (_request.getParameter("LineRef") != null) {
-      
+
       gaLabel = _request.getParameter("LineRef");
-      
+
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-      
+
       for (AgencyAndId routeId : routeIds) {
-        
+
         List<VehicleActivityStructure> activitiesForRoute = _realtimeService.getVehicleActivityForRoute(
-            routeId.toString(), directionId, maximumOnwardCalls, currentTimestamp, showApc);
+                routeId.toString(), directionId, maximumOnwardCalls, currentTimestamp, showApc);
         if (activitiesForRoute != null) {
           activities.addAll(activitiesForRoute);
         }
       }
-      
+
       if (vehicleIds.size() > 0) {
         List<VehicleActivityStructure> filteredActivities = new ArrayList<VehicleActivityStructure>();
 
@@ -226,52 +224,52 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
         activities = filteredActivities;
       }
-      
+
       Exception error = null;
       if (_request.getParameter("LineRef") != null && routeIds.size() == 0) {
         error = new Exception(routeIdErrorString.trim());
       }
 
       _response = generateSiriResponse(activities, routeIds, error, currentTimestamp);
-      
+
       // *** CASE 3: all vehicles
     } else {
       try {
-      gaLabel = "All Vehicles";
-      
-      int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type, VERSION);
-      
-      List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-      if (!_siriCacheService.containsKey(hashKey)) {
-        for (String agency : agencyIds) {
-          ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
+        gaLabel = "All Vehicles";
+
+        int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type, VERSION);
+
+        List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
+        if (!_siriCacheService.containsKey(hashKey)) {
+          for (String agency : agencyIds) {
+            ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
                     agency, currentTimestamp);
 
-          for (VehicleStatusBean v : vehicles.getList()) {
+            for (VehicleStatusBean v : vehicles.getList()) {
               VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
                       v.getVehicleId(), maximumOnwardCalls, currentTimestamp, showApc);
               if (activity != null) {
                 activities.add(activity);
               }
+            }
           }
+          // There is no input (route id) to validate, so pass null error
+          _response = generateSiriResponse(activities, null, null,
+                  currentTimestamp);
+          _siriCacheService.store(hashKey, getVehicleMonitoring());
+        } else {
+          _cachedResponse = _siriCacheService.retrieve(hashKey);
         }
-        // There is no input (route id) to validate, so pass null error
-        _response = generateSiriResponse(activities, null, null,
-            currentTimestamp);
-        _siriCacheService.store(hashKey, getVehicleMonitoring());
-      } else {
-        _cachedResponse = _siriCacheService.retrieve(hashKey);
-      }
       } catch (Exception e) {
         _log.error("vm all broke:", e);
         throw new RuntimeException(e);
       }
     }
-    
+
     if (_monitoringActionSupport.canReportToGoogleAnalytics(_configurationService)) {
       _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
-    } 
-    
+    }
+
     try {
       this._servletResponse.getWriter().write(getVehicleMonitoring());
     } catch (Throwable t) {
@@ -283,31 +281,31 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   /**
    * Generate a siri response for a set of VehicleActivities
-   * 
+   *
    * @param routeId
    */
   private Siri generateSiriResponse(List<VehicleActivityStructure> activities,
-      List<AgencyAndId> routeIds, Exception error, long currentTimestamp) {
-    
+                                    List<AgencyAndId> routeIds, Exception error, long currentTimestamp) {
+
     VehicleMonitoringDeliveryStructure vehicleMonitoringDelivery = new VehicleMonitoringDeliveryStructure();
     vehicleMonitoringDelivery.setResponseTimestamp(new Date(currentTimestamp));
-    
+
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     serviceDelivery.setResponseTimestamp(new Date(currentTimestamp));
     serviceDelivery.getVehicleMonitoringDelivery().add(vehicleMonitoringDelivery);
-    
+
     if (error != null) {
       ServiceDeliveryErrorConditionStructure errorConditionStructure = new ServiceDeliveryErrorConditionStructure();
-      
+
       ErrorDescriptionStructure errorDescriptionStructure = new ErrorDescriptionStructure();
       errorDescriptionStructure.setValue(error.getMessage());
-      
+
       OtherErrorStructure otherErrorStructure = new OtherErrorStructure();
       otherErrorStructure.setErrorText(error.getMessage());
-      
+
       errorConditionStructure.setDescription(errorDescriptionStructure);
       errorConditionStructure.setOtherError(otherErrorStructure);
-      
+
       vehicleMonitoringDelivery.setErrorCondition(errorConditionStructure);
     } else {
       Calendar gregorianCalendar = new GregorianCalendar();
@@ -318,7 +316,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       vehicleMonitoringDelivery.getVehicleActivity().addAll(activities);
 
       _serviceAlertsHelper.addSituationExchangeToServiceDelivery(serviceDelivery,
-          activities, _nycTransitDataService, routeIds);
+              activities, _nycTransitDataService, routeIds);
       _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(serviceDelivery, _realtimeService);
     }
     Siri siri = new Siri();
@@ -326,7 +324,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
     return siri;
   }
-  
+
   private boolean isValidRoute(AgencyAndId routeId) {
     if (routeId != null && routeId.hasValues() && this._nycTransitDataService.getRouteForId(routeId.toString()) != null) {
       return true;
@@ -339,7 +337,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       // check the cache first
       return _cachedResponse;
     }
-    
+
     try {
       if (_type.equals("xml")) {
         this._servletResponse.setContentType("application/xml");
@@ -347,7 +345,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       } else {
         this._servletResponse.setContentType("application/json");
         return _realtimeService.getSiriJsonSerializer().getJson(_response,
-            _request.getParameter("callback"));
+                _request.getParameter("callback"));
       }
     } catch (Exception e) {
       return e.getMessage();
@@ -363,8 +361,10 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   public void setServletResponse(HttpServletResponse servletResponse) {
     this._servletResponse = servletResponse;
   }
-  
+
   public HttpServletResponse getServletResponse(){
     return _servletResponse;
   }
+
+
 }

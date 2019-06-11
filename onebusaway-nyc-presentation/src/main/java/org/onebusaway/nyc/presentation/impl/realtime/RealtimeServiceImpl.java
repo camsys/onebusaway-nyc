@@ -1,10 +1,6 @@
 package org.onebusaway.nyc.presentation.impl.realtime;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupport.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
@@ -48,7 +44,6 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Autowired
   private NycTransitDataService _nycTransitDataService;
 
-  @Autowired
   private ConfigurationService _configurationService;
 
   private PresentationService _presentationService;
@@ -75,6 +70,11 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Autowired
   public void setPresentationService(PresentationService presentationService) {
     _presentationService = presentationService;
+  }
+
+  @Autowired
+  public void setConfigurationService(ConfigurationService configurationService){
+    _configurationService = configurationService;
   }
   
   @Override
@@ -327,6 +327,30 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
     return serviceAlerts.getList();
+  }
+
+  @Override
+  public boolean showApc(String apiKey){
+    String apc = _configurationService.getConfigurationValueAsString("display.validApcKeys", "");
+    List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
+    for(String key : keys){
+        if(apiKey.equalsIgnoreCase(key.trim()) || key.trim().equals("*")){
+            return true;
+        }
+    }
+    return false;
+  }
+
+  @Override
+  public boolean showApc(){
+    String apc = _configurationService.getConfigurationValueAsString("display.validApcKeys", "");
+    List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
+    for(String key : keys){
+        if(key.trim().equals("*")){
+            return true;
+        }
+    }
+    return false;
   }
   
   /**
