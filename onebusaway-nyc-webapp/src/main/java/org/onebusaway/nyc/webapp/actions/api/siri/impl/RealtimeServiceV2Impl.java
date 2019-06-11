@@ -1,12 +1,6 @@
 package org.onebusaway.nyc.webapp.actions.api.siri.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.math.BigInteger;
 
 import org.apache.commons.lang.StringUtils;
@@ -19,6 +13,7 @@ import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializerV2;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializerV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.OnwardCallsMode;
@@ -81,6 +76,8 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	private SiriJsonSerializerV2 _siriJsonSerializer = new SiriJsonSerializerV2();
 
+	private ConfigurationService _configurationService;
+
 	private Long _now = null;
 
 	@Override
@@ -108,6 +105,11 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		_presentationService = presentationService;
 	}
 
+	@Autowired
+	public void setConfigurationService(ConfigurationService configurationService){
+		_configurationService = configurationService;
+	}
+
 	@Override
 	public PresentationService getPresentationService() {
 		return _presentationService;
@@ -122,6 +124,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	public SiriXmlSerializerV2 getSiriXmlSerializer() {
 		return _siriXmlSerializer;
 	}
+
 
 	/**
 	 * SIRI METHODS
@@ -641,6 +644,30 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService
 				.getServiceAlerts(query);
 		return serviceAlerts.getList();
+	}
+
+	@Override
+	public boolean showApc(String apiKey){
+		String apc = _configurationService.getConfigurationValueAsString("display.validApcKeys", "");
+		List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
+		for(String key : keys){
+			if(apiKey.equalsIgnoreCase(key.trim()) || key.trim().equals("*")){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean showApc(){
+		String apc = _configurationService.getConfigurationValueAsString("display.validApcKeys", "");
+		List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
+		for(String key : keys){
+			if(key.trim().equals("*")){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

@@ -72,4 +72,7 @@ public interface RealtimeServiceV2 {
 			List<String> agencyIds, CoordinateBounds bounds, DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters);
 
+    boolean showApc(String apiKey);
+
+	boolean showApc();
 }
