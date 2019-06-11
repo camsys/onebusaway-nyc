@@ -42,5 +42,8 @@ public interface RealtimeService {
       String routeId, String directionId);
   
   public List<ServiceAlertBean> getServiceAlertsGlobal();
-    
+
+  boolean showApc(String apiKey);
+
+  boolean showApc();
 }
