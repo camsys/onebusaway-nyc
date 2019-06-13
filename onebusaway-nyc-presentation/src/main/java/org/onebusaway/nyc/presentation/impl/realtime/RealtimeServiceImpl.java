@@ -331,6 +331,9 @@ public class RealtimeServiceImpl implements RealtimeService {
 
   @Override
   public boolean showApc(String apiKey){
+    if(!useApc()){
+      return false;
+    }
     String apc = _configurationService.getConfigurationValueAsString("display.validApcKeys", "");
     List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
     for(String key : keys){
@@ -343,6 +346,9 @@ public class RealtimeServiceImpl implements RealtimeService {
 
   @Override
   public boolean showApc(){
+    if(!useApc()){
+      return false;
+    }
     String apc = _configurationService.getConfigurationValueAsString("display.validApcKeys", "");
     List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
     for(String key : keys){
@@ -352,7 +358,7 @@ public class RealtimeServiceImpl implements RealtimeService {
     }
     return false;
   }
-  
+
   /**
    * PRIVATE METHODS
    */
@@ -380,5 +386,10 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     return stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
   }
+
+    private boolean useApc(){
+        return _configurationService.getConfigurationValueAsBoolean("tds.useApc", Boolean.FALSE);
+    }
+
 
 }

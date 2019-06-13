@@ -646,6 +646,9 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public boolean showApc(String apiKey){
+		if(!useApc()){
+			return false;
+		}
 		String apc = _configurationService.getConfigurationValueAsString("display.validApcKeys", "");
 		List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
 		for(String key : keys){
@@ -658,6 +661,9 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public boolean showApc(){
+		if(!useApc()){
+			return false;
+		}
 		String apc = _configurationService.getConfigurationValueAsString("display.validApcKeys", "");
 		List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
 		for(String key : keys){
@@ -667,6 +673,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		}
 		return false;
 	}
+
 
 	/**
 	 * PRIVATE METHODS
@@ -788,9 +795,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		}
 		
 	}
-	
-	
-	
+
 	private RouteResult getRouteResult(
 			RouteBean routeBean,
 			Map<Filters, String> filters){
@@ -924,6 +929,10 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		
 			
 		return stopRouteDirection;
+	}
+
+	private boolean useApc(){
+		return _configurationService.getConfigurationValueAsBoolean("tds.useApc", Boolean.FALSE);
 	}
 
 }
