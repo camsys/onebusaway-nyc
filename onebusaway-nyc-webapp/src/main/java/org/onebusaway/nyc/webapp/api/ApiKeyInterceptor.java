@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.dispatcher.HttpParameters;
+import org.apache.struts2.dispatcher.Parameter;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottledService;
 import org.onebusaway.users.services.ApiKeyPermissionService;
@@ -91,11 +93,13 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
 
   private int isAllowed(ActionInvocation invocation) {
     ActionContext context = invocation.getInvocationContext();
-    Map<String, Object> parameters = context.getParameters();
-    String[] keys = (String[]) parameters.get("key");
-
-    if (keys == null || keys.length == 0)
+    HttpParameters parameters = context.getParameters();
+    Parameter key = parameters.get("key");
+    if(key == null || key.getMultipleValues() == null || key.getMultipleValues().length == 0){
       return HttpServletResponse.SC_UNAUTHORIZED;
+    }
+
+    String[] keys = key.getMultipleValues();
 
     boolean isPermitted = _keyService.getPermission(keys[0], "api");
     boolean notThrottled = _throttledKeyService.isAllowed(keys[0]);

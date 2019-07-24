@@ -19,5 +19,5 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" 
 	xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/plain"/>
-<s:property value="response" escape="false"/>
+<s:property value="response" escapeHtml="false"/>
 </jsp:root>

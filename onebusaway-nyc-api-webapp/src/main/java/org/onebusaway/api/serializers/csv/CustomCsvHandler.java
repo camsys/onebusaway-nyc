@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.api.impl;
+package org.onebusaway.api.serializers.csv;
 
 import java.io.IOException;
 import java.io.Reader;
