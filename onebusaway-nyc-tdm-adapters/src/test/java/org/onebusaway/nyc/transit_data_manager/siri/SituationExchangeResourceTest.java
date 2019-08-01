@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.nyc.transit_data_manager.util.NycEnvironment;
+import org.onebusaway.nyc.transit_data_manager.util.NycSiriUtil;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import uk.org.siri.siri.AffectsScopeStructure;
@@ -341,4 +342,19 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
     return body;
   }
 
+  @Test
+  public void testSanitizedRoute(){
+    String expected = "MTA NYCT_M101";
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("MTA NYCT_M101-LTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("MTA NYCT_M101_LTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("MTA NYCT_M101LTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("MTA NYCT_M101"));
+
+    expected = "SIM1C";
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("SIM1C-LTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("SIM1C_LTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("SIM1CLTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("SIM1C"));
+
+  }
 }
