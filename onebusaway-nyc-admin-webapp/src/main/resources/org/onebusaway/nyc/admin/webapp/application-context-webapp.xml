@@ -68,7 +68,7 @@
     
     <bean id="loginUrlAuthenticationEntryPoint"
  		class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
-  		<constructor-arg name="loginFormUrl" value="/login.action?forbidden=true" />
+  		<constructor-arg name="loginFormUrl" value="/login.action" />
  	</bean>
     
     <bean id="psaHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
