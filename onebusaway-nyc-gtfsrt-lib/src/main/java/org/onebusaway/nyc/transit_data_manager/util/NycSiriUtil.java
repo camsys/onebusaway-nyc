@@ -276,7 +276,7 @@ public class NycSiriUtil {
         SituationAffectsBean sab = new SituationAffectsBean();
 
         if (vj.getLineRef() != null) {
-          sab.setRouteId(StringUtils.trim(vj.getLineRef().getValue()));
+          sab.setRouteId(getSanitizedLineRef(vj.getLineRef().getValue()));
         }
 
         if (vj.getDirectionRef() != null)
@@ -338,6 +338,22 @@ public class NycSiriUtil {
 
     if (!allAffects.isEmpty())
       serviceAlert.setAllAffects(allAffects);
+  }
+
+  public static String getSanitizedLineRef(String lineRef){
+    String sanitizedLineRef = lineRef;
+    if(lineRef != null) {
+      sanitizedLineRef = StringUtils.trim(lineRef);
+      if (sanitizedLineRef.length() > 4) {
+        String suffix = sanitizedLineRef.substring(sanitizedLineRef.length() - 4);
+        if (suffix.equalsIgnoreCase("-LTD") || suffix.equalsIgnoreCase("_LTD")) {
+          return sanitizedLineRef.substring(0, sanitizedLineRef.length() - 4);
+        } else if (suffix.substring(1).equalsIgnoreCase("LTD")) {
+          return sanitizedLineRef.substring(0, sanitizedLineRef.length() - 3);
+        }
+      }
+    }
+    return sanitizedLineRef;
   }
 
   private static void addAffectsOperator(List<SituationAffectsBean> allAffects,
