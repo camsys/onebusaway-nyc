@@ -319,6 +319,18 @@ public class PublisherTest {
 
         assertEquals(expectedCcMessage, actualCcMessage);
 
+
+        timeReceived = 1566488219000L; //  Thursday, August 22, 2019 3:36:59 PM GMT
+
+        // Original Date Time - Thursday, April 7, 2039 3:36:59 PM
+        ccmessage = "{\"CcLocationReport\":{\"request-id\":60,\"vehicle\":{\"vehicle-id\":6828,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2039-04-07T18:14:22.0-00:00\",\"latitude\":0,\"longitude\":0,\"direction\":{\"deg\":0.0},\"speed\":0,\"data-quality\":{\"qualitative-indicator\":4},\"manufacturer-data\":\"BMV52269\",\"operatorID\":{\"operator-id\":0,\"designator\":\"0\"},\"runID\":{\"run-id\":0,\"designator\":\"0\"},\"destSignCode\":6,\"routeID\":{\"route-id\":0,\"route-designator\":\"0\"},\"localCcLocationReport\":{\"vehiclePowerState\":1}}}";
+
+        // Expected Date Time - Thursday, August 22, 2019 3:37:01 PM GMT
+        expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":60,\"vehicle\":{\"vehicle-id\":6828,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2039-04-07T18:14:22.0-00:00\",\"latitude\":0,\"longitude\":0,\"direction\":{\"deg\":0.0},\"speed\":0,\"data-quality\":{\"qualitative-indicator\":4},\"manufacturer-data\":\"BMV52269\",\"operatorID\":{\"operator-id\":0,\"designator\":\"0\"},\"runID\":{\"run-id\":0,\"designator\":\"0\"},\"destSignCode\":6,\"routeID\":{\"route-id\":0,\"route-designator\":\"0\"},\"localCcLocationReport\":{\"vehiclePowerState\":1}}}";
+        actualCcMessage = rmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
+
+        assertEquals(expectedCcMessage, actualCcMessage);
+
     }
     @Test
     public void testGetTimeReported() throws ParseException {
