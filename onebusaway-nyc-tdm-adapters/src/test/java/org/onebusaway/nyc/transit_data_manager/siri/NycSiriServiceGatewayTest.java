@@ -15,6 +15,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
 import org.onebusaway.nyc.transit_data_manager.util.NycSiriUtil;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
+import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDetails;
@@ -32,7 +33,7 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
   public void testGetPtSituationAsServiceAlertBean() {
     SiriHelper siriHelper = new SiriHelper();
     PtSituationElementStructure ptSituation = siriHelper.createPtSituationElementStructure(
-        "summaryText", "descriptionText    ", "    MTA NYCT_123",
+        "summaryText", "• descriptionText    ", "    MTA NYCT_123",
         "2011-11-08T00:00:00.000Z", "", "MTA NYCT_B63", "statusType");
     SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
     ServiceAlertBean serviceAlertBean = NycSiriUtil.getPtSituationAsServiceAlertBean(
@@ -40,7 +41,7 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
     assertNotNull(serviceAlertBean.getSummaries());
     assertEquals("summaryText",
         serviceAlertBean.getSummaries().get(0).getValue());
-    assertEquals("descriptionText",
+    assertEquals(" descriptionText",
         serviceAlertBean.getDescriptions().get(0).getValue());
     assertEquals("MTA NYCT_123", serviceAlertBean.getId());
     assertEquals(
@@ -53,6 +54,43 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
 
     assertEquals(EEffect.MODIFIED_SERVICE,
         serviceAlertBean.getConsequences().get(0).getEffect());
+
+  }
+
+  @Test
+  public void testGetPtSituationAsServiceAlertBeanWithCleanup() {
+    SiriHelper siriHelper = new SiriHelper();
+
+    PtSituationElementStructure ptSituation = siriHelper.createPtSituationElementStructure(
+            "summaryText", "• descriptionText    ", "    MTA NYCT_123",
+            "2011-11-08T00:00:00.000Z", "", "MTA NYCT_B63", "statusType");
+    SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
+    ServiceAlertBean serviceAlertBean = NycSiriUtil.getPtSituationAsServiceAlertBean(
+            ptSituation, endpointDetails);
+
+    assertNotNull(serviceAlertBean.getSummaries());
+    assertEquals("&#x2022; descriptionText",
+            serviceAlertBean.getDescriptions().get(0).getValue());
+
+    ptSituation = siriHelper.createPtSituationElementStructure(
+            "summaryText", "· descriptionText    ", "    MTA NYCT_123",
+            "2011-11-08T00:00:00.000Z", "", "MTA NYCT_B63", "statusType");
+    endpointDetails = new SiriEndpointDetails();
+    serviceAlertBean = NycSiriUtil.getPtSituationAsServiceAlertBean(ptSituation, endpointDetails);
+
+    assertNotNull(serviceAlertBean.getSummaries());
+    assertEquals("&middot; descriptionText",
+            serviceAlertBean.getDescriptions().get(0).getValue());
+
+    ptSituation = siriHelper.createPtSituationElementStructure(
+            "summaryText", "— descriptionText    ", "    MTA NYCT_123",
+            "2011-11-08T00:00:00.000Z", "", "MTA NYCT_B63", "statusType");
+    endpointDetails = new SiriEndpointDetails();
+    serviceAlertBean = NycSiriUtil.getPtSituationAsServiceAlertBean(ptSituation, endpointDetails);
+
+    assertNotNull(serviceAlertBean.getSummaries());
+    assertEquals("&#x2014; descriptionText",
+            serviceAlertBean.getDescriptions().get(0).getValue());
 
   }
 
