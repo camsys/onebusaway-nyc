@@ -174,18 +174,34 @@ public class NycSiriUtil {
       serviceAlert.setSummaries(naturalLanguageStringBeanFromTranslatedString(summary));
 
     ServiceAlerts.TranslatedString description = translation(ptSituation.getDescription());
-    if (description != null)
-      serviceAlert.setDescriptions(naturalLanguageStringBeanFromTranslatedString(description));
+    if (description != null) {
+      serviceAlert.setDescriptions(naturalLanguageStringBeanFromTranslatedString(description, true));
+    }
   }
 
   private static List<NaturalLanguageStringBean> naturalLanguageStringBeanFromTranslatedString(
-          ServiceAlerts.TranslatedString translatedString) {
+          ServiceAlerts.TranslatedString translatedString, boolean cleanHtml) {
     List<NaturalLanguageStringBean> nlsb = new ArrayList<NaturalLanguageStringBean>();
     for (ServiceAlerts.TranslatedString.Translation t : translatedString.getTranslationList()) {
-      nlsb.add(new NaturalLanguageStringBean(StringUtils.trim(t.getText()),
-              StringUtils.trim(t.getLanguage())));
+      String language = StringUtils.trim(t.getLanguage());
+      String text = StringUtils.trim(t.getText());
+      if(cleanHtml){
+        text = cleanHtml(text);
+      }
+      nlsb.add(new NaturalLanguageStringBean(text,language));
     }
     return nlsb;
+  }
+
+  private static List<NaturalLanguageStringBean> naturalLanguageStringBeanFromTranslatedString(
+          ServiceAlerts.TranslatedString translatedString){
+    return naturalLanguageStringBeanFromTranslatedString(translatedString, false);
+  }
+
+  private static String cleanHtml(String htmlText) {
+    String[] searchList = new String[]{"•", "·","—"};
+    String[] replaceList = new String[]{"&#x2022;","&middot;","&#x2014;"};
+    return StringUtils.replaceEach(htmlText,searchList, replaceList);
   }
 
   private static void handleOtherFields(PtSituationElementStructure ptSituation,
