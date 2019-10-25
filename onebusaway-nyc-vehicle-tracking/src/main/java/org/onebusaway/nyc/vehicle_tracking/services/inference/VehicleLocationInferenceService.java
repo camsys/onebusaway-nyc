@@ -75,4 +75,6 @@ public interface VehicleLocationInferenceService {
   public void setSeeds(long cdfSeed, long factorySeed);
   
   public List<NycQueuedInferredLocationBean> getLatestProcessedQueuedVehicleLocationRecords();
+
+    Long getTimeReceivedByVehicleId(AgencyAndId vid);
 }

@@ -941,4 +941,9 @@ public class VehicleLocationInferenceServiceImpl implements
       return isValid;
     }
   }
+
+  @Override
+  public Long getTimeReceivedByVehicleId(AgencyAndId vid){
+    return _timeReceivedByVehicleId.get(vid);
+  }
 }
