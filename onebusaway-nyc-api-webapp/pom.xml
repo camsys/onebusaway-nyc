@@ -135,10 +135,9 @@
         </dependency>
 	<!-- for amazon deployment -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.17</version>
-        </dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+    </dependency>
     </dependencies>
 
     <!-- TODO This is an exact duplicate of what's in onebusaway-nyc-webapp. Should extract out to a common profiles.xml -->
