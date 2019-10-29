@@ -210,45 +210,45 @@ public class PublisherTest {
         Calendar calPast1 = Calendar.getInstance();
         calPast1.setTimeInMillis(1532712063123L);
         calPast1.add(Calendar.WEEK_OF_YEAR, -1022);
-        assertTrue(rmcUtil.isRmcDateValid(calPast1.getTime(), p.getTimeReceived()));
+        assertTrue(RmcUtil.isRmcDateValid(calPast1.getTime(), p.getTimeReceived()));
 
         Calendar calPast2 = Calendar.getInstance();
         calPast2.setTimeInMillis(1532712063123L);
         calPast2.add(Calendar.WEEK_OF_YEAR, -1023);
-        assertFalse(rmcUtil.isRmcDateValid(calPast2.getTime(), p.getTimeReceived()));
+        assertFalse(RmcUtil.isRmcDateValid(calPast2.getTime(), p.getTimeReceived()));
 
         Calendar calPast3 = Calendar.getInstance();
         calPast3.setTimeInMillis(1532712063123L);
         calPast3.add(Calendar.WEEK_OF_YEAR, -1024);
         System.out.println(calPast3.getTime());
-        assertFalse(rmcUtil.isRmcDateValid(calPast3.getTime(), p.getTimeReceived()));
+        assertFalse(RmcUtil.isRmcDateValid(calPast3.getTime(), p.getTimeReceived()));
 
         Calendar calPast4 = Calendar.getInstance();
         calPast4.setTimeInMillis(1532712063123L);
         calPast4.add(Calendar.WEEK_OF_YEAR, -1025);
-        assertFalse(rmcUtil.isRmcDateValid(calPast4.getTime(), p.getTimeReceived()));
+        assertFalse(RmcUtil.isRmcDateValid(calPast4.getTime(), p.getTimeReceived()));
 
         Calendar calPast5 = Calendar.getInstance();
         calPast5.setTimeInMillis(1532712063123L);
         calPast5.add(Calendar.WEEK_OF_YEAR, -1026);
-        assertTrue(rmcUtil.isRmcDateValid(calPast5.getTime(), p.getTimeReceived()));
+        assertTrue(RmcUtil.isRmcDateValid(calPast5.getTime(), p.getTimeReceived()));
 
 
         // Check Dates in Future
         Calendar calFuture1 = Calendar.getInstance();
         calFuture1.setTimeInMillis(1532712063123L);
         calFuture1.add(Calendar.WEEK_OF_YEAR, 1022);
-        assertTrue(rmcUtil.isRmcDateValid(calFuture1.getTime(), p.getTimeReceived()));
+        assertTrue(RmcUtil.isRmcDateValid(calFuture1.getTime(), p.getTimeReceived()));
 
         Calendar calFuture2 = Calendar.getInstance();
         calFuture2.setTimeInMillis(1532712063123L);
         calFuture2.add(Calendar.WEEK_OF_YEAR, 1023);
-        assertFalse(rmcUtil.isRmcDateValid(calFuture2.getTime(), p.getTimeReceived()));
+        assertFalse(RmcUtil.isRmcDateValid(calFuture2.getTime(), p.getTimeReceived()));
 
         Calendar calFuture3 = Calendar.getInstance();
         calFuture3.setTimeInMillis(1532712063123L);
         calFuture3.add(Calendar.WEEK_OF_YEAR, 1024);
-        assertFalse(rmcUtil.isRmcDateValid(calFuture3.getTime(), p.getTimeReceived()));
+        assertFalse(RmcUtil.isRmcDateValid(calFuture3.getTime(), p.getTimeReceived()));
     }
 
     @Test
@@ -315,7 +315,7 @@ public class PublisherTest {
 
         // Expected Date Time - Thursday, August 22, 2019 3:37:01 PM GMT
         expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":225,\"vehicle\":{\"vehicle-id\":6195,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2019-08-22T15:37:01.514-00:00\",\"latitude\":40821880,\"longitude\":-73936579,\"direction\":{\"deg\":302.1},\"speed\":30,\"manufacturer-data\":\"BMV56473\",\"operatorID\":{\"operator-id\":0,\"designator\":\"0\"},\"runID\":{\"run-id\":0,\"designator\":\"0\"},\"destSignCode\":0,\"routeID\":{\"route-id\":0,\"route-designator\":\"0\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPRMC,153701.514,A,4049.31282,N,07356.19479,W,000.0,302.1,220819,,,E*7f\",\"$GPGGA,153701.514,4049.31282,N,07356.19479,W,6,00,0.99,00000.4,M,-034.2,M,,*62\"]},\"vehiclePowerState\":0}}}";
-        actualCcMessage = rmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
+        actualCcMessage = RmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
 
         assertEquals(expectedCcMessage, actualCcMessage);
 
@@ -327,7 +327,7 @@ public class PublisherTest {
 
         // Expected Date Time - Thursday, August 22, 2019 3:37:01 PM GMT
         expectedCcMessage = "{\"CcLocationReport\":{\"request-id\":60,\"vehicle\":{\"vehicle-id\":6828,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2039-04-07T18:14:22.0-00:00\",\"latitude\":0,\"longitude\":0,\"direction\":{\"deg\":0.0},\"speed\":0,\"data-quality\":{\"qualitative-indicator\":4},\"manufacturer-data\":\"BMV52269\",\"operatorID\":{\"operator-id\":0,\"designator\":\"0\"},\"runID\":{\"run-id\":0,\"designator\":\"0\"},\"destSignCode\":6,\"routeID\":{\"route-id\":0,\"route-designator\":\"0\"},\"localCcLocationReport\":{\"vehiclePowerState\":1}}}";
-        actualCcMessage = rmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
+        actualCcMessage = RmcUtil.replaceInvalidRmcDateTime(new StringBuffer(ccmessage), timeReceived);
 
         assertEquals(expectedCcMessage, actualCcMessage);
 
