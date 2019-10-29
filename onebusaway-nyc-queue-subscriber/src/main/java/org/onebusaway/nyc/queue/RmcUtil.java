@@ -59,19 +59,29 @@ public class RmcUtil {
         return null;
     }
 
-    static boolean isRmcDateValid(Date rmcDate, long timeReceived){
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(timeReceived);
-        cal.add(Calendar.WEEK_OF_YEAR, -1024);
+    boolean isRmcDateValid(Date rmcDate, long timeReceived){
+        Calendar calPast = Calendar.getInstance();
+        calPast.setTimeInMillis(timeReceived);
+        calPast.add(Calendar.WEEK_OF_YEAR, -1024);
 
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTime(rmcDate);
+        Calendar calFuture = Calendar.getInstance();
+        calFuture.setTimeInMillis(timeReceived);
+        calFuture.add(Calendar.WEEK_OF_YEAR, 1023);
 
-        int cal1Week = cal.get(cal.WEEK_OF_YEAR);
-        int cal2Week = cal2.get(cal2.WEEK_OF_YEAR);
-        int calWeekDiff = Math.abs(cal1Week - cal2Week);
+        Calendar rmcCal = Calendar.getInstance();
+        rmcCal.setTime(rmcDate);
 
-        return calWeekDiff > 1;
+        int calPastWeek = calPast.get(calPast.WEEK_OF_YEAR);
+        int rmcCalWeek = rmcCal.get(rmcCal.WEEK_OF_YEAR);
+
+        int calPastWeekDiff = Math.abs(calPastWeek - rmcCalWeek);
+
+        if(calPastWeekDiff <= 1){
+            return false;
+        } else if(rmcCal.getTimeInMillis() >= calFuture.getTimeInMillis()){
+            return false;
+        }
+        return true;
     }
 
     static boolean isRmcTimeValid(Date rmcDate, Date timeReceived){
