@@ -59,7 +59,7 @@ public class RmcUtil {
         return null;
     }
 
-    boolean isRmcDateValid(Date rmcDate, long timeReceived){
+    static boolean isRmcDateValid(Date rmcDate, long timeReceived){
         Calendar calPast = Calendar.getInstance();
         calPast.setTimeInMillis(timeReceived);
         calPast.add(Calendar.WEEK_OF_YEAR, -1024);
