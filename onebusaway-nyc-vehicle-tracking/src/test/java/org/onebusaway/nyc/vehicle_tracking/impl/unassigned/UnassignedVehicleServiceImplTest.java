@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.unassigned;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -11,6 +12,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.vehicle_tracking.model.unassigned.UnassignedVehicleRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.realtime.api.VehicleLocationRecord;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -23,6 +25,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class UnassignedVehicleServiceImplTest {
 
+        private UnassignedVehicleRecord[] records;
+
         @InjectMocks
         private UnassignedVehicleServiceImpl service;
 
@@ -33,17 +37,16 @@ public class UnassignedVehicleServiceImplTest {
         public void prepare(){
             MockitoAnnotations.initMocks(this);
             this.service.setupMapper();
+            URL url = getClass().getClassLoader().getResource("unassigned_vehicles.json");
+            records = service.getUnassignedVehicleRecords(url);
         }
 
         @Test
         public void testVehiclePulloutEmptyList() throws Exception {
 
-            URL url = getClass().getClassLoader().getResource("unassigned_vehicles.json");
-            UnassignedVehicleRecord[] records = service.getUnassignedVehicleRecords(url);
             assertEquals(8, records.length);
 
             UnassignedVehicleRecord record = records[0];
-            UnassignedVehicleRecord record2 = records[1];
 
             assertEquals("MTA NYCT", record.getAgencyId());
             assertNull(record.getBlockId());
@@ -86,8 +89,6 @@ public class UnassignedVehicleServiceImplTest {
 
         @Test
         public void testInferredLocationBeanCreation(){
-            URL url = getClass().getClassLoader().getResource("unassigned_vehicles.json");
-            UnassignedVehicleRecord[] records = service.getUnassignedVehicleRecords(url);
             UnassignedVehicleRecord record = records[0];
 
             NycQueuedInferredLocationBean inferredLocationBean = service.toNycQueueInferredLocationBean(record);
@@ -101,6 +102,15 @@ public class UnassignedVehicleServiceImplTest {
             assertEquals(record.getLongitude(), inferredLocationBean.getInferredLongitude());
             assertEquals(record.getTripId(), inferredLocationBean.getTripId());
             assertEquals(record.getStatus(), inferredLocationBean.getStatus());
+        }
+
+        @Test
+        public void testUnassignedVehicleToVLR(){
+            UnassignedVehicleRecord record = records[0];
+
+            NycQueuedInferredLocationBean inferredLocationBean = service.toNycQueueInferredLocationBean(record);
+            VehicleLocationRecord vlr = inferredLocationBean.toVehicleLocationRecord();
+            assertNotNull(vlr);
         }
 
 
