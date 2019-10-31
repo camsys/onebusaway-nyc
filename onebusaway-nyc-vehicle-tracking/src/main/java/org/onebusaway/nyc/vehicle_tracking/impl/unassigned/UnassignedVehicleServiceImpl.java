@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -24,6 +25,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 
+@Component
 public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
 
     private static Logger _log = LoggerFactory.getLogger(UnassignedVehicleServiceImpl.class);
@@ -61,6 +63,11 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     @Autowired
     public void setOutputQueueSenderService(OutputQueueSenderService outputQueueSenderService){
         _outputQueueSenderService = outputQueueSenderService;
+    }
+
+    @Autowired
+    public void set_vehicleLocationInferenceService(VehicleLocationInferenceService vehicleLocationInferenceService){
+        _vehicleLocationInferenceService = vehicleLocationInferenceService;
     }
 
     public URL getUrl(){
@@ -103,6 +110,7 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
             _updateTask.cancel(true);
         }
         if(_enabled){
+            _log.info("Starting Unassigned Vehicle Service");
             _updateTask = _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), seconds * 1000);
         }
     }
@@ -150,27 +158,32 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         @Override
         public void run() {
             try {
+                _log.debug("Retreiving unassigned vehicle records from {}", getUrl());
                 UnassignedVehicleRecord[] unassignedVehicleRecords = getUnassignedVehicleRecords(getUrl());
                 processUnassignedVehicles(unassignedVehicleRecords);
             } catch (Exception e) {
-                _log.error("refreshData() failed: " + e.getMessage());
+                _log.error("refreshData() failed: " + e.getMessage(), e);
                 e.printStackTrace();
             }
         }
     }
 
     private void processUnassignedVehicles(UnassignedVehicleRecord[] unassignedVehicleRecords) {
+        int successfullyQueuedCount = 0;
         for(UnassignedVehicleRecord record : unassignedVehicleRecords){
             if(StringUtils.isNotBlank(record.getAgencyId()) && StringUtils.isNotBlank(record.getVehicleId())){
                 NycQueuedInferredLocationBean inferredLocationBean = toNycQueueInferredLocationBean(record);
                 AgencyAndId vehicleId = new AgencyAndId(record.getAgencyId(), record.getVehicleId());
                 if(!vehicleActive(vehicleId, System.currentTimeMillis())) {
+                    _log.trace("Adding unassigned vehicle to output queue {}",inferredLocationBean.toDebugOutput());
                     _outputQueueSenderService.enqueue(inferredLocationBean);
+                    successfullyQueuedCount++;
                 } else {
                     _log.warn("Vehicle with id {} marked as unassigned but has been recently updated.", vehicleId);
                 }
             }
         }
+        _log.info("{} unassigned vehicles successfully sent to output queue", successfullyQueuedCount);
     }
 
     public boolean vehicleActive(AgencyAndId vehicleId, long currentTime) {

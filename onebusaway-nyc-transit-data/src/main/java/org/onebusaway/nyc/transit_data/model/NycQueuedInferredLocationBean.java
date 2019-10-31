@@ -418,5 +418,20 @@ public class NycQueuedInferredLocationBean implements Serializable {
 
 	  return vlr;
 	}
+
+	public String toDebugOutput() {
+		return "NycQueuedInferredLocationBean{" +
+				"recordTimestamp=" + recordTimestamp +
+				", vehicleId='" + vehicleId + '\'' +
+				", serviceDate=" + serviceDate +
+				", blockId='" + blockId + '\'' +
+				", tripId='" + tripId + '\'' +
+				", inferredLatitude=" + inferredLatitude +
+				", inferredLongitude=" + inferredLongitude +
+				", phase='" + phase + '\'' +
+				", status='" + status + '\'' +
+				", routeId='" + routeId + '\'' +
+				'}';
+	}
 }
 
