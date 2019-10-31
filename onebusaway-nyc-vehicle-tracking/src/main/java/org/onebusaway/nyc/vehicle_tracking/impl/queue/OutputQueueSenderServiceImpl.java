@@ -256,7 +256,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
       _outputBuffer.put(sw.toString());
     } catch (final IOException e) {
       _log.info("Could not serialize inferred location record: "
-          + e.getMessage());
+          + e.getMessage(), e);
     } catch (final InterruptedException e) {
       // discard if thread is interrupted or serialization fails
       return;
