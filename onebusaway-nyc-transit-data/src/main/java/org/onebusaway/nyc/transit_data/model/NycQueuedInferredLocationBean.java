@@ -67,7 +67,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
 
 	private String routeId;
 
-	private Double bearing;
+	private double bearing;
 	
 	// Fields from TDS
 	
@@ -398,10 +398,17 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	  } else {
 	  	vlr.setServiceDate(getServiceDate());
 	  }
-	  vlr.setDistanceAlongBlock(getDistanceAlongBlock());
+	  if(getDistanceAlongBlock() != null)
+	  	vlr.setDistanceAlongBlock(getDistanceAlongBlock().doubleValue());
 	  vlr.setCurrentLocationLat(getInferredLatitude().doubleValue());
 	  vlr.setCurrentLocationLon(getInferredLongitude().doubleValue());
-	  vlr.setPhase(EVehiclePhase.valueOf(getPhase()));
+
+	  try{
+		  vlr.setPhase(EVehiclePhase.valueOf(getPhase()));
+	  }catch (IllegalArgumentException e){
+		  vlr.setPhase(EVehiclePhase.UNKNOWN);
+	  }
+
 	  vlr.setStatus(getStatus());
 
 	  if (getScheduleDeviation() != null)
