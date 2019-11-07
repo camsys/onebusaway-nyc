@@ -367,6 +367,9 @@ public class NycSiriUtil {
         } else if (suffix.substring(1).equalsIgnoreCase("LTD")) {
           return sanitizedLineRef.substring(0, sanitizedLineRef.length() - 3);
         }
+        else if(suffix.equalsIgnoreCase("-SBS")){
+          return sanitizedLineRef.substring(0, sanitizedLineRef.length() - 4) + "+";
+        }
       }
     }
     return sanitizedLineRef;

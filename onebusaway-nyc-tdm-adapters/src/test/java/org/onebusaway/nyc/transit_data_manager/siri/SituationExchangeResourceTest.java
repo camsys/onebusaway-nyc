@@ -356,5 +356,8 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
     assertEquals(expected, NycSiriUtil.getSanitizedLineRef("SIM1CLTD"));
     assertEquals(expected, NycSiriUtil.getSanitizedLineRef("SIM1C"));
 
+    expected = "M14A+";
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("M14A-SBS"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("M14A+"));
   }
 }
