@@ -31,7 +31,6 @@ import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceIm
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
-import org.onebusaway.nyc.transit_data_federation.services.schedule.ScheduledServiceService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.OccupancyStatusBean;
@@ -79,7 +78,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	
 	private static Logger _log = LoggerFactory.getLogger(NycTransitDataServiceImpl.class);
 
-	@Resource
+	@Autowired
 	private TransitDataServiceTemplateImpl _transitDataService;
 
 	@Autowired
@@ -391,6 +390,12 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 			String arg0, long arg1, int arg2) {
 		blockUntilBundleIsReady();
 		return _transitDataService.getScheduledBlockLocationFromScheduledTime(arg0, arg1, arg2);
+	}
+
+	@Override
+	public List<BlockInstanceBean> getActiveBlocksForRoute(AgencyAndId agencyAndId, long l, long l1) {
+		blockUntilBundleIsReady();
+		return _transitDataService.getActiveBlocksForRoute(agencyAndId, l, l1);
 	}
 
 	@Override
