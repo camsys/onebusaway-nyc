@@ -243,6 +243,11 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
+    public List<BlockInstanceBean> getActiveBlocksForRoute(AgencyAndId agencyAndId, long l, long l1) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public VehicleStatusBean getVehicleForAgency(String id, long time) {
         VehicleLocationRecordBean vlrb = _vehicleLocations.get(id);
         VehicleStatusBean vsb = new VehicleStatusBean();
