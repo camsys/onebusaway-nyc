@@ -23,6 +23,7 @@ import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @ParentPackage("json-default")
 //@Result(type="json")
@@ -32,12 +33,14 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   private static final long serialVersionUID = 1L;
 
   @Autowired
+  @Qualifier("NycSearchService")
   private SearchService _searchService;
 
   @Autowired
   private NycTransitDataService _nycTransitDataService;
 
   @Autowired
+  @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
 
   private SearchResultCollection _results = null;

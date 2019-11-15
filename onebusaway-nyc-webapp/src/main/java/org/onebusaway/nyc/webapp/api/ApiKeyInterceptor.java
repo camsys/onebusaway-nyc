@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import uk.org.siri.siri.ErrorDescriptionStructure;
 import uk.org.siri.siri.OtherErrorStructure;
 import uk.org.siri.siri.ServiceDelivery;
@@ -40,6 +41,7 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
   private ApiKeyPermissionService _keyService;
 
   @Autowired
+  @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
   
   @Autowired

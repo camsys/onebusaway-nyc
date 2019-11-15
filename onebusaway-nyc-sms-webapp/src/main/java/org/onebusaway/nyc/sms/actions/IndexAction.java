@@ -52,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.dmurph.tracking.AnalyticsConfigData;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class IndexAction extends SessionedIndexAction {
   
@@ -60,12 +61,14 @@ public class IndexAction extends SessionedIndexAction {
   private static final int MAX_SMS_CHARACTER_COUNT = 160;
   
   @Autowired
+  @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
 
   @Autowired
   private ConfigurationService _configurationService;
 
   @Autowired
+  @Qualifier("NycSearchService")
   private SearchService _searchService;
 
   @Autowired

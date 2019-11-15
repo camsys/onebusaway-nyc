@@ -40,6 +40,7 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import uk.org.siri.siri.ErrorDescriptionStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
@@ -60,7 +61,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   @Autowired
   public NycTransitDataService _nycTransitDataService;
 
-  @Autowired  
+  @Autowired
+  @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
   
   @Autowired

@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Action for home page
@@ -40,6 +41,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   private ConfigurationService _configurationService;
   
   @Autowired
+  @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
   
   @Autowired

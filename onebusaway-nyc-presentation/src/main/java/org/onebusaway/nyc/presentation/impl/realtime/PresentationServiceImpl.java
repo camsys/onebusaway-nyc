@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  * @author jmaki
  *
  */
-@Component
+@Component("NycPresentationService")
 public class PresentationServiceImpl implements PresentationService {
   
 

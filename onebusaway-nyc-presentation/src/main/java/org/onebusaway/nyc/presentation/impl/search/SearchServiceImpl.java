@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
  * @author jmaki
  *
  */
-@Component
+@Component("NycSearchService")
 public class SearchServiceImpl implements SearchService {
 
 	// the pattern of what can be leftover after prefix/suffix matching for a

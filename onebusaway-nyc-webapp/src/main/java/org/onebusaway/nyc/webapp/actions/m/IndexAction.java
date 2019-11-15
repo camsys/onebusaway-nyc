@@ -40,6 +40,7 @@ import org.onebusaway.nyc.webapp.psa.MessageService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class IndexAction extends OneBusAwayNYCActionSupport {
 
@@ -52,9 +53,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   private NycTransitDataService _nycTransitDataService;
 
   @Autowired
+  @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
 
   @Autowired
+  @Qualifier("NycSearchService")
   private SearchService _searchService;
   
   @Autowired

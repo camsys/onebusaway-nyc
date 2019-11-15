@@ -52,6 +52,7 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import uk.org.siri.siri_2.AnnotatedLineStructure;
@@ -102,6 +103,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	}
 
 	@Autowired
+	@Qualifier("NycPresentationService")
 	public void setPresentationService(PresentationService presentationService) {
 		_presentationService = presentationService;
 	}

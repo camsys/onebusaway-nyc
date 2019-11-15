@@ -22,6 +22,7 @@ import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.nyc.presentation.service.routes.RouteListService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Action for route index page
@@ -30,7 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class IndexAction extends OneBusAwayNYCActionSupport {
 
     private static final long serialVersionUID = 1L;
+
     @Autowired
+    @Qualifier("NycRouteListService")
     private RouteListService _routeListService;
 
     public boolean getShowAgencyNames() {

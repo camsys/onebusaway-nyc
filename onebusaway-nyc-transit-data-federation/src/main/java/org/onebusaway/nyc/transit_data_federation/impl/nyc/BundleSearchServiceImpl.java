@@ -18,6 +18,8 @@ import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,7 +28,7 @@ import org.springframework.stereotype.Component;
  * @author asutula
  *
  */
-@Component
+@Component("NycBundleSearchService")
 public class BundleSearchServiceImpl implements BundleSearchService {
 
 	@Autowired

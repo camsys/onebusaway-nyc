@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import uk.org.siri.siri.ErrorDescriptionStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.OtherErrorStructure;
@@ -63,6 +64,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   public NycTransitDataService _nycTransitDataService;
 
   @Autowired
+  @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
 
   @Autowired

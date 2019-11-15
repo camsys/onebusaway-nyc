@@ -39,6 +39,7 @@ import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
@@ -49,6 +50,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
   private static final long serialVersionUID = 1L;
 
   @Autowired
+  @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
 
   @Autowired
