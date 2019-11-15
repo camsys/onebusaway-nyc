@@ -78,6 +78,9 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
     }
 
     public boolean showApc(){
+        if(!useApc()){
+            return false;
+        }
         String apc = _configurationService.getConfigurationValueAsString("display.validApcKeys", "");
         List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
         for(String key : keys){
@@ -86,5 +89,9 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
             }
         }
         return false;
+    }
+
+    private boolean useApc(){
+        return _configurationService.getConfigurationValueAsBoolean("tds.useApc", Boolean.FALSE);
     }
 }

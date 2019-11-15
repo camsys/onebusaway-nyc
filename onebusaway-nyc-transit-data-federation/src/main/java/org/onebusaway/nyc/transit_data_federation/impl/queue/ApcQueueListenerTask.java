@@ -53,7 +53,9 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
 
     @Override
     public boolean processMessage(String contents, byte[] buff) throws Exception {        
-
+        if(!useApcIfAvailable()){
+            return false;
+        }
         if(StringUtils.isBlank(contents)){
           _log.warn("rejected message, message is empty");
           return false;
