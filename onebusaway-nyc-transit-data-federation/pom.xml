@@ -25,11 +25,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-transit-data-federation-common</artifactId>
-            <version>${onebusaway.app-modules.version}</version>
-        </dependency>
-        <dependency>
             		<artifactId>hsqldb</artifactId>
             		<groupId>org.hsqldb</groupId>
         </dependency>
