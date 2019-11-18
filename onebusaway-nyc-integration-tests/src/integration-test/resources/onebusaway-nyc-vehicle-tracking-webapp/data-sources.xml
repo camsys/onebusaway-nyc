@@ -84,11 +84,11 @@
     </bean>
 
     <!-- GTFS-Sometimes -->
-    <context:component-scan base-package="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl"/>
+    <!--<context:component-scan base-package="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl"/>
     <context:component-scan base-package="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph"/>
     <bean id="gtfsSometimesClient" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesJsonClientImpl">
         <property name="url" value="file://${onebusaway_prefix}/src/integration-test/resources/gtfs-sometimes/feed.json" />
         <property name="transitDataService" ref="nycTransitDataServiceImpl" />
     </bean>
-    <bean class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />
+    <bean class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />-->
 </beans>
