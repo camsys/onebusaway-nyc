@@ -149,7 +149,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 			// try to get TOC page for this namespace
 			try {
 				NycWikiPageWrapper page = 
-						new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "TOC", forceRefresh));
+						new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "TOC", getLocale(), forceRefresh));
 
 				if(page.pageExists()) {
 					toc = _wikiRenderingService.renderPage(page);	
@@ -167,7 +167,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 				// try to get admin TOC page for this namespace
 				try {
 					NycWikiPageWrapper adminPage = 
-							new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "AdminTOC", forceRefresh));
+							new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "AdminTOC", getLocale(), forceRefresh));
 
 					if(adminPage.pageExists()) {
 						adminToc = _wikiRenderingService.renderPage(adminPage);	
@@ -185,7 +185,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 			// content for page
 			try {
 				NycWikiPageWrapper page = 
-						new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, name, false));
+						new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, name, getLocale(),false));
 				
 				if(page.pageExists()) {
 					content = _wikiRenderingService.renderPage(page);	
