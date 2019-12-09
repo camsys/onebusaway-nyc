@@ -75,7 +75,7 @@ public class LocalBundleStoreImpl implements BundleStoreService {
 						}
 					}             
 				} catch(Exception e) {
-					_log.info("Deserialization of CalendarServiceData.obj in local bundle " + filename + "; skipping.");
+					_log.info("Deserialization of CalendarServiceData.obj in local bundle " + filename + "; skipping.",e);
 					continue;
 				}        
 
