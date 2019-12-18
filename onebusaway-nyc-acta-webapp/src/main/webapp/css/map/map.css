@@ -430,3 +430,7 @@
 #subwayControl a:hover { 
 	background-color: #EEEEEE;
 }
+
+/*#markerLayer img[src*="img/vehicle/vehicle-"] {*/
+	/*filter: sepia(100%) hue-rotate(315deg);*/
+/*}*/
