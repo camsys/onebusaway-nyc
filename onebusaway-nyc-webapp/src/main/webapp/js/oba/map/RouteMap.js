@@ -270,6 +270,11 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 						new google.maps.Point(0,0),
 						new google.maps.Point(25, 25));
 
+				if(typeof activity.MonitoredVehicleJourney.ProgressStatus != 'undefined' && activity.MonitoredVehicleJourney.ProgressStatus != null && activity.MonitoredVehicleJourney.ProgressStatus == "spooking") {
+					icon.url = "img/vehicle/scheduled/vehicle-" + orientationAngle + ".png";
+					marker.setOpacity(0.6);
+				}
+
 				marker.setIcon(icon);
 
 				// position
@@ -299,6 +304,11 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 					delete vehiclesByRoute[vehicleOnMap_routeId][vehicleOnMap_vehicleId];
 				}
 			});
+			var overlay = new google.maps.OverlayView();
+			overlay.draw = function () {
+				this.getPanes().markerLayer.id = 'markerLayer';
+			};
+			overlay.setMap(map);
 		});
 	}
 	
