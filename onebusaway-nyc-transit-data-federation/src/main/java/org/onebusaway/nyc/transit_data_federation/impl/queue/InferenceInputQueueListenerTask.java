@@ -102,13 +102,16 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 				return;
 			}
 		}
+		if (!inferredResult.getPhase().equals("SPOOKING")) {
+			vlr.setDistanceAlongBlock(inferredResult.getDistanceAlongBlock());
+		}
 		vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(inferredResult.getVehicleId()));
 		vlr.setTimeOfRecord(inferredResult.getRecordTimestamp());
 		vlr.setTimeOfLocationUpdate(inferredResult.getRecordTimestamp());
 		vlr.setBlockId(AgencyAndIdLibrary.convertFromString(inferredResult.getBlockId()));
 		vlr.setTripId(AgencyAndIdLibrary.convertFromString(inferredResult.getTripId()));
 		vlr.setServiceDate(inferredResult.getServiceDate());
-		vlr.setDistanceAlongBlock(inferredResult.getDistanceAlongBlock());
+//		vlr.setDistanceAlongBlock(inferredResult.getDistanceAlongBlock());
 		vlr.setCurrentLocationLat(inferredResult.getInferredLatitude());
 		vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
 		vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getPhase()));

@@ -12,6 +12,8 @@ public interface PresentationService {
 
   public Boolean isBlockLevelInference(TripStatusBean statusBean);
 
+  public Boolean isSpooking(TripStatusBean statusBean);
+
   public Boolean isInLayover(TripStatusBean statusBean);
 
   public Boolean isOnDetour(TripStatusBean statusBean);
@@ -37,6 +39,6 @@ public interface PresentationService {
 		String multipleStopsWord, String oneMileWord, String multipleMilesWord,
 		String awayWord);
 
-  
+
 
 }

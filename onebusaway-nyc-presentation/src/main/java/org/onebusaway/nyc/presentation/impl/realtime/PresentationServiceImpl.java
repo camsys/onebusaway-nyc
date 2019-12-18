@@ -132,6 +132,21 @@ public class PresentationServiceImpl implements PresentationService {
     return null;
   }
 
+
+//  @Override
+  public Boolean isSpooking(TripStatusBean statusBean) {
+    if (statusBean != null) {
+      String phase = statusBean.getPhase();
+
+      if (phase != null && phase.toUpperCase().equals("SPOOKING")) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return null;
+  }
+
   @Override
   public Boolean isBlockLevelInference(TripStatusBean statusBean) {
     if(statusBean != null) {
@@ -264,7 +279,8 @@ public class PresentationServiceImpl implements PresentationService {
     if(phase != null 
         && !phase.toUpperCase().equals("IN_PROGRESS")
         && !phase.toUpperCase().equals("LAYOVER_BEFORE") 
-        && !phase.toUpperCase().equals("LAYOVER_DURING")) {
+        && !phase.toUpperCase().equals("LAYOVER_DURING")
+        && !phase.toUpperCase().equals("SPOOKING")) {
       _log.debug("  " + statusBean.getVehicleId() + " filtered out because phase is not in progress.");      
       return false;
     }
