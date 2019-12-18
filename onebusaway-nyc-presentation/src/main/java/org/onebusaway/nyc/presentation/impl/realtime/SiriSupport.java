@@ -22,6 +22,9 @@ import java.text.SimpleDateFormat;
 import java.time.Month;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.commons.lang.StringUtils;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -75,6 +78,9 @@ public final class SiriSupport {
 	public SiriSupport(ConfigurationService configurationService){
 		_configurationService = configurationService;
 	}
+
+	private static Logger _log = LoggerFactory.getLogger(PresentationServiceImpl.class);
+
 
 	public enum OnwardCallsMode {
 		VEHICLE_MONITORING,
@@ -233,6 +239,11 @@ public final class SiriSupport {
 
 		if (presentationService.isInLayover(currentVehicleTripStatus)) {
 			progressStatuses.add("layover");
+		}
+
+		if (presentationService.isSpooking(currentVehicleTripStatus)) {
+			progressStatuses.add("spooking");
+			_log.info("SPOOKING BUS"); //TODO: what info is valuable to log here?
 		}
 
 		// "prevTrip" really means not on the framedvehiclejourney trip
