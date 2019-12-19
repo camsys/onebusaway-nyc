@@ -432,7 +432,32 @@
 }
 
 #markerLayer img[src*="img/vehicle/scheduled/vehicle-"] {
-	border: 10px solid black;
 	opacity: 0.6;
-	filter: sepia(60%) saturate(1000%) contrast(1000%) hue-rotate(315deg);
+	filter: sepia(40%) hue-rotate(315deg) saturate(1000%);
+}
+
+img[src*="img/vehicle/scheduled/vehicle-"] {
+	opacity: 0.6;
+	filter: sepia(40%) hue-rotate(315deg) saturate(1000%);
+}
+
+
+#legend {
+	background-color: #e8e8e89e;
+	padding-right: 15px;
+	margin-right: 20px;
+	border: 1px solid #696969;
+	border-radius: 10px;
+}
+#legend h3 {
+	margin-top: 0;
+	font-weight: bold;
+	font-size: 1.05em;
+}
+#legend img {
+	vertical-align: middle;
+}
+
+#legend span {
+	font-size: 14px;
 }
