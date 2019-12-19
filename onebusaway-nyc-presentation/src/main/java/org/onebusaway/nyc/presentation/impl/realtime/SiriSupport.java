@@ -243,7 +243,7 @@ public final class SiriSupport {
 
 		if (presentationService.isSpooking(currentVehicleTripStatus)) {
 			progressStatuses.add("spooking");
-			_log.info("SPOOKING BUS"); //TODO: what info is valuable to log here?
+			_log.debug("SPOOKING BUS"); //TODO: what info is valuable to log here?
 		}
 
 		// "prevTrip" really means not on the framedvehiclejourney trip
