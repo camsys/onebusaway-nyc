@@ -598,13 +598,17 @@ OBA.Popups = (function() {
 							var vehicleId = monitoredVehicleJourney.VehicleRef.split("_")[1];
 							distance += '<span class="vehicleId"> (#' + vehicleId + ')</span>';
 						}
+						var arrival = "arrival";
+						if (typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && monitoredVehicleJourney.ProgressStatus !== null && monitoredVehicleJourney.ProgressStatus === 'spooking') {
+							arrival = "scheduled_arrival";
+						}
 						
 						// time mode
                         if(tripId != null) {
-                            html += '<li class="arrival' + lastClass + '">' + 'tripId: ' + tripId + '</li>';
+                            html += '<li class="' + arrival + lastClass + '">' + 'tripId: ' + tripId + '</li>';
                         }
                         if(scheduledArrivalTime != null) {
-                            html += '<li class="arrival' + lastClass + '">' + 'scheduled: ' + scheduledArrivalTime + '</li>';
+                            html += '<li class="' + arrival + lastClass + '">' + 'scheduled: ' + scheduledArrivalTime + '</li>';
                         }
 						if(timePrediction != null) {
 							timePrediction += ", " + distance + loadOccupancy;
@@ -632,7 +636,7 @@ OBA.Popups = (function() {
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
-							html += '<li class="arrival' + lastClass + '">' + timePrediction + '</li>';
+							html += '<li class="' + arrival + lastClass + '">' + timePrediction + '</li>';
 
 						// distance mode
 						} else {
@@ -654,7 +658,7 @@ OBA.Popups = (function() {
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
-							html += '<li class="arrival' + lastClass + '">' + distance + '</li>';
+							html += '<li class="' + arrival + lastClass + '">' + distance + '</li>';
 						}
 					}
 				});
