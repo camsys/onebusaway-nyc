@@ -456,6 +456,7 @@ img[src*="img/vehicle/scheduled/vehicle-"] {
 }
 #legend img {
 	vertical-align: middle;
+	height: 42px;
 }
 
 #legend span {

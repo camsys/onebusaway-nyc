@@ -200,6 +200,16 @@
 	background-repeat: no-repeat;
 }
 
+.popup ul li.scheduled_arrival {
+	white-space: nowrap;
+	height: 16px;
+	font-weight: bold;
+	padding-left: 19px;
+	background: url("img/schedule_bullet_bus.png");
+	background-position: left top;
+	background-repeat: no-repeat;
+}
+
 .popup ul li.arrival .not_bold {
 	font-weight: normal;
 	white-space: nowrap;
