@@ -599,8 +599,12 @@ OBA.Popups = (function() {
 							distance += '<span class="vehicleId"> (#' + vehicleId + ')</span>';
 						}
 						var arrival = "arrival";
+						var spooking = false;
 						if (typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && monitoredVehicleJourney.ProgressStatus !== null && monitoredVehicleJourney.ProgressStatus === 'spooking') {
+							spooking = true;
 							arrival = "scheduled_arrival";
+							tripId += "(using scheduled time)";
+							scheduledArrivalTime += "(using scheduled time)";
 						}
 						
 						// time mode
@@ -634,6 +638,9 @@ OBA.Popups = (function() {
 									timePrediction += layoverLateDepartureText;	
 								}
 							}
+							if(spooking) {
+								timePrediction += "(using scheduled time)";
+							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
 							html += '<li class="' + arrival + lastClass + '">' + timePrediction + '</li>';
@@ -655,6 +662,9 @@ OBA.Popups = (function() {
 										distance += prevTripLateDepartureText;
 									}
 								}
+							}
+							if(spooking) {
+								distance += "(using scheduled time)";
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
