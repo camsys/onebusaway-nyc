@@ -270,6 +270,11 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 						new google.maps.Point(0,0),
 						new google.maps.Point(25, 25));
 
+				if(typeof activity.MonitoredVehicleJourney.ProgressStatus != 'undefined' && activity.MonitoredVehicleJourney.ProgressStatus != null && activity.MonitoredVehicleJourney.ProgressStatus == "spooking") {
+					icon.url = "img/vehicle/scheduled/vehicle-" + orientationAngle + ".png";
+					marker.setOpacity(0.6);
+				}
+
 				marker.setIcon(icon);
 
 				// position
@@ -299,6 +304,11 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 					delete vehiclesByRoute[vehicleOnMap_routeId][vehicleOnMap_vehicleId];
 				}
 			});
+			var overlay = new google.maps.OverlayView();
+			overlay.draw = function () {
+				this.getPanes().markerLayer.id = 'markerLayer';
+			};
+			overlay.setMap(map);
 		});
 	}
 	
@@ -346,7 +356,35 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		}
 		highlightedStop = null;
 	}
-		
+
+	function showLegend(map) {
+		var iconBase = OBA.Config.urlPrefix + 'img/';
+		var icons = {
+			realtime: {
+				name: 'Real-Time',
+				icon: "img/vehicle/vehicle-unknown.png"
+			},
+			scheduled: {
+				name: 'Scheduled',
+				icon: "img/vehicle/scheduled/vehicle-unknown.png"
+			}
+		};
+
+		var legend = document.getElementById('legend');
+		for (var key in icons) {
+			var type = icons[key];
+			var name = type.name;
+			var icon = type.icon;
+			var div = document.createElement('div');
+			div.innerHTML = '<img src="' + icon + '"> ' + '<span>' + name + '</span>';
+			if (legend) legend.appendChild(div);
+		}
+
+
+		map.controls[google.maps.ControlPosition.RIGHT_TOP].push(legend);
+	}
+
+
 	//////////////////// CONSTRUCTOR /////////////////////
 
 	map = new OBA.GoogleMapWrapper(document.getElementById("map"));
@@ -367,6 +405,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		// start adding things to map once it's ready...
 		if(initialized === false) {
 			initialized = true;
+
+			showLegend(map);
 
 			if(typeof initCallbackFn === 'function') {
 				initCallbackFn();

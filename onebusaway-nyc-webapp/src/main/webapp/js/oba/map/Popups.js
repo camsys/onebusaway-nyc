@@ -598,13 +598,21 @@ OBA.Popups = (function() {
 							var vehicleId = monitoredVehicleJourney.VehicleRef.split("_")[1];
 							distance += '<span class="vehicleId"> (#' + vehicleId + ')</span>';
 						}
+						var arrival = "arrival";
+						var spooking = false;
+						if (typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && monitoredVehicleJourney.ProgressStatus !== null && monitoredVehicleJourney.ProgressStatus === 'spooking') {
+							spooking = true;
+							arrival = "scheduled_arrival";
+							tripId += "(using scheduled time)";
+							scheduledArrivalTime += "(using scheduled time)";
+						}
 						
 						// time mode
                         if(tripId != null) {
-                            html += '<li class="arrival' + lastClass + '">' + 'tripId: ' + tripId + '</li>';
+                            html += '<li class="' + arrival + lastClass + '">' + 'tripId: ' + tripId + '</li>';
                         }
                         if(scheduledArrivalTime != null) {
-                            html += '<li class="arrival' + lastClass + '">' + 'scheduled: ' + scheduledArrivalTime + '</li>';
+                            html += '<li class="' + arrival + lastClass + '">' + 'scheduled: ' + scheduledArrivalTime + '</li>';
                         }
 						if(timePrediction != null) {
 							timePrediction += ", " + distance + loadOccupancy;
@@ -630,9 +638,12 @@ OBA.Popups = (function() {
 									timePrediction += layoverLateDepartureText;	
 								}
 							}
+							if(spooking) {
+								timePrediction += "(using scheduled time)";
+							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
-							html += '<li class="arrival' + lastClass + '">' + timePrediction + '</li>';
+							html += '<li class="' + arrival + lastClass + '">' + timePrediction + '</li>';
 
 						// distance mode
 						} else {
@@ -652,9 +663,12 @@ OBA.Popups = (function() {
 									}
 								}
 							}
+							if(spooking) {
+								distance += "(using scheduled time)";
+							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
-							html += '<li class="arrival' + lastClass + '">' + distance + '</li>';
+							html += '<li class="' + arrival + lastClass + '">' + distance + '</li>';
 						}
 					}
 				});

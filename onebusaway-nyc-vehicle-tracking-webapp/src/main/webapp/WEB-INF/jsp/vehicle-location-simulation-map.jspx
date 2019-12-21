@@ -749,6 +749,7 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 </td>
 <td>
 	<div id="map" style="width: 1500px; height: 1000px;"></div>
+	<div id="legend"></div>
 </td>
 </tr>
 </table>
