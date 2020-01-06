@@ -229,6 +229,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				var routeName = activity.MonitoredVehicleJourney.PublishedLineName;
 
 				var vehicleId = activity.MonitoredVehicleJourney.VehicleRef;
+				var hasRealtime = activity.MonitoredVehicleJourney.Monitored;
 				var vehicleIdParts = vehicleId.split("_");
 				var vehicleIdWithoutAgency = vehicleIdParts[1];
 				var marker = vehiclesById[vehicleId];

@@ -437,7 +437,6 @@
 }
 
 img[src*="img/vehicle/scheduled/vehicle-"] {
-	opacity: 0.6;
 	filter: sepia(40%) hue-rotate(315deg) saturate(1000%);
 }
 
