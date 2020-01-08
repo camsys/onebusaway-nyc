@@ -13,6 +13,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.CheckShapeIdTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.ClearCSVTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.SummarizeCSVTask;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.save.SaveGtfsTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.logging.LoggingService;
@@ -184,7 +185,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           + "stif");
     }
 
-    _log.info("stip unzip complete ");
+    _log.info("stif unzip complete ");
     
     // stage baseLocations
     InputStream baseLocationsStream = this.getClass().getResourceAsStream("/BaseLocations.txt");
@@ -397,6 +398,23 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       _log.debug("setting outputPath=" + outputPath);
       creator.setOutputPath(outputPath);
       creator.setContextPaths(contextPaths);
+
+
+      // STEP 5
+      BeanDefinitionBuilder saveGtfsTask = BeanDefinitionBuilder.genericBeanDefinition(SaveGtfsTask.class);
+      saveGtfsTask.addPropertyReference("logger", "multiCSVLogger");
+      saveGtfsTask.addPropertyReference("dao", "gtfsRelationalDaoImpl");
+      saveGtfsTask.addPropertyValue("applicationContext", context);
+      saveGtfsTask.addPropertyValue("outputDirectory", outputPath);
+
+      beans.put("saveGtfsTask", saveGtfsTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "saveGtfsTask");
+      task.addPropertyValue("afterTaskName", "summarizeCSVTask");
+      task.addPropertyValue("beforeTaskName", "transit_graph");
+      task.addPropertyReference("task", "saveGtfsTask");
+      beans.put("saveGtfsTaskDef", task.getBeanDefinition());
 
       // manage our own context to recover from exceptions
       Map<String, BeanDefinition> contextBeans = new HashMap<String, BeanDefinition>();
