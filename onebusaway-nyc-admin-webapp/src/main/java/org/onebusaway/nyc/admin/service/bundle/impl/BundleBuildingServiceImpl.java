@@ -285,6 +285,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     try {
       File outputPath = new File(response.getBundleDataDirectory());
       File loggingPath = new File(response.getBundleOutputDirectory());
+
+      File gtfsPath = new File(response.getBundleOutputDirectory() + File.separator + "GTFS");
+      gtfsPath.mkdir();
       
       // beans assume bundlePath is set -- this will be where files are written!
       System.setProperty("bundlePath", outputPath.getAbsolutePath());
@@ -405,7 +408,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       saveGtfsTask.addPropertyReference("logger", "multiCSVLogger");
       saveGtfsTask.addPropertyReference("dao", "gtfsRelationalDaoImpl");
       saveGtfsTask.addPropertyValue("applicationContext", context);
-      saveGtfsTask.addPropertyValue("outputDirectory", outputPath);
+      saveGtfsTask.addPropertyValue("outputDirectory", gtfsPath);
 
       beans.put("saveGtfsTask", saveGtfsTask.getBeanDefinition());
 
