@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -24,6 +25,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 
+@Component
 public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
 
     private static Logger _log = LoggerFactory.getLogger(UnassignedVehicleServiceImpl.class);
@@ -41,8 +43,6 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
 
     private OutputQueueSenderService _outputQueueSenderService;
 
-    private Map<AgencyAndId, UnassignedVehicleRecord> _vehicleIdToUnassignedRecord = new HashMap<AgencyAndId, UnassignedVehicleRecord>();
-
     private ObjectMapper _mapper;
 
     private URL _url;
@@ -56,6 +56,11 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     public void setConfigurationService(ConfigurationService configurationService) {
         this._configurationService = configurationService;
         configChanged();
+    }
+
+    @Autowired
+    public void setVehicleLocationInferenceService(VehicleLocationInferenceService vehicleLocationInferenceService){
+        _vehicleLocationInferenceService = vehicleLocationInferenceService;
     }
 
     @Autowired
@@ -82,19 +87,11 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     @PostConstruct
     public void setup(){
         setupMapper();
-        startUpdateProcess();
     }
 
     public void setupMapper() {
         _mapper = new ObjectMapper();
         _mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
-    private void startUpdateProcess() {
-        Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("vtw.vehiclePipoRefreshInterval", 60);
-        if (_updateTask==null) {
-            setUpdateFrequency(updateIntervalSecs);
-        }
     }
 
     @SuppressWarnings("unchecked")
