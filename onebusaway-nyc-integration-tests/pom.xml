@@ -188,8 +188,31 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1.1</version>
                 <executions>
-                	<execution>
-                        <id>graph-builder-execution-2016April_Prod_r01_b05</id>
+                    <execution>
+                        <id>graph-builder-execution-2019Sept_Prod_Brooklyn_r16_b07</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx3g</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2019Sept_Prod_Brooklyn_r16_b07.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2019Sept_Prod_Brooklyn_r16_b07</argument>
+                            </arguments>
+                        </configuration>
+                </execution>
+                <execution>
+                    <id>graph-builder-execution-2016April_Prod_r01_b05</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -210,9 +233,9 @@
                                 <argument>${project.build.directory}/transit-data-bundle/2016April_Prod_r01_b05</argument>
                             </arguments>
                         </configuration>
-                    </execution>
-                  <execution>
-                        <id>graph-builder-execution-2016Jan_ManBC_WkdOnly</id>
+                </execution>
+                <execution>
+                    <id>graph-builder-execution-2016Jan_ManBC_WkdOnly</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
