@@ -111,7 +111,6 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 		vlr.setBlockId(AgencyAndIdLibrary.convertFromString(inferredResult.getBlockId()));
 		vlr.setTripId(AgencyAndIdLibrary.convertFromString(inferredResult.getTripId()));
 		vlr.setServiceDate(inferredResult.getServiceDate());
-//		vlr.setDistanceAlongBlock(inferredResult.getDistanceAlongBlock());
 		vlr.setCurrentLocationLat(inferredResult.getInferredLatitude());
 		vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
 		vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getPhase()));
