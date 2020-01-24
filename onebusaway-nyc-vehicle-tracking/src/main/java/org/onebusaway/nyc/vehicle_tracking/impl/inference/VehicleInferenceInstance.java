@@ -725,6 +725,8 @@ public class VehicleInferenceInstance {
         nycRecord.getRunNumber()));
     
     record.setAssignedBlockId(obs.getAssignedBlockId());
+    record.setSpeed(nycRecord.getSpeed());
+    record.setBearing(nycRecord.getBearing());
 
     final EVehiclePhase phase = journeyState.getPhase();
     if (phase != null)

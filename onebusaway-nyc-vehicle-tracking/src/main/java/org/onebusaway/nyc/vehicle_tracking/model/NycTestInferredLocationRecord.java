@@ -158,6 +158,12 @@ public class NycTestInferredLocationRecord implements Serializable {
   @CsvField(optional = true, ignore=true)
   private String inferredEdge = null;
 
+  @CsvField(optional = true, ignore=true)
+  private short speed;
+
+  @CsvField(optional = true, ignore=true)
+  private double bearing;
+
   // **************
 
   public void setVehicleId(AgencyAndId vehicleId) {
@@ -526,5 +532,21 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public void setAssignedBlockId(String assignedBlockId) {
     this.assignedBlockId = assignedBlockId;
+  }
+
+  public short getSpeed() {
+    return speed;
+  }
+
+  public void setSpeed(short speed) {
+    this.speed = speed;
+  }
+
+  public double getBearing() {
+    return bearing;
+  }
+
+  public void setBearing(double bearing) {
+    this.bearing = bearing;
   }
 }

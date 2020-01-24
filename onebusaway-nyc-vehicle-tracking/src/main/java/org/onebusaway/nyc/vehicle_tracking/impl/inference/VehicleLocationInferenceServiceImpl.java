@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -322,9 +323,9 @@ public class VehicleLocationInferenceServiceImpl implements
 
     final Angle bearing = message.getDirection();
     if (bearing != null) {
-      final Integer degrees = bearing.getCdeg();
+      final BigDecimal degrees = bearing.getDeg();
       if (degrees != null)
-        r.setBearing(degrees);
+        r.setBearing(degrees.doubleValue());
     }
 
     r.setSpeed(message.getSpeed());

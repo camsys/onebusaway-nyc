@@ -68,6 +68,8 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	private String routeId;
 
 	private double bearing;
+
+	private short speed;
 	
 	// Fields from TDS
 	
@@ -315,6 +317,14 @@ public class NycQueuedInferredLocationBean implements Serializable {
 
 	public void setLastLocationUpdateTime(Long lastLocationUpdateTime) {
 		this.lastLocationUpdateTime = lastLocationUpdateTime;
+	}
+
+	public short getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed(short speed) {
+		this.speed = speed;
 	}
 
 	public void setRouteBean(RouteBean rb) {

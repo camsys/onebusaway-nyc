@@ -59,6 +59,8 @@ public class RecordLibrary {
     qlr.setPhase(record.getInferredPhase());
     qlr.setStatus(record.getInferredStatus());
     qlr.setAssignedBlockId(record.getAssignedBlockId());
+    qlr.setSpeed(record.getSpeed());
+    qlr.setBearing(record.getBearing());
     // TODO add operator, run?
 
     return qlr;
