@@ -9,12 +9,10 @@ import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.nyc.admin.util.ProcessUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.CheckShapeIdTask;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.ClearCSVTask;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.SummarizeCSVTask;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.*;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.save.SaveGtfsTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stiftransformer.StifTransformerTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
@@ -39,7 +37,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -286,8 +283,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       File outputPath = new File(response.getBundleDataDirectory());
       File loggingPath = new File(response.getBundleOutputDirectory());
 
-      File gtfsPath = new File(response.getBundleOutputDirectory() + File.separator + "GTFS");
-      gtfsPath.mkdir();
+      File gtfsOutputPath = new File(response.getBundleOutputDirectory() + File.separator + "GTFS");
+      gtfsOutputPath.mkdir();
+
+      File stifOutputPath = new File(response.getBundleOutputDirectory() + File.separator + "STIF");
+      stifOutputPath.mkdir();
       
       // beans assume bundlePath is set -- this will be where files are written!
       System.setProperty("bundlePath", outputPath.getAbsolutePath());
@@ -353,11 +353,29 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       beans.put("checkShapeIdTaskDef", task.getBeanDefinition());
 
       // STEP 3
+      BeanDefinitionBuilder stifTransformerTask = BeanDefinitionBuilder.genericBeanDefinition(StifTransformerTask.class);
+      stifTransformerTask.addPropertyReference("logger", "multiCSVLogger");
+      stifTransformerTask.addPropertyValue("stifsPath", request.getTmpDirectory() + File.separator + "stif");
+      stifTransformerTask.addPropertyValue("stifTransform", "{\"op\":\"update\",\"match\":{\"class\":\"EventRecord\",\"location\":\"1473\"},\"update\":{\"boardingAlightingFlag\":\"N\"}}");
+      stifTransformerTask.addPropertyValue("stifOutputPath", stifOutputPath.getAbsolutePath());
+
+      File stifFolderInputPath = new File(request.getTmpDirectory() + File.separator + "stif");
+
+      beans.put("stifTransformerTask", stifTransformerTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "stifTransformerTask");
+      task.addPropertyValue("afterTaskName", "checkShapeIdTask");
+      task.addPropertyValue("beforeTaskName", "transit_graph");
+      task.addPropertyReference("task", "stifTransformerTask");
+      beans.put("stifTransformerTaskDef", task.getBeanDefinition());
+
+      // STEP 4
       BeanDefinitionBuilder stifLoaderTask = BeanDefinitionBuilder.genericBeanDefinition(StifTask.class);
       stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
       stifLoaderTask.addPropertyReference("logger", "multiCSVLogger");
       // TODO this is a convention, pull out into config?
-      stifLoaderTask.addPropertyValue("stifPath", request.getTmpDirectory() + File.separator + "stif"); 
+      stifLoaderTask.addPropertyValue("stifPath", stifOutputPath);
       String notInServiceFilename = request.getTmpDirectory() + File.separator
           + "NotInServiceDSCs.txt";
 
@@ -381,12 +399,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "stifLoaderTask");
-      task.addPropertyValue("afterTaskName", "checkShapeIdTask");
+      task.addPropertyValue("afterTaskName", "stifTransformerTask");
       task.addPropertyValue("beforeTaskName", "transit_graph");
       task.addPropertyReference("task", "stifLoaderTask");
       beans.put("stifLoaderTaskDef", task.getBeanDefinition());
 
-      // STEP 4
+      // STEP 5
       BeanDefinitionBuilder summarizeCSVTask = BeanDefinitionBuilder.genericBeanDefinition(SummarizeCSVTask.class);
       summarizeCSVTask.addPropertyReference("logger", "multiCSVLogger");
       beans.put("summarizeCSVTask", summarizeCSVTask.getBeanDefinition());
@@ -403,12 +421,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       creator.setContextPaths(contextPaths);
 
 
-      // STEP 5
+      // STEP 6
       BeanDefinitionBuilder saveGtfsTask = BeanDefinitionBuilder.genericBeanDefinition(SaveGtfsTask.class);
       saveGtfsTask.addPropertyReference("logger", "multiCSVLogger");
       saveGtfsTask.addPropertyReference("dao", "gtfsRelationalDaoImpl");
       saveGtfsTask.addPropertyValue("applicationContext", context);
-      saveGtfsTask.addPropertyValue("outputDirectory", gtfsPath);
+      saveGtfsTask.addPropertyValue("outputDirectory", gtfsOutputPath);
 
       beans.put("saveGtfsTask", saveGtfsTask.getBeanDefinition());
 
