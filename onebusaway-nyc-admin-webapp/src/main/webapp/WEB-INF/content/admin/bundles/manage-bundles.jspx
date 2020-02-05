@@ -68,7 +68,9 @@
 								inputs</span></a></li>
 					<li><a href="#Build" title="Build And Validate"><span>4. Build
 								And Validate</span></a></li>
-					<li><a href="#Deploy" title="Deploy Bundle"><span>5. Deploy
+					<li><a href="#Compare" title="Compare Bundles"><span>5. Compare
+								Bundles</span></a></li>
+					<li><a href="#Deploy" title="Deploy Bundle"><span>6. Deploy
 								Bundle</span></a></li>
 				</ul>
 
@@ -89,6 +91,11 @@
 				</div>
 				<div id="Build">
 					<jsp:include page="build-bundle.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
+				<div id="Compare">
+					<jsp:include page="compare-bundles.jspx">
 						<!--  space -->
 					</jsp:include>
 				</div>

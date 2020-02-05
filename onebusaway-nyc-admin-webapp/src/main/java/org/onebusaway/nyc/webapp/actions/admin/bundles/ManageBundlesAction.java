@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.servlet.ServletContext;
 
@@ -77,10 +79,12 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	private String emailTo;
 	private InputStream downloadInputStream;
 	private List<String> fileList = new ArrayList<String>();
+	private String selectedBundleName;
 	private DirectoryStatus directoryStatus;
 	// where the bundle is deployed to
 	private String s3Path = "s3://bundle-data/activebundle/<env>/";
 	private String environment = "dev";
+	private SortedMap<String, String> existingBuildList = new TreeMap<String, String>();
 	
 	@Override
 	public String input() {
@@ -161,6 +165,22 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	    fileList.addAll(this.bundleResponse.getValidationFiles());
 	  }
 	  return "fileList";
+	}
+
+	public String existingBuildList() {
+		existingBuildList.clear();
+		_log.info("existingBuildList called for path=" + fileService.getBucketName()+"/"+ selectedBundleName +"/"+fileService.getBuildPath());
+		File builds = new File(fileService.getBucketName()+"/"+ selectedBundleName +"/"+fileService.getBuildPath());
+		File[] existingDirectories = builds.listFiles();
+		if(existingDirectories == null){
+			return null;
+		}
+		int i = 1;
+		for(File file: existingDirectories) {
+			existingBuildList.put(file.getName(), ""+i++);
+		}
+
+	return "existingBuildList";
 	}
 	
 	public String download() {
@@ -323,6 +343,14 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
     return bundleName;
 	}
 
+	public void setSelectedBundleName(String selectedBundleName) {
+		this.selectedBundleName = selectedBundleName;
+	}
+
+	public String getSelectedBundleName() {
+		return selectedBundleName;
+	}
+
 	public DirectoryStatus getDirectoryStatus() {
 	  return directoryStatus;
 	}
@@ -341,6 +369,10 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 
 	public List<String> getFileList() {
 	  return this.fileList;
+	}
+
+	public SortedMap<String, String> getExistingBuildList() {
+		return this.existingBuildList;
 	}
 
 	public void setEmailTo(String to) {

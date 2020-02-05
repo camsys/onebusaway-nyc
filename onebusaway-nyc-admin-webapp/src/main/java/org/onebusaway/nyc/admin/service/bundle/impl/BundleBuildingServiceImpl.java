@@ -356,7 +356,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       BeanDefinitionBuilder stifTransformerTask = BeanDefinitionBuilder.genericBeanDefinition(StifTransformerTask.class);
       stifTransformerTask.addPropertyReference("logger", "multiCSVLogger");
       stifTransformerTask.addPropertyValue("stifsPath", request.getTmpDirectory() + File.separator + "stif");
-      stifTransformerTask.addPropertyValue("stifTransform", "{\"op\":\"update\",\"match\":{\"class\":\"EventRecord\",\"location\":\"1473\"},\"update\":{\"boardingAlightingFlag\":\"N\"}}");
+      stifTransformerTask.addPropertyValue("stifTransform", "https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/stif_transformations.md");
       stifTransformerTask.addPropertyValue("stifOutputPath", stifOutputPath.getAbsolutePath());
 
       File stifFolderInputPath = new File(request.getTmpDirectory() + File.separator + "stif");
