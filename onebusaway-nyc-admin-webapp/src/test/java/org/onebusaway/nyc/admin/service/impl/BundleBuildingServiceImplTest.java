@@ -153,6 +153,12 @@ public class BundleBuildingServiceImplTest {
     testBuild(2);
   }
 
+  @Ignore
+  @Test
+  public void transformationTestBuild(){
+
+  }
+
   public void testBuild(int mode) {
     String bundleDir = (mode == 1) ? "test" : "extensiveTest";
 
