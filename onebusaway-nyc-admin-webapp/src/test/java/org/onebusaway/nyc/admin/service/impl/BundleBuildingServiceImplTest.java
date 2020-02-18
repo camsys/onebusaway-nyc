@@ -77,6 +77,7 @@ public class BundleBuildingServiceImplTest {
         } else if (directory.equals("test/config")) {
           // do nothing
         } else if (directory.equals("extensiveTest/gtfs_latest")) {
+          list.add("GTFS_MTABC.zip");
           list.add("google_transit_mta_agency.zip");
           list.add("google_transit_queens.zip");
           list.add("google_transit_staten_island.zip");
@@ -84,12 +85,12 @@ public class BundleBuildingServiceImplTest {
           list.add("google_transit_brooklyn.zip");
           list.add("google_transit_manhattan.zip");
         } else if (directory.equals("extensiveTest/stif_latest")) {
-          list.add("STIF_MTABC_B9_AsAssigned_Rte_Included_v2-v1.zip");
-          list.add("STIF_SURFACE_BX_2019-04-28_REV2019-03-19_1348211.zip");
-          list.add("STIF_SURFACE_B_2019-04-28_REV2019-03-22_1507259-v2.zip");
-          list.add("STIF_SURFACE_M_2019-04-28_REV2019-04-05_1059035.zip");
-          list.add("STIF_SURFACE_Q_2019-04-28_REV2019-05-28_1348461-v2.zip");
-          list.add("STIF_SURFACE_S_2019-04-28_REV2019-05-01_0929286.zip");
+          list.add("STIF_MTABC_A0_AsAssigned_Rte_Included_Hol_Included-v1.zip");
+          list.add("STIF_SURFACE_BX_2020-01-19_REV2019-11-25_1032003.zip");
+          list.add("STIF_SURFACE_B_2020-01-19_REV2019-12-17_0832430.zip");
+          list.add("STIF_SURFACE_M_2020-01-31_REV2020-02-05_1050273.zip");
+          list.add("STIF_SURFACE_Q_2020-01-19_REV2020-01-14_1130185-v1.zip");
+          list.add("STIF_SURFACE_S_2020-01-19_REV2020-02-03_0943449.zip");
         } else if (directory.equals("extensiveTest/config")) {
           // do nothing
         }
@@ -182,7 +183,7 @@ public class BundleBuildingServiceImplTest {
     // step 1
     _service.download(request, response);
     assertNotNull(response.getGtfsList());
-    int expected = (mode == 1) ? 1 : 6;
+    int expected = (mode == 1) ? 1 : 7;
     assertEquals(expected, response.getGtfsList().size());
     expected = (mode == 1) ? 1 : 6;
     assertNotNull(response.getStifZipList());
