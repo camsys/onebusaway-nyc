@@ -7,7 +7,7 @@ import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
-import org.onebusaway.nyc.admin.service.bundle.task.NycGtfsModTask;
+import org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation.NycGtfsModTask;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.nyc.admin.util.ProcessUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
@@ -16,7 +16,6 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.save.SaveGtfsTask
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stiftransformer.StifTransformerTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.util.configuration.ConfigurationServiceClientFileImpl;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
@@ -334,6 +333,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       BeanDefinitionBuilder nycBundle = BeanDefinitionBuilder.genericBeanDefinition(NycFederatedTransitDataBundle.class);
       nycBundle.addPropertyValue("path", outputPath);
       beans.put("nycBundle", nycBundle.getBeanDefinition());
+      BeanDefinitionBuilder task;
 
       // STEP 0
       BeanDefinitionBuilder nycGtfsModTask = BeanDefinitionBuilder.genericBeanDefinition(NycGtfsModTask.class);
@@ -341,11 +341,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       nycGtfsModTask.addPropertyValue("requestResponse", requestResponse);
       nycGtfsModTask.addPropertyValue("bundleRequestResponse", requestResponse);
       nycGtfsModTask.addPropertyReference("logger", "multiCSVLogger");
-      nycGtfsModTask.addPropertyReference("gtfsBundles", "gtfs-bundles");
+      //nycGtfsModTask.addPropertyReference("applicationContext", "??????????????????????????????");
       nycGtfsModTask.addPropertyValue("configurationService", configurationService);
 
       beans.put("NycGtfsModTask", nycGtfsModTask.getBeanDefinition());
-      BeanDefinitionBuilder task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "NycGtfsModTask");
       task.addPropertyValue("afterTaskName", "start");
       task.addPropertyValue("beforeTaskName", "gtfs");

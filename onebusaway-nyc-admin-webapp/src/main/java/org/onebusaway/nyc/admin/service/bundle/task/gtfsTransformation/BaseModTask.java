@@ -14,12 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.nyc.admin.service.bundle.task;
+package org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import jdk.nashorn.internal.runtime.regexp.joni.exception.InternalException;
+import org.onebusaway.gtfs_transformer.TransformSpecificationException;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.gtfs.serialization.GtfsReader;
@@ -32,23 +37,24 @@ import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.util.impl.FileUtility;
-import org.onebusaway.nyc.util.configuration.ConfigurationServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 
 public class BaseModTask {
     private static Logger _log = LoggerFactory.getLogger(BaseModTask.class);
-    protected GtfsBundles gtfsBundles;
+    protected ApplicationContext _applicationContext;
     protected MultiCSVLogger logger;
     protected BundleRequestResponse requestResponse;
     private String _directoryHint = "modified";
     protected ConfigurationService configurationService;
+    private String[] REQUIRED_GTFS_FILES = {"agency.txt","routes.txt","stops.txt","calendar.txt","shapes.txt","trips.txt","stop_times.txt"};
 
     @Autowired
-    public void setGtfsBundles(GtfsBundles gtfsBundles) {
-        this.gtfsBundles = gtfsBundles;
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        _applicationContext = applicationContext;
     }
 
     @Autowired
@@ -155,6 +161,7 @@ public class BaseModTask {
 
         String basePath = fs.parseDirectory(oldGtfsName);
         String includeExpression = ".*\\.txt";
+        testForMissingFiles(basePath, gtfsBundle.getPath().getName());
         fu.zip(newGtfsName, basePath, includeExpression);
         int deletedFiles = fu.deleteFilesInFolder(basePath, includeExpression);
         if (deletedFiles < 1) {
@@ -179,6 +186,23 @@ public class BaseModTask {
             FileUtils.copyFile(new File(newGtfsName), new File(outputLocation));
         }
         return newGtfsName;
+    }
+
+    private void testForMissingFiles(String basePath, String gtfsName) throws InterruptedException {
+        File basePathDir = new File(basePath);
+        List<String> txtFiles = Arrays.asList(basePathDir.list());
+        String somethingBroke = "";
+        for (String file : REQUIRED_GTFS_FILES){
+            if(!txtFiles.contains(file)){
+                somethingBroke += file + " ";
+            }
+        }
+        if(!somethingBroke.equals("")){
+            throw new InterruptedException("Transformer was run on " + gtfsName + ". "
+                    + "These transformations removed key fields and resulted in the following empty files:" + somethingBroke +
+                    ". Most likely cause: Service Calendar ends before current date, or empty GTFS .txt input files."+
+                    " Check transformations for more in depth investigation");
+        }
 
     }
 
@@ -211,4 +235,22 @@ public class BaseModTask {
 
         return path.substring(0, lastSlash);
     }
+
+    protected GtfsBundles getGtfsBundles(ApplicationContext context) {
+
+        GtfsBundles bundles = (GtfsBundles) context.getBean("gtfs-bundles");
+        if (bundles != null)
+            return bundles;
+
+        GtfsBundle bundle = (GtfsBundle) context.getBean("gtfs-bundle");
+        if (bundle != null) {
+            bundles = new GtfsBundles();
+            bundles.getBundles().add(bundle);
+            return bundles;
+        }
+
+        throw new IllegalStateException(
+                "must define either \"gtfs-bundles\" or \"gtfs-bundle\" in config");
+    }
+
 }
