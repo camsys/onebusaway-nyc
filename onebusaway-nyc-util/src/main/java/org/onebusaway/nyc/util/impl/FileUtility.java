@@ -177,7 +177,7 @@ public class FileUtility {
    * Zip up the files in basePath according to the globbing includeExpression.  Similar to
    * command line syntax except expecting java regex syntax (or a filename).
    * @param filename the created zip file including full path
-   * @param basePath the directory to look for files in; not recursively however
+   * @param basePath the directory to look for files in;
    * @param includeExpression the java regex to apply to the basePath.
    * @throws Exception should the zip fail, or should the includeExression not match any files
    */
@@ -198,7 +198,25 @@ public class FileUtility {
               + " and includeExpression=" + includeExpression);
     }
 
+    zipFolder(zos,files,basePath,includeExpression);
+    zos.close();
+  }
+
+
+  private void zipFolder(ZipOutputStream zos, String[] files, String basePath, final String includeExpression) throws IOException {
     for (String file : files) {
+      String basePathSubFolder = basePath+"/"+file ;
+      File fileObject = new File(basePathSubFolder);
+      if (fileObject.isDirectory()){
+        File basePathDir = new File(basePathSubFolder);
+        String[] filesSubfolder = basePathDir.list(new FilenameFilter() {
+          public boolean accept(File dir, String name) {
+            return name.matches(includeExpression);
+          }
+        });
+        zipFolder(zos,filesSubfolder,basePathSubFolder,includeExpression);
+        return;
+      }
       _log.info("compressing " + file);
       ZipEntry ze = new ZipEntry(file);
       zos.putNextEntry(ze);
@@ -207,7 +225,6 @@ public class FileUtility {
       in.close();
       zos.closeEntry();
     }
-    zos.close();
   }
 
   /**
