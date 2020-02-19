@@ -94,6 +94,28 @@ public class FileUtils {
     return urlString;
   }
 
+  public String parseDirectory(String urlString) {
+    if (urlString == null) return null;
+    int i = urlString.lastIndexOf("/");
+    if (i+1 < urlString.length()) {
+      return urlString.substring(0, i);
+    }
+    return urlString;
+  }
+
+  public String parseFileNameMinusExtension(String urlString) {
+    if (urlString == null) return null;
+    int i = urlString.lastIndexOf("/");
+    if (i > 0 && i+1 < urlString.length()) {
+      urlString = urlString.substring(i+1, urlString.length());
+    }
+    i = urlString.lastIndexOf(".");
+    if (i > 0) {
+      urlString = urlString.substring(0, i);
+    }
+    return urlString;
+  }
+
   public String parseBucket(String s3path) {
     if (s3path.indexOf("s3://") == -1) {
       throw new RuntimeException(
@@ -267,6 +289,15 @@ public class FileUtils {
 
   }
 
+  public static void copyFile(File srcFile, File destFile) {
+    _log.debug("copyFile(" + srcFile + "=>" + destFile);
+    try {
+      org.apache.commons.io.FileUtils.copyFile(srcFile, destFile);
+    } catch (IOException e) {
+      _log.error("copyFile failed:", e);
+      throw new RuntimeException(e);
+    }
+  }
 
   public InputStream read(String filename) {
     File file = new File(filename);

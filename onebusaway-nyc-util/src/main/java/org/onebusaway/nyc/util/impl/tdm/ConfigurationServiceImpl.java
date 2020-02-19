@@ -45,14 +45,14 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		this._taskScheduler = taskScheduler;
 	}
 
-	private void updateConfigurationMap(String configKey, String configValue) {
+	public void updateConfigurationMap(String configKey, String configValue) {
 		String currentValue = _configurationKeyToValueMap.get(configKey);
 		_configurationKeyToValueMap.put(configKey, configValue);
 
 		if(currentValue == null || !configValue.equals(currentValue)) {	
 			_log.info("Invoking refresh method for config key " + configKey);
 
-			_refreshService.refresh(configKey);
+			//_refreshService.refresh(configKey);
 		}
 	}
 
