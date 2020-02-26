@@ -93,6 +93,15 @@ public class BundleBuildingServiceImplTest {
           list.add("STIF_SURFACE_S_2020-01-19_REV2020-02-03_0943449.zip");
         } else if (directory.equals("extensiveTest/config")) {
           // do nothing
+        } else if (directory.equals("semiExtensiveTest/gtfs_latest")) {
+          list.add("GTFS_MTABC.zip");
+          list.add("google_transit_mta_agency.zip");
+          list.add("google_transit_bronx.zip");
+        } else if (directory.equals("semiExtensiveTest/stif_latest")) {
+          list.add("STIF_MTABC_A0_AsAssigned_Rte_Included_Hol_Included-v1.zip");
+          list.add("STIF_SURFACE_BX_2020-01-19_REV2019-11-25_1032003.zip");
+        } else if (directory.equals("semiExtensiveTest/config")) {
+          // do nothing
         }
         else{
           list.add("empty");
@@ -151,6 +160,12 @@ public class BundleBuildingServiceImplTest {
   @Ignore
   @Test
   public void extensiveTestBuild(){
+    testBuild(6);
+  }
+
+  @Ignore
+  @Test
+  public void semiExtensiveTestBuild(){
     testBuild(2);
   }
 
@@ -161,7 +176,18 @@ public class BundleBuildingServiceImplTest {
   }
 
   public void testBuild(int mode) {
-    String bundleDir = (mode == 1) ? "test" : "extensiveTest";
+    String bundleDir;
+    switch(mode)
+    {
+      case 1:
+        bundleDir = "test";
+        break;
+      case 6:
+        bundleDir = "extensiveTest";
+        break;
+      default:
+        bundleDir = "semiExtensiveTest";
+    }
 
     String tmpDir = new FileUtils().createTmpDirectory();
 
@@ -183,9 +209,9 @@ public class BundleBuildingServiceImplTest {
     // step 1
     _service.download(request, response);
     assertNotNull(response.getGtfsList());
-    int expected = (mode == 1) ? 1 : 7;
+    int expected = (mode == 1) ? mode:mode+1;
     assertEquals(expected, response.getGtfsList().size());
-    expected = (mode == 1) ? 1 : 6;
+    expected = mode;
     assertNotNull(response.getStifZipList());
     assertEquals(expected, response.getStifZipList().size());
      
