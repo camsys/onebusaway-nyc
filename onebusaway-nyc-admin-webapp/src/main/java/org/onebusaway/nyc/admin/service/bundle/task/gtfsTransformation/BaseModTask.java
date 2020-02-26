@@ -19,6 +19,7 @@ package org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -51,6 +52,8 @@ public class BaseModTask {
     private String _directoryHint = "modified";
     protected ConfigurationService configurationService;
     private String[] REQUIRED_GTFS_FILES = {"agency.txt","routes.txt","stops.txt","calendar.txt","shapes.txt","trips.txt","stop_times.txt"};
+    private boolean ARG_WRITE_ZONE_ROUTE_MAPPING = false;
+    private String ARG_ROUTE_MAPPING_OUTPUT_FILE_NAME;
 
     @Autowired
     public void setApplicationContext(ApplicationContext applicationContext) {
@@ -69,6 +72,22 @@ public class BaseModTask {
 
     public void setDirectoryHint(String hint) {
         _directoryHint = hint;
+    }
+
+    public void setWriteZoneRouteMapping(boolean shouldMap){
+        ARG_WRITE_ZONE_ROUTE_MAPPING = shouldMap;
+    }
+
+    public void setRouteMappingOutputName(String routeMappingOutputName){
+        ARG_ROUTE_MAPPING_OUTPUT_FILE_NAME = routeMappingOutputName;
+    }
+
+    public String getRouteMappingOutputName() {
+        return ARG_ROUTE_MAPPING_OUTPUT_FILE_NAME;
+    }
+
+    public boolean getWriteZoneRouteMapping() {
+        return ARG_WRITE_ZONE_ROUTE_MAPPING;
     }
 
 
@@ -97,6 +116,8 @@ public class BaseModTask {
         // the transformer may be called twice causing erroneous duplicate messages
         mod.getReader().setOverwriteDuplicates(true);
 
+        mod.setWriteZoneRouteMapping(ARG_WRITE_ZONE_ROUTE_MAPPING);
+        mod.setRouteMappingOutputName(ARG_ROUTE_MAPPING_OUTPUT_FILE_NAME);
         addAgencyMappings(mod.getReader(), gtfsBundle);
 
         // add models outside the default namespace
@@ -145,9 +166,13 @@ public class BaseModTask {
     }
 
     private String cleanup(GtfsBundle gtfsBundle) throws Exception {
+
         File gtfsFile = gtfsBundle.getPath();
         FileUtility fu = new FileUtility();
         FileUtils fs = new FileUtils();
+
+
+
 
         _log.info("gtfsBundle.getPath=" + gtfsFile.getPath());
         String oldGtfsName = gtfsFile.getPath().toString();
@@ -160,6 +185,9 @@ public class BaseModTask {
                 + fs.parseFileNameMinusExtension(oldGtfsName) + "_mod.zip";
 
         String basePath = fs.parseDirectory(oldGtfsName);
+        if(ARG_WRITE_ZONE_ROUTE_MAPPING) {
+            handleRoutesByZone(basePath);
+        }
         String includeExpression = ".*\\.txt";
         testForMissingFiles(basePath, gtfsBundle.getPath().getName());
         fu.zip(newGtfsName, basePath, includeExpression);
@@ -204,6 +232,12 @@ public class BaseModTask {
                     " Check transformations for more in depth investigation");
         }
 
+    }
+
+
+    private void handleRoutesByZone(String outLocation){
+        File routesByZone = new File (outLocation + "/" +ARG_ROUTE_MAPPING_OUTPUT_FILE_NAME);
+        routesByZone.renameTo(new File(routesByZone.getParentFile().getParentFile().getAbsolutePath()+ "/" +ARG_ROUTE_MAPPING_OUTPUT_FILE_NAME));
     }
 
     private String getDirectoryHint() {

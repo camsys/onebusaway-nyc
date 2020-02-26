@@ -64,6 +64,11 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     private String _transformationExceptions;
     private String _distanceFromZoneCenter;
     private String _delimiter;
+    private String DEFAULT_TDS_VALUE_LOCATION_OF_ROUTE_MAPPING = "file_name_zone_route_mapping";
+    private String DEFAULT_TDS_VALUE_WRITE_ROUTE_MAPPING = "should_zone_route_mapping";
+    private String DEFAULT_LOCATION_OF_RAW_ROUTE_MAPPING = "ListOfRoutesInGtfs.txt";
+    private String DEFAULT_LOCATION_OF_ROUTE_MAPPING = "routesByZone.txt";
+    private boolean DEFAULT_WRITE_ROUTE_MAPPING = true;
 
 
 
@@ -80,6 +85,8 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
             configurationService = configurationServiceImpl;
         }
         try{
+            super.setWriteZoneRouteMapping(getWriteRouteMapping());
+            super.setRouteMappingOutputName(getLocationOfRouteMapping());
             getModTaskConfigKeys();
             String[] zones = getZones();
             getZoneCoordinates(zones);
@@ -111,6 +118,9 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
                 outputDestination = new File(outputDestination.getParentFile(), gtfsBundle.getPath().getName());
                 FileUtils.copyFile(gtfsBundle.getPath(), new File(outputDestination.getParentFile(), gtfsBundle.getPath().getName()));
                 gtfsBundle.setPath(outputDestination);
+                if(super.getWriteZoneRouteMapping()){
+                    mergeZoneMapping(zone,outputDestination.getParentFile());
+                }
             }
     }catch (Exception ex) {
         _log.error("error modifying gtfs:", ex);
@@ -118,6 +128,31 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     } finally {
         _log.info("GtfsModTask Exiting");
     }
+    }
+
+    private void mergeZoneMapping(String zone,File workingDir){
+        File mergedOutputs = new File (workingDir,DEFAULT_LOCATION_OF_ROUTE_MAPPING);
+        File rawOutput = new File (workingDir,super.getRouteMappingOutputName());
+        BufferedWriter writer;
+        try {
+            if (!mergedOutputs.isFile()) {
+                writer = new BufferedWriter(new FileWriter(mergedOutputs));
+                writer.write("zone_name, [route1_agency]***[route1_routeid],[route2_agency]***[route2_routeid]...\n");
+                writer.close();
+            }
+            writer = new BufferedWriter(new FileWriter(mergedOutputs, true));
+            BufferedReader reader = new BufferedReader((new FileReader((rawOutput))));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                writer.write(zone+","+line + "\n");
+            }
+            reader.close();
+            writer.close();
+        }
+        catch (IOException exception){
+            _log.error("Issue writing listOfRoutes in ModTask/NycGtfsModTask for later use in FixedRouteValidationTask");
+        }
+        rawOutput.delete();
     }
 
     private void getModTaskConfigKeys() {
@@ -146,6 +181,13 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     private String[] getZones(){
         return configurationService.getConfigurationValueAsString(_zone,DEFAULT_ZONES_VALUES).
                 replaceAll("\\s_","").split(",");
+    }
+
+    private String getLocationOfRouteMapping(){
+        return configurationService.getConfigurationValueAsString(DEFAULT_TDS_VALUE_LOCATION_OF_ROUTE_MAPPING, DEFAULT_LOCATION_OF_RAW_ROUTE_MAPPING);
+    }
+    private boolean getWriteRouteMapping(){
+        return configurationService.getConfigurationValueAsBoolean(DEFAULT_TDS_VALUE_WRITE_ROUTE_MAPPING, DEFAULT_WRITE_ROUTE_MAPPING);
     }
 
     private String[] zonesToAvoidTransforming(){
