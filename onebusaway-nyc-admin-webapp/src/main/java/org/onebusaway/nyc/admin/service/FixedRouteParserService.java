@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.admin.service;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import org.onebusaway.nyc.admin.model.ui.DataValidationMode;
@@ -29,4 +30,5 @@ import org.onebusaway.nyc.admin.model.ui.DataValidationMode;
  */
 public interface FixedRouteParserService {
   public List<DataValidationMode> parseFixedRouteReportFile(File checkFile);
+  public List<DataValidationMode> parseFixedRouteReportInputStream(InputStream fixedRouteReportInputStream, String fixedRouteReportPath);
 }

@@ -248,6 +248,45 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 	}
 
 
+	@Override
+	/**
+	 * Return tabular data (filename, flag, modified date) about bundle directories.
+	 */
+	public List<String> listBundleBuilds(String directoryName, int maxResults) {
+		List<String> rows = new ArrayList<String>();
+		HashMap<String, String> map = new HashMap<String, String>();
+		ListObjectsRequest request = new ListObjectsRequest(_bucketName, directoryName, null,
+				"/", maxResults);
+
+		ObjectListing listing = null;
+		do {
+			if (listing == null) {
+				listing = _s3.listObjects(request);
+				if (listing.getCommonPrefixes() != null) {
+					// short circuit if common prefixes works
+					List<String> commonPrefixes = listing.getCommonPrefixes();
+					for (String key : commonPrefixes) {
+						rows.add(key);
+					}
+					return rows;
+				}
+				_log.error("prefixes=" + listing.getCommonPrefixes());
+			} else {
+				listing = _s3.listNextBatchOfObjects(listing);
+			}
+			for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+				String key = parseKey(summary.getKey());
+				if (!map.containsKey(key)) {
+					rows.add(key);
+					map.put(key, key);
+				}
+			}
+
+		} while (listing.isTruncated());
+		return rows;
+	}
+
+
 	private Date getLastModifiedTimeForKey(String key) {
 		ListObjectsRequest request = new ListObjectsRequest(_bucketName, key, null,
 				"/", 1);

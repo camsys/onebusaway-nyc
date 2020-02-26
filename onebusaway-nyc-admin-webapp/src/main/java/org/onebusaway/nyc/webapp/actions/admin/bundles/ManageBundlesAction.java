@@ -45,6 +45,8 @@ import org.springframework.web.context.ServletContextAware;
   params={"root", "bundleResponse"}),
     @Result(name="buildResponse", type="json", 
   params={"root", "bundleBuildResponse"}),
+		@Result(name="existingBuildList", type="json",
+				params={"root", "existingBuildList"}),
     @Result(name="fileList", type="json", 
   params={"root", "fileList"}),
   	@Result(name="downloadZip", type="stream", 
@@ -170,17 +172,17 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	public String existingBuildList() {
 		existingBuildList.clear();
 		_log.info("existingBuildList called for path=" + fileService.getBucketName()+"/"+ selectedBundleName +"/"+fileService.getBuildPath());
-		File builds = new File(fileService.getBucketName()+"/"+ selectedBundleName +"/"+fileService.getBuildPath());
-		File[] existingDirectories = builds.listFiles();
+		List<String> existingDirectories = fileService.listBundleBuilds( selectedBundleName +"/" +fileService.getBuildPath()+"/" , MAX_RESULTS);
 		if(existingDirectories == null){
 			return null;
 		}
 		int i = 1;
-		for(File file: existingDirectories) {
-			existingBuildList.put(file.getName(), ""+i++);
+		for(String directory: existingDirectories) {
+			String[] buildSplit = directory.split("/");
+			existingBuildList.put(buildSplit[buildSplit.length-1], ""+i++);
 		}
 
-	return "existingBuildList";
+		return "existingBuildList";
 	}
 	
 	public String download() {

@@ -17,10 +17,7 @@
 package org.onebusaway.nyc.webapp.actions.admin.bundles;
 
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -135,18 +132,28 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
     }
 
     public String diffResult() {
-        String gtfsStatsFile1 = fileService.getBucketName() + File.separator
-                + datasetName + "/builds/" + buildName + "/outputs/gtfs_stats.csv";
-        String gtfsStatsFile2 = fileService.getBucketName()
-                + File.separator
-                + datasetName2 + "/builds/"
+        String gtfsStatsFile1 = datasetName + "/builds/" + buildName + "/outputs/gtfs_stats.csv";
+        String gtfsStatsFile2 = datasetName2 + "/builds/"
                 + buildName2 + "/outputs/gtfs_stats.csv";
         diffResult.clear();
-        diffResult = diffService.diff(gtfsStatsFile2, gtfsStatsFile1);
+
+
+        // make a temporary working location
+        // this can be done through system.properties(java.io.tmpdir) and then a subdirectory tied to timestamp
+        // Sheldon indicated he'd rather I get that from the bundle request or response, so I might need to autowire one in
+
+
+
+        // afterwords: Use a fileservice to output these to the right place!
+        InputStream gtfsStatsFile1Stream = fileService.get(gtfsStatsFile1);
+        InputStream gtfsStatsFile2Stream = fileService.get(gtfsStatsFile2);
+
+
+        diffResult = diffService.diff(gtfsStatsFile1, gtfsStatsFile2, gtfsStatsFile1Stream, gtfsStatsFile2Stream);
 
         // Added code to compare Fixed Route Date Validation reports from the
         // two specified bundles and builds
-        List<DataValidationMode> fixedRouteDiffs = compareFixedRouteValidations(
+        List<DataValidationMode> fixedRouteDiffs = compareFixedRouteValidationsViaInputStream(
                 datasetName, buildName, datasetName2, buildName2);
         combinedDiffs = new HashMap<String, List>();
         combinedDiffs.put("diffResults", diffResult);
@@ -154,7 +161,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
         return "diffResult";
     }
 
-    private List<DataValidationMode> compareFixedRouteValidations(
+    private List<DataValidationMode> compareFixedRouteValidationsViaInputStream(
             String datasetName, String buildName,
             String datasetName2, String buildName2) {
         List<DataValidationMode> currentModes;
@@ -165,21 +172,18 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
         long buildModeTime2 = 0L;
 
 
-        String currentValidationReportPath = fileService.getBucketName()
-                + File.separator  + datasetName + "/builds/" + buildName
+        String currentValidationReportPath = datasetName + "/builds/" + buildName
                 + "/outputs/fixed_route_validation.csv";
-        File currentValidationReportFile = new File(currentValidationReportPath);
-        String selectedValidationReportPath = fileService.getBucketName()
-                + File.separator
-                + datasetName2 + "/builds/"
+        InputStream currentValidationReportInputStream = fileService.get(currentValidationReportPath);
+        String selectedValidationReportPath = datasetName2 + "/builds/"
                 + buildName2 + "/outputs/fixed_route_validation.csv";
-        File selectedValidationReportFile = new File(selectedValidationReportPath);
+        InputStream selectedValidationReportInputStream = fileService.get(selectedValidationReportPath);
 
         // parse input files
         currentModes
-                = _fixedRouteParserService.parseFixedRouteReportFile(currentValidationReportFile);
+                = _fixedRouteParserService.parseFixedRouteReportInputStream(currentValidationReportInputStream,currentValidationReportPath);
         selectedModes
-                = _fixedRouteParserService.parseFixedRouteReportFile(selectedValidationReportFile);
+                = _fixedRouteParserService.parseFixedRouteReportInputStream(selectedValidationReportInputStream,selectedValidationReportPath);
 
 
         // compare and get diffs

@@ -15,11 +15,13 @@
  */
 package org.onebusaway.nyc.admin.service;
 
+import java.io.InputStream;
 import java.util.List;
 
 import org.onebusaway.nyc.admin.service.impl.DiffTransformer;
 
 public interface DiffService {
 	List<String> diff(String filename1, String filename2);
+	List<String> diff(String filename1, String filename2, InputStream inputStream1, InputStream inputStream2);
 	void setDiffTransformer(DiffTransformer diffTransformer);
 }
