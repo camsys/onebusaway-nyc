@@ -20,17 +20,17 @@ public class StifTransformerTaskSupport {
         stifTransformerSuite.setOutputPath(stifOutputPath);
         stifTransformerSuite.run();
 
-        String includeExpression = ".*";
-        FileUtility fu = new FileUtility();
-        File[] stifDirectories = new File(stifOutputPath).listFiles();
-        for(File path : stifDirectories){
-            try {
-                fu.zip(path.getName(), path.getAbsolutePath(), includeExpression);
-                fu.delete(path);
-            }
-            catch (java.lang.Exception exception){
-                _log.error("Encountered exception zipping and deleating files: ",exception);
-            }
-        }
+//        String includeExpression = ".*";
+//        FileUtility fu = new FileUtility();
+//        File[] stifDirectories = new File(stifOutputPath).listFiles();
+//        for(File path : stifDirectories){
+//            try {
+//                fu.zip(path.getAbsolutePath()+".zip", path.getAbsolutePath(), includeExpression);
+//                fu.delete(path);
+//            }
+//            catch (java.lang.Exception exception){
+//                _log.error("Encountered exception zipping and deleating files: ",exception);
+//            }
+//        }
     }
 }

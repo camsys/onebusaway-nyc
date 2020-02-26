@@ -7,12 +7,16 @@ import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
+import org.onebusaway.nyc.admin.service.bundle.task.FixedRouteDataValidationTask;
+import org.onebusaway.nyc.admin.service.bundle.task.GtfsStatisticsTask;
 import org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation.NycGtfsModTask;
+import org.onebusaway.nyc.admin.service.bundle.task.nycNamingConventionTask;
+import org.onebusaway.nyc.admin.service.impl.DiffServiceImpl;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.nyc.admin.util.ProcessUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.*;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.save.SaveGtfsTask;
+import org.onebusaway.nyc.admin.service.bundle.task.save.SaveGtfsTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stiftransformer.StifTransformerTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -285,8 +289,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       File outputPath = new File(response.getBundleDataDirectory());
       File loggingPath = new File(response.getBundleOutputDirectory());
 
-      File gtfsOutputPath = new File(response.getBundleOutputDirectory() + File.separator + "GTFS");
-      gtfsOutputPath.mkdir();
+      File mergedGtfsPath = new File(response.getBundleOutputDirectory() + File.separator + "Merged_Gtfs");
+      mergedGtfsPath.mkdir();
 
       File stifOutputPath = new File(response.getBundleOutputDirectory() + File.separator + "STIF");
       stifOutputPath.mkdir();
@@ -320,6 +324,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       BeanDefinitionBuilder multiCSVLogger = BeanDefinitionBuilder.genericBeanDefinition(MultiCSVLogger.class);
       multiCSVLogger.addPropertyValue("basePath", loggingPath);
       beans.put("multiCSVLogger", multiCSVLogger.getBeanDefinition());
+
+
+      BeanDefinitionBuilder diffService = BeanDefinitionBuilder.genericBeanDefinition(DiffServiceImpl.class);
+      beans.put("diffService", diffService.getBeanDefinition());
+
 
       BundleRequestResponse requestResponse = new BundleRequestResponse();
       requestResponse.setRequest(request);
@@ -445,21 +454,91 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       creator.setContextPaths(contextPaths);
 
 
-      // STEP 6
+//      // STEP 6
+//      BeanDefinitionBuilder validationDiffTask = BeanDefinitionBuilder.genericBeanDefinition(ValidationDiffTask.class);
+//      validationDiffTask.addPropertyReference("logger", "multiCSVLogger");
+//      validationDiffTask.addPropertyValue("bundleRequestResponse", requestResponse);
+//      validationDiffTask.addPropertyReference("diffService", "diffService");
+//
+//      beans.put("validationDiffTask", validationDiffTask.getBeanDefinition());
+//
+//      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+//      task.addPropertyValue("taskName", "validationDiffTask");
+//      task.addPropertyValue("afterTaskName", "block_location_history");
+//      task.addPropertyValue("beforeTaskName", "pre_cache");
+//      task.addPropertyReference("task", "validationDiffTask");
+//      beans.put("validationDiffTaskDef", task.getBeanDefinition());
+
+
+
+
+
+      // STEP 7
       BeanDefinitionBuilder saveGtfsTask = BeanDefinitionBuilder.genericBeanDefinition(SaveGtfsTask.class);
       saveGtfsTask.addPropertyReference("logger", "multiCSVLogger");
       saveGtfsTask.addPropertyReference("dao", "gtfsRelationalDaoImpl");
-      saveGtfsTask.addPropertyValue("applicationContext", context);
-      saveGtfsTask.addPropertyValue("outputDirectory", gtfsOutputPath);
+      saveGtfsTask.addPropertyValue("outputDirectory", mergedGtfsPath);
 
       beans.put("saveGtfsTask", saveGtfsTask.getBeanDefinition());
 
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "saveGtfsTask");
-      task.addPropertyValue("afterTaskName", "summarizeCSVTask");
-      task.addPropertyValue("beforeTaskName", "transit_graph");
+      task.addPropertyValue("afterTaskName", "block_location_history");
+      task.addPropertyValue("beforeTaskName", "pre_cache");
       task.addPropertyReference("task", "saveGtfsTask");
       beans.put("saveGtfsTaskDef", task.getBeanDefinition());
+
+
+
+//      // STEP 8
+//      BeanDefinitionBuilder nycNamingConventionTask = BeanDefinitionBuilder.genericBeanDefinition(nycNamingConventionTask.class);
+//      nycNamingConventionTask.addPropertyReference("logger", "multiCSVLogger");
+//      nycNamingConventionTask.addPropertyReference("dao", "gtfsRelationalDaoImpl");
+//      nycNamingConventionTask.addPropertyValue("outputDirectory", mergedGtfsPath);
+//
+//      beans.put("nycNamingConventionTask", saveGtfsTask.getBeanDefinition());
+//
+//      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+//      task.addPropertyValue("taskName", "nycNamingConventionTask");
+//      task.addPropertyValue("afterTaskName", "block_location_history");
+//      task.addPropertyValue("beforeTaskName", "pre_cache");
+//      task.addPropertyReference("task", "nycNamingConventionTask");
+//      beans.put("nycNamingConventionTaskDef", task.getBeanDefinition());
+
+
+      // STEP 9
+      BeanDefinitionBuilder gtfsStatisticsTask = BeanDefinitionBuilder.genericBeanDefinition(GtfsStatisticsTask.class);
+      gtfsStatisticsTask.addPropertyReference("logger", "multiCSVLogger");
+      gtfsStatisticsTask.addPropertyReference("gtfsDao", "gtfsRelationalDaoImpl");
+
+      beans.put("gtfsStatisticsTask", gtfsStatisticsTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "gtfsStatisticsTask");
+      task.addPropertyValue("afterTaskName", "pre_cache");
+      task.addPropertyReference("task", "gtfsStatisticsTask");
+      beans.put("gtfsStatisticsTaskDef", task.getBeanDefinition());
+
+
+
+
+
+
+      BeanDefinitionBuilder fixedRouteDataValidationTask = BeanDefinitionBuilder.genericBeanDefinition(FixedRouteDataValidationTask.class);
+
+      fixedRouteDataValidationTask.addPropertyReference("logger", "multiCSVLogger");
+      fixedRouteDataValidationTask.addPropertyReference("gtfsDao", "gtfsRelationalDaoImpl");
+      fixedRouteDataValidationTask.addPropertyReference("bundle", "bundle");
+      fixedRouteDataValidationTask.addPropertyValue("configurationService", configurationService);
+
+      beans.put("fixedRouteDataValidationTask", fixedRouteDataValidationTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "fixedRouteDataValidationTask");
+      task.addPropertyValue("afterTaskName", "gtfsStatisticsTask");
+      task.addPropertyReference("task", "fixedRouteDataValidationTask");
+      beans.put("fixedRouteDataValidationTaskDef", task.getBeanDefinition());
+
 
       // manage our own context to recover from exceptions
       Map<String, BeanDefinition> contextBeans = new HashMap<String, BeanDefinition>();

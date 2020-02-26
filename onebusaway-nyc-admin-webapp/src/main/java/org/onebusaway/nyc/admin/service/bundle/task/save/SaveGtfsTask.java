@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.transit_data_federation.bundle.tasks.save;
+package org.onebusaway.nyc.admin.service.bundle.task.save;
 
-import org.onebusaway.gtfs.serialization.GtfsEntitySchemaFactory;
+import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.gtfs.services.GenericMutableDao;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
+import org.onebusaway.nyc.util.impl.FileUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -26,6 +29,7 @@ import java.io.File;
 
 
 public class SaveGtfsTask  implements Runnable {
+    private static Logger _log = LoggerFactory.getLogger(SaveGtfsTask.class);
 
     private MultiCSVLogger logger;
 
@@ -58,11 +62,32 @@ public class SaveGtfsTask  implements Runnable {
         try {
 
             GtfsWritingSupport.writeGtfsFromStore(applicationContext, dao,outputDirectory);
+            cleanup(outputDirectory);
+
 
         } catch (Throwable ex) {
             throw new IllegalStateException("error loading gtfs", ex);
         }
 
+    }
+
+
+    private void cleanup(File gtfsFile) throws Exception {
+        FileUtility fu = new FileUtility();
+        FileUtils fs = new FileUtils();
+
+        _log.info("gtfsBundle.getPath=" + gtfsFile.getPath());
+        String oldGtfsName = gtfsFile.getPath().toString();
+        // create a new zip file
+
+        String newGtfsName = fs.parseDirectory(oldGtfsName) + File.separator
+                + fs.parseFileNameMinusExtension(oldGtfsName) + ".zip";
+
+        String basePath = fs.parseDirectory(oldGtfsName);
+        String includeExpression = ".*\\.txt";
+        fu.zip(newGtfsName, basePath, includeExpression);
+        fu.deleteFilesInFolder(gtfsFile.getAbsolutePath(), includeExpression);
+        gtfsFile.delete();
     }
 
 }
