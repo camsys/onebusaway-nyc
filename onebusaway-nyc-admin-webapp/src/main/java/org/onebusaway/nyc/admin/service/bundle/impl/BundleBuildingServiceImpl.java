@@ -490,20 +490,19 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
 
 
-//      // STEP 8
-//      BeanDefinitionBuilder nycNamingConventionTask = BeanDefinitionBuilder.genericBeanDefinition(nycNamingConventionTask.class);
-//      nycNamingConventionTask.addPropertyReference("logger", "multiCSVLogger");
-//      nycNamingConventionTask.addPropertyReference("dao", "gtfsRelationalDaoImpl");
-//      nycNamingConventionTask.addPropertyValue("outputDirectory", mergedGtfsPath);
-//
-//      beans.put("nycNamingConventionTask", saveGtfsTask.getBeanDefinition());
-//
-//      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
-//      task.addPropertyValue("taskName", "nycNamingConventionTask");
-//      task.addPropertyValue("afterTaskName", "block_location_history");
-//      task.addPropertyValue("beforeTaskName", "pre_cache");
-//      task.addPropertyReference("task", "nycNamingConventionTask");
-//      beans.put("nycNamingConventionTaskDef", task.getBeanDefinition());
+      // STEP 8
+      BeanDefinitionBuilder nycNamingConventionTask = BeanDefinitionBuilder.genericBeanDefinition(nycNamingConventionTask.class);
+      nycNamingConventionTask.addPropertyValue("requestResponse", requestResponse);
+      nycNamingConventionTask.addPropertyValue("stifDirectory", stifOutputPath);
+
+      beans.put("nycNamingConventionTask", nycNamingConventionTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "nycNamingConventionTask");
+      task.addPropertyValue("afterTaskName", "saveGtfsTask");
+      task.addPropertyValue("beforeTaskName", "pre_cache");
+      task.addPropertyReference("task", "nycNamingConventionTask");
+      beans.put("nycNamingConventionTaskDef", task.getBeanDefinition());
 
 
       // STEP 9

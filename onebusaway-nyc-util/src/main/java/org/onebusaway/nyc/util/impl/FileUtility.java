@@ -173,6 +173,36 @@ public class FileUtility {
     return outputFile;
   }
 
+
+  /**
+   * Zip up the files in basePath according to the globbing includeExpression.  Similar to
+   * command line syntax except expecting java regex syntax (or a filename).
+   * @param filename the created zip file including full path
+   * @param basePath the directory to look for files in;
+   * @param includeExpression the java regex to apply to the basePath.
+   * @throws Exception should the zip fail, or should the includeExression not match any files
+   */
+  public void zipRecursively(String filename, String basePath, final String includeExpression) throws Exception {
+    _log.info("creating zip file " + filename);
+    FileOutputStream fos = new FileOutputStream(filename);
+    ZipOutputStream zos = new ZipOutputStream(fos);
+    File basePathDir = new File(basePath);
+    String[] files = basePathDir.list(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        return name.matches(includeExpression);
+      }
+    });
+
+    if (files == null) {
+      zos.close();
+      throw new FileNotFoundException("no files selected for basePath=" + basePath
+              + " and includeExpression=" + includeExpression);
+    }
+
+    zipFolder(zos,files,basePath,includeExpression);
+    zos.close();
+  }
+
   /**
    * Zip up the files in basePath according to the globbing includeExpression.  Similar to
    * command line syntax except expecting java regex syntax (or a filename).
@@ -202,6 +232,27 @@ public class FileUtility {
     zos.close();
   }
 
+  /**
+   * Zip up the files in basePath recursively.
+   * @param filename the created zip file including full path
+   * @param basePath the directory to look for files in;
+   * @throws Exception should the zip fail, or should the includeExression not match any files
+   */
+  public void zipRecursively(String filename, String basePath) throws Exception {
+    _log.info("creating zip file " + filename);
+    FileOutputStream fos = new FileOutputStream(filename);
+    ZipOutputStream zos = new ZipOutputStream(fos);
+    File basePathDir = new File(basePath);
+    String[] files = basePathDir.list();
+
+    if (files == null) {
+      zos.close();
+      throw new FileNotFoundException("no files selected for basePath=" + basePath);
+    }
+
+    zipFolderRecursively(zos,files,basePath);
+    zos.close();
+  }
 
   private void zipFolder(ZipOutputStream zos, String[] files, String basePath, final String includeExpression) throws IOException {
     for (String file : files) {
@@ -221,6 +272,31 @@ public class FileUtility {
       ZipEntry ze = new ZipEntry(file);
       zos.putNextEntry(ze);
       FileInputStream in = new FileInputStream(new File(basePath, file));
+      IOUtils.copy(in, zos);
+      in.close();
+      zos.closeEntry();
+    }
+  }
+
+  private void zipFolderRecursively(ZipOutputStream zos, String[] files, String basePath) throws IOException {
+    zipFolderRecursively(zos,files,basePath, basePath, "");
+  }
+
+  private void zipFolderRecursively(ZipOutputStream zos, String[] files, String originalBasePath, String newBasePath, String subfolderPath) throws IOException {
+    for (String file : files) {
+      String basePathSubFolder = newBasePath+"/"+file ;
+      File fileObject = new File(basePathSubFolder);
+      String recursiveFilePath = subfolderPath == "" ? file : subfolderPath + "/" +file;
+      if (fileObject.isDirectory()){
+        File basePathDir = new File(basePathSubFolder);
+        String[] filesSubfolder = basePathDir.list();
+        zipFolderRecursively(zos,filesSubfolder,originalBasePath,basePathSubFolder, recursiveFilePath);
+        return;
+      }
+      _log.info("compressing " + recursiveFilePath);
+      ZipEntry ze = new ZipEntry(recursiveFilePath);
+      zos.putNextEntry(ze);
+      FileInputStream in = new FileInputStream(new File(originalBasePath, recursiveFilePath));
       IOUtils.copy(in, zos);
       in.close();
       zos.closeEntry();
@@ -251,4 +327,7 @@ public class FileUtility {
     }
     return count;
   }
+
+
+  
 }

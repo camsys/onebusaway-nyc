@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.admin.service.impl.FileServiceImpl;
 import org.onebusaway.nyc.webapp.actions.admin.bundles.ManageBundlesAction;
 
 import static org.mockito.Mockito.when;
@@ -76,6 +77,15 @@ public class ManageBundlesActionTest {
 		
 		verify(fileService, times(1)).bundleDirectoryExists(directoryName);
 		verify(fileService, times(0)).createBundleDirectory(directoryName);
+	}
+
+	@Test
+	public void testExistingBuildList() {
+		setCommonExpectations(true, false);
+
+		action.setFileService(new FileServiceImpl());
+		action.setSelectedBundleName("2020Jan_Prod");
+		action.existingBuildList();
 	}
 
 }
