@@ -285,7 +285,7 @@ public class BundleBuildResponse {
 				 count++;
 				 if (count > 1) break;
 			 }
-			 _rootCause += "  Caused by:\n\n";
+			 _rootCause += "\n\n  Caused by:\n\n";
 			 count++;
 			 for (StackTraceElement ste:rootCause.getStackTrace()) {
 				 _rootCause += ste.toString() + "\n";

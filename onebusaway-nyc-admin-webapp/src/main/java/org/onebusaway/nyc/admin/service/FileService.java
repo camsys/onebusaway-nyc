@@ -44,4 +44,10 @@ public interface FileService {
    */
   void validateFileName(String fileName);
 
+
+  /**
+   * Return tabular data (filename, flag, modified date) about bundle directories.
+   */
+   List<String> listBundleBuilds(String directoryName, int maxResults);
+
 }

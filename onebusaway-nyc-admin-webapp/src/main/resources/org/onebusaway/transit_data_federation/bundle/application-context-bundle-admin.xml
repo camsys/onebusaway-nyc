@@ -173,6 +173,11 @@
   </bean>
 
   <bean id="blockLocationHistoryTask" class="org.onebusaway.transit_data_federation.bundle.tasks.history.BlockLocationHistoryTask" />
+
+
+
+
+
   
 
   <!-- Pre Cache -->
@@ -184,5 +189,22 @@
   </bean>
 
   <bean id="preCacheTask" class="org.onebusaway.transit_data_federation.bundle.tasks.PreCacheTask" />
+
+
+
+
+
+
+
+  <bean id="configurationServiceClient" class="org.onebusaway.util.impl.configuration.ConfigurationServiceClientFileImpl" >
+  </bean>
+  <bean id="entityReplacementStrategyFactory" class="org.onebusaway.transit_data_federation.bundle.tasks.EntityReplacementStrategyFactory">
+    <property name="entityMappings">
+      <map>
+        <!-- this is set dynamically from the configuration -->
+        <!--                 <entry key="org.onebusaway.gtfs.model.Stop" value="https://raw.github.com/wiki/camsys/onebusaway-application-modules/PugetSoundStopConsolidation.md" /> -->
+      </map>
+    </property>
+  </bean>
 
 </beans>

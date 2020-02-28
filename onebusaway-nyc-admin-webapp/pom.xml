@@ -22,6 +22,10 @@
 			<id>xwiki</id>
 			<url>http://maven.xwiki.org/releases</url>
 		</repository>
+		<repository>
+			<id>oba-dev</id>
+			<url>http://developer.onebusaway.org/modules/</url>
+		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -90,6 +94,16 @@
 			<version>${onebusaway.app-modules.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.java-diff-utils</groupId>
+			<artifactId>diffutils</artifactId>
+			<version>1.2.1</version>
+		</dependency>
+		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-gtfs</artifactId>
 		</dependency>
@@ -125,6 +139,11 @@
 			<version>1.1.1</version>
 		</dependency>
 		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-king-county-metro-gtfs</artifactId>
+			<version>0.0.10-st</version>
+		</dependency>
+		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<scope>provided</scope>
@@ -134,7 +153,19 @@
 			<artifactId>mail</artifactId>
 			<version>1.4</version>
 		</dependency>
-		<!-- dependency> <groupId>org.codehaus.jackson</groupId> <artifactId>jackson-core-asl</artifactId> 
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-nyc-util</artifactId>
+			<version>2.26.2-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>2.3</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- dependency> <groupId>org.codehaus.jackson</groupId> <artifactId>jackson-core-asl</artifactId>
 			<version>1.9.0</version> </dependency -->
 	</dependencies>
 

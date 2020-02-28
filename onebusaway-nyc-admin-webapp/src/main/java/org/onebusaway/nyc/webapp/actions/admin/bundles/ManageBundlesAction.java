@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.servlet.ServletContext;
 
@@ -43,6 +45,8 @@ import org.springframework.web.context.ServletContextAware;
   params={"root", "bundleResponse"}),
     @Result(name="buildResponse", type="json", 
   params={"root", "bundleBuildResponse"}),
+		@Result(name="existingBuildList", type="json",
+				params={"root", "existingBuildList"}),
     @Result(name="fileList", type="json", 
   params={"root", "fileList"}),
   	@Result(name="downloadZip", type="stream", 
@@ -77,10 +81,12 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	private String emailTo;
 	private InputStream downloadInputStream;
 	private List<String> fileList = new ArrayList<String>();
+	private String selectedBundleName;
 	private DirectoryStatus directoryStatus;
 	// where the bundle is deployed to
 	private String s3Path = "s3://bundle-data/activebundle/<env>/";
 	private String environment = "dev";
+	private SortedMap<String, String> existingBuildList = new TreeMap<String, String>();
 	
 	@Override
 	public String input() {
@@ -161,6 +167,22 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	    fileList.addAll(this.bundleResponse.getValidationFiles());
 	  }
 	  return "fileList";
+	}
+
+	public String existingBuildList() {
+		existingBuildList.clear();
+		_log.info("existingBuildList called for path=" + fileService.getBucketName()+"/"+ selectedBundleName +"/"+fileService.getBuildPath());
+		List<String> existingDirectories = fileService.listBundleBuilds( selectedBundleName +"/" +fileService.getBuildPath()+"/" , MAX_RESULTS);
+		if(existingDirectories == null){
+			return null;
+		}
+		int i = 1;
+		for(String directory: existingDirectories) {
+			String[] buildSplit = directory.split("/");
+			existingBuildList.put(buildSplit[buildSplit.length-1], ""+i++);
+		}
+
+		return "existingBuildList";
 	}
 	
 	public String download() {
@@ -323,6 +345,14 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
     return bundleName;
 	}
 
+	public void setSelectedBundleName(String selectedBundleName) {
+		this.selectedBundleName = selectedBundleName;
+	}
+
+	public String getSelectedBundleName() {
+		return selectedBundleName;
+	}
+
 	public DirectoryStatus getDirectoryStatus() {
 	  return directoryStatus;
 	}
@@ -341,6 +371,10 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 
 	public List<String> getFileList() {
 	  return this.fileList;
+	}
+
+	public SortedMap<String, String> getExistingBuildList() {
+		return this.existingBuildList;
 	}
 
 	public void setEmailTo(String to) {

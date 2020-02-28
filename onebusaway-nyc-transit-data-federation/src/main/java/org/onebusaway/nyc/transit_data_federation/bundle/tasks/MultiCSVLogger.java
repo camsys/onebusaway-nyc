@@ -41,6 +41,7 @@ public class MultiCSVLogger {
   private HashMap<String, Log> logs;
   
   private File basePath;
+  private String diff_log_filename = "diff_log.csv";
   
   public void setBasePath(File path) {
     this.basePath = path;
@@ -97,6 +98,16 @@ public class MultiCSVLogger {
     log.stream.print("\n");
   }
 
+  public void logCSV(String file, String csv) {
+    Log log = logs.get(file);
+    if (log == null) {
+      throw new RuntimeException("log called before header for file " + file);
+    }
+    log.lines += 1;
+    log.stream.print(csv);
+    log.stream.print("\n");
+  }
+
   public void header(String file, String header) {
   
     Log log = logs.get(file);
@@ -133,5 +144,18 @@ public class MultiCSVLogger {
       }
     }
     
+  }
+
+
+  public void difflogHeader(String filename) {
+    diff_log_filename = filename;
+    Log log = logs.get(diff_log_filename);
+    if (log == null) {
+      header(diff_log_filename, "line,diff");
+    }
+  }
+
+  public void difflog(int linenum, String content) {
+    log(diff_log_filename, linenum, content);
   }
 }
