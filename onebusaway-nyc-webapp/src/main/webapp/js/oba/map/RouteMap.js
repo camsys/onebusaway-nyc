@@ -366,7 +366,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				icon: "img/vehicle/vehicle-unknown.png"
 			},
 			scheduled: {
-				name: 'Scheduled',
+				name: 'Estimated',
 				icon: "img/vehicle/scheduled/vehicle-unknown.png"
 			}
 		};
