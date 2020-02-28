@@ -533,6 +533,17 @@ small {
 	position: relative;
 	top: 3px;
 }
+.scheduleItem {
+	padding-left: 0px !important;
+	background-image: none !important;
+}
+
+.scheduleItem::before {
+	content: url('img/schedule_bullet_bus.png');
+	filter: sepia(40%) hue-rotate(315deg) saturate(1000%);
+	position: relative;
+	top: 3px;
+}
 
 .routeList a {
 	display: inline-block;

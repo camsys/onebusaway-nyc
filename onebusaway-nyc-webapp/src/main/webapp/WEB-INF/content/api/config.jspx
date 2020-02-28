@@ -46,7 +46,7 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 
 				html += 'Send stop code <strong>' + query + '</strong> as a text to <strong>' + OBA.Config.shortCode + '</strong>';
 				html += '<br/>';
-				html += 'or check <a href="m/?q=' + query + '">this stop</a> on your smartphone.';
+				html += 'or check &lt;a href=&quot;m/?q=' + query + '&quot;>this stop&lt;/a> on your smartphone.';
 
 				html += '</div>';
 
@@ -55,7 +55,7 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 				html += '<span class="header">While at the bus stop...</span>';
 				html += '<br/>';
 				
-				html += 'Check <a href="m/?q=' + query + '">this route</a> on your smartphone.';
+				html += 'Check &lt;a href=&quot;m/?q=' + query + '&quot;>this route&lt;/a> on your smartphone.';
 
 				html += '</div>';				
 

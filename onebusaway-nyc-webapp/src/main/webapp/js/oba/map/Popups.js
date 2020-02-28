@@ -607,8 +607,8 @@ OBA.Popups = (function() {
 						if (typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && monitoredVehicleJourney.ProgressStatus !== null && monitoredVehicleJourney.ProgressStatus === 'spooking') {
 							spooking = true;
 							arrival = "scheduled_arrival";
-							tripId += "(scheduled)";
-							scheduledArrivalTime += "(scheduled)";
+							tripId += "(Estimated)";
+							scheduledArrivalTime += "(Estimated)";
 						}
 						
 						// time mode
@@ -643,7 +643,7 @@ OBA.Popups = (function() {
 								}
 							}
 							if(spooking) {
-								timePrediction += "(scheduled)";
+								timePrediction += "(Estimated)";
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
@@ -668,7 +668,7 @@ OBA.Popups = (function() {
 								}
 							}
 							if(spooking) {
-								distance += "(scheduled)";
+								distance += "(Estimated)";
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");

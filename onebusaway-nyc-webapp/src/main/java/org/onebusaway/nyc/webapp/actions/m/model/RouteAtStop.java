@@ -18,7 +18,16 @@ public class RouteAtStop {
   
   private Set<String> serviceAlerts;
 
-  public RouteAtStop(RouteBean route, List<RouteDirection> directions, Set<String> serviceAlerts) {    
+  private Boolean hasRealtime = true;
+
+  public RouteAtStop(RouteBean route, List<RouteDirection> directions, Set<String> serviceAlerts,  Boolean hasRealtime) {
+    this.route = route;
+    this.directions = directions;
+    this.serviceAlerts = serviceAlerts;
+    this.hasRealtime = hasRealtime;
+  }
+
+  public RouteAtStop(RouteBean route, List<RouteDirection> directions, Set<String> serviceAlerts) {
     this.route = route;
     this.directions = directions;
     this.serviceAlerts = serviceAlerts;
@@ -38,6 +47,10 @@ public class RouteAtStop {
   
   public List<RouteDirection> getDirections() {
     return directions;
-  }  
+  }
+
+  public Boolean getHasRealtime() { return hasRealtime; }
+
+  public void setHasRealtime(Boolean hasRealtime) {this.hasRealtime = hasRealtime; }
 
 }
