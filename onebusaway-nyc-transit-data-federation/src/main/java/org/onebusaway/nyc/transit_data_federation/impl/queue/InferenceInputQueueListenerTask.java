@@ -103,8 +103,15 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 			}
 		}
 		if (!inferredResult.getPhase().equals("SPOOKING")) {
-			vlr.setDistanceAlongBlock(inferredResult.getDistanceAlongBlock());
+			try {
+				vlr.setDistanceAlongBlock(inferredResult.getDistanceAlongBlock());
+			} catch (Exception e) {
+				 _log.info("DistanceAlongBlock not defined");
+			}
 		}
+//		if (inferredResult.getPhase().equals("SPOOF")) {
+//			inferredResult.setPhase("IN_PROGRESS");
+//		}
 		vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(inferredResult.getVehicleId()));
 		vlr.setTimeOfRecord(inferredResult.getRecordTimestamp());
 		vlr.setTimeOfLocationUpdate(inferredResult.getRecordTimestamp());
@@ -115,6 +122,11 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 		vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
 		vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getPhase()));
 		vlr.setStatus(inferredResult.getStatus());
+		try {
+			vlr.setScheduleDeviation(inferredResult.getScheduleDeviation());
+		} catch (Exception e) {
+//			_log.info("no schedule deviation: " + vlr.getVehicleId() + " with phase: " + vlr.getPhase());
+		}
 		if (_vehicleLocationListener != null) {
 			_vehicleLocationListener.handleVehicleLocationRecord(vlr);
 		}

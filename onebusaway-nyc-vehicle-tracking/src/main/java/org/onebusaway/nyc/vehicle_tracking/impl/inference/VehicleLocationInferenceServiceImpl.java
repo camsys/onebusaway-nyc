@@ -938,7 +938,7 @@ public class VehicleLocationInferenceServiceImpl implements
       }
       if(isValid)
         _timeReceivedByVehicleId.put(vid, timeReceived);
-      
+//        _log.info("put: " + vid + ", " + timeReceived + ", size: " + _timeReceivedByVehicleId.size());
       return isValid;
     }
   }
@@ -946,5 +946,10 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public Long getTimeReceivedByVehicleId(AgencyAndId vid){
     return _timeReceivedByVehicleId.get(vid);
+  }
+
+  @Override
+  public VehicleInferenceInstance getInstanceByVehicleId(AgencyAndId vid) {
+    return _vehicleInstancesByVehicleId.get(vid);
   }
 }
