@@ -28,7 +28,7 @@ import org.onebusaway.nyc.admin.model.ui.DataValidationMode;
  * @author jpearson
  *
  */
-public interface FixedRouteParserService {
-  public List<DataValidationMode> parseFixedRouteReportFile(File checkFile);
-  public List<DataValidationMode> parseFixedRouteReportInputStream(InputStream fixedRouteReportInputStream, String fixedRouteReportPath);
+public interface RouteParserService {
+  public List<DataValidationMode> parseRouteReportFile(File checkFile);
+  public List<DataValidationMode> parseRouteReportInputStream(InputStream fixedRouteReportInputStream, String fixedRouteReportPath);
 }

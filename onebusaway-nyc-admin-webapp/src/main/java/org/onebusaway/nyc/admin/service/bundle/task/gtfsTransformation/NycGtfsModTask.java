@@ -79,6 +79,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
 
     @Override
     public void run() {
+        _log.info("starting NycGtfsModTask");
         if(configurationService == null){
             ConfigurationServiceImpl configurationServiceImpl = new ConfigurationServiceImpl();
             configurationServiceImpl.setTransitDataManagerApiLibrary(new TransitDataManagerApiLibrary("tdm.dev.obanyc.com", 80, "/api"));

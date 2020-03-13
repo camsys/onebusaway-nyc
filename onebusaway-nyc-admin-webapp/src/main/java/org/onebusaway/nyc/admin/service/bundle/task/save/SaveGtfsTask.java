@@ -68,6 +68,9 @@ public class SaveGtfsTask  implements Runnable {
         } catch (Throwable ex) {
             throw new IllegalStateException("error loading gtfs", ex);
         }
+        finally {
+            _log.info("exiting SaveGtfsTask");
+        }
 
     }
 

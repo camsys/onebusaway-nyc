@@ -7,6 +7,7 @@ import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
+import org.onebusaway.nyc.admin.service.bundle.task.DailyDataValidationTask;
 import org.onebusaway.nyc.admin.service.bundle.task.FixedRouteDataValidationTask;
 import org.onebusaway.nyc.admin.service.bundle.task.GtfsStatisticsTask;
 import org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation.NycGtfsModTask;
@@ -469,7 +470,21 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 //      task.addPropertyReference("task", "validationDiffTask");
 //      beans.put("validationDiffTaskDef", task.getBeanDefinition());
 
+      BeanDefinitionBuilder dailyDataValidationTask = BeanDefinitionBuilder.genericBeanDefinition(DailyDataValidationTask.class);
 
+      dailyDataValidationTask.addPropertyReference("logger", "multiCSVLogger");
+      dailyDataValidationTask.addPropertyReference("gtfsDao", "gtfsRelationalDaoImpl");
+      dailyDataValidationTask.addPropertyReference("bundle", "bundle");
+      dailyDataValidationTask.addPropertyValue("configurationService", configurationService);
+
+      beans.put("dailyDataValidationTask", dailyDataValidationTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "dailyDataValidationTask");
+      task.addPropertyValue("afterTaskName", "block_location_history");
+      task.addPropertyValue("beforeTaskName", "saveGtfsTask");
+      task.addPropertyReference("task", "dailyDataValidationTask");
+      beans.put("dailyDataValidationTaskDef", task.getBeanDefinition());
 
 
 
@@ -483,7 +498,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "saveGtfsTask");
-      task.addPropertyValue("afterTaskName", "block_location_history");
+      task.addPropertyValue("afterTaskName", "dailyDataValidationTask");
       task.addPropertyValue("beforeTaskName", "pre_cache");
       task.addPropertyReference("task", "saveGtfsTask");
       beans.put("saveGtfsTaskDef", task.getBeanDefinition());
@@ -521,8 +536,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
 
 
-
-
       BeanDefinitionBuilder fixedRouteDataValidationTask = BeanDefinitionBuilder.genericBeanDefinition(FixedRouteDataValidationTask.class);
 
       fixedRouteDataValidationTask.addPropertyReference("logger", "multiCSVLogger");
@@ -537,6 +550,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       task.addPropertyValue("afterTaskName", "gtfsStatisticsTask");
       task.addPropertyReference("task", "fixedRouteDataValidationTask");
       beans.put("fixedRouteDataValidationTaskDef", task.getBeanDefinition());
+
+
+
+
 
 
       // manage our own context to recover from exceptions

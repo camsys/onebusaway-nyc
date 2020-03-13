@@ -69,6 +69,7 @@ public class FixedRouteDataValidationTask implements Runnable {
 
     @Override
     public void run() {
+        _log.info("starting FixedRouteDataValidationTask");
         if(_configurationService == null){
             ConfigurationServiceImpl configurationServiceImpl = new ConfigurationServiceImpl();
             configurationServiceImpl.setTransitDataManagerApiLibrary(new TransitDataManagerApiLibrary("tdm.dev.obanyc.com", 80, "/api"));
