@@ -47,6 +47,7 @@ public class nycNamingConventionTask  implements Runnable {
 
     @Override
     public void run() {
+        _log.info("Starting nycNamingConventionTask");
         try {
 
             Map <File, File> filesToRename = new HashMap<>();
@@ -67,6 +68,7 @@ public class nycNamingConventionTask  implements Runnable {
                     return new File(current, name).isDirectory();
                 }
             });
+            _log.info("Zipping Stif Files");
             for (File stif : stifFolders) {
                 cleanup(stif);
             }
@@ -74,7 +76,7 @@ public class nycNamingConventionTask  implements Runnable {
             // match them up somehow and rename them~
             // set up some defaults but use the TDM to allow for nameing convention changes
             List<File> stifFiles = Lists.newArrayList(stifDirectory.listFiles());
-
+            _log.info("Renaming based on old Gtfs Files");
             gtfsLoop : for (File gtfsFile : gtfsFiles){
                 if(gtfsFile.getName().contains("GTFS")){
                     String sufix = gtfsFile.getName().substring(4);
@@ -90,7 +92,7 @@ public class nycNamingConventionTask  implements Runnable {
                     }
                 }
             }
-
+            _log.info("Renaming based on old Stif Files");
             originalStifLoop : for (File originalStifFile : originalStifFiles){
                 if(originalStifFile.getName().contains("STIF")){
                     String sufix = originalStifFile.getName().substring(4);
@@ -113,6 +115,9 @@ public class nycNamingConventionTask  implements Runnable {
         } catch (Throwable ex) {
             throw new IllegalStateException("error loading gtfs", ex);
         }
+        finally {
+            _log.info("exiting nycNamingConventionTask");
+        }
 
     }
 
@@ -127,8 +132,11 @@ public class nycNamingConventionTask  implements Runnable {
                 + fs.parseFileNameMinusExtension(oldFileName) + ".zip";
 
         String basePath = fs.parseDirectory(oldFileName);
-        fu.zipRecursively(newFileName, basePath);
+        _log.info("zipping "+ file.getName());
+        fu.zipRecursively(newFileName, file.getAbsolutePath(), true);
+        _log.info("zipped "+ file.getName());
         FileSystemUtils.deleteRecursively(file);
+        _log.info("deleated old "+ file.getName());
         return new File(newFileName);
     }
 
