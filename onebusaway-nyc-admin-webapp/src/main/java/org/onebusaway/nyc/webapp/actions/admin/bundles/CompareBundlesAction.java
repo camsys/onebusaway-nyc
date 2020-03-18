@@ -414,6 +414,8 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
             boolean stopCtMatched = false;
             // Check if this stop count  exists in selectedMode
             for (DataValidationStopCt selectedStopCt : selectedDirection.getStopCounts()) {
+                int currstpcnt = currentStopCt.getStopCt();
+                int selstpcnt = selectedStopCt.getStopCt();
                 if (currentStopCt.getStopCt() == selectedStopCt.getStopCt()) {
                     stopCtMatched = true;
                     selectedDirection.getStopCounts().remove(selectedStopCt);
@@ -429,7 +431,8 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
                         break;
                     }
                     else{
-                        if ((currentStopCt.getTripCts()[0] != selectedStopCt.getTripCts()[0])) {
+                        if ((currentStopCt.getTripCts()[0] != selectedStopCt.getTripCts()[0])
+                            || !(currentStopCt.getServiceId().equals(selectedStopCt.getServiceId()))) {
                             currentStopCt.setSrcCode("1");
                             diffDirection.getStopCounts().add(currentStopCt);
                             selectedStopCt.setSrcCode("2");

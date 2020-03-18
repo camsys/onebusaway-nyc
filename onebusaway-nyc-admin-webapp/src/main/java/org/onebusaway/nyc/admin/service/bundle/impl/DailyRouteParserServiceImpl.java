@@ -125,8 +125,10 @@ public class DailyRouteParserServiceImpl implements RouteParserService {
         currentStopCt.setStopCt(Integer.parseInt(record.get(4)));
         int[] stopCtTrips = {0};
         int tripCt = Integer.parseInt(record.get(5));
+        String serviceId = record.get(6);
         stopCtTrips[0] = tripCt;
         currentStopCt.setTripCts(stopCtTrips);
+        currentStopCt.setServiceId(serviceId);
         String modeName = record.get(0);
         String routeName = record.get(1);
         String headsign = record.get(2);

@@ -1700,6 +1700,7 @@ function buildDailyDiffReport() {
 							}
 							$.each(direction.stopCounts, function (index3, value3) {
 								var stopCt = value3.stopCt;
+								var serviceId = value3.serviceId;
 								var stopClass = "";
 								if (dirClass == "currentRpt") {
 									stopClass = "currentStopCt";
@@ -1739,6 +1740,7 @@ function buildDailyDiffReport() {
 										<td></td> \
 										<td></td> \
 										<td></td> \
+										<td></td> \
 										</tr>';
 									$('#dailyRouteDiffTable').append(new_spacer_row);
 								}
@@ -1750,6 +1752,7 @@ function buildDailyDiffReport() {
 									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + dirName + '</td> \
 									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + stopCt + '</td> \
 									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + weekdayTrips + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + serviceId + '</td> \
 									</tr>';
 								$('#dailyRouteDiffTable').append(new_row);
 							});
@@ -1759,6 +1762,7 @@ function buildDailyDiffReport() {
 			});
 			// Add bottom border to reprot
 			var new_spacer_row = '<tr class="spacer"> \
+				<td></td> \
 				<td></td> \
 				<td></td> \
 				<td></td> \

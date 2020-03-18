@@ -31,6 +31,7 @@ public class DataValidationStopCt implements Comparable {
   private int stopCt;
   private int[] tripCts;
   private String srcCode;  // Used in diff files to indicate the source.
+  private String serviceId;
 
   public int getStopCt() {
     return stopCt;
@@ -50,6 +51,8 @@ public class DataValidationStopCt implements Comparable {
   public void setSrcCode(String srcCode) {
     this.srcCode = srcCode;
   }
+  public void setServiceId(String serviceId){this.serviceId = serviceId;}
+  public String getServiceId(){return serviceId;}
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -104,7 +107,7 @@ public class DataValidationStopCt implements Comparable {
     } else if (!srcCode.equals(other.srcCode)) {
       return srcCode == "1" ? -1 : 1;
     }
-    for (int i=0; i<3; i++) {
+    for (int i=0; i<tripCts.length; i++) {
       if (tripCts[i] != other.tripCts[i]) {
         return tripCts[i] - other.tripCts[i];
       }
