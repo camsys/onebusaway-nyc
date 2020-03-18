@@ -12,6 +12,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.vehicle_tracking.model.unassigned.UnassignedVehicleRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 
 import java.net.URL;
@@ -111,6 +112,10 @@ public class UnassignedVehicleServiceImplTest {
             NycQueuedInferredLocationBean inferredLocationBean = service.toNycQueueInferredLocationBean(record);
             VehicleLocationRecord vlr = inferredLocationBean.toVehicleLocationRecord();
             assertNotNull(vlr);
+            assertEquals(vlr.getPhase(), EVehiclePhase.SPOOKING);
+            assertNull(vlr.getDistanceAlongBlock());
+
+            //assertNull(vlr.getScheduleDeviation());
         }
 
 

@@ -7,6 +7,7 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance;
 import org.onebusaway.nyc.vehicle_tracking.model.unassigned.Records;
 import org.onebusaway.nyc.vehicle_tracking.model.unassigned.UnassignedVehicleRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
@@ -162,10 +163,71 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
                 NycQueuedInferredLocationBean inferredLocationBean = toNycQueueInferredLocationBean(record);
                 AgencyAndId vehicleId = new AgencyAndId(record.getAgencyId(), record.getVehicleId());
                 if(!vehicleActive(vehicleId, System.currentTimeMillis())) {
+
+//                    if ((System.currentTimeMillis()/60000)%5 == 0) {
+//                        inferredLocationBean.setScheduleDeviation(-500);
+//                        inferredLocationBean.setPhase("IN_PROGRESS");
+//                        inferredLocationBean.setDistanceAlongBlock(1000.0);
+//                        _vehicleLocationInferenceService.putInstance(vehicleId);
+//                        _outputQueueSenderService.enqueue(inferredLocationBean);
+//                        _log.info("send spoof of: " + inferredLocationBean.getVehicleId());
+//                        continue;
+//                    }
+
+
+
+
+                    VehicleInferenceInstance instance = _vehicleLocationInferenceService.getInstanceByVehicleId(vehicleId);
+                    /* *
+                     * get scheduleDeviation from most recent realtime update
+                     * apply that to this unassigned update to minimize discrepancies between realtime and unassigned
+                     * */
+                    try {
+                        inferredLocationBean.setScheduleDeviation((int)instance.getCurrentState().getActualScheduleDeviation());
+//                        _log.info("set actual for: " + vehicleId);
+                    } catch (Exception e) {
+                        try {
+                            inferredLocationBean.setScheduleDeviation((int)instance.getCurrentState().getInferredScheduleDeviation());
+//                            _log.info("set inferred for: " + vehicleId);
+                        } catch (Exception f){
+                            inferredLocationBean.setScheduleDeviation(0); //default to 0
+//                            _log.info("Did not apply ScheduleDeviation to inferredLocationBean for vehicle: " + inferredLocationBean.getVehicleId());
+                        }
+                    }
+                    try {
+                        if(inferredLocationBean.getDistanceAlongBlock() > instance.getCurrentState().getActualDistanceAlongBlock())
+                            inferredLocationBean.setDistanceAlongBlock(instance.getCurrentState().getActualDistanceAlongBlock());
+                    } catch (Exception e) {
+                        try {
+                            if(inferredLocationBean.getDistanceAlongBlock() > instance.getCurrentState().getInferredDistanceAlongBlock())
+                                inferredLocationBean.setDistanceAlongBlock(instance.getCurrentState().getInferredDistanceAlongBlock());
+                        } catch (Exception f) {
+                            inferredLocationBean.setDistanceAlongBlock(0.0);//placeholder
+                        }
+                    }
                     _outputQueueSenderService.enqueue(inferredLocationBean);
+
                 } else {
-                    _log.warn("Vehicle with id {} marked as unassigned but has been recently updated.", vehicleId);
+                    _log.info("CONFLICT Vehicle with id {} marked as unassigned but has been recently updated.", vehicleId);
                 }
+
+//                if ((System.currentTimeMillis()/60000)%5 == 0) {
+//                    NycQueuedInferredLocationBean spoof = inferredLocationBean;
+//                    spoof.setPhase("SPOOF");
+//                    spoof.setScheduleDeviation(-500);
+//                    try {
+//                        VehicleInferenceInstance instance = _vehicleLocationInferenceService.getInstanceByVehicleId(new AgencyAndId(record.getAgencyId(), record.getVehicleId()));
+//
+//                        spoof.setRecordTimestamp(inferredLocationBean.getRecordTimestamp()-60000);
+//                        spoof.setDistanceAlongBlock(0.0); //placeholder
+//                        spoof.setDistanceAlongBlock(instance.getCurrentState().getActualDistanceAlongBlock());
+//                        spoof.setDistanceAlongBlock(instance.getCurrentState().getInferredDistanceAlongBlock());
+//                    } catch (Exception e) {
+//
+//                    }
+//                    _outputQueueSenderService.enqueue(spoof);
+//                    _log.info("SPOOFING " + spoof.getVehicleId() + " sd: " + spoof.getScheduleDeviation());
+//                }
             }
         }
     }

@@ -229,6 +229,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				var routeName = activity.MonitoredVehicleJourney.PublishedLineName;
 
 				var vehicleId = activity.MonitoredVehicleJourney.VehicleRef;
+				var hasRealtime = activity.MonitoredVehicleJourney.Monitored;
 				var vehicleIdParts = vehicleId.split("_");
 				var vehicleIdWithoutAgency = vehicleIdParts[1];
 				var marker = vehiclesById[vehicleId];
@@ -365,7 +366,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				icon: "img/vehicle/vehicle-unknown.png"
 			},
 			scheduled: {
-				name: 'Scheduled',
+				name: 'Estimated',
 				icon: "img/vehicle/scheduled/vehicle-unknown.png"
 			}
 		};
