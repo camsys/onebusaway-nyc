@@ -84,10 +84,11 @@ public class DailyDataValidationTask implements Runnable {
     private void process(){
         _log.info("Creating daily route data validation from this file" + getLocationOfRouteMappingFile());
 
-        Map<AgencyAndId,Map<String,Integer>> tripCountByRouteInfoByServiceId = getTripCountByRouteInfoByServiceId(_dao);
+        Map<AgencyAndId,Set<String>> RouteInfoByServiceId = getRouteInfoByServiceId(_dao);
         _log.info("Gotten TripCountsByRouteInfoByServiceId organized");
         Map<Date,List<AgencyAndId>> serviceIdsByDate = getServiceIdsByDate(_dao);
         _log.info("Determined Service Ids for dates");
+        Map<List<AgencyAndId>,List<String>> orderedOutputForServiceIds = new HashMap<>();
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyy-MM-dd");
         int dayCounter = 0;
@@ -95,40 +96,54 @@ public class DailyDataValidationTask implements Runnable {
         Date newestDate = getNewestDate(serviceIdsByDate.keySet());
         Date dateDay = removeTime(addDays(oldestDate, dayCounter));
         while (newestDate.after(dateDay)) {
-            if (serviceIdsByDate.get(dateDay) == null){
-                dayCounter ++;
+            if (serviceIdsByDate.get(dateDay) == null) {
+                dayCounter++;
                 dateDay = removeTime(addDays(oldestDate, dayCounter));
                 continue;
             }
             _log.info("Printing route summaries for " + simpleDateFormat.format(dateDay));
-            String filePath = FOLDERNAME + "/" + simpleDateFormat.format(dateDay)+".csv";
+            String filePath = FOLDERNAME + "/" + simpleDateFormat.format(dateDay) + ".csv";
             new File(logger.getBasePath() + "/" + FOLDERNAME).mkdir();
             logger.header(filePath, "Zone,Route,Headsign,Direction,# of stops,# of trips");
             String[] oldRouteInfoArray = null;
-            for(AgencyAndId agencyAndId : serviceIdsByDate.get(dateDay)) {
-                Map<String, Integer> routeInfoByServiceId = tripCountByRouteInfoByServiceId.get(agencyAndId);
-                for (Map.Entry<String, Integer> routeInfoTripCountEntry : routeInfoByServiceId.entrySet()) {
-                    String[] routeInfoArray = routeInfoTripCountEntry.getKey().split(internalDelimeter);
+            List<AgencyAndId> serviceIds = serviceIdsByDate.get(dateDay);
+            List<String> output = orderedOutputForServiceIds.get(serviceIds);
+            if (output == null) {
+                output = new ArrayList<>();
+                for (AgencyAndId agencyAndId : serviceIdsByDate.get(dateDay)) {
+                    Set<String> routeInfoByServiceId = RouteInfoByServiceId.get(agencyAndId);
+                    for (String routeInfo : routeInfoByServiceId) {
+                        output.add( routeInfo);
+                    }
+                }
+                Collections.sort(output);
+
+                for( int n = 0; n < output.size(); n++){
+                    String line = output.get(n);
+                    String[] routeInfoArray = line.split(internalDelimeter);
                     String routeInfoOutput = "";
                     if (oldRouteInfoArray == null) {
                         oldRouteInfoArray = routeInfoArray;
-                        routeInfoOutput = Arrays.stream(routeInfoArray).reduce((a,b) -> a + "," + b).get();
-                    } else{
+                        routeInfoOutput = Arrays.stream(routeInfoArray).reduce((a, b) -> a + "," + b).get();
+                    } else {
                         boolean match = true;
-                        for (int i = 0; i < routeInfoArray.length; i++){
-                            if(routeInfoArray[i].equals(oldRouteInfoArray[i]) & match){
+                        for (int i = 0; i < routeInfoArray.length; i++) {
+                            if (routeInfoArray[i].equals(oldRouteInfoArray[i]) & match) {
                                 routeInfoOutput += ",";
                             } else {
-                                routeInfoOutput += routeInfoArray[i].replace(",","") + ",";
+                                routeInfoOutput += routeInfoArray[i].replace(",", "") + ",";
                                 oldRouteInfoArray[i] = routeInfoArray[i];
                                 match = false;
                             }
                         }
-                        // remove final comma
-                        routeInfoOutput = routeInfoOutput.substring(0,routeInfoOutput.length()-1);
                     }
-                    logger.logCSV(filePath, routeInfoOutput + "," + routeInfoTripCountEntry.getValue());
+                    output.set(n, routeInfoOutput);
                 }
+
+                orderedOutputForServiceIds.put(serviceIds,output);
+            }
+            for(String line : output){
+                logger.logCSV(filePath, line);
             }
             dayCounter ++;
             dateDay = removeTime(addDays(oldestDate, dayCounter));
@@ -140,11 +155,12 @@ public class DailyDataValidationTask implements Runnable {
 
 
 
-    private Map<AgencyAndId,Map<String,Integer>> getTripCountByRouteInfoByServiceId(GtfsMutableRelationalDao dao){
+    private Map<AgencyAndId,Set<String>> getRouteInfoByServiceId(GtfsMutableRelationalDao dao){
 
-        Map<AgencyAndId,Map<String,Integer>> tripCountByRouteInfoByServiceId = new HashMap<>();
+        Map<AgencyAndId,Set<String>> RouteInfoByServiceId = new HashMap<>();
         Map<AgencyAndId, String> zoneForRoutes = getZoneforRoutes();
         for(AgencyAndId serviceId : dao.getAllServiceIds()){
+            Set<String> routeInfoSet = new HashSet<>();
             Map<String,Integer> routeInfoByServiceId = new HashMap<>();
             for(Trip trip : dao.getTripsForServiceId(serviceId)){
                 Route route = trip.getRoute();
@@ -171,15 +187,15 @@ public class DailyDataValidationTask implements Runnable {
                     routeInfoByServiceId.put(routeInfo,routeInfoByServiceId.get(routeInfo)+1);
                 }
             }
-            Map<String,Integer> sortedRouteInfoByServiceId = new LinkedHashMap<>();
-            routeInfoByServiceId.entrySet().stream().sorted(Map.Entry.comparingByKey())
-                    .forEachOrdered(x -> sortedRouteInfoByServiceId.put(x.getKey(), x.getValue()));
-            tripCountByRouteInfoByServiceId.put(serviceId,sortedRouteInfoByServiceId);
+            for(Map.Entry<String, Integer> entry : routeInfoByServiceId.entrySet()){
+                routeInfoSet.add(entry.getKey() + internalDelimeter + entry.getValue() + internalDelimeter + serviceId);
+            }
+
+
+            RouteInfoByServiceId.put(serviceId,routeInfoSet);
         }
-        Map<AgencyAndId,Map<String,Integer>> sortedTripCountByRouteInfoByServiceId = new LinkedHashMap<>();
-        tripCountByRouteInfoByServiceId.entrySet().stream().sorted(Map.Entry.comparingByKey())
-                .forEachOrdered(x -> sortedTripCountByRouteInfoByServiceId.put(x.getKey(), x.getValue()));
-        return sortedTripCountByRouteInfoByServiceId;
+
+        return RouteInfoByServiceId;
     }
 
 
