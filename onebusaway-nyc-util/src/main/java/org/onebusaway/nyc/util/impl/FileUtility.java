@@ -239,11 +239,30 @@ public class FileUtility {
    * @throws Exception should the zip fail, or should the includeExression not match any files
    */
   public void zipRecursively(String filename, String basePath) throws Exception {
+    zipRecursively(filename,basePath,false);
+  }
+
+  /**
+   * Zip up the files in basePath recursively.
+   * @param filename the created zip file including full path
+   * @param basePath the directory to look for files in;
+   * @param includeBaseFolder whether or not to zip the basepath folder itself
+   * @throws Exception should the zip fail, or should the includeExression not match any files
+   */
+  public void zipRecursively(String filename, String basePath, boolean includeBaseFolder) throws Exception {
     _log.info("creating zip file " + filename);
     FileOutputStream fos = new FileOutputStream(filename);
     ZipOutputStream zos = new ZipOutputStream(fos);
     File basePathDir = new File(basePath);
     String[] files = basePathDir.list();
+    if (includeBaseFolder){
+      String[] tmpFiles = new String[files.length+1];
+      for (int i = 0; i < files.length; i++) {
+        tmpFiles[i] = files[i];
+      }
+      tmpFiles[files.length] = basePath;
+      files = tmpFiles;
+    }
 
     if (files == null) {
       zos.close();

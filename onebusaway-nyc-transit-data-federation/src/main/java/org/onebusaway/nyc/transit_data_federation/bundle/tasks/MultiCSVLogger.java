@@ -158,4 +158,8 @@ public class MultiCSVLogger {
   public void difflog(int linenum, String content) {
     log(diff_log_filename, linenum, content);
   }
+
+  public String getBasePath(){
+    return basePath.getAbsolutePath();
+  }
 }
