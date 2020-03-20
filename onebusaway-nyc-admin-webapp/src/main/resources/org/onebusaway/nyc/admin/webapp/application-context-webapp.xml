@@ -133,6 +133,8 @@
 
    <bean id="fixedRouteParserService" class="org.onebusaway.nyc.admin.service.bundle.impl.FixedRouteParserServiceImpl" />
 
+    <bean id="dailyRouteParserService" class="org.onebusaway.nyc.admin.service.bundle.impl.DailyRouteParserServiceImpl" />
+
     <bean id="configurationServiceClient" class="org.onebusaway.util.impl.configuration.ConfigurationServiceClientFileImpl" >
     </bean>
 

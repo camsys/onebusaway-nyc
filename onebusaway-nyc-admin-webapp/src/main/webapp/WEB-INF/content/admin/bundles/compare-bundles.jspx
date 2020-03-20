@@ -61,6 +61,12 @@
 						</select>
 					</td>
 				</tr>
+				<tr>
+					<td>Date</td>
+					<td>
+						<input type="text" id="currentReportDate"/>
+					</td>
+				</tr>
 			</table>
 		</fieldset>
 	</div>
@@ -89,6 +95,12 @@
 						<select name="compareToBuildNameList" id="compareToBuildNameList">
 							<option value="0">Select a build name</option>
 						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>Date</td>
+					<td>
+						<input type="text" id="compareToDate"/>
 					</td>
 				</tr>
 			</table>
@@ -151,6 +163,38 @@
 			</tr>
 			</thead>
 			<tbody class="fixedRouteScrollable">
+			<!--  prevent jsxp minimiztion -->
+			</tbody>
+		</table>
+	</div>
+</div>
+<div id="compareDailyRouteModes">
+	<div>
+		<input id="printDailyRouteRptButton" value="Print Daily Route Comparison Report" type="button" />
+		<table id="dailyRouteDiffTable">
+			<caption>
+				Comparison of Daily Route Modes
+				<br />
+				<span id="baseBundle" >
+					<!--  prevent jsxp minimiztion -->
+					</span>
+				<br />
+				<span id="compareToBundle" >
+					<!--  prevent jsxp minimiztion -->
+					</span>
+			</caption>
+			<thead>
+			<tr>
+				<th class="modeColumn">Mode</th>
+				<th class="rtNumColumn">Rt</th>
+				<th class="rtNameColumn">Route Name</th>
+				<th class="headsignColumn">Headsign</th>
+				<th class="dirColumn">Dir</th>
+				<th class="stopCtColumn"># of Stops</th>
+				<th class="weekdayTripColumn"># Trips</th>
+			</tr>
+			</thead>
+			<tbody class="dailyRouteScrollable">
 			<!--  prevent jsxp minimiztion -->
 			</tbody>
 		</table>

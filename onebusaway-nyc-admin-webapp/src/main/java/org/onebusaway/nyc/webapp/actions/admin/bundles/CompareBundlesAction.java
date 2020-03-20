@@ -44,8 +44,10 @@ import org.onebusaway.nyc.admin.model.ui.DataValidationRouteCounts;
 import org.onebusaway.nyc.admin.model.ui.DataValidationStopCt;
 import org.onebusaway.nyc.admin.service.DiffService;
 import org.onebusaway.nyc.admin.service.FileService;
-import org.onebusaway.nyc.admin.service.FixedRouteParserService;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.admin.service.RouteParserService;
+import org.onebusaway.nyc.admin.service.bundle.impl.DailyRouteParserServiceImpl;
+import org.onebusaway.nyc.admin.service.bundle.impl.FixedRouteParserServiceImpl;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.onebusaway.util.services.configuration.ConfigurationServiceClient;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
@@ -72,15 +74,19 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
     private String datasetName;
     private int dataset_1_build_id;
     private String buildName;
+    private String buildDate;
     private String datasetName2;
     private int dataset_2_build_id;
     private String buildName2;
+    private String buildDate2;
     private FileService fileService;
     private List<String> diffResult = new ArrayList<String>();
     private Map<String, List> combinedDiffs;
     private DiffService diffService;
     @Autowired
-    private FixedRouteParserService _fixedRouteParserService;
+    private FixedRouteParserServiceImpl _fixedRouteParserService;
+    @Autowired
+    private DailyRouteParserServiceImpl _dailyRouteParserService;
 
     public boolean isUseArchived() {
         return useArchived;
@@ -102,6 +108,8 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
         this.buildName = buildName;
     }
 
+    public void setBuildDate(String buildDate) {this.buildDate = buildDate;}
+
     public void setDatasetName2(String datasetName2) {
         this.datasetName2 = datasetName2;
     }
@@ -113,6 +121,8 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
     public void setBuildName2(String buildName2) {
         this.buildName2 = buildName2;
     }
+
+    public void setBuildDate2(String buildDate2) {this.buildDate2 = buildDate2; }
 
     @Autowired
     public void setFileService(FileService fileService) {
@@ -137,13 +147,6 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
                 + buildName2 + "/outputs/gtfs_stats.csv";
         diffResult.clear();
 
-
-        // make a temporary working location
-        // this can be done through system.properties(java.io.tmpdir) and then a subdirectory tied to timestamp
-        // Sheldon indicated he'd rather I get that from the bundle request or response, so I might need to autowire one in
-
-
-
         // afterwords: Use a fileservice to output these to the right place!
         InputStream gtfsStatsFile1Stream = fileService.get(gtfsStatsFile1);
         InputStream gtfsStatsFile2Stream = fileService.get(gtfsStatsFile2);
@@ -153,6 +156,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
 
         // Added code to compare Fixed Route Date Validation reports from the
         // two specified bundles and builds
+
         List<DataValidationMode> fixedRouteDiffs = compareFixedRouteValidationsViaInputStream(
                 datasetName, buildName, datasetName2, buildName2);
         combinedDiffs = new HashMap<String, List>();
@@ -171,24 +175,41 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
         long buildModeTime1 = 0L;
         long buildModeTime2 = 0L;
 
+        boolean isFixed;
 
-        String currentValidationReportPath = datasetName + "/builds/" + buildName
-                + "/outputs/fixed_route_validation.csv";
+        String currentValidationReportPath;
+
+        String selectedValidationReportPath;
+
+        RouteParserService routeParser;
+        if (buildDate == null || buildDate2 == null || buildDate.equals("") || buildDate2.equals("")) {
+            currentValidationReportPath = datasetName + "/builds/" + buildName
+                    + "/outputs/fixed_route_validation.csv";
+            selectedValidationReportPath = datasetName2 + "/builds/"
+                    + buildName2 + "/outputs/fixed_route_validation.csv";
+            routeParser = _fixedRouteParserService;
+            isFixed = true;
+        }
+        else {
+            currentValidationReportPath = datasetName + "/builds/" + buildName + "/outputs/DailyDataValidation/"+buildDate + ".csv";
+            selectedValidationReportPath = datasetName2 + "/builds/"
+                    + buildName2 + "/outputs/DailyDataValidation/"+buildDate2 + ".csv";
+            routeParser = _dailyRouteParserService;
+            isFixed = false;
+        }
         InputStream currentValidationReportInputStream = fileService.get(currentValidationReportPath);
-        String selectedValidationReportPath = datasetName2 + "/builds/"
-                + buildName2 + "/outputs/fixed_route_validation.csv";
         InputStream selectedValidationReportInputStream = fileService.get(selectedValidationReportPath);
 
         // parse input files
         currentModes
-                = _fixedRouteParserService.parseFixedRouteReportInputStream(currentValidationReportInputStream,currentValidationReportPath);
+                = routeParser.parseRouteReportInputStream(currentValidationReportInputStream,currentValidationReportPath);
         selectedModes
-                = _fixedRouteParserService.parseFixedRouteReportInputStream(selectedValidationReportInputStream,selectedValidationReportPath);
+                = routeParser.parseRouteReportInputStream(selectedValidationReportInputStream,selectedValidationReportPath);
 
 
         // compare and get diffs
         List<DataValidationMode> fixedRouteDiffs
-                = findFixedRouteDiffs(currentModes, selectedModes);
+                = findFixedRouteDiffs(currentModes, selectedModes, isFixed);
 
         long totalTime = (new Date()).getTime() -startTime ;
 
@@ -226,7 +247,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
      */
     private List<DataValidationMode> findFixedRouteDiffs(
             List<DataValidationMode> currentModes,
-            List<DataValidationMode> selectedModes) {
+            List<DataValidationMode> selectedModes, boolean isFixed) {
 
         List<DataValidationMode> fixedRouteDiffs = new ArrayList<>();
         if (currentModes != null && selectedModes == null) {
@@ -247,7 +268,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
             for (DataValidationMode selectedMode : selectedModes) {
                 if (modeName.equals(selectedMode.getModeName())) {
                     selectedModes.remove(selectedMode);
-                    diffMode = compareModes(currentMode, selectedMode);
+                    diffMode = compareModes(currentMode, selectedMode, isFixed);
                     break;
                 }
             }
@@ -269,7 +290,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
     }
 
     private DataValidationMode compareModes(
-            DataValidationMode currentMode, DataValidationMode selectedMode) {
+            DataValidationMode currentMode, DataValidationMode selectedMode, boolean isFixed) {
 
         DataValidationMode diffMode = new DataValidationMode();
         diffMode.setModeName(currentMode.getModeName());
@@ -284,7 +305,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
                 if (routeNum.equals(selectedRoute.getRouteNum())) {
                     selectedMode.getRoutes().remove(selectedRoute);
                     if (routeName.equals(selectedRoute.getRouteName())) {
-                        diffRoute = compareRoutes(currentRoute, selectedRoute);
+                        diffRoute = compareRoutes(currentRoute, selectedRoute, isFixed);
                     } else {    // Route name changed, but not route number.
                         currentRoute.setSrcCode("1");
                         selectedRoute.setSrcCode("2");
@@ -312,7 +333,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
     }
 
     private DataValidationRouteCounts compareRoutes(
-            DataValidationRouteCounts currentRoute, DataValidationRouteCounts selectedRoute) {
+            DataValidationRouteCounts currentRoute, DataValidationRouteCounts selectedRoute, boolean isFixed) {
         DataValidationRouteCounts diffRoute = new DataValidationRouteCounts();
 
         diffRoute.setRouteName(currentRoute.getRouteName());
@@ -326,7 +347,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
             for (DataValidationHeadsignCts selectedHeadsign : selectedRoute.getHeadsignCounts()) {
                 if (headsignName.equals(selectedHeadsign.getHeadsign())) {
                     selectedRoute.getHeadsignCounts().remove(selectedHeadsign);
-                    diffHeadsign = compareHeadsigns(currentHeadsign, selectedHeadsign);
+                    diffHeadsign = compareHeadsigns(currentHeadsign, selectedHeadsign, isFixed);
                     break;
                 }
             }
@@ -348,7 +369,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
     }
 
     private DataValidationHeadsignCts compareHeadsigns (
-            DataValidationHeadsignCts currentHeadsign, DataValidationHeadsignCts selectedHeadsign) {
+            DataValidationHeadsignCts currentHeadsign, DataValidationHeadsignCts selectedHeadsign, boolean isFixed) {
         DataValidationHeadsignCts diffHeadsign = new DataValidationHeadsignCts();
 
         diffHeadsign.setHeadsign(currentHeadsign.getHeadsign());
@@ -361,7 +382,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
             for (DataValidationDirectionCts selectedDirection : selectedHeadsign.getDirCounts()) {
                 if (directionName.equals(selectedDirection.getDirection())) {
                     selectedHeadsign.getDirCounts().remove(selectedDirection);
-                    diffDirection = compareDirections(currentDirection, selectedDirection);
+                    diffDirection = compareDirections(currentDirection, selectedDirection, isFixed);
                     break;
                 }
             }
@@ -383,7 +404,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
     }
 
     private DataValidationDirectionCts compareDirections (
-            DataValidationDirectionCts currentDirection, DataValidationDirectionCts selectedDirection) {
+            DataValidationDirectionCts currentDirection, DataValidationDirectionCts selectedDirection, boolean isFixed) {
 
         DataValidationDirectionCts diffDirection = new DataValidationDirectionCts();
         diffDirection.setDirection(currentDirection.getDirection());
@@ -393,18 +414,32 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
             boolean stopCtMatched = false;
             // Check if this stop count  exists in selectedMode
             for (DataValidationStopCt selectedStopCt : selectedDirection.getStopCounts()) {
+                int currstpcnt = currentStopCt.getStopCt();
+                int selstpcnt = selectedStopCt.getStopCt();
                 if (currentStopCt.getStopCt() == selectedStopCt.getStopCt()) {
                     stopCtMatched = true;
                     selectedDirection.getStopCounts().remove(selectedStopCt);
-                    if ((currentStopCt.getTripCts()[0] != selectedStopCt.getTripCts()[0])
-                            || (currentStopCt.getTripCts()[1] != selectedStopCt.getTripCts()[1])
-                            || (currentStopCt.getTripCts()[2] != selectedStopCt.getTripCts()[2])){
-                        currentStopCt.setSrcCode("1");
-                        diffDirection.getStopCounts().add(currentStopCt);
-                        selectedStopCt.setSrcCode("2");
-                        diffDirection.getStopCounts().add(selectedStopCt);
+                    if(isFixed) {
+                        if ((currentStopCt.getTripCts()[0] != selectedStopCt.getTripCts()[0])
+                                || (currentStopCt.getTripCts()[1] != selectedStopCt.getTripCts()[1])
+                                || (currentStopCt.getTripCts()[2] != selectedStopCt.getTripCts()[2])) {
+                            currentStopCt.setSrcCode("1");
+                            diffDirection.getStopCounts().add(currentStopCt);
+                            selectedStopCt.setSrcCode("2");
+                            diffDirection.getStopCounts().add(selectedStopCt);
+                        }
+                        break;
                     }
-                    break;
+                    else{
+                        if ((currentStopCt.getTripCts()[0] != selectedStopCt.getTripCts()[0])
+                            || !(currentStopCt.getServiceId().equals(selectedStopCt.getServiceId()))) {
+                            currentStopCt.setSrcCode("1");
+                            diffDirection.getStopCounts().add(currentStopCt);
+                            selectedStopCt.setSrcCode("2");
+                            diffDirection.getStopCounts().add(selectedStopCt);
+                        }
+                        break;
+                    }
                 }
             }
             if (stopCtMatched) {
@@ -422,6 +457,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
         }
         return diffDirection;
     }
+
 
     private Map<String, List<String>> getReportModes() {
         Map<String, List<String>> reportModes = new HashMap<>();

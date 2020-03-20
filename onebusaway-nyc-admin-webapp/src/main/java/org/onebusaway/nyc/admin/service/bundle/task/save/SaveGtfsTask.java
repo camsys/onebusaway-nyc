@@ -68,6 +68,9 @@ public class SaveGtfsTask  implements Runnable {
         } catch (Throwable ex) {
             throw new IllegalStateException("error loading gtfs", ex);
         }
+        finally {
+            _log.info("exiting SaveGtfsTask");
+        }
 
     }
 
@@ -83,7 +86,8 @@ public class SaveGtfsTask  implements Runnable {
         String newGtfsName = fs.parseDirectory(oldGtfsName) + File.separator
                 + fs.parseFileNameMinusExtension(oldGtfsName) + ".zip";
 
-        String basePath = fs.parseDirectory(oldGtfsName);
+        String basePath = fs.parseDirectory(oldGtfsName)+ File.separator
+                + fs.parseFileNameMinusExtension(oldGtfsName);
         String includeExpression = ".*\\.txt";
         fu.zip(newGtfsName, basePath, includeExpression);
         fu.deleteFilesInFolder(gtfsFile.getAbsolutePath(), includeExpression);

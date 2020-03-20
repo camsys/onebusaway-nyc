@@ -33,6 +33,7 @@ public class ModifyStartDateTask implements Runnable {
   }
 
   public void run() {
+    _log.info("starting ModifyStartDateTask");
     Collection<ServiceCalendar> calendars = _gtfsMutableRelationalDao.getAllCalendars();
     _log.info("found " + calendars.size() + " calendar entries");
     for (ServiceCalendar sc : calendars) {
@@ -45,6 +46,7 @@ public class ModifyStartDateTask implements Runnable {
         sc.setStartDate(new ServiceDate(cal));
       }
     }
+    _log.info("exiting ModifyStartDateTask");
   }
 
   /**
