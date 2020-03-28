@@ -12,7 +12,7 @@
 			upload missing libs in third-parties -->
 		<repository>
 			<id>infin-it</id>
-			<url>http://nexus.infin-it.fr/content/groups/public</url>
+			<url>https://nexus.infin-it.fr/content/groups/public</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>

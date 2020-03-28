@@ -34,7 +34,7 @@
     <repositories>
         <repository>
             <id>nyc-cache</id>
-            <url>http://build.staging.obanyc.com/archiva/repository/internal/</url>
+            <url>https://build.staging.obanyc.com/archiva/repository/internal/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -44,7 +44,7 @@
         </repository>
         <repository>
             <id>snapshots.staging.obanyc.com</id>
-            <url>http://build.staging.obanyc.com/archiva/repository/snapshots/</url>
+            <url>https://build.staging.obanyc.com/archiva/repository/snapshots/</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -54,7 +54,7 @@
         </repository>
         <repository>
             <id>releases.staging.obanyc.com</id>
-            <url>http://build.staging.obanyc.com/archiva/repository/releases/</url>
+            <url>https://build.staging.obanyc.com/archiva/repository/releases/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -66,7 +66,7 @@
 <!--
         <repository>
             <id>caucho</id>
-            <url>http://caucho.com/m2</url>
+            <url>https://caucho.com/m2</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -76,7 +76,7 @@
         </repository>
         <repository>
             <id>ssj</id>
-            <url>http://maven.iscpif.fr/public</url>
+            <url>https://maven.iscpif.fr/public</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -90,7 +90,7 @@
 <!--
         <repository>
             <id>eaio.com</id>
-            <url>http://eaio.com/maven2</url>
+            <url>https://eaio.com/maven2</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -102,7 +102,7 @@
 <!-- if nyc-cache is down is down, try camsys.com -->
         <repository>
             <id>camsys-cache</id>
-            <url>http://svn2.camsys.com/archiva/repository/internal/</url>
+            <url>https://svn2.camsys.com/archiva/repository/internal/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -135,7 +135,7 @@
 -->
         <repository>
             <id>snapshots.nexus.onebusaway.org</id>
-            <url>http://nexus.onebusaway.org/content/repositories/snapshots/</url>
+            <url>https://nexus.onebusaway.org/content/repositories/snapshots/</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -145,7 +145,7 @@
         </repository>
         <repository>
             <id>public.nexus.onebusaway.org</id>
-            <url>http://nexus.onebusaway.org/content/groups/public/</url>
+            <url>https://nexus.onebusaway.org/content/groups/public/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -159,7 +159,7 @@
         <pluginRepository>
             <id>mc-release</id>
             <name>Local Maven repository of releases</name>
-            <url>http://build.staging.obanyc.com/archiva/repository/releases/</url>
+            <url>https://build.staging.obanyc.com/archiva/repository/releases/</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -183,11 +183,11 @@
   <distributionManagement>
     <repository>
       <id>releases-mvn-repo</id>
-      <url>http://build.staging.obanyc.com/archiva/repository/releases/</url>
+      <url>https://build.staging.obanyc.com/archiva/repository/releases/</url>
     </repository>
     <snapshotRepository>
       <id>snapshots-mvn-repo</id>
-      <url>http://build.staging.obanyc.com/archiva/repository/snapshots/</url>
+      <url>https://build.staging.obanyc.com/archiva/repository/snapshots/</url>
     </snapshotRepository>
     <site>
       <id>${nyc_site_id}</id>

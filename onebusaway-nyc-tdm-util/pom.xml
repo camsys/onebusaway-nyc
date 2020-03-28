@@ -17,7 +17,7 @@
   <repositories>
     <repository>
       <id>camsys-cache</id>
-      <url>http://svn2.camsys.com/archiva/repository/internal/</url>
+      <url>https://svn2.camsys.com/archiva/repository/internal/</url>
       <releases>
 	<enabled>true</enabled>
       </releases>
@@ -27,7 +27,7 @@
     </repository>
     <repository>
       <id>caucho</id>
-      <url>http://caucho.com/m2</url>
+      <url>https://caucho.com/m2</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -37,7 +37,7 @@
     </repository>
     <repository>
       <id>ssj</id>
-      <url>http://maven.iscpif.fr/public</url>
+      <url>https://maven.iscpif.fr/public</url>
       <releases>
         <enabled>true</enabled>
       </releases>
