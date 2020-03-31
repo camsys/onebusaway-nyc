@@ -24,6 +24,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory
 import com.google.common.base.Strings;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 public class NycTestInferredLocationRecord implements Serializable {
@@ -159,7 +160,7 @@ public class NycTestInferredLocationRecord implements Serializable {
   private String inferredEdge = null;
 
   @CsvField(optional = true, ignore=true)
-  private short speed;
+  private BigDecimal speed;
 
   @CsvField(optional = true, ignore=true)
   private double bearing;
@@ -534,11 +535,11 @@ public class NycTestInferredLocationRecord implements Serializable {
     this.assignedBlockId = assignedBlockId;
   }
 
-  public short getSpeed() {
+  public BigDecimal getSpeed() {
     return speed;
   }
 
-  public void setSpeed(short speed) {
+  public void setSpeed(BigDecimal speed) {
     this.speed = speed;
   }
 
