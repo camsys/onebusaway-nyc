@@ -68,6 +68,8 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.TreeMultiset;
 
+import static org.onebusaway.nyc.util.impl.queue.CCLocationRecordUtil.convertSpeed;
+
 public class VehicleInferenceInstance {
 
   private static Logger _log = LoggerFactory.getLogger(VehicleInferenceInstance.class);
@@ -725,7 +727,7 @@ public class VehicleInferenceInstance {
         nycRecord.getRunNumber()));
     
     record.setAssignedBlockId(obs.getAssignedBlockId());
-    record.setSpeed(nycRecord.getSpeed());
+    record.setSpeed(convertSpeed(nycRecord.getSpeed()));
     record.setBearing(nycRecord.getBearing());
 
     final EVehiclePhase phase = journeyState.getPhase();

@@ -24,6 +24,8 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 import org.apache.commons.lang.StringUtils;
 
+import static org.onebusaway.nyc.util.impl.queue.CCLocationRecordUtil.convertSpeed;
+
 public class RecordLibrary {
 
   /**
