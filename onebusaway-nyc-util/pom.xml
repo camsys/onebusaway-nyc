@@ -66,6 +66,10 @@
           <version>2.6</version>
           <scope>compile</scope>
       </dependency>
+      <dependency>
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+      </dependency>
   </dependencies>
   
   <profiles>
