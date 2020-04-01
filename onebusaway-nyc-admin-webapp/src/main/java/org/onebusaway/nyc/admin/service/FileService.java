@@ -50,4 +50,9 @@ public interface FileService {
    */
    List<String> listBundleBuilds(String directoryName, int maxResults);
 
+
+  /**
+   * Return tabular data (filename, flag, modified date) about objects in an S3 file.
+   */
+  public List<String> listObjects (String directoryName, int maxResults);
 }

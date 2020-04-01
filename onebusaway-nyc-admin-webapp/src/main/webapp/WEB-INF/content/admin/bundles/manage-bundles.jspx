@@ -52,6 +52,16 @@
 <!-- //prevent jspx minimization -->
 	
 </script>
+
+
+<s:url var="url" value="https://www.gstatic.com/charts/loader.js">
+	<!-- //prevent jspx minimization -->
+</s:url>
+<script type="text/javascript" src="${url}">
+	<!-- //prevent jspx minimization -->
+
+</script>
+
 </head>
 <body>
 <s:form  action="manage-bundles" cssClass="bundleForm">
@@ -68,9 +78,10 @@
 								inputs</span></a></li>
 					<li><a href="#Build" title="Build And Validate"><span>4. Build
 								And Validate</span></a></li>
-					<li><a href="#Compare" title="Compare Bundles"><span>5. Compare
+					<li><a href="#Analyze" title="Build And Validate"><span>5. Analyze Trip Counts</span></a></li>
+					<li><a href="#Compare" title="Compare Bundles"><span>6. Compare
 								Bundles</span></a></li>
-					<li><a href="#Deploy" title="Deploy Bundle"><span>6. Deploy
+					<li><a href="#Deploy" title="Deploy Bundle"><span>7. Deploy
 								Bundle</span></a></li>
 				</ul>
 
@@ -91,6 +102,11 @@
 				</div>
 				<div id="Build">
 					<jsp:include page="build-bundle.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
+				<div id="Analyze">
+					<jsp:include page="analyze-bundle.jspx">
 						<!--  space -->
 					</jsp:include>
 				</div>

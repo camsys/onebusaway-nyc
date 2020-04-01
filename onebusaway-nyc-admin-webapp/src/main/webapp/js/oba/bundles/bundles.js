@@ -233,6 +233,13 @@ jQuery(function() {
 	jQuery("#compareToBuildNameList").on("change", onCompareToBuildNameChange);
 	jQuery("#compareToDate").on("change", onCompareToDateChange);
 
+	jQuery("#analyzeDatasetList").on("change", analyzeDatasetChange);
+	jQuery("#analyzeBuildNameList").on("change", analyzeBuildNameChange);
+
+
+
+
+
 	jQuery("#compareCurrentDirectories").selectable({
 		stop: function() {
 			var names = $.map($('#compareListItem.ui-selected strong, this'), function(element, i) {
@@ -1805,4 +1812,270 @@ function formatDiffRow(value) {
 		+ dataItems
 		+ "</tr>";
 	return newRow;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Copyright (c) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+var analyzeDataset = "";
+var analyzeBuildName = "";
+var analyzeData =  new Map();
+var analyzeChart;
+var analyzeDataMaterialChartOptions = {
+	chart: {
+		title: 'Trip counts by Zones'
+	},
+	width: 900,
+	height: 500,
+	series: {
+		// Gives each series an axis name that matches the Y-axis below.
+		0: {axis: 'TripCounts'}
+	},
+	axes: {
+		// Adds labels to each axis; they don't have to match the axis names.
+		y: {
+			TripCounts: {label: 'Trips'},
+		}
+	}
+};
+
+
+
+function analyzeDatasetChange() {
+	//clearChart();
+
+	if ($("#analyzeDatasetList option:selected").val() == "0") {
+		resetAnalyzeDataset();
+	} else {
+		analyzeDataset = $("#analyzeDatasetList option:selected").text();
+		analyzeBuildName = "";
+		var buildNameList = getExistingBuildList(analyzeDataset);
+		initBuildNameList($("#analyzeBuildNameList"), buildNameList);
+	}
+}
+
+function analyzeBuildNameChange() {
+	if ($("#analyzeNameList option:selected").val() == 0) {
+		analyzeBuildName = "";
+	} else {
+		analyzeBuildName = $("#analyzeBuildNameList option:selected").text();
+		if (analyzeDataset && analyzeBuildName) {
+			updateZoneSelection();
+		}
+	}
+	updateChart()
+}
+
+function resetAnalyzeDataset(){
+	AnalyzeDataset = "";
+	AnalyzeBuildName = "";
+	$("#analyzeDatasetList").val("0");
+	var row_0 = '<option value="0">Select a build name</option>';
+	$("#analyzeBuildNameList").find('option').remove().end().append(row_0);
+}
+
+function addZoneForAnalysis(zone){
+	if(!analyzeData.has(analyzeDataset + "," + analyzeBuildName + "," + zone)) {
+		var data = {};
+		data[csrfParameter] = csrfToken;
+		data["datasetName"] = analyzeDataset;
+		data["dataset_build_id"] = 0;
+		data["buildName"] = analyzeBuildName;
+		data["zone"] = zone;
+
+		jQuery.ajax({
+			url: "analyze-bundle!getZoneData.action",
+			data: data,
+			type: "POST",
+			async: false,
+			success: function (zoneData) {
+				console.log(zoneData);
+				analyzeData.set(analyzeDataset + "," + analyzeBuildName + "," + zone, zoneData);
+			}
+		})
+	}
+}
+
+function updateChart(){
+	google.charts.load("current", {packages: ["corechart",'annotationchart']});
+	google.charts.setOnLoadCallback(drawChart());
+}
+
+function drawChart(){
+	var requestedAnalyzeData = getRequestedAnalyzeData();
+	var data = new google.visualization.DataTable();
+	var oldestDate = null;
+	var lastDate = null;
+	var itt = 0
+
+	data.addColumn('date', 'Date');
+	for (var dataArray of requestedAnalyzeData){
+		data.addColumn('number', dataArray[0]);
+		if(oldestDate == null){
+			oldestDate = getOldestDateInDatamap(dataArray[1]);
+			lastDate = getLastDateInDatamap(dataArray[1]);
+		} else {
+			var oldestDateInDatamap = getOldestDateInDatamap(dataArray[1]);
+			oldestDate = (oldestDate < oldestDateInDatamap) ? oldestDate : oldestDateInDatamap;
+			var lastDateInDatamap = getLastDateInDatamap(dataArray[1]);
+			lastDate = (lastDate < lastDateInDatamap) ? lastDate : lastDateInDatamap;
+		}
+	}
+
+	var indexDate = new Date(oldestDate)
+	var formattedRequestAnalyzeData = []
+	while (indexDate <= lastDate) {
+		formattedRequestAnalyzeData[itt]=[];
+		formattedRequestAnalyzeData[itt].push(new Date(indexDate));
+		for (var dataArray of requestedAnalyzeData) {
+			var indexDateString = indexDate.toISOString();
+			indexDateString = indexDateString.substring(0,10);
+			(dataArray[1][indexDateString] != null) ? formattedRequestAnalyzeData[itt].push(dataArray[1][indexDateString]) : formattedRequestAnalyzeData[itt].push(0);
+		}
+		indexDate.setDate(indexDate.getDate() + 1)
+		itt += 1;
+	}
+	data.addRows(formattedRequestAnalyzeData);
+	console.log(formattedRequestAnalyzeData)
+	console.log(data)
+
+
+
+	if(analyzeChart == null) {
+		analyzeChart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
+	}
+
+	var options = {
+		displayAnnotations: false
+	};
+
+	analyzeChart.draw(data, options);
+
+	// console.log(chart.getVisibleChartRange())
+	// chart.setVisibleChartRange(oldestDate,lastDate)
+
+	// var chartDiv = document.getElementById('chart_div');
+	// var materialChart = new google.charts.Line(chartDiv);
+	// materialChart.draw(data, analyzeDataMaterialChartOptions);
+}
+
+function updateZoneSelection(){
+	var data = {};
+	data[csrfParameter] = csrfToken;
+	data["datasetName"] = analyzeDataset;
+	data["dataset_build_id"] = 0;
+	data["buildName"] = analyzeBuildName;
+
+	jQuery.ajax({
+		url: "analyze-bundle!getZoneList.action",
+		data: data,
+		type: "POST",
+		async: false,
+		success: function (zoneData) {
+			console.log(zoneData);
+			var existingZoneNodes = $("#zone_selection").children();
+			var existingZones = new Set();
+			for (i = 0; i< existingZoneNodes.length; i++){
+				existingZones.add(existingZoneNodes[i].name);
+			}
+			for (itt in zoneData){
+				currentZone = zoneData[itt];
+				if(!existingZones.has(currentZone)) {
+					childCheckbox = $(document.createElement("input")).attr({
+						id: 'zone_' + currentZone,
+						name: currentZone,
+						value: 'zone' + currentZone,
+						type: "checkbox",
+						class: "analyzeCheckbox"
+					})
+					$(childCheckbox).change(function(){
+						if(this.checked){
+							addZoneForAnalysis(this.name);
+							updateChart();
+ 						} else{
+							updateChart();
+						}
+					})
+					childLabel = $(document.createElement("label")).attr({
+						for: 'zone_' + currentZone
+					}).html(currentZone)
+					$("#zone_selection").append(childCheckbox)
+					$("#zone_selection").append(childLabel)
+				}
+			}
+		}
+	})
+}
+
+function clearChart(){
+	var chartDiv = document.getElementById('chart_div');
+	var data = new google.visualization.DataTable();
+	var materialChart = new google.charts.Line(chartDiv);
+	materialChart.draw(data, analyzeDataMaterialChartOptions);
+}
+
+
+
+function getRequestedAnalyzeData(){
+	var requestedAnalyzeData = new Map();
+	var selectedZones = getSelectedZones();
+	for (var i = 0; i<selectedZones.length; i++)
+		requestedAnalyzeData.set(selectedZones[i], analyzeData.get(analyzeDataset + "," + analyzeBuildName + "," + selectedZones[i]));
+	return requestedAnalyzeData;
+}
+
+function getSelectedZones(){
+	return $( "#zone_selection" ).children().map(function() {if(this.checked == true){return this.name}})
+}
+
+function getOldestDateInDatamap(datamap){
+	var oldestDate = null;
+	for (var mapEntry in datamap){
+		if(oldestDate == null){
+			oldestDate = new Date(mapEntry+"T00:00:00");
+		} else {
+			oldestDate = (oldestDate < new Date(mapEntry+"T00:00:00")) ? oldestDate : new Date(mapEntry +"T00:00:00");
+		}
+	}
+	return oldestDate;
+}
+
+function getLastDateInDatamap(datamap){
+	var lastDate = null;
+	for (var mapEntry in datamap){
+		if(lastDate == null){
+			lastDate = new Date(mapEntry +"T00:00:00");
+		} else {
+			lastDate = (lastDate > new Date(mapEntry + "T00:00:00")) ? lastDate : new Date(mapEntry + "T00:00:00");
+		}
+	}
+	return lastDate;
 }
