@@ -467,6 +467,22 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 //      task.addPropertyReference("task", "validationDiffTask");
 //      beans.put("validationDiffTaskDef", task.getBeanDefinition());
 
+      BeanDefinitionBuilder serviceIdsByBoroughByDayTask = BeanDefinitionBuilder.genericBeanDefinition(ServiceIdsByBoroughByDayTask.class);
+
+      serviceIdsByBoroughByDayTask.addPropertyReference("logger", "multiCSVLogger");
+      serviceIdsByBoroughByDayTask.addPropertyReference("gtfsDao", "gtfsRelationalDaoImpl");
+      serviceIdsByBoroughByDayTask.addPropertyReference("bundle", "bundle");
+      serviceIdsByBoroughByDayTask.addPropertyValue("configurationService", configurationService);
+
+      beans.put("serviceIdsByBoroughByDayTask", serviceIdsByBoroughByDayTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "serviceIdsByBoroughByDayTask");
+      task.addPropertyValue("afterTaskName", "block_location_history");
+      task.addPropertyValue("beforeTaskName", "dailyDataValidationTask");
+      task.addPropertyReference("task", "serviceIdsByBoroughByDayTask");
+      beans.put("serviceIdsByBoroughByDayTaskDef", task.getBeanDefinition());
+
       BeanDefinitionBuilder tripCountByZoneDataOutputTask = BeanDefinitionBuilder.genericBeanDefinition(TripCountByZoneDataOutputTask.class);
 
       tripCountByZoneDataOutputTask.addPropertyReference("logger", "multiCSVLogger");
@@ -478,7 +494,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "tripCountByZoneDataOutputTask");
-      task.addPropertyValue("afterTaskName", "block_location_history");
+      task.addPropertyValue("afterTaskName", "serviceIdsByBoroughByDayTask");
       task.addPropertyValue("beforeTaskName", "dailyDataValidationTask");
       task.addPropertyReference("task", "tripCountByZoneDataOutputTask");
       beans.put("tripCountByZoneDataOutputTaskDef", task.getBeanDefinition());
