@@ -927,6 +927,29 @@ function updateBuildStatus() {
 
 // populate list of files that were result of building
 function updateBuildList(id) {
+	var buildName = id;
+	jQuery.ajax({
+		url: "manage-bundles!determineBundleName.action?ts=" +new Date().getTime(),
+		type: "GET",
+		data: {"id": id},
+		async: false,
+		success: function(response){
+			summaryList = response;
+		}
+	});
+    var url = $("buildBundle_slack").innerText;
+    var text = "Bundle Build " + jQuery("#buildBundle_id").text();
+	 + " is complete"
+    $.ajax({
+        data: 'payload=' + JSON.stringify({
+            "text": text
+        }),
+        dataType: 'json',
+        processData: false,
+        type: 'POST',
+        url: url
+    });
+
 	var summaryList = null;
 	jQuery.ajax({
 		url: "manage-bundles!downloadOutputFile.action?ts=" +new Date().getTime(),
