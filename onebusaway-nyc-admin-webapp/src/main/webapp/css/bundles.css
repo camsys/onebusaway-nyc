@@ -801,3 +801,7 @@
 #Compare #dailyRouteDiffTable .selectedRpt {
 	background-color: #F99;
 }
+
+.analyzeCheckbox{
+	padding: 0px 20px;
+}

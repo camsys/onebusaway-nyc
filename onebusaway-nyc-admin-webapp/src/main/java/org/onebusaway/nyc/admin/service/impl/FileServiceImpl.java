@@ -287,6 +287,31 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 	}
 
 
+	@Override
+	/**
+	 * Return tabular data (filename, flag, modified date) about objects in an S3 file.
+	 */
+	public List<String> listObjects(String directoryName, int maxResults) {
+		List<String> rows = new ArrayList<String>();
+		HashMap<String, String> map = new HashMap<String, String>();
+		ListObjectsRequest request = new ListObjectsRequest(_bucketName, directoryName, null,
+				"/", maxResults);
+
+		ObjectListing listing = null;
+		if (listing == null) {
+			listing = _s3.listObjects(request);
+			if (listing.getObjectSummaries() != null) {
+				// short circuit if common prefixes works
+				List<S3ObjectSummary> s3objectSummaries = listing.getObjectSummaries();
+				for (S3ObjectSummary s3ObjectSummary : s3objectSummaries) {
+					String[] keyParts = s3ObjectSummary.getKey().split("/");
+					rows.add(keyParts[keyParts.length - 1]);
+				}
+			}
+		}
+		return rows;
+	}
+
 	private Date getLastModifiedTimeForKey(String key) {
 		ListObjectsRequest request = new ListObjectsRequest(_bucketName, key, null,
 				"/", 1);
