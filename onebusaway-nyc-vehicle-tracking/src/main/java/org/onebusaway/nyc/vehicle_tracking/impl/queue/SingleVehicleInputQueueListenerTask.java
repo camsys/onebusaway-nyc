@@ -16,6 +16,7 @@ import javax.annotation.PreDestroy;
 
 /**
  * Listens to the real time queue for one vehicle and injects it into the inference process.
+ * Configure the specific vehicle by editing vehicleId in SingleVehicleQueueInputServiceImpl.
  * 
  * @author jmaki
  */
