@@ -7,11 +7,8 @@ import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
-import org.onebusaway.nyc.admin.service.bundle.task.DailyDataValidationTask;
-import org.onebusaway.nyc.admin.service.bundle.task.FixedRouteDataValidationTask;
-import org.onebusaway.nyc.admin.service.bundle.task.GtfsStatisticsTask;
+import org.onebusaway.nyc.admin.service.bundle.task.*;
 import org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation.NycGtfsModTask;
-import org.onebusaway.nyc.admin.service.bundle.task.nycNamingConventionTask;
 import org.onebusaway.nyc.admin.service.impl.DiffServiceImpl;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.nyc.admin.util.ProcessUtil;
@@ -470,6 +467,23 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 //      task.addPropertyReference("task", "validationDiffTask");
 //      beans.put("validationDiffTaskDef", task.getBeanDefinition());
 
+      BeanDefinitionBuilder tripCountByZoneDataOutputTask = BeanDefinitionBuilder.genericBeanDefinition(TripCountByZoneDataOutputTask.class);
+
+      tripCountByZoneDataOutputTask.addPropertyReference("logger", "multiCSVLogger");
+      tripCountByZoneDataOutputTask.addPropertyReference("gtfsDao", "gtfsRelationalDaoImpl");
+      tripCountByZoneDataOutputTask.addPropertyReference("bundle", "bundle");
+      tripCountByZoneDataOutputTask.addPropertyValue("configurationService", configurationService);
+
+      beans.put("tripCountByZoneDataOutputTask", tripCountByZoneDataOutputTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "tripCountByZoneDataOutputTask");
+      task.addPropertyValue("afterTaskName", "block_location_history");
+      task.addPropertyValue("beforeTaskName", "dailyDataValidationTask");
+      task.addPropertyReference("task", "tripCountByZoneDataOutputTask");
+      beans.put("tripCountByZoneDataOutputTaskDef", task.getBeanDefinition());
+
+
       BeanDefinitionBuilder dailyDataValidationTask = BeanDefinitionBuilder.genericBeanDefinition(DailyDataValidationTask.class);
 
       dailyDataValidationTask.addPropertyReference("logger", "multiCSVLogger");
@@ -481,11 +495,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "dailyDataValidationTask");
-      task.addPropertyValue("afterTaskName", "block_location_history");
+      task.addPropertyValue("afterTaskName", "tripCountByZoneDataOutputTask");
       task.addPropertyValue("beforeTaskName", "saveGtfsTask");
       task.addPropertyReference("task", "dailyDataValidationTask");
       beans.put("dailyDataValidationTaskDef", task.getBeanDefinition());
-
 
 
       // STEP 7

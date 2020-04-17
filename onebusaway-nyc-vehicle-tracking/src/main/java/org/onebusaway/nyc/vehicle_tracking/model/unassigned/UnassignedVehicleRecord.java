@@ -1,19 +1,14 @@
 package org.onebusaway.nyc.vehicle_tracking.model.unassigned;
 
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.JsonDeserializer;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonRootName;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Objects;
 
+/**
+ * Represents SPOOKY / zombie bus data passed to us from an external system -- Depot pull-out vehicles.
+ * Pass along to TDS confirming that bus is in service and hence schedule data should be shown.
+ */
 public class UnassignedVehicleRecord {
     private String agencyId;
     private String blockId;
@@ -26,6 +21,8 @@ public class UnassignedVehicleRecord {
     private Long timeReceived;
     private String tripId;
     private String vehicleId;
+    // external system doesn't know this, but IE may remember this from last update
+    private Integer scheduleDeviation;
 
     @JsonProperty("agency-id")
     public String getAgencyId() {
@@ -89,6 +86,13 @@ public class UnassignedVehicleRecord {
 
     public void setServiceDate(Long serviceDate) {
         this.serviceDate = serviceDate;
+    }
+
+    @JsonProperty("schedule-deviation")
+    public Integer getScheduleDeviation() { return scheduleDeviation; }
+
+    public void setScheduleDeviation(Integer scheduleDeviation) {
+        this.scheduleDeviation = scheduleDeviation;
     }
 
     @JsonProperty("inferred-status")
