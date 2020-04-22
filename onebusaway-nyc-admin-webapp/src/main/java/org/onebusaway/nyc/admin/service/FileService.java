@@ -55,4 +55,20 @@ public interface FileService {
    * Return tabular data (filename, flag, modified date) about objects in an S3 file.
    */
   public List<String> listObjects (String directoryName, int maxResults);
+
+
+  /**
+   * Return files' names at a specified location.
+   */
+  public List<String> listFiles(String directoryName, int maxResults);
+
+  /**
+   * delete an object from s3
+   */
+  public void deleteObject(String filename);
+
+  /**
+   * Copies an s3 object from one location to another
+   */
+  public void copyS3Object(String fromObjectKey, String toObjectKey);
 }

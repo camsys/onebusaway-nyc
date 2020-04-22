@@ -108,6 +108,13 @@ ul li {
 	background-image:url('img/Button_background.png');
 }
 
+.formButtonWide {
+	border: 1px transparent;
+	width: 200px;
+	height: 30px;
+	background-image:url('img/Button_background.png');
+}
+
 .inlineFormButton {
 	border: 1px transparent;
 	width: 100px;

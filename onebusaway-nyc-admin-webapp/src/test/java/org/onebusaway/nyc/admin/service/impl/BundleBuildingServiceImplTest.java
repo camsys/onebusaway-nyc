@@ -261,7 +261,7 @@ public class BundleBuildingServiceImplTest {
   @Ignore
   @Test
   public void configureMeTest(){
-    testingGtfsLocally("2020-01-19", "2020-05-02","google_transit_brooklyn_tmp.zip","STIF_SURFACE_B_2020-01-19_REV2020-04-01_1551392-v5.zip");
+    testingGtfsLocally("2020-01-19", "2020-05-02","GTFS_MTABC_tmp.zip","STIF_MTABC_04202020_ECCPFRJKSC-v1.zip");
   }
 
   public void testingGtfsLocally(String startDate, String endDate, String gtfsFile, String stifFile){

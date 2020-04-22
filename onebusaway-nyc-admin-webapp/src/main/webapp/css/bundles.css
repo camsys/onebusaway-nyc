@@ -323,7 +323,7 @@
 	padding-top: 20px;
 }
 
-#uploadFiles #instruction {
+#uploadFiles .instruction {
 	background-color: #C3FDB8;
 	z-index: 1;
 	/* These three lines are for transparency in all browsers. */
@@ -332,7 +332,7 @@
 	opacity: 0.6;
 }
 
-#instruction p {
+.instruction p {
 	padding-left: 30px;
 	font-weight: bold;
 	color: #004E00;
