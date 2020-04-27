@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.unassigned;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -8,6 +10,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance;
 import org.onebusaway.nyc.vehicle_tracking.model.unassigned.Records;
 import org.onebusaway.nyc.vehicle_tracking.model.unassigned.UnassignedVehicleRecord;
@@ -30,6 +33,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
@@ -82,6 +87,9 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     private ArrayBlockingQueue<NycQueuedInferredLocationBean> _testingUnassignedQueue = new ArrayBlockingQueue<NycQueuedInferredLocationBean>(1000);
 
     @Autowired
+    private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
+
+    @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
 
     @Autowired
@@ -99,7 +107,7 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
 
     Integer _maxActiveVehicleAgeSecs;
 
-    private static final UnassignedVehicleRecord[] EMPTY_RECORDS = {};
+    private static final List<UnassignedVehicleRecord> EMPTY_RECORDS = Collections.unmodifiableList(new ArrayList<UnassignedVehicleRecord>());
 
 
     @Autowired
@@ -222,14 +230,19 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     }
 
     // package private for unit tests
-    UnassignedVehicleRecord[] getUnassignedVehicleRecords(URL url) {
+    List<UnassignedVehicleRecord> getUnassignedVehicleRecordsDirect(URL url) {
         try {
             if (_mapper == null) {
                 _log.error("mapper not present, still starting up?  ");
                 return EMPTY_RECORDS;
             }
             Records records = _mapper.readValue(url, Records.class);
-            return records.getUnassignedVehicleRecords();
+            if (records == null) return EMPTY_RECORDS;
+            List<UnassignedVehicleRecord> output = new ArrayList<>();
+            for (UnassignedVehicleRecord unassignedVehicleRecord : records.getUnassignedVehicleRecords()) {
+                output.add(unassignedVehicleRecord);
+            }
+            return output;
         } catch (Exception e) {
             _log.error("Unable to retrieve unassigned vehicle records from {}", url, e);
             return EMPTY_RECORDS;
@@ -249,8 +262,13 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         @Override
         public void run() {
             try {
-                UnassignedVehicleRecord[] unassignedVehicleRecords = getUnassignedVehicleRecords(getUrl());
-                processUnassignedVehicles(filterRecords(unassignedVehicleRecords));
+                if (!_debug) {
+                    // the TDM proxies this info
+                    processUnassignedVehicles(filterRecords(getUnassignedVehicleRecordsViaTDM()));
+                } else {
+                    // in debug mode we go direct to BusTrek
+                    processUnassignedVehicles(filterRecords(getUnassignedVehicleRecordsDirect(getUrl())));
+                }
             } catch (Exception e) {
                 _log.error("refreshData() failed: " + e.getMessage());
                 e.printStackTrace();
@@ -258,16 +276,96 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         }
     }
 
-    private UnassignedVehicleRecord[] filterRecords(UnassignedVehicleRecord[] unassignedVehicleRecords) {
+    private List<UnassignedVehicleRecord> getUnassignedVehicleRecordsViaTDM() {
+        try {
+            List<JsonObject> operatorAssignments = _transitDataManagerApiLibrary.getItemsForRequest(
+                    "ghostbus", "list");
+            if (operatorAssignments == null) return EMPTY_RECORDS;
+            List<UnassignedVehicleRecord> records = new ArrayList<>();
+            for (JsonObject obj : operatorAssignments) {
+                UnassignedVehicleRecord vr = toRecord(obj);
+                if (vr != null) {
+                    records.add(vr);
+                }
+            }
+            return records;
+        } catch (Exception any) {
+            _log.warn("issue retrieving ghostbuses: " + any, any);
+            return EMPTY_RECORDS;
+        }
+    }
+
+    private UnassignedVehicleRecord toRecord(JsonObject obj) {
+        UnassignedVehicleRecord vr = new UnassignedVehicleRecord();
+
+        vr.setAgencyId(nullSafeGetAsString(obj.get("agency-id")));
+        vr.setBlockId(nullSafeGetAsString(obj.get("inferred-block-id")));
+        vr.setDistanceAlongBlock(nullSafeGetAsDouble(obj.get("distance-along-block")));
+        vr.setLatitude(nullSafeGetAsDouble(obj.get("inferred-latitude")));
+        vr.setLongitude(nullSafeGetAsDouble(obj.get("inferred-longitude")));
+        vr.setPhase(nullSafeGetAsString(obj.get("inferred-phase")));
+        String dateStr = obj.get("service-date").getAsString();
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD");
+            Date parse = sdf.parse(dateStr);
+            vr.setServiceDate(parse.getTime());
+        } catch (ParseException pe) {
+            _log.info("invalid service date of " + dateStr);
+        }
+        vr.setStatus(nullSafeGetAsString(obj.get("inferred-status")));
+        String trStr = obj.get("time-received").getAsString();
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX'Z'");
+            Date parse = sdf.parse(trStr);
+            vr.setTimeReceived(parse.getTime());
+        } catch (ParseException pe) {
+            _log.info("invalid time received " + trStr);
+        }
+
+        vr.setTripId(nullSafeGetAsString(obj.get("inferred-trip-id")));
+        vr.setVehicleId(nullSafeGetAsString(obj.get("vehicle-id")));
+        if (obj.has("schedule-deviation")) {
+            vr.setScheduleDeviation(nullSafeGetAsInt(obj.get("schedule-deviation")));
+        }
+        if (vr.getScheduleDeviation() == null) {
+            vr.setScheduleDeviation(0); // default it
+        }
+        return vr;
+    }
+
+    private int nullSafeGetAsInt(JsonElement jsonElement) {
+        if (jsonElement.isJsonNull()) return 0;
+        if (jsonElement.isJsonPrimitive()) return jsonElement.getAsJsonPrimitive().getAsInt();
+        if (jsonElement.isJsonObject()) return jsonElement.getAsInt();
+        throw new IllegalStateException("unexpected element " + jsonElement);
+
+    }
+
+    private Double nullSafeGetAsDouble(JsonElement jsonElement) {
+        if (jsonElement.isJsonNull()) return null;
+        if (jsonElement.isJsonPrimitive()) return jsonElement.getAsJsonPrimitive().getAsDouble();
+        if (jsonElement.isJsonObject()) return jsonElement.getAsDouble();
+        throw new IllegalStateException("unexpected element " + jsonElement);
+    }
+
+    private String nullSafeGetAsString(JsonElement jsonElement) {
+        if (jsonElement.isJsonNull()) return null;
+        if (jsonElement.isJsonPrimitive()) return jsonElement.getAsJsonPrimitive().getAsString();
+        if (jsonElement.isJsonObject()) return jsonElement.getAsString();
+        throw new IllegalStateException("unexpected element " + jsonElement);
+    }
+
+
+    private List<UnassignedVehicleRecord> filterRecords(List<UnassignedVehicleRecord> unassignedVehicleRecords) {
         if (unassignedVehicleRecords == null) return EMPTY_RECORDS;
         if (!_debug) return unassignedVehicleRecords;
         // from here we are in debug mode -- create additional test records from testingUnassignedQueue
         List<UnassignedVehicleRecord> vehicleRecords = new ArrayList<>();
-                vehicleRecords.addAll(Arrays.asList(unassignedVehicleRecords));
+                vehicleRecords.addAll(unassignedVehicleRecords);
         List<UnassignedVehicleRecord> queuedRecords = dequeueTestUnassignedRecords();
         if (queuedRecords != null)
             vehicleRecords.addAll(queuedRecords);
-        return vehicleRecords.toArray(new UnassignedVehicleRecord[vehicleRecords.size()]);
+        return vehicleRecords;
     }
 
     private List<UnassignedVehicleRecord> dequeueTestUnassignedRecords() {
@@ -300,7 +398,7 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         return output;
     }
 
-    private void processUnassignedVehicles(UnassignedVehicleRecord[] unassignedVehicleRecords) {
+    private void processUnassignedVehicles(List<UnassignedVehicleRecord> unassignedVehicleRecords) {
         for(UnassignedVehicleRecord record : unassignedVehicleRecords){
             if(StringUtils.isNotBlank(record.getAgencyId()) && StringUtils.isNotBlank(record.getVehicleId())){
                 NycQueuedInferredLocationBean inferredLocationBean = toNycQueueInferredLocationBean(record);
@@ -394,6 +492,8 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     }
 
     public boolean vehicleActive(AgencyAndId vehicleId, long currentTime) {
+        if (_vehicleLocationInferenceService.getTimeReceivedByVehicleId(vehicleId) ==  null) return false;
+
         Long timeReceived = _vehicleLocationInferenceService.getTimeReceivedByVehicleId(vehicleId);
         if(timeReceived != null && ((currentTime - timeReceived) / 1000) <= getMaxActiveVehicleAgeSecs()){
             return true;
