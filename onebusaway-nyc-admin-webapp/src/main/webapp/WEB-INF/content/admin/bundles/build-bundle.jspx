@@ -40,6 +40,8 @@
 							Select a way to be notified when the bundle is complete:</p>
 						<label class="adminLabel">Email</label>
 						<s:textfield id="buildBundle_email" name="emailAddress" />
+						<label class="adminLabel">Slack</label>
+						<s:textfield id="buildBundle_slack" name="slackWehook" />
 					</fieldset>
 				</div>
 				<div id="buildBox">

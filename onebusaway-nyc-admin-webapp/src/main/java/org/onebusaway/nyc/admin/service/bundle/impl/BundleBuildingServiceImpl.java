@@ -143,13 +143,21 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setBundleRootDirectory(rootPath);
     File rootDir = new File(rootPath);
     rootDir.mkdirs();
-    
+
     String inputsPath = request.getTmpDirectory() + File.separator + request.getBundleName() 
         + File.separator + INPUTS_DIR;
     response.setBundleInputDirectory(inputsPath);
     File inputsDir = new File(inputsPath);
     inputsDir.mkdirs();
-    
+
+    String inputsGtfsPath = inputsPath + File.separator + "gtfs";
+    File inputsGtfsDir = new File (inputsGtfsPath);
+    inputsGtfsDir.mkdirs();
+
+    String inputsStifPath = inputsPath + File.separator + "stif";
+    File inputsStifDir = new File (inputsStifPath);
+    inputsStifDir.mkdirs();
+
     String outputsPath = request.getTmpDirectory() + File.separator + request.getBundleName()
         + File.separator + OUTPUT_DIR;
     response.setBundleOutputDirectory(outputsPath);
@@ -170,11 +178,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     dataDir.mkdirs();
     
     for (String gtfs : response.getGtfsList()) {
-      String outputFilename = inputsPath + File.separator + fs.parseFileName(gtfs); 
+      String outputFilename = inputsGtfsPath + File.separator + fs.parseFileName(gtfs);
       fs.copyFiles(new File(gtfs), new File(outputFilename));
     }
     for (String stif: response.getStifZipList()) {
-      String outputFilename = inputsPath + File.separator + fs.parseFileName(stif); 
+      String outputFilename = inputsStifPath + File.separator + fs.parseFileName(stif);
       fs.copyFiles(new File(stif), new File(outputFilename));
     }
     
@@ -467,6 +475,22 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 //      task.addPropertyReference("task", "validationDiffTask");
 //      beans.put("validationDiffTaskDef", task.getBeanDefinition());
 
+      BeanDefinitionBuilder serviceIdsByBoroughByDayTask = BeanDefinitionBuilder.genericBeanDefinition(ServiceIdsByBoroughByDayTask.class);
+
+      serviceIdsByBoroughByDayTask.addPropertyReference("logger", "multiCSVLogger");
+      serviceIdsByBoroughByDayTask.addPropertyReference("gtfsDao", "gtfsRelationalDaoImpl");
+      serviceIdsByBoroughByDayTask.addPropertyReference("bundle", "bundle");
+      serviceIdsByBoroughByDayTask.addPropertyValue("configurationService", configurationService);
+
+      beans.put("serviceIdsByBoroughByDayTask", serviceIdsByBoroughByDayTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "serviceIdsByBoroughByDayTask");
+      task.addPropertyValue("afterTaskName", "block_location_history");
+      task.addPropertyValue("beforeTaskName", "dailyDataValidationTask");
+      task.addPropertyReference("task", "serviceIdsByBoroughByDayTask");
+      beans.put("serviceIdsByBoroughByDayTaskDef", task.getBeanDefinition());
+
       BeanDefinitionBuilder tripCountByZoneDataOutputTask = BeanDefinitionBuilder.genericBeanDefinition(TripCountByZoneDataOutputTask.class);
 
       tripCountByZoneDataOutputTask.addPropertyReference("logger", "multiCSVLogger");
@@ -478,7 +502,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "tripCountByZoneDataOutputTask");
-      task.addPropertyValue("afterTaskName", "block_location_history");
+      task.addPropertyValue("afterTaskName", "serviceIdsByBoroughByDayTask");
       task.addPropertyValue("beforeTaskName", "dailyDataValidationTask");
       task.addPropertyReference("task", "tripCountByZoneDataOutputTask");
       beans.put("tripCountByZoneDataOutputTaskDef", task.getBeanDefinition());
