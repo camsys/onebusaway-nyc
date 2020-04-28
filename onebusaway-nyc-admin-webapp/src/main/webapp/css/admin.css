@@ -136,6 +136,10 @@ ul li {
 	overflow: hidden;
 }
 
+.hidden{
+	display: none;
+}
+
 #codesHolder #quickCodes {
 	float: left;
 	border: 1px transparent;

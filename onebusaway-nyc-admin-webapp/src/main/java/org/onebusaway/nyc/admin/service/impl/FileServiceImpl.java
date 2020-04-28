@@ -19,10 +19,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -339,7 +336,7 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 
 	@Override
 	/**
-	 * Return tabular data (filename, flag, modified date) about objects in an S3 file.
+	 * Return fileName of objects in an S3 file.
 	 */
 	public List<String> listObjects(String directoryName, int maxResults) {
 		List<String> rows = new ArrayList<String>();
@@ -537,6 +534,27 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 					"traversal attack");
 		}
 	}
+
+
+	/**
+	 * Return tabular data (filename, flag, modified date) about objects on S3.
+	 */
+	public List<Map<String,String>> listObjectsTabular (String directory, int maxResults){
+
+	ListObjectsRequest request = new ListObjectsRequest(_bucketName, directory,
+			null, null, maxResults);
+	ObjectListing listing = _s3.listObjects(request);
+	List<Map<String,String>> rows = new ArrayList();
+	for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+		HashMap<String,String> objectDetails = new HashMap<String,String>();
+		objectDetails.put("bucketName",summary.getBucketName());
+		objectDetails.put("key",summary.getKey());
+		objectDetails.put("eTag",summary.getETag());
+		objectDetails.put("lastModified",summary.getLastModified().toString());
+		rows.add(objectDetails);
+	}
+	return rows;
+}
 
 	
 }

@@ -2,6 +2,7 @@ package org.onebusaway.nyc.admin.service;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 public interface FileService {
   void setup();
@@ -52,9 +53,14 @@ public interface FileService {
 
 
   /**
-   * Return tabular data (filename, flag, modified date) about objects in an S3 file.
+   * Return fileName of objects on S3.
    */
   public List<String> listObjects (String directoryName, int maxResults);
+
+  /**
+   * Return tabular data (filename, flag, modified date) about objects on S3.
+   */
+  public List<Map<String,String>> listObjectsTabular (String directoryName, int maxResults);
 
 
   /**

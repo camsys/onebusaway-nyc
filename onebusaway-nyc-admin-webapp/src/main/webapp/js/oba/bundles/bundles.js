@@ -237,6 +237,9 @@ jQuery(function() {
 	jQuery("#analyzeDatasetList").on("change", analyzeDatasetChange);
 	jQuery("#analyzeBuildNameList").on("change", analyzeBuildNameChange);
 
+	jQuery("#prepDeployDatasetList").on("change", prepDeployDatasetChange);
+	jQuery("#prepDeployBuildNameList").on("change", prepDeployBuildNameChange);
+	jQuery("#prepDeployBundle_prepDeployButton").click(copyBundleToDeployLocation);
 
 
 
@@ -2226,4 +2229,94 @@ function clearAndImport(){
 			}
 		})
 	}
+}
+
+
+
+
+
+
+
+
+//~~~~~~~~~~~~~~~Stage~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+function prepDeployDatasetChange() {
+	if ($("#prepDeployDatasetList option:selected").val() == "0") {
+		resetStageDataset();
+	} else {
+		var prepDeployDataset = $("#prepDeployDatasetList option:selected").text();
+		var buildNameList = getExistingBuildList(prepDeployDataset);
+		initBuildNameList($("#prepDeployBuildNameList"), buildNameList);
+	}
+	clearStagingBundle()
+}
+
+function prepDeployBuildNameChange() {
+	clearStagingBundle()
+	var prepDeployDataset = $("#prepDeployDatasetList option:selected").text();
+	var prepDeployBuildName = $("#prepDeployBuildNameList option:selected").text();
+	if (prepDeployDataset && prepDeployBuildName) {
+		getStagingBundle(prepDeployDataset, prepDeployBuildName);
+	}
+}
+
+function resetStageDataset(){
+	$("#prepDeployDatasetList").val("0");
+	var row_0 = '<option value="0">Select a build name</option>';
+	$("#prepDeployBuildNameList").find('option').remove().end().append(row_0);
+}
+
+function clearStagingBundle(){
+	$("#prepDeployBundle_bundleList").find('p').remove();
+}
+
+function getStagingBundle(prepDeployDataset, prepDeployBuildName) {
+	var data = {};
+	data[csrfParameter] = csrfToken;
+	data["datasetName"] = prepDeployDataset;
+	data["dataset_build_id"] = 0;
+	data["buildName"] = prepDeployBuildName;
+
+	jQuery.ajax({
+		url: "prep-deploy-bundle!requestBundleModifiedDate.action",
+		data: data,
+		type: "POST",
+		async: false,
+		success: function (modifiedDate) {
+			console.log(modifiedDate);
+			addPrepDeployBundle(prepDeployDataset, prepDeployBuildName, modifiedDate)
+		}
+	})
+}
+
+function addPrepDeployBundle(prepDeployDataset, prepDeployBuildName, modifiedDate){
+	$("#prepDeployBundle_bundleList").append(
+		$(
+			document.createElement("p")
+		).html("<b>" + prepDeployBuildName + ".tar.gz </b>"
+			+ " was last modified on <b>" +modifiedDate + "</b>")
+	)
+}
+
+function copyBundleToDeployLocation(){
+	var data = {};
+	data[csrfParameter] = csrfToken;
+	data["datasetName"] = $("#prepDeployDatasetList option:selected").text();
+	data["dataset_build_id"] = 0;
+	data["buildName"] = $("#prepDeployBuildNameList option:selected").text();
+	data["s3Path"] = $("#prepDeploy_path").text();
+
+	jQuery.ajax({
+		url: "prep-deploy-bundle!copyBundleToDeployLocation.action",
+		data: data,
+		type: "POST",
+		async: false,
+		success: function (messages) {
+			console.log(messages);
+			for (messagesIndex in messages)
+				$("#prepDeployMessages").append($(document.createElement("p")).html(messages[messagesIndex]))
+		}
+	})
 }

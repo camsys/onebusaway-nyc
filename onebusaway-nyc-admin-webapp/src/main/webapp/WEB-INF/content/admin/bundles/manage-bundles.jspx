@@ -81,6 +81,8 @@
 					<li><a href="#Analyze" title="Build And Validate"><span>5. Analyze Trip Counts</span></a></li>
 					<li><a href="#Compare" title="Compare Bundles"><span>6. Compare
 								Bundles</span></a></li>
+					<li><a href="#PrepDeploy" title="PrepDeploy Bundle"><span>6. PrepDeploy
+								Bundle</span></a></li>
 					<li><a href="#Deploy" title="Deploy Bundle"><span>7. Deploy
 								Bundle</span></a></li>
 				</ul>
@@ -112,6 +114,11 @@
 				</div>
 				<div id="Compare">
 					<jsp:include page="compare-bundles.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
+				<div id="PrepDeploy">
+					<jsp:include page="prepDeploy-bundle.jspx">
 						<!--  space -->
 					</jsp:include>
 				</div>

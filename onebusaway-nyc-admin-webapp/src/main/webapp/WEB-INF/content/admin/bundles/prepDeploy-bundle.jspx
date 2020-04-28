@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+      xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
+<jsp:directive.page contentType="text/html" />
+<div class="tabHeader">
+    <label class="headerLabel">Prep for Deploy</label>
+</div>
+<div id="prepDeploypage_info">
+    <label id="prepDeploy_path" class="adminLabel directoryLabel hidden">
+        <s:property value="s3Path" ></s:property>
+    </label>
+</div>
+<div id="helpfulMessage">
+    Please select a bundle to copy to the <b><s:property value="s3Path" ></s:property></b> directory via the S3 Management Console.
+</div>
+<div id="prepDeployBundle">
+    <fieldset>
+        <legend></legend>
+        <table id="prepDeployBundleTable">
+            <tr>
+                <td>Dataset Name</td>
+                <td>
+                    <select name="prepDeployDatasetList" id="prepDeployDatasetList">
+                        <option value="0">Select a dataset</option>
+                        <s:iterator value="%{existingDirectories}" status="status">
+                            <s:set var="index" value="%{#status.count}" />
+                            <option value="">
+                                <s:property value="name" />
+                            </option>
+                        </s:iterator>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Build Name</td>
+                <td>
+                    <select name="prepDeployBuildNameList" id="prepDeployBuildNameList">
+                        <option value="0">Select a build name</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+    <div id="prepDeployBundle_bundleList">
+        <!--  space -->
+    </div>
+    <label>Click to copy bundle to deployment location</label>
+        <s:textfield type="button" id="prepDeployBundle_prepDeployButton" value="Prepare Deployment"/>
+    <div id="prepDeployMessages">
+        <p>Status of Deployment preparation</p>
+    </div>
+    <div class="submitForm">
+        <fieldset>
+            <s:url var="url" action="index.action" namespace="/admin" />
+            <a href="${url}" class="link">Cancel</a>
+            <input type="button" id="prepDeploy_continue" value="Continue" class="submit_disabled" disabled="disabled" />
+        </fieldset>
+    </div>
+</div>
+</html>
