@@ -65,7 +65,7 @@
     <label>Click to copy bundle to deployment location</label>
         <s:textfield type="button" id="prepDeployBundle_prepDeployButton" value="Prepare Deployment"/>
     <div id="prepDeployMessages">
-        <p>Status of Deployment preparation</p>
+        <p>Status of Preparation</p>
     </div>
     <div class="submitForm">
         <fieldset>
