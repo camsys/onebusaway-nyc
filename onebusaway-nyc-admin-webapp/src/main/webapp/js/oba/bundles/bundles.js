@@ -144,6 +144,7 @@ var csrfHeader = "";
 
 
 jQuery(function() {
+
 	//Initialize tabs
 	jQuery("#tabs").tabs();
 	csrfParameter = $("meta[name='_csrf_parameter']").attr("content");
@@ -236,6 +237,9 @@ jQuery(function() {
 	jQuery("#analyzeDatasetList").on("change", analyzeDatasetChange);
 	jQuery("#analyzeBuildNameList").on("change", analyzeBuildNameChange);
 
+	jQuery("#prepDeployDatasetList").on("change", prepDeployDatasetChange);
+	jQuery("#prepDeployBuildNameList").on("change", prepDeployBuildNameChange);
+	jQuery("#prepDeployBundle_prepDeployButton").click(copyBundleToDeployLocation);
 
 
 
@@ -499,6 +503,12 @@ jQuery(function() {
 	jQuery("#deployBundle_deployButton").click(onDeployClick);
 	jQuery("#deployBundle_listButton").click(onDeployListClick);
 	onDeployListClick();
+
+
+	//Handling for UploadFiles
+	jQuery("#importBundle_bundleName").on("change", getFileNamesToCopy);
+	jQuery("#clearAndImportButton").click(clearAndImport);
+
 });
 
 function onCreateContinueClick() {
@@ -517,6 +527,7 @@ function onPrevalidateContinueClick() {
 }
 
 function onSelectClick() {
+	getBundlesForDir();
 	var bundleDir = jQuery("#createDirectory #directoryName").val();
 	var actionName = "selectDirectory";
 
@@ -927,6 +938,29 @@ function updateBuildStatus() {
 
 // populate list of files that were result of building
 function updateBuildList(id) {
+	var buildName = id;
+	jQuery.ajax({
+		url: "manage-bundles!determineBundleName.action?ts=" +new Date().getTime(),
+		type: "GET",
+		data: {"id": id},
+		async: false,
+		success: function(response){
+			summaryList = response;
+		}
+	});
+	var url = $("buildBundle_slack").innerText;
+	var text = "Bundle Build " + jQuery("#buildBundle_id").text();
+	+ " is complete"
+	$.ajax({
+		data: 'payload=' + JSON.stringify({
+			"text": text
+		}),
+		dataType: 'json',
+		processData: false,
+		type: 'POST',
+		url: url
+	});
+
 	var summaryList = null;
 	jQuery.ajax({
 		url: "manage-bundles!downloadOutputFile.action?ts=" +new Date().getTime(),
@@ -2020,7 +2054,7 @@ function updateZoneSelection(){
 						if(this.checked){
 							addZoneForAnalysis(this.name);
 							updateChart();
- 						} else{
+						} else{
 							updateChart();
 						}
 					})
@@ -2078,4 +2112,211 @@ function getLastDateInDatamap(datamap){
 		}
 	}
 	return lastDate;
+}
+
+
+
+
+
+
+//~~~~~~~~~Import Files~~~~~~~
+
+
+
+
+function getFileNamesToCopy(){
+
+	if ($("#importBundle_bundleName option:selected").val() == 0) {
+		return
+	}
+	var copyBundleDirectory = jQuery("#createDirectory #directoryName").val();
+	var copyBuildNameList = jQuery("#importBundle_bundleName  option:selected").text();
+	var data = {};
+	data[csrfParameter] = csrfToken;
+	data["bundleDirectory"] = copyBundleDirectory;
+	data["buildName"] = copyBuildNameList;
+
+	jQuery.ajax({
+		url: "import-files-for-bundle!requestFilePaths.action",
+		data: data,
+		type: "POST",
+		async: false,
+		success: function (filePaths) {
+			clearImportCheckboxes();
+			for (filePathIndex in filePaths)
+				mkImportCheckbox(filePaths[filePathIndex])
+		}
+	})
+}
+
+function getBundlesForDir() {
+	var bundleDir = jQuery("#createDirectory #directoryName").val();
+	var buildNameList = getExistingBuildList(bundleDir);
+	initBuildNameList($("#importBundle_bundleName"), buildNameList);
+}
+
+function clearImportCheckboxes() {
+	$("#filesToImport").empty()
+	row = document.createElement("tr");
+	$(row).append($(document.createElement("td")).html("Available files to import"))
+	$("#filesToImport").append(row)
+}
+
+function mkImportCheckbox(filePath){
+	var filePathParts = filePath.split("/");
+	var fileName = filePathParts[filePathParts.length-1];
+	childCheckbox = $(document.createElement("input")).attr({
+		id: 'import_' + fileName,
+		name: 'import_' + fileName,
+		value: filePath,
+		type: "checkbox",
+		class: "analyzeCheckbox",
+		checked:true
+	})
+	childLabel = $(document.createElement("label")).attr({
+		for: 'import_' + fileName
+	}).html(fileName)
+
+	$("#filesToImport").append($(document.createElement("tr")).append($(document.createElement("td")).append(childCheckbox).append(childLabel)))
+}
+
+function getSelectedFilesForImport(){
+	out = [];
+	selectedElements = $( "#filesToImport tbody tr td input" ).map(function() {if(this.checked == true){return this.value}})
+	for (var i = 0; i<selectedElements.length; i++)
+		out.push(selectedElements[i]);
+	return out
+}
+
+function clearAndImport(){
+	var data = {};
+	var copyBundleDirectory = jQuery("#createDirectory #directoryName").val();
+	var copyBuildNameList = jQuery("#importBundle_bundleName  option:selected").text();
+	data[csrfParameter] = csrfToken;
+	data["bundleDirectory"] = copyBundleDirectory;
+	data["buildName"] = copyBuildNameList;
+	var selectedFilesForImport =  getSelectedFilesForImport();
+
+	jQuery.ajax({
+		url: "import-files-for-bundle!clearFiles.action",
+		data: data,
+		type: "POST",
+		async: false,
+		success: function (message) {
+			$("#importFiles_messageBox").append(
+				$(
+					document.createElement("p")
+				).html(message)
+			)
+		}
+	})
+
+	for(itt in selectedFilesForImport){
+		selectedFileForImport = selectedFilesForImport[itt];
+		data["fileToImport"] = selectedFileForImport;
+
+		jQuery.ajax({
+			url: "import-files-for-bundle!importFile.action",
+			data: data,
+			type: "POST",
+			async: false,
+			success: function (message) {
+				$("#importFiles_messageBox").append(
+					$(
+						document.createElement("p")
+					).html(message)
+				)
+			}
+		})
+	}
+}
+
+
+
+
+
+
+
+
+//~~~~~~~~~~~~~~~Stage~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+function prepDeployDatasetChange() {
+	if ($("#prepDeployDatasetList option:selected").val() == "0") {
+		resetStageDataset();
+	} else {
+		var prepDeployDataset = $("#prepDeployDatasetList option:selected").text();
+		var buildNameList = getExistingBuildList(prepDeployDataset);
+		initBuildNameList($("#prepDeployBuildNameList"), buildNameList);
+	}
+	clearStagingBundle()
+}
+
+function prepDeployBuildNameChange() {
+	clearStagingBundle()
+	var prepDeployDataset = $("#prepDeployDatasetList option:selected").text();
+	var prepDeployBuildName = $("#prepDeployBuildNameList option:selected").text();
+	if (prepDeployDataset && prepDeployBuildName) {
+		getStagingBundle(prepDeployDataset, prepDeployBuildName);
+	}
+}
+
+function resetStageDataset(){
+	$("#prepDeployDatasetList").val("0");
+	var row_0 = '<option value="0">Select a build name</option>';
+	$("#prepDeployBuildNameList").find('option').remove().end().append(row_0);
+}
+
+function clearStagingBundle(){
+	$("#prepDeployBundle_bundleList").find('p').remove();
+}
+
+function getStagingBundle(prepDeployDataset, prepDeployBuildName) {
+	var data = {};
+	data[csrfParameter] = csrfToken;
+	data["datasetName"] = prepDeployDataset;
+	data["dataset_build_id"] = 0;
+	data["buildName"] = prepDeployBuildName;
+
+	jQuery.ajax({
+		url: "prep-deploy-bundle!requestBundleModifiedDate.action",
+		data: data,
+		type: "POST",
+		async: false,
+		success: function (modifiedDate) {
+			console.log(modifiedDate);
+			addPrepDeployBundle(prepDeployDataset, prepDeployBuildName, modifiedDate)
+		}
+	})
+}
+
+function addPrepDeployBundle(prepDeployDataset, prepDeployBuildName, modifiedDate){
+	$("#prepDeployBundle_bundleList").append(
+		$(
+			document.createElement("p")
+		).html("<b>" + prepDeployBuildName + ".tar.gz </b>"
+			+ " was last modified on <b>" +modifiedDate + "</b>")
+	)
+}
+
+function copyBundleToDeployLocation(){
+	var data = {};
+	data[csrfParameter] = csrfToken;
+	data["datasetName"] = $("#prepDeployDatasetList option:selected").text();
+	data["dataset_build_id"] = 0;
+	data["buildName"] = $("#prepDeployBuildNameList option:selected").text();
+	data["s3Path"] = $("#prepDeploy_path").text();
+
+	jQuery.ajax({
+		url: "prep-deploy-bundle!copyBundleToDeployLocation.action",
+		data: data,
+		type: "POST",
+		async: false,
+		success: function (messages) {
+			console.log(messages);
+			for (messagesIndex in messages)
+				$("#prepDeployMessages").append($(document.createElement("p")).html(messages[messagesIndex]))
+		}
+	})
 }

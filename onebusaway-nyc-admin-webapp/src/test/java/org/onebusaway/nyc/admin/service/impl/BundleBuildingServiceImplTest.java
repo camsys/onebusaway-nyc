@@ -24,6 +24,8 @@ public class BundleBuildingServiceImplTest {
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImplTest.class);
   private BundleBuildingServiceImpl _service;
 
+  private String oddInternalDelimeter = "_&_&_";
+
   @Before
   public void setup() {
     _service = new BundleBuildingServiceImpl() {
@@ -102,6 +104,16 @@ public class BundleBuildingServiceImplTest {
           list.add("STIF_SURFACE_BX_2020-01-19_REV2019-11-25_1032003.zip");
         } else if (directory.equals("semiExtensiveTest/config")) {
           // do nothing
+        } else if (directory.split(oddInternalDelimeter).length > 1){
+          String[] directoryParts = directory.split(oddInternalDelimeter);
+          String gtfsFile = directoryParts[1];
+          String stifFile = directoryParts[2];
+          String requestType = directoryParts[3].split("/")[1];
+          if (requestType.equals("gtfs_latest")){
+            list.add(gtfsFile);
+          } else if (requestType.equals("stif_latest")){
+            list.add(stifFile);
+          }
         }
         else{
           list.add("empty");
@@ -214,19 +226,19 @@ public class BundleBuildingServiceImplTest {
     expected = mode;
     assertNotNull(response.getStifZipList());
     assertEquals(expected, response.getStifZipList().size());
-     
+
     assertNotNull(response.getStatusList());
     assertTrue(response.getStatusList().size() > 0);
 
     assertNotNull(response.getConfigList());
     assertEquals(0, response.getConfigList().size());
-    
+
     // step 2
     _service.prepare(request, response);
 
-    
+
     assertFalse(response.isComplete());
-    
+
     // step 3
     int rc = _service.build(request, response);
     if (response.getException() != null) {
@@ -235,7 +247,7 @@ public class BundleBuildingServiceImplTest {
     assertNull(response.getException());
     assertFalse(response.isComplete());
     assertEquals(0, rc);
-    
+
     // step 4
     // OBANYC-1451 -- fails on OSX TODO
     //_service.assemble(request, response);
@@ -243,6 +255,54 @@ public class BundleBuildingServiceImplTest {
     // step 5
     _service.upload(request, response);
     assertFalse(response.isComplete()); // set by BundleRequestService
+
+  }
+
+  @Ignore
+  @Test
+  public void configureMeTest(){
+    testingGtfsLocally("2020-01-19", "2020-05-02","GTFS_MTABC_tmp.zip","STIF_MTABC_04202020_ECCPFRJKSC-v1.zip");
+  }
+
+  public void testingGtfsLocally(String startDate, String endDate, String gtfsFile, String stifFile){
+
+    String bundleDir;
+
+    bundleDir = "testingGtfsLocally" + oddInternalDelimeter + gtfsFile + oddInternalDelimeter + stifFile + oddInternalDelimeter + "testingGtfsLocally";
+
+
+    String tmpDir = new FileUtils().createTmpDirectory();
+
+    BundleBuildRequest request = new BundleBuildRequest();
+    request.setBundleDirectory(bundleDir);
+    request.setBundleName("testname");
+    request.setTmpDirectory(tmpDir);
+    request.setBundleStartDate(startDate);
+    request.setBundleEndDate(endDate);
+    BundleBuildResponse response = new BundleBuildResponse(""
+            + System.currentTimeMillis());
+
+
+    // step 1
+    _service.download(request, response);
+
+    // step 2
+    _service.prepare(request, response);
+
+
+
+    // step 3
+    int rc = _service.build(request, response);
+    if (response.getException() != null) {
+      _log.error("Failed with exception=" + response.getException());
+    }
+
+    // step 4
+    // OBANYC-1451 -- fails on OSX TODO
+    //_service.assemble(request, response);
+
+    // step 5
+    _service.upload(request, response);
 
   }
 
