@@ -37,7 +37,9 @@
 		<input type="button" id="clearAndImportButton" value="Clear Latest and Import Files"
 			   class="formButtonWide" />
 	</div>
-	<div id="importFiles_messageBox"></div>
+	<div id="importFiles_messageBox">
+		<p>Log of imported files:</p>
+	</div>
 </div>
 
 <div id="uploadFiles">
