@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.unassigned;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -17,6 +16,7 @@ import org.onebusaway.realtime.api.VehicleLocationRecord;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
@@ -39,7 +39,8 @@ public class UnassignedVehicleServiceImplTest {
             MockitoAnnotations.initMocks(this);
             this.service.setupMapper();
             URL url = getClass().getClassLoader().getResource("unassigned_vehicles.json");
-            records = service.getUnassignedVehicleRecords(url);
+            List<UnassignedVehicleRecord> direct = service.getUnassignedVehicleRecordsDirect(url);
+            records = direct.toArray(new UnassignedVehicleRecord[direct.size()]);
         }
 
         @Test
