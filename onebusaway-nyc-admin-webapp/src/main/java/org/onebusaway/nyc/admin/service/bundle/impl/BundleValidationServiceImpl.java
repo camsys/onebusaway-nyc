@@ -223,9 +223,9 @@ public class BundleValidationServiceImpl implements BundleValidationService {
           }
           _log.info("results of " + gtfsZipFileName + " at " + outputFile);
           response.addValidationFile(new FileUtils().parseFileName(outputFile));
-          upload(request, response);
-          response.addStatusMessage("complete");
         }
+    upload(request, response);
+    response.addStatusMessage("complete");
   } 
   
 	  
