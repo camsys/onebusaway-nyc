@@ -10,6 +10,7 @@ import java.util.*;
 public class FilterGtfsValidatorOutput {
 
     private static String gitPath = "https://raw.githubusercontent.com/wiki/camsys/onebusaway-application-modules/FilterForGtfsValidator.md";
+    private static String regexGitPath = "https://raw.githubusercontent.com/wiki/camsys/onebusaway-application-modules/RegexFilterForGtfsValidator.md";
 
     public static String generateFilteredGtfsValidatorFile(String unfilteredGtfsValidatorFileString, FileService fileService) {
         InputStream unfilteredGtfsValidatorInputStream = fileService.get(unfilteredGtfsValidatorFileString);
@@ -29,19 +30,31 @@ public class FilterGtfsValidatorOutput {
         try{
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filteredGtfsValidatorFile)));
             Set<String>  errorsToIgnore = getErrorsToIgnore();
+            Set<String>  regexErrorsToIgnore = getRegexErrorsToIgnore();
             BufferedReader in = new BufferedReader(new InputStreamReader(unfilteredGtfsValidatorInputStream));
             String unfilteredGtfsValidatorLine;
             boolean first = true;
             while ((unfilteredGtfsValidatorLine = in.readLine()) != null) {
                 String[] lineParts = unfilteredGtfsValidatorLine.split(" ");
                 String errorType1 = lineParts.length > 1 ? lineParts[0] : null;
-                String errorType2 = lineParts.length > 2 ? lineParts[1] : null;
+                errorType1 = (errorType1 == null) ? unfilteredGtfsValidatorLine : errorType1;
+                String errorType2 = lineParts.length > 2 ? lineParts[1] : errorType1;
                 if(errorType2 !=null){
                     if(errorType2.contains("\t")){
                     errorType2 = errorType2.split("\t")[0];
                 }}
                 //errorType2 = errorType2.contains("\t") ? errorType2.split("\t")[0] : errorType2;
-                if(!errorsToIgnore.contains(errorType1)  & !errorsToIgnore.contains(errorType2)) {
+                boolean keepLine = true;
+                if(errorsToIgnore.contains(errorType1)  | errorsToIgnore.contains(errorType2)) {
+                    keepLine = false;
+                } else{
+                    for(String errorToIgnore : regexErrorsToIgnore) {
+                        if(errorType1.matches(errorToIgnore) | errorType2.matches(errorToIgnore)) {
+                            keepLine = false;
+                        }
+                    }
+                }
+                if(keepLine){
                     out.write(unfilteredGtfsValidatorLine);
                     out.newLine();
                     out.flush();
@@ -56,6 +69,10 @@ public class FilterGtfsValidatorOutput {
 
     private static Set<String> getErrorsToIgnore() throws IOException {
         return getErrorsToIgnore(gitPath);
+    }
+
+    private static Set<String> getRegexErrorsToIgnore() throws IOException {
+        return getErrorsToIgnore(regexGitPath);
     }
 
     private static Set<String> getErrorsToIgnore(String path) throws IOException {
