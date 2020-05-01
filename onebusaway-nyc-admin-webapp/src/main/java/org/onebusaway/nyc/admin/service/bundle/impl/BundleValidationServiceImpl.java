@@ -223,6 +223,8 @@ public class BundleValidationServiceImpl implements BundleValidationService {
           }
           _log.info("results of " + gtfsZipFileName + " at " + outputFile);
           response.addValidationFile(new FileUtils().parseFileName(outputFile));
+          String filteredOutputFile = FilterGtfsValidatorOutput.generateFilteredGtfsValidatorFile(outputFile);
+          response.addValidationFile(new FileUtils().parseFileName(filteredOutputFile));
         }
     upload(request, response);
     response.addStatusMessage("complete");
@@ -238,6 +240,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
   public void downloadFeedValidator() {
 	  _gtfsValidationService.downloadFeedValidator();
   }
+
 
   public void upload(BundleRequest request, BundleResponse response) {
     String destDirectory = request.getBundleDirectory() + File.separator
