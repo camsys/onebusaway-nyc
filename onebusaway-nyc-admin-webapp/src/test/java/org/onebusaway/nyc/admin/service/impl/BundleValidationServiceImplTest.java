@@ -37,15 +37,15 @@ public class BundleValidationServiceImplTest {
     assertNotNull(input);
     List<ServiceDateRange> ranges = bundleValidationService.getServiceDateRanges(input);
     assertNotNull(ranges);
-    assertTrue(ranges.size() == 4);
+    assertTrue(ranges.size() == 14);
     ServiceDateRange sdr0 = ranges.get(0);
     assertEquals("MTA NYCT", sdr0.getAgencyId());
-    assertEquals(2012, sdr0.getStartDate().getYear());
-    assertEquals(4, sdr0.getStartDate().getMonth());
-    assertEquals(8, sdr0.getStartDate().getDay());
-    assertEquals(2012, sdr0.getEndDate().getYear());
-    assertEquals(7, sdr0.getEndDate().getMonth());
-    assertEquals(7, sdr0.getEndDate().getDay());
+    assertEquals(2020, sdr0.getStartDate().getYear());
+    assertEquals(1, sdr0.getStartDate().getMonth());
+    assertEquals(25, sdr0.getStartDate().getDay());
+    assertEquals(2020, sdr0.getEndDate().getYear());
+    assertEquals(4, sdr0.getEndDate().getMonth());
+    assertEquals(4, sdr0.getEndDate().getDay());
 
   }
 
@@ -58,12 +58,12 @@ public class BundleValidationServiceImplTest {
     Map<String, List<ServiceDateRange>> map = bundleValidationService.getServiceDateRangesByAgencyId(ranges);
     ServiceDateRange sdr0 = map.get("MTA NYCT").get(0);
     assertEquals("MTA NYCT", sdr0.getAgencyId());
-    assertEquals(2012, sdr0.getStartDate().getYear());
-    assertEquals(4, sdr0.getStartDate().getMonth());
-    assertEquals(8, sdr0.getStartDate().getDay());
-    assertEquals(2012, sdr0.getEndDate().getYear());
-    assertEquals(7, sdr0.getEndDate().getMonth());
-    assertEquals(7, sdr0.getEndDate().getDay());
+    assertEquals(2020, sdr0.getStartDate().getYear());
+    assertEquals(1, sdr0.getStartDate().getMonth());
+    assertEquals(25, sdr0.getStartDate().getDay());
+    assertEquals(2020, sdr0.getEndDate().getYear());
+    assertEquals(4, sdr0.getEndDate().getMonth());
+    assertEquals(4, sdr0.getEndDate().getDay());
 
   }
 
@@ -77,12 +77,12 @@ public class BundleValidationServiceImplTest {
     Map<String, List<ServiceDateRange>> map = bundleValidationService.getServiceDateRangesAcrossAllGtfs(inputs);
     ServiceDateRange sdr0 = map.get("MTA NYCT").get(0);
 
-    assertEquals(2012, sdr0.getStartDate().getYear());
-    assertEquals(4, sdr0.getStartDate().getMonth());
-    assertEquals(8, sdr0.getStartDate().getDay());
-    assertEquals(2012, sdr0.getEndDate().getYear());
-    assertEquals(7, sdr0.getEndDate().getMonth());
-    assertEquals(7, sdr0.getEndDate().getDay());
+    assertEquals(2020, sdr0.getStartDate().getYear());
+    assertEquals(1, sdr0.getStartDate().getMonth());
+    assertEquals(25, sdr0.getStartDate().getDay());
+    assertEquals(2020, sdr0.getEndDate().getYear());
+    assertEquals(4, sdr0.getEndDate().getMonth());
+    assertEquals(4, sdr0.getEndDate().getDay());
 
   }
 

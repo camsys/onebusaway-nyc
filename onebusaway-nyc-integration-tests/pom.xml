@@ -105,6 +105,11 @@
             <artifactId>json</artifactId>
             <version>20090211</version>
         </dependency>
+        <dependency>
+            <groupId>org.opentripplanner</groupId>
+            <artifactId>opentripplanner-routing</artifactId>
+            <version>0.5</version>
+        </dependency>
     </dependencies>
 
     <build>
