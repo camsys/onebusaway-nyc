@@ -59,6 +59,7 @@ public class InferenceInputQueueListenerTaskTest {
 		bean.setInferredLongitude(Double.parseDouble("-73.85864343194719"));
 		bean.setPhase("IN_PROGRESS");
 		bean.setStatus("sample_Status");
+		bean.setScheduleDeviation(0);
 		return bean;
 	}
 
@@ -74,6 +75,7 @@ public class InferenceInputQueueListenerTaskTest {
 		bean.setInferredLongitude(Double.parseDouble("-73.85864343194719"));
 		bean.setPhase("SPOOKING"); // GHOST BUS
 		bean.setStatus("sample_Status");
+		bean.setScheduleDeviation(0);
 		return bean;
 	}
 
