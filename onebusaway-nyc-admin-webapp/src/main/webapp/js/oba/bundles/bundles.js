@@ -1862,22 +1862,7 @@ function formatDiffRow(value) {
 
 
 
-
-/**
- * Copyright (c) 2011 Metropolitan Transportation Authority
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
+//Analyze
 
 var analyzeDataset = "";
 var analyzeBuildName = "";
@@ -1965,6 +1950,11 @@ function updateChart(){
 
 function drawChart(){
 	var requestedAnalyzeData = getRequestedAnalyzeData();
+	if (requestedAnalyzeData.size == 0){
+		$('#chart_div').empty();
+		analyzeChart = null;
+		return;
+	}
 	var data = new google.visualization.DataTable();
 	var oldestDate = null;
 	var lastDate = null;
@@ -1998,10 +1988,6 @@ function drawChart(){
 		itt += 1;
 	}
 	data.addRows(formattedRequestAnalyzeData);
-	console.log(formattedRequestAnalyzeData)
-	console.log(data)
-
-
 
 	if(analyzeChart == null) {
 		analyzeChart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
@@ -2067,13 +2053,6 @@ function updateZoneSelection(){
 			}
 		}
 	})
-}
-
-function clearChart(){
-	var chartDiv = document.getElementById('chart_div');
-	var data = new google.visualization.DataTable();
-	var materialChart = new google.charts.Line(chartDiv);
-	materialChart.draw(data, analyzeDataMaterialChartOptions);
 }
 
 
