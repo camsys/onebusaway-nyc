@@ -47,9 +47,9 @@
       <version>1.9.2</version>
     </dependency>
     <dependency>
-      <groupId>com.eaio.uuid</groupId>
+      <groupId>org.mule.com.github.stephenc.eaio-uuid</groupId>
       <artifactId>uuid</artifactId>
-      <version>3.2</version>
+      <version>3.4.2-MULE-002-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
