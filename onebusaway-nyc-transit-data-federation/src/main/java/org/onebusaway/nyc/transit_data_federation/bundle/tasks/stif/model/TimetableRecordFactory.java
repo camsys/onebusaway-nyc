@@ -72,6 +72,11 @@ public class TimetableRecordFactory extends StifRecordFactory<TimetableRecord> {
 		new FieldDef(146-132, "(fields skipped)", null),
 		new FieldDef(154-146, "holiday code", new TimetableFieldSetter() {
       public void setField(TimetableRecord record) {
+      	ServiceCode a = record.getServiceCode();
+      	if (a != null){
+      		boolean b = a.isHoliday();
+      		System.out.print(b);
+		}
         if (record.getServiceCode() == null || !record.getServiceCode().isHoliday()) {
           String data = getStringData();
           if (data != null && data.length() > 0) {
