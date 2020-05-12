@@ -24,9 +24,6 @@
 	<label class="headerLabel">Compare Bundles</label>
 </div>
 
-<div id="selectArchiveDiv">
-	<input type="checkbox" id="useArchiveCheckbox" value="useArchivedData">Use archived data for Fixed Route Comparison</input>
-</div>
 <div id="buildingReportDiv">
 	<s:url var="url" value="/css/img/ajax-loader.gif" />
 	<img id="buildingReportIcon" src="${url}" alt="Ajax loader" class="progress" />

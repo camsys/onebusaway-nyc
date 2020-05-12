@@ -1313,7 +1313,7 @@ function updateFixedRouteParams(datasetName) {
 
 function getExistingBuildList(datasetName) {
 	var buildNameList;
-	var useArchivedGtfs = jQuery("#useArchiveCheckbox").is(":checked");
+	var useArchivedGtfs = false
 	var data = {};
 	data[csrfParameter] = csrfToken;
 	data["selectedBundleName"] = datasetName;
@@ -1357,7 +1357,7 @@ function initBuildNameList($buildNameList, buildNameMap) {
 }
 
 function resetCurrentReportDataset() {
-	if (!jQuery("#useArchiveCheckbox").is(":checked")) {
+	if (!false) {
 		currentReportDataset = "";
 		currentReportBuildName = "";
 		$("#currentDatasetList").val("0");
@@ -1372,7 +1372,7 @@ function resetCurrentReportDataset() {
 	}
 }
 function resetCompareToDataset() {
-	if (!jQuery("#useArchiveCheckbox").is(":checked")) {
+	if (!false) {
 		compareToDataset = "";
 		compareToBuildName = "";
 		$("#compareToDatasetList").val("0");
@@ -1425,7 +1425,7 @@ function buildDiffReport() {
 	// Clear any previous reports
 	$("#diffResultsTable tbody").empty();
 	$('#fixedRouteDiffTable tbody').empty();
-	var useArchived = jQuery("#useArchiveCheckbox").is(":checked");
+	var useArchived = false;
 	if (!useArchived) {
 		var dataset_1 = currentReportDataset;
 		var dataset_1_build_id = 0;
@@ -1626,7 +1626,7 @@ function buildDailyDiffReport() {
 	// Clear any previous reports
 	$("#diffResultsTable tbody").empty();
 	$('#dailyRouteDiffTable tbody').empty();
-	var useArchived = jQuery("#useArchiveCheckbox").is(":checked");
+	var useArchived = false;
 	if (!useArchived) {
 		var dataset_1 = currentReportDataset;
 		var dataset_1_build_id = 0;
