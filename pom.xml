@@ -33,6 +33,10 @@
 
     <repositories>
         <repository>
+            <id>repo.camsys-apps.com</id>
+            <url>https://repo.camsys-apps.com/third-party/</url>
+        </repository>
+        <repository>
             <id>nyc-cache</id>
             <url>http://build.staging.obanyc.com/archiva/repository/internal/</url>
             <releases>

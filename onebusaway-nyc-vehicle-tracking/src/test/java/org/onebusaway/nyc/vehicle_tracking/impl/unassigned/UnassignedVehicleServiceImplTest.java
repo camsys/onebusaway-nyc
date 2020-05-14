@@ -114,7 +114,7 @@ public class UnassignedVehicleServiceImplTest {
             VehicleLocationRecord vlr = inferredLocationBean.toVehicleLocationRecord();
             assertNotNull(vlr);
             assertEquals(vlr.getPhase(), EVehiclePhase.SPOOKING);
-            assertNull(vlr.getDistanceAlongBlock());
+            assertTrue(Double.isNaN(vlr.getDistanceAlongBlock()));
 
             //assertNull(vlr.getScheduleDeviation());
         }
