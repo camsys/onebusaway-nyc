@@ -241,6 +241,9 @@ jQuery(function() {
 	jQuery("#prepDeployBuildNameList").on("change", prepDeployBuildNameChange);
 	jQuery("#prepDeployBundle_prepDeployButton").click(copyBundleToDeployLocation);
 
+	jQuery("#printFixedRouteRptButton").click(onPrintRouteRptClick);
+	jQuery("#printDailyRouteRptButton").click(onPrintRouteRptClick);
+
 
 
 
@@ -1271,6 +1274,11 @@ function onCompareToBuildNameChange() {
 		}
 	}
 }
+
+function onPrintRouteRptClick() {
+	window.print();
+}
+
 function onCompareToDateChange(){
 	compareToDate = jQuery("#compareToDate").val();
 	if (compareToDate == 0) {
@@ -1463,7 +1471,6 @@ function buildDiffReport() {
 		async: false,
 		success: function(data) {
 			console.log(data);
-			$('#Compare #buildingReportDiv').hide();
 			$.each(data.diffResults, function(index, value) {
 				// Skip first three rows of results
 				if (index >= 3) {
@@ -1664,7 +1671,6 @@ function buildDailyDiffReport() {
 		async: false,
 		success: function (data) {
 			console.log(data);
-			$('#Compare #buildingReportDiv').hide();
 			$.each(data.diffResults, function (index, value) {
 				// Skip first three rows of results
 				if (index >= 3) {

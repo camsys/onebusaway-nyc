@@ -24,13 +24,6 @@
 	<label class="headerLabel">Compare Bundles</label>
 </div>
 
-<div id="buildingReportDiv">
-	<s:url var="url" value="/css/img/ajax-loader.gif" />
-	<img id="buildingReportIcon" src="${url}" alt="Ajax loader" class="progress" />
-	<label id="buildingReportMsg" class="adminLabel">Fixed Route Comparison Report in Progress...</label>
-</div>
-
-
 <div id="bundleSelectionDiv">
 	<div id="currentBundleDiv">
 		<fieldset>
