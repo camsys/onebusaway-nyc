@@ -121,24 +121,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.vividsolutions</groupId>
-            <artifactId>jts</artifactId>
-            <version>1.13</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.vividsolutions</groupId>
-            <artifactId>jts</artifactId>
-            <version>1.13</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.vividsolutions</groupId>
-            <artifactId>jts</artifactId>
-            <version>1.13</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-geospatial</artifactId>
             <version>${onebusaway.app-modules.version}</version>
