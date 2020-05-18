@@ -34,6 +34,7 @@ import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.crypto.Mac;
@@ -85,18 +86,21 @@ public class GoogleGeocoderImpl extends FilteredGeocoderBase {
       String clientId = 
           _configurationService.getConfigurationValueAsString("display.googleMapsClientId", null);          
       String authKey = 
-          _configurationService.getConfigurationValueAsString("display.googleMapsSecretKey", null);    
-      
-      if(clientId != null && authKey != null && !StringUtils.isEmpty(clientId) && !StringUtils.isEmpty(authKey)) {
-        q.append("&client=").append(clientId);
+          _configurationService.getConfigurationValueAsString("display.googleMapsSecretKey", null);
+      String channelId =
+          _configurationService.getConfigurationValueAsString("display.googleMapsChannelId", null);
+
+      // Fail if we don't have client key, auth key, channel id
+      if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(authKey)
+              || StringUtils.isEmpty(channelId)) {
+        _log.warn("No clientId, authKey, or channelId. Not accessing Google.");
+        return Collections.emptyList();
       }
-    
-      URL url = null;
-      if(authKey != null && clientId != null && !StringUtils.isEmpty(clientId) && !StringUtils.isEmpty(authKey)) {
-        url = new URL(GEOCODE_URL_PREFIX + signRequest(authKey, GEOCODE_PATH + "?" + q.toString()));
-      } else {
-        url = new URL(GEOCODE_URL_PREFIX + GEOCODE_PATH + "?" + q.toString());        
-      }
+
+      q.append("&client=").append(clientId);
+      q.append("&channel=").append(channelId);
+
+      URL url = new URL(GEOCODE_URL_PREFIX + signRequest(authKey, GEOCODE_PATH + "?" + q.toString()));
       
       Digester digester = createDigester();
       digester.push(results);
