@@ -26,12 +26,11 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Predicate;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.MinMaxPriorityQueue;
-import com.google.common.primitives.Longs;
 
 @Component
 public class ObservationCache {
@@ -45,8 +44,7 @@ public class ObservationCache {
    * observation cache per vehicle-id. The observation caches hold only the last
    * two entries.
    */
-  private final LoadingCache<AgencyAndId, MinMaxPriorityQueue<ObservationContents>> _contentsByVehicleId = CacheBuilder.newBuilder().concurrencyLevel(
-      4).expireAfterWrite(30, TimeUnit.MINUTES).build(
+  private final LoadingCache<AgencyAndId, MinMaxPriorityQueue<ObservationContents>> _contentsByVehicleId = Caffeine.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build(
       new CacheLoader<AgencyAndId, MinMaxPriorityQueue<ObservationContents>>() {
 
         @Override
@@ -56,7 +54,7 @@ public class ObservationCache {
           return MinMaxPriorityQueue.orderedBy(new Comparator<ObservationContents>() {
             @Override
             public int compare(ObservationContents o1, ObservationContents o2) {
-              return -Longs.compare(o1.getObservation().getTime(), o2.getObservation().getTime());
+              return -Long.compare(o1.getObservation().getTime(), o2.getObservation().getTime());
             }
             
           }).maximumSize(2).create();
@@ -68,13 +66,13 @@ public class ObservationCache {
   public <T> T getValueForObservation(Observation observation,
       EObservationCacheKey key) {
     final NycRawLocationRecord record = observation.getRecord();
-    final MinMaxPriorityQueue<ObservationContents> contentsCache =  _contentsByVehicleId.getUnchecked(record.getVehicleId());
+    final MinMaxPriorityQueue<ObservationContents> contentsCache =  _contentsByVehicleId.get(record.getVehicleId());
     /*
      * Synchronize for integration tests, which can do crazy things.
      */
     final ObservationContents contents;
     synchronized (contentsCache) {
-      contents = Iterables.find(contentsCache, new ObsSearch(observation), null);
+      contents = Iterables.find(contentsCache, new ObsSearch(observation));
       
       if (contents == null) {
         /*
@@ -94,14 +92,14 @@ public class ObservationCache {
   public void putValueForObservation(Observation observation,
       EObservationCacheKey key, Object value) {
     final NycRawLocationRecord record = observation.getRecord();
-    final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
+    final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.get(record.getVehicleId());
 
     /*
      * Synchronize for integration tests, which can do crazy things.
      */
     ObservationContents contents;
     synchronized (contentsCache) {
-      contents = Iterables.find(contentsCache, new ObsSearch(observation), null);
+      contents = Iterables.find(contentsCache, new ObsSearch(observation));
       
       if (contents == null) {
         contents = new ObservationContents(observation);
@@ -164,7 +162,7 @@ public class ObservationCache {
   }
 
   public void purge(AgencyAndId vehicleId) {
-    final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(vehicleId);
+    final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.get(vehicleId);
     if (contentsCache != null) {
       contentsCache.clear();
     }

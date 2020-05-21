@@ -25,8 +25,8 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
@@ -77,7 +77,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 
 			int timeout = _configurationService.getConfigurationValueAsInteger(CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
 			_log.info("creating initial prediction cache with timeout " + timeout + "...");
-			_cache = CacheBuilder.newBuilder()
+			_cache = Caffeine.newBuilder()
 					.expireAfterWrite(timeout, TimeUnit.SECONDS)
 					.build();
 			_log.info("done");
@@ -101,9 +101,9 @@ public class QueuePredictionIntegrationServiceImpl extends
 	private synchronized void refreshCache() {
 		if (_cache == null) return; // nothing to do
 		int timeout = _configurationService.getConfigurationValueAsInteger(CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
-		_log.info("rebuilding prediction cache with " + _cache.size() + " entries after refresh with timeout=" + timeout + "...");
+		_log.info("rebuilding prediction cache with " + _cache.estimatedSize() + " entries after refresh with timeout=" + timeout + "...");
 		ConcurrentMap<String, List<TimepointPredictionRecord>> map = _cache.asMap();
-		_cache = CacheBuilder.newBuilder()
+		_cache = Caffeine.newBuilder()
 				.expireAfterWrite(timeout, TimeUnit.SECONDS)
 				.build();
 		for (Entry<String, List<TimepointPredictionRecord>> entry : map.entrySet()) {

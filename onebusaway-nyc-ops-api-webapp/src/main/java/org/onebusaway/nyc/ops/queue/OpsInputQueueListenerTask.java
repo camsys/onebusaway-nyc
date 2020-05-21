@@ -6,10 +6,10 @@ import java.util.TimeZone;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
@@ -51,7 +51,7 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
      * from XSDs
      */
     AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
-    _mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
+    _mapper.setAnnotationIntrospector(jaxb);
 
   }
 
@@ -169,7 +169,7 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
   public void setup() {
     super.setup();
     // make parsing lenient
-    _mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,
+    _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
     // set a reasonable default
     _systemTimeZone = _configurationService.getConfigurationValueAsString(

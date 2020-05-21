@@ -22,8 +22,8 @@ import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -39,7 +39,7 @@ public abstract class InputQueueListenerTask extends QueueListenerTask implement
      * from XSDs
      */
     final AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
-    _mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
+    _mapper.setAnnotationIntrospector(jaxb);
   }
   
   @Autowired

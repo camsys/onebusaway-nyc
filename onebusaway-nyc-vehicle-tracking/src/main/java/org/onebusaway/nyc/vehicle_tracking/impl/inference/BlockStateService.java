@@ -16,14 +16,8 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
@@ -304,7 +298,7 @@ public class BlockStateService {
 
     @Override
     public String toString() {
-      return Objects.toStringHelper("BestBlockStates").add("bestStates",
+      return new StringJoiner("BestBlockStates").add("bestStates=" +
           _bestStates).toString();
     }
     

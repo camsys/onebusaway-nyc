@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 public abstract class NycCacheService<K, V> {
 
@@ -55,7 +55,7 @@ public abstract class NycCacheService<K, V> {
     if (_cache == null) {
       _log.info("creating initial " + type + " cache with timeout " + timeout
           + "...");
-      _cache = CacheBuilder.newBuilder().expireAfterWrite(timeout,
+      _cache = Caffeine.newBuilder().expireAfterWrite(timeout,
           TimeUnit.SECONDS).build();
       _log.info("done");
     }

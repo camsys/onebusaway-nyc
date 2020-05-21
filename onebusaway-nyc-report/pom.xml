@@ -47,12 +47,12 @@
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
             <version>2.26.2.7-SNAPSHOT</version>
         </dependency>
-        
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-xc</artifactId>
-			<version>1.9.2</version>
-		</dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+            <version>2.11.0</version>
+        </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>

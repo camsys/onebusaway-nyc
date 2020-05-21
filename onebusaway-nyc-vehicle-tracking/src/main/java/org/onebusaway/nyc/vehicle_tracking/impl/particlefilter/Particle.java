@@ -20,7 +20,7 @@ import java.io.Serializable;
 import org.apache.commons.math.util.FastMath;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
-import com.google.common.base.Objects;
+import java.util.StringJoiner;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
@@ -165,8 +165,8 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper("Particle").add("time", _timestamp).add(
-        "weight", _logWeight).add("data", _data).add("parentState",
+    return new StringJoiner("Particle").add("time=" + _timestamp).add(
+        "weight=" + _logWeight).add("data=" + _data).add("parentState=" +
         _parent != null ? _parent.getData() : null).toString();
   }
 

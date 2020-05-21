@@ -1,8 +1,8 @@
 package org.onebusaway.nyc.transit_data_manager.util;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.PropertyNamingStrategy;
-import org.codehaus.jackson.map.ser.StdSerializerProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import org.onebusaway.nyc.transit_data_manager.config.AllLowerWithDashesNamingStrategy;
 
 /**
@@ -24,7 +24,7 @@ public class ObjectMapperProvider {
 
 	    ObjectMapper m = new ObjectMapper();
 	    
-	    StdSerializerProvider sp = new StdSerializerProvider();
+	    DefaultSerializerProvider.Impl sp = new DefaultSerializerProvider.Impl();
 	    m.setSerializerProvider(sp);
 	    
 	    PropertyNamingStrategy pns = new AllLowerWithDashesNamingStrategy();

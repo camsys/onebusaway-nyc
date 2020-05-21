@@ -17,7 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 
-import com.google.common.base.Objects;
+import java.util.StringJoiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
@@ -88,8 +88,8 @@ public final class VehicleState implements Comparable<VehicleState> {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper("VehicleState").add("journeyState",
-        journeyState).addValue(blockStateObservation).toString();
+    return new StringJoiner("VehicleState").add("journeyState=" +
+        journeyState).add(String.valueOf(blockStateObservation)).toString();
   }
 
   /**

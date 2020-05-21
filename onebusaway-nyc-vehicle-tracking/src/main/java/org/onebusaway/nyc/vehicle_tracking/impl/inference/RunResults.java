@@ -2,7 +2,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 
-import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
 
@@ -26,7 +26,7 @@ public class RunResults implements Comparable<RunResults> {
   }
 
   public boolean hasRunResults() {
-    return !(Strings.isNullOrEmpty(assignedRunId) && fuzzyMatches.isEmpty() && bestFuzzyDist == null);
+    return !(StringUtils.isEmpty(assignedRunId) && fuzzyMatches.isEmpty() && bestFuzzyDist == null);
   }
 
   public String getAssignedRunId() {

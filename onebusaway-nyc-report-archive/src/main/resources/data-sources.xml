@@ -97,7 +97,7 @@
 				<prop key="hibernate.connection.pool_size">1</prop>
 				<prop key="hibernate.cache.provider_class">org.hibernate.cache.internal.NoCachingRegionFactory</prop>
 				<prop key="hibernate.show_sql">false</prop>
-				<prop key="hibernate.hbm2ddl.auto">validate</prop>
+				<prop key="hibernate.hbm2ddl.auto">create</prop>
         <prop key="hibernate.jdbc.batch_size">1000</prop>
 	    	<prop key="hibernate.order_inserts">false</prop>
        	<prop key="hibernate.order_updates">false</prop>
@@ -119,7 +119,7 @@
 			<props>
 				<prop key="hibernate.connection.pool_size">1</prop>
 				<prop key="hibernate.cache.provider_class">org.hibernate.cache.internal.NoCachingRegionFactory</prop>
-				<prop key="hibernate.hbm2ddl.auto">validate</prop>
+				<prop key="hibernate.hbm2ddl.auto">create</prop>
        	<prop key="hibernate.jdbc.batch_size">1000</prop>
        	<prop key="hibernate.order_inserts">false</prop>
        	<prop key="hibernate.order_updates">false</prop>
