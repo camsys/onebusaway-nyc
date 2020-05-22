@@ -1927,13 +1927,16 @@ function resetAnalyzeDataset(){
 	$("#analyzeBuildNameList").find('option').remove().end().append(row_0);
 }
 
-function addZoneForAnalysis(zone){
-	if(!analyzeData.has(analyzeDataset + "," + analyzeBuildName + "," + zone)) {
+function addZoneForAnalysis(zoneIdentifier){
+	if(!analyzeData.has(zoneIdentifier)) {
+        var dataset = zoneIdentifier.split(",")[0];
+        var buildName = zoneIdentifier.split(",")[1];
+        var zone = zoneIdentifier.split(",")[2];
 		var data = {};
 		data[csrfParameter] = csrfToken;
-		data["datasetName"] = analyzeDataset;
+		data["datasetName"] = dataset;
 		data["dataset_build_id"] = 0;
-		data["buildName"] = analyzeBuildName;
+		data["buildName"] = buildName;
 		data["zone"] = zone;
 
 		jQuery.ajax({
@@ -1943,7 +1946,7 @@ function addZoneForAnalysis(zone){
 			async: false,
 			success: function (zoneData) {
 				console.log(zoneData);
-				analyzeData.set(analyzeDataset + "," + analyzeBuildName + "," + zone, zoneData);
+				analyzeData.set(dataset + "," + buildName + "," + zone, zoneData);
 			}
 		})
 	}
@@ -2027,21 +2030,24 @@ function updateZoneSelection(){
 		async: false,
 		success: function (zoneData) {
 			console.log(zoneData);
+            var sectionLabel = $(document.createElement("p")).html(analyzeDataset + ": " + analyzeBuildName)
+            $("#zone_selection").append(sectionLabel)
 			var existingZoneNodes = $("#zone_selection").children();
 			var existingZones = new Set();
 			for (i = 0; i< existingZoneNodes.length; i++){
 				existingZones.add(existingZoneNodes[i].name);
 			}
 			for (itt in zoneData){
-				currentZone = zoneData[itt];
+				var currentZone = zoneData[itt];
 				if(!existingZones.has(currentZone)) {
-					childCheckbox = $(document.createElement("input")).attr({
+					var childCheckbox = $(document.createElement("input"));
+					childCheckbox.attr({
 						id: 'zone_' + currentZone,
-						name: currentZone,
+						name: analyzeDataset + "," + analyzeBuildName + "," + currentZone,
 						value: 'zone' + currentZone,
 						type: "checkbox",
 						class: "analyzeCheckbox"
-					})
+					});
 					$(childCheckbox).change(function(){
 						if(this.checked){
 							addZoneForAnalysis(this.name);
@@ -2050,7 +2056,7 @@ function updateZoneSelection(){
 							updateChart();
 						}
 					})
-					childLabel = $(document.createElement("label")).attr({
+					var childLabel = $(document.createElement("label")).attr({
 						for: 'zone_' + currentZone
 					}).html(currentZone)
 					$("#zone_selection").append(childCheckbox)
@@ -2067,7 +2073,7 @@ function getRequestedAnalyzeData(){
 	var requestedAnalyzeData = new Map();
 	var selectedZones = getSelectedZones();
 	for (var i = 0; i<selectedZones.length; i++)
-		requestedAnalyzeData.set(selectedZones[i], analyzeData.get(analyzeDataset + "," + analyzeBuildName + "," + selectedZones[i]));
+		requestedAnalyzeData.set(selectedZones[i], analyzeData.get(selectedZones[i]));
 	return requestedAnalyzeData;
 }
 
