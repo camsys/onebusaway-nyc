@@ -34,6 +34,7 @@ public class nycNamingConventionTask  implements Runnable {
                     {"Q","queens"},
                     {"S","staten-island"},
             }).collect(Collectors.toMap(mapEntry -> mapEntry[0], mapEntry -> mapEntry[1]));
+    public String ARG_MODIFIED = "modified";
 
 
     @Autowired
@@ -43,6 +44,8 @@ public class nycNamingConventionTask  implements Runnable {
 
     @Autowired
     public void setStifDirectory(File stifDirectory){this.stifDirectory = stifDirectory;}
+
+    public void setARG_MODIFIED(String ARG_MODIFIED){this.ARG_MODIFIED = ARG_MODIFIED;}
 
 
     @Override
@@ -58,8 +61,9 @@ public class nycNamingConventionTask  implements Runnable {
                 originalStifFiles.add(new File(stifPath));
             }
 
-            for (String gtfsPath : requestResponse.getResponse().getGtfsList()){
-                gtfsFiles.add(new File(gtfsPath));
+            File[] gtfsModified = new File(requestResponse.getResponse().getBundleOutputDirectory() + "/" + ARG_MODIFIED).listFiles();
+            for (File gtfsFile : gtfsModified){
+                gtfsFiles.add(gtfsFile);
             }
             // go through each file in stif directory and run cleanup to zip them
             File[] stifFolders = stifDirectory.listFiles(new FilenameFilter() {
@@ -77,6 +81,7 @@ public class nycNamingConventionTask  implements Runnable {
             // set up some defaults but use the TDM to allow for nameing convention changes
             List<File> stifFiles = Lists.newArrayList(stifDirectory.listFiles());
             _log.info("Renaming based on old Gtfs Files");
+
             gtfsLoop : for (File gtfsFile : gtfsFiles){
                 if(gtfsFile.getName().contains("GTFS")){
                     String sufix = gtfsFile.getName().substring(4);
