@@ -3,7 +3,7 @@ package org.onebusaway.api.actions.api;
 import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.rest.DefaultHttpHeaders;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.nyc.util.model.PublicServiceAnnouncement;
 import org.onebusaway.util.service.psa.PsaService;
 import org.springframework.beans.factory.annotation.Autowired;

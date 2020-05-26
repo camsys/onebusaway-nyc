@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.model.unassigned;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonRootName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Records {
     @JsonProperty("records")

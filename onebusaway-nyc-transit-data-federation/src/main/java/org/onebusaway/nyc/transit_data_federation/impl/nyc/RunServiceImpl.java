@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Objects;
+import org.apache.commons.lang3.ObjectUtils;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
@@ -492,7 +492,7 @@ public class RunServiceImpl implements RunService {
   @Override
   public Set<AgencyAndId> getRoutesForRunId(String runId) {
     Collection<AgencyAndId> routeIds = runIdsToRoutes.get(runId);
-    return Objects.firstNonNull(Sets.newHashSet(routeIds),
+    return ObjectUtils.firstNonNull(Sets.newHashSet(routeIds),
         Collections.<AgencyAndId> emptySet());
   }
 

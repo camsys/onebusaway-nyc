@@ -42,9 +42,9 @@
       <version>3.4.2-MULE-002-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-xc</artifactId>
-      <version>1.9.2</version>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-jaxb-annotations</artifactId>
+      <version>2.11.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>

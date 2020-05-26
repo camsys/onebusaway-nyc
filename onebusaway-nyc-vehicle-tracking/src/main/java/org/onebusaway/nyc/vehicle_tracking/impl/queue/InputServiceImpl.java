@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
@@ -49,7 +49,7 @@ public abstract class InputServiceImpl {
 	public void setup() {
 		_mapper = new ObjectMapper();
 		final AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
-		_mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
+		_mapper.setAnnotationIntrospector(jaxb);
 	}
 
 	public boolean processMessage(String address, byte[] buff) throws Exception {
@@ -84,7 +84,7 @@ public abstract class InputServiceImpl {
 	}
 
 	public String replaceNonPrintableCharacters(String contents) {
-		return CharMatcher.JAVA_ISO_CONTROL.removeFrom(contents);
+		return CharMatcher.javaIsoControl().removeFrom(contents);
 	}
 
 	public abstract String replaceMessageContents(String contents);

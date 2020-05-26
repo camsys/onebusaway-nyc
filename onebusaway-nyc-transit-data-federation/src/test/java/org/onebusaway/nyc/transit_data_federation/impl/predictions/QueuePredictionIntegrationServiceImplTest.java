@@ -12,7 +12,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +55,7 @@ public class QueuePredictionIntegrationServiceImplTest {
     service = new QueuePredictionIntegrationServiceImpl();
     service.setConfigurationService(config);
     service.setTransitDataService(tds);
-    service.setCache(CacheBuilder.newBuilder().<String, List<TimepointPredictionRecord>>build());
+    service.setCache(Caffeine.newBuilder().<String, List<TimepointPredictionRecord>>build());
   }
 
   @Test

@@ -4,7 +4,7 @@ import java.util.Date;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.codehaus.jackson.map.DeserializationConfig;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.services.InferencePersistenceService;
@@ -135,7 +135,7 @@ public class ArchivingInferenceQueueListenerTask extends
     super.setup();
 
     // make parsing lenient
-    _mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,
+    _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
   }
 

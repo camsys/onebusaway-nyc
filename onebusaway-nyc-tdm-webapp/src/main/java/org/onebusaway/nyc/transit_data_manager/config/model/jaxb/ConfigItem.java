@@ -2,7 +2,7 @@ package org.onebusaway.nyc.transit_data_manager.config.model.jaxb;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.joda.time.DateTime;
 import org.onebusaway.nyc.transit_data_manager.config.DateTimeXmlAdapter;
 import org.onebusaway.nyc.transit_data_manager.config.TdmIsoDateTimeNoMillisSerializer;

@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.Reader;
 import java.sql.Date;
 import javax.annotation.PostConstruct;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;

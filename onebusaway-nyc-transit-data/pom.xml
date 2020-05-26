@@ -22,10 +22,10 @@
             <artifactId>onebusaway-realtime-api</artifactId>
             <version>${onebusaway.app-modules.version}</version>
         </dependency>
-                <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-xc</artifactId>
-            <version>1.9.2</version>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+            <version>2.11.0</version>
         </dependency>
     </dependencies>
 </project>
