@@ -72,7 +72,7 @@
 	</bean>
 
 	<bean id="appSessionFactory"
-		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="annotatedClasses">
 			<list>
@@ -95,7 +95,7 @@
 	</bean>
 
 	<bean id="archiveSessionFactory"
-		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
 		<property name="dataSource" ref="archiveDataSource" />
 		<property name="annotatedClasses">
 			<list>
@@ -159,12 +159,12 @@
 		</property>
 	</bean>
 	
-	<bean id="transactionManagerApp" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+	<bean id="transactionManagerApp" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
         <property name="sessionFactory" ref="appSessionFactory" />
         <qualifier value="appDB"/>
     </bean>
 	
-	 <bean id="transactionManagerArchive" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+	 <bean id="transactionManagerArchive" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
         <property name="sessionFactory" ref="archiveSessionFactory" />
         <qualifier value="archiveDB"/>
     </bean>

@@ -82,7 +82,7 @@
        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
   </bean>
   
-	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="annotatedClasses">
 			<list>
@@ -105,7 +105,7 @@
 		</property>
 	</bean>
 	
-	<bean id="slaveSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+	<bean id="slaveSessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
 		<property name="dataSource" ref="slaveDataSource" />
 		<property name="annotatedClasses">
 			<list>
@@ -128,11 +128,11 @@
 		</property>
 	</bean>
 	
-	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+	<bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
         <property name="sessionFactory" ref="sessionFactory" />
     </bean>
     
-    <bean id="transactionManagerSlave" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+    <bean id="transactionManagerSlave" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
         <property name="sessionFactory" ref="slaveSessionFactory" />
         <qualifier value="slaveDB"/>
     </bean>
