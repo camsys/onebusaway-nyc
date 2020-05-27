@@ -778,6 +778,11 @@
                 <artifactId>uuid</artifactId>
                 <version>3.4.2-MULE-001</version>
             </dependency>
+            <dependency>
+                <groupId>org.geotools</groupId>
+                <artifactId>gt-main</artifactId>
+                <version>23.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

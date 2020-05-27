@@ -17,7 +17,7 @@ package org.onebusaway.nyc.transit_data_federation.model.nyc;
 
 import org.onebusaway.csv_entities.schema.annotations.CsvField;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 public class BaseLocationRecord {
 

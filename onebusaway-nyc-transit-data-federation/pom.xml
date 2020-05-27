@@ -112,10 +112,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.vividsolutions</groupId>
-            <artifactId>jts</artifactId>
-            <version>1.13</version>
-            <scope>compile</scope>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.16.1</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>

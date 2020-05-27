@@ -37,7 +37,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
 import org.opentripplanner.routing.impl.DistanceLibrary;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 public class AbstractTraceRunner {
 

@@ -2,7 +2,7 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
 import java.io.Serializable;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 public class NonRevenueStopData implements Serializable {
   
