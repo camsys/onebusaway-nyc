@@ -259,12 +259,6 @@ public class FileUtility {
         files = new String[1];
         files[0] = basePathDir.getName();
         basePath = basePathDir.getParent();
-//      String[] tmpFiles = new String[files.length+1];
-//      for (int i = 0; i < files.length; i++) {
-//        tmpFiles[i] = files[i];
-//      }
-//      tmpFiles[files.length] = basePath;
-//      files = tmpFiles;
     }
 
     if (files == null) {
