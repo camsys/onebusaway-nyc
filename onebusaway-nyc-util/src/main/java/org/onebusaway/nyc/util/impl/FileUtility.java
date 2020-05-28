@@ -256,12 +256,9 @@ public class FileUtility {
     File basePathDir = new File(basePath);
     String[] files = basePathDir.list();
     if (includeBaseFolder){
-      String[] tmpFiles = new String[files.length+1];
-      for (int i = 0; i < files.length; i++) {
-        tmpFiles[i] = files[i];
-      }
-      tmpFiles[files.length] = basePath;
-      files = tmpFiles;
+        files = new String[1];
+        files[0] = basePathDir.getName();
+        basePath = basePathDir.getParent();
     }
 
     if (files == null) {
@@ -310,7 +307,7 @@ public class FileUtility {
         File basePathDir = new File(basePathSubFolder);
         String[] filesSubfolder = basePathDir.list();
         zipFolderRecursively(zos,filesSubfolder,originalBasePath,basePathSubFolder, recursiveFilePath);
-        return;
+        continue;
       }
       _log.info("compressing " + recursiveFilePath);
       ZipEntry ze = new ZipEntry(recursiveFilePath);

@@ -194,9 +194,11 @@ public class FixedRouteDataValidationTask implements Runnable {
                         AgencyAndId tripSvcId = trip.getServiceId();
                         if (weekdaySvcIds.contains(tripSvcId)) {
                             ++wkdayTrips[stopCt];
-                        } else if (saturdaySvcIds.contains(tripSvcId)) {
+                        }
+                        if (saturdaySvcIds.contains(tripSvcId)) {
                             ++satTrips[stopCt];
-                        } else if (sundaySvcIds.contains(tripSvcId)) {
+                        }
+                        if (sundaySvcIds.contains(tripSvcId)) {
                             ++sunTrips[stopCt];
                         }
                         tripMap.put(trip.getTripHeadsign(), tripTotals);

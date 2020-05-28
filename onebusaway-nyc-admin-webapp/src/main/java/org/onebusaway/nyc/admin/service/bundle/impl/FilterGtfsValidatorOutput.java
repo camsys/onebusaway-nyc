@@ -19,8 +19,8 @@ public class FilterGtfsValidatorOutput {
     Words that are filterable offenses are specified in the two git pages provided.
      */
 
-    private static String gitPath = "https://raw.githubusercontent.com/wiki/camsys/onebusaway-application-modules/FilterForGtfsValidator.md";
-    private static String regexGitPath = "https://raw.githubusercontent.com/wiki/camsys/onebusaway-application-modules/RegexFilterForGtfsValidator.md";
+    private static String gitPath = "https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/FilterForGtfsValidator.md";
+    private static String regexGitPath = "https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/RegexFilterForGtfsValidator.md";
 
 
 
