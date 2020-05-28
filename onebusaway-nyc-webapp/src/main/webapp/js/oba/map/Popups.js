@@ -286,13 +286,6 @@ OBA.Popups = (function() {
 						html += onwardCall.Extensions.Distances.PresentableDistance;
 					}
 
-                    if(typeof onwardCall.AimedArrivalTime !== 'undefined' && onwardCall.AimedArrivalTime !== null) {
-                        html += "scheduled: " + onwardCall.AimedArrivalTime;
-                        html += ", " + onwardCall.Extensions.Distances.PresentableDistance;
-                    } else {
-                        html += onwardCall.Extensions.Distances.PresentableDistance;
-                    }
-
 					html += '</span></li>';
 				});
 				
@@ -552,19 +545,7 @@ OBA.Popups = (function() {
 									updateTimestampReference);
 						}
 
-                        var scheduledArrivalTime = null;
-                        if(typeof monitoredVehicleJourney.MonitoredCall.AimedArrivalTime !== 'undefined'
-                            && monitoredVehicleJourney.MonitoredCall.AimedArrivalTime !== null) {
-                            scheduledArrivalTime =  monitoredVehicleJourney.MonitoredCall.AimedArrivalTime;
-                        }
-
-                        var tripId = null;
-                        if(typeof monitoredVehicleJourney.FramedVehicleJourneyRef.DatedVehicleJourneyRef !== 'undefined'
-                            && monitoredVehicleJourney.FramedVehicleJourneyRef.DatedVehicleJourneyRef !== null) {
-                            tripId =  monitoredVehicleJourney.FramedVehicleJourneyRef.DatedVehicleJourneyRef;
-                        }
-
-                        var layover = false;
+						var layover = false;
 						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' 
 							&& monitoredVehicleJourney.ProgressStatus.indexOf("layover") !== -1) {
 							layover = true;
@@ -612,12 +593,6 @@ OBA.Popups = (function() {
 						}
 						
 						// time mode
-                        if(tripId != null) {
-                            html += '<li class="' + arrival + lastClass + '">' + 'tripId: ' + tripId + '</li>';
-                        }
-                        if(scheduledArrivalTime != null) {
-                            html += '<li class="' + arrival + lastClass + '">' + 'scheduled: ' + scheduledArrivalTime + '</li>';
-                        }
 						if(timePrediction != null) {
 							timePrediction += ", " + distance + loadOccupancy;
 							
