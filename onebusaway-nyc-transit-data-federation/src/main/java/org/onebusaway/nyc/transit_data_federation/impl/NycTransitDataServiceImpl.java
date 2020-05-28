@@ -84,7 +84,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	@Autowired
 	private BundleManagementService _bundleManagementService;
 
-	@Autowired
+	@Autowired(required=false)
 	private PredictionIntegrationService _predictionIntegrationService;
 
 	@Autowired
@@ -156,7 +156,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	public List<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
 			TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
-		if (_predictionIntegrationService.isEnabled()) {
+		if (_predictionIntegrationService != null && _predictionIntegrationService.isEnabled()) {
 			return _predictionIntegrationService.getPredictionsForTrip(tripStatus);
 		}
 		return _transitDataService.getPredictionRecordsForTrip(agencyId, tripStatus);
@@ -165,7 +165,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripStatus(String vehicleId,
 																					   TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
-		if (_predictionIntegrationService.isEnabled()) {
+		if (_predictionIntegrationService != null && _predictionIntegrationService.isEnabled()) {
 			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripStatus.getActiveTrip().getId());
 		}
 		return _transitDataService.getPredictionRecordsForTrip(vehicleId, tripStatus);
@@ -174,7 +174,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
 																				 String tripId) {
 		blockUntilBundleIsReady();
-		if (_predictionIntegrationService.isEnabled()) {
+		if (_predictionIntegrationService != null && _predictionIntegrationService.isEnabled()) {
 			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripId);
 		}
 		return Collections.emptyList();

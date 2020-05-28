@@ -131,7 +131,7 @@ public class VehicleLocationInferenceServiceImpl implements
   @Autowired
   private VehicleLocationListener _vehicleLocationListener;
 
-  @Autowired
+  @Autowired(required = false)
   private PredictionIntegrationService _predictionIntegrationService;
 
   @Autowired
@@ -909,7 +909,7 @@ public class VehicleLocationInferenceServiceImpl implements
     if (_vehicleLocationListener != null) {
       _vehicleLocationListener.handleVehicleLocationRecord(vlr);
     }
-    if (useTimePredictions) {
+    if (_predictionIntegrationService != null && useTimePredictions) {
       // if we're updating time predictions with the generation service,
       // tell the integration service to fetch
       // a new set of predictions now that the TDS has been updated

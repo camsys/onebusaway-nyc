@@ -10,7 +10,7 @@ public interface PresentationService {
 
   public Boolean useTimePredictionsIfAvailable();
 
-  public Boolean isBlockLevelInference(TripStatusBean statusBean);
+  public Boolean hasFormalBlockLevelMatch(TripStatusBean statusBean);
 
   public Boolean isSpooking(TripStatusBean statusBean);
 
