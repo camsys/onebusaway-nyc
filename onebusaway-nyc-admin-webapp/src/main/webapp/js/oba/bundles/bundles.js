@@ -407,7 +407,7 @@ jQuery(function() {
 												addSpacer = true;
 											}
 											if (addSpacer) {
-												var new_spacer_row = '<tr class="spacer"> \
+												var new_spacer_row = '<tr class="spacer "'+value.modeName+'_fixed_diff_item"> \
 													<td></td> \
 													<td></td> \
 													<td></td> \
@@ -420,7 +420,7 @@ jQuery(function() {
 													</tr>';
 												$('#fixedRouteDiffTable').append(new_spacer_row);
 											}
-											var new_row = '<tr class="fixedRouteDiff' + modeFirstLineClass + routeFirstLineClass + '"> \
+											var new_row = '<tr class="fixedRouteDiff' + modeFirstLineClass + routeFirstLineClass + ' '+  value.modeName+'_fixed_diff_item>"> \
 												<td class="' + modeClass + ' modeName" >' + modeName + '</td> \
 												<td class="' + routeClass + routeFirstLineClass + ' rtNum" >' + routeNum + '</td> \
 												<td class="' + routeClass + routeFirstLineClass + '">' + routeName + '</td> \
@@ -1480,9 +1480,11 @@ function buildDiffReport() {
 			});
 			var baseBundle = dataset_1 + " / " + buildName_1;
 			var compareToBundle = dataset_2 + " / " + buildName_2;
+			var allModeDiffItems = new Set();
 			$("#baseBundle").text(baseBundle + " (green)");
 			$("#compareToBundle").text(compareToBundle + " (red)");
 			$.each(data.fixedRouteDiffs, function(index, value) {
+                //$('#fixedRouteDiffTable').append('<tr id="' + value.modeName +'FixedDiffContainer"></tr>');
 				var modeName = value.modeName;
 				var modeClass = "";
 				var modeFirstLineClass=" modeFirstLine";
@@ -1577,8 +1579,14 @@ function buildDiffReport() {
 									&& dirIdx == 0 && index3 == 0) {
 									addSpacer = true;
 								}
+								var modeFixedDiffItemClass = " " + value.modeName+'FixedDiffItem';
+								allModeDiffItems.add(value.modeName+'FixedDiffItem');
+								var possiblyModeFixedDiffItemClass = " ";
+								if(modeName == ""){
+								    possiblyModeFixedDiffItemClass = modeFixedDiffItemClass;
+                                };
 								if (addSpacer) {
-									var new_spacer_row = '<tr class="spacer"> \
+									var new_spacer_row = '<tr class="spacer '+  modeFixedDiffItemClass +'"> \
 										<td></td> \
 										<td></td> \
 										<td></td> \
@@ -1589,20 +1597,29 @@ function buildDiffReport() {
 										<td></td> \
 										<td></td> \
 										</tr>';
-									$('#fixedRouteDiffTable').append(new_spacer_row);
+                                    //$('#' + value.modeName+'FixedDiffContainer').append(new_spacer_row);
+                                    $('#fixedRouteDiffTable').append(new_spacer_row);
+
 								}
-								var new_row = '<tr class="fixedRouteDiff' + modeFirstLineClass + routeFirstLineClass + '"> \
-									<td class="' + modeClass + ' modeName" >' + modeName + '</td> \
-									<td class="' + routeClass + routeFirstLineClass + ' rtNum" >' + routeNum + '</td> \
-									<td class="' + routeClass + routeFirstLineClass + '">' + routeName + '</td> \
-									<td class="' + headsignClass + routeFirstLineClass + headsignBorderClass + '">' + headsignName + '</td> \
-									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + dirName + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + stopCt + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + weekdayTrips + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + satTrips + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + sunTrips + '</td> \
+								var modeTd = "";
+								if (modeName == "") {
+									modeTd = '<td class="' + modeClass +  modeName+ '" onclick = "showhide(\''+ value.modeName+'FixedDiffItem'+'\')"></td>'
+								}
+								else{
+									modeTd = '<td class="' + modeClass +  modeName+ '"><input type="button" onclick = "showhide(\''+ value.modeName+'FixedDiffItem'+'\')" value ="' + modeName + '"</td>'
+								}
+								var new_row = '<tr class="fixedRouteDiff' + modeFirstLineClass + routeFirstLineClass + possiblyModeFixedDiffItemClass +  '"> \
+									'+ modeTd + '\
+									<td class="' + routeClass + routeFirstLineClass + ' rtNum'+ modeFixedDiffItemClass +'" >' + routeNum + '</td> \
+									<td class="' + routeClass + routeFirstLineClass + ''+ modeFixedDiffItemClass +'">' + routeName + '</td> \
+									<td class="' + headsignClass + routeFirstLineClass + headsignBorderClass + ''+ modeFixedDiffItemClass +'">' + headsignName + '</td> \
+									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeFixedDiffItemClass +'">' + dirName + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeFixedDiffItemClass +'">' + stopCt + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeFixedDiffItemClass +'">' + weekdayTrips + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeFixedDiffItemClass +'">' + satTrips + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeFixedDiffItemClass +'">' + sunTrips + '</td> \
 									</tr>';
-								$('#fixedRouteDiffTable').append(new_row);
+                                $('#fixedRouteDiffTable').append(new_row);
 							});
 						});
 					});
@@ -1621,12 +1638,21 @@ function buildDiffReport() {
 				<td></td> \
 				</tr>';
 			$('#fixedRouteDiffTable').append(new_spacer_row);
+			allModeDiffItems.forEach(modeDiffItem => showhide(modeDiffItem))
 		}
 	})
 }
 
 
-
+function showhide(className){
+    var items = $("."+className);
+    if (items[0].style.display == "none"){
+        items.show()
+    }
+    else{
+        items.hide()
+    }
+}
 
 
 function buildDailyDiffReport() {
@@ -1680,6 +1706,7 @@ function buildDailyDiffReport() {
 			});
 			var baseBundle = dataset_1 + " / " + buildName_1;
 			var compareToBundle = dataset_2 + " / " + buildName_2;
+			var allModeDailyDiffItems = new Set();
 			$("#baseBundle").text(baseBundle + " (green)");
 			$("#compareToBundle").text(compareToBundle + " (red)");
 			$.each(data.fixedRouteDiffs, function (index, value) {
@@ -1778,8 +1805,15 @@ function buildDailyDiffReport() {
 									&& dirIdx == 0 && index3 == 0) {
 									addSpacer = true;
 								}
+								var modeDailyDiffItemClass = " " + value.modeName+'DailyDiffItem';
+								allModeDailyDiffItems.add(value.modeName+'DailyDiffItem');
+								var possiblyModeDailyDiffItemClass = " ";
+								if(modeName == ""){
+									possiblyModeDailyDiffItemClass = modeDailyDiffItemClass;
+								};
 								if (addSpacer) {
-									var new_spacer_row = '<tr class="spacer"> \
+									var new_spacer_row = '<tr class="spacer '+  modeDailyDiffItemClass +'"> \
+										<td></td> \
 										<td></td> \
 										<td></td> \
 										<td></td> \
@@ -1789,17 +1823,27 @@ function buildDailyDiffReport() {
 										<td></td> \
 										<td></td> \
 										</tr>';
+									//$('#' + value.modeName+'FixedDiffContainer').append(new_spacer_row);
 									$('#dailyRouteDiffTable').append(new_spacer_row);
+
 								}
-								var new_row = '<tr class="dailyRouteDiff' + modeFirstLineClass + routeFirstLineClass + '"> \
-									<td class="' + modeClass + ' modeName" >' + modeName + '</td> \
-									<td class="' + routeClass + routeFirstLineClass + ' rtNum" >' + routeNum + '</td> \
-									<td class="' + routeClass + routeFirstLineClass + '">' + routeName + '</td> \
-									<td class="' + headsignClass + routeFirstLineClass + headsignBorderClass + '">' + headsignName + '</td> \
-									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + dirName + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + stopCt + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + weekdayTrips + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + serviceId + '</td> \
+								var modeTd = "";
+								if (modeName == "") {
+									modeTd = '<td class="' + modeClass +  modeName+ '" onclick = "showhide(\''+ value.modeName+'DailyDiffItem'+'\')"></td>'
+								}
+								else{
+									modeTd = '<td class="' + modeClass +  modeName+ '"><input type="button" onclick = "showhide(\''+ value.modeName+'DailyDiffItem'+'\')" value ="' + modeName + '"</td>'
+								}
+								var new_row = '<tr class="dailyRouteDiff' + modeFirstLineClass + routeFirstLineClass + possiblyModeDailyDiffItemClass +  '"> \
+									'+ modeTd + '\
+									<td class="' + routeClass + routeFirstLineClass + ' rtNum'+ modeDailyDiffItemClass +'" >' + routeNum + '</td> \
+									<td class="' + routeClass + routeFirstLineClass + ''+ modeDailyDiffItemClass +'">' + routeName + '</td> \
+									<td class="' + headsignClass + routeFirstLineClass + headsignBorderClass + ''+ modeDailyDiffItemClass +'">' + headsignName + '</td> \
+									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + dirName + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + stopCt + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + weekdayTrips + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + satTrips + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + sunTrips + '</td> \
 									</tr>';
 								$('#dailyRouteDiffTable').append(new_row);
 							});
@@ -1819,6 +1863,7 @@ function buildDailyDiffReport() {
 				<td></td> \
 				</tr>';
 			$('#dailyRouteDiffTable').append(new_spacer_row);
+			allModeDiffItems.forEach(modeDiffItem => showhide(modeDiffItem))
 		}
 	})
 }
