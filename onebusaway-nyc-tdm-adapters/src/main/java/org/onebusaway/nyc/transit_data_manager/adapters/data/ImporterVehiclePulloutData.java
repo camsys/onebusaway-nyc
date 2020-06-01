@@ -44,7 +44,8 @@ public class ImporterVehiclePulloutData implements PulloutData {
 		List<VehiclePullInOutInfo> agencyPullOutInfo = new ArrayList<VehiclePullInOutInfo>();
 		
 		for(VehiclePullInOutInfo currentPullOut : pulloutData) {
-			if(currentPullOut.getPullOutInfo().getGarage().getAgencydesignator().equals(agencyId)) {
+			String agencyDesignator = currentPullOut.getPullOutInfo().getGarage().getAgencydesignator();
+			if(agencyDesignator != null && agencyDesignator.equals(agencyId)) {
 				agencyPullOutInfo.add(currentPullOut);
 			}
 		}
