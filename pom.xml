@@ -427,6 +427,7 @@
                         <exclude>**/*.sh</exclude>
                         <exclude>**/*.pom</exclude>
                         <exclude>**/ESAPI.properties</exclude>
+                        <exclude>ServiceAlerts.xml</exclude>
                     </excludes>
                 </configuration>
             </plugin>
