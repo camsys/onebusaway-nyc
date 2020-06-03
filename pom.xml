@@ -395,23 +395,38 @@
                 </executions>
             </plugin>
             <plugin>
-                <inherited>false</inherited>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <version>1.9.0</version>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>3.0</version>
                 <configuration>
-                    <header>${basedir}/src/etc/license-header.txt</header>
-                    <strictCheck>true</strictCheck>
-                    <failIfMissing>true</failIfMissing>
-                    <aggregate>true</aggregate>
-                    <properties>
-                        <year>${project.inceptionYear}</year>
-                    </properties>
-                    <excludes>
-                        <exclude>LICENSE.txt</exclude>
-                        <exclude>license-header.txt</exclude>
+                    <excludes combine.children="append">
+                        <exclude>**/data-sources.xml</exclude>
+                        <exclude>**/*.action</exclude>
+                        <exclude>**/*.ai</exclude>
+                        <exclude>**/*.tagx</exclude>
+                        <exclude>**/*.swf</exclude>
+                        <exclude>**/*.mp3</exclude>
+                        <exclude>**/*.wav</exclude>
+                        <exclude>bin/**</exclude>
+                        <exclude>src/test/resources/**</exclude>
+                        <exclude>**/git.properties</exclude>
                         <exclude>**/src/test/resources/**</exclude>
-                        <exclude>**/src/integration-test/resources/**</exclude>
+                        <exclude>**/src/integration-test/resources/**</exclude>'
+                        <exclude>jgoogleanalyticstracker/**</exclude>
+                        <exclude>onebusaway-nyc-tdm-util/logs/**,</exclude>
+                        <exclude>onebusaway-nyc-tdm-util/modules/**</exclude>
+                        <exclude>onebusaway-nyc-tdm-util/conf/**</exclude>
+                        <exclude>onebusaway-nyc-tdm-util/public/**</exclude>
+                        <exclude>**/js/lib/**</exclude>
+                        <exclude>.idea/**</exclude>
+                        <exclude>**/.iml</exclude>
+                        <exclude>**/*.info</exclude>
+                        <exclude>**/*.rb</exclude>
+                        <exclude>**/*.py</exclude>
+                        <exclude>**/*.sh</exclude>
+                        <exclude>**/*.sh</exclude>
+                        <exclude>**/*.pom</exclude>
+                        <exclude>**/ESAPI.properties</exclude>
                     </excludes>
                 </configuration>
             </plugin>
