@@ -27,11 +27,8 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupport.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.RouteBean.Builder;
-import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data.model.TripStopTimeBean;
-import org.onebusaway.transit_data.model.TripStopTimesBean;
 import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
@@ -62,7 +59,7 @@ public class SiriSupportTest {
     blockInstance.setBlockConfiguration(blockConfig);
     
     when(nycTransitDataService.getBlockInstance("BLOCK", 0)).thenReturn(blockInstance);
-    
+
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);
     MonitoredVehicleJourney journey = new MonitoredVehicleJourney();
@@ -85,10 +82,10 @@ public class SiriSupportTest {
     TripBean tripBean = new TripBean();
     tripBean.setId("TEST_TRIP_ID");
     tripDetails.setTrip(tripBean);
-    Builder routeBeanBuilder = RouteBean.builder();
-    routeBeanBuilder.setId("foo");
-    RouteBean route = routeBeanBuilder.create();
-    tripBean.setRoute(route);
+    Builder routeBuilder = RouteBean.builder();
+    routeBuilder.setAgency(new AgencyBean());
+    routeBuilder.setId("foo");
+    tripBean.setRoute(routeBuilder.create());
     tripBean.setBlockId("BLOCK");
     TripStatusBean status = new TripStatusBean();
     CoordinatePoint location = new CoordinatePoint(90.0, 90.0);
