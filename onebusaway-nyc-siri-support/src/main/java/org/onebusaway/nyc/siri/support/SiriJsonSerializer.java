@@ -1,23 +1,21 @@
 package org.onebusaway.nyc.siri.support;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.introspect.BasicBeanDescription;
-import com.fasterxml.jackson.databind.ser.BeanSerializer;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
-import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
-import org.springframework.util.ReflectionUtils;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ser.impl.ObjectIdWriter;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.Version;
+import org.codehaus.jackson.map.AnnotationIntrospector;
+import org.codehaus.jackson.map.BeanPropertyDefinition;
+import org.codehaus.jackson.map.JsonSerializer;
+import org.codehaus.jackson.map.Module;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.SerializerProvider;
+import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
+import org.codehaus.jackson.map.introspect.BasicBeanDescription;
+import org.codehaus.jackson.map.ser.BeanSerializer;
+import org.codehaus.jackson.map.ser.BeanSerializerModifier;
+import org.codehaus.jackson.map.ser.std.BeanSerializerBase;
+import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.springframework.util.ReflectionUtils;
 
 import uk.org.siri.siri.Siri;
@@ -28,7 +26,6 @@ import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /** 
  * Serializer for XSD-generated SIRI classes, creating JSON in the format suitable
@@ -42,7 +39,7 @@ public class SiriJsonSerializer {
   private static class CustomValueObjectSerializer extends BeanSerializerBase {
 
     private String fieldName = null;
-    
+
     protected CustomValueObjectSerializer(BeanSerializer src, String fieldName) {
       super(src);
       this.fieldName = fieldName;
@@ -50,40 +47,26 @@ public class SiriJsonSerializer {
 
     @Override
     public void serialize(Object bean, JsonGenerator jgen,
-        SerializerProvider provider) throws IOException, JsonGenerationException {
-      
+                          SerializerProvider provider) throws IOException, JsonGenerationException {
+
       try {
         Class<? extends Object> beanClass = bean.getClass();
         Field valueField = ReflectionUtils.findField(beanClass, fieldName);
         valueField.setAccessible(true);
 
         Object value = valueField.get(bean);
-  
+
         provider.defaultSerializeValue(value, jgen);
-      } catch(Exception e) {
+      } catch (Exception e) {
         jgen.writeNull();
       }
     }
 
-    public BeanSerializerBase withObjectIdWriter(ObjectIdWriter var1) {
-      return null;
-    }
-
-    public BeanSerializerBase withFilterId(Object var1) {
-      return null;
-    }
-
-    protected BeanSerializerBase withIgnorals(Set<String> var1) {
-      return null;
-    }
-
-    public BeanSerializerBase asArraySerializer() {
-      return null;
-    }
   }
   
   private static class CustomBeanSerializerModifier extends BeanSerializerModifier {
 
+    @Override
     public JsonSerializer<?> modifySerializer(SerializationConfig config,
         BasicBeanDescription beanDesc, JsonSerializer<?> serializer) {
       
@@ -143,15 +126,15 @@ public class SiriJsonSerializer {
   
   public String getJson(Siri siri, String callback) throws Exception {    
     ObjectMapper mapper = new ObjectMapper();
-    mapper.setSerializationInclusion(Include.NON_NULL);
-    mapper.configure(SerializationFeature.INDENT_OUTPUT, false);
-    mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
+    mapper.setSerializationInclusion(Inclusion.NON_NULL);
+    mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, false);
+    mapper.configure(SerializationConfig.Feature.WRAP_ROOT_VALUE, true);
 
-    mapper.setDateFormat(new SiriJsonSerializer.RFC822SimpleDateFormat());
+    mapper.setDateFormat(new RFC822SimpleDateFormat());
 
-    JacksonAnnotationIntrospector introspector = new JacksonAnnotationIntrospector();
-    SerializationConfig config = mapper.getSerializationConfig().with(introspector);
-    mapper.setConfig(config);
+    AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
+    SerializationConfig config = mapper.getSerializationConfig().withAnnotationIntrospector(introspector);
+    mapper.setSerializationConfig(config);
 
     mapper.registerModule(new JacksonModule());
 
