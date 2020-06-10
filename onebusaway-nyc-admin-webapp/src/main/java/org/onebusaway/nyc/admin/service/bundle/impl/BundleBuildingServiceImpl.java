@@ -24,6 +24,7 @@ import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.bundle.task.*;
+import org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation.MergedGtfsModTask;
 import org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation.NycGtfsModTask;
 import org.onebusaway.nyc.admin.service.impl.DiffServiceImpl;
 import org.onebusaway.nyc.admin.util.FileUtils;
@@ -75,19 +76,19 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private FileService _fileService;
   private ConfigurationService configurationService;
   private LoggingService loggingService;
-  
+
   @Autowired
   public void setFileService(FileService service) {
     _fileService = service;
   }
 
- 	/**
-	 * @param configurationService the configurationService to set
-	 */
- 	@Autowired
-	public void setConfigurationService(ConfigurationService configurationService) {
-		this.configurationService = configurationService;
-	}
+  /**
+   * @param configurationService the configurationService to set
+   */
+  @Autowired
+  public void setConfigurationService(ConfigurationService configurationService) {
+    this.configurationService = configurationService;
+  }
 
   @Override
   public void setup() {
@@ -104,18 +105,18 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     upload(request, response);
     response.addStatusMessage("Bundle build process complete");
     String component = System.getProperty("admin.chefRole");
-    loggingService.log(component, Level.INFO, "Bundle build process complete for bundle '" 
-    			+request.getBundleName() + "'");
+    loggingService.log(component, Level.INFO, "Bundle build process complete for bundle '"
+            +request.getBundleName() + "'");
   }
   /**
-   * download from S3 and stage for building 
+   * download from S3 and stage for building
    */
   @Override
   public void download(BundleBuildRequest request, BundleBuildResponse response) {
 
     String bundleDir = request.getBundleDirectory();
     String tmpDirectory = request.getTmpDirectory();
-    if (tmpDirectory == null) { 
+    if (tmpDirectory == null) {
       tmpDirectory = new FileUtils().createTmpDirectory();
       request.setTmpDirectory(tmpDirectory);
     }
@@ -123,14 +124,14 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
     // download gtfs
     List<String> gtfs = _fileService.list(
-        bundleDir + "/" + _fileService.getGtfsPath(), -1);
+            bundleDir + "/" + _fileService.getGtfsPath(), -1);
     for (String file : gtfs) {
       response.addStatusMessage("downloading gtfs " + file);
       response.addGtfsFile(_fileService.get(file, tmpDirectory));
     }
     // download stifs
     List<String> stif = _fileService.list(
-        bundleDir + "/" + _fileService.getStifPath(), -1);
+            bundleDir + "/" + _fileService.getStifPath(), -1);
     for (String file : stif) {
       response.addStatusMessage("downloading stif " + file);
       response.addStifZipFile(_fileService.get(file, tmpDirectory));
@@ -138,7 +139,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
     // download optional configuration files
     List<String> config = _fileService.list(
-        bundleDir + "/" + _fileService.getConfigPath(), -1);
+            bundleDir + "/" + _fileService.getConfigPath(), -1);
     for (String file : config) {
       response.addStatusMessage("downloading config file " + file);
       response.addConfigFile(_fileService.get(file, tmpDirectory));
@@ -151,17 +152,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   @Override
   public void prepare(BundleBuildRequest request, BundleBuildResponse response) {
 
-	response.addStatusMessage("preparing for build");
+    response.addStatusMessage("preparing for build");
     FileUtils fs = new FileUtils();
-    
+
     // copy source data to inputs
     String rootPath = request.getTmpDirectory() + File.separator + request.getBundleName();
     response.setBundleRootDirectory(rootPath);
     File rootDir = new File(rootPath);
     rootDir.mkdirs();
 
-    String inputsPath = request.getTmpDirectory() + File.separator + request.getBundleName() 
-        + File.separator + INPUTS_DIR;
+    String inputsPath = request.getTmpDirectory() + File.separator + request.getBundleName()
+            + File.separator + INPUTS_DIR;
     response.setBundleInputDirectory(inputsPath);
     File inputsDir = new File(inputsPath);
     inputsDir.mkdirs();
@@ -175,24 +176,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     inputsStifDir.mkdirs();
 
     String outputsPath = request.getTmpDirectory() + File.separator + request.getBundleName()
-        + File.separator + OUTPUT_DIR;
+            + File.separator + OUTPUT_DIR;
     response.setBundleOutputDirectory(outputsPath);
     File outputsDir = new File(outputsPath);
     outputsDir.mkdirs();
 
     String dataPath = request.getTmpDirectory() + File.separator + request.getBundleName()
-        + File.separator + DATA_DIR;
-    
+            + File.separator + DATA_DIR;
+
     // create STIF dir as well
     String stifPath = request.getTmpDirectory() + File.separator + "stif";
     File stifDir = new File(stifPath);
     _log.info("creating stif directory=" + stifPath);
     stifDir.mkdirs();
-    
+
     File dataDir = new File(dataPath);
     response.setBundleDataDirectory(dataPath);
     dataDir.mkdirs();
-    
+
     for (String gtfs : response.getGtfsList()) {
       String outputFilename = inputsGtfsPath + File.separator + fs.parseFileName(gtfs);
       fs.copyFiles(new File(gtfs), new File(outputFilename));
@@ -201,24 +202,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       String outputFilename = inputsStifPath + File.separator + fs.parseFileName(stif);
       fs.copyFiles(new File(stif), new File(outputFilename));
     }
-    
+
     for (String stifZip : response.getStifZipList()) {
       _log.info("stif copying " + stifZip + " to " + request.getTmpDirectory() + File.separator
-          + "stif");
-        _log.info("unzipping " + stifZip);
+              + "stif");
+      _log.info("unzipping " + stifZip);
       new FileUtils().unzip(stifZip, request.getTmpDirectory() + File.separator
-          + "stif");
+              + "stif");
     }
 
     _log.info("stif unzip complete ");
-    
+
     // stage baseLocations
     InputStream baseLocationsStream = this.getClass().getResourceAsStream("/BaseLocations.txt");
     new FileUtils().copy(baseLocationsStream, dataPath + File.separator + "BaseLocations.txt");
-    
+
     File configPath = new File(inputsPath + File.separator + "config");
     configPath.mkdirs();
-    
+
     // stage any configuration files
     for (String config : response.getConfigList()) {
       _log.info("config copying " + config + " to " + inputsPath + File.separator + "config");
@@ -226,41 +227,41 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       String outputFilename = inputsPath + File.separator + "config" + File.separator + fs.parseFileName(config);
       fs.copyFiles(new File(config), new File(outputFilename));
     }
-    
+
     // clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
     try {
       File[] stifDirectories = stifDir.listFiles();
       if (stifDirectories != null) {
-        
+
         fs = new FileUtils(request.getTmpDirectory());
-          String stifUtilUrl = getStifCleanupUrl();
-          response.addStatusMessage("downloading " + stifUtilUrl + " to clean stifs");
-          String stifUtilName = fs.parseFileName(stifUtilUrl);
+        String stifUtilUrl = getStifCleanupUrl();
+        response.addStatusMessage("downloading " + stifUtilUrl + " to clean stifs");
+        String stifUtilName = fs.parseFileName(stifUtilUrl);
 
-          // obanyc-2177, pull fix_stif_date_codes onto adminx image if download fails
-          try {
-            fs.wget(stifUtilUrl);
-            response.addStatusMessage("download complete");
-          } catch (Exception any) {
-            _log.info("Download of " + stifUtilUrl + "failed.");
-            // Copy local version of script
-            String stifScriptDir = System.getProperty("admin.stifScriptLocation");
-            String localStifScriptName = stifScriptDir + File.separator + stifUtilName;
-            File localStifScript = new File(localStifScriptName);
-            _log.info("Copying " + localStifScriptName + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
-            response.addStatusMessage("download failed, copying " + localStifScriptName + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
-            File workingStifScript = new File(request.getTmpDirectory() + File.separator + stifUtilName);
-            fs.copyFiles(localStifScript, workingStifScript);
-            response.addStatusMessage("copy complete");
-          }
-          // make executable
-          fs.chmod("500", request.getTmpDirectory() + File.separator + stifUtilName);
+        // obanyc-2177, pull fix_stif_date_codes onto adminx image if download fails
+        try {
+          fs.wget(stifUtilUrl);
+          response.addStatusMessage("download complete");
+        } catch (Exception any) {
+          _log.info("Download of " + stifUtilUrl + "failed.");
+          // Copy local version of script
+          String stifScriptDir = System.getProperty("admin.stifScriptLocation");
+          String localStifScriptName = stifScriptDir + File.separator + stifUtilName;
+          File localStifScript = new File(localStifScriptName);
+          _log.info("Copying " + localStifScriptName + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
+          response.addStatusMessage("download failed, copying " + localStifScriptName + " to " + request.getTmpDirectory() + File.separator + stifUtilName);
+          File workingStifScript = new File(request.getTmpDirectory() + File.separator + stifUtilName);
+          fs.copyFiles(localStifScript, workingStifScript);
+          response.addStatusMessage("copy complete");
+        }
+        // make executable
+        fs.chmod("500", request.getTmpDirectory() + File.separator + stifUtilName);
 
-        // for each subdirectory of stif, run the script 
+        // for each subdirectory of stif, run the script
         for (File stifSubDir : stifDirectories) {
-          String cmd = request.getTmpDirectory() + File.separator + stifUtilName + " " 
-            + stifSubDir.getCanonicalPath();
-          
+          String cmd = request.getTmpDirectory() + File.separator + stifUtilName + " "
+                  + stifSubDir.getCanonicalPath();
+
           // kick off process and collect output
           ProcessUtil pu = new ProcessUtil(cmd);
           pu.exec();
@@ -276,7 +277,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           }
         }
         response.addStatusMessage("stif cleaning complete");
-      } 
+      }
     } catch (Exception any) {
       response.setException(any);
     }
@@ -293,7 +294,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     }
     return DEFAULT_STIF_CLEANUP_URL;
   }
-  
+
   /**
    * call FederatedTransitDataBundleCreator
    */
@@ -304,29 +305,30 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
      */
     PrintStream stdOut = System.out;
     PrintStream logFile = null;
-    
+
     // pass a mini spring context to the bundle builder so we can cleanup
     ConfigurableApplicationContext context = null;
     try {
       File outputPath = new File(response.getBundleDataDirectory());
       File loggingPath = new File(response.getBundleOutputDirectory());
 
-      File mergedGtfsPath = new File(response.getBundleOutputDirectory() + File.separator + "Merged_Gtfs");
-      mergedGtfsPath.mkdir();
+      File mergedGtfsPath = new File(response.getBundleOutputDirectory() + File.separator + "Merged_Gtfs" + ".zip");
 
       File stifOutputPath = new File(response.getBundleOutputDirectory() + File.separator + "STIF");
       stifOutputPath.mkdir();
-      
+
+      String transformationToAddFeedInfo = "{\"op\":\"transform\", \"class\":\"org.onebusaway.gtfs_transformer.impl.FeedInfoFromAgencyStrategy\", \"agency_id\":\"MTA\"}}";
+
       // beans assume bundlePath is set -- this will be where files are written!
       System.setProperty("bundlePath", outputPath.getAbsolutePath());
-      
+
       String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
       logFile = new PrintStream(new FileOutputStream(new File(logFilename)));
 
       // swap standard out for logging
       System.setOut(logFile);
       configureLogging(System.out);
-      
+
       FederatedTransitDataBundleCreator creator = new FederatedTransitDataBundleCreator();
 
       Map<String, BeanDefinition> beans = new HashMap<String, BeanDefinition>();
@@ -335,7 +337,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       List<GtfsBundle> gtfsBundles = createGtfsBundles(response);
       List<String> contextPaths = new ArrayList<String>();
       contextPaths.add(BUNDLE_RESOURCE);
-      
+
       BeanDefinitionBuilder bean = BeanDefinitionBuilder.genericBeanDefinition(GtfsBundles.class);
       bean.addPropertyValue("bundles", gtfsBundles);
       beans.put("gtfs-bundles", bean.getBeanDefinition());
@@ -355,12 +357,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       BundleRequestResponse requestResponse = new BundleRequestResponse();
       requestResponse.setRequest(request);
       requestResponse.setResponse(response);
-            
+
       // configure for NYC specifics
       BeanDefinitionBuilder bundle = BeanDefinitionBuilder.genericBeanDefinition(FederatedTransitDataBundle.class);
       bundle.addPropertyValue("path", outputPath);
       beans.put("bundle", bundle.getBeanDefinition());
-      
+
       BeanDefinitionBuilder nycBundle = BeanDefinitionBuilder.genericBeanDefinition(NycFederatedTransitDataBundle.class);
       nycBundle.addPropertyValue("path", outputPath);
       beans.put("nycBundle", nycBundle.getBeanDefinition());
@@ -387,7 +389,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       BeanDefinitionBuilder clearCSVTask = BeanDefinitionBuilder.genericBeanDefinition(ClearCSVTask.class);
       clearCSVTask.addPropertyReference("logger", "multiCSVLogger");
       beans.put("clearCSVTask", clearCSVTask.getBeanDefinition());
-      
+
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "clearCSVTask");
       task.addPropertyValue("afterTaskName", "gtfs");
@@ -432,15 +434,15 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // TODO this is a convention, pull out into config?
       stifLoaderTask.addPropertyValue("stifPath", stifOutputPath);
       String notInServiceFilename = request.getTmpDirectory() + File.separator
-          + "NotInServiceDSCs.txt";
+              + "NotInServiceDSCs.txt";
 
       new FileUtils().createFile(notInServiceFilename,
-          listToFile(request.getNotInServiceDSCList()));
+              listToFile(request.getNotInServiceDSCList()));
       stifLoaderTask.addPropertyValue("notInServiceDscPath",
-          notInServiceFilename);
-      
-      String dscMapPath = response.getBundleInputDirectory() + File.separator + "config" + File.separator 
-          + getTripToDSCFilename();
+              notInServiceFilename);
+
+      String dscMapPath = response.getBundleInputDirectory() + File.separator + "config" + File.separator
+              + getTripToDSCFilename();
       _log.info("looking for configuration at " + dscMapPath);
       File dscMapFile = new File(dscMapPath);
       if (dscMapFile.exists()) {
@@ -469,8 +471,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       task.addPropertyValue("afterTaskName", "stifLoaderTask");
       task.addPropertyValue("beforeTaskName", "transit_graph");
       task.addPropertyReference("task", "summarizeCSVTask");
-      beans.put("summarizeCSVTaskDef", task.getBeanDefinition());      
-      
+      beans.put("summarizeCSVTaskDef", task.getBeanDefinition());
+
       _log.debug("setting outputPath=" + outputPath);
       creator.setOutputPath(outputPath);
       creator.setContextPaths(contextPaths);
@@ -556,9 +558,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       task.addPropertyReference("task", "saveGtfsTask");
       beans.put("saveGtfsTaskDef", task.getBeanDefinition());
 
-
-
       // STEP 8
+      BeanDefinitionBuilder mergedGtfsModTask = BeanDefinitionBuilder.genericBeanDefinition(MergedGtfsModTask.class);
+
+      mergedGtfsModTask.addPropertyValue("transformation", transformationToAddFeedInfo);
+      mergedGtfsModTask.addPropertyValue("gtfsPath", mergedGtfsPath);
+
+
+      beans.put("mergedGtfsModTask", mergedGtfsModTask.getBeanDefinition());
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "mergedGtfsModTask");
+      task.addPropertyValue("afterTaskName", "saveGtfsTask");
+      task.addPropertyValue("beforeTaskName", "pre_cache");
+      task.addPropertyReference("task", "mergedGtfsModTask");
+      beans.put("mergedGtfsModTaskDef", task.getBeanDefinition());
+
+
+
+      // STEP 9
       BeanDefinitionBuilder nycNamingConventionTask = BeanDefinitionBuilder.genericBeanDefinition(nycNamingConventionTask.class);
       nycNamingConventionTask.addPropertyValue("requestResponse", requestResponse);
       nycNamingConventionTask.addPropertyValue("stifDirectory", stifOutputPath);
@@ -614,8 +631,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       contextBeans.putAll(beans);
       context = ContainerLibrary.createContext(contextPaths, contextBeans);
       creator.setContext(context);
-      
-      
+
+
       response.addStatusMessage("building bundle");
       creator.run();
       response.addStatusMessage("bundle build complete");
@@ -635,8 +652,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           /*
            * here we cleanup the spring context so we can process follow on requests.
            */
-        context.stop();
-        context.close();
+          context.stop();
+          context.close();
         } catch (Throwable t) {
           _log.error("buried context close:", t);
         }
@@ -644,19 +661,19 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // restore standard out
       deconfigureLogging(System.out);
       System.setOut(stdOut);
-      
+
       if (logFile != null) {
         logFile.close();
       }
     }
 
   }
-  
+
   private String getTripToDSCFilename() {
     String dscFilename = null;
     try {
-        dscFilename = configurationService.getConfigurationValueAsString("admin.tripToDSCFilename", DEFAULT_TRIP_TO_DSC_FILE);
-        
+      dscFilename = configurationService.getConfigurationValueAsString("admin.tripToDSCFilename", DEFAULT_TRIP_TO_DSC_FILE);
+
     } catch (Exception any) {
       return DEFAULT_TRIP_TO_DSC_FILE;
     }
@@ -667,7 +684,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   }
 
   /**
-   * tear down the logger for the bundle building activity. 
+   * tear down the logger for the bundle building activity.
    */
   private void deconfigureLogging(OutputStream os) {
     _log.info("deconfiguring logging");
@@ -683,7 +700,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   }
 
   /**
-   * setup a logger just for the bundle building activity. 
+   * setup a logger just for the bundle building activity.
    */
   private void configureLogging(OutputStream os) {
     Layout layout = new SimpleLayout();
@@ -705,7 +722,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
     FileUtils fs = new FileUtils();
     // build BundleMetaData.json
-   new BundleBuildingUtil().generateJsonMetadata(request, response);
+    new BundleBuildingUtil().generateJsonMetadata(request, response);
 
     String[] paths = {request.getBundleName()};
     String filename = request.getTmpDirectory() + File.separator + request.getBundleName() + ".tar.gz";
@@ -713,14 +730,14 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.addStatusMessage("creating bundle=" + filename + " for root dir=" + request.getTmpDirectory());
     String baseDir = request.getTmpDirectory();
     fs.tarcvf(baseDir, paths, filename);
-    
+
     // now copy inputs and outputs to root for easy access
     // inputs
     String inputsPath = request.getTmpDirectory() + File.separator + INPUTS_DIR;
     File inputsDestDir = new File(inputsPath);
     inputsDestDir.mkdir();
     File inputsDir = new File(response.getBundleInputDirectory());
-    
+
     File[] inputFiles = inputsDir.listFiles();
     if (inputFiles != null) {
       for (File input : inputFiles) {
@@ -738,7 +755,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
     fs.copyFiles(new File(logFilename), new File(response.getBundleOutputDirectory() + File.separator + "bundleBuilder.out.txt"));
     response.addOutputFile("bundleBuilder.out.txt");
-    
+
     // copy the rest of the bundle content to outputs directory
     File outputsDir = new File(response.getBundleOutputDirectory());
     File[] outputFiles = outputsDir.listFiles();
@@ -748,7 +765,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         fs.copyFiles(output, new File(outputsPath + File.separator + output.getName()));
       }
     }
-    
+
   }
 
   private StringBuffer listToFile(List<String> notInServiceDSCList) {
@@ -761,10 +778,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   private List<GtfsBundle> createGtfsBundles(BundleBuildResponse response) {
     List<String> gtfsList = response.getGtfsList();
-    final String gtfsMsg = "constructing configuration for bundles=" + gtfsList; 
+    final String gtfsMsg = "constructing configuration for bundles=" + gtfsList;
     response.addStatusMessage(gtfsMsg);
     _log.info(gtfsMsg);
-    
+
     List<GtfsBundle> bundles = new ArrayList<GtfsBundle>(gtfsList.size());
     String defaultAgencyId = getDefaultAgencyId();
     response.addStatusMessage("default agency configured to be |" + defaultAgencyId + "|");
@@ -801,32 +818,32 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setRemoteInputDirectory(versionString + File.separator + INPUTS_DIR);
     _fileService.put(versionString + File.separator + OUTPUT_DIR, response.getBundleOutputDirectory());
     response.setRemoteOutputDirectory(versionString + File.separator + OUTPUT_DIR);
-    _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
-        response.getBundleTarFilename());
+    _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz",
+            response.getBundleTarFilename());
 
-    /* TODO implement delete 
-     * for now we rely on cloud restart to delete volume for us, but that is lazy 
+    /* TODO implement delete
+     * for now we rely on cloud restart to delete volume for us, but that is lazy
      */
   }
 
   private String createVersionString(BundleBuildRequest request,
-      BundleBuildResponse response) {
+                                     BundleBuildResponse response) {
     String bundleName = request.getBundleName();
     _log.info("createVersionString found bundleName=" + bundleName);
     if (bundleName == null || bundleName.length() == 0) {
       bundleName = "b" + System.currentTimeMillis();
     }
-    return request.getBundleDirectory() + File.separator + 
-        _fileService.getBuildPath() +  File.separator +
-        bundleName;
+    return request.getBundleDirectory() + File.separator +
+            _fileService.getBuildPath() +  File.separator +
+            bundleName;
   }
 
-	/**
-	 * @param loggingService the loggingService to set
-	 */
-    @Autowired
-	public void setLoggingService(LoggingService loggingService) {
-		this.loggingService = loggingService;
-	}
+  /**
+   * @param loggingService the loggingService to set
+   */
+  @Autowired
+  public void setLoggingService(LoggingService loggingService) {
+    this.loggingService = loggingService;
+  }
 
 }
