@@ -189,11 +189,6 @@ public class InferenceInputQueueListenerTaskTest {
 		inferredResult = initializeSpookingBean();
 		assertEquals(inferredResult.getPhase(), "SPOOKING");
 		task.processResult(inferredResult, "");
-
-
-
-//		verify(listener,times(1)).handleVehicleLocationRecord((VehicleLocationRecord)any());
-//		verify(pService, times(1)).updatePredictionsForVehicle((AgencyAndId)any());
 	}
 }
 
