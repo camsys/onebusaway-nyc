@@ -57,11 +57,15 @@ public class DummyOutputQueueSenderServiceImpl implements
 
   @Override
   public void enqueue(NycQueuedInferredLocationBean r) {
-    final VehicleLocationRecord vlr = RecordLibrary.getNycQueuedInferredLocationBeanAsVehicleLocationRecord(r);
-    _vehicleLocationListener.handleVehicleLocationRecord(vlr);
+    try {
+      final VehicleLocationRecord vlr = r.toVehicleLocationRecord();
+      _vehicleLocationListener.handleVehicleLocationRecord(vlr);
 
-    if(useTimePredictionsIfAvailable()) {
-    	_predictionIntegrationService.updatePredictionsForVehicle(vlr.getVehicleId());
+      if (useTimePredictionsIfAvailable()) {
+        _predictionIntegrationService.updatePredictionsForVehicle(vlr.getVehicleId());
+      }
+    } catch (Exception e){
+      _log.error("Unable to process record {}", r, e);
     }
   }
 

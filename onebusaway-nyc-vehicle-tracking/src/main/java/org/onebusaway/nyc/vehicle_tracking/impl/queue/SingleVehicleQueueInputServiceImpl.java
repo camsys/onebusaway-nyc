@@ -19,8 +19,10 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.onebusaway.nyc.vehicle_tracking.services.unassigned.UnassignedVehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,9 @@ public class SingleVehicleQueueInputServiceImpl extends InputServiceImpl
 
 	@Autowired
 	private UnassignedVehicleService _service;
+
+	@Autowired
+	protected ConfigurationService _configurationService;
 
 	@Override
 	public boolean acceptMessage(RealtimeEnvelope envelope) {
@@ -99,9 +104,18 @@ public class SingleVehicleQueueInputServiceImpl extends InputServiceImpl
 		return StringUtils.replaceEach(contents, searchList, replacementList);
 	}
 
+	@Refreshable(dependsOn = { "inference-engine.singleVehicleQueueVehicleId", "inference-engine.singleVehicleQueueDebugEnabled" })
+	public void refreshCache(){
+		_vehicleId = _configurationService.getConfigurationValueAsString(
+				"inference-engine.singleVehicleQueueVehicleId", "MTA NYCT_7182");
+		_debug = _configurationService.getConfigurationValueAsBoolean(
+				"inference-engine.singleVehicleQueueDebugEnabled", false);
+	}
+
 	@Override
 	@PostConstruct
 	public void setup() {
+		refreshCache();
 		super.setup();
 	}
 
