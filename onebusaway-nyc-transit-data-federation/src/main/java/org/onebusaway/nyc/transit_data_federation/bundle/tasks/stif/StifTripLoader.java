@@ -67,7 +67,9 @@ public class StifTripLoader {
 
   private Map<Trip, RawRunData> rawRunDataByTrip = new HashMap<Trip, RawRunData>(20000);
 
-  private Map<ServiceCode, List<StifTrip>> rawData = new HashMap<ServiceCode, List<StifTrip>>(1024);
+  private Map<ServiceCode, List<StifTrip>> rawDataByServiceCode = new HashMap<ServiceCode, List<StifTrip>>(1024);
+
+  private Map<String, List<StifTrip>> rawDataByServiceId = new HashMap<String, List<StifTrip>>(1024);
   
   private Map<AgencyAndId, List<NonRevenueStopData>> nonRevenueStopDataByTripId = new HashMap<AgencyAndId, List<NonRevenueStopData>>(1024);
 
@@ -118,6 +120,9 @@ public class StifTripLoader {
     return _tripsWithoutMatchCount;
   }
 
+  private boolean isBusCo;
+  private boolean isNewMTAHastusGtfsFormat;
+
   /**
    * For each STIF file, call run().
    */
@@ -148,7 +153,7 @@ public class StifTripLoader {
       reader = new StifRecordReader(stream);
       ServiceCode serviceCode = null;
       String agencyId = null;
-      boolean isBusCo = false;
+      isBusCo = false;
       while (true) {
         StifRecord record = reader.read();
         lineNumber++;
@@ -161,9 +166,11 @@ public class StifTripLoader {
           serviceCode = timetableRecord.getServiceCode();
           agencyId = timetableRecord.getAgencyId();
           isBusCo = "MTABC".equals(agencyId);
-          if (!rawData.containsKey(serviceCode)) {
-            rawData.put(serviceCode, new ArrayList<StifTrip>());
+          ///////////////////
+          if (!rawDataByServiceCode.containsKey(serviceCode)) {
+            rawDataByServiceCode.put(serviceCode, new ArrayList<StifTrip>());
           }
+          ///////////////////
           continue;
         }
         if (record instanceof GeographyRecord) {
@@ -241,7 +248,9 @@ public class StifTripLoader {
 
             StifTrip stifTrip = getTripFromNonRevenueRecord(path, tripLineNumber, tripRecord, serviceCode, agencyId,
 					tripType);
-            rawData.get(serviceCode).add(stifTrip);
+            rawDataByServiceCode.get(serviceCode).add(stifTrip);
+            String serviceId = generateServiceId(tripRecord, stifTrip);
+            addServiceIdToRawDataByServiceId(stifTrip,serviceId);
 
             if (record instanceof TripRecord) {
               tripLineNumber = lineNumber;
@@ -286,8 +295,8 @@ public class StifTripLoader {
           stifTrip.path = path;
           stifTrip.lineNumber = tripLineNumber;
           stifTrip.blockId = tripRecord.getBlockNumber();
-          
-          rawData.get(serviceCode).add(stifTrip);
+
+          rawDataByServiceCode.get(serviceCode).add(stifTrip);
 
           String destSignCode = tripRecord.getSignCode();
 
@@ -350,12 +359,14 @@ public class StifTripLoader {
             if (gtfsTrip.getId().getId().equals(tripRecord.getGtfsTripId())) {
               addGtfsTrip(path, tripLineNumber, tripRecord, runId, reliefRunId, nextOperatorRunId,
                   stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
+              String serviceId = gtfsTrip.getServiceId().getId();
+              addServiceIdToRawDataByServiceId(stifTrip,serviceId);
               continue;
             }
 
             String serviceId = gtfsTrip.getServiceId().getId();
             Matcher m = oldNYCTServiceIdFormat.matcher(serviceId);
-            boolean isNewMTAHastusGtfsFormat = !m.matches();
+            isNewMTAHastusGtfsFormat = !m.matches();
             
             if (isBusCo || isNewMTAHastusGtfsFormat) {
               ServiceCode tripServiceCode = ServiceCode.getServiceCodeForMTAHastusGTFS(serviceId);              
@@ -395,6 +406,7 @@ public class StifTripLoader {
             if (gtfsTrip != null) {
               addGtfsTrip(path, tripLineNumber, tripRecord, runId, reliefRunId, nextOperatorRunId,
                   stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
+              addServiceIdToRawDataByServiceId(stifTrip,serviceId);
             }
           }
           if (filtered.size() == 0) {
@@ -519,8 +531,12 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
     return runsForTrip;
   }
 
-  public Map<ServiceCode, List<StifTrip>> getRawStifData() {
-    return rawData;
+  public Map<ServiceCode, List<StifTrip>> getRawStifDataByServiceCode() {
+    return rawDataByServiceCode;
+  }
+
+  public Map<String, List<StifTrip>> getRawStifDataByServiceId() {
+    return rawDataByServiceId;
   }
   
   public Map<AgencyAndId, List<NonRevenueStopData>> getNonRevenueStopDataByTripId() {
@@ -543,6 +559,33 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
 
   public StifTripLoaderSupport getSupport() {
     return support;
+  }
+
+  private Pattern standardServiceIdPattern = Pattern.compile("-[0-9]");
+
+  private String generateServiceId(TripRecord tripRecord, StifTrip stifTrip){
+    String serviceId = "";
+    String gtfsTripId = tripRecord.getGtfsTripId();
+    if (isBusCo){
+      int endOfServiceIdIndex = gtfsTripId.indexOf("-");
+      serviceId = gtfsTripId.substring(endOfServiceIdIndex+"-".length());
+    } else{
+      Matcher matcher = standardServiceIdPattern.matcher(gtfsTripId);
+      matcher.find();
+      serviceId = gtfsTripId.substring(0, matcher.start());
+    }
+    return serviceId;
+  }
+
+  private void addServiceIdToRawDataByServiceId(StifTrip stifTrip, String serviceId){
+    serviceId = serviceId.replace("-BM","");
+    if(serviceId.equals("WF_E0-Weekday-SDon")){
+      _log.info("WF_E0-Weekday-SDon");
+    }
+    if (!rawDataByServiceId.containsKey(serviceId)) {
+      rawDataByServiceId.put(serviceId, new ArrayList<StifTrip>());
+    }
+    rawDataByServiceId.get(serviceId).add(stifTrip);
   }
 
 }

@@ -68,7 +68,7 @@ public class NonRevenueMovementServiceImplTest extends NonRevenueMovementService
 	    loader.run(in, new File("stif.m_0014__.210186.sun"));
 
 	    this._nonRevenueMoveLocationsByBoxId = loader.getGeographyRecordsByBoxId();
-	    this._nonRevenueMovesByServiceCode = loader.getRawStifData();
+	    this._nonRevenueMovesByServiceCode = loader.getRawStifDataByServiceCode();
 	    buildIndices();
   }
   

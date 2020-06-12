@@ -98,8 +98,12 @@ public class StifLoaderImpl {
 		return _loader.getRawRunDataByTrip();
 	}
 
-	public Map<ServiceCode, List<StifTrip>> getRawStifData(){
-		return _loader.getRawStifData();
+	public Map<ServiceCode, List<StifTrip>> getRawStifDataByServiceCode(){
+		return _loader.getRawStifDataByServiceCode();
+	}
+
+	public Map<String, List<StifTrip>> getRawStifDataByServiceId(){
+		return _loader.getRawStifDataByServiceId();
 	}
 
 	public StifTripLoaderSupport getSupport(){

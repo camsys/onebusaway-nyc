@@ -67,6 +67,8 @@ public class StifAggregatorImpl {
   
   private HashMap<AgencyAndId, SupplimentalTripInformation> tripInfo = new HashMap<AgencyAndId, SupplimentalTripInformation>(1000000);
 
+  public boolean useServiceId = false;
+
   public HashMap<String, Set<AgencyAndId>> getRouteIdsByDsc(){
     return routeIdsByDsc;
   }
@@ -78,20 +80,20 @@ public class StifAggregatorImpl {
   public void computeBlocksFromRuns() {
     int blockNo = 0;
 
-    Map<ServiceCode, List<StifTrip>> rawData = _stifLoader.getRawStifData();
+    Map<ServiceCode, List<StifTrip>> rawDataByServiceCode = _stifLoader.getRawStifDataByServiceCode();
     //    _log.debug("number of service codes " +rawData.size() + ":" + rawData.keySet().toString());
 
-    for (Map.Entry<ServiceCode, List<StifTrip>> entry : rawData.entrySet()) {
+    for (Map.Entry<ServiceCode, List<StifTrip>> entry : rawDataByServiceCode.entrySet()) {
       List<StifTrip> rawTrips = entry.getValue();
 
       populateTripDetails(rawTrips);
 
       // for each pull-out, start a new block
-//      _log.debug(pullouts.size() + " pullouts on " + entry.getKey().toString());
+      //      _log.debug(pullouts.size() + " pullouts on " + entry.getKey().toString());
       for (StifTrip pullout : pullouts) {
-//              _log.debug("pullout " + pullout.toString() + " unmatched trips size" + unmatchedTrips.size());
+        //              _log.debug("pullout " + pullout.toString() + " unmatched trips size" + unmatchedTrips.size());
 
-        blockNo ++;
+        blockNo++;
         StifTrip lastTrip = pullout;
         int i = 0;
         HashSet<Pair<String, String>> blockIds = new HashSet<Pair<String, String>>();
@@ -105,7 +107,7 @@ public class StifAggregatorImpl {
 
           String nextRunId = getNextRunID(lastTrip);
 
-          if (nextRunId == null){
+          if (nextRunId == null) {
             _log.debug("no next run id for " + lastTrip.toString());
             break;
           }
@@ -119,32 +121,108 @@ public class StifAggregatorImpl {
           int nextTripStartTime = lastTrip.listedLastStopTime + lastTrip.recoveryTime * 60;
           @SuppressWarnings("unchecked")
           int index = Collections.binarySearch(trips, nextTripStartTime, new RawTripComparator());
-          
+
           //binarySearch on a list returns a negative number when the search key is not found.
           if (index < 0) {
             index = -(index + 1);
             _log.debug("index reset to " + index);
           }
 
-          if(!tripExists(index, nextRunId, lastTrip, trips.size())){
+          if (!tripExists(index, nextRunId, lastTrip, trips.size())) {
             _log.debug(index + " next run " + nextRunId + " trip " + lastTrip.toString() + " size " + trips.size());
             break;
           }
 
           StifTrip trip = trips.get(index);
 
-          if(!isTripDifferent(lastTrip, trip, index, nextTripStartTime, nextRunId, trips)){
-            _log.debug(lastTrip.toString() + " and " + trip.toString() +" not different");
+          if (!isTripDifferent(lastTrip, trip, index, nextTripStartTime, nextRunId, trips)) {
+            _log.debug(lastTrip.toString() + " and " + trip.toString() + " not different");
             break;
           }
-          
+
           lastTrip = trip;
           matchGTFSToSTIF(lastTrip, trip, pullout, blockIds);
         }
         unmatchedTrips.remove(lastTrip);
         dumpBlocksOut(blockIds, lastTrip, pullout);
       }
-      logUnmatchedTrip(blockNo, entry);
+      if(!useServiceId) {
+        logUnmatchedTrip(blockNo, entry.getKey().toString());
+      }
+    }
+    if(useServiceId){
+      blockNo = 0;
+      usedGtfsTrips.clear();
+      tripInfo.clear();
+
+      Map<String, List<StifTrip>> rawDataByServiceId = _stifLoader.getRawStifDataByServiceId();
+      //    _log.debug("number of service codes " +rawData.size() + ":" + rawData.keySet().toString());
+
+      for (Map.Entry<String, List<StifTrip>> entry : rawDataByServiceId.entrySet()) {
+        List<StifTrip> rawTrips = entry.getValue();
+
+        populateTripDetails(rawTrips);
+
+        // for each pull-out, start a new block
+        //      _log.debug(pullouts.size() + " pullouts on " + entry.getKey().toString());
+        for (StifTrip pullout : pullouts) {
+          //              _log.debug("pullout " + pullout.toString() + " unmatched trips size" + unmatchedTrips.size());
+
+          blockNo++;
+          StifTrip lastTrip = pullout;
+          int i = 0;
+          HashSet<Pair<String, String>> blockIds = new HashSet<Pair<String, String>>();
+
+          while (lastTrip.type != StifTripType.PULLIN) {
+            unmatchedTrips.remove(lastTrip);
+            if (++i > 200) {
+              infiniteLoopMessage(lastTrip);
+              break;
+            }
+
+            String nextRunId = getNextRunID(lastTrip);
+
+            if (nextRunId == null) {
+              _log.debug("no next run id for " + lastTrip.toString());
+              break;
+            }
+            List<StifTrip> trips = tripsByRun.get(nextRunId);
+
+            if (trips == null) {
+              _log.warn("No trips for run " + nextRunId);
+              break;
+            }
+
+            int nextTripStartTime = lastTrip.listedLastStopTime + lastTrip.recoveryTime * 60;
+            @SuppressWarnings("unchecked")
+            int index = Collections.binarySearch(trips, nextTripStartTime, new RawTripComparator());
+
+            //binarySearch on a list returns a negative number when the search key is not found.
+            if (index < 0) {
+              index = -(index + 1);
+              _log.debug("index reset to " + index);
+            }
+
+            if (!tripExists(index, nextRunId, lastTrip, trips.size())) {
+              _log.debug(index + " next run " + nextRunId + " trip " + lastTrip.toString() + " size " + trips.size());
+              break;
+            }
+
+            StifTrip trip = trips.get(index);
+
+            if (!isTripDifferent(lastTrip, trip, index, nextTripStartTime, nextRunId, trips)) {
+              _log.debug(lastTrip.toString() + " and " + trip.toString() + " not different");
+              break;
+            }
+
+            lastTrip = trip;
+            matchGTFSToSTIF(lastTrip, trip, pullout, blockIds);
+          }
+          unmatchedTrips.remove(lastTrip);
+          dumpBlocksOut(blockIds, lastTrip, pullout);
+        }
+        logUnmatchedTrip(blockNo, entry.getKey().toString());
+      }
     }
     determineIfRoutesAreInStif();
   }
@@ -296,9 +374,9 @@ public class StifAggregatorImpl {
     }
   }
 
-  private void logUnmatchedTrip(int blockNo, Entry<ServiceCode, List<StifTrip>> entry){
+  private void logUnmatchedTrip(int blockNo, String entryKey){
     for (StifTrip trip : unmatchedTrips) {
-      _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey()
+      _log.warn("STIF trip: " + trip + " on schedule " + entryKey
       + " trip type " + trip.type
       + " must not have an associated pullout");
       for (Trip gtfsTrip : trip.getGtfsTrips()) {

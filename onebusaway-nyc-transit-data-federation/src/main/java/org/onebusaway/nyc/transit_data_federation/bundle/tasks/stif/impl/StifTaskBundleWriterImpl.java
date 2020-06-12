@@ -53,7 +53,7 @@ public class StifTaskBundleWriterImpl {
 		}
 
 		// non revenue moves
-		serializeNonRevenueMoveData(loader.getRawStifData(), loader.getGeographyRecordsByBoxId());
+		serializeNonRevenueMoveData(loader.getRawStifDataByServiceCode(), loader.getGeographyRecordsByBoxId());
 
 		// non revenue stops
 		serializeNonRevenueStopData(loader.getNonRevenueStopDataByTripId());
