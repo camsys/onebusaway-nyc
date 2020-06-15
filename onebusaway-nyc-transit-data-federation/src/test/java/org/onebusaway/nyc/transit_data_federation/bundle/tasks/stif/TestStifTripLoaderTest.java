@@ -258,8 +258,8 @@ public class TestStifTripLoaderTest {
     loader.run(in, new File("stif.q_0058o_.413663.wkd.open"));
     assertTrue(loader.getTripsCount() > 0);
     List<StifTrip> strips = null;
-    for (ServiceCode sc : loader.getRawStifData().keySet()) {
-      strips = loader.getRawStifData().get(sc);
+    for (ServiceCode sc : loader.getRawStifDataByServiceCode().keySet()) {
+      strips = loader.getRawStifDataByServiceCode().get(sc);
     }
     
     assertEquals("FP", strips.get(0).depot);
