@@ -133,6 +133,8 @@ public class StifLoaderImpl {
 	public int getTripsCount(){
 		return _loader.getTripsCount();
 	}
+
+	public boolean getIsModernTripSyntax(){ return _loader.getIsModernTripSyntax();}
 	
 	public void warnOnMissingTrips() {
 		for (Trip t : _gtfsMutableRelationalDao.getAllTrips()) {

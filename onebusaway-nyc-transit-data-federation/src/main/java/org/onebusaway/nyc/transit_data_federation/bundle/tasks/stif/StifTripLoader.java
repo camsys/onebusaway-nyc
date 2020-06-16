@@ -79,6 +79,8 @@ public class StifTripLoader {
   
   private Map<DuplicateTripCheckKey, StifTrip> tripsByRunAndStartTime = new HashMap<DuplicateTripCheckKey, StifTrip>();
 
+  private boolean isModernTripSyntax = true;
+
   class DuplicateTripCheckKey {
     public DuplicateTripCheckKey(String runId, int startTime,
         ServiceCode serviceCode) {
@@ -249,8 +251,7 @@ public class StifTripLoader {
             StifTrip stifTrip = getTripFromNonRevenueRecord(path, tripLineNumber, tripRecord, serviceCode, agencyId,
 					tripType);
             rawDataByServiceCode.get(serviceCode).add(stifTrip);
-            String serviceId = generateServiceId(tripRecord, stifTrip);
-            addServiceIdToRawDataByServiceId(stifTrip,serviceId);
+            handleServiceIdActions(stifTrip,tripRecord);
 
             if (record instanceof TripRecord) {
               tripLineNumber = lineNumber;
@@ -360,7 +361,7 @@ public class StifTripLoader {
               addGtfsTrip(path, tripLineNumber, tripRecord, runId, reliefRunId, nextOperatorRunId,
                   stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
               String serviceId = gtfsTrip.getServiceId().getId();
-              addServiceIdToRawDataByServiceId(stifTrip,serviceId);
+              handleServiceIdActions(stifTrip,serviceId);
               continue;
             }
 
@@ -406,7 +407,7 @@ public class StifTripLoader {
             if (gtfsTrip != null) {
               addGtfsTrip(path, tripLineNumber, tripRecord, runId, reliefRunId, nextOperatorRunId,
                   stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
-              addServiceIdToRawDataByServiceId(stifTrip,serviceId);
+              handleServiceIdActions(stifTrip,serviceId);
             }
           }
           if (filtered.size() == 0) {
@@ -586,6 +587,45 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
       rawDataByServiceId.put(serviceId, new ArrayList<StifTrip>());
     }
     rawDataByServiceId.get(serviceId).add(stifTrip);
+  }
+
+  private void handleServiceIdActions(StifTrip stifTrip, TripRecord tripRecord){
+    if(testForModernTripSyntax(tripRecord)) {
+      String serviceId = generateServiceId(tripRecord, stifTrip);
+      addServiceIdToRawDataByServiceId(stifTrip,serviceId);
+    }
+  }
+  private void handleServiceIdActions(StifTrip stifTrip, String serviceId){
+    if(testForModernTripSyntax(stifTrip)) {
+      addServiceIdToRawDataByServiceId(stifTrip,serviceId);
+    }
+  }
+
+  private boolean testForModernTripSyntax(TripRecord tripRecord) {
+    return testForModernTripSyntax(tripRecord.getGtfsTripId());
+  }
+  private boolean testForModernTripSyntax(StifTrip stifTrip){
+    for(Trip gtfsTrip : stifTrip.getGtfsTrips()){
+      testForModernTripSyntax(gtfsTrip.getId().getId());
+    }
+    return isModernTripSyntax;
+  }
+
+  private String mtabcTripIdFormat = "\\d+-[A-Z]+\\d-[A-Z]+_[A-Z]\\d-(\\w+-)+\\d+(-\\w+)+";
+  private String nyctTripIdFormat = "[A-Z]{2}_[A-Z]\\d-([A-z]+-)\\d+_[A-Z]+_\\d+";
+
+  private boolean testForModernTripSyntax(String gtfsTripId){
+    if(isModernTripSyntax) {
+      boolean a = gtfsTripId.matches(mtabcTripIdFormat);
+      boolean b = gtfsTripId.matches(nyctTripIdFormat);
+      if (!gtfsTripId.matches(mtabcTripIdFormat) & !gtfsTripId.matches(nyctTripIdFormat)) {
+        isModernTripSyntax = false;
+      }
+    }
+    return isModernTripSyntax;
+  }
+  public boolean getIsModernTripSyntax(){
+    return isModernTripSyntax;
   }
 
 }

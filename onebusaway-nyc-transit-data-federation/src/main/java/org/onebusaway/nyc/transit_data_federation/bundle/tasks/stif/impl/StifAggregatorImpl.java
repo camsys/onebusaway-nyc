@@ -67,7 +67,7 @@ public class StifAggregatorImpl {
   
   private HashMap<AgencyAndId, SupplimentalTripInformation> tripInfo = new HashMap<AgencyAndId, SupplimentalTripInformation>(1000000);
 
-  public boolean useServiceId = false;
+  public boolean useServiceId = true;
 
   public HashMap<String, Set<AgencyAndId>> getRouteIdsByDsc(){
     return routeIdsByDsc;
@@ -78,6 +78,7 @@ public class StifAggregatorImpl {
   }
 
   public void computeBlocksFromRuns() {
+    useServiceId = _stifLoader.getIsModernTripSyntax();
     int blockNo = 0;
 
     Map<ServiceCode, List<StifTrip>> rawDataByServiceCode = _stifLoader.getRawStifDataByServiceCode();
