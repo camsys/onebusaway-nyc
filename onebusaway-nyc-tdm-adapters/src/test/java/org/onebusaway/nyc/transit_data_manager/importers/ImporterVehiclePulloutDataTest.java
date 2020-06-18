@@ -54,7 +54,7 @@ public class ImporterVehiclePulloutDataTest {
     }
 
     private List<VehiclePullInOutInfo> getTestPulloutFromAuthId(String authId){
-        List<VehiclePullInOutInfo> tcipPullouts = new ArrayList<> ();
+        List<VehiclePullInOutInfo> tcipPullouts = new ArrayList<VehiclePullInOutInfo> ();
 
         SCHPullInOutInfo outputAssignment = new SCHPullInOutInfo();
 
