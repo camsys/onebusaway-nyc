@@ -29,7 +29,7 @@ public class ApcIntegrationServiceImplTest {
         String url = "http://example.com/feed"; // we mock out the results, this isn't used
         Map<AgencyAndId, VehicleOccupancyRecord> map = new HashMap<AgencyAndId, VehicleOccupancyRecord>();
         ApcIntegrationServiceImpl impl = new ApcIntegrationServiceImpl();
-        HttpClient httpClient = Mockito.mock(HttpClient.class);
+        final HttpClient httpClient = Mockito.mock(HttpClient.class);
         HttpResponse response = Mockito.mock(HttpResponse.class);
         HttpEntity entity = Mockito.mock(HttpEntity.class);
         Mockito.when(entity.getContent()).thenReturn(getAsStream(apcJson));
@@ -38,8 +38,12 @@ public class ApcIntegrationServiceImplTest {
         ApcIntegrationServiceImpl.RawCountPollerThread thread
                 = new ApcIntegrationServiceImpl.RawCountPollerThread(null, null,
                 map,
-                httpClient,
-                url);
+                url) {
+            @Override
+            protected HttpClient getHttpClient() {
+                return httpClient;
+            }
+        };
         Map<AgencyAndId, ApcLoadData> feed = thread.getFeed();
         assertNotNull(feed);
         assertEquals(2, feed.size());

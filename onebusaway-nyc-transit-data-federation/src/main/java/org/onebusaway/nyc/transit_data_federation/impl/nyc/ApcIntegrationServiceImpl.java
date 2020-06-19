@@ -48,9 +48,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
-    // provide a default so raw count can be used
-    public static final int DEFAULT_CAPACITY = 40;
-
     // how recent the occupancy record needs to be for usage
     public static final int MAX_AGE_MILLIS = 6 * 60 * 1000; // 6 minutes
 
@@ -83,16 +80,6 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
 
-
-    private HttpClient _httpClient = null;
-    public HttpClient getHttpClient() {
-        return _httpClient;
-    }
-    // let the unit tests mock the client
-    public void setHttpClient(HttpClient client) {
-        _httpClient = client;
-    }
-
     @PostConstruct
     public void setup() {
         super.setup();
@@ -101,13 +88,8 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
             return;
         }
 
-        HttpParams httpParams = new BasicHttpParams();
-        // recover from bad network conditions
-        HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_CONNECTION);
-        HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_SOCKET);
-        _httpClient = new DefaultHttpClient(httpParams);
 
-        RawCountPollerThread thread = new RawCountPollerThread(_tds, _listener, _vehicleToQueueOccupancyCache, _httpClient, getRawCountUrl());
+        RawCountPollerThread thread = new RawCountPollerThread(_tds, _listener, _vehicleToQueueOccupancyCache, getRawCountUrl());
         _taskScheduler.scheduleWithFixedDelay(thread, 30 * 1000);
     }
 
@@ -137,18 +119,15 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
         private NycTransitDataService tds;
         private VehicleOccupancyListener listener;
         private Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache;
-        private HttpClient httpClient;
         private String url;
 
         public RawCountPollerThread(NycTransitDataService tds,
                                     VehicleOccupancyListener listener,
                                     Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache,
-                                    HttpClient httpClient,
                                     String url) {
             this.tds = tds;
             this.listener = listener;
             this.vehicleToQueueOccupancyCache = vehicleToQueueOccupancyCache;
-            this.httpClient = httpClient;
             this.url = url;
         }
 
@@ -172,7 +151,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
             Map<AgencyAndId, ApcLoadData> results = new HashMap<AgencyAndId, ApcLoadData>();
             HttpGet get = new HttpGet(url);
             try {
-                HttpResponse response = httpClient.execute(get);
+                HttpResponse response = getHttpClient().execute(get);
                 InputStreamReader reader = new InputStreamReader(response.getEntity().getContent());
                 Gson gson = new Gson();
                 // we need to give a hint on how to load a map
@@ -209,10 +188,6 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
             VehicleOccupancyRecord vor = queueRecord.deepCopy();
             vor.setRawCount(additionalApcData.getEstLoadAsInt());
             vor.setCapacity(additionalApcData.getEstCapacityAsInt());
-            if (vor.getRawCount() != null && vor.getCapacity() == null) {
-                // provide a default
-                vor.setCapacity(DEFAULT_CAPACITY);
-            }
             vor.setVehicleId(vehicleId);
             vor.setTimestamp(new Date(additionalApcData.getTimestamp()));
             return vor;
@@ -229,10 +204,20 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
             vor.setVehicleId(data.getVehicleAsId());
             vor.setTimestamp(new Date(data.getTimestamp()));
             vor.setCapacity(data.getEstCapacityAsInt());
-            if (vor.getCapacity() == null && vor.getCapacity() == null)
-                vor.setCapacity(DEFAULT_CAPACITY);
             vor.setRawCount(data.getEstLoadAsInt());
             return vor;
         }
+
+        // allow unit tests to override
+        protected HttpClient getHttpClient() {
+            HttpParams httpParams = new BasicHttpParams();
+            // recover from bad network conditions
+            HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_CONNECTION);
+            HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_SOCKET);
+            HttpClient httpClient = new DefaultHttpClient(httpParams);
+
+            return httpClient;
+        }
+
     }
 }
