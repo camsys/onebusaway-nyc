@@ -18,6 +18,8 @@ public class SiriExtensionWrapper {
   
   private SiriDistanceExtension distances;
 
+  private SiriApcExtension capacities;
+
   @XmlElement(name="Distances")
   public SiriDistanceExtension getDistances() {
     return distances;
@@ -26,5 +28,10 @@ public class SiriExtensionWrapper {
   public void setDistances(SiriDistanceExtension distances) {
     this.distances = distances;
   }
+
+  @XmlElement(name="Capacities")
+  public SiriApcExtension getCapacities() { return capacities; }
+
+  public void setCapacities(SiriApcExtension capacities) { this.capacities = capacities; }
 
 }
