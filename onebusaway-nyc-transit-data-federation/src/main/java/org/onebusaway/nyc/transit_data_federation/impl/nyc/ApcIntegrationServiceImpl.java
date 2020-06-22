@@ -19,6 +19,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.ApcQueueListenerTask;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.VehicleOccupancyListener;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +69,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
         }
 
 
-        RawCountPollerThread thread = new RawCountPollerThread(_tds, _listener, _vehicleToQueueOccupancyCache, getRawCountUrl());
+        RawCountPollerThread thread = new RawCountPollerThread(_tds, _configurationService, _listener, _vehicleToQueueOccupancyCache, getRawCountUrl());
         _taskScheduler.scheduleWithFixedDelay(thread, 30 * 1000);
     }
 
@@ -91,15 +92,24 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
     public static class RawCountPollerThread extends Thread {
         private NycTransitDataService tds;
+        private ConfigurationService configService;
         private VehicleOccupancyListener listener;
         private Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache;
         private String url;
+        private long maxEarlyMessageMillis = 0;
+        private long maxLateMessageMillis = 0;
+        private int totalCount = 0;
+        private int earlyCount = 0;
+        private int lateCount = 0;
+
 
         public RawCountPollerThread(NycTransitDataService tds,
+                                    ConfigurationService cs,
                                     VehicleOccupancyListener listener,
                                     Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache,
                                     String url) {
             this.tds = tds;
+            this.configService = cs;
             this.listener = listener;
             this.vehicleToQueueOccupancyCache = vehicleToQueueOccupancyCache;
             this.url = url;
@@ -107,17 +117,29 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
 
         public void run() {
+            prepareForRun();
             _log.info("retrieving feed at " + url);
-            int count = 0;
+
             Map<AgencyAndId, ApcLoadData> recordMap = getFeed();
 
             // here we assume the web service feed will be the superset of data
             for (AgencyAndId vehicleId : recordMap.keySet()) {
-                count++;
+                totalCount++;
                 VehicleOccupancyRecord vor = merge(vehicleId, vehicleToQueueOccupancyCache, recordMap.get(vehicleId));
                 listener.handleVehicleOccupancyRecord(vor);
             }
-            _log.info("retrieve complete with " + count + " entries");
+
+            if (totalCount > 0) {
+                _log.info("APC run complete with "
+                        + earlyCount + " (" + (earlyCount * 100 / totalCount)
+                        + "% earlier than " + maxEarlyMessageMillis/1000 + "s)" + " early, "
+                        + lateCount + " (" + (lateCount * 100 / totalCount)
+                        + "% later than " + maxLateMessageMillis/1000 + "s)" + " late"
+                        + " of " + totalCount + " entries");
+            } else {
+                _log.info("APC run complete with nothing to do");
+            }
+
         }
 
         // package private for unit tests
@@ -141,7 +163,10 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
             } catch (IOException ioe) {
                 _log.error("failure retrieving " + url + ", " + ioe, ioe);
+            } catch (Throwable t) {
+                _log.error("unexpected exception retrieving " + url, t);
             }
+
             return results;
         }
 
@@ -151,11 +176,11 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
             VehicleOccupancyRecord queueRecord = cache.get(vehicleId);
 
             // CASE 1:  no ApcData element from webservice, return whatever matches from cache
-            if (additionalApcData == null  || !isTimely(additionalApcData.getTimestamp())) {
+            if (additionalApcData == null  || !isTimely(vehicleId, additionalApcData.getTimestamp())) {
                 return queueRecord;
             }
             // CASE 2:  no enumeration from queue, return ApcData as VehicleOccupancyRecord
-            if (queueRecord == null || !isTimely(queueRecord.getTimestamp().getTime())) {
+            if (queueRecord == null || !isTimely(vehicleId, queueRecord.getTimestamp().getTime())) {
                 return toVehicleOccupancyRecord(additionalApcData);
             }
             // CASE 3:  we have both, merge raw counts/capacity into queue record and return
@@ -168,9 +193,39 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
         }
 
-        private boolean isTimely(long time) {
-            long delta = Math.abs(System.currentTimeMillis() - time);
-            return delta < MAX_AGE_MILLIS;
+        private boolean isTimely(AgencyAndId vehicleId, long time) {
+            long delta = System.currentTimeMillis() - time;
+            long early = getMaxEarlyMessageMillis();
+            long late = getMaxLateMessageMillis();
+            if (delta < -1 * early) {
+                earlyCount++;
+                _log.debug("dropping v " + vehicleId + " as its " + (delta/60000) + " mins early");
+                return false;
+            }
+            if (late > delta) {
+                lateCount++;
+                _log.debug("dropping v" + vehicleId + " as its " + (delta/60000) + " mins late");
+                return false;
+            }
+            return true;
+        }
+
+        private void prepareForRun() {
+            // look up these values on each "run" (every 30 seconds)
+            maxEarlyMessageMillis = configService.getConfigurationValueAsInteger("tds.apcAllowableEarly", 60*1000);
+            maxLateMessageMillis = configService.getConfigurationValueAsInteger("tds.apcAllowableLate", 6*60*1000);
+            totalCount = 0;
+            earlyCount = 0;
+            lateCount = 0;
+        }
+
+
+        private long getMaxEarlyMessageMillis() {
+            return maxEarlyMessageMillis;
+        }
+
+        private long getMaxLateMessageMillis() {
+            return maxLateMessageMillis;
         }
 
         private VehicleOccupancyRecord toVehicleOccupancyRecord(ApcLoadData data) {
