@@ -7,6 +7,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 
 import java.io.ByteArrayInputStream;
@@ -35,8 +36,9 @@ public class ApcIntegrationServiceImplTest {
         Mockito.when(entity.getContent()).thenReturn(getAsStream(apcJson));
         Mockito.when(response.getEntity()).thenReturn(entity);
         Mockito.when(httpClient.execute((HttpUriRequest) any())).thenReturn(response);
+        ConfigurationService service = Mockito.mock(ConfigurationService.class);
         ApcIntegrationServiceImpl.RawCountPollerThread thread
-                = new ApcIntegrationServiceImpl.RawCountPollerThread(null, null,
+                = new ApcIntegrationServiceImpl.RawCountPollerThread(null, service,null,
                 map,
                 url) {
             @Override
