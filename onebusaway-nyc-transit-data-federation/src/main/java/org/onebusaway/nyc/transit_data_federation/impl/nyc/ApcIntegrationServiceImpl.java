@@ -202,7 +202,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
                 _log.debug("dropping v " + vehicleId + " as its " + (delta/60000) + " mins early");
                 return false;
             }
-            if (late > delta) {
+            if (delta > late) {
                 lateCount++;
                 _log.debug("dropping v" + vehicleId + " as its " + (delta/60000) + " mins late");
                 return false;
