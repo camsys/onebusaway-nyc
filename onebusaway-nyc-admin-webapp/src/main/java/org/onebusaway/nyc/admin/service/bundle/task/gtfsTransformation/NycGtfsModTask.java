@@ -128,6 +128,9 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
                 _log.info("using modUrl=" + modUrl + " for zone " + zone + " and bundle " + gtfsBundle.getPath());
                 String oldFilename = gtfsBundle.getPath().getPath();
                 String transform = null;
+                if(_requestResponse.getRequest().getPredate()){
+                    transform ="{\"op\":\"transform\", \"class\":\"org.onebusaway.gtfs_transformer.impl.PredateCalendars\"}";
+                }
                 String newFilename = runModifications(gtfsBundle, zone, modUrl, transform);
                 _log.info("Transformed " + oldFilename + " to " + newFilename + " according to url " + getModUrl(agencyId));
 

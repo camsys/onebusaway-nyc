@@ -791,12 +791,13 @@ function onBuildClick() {
 	var bundleName = jQuery("#buildBundle_bundleName").val();
 	var startDate = jQuery("#startDate").val();
 	var endDate = jQuery("#endDate").val();
+	var predate = jQuery("#buildBundle_predateCheckbox")[0].checked;
 
 	var valid = validateBundleBuildFields(bundleDir, bundleName, startDate, endDate);
 	if(valid == false) {
 		return;
 	}
-	buildBundle(bundleName, startDate, endDate);
+	buildBundle(bundleName, startDate, endDate, predate);
 }
 
 function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
@@ -861,12 +862,17 @@ function bundleUrl() {
 		window.setTimeout(bundleUrl, 5000);
 	}
 }
+
 function buildBundle(bundleName, startDate, endDate){
+	buildBundle(bundleName, startDate, endDate,false)
+}
+
+function buildBundle(bundleName, startDate, endDate, predate){
 	var bundleDirectory = jQuery("#buildBundle_bundleDirectory").text();
 	var email = jQuery("#buildBundle_email").val();
 	if (email == "") { email = "null"; }
 	jQuery.ajax({
-		url: "../../api/build/" + bundleDirectory + "/" + bundleName + "/" + email + "/" + startDate + "/" + endDate + "/create?ts=" +new Date().getTime(),
+		url: "../../api/build/" + bundleDirectory + "/" + bundleName + "/" + email + "/" + startDate + "/" + endDate + "/" + predate + "/create?ts=" +new Date().getTime(),
 		type: "GET",
 		async: false,
 		success: function(response) {

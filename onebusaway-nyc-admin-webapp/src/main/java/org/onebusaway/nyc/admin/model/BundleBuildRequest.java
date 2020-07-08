@@ -31,6 +31,7 @@ public class BundleBuildRequest {
 	private String _emailAddress;
 	private String _bundleStartDate;
 	private String _bundleEndDate;
+	private boolean _predate = false;
 
 	public String getBundleDirectory() {
 		return _bundleDirectory;
@@ -47,6 +48,10 @@ public class BundleBuildRequest {
 	public void setTmpDirectory(String tmpDirectory) {
 		_tmpDirectory = tmpDirectory;
 	}
+
+	public boolean getPredate(){return _predate;}
+
+	public void setPredate(boolean predate){_predate = predate;}
 
 	// TODO this should come from config service
 	public List<String> getNotInServiceDSCList() {

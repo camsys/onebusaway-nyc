@@ -61,6 +61,9 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
 
   public String direction;
 
+  public String serviceId;
+  public ArrayList<Trip> serviceIdBasedGtfsTrips = new ArrayList<>();
+
 
   public StifTrip(String runId, String reliefRunId, String nextRun,
       StifTripType type, String dsc, char busType, String direction) {
@@ -110,6 +113,13 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
       return Collections.emptyList();
     }
     return gtfsTrips;
+  }
+
+  public List<Trip> getServiceIdBasedGtfsTrips() {
+    if (serviceIdBasedGtfsTrips == null) {
+      return Collections.emptyList();
+    }
+    return serviceIdBasedGtfsTrips;
   }
 
   public String getDsc() {

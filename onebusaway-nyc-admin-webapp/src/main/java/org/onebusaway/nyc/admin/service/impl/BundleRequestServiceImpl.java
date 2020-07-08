@@ -375,7 +375,9 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
             + _request.getEmailAddress() + "/" 
             + _request.getId() + "/" 
             + _request.getBundleStartDate() + "/" 
-            + _request.getBundleEndDate() + "/create";
+            + _request.getBundleEndDate() + "/"
+            + _request.getPredate() +
+                "/create";
         _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
 
           if (_response != null && _response.getId() != null) {

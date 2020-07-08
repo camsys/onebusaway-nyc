@@ -63,6 +63,12 @@
 							<input type="text" id="endDatePicker"/>
 							<input type="hidden" id="endDate" />
 						</div>
+						<div>
+							<label>
+								Predate?
+								<input type="checkbox" id="buildBundle_predateCheckbox"/>
+							</label>
+						</div>
 						<input type="button" id="buildBundle_buildButton" value="Build Bundle" />
 					</div>
 					<div id="building">

@@ -78,7 +78,7 @@ public class StifAggregatorImpl {
   }
 
   public void computeBlocksFromRuns() {
-    useServiceId = _stifLoader.getIsModernTripSyntax();
+    useServiceId = !(!_stifLoader.getIsModernTripSyntax() | !useServiceId);
     int blockNo = 0;
 
     Map<ServiceCode, List<StifTrip>> rawDataByServiceCode = _stifLoader.getRawStifDataByServiceCode();
@@ -142,18 +142,21 @@ public class StifAggregatorImpl {
           }
 
           lastTrip = trip;
-          matchGTFSToSTIF(lastTrip, trip, pullout, blockIds);
+          matchGTFSToSTIF(lastTrip, trip, pullout, blockIds,!useServiceId);
         }
         unmatchedTrips.remove(lastTrip);
-        dumpBlocksOut(blockIds, lastTrip, pullout);
+        if(!useServiceId) {
+          dumpBlocksOut(blockIds, lastTrip, pullout);
+        }
       }
       if(!useServiceId) {
-        logUnmatchedTrip(blockNo, entry.getKey().toString());
+        logUnmatchedTrip(blockNo, entry.getKey().toString(),!useServiceId);
       }
     }
     if(useServiceId){
       blockNo = 0;
       usedGtfsTrips.clear();
+      unmatchedTrips.clear();
       tripInfo.clear();
 
       Map<String, List<StifTrip>> rawDataByServiceId = _stifLoader.getRawStifDataByServiceId();
@@ -217,12 +220,13 @@ public class StifAggregatorImpl {
             }
 
             lastTrip = trip;
-            matchGTFSToSTIF(lastTrip, trip, pullout, blockIds);
+            matchGTFSToSTIFUsingServiceId(lastTrip, trip, pullout, blockIds,useServiceId,entry.getKey());
           }
           unmatchedTrips.remove(lastTrip);
           dumpBlocksOut(blockIds, lastTrip, pullout);
         }
-        logUnmatchedTrip(blockNo, entry.getKey().toString());
+
+        logUnmatchedTrip(blockNo, entry.getKey().toString(),useServiceId);
       }
     }
     determineIfRoutesAreInStif();
@@ -323,7 +327,7 @@ public class StifAggregatorImpl {
     return true;
   }
 
-  public void matchGTFSToSTIF(StifTrip lastTrip, StifTrip trip, StifTrip pullout, HashSet<Pair<String, String>> blockIds){
+  public void matchGTFSToSTIF(StifTrip lastTrip, StifTrip trip, StifTrip pullout, HashSet<Pair<String, String>> blockIds, boolean setGtfsBlockId){
     for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
       RawRunData rawRunData = _stifLoader.getRawRunDataByTrip().get(gtfsTrip);
 
@@ -341,13 +345,17 @@ public class StifAggregatorImpl {
 
       blockId = blockId.intern();
       blockIds.add(new ImmutablePair<>(blockId, gtfsTrip.getServiceId().getId()));
-      gtfsTrip.setBlockId(blockId);
+      if(setGtfsBlockId) {
+        gtfsTrip.setBlockId(blockId);
+      }
       _stifLoader.getGtfsMutableRelationalDao().updateEntity(gtfsTrip);
 
       AgencyAndId routeId = gtfsTrip.getRoute().getId();
       addToMapSet(routeIdsByDsc, trip.getDsc(), routeId);
-      _AbnormalStifDataLogger.dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
-          gtfsTrip.getId().getId(), blockId, routeId.getId());
+      if(setGtfsBlockId) {
+        _AbnormalStifDataLogger.dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
+                gtfsTrip.getId().getId(), blockId, routeId.getId());
+      }
 
       usedGtfsTrips.add(gtfsTrip);
       addToSupplimentalTripInfo(gtfsTrip, trip);
@@ -355,8 +363,68 @@ public class StifAggregatorImpl {
     if (lastTrip.type == StifTripType.DEADHEAD) {
       for (Pair<String, String> blockId : blockIds) {
         String tripId = String.format("deadhead_%s_%s_%s_%s_%s", blockId.getRight(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.lastStop, lastTrip.runId);
-        _AbnormalStifDataLogger.dumpBlockDataForTrip(lastTrip, blockId.getRight(), tripId, blockId.getLeft(), "no gtfs trip");
+        if(setGtfsBlockId) {
+          _AbnormalStifDataLogger.dumpBlockDataForTrip(lastTrip, blockId.getRight(), tripId, blockId.getLeft(), "no gtfs trip");
+        }
       }
+    }
+  }
+
+  public void matchGTFSToSTIFUsingServiceId(StifTrip lastTrip, StifTrip trip, StifTrip pullout, HashSet<Pair<String, String>> blockIds, boolean setGtfsBlockId, String serviceId){
+    int i = 0;
+    for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
+      if(!gtfsTrip.getServiceId().getId().replace("-BM","").equals(serviceId)){
+        continue;
+      }
+      if(usedGtfsTrips.contains(gtfsTrip)){
+        _log.info("reusing " + gtfsTrip + "which was matched with " + trip + " as part of block from " + pullout);
+        _AbnormalStifDataLogger.log("gtfs_trips_matched_with_multiple_stif_trips.csv", gtfsTrip.getId(),trip.id, trip.path,
+                trip.lineNumber );
+      }
+      i++;
+      RawRunData rawRunData = _stifLoader.getRawRunDataByTrip().get(gtfsTrip);
+
+
+      String blockId;
+      if (trip.agencyId.equals("MTA NYCT")) {
+        blockId = gtfsTrip.getServiceId().getId() + "_" +
+                trip.serviceCode.getLetterCode() + "_" +
+                rawRunData.getDepotCode() + "_" +
+                pullout.firstStopTime + "_" +
+                pullout.runId;
+      } else {
+        blockId = gtfsTrip.getServiceId().getId() + "_" + trip.blockId;
+      }
+
+      blockId = blockId.intern();
+      blockIds.add(new ImmutablePair<>(blockId, gtfsTrip.getServiceId().getId()));
+      if(setGtfsBlockId) {
+        gtfsTrip.setBlockId(blockId);
+      }
+      _stifLoader.getGtfsMutableRelationalDao().updateEntity(gtfsTrip);
+
+      AgencyAndId routeId = gtfsTrip.getRoute().getId();
+      addToMapSet(routeIdsByDsc, trip.getDsc(), routeId);
+      if(setGtfsBlockId) {
+        _AbnormalStifDataLogger.dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
+                gtfsTrip.getId().getId(), blockId, routeId.getId());
+      }
+
+      usedGtfsTrips.add(gtfsTrip);
+      addToSupplimentalTripInfo(gtfsTrip, trip);
+    }
+    if (lastTrip.type == StifTripType.DEADHEAD) {
+      for (Pair<String, String> blockId : blockIds) {
+        String tripId = String.format("deadhead_%s_%s_%s_%s_%s", blockId.getRight(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.lastStop, lastTrip.runId);
+        if(setGtfsBlockId) {
+          _AbnormalStifDataLogger.dumpBlockDataForTrip(lastTrip, blockId.getRight(), tripId, blockId.getLeft(), "no gtfs trip");
+        }
+      }
+    }
+    if(i==0 & trip.getGtfsTrips().size()!=0){
+      _log.info("Gtfs and stif trips were incorrectly matched");
+      _AbnormalStifDataLogger.log("incorrect_gtfs_stif_mismatches_by_Service_Id.csv", trip.id, trip.path,
+              trip.lineNumber,trip.getGtfsTrips());
     }
   }
 
@@ -375,7 +443,7 @@ public class StifAggregatorImpl {
     }
   }
 
-  private void logUnmatchedTrip(int blockNo, String entryKey){
+  private void logUnmatchedTrip(int blockNo, String entryKey, boolean setGtfsBlockId){
     for (StifTrip trip : unmatchedTrips) {
       _log.warn("STIF trip: " + trip + " on schedule " + entryKey
       + " trip type " + trip.type
@@ -391,11 +459,13 @@ public class StifAggregatorImpl {
         }
         _log.warn("Generating single-trip block id for GTFS trip: "
             + gtfsTrip.getId() + " : " + blockId);
-        gtfsTrip.setBlockId(blockId);
-        _AbnormalStifDataLogger.dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
-            gtfsTrip.getId().getId(), blockId, gtfsTrip.getRoute().getId().getId());
-        _AbnormalStifDataLogger.log("stif_trips_without_pullout.csv", trip.id, trip.path,
-            trip.lineNumber, gtfsTrip.getId(), blockId);
+        if(setGtfsBlockId) {
+          gtfsTrip.setBlockId(blockId);
+          _AbnormalStifDataLogger.dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
+                  gtfsTrip.getId().getId(), blockId, gtfsTrip.getRoute().getId().getId());
+          _AbnormalStifDataLogger.log("stif_trips_without_pullout.csv", trip.id, trip.path,
+                  trip.lineNumber, gtfsTrip.getId(), blockId);
+        }
         usedGtfsTrips.add(gtfsTrip);
       }
     }

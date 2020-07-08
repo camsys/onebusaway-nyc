@@ -19,10 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -296,6 +293,9 @@ public class StifTripLoader {
           stifTrip.path = path;
           stifTrip.lineNumber = tripLineNumber;
           stifTrip.blockId = tripRecord.getBlockNumber();
+//          if(testForModernTripSyntax(tripRecord)) {
+//            stifTrip.serviceId = generateServiceId(tripRecord);
+//          }
 
           rawDataByServiceCode.get(serviceCode).add(stifTrip);
 
@@ -325,9 +325,8 @@ public class StifTripLoader {
                 stifTrip.path, stifTrip.lineNumber, oldTrip.id, oldTrip.path,
                 oldTrip.lineNumber);
           }
-
           List<Trip> trips = support.getTripsForIdentifier(tripIdentifier);
-
+          List<Trip> tmp =support.getTripsForIdentifier(new TripIdentifier("Q112",98500,101900,"550137","Q112-204",null));
           _tripsCount++;
 
           if (trips == null || trips.isEmpty()) {
@@ -361,7 +360,7 @@ public class StifTripLoader {
               addGtfsTrip(path, tripLineNumber, tripRecord, runId, reliefRunId, nextOperatorRunId,
                   stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
               String serviceId = gtfsTrip.getServiceId().getId();
-              handleServiceIdActions(stifTrip,serviceId);
+              handleServiceIdActions(stifTrip,tripRecord);
               continue;
             }
 
@@ -407,7 +406,7 @@ public class StifTripLoader {
             if (gtfsTrip != null) {
               addGtfsTrip(path, tripLineNumber, tripRecord, runId, reliefRunId, nextOperatorRunId,
                   stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
-              handleServiceIdActions(stifTrip,serviceId);
+              handleServiceIdActions(stifTrip,tripRecord);
             }
           }
           if (filtered.size() == 0) {
@@ -497,6 +496,9 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
 	stifTrip.path = path;
 	stifTrip.lineNumber = tripLineNumber;
 	stifTrip.blockId = tripRecord.getBlockNumber();
+//    if(testForModernTripSyntax(tripRecord)) {
+//      stifTrip.serviceId = generateServiceId(tripRecord);
+//    }
 	return stifTrip;
 }
 
@@ -564,7 +566,7 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
 
   private Pattern standardServiceIdPattern = Pattern.compile("-[0-9]");
 
-  private String generateServiceId(TripRecord tripRecord, StifTrip stifTrip){
+  private String generateServiceId(TripRecord tripRecord){
     String serviceId = "";
     String gtfsTripId = tripRecord.getGtfsTripId();
     if (isBusCo){
@@ -591,13 +593,21 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
 
   private void handleServiceIdActions(StifTrip stifTrip, TripRecord tripRecord){
     if(testForModernTripSyntax(tripRecord)) {
-      String serviceId = generateServiceId(tripRecord, stifTrip);
+      String serviceId = generateServiceId(tripRecord);
       addServiceIdToRawDataByServiceId(stifTrip,serviceId);
-    }
-  }
-  private void handleServiceIdActions(StifTrip stifTrip, String serviceId){
-    if(testForModernTripSyntax(stifTrip)) {
-      addServiceIdToRawDataByServiceId(stifTrip,serviceId);
+      if(stifTrip.getGtfsTrips().size()!=0){
+        for(Trip gtfsTrip : stifTrip.getGtfsTrips()){
+          if(gtfsTrip.getServiceId().getId().equals(serviceId)
+          & !stifTrip.getGtfsTrips().contains(gtfsTrip)){
+            stifTrip.serviceIdBasedGtfsTrips.add(gtfsTrip);
+          }
+        }
+//        if(stifTrip.getServiceIdBasedGtfsTrips().size() == 0){
+//          _log.info("Exiting Modern trip syntax mode because stif trip" + tripRecord
+//                  + " does not match both trip identifiers and Service Id with gtfs trips");
+//          isModernTripSyntax = false;
+//        }
+      }
     }
   }
 
@@ -611,8 +621,8 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
     return isModernTripSyntax;
   }
 
-  private String mtabcTripIdFormat = "\\d+-[A-Z]+\\d-[A-Z]+_[A-Z]\\d-(\\w+-)+\\d+(-\\w+)+";
-  private String nyctTripIdFormat = "[A-Z]{2}_[A-Z]\\d-([A-z]+-)\\d+_[A-Z]+_\\d+";
+  private String mtabcTripIdFormat = "\\d+-[A-Z]+\\d*-[A-Z]+_[A-Z]\\d-(\\w+-)+\\d+(-\\w+)*";
+  private String nyctTripIdFormat = "[A-Z]+\\d*_[A-Z]\\d-([A-z]+-)+\\d+_[A-Z]+\\d*[A-Z]*_[A-Z]*\\d+";
 
   private boolean testForModernTripSyntax(String gtfsTripId){
     if(isModernTripSyntax) {
