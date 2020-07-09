@@ -59,6 +59,15 @@
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-util</artifactId>
 			<version>2.26.2.7-j11-SNAPSHOT</version>
+			<!-- Prevents the following error, with JDK 11+ -->
+			<!-- Due to conflicts between javax.annotation-api and jsr250-api :' -->
+			<!-- NoSuchMethodError: 'java.lang.String javax.annotation.Resource.lookup()' -->
+			<exclusions>
+				<exclusion>
+					<groupId>javax.annotation</groupId>
+					<artifactId>jsr250-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		
 		<!-- Wiki Integration Support -->
