@@ -595,11 +595,6 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
             stifTrip.serviceIdBasedGtfsTrips.add(gtfsTrip);
           }
         }
-//        if(stifTrip.getServiceIdBasedGtfsTrips().size() == 0){
-//          _log.info("Exiting Modern trip syntax mode because stif trip" + tripRecord
-//                  + " does not match both trip identifiers and Service Id with gtfs trips");
-//          isModernTripSyntax = false;
-//        }
       }
     }
   }
@@ -623,8 +618,6 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
 
   private boolean testForModernTripSyntax(String gtfsTripId){
     if(isModernTripSyntax) {
-      boolean a = gtfsTripId.matches(mtabcTripIdFormat);
-      boolean b = gtfsTripId.matches(nyctTripIdFormat);
       if (!gtfsTripId.matches(mtabcTripIdFormat) & !gtfsTripId.matches(nyctTripIdFormat)) {
         isModernTripSyntax = false;
       }
