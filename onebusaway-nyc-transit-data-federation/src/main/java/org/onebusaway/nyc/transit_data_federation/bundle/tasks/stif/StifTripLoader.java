@@ -293,9 +293,6 @@ public class StifTripLoader {
           stifTrip.path = path;
           stifTrip.lineNumber = tripLineNumber;
           stifTrip.blockId = tripRecord.getBlockNumber();
-//          if(testForModernTripSyntax(tripRecord)) {
-//            stifTrip.serviceId = generateServiceId(tripRecord);
-//          }
 
           rawDataByServiceCode.get(serviceCode).add(stifTrip);
 
@@ -326,7 +323,6 @@ public class StifTripLoader {
                 oldTrip.lineNumber);
           }
           List<Trip> trips = support.getTripsForIdentifier(tripIdentifier);
-          List<Trip> tmp =support.getTripsForIdentifier(new TripIdentifier("Q112",98500,101900,"550137","Q112-204",null));
           _tripsCount++;
 
           if (trips == null || trips.isEmpty()) {
@@ -496,9 +492,6 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
 	stifTrip.path = path;
 	stifTrip.lineNumber = tripLineNumber;
 	stifTrip.blockId = tripRecord.getBlockNumber();
-//    if(testForModernTripSyntax(tripRecord)) {
-//      stifTrip.serviceId = generateServiceId(tripRecord);
-//    }
 	return stifTrip;
 }
 
@@ -612,6 +605,10 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
   }
 
   private boolean testForModernTripSyntax(TripRecord tripRecord) {
+    if(tripRecord.getGtfsTripId() == null){
+      isModernTripSyntax = false;
+      return isModernTripSyntax;
+    }
     return testForModernTripSyntax(tripRecord.getGtfsTripId());
   }
   private boolean testForModernTripSyntax(StifTrip stifTrip){
