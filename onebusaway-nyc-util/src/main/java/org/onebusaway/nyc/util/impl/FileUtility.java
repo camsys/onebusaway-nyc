@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -360,6 +362,37 @@ public class FileUtility {
     return count;
   }
 
+  public boolean printFromUrl(String url, String destination){
+    return printFromUrl(url,null,destination);
+  }
 
+  public boolean printFromUrl(String url, String additionalText, String destination){
+    try{
+      URL inputAddress = new URL(url);
+      InputStream in = inputAddress.openStream();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+      File targetAdress = new File(destination);
+      OutputStream out = new FileOutputStream(targetAdress);
+      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
+
+      String line = null;
+
+      while ((line = reader.readLine()) != null) {
+        writer.write(line);
+      }
+      if(additionalText!=null){
+        writer.newLine();
+        writer.write(additionalText);
+      }
+      writer.close();
+      return true;
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return false;
+  }
   
 }

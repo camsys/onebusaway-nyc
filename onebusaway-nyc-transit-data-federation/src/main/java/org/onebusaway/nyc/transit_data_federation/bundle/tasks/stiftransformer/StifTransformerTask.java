@@ -18,6 +18,7 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stiftransformer;
 
 
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
+import org.onebusaway.nyc.util.impl.FileUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
@@ -31,6 +32,8 @@ public class StifTransformerTask implements Runnable {
     private String stifOutputPath;
 
     private String stifTransform;
+
+    private String transformationsOutputFolder;
 
     @Autowired
     public void setStifsPath(String stifsPath) {
@@ -48,6 +51,9 @@ public class StifTransformerTask implements Runnable {
     }
 
     @Autowired
+    public void setTransformationsOutputFolder(String transformationsOutputFolder){this.transformationsOutputFolder = transformationsOutputFolder;}
+
+    @Autowired
     public void setLogger(MultiCSVLogger logger) {
         this.logger = logger;
     }
@@ -55,6 +61,8 @@ public class StifTransformerTask implements Runnable {
     @Override
     public void run() {
         StifTransformerTaskSupport.transformStifFiles(stifsPath,stifTransform,stifOutputPath);
+        FileUtility fu = new FileUtility();
+        fu.printFromUrl(stifTransform,transformationsOutputFolder+"/"+"Stif");
     }
 
 }

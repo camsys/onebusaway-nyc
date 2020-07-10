@@ -85,6 +85,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     private String DEFAULT_LOCATION_OF_RAW_ROUTE_MAPPING = "ListOfRoutesInGtfs.txt";
     private String DEFAULT_LOCATION_OF_ROUTE_MAPPING = "routesByZone.txt";
     private boolean DEFAULT_WRITE_ROUTE_MAPPING = true;
+    private String transformationsOutputFolder;
 
 
 
@@ -92,6 +93,9 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     public void setRequestResponse(BundleRequestResponse requestResponse) {
         _requestResponse = requestResponse;
     }
+
+    @Autowired
+    public void setTransformationsOutputFolder(String transformationsOutputFolder){this.transformationsOutputFolder = transformationsOutputFolder;}
 
     @Override
     public void run() {
@@ -141,6 +145,9 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
                 if(super.getWriteZoneRouteMapping()){
                     mergeZoneMapping(zone,outputDestination.getParentFile());
                 }
+
+                FileUtility fu = new FileUtility();
+                fu.printFromUrl(modUrl,transform,transformationsOutputFolder+"/"+"Gtfs_"+zone+".json");
             }
     }catch (Exception ex) {
         _log.error("error modifying gtfs:", ex);

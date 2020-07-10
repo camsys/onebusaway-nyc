@@ -314,6 +314,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       File mergedGtfsPath = new File(response.getBundleOutputDirectory() + File.separator + "Merged_Gtfs" + ".zip");
 
+      File transformationsOutputPath = new File(response.getBundleOutputDirectory() + File.separator + "Transformations");
+      transformationsOutputPath.mkdir();
+
       File stifOutputPath = new File(response.getBundleOutputDirectory() + File.separator + "STIF");
       stifOutputPath.mkdir();
 
@@ -376,6 +379,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       nycGtfsModTask.addPropertyReference("logger", "multiCSVLogger");
       //nycGtfsModTask.addPropertyReference("applicationContext", "??????????????????????????????");
       nycGtfsModTask.addPropertyValue("configurationService", configurationService);
+      nycGtfsModTask.addPropertyValue("transformationsOutputFolder", transformationsOutputPath.getAbsolutePath());
+
 
       beans.put("NycGtfsModTask", nycGtfsModTask.getBeanDefinition());
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
@@ -415,8 +420,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       stifTransformerTask.addPropertyValue("stifsPath", request.getTmpDirectory() + File.separator + "stif");
       stifTransformerTask.addPropertyValue("stifTransform", "https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/stif_transformations.md");
       stifTransformerTask.addPropertyValue("stifOutputPath", stifOutputPath.getAbsolutePath());
-
-      File stifFolderInputPath = new File(request.getTmpDirectory() + File.separator + "stif");
+      stifTransformerTask.addPropertyValue("transformationsOutputFolder", transformationsOutputPath.getAbsolutePath());
 
       beans.put("stifTransformerTask", stifTransformerTask.getBeanDefinition());
 
