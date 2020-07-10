@@ -317,7 +317,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       File stifOutputPath = new File(response.getBundleOutputDirectory() + File.separator + "STIF");
       stifOutputPath.mkdir();
 
-      String transformationToAddFeedInfo = "{\"op\":\"transform\", \"class\":\"org.onebusaway.gtfs_transformer.impl.FeedInfoFromAgencyStrategy\", \"agency_id\":\"MTA\"}}";
+      String transformationToAddFeedInfo = "{\"op\":\"transform\", \"class\":\"org.onebusaway.gtfs_transformer.impl.FeedInfoFromAgencyStrategy\", \"agency_id\":\"MTA\", \"feed_version\":\""+ request.getBundleName()+"\"}}";
 
       // beans assume bundlePath is set -- this will be where files are written!
       System.setProperty("bundlePath", outputPath.getAbsolutePath());
