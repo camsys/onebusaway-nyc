@@ -472,6 +472,9 @@ jQuery(function() {
 	jQuery("#prevalidateInputs #prevalidate_progress #expand").bind({
 		'click' : toggleValidationResultList});
 
+	jQuery("#prevalidateInputs #prevalidate_warnings #expand").bind({
+		'click' : toggleValidationWarningList});
+
 	//toggle bundle build progress list
 	jQuery("#buildBundle #buildBundle_progress #expand").bind({
 		'click' : toggleBuildBundleResultList});
@@ -604,6 +607,13 @@ function toggleValidationResultList() {
 	changeImageSrc($image);
 	//Toggle progress result list
 	jQuery("#prevalidateInputs #prevalidate_resultList").toggle();
+}
+
+function toggleValidationWarningList() {
+	var $image = jQuery("#prevalidateInputs #prevalidate_warnings #expand");
+	changeImageSrc($image);
+	//Toggle progress result list
+	jQuery("#prevalidate_resultWarnings").toggle();
 }
 
 function toggleBuildBundleResultList() {
@@ -784,6 +794,19 @@ function updateValidateList(id) {
 			}, 10000);
 		}
 	});
+	updateValidateWarningResults()
+}
+
+function updateValidateWarningResults(id) {
+	var id = jQuery("#prevalidate_id").text();
+	jQuery.ajax({
+		url: "../../api/validate/" + id + "/getValidationResults?ts=" +new Date().getTime(),
+		type: "GET",
+		async: false,
+		success: function(response) {
+			console.log(response);
+			$("#prevalidate_resultWarnings").html(response);
+		}});
 }
 
 function onBuildClick() {

@@ -387,9 +387,13 @@
 	margin-right: 10px;
 }
 
-#prevalidateInputs #prevalidate_resultList {
+#prevalidateInputs #prevalidate_resultList #prevalidate_resultWarnings{
 	display: none;
 	padding-top : 10px;
+}
+
+#prevalidate_resultWarnings{
+	display: none;
 }
 
 #prevalidateInputs #prevalidate_fileList {

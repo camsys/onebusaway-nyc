@@ -59,6 +59,18 @@
 			<div id="prevalidate_exception">
 				<!--  space -->
 			</div>
+			<div id="prevalidate_warnings">
+				<s:url var="url" value="/css/img/arrow-right-3.png" />
+				<img src="${url}" alt="Not found" id="expand" /> <label
+					class="adminLabel">Errors and Warnings Found</label>
+			</div>
+			<div id="prevalidate_resultWarnings">
+				<!--  space -->
+				<ul>
+					<li>Demo Text</li>
+					<li>More Demo text</li>
+				</ul>
+			</div>
 			<div id="prevalidate_fileList">
 				<!--  space -->
 			</div>
