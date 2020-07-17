@@ -61,6 +61,8 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 
 	// the stif directory relative to the bundle directory; e.g. stif_latest
 	private String _stifPath;
+	// the transformation directory relative to the bundle directory; e.g. transformations_latest
+	private String _transformationPath;
 	// the config directory, relative to the bundle directory; e.g., config
 	private String _configPath;
 	private String _buildPath;
@@ -105,6 +107,16 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 	@Override
 	public String getStifPath() {
 		return _stifPath;
+	}
+
+	@Override
+	public void setTransformationPath(String transformationPath) {
+		this._transformationPath = transformationPath;
+	}
+
+	@Override
+	public String getTransformationPath() {
+		return _transformationPath;
 	}
 
 	@Override
@@ -212,6 +224,9 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 			result = _s3.putObject(request);
 			request = new PutObjectRequest(_bucketName, filename + "/" +
 					this.getStifPath() + "/README.txt", tmpFile);
+			result = _s3.putObject(request);
+			request = new PutObjectRequest(_bucketName, filename + "/" +
+					this.getTransformationPath() + "/README.txt", tmpFile);
 			result = _s3.putObject(request);
 			request = new PutObjectRequest(_bucketName, filename + "/" +
 					this.getBuildPath() + "/README.txt", tmpFile);

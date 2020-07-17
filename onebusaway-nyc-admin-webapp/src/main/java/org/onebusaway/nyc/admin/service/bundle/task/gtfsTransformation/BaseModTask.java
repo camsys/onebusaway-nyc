@@ -101,7 +101,7 @@ public class BaseModTask {
     }
 
     protected String runModifications(GtfsBundle gtfsBundle, String agencyId,
-                                      String modUrl, String transform) throws Exception {
+                                      String modPath, String transform) throws Exception {
         if (skipMod(agencyId)) {
             _log.info("runModifications skipping agencyId " + agencyId + " as multiAgency set to false");
             return gtfsBundle.getPath().getPath();
@@ -128,10 +128,10 @@ public class BaseModTask {
         List<File> paths = new ArrayList<File>();
         paths.add(gtfsBundle.getPath());
         _log.info("transformer path=" + gtfsBundle.getPath() + "; output="
-                + outputDirectory + " for modUrl=" + modUrl);
+                + outputDirectory + " for modPath=" + modPath);
         mod.setGtfsInputDirectories(paths);
         mod.setOutputDirectory(new File(outputDirectory));
-        GtfsTransformerLibrary.configureTransformation(mod, modUrl);
+        GtfsTransformerLibrary.configureTransformation(mod, modPath);
         String path = gtfsBundle.getPath().getPath();
         if (transform != null) {
             _log.info("using transform=" + transform);

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stiftransformer;
+package org.onebusaway.nyc.admin.service.bundle.task.stifTransformer;
 
-import org.onebusaway.nyc.util.impl.FileUtility;
 import org.onebusaway.onebusaway_stif_transformer_impl.StifTransformerSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

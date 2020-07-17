@@ -33,7 +33,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTrans
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.*;
 import org.onebusaway.nyc.admin.service.bundle.task.save.SaveGtfsTask;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stiftransformer.StifTransformerTask;
+import org.onebusaway.nyc.admin.service.bundle.task.stifTransformer.StifTransformerTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
@@ -137,6 +137,15 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       response.addStifZipFile(_fileService.get(file, tmpDirectory));
     }
 
+    String transformationsPath = bundleDir + "/" + _fileService.getTransformationPath();
+    // download transformations
+    List<String> transformation = _fileService.list(
+            bundleDir + "/" + _fileService.getTransformationPath(), -1);
+    for (String file : transformation) {
+      response.addStatusMessage("downloading transformation " + file);
+      response.addTransformationFile(_fileService.get(file, tmpDirectory));
+    }
+
     // download optional configuration files
     List<String> config = _fileService.list(
             bundleDir + "/" + _fileService.getConfigPath(), -1);
@@ -175,6 +184,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     File inputsStifDir = new File (inputsStifPath);
     inputsStifDir.mkdirs();
 
+    String inputsTransformationPath = inputsPath + File.separator + "transformations";
+    File inputsTransformationDir = new File (inputsTransformationPath);
+    inputsTransformationDir.mkdirs();
+
     String outputsPath = request.getTmpDirectory() + File.separator + request.getBundleName()
             + File.separator + OUTPUT_DIR;
     response.setBundleOutputDirectory(outputsPath);
@@ -212,6 +225,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     }
 
     _log.info("stif unzip complete ");
+
+    for (String transformation : response.getTransformationList()) {
+      String outputFilename = inputsTransformationPath + File.separator + fs.parseFileName(transformation);
+      fs.copyFiles(new File(transformation), new File(outputFilename));
+    }
 
     // stage baseLocations
     InputStream baseLocationsStream = this.getClass().getResourceAsStream("/BaseLocations.txt");
@@ -418,7 +436,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       BeanDefinitionBuilder stifTransformerTask = BeanDefinitionBuilder.genericBeanDefinition(StifTransformerTask.class);
       stifTransformerTask.addPropertyReference("logger", "multiCSVLogger");
       stifTransformerTask.addPropertyValue("stifsPath", request.getTmpDirectory() + File.separator + "stif");
-      stifTransformerTask.addPropertyValue("stifTransform", "https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/stif_transformations.md");
+      stifTransformerTask.addPropertyValue("response", response);
       stifTransformerTask.addPropertyValue("stifOutputPath", stifOutputPath.getAbsolutePath());
       stifTransformerTask.addPropertyValue("transformationsOutputFolder", transformationsOutputPath.getAbsolutePath());
 

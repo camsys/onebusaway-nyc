@@ -29,6 +29,8 @@ public interface FileService {
   String getGtfsPath();
   void setStifPath(String stifPath);
   String getStifPath();
+  void setTransformationPath(String transformationPath);
+  String getTransformationPath();
   void setBuildPath(String buildPath);
   String getConfigPath();
   void setConfigPath(String configPath);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stiftransformer;
+package org.onebusaway.nyc.admin.service.bundle.task.stifTransformer;
 
 public class StifTransformationWrapper {
 

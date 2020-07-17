@@ -24,6 +24,7 @@ import java.util.List;
 public class BundleBuildResponse {
 	private List<String> _gtfsList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _stifZipList = Collections.synchronizedList(new ArrayList<String>());
+	private List<String> _transformationList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _configList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _statusList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _outputFileList = Collections.synchronizedList(new ArrayList<String>());
@@ -93,6 +94,18 @@ public class BundleBuildResponse {
 	// for JSON serializaton only
 	public void setStifZipList(List<String> stifZipList) {
 		_stifZipList = stifZipList;
+	}
+	public void addTransformationFile(String file) {
+		_transformationList.add(file);
+	}
+
+	public List<String> getTransformationList() {
+		return new ArrayList<String>(_transformationList);
+	}
+
+	// for JSON serializaton only
+	public void setTransformationList(List<String> transformationList) {
+		_transformationList = transformationList;
 	}
 
 	public List<String> getConfigList() {

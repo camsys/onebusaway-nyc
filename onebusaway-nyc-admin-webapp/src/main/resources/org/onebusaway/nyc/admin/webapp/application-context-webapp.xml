@@ -111,6 +111,7 @@
    		<property name="bucketName" value="obanyc-bundle-data-test"/>
    		<property name="gtfsPath" value="gtfs_latest" />
    		<property name="stifPath" value="stif_latest" />
+        <property name="transformationPath" value="transformations_latest" />
       <property name="configPath" value="config" />
    		<property name="buildPath" value="builds" />
    </bean>

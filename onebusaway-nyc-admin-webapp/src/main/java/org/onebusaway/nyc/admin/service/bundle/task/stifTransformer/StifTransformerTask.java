@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stiftransformer;
+package org.onebusaway.nyc.admin.service.bundle.task.stifTransformer;
 
 
+import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.util.impl.FileUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.File;
-
 public class StifTransformerTask implements Runnable {
+    private static Logger _log = LoggerFactory.getLogger(StifTransformerTask.class);
 
     private MultiCSVLogger logger;
 
@@ -31,7 +33,7 @@ public class StifTransformerTask implements Runnable {
 
     private String stifOutputPath;
 
-    private String stifTransform;
+    private BundleBuildResponse response;
 
     private String transformationsOutputFolder;
 
@@ -41,8 +43,8 @@ public class StifTransformerTask implements Runnable {
     }
 
     @Autowired
-    public void setStifTransform(String stifTransform) {
-        this.stifTransform = stifTransform;
+    public void setResponse(BundleBuildResponse response) {
+        this.response = response;
     }
 
     @Autowired
@@ -60,9 +62,21 @@ public class StifTransformerTask implements Runnable {
 
     @Override
     public void run() {
-        StifTransformerTaskSupport.transformStifFiles(stifsPath,stifTransform,stifOutputPath);
-        FileUtility fu = new FileUtility();
-        fu.printFromUrl(stifTransform,transformationsOutputFolder+"/"+"Stif");
+
+        String stifTransformation = null;
+        for (String transformationPath : response.getTransformationList()){
+            if (transformationPath.toLowerCase().contains("stif")){
+                stifTransformation = transformationPath;
+            }
+        }
+        if (stifTransformation == null){
+            _log.error("No Stif Transformation Found");
+            response.addStatusMessage("No Stif Transformation Found");
+            return;
+        }
+
+
+        StifTransformerTaskSupport.transformStifFiles(stifsPath,stifTransformation,stifOutputPath);
     }
 
 }
