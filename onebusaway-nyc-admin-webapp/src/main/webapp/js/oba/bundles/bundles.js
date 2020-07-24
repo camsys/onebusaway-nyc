@@ -2077,7 +2077,9 @@ function drawChart(){
 	}
 
 	var options = {
-		displayAnnotations: false
+		displayAnnotations: false,
+		dateFormat: 'EEEEEEEE',
+		displayZoomButtons: false
 	};
 
 	analyzeChart.draw(data, options);
