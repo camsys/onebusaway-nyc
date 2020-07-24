@@ -286,7 +286,7 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
                     processUnassignedVehicles(filterRecords(getUnassignedVehicleRecordsDirect(getUrl())));
                 }
             } catch (Exception e) {
-                _log.error("refreshData() failed: " + e.getMessage());
+                _log.error("refreshData() failed: " + e.getMessage(), e);
                 e.printStackTrace();
             }
         }

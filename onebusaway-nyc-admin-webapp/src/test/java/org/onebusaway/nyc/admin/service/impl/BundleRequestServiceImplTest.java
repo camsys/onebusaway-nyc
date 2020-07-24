@@ -126,7 +126,7 @@ public class BundleRequestServiceImplTest {
         if (apiCall.equals("/validate/remote/2012Jan/test_0/1/create")) {
           BundleResponse br = new BundleResponse("1");
           return (T) br;
-        } else if (apiCall.equals("/build/remote/2012Jan/test_0/null/1/2012-04-08/2012-07-07/create")) {
+        } else if (apiCall.equals("/build/remote/2012Jan/test_0/null/1/2012-04-08/2012-07-07/false/create")) {
           BundleBuildResponse br = new BundleBuildResponse("1");
           return (T) br;
         } else if (apiCall.equals("/ping/remote")) {

@@ -78,8 +78,10 @@ public class nycNamingConventionTask  implements Runnable {
             }
 
             File[] gtfsModified = new File(requestResponse.getResponse().getBundleOutputDirectory() + "/" + ARG_MODIFIED).listFiles();
-            for (File gtfsFile : gtfsModified){
-                gtfsFiles.add(gtfsFile);
+            if (gtfsModified != null) {
+                for (File gtfsFile : gtfsModified) {
+                    gtfsFiles.add(gtfsFile);
+                }
             }
             // go through each file in stif directory and run cleanup to zip them
             File[] stifFolders = stifDirectory.listFiles(new FilenameFilter() {

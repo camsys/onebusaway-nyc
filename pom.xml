@@ -426,6 +426,7 @@
                         <exclude>**/*.sh</exclude>
                         <exclude>**/*.sh</exclude>
                         <exclude>**/*.pom</exclude>
+                        <exclude>overlays/**</exclude>
                         <exclude>**/ESAPI.properties</exclude>
                         <exclude>ServiceAlerts.xml</exclude>
                     </excludes>
