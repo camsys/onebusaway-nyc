@@ -17,12 +17,14 @@
 package org.onebusaway.nyc.admin.service.bundle.task.stifTransformer;
 
 
+import org.apache.commons.io.FileUtils;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
-import org.onebusaway.nyc.util.impl.FileUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.File;
+import java.io.IOException;
 
 public class StifTransformerTask implements Runnable {
     private static Logger _log = LoggerFactory.getLogger(StifTransformerTask.class);
@@ -72,6 +74,11 @@ public class StifTransformerTask implements Runnable {
         if (stifTransformation == null){
             _log.error("No Stif Transformation Found");
             response.addStatusMessage("No Stif Transformation Found");
+            try {
+                FileUtils.copyDirectory(new File(stifsPath), new File(stifOutputPath));
+            } catch (IOException e) {
+                _log.error(e.toString());
+            }
             return;
         }
 
