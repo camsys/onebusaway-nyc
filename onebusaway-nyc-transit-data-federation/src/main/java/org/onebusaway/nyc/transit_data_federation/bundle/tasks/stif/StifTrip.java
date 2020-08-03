@@ -23,10 +23,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.Trip;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.EventRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 
 public class StifTrip implements Comparable<StifTrip>, Serializable {
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2L;
   
   public String nextRun;
   public String runId;
@@ -63,6 +64,7 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
 
   public String serviceId;
   public ArrayList<Trip> serviceIdBasedGtfsTrips = new ArrayList<>();
+  public ArrayList<StifStopTime> stifStopTimes;
 
 
   public StifTrip(String runId, String reliefRunId, String nextRun,
@@ -120,6 +122,14 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
       return Collections.emptyList();
     }
     return serviceIdBasedGtfsTrips;
+  }
+
+  public ArrayList<StifStopTime> getStifStopTimes(){
+    return stifStopTimes;
+  }
+
+  public void setStifStopTimes(ArrayList<StifStopTime> stifStopTimes){
+    this.stifStopTimes = stifStopTimes;
   }
 
   public String getDsc() {

@@ -54,7 +54,7 @@ public class EventRecordFactory extends StifRecordFactory<EventRecord> {
           record.setLocationTypeCode(getStringData());
         }
       }),
-      new FieldDef(22 - 21, "boarding / alighting flag", new EventFieldSetter() {
+      new FieldDef(23 - 21, "boarding / alighting flag", new EventFieldSetter() {
         public void setField(EventRecord record) {
           String data = getStringData();
           int flag = 4;
@@ -70,7 +70,7 @@ public class EventRecordFactory extends StifRecordFactory<EventRecord> {
           record.setBoardAlightFlag(flag);
         }
       }),
-      new FieldDef(24 - 22, "empty", null),
+      new FieldDef(24 - 23, "empty", null),
       new FieldDef(29 - 24, "distance from Start of Trip", new EventFieldSetter() {
         public void setField(EventRecord record) {
           record.setDistanceFromStartOfTrip(getIntegerSafe());

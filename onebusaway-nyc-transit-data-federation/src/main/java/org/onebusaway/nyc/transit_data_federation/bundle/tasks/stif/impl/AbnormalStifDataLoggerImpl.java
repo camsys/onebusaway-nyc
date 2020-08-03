@@ -63,6 +63,9 @@ public class AbnormalStifDataLoggerImpl {
 		  csvLogger.header("dsc_statistics.csv", "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs");
 		  csvLogger.header("gtfs_trips_matched_with_multiple_stif_trips.csv","GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num");
 		  csvLogger.header("incorrect_gtfs_stif_mismatches_by_Service_Id.csv", "stif_trip,stif_filename,stif_trip_record_line_num, Gtfs_Trip_1, Gtfs_Trip_2, Gtfs_Trip_3, Gtfs_Trip_4...");
+		  csvLogger.header("stif_gtfs_stoptime_mismatch.csv", "stifTrip.path, stifTrip, stifStop, stifId, gtfsTrip, gtfsStop, gtfsId");
+		  csvLogger.header("trips_with_failed_stif_to_gtfs_stop_id_matching.csv", "stifTrip.path, stifTrip, gtfsTrip");
+		  csvLogger.header("non-revenue_gtfs_stoptimes_updated.csv", "associatedStifTrip.path, associatedStifTrip, associatedStifStop, associatedStifId, gtfsTrip, gtfsStop, gtfsId");
 	  }
 	
 	  // package private for unit testing

@@ -122,20 +122,7 @@ public class StifTripLoader {
   private boolean isBusCo;
   private boolean isNewMTAHastusGtfsFormat;
 
-  /**
-   * For each STIF file, call run().
-   */
-  public void run(File path) {
-    try {
-      _log.info("loading stif from " + path.getAbsolutePath());
-      InputStream in = new FileInputStream(path);
-      if (path.getName().endsWith(".gz"))
-        in = new GZIPInputStream(in);
-      run(in, path);
-    } catch (Exception e) {
-      throw new RuntimeException("Error loading " + path, e);
-    }
-  }
+  private ArrayList<StifStopTime> currentStifStopTimes = new ArrayList<>();
 
   public void run(InputStream stream, File path) {
     StifRecordReader reader;
@@ -174,10 +161,10 @@ public class StifTripLoader {
         }
         if (record instanceof GeographyRecord) {
           GeographyRecord geographyRecord = ((GeographyRecord) record);
-          geographyRecordsByBoxId.put(new AgencyAndId(agencyId, geographyRecord.getBoxID()), 
-        		  geographyRecord);
+          geographyRecordsByBoxId.put(new AgencyAndId(agencyId, geographyRecord.getBoxID()),
+                  geographyRecord);
           support.putStopIdForLocation(geographyRecord.getIdentifier(),
-              geographyRecord.getBoxID());
+                  geographyRecord.getBoxID());
           continue;
         }
 
@@ -191,6 +178,12 @@ public class StifTripLoader {
           if (possibleEventRecord.getLocation() == null)
             //yet another new kind of bogus record
             continue;
+          StifStopTime currentStifStopTime = new StifStopTime(
+                  support.getStopIdForLocation(possibleEventRecord.getLocation()),
+                  possibleEventRecord.getTime(),
+                  possibleEventRecord.getBoardAlightFlag().getCode(),
+                  possibleEventRecord.isRevenue());
+          currentStifStopTimes.add(currentStifStopTime);
           if (!possibleEventRecord.isRevenue()) {
             // Keep track of the first and last non-revenue stop events
             lastNonRevEventRecord = possibleEventRecord;
@@ -219,22 +212,23 @@ public class StifTripLoader {
               // prepare for next trip
               tripLineNumber = lineNumber;
               tripRecord = (TripRecord) record;
-                       
+
               firstNonRevEventRecord = lastNonRevEventRecord = null;
               eventRecord = firstEventRecord = null;
+              currentStifStopTimes = new ArrayList<>();
             } else {
               tripRecord = null;
             }
             continue;
           }
           int tripType = tripRecord.getTripType();
-          
+
           boolean fakeDeadhead = false;
           if (firstEventRecord == null && !(tripType == 2 || tripType == 3 || tripType == 4 )) {
             //revenue trips must have at least one revenue stop
             _log.warn("Revenue trip at " + tripLineNumber + " in " + path + " has no revenue stops.  " +
-                "Using first/last stops from trip layer rather than event layer.");
-              fakeDeadhead = true;
+                    "Using first/last stops from trip layer rather than event layer.");
+            fakeDeadhead = true;
           }
 
           // NON-REVENUE TRIP CASE.
@@ -246,7 +240,7 @@ public class StifTripLoader {
             }
 
             StifTrip stifTrip = getTripFromNonRevenueRecord(path, tripLineNumber, tripRecord, serviceCode, agencyId,
-					tripType);
+                    tripType);
             rawDataByServiceCode.get(serviceCode).add(stifTrip);
             handleServiceIdActions(stifTrip,tripRecord);
 
@@ -255,6 +249,7 @@ public class StifTripLoader {
               tripRecord = (TripRecord) record;
               firstNonRevEventRecord = lastNonRevEventRecord = null;
               eventRecord = firstEventRecord = null;
+              currentStifStopTimes = new ArrayList<>();
             } else {
               tripRecord = null;
             }
@@ -265,20 +260,20 @@ public class StifTripLoader {
           String runId = tripRecord.getRunIdWithDepot();
           String reliefRunId = tripRecord.getReliefRunId();
           String nextOperatorRunId = tripRecord.getNextTripOperatorRunIdWithDepot();
-          
-          
+
+
           StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
-              tripRecord.getReliefRunId(),
-              tripRecord.getNextTripOperatorRunId(),
-              StifTripType.byValue(tripType), tripRecord.getSignCode(), tripRecord.getBusType(), tripRecord.getDirection());
-          
+                  tripRecord.getReliefRunId(),
+                  tripRecord.getNextTripOperatorRunId(),
+                  StifTripType.byValue(tripType), tripRecord.getSignCode(), tripRecord.getBusType(), tripRecord.getDirection());
+
           stifTrip.agencyId = agencyId;
           stifTrip.serviceCode = serviceCode;
           stifTrip.depot = tripRecord.getDepotCode();
           if (tripRecord.getNextTripOperatorDepotCode() != null) {
             stifTrip.nextTripOperatorDepot = tripRecord.getNextTripOperatorDepotCode();
           } else {
-            stifTrip.nextTripOperatorDepot = tripRecord.getDepotCode(); 
+            stifTrip.nextTripOperatorDepot = tripRecord.getDepotCode();
           }
           stifTrip.firstStopTime = firstEventRecord.getTime();
           stifTrip.lastStopTime = eventRecord.getTime();
@@ -293,41 +288,42 @@ public class StifTripLoader {
           stifTrip.path = path;
           stifTrip.lineNumber = tripLineNumber;
           stifTrip.blockId = tripRecord.getBlockNumber();
+          stifTrip.setStifStopTimes(currentStifStopTimes);
 
           rawDataByServiceCode.get(serviceCode).add(stifTrip);
 
           String destSignCode = tripRecord.getSignCode();
 
           TripIdentifier tripIdentifier = support.getIdentifierForStifTrip(tripRecord,
-              stifTrip);
+                  stifTrip);
           stifTrip.id = tripIdentifier;
 
           if (stifTrip.signCodeRoute == null
-              || stifTrip.signCodeRoute.length() == 0) {
+                  || stifTrip.signCodeRoute.length() == 0) {
             csvLogger.log("stif_trip_layers_with_missing_route.csv", tripIdentifier, path,
-                tripLineNumber, "signCodeRoute");
+                    tripLineNumber, "signCodeRoute");
           }
           if (stifTrip.getDsc() == null || stifTrip.getDsc().length() == 0) {
             csvLogger.log("stif_trip_layers_with_missing_route.csv", tripIdentifier, path,
-                tripLineNumber, "DSC");
+                    tripLineNumber, "DSC");
           }
 
           DuplicateTripCheckKey key = new DuplicateTripCheckKey(stifTrip.runId,
-              stifTrip.firstStopTime, stifTrip.serviceCode);
+                  stifTrip.firstStopTime, stifTrip.serviceCode);
           StifTrip oldTrip = tripsByRunAndStartTime.get(key);
           if (oldTrip == null) {
             tripsByRunAndStartTime.put(key, stifTrip);
           } else {
             csvLogger.log("trips_with_duplicate_run_and_start_time.csv", tripIdentifier,
-                stifTrip.path, stifTrip.lineNumber, oldTrip.id, oldTrip.path,
-                oldTrip.lineNumber);
+                    stifTrip.path, stifTrip.lineNumber, oldTrip.id, oldTrip.path,
+                    oldTrip.lineNumber);
           }
           List<Trip> trips = support.getTripsForIdentifier(tripIdentifier);
           _tripsCount++;
 
           if (trips == null || trips.isEmpty()) {
             csvLogger.log("stif_trips_with_no_gtfs_match.csv", tripIdentifier, path,
-                tripLineNumber);
+                    tripLineNumber);
 
             // trip in stif but not in gtfs
             if (!warned) {
@@ -341,6 +337,7 @@ public class StifTripLoader {
               tripRecord = (TripRecord) record;
               firstNonRevEventRecord = lastNonRevEventRecord = null;
               eventRecord = firstEventRecord = null;
+              currentStifStopTimes = new ArrayList<>();
             } else {
               tripRecord = null;
             }
@@ -354,7 +351,7 @@ public class StifTripLoader {
             gtfsTrip.getId().getId();
             if (gtfsTrip.getId().getId().equals(tripRecord.getGtfsTripId())) {
               addGtfsTrip(path, tripLineNumber, tripRecord, runId, reliefRunId, nextOperatorRunId,
-                  stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
+                      stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
               String serviceId = gtfsTrip.getServiceId().getId();
               handleServiceIdActions(stifTrip,tripRecord);
               continue;
@@ -363,24 +360,24 @@ public class StifTripLoader {
             String serviceId = gtfsTrip.getServiceId().getId();
             Matcher m = oldNYCTServiceIdFormat.matcher(serviceId);
             isNewMTAHastusGtfsFormat = !m.matches();
-            
+
             if (isBusCo || isNewMTAHastusGtfsFormat) {
-              ServiceCode tripServiceCode = ServiceCode.getServiceCodeForMTAHastusGTFS(serviceId);              
+              ServiceCode tripServiceCode = ServiceCode.getServiceCodeForMTAHastusGTFS(serviceId);
               if (serviceCode != tripServiceCode) {
-                  gtfsTrip = null;
+                gtfsTrip = null;
               }
-            	
-            // legacy NYCT format, where service ID ends in primary/secondary schedule 
+
+              // legacy NYCT format, where service ID ends in primary/secondary schedule
             } else {
               /*
                * Service codes are of the form 20100627CA Only the last two
                * characters are important. They have the meaning: A = sat B =
                * weekday closed C = weekday open D = sun
-               * 
+               *
                * The first character is for trips on that day's STIF schedule,
                * while the second character is for trips on the next day's STIF
                * schedule (but that run on that day).
-               * 
+               *
                * To figure out whether a GTFS trip corresponds to a STIF trip, if
                * the STIF trip is before midnight, check daycode1; else check
                * daycode2
@@ -401,16 +398,16 @@ public class StifTripLoader {
             }
             if (gtfsTrip != null) {
               addGtfsTrip(path, tripLineNumber, tripRecord, runId, reliefRunId, nextOperatorRunId,
-                  stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
+                      stifTrip, destSignCode, tripIdentifier, filtered, gtfsTrip);
               handleServiceIdActions(stifTrip,tripRecord);
             }
           }
           if (filtered.size() == 0) {
             if (stifTrip.type == StifTripType.REVENUE
-                && (destSignCode == null || destSignCode.length() == 0)) {
+                    && (destSignCode == null || destSignCode.length() == 0)) {
               _log.warn("Revenue trip " + stifTrip + " did not have a DSC");
               csvLogger.log("trips_with_null_dscs.csv", "(no GTFS trips)", tripIdentifier,
-                  path, tripLineNumber);
+                      path, tripLineNumber);
             }
           }
 
@@ -421,7 +418,7 @@ public class StifTripLoader {
           }
           for (Trip trip : filtered) {
             sctrips.add(trip.getId());
-            
+
             // Insert non revenue stop data into a map that can be serialized later
             if (firstNonRevEventRecord != null || lastNonRevEventRecord != null) {
               if (!nonRevenueStopDataByTripId.containsKey(trip.getId())) {
@@ -458,10 +455,26 @@ public class StifTripLoader {
           tripRecord = (TripRecord) record;
           firstNonRevEventRecord = lastNonRevEventRecord = null;
           eventRecord = firstEventRecord = null;
+          currentStifStopTimes = new ArrayList<>();
         }
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * For each STIF file, call run().
+   */
+  public void run(File path) {
+    try {
+      _log.info("loading stif from " + path.getAbsolutePath());
+      InputStream in = new FileInputStream(path);
+      if (path.getName().endsWith(".gz"))
+        in = new GZIPInputStream(in);
+      run(in, path);
+    } catch (Exception e) {
+      throw new RuntimeException("Error loading " + path, e);
     }
   }
 
@@ -492,6 +505,7 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
 	stifTrip.path = path;
 	stifTrip.lineNumber = tripLineNumber;
 	stifTrip.blockId = tripRecord.getBlockNumber();
+    stifTrip.setStifStopTimes(currentStifStopTimes);
 	return stifTrip;
 }
 

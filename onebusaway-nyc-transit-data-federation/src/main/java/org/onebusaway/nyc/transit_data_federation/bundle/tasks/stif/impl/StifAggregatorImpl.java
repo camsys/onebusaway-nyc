@@ -31,12 +31,13 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Route;
+import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.RawRunData;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTrip;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripType;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.*;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.EventRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 import org.onebusaway.nyc.transit_data_federation.model.nyc.SupplimentalTripInformation;
+import org.onebusaway.onebusaway_stif_transformer_impl.StifSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,9 +70,12 @@ public class StifAggregatorImpl {
 
   public boolean useServiceId = true;
 
+  public boolean ARG_REMOVE_GTFS_NONREVENUE_STOPS = true;
+
   public HashMap<String, Set<AgencyAndId>> getRouteIdsByDsc(){
     return routeIdsByDsc;
   }
+
   
   public HashSet<StifTrip> getUnmatchedTrips() {
 	return unmatchedTrips;
@@ -346,6 +350,7 @@ public class StifAggregatorImpl {
       blockId = blockId.intern();
       blockIds.add(new ImmutablePair<>(blockId, gtfsTrip.getServiceId().getId()));
       if(setGtfsBlockId) {
+        logStopMismtaches(trip, gtfsTrip);
         gtfsTrip.setBlockId(blockId);
       }
       _stifLoader.getGtfsMutableRelationalDao().updateEntity(gtfsTrip);
@@ -381,6 +386,9 @@ public class StifAggregatorImpl {
         _AbnormalStifDataLogger.log("gtfs_trips_matched_with_multiple_stif_trips.csv", gtfsTrip.getId(),trip.id, trip.path,
                 trip.lineNumber );
       }
+
+      logStopMismtaches(trip, gtfsTrip);
+
       i++;
       RawRunData rawRunData = _stifLoader.getRawRunDataByTrip().get(gtfsTrip);
 
@@ -426,6 +434,48 @@ public class StifAggregatorImpl {
       _AbnormalStifDataLogger.log("incorrect_gtfs_stif_mismatches_by_Service_Id.csv", trip.id, trip.path,
               trip.lineNumber,trip.getGtfsTrips());
     }
+  }
+
+  private void logStopMismtaches(StifTrip stifTrip, Trip gtfsTrip){
+    StifTripLoaderSupport support = _stifLoader.getSupport();
+    List<StopTime> gtfsStopsList = _stifLoader.getGtfsMutableRelationalDao().getStopTimesForTrip(gtfsTrip);
+    List<StifStopTime> stifStopsList = stifTrip.getStifStopTimes();
+    int gtfsStopsItt = 0;
+    int stifStopsItt = 0;
+    while(stifStopsItt<stifStopsList.size() && gtfsStopsItt<gtfsStopsList.size()){
+      StifStopTime stifStop = stifStopsList.get(stifStopsItt);
+      StopTime gtfsStop = gtfsStopsList.get(gtfsStopsItt);
+      String stifId = stifStop.getId();
+      String gtfsId = gtfsStop.getStop().getId().getId();
+      if(gtfsId.equals(stifId)) {
+        int stifTime = stifStop.getTime()%(24*60*60);
+        if (stifTime < 0) {
+          // skip a day ahead for previous-day trips.
+          stifTime += 24 * 60 * 60;
+        }
+        int gtfsTime = gtfsStop.getDepartureTime()%(24*60*60);
+        if(!(stifTime == gtfsTime)){
+          _AbnormalStifDataLogger.log("stif_gtfs_stoptime_mismatch.csv", stifTrip.path, stifTrip, stifStop, stifId, gtfsTrip, gtfsStop, gtfsId);
+        } else {
+          int boardingAlightingFlag = stifStop.getBoardingAlightingFlag();
+          if ((gtfsStop.getDropOffType() == 1 & gtfsStop.getPickupType()==1) &
+                  (!stifStop.isRevenue() |
+                    (boardingAlightingFlag ==0))){
+            if(ARG_REMOVE_GTFS_NONREVENUE_STOPS) {
+              gtfsStop.setDropOffType(1);
+              gtfsStop.setPickupType(1);
+            }
+            _AbnormalStifDataLogger.log("non-revenue_gtfs_stoptimes_updated.csv", stifTrip.path, stifTrip, stifStop, stifId, gtfsTrip, gtfsStop, gtfsId);
+          }
+        }
+        gtfsStopsItt++;
+      }
+      stifStopsItt++;
+    }
+    if(gtfsStopsItt<gtfsStopsList.size()){
+      _AbnormalStifDataLogger.log("trips_with_failed_stif_to_gtfs_stop_id_matching.csv", stifTrip.path, stifTrip, gtfsTrip);
+    }
+
   }
 
   // public for testing :/
@@ -569,4 +619,7 @@ public class StifAggregatorImpl {
 	return tripInfo;
   }
 
+  public void setARG_REMOVE_GTFS_NONREVENUE_STOPS(boolean ARG_REMOVE_GTFS_NONREVENUE_STOPS) {
+    this.ARG_REMOVE_GTFS_NONREVENUE_STOPS = ARG_REMOVE_GTFS_NONREVENUE_STOPS;
+  }
 }
