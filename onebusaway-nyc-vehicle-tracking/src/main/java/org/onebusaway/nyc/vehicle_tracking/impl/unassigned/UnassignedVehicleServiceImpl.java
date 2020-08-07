@@ -121,7 +121,9 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
 
     private URL _url;
 
-    Integer _maxActiveVehicleAgeSecs;
+    private Integer _maxActiveVehicleAgeSecs;
+
+    private Integer _updateIntervalSecs = null;
 
     private static final List<UnassignedVehicleRecord> EMPTY_RECORDS = Collections.unmodifiableList(new ArrayList<UnassignedVehicleRecord>());
 
@@ -129,7 +131,10 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     @Autowired
     public void setConfigurationService(ConfigurationService configurationService) {
         this._configurationService = configurationService;
-        configChanged();
+        getConfig();
+        ConfigThread config = new ConfigThread(this);
+        // we do this quite frequently has the config values themselves refresh slowly
+        _taskScheduler.scheduleWithFixedDelay(config, 1 * 60 * 1000);
     }
 
     @Autowired
@@ -146,6 +151,7 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         return _url;
     }
 
+    private String _urlStr = null;
     @Override
     public void setUrl(URL url){
         _url = url;
@@ -180,11 +186,29 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         }
     }
 
+    private void getConfig()  {
+        String urlStr = _configurationService.getConfigurationValueAsString("vtw.unassignedVehicleServiceUrl", null);
+        Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("vtw.unassignedVehicleServiceRefreshInterval", 30);
+        boolean enabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("vtw.unassignedVehicleServiceEnabled", "true"));
+        Integer maxActiveVehicleAgeSecs = _configurationService.getConfigurationValueAsInteger("vtw.maxActiveVehicleAgeSecs", 120);
 
-    @Refreshable(dependsOn = {"vtw.unassignedVehicleServiceUrl", "vtw.unassignedVehicleServiceEnabled", "vtw.unassignedVehicleServiceRefreshInterval", "vtw.maxActiveVehicleAgeSecs"})
+        // if any of our configuration has changed update our entire configuration
+        if ((_urlStr == null && _urlStr != urlStr)
+                ||!_urlStr.equals(urlStr)
+                || (_updateIntervalSecs == null && _updateIntervalSecs != updateIntervalSecs)
+                || _updateIntervalSecs != updateIntervalSecs
+                || _enabled != enabled
+                || (_maxActiveVehicleAgeSecs == null && _maxActiveVehicleAgeSecs != maxActiveVehicleAgeSecs)
+                || _maxActiveVehicleAgeSecs != maxActiveVehicleAgeSecs) {
+            configChanged();
+        }
+    }
+
     private void configChanged() {
         String url = _configurationService.getConfigurationValueAsString("vtw.unassignedVehicleServiceUrl", null);
+        _urlStr = url;
         Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("vtw.unassignedVehicleServiceRefreshInterval", 30);
+        _updateIntervalSecs = updateIntervalSecs;
         boolean previousEnablement = _enabled;
         _enabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("vtw.unassignedVehicleServiceEnabled", "true"));
         _maxActiveVehicleAgeSecs = _configurationService.getConfigurationValueAsInteger("vtw.maxActiveVehicleAgeSecs", 120);
@@ -203,6 +227,8 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         if (updateIntervalSecs != null) {
             setUpdateFrequency(updateIntervalSecs);
         }
+
+
     }
 
 
@@ -534,6 +560,17 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         inferredLocationBean.setPhase(record.getPhase());
         inferredLocationBean.setStatus(record.getStatus());
         return inferredLocationBean;
+    }
+
+    private class ConfigThread implements Runnable {
+        private UnassignedVehicleServiceImpl impl = null;
+        public ConfigThread(UnassignedVehicleServiceImpl impl) {
+            this.impl = impl;
+        }
+
+        public void run() {
+            impl.getConfig();
+        }
     }
 
 }
