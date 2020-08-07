@@ -480,7 +480,11 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
                     Integer schDev = null;
                     VehicleInferenceInstance instance = _vehicleLocationInferenceService.getInstanceByVehicleId(vehicleId);
                     if (instance != null) {
-                        schDev = instance.getCurrentStateAsNycQueuedInferredLocationBean().getScheduleDeviation();
+                        if (instance.getCurrentStateAsNycQueuedInferredLocationBean().getScheduleDeviation() != null) {
+                            schDev = instance.getCurrentStateAsNycQueuedInferredLocationBean().getScheduleDeviation();
+                        } else {
+                            schDev = 0;
+                        }
                     }
                     if (timeReceived != null) {
                         _log.info("CONFLICT Vehicle with id {} marked as unassigned but has been recently updated at {}s with max of {}s and schDev {}",
