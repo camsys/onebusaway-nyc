@@ -480,7 +480,8 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
                     Integer schDev = null;
                     VehicleInferenceInstance instance = _vehicleLocationInferenceService.getInstanceByVehicleId(vehicleId);
                     if (instance != null) {
-                        if (instance.getCurrentStateAsNycQueuedInferredLocationBean().getScheduleDeviation() != null) {
+                        if (instance.getCurrentStateAsNycQueuedInferredLocationBean() != null
+                                && instance.getCurrentStateAsNycQueuedInferredLocationBean().getScheduleDeviation() != null) {
                             schDev = instance.getCurrentStateAsNycQueuedInferredLocationBean().getScheduleDeviation();
                         } else {
                             schDev = 0;
