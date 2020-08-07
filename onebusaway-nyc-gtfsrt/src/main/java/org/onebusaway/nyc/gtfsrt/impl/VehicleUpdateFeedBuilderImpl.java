@@ -21,6 +21,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -53,16 +54,22 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
     @Override
     public VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record, 
         OccupancyStatus occupancy) {
+
         VehiclePosition.Builder position = VehiclePosition.newBuilder();
-        position.setTrip(makeTripDescriptor(status));
+        position.setTimestamp(record.getTimeOfRecord()/1000);
         position.setPosition(makePosition(record));
         position.setVehicle(makeVehicleDescriptor(record));
-        position.setTimestamp(record.getTimeOfRecord()/1000);
-        
         if(showApc() && getGtfsrtOccupancy(status) != null){
             position.setOccupancyStatus(getGtfsrtOccupancy(status));
         }
-        
+
+        if (EVehiclePhase.SPOOKING.equals(EVehiclePhase.valueOf(record.getPhase().toUpperCase()))) {
+            return position;
+        }
+
+        position.setTrip(makeTripDescriptor(status));
+
+
         if (status.getTripStatus().getNextStop() != null) {
             AgencyAndId id = AgencyAndId.convertFromString(status.getTripStatus().getNextStop().getId());
             position.setStopId(id.getId());
