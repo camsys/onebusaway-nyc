@@ -980,9 +980,8 @@ function updateBuildList(id) {
 			summaryList = response;
 		}
 	});
-	var url = $("buildBundle_slack").innerText;
-	var text = "Bundle Build " + jQuery("#buildBundle_id").text();
-	+ " is complete"
+	var url = $("#buildBundle_slack")[0].value;
+	var text = "Bundle Build " + jQuery("#buildBundle_id").text() + " is complete";
 	$.ajax({
 		data: 'payload=' + JSON.stringify({
 			"text": text
