@@ -539,7 +539,8 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     }
 
     public boolean vehicleActive(AgencyAndId vehicleId, long currentTime) {
-        if (_vehicleLocationInferenceService.getTimeReceivedByVehicleId(vehicleId) ==  null) return false;
+        if (_vehicleLocationInferenceService == null ||
+                _vehicleLocationInferenceService.getTimeReceivedByVehicleId(vehicleId) ==  null) return false;
 
         Long timeReceived = _vehicleLocationInferenceService.getTimeReceivedByVehicleId(vehicleId);
         if(timeReceived != null && ((currentTime - timeReceived) / 1000) <= getMaxActiveVehicleAgeSecs()){
