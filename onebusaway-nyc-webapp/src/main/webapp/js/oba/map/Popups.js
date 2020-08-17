@@ -259,37 +259,44 @@ OBA.Popups = (function() {
 				|| typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall === 'undefined') 
 			|| (typeof activity.MonitoredVehicleJourney.OnwardCalls !== 'undefined' 
 				&& activity.MonitoredVehicleJourney.OnwardCalls.length === 0)
+			|| (typeof activity.MonitoredVehicleJourney.OnwardCalls !== 'undefined'
+				&& typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall !== "undefined"
+				&& activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall.length === 0)
 			)) {
-
 			html += '<p class="service">Next stops are not known for this vehicle.</p>';
+		} else if(typeof activity.MonitoredVehicleJourney.OnwardCalls !== 'undefined'
+			&& typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall === "undefined"){
+
+			html += '<p class="service">No stops... </p>';
+
 		} else {
 			if(typeof activity.MonitoredVehicleJourney.OnwardCalls !== 'undefined'
 				&& typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall !== 'undefined') {
 
-				html += '<p class="service">Next stops:</p>';
-				html += '<ul>';			
+					html += '<p class="service">Next stops:</p>';
+					html += '<ul>';
 
-				jQuery.each(activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall, function(_, onwardCall) {
-					var stopIdParts = onwardCall.StopPointRef.split("_");
-					var stopIdWithoutAgencyId = stopIdParts[1];
-						
-					var lastClass = ((_ === activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall.length - 1) ? " last" : "");
+					jQuery.each(activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall, function(_, onwardCall) {
+						var stopIdParts = onwardCall.StopPointRef.split("_");
+						var stopIdWithoutAgencyId = stopIdParts[1];
 
-					html += '<li class="nextStop' + lastClass + '">';				
-					html += '<a href="#' + stopIdWithoutAgencyId + '">' + onwardCall.StopPointName + '</a>';
-					html += '<span>';
-						
-					if(typeof onwardCall.ExpectedArrivalTime !== 'undefined' && onwardCall.ExpectedArrivalTime !== null) {
-						html += OBA.Util.getArrivalEstimateForISOString(onwardCall.ExpectedArrivalTime, updateTimestampReference);
-						html += ", " + onwardCall.Extensions.Distances.PresentableDistance;
-					} else {
-						html += onwardCall.Extensions.Distances.PresentableDistance;
-					}
+						var lastClass = ((_ === activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall.length - 1) ? " last" : "");
 
-					html += '</span></li>';
-				});
-				
-				html += '</ul>';
+						html += '<li class="nextStop' + lastClass + '">';
+						html += '<a href="#' + stopIdWithoutAgencyId + '">' + onwardCall.StopPointName + '</a>';
+						html += '<span>';
+
+						if(typeof onwardCall.ExpectedArrivalTime !== 'undefined' && onwardCall.ExpectedArrivalTime !== null) {
+							html += OBA.Util.getArrivalEstimateForISOString(onwardCall.ExpectedArrivalTime, updateTimestampReference);
+							html += ", " + onwardCall.Extensions.Distances.PresentableDistance;
+						} else {
+							html += onwardCall.Extensions.Distances.PresentableDistance;
+						}
+
+						html += '</span></li>';
+					});
+
+					html += '</ul>';
 			}
 		}
 		
