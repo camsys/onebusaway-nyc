@@ -452,6 +452,7 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
                 }
                 AgencyAndId vehicleId = new AgencyAndId(record.getAgencyId(), record.getVehicleId());
                 if(!vehicleActive(vehicleId, System.currentTimeMillis())) {
+                    if (_vehicleLocationInferenceService == null) return;
                     VehicleInferenceInstance instance = _vehicleLocationInferenceService.getInstanceByVehicleId(vehicleId);
                     NycQueuedInferredLocationBean ieBean = null;
                     if (instance != null) {
