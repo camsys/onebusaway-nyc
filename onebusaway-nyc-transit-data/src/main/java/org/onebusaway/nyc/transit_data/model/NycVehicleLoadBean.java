@@ -53,6 +53,8 @@ public class NycVehicleLoadBean implements Serializable {
     //estimated count for debugging only
     @JsonDeserialize(using = OccupancyDeserializer.class)
     private Integer estimatedCount;
+
+    private Integer estLoad;
     
 
     public NycVehicleLoadBean(){}
@@ -63,16 +65,19 @@ public class NycVehicleLoadBean implements Serializable {
         this.route = b.route;
         this.direction = b.direction;
         this.estimatedCount = b.estimatedCount;
+        this.estLoad = b.estLoad;
         this.recordTimestamp = b.recordTimestamp;
     }
 
-    public int getEstimatedCount() {
+    public Integer getEstimatedCount() {
         return estimatedCount;
     }
 
     public OccupancyStatus getLoad() {
         return load;
     }
+
+    public Integer getEstLoad() { return estLoad; }
 
     public Long getRecordTimestamp() {
         return recordTimestamp;
@@ -105,7 +110,8 @@ public class NycVehicleLoadBean implements Serializable {
         private OccupancyStatus load;
         private String direction;
         private String route;
-        private int estimatedCount;
+        private Integer estimatedCount;
+        private Integer estLoad;
 
         public NycVehicleLoadBeanBuilder(String vehicleId, long recordTimestamp){
             this.vehicleId = vehicleId;
@@ -141,7 +147,7 @@ public class NycVehicleLoadBean implements Serializable {
         public NycVehicleLoadBean build() throws IllegalStateException{
 
             if (load == null){ load = OccupancyStatus.UNKNOWN; }
-            if (estimatedCount > ERROR_LOAD){
+            if (estimatedCount != null && estimatedCount > ERROR_LOAD){
                 throw new IllegalStateException("Load is greater than " + ERROR_LOAD + ", which is unlikely on a bus.");
             }
 
