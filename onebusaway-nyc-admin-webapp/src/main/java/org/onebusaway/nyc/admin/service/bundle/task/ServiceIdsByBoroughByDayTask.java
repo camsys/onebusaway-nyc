@@ -19,6 +19,7 @@ package org.onebusaway.nyc.admin.service.bundle.task;
 import org.onebusaway.gtfs.model.*;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
+import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
@@ -42,13 +43,12 @@ public class ServiceIdsByBoroughByDayTask implements Runnable {
     private GtfsMutableRelationalDao _dao;
     private FederatedTransitDataBundle _bundle;
     private static final int MAX_STOP_CT = 150;
-    private String DEFAULT_TDS_VALUE_LOCATION_OF_ROUTE_MAPPING = "file_name_zone_route_mapping";
-    private String DEFAULT_LOCATION_OF_ROUTE_MAPPING = "routesByZone.txt";
     private ConfigurationService _configurationService;
     private File _mappingsFile;
     int maxStops = 0;
     final private String internalDelimeter = "&%&%&%&%";
     String ARG_TOTAL = "total";
+    BundleRequestResponse requestResponse;
 
     @Autowired
     public void setLogger(MultiCSVLogger logger) {
@@ -66,18 +66,13 @@ public class ServiceIdsByBoroughByDayTask implements Runnable {
     }
 
     @Autowired
-    public void setConfigurationService(ConfigurationService configurationService) {
-        _configurationService = configurationService;
+    public void setRequestResponse(BundleRequestResponse requestResponse) {
+        this.requestResponse = requestResponse;
     }
 
     @Override
     public void run() {
         _log.info("starting ServiceIdsByBoroughByDayTask");
-        if(_configurationService == null){
-            ConfigurationServiceImpl configurationServiceImpl = new ConfigurationServiceImpl();
-            configurationServiceImpl.setTransitDataManagerApiLibrary(new TransitDataManagerApiLibrary("tdm.dev.obanyc.com", 80, "/api"));
-            _configurationService = configurationServiceImpl;
-        }
         setMappingsFile();
         if (! _mappingsFile.isFile()) {
             _log.info("missing mapping file,{} exiting", _mappingsFile.getAbsolutePath());
@@ -94,12 +89,12 @@ public class ServiceIdsByBoroughByDayTask implements Runnable {
     }
 
     private void setMappingsFile(){
-        _mappingsFile = new File(_bundle.getPath().getParentFile().getParent() +"/" + getLocationOfRouteMappingFile());
+        _mappingsFile = new File(requestResponse.getRequest().getRouteMappings());
     }
 
     private void process(){
         new File(logger.getBasePath() + "/" + FOLDERNAME).mkdir();
-        _log.info("Creating ServiceIdsByBoroughByDayTask from this file" + getLocationOfRouteMappingFile());
+        _log.info("Creating ServiceIdsByBoroughByDayTask from this file" + _mappingsFile);
         Map<AgencyAndId, String> zoneAndSubzoneForServiceIds = getZoneAndSubzoneForServiceIds(_dao);
         _log.info("Gotten ServiceIdsByBoroughByDayTask organized");
         Map<Date, List<AgencyAndId>> serviceIdsByDate = getServiceIdsByDate(_dao);
@@ -312,17 +307,6 @@ public class ServiceIdsByBoroughByDayTask implements Runnable {
             e.printStackTrace();
         }
         return zoneforRoutes;
-    }
-
-    /*
-     * This method will use the config service to retrieve the file name where
-     * each zones route id's were placed. This file was created in the mod task.
-     * The location is stored in config.json.
-     *
-     * @return the URL to use to retrieve the modes and routes to be reported on
-     */
-    private String getLocationOfRouteMappingFile(){
-        return _configurationService.getConfigurationValueAsString(DEFAULT_TDS_VALUE_LOCATION_OF_ROUTE_MAPPING, DEFAULT_LOCATION_OF_ROUTE_MAPPING);
     }
 
     class TripTotals {
