@@ -3,17 +3,17 @@
 
     Copyright (c) 2011 Metropolitan Transportation Authority
 
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not
-    use this file except in compliance with the License. You may obtain a copy of
-    the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+            http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-    License for the specific language governing permissions and limitations under
-    the License.
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 
 -->
 
@@ -52,6 +52,16 @@
 <!-- //prevent jspx minimization -->
 	
 </script>
+
+
+<s:url var="url" value="https://www.gstatic.com/charts/loader.js">
+	<!-- //prevent jspx minimization -->
+</s:url>
+<script type="text/javascript" src="${url}">
+	<!-- //prevent jspx minimization -->
+
+</script>
+
 </head>
 <body>
 <s:form  action="manage-bundles" cssClass="bundleForm">
@@ -68,7 +78,12 @@
 								inputs</span></a></li>
 					<li><a href="#Build" title="Build And Validate"><span>4. Build
 								And Validate</span></a></li>
-					<li><a href="#Deploy" title="Deploy Bundle"><span>5. Deploy
+					<li><a href="#Analyze" title="Build And Validate"><span>5. Analyze Trip Counts</span></a></li>
+					<li><a href="#Compare" title="Compare Bundles"><span>6. Compare
+								Bundles</span></a></li>
+					<li><a href="#PrepDeploy" title="PrepDeploy Bundle"><span>6. PrepDeploy
+								Bundle</span></a></li>
+					<li><a href="#Deploy" title="Deploy Bundle"><span>7. Deploy
 								Bundle</span></a></li>
 				</ul>
 
@@ -89,6 +104,21 @@
 				</div>
 				<div id="Build">
 					<jsp:include page="build-bundle.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
+				<div id="Analyze">
+					<jsp:include page="analyze-bundle.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
+				<div id="Compare">
+					<jsp:include page="compare-bundles.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
+				<div id="PrepDeploy">
+					<jsp:include page="prepDeploy-bundle.jspx">
 						<!--  space -->
 					</jsp:include>
 				</div>

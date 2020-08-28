@@ -2,17 +2,17 @@
 
     Copyright (c) 2011 Metropolitan Transportation Authority
 
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not
-    use this file except in compliance with the License. You may obtain a copy of
-    the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+            http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-    License for the specific language governing permissions and limitations under
-    the License.
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 
 -->
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
@@ -42,22 +42,37 @@
 					<s:iterator value="directions">
 						<div class="directionAtStop">
 							<p>
-								<s:url var="url" namespace="/m" action="index" anchor="%{directionId}">
+								<s:url var="url" namespace="/m" action="index" anchor="%{directionId}-%{q}">
 									<s:param name="q">
 										<s:property value="shortName" />
 									</s:param>
-									<s:param name="l"><s:property value="l" /></s:param>
 								</s:url>
 								<a href="${url}">
 									<strong><s:property value="shortName" />&amp;nbsp;&amp;nbsp;<s:property value="destination" /></strong>
 								</a>
 							</p>
-							
-							<ol class="arrivalsAtStop">
-								<c:forEach var="distanceAway" items="${distanceAways}">
-									<li>${distanceAway}</li>
-								</c:forEach>
-							</ol>
+							<!--<ol class="arrivalsAtStop">-->
+								<!--<c:forEach var="distanceAway" items="${distanceAways}" varStatus="status">-->
+									<!--<li>${distanceAway}  <small>Vehicle ${vehicleIds[status.index]}</small></li>-->
+								<!--</c:forEach>-->
+							<!--</ol>-->
+							<!--<c:choose>-->
+								<!--<c:when test="${!hasRealtime}">-->
+									<!--<ol class="arrivalsAtStopSchedule">-->
+										<!--<c:forEach var="distanceAway" items="${distanceAways}">-->
+											<!--<li>${distanceAway} <span class="scheduleAlert"> (Estimated)</span></li>-->
+										<!--</c:forEach>-->
+										<!--<script>console.log("${distanceAway}");</script>-->
+									<!--</ol>-->
+								<!--</c:when>-->
+								<!--<c:otherwise>-->
+									<ol class="arrivalsAtStop">
+										<c:forEach var="distanceAway" items="${distanceAways}" varStatus="status">
+											<li>${distanceAway}  <small>Vehicle ${vehicleIds[status.index]}</small></li>
+										</c:forEach>
+									</ol>
+								<!--</c:otherwise>-->
+							<!--</c:choose>-->
 						</div>
 					</s:iterator>
 				</s:iterator>

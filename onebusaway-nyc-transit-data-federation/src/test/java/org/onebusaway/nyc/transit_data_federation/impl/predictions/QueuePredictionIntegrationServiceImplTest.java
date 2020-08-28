@@ -1,15 +1,18 @@
-/* This program is free software: you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public License
- as published by the Free Software Foundation, either version 3 of
- the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
 import com.google.common.cache.CacheBuilder;
@@ -72,7 +75,7 @@ public class QueuePredictionIntegrationServiceImplTest {
     TimepointPredictionRecord record = records.get(0);
     assertEquals(new AgencyAndId("1", "stop1"), record.getTimepointId());
     assertEquals(1, record.getStopSequence());
-    assertEquals(1, record.getTimepointPredictedTime());
+    assertEquals(1, record.getTimepointPredictedArrivalTime());
   }
 
   @Test
@@ -93,14 +96,14 @@ public class QueuePredictionIntegrationServiceImplTest {
     TimepointPredictionRecord record1 = records1.get(0);
     assertEquals(new AgencyAndId("1", "stop1"), record1.getTimepointId());
     assertEquals(1, record1.getStopSequence());
-    assertEquals(1, record1.getTimepointPredictedTime());
+    assertEquals(1, record1.getTimepointPredictedArrivalTime());
 
     List<TimepointPredictionRecord> records2 = service.getPredictionRecordsForVehicleAndTrip("vehicle1", "trip2");
     assertEquals(1, records2.size());
     TimepointPredictionRecord record2 = records2.get(0);
     assertEquals(new AgencyAndId("1", "stop2"), record2.getTimepointId());
     assertEquals(1, record2.getStopSequence());
-    assertEquals(1, record2.getTimepointPredictedTime());
+    assertEquals(1, record2.getTimepointPredictedArrivalTime());
   }
 
   private TripUpdate.Builder getTripUpdate(String tripId, String stopId) {

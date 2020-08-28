@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.queue;
 
 import org.apache.commons.lang.StringUtils;
@@ -15,41 +31,40 @@ public class RmcUtil {
     private static final int THIRTY_SEC_MILLIS = 30*1000;
     private static Logger _log = LoggerFactory.getLogger(RmcUtil.class);
 
-    String replaceInvalidRmcDateTime(StringBuffer realtime, long timeReceived){
-        try {
-            String[] rmcData = getRmcData(realtime);
-            String timeReported = getTimeReported(realtime);
-            if(rmcData != null) {
-                // Fix RMC Date (1024 Weeks)
-                Date rmcDateTime = getRmcDateTime(rmcData);
-                if (!isRmcDateValid(rmcDateTime, timeReceived)) {
-                    Date timeReceivedDate = new Date(timeReceived);
-                    replaceRmcDate(rmcData, timeReceivedDate);
+    public static String replaceInvalidRmcDateTime(StringBuffer realtime, long timeReceived) throws ParseException {
 
-                    // Fix Rmc Time
-                    if (!isRmcTimeValid(rmcDateTime, timeReceivedDate)) {
-                        replaceRmcTime(rmcData, timeReceivedDate);
-                    }
-                    String rmcDataString = StringUtils.join(rmcData, ",");
-                    rmcDataString = processNewCRC(rmcDataString);
-                    replaceRmcData(realtime, rmcDataString);
+        StringBuffer realtimeLocal = new StringBuffer(realtime);
+        String[] rmcData = getRmcData(realtimeLocal);
+        String timeReported = getTimeReported(realtimeLocal);
+        if(rmcData != null) {
+            // Fix RMC Date (1024 Weeks)
+            Date rmcDateTime = getRmcDateTime(rmcData);
+            if (!isRmcDateValid(rmcDateTime, timeReceived)) {
+                Date timeReceivedDate = new Date(timeReceived);
+                replaceRmcDate(rmcData, timeReceivedDate);
 
-                    // Fix Time Reported
-                    rmcData = getRmcData(realtime);
-                    rmcDateTime = getRmcDateTime(rmcData);
-                    if(!isTimeReportedValid(timeReported, rmcDateTime)){
-                        replaceTimeReported(realtime, rmcDateTime);
-                    }
+                // Fix Rmc Time
+                if (!isRmcTimeValid(rmcDateTime, timeReceivedDate)) {
+                    replaceRmcTime(rmcData, timeReceivedDate);
+                }
+                String rmcDataString = StringUtils.join(rmcData, ",");
+                rmcDataString = processNewCRC(rmcDataString);
+                replaceRmcData(realtime, rmcDataString);
+
+                // Fix Time Reported
+                rmcData = getRmcData(realtime);
+                rmcDateTime = getRmcDateTime(rmcData);
+                if(!isTimeReportedValid(timeReported, rmcDateTime)){
+                    replaceTimeReported(realtime, rmcDateTime);
                 }
             }
-        }catch (Exception e){
-            _log.warn("Unable to replace invalid rmc date time", e);
         }
+
         return realtime.toString();
     }
 
 
-    String [] getRmcData(StringBuffer realtime){
+    static String [] getRmcData(StringBuffer realtime){
         int rmcIndex = realtime.lastIndexOf("$GPRMC");
         int endRmcIndex = realtime.indexOf("\"",rmcIndex);
         if(rmcIndex != -1 && endRmcIndex != -1){
@@ -60,7 +75,7 @@ public class RmcUtil {
         return null;
     }
 
-    boolean isRmcDateValid(Date rmcDate, long timeReceived){
+    static boolean isRmcDateValid(Date rmcDate, long timeReceived){
         Calendar calPast = Calendar.getInstance();
         calPast.setTimeInMillis(timeReceived);
         calPast.add(Calendar.WEEK_OF_YEAR, -1024);
@@ -85,7 +100,7 @@ public class RmcUtil {
         return true;
     }
 
-    boolean isRmcTimeValid(Date rmcDate, Date timeReceived){
+    static boolean isRmcTimeValid(Date rmcDate, Date timeReceived){
         int rmcTime;
         int timeReceivedTime;
 
@@ -94,13 +109,13 @@ public class RmcUtil {
         return (timeReceivedTime - rmcTime <= (THIRTY_SEC_MILLIS));
     }
 
-    void replaceRmcData(StringBuffer realtime, String rmcDataString){
+    static void replaceRmcData(StringBuffer realtime, String rmcDataString){
         int rmcIndex = realtime.lastIndexOf("$GPRMC");
         int endRmcIndex = realtime.indexOf("\"",rmcIndex);
         realtime.replace(rmcIndex, endRmcIndex, rmcDataString);
     }
 
-    Date getRmcDateTime(String[] rmcData) throws ParseException {
+    static Date getRmcDateTime(String[] rmcData) throws ParseException {
         String rmcDateTime = rmcData[9] + " " + rmcData[1];
         SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy HHmmss.S");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -108,19 +123,19 @@ public class RmcUtil {
         return date;
     }
 
-    void replaceRmcDate(String[] rmcData, Date timeReceived){
+    static void replaceRmcDate(String[] rmcData, Date timeReceived){
         SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         rmcData[9] = sdf.format(timeReceived);
     }
 
-    void replaceRmcTime(String[] rmcData, Date timeReceived){
+    static void replaceRmcTime(String[] rmcData, Date timeReceived){
         SimpleDateFormat sdf = new SimpleDateFormat("HHmmss.S");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         rmcData[1] = sdf.format(timeReceived);
     }
 
-    String getTimeReported(StringBuffer realtime) {
+    static String getTimeReported(StringBuffer realtime) {
         String timeReportedText = "\"time-reported\":\"";
         int timeReportedIndex = realtime.lastIndexOf(timeReportedText);
         int endTimeReportedIndex = realtime.indexOf(",", timeReportedIndex);
@@ -132,7 +147,7 @@ public class RmcUtil {
         return null;
     }
 
-    boolean isTimeReportedValid(String timeReported, Date rmcDateTime){
+    static boolean isTimeReportedValid(String timeReported, Date rmcDateTime){
 
         if(timeReported.length() < 10){
             return false;
@@ -151,7 +166,7 @@ public class RmcUtil {
         return true;
     }
 
-    void replaceTimeReported(StringBuffer realtime, Date rmcDate) {
+    static void replaceTimeReported(StringBuffer realtime, Date rmcDate) {
         String timeReportedText = "\"time-reported\":\"";
         int timeReportedIndex = realtime.lastIndexOf(timeReportedText) + timeReportedText.length();
         int endTimeReportedIndex = realtime.indexOf(",", timeReportedIndex) - 1;

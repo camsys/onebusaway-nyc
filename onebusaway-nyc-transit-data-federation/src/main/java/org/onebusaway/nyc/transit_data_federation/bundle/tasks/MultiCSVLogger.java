@@ -1,17 +1,17 @@
 /**
- * Copyright (c) 2012 Metropolitan Transportation Authority
+ * Copyright (C) 2012 Metropolitan Transportation Authority
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks;
 
@@ -41,6 +41,7 @@ public class MultiCSVLogger {
   private HashMap<String, Log> logs;
   
   private File basePath;
+  private String diff_log_filename = "diff_log.csv";
   
   public void setBasePath(File path) {
     this.basePath = path;
@@ -97,6 +98,16 @@ public class MultiCSVLogger {
     log.stream.print("\n");
   }
 
+  public void logCSV(String file, String csv) {
+    Log log = logs.get(file);
+    if (log == null) {
+      throw new RuntimeException("log called before header for file " + file);
+    }
+    log.lines += 1;
+    log.stream.print(csv);
+    log.stream.print("\n");
+  }
+
   public void header(String file, String header) {
   
     Log log = logs.get(file);
@@ -133,5 +144,22 @@ public class MultiCSVLogger {
       }
     }
     
+  }
+
+
+  public void difflogHeader(String filename) {
+    diff_log_filename = filename;
+    Log log = logs.get(diff_log_filename);
+    if (log == null) {
+      header(diff_log_filename, "line,diff");
+    }
+  }
+
+  public void difflog(int linenum, String content) {
+    log(diff_log_filename, linenum, content);
+  }
+
+  public String getBasePath(){
+    return basePath.getAbsolutePath();
   }
 }

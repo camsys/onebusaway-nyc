@@ -1,29 +1,28 @@
-/*
- * Copyright 2010, OpenPlans Licensed under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
+/**
+ * Copyright (C) 2010 OpenPlans
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.onebusaway.nyc.webapp.actions.api.siri.impl;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -41,10 +40,8 @@ import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteForDirection;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.StopOnRoute;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirection;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
-import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
@@ -53,7 +50,6 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import uk.org.siri.siri_2.OccupancyEnumeration;
 import uk.org.siri.siri_2.AnnotatedDestinationStructure;
 import uk.org.siri.siri_2.AnnotatedLineStructure;
@@ -70,7 +66,6 @@ import uk.org.siri.siri_2.JourneyPatternRefStructure;
 import uk.org.siri.siri_2.JourneyPlaceRefStructure;
 import uk.org.siri.siri_2.LineDirectionStructure;
 import uk.org.siri.siri_2.LineRefStructure;
-import uk.org.siri.siri_2.LinesDeliveryStructure;
 import uk.org.siri.siri_2.LocationStructure;
 import uk.org.siri.siri_2.MonitoredCallStructure;
 import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
@@ -236,7 +231,7 @@ public final class SiriSupportV2 {
 		}
 
 		// scheduled depature time
-		if (presentationService.isBlockLevelInference(currentVehicleTripStatus)
+		if (presentationService.hasFormalBlockLevelMatch(currentVehicleTripStatus)
 				&& (presentationService.isInLayover(currentVehicleTripStatus) || !framedJourneyTripBean
 						.getId().equals(
 								currentVehicleTripStatus.getActiveTrip()
@@ -345,7 +340,7 @@ public final class SiriSupportV2 {
 		if (detailLevel.equals(DetailLevel.NORMAL) || detailLevel.equals(DetailLevel.CALLS)){
 			monitoredVehicleJourney.setOperatorRef(operatorRef);
 			// block ref
-			if (presentationService.isBlockLevelInference(currentVehicleTripStatus)) {
+			if (presentationService.hasFormalBlockLevelMatch(currentVehicleTripStatus)) {
 				BlockRefStructure blockRef = new BlockRefStructure();
 				blockRef.setValue(framedJourneyTripBean.getBlockId());
 				monitoredVehicleJourney.setBlockRef(blockRef);
@@ -903,7 +898,7 @@ public final class SiriSupportV2 {
 		if (distanceOfCallAlongTrip < 100) isNearFirstStop = true;
 
 		if (prediction != null) {
-			if (prediction.getTimepointPredictedTime() < responseTimestamp) {
+			if (prediction.getTimepointPredictedArrivalTime() < responseTimestamp) {
 				// TODO - LCARABALLO - should this be setExpectedArrivalTime?
 				if (!isNearFirstStop) {
 					onwardCallStructure.setExpectedArrivalTime(DateUtil.toXmlGregorianCalendar(responseTimestamp));
@@ -914,11 +909,11 @@ public final class SiriSupportV2 {
 			} else {
 				if (!isNearFirstStop){
 					onwardCallStructure.setExpectedArrivalTime(DateUtil
-							.toXmlGregorianCalendar(prediction.getTimepointPredictedTime()));
+							.toXmlGregorianCalendar(prediction.getTimepointPredictedArrivalTime()));
 				} 
 				else {
 					onwardCallStructure.setExpectedDepartureTime(DateUtil
-							.toXmlGregorianCalendar(prediction.getTimepointPredictedTime()));
+							.toXmlGregorianCalendar(prediction.getTimepointPredictedDepartureTime()));
 				}
 			}
 		}
@@ -955,7 +950,7 @@ public final class SiriSupportV2 {
 
 		if (prediction != null) {
 			// do not allow predicted times to be less than ResponseTimestamp
-			if (prediction.getTimepointPredictedTime() < responseTimestamp) {
+			if (prediction.getTimepointPredictedArrivalTime() < responseTimestamp) {
 				/*
 				 * monitoredCall has less precision than onwardCall (date vs.
 				 * timestamp) which results in a small amount of error when
@@ -970,10 +965,10 @@ public final class SiriSupportV2 {
 			} else {
 				monitoredCallStructure.setExpectedArrivalTime(DateUtil
 						.toXmlGregorianCalendar(prediction
-								.getTimepointPredictedTime()));
+								.getTimepointPredictedArrivalTime()));
 				monitoredCallStructure.setExpectedDepartureTime(DateUtil
 						.toXmlGregorianCalendar(prediction
-								.getTimepointPredictedTime()));
+								.getTimepointPredictedDepartureTime()));
 			}
 
 		}

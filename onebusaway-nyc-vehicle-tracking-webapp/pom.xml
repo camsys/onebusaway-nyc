@@ -4,7 +4,7 @@
     <parent>
         <artifactId>onebusaway-nyc</artifactId>
         <groupId>org.onebusaway</groupId>
-        <version>2.25.38-SNAPSHOT</version>
+        <version>2.26.2.19-SNAPSHOT</version>
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-vehicle-tracking-webapp</artifactId>
@@ -16,7 +16,7 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
-            <version>2.25.38-SNAPSHOT</version>
+            <version>2.26.2.19-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.servlet.jsp</groupId>
@@ -28,11 +28,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
-            <version>2.25.38-SNAPSHOT</version>
+            <version>2.26.2.19-SNAPSHOT</version>
         </dependency>
         <!-- Standard Java Webapp Libraries -->
         <dependency>
@@ -97,7 +96,6 @@
         <dependency>
           <groupId>mysql</groupId>
           <artifactId>mysql-connector-java</artifactId>
-          <version>5.1.18</version>
         </dependency>
 
         <dependency>
@@ -137,7 +135,8 @@
                 <log4j.appender>ROLL</log4j.appender>
                 <particle.filter.debug>false</particle.filter.debug>
                 <timePredictions.status>DISABLED</timePredictions.status>
-                <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
+                <pipo.host>yardtrek.mtabuscis.net</pipo.host>
+                <gtfs.editor.host>gtfs-editor</gtfs.editor.host>
             </properties>
         </profile>
         <profile>
@@ -168,7 +167,8 @@
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
                  <timePredictions.status>DISABLED</timePredictions.status>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
+                 <pipo.host>yardtrek.mtabuscis.net</pipo.host>
+                 <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
           </properties>
         </profile>
         <profile>
@@ -200,7 +200,8 @@
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
                  <timePredictions.status>DISABLED</timePredictions.status>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
+                 <pipo.host>yardtrek.mtabuscis.net</pipo.host>
+                 <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
           </properties>
         </profile>
         <profile>
@@ -235,7 +236,8 @@
 <!--                  <particle.filter.debug>false</particle.filter.debug> -->
                  <particle.filter.debug>true</particle.filter.debug>
                  <timePredictions.status>DISABLED</timePredictions.status>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
+                 <pipo.host>yardtrek.mtabuscis.net</pipo.host>
+                 <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
           </properties>
         </profile>
         <profile>
@@ -264,7 +266,8 @@
                  <log4j.appender>stdout</log4j.appender>
                  <particle.filter.debug>false</particle.filter.debug>
                  <timePredictions.status>DISABLED</timePredictions.status>
-                 <pipo.host>yardtrek-beta.mtabuscis.net</pipo.host>
+                 <pipo.host>yardtrek.mtabuscis.net</pipo.host>
+                 <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
           </properties>
         </profile>
 
@@ -273,7 +276,7 @@
         <profile>
             <id>depots-one</id>
             <properties>
-                <depot.partition.key>MA</depot.partition.key>
+                <depot.partition.key>BP</depot.partition.key>
             </properties>            
         </profile>
         <profile>

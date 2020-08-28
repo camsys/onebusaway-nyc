@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.impl;
 
 import static org.junit.Assert.*;
@@ -37,15 +53,15 @@ public class BundleValidationServiceImplTest {
     assertNotNull(input);
     List<ServiceDateRange> ranges = bundleValidationService.getServiceDateRanges(input);
     assertNotNull(ranges);
-    assertTrue(ranges.size() == 4);
+    assertTrue(ranges.size() == 14);
     ServiceDateRange sdr0 = ranges.get(0);
     assertEquals("MTA NYCT", sdr0.getAgencyId());
-    assertEquals(2012, sdr0.getStartDate().getYear());
-    assertEquals(4, sdr0.getStartDate().getMonth());
-    assertEquals(8, sdr0.getStartDate().getDay());
-    assertEquals(2012, sdr0.getEndDate().getYear());
-    assertEquals(7, sdr0.getEndDate().getMonth());
-    assertEquals(7, sdr0.getEndDate().getDay());
+    assertEquals(2020, sdr0.getStartDate().getYear());
+    assertEquals(1, sdr0.getStartDate().getMonth());
+    assertEquals(25, sdr0.getStartDate().getDay());
+    assertEquals(2020, sdr0.getEndDate().getYear());
+    assertEquals(4, sdr0.getEndDate().getMonth());
+    assertEquals(4, sdr0.getEndDate().getDay());
 
   }
 
@@ -58,12 +74,12 @@ public class BundleValidationServiceImplTest {
     Map<String, List<ServiceDateRange>> map = bundleValidationService.getServiceDateRangesByAgencyId(ranges);
     ServiceDateRange sdr0 = map.get("MTA NYCT").get(0);
     assertEquals("MTA NYCT", sdr0.getAgencyId());
-    assertEquals(2012, sdr0.getStartDate().getYear());
-    assertEquals(4, sdr0.getStartDate().getMonth());
-    assertEquals(8, sdr0.getStartDate().getDay());
-    assertEquals(2012, sdr0.getEndDate().getYear());
-    assertEquals(7, sdr0.getEndDate().getMonth());
-    assertEquals(7, sdr0.getEndDate().getDay());
+    assertEquals(2020, sdr0.getStartDate().getYear());
+    assertEquals(1, sdr0.getStartDate().getMonth());
+    assertEquals(25, sdr0.getStartDate().getDay());
+    assertEquals(2020, sdr0.getEndDate().getYear());
+    assertEquals(4, sdr0.getEndDate().getMonth());
+    assertEquals(4, sdr0.getEndDate().getDay());
 
   }
 
@@ -77,12 +93,12 @@ public class BundleValidationServiceImplTest {
     Map<String, List<ServiceDateRange>> map = bundleValidationService.getServiceDateRangesAcrossAllGtfs(inputs);
     ServiceDateRange sdr0 = map.get("MTA NYCT").get(0);
 
-    assertEquals(2012, sdr0.getStartDate().getYear());
-    assertEquals(4, sdr0.getStartDate().getMonth());
-    assertEquals(8, sdr0.getStartDate().getDay());
-    assertEquals(2012, sdr0.getEndDate().getYear());
-    assertEquals(7, sdr0.getEndDate().getMonth());
-    assertEquals(7, sdr0.getEndDate().getDay());
+    assertEquals(2020, sdr0.getStartDate().getYear());
+    assertEquals(1, sdr0.getStartDate().getMonth());
+    assertEquals(25, sdr0.getStartDate().getDay());
+    assertEquals(2020, sdr0.getEndDate().getYear());
+    assertEquals(4, sdr0.getEndDate().getMonth());
+    assertEquals(4, sdr0.getEndDate().getDay());
 
   }
 

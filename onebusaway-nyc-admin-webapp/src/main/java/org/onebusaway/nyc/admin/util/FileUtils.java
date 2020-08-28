@@ -1,8 +1,24 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.util;
 
 import org.onebusaway.nyc.util.impl.FileUtility;
 
-import org.h2.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +106,28 @@ public class FileUtils {
     }
     if (i >= 0) {
       return urlString.substring(i, urlString.length());
+    }
+    return urlString;
+  }
+
+  public String parseDirectory(String urlString) {
+    if (urlString == null) return null;
+    int i = urlString.lastIndexOf("/");
+    if (i+1 < urlString.length()) {
+      return urlString.substring(0, i);
+    }
+    return urlString;
+  }
+
+  public String parseFileNameMinusExtension(String urlString) {
+    if (urlString == null) return null;
+    int i = urlString.lastIndexOf("/");
+    if (i > 0 && i+1 < urlString.length()) {
+      urlString = urlString.substring(i+1, urlString.length());
+    }
+    i = urlString.lastIndexOf(".");
+    if (i > 0) {
+      urlString = urlString.substring(0, i);
     }
     return urlString;
   }
@@ -254,11 +292,10 @@ public class FileUtils {
     Process process = null;
     try {
       StringBuffer cmd = new StringBuffer();
-      cmd.append("tar zcC " + baseDir + "  ");
+      cmd.append("tar -c -f " + filename + " -z -C " + baseDir + "  ");
       for (String path : paths) {
         cmd.append(path + " ");
       }
-      cmd.append("-f " + filename);
       _log.info("exec:" + cmd.toString());
       process = Runtime.getRuntime().exec(cmd.toString());
       return process.waitFor();
@@ -268,6 +305,15 @@ public class FileUtils {
 
   }
 
+  public static void copyFile(File srcFile, File destFile) {
+    _log.debug("copyFile(" + srcFile + "=>" + destFile);
+    try {
+      org.apache.commons.io.FileUtils.copyFile(srcFile, destFile);
+    } catch (IOException e) {
+      _log.error("copyFile failed:", e);
+      throw new RuntimeException(e);
+    }
+  }
 
   public InputStream read(String filename) {
     File file = new File(filename);

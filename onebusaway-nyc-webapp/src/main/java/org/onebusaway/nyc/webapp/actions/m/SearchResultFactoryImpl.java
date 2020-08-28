@@ -1,20 +1,21 @@
 /**
- * Copyright (c) 2011 Metropolitan Transportation Authority
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.util.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +58,8 @@ import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
+
+import javax.management.monitor.Monitor;
 
 public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl implements SearchResultFactory {
 
@@ -95,7 +99,30 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     }
 
     // add stops in both directions
-    Map<String, List<String>> stopIdAndDirectionToDistanceAwayStringMap = getStopIdAndDirectionToDistanceAwayStringsListMapForRoute(routeBean);
+//    Map<String, List<String>> stopIdAndDirectionToDistanceAwayStringMap = getStopIdAndDirectionToDistanceAwayStringsListMapForRoute(routeBean);
+
+    List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(
+        routeBean.getId(), null, 0, SystemTime.currentTimeMillis(), false);
+
+    Map<String, List<String>> stopIdToDistanceAwayStringMap = new HashMap<String, List<String>>();
+    Map<String, List<String>> stopIdToVehicleIdMap = new HashMap<String, List<String>>();
+    Map<String, Boolean> stopIdToRealtimeDataMap = new HashMap<String, Boolean>();
+
+    // build map of stop IDs to list of distance strings
+    for (VehicleActivityStructure journey : journeyList) {
+      // on detour?
+      MonitoredCallStructure monitoredCall = journey.getMonitoredVehicleJourney().getMonitoredCall();
+      if (monitoredCall == null) {
+        continue;
+      }
+
+      String stopId = monitoredCall.getStopPointRef().getValue();
+
+      fillDistanceAwayStringsList(journey.getMonitoredVehicleJourney(),journey.getRecordedAtTime(), stopId, stopIdToDistanceAwayStringMap);
+      fillVehicleIdsStringList(journey.getMonitoredVehicleJourney(), journey.getRecordedAtTime(), stopId, stopIdToVehicleIdMap);
+      fillRealtimeData(journey.getMonitoredVehicleJourney(), stopId, stopIdToRealtimeDataMap);
+    }
+
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
@@ -128,9 +155,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
           for (String stopId : stopGroupBean.getStopIds()) { 
         	  if (_nycTransitDataService.stopHasRevenueServiceOnRoute((routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
                       stopId, routeBean.getId(), stopGroupBean.getId())) {
-                stopsOnRoute.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId),
-            		stopIdAndDirectionToDistanceAwayStringMap.get(stopId + "_" + stopGroupBean.getId())));
-              }  
+              stopsOnRoute.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId),
+                  stopIdToDistanceAwayStringMap.get(stopId), stopIdToRealtimeDataMap.get(stopId), stopIdToVehicleIdMap.get(stopId)));
+            }
           }
         }
 
@@ -158,11 +185,40 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     
     Set<String> serviceAlertDescriptions = new HashSet<String>();
 
+//    Map<String, Boolean> routeIdToRealtimeDataMap = new HashMap<String, Boolean>();
+//
+//    List<MonitoredStopVisitStructure> monitoredStopVisitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopBean.getId(),0, System.currentTimeMillis(),false);
+//    for(MonitoredStopVisitStructure msv : monitoredStopVisitsForStop) {
+//      try {
+//        MonitoredVehicleJourneyStructure mvj = msv.getMonitoredVehicleJourney();
+//
+//
+//      Boolean spooking = false;
+//      try {
+//        spooking = mvj.getProgressStatus().getValue() == "spooking";
+//      } catch (Exception e) {
+//        _log.info("prog status is null or not spooking");
+//      }
+//      routeIdToRealtimeDataMap.put(mvj.getLineRef().getValue() + mvj.getVehicleRef().getValue(), (mvj.isMonitored() && !spooking)); //
+//      } catch (Exception e) {
+//        _log.info(e.toString());
+//      }
+//    }
+
+
+
+
     for (RouteBean routeBean : stopBean.getRoutes()) {
       if (routeFilter != null && !routeFilter.isEmpty()
           && !routeFilter.contains(routeBean)) {
         filteredRoutes.add(routeBean);
         continue;
+      }
+
+
+      List<VehicleActivityStructure> vehicleActivityForRoute = _realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopBean.getDirection(),0, System.currentTimeMillis(),false);
+      for(VehicleActivityStructure vas : vehicleActivityForRoute) {
+        vas.getMonitoredVehicleJourney().getVehicleRef().getValue();
       }
 
       StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
@@ -201,13 +257,24 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
             hasUpcomingScheduledService = true;
           }
 
+          Map<String, List<Boolean>> hasRealtimes = getHasRealtimesForStopAndRouteAndDirection(stopBean, routeBean, stopGroupBean);
+//
+//          Boolean hasRevenueServiceOnRoute = _nycTransitDataService.stopHasRevenueServiceOnRoute(
+//              (routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
+//              stopBean.getId(),
+//              routeBean.getId(),
+//              stopBean.getDirection());
+
+
           if(arrivalsForRouteAndDirection.isEmpty()) {
-            directions.add(new RouteDirection(stopGroupBean.getName().getName(), stopGroupBean, null, 
+            directions.add(new RouteDirection(stopGroupBean.getName().getName(), stopGroupBean, null,
                 hasUpcomingScheduledService, Collections.<String>emptyList()));
-          } else {          
+          } else {
+
             for (Map.Entry<String,List<String>> entry : arrivalsForRouteAndDirection.entrySet()) {
-              directions.add(new RouteDirection(entry.getKey(), stopGroupBean, null, 
-                 hasUpcomingScheduledService, entry.getValue()));
+              directions.add(new RouteDirection(entry.getKey(), stopGroupBean, null,
+                 hasUpcomingScheduledService, entry.getValue(), hasRealtimes.get(entry.getKey())));
+
             }
           }
         }
@@ -297,6 +364,36 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     }
 
     return results;
+  }
+
+  private Map<String,List<Boolean>> getHasRealtimesForStopAndRouteAndDirection(StopBean stopBean, RouteBean routeBean, StopGroupBean stopGroupBean){
+
+    Map<String,List<Boolean>> hasRealtimes = new HashMap<>();
+    List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
+        stopBean.getId(), 0, System.currentTimeMillis(), _realtimeService.showApc());
+
+    for (MonitoredStopVisitStructure visit : visitList) {
+      String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
+      if (!routeBean.getId().equals(routeId))
+        continue;
+
+      String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
+      if (!stopGroupBean.getId().equals(directionId))
+        continue;
+
+      if (!hasRealtimes.containsKey(visit.getMonitoredVehicleJourney().getDestinationName().getValue()))
+        hasRealtimes.put(visit.getMonitoredVehicleJourney().getDestinationName().getValue(), new ArrayList<>());
+
+      if(hasRealtimes.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).size() >= 3)
+        continue;
+      try {
+        hasRealtimes.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).add(!visit.getMonitoredVehicleJourney().getProgressStatus().getValue().equals("spooking"));
+      } catch (Exception e) {
+        hasRealtimes.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).add(true);
+      }
+    }
+
+    return hasRealtimes;
   }
 
   // route view
@@ -430,6 +527,58 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 			return "";
 
 	}
+
+  private void fillDistanceAwayStringsList(
+      VehicleActivityStructure.MonitoredVehicleJourney mvj,
+      Date recordedAtTime,
+      String stopId,
+      Map<String, List<String>> map) {
+
+    // Distance Away
+    List<String> distanceStrings = map.get(stopId);
+    if (distanceStrings == null) {
+      distanceStrings = new ArrayList<String>();
+    }
+
+    distanceStrings.add(getPresentableDistance(
+        mvj,
+        recordedAtTime.getTime(), false));
+    map.put(stopId, distanceStrings);
+
+  }
+
+  private void fillVehicleIdsStringList(
+      VehicleActivityStructure.MonitoredVehicleJourney mvj, Date recordedAtTime,
+      String stopId, Map<String, List<String>> map) {
+
+    List<String> vehicleIdStrings = map.get(stopId);
+    if (vehicleIdStrings ==null) {
+      vehicleIdStrings = new ArrayList<String>();
+    }
+    if (mvj != null && mvj.getVehicleRef() != null) {
+      String id = mvj.getVehicleRef().getValue();
+      if (id.contains("_")) id = id.split("_")[1];
+      vehicleIdStrings.add(id);
+    } else {
+      vehicleIdStrings.add("N/A");
+    }
+  }
+
+
+  private void fillRealtimeData(
+      VehicleActivityStructure.MonitoredVehicleJourney mvj,
+      String stopId,
+      Map<String, Boolean> map) {
+
+    // Realtime Data Check for Stop
+    Boolean spooking = false;
+    try {
+      spooking = mvj.getProgressStatus().getValue() == "spooking";
+    } catch (Exception e) {
+      //nothing
+    }
+    map.put(stopId, (mvj.isMonitored() && !spooking));
+  }
   
   private String getPresentableDistance(
       MonitoredVehicleJourneyStructure journey, long updateTime,

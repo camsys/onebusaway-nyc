@@ -30,6 +30,7 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
     }
 
     @Autowired
+    @Qualifier("NycPresentationService")
     public void setPresentationService(PresentationService presentationService) {
         _presentationService = presentationService;
     }

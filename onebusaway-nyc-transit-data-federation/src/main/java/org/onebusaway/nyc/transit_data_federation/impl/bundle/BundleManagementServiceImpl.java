@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.transit_data_federation.impl.bundle;
 
 import java.io.File;
@@ -12,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
@@ -27,7 +42,6 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleFileItem;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
@@ -399,13 +413,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTIONS_DATA);
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTION_SEARCH_DATA);
 			_refreshService.refresh(RefreshableResources.STOP_SEARCH_DATA);
-			_refreshService.refresh(RefreshableResources.WALK_PLANNER_GRAPH);
 			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA);
 			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_SERVICE);
-			_refreshService.refresh(RefreshableResources.STOP_TRANSFER_DATA);
 			_refreshService.refresh(RefreshableResources.SHAPE_GEOSPATIAL_INDEX);
 			_refreshService.refresh(RefreshableResources.STOP_GEOSPATIAL_INDEX);
-			_refreshService.refresh(RefreshableResources.TRANSFER_PATTERNS);
 			_refreshService.refresh(RefreshableResources.NARRATIVE_DATA);
 			_refreshService.refresh(RefreshableResources.REVENUE_STOP_ROUTE_INDEX);
 
@@ -415,7 +426,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_refreshService.refresh(NycRefreshableResources.NON_REVENUE_MOVES_DATA);
 			_refreshService.refresh(NycRefreshableResources.NON_REVENUE_STOP_DATA);
 		} catch(Exception e) {
-			_log.error("Bundle " + bundleId + " failed to load. Disabling for this session...");
+			_log.error("Bundle " + bundleId + " failed to load. Disabling for this session...",e);
 			_applicableBundles.remove(bundleId);
 			reevaluateBundleAssignment();
 

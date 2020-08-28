@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.model;
 
 import java.io.Serializable;
@@ -8,6 +24,7 @@ import java.util.List;
 public class BundleBuildResponse {
 	private List<String> _gtfsList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _stifZipList = Collections.synchronizedList(new ArrayList<String>());
+	private List<String> _transformationList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _configList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _statusList = Collections.synchronizedList(new ArrayList<String>());
 	private List<String> _outputFileList = Collections.synchronizedList(new ArrayList<String>());
@@ -77,6 +94,18 @@ public class BundleBuildResponse {
 	// for JSON serializaton only
 	public void setStifZipList(List<String> stifZipList) {
 		_stifZipList = stifZipList;
+	}
+	public void addTransformationFile(String file) {
+		_transformationList.add(file);
+	}
+
+	public List<String> getTransformationList() {
+		return new ArrayList<String>(_transformationList);
+	}
+
+	// for JSON serializaton only
+	public void setTransformationList(List<String> transformationList) {
+		_transformationList = transformationList;
 	}
 
 	public List<String> getConfigList() {
@@ -285,7 +314,7 @@ public class BundleBuildResponse {
 				 count++;
 				 if (count > 1) break;
 			 }
-			 _rootCause += "  Caused by:\n\n";
+			 _rootCause += "\n\n  Caused by:\n\n";
 			 count++;
 			 for (StackTraceElement ste:rootCause.getStackTrace()) {
 				 _rootCause += ste.toString() + "\n";

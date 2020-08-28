@@ -1,17 +1,17 @@
 /**
- * Copyright (c) 2011 Metropolitan Transportation Authority
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.likelihood;
 
@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 public class BlockLikelihood implements SensorModelRule {
 
   public static enum BLOCK_INFO_STATE {
-    NO_BLOCK_INFO, BLOCK_MATCH, NO_BLOCK_MATCH, BLOCK_INFO_NO_BLOCK,
+    NO_BLOCK_INFO, BLOCK_MATCH, BLOCK_INFO_NO_BLOCK, BLOCK_INFO_NOT_VALID, NO_BLOCK_MATCH
   };
 
   @Override
@@ -41,18 +41,23 @@ public class BlockLikelihood implements SensorModelRule {
       case NO_BLOCK_INFO:
         result.addResultAsAnd("no block info", 1d);
         return result;
+      case BLOCK_INFO_NOT_VALID:
+        result.addResultAsAnd("block-info, but invalid block", 1d);
+        return result;
       case BLOCK_MATCH:
-        result.addResultAsAnd("block match", (7d/20d));
+        result.addResultAsAnd("block match", 1d);
         return result;
       case NO_BLOCK_MATCH:
-        result.addResultAsAnd("no block match", (5d/20d));
+        result.addResultAsAnd("no block match", (2d/20d));
         return result;
       case BLOCK_INFO_NO_BLOCK:
-        result.addResultAsAnd("block-info, but no block", (2d/20d));
+        result.addResultAsAnd("block info, but no block", (1d/20d));
         return result;
+
       default:
         return null;
     }
+    
   }
 
   public static BLOCK_INFO_STATE getBlockInfoState(Context context) {
@@ -78,9 +83,9 @@ public class BlockLikelihood implements SensorModelRule {
     if (StringUtils.isEmpty(assignedBlockId)) {
       result = BLOCK_INFO_STATE.NO_BLOCK_INFO;
     } else if (!obs.hasValidAssignedBlockId()) {
-      result = BLOCK_INFO_STATE.BLOCK_INFO_NO_BLOCK;
+      result = BLOCK_INFO_STATE.BLOCK_INFO_NOT_VALID;
     } else if (inferredBlockId == null) {
-      result = BLOCK_INFO_STATE.NO_BLOCK_MATCH;
+      result = BLOCK_INFO_STATE.BLOCK_INFO_NO_BLOCK;
     } else if (StringUtils.equals(assignedBlockId, inferredBlockId)) {
       result = BLOCK_INFO_STATE.BLOCK_MATCH;
     }

@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.webapp.api;
 
 import java.util.Date;
@@ -7,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.ServletActionContext;
+import org.apache.xpath.operations.Bool;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottledService;
 import org.onebusaway.users.services.ApiKeyPermissionService;
@@ -14,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import uk.org.siri.siri.ErrorDescriptionStructure;
 import uk.org.siri.siri.OtherErrorStructure;
 import uk.org.siri.siri.ServiceDelivery;
@@ -39,6 +57,7 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
   private ApiKeyPermissionService _keyService;
 
   @Autowired
+  @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
   
   @Autowired
@@ -97,7 +116,8 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
     if (keys == null || keys.length == 0)
       return HttpServletResponse.SC_UNAUTHORIZED;
 
-    boolean isPermitted = _keyService.getPermission(keys[0], "api");
+    boolean isPermitted = checkIsPermitted(_keyService.getPermission(keys[0], "api"));
+
     boolean notThrottled = _throttledKeyService.isAllowed(keys[0]);
     
     if (isPermitted && notThrottled)
@@ -107,6 +127,13 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
       return HttpServletResponse.SC_EXPECTATION_FAILED;
     }else
       return HttpServletResponse.SC_FORBIDDEN;
+  }
+
+  private boolean checkIsPermitted(ApiKeyPermissionService.Status api) {
+      if(api != null && api.equals(ApiKeyPermissionService.Status.AUTHORIZED)){
+        return Boolean.TRUE;
+      }
+      return Boolean.FALSE;
   }
 
   @Autowired

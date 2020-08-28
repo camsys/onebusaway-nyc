@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl;
 
 import java.util.HashMap;
@@ -45,6 +61,11 @@ public class AbnormalStifDataLoggerImpl {
 		  csvLogger.header("matched_trips_gtfs_stif.csv", "agency_id,gtfs_service_id,service_id,blockId,tripId,dsc,firstStop,"+
 		        "firstStopTime,lastStop,lastStopTime,runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute,routeId,busType");
 		  csvLogger.header("dsc_statistics.csv", "dsc,agency_id,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs");
+		  csvLogger.header("gtfs_trips_matched_with_multiple_stif_trips.csv","GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num");
+		  csvLogger.header("incorrect_gtfs_stif_mismatches_by_Service_Id.csv", "stif_trip,stif_filename,stif_trip_record_line_num, Gtfs_Trip_1, Gtfs_Trip_2, Gtfs_Trip_3, Gtfs_Trip_4...");
+		  csvLogger.header("stif_gtfs_stoptime_mismatch.csv", "stifTrip.path, stifTrip, stifStop, stifId, gtfsTrip, gtfsStop, gtfsId");
+		  csvLogger.header("trips_with_failed_stif_to_gtfs_stop_id_matching.csv", "stifTrip.path, stifTrip, gtfsTrip");
+		  csvLogger.header("non-revenue_gtfs_stoptimes_updated.csv", "associatedStifTrip.path, associatedStifTrip, associatedStifStop, associatedStifId, gtfsTrip, gtfsStop, gtfsId");
 	  }
 	
 	  // package private for unit testing

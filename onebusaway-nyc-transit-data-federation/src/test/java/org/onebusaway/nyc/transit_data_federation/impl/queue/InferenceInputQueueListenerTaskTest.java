@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import static org.junit.Assert.*;
@@ -59,6 +75,23 @@ public class InferenceInputQueueListenerTaskTest {
 		bean.setInferredLongitude(Double.parseDouble("-73.85864343194719"));
 		bean.setPhase("IN_PROGRESS");
 		bean.setStatus("sample_Status");
+		bean.setScheduleDeviation(0);
+		return bean;
+	}
+
+	public NycQueuedInferredLocationBean initializeSpookingBean(){
+		NycQueuedInferredLocationBean bean = new NycQueuedInferredLocationBean();
+		bean.setVehicleId("MTA NYCT_123456789");
+		bean.setRecordTimestamp(timestamp);
+		bean.setBlockId("sample_blockID");
+		bean.setTripId("sample_tripID");
+		bean.setServiceDate(Long.parseLong("1374120000000"));
+		bean.setDistanceAlongBlock(Double.parseDouble("9379.514420929047"));
+		bean.setInferredLatitude(Double.parseDouble("40.82360253803387"));
+		bean.setInferredLongitude(Double.parseDouble("-73.85864343194719"));
+		bean.setPhase("SPOOKING"); // GHOST BUS
+		bean.setStatus("sample_Status");
+		bean.setScheduleDeviation(0);
 		return bean;
 	}
 
@@ -149,6 +182,13 @@ public class InferenceInputQueueListenerTaskTest {
 		task.processResult(inferredResult, "");
 		verify(listener,times(1)).handleVehicleLocationRecord((VehicleLocationRecord)any());
 		verify(pService, times(1)).updatePredictionsForVehicle((AgencyAndId)any());
+	}
+
+	@Test
+	public void testSpooking() throws Exception {
+		inferredResult = initializeSpookingBean();
+		assertEquals(inferredResult.getPhase(), "SPOOKING");
+		task.processResult(inferredResult, "");
 	}
 }
 

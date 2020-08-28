@@ -26,7 +26,9 @@ public class ResponseCodes {
   public static final int RESPONSE_UNAUTHORIZED = 401;
 
   public static final int RESPONSE_RESOURCE_NOT_FOUND = 404;
-  
+
+  public static final int RESPONSE_TOO_MANY_REQUESTS = 429;
+
   public static final int RESPONSE_OUT_OF_SERVICE_AREA = 440;
 
   public static final int RESPONSE_SERVICE_EXCEPTION = 500;
