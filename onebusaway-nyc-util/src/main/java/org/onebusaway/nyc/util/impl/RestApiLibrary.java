@@ -96,8 +96,12 @@ public class RestApiLibrary {
 		
 		return url;
 	}
+
+	public String getContentsOfUrlAsString(URL requstUrl) throws IOException {
+		return getContentsOfUrlAsString(requstUrl, connectionTimeout, readTimeout);
+	}
 	
-	public String getContentsOfUrlAsString(URL requestUrl) throws IOException {
+	public static String getContentsOfUrlAsString(URL requestUrl, int connectionTimeout, int readTimeout) throws IOException {
 		BufferedReader br = null;
 		InputStream inStream = null;
 		URLConnection conn = null;
