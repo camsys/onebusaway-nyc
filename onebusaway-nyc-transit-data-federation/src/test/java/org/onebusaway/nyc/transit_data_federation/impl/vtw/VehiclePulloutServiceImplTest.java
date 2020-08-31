@@ -21,7 +21,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +47,10 @@ import tcip_final_4_0_0.ObaSchPullOutList;
 import tcip_final_4_0_0.SCHBlockIden;
 import tcip_final_4_0_0.SCHPullInOutInfo;
 import tcip_final_4_0_0.SchPullOutList.PullOuts;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -114,6 +125,24 @@ public class VehiclePulloutServiceImplTest {
     assertEquals("MTA", resultPullouts.getVehicle().getAgdesig());
     assertEquals("7788", resultPullouts.getVehicle().getId());
     assertEquals("test block id", resultPullouts.getBlock().getId());
+  }
+
+  @Test
+  public void testVehiclePulloutFromXml() throws Exception {
+    Path path = Paths.get(getClass().getResource("vehicle_pipo.xml").getFile());
+    String xml = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+    ObaSchPullOutList pullOutList = service.getFromXml(xml);
+
+    Map<AgencyAndId, SCHPullInOutInfo> vehicleIdToPullouts = new HashMap<>();
+    service.processVehiclePipoList(pullOutList, vehicleIdToPullouts);
+    assertEquals(1, vehicleIdToPullouts.size());
+
+    List<SCHPullInOutInfo> pullInOutInfoList =  new ArrayList<>(vehicleIdToPullouts.values());
+    SCHPullInOutInfo pipoInfo = pullInOutInfoList.get(0);
+    assertEquals(pipoInfo.getBlock().getId(), "MTABC_BPPC0-BP_C0-Weekday-10_5440668");
+    assertEquals(pipoInfo.getGarage().getAgdesig(), "MTABC");
+    assertEquals(pipoInfo.getVehicle().getId(), "3773");
+    assertEquals(pipoInfo.getRun().getId(), "417");
   }
 
 }
