@@ -19,7 +19,6 @@ package org.onebusaway.nyc.transit_data_federation.impl.vtw;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.when;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -34,7 +33,7 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data_federation.util.TcipUtilImpl;
+import org.onebusaway.nyc.transit_data_federation.impl.util.TcipUtilImpl;
 import org.onebusaway.nyc.util.impl.vtw.PullOutApiLibrary;
 
 import tcip_final_4_0_0.CPTTransitFacilityIden;
@@ -125,16 +124,31 @@ public class VehiclePulloutServiceImplTest {
     String xml = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
     ObaSchPullOutList pullOutList = tcipUtil.getFromXml(xml);
 
-    Map<AgencyAndId, SCHPullInOutInfo> vehicleIdToPullouts = new HashMap<>();
-    service.processVehiclePipoList(pullOutList, vehicleIdToPullouts);
-    assertEquals(1, vehicleIdToPullouts.size());
+    service.processVehiclePipoList(pullOutList);
+    assertEquals(1,service.getVehicleIdToPullouts().size());
 
-    List<SCHPullInOutInfo> pullInOutInfoList =  new ArrayList<>(vehicleIdToPullouts.values());
+    List<SCHPullInOutInfo> pullInOutInfoList =  new ArrayList<>(service.getVehicleIdToPullouts().values());
     SCHPullInOutInfo pipoInfo = pullInOutInfoList.get(0);
     assertEquals(pipoInfo.getBlock().getId(), "MTABC_BPPC0-BP_C0-Weekday-10_5440668");
     assertEquals(pipoInfo.getGarage().getAgdesig(), "MTABC");
     assertEquals(pipoInfo.getVehicle().getId(), "3773");
     assertEquals(pipoInfo.getRun().getId(), "417");
+
+    AgencyAndId vehicleId = new AgencyAndId("MTABC","3773");
+    assertEquals("MTABC_BPPC0-BP_C0-Weekday-10_5440668",service.getAssignedBlockId(vehicleId));
+  }
+
+  @Test
+  public void testVehiclePulloutFromEmptyXml() throws Exception {
+    Path path = Paths.get(getClass().getResource("vehicle_pipo_empty.xml").getFile());
+    String xml = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+    ObaSchPullOutList pullOutList = tcipUtil.getFromXml(xml);
+    assertEquals("0", pullOutList.getErrorCode());
+    assertEquals("Yard Trek", pullOutList.getSourceapp());
+    assertEquals("TCIP 4.0", pullOutList.getSchVersion());
+
+    service.processVehiclePipoList(pullOutList);
+    assertEquals(0, service.getVehicleIdToPullouts().size());
   }
 
 }

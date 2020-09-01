@@ -17,25 +17,23 @@ package org.onebusaway.nyc.transit_data_federation.impl.vtw;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.impl.util.TcipUtil;
 import org.onebusaway.nyc.transit_data_federation.services.vtw.VehiclePulloutService;
-import org.onebusaway.nyc.transit_data_federation.util.TcipUtil;
-import org.onebusaway.nyc.transit_data_federation.util.TcipUtilImpl;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.util.impl.vtw.PullOutApiLibrary;
+import org.onebusaway.nyc.util.impl.UrlUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,12 +61,9 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   private ConfigurationService _configurationService;
 
-  @Autowired
-  private PullOutApiLibrary _pullOutApiLibrary = null;
-
   private TcipUtil _tcipUtil;
 
-  private Map<AgencyAndId, SCHPullInOutInfo> _vehicleIdToPullouts = new HashMap<AgencyAndId, SCHPullInOutInfo>();
+  private Map<AgencyAndId, SCHPullInOutInfo> _vehicleIdToPullouts = new ConcurrentHashMap<>(10000);
 
   @Autowired
   public void setTcipUtil(TcipUtil tcipUtil){
@@ -81,17 +76,16 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     configChanged();
   }
 
-  public void setTransitDataManagerApiLibrary(
-          PullOutApiLibrary apiLibrary) {
-    this._pullOutApiLibrary = apiLibrary;
-  }
-
   public URL getUrl() {
     return _url;
   }
 
   public void setUrl(URL url) {
     _url = url;
+  }
+
+  public Map<AgencyAndId, SCHPullInOutInfo> getVehicleIdToPullouts(){
+    return _vehicleIdToPullouts;
   }
 
   @PostConstruct
@@ -101,8 +95,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   @Refreshable(dependsOn = {"tdm.vehiclePipoRefreshInterval", "tdm.vehiclePipoServiceEnabled", "tdm.vehiclePipoUrl"})
   private void configChanged() {
-    String url = _configurationService.getConfigurationValueAsString("vtw.unassignedVehicleServiceUrl", null);
-
+    String url = _configurationService.getConfigurationValueAsString("tdm.vehiclePipoUrl", null);
     Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("tdm.vehiclePipoRefreshInterval", null);
     _enabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("tdm.vehiclePipoServiceEnabled", "false"));
 
@@ -154,20 +147,22 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     }
   }
 
-  public synchronized ObaSchPullOutList getPullOutData() throws JAXBException {
-    return _tcipUtil.getFromXmlUrl(getUrl());
+  public ObaSchPullOutList getPullOutData() throws Exception {
+    String xml = UrlUtility.readAsString(getUrl());
+    return _tcipUtil.getFromXml(xml);
   }
-  public synchronized void refreshData(ObaSchPullOutList schPulloutList) throws Exception {
-    _vehicleIdToPullouts.clear();
+
+  public void refreshData(ObaSchPullOutList schPulloutList) throws Exception {
     try {
-      processVehiclePipoList(schPulloutList, _vehicleIdToPullouts);
+      processVehiclePipoList(schPulloutList);
     } catch (Exception e) {
       _log.error("Unable to process vehicle pipo information", e);
       throw e;
     }
   }
 
-  public void processVehiclePipoList(ObaSchPullOutList schPulloutList, Map<AgencyAndId, SCHPullInOutInfo> vehicleIdToPullouts){
+  public void processVehiclePipoList(ObaSchPullOutList schPulloutList){
+    Map<AgencyAndId, SCHPullInOutInfo> updatedVehicleIdToPullouts = new ConcurrentHashMap<>(10000);
     String errorCode = schPulloutList.getErrorCode();
     if (errorCode != null && !errorCode.equals("0")){
       if (errorCode.equalsIgnoreCase("1")) {
@@ -186,14 +181,10 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
         _log.warn("Unable to add pipo info, missing agencyId {} or vehicleId {}", agencyId, vehicleId);
         continue;
       }
-      vehicleIdToPullouts.put(new AgencyAndId(agencyId, vehicleId), pullInOutInfo);
+      updatedVehicleIdToPullouts.put(new AgencyAndId(agencyId, vehicleId), pullInOutInfo);
     }
+    _vehicleIdToPullouts = updatedVehicleIdToPullouts;
   }
-
-  public String getVehiclePipoApiOutputAsXml() throws Exception {
-    return _pullOutApiLibrary.getContentsOfUrlAsString("uts","active","tcip","");
-  }
-
 
   @Override
   public String getAssignedBlockId(AgencyAndId vehicleId) {
@@ -202,7 +193,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     if (info==null || info.getBlock()==null || agency == null) {
       return null;
     }
-    return agency + AgencyAndId.ID_SEPARATOR + info.getBlock().getId();
+    return info.getBlock().getId();
   }
 
   @Override
@@ -219,8 +210,5 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
       _taskScheduler.shutdown();
     }
   }
-
-
-
 
 }

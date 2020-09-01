@@ -14,11 +14,13 @@
  *  limitations under the License.
  */
 
-package org.onebusaway.nyc.transit_data_federation.util;
+package org.onebusaway.nyc.transit_data_federation.impl.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.onebusaway.nyc.util.impl.RestApiLibrary;
+import org.onebusaway.nyc.util.impl.UrlUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -74,11 +76,9 @@ public class TcipUtilImpl implements TcipUtil{
     }
 
     @Override
-    public ObaSchPullOutList getFromXmlUrl(URL url) throws JAXBException {
-        JAXBContext jaxbContext  = JAXBContext.newInstance(ObaSchPullOutList.class);
-        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-        ObaSchPullOutList list = (ObaSchPullOutList) jaxbUnmarshaller.unmarshal(url);
-        return list;
+    public ObaSchPullOutList getFromXmlUrl(URL url) throws JAXBException, IOException, XMLStreamException {
+        String xml = UrlUtility.readAsString(url);
+        return getFromXml(xml);
     }
 
     @Override

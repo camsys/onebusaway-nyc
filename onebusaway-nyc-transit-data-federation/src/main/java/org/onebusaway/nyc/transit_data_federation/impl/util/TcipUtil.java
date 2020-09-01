@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.onebusaway.nyc.transit_data_federation.util;
+package org.onebusaway.nyc.transit_data_federation.impl.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import tcip_final_4_0_0.ObaSchPullOutList;
@@ -34,7 +34,7 @@ public interface TcipUtil {
 
     String getAsJson(ObaSchPullOutList o) throws JsonProcessingException;
 
-    ObaSchPullOutList getFromXmlUrl(URL url) throws JAXBException;
+    ObaSchPullOutList getFromXmlUrl(URL url) throws JAXBException, IOException, XMLStreamException;
 
     ObaSchPullOutList getFromXml(String xml) throws XMLStreamException, JAXBException;
 
