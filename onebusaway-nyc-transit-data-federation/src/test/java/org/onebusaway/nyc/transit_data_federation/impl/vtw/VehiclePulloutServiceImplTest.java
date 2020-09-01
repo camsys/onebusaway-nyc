@@ -21,8 +21,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,12 +31,10 @@ import java.util.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data_federation.impl.vtw.VehiclePulloutServiceImpl;
+import org.onebusaway.nyc.transit_data_federation.util.TcipUtilImpl;
 import org.onebusaway.nyc.util.impl.vtw.PullOutApiLibrary;
 
 import tcip_final_4_0_0.CPTTransitFacilityIden;
@@ -47,10 +43,6 @@ import tcip_final_4_0_0.ObaSchPullOutList;
 import tcip_final_4_0_0.SCHBlockIden;
 import tcip_final_4_0_0.SCHPullInOutInfo;
 import tcip_final_4_0_0.SchPullOutList.PullOuts;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -61,11 +53,15 @@ public class VehiclePulloutServiceImplTest {
 
   @InjectMocks
   private VehiclePulloutServiceImpl service;
-  
+
+  @InjectMocks
+  private TcipUtilImpl tcipUtil;
+
   @Before
   public void prepare(){
-	  MockitoAnnotations.initMocks(this);
-	  this.service.setupJaxbContext();
+    MockitoAnnotations.initMocks(this);
+    tcipUtil.setup();
+    service.setTcipUtil(tcipUtil);
   }
 
   @Test
@@ -74,11 +70,9 @@ public class VehiclePulloutServiceImplTest {
     o.setErrorCode("1");
     o.setErrorDescription("No description here");
 
-    String xml = service.getAsXml(o);
-    
-    when(mockApiLibrary.getContentsOfUrlAsString("uts","active","tcip","")).thenReturn(xml);
-        
-    service.refreshData();
+    String xml = tcipUtil.getAsXml(o);
+    ObaSchPullOutList o2 = tcipUtil.getFromXml(xml);
+    service.refreshData(o2);
 
     AgencyAndId vehicle = new AgencyAndId("MTA", "7788");
     SCHPullInOutInfo pullouts = service.getVehiclePullout(vehicle);
@@ -113,11 +107,9 @@ public class VehiclePulloutServiceImplTest {
     pullinoutinfo.setBlock(block);
     block.setId("test block id");
     
-    String xml = service.getAsXml(o);
-
-    when(mockApiLibrary.getContentsOfUrlAsString("uts","active","tcip","")).thenReturn(xml);
-    
-    service.refreshData();
+    String xml = tcipUtil.getAsXml(o);
+    ObaSchPullOutList o2 = tcipUtil.getFromXml(xml);
+    service.refreshData(o2);
     
     AgencyAndId lookupVehicle = new AgencyAndId("MTA", "7788");
     SCHPullInOutInfo resultPullouts = service.getVehiclePullout(lookupVehicle);
@@ -131,7 +123,7 @@ public class VehiclePulloutServiceImplTest {
   public void testVehiclePulloutFromXml() throws Exception {
     Path path = Paths.get(getClass().getResource("vehicle_pipo.xml").getFile());
     String xml = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-    ObaSchPullOutList pullOutList = service.getFromXml(xml);
+    ObaSchPullOutList pullOutList = tcipUtil.getFromXml(xml);
 
     Map<AgencyAndId, SCHPullInOutInfo> vehicleIdToPullouts = new HashMap<>();
     service.processVehiclePipoList(pullOutList, vehicleIdToPullouts);

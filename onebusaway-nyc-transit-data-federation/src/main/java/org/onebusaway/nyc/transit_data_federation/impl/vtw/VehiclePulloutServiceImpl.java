@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl.vtw;
 
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -28,31 +26,22 @@ import java.util.concurrent.ScheduledFuture;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.vtw.VehiclePulloutService;
+import org.onebusaway.nyc.transit_data_federation.util.TcipUtil;
+import org.onebusaway.nyc.transit_data_federation.util.TcipUtilImpl;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.vtw.PullOutApiLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.stereotype.Component;
 
-import tcip_final_4_0_0.CPTVehicleIden;
 import tcip_final_4_0_0.ObaSchPullOutList;
-import tcip_final_4_0_0.ObjectFactory;
 import tcip_final_4_0_0.SCHPullInOutInfo;
 
 public class VehiclePulloutServiceImpl implements VehiclePulloutService {
@@ -77,7 +66,14 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   @Autowired
   private PullOutApiLibrary _pullOutApiLibrary = null;
 
+  private TcipUtil _tcipUtil;
+
   private Map<AgencyAndId, SCHPullInOutInfo> _vehicleIdToPullouts = new HashMap<AgencyAndId, SCHPullInOutInfo>();
+
+  @Autowired
+  public void setTcipUtil(TcipUtil tcipUtil){
+    _tcipUtil = tcipUtil;
+  }
 
   @Autowired
   public void setConfigurationService(ConfigurationService configurationService) {
@@ -100,8 +96,6 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   @PostConstruct
   public void setup(){
-    setupMapper();
-    setupJaxbContext();
     startUpdateProcess();
   }
 
@@ -132,20 +126,6 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     }
   }
 
-  public void setupMapper(){
-    _mapper = new ObjectMapper();
-    _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-  }
-
-  public void setupJaxbContext(){
-    try {
-      context = JAXBContext.newInstance(
-              ObaSchPullOutList.class);
-    } catch(Exception e) {
-      _log.error("Failed to Serialize ObaSchPullOutList to XML", e);
-    }
-  }
-
   private void startUpdateProcess() {
     Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("tdm.vehiclePipoRefreshInterval", 60);
     if (_updateTask==null) {
@@ -165,7 +145,8 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     @Override
     public void run() {
       try {
-        refreshData();
+        ObaSchPullOutList schPulloutList = getPullOutData();
+        refreshData(schPulloutList);
       } catch (Exception e) {
         _log.error("refreshData() failed: " + e.getMessage());
         e.printStackTrace();
@@ -173,10 +154,12 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     }
   }
 
-  public synchronized void refreshData() throws Exception {
+  public synchronized ObaSchPullOutList getPullOutData() throws JAXBException {
+    return _tcipUtil.getFromXmlUrl(getUrl());
+  }
+  public synchronized void refreshData(ObaSchPullOutList schPulloutList) throws Exception {
     _vehicleIdToPullouts.clear();
     try {
-      ObaSchPullOutList schPulloutList = getPullOutListFromXml(_url);
       processVehiclePipoList(schPulloutList, _vehicleIdToPullouts);
     } catch (Exception e) {
       _log.error("Unable to process vehicle pipo information", e);
@@ -207,54 +190,10 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     }
   }
 
-  public ObaSchPullOutList getPullOutListFromJson() throws Exception {
-    if (_mapper == null) {
-      _enabled = false;
-      cancelTask();
-      throw new Exception("Object Mapper unavailable, disabling vehicle pullout service");
-    }
-    ObaSchPullOutList response = _mapper.readValue(_url, ObaSchPullOutList.class);
-    return response;
+  public String getVehiclePipoApiOutputAsXml() throws Exception {
+    return _pullOutApiLibrary.getContentsOfUrlAsString("uts","active","tcip","");
   }
 
-  public String getAsJson(ObaSchPullOutList o) throws JsonProcessingException {
-    return _mapper.writeValueAsString(o);
-  }
-
-  public ObaSchPullOutList getPullOutListFromXml(URL url) throws JAXBException, MalformedURLException {
-    JAXBContext jaxbContext  = JAXBContext.newInstance(ObaSchPullOutList.class);
-    Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-    ObaSchPullOutList list = (ObaSchPullOutList) jaxbUnmarshaller.unmarshal(url);
-    return list;
-  }
-
-  public ObaSchPullOutList getPullOutListFromXml() throws Exception {
-    String response = _pullOutApiLibrary.getContentsOfUrlAsString("uts","active","tcip","");
-    return getFromXml(response);
-  }
-
-  public ObaSchPullOutList getFromXml(String xml) throws XMLStreamException, JAXBException{
-    XMLInputFactory xmlInputFact = XMLInputFactory.newInstance();
-    XMLStreamReader reader = xmlInputFact.createXMLStreamReader(
-            new StringReader(xml));
-
-    Unmarshaller u = context.createUnmarshaller();
-
-    JAXBElement<ObaSchPullOutList> doc = (JAXBElement<ObaSchPullOutList>) u.unmarshal(reader,ObaSchPullOutList.class);
-    return doc.getValue();
-  }
-
-  public String getAsXml(ObaSchPullOutList o) throws JAXBException{
-    ObjectFactory f = new ObjectFactory();
-    JAXBElement<ObaSchPullOutList> pullOutListElement = f.createObaSchPullOutList(o);
-    Marshaller m = JAXBContext.newInstance(ObjectFactory.class).createMarshaller();
-    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-    StringWriter writer = new StringWriter();
-
-    m.marshal(pullOutListElement, writer);
-    return writer.toString();
-  }
 
   @Override
   public String getAssignedBlockId(AgencyAndId vehicleId) {
