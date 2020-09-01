@@ -83,6 +83,7 @@ public class DailyDataValidationTask implements Runnable {
             _log.info("done");
         } catch (Exception e) {
             _log.error("exception with dailyVa:", e);
+            requestResponse.getResponse().setException(e);
         }
 
     }
@@ -258,9 +259,11 @@ public class DailyDataValidationTask implements Runnable {
                     serviceIdsByDate.get(date).add(serviceId);
                 }
                 if(calDate.getExceptionType() == 2){
-                    serviceIdsByDate.get(date).remove(serviceId);
-                    if(serviceIdsByDate.get(date).size() == 0){
-                        serviceIdsByDate.remove(date);
+                    if(serviceIdsByDate.get(date) != null) {
+                        serviceIdsByDate.get(date).remove(serviceId);
+                        if (serviceIdsByDate.get(date).size() == 0) {
+                            serviceIdsByDate.remove(date);
+                        }
                     }
                 }
 
