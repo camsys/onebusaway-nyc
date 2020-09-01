@@ -19,7 +19,7 @@ package org.onebusaway.nyc.admin.service.bundle.task;
 import org.onebusaway.gtfs.model.*;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
-import org.onebusaway.nyc.admin.model.BundleRequestResponse;
+import org.onebusaway.nyc.admin.model.*;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
@@ -47,7 +47,9 @@ public class TripCountByZoneDataOutputTask implements Runnable {
     int maxStops = 0;
     final private String internalDelimeter = "&%&%&%&%";
     String ARG_TOTAL = "total";
-    BundleRequestResponse requestResponse;
+    protected BundleRequestResponse requestResponse;
+    protected BundleBuildRequest request;
+    protected BundleBuildResponse response;
 
     @Autowired
     public void setLogger(MultiCSVLogger logger) {
@@ -72,7 +74,7 @@ public class TripCountByZoneDataOutputTask implements Runnable {
     @Override
     public void run() {
         _log.info("starting TripCountByZoneDataOutputTask");
-        setMappingsFile();
+        setMappingsFile(requestResponse.getRequest());
         if (! _mappingsFile.isFile()) {
             _log.info("missing mapping file,{} exiting", _mappingsFile.getAbsolutePath());
             return;
@@ -81,14 +83,15 @@ public class TripCountByZoneDataOutputTask implements Runnable {
             process();
         } catch (Exception e) {
             _log.error("exception with dailyVa:", e);
+            requestResponse.getResponse().setException(e);
         } finally {
             _log.info("done");
         }
 
     }
 
-    private void setMappingsFile(){
-        _mappingsFile = new File(requestResponse.getRequest().getRouteMappings());
+    private void setMappingsFile(BundleBuildRequest request){
+        _mappingsFile = new File(request.getRouteMappings());
     }
 
     private void process(){
@@ -225,9 +228,11 @@ public class TripCountByZoneDataOutputTask implements Runnable {
                     serviceIdsByDate.get(date).add(serviceId);
                 }
                 if(calDate.getExceptionType() == 2){
-                    serviceIdsByDate.get(date).remove(serviceId);
-                    if(serviceIdsByDate.get(date).size() == 0){
-                        serviceIdsByDate.remove(date);
+                    if(serviceIdsByDate.get(date) != null) {
+                        serviceIdsByDate.get(date).remove(serviceId);
+                        if (serviceIdsByDate.get(date).size() == 0) {
+                            serviceIdsByDate.remove(date);
+                        }
                     }
                 }
 
