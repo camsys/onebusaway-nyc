@@ -449,7 +449,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // STEP 3
       BeanDefinitionBuilder stifTransformerTask = BeanDefinitionBuilder.genericBeanDefinition(StifTransformerTask.class);
       stifTransformerTask.addPropertyReference("logger", "multiCSVLogger");
-      stifTransformerTask.addPropertyValue("stifsPath", request.getTmpDirectory() + File.separator + "stif");
       stifTransformerTask.addPropertyValue("response", response);
       stifTransformerTask.addPropertyValue("stifOutputPath", stifOutputPath.getAbsolutePath());
       stifTransformerTask.addPropertyValue("transformationsOutputFolder", transformationsOutputPath.getAbsolutePath());

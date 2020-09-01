@@ -25,12 +25,10 @@ import java.io.File;
 public class StifTransformerTaskSupport {
     private static Logger _log = LoggerFactory.getLogger(StifTransformerTaskSupport.class);
 
-    public static void transformStifFiles(String stifPathLocation,String stifTransform,String stifOutputPath){
-        File stifFolderInputPath = new File(stifPathLocation);
-        File[] stifFileInputPaths = stifFolderInputPath.listFiles();
+    public static void transformStifFiles(String[] stifPathsLocation,String stifTransform,String stifOutputPath){
         StifTransformerSuite stifTransformerSuite = new StifTransformerSuite();
         stifTransformerSuite.setOutputFormat(1);
-        stifTransformerSuite.setInputPaths(stifPathLocation);
+        stifTransformerSuite.setInputPaths(stifPathsLocation);
         stifTransformerSuite.setTranform(stifTransform);
         stifTransformerSuite.setOutputPath(stifOutputPath);
         stifTransformerSuite.run();

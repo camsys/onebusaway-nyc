@@ -31,18 +31,11 @@ public class StifTransformerTask implements Runnable {
 
     private MultiCSVLogger logger;
 
-    private String stifsPath;
-
     private String stifOutputPath;
 
     private BundleBuildResponse response;
 
     private String transformationsOutputFolder;
-
-    @Autowired
-    public void setStifsPath(String stifsPath) {
-        this.stifsPath = stifsPath;
-    }
 
     @Autowired
     public void setResponse(BundleBuildResponse response) {
@@ -74,16 +67,13 @@ public class StifTransformerTask implements Runnable {
         if (stifTransformation == null){
             _log.error("No Stif Transformation Found");
             response.addStatusMessage("No Stif Transformation Found");
-            try {
-                FileUtils.copyDirectory(new File(stifsPath), new File(stifOutputPath));
-            } catch (IOException e) {
-                _log.error(e.toString());
+            for (String stifZip : response.getStifZipList()) {
+                new org.onebusaway.nyc.admin.util.FileUtils().unzip(stifZip, stifOutputPath);
             }
             return;
         }
 
-
-        StifTransformerTaskSupport.transformStifFiles(stifsPath,stifTransformation,stifOutputPath);
+        StifTransformerTaskSupport.transformStifFiles(response.getStifZipList().toArray(new String[0]),stifTransformation,stifOutputPath);
     }
 
 }
