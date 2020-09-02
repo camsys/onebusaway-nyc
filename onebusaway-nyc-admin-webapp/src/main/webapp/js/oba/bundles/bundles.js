@@ -458,6 +458,9 @@ jQuery(function() {
 	jQuery("#create_continue").click(onCreateContinueClick);
 
 	jQuery("#prevalidate_continue").click(onPrevalidateContinueClick);
+	jQuery("#upload_continue").click(onUploadContinueClick);
+	jQuery("#prepDeploy_continue").click(onPrepDeployContinueClick);
+	jQuery("#build_continue").click(onBuildContinueClick);
 
 	jQuery("#upload_continue").click(onUploadContinueClick);
 
@@ -530,6 +533,16 @@ function onUploadContinueClick() {
 function onPrevalidateContinueClick() {
 	var $tabs = jQuery("#tabs");
 	$tabs.tabs('select', 3);
+}
+
+function onBuildContinueClick() {
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 4);
+}
+
+function onPrepDeployContinueClick(){
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 7);
 }
 
 function onSelectClick() {
@@ -2383,6 +2396,8 @@ function copyBundleToDeployLocation(){
 			console.log(messages);
 			for (messagesIndex in messages)
 				$("#prepDeployMessages").append($(document.createElement("p")).html(messages[messagesIndex]))
+			var continueButton = jQuery("#prepDeploy_continue");
+			enableContinueButton(continueButton);
 		}
 	})
 }
