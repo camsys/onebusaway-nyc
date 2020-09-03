@@ -244,6 +244,8 @@ jQuery(function() {
 	jQuery("#printFixedRouteRptButton").click(onPrintRouteRptClick);
 	jQuery("#printDailyRouteRptButton").click(onPrintRouteRptClick);
 
+	window.onscroll = function() {stickyAddRemove()};
+
 
 
 
@@ -544,6 +546,40 @@ function onPrepDeployContinueClick(){
 	var $tabs = jQuery("#tabs");
 	$tabs.tabs('select', 7);
 }
+
+function stickyAddRemove(){
+	if(!$("#Compare").hasClass("ui-tabs-hide")){
+		if (window.pageYOffset >= $("#fixedRouteComparisonTableBody").offset().top - jQuery("#fixedComparisonTableHeader").innerHeight()&&
+			window.pageYOffset <= $("#fixedRouteComparisonTableBody").offset().top + $("#fixedRouteComparisonTableBody").innerHeight()) {
+			if(!jQuery("#fixedComparisonTableHeaderClone").hasClass("sticky")){
+				jQuery("#fixedComparisonTableHeader").clone().attr("id","fixedComparisonTableHeaderClone").insertBefore(jQuery("#fixedComparisonTableHeader"))
+				jQuery("#fixedComparisonTableHeaderClone").addClass("sticky")
+				jQuery("#fixedComparisonTableHeaderClone").css("background-color","white")
+				jQuery("#fixedComparisonTableHeaderClone").css("width",$("#fixedRouteComparisonTableBody").width())
+			}
+		} else{
+			if(jQuery("#fixedComparisonTableHeaderClone").hasClass("sticky")) {
+				jQuery("#fixedComparisonTableHeaderClone").remove()
+			}
+		}
+
+		if (window.pageYOffset >= $("#dailyRouteComparisonTableBody").offset().top - jQuery("#dailyComparisonTableHeader").innerHeight()&&
+			window.pageYOffset <= $("#dailyRouteComparisonTableBody").offset().top + $("#dailyRouteComparisonTableBody").innerHeight()) {
+			if(!jQuery("#dailyComparisonTableHeaderClone").hasClass("sticky")){
+				jQuery("#dailyComparisonTableHeader").clone().attr("id","dailyComparisonTableHeaderClone").insertBefore(jQuery("#dailyComparisonTableHeader"))
+				jQuery("#dailyComparisonTableHeaderClone").addClass("sticky")
+				jQuery("#dailyComparisonTableHeaderClone").css("background-color","white")
+				jQuery("#dailyComparisonTableHeaderClone").css("width",$("#dailyRouteComparisonTableBody").width())
+			}
+		} else{
+			if(jQuery("#dailyComparisonTableHeaderClone").hasClass("sticky")) {
+				jQuery("#dailyComparisonTableHeaderClone").remove()
+			}
+		}
+	}
+}
+
+
 
 function onSelectClick() {
 	getBundlesForDir();
