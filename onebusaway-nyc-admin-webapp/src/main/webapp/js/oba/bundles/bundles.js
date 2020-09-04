@@ -1863,9 +1863,7 @@ function buildDailyDiffReport() {
 								} else if (value3.srcCode == 2) {
 									stopClass = "selectedStopCt";
 								}
-								var weekdayTrips = value3.tripCts[0];
-								var satTrips = value3.tripCts[1];
-								var sunTrips = value3.tripCts[2];
+								var dailyTrips = value3.tripCts[0];
 								if (index3 > 0) {
 									modeName = "";
 									modeFirstLineClass = "";
@@ -1918,9 +1916,7 @@ function buildDailyDiffReport() {
 									<td class="' + headsignClass + routeFirstLineClass + headsignBorderClass + ''+ modeDailyDiffItemClass +'">' + headsignName + '</td> \
 									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + dirName + '</td> \
 									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + stopCt + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + weekdayTrips + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + satTrips + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + sunTrips + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + dailyTrips + '</td> \
 									</tr>';
 								$('#dailyRouteDiffTable').append(new_row);
 							});
