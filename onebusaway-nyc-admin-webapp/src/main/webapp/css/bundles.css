@@ -809,3 +809,8 @@
 .analyzeCheckbox{
 	padding: 0px 20px;
 }
+
+.sticky {
+	position: fixed;
+	top: 0;
+}

@@ -244,6 +244,8 @@ jQuery(function() {
 	jQuery("#printFixedRouteRptButton").click(onPrintRouteRptClick);
 	jQuery("#printDailyRouteRptButton").click(onPrintRouteRptClick);
 
+	window.onscroll = function() {stickyAddRemove()};
+
 
 
 
@@ -458,6 +460,9 @@ jQuery(function() {
 	jQuery("#create_continue").click(onCreateContinueClick);
 
 	jQuery("#prevalidate_continue").click(onPrevalidateContinueClick);
+	jQuery("#upload_continue").click(onUploadContinueClick);
+	jQuery("#prepDeploy_continue").click(onPrepDeployContinueClick);
+	jQuery("#build_continue").click(onBuildContinueClick);
 
 	jQuery("#upload_continue").click(onUploadContinueClick);
 
@@ -531,6 +536,50 @@ function onPrevalidateContinueClick() {
 	var $tabs = jQuery("#tabs");
 	$tabs.tabs('select', 3);
 }
+
+function onBuildContinueClick() {
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 4);
+}
+
+function onPrepDeployContinueClick(){
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 7);
+}
+
+function stickyAddRemove(){
+	if(!$("#Compare").hasClass("ui-tabs-hide")){
+		if (window.pageYOffset >= $("#fixedRouteComparisonTableBody").offset().top - jQuery("#fixedComparisonTableHeader").innerHeight()&&
+			window.pageYOffset <= $("#fixedRouteComparisonTableBody").offset().top + $("#fixedRouteComparisonTableBody").innerHeight()) {
+			if(!jQuery("#fixedComparisonTableHeaderClone").hasClass("sticky")){
+				jQuery("#fixedComparisonTableHeader").clone().attr("id","fixedComparisonTableHeaderClone").insertBefore(jQuery("#fixedComparisonTableHeader"))
+				jQuery("#fixedComparisonTableHeaderClone").addClass("sticky")
+				jQuery("#fixedComparisonTableHeaderClone").css("background-color","white")
+				jQuery("#fixedComparisonTableHeaderClone").css("width",$("#fixedRouteComparisonTableBody").width())
+			}
+		} else{
+			if(jQuery("#fixedComparisonTableHeaderClone").hasClass("sticky")) {
+				jQuery("#fixedComparisonTableHeaderClone").remove()
+			}
+		}
+
+		if (window.pageYOffset >= $("#dailyRouteComparisonTableBody").offset().top - jQuery("#dailyComparisonTableHeader").innerHeight()&&
+			window.pageYOffset <= $("#dailyRouteComparisonTableBody").offset().top + $("#dailyRouteComparisonTableBody").innerHeight()) {
+			if(!jQuery("#dailyComparisonTableHeaderClone").hasClass("sticky")){
+				jQuery("#dailyComparisonTableHeader").clone().attr("id","dailyComparisonTableHeaderClone").insertBefore(jQuery("#dailyComparisonTableHeader"))
+				jQuery("#dailyComparisonTableHeaderClone").addClass("sticky")
+				jQuery("#dailyComparisonTableHeaderClone").css("background-color","white")
+				jQuery("#dailyComparisonTableHeaderClone").css("width",$("#dailyRouteComparisonTableBody").width())
+			}
+		} else{
+			if(jQuery("#dailyComparisonTableHeaderClone").hasClass("sticky")) {
+				jQuery("#dailyComparisonTableHeaderClone").remove()
+			}
+		}
+	}
+}
+
+
 
 function onSelectClick() {
 	getBundlesForDir();
@@ -1814,9 +1863,7 @@ function buildDailyDiffReport() {
 								} else if (value3.srcCode == 2) {
 									stopClass = "selectedStopCt";
 								}
-								var weekdayTrips = value3.tripCts[0];
-								var satTrips = value3.tripCts[1];
-								var sunTrips = value3.tripCts[2];
+								var dailyTrips = value3.tripCts[0];
 								if (index3 > 0) {
 									modeName = "";
 									modeFirstLineClass = "";
@@ -1869,9 +1916,7 @@ function buildDailyDiffReport() {
 									<td class="' + headsignClass + routeFirstLineClass + headsignBorderClass + ''+ modeDailyDiffItemClass +'">' + headsignName + '</td> \
 									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + dirName + '</td> \
 									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + stopCt + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + weekdayTrips + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + satTrips + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + sunTrips + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + dailyTrips + '</td> \
 									</tr>';
 								$('#dailyRouteDiffTable').append(new_row);
 							});
@@ -2383,6 +2428,8 @@ function copyBundleToDeployLocation(){
 			console.log(messages);
 			for (messagesIndex in messages)
 				$("#prepDeployMessages").append($(document.createElement("p")).html(messages[messagesIndex]))
+			var continueButton = jQuery("#prepDeploy_continue");
+			enableContinueButton(continueButton);
 		}
 	})
 }
