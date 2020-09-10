@@ -7,7 +7,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 
 import java.io.ByteArrayInputStream;
@@ -30,22 +29,17 @@ public class ApcIntegrationServiceImplTest {
         String url = "http://example.com/feed"; // we mock out the results, this isn't used
         Map<AgencyAndId, VehicleOccupancyRecord> map = new HashMap<AgencyAndId, VehicleOccupancyRecord>();
         ApcIntegrationServiceImpl impl = new ApcIntegrationServiceImpl();
-        final HttpClient httpClient = Mockito.mock(HttpClient.class);
+        HttpClient httpClient = Mockito.mock(HttpClient.class);
         HttpResponse response = Mockito.mock(HttpResponse.class);
         HttpEntity entity = Mockito.mock(HttpEntity.class);
         Mockito.when(entity.getContent()).thenReturn(getAsStream(apcJson));
         Mockito.when(response.getEntity()).thenReturn(entity);
         Mockito.when(httpClient.execute((HttpUriRequest) any())).thenReturn(response);
-        ConfigurationService service = Mockito.mock(ConfigurationService.class);
         ApcIntegrationServiceImpl.RawCountPollerThread thread
-                = new ApcIntegrationServiceImpl.RawCountPollerThread(null, service,null,
+                = new ApcIntegrationServiceImpl.RawCountPollerThread(null, null,
                 map,
-                url) {
-            @Override
-            protected HttpClient getHttpClient() {
-                return httpClient;
-            }
-        };
+                httpClient,
+                url);
         Map<AgencyAndId, ApcLoadData> feed = thread.getFeed();
         assertNotNull(feed);
         assertEquals(2, feed.size());
