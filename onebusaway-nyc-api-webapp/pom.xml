@@ -105,7 +105,18 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-cloud-noop</artifactId>
+            <version>0.0.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-cloud-aws</artifactId>
+            <version>0.0.10</version>
+        </dependency>
     </dependencies>
+
 
     <!-- TODO This is an exact duplicate of what's in onebusaway-nyc-webapp. Should extract out to a common profiles.xml -->
     <profiles>
