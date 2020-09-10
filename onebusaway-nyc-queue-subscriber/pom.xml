@@ -59,7 +59,7 @@
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-gtfs-realtime-api</artifactId>
-      <version>1.2.3</version>
+      <version>${gtfs-api-version}</version>
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>

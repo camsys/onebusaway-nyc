@@ -48,7 +48,11 @@
 			<artifactId>onebusaway-nyc-tdm-adapters</artifactId>
 			<version>2.26.2.19-SNAPSHOT</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-gtfs-realtime-api</artifactId>
+			<version>${gtfs-api-version}</version>
+		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
