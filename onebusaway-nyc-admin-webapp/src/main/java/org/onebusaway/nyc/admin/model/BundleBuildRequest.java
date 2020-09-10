@@ -31,6 +31,7 @@ public class BundleBuildRequest {
 	private String _emailAddress;
 	private String _bundleStartDate;
 	private String _bundleEndDate;
+	private String _routeMappings = "";
 	private boolean _predate = false;
 
 	public String getBundleDirectory() {
@@ -115,4 +116,11 @@ public class BundleBuildRequest {
 		_id = id;
 	}
 
+	public void setRouteMappings(String routeMappings){
+		_routeMappings = routeMappings;
+	}
+
+	public String getRouteMappings() {
+		return _routeMappings;
+	}
 }

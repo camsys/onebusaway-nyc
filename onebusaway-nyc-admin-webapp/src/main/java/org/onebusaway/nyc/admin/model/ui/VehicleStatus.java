@@ -16,6 +16,8 @@
 
 package org.onebusaway.nyc.admin.model.ui;
 
+import org.onebusaway.realtime.api.OccupancyStatus;
+
 /**
  * Holds vehicle status info
  * @author abelsare
@@ -40,6 +42,8 @@ public class VehicleStatus {
 	private String formattedPullinTime;
 	private String timeReported;
 	private boolean inferrenceFormal;
+	private OccupancyStatus occupancyStatus;
+
 	/**
 	 * @return the vehicleId
 	 */

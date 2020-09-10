@@ -389,13 +389,26 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       beans.put("nycBundle", nycBundle.getBeanDefinition());
       BeanDefinitionBuilder task;
 
-      // STEP 0
+      // STEP Pre-GtfsLoading 1
+      /*BeanDefinitionBuilder routesByZoneGenerationTask = BeanDefinitionBuilder.genericBeanDefinition(RoutesByZoneGenerationTask.class);
+
+      routesByZoneGenerationTask.addPropertyValue("requestResponse", requestResponse);
+
+
+      beans.put("RoutesByZoneGenerationTask", routesByZoneGenerationTask.getBeanDefinition());
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "RoutesByZoneGenerationTask");
+      task.addPropertyValue("afterTaskName", "start");
+      task.addPropertyValue("beforeTaskName", "NycGtfsModTask");
+      task.addPropertyReference("task", "RoutesByZoneGenerationTask");
+      beans.put("RoutesByZoneGenerationTaskDef", task.getBeanDefinition());*/
+
+      // STEP Pre-GtfsLoading 2
       BeanDefinitionBuilder nycGtfsModTask = BeanDefinitionBuilder.genericBeanDefinition(NycGtfsModTask.class);
 
       nycGtfsModTask.addPropertyValue("requestResponse", requestResponse);
       nycGtfsModTask.addPropertyValue("bundleRequestResponse", requestResponse);
       nycGtfsModTask.addPropertyReference("logger", "multiCSVLogger");
-      //nycGtfsModTask.addPropertyReference("applicationContext", "??????????????????????????????");
       nycGtfsModTask.addPropertyValue("configurationService", configurationService);
       nycGtfsModTask.addPropertyValue("transformationsOutputFolder", transformationsOutputPath.getAbsolutePath());
 
@@ -407,6 +420,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       task.addPropertyValue("beforeTaskName", "gtfs");
       task.addPropertyReference("task", "NycGtfsModTask");
       beans.put("NycGtfsModTaskDef", task.getBeanDefinition());
+
 
       // STEP 1
       BeanDefinitionBuilder clearCSVTask = BeanDefinitionBuilder.genericBeanDefinition(ClearCSVTask.class);
@@ -435,7 +449,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // STEP 3
       BeanDefinitionBuilder stifTransformerTask = BeanDefinitionBuilder.genericBeanDefinition(StifTransformerTask.class);
       stifTransformerTask.addPropertyReference("logger", "multiCSVLogger");
-      stifTransformerTask.addPropertyValue("stifsPath", request.getTmpDirectory() + File.separator + "stif");
       stifTransformerTask.addPropertyValue("response", response);
       stifTransformerTask.addPropertyValue("stifOutputPath", stifOutputPath.getAbsolutePath());
       stifTransformerTask.addPropertyValue("transformationsOutputFolder", transformationsOutputPath.getAbsolutePath());
@@ -520,7 +533,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       serviceIdsByBoroughByDayTask.addPropertyReference("logger", "multiCSVLogger");
       serviceIdsByBoroughByDayTask.addPropertyReference("gtfsDao", "gtfsRelationalDaoImpl");
       serviceIdsByBoroughByDayTask.addPropertyReference("bundle", "bundle");
-      serviceIdsByBoroughByDayTask.addPropertyValue("configurationService", configurationService);
+      serviceIdsByBoroughByDayTask.addPropertyValue("requestResponse", requestResponse);
 
       beans.put("serviceIdsByBoroughByDayTask", serviceIdsByBoroughByDayTask.getBeanDefinition());
 
@@ -536,7 +549,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       tripCountByZoneDataOutputTask.addPropertyReference("logger", "multiCSVLogger");
       tripCountByZoneDataOutputTask.addPropertyReference("gtfsDao", "gtfsRelationalDaoImpl");
       tripCountByZoneDataOutputTask.addPropertyReference("bundle", "bundle");
-      tripCountByZoneDataOutputTask.addPropertyValue("configurationService", configurationService);
+      tripCountByZoneDataOutputTask.addPropertyValue("requestResponse", requestResponse);
 
       beans.put("tripCountByZoneDataOutputTask", tripCountByZoneDataOutputTask.getBeanDefinition());
 
@@ -553,7 +566,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       dailyDataValidationTask.addPropertyReference("logger", "multiCSVLogger");
       dailyDataValidationTask.addPropertyReference("gtfsDao", "gtfsRelationalDaoImpl");
       dailyDataValidationTask.addPropertyReference("bundle", "bundle");
-      dailyDataValidationTask.addPropertyValue("configurationService", configurationService);
+      dailyDataValidationTask.addPropertyValue("requestResponse", requestResponse);
 
       beans.put("dailyDataValidationTask", dailyDataValidationTask.getBeanDefinition());
 
@@ -632,8 +645,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       fixedRouteDataValidationTask.addPropertyReference("logger", "multiCSVLogger");
       fixedRouteDataValidationTask.addPropertyReference("gtfsDao", "gtfsRelationalDaoImpl");
-      fixedRouteDataValidationTask.addPropertyReference("bundle", "bundle");
-      fixedRouteDataValidationTask.addPropertyValue("configurationService", configurationService);
+      fixedRouteDataValidationTask.addPropertyValue("requestResponse", requestResponse);
 
       beans.put("fixedRouteDataValidationTask", fixedRouteDataValidationTask.getBeanDefinition());
 

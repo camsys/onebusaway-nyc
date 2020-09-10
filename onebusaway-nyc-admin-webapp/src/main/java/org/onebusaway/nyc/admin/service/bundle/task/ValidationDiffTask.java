@@ -54,6 +54,7 @@ public class ValidationDiffTask extends DiffTask {
                     + FILENAME;
         }
         catch (Exception e) {
+            bundleRequestResponse.getResponse().setException(e);
             e.printStackTrace();
             return;
         }

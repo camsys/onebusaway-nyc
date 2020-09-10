@@ -39,8 +39,4 @@ public interface VehiclePulloutService {
   public SCHPullInOutInfo getVehiclePullout(AgencyAndId vehicle);
 
   public String getAssignedBlockId(AgencyAndId vehicleId);
-  
-  public ObaSchPullOutList getFromXml(String xml) throws XMLStreamException, JAXBException;
-  
-  public String getAsXml(ObaSchPullOutList o) throws JAXBException;
 }

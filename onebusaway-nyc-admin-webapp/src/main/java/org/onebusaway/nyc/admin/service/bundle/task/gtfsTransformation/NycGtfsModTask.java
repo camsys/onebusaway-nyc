@@ -103,8 +103,9 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
             getZoneCoordinates(zones);
             List zonesToAvoidTransforming = Arrays.asList(zonesToAvoidTransforming());
             _log.info("GtfsModTask Starting");
+            File outputDestination;
             for (GtfsBundle gtfsBundle : getGtfsBundles(_applicationContext).getBundles()) {
-                File outputDestination = gtfsBundle.getPath().getAbsoluteFile();
+                outputDestination = gtfsBundle.getPath().getAbsoluteFile();
 
                 File tmpDir = new File(gtfsBundle.getPath().getParentFile(), "tmpTransformationFolder");
                 tmpDir.mkdir();
@@ -122,7 +123,6 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
                 if (modpath == null){
                     _log.error("No " + zone + " Transformation Found");
                     requestResponse.getResponse().addStatusMessage("No " + zone + " Transformation Found");
-                    continue;
                 }
                 _log.info("using modUrl=" + modpath + " for zone " + zone + " and bundle " + gtfsBundle.getPath());
                 String oldFilename = gtfsBundle.getPath().getPath();
@@ -171,6 +171,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
         catch (IOException exception){
             _log.error("Issue writing listOfRoutes in ModTask/NycGtfsModTask for later use in FixedRouteValidationTask");
         }
+        _requestResponse.getRequest().setRouteMappings(mergedOutputs.getAbsolutePath());
         rawOutput.delete();
     }
 
