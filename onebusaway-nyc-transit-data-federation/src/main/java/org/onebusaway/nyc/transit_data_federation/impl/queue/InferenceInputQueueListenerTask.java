@@ -113,8 +113,9 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 		vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
 		vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getPhase()));
 		vlr.setStatus(inferredResult.getStatus());
-		// by contract, schDev can't be null.  If it is, fix upstream data, not here
-		vlr.setScheduleDeviation(inferredResult.getScheduleDeviation());
+		// by contract, schDev shouldn't be null.  Still, no need to throw an NPE
+		if (inferredResult.getScheduleDeviation() != null)
+			vlr.setScheduleDeviation(inferredResult.getScheduleDeviation());
 		if (_vehicleLocationListener != null) {
 			_vehicleLocationListener.handleVehicleLocationRecord(vlr);
 		}
