@@ -17,15 +17,18 @@ package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime.VehiclePosition;
 
+import com.google.transit.realtime.GtfsRealtimeCrowding;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.EVehiclePhase;
-import org.onebusaway.realtime.api.OccupancyStatus;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +39,9 @@ import static org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary.*;
 
 @Component
 public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
-	
+
+    private static final Logger _log = LoggerFactory.getLogger(VehicleUpdateFeedBuilderImpl.class);
+
 	private NycTransitDataService _transitDataService;
 
 	private ConfigurationService _configurationService;
@@ -53,7 +58,7 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
 
     @Override
     public VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record, 
-        OccupancyStatus occupancy) {
+        VehicleOccupancyRecord vor) {
 
         VehiclePosition.Builder position = VehiclePosition.newBuilder();
         position.setTimestamp(record.getTimeOfRecord()/1000);
@@ -62,6 +67,20 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
         if(showApc() && getGtfsrtOccupancy(status) != null){
             position.setOccupancyStatus(getGtfsrtOccupancy(status));
         }
+
+        // if we have count or capacity, create custom extension
+        if (vor != null
+                && showApc()
+                && (vor.getCapacity() != null || vor.getRawCount() != null)) {
+            GtfsRealtimeCrowding.CrowdingDescriptor.Builder builder = GtfsRealtimeCrowding.CrowdingDescriptor.newBuilder();
+            if (vor.getRawCount() != null)
+                builder.setEstimatedCount(vor.getRawCount());
+            if (vor.getCapacity() != null)
+                builder.setEstimatedCapacity(vor.getCapacity());
+            position.setExtension(GtfsRealtimeCrowding.crowdingDescriptor, builder.build());
+            _log.info(" v:" + record.getVehicleId() + " vor=" + vor.getRawCount() + "/" + vor.getCapacity());
+        }
+
 
         if (EVehiclePhase.SPOOKING.equals(EVehiclePhase.valueOf(record.getPhase().toUpperCase()))) {
             return position;
