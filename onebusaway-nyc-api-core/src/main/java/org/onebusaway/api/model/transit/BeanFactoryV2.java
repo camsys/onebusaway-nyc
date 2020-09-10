@@ -530,6 +530,14 @@ public class BeanFactoryV2 {
       bean.setOccupancyStatus((null));
     }
 
+    if(vehicleStatus.getOccupancyCount() != null){
+      bean.setOccupancyCount(vehicleStatus.getOccupancyCount());
+    }
+
+    if(vehicleStatus.getOccupancyCapacity() != null){
+      bean.setOccupancyCapacity(vehicleStatus.getOccupancyCapacity());
+    }
+
     TripBean trip = vehicleStatus.getTrip();
     if (trip != null) {
       bean.setTripId(trip.getId());
