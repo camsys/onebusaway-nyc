@@ -72,7 +72,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
      * Poll webservice at getRawCountUrl() for raw counts.  Alternatively
      * pull APC levels off queue if false.
      */
-    private boolean getRawCounts() {
+    private boolean getRawCountsViaWebService() {
         return getRawCountUrl() != null;
     }
 
@@ -97,8 +97,8 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
     @PostConstruct
     public void setup() {
         super.setup();
-        if (!getRawCounts()) {
-            _log.error("url not configured, Raw Count polling disabled.");
+        if (!getRawCountsViaWebService()) {
+            _log.error("url not configured, Raw Count polling via webservice disabled.");
             return;
         }
 
@@ -108,7 +108,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
         HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_SOCKET);
         _httpClient = new DefaultHttpClient(httpParams);
 
-        RawCountPollerThread thread = new RawCountPollerThread(_tds, _listener, _vehicleToQueueOccupancyCache, _httpClient, getRawCountUrl());
+        RawCountWebServicePollerThread thread = new RawCountWebServicePollerThread(_tds, _configurationService, _listener, _vehicleToQueueOccupancyCache, getRawCountUrl());
         _taskScheduler.scheduleWithFixedDelay(thread, 30 * 1000);
     }
 
@@ -116,7 +116,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
     protected void processResult(NycVehicleLoadBean message, String contents) {
         _log.debug("found message=" + message + " for contents=" + contents);
         VehicleOccupancyRecord vor = toVehicleOccupancyRecord(message);
-        if (!getRawCounts()) {
+        if (!getRawCountsViaWebService()) {
             _listener.handleVehicleOccupancyRecord(vor);
         } else {
              //merge this record with webservice results otherwise raw counts will be quashed
@@ -136,18 +136,19 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
         return vor;
     }
 
-    public static class RawCountPollerThread extends Thread {
+    public static class RawCountWebServicePollerThread extends Thread {
         private NycTransitDataService tds;
         private VehicleOccupancyListener listener;
         private Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache;
         private HttpClient httpClient;
         private String url;
 
-        public RawCountPollerThread(NycTransitDataService tds,
-                                    VehicleOccupancyListener listener,
-                                    Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache,
-                                    HttpClient httpClient,
-                                    String url) {
+
+        public RawCountWebServicePollerThread(NycTransitDataService tds,
+                                              ConfigurationService cs,
+                                              VehicleOccupancyListener listener,
+                                              Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache,
+                                              String url) {
             this.tds = tds;
             this.listener = listener;
             this.vehicleToQueueOccupancyCache = vehicleToQueueOccupancyCache;

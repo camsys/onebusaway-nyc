@@ -35,8 +35,9 @@ public class ApcIntegrationServiceImplTest {
         Mockito.when(entity.getContent()).thenReturn(getAsStream(apcJson));
         Mockito.when(response.getEntity()).thenReturn(entity);
         Mockito.when(httpClient.execute((HttpUriRequest) any())).thenReturn(response);
-        ApcIntegrationServiceImpl.RawCountPollerThread thread
-                = new ApcIntegrationServiceImpl.RawCountPollerThread(null, null,
+        ConfigurationService service = Mockito.mock(ConfigurationService.class);
+        ApcIntegrationServiceImpl.RawCountWebServicePollerThread thread
+                = new ApcIntegrationServiceImpl.RawCountWebServicePollerThread(null, service,null,
                 map,
                 httpClient,
                 url);
