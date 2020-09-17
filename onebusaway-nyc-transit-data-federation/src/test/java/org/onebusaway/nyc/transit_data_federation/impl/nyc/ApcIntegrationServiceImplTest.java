@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import org.apache.http.HttpEntity;
@@ -7,6 +22,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 
 import java.io.ByteArrayInputStream;
@@ -29,7 +45,7 @@ public class ApcIntegrationServiceImplTest {
         String url = "http://example.com/feed"; // we mock out the results, this isn't used
         Map<AgencyAndId, VehicleOccupancyRecord> map = new HashMap<AgencyAndId, VehicleOccupancyRecord>();
         ApcIntegrationServiceImpl impl = new ApcIntegrationServiceImpl();
-        HttpClient httpClient = Mockito.mock(HttpClient.class);
+        final HttpClient httpClient = Mockito.mock(HttpClient.class);
         HttpResponse response = Mockito.mock(HttpResponse.class);
         HttpEntity entity = Mockito.mock(HttpEntity.class);
         Mockito.when(entity.getContent()).thenReturn(getAsStream(apcJson));
@@ -39,8 +55,12 @@ public class ApcIntegrationServiceImplTest {
         ApcIntegrationServiceImpl.RawCountWebServicePollerThread thread
                 = new ApcIntegrationServiceImpl.RawCountWebServicePollerThread(null, service,null,
                 map,
-                httpClient,
-                url);
+                url) {
+            @Override
+            protected HttpClient getHttpClient() {
+                return httpClient;
+            }
+        };
         Map<AgencyAndId, ApcLoadData> feed = thread.getFeed();
         assertNotNull(feed);
         assertEquals(2, feed.size());
