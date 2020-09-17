@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>onebusaway-nyc</artifactId>
 		<groupId>org.onebusaway</groupId>
-		<version>2.26.2.20</version>
+		<version>2.26.2.21</version>
 	</parent>
 	<groupId>org.onebusaway</groupId>
 	<artifactId>onebusaway-nyc-gtfsrt</artifactId>
@@ -26,29 +26,33 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-transit-data</artifactId>
-			<version>2.26.2.20</version>
+			<version>2.26.2.21</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-util</artifactId>
-			<version>2.26.2.20</version>
+			<version>2.26.2.21</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-transit-data-federation</artifactId>
-			<version>2.26.2.20</version>
+			<version>2.26.2.21</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-presentation</artifactId>
-			<version>2.26.2.20</version>
+			<version>2.26.2.21</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-tdm-adapters</artifactId>
-			<version>2.26.2.20</version>
+			<version>2.26.2.21</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-gtfs-realtime-api</artifactId>
+			<version>${gtfs-api-version}</version>
+		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -58,7 +62,7 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-report</artifactId>
-			<version>2.26.2.20</version>
+			<version>2.26.2.21</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>

@@ -50,11 +50,13 @@ public class NycVehicleLoadBean implements Serializable {
     //GTFS direction_id, typed as String to keep in pattern with rest of OBA.
     private String direction;
 
-    //estimated count for debugging only
+    //estimated count
     @JsonDeserialize(using = OccupancyDeserializer.class)
     private Integer estimatedCount;
 
     private Integer estLoad;
+
+    private Integer estCapacity;
     
 
     public NycVehicleLoadBean(){}
@@ -66,6 +68,7 @@ public class NycVehicleLoadBean implements Serializable {
         this.direction = b.direction;
         this.estimatedCount = b.estimatedCount;
         this.estLoad = b.estLoad;
+        this.estCapacity = b.estCapacity;
         this.recordTimestamp = b.recordTimestamp;
     }
 
@@ -95,6 +98,10 @@ public class NycVehicleLoadBean implements Serializable {
         return route;
     }
 
+    public Integer getEstCapacity() {
+        return estCapacity;
+    }
+
     /* builder pattern class for NycVehicleLoadBean
      * to use this, call something like:
      * new NycVehicleLoadBean.NycVehicleLoadBeanBuilder('vehicle_1234',1234566789)
@@ -112,6 +119,7 @@ public class NycVehicleLoadBean implements Serializable {
         private String route;
         private Integer estimatedCount;
         private Integer estLoad;
+        public Integer estCapacity;
 
         public NycVehicleLoadBeanBuilder(String vehicleId, long recordTimestamp){
             this.vehicleId = vehicleId;

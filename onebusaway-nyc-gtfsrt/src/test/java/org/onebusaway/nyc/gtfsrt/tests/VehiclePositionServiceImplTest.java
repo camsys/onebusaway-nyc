@@ -24,6 +24,7 @@ import org.onebusaway.nyc.gtfsrt.impl.VehicleUpdateServiceImpl;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -54,7 +55,7 @@ public class VehiclePositionServiceImplTest {
   public void setup() {
     VehicleUpdateFeedBuilder feedBuilder = new VehicleUpdateFeedBuilder() {
       @Override
-      public VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record, OccupancyStatus occupancy) {
+      public VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record, VehicleOccupancyRecord vor) {
         return VehiclePosition.newBuilder()
                 .setVehicle(VehicleDescriptor.newBuilder().setId(status.getVehicleId()));
       }
