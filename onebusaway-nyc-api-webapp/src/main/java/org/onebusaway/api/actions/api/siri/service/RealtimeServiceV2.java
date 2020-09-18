@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.actions.api.siri.service;
+package org.onebusaway.api.actions.api.siri.service;
 
 import java.util.List;
 import java.util.Map;
@@ -24,8 +24,8 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializerV2;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializerV2;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
+import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
+import org.onebusaway.api.actions.api.siri.model.DetailLevel;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import uk.org.siri.siri_2.AnnotatedLineStructure;

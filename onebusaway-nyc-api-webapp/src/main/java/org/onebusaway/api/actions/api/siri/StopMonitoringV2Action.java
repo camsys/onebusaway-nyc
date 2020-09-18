@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.nyc.webapp.actions.api.siri;
+package org.onebusaway.api.actions.api.siri;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,24 +31,16 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
-import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.ServiceAlertsHelperV2;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
-import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
-import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.onebusaway.api.actions.api.siri.impl.ServiceAlertsHelperV2;
+import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2;
+import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
+import org.onebusaway.api.actions.api.siri.model.DetailLevel;
 
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
-import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
 import uk.org.siri.siri_2.ServiceDelivery;
 import uk.org.siri.siri_2.ServiceDeliveryErrorConditionStructure;

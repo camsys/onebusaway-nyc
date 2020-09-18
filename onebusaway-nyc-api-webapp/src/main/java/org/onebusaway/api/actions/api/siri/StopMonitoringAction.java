@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.nyc.webapp.actions.api.siri;
+package org.onebusaway.api.actions.api.siri;
 
 import java.io.IOException;
 import java.util.ArrayList;

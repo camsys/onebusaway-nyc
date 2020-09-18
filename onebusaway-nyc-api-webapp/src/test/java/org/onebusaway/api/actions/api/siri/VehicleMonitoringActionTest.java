@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.actions.api.siri;
+package org.onebusaway.api.actions.api.siri;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.*;
@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.onebusaway.api.actions.api.siri.VehicleMonitoringAction;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsTestSupport;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;

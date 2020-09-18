@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.actions.api.siri.model;
+package org.onebusaway.api.actions.api.siri.model;
 
 import org.onebusaway.transit_data.model.StopGroupBean;
 

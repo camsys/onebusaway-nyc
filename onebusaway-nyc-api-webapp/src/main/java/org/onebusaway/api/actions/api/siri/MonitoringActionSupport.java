@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.actions.api.siri;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+package org.onebusaway.api.actions.api.siri;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.GoogleAnalyticsApiHelper;
-import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.api.actions.api.siri.impl.GoogleAnalyticsApiHelper;
 
 import com.dmurph.tracking.AnalyticsConfigData;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;

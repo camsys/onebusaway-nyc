@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.actions.api.siri.impl;
+package org.onebusaway.api.actions.api.siri.impl;
 
 import java.util.*;
 import java.math.BigInteger;
@@ -25,20 +25,19 @@ import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
-import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializerV2;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializerV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteResult;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.OnwardCallsMode;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteDirection;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteForDirection;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.StopOnRoute;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirection;
-import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
+import org.onebusaway.api.actions.api.siri.model.RouteResult;
+import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
+import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.OnwardCallsMode;
+import org.onebusaway.api.actions.api.siri.model.DetailLevel;
+import org.onebusaway.api.actions.api.siri.model.RouteDirection;
+import org.onebusaway.api.actions.api.siri.model.RouteForDirection;
+import org.onebusaway.api.actions.api.siri.model.StopOnRoute;
+import org.onebusaway.api.actions.api.siri.model.StopRouteDirection;
+import org.onebusaway.api.actions.api.siri.service.RealtimeServiceV2;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;

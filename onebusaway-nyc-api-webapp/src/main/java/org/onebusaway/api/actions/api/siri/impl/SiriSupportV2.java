@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.nyc.webapp.actions.api.siri.impl;
+package org.onebusaway.api.actions.api.siri.impl;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -34,12 +34,12 @@ import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriPolyLinesExtension;
 import org.onebusaway.nyc.siri.support.SiriUpcomingServiceExtension;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteDirection;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteForDirection;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteResult;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.StopOnRoute;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirection;
+import org.onebusaway.api.actions.api.siri.model.DetailLevel;
+import org.onebusaway.api.actions.api.siri.model.RouteDirection;
+import org.onebusaway.api.actions.api.siri.model.RouteForDirection;
+import org.onebusaway.api.actions.api.siri.model.RouteResult;
+import org.onebusaway.api.actions.api.siri.model.StopOnRoute;
+import org.onebusaway.api.actions.api.siri.model.StopRouteDirection;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.StopBean;

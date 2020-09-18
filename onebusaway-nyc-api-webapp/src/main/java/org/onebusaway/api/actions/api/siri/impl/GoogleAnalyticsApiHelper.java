@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.actions.api.siri.impl;
+package org.onebusaway.api.actions.api.siri.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
