@@ -43,6 +43,7 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
@@ -255,7 +256,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       try {
         gaLabel = "All Vehicles";
 
-        int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type, VERSION);
+        int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type, VERSION, showApc);
 
         List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
         if (!_siriCacheService.containsKey(hashKey)) {
@@ -300,7 +301,10 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   /**
    * Generate a siri response for a set of VehicleActivities
    *
-   * @param routeId
+   * @param activities
+   * @param routeIds
+   * @param error
+   * @param currentTimestamp
    */
   private Siri generateSiriResponse(List<VehicleActivityStructure> activities,
                                     List<AgencyAndId> routeIds, Exception error, long currentTimestamp) {

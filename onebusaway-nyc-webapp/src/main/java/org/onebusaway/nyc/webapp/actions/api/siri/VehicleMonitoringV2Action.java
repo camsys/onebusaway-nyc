@@ -123,8 +123,10 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
 	String maxStopVisitsParam = _request.getParameter(MAX_STOP_VISITS);
 	String minStopVisitsParam = _request.getParameter(MIN_STOP_VISITS);
     boolean showApc = _realtimeService.showApc(_request.getParameter(KEY));
-    
-	// Error Strings
+    boolean showApc = _realtimeService.showApc(_request.getParameter(KEY));
+
+
+    // Error Strings
 	String routeIdsErrorString = "";
 	
     /*
@@ -216,7 +218,7 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
       try {
       gaLabel = "All Vehicles";
       
-      int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type, VERSION);
+      int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type, VERSION, showApc);
       
       List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
       if (!_siriCacheService.containsKey(hashKey)) {
