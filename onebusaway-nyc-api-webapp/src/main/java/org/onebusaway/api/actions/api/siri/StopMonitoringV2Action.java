@@ -33,7 +33,6 @@ import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.api.actions.api.siri.impl.ServiceAlertsHelperV2;
 import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2;
 import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
@@ -66,6 +65,10 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 	private String _type = "xml";
 
 	private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
+
+	public StopMonitoringV2Action(int defaultVersion) {
+		super(defaultVersion);
+	}
 
 	public void setType(String type) {
 		_type = type;

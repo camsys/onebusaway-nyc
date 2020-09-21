@@ -31,7 +31,6 @@ import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.api.actions.api.siri.impl.ServiceAlertsHelperV2;
 import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2;
 import org.onebusaway.api.actions.api.siri.model.DetailLevel;
@@ -80,7 +79,11 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
   private NycCacheService<Integer, String> _siriCacheService;
   
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
-  
+
+  public VehicleMonitoringV2Action(int defaultVersion) {
+    super(defaultVersion);
+  }
+
   public void setType(String type) {
     _type = type;
   }

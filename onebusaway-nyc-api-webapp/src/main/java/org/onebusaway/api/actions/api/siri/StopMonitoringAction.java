@@ -32,13 +32,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
+import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +54,7 @@ import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.StopMonitoringDeliveryStructure;
 
 @ParentPackage("onebusaway-webapp-api")
-public class StopMonitoringAction extends OneBusAwayNYCActionSupport 
+public class StopMonitoringAction extends ApiActionSupport
   implements ServletRequestAware, ServletResponseAware {
 
   private static final long serialVersionUID = 1L;
@@ -83,7 +83,11 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   private String _type = "xml";
 
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
-  
+
+  public StopMonitoringAction(int defaultVersion) {
+    super(defaultVersion);
+  }
+
   public void setType(String type) {
     _type = type;
   }

@@ -22,19 +22,19 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.api.actions.api.siri.service.RealtimeServiceV2;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
+public class MonitoringActionBase extends ApiActionSupport {
 
 	private static final long serialVersionUID = -8569334328795108218L;
 	
@@ -68,6 +68,10 @@ public class MonitoringActionBase extends OneBusAwayNYCActionSupport{
 	
 	@Autowired
 	protected ConfigurationService _configurationService;
+
+	public MonitoringActionBase(int defaultVersion) {
+		super(defaultVersion);
+	}
 
 	protected boolean isValidRoute(AgencyAndId routeId) {
 		boolean hasValues = routeId.hasValues();

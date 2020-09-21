@@ -34,7 +34,6 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.siri.support.SiriUpcomingServiceExtension;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.api.actions.api.siri.model.DetailLevel;
 
@@ -64,6 +63,10 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 	private String _type = "xml";
 
 	private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
+
+	public LinesRequestV2Action(int defaultVersion) {
+		super(defaultVersion);
+	}
 
 	public void setType(String type) {
 		_type = type;

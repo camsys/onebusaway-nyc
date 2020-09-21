@@ -27,6 +27,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import com.opensymphony.xwork2.ModelDriven;
+import org.onebusaway.util.SystemTime;
 
 public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     ModelDriven<ResponseBean> {
@@ -44,6 +45,20 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
   private String _key;
 
   private boolean _includeReferences = true;
+
+  private Long time = null;
+
+  public void setTime(long time) {
+    this.time = time;
+  }
+
+  public long getTime() {
+    if(time != null) {
+      return time;
+    } else {
+      return SystemTime.currentTimeMillis();
+    }
+  }
 
   public ApiActionSupport(int defaultVersion) {
     _defaultVersion = defaultVersion;
