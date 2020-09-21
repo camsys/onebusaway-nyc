@@ -16,15 +16,11 @@
  */
 package org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation;
 
-import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs_transformer.TransformSpecificationException;
-import org.onebusaway.king_county_metro_gtfs.model.PatternPair;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.nyc.util.impl.FileUtility;
-import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.gtfs_transformer.GtfsTransformer;
 import org.onebusaway.gtfs_transformer.GtfsTransformerLibrary;
-import org.onebusaway.gtfs_transformer.factory.TransformFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
