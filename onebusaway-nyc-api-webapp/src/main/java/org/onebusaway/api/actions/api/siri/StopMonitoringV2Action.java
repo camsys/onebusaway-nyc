@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
+import org.onebusaway.api.actions.api.siri.service.GoogleAnalyticsSupportService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.api.actions.api.siri.impl.ServiceAlertsHelperV2;
@@ -38,6 +39,7 @@ import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2;
 import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.api.actions.api.siri.model.DetailLevel;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
@@ -64,7 +66,8 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 	// respect an HTTP Accept: header.
 	private String _type = "xml";
 
-	private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
+	@Autowired
+	private GoogleAnalyticsSupportService _gaService;
 
 	public StopMonitoringV2Action(int defaultVersion) {
 		super(defaultVersion);
@@ -78,8 +81,7 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 	public String execute() {
 
 		long responseTimestamp = getTime();
-		_monitoringActionSupport.setupGoogleAnalytics(_request,
-				_configurationService);
+		_gaService.processGoogleAnalytics(_request.getParameter("key"));
 
 		_realtimeService.setTime(responseTimestamp);
 		String detailLevelParam = _request.getParameter(STOP_MONITORING_DETAIL_LEVEL);
@@ -130,12 +132,12 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 		}
 
 
-		if (_monitoringActionSupport
-				.canReportToGoogleAnalytics(_configurationService)) {
-			_monitoringActionSupport.reportToGoogleAnalytics(_request,
-					"Stop Monitoring", StringUtils.join(stopIds, ","),
-					_configurationService);
-		}		
+//		if (_monitoringActionSupport
+//				.canReportToGoogleAnalytics(_configurationService)) {
+//			_monitoringActionSupport.reportToGoogleAnalytics(_request,
+//					"Stop Monitoring", StringUtils.join(stopIds, ","),
+//					_configurationService);
+//		}
 		
 		
 		// Setup Filters

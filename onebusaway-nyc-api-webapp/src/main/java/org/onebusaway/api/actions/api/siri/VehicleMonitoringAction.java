@@ -39,6 +39,7 @@ import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.api.actions.api.ApiActionSupport;
+import org.onebusaway.api.actions.api.siri.service.GoogleAnalyticsSupportService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
@@ -99,7 +100,8 @@ public class VehicleMonitoringAction extends ApiActionSupport
   @Resource(name="siriCacheService")
   private NycCacheService<Integer, String> _siriCacheService;
 
-  private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
+  @Autowired
+  private GoogleAnalyticsSupportService _gaService;
 
   public VehicleMonitoringAction(int defaultVersion) {
     super(defaultVersion);
@@ -113,7 +115,7 @@ public class VehicleMonitoringAction extends ApiActionSupport
   public String execute() {
 
     long currentTimestamp = getTime();
-    _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
+    _gaService.processGoogleAnalytics(_request.getParameter("key"));
 
     _realtimeService.setTime(currentTimestamp);
 
@@ -287,9 +289,9 @@ public class VehicleMonitoringAction extends ApiActionSupport
       }
     }
 
-    if (_monitoringActionSupport.canReportToGoogleAnalytics(_configurationService)) {
-      _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
-    }
+//    if (_monitoringActionSupport.canReportToGoogleAnalytics(_configurationService)) {
+//      _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
+//    }
 
     try {
       this._servletResponse.getWriter().write(getVehicleMonitoring());

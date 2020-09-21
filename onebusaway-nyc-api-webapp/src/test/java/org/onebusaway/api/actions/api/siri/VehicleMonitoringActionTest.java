@@ -74,7 +74,11 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
   
   @Mock
   HttpServletResponse servletResponse;
-  
+
+  public VehicleMonitoringActionTest(int defaultVersion) {
+    super(defaultVersion);
+  }
+
   @Test
   public void testExecuteByRoute() throws Exception {
     

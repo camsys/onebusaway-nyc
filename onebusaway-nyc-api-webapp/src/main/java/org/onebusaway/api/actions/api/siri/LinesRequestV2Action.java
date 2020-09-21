@@ -30,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
+import org.apache.struts2.rest.DefaultHttpHeaders;
+import org.onebusaway.api.actions.api.siri.service.GoogleAnalyticsSupportService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
@@ -37,6 +39,7 @@ import org.onebusaway.nyc.siri.support.SiriUpcomingServiceExtension;
 import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.api.actions.api.siri.model.DetailLevel;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.org.siri.siri_2.AnnotatedLineStructure;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.ExtensionsStructure;
@@ -62,7 +65,8 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 	// respect an HTTP Accept: header.
 	private String _type = "xml";
 
-	private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
+	@Autowired
+	private GoogleAnalyticsSupportService _gaService;
 
 	public LinesRequestV2Action(int defaultVersion) {
 		super(defaultVersion);
@@ -72,12 +76,10 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		_type = type;
 	}
 
-	@Override
-	public String execute() {
+	public DefaultHttpHeaders index() throws IOException {
 
 		long responseTimestamp = getTime();
-		_monitoringActionSupport.setupGoogleAnalytics(_request,
-				_configurationService);
+		_gaService.processGoogleAnalytics(_request.getParameter("key"));
 
 		_realtimeService.setTime(responseTimestamp);
 

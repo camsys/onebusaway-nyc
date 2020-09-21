@@ -26,9 +26,12 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.brsanthu.googleanalytics.EventHit;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
+import org.apache.struts2.rest.DefaultHttpHeaders;
+import org.onebusaway.api.actions.api.siri.service.GoogleAnalyticsSupportService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.api.actions.api.siri.impl.ServiceAlertsHelperV2;
@@ -41,6 +44,7 @@ import org.onebusaway.nyc.presentation.service.cache.NycCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
@@ -77,8 +81,6 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
   
   @Resource(name="siriCacheService")
   private NycCacheService<Integer, String> _siriCacheService;
-  
-  private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
 
   public VehicleMonitoringV2Action(int defaultVersion) {
     super(defaultVersion);
@@ -88,11 +90,14 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
     _type = type;
   }
 
-  @Override
-  public String execute() {
+  @Autowired
+  private GoogleAnalyticsSupportService _gaService;
+
+  public DefaultHttpHeaders index() throws IOException {
 
     long currentTimestamp = getTime();
-    _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
+    _gaService.processGoogleAnalytics(_request.getParameter("key"));
+    //_monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
     
     _realtimeService.setTime(currentTimestamp);
     
@@ -240,9 +245,9 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
       }
     }
     
-    if (_monitoringActionSupport.canReportToGoogleAnalytics(_configurationService)) {
-      _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
-    } 
+//    if (_monitoringActionSupport.canReportToGoogleAnalytics(_configurationService)) {
+//      _monitoringActionSupport.reportToGoogleAnalytics(_request, "Vehicle Monitoring", gaLabel, _configurationService);
+//    }
     
     try {
       this._servletResponse.getWriter().write(getVehicleMonitoring());
@@ -332,4 +337,6 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
   public HttpServletResponse getServletResponse(){
     return _servletResponse;
   }
+
+
 }

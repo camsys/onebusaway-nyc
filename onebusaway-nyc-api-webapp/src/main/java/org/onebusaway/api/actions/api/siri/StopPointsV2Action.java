@@ -27,9 +27,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.brsanthu.googleanalytics.EventHit;
+import com.brsanthu.googleanalytics.PageViewHit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
+import org.apache.struts2.rest.DefaultHttpHeaders;
+import org.onebusaway.api.actions.api.siri.service.GoogleAnalyticsSupportService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
@@ -37,6 +41,8 @@ import org.onebusaway.nyc.siri.support.SiriUpcomingServiceExtension;
 import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.api.actions.api.siri.model.DetailLevel;
 
+import org.onebusaway.util.impl.analytics.GoogleAnalyticsServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.ExtensionsStructure;
@@ -61,7 +67,7 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 	// respect an HTTP Accept: header.
 	private String _type = "xml";
 
-	private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
+
 
 	public StopPointsV2Action(int defaultVersion) {
 		super(defaultVersion);
@@ -71,21 +77,22 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		_type = type;
 	}
 
-	@Override
-	public String execute() {
+	@Autowired
+	private GoogleAnalyticsSupportService _gaService;
+
+	public DefaultHttpHeaders index() throws IOException {
 
 		long responseTimestamp = getTime();
-		_monitoringActionSupport.setupGoogleAnalytics(_request,
-				_configurationService);
+		_gaService.processGoogleAnalytics(_request.getParameter("key"));
 
 		_realtimeService.setTime(responseTimestamp);
-		
+
 		boolean useLineRefOnly = false;
 		Boolean upcomingServiceAllStops = null;
-		
+
 		CoordinateBounds bounds = null;
 		boolean validBoundDistance = true;
-		
+
 		// User Parameters
 		String boundingBox = _request.getParameter(BOUNDING_BOX);
 		String circle = _request.getParameter(CIRCLE);
@@ -94,41 +101,41 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		String agencyId = _request.getParameter(OPERATOR_REF);
 		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
 		String detailLevelParam = _request.getParameter(STOP_POINTS_DETAIL_LEVEL);
-		
-		
+
+
 		//get the detail level parameter or set it to default if not specified
 	    DetailLevel detailLevel;
-	    
+
 	    if(DetailLevel.contains(detailLevelParam)){
 	    	detailLevel = DetailLevel.valueOf(detailLevelParam.toUpperCase());
 	    }
 	    else{
 	    	detailLevel = DetailLevel.NORMAL;
 	    }
-		
-		
+
+
 		// Error Strings
 		String routeIdsErrorString = "";
 		String boundsErrorString = "";
-		
-		
-		/* 
+
+
+		/*
 		 * We need to support the user providing no agency id which means 'all
 		agencies'. So, this array will hold a single agency if the user provides it or
 		all agencies if the user provides none. We'll iterate over them later while
 		querying for vehicles and routes
 		*/
 		List<String> agencyIds = processAgencyIds(agencyId);
-		
+
 		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
-		
+
 		routeIdsErrorString =  processRouteIds(lineRef, routeIds, agencyIds);
 
-		// Calculate Bounds	
+		// Calculate Bounds
 		try{
 			if(StringUtils.isNotBlank(circle)){
-				bounds = getCircleBounds(circle);	
-				
+				bounds = getCircleBounds(circle);
+
 				if(bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)){
 					boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m ";
 					validBoundDistance = false;
@@ -136,7 +143,7 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 			}
 			else if(StringUtils.isNotBlank(boundingBox)){
 				bounds = getBoxBounds(boundingBox);
-				
+
 				if(bounds != null && !isValidBoundBoxDistance(bounds, MAX_BOUNDS_DISTANCE)){
 					boundsErrorString += "Provided values exceed allowed search distance of " + MAX_BOUNDS_DISTANCE + "m ";
 					validBoundDistance = false;
@@ -167,30 +174,30 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 
 		// Error Handler
 		Exception error = null;
-		if ((bounds == null && !useLineRefOnly) || 
+		if ((bounds == null && !useLineRefOnly) ||
 			(_request.getParameter(LINE_REF) != null && routeIds.size() == 0) ||
 			!validBoundDistance) {
 			String errorString = (boundsErrorString + " " + routeIdsErrorString).trim();
 			error = new Exception(errorString);
 		}
 		else{
-		
+
 			if (useLineRefOnly) {
 				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(agencyIds,
 						routeIds, detailLevel, responseTimestamp, filters);
 			} else {
 				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(bounds, agencyIds,
-						routeIds, detailLevel, responseTimestamp, filters);			
+						routeIds, detailLevel, responseTimestamp, filters);
 			}
-			
+
 			for (Map.Entry<Boolean, List<AnnotatedStopPointStructure>> entry : stopPointsMap.entrySet()) {
 				if(entry.getValue().size() > 0)
 					upcomingServiceAllStops= entry.getKey();
 				stopPoints.addAll(entry.getValue());
 			}
 		}
-		
-		
+
+
 		_response = generateSiriResponse(stopPoints, upcomingServiceAllStops, error, responseTimestamp);
 
 		try {
