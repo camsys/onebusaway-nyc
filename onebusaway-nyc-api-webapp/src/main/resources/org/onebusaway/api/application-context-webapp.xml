@@ -35,17 +35,19 @@
 
   <import resource="classpath:org/onebusaway/users/application-context.xml" />
   <import resource="classpath:org/onebusaway/users/application-context-security.xml" />
-  <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
-  <import resource="classpath:org/onebusaway/presentation/application-context-services.xml" />
-  <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
-
+    <import resource="classpath:org/onebusaway/presentation/application-context-services.xml" />
+    <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
 
   <aop:aspectj-autoproxy />
 
   <context:component-scan base-package="org.onebusaway.api.impl" />
+<!--
+  <context:component-scan base-package="org.onebusaway.nyc.presentation.impl,org.onebusaway.nyc.presentation.service.cache"/>
+-->
   <context:component-scan base-package="org.onebusaway.api.actions.siri.impl" />
 
-  <bean id="psaHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
+
+    <bean id="psaHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
     <property name="target" value="hibernateAnnotatedClasses" />
     <property name="values">
       <list>
@@ -57,15 +59,6 @@
   <bean class="org.onebusaway.util.service.psa.PsaDaoImpl" />
    
   <bean class="org.onebusaway.util.service.psa.PsaServiceImpl" />
-
-    <bean id="geocoderImpl" class="org.onebusaway.geocoder.impl.DatabaseCachingGeocoderImpl" primary="true">
-        <property name="geocoderService" ref="externalGeocoderImpl" />
-    </bean>
-
-
-
-
-
 
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
 
@@ -81,18 +74,16 @@
         <property name="diskPersistent" value="false" />
     </bean>
 
-    <bean id="createAPIKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction"
+    <bean id="createAPIKeyOnInitAction" class="org.onebusaway.users.impl.CreateAPIKeyOnInitAction"
           init-method="init">
-        <property name="createAPIKey" value="${create-apikey}" />
+        <property name="createAPIKey" value="false" />
         <property name="key" value="OBANYC" />
     </bean>
 
-    <bean id="createAPITestKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction"
+    <bean id="createAPITestKeyOnInitAction" class="org.onebusaway.users.impl.CreateAPIKeyOnInitAction"
           init-method="init">
-        <property name="createAPIKey" value="${create-apikey}" />
+        <property name="createAPIKey" value="false" />
         <property name="key" value="TEST" />
     </bean>
 
-    <bean class="org.onebusaway.nyc.webapp.psa.MessageServiceImpl" />
-  
 </beans>
