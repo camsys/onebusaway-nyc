@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.api.actions.api.siri.model;
+package org.onebusaway.api.actions.siri.model;
 
 public enum DetailLevel {
 	MINIMUM(0), BASIC(1), NORMAL(2), CALLS(3), STOPS(4), FULL(5);

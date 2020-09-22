@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.api.actions.api.siri.model;
+package org.onebusaway.api.actions.siri.model;
 
 import java.util.ArrayList;
 import java.util.List;

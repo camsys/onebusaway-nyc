@@ -30,13 +30,20 @@
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
 
-  <import resource="classpath:org/onebusaway/users/application-context.xml" />
   <!-- This turns on automatic annotation configuration -->
   <context:annotation-config />
+
+  <import resource="classpath:org/onebusaway/users/application-context.xml" />
+  <import resource="classpath:org/onebusaway/users/application-context-security.xml" />
+  <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
+  <import resource="classpath:org/onebusaway/presentation/application-context-services.xml" />
+  <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
+
 
   <aop:aspectj-autoproxy />
 
   <context:component-scan base-package="org.onebusaway.api.impl" />
+  <context:component-scan base-package="org.onebusaway.api.actions.siri.impl" />
 
   <bean id="psaHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
     <property name="target" value="hibernateAnnotatedClasses" />
@@ -50,5 +57,42 @@
   <bean class="org.onebusaway.util.service.psa.PsaDaoImpl" />
    
   <bean class="org.onebusaway.util.service.psa.PsaServiceImpl" />
+
+    <bean id="geocoderImpl" class="org.onebusaway.geocoder.impl.DatabaseCachingGeocoderImpl" primary="true">
+        <property name="geocoderService" ref="externalGeocoderImpl" />
+    </bean>
+
+
+
+
+
+
+    <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
+
+
+    <bean id="minApiRequestIntervalForKeyCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean" primary="true">
+        <property name="cacheManager" ref="cacheManager" />
+        <property name="cacheName" value="org.onebusaway.users.services.UserService.getMinApiRequestIntervalForKey" />
+        <property name="maxElementsInMemory" value="50" />
+        <property name="eternal" value="false" />
+        <property name="timeToLive" value="900" />
+        <property name="timeToIdle" value="3600" />
+        <property name="overflowToDisk" value="false" />
+        <property name="diskPersistent" value="false" />
+    </bean>
+
+    <bean id="createAPIKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction"
+          init-method="init">
+        <property name="createAPIKey" value="${create-apikey}" />
+        <property name="key" value="OBANYC" />
+    </bean>
+
+    <bean id="createAPITestKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction"
+          init-method="init">
+        <property name="createAPIKey" value="${create-apikey}" />
+        <property name="key" value="TEST" />
+    </bean>
+
+    <bean class="org.onebusaway.nyc.webapp.psa.MessageServiceImpl" />
   
 </beans>

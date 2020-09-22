@@ -34,14 +34,14 @@
 
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
     <context:component-scan base-package="org.onebusaway.nyc.webapp.users.impl" /> <!-- for api throttling app -->
-    <context:component-scan base-package="org.onebusaway.nyc.webapp.actions.api.siri.impl" />
-    
+    <context:component-scan base-package="org.onebusaway.api.actions.siri.impl" />
+
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
 
     <bean id="geocoderImpl" class="org.onebusaway.geocoder.impl.DatabaseCachingGeocoderImpl" primary="true">
         <property name="geocoderService" ref="externalGeocoderImpl" />
     </bean>
-    
+
     <bean id="minApiRequestIntervalForKeyCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean" primary="true">
         <property name="cacheManager" ref="cacheManager" />
         <property name="cacheName" value="org.onebusaway.users.services.UserService.getMinApiRequestIntervalForKey" />
@@ -52,19 +52,19 @@
         <property name="overflowToDisk" value="false" />
         <property name="diskPersistent" value="false" />
     </bean>
-    
-    <bean id="createAPIKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction" 
+
+    <bean id="createAPIKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction"
     	init-method="init">
     	<property name="createAPIKey" value="${create-apikey}" />
     	<property name="key" value="OBANYC" />
     </bean>
 
-    <bean id="createAPITestKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction" 
+    <bean id="createAPITestKeyOnInitAction" class="org.onebusaway.nyc.webapp.api.CreateAPIKeyOnInitAction"
     	init-method="init">
     	<property name="createAPIKey" value="${create-apikey}" />
     	<property name="key" value="TEST" />
     </bean>
-    
+
     <bean class="org.onebusaway.nyc.webapp.psa.MessageServiceImpl" />
-    
+
 </beans>

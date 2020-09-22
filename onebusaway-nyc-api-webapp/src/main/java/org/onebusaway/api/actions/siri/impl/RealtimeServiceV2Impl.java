@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.api.actions.api.siri.impl;
+package org.onebusaway.api.actions.siri.impl;
 
 import java.util.*;
 import java.math.BigInteger;
@@ -29,15 +29,15 @@ import org.onebusaway.nyc.siri.support.SiriJsonSerializerV2;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializerV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.api.actions.api.siri.model.RouteResult;
-import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.OnwardCallsMode;
-import org.onebusaway.api.actions.api.siri.model.DetailLevel;
-import org.onebusaway.api.actions.api.siri.model.RouteDirection;
-import org.onebusaway.api.actions.api.siri.model.RouteForDirection;
-import org.onebusaway.api.actions.api.siri.model.StopOnRoute;
-import org.onebusaway.api.actions.api.siri.model.StopRouteDirection;
-import org.onebusaway.api.actions.api.siri.service.RealtimeServiceV2;
+import org.onebusaway.api.actions.siri.model.RouteResult;
+import org.onebusaway.api.actions.siri.impl.SiriSupportV2.Filters;
+import org.onebusaway.api.actions.siri.impl.SiriSupportV2.OnwardCallsMode;
+import org.onebusaway.api.actions.siri.model.DetailLevel;
+import org.onebusaway.api.actions.siri.model.RouteDirection;
+import org.onebusaway.api.actions.siri.model.RouteForDirection;
+import org.onebusaway.api.actions.siri.model.StopOnRoute;
+import org.onebusaway.api.actions.siri.model.StopRouteDirection;
+import org.onebusaway.api.actions.siri.service.RealtimeServiceV2;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
@@ -115,7 +115,6 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	}
 
 	@Autowired
-	@Qualifier("NycPresentationService")
 	public void setPresentationService(PresentationService presentationService) {
 		_presentationService = presentationService;
 	}

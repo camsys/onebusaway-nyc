@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.api.actions.api.siri;
+package org.onebusaway.api.actions.siri;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,14 +32,13 @@ import com.brsanthu.googleanalytics.PageViewHit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
-import org.apache.struts2.rest.DefaultHttpHeaders;
-import org.onebusaway.api.actions.api.siri.service.GoogleAnalyticsSupportService;
+import org.onebusaway.api.actions.siri.service.GoogleAnalyticsSupportService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.siri.support.SiriUpcomingServiceExtension;
-import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.api.actions.api.siri.model.DetailLevel;
+import org.onebusaway.api.actions.siri.impl.SiriSupportV2.Filters;
+import org.onebusaway.api.actions.siri.model.DetailLevel;
 
 import org.onebusaway.util.impl.analytics.GoogleAnalyticsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,12 +77,18 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 	}
 
 	@Autowired
-	private GoogleAnalyticsSupportService _gaService;
+	private GoogleAnalyticsSupportService _gaSupportService;
 
-	public DefaultHttpHeaders index() throws IOException {
+//	public DefaultHttpHeaders index() throws IOException {
+//		return execute();
+//	}
+
+	@Override
+	public String execute(){
 
 		long responseTimestamp = getTime();
-		_gaService.processGoogleAnalytics(_request.getParameter("key"));
+		//processGoogleAnalytics();
+		_gaSupportService.processGoogleAnalytics(_request.getParameter("key"));
 
 		_realtimeService.setTime(responseTimestamp);
 
@@ -286,6 +291,12 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 		}
 	}
 
+
+	public static final String GA_EVENT_ACTION = "API Key Request";
+	public static final String GA_EVENT_CATEGORY = "Stop Monitoring";
+
+	@Autowired
+	private GoogleAnalyticsServiceImpl _gaService;
 	
 	@Override
 	public void setServletRequest(HttpServletRequest request) {
@@ -299,5 +310,22 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 
 	public HttpServletResponse getServletResponse() {
 		return _servletResponse;
+	}
+
+	public void processGoogleAnalytics(){
+		processGoogleAnalyticsPageView();
+		processGoogleAnalyticsApiKeys();
+	}
+
+	private void processGoogleAnalyticsPageView(){
+		_gaService.post(new PageViewHit());
+	}
+
+	private void processGoogleAnalyticsApiKeys(){
+		String apiKey = _request.getParameter("key");
+		if(org.apache.commons.lang.StringUtils.isBlank(apiKey))
+			apiKey = "Key Information Unavailable";
+
+		_gaService.post(new EventHit(GA_EVENT_CATEGORY, GA_EVENT_ACTION, apiKey, 1));
 	}
 }

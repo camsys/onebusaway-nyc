@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.api.actions.api.siri;
+package org.onebusaway.api.actions.siri;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,17 +26,16 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.brsanthu.googleanalytics.EventHit;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.apache.struts2.rest.DefaultHttpHeaders;
-import org.onebusaway.api.actions.api.siri.service.GoogleAnalyticsSupportService;
+import org.onebusaway.api.actions.siri.service.GoogleAnalyticsSupportService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
-import org.onebusaway.api.actions.api.siri.impl.ServiceAlertsHelperV2;
-import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2;
-import org.onebusaway.api.actions.api.siri.model.DetailLevel;
+import org.onebusaway.api.actions.siri.impl.ServiceAlertsHelperV2;
+import org.onebusaway.api.actions.siri.impl.SiriSupportV2;
+import org.onebusaway.api.actions.siri.model.DetailLevel;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;

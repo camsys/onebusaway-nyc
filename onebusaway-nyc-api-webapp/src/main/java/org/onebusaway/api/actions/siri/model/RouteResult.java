@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.api.actions.api.siri.model;
+package org.onebusaway.api.actions.siri.model;
 
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.RouteBean;

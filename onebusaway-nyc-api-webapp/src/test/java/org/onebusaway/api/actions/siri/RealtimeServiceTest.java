@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.api.actions.api.siri;
+package org.onebusaway.api.actions.siri;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -35,16 +35,15 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.onebusaway.api.actions.api.siri.StopPointsV2Action;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.api.actions.api.siri.impl.RealtimeServiceV2Impl;
-import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.api.actions.api.siri.model.DetailLevel;
-import org.onebusaway.api.actions.api.siri.service.RealtimeServiceV2;
+import org.onebusaway.api.actions.siri.impl.RealtimeServiceV2Impl;
+import org.onebusaway.api.actions.siri.impl.SiriSupportV2.Filters;
+import org.onebusaway.api.actions.siri.model.DetailLevel;
+import org.onebusaway.api.actions.siri.service.RealtimeServiceV2;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.api.actions.api.siri;
+package org.onebusaway.api.actions.siri;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,13 +31,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 import org.apache.struts2.rest.DefaultHttpHeaders;
-import org.onebusaway.api.actions.api.siri.service.GoogleAnalyticsSupportService;
+import org.onebusaway.api.actions.siri.service.GoogleAnalyticsSupportService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.siri.support.SiriUpcomingServiceExtension;
-import org.onebusaway.api.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.api.actions.api.siri.model.DetailLevel;
+import org.onebusaway.api.actions.siri.impl.SiriSupportV2.Filters;
+import org.onebusaway.api.actions.siri.model.DetailLevel;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.org.siri.siri_2.AnnotatedLineStructure;

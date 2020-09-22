@@ -1,4 +1,4 @@
-package org.onebusaway.api.actions.api.siri.service;
+package org.onebusaway.api.actions.siri.service;
 
 import com.brsanthu.googleanalytics.EventHit;
 import com.brsanthu.googleanalytics.PageViewHit;
