@@ -66,7 +66,7 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, String> {
   @SuppressWarnings("unchecked")
   @Override
   public Integer hash(Object...factors){
-    return hash((Integer)factors[0], (List<String>)factors[1], (String)factors[2], (String)factors[3], (Boolean)factors[4]);
+    return hash((Integer)factors[0], (List<String>)factors[1], (String)factors[2], (String)factors[3], (Boolean)factors[4], (Boolean)factors[5]);
   }
 
   public void store(Integer key, String value) {

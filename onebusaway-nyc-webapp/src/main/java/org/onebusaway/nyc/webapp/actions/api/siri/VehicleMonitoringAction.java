@@ -189,6 +189,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     }
 
     boolean showApc = _realtimeService.showApc(_request.getParameter("key"));
+    boolean showRawApc = _realtimeService.showRawApc(_request.getParameter("key"));
 
     String gaLabel = null;
 
@@ -201,7 +202,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
       for (AgencyAndId vehicleId : vehicleIds) {
         VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-                vehicleId.toString(), maximumOnwardCalls, currentTimestamp, showApc);
+                vehicleId.toString(), maximumOnwardCalls, currentTimestamp, showApc, showRawApc);
 
         if (activity != null) {
           activities.add(activity);
@@ -221,7 +222,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       for (AgencyAndId routeId : routeIds) {
 
         List<VehicleActivityStructure> activitiesForRoute = _realtimeService.getVehicleActivityForRoute(
-                routeId.toString(), directionId, maximumOnwardCalls, currentTimestamp, showApc);
+                routeId.toString(), directionId, maximumOnwardCalls, currentTimestamp, showApc, showRawApc);
         if (activitiesForRoute != null) {
           activities.addAll(activitiesForRoute);
         }
@@ -256,7 +257,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       try {
         gaLabel = "All Vehicles";
 
-        int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type, VERSION, showApc);
+        int hashKey = _siriCacheService.hash(maximumOnwardCalls, agencyIds, _type, VERSION, showApc, showRawApc);
 
         List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
         if (!_siriCacheService.containsKey(hashKey)) {
@@ -266,7 +267,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
             for (VehicleStatusBean v : vehicles.getList()) {
               VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
-                      v.getVehicleId(), maximumOnwardCalls, currentTimestamp, showApc);
+                      v.getVehicleId(), maximumOnwardCalls, currentTimestamp, showApc, showRawApc);
               if (activity != null) {
                 activities.add(activity);
               }
