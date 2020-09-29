@@ -984,14 +984,12 @@ public final class SiriSupportV2 {
 				SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
 
 				ExtensionsStructure anyExtensions = new ExtensionsStructure();
-
-				SiriApcExtension apcExtension = new SiriApcExtension();
-				apcExtension.setPassengerCapacity(vor.getCapacity());
-				apcExtension.setPassengerCount(vor.getRawCount());
-				wrapper.setCapacities(apcExtension);
-				anyExtensions.setAny(wrapper);
-				monitoredCallStructure.setExtensions(anyExtensions);
-
+				SiriApcExtension apcExtension = presentationService.getPresentableApc(vor);
+				if (apcExtension != null) {
+					wrapper.setCapacities(apcExtension);
+					anyExtensions.setAny(wrapper);
+					monitoredCallStructure.setExtensions(anyExtensions);
+				}
 			}
 		}
 

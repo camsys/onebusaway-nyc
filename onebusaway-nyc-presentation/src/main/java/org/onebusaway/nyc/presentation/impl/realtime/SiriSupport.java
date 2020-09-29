@@ -764,11 +764,11 @@ public final class SiriSupport {
 		if (vehicleId != null) {
 			VehicleOccupancyRecord vor =
 					nycTransitDataService.getLastVehicleOccupancyRecordForVehicleId(AgencyAndId.convertFromString(vehicleId));
-			if (showApc && vor != null && vor.getCapacity() != null && vor.getRawCount() != null) {
-				SiriApcExtension apcExtension = new SiriApcExtension();
-				apcExtension.setPassengerCapacity(vor.getCapacity());
-				apcExtension.setPassengerCount(vor.getRawCount());
-				wrapper.setCapacities(apcExtension);
+			if (showApc) {
+				SiriApcExtension apcExtension = presentationService.getPresentableApc(vor);
+				if (apcExtension != null) {
+					wrapper.setCapacities(apcExtension);
+				}
 			}
 		}
 

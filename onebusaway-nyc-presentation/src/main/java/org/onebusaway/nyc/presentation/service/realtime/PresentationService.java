@@ -16,7 +16,9 @@
 
 package org.onebusaway.nyc.presentation.service.realtime;
 
+import org.onebusaway.nyc.siri.support.SiriApcExtension;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
@@ -56,5 +58,5 @@ public interface PresentationService {
 		String awayWord);
 
 
-
+  public SiriApcExtension getPresentableApc(VehicleOccupancyRecord vor);
 }
