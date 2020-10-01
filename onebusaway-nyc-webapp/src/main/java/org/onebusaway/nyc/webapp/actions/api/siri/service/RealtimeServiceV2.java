@@ -45,16 +45,16 @@ public interface RealtimeServiceV2 {
 
 	public VehicleActivityStructure getVehicleActivityForVehicle(
 			String vehicleId, int maximumOnwardCalls, DetailLevel detailLevel, 
-			long currentTime, boolean showApc);
+			long currentTime, boolean showApc, boolean showRawApc);
 
 	public List<VehicleActivityStructure> getVehicleActivityForRoute(
 			String routeId, String directionId, int maximumOnwardCalls,
-			DetailLevel detailLevel, long currentTime, boolean showApc);
+			DetailLevel detailLevel, long currentTime, boolean showApc, boolean showRawApc);
 
 	public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(
 			String stopId, int maximumOnwardCalls, DetailLevel detailLevel,
 			long currentTime, List<AgencyAndId> routeIds,
-			Map<Filters, String> filters, boolean showApc);
+			Map<Filters, String> filters, boolean showApc, boolean showRawApc);
 
 	public boolean getVehiclesInServiceForRoute(String routeId,
 			String directionId, long currentTime);
@@ -91,4 +91,8 @@ public interface RealtimeServiceV2 {
     boolean showApc(String apiKey);
 
 	boolean showApc();
+
+	boolean showRawApc(String apiKey);
+
+	boolean showRawApc();
 }

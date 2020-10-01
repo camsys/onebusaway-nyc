@@ -132,10 +132,11 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
     _result = new StopResult(stop, routesAtStop);
 
     Boolean showApc = _realtimeService.showApc();
-
+    Boolean showRawApc = _realtimeService.showRawApc();
 
     List<MonitoredStopVisitStructure> visits =
-        _realtimeService.getMonitoredStopVisitsForStop(_stopId, 0, System.currentTimeMillis(), showApc);
+        _realtimeService.getMonitoredStopVisitsForStop(_stopId, 0, System.currentTimeMillis(),
+                showApc, showRawApc);
 
     _response = generateSiriResponse(visits, AgencyAndIdLibrary.convertFromString(_stopId));
     

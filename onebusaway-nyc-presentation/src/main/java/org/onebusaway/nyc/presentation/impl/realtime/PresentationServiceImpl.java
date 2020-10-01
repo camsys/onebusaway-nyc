@@ -20,8 +20,10 @@ import javax.annotation.PostConstruct;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
+import org.onebusaway.nyc.siri.support.SiriApcExtension;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
@@ -37,8 +39,11 @@ import org.springframework.stereotype.Component;
  */
 @Component("NycPresentationService")
 public class PresentationServiceImpl implements PresentationService {
-  
 
+
+  private static final String OCCUPANCY_HIGH = "High";
+  private static final String OCCUPANCY_MEDIUM = "Medium";
+  private static final String OCCUPANCY_LOW = "Low";
   private static Logger _log = LoggerFactory.getLogger(PresentationServiceImpl.class);
   
   private static final String APPROACHING_TEXT = "approaching";
@@ -253,8 +258,33 @@ public class PresentationServiceImpl implements PresentationService {
     
     return r;
   }
-  
-  /**
+
+    @Override
+    public SiriApcExtension getPresentableApc(VehicleOccupancyRecord vor) {
+        if (vor == null ||
+                (vor.getCapacity() == null
+                 && vor.getRawCount() == null)) {
+            // we don't have enough information
+            return null;
+        }
+        SiriApcExtension apcExtension = new SiriApcExtension();
+        apcExtension.setPassengerCapacity(vor.getCapacity());
+        apcExtension.setPassengerCount(vor.getRawCount());
+        if (vor.getCapacity() != null && vor.getRawCount() != null
+            && vor.getCapacity() > 0) {
+            double loadFactor = vor.getRawCount() / vor.getCapacity() * 100.0;
+            if (loadFactor > 75) {
+                apcExtension.setOccupancyLoadFactor(OCCUPANCY_HIGH);
+            } else if (loadFactor > 25) {
+                apcExtension.setOccupancyLoadFactor(OCCUPANCY_MEDIUM);
+            } else {
+                apcExtension.setOccupancyLoadFactor(OCCUPANCY_LOW);
+            }
+        }
+        return apcExtension;
+    }
+
+    /**
    * Filter logic: these methods determine which buses are shown in different request contexts. By 
    * default, OBA reports all vehicles both scheduled and tracked, which one may or may not want.
    */

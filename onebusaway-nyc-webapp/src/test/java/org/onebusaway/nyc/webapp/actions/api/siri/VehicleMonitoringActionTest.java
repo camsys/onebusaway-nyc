@@ -89,7 +89,7 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(servletResponse.getWriter()).thenReturn(nothingPrintWriter);
     
     List<VehicleActivityStructure> vehicleActivities = new ArrayList<VehicleActivityStructure>();
-    when(realtimeService.getVehicleActivityForRoute(eq("MTA NYCT_S51"), anyString(), eq(0), anyLong(), anyBoolean())).thenReturn(vehicleActivities);
+    when(realtimeService.getVehicleActivityForRoute(eq("MTA NYCT_S51"), anyString(), eq(0), anyLong(), anyBoolean(), anyBoolean())).thenReturn(vehicleActivities);
     
     VehicleActivityStructure vehicleActivity = new VehicleActivityStructure();
     vehicleActivities.add(vehicleActivity);
@@ -143,7 +143,7 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(servletResponse.getWriter()).thenReturn(nothingPrintWriter);
     
     List<VehicleActivityStructure> vehicleActivities = new ArrayList<VehicleActivityStructure>();
-    when(realtimeService.getVehicleActivityForRoute(eq("MTA NYCT_S51"), anyString(), eq(0), anyLong(), anyBoolean())).thenReturn(vehicleActivities);
+    when(realtimeService.getVehicleActivityForRoute(eq("MTA NYCT_S51"), anyString(), eq(0), anyLong(), anyBoolean(), anyBoolean())).thenReturn(vehicleActivities);
     
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_1");
     when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );

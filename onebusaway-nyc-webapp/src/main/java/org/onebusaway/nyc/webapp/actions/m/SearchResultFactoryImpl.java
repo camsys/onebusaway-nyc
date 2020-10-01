@@ -102,7 +102,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 //    Map<String, List<String>> stopIdAndDirectionToDistanceAwayStringMap = getStopIdAndDirectionToDistanceAwayStringsListMapForRoute(routeBean);
 
     List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(
-        routeBean.getId(), null, 0, SystemTime.currentTimeMillis(), false);
+        routeBean.getId(), null, 0, SystemTime.currentTimeMillis(), false, false);
 
     Map<String, List<String>> stopIdToDistanceAwayStringMap = new HashMap<String, List<String>>();
     Map<String, List<String>> stopIdToVehicleIdMap = new HashMap<String, List<String>>();
@@ -216,7 +216,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       }
 
 
-      List<VehicleActivityStructure> vehicleActivityForRoute = _realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopBean.getDirection(),0, System.currentTimeMillis(),false);
+      List<VehicleActivityStructure> vehicleActivityForRoute = _realtimeService.getVehicleActivityForRoute(
+              routeBean.getId(), stopBean.getDirection(),0, System.currentTimeMillis(),
+              false, false);
       for(VehicleActivityStructure vas : vehicleActivityForRoute) {
         vas.getMonitoredVehicleJourney().getVehicleRef().getValue();
       }
@@ -325,10 +327,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     Map<String, List<String>> results = new HashMap<String, List<String>>();
 
     Boolean showApc = _realtimeService.showApc();
+      Boolean showRawApc = _realtimeService.showRawApc();
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
-        stopBean.getId(), 0, System.currentTimeMillis(), showApc);
+        stopBean.getId(), 0, System.currentTimeMillis(), showApc, showRawApc);
 
     for (MonitoredStopVisitStructure visit : visitList) {
       String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
@@ -370,7 +373,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     Map<String,List<Boolean>> hasRealtimes = new HashMap<>();
     List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
-        stopBean.getId(), 0, System.currentTimeMillis(), _realtimeService.showApc());
+        stopBean.getId(), 0, System.currentTimeMillis(), _realtimeService.showApc(), _realtimeService.showRawApc());
 
     for (MonitoredStopVisitStructure visit : visitList) {
       String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
@@ -402,10 +405,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     Map<String, List<String>> result = new HashMap<String, List<String>>();
 
     Boolean showApc = _realtimeService.showApc();
+    Boolean showRawApc = _realtimeService.showApc();
 
       // stop visits
     List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(
-        routeBean.getId(), null, 0, System.currentTimeMillis(), showApc);
+        routeBean.getId(), null, 0, System.currentTimeMillis(), showApc, showRawApc);
 
     // build map of stop IDs to list of distance strings
     for (VehicleActivityStructure journey : journeyList) {

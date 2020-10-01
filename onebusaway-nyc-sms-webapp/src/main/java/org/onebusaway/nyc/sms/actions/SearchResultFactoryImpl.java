@@ -178,11 +178,13 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 		HashMap<String, HashMap<Double, String>> result = new HashMap<String, HashMap<Double, String>>();
 
 		Boolean showApc = _realtimeService.showApc();
+		Boolean showRawApc = _realtimeService.showRawApc();
+
 
 		// stop visits
 		List<MonitoredStopVisitStructure> visitList = 
 				_realtimeService.getMonitoredStopVisitsForStop(stopBean.getId(), 0,
-						System.currentTimeMillis(), showApc);
+						System.currentTimeMillis(), showApc, showRawApc);
 
 		for(MonitoredStopVisitStructure visit : visitList) {
 			// on detour? don't show it. 

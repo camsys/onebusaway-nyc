@@ -10,24 +10,33 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class SiriApcExtension {
 
-    private Integer PassengerCount = null;
-    private Integer PassengerCapacity = null;
+    private Integer passengerCount = null;
+    private Integer passengerCapacity = null;
+    private String passengerLoadFactor = null;
 
     @XmlElement(name="EstimatedPassengerCount")
     public Integer getPassengerCount() {
-        return PassengerCount;
+        return passengerCount;
     }
 
     public void setPassengerCount(Integer count) {
-        PassengerCount = count;
+        passengerCount = count;
     }
 
     @XmlElement(name="EstimatedPassengerCapacity")
     public Integer getPassengerCapacity() {
-        return PassengerCapacity;
+        return passengerCapacity;
     }
 
     public void setPassengerCapacity(Integer capacity) {
-        PassengerCapacity = capacity;
+        passengerCapacity = capacity;
+    }
+
+    @XmlElement(name="EstimatedPassengerLoadFactor")
+    public String getOccupancyLoadFactor() {
+        return passengerLoadFactor;
+    }
+    public void setOccupancyLoadFactor(String loadFactorString) {
+        passengerLoadFactor = loadFactorString;
     }
 }
