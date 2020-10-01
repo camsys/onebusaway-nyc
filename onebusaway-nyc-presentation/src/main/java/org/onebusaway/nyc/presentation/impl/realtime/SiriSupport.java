@@ -134,7 +134,7 @@ public final class SiriSupport {
 	public void fillMonitoredVehicleJourney(MonitoredVehicleJourneyStructure monitoredVehicleJourney,
 											TripBean framedJourneyTripBean, TripStatusBean currentVehicleTripStatus, StopBean monitoredCallStopBean, OnwardCallsMode onwardCallsMode,
 											PresentationService presentationService, NycTransitDataService nycTransitDataService,
-											int maximumOnwardCalls, long responseTimestamp, boolean showApc) {
+											int maximumOnwardCalls, long responseTimestamp, boolean showApc, boolean showRawApc) {
 
 		BlockInstanceBean blockInstance = nycTransitDataService
 				.getBlockInstance(currentVehicleTripStatus.getActiveTrip()
@@ -347,7 +347,7 @@ public final class SiriSupport {
 		// monitored call
 		if(!presentationService.isOnDetour(currentVehicleTripStatus)) {
 			fillMonitoredCall(monitoredVehicleJourney, blockInstance, currentVehicleTripStatus, monitoredCallStopBean,
-					presentationService, nycTransitDataService, stopIdToPredictionRecordMap, showApc, responseTimestamp);
+					presentationService, nycTransitDataService, stopIdToPredictionRecordMap, showApc, showRawApc, responseTimestamp);
 		}
 
 		// onward calls
@@ -472,7 +472,9 @@ public final class SiriSupport {
 								stopTime.getDistanceAlongBlock() - blockTrip.getDistanceAlongBlock(),
 								stopTime.getDistanceAlongBlock() - distanceOfVehicleAlongBlock,
 								blockTripStopsAfterTheVehicle - 1,
-								stopLevelPredictions.get(stopPredictionKey), responseTimestamp, stopTime.getStopTime().getArrivalTime()));
+								stopLevelPredictions.get(stopTime.getStopTime().getStop().getId()), 
+                                responseTimestamp, 
+                                stopTime.getStopTime().getArrivalTime()));
 
 				onwardCallsAdded++;
 
@@ -485,13 +487,13 @@ public final class SiriSupport {
 			return;
 		}
 
-		return;
 	}
 
 	private void fillMonitoredCall(MonitoredVehicleJourneyStructure monitoredVehicleJourney,
 								   BlockInstanceBean blockInstance, TripStatusBean tripStatus, StopBean monitoredCallStopBean,
 								   PresentationService presentationService, NycTransitDataService nycTransitDataService,
-			Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions, boolean showApc, long responseTimestamp) {
+								   Map<String, TimepointPredictionRecord> stopLevelPredictions, boolean showApc,
+								   boolean showRawApc, long responseTimestamp) {
 
 		List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
 
@@ -555,8 +557,9 @@ public final class SiriSupport {
 										blockTripStopsAfterTheVehicle - 1,
 										stopLevelPredictions.get(monitoredCallStopBean.getId()),
 										tripStatus.getVehicleId(),
-										showApc,
-										responseTimestamp,
+                                        showApc,
+                                        showRawApc,
+                                        responseTimestamp,
 										stopTime.getStopTime().getArrivalTime()));
 
 					}
@@ -711,11 +714,11 @@ public final class SiriSupport {
 															 PresentationService presentationService,
 															 double distanceOfCallAlongTrip,
 															 double distanceOfVehicleFromCall,
-															 int visitNumber,
-															 int index,
-															 SiriSupportPredictionTimepointRecord prediction,
+															 int visitNumber, int index,
+															 TimepointPredictionRecord prediction,
 															 String vehicleId,
 															 boolean showApc,
+															 boolean showRawApc,
 															 long responseTimestamp,
 															 int arrivalTime) {
 
@@ -764,7 +767,7 @@ public final class SiriSupport {
 		if (vehicleId != null) {
 			VehicleOccupancyRecord vor =
 					nycTransitDataService.getLastVehicleOccupancyRecordForVehicleId(AgencyAndId.convertFromString(vehicleId));
-			if (showApc) {
+			if (showRawApc) {
 				SiriApcExtension apcExtension = presentationService.getPresentableApc(vor);
 				if (apcExtension != null) {
 					wrapper.setCapacities(apcExtension);

@@ -82,6 +82,7 @@ public class ServiceIdsByBoroughByDayTask implements Runnable {
             process();
         } catch (Exception e) {
             _log.error("exception with dailyVa:", e);
+            requestResponse.getResponse().setException(e);
         } finally {
             _log.info("done");
         }
@@ -182,7 +183,11 @@ public class ServiceIdsByBoroughByDayTask implements Runnable {
             }
         };
         for(Map.Entry<Date,List<AgencyAndId>> serviceIdsByDateEntry : serviceIdsByDate.entrySet()){
-            serviceIdsByDateEntry.getValue().sort(comparator);
+            if(serviceIdsByDateEntry.getValue() != null && serviceIdsByDateEntry.getValue().size()>1) {
+                serviceIdsByDateEntry.getValue().sort(comparator);
+            } else {
+                serviceIdsByDate.remove(serviceIdsByDateEntry);
+            }
         }
 
         LinkedHashMap<Date,List<AgencyAndId>> sortedServiceIdsByDate = new LinkedHashMap<>();
@@ -243,9 +248,11 @@ public class ServiceIdsByBoroughByDayTask implements Runnable {
                     serviceIdsByDate.get(date).add(serviceId);
                 }
                 if(calDate.getExceptionType() == 2){
-                    serviceIdsByDate.get(date).remove(serviceId);
-                    if(serviceIdsByDate.get(date).size() == 0){
-                        serviceIdsByDate.remove(date);
+                    if(serviceIdsByDate.get(date) != null && serviceIdsByDate.get(date).size() != 0) {
+                        serviceIdsByDate.get(date).remove(serviceId);
+                        if (serviceIdsByDate.get(date).size() == 0) {
+                            serviceIdsByDate.remove(date);
+                        }
                     }
                 }
 

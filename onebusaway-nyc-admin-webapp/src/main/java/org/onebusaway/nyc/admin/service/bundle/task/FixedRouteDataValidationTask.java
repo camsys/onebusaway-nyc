@@ -72,6 +72,7 @@ public class FixedRouteDataValidationTask implements Runnable {
             process();
             _log.info("done");
         } catch (Exception e) {
+            requestResponse.getResponse().setException(e);
             _log.error("exception with FixedRouteDataValidationTask:", e);
         }
 

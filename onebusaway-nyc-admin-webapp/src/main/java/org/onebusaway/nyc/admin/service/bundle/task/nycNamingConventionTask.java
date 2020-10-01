@@ -136,6 +136,7 @@ public class nycNamingConventionTask  implements Runnable {
             }
 
         } catch (Throwable ex) {
+            requestResponse.getResponse().setException((Exception) ex);
             throw new IllegalStateException("error loading gtfs", ex);
         }
         finally {

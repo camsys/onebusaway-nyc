@@ -17,22 +17,16 @@
 package org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation;
 
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import jdk.nashorn.internal.runtime.regexp.joni.exception.InternalException;
-import org.onebusaway.gtfs_transformer.TransformSpecificationException;
 import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.admin.util.FileUtils;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs_transformer.GtfsTransformer;
 import org.onebusaway.gtfs_transformer.GtfsTransformerLibrary;
 import org.onebusaway.gtfs_transformer.factory.TransformFactory;
-import org.onebusaway.king_county_metro_gtfs.model.PatternPair;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
@@ -108,9 +102,6 @@ public class BaseModTask {
         }
         _log.info("runModifications(" + agencyId + ") with mappings=" + gtfsBundle.getAgencyIdMappings() );
         GtfsTransformer mod = new GtfsTransformer();
-        // add support for KCM Pattern Pairs
-        mod.getReader().getEntityClasses().add(PatternPair.class);
-        mod.getWriter().getEntityClasses().add(PatternPair.class);
 
         TransformFactory factory = mod.getTransformFactory();
         // the transformer may be called twice causing erroneous duplicate messages
@@ -119,9 +110,6 @@ public class BaseModTask {
 //        mod.setWriteZoneRouteMapping(ARG_WRITE_ZONE_ROUTE_MAPPING);
 //        mod.setRouteMappingOutputName(ARG_ROUTE_MAPPING_OUTPUT_FILE_NAME);
         addAgencyMappings(mod.getReader(), gtfsBundle);
-
-        // add models outside the default namespace
-        //factory.addEntityPackage("org.onebusaway.king_county_metro_gtfs.model");
 
         String outputDirectory = parseDirectory(gtfsBundle.getPath().getPath());
 

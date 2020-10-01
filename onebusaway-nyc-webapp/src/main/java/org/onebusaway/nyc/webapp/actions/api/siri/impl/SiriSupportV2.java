@@ -117,7 +117,7 @@ public final class SiriSupportV2 {
 			List<TimepointPredictionRecord> stopLevelPredictions,
 			DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters,
-			boolean showApc) {
+			boolean showApc, boolean showRawApc) {
 
 		BlockInstanceBean blockInstance = nycTransitDataService
 				.getBlockInstance(currentVehicleTripStatus.getActiveTrip()
@@ -292,7 +292,7 @@ public final class SiriSupportV2 {
 			fillMonitoredCall(monitoredVehicleJourney, blockInstance,
 					currentVehicleTripStatus, monitoredCallStopBean,
 					presentationService, nycTransitDataService,
-					stopIdToPredictionRecordMap, detailLevel, showApc, responseTimestamp);
+					stopIdToPredictionRecordMap, detailLevel, showApc, showRawApc, responseTimestamp);
 
 
 		// detail level - minimal
@@ -733,6 +733,7 @@ public final class SiriSupportV2 {
 			Map<String, TimepointPredictionRecord> stopLevelPredictions,
 			DetailLevel detailLevel,
 			boolean showApc,
+			boolean showRawApc,
 			long responseTimestamp) {
 
 		List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration()
@@ -813,7 +814,7 @@ public final class SiriSupportV2 {
 										.getStopTime().getStop()
 										.getId()), detailLevel,
 								tripStatus.getVehicleId(),
-								showApc, responseTimestamp));
+								showApc, showRawApc, responseTimestamp));
 
 					}
 
@@ -936,7 +937,7 @@ public final class SiriSupportV2 {
 			PresentationService presentationService,
 			double distanceOfCallAlongTrip, double distanceOfVehicleFromCall,
 			int visitNumber, int index, TimepointPredictionRecord prediction,
-			DetailLevel detailLevel, String vehicleId, boolean showApc, long responseTimestamp) {
+			DetailLevel detailLevel, String vehicleId, boolean showApc, boolean showRawApc, long responseTimestamp) {
 
 		MonitoredCallStructure monitoredCallStructure = new MonitoredCallStructure();
 		monitoredCallStructure.setVisitNumber(BigInteger.valueOf(visitNumber));
@@ -979,7 +980,7 @@ public final class SiriSupportV2 {
 			VehicleOccupancyRecord vor =
 					nycTransitDataService.getLastVehicleOccupancyRecordForVehicleId(AgencyAndId.convertFromString(vehicleId));
 
-			if (showApc && vor != null && vor.getCapacity() != null && vor.getRawCount() != null) {
+			if (showRawApc && vor != null && vor.getCapacity() != null && vor.getRawCount() != null) {
 				// siri extensions
 				SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
 

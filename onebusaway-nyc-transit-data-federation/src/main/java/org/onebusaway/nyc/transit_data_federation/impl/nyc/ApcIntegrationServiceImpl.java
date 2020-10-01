@@ -101,7 +101,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
         if (!getRawCountsViaWebService()) {
             _listener.handleVehicleOccupancyRecord(vor);
         } else {
-             //merge this record with webservice results otherwise raw counts will be quashed
+            //merge this record with webservice results otherwise raw counts will be quashed
             _vehicleToQueueOccupancyCache.put(vor.getVehicleId(), vor);
         }
     }
@@ -171,7 +171,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
         }
 
         // package private for unit tests
-         Map<AgencyAndId, ApcLoadData> getFeed() {
+        Map<AgencyAndId, ApcLoadData> getFeed() {
             Map<AgencyAndId, ApcLoadData> results = new HashMap<AgencyAndId, ApcLoadData>();
             HttpGet get = new HttpGet(url);
             try {
