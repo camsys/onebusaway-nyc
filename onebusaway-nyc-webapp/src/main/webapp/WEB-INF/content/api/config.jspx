@@ -33,8 +33,8 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 	OBA.Config.signDefaultAgencyId='<s:text name="sign.default.agency.id" />';
 	OBA.Config.showVehicleIdInStopPopup=<s:property value="showVehicleIdInStopPopup" />;
 
-	OBA.Config.siriSMUrl = "api/siri/stop-monitoring.json?key=" + OBA.Config.obaApiKey;
-	OBA.Config.siriVMUrl = "api/siri/vehicle-monitoring.json?key=" + OBA.Config.obaApiKey;
+	OBA.Config.siriSMUrl = "/onebusaway-nyc-api-webapp/siri/stop-monitoring.json?key=" + OBA.Config.obaApiKey;
+	OBA.Config.siriVMUrl = "/onebusaway-nyc-api-webapp/siri/vehicle-monitoring.json?key=" + OBA.Config.obaApiKey;
 	
 	OBA.Config.infoBubbleFooterFunction = function(type, query) {
 			var html = '';

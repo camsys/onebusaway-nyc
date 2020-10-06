@@ -103,7 +103,7 @@ public class SiriIntegrationTestBase {
   
   protected HashMap<String,Object> getVmResponse(Map<String, String> params) throws IOException {
     String port = getNycWebappPort();
-    String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?";
+    String url = "http://localhost:" + port + "/onebusaway-nyc-api-webapp/siri/vehicle-monitoring.json?";
     if (!params.containsKey(("key"))) {
         params.put("key", "TEST");
     }
@@ -126,9 +126,9 @@ public class SiriIntegrationTestBase {
 	  String url = null;
 	  if (operatorId == null && vId == null) {
 	    // open ended call
-	    url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&VehicleMonitoringDetailLevel=calls&time=" + _time;
+	    url = "http://localhost:" + port + "/onebusaway-nyc-api-webapp/siri/vehicle-monitoring.json?key=TEST&VehicleMonitoringDetailLevel=calls&time=" + _time;
 	  } else {
-	    url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel=calls&MonitoringRef=" + vId + "&time=" + _time;
+	    url = "http://localhost:" + port + "/onebusaway-nyc-api-webapp/siri/vehicle-monitoring.json?key=TEST&OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel=calls&MonitoringRef=" + vId + "&time=" + _time;
 	  }
 
 	  String response = getResponseForURL(url);
@@ -144,9 +144,9 @@ public class SiriIntegrationTestBase {
     String url = null;
     if (operatorId == null && vId == null) {
       // open ended call
-      url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&version=2&VehicleMonitoringDetailLevel="+ detailLevel +"&time=" + _time;
+      url = "http://localhost:" + port + "/onebusaway-nyc-api-webapp/siri/vehicle-monitoring.json?key=TEST&version=2&VehicleMonitoringDetailLevel="+ detailLevel +"&time=" + _time;
     } else {
-      url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/vehicle-monitoring.json?key=TEST&version=2&OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel="+ detailLevel +"&MonitoringRef=" + vId + "&time=" + _time;
+      url = "http://localhost:" + port + "/onebusaway-nyc-api-webapp/siri/vehicle-monitoring.json?key=TEST&version=2&OperatorRef=" + operatorId + "&VehicleMonitoringDetailLevel="+ detailLevel +"&MonitoringRef=" + vId + "&time=" + _time;
     }
 
     String response = getResponseForURL(url);
@@ -159,7 +159,7 @@ public class SiriIntegrationTestBase {
   protected HashMap<String,Object> getSmResponse(String operatorId, String mRef) throws IOException, HttpException {
 	  
 	  String port = getNycWebappPort();
-	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?key=TEST&StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
+	  String url = "http://localhost:" + port + "/onebusaway-nyc-api-webapp/siri/stop-monitoring.json?key=TEST&StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
 	  _log.debug(url);
 	  String response = getResponseForURL(url);
 	  
@@ -171,7 +171,7 @@ public class SiriIntegrationTestBase {
   protected HashMap<String,Object> getSmV2Response(String operatorId, String mRef, String detailLevel) throws IOException, HttpException {
     
     String port = getNycWebappPort();
-    String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?key=TEST&StopMonitoringDetailLevel="+ detailLevel +"&MonitoringRef=" + mRef + "&time=" + _time;
+    String url = "http://localhost:" + port + "/onebusaway-nyc-api-webapp/siri/stop-monitoring.json?key=TEST&StopMonitoringDetailLevel="+ detailLevel +"&MonitoringRef=" + mRef + "&time=" + _time;
     _log.debug(url);
     String response = getResponseForURL(url);
     
