@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.users.services;
+package org.onebusaway.api.users.services;
 
 //written to enable alternate memcache implementations to enable testing using this interface
 public interface ApiKeyThrottlingCacheService {
