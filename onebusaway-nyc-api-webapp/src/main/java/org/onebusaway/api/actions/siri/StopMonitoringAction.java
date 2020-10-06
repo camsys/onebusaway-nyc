@@ -54,13 +54,13 @@ import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.StopMonitoringDeliveryStructure;
 
-@ParentPackage("onebusaway-webapp-api")
 public class StopMonitoringAction extends ApiActionSupport
   implements ServletRequestAware, ServletResponseAware {
 
   private static final long serialVersionUID = 1L;
   
   private static final String PREV_TRIP = "prevTrip";
+  private static final int V1 = 1;
 
   @Autowired
   public NycTransitDataService _nycTransitDataService;
@@ -83,23 +83,19 @@ public class StopMonitoringAction extends ApiActionSupport
   // See urlrewrite.xml as to how this is set.  Which means this action doesn't respect an HTTP Accept: header.
   private String _type = "xml";
 
-  @Autowired
-  private GoogleAnalyticsSupportService _gaService;
-
-  public StopMonitoringAction(int defaultVersion) {
-    super(defaultVersion);
+  public StopMonitoringAction() {
+    super(V1);
   }
 
   public void setType(String type) {
     _type = type;
   }
   
-  @Override
-  public String execute() {
+  //@Override
+  public String index() {
   
 	long responseTimestamp = getTime();
-    _gaService.processGoogleAnalytics(_request.getParameter("key"));
-  
+
     _realtimeService.setTime(responseTimestamp);
 
     boolean showApc = _realtimeService.showApc(_request.getParameter("key"));

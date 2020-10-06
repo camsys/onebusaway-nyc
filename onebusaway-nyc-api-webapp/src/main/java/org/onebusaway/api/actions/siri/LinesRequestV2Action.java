@@ -54,6 +54,8 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 
 	private static final String LINES_DETAIL_LEVEL = "LinesDetailLevel";
 	private static final String INCLUDE_POLYLINES = "includePolylines";
+	private static final int V2 = 2;
+
 
 	private Siri _response;
 
@@ -65,11 +67,8 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 	// respect an HTTP Accept: header.
 	private String _type = "xml";
 
-	@Autowired
-	private GoogleAnalyticsSupportService _gaService;
-
-	public LinesRequestV2Action(int defaultVersion) {
-		super(defaultVersion);
+	public LinesRequestV2Action() {
+		super(V2);
 	}
 
 	public void setType(String type) {
@@ -79,8 +78,6 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 	public DefaultHttpHeaders index() throws IOException {
 
 		long responseTimestamp = getTime();
-		_gaService.processGoogleAnalytics(_request.getParameter("key"));
-
 		_realtimeService.setTime(responseTimestamp);
 
 		boolean useLineRefOnly = false;

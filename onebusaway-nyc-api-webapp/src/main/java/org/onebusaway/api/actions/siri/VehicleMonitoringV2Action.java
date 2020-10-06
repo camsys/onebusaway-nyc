@@ -53,7 +53,6 @@ import uk.org.siri.siri_2.Siri;
 import uk.org.siri.siri_2.VehicleActivityStructure;
 import uk.org.siri.siri_2.VehicleMonitoringDeliveryStructure;
 
-@ParentPackage("onebusaway-webapp-api")
 public class VehicleMonitoringV2Action extends MonitoringActionBase
     implements ServletRequestAware, ServletResponseAware {
 
@@ -63,7 +62,9 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
   private static final String VEHICLE_REF = "VehicleRef";
   
   private static final String VERSION = "V2";
-  
+
+  private static final int V2 = 2;
+
   private Siri _response;
   
   private String _cachedResponse = null;
@@ -81,21 +82,18 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
   @Resource(name="siriCacheService")
   private NycCacheService<Integer, String> _siriCacheService;
 
-  public VehicleMonitoringV2Action(int defaultVersion) {
-    super(defaultVersion);
+  public VehicleMonitoringV2Action() {
+    super(V2);
   }
 
   public void setType(String type) {
     _type = type;
   }
 
-  @Autowired
-  private GoogleAnalyticsSupportService _gaService;
 
   public DefaultHttpHeaders index() throws IOException {
 
     long currentTimestamp = getTime();
-    _gaService.processGoogleAnalytics(_request.getParameter("key"));
     //_monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
     
     _realtimeService.setTime(currentTimestamp);

@@ -56,6 +56,8 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 	
 	private static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
 
+	private static final int V2 = 2;
+
 	private Siri _response;
 
 	private HttpServletRequest _request;
@@ -66,30 +68,23 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 	// respect an HTTP Accept: header.
 	private String _type = "xml";
 
-
-
-	public StopPointsV2Action(int defaultVersion) {
-		super(defaultVersion);
+	public StopPointsV2Action() {
+		super(V2);
 	}
 
 	public void setType(String type) {
 		_type = type;
 	}
 
-	@Autowired
-	private GoogleAnalyticsSupportService _gaSupportService;
-
 //	public DefaultHttpHeaders index() throws IOException {
 //		return execute();
 //	}
 
-	@Override
-	public String execute(){
+	//@Override
+	public String index(){
 
 		long responseTimestamp = getTime();
 		//processGoogleAnalytics();
-		_gaSupportService.processGoogleAnalytics(_request.getParameter("key"));
-
 		_realtimeService.setTime(responseTimestamp);
 
 		boolean useLineRefOnly = false;

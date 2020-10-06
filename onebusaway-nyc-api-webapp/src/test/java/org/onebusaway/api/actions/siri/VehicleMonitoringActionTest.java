@@ -74,8 +74,8 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
   @Mock
   HttpServletResponse servletResponse;
 
-  public VehicleMonitoringActionTest(int defaultVersion) {
-    super(defaultVersion);
+  public VehicleMonitoringActionTest() {
+    super();
   }
 
   @Test

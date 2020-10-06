@@ -5,7 +5,9 @@ import com.brsanthu.googleanalytics.PageViewHit;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.util.impl.analytics.GoogleAnalyticsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class GoogleAnalyticsSupportService{
 
     public static final String GA_EVENT_ACTION = "API Key Request";

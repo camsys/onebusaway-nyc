@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
+import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.siri.service.GoogleAnalyticsSupportService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
@@ -47,11 +48,12 @@ import uk.org.siri.siri_2.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri_2.Siri;
 import uk.org.siri.siri_2.StopMonitoringDeliveryStructure;
 
-@ParentPackage("onebusaway-webapp-api")
 public class StopMonitoringV2Action extends MonitoringActionBase
 		implements ServletRequestAware, ServletResponseAware {
 
 	private static final long serialVersionUID = 1L;
+
+	private static final int V2 = 2;
 
 	private Siri _response;
 
@@ -65,22 +67,18 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 	// respect an HTTP Accept: header.
 	private String _type = "xml";
 
-	@Autowired
-	private GoogleAnalyticsSupportService _gaService;
-
-	public StopMonitoringV2Action(int defaultVersion) {
-		super(defaultVersion);
+	public StopMonitoringV2Action() {
+		super(V2);
 	}
 
 	public void setType(String type) {
 		_type = type;
 	}
 
-	@Override
-	public String execute() {
+	//@Override
+	public DefaultHttpHeaders index() {
 
 		long responseTimestamp = getTime();
-		_gaService.processGoogleAnalytics(_request.getParameter("key"));
 
 		_realtimeService.setTime(responseTimestamp);
 		String detailLevelParam = _request.getParameter(STOP_MONITORING_DETAIL_LEVEL);

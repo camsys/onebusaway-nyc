@@ -83,7 +83,7 @@ public class StopPointsActionTest {
     private ConfigurationService configurationService;
     
 
-    private StopPointsV2Action action = new StopPointsV2Action(1);
+    private StopPointsV2Action action = new StopPointsV2Action();
 
     @Mock
     HttpServletRequest request;
