@@ -148,8 +148,7 @@ public final class SiriSupport {
 		}
 
 
-		List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTripStatus(currentVehicleTripStatus.getVehicleId(), currentVehicleTripStatus);
-		//List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForTrip(currentVehicleTripStatus.getActiveTrip().getRoute().getAgency().getId(), currentVehicleTripStatus);
+		List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForTrip(currentVehicleTripStatus.getActiveTrip().getRoute().getAgency().getId(), currentVehicleTripStatus);
 		List<TimepointPredictionRecord> nextTripPredictions = null;
 
 		TripBean nextTripBean = null;
@@ -321,9 +320,6 @@ public final class SiriSupport {
 		}
 
 		Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = new HashMap<String, SiriSupportPredictionTimepointRecord>();
-
-		// (build map of stop IDs to TPRs)
-		if(presentationService.useTimePredictionsIfAvailable()){
 		if(currentTripPredictions != null) {
 			for(TimepointPredictionRecord tpr : currentTripPredictions) {
 					SiriSupportPredictionTimepointRecord r = new SiriSupportPredictionTimepointRecord();
@@ -332,15 +328,14 @@ public final class SiriSupport {
 					r.setTimepointPredictionRecord(tpr);
 					stopIdToPredictionRecordMap.put(r.getKey(), r);
 				}
-			}
-			if(nextTripPredictions != null && nextTripBean != null){
-				for(TimepointPredictionRecord tpr : nextTripPredictions) {
-					SiriSupportPredictionTimepointRecord r = new SiriSupportPredictionTimepointRecord();
-					r.setStopId(tpr.getTimepointId().toString());
-					r.setTripId(nextTripBean.getId());
-					r.setTimepointPredictionRecord(tpr);
-					stopIdToPredictionRecordMap.put(r.getKey(), r);
-				}
+		}
+		if(nextTripPredictions != null && nextTripBean != null){
+			for(TimepointPredictionRecord tpr : nextTripPredictions) {
+				SiriSupportPredictionTimepointRecord r = new SiriSupportPredictionTimepointRecord();
+				r.setStopId(tpr.getTimepointId().toString());
+				r.setTripId(nextTripBean.getId());
+				r.setTimepointPredictionRecord(tpr);
+				stopIdToPredictionRecordMap.put(r.getKey(), r);
 			}
 		}
 
@@ -492,7 +487,7 @@ public final class SiriSupport {
 	private void fillMonitoredCall(MonitoredVehicleJourneyStructure monitoredVehicleJourney,
 								   BlockInstanceBean blockInstance, TripStatusBean tripStatus, StopBean monitoredCallStopBean,
 								   PresentationService presentationService, NycTransitDataService nycTransitDataService,
-								   Map<String, TimepointPredictionRecord> stopLevelPredictions, boolean showApc,
+								   Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions, boolean showApc,
 								   boolean showRawApc, long responseTimestamp) {
 
 		List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
@@ -715,7 +710,7 @@ public final class SiriSupport {
 															 double distanceOfCallAlongTrip,
 															 double distanceOfVehicleFromCall,
 															 int visitNumber, int index,
-															 TimepointPredictionRecord prediction,
+															 SiriSupportPredictionTimepointRecord prediction,
 															 String vehicleId,
 															 boolean showApc,
 															 boolean showRawApc,
