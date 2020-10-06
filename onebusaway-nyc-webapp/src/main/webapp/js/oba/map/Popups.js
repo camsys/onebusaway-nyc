@@ -540,9 +540,9 @@ OBA.Popups = (function() {
 						var layoverLateDepartureText = " <span class='not_bold'>(at terminal)</span>";
 						var prevTripSchedDepartureText = "";
 						var prevTripLateDepartureText = " <span class='not_bold'>(+ scheduled layover at terminal)</span>";
-						
-						var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
+
 						var loadOccupancy = getOccupancyForStop(monitoredVehicleJourney);
+						var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance + loadOccupancy;
 						
 						var timePrediction = null;
 						if(typeof monitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime !== 'undefined' 
@@ -601,7 +601,7 @@ OBA.Popups = (function() {
 						
 						// time mode
 						if(timePrediction != null) {
-							timePrediction += ", " + distance + loadOccupancy;
+							timePrediction += ", " + distance;
 							
 							if(isDepartureTimeAvailable){
 								if(layover === true) {
