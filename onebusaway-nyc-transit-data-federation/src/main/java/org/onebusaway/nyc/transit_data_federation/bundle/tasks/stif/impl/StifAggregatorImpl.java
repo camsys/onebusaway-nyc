@@ -70,7 +70,7 @@ public class StifAggregatorImpl {
 
   public boolean useServiceId = true;
 
-  public boolean ARG_REMOVE_GTFS_NONREVENUE_STOPS = true;
+  public boolean ARG_REMOVE_GTFS_NONREVENUE_STOPS = false;
 
   public HashMap<String, Set<AgencyAndId>> getRouteIdsByDsc(){
     return routeIdsByDsc;
