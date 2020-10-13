@@ -313,9 +313,13 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
         this._servletResponse.setContentType("application/xml");
         return _realtimeService.getSiriXmlSerializer().getXml(_response);
       } else {
-        this._servletResponse.setContentType("application/json");
-        return _realtimeService.getSiriJsonSerializer().getJson(_response,
-            _request.getParameter("callback"));
+        String callback = _request.getParameter("callback");
+        if(callback != null){
+          this._servletResponse.setContentType("application/javascript");
+        } else {
+          this._servletResponse.setContentType("application/json");
+        }
+        return _realtimeService.getSiriJsonSerializer().getJson(_response, callback);
       }
     } catch (Exception e) {
       return e.getMessage();
