@@ -108,8 +108,10 @@ public class nycNamingConventionTask  implements Runnable {
                     for (File stifFile : stifFiles){
                         if(stifZone != null && stifFile.getName().contains(stifZone)){
                             stifFiles.remove(stifFile);
-                            filesToRename.put(gtfsFile,new File(gtfsFile.getParent() + "/" + "google_transit_"+stifZone));
-                            filesToRename.put(stifFile,new File(stifFile.getParent() + "/" + "STIF"+sufix));
+                            if(!gtfsAbbr.contains("MTABC")){
+                                filesToRename.put(gtfsFile,new File(gtfsFile.getParent() + "/" + "google_transit_"+stifZone+".zip"));
+                            }
+                            filesToRename.put(stifFile,new File(stifFile.getParent() + "/" + "STIF"+sufix+".zip"));
                             continue gtfsLoop;
                         }
                     }
