@@ -331,41 +331,132 @@ OBA.Popups = (function() {
 	}
 
 	function getOccupancy(MonitoredVehicleJourney, addDashedLine){
-		  
-		   if(MonitoredVehicleJourney.Occupancy === undefined)
-			   return '';
-		 
-		   var occupancyLoad = "N/A";
-		   
-		   console.log('occupancy: '+ MonitoredVehicleJourney.Occupancy);
-		   
-		   if(MonitoredVehicleJourney.Occupancy == "seatsAvailable"){
-			   occupancyLoad = '<span class="apcDotG"></span>'+
-			   '<span id="apcTextG">Seats Available</span>';
-			   if(addDashedLine == true){
-				   occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadG.png"></div>';
-			   }
-			   //occupancyLoad = '<span class="apcicong"> </span>';
-		   }
-		   else if(MonitoredVehicleJourney.Occupancy == "standingAvailable"){
-			   occupancyLoad = '<span class="apcDotY"></span>'+
-			   '<span id="apcTextY">Limited Seating</span>';
-			   if(addDashedLine == true){
-				   occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadY.png"></div>';
-			   }
-			   //occupancyLoad = '<span class="apcicony"> </span>';
-		   }
-		   else if(MonitoredVehicleJourney.Occupancy == "full"){
-			   occupancyLoad = '<span class="apcDotR"></span>'+
-			   '<span id="apcTextR">Standing Room Only</span>';
-			   if(addDashedLine == true){
-				   occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadR.png"></div>';
-			   }
-			   //occupancyLoad = '<span class="apciconr"> </span>';
-		   }
-		  
-		   return occupancyLoad;
+		switch (OBA.Config.apcMode.toUpperCase()) {
+			case "NONE":
+                return '';
+			case "OCCUPANCY":
+                return getOccupancyApcModeOccupancy(MonitoredVehicleJourney, addDashedLine);
+			case "LOADFACTOR":
+				return getOccupancyApcModeLoadFactor(MonitoredVehicleJourney, addDashedLine);
+			case "PASSENGERCOUNT":
+                return getOccupancyApcModePassengerCount(MonitoredVehicleJourney, addDashedLine);
+			case "LOADFACTORPASSENGERCOUNT":
+                return getOccupancyApcModeLoadFactorPassengerCount(MonitoredVehicleJourney, addDashedLine);
 		}
+
+		return "";
+	}
+
+    function getOccupancyApcModeOccupancy(MonitoredVehicleJourney, addDashedLine){
+
+        if(MonitoredVehicleJourney.Occupancy === undefined)
+            return '';
+
+        var occupancyLoad = "N/A";
+
+        console.log('occupancy: '+ MonitoredVehicleJourney.Occupancy);
+
+        if(MonitoredVehicleJourney.Occupancy == "seatsAvailable"){
+            occupancyLoad = '<span class="apcDotG"></span>'+
+                '<span id="apcTextG">Seats Available</span>';
+            if(addDashedLine == true){
+                occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadG.png"></div>';
+            }
+            //occupancyLoad = '<span class="apcicong"> </span>';
+        }
+        else if(MonitoredVehicleJourney.Occupancy == "standingAvailable"){
+            occupancyLoad = '<span class="apcDotY"></span>'+
+                '<span id="apcTextY">Limited Seating</span>';
+            if(addDashedLine == true){
+                occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadY.png"></div>';
+            }
+            //occupancyLoad = '<span class="apcicony"> </span>';
+        }
+        else if(MonitoredVehicleJourney.Occupancy == "full"){
+            occupancyLoad = '<span class="apcDotR"></span>'+
+                '<span id="apcTextR">Standing Room Only</span>';
+            if(addDashedLine == true){
+                occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadR.png"></div>';
+            }
+            //occupancyLoad = '<span class="apciconr"> </span>';
+        }
+
+        return occupancyLoad;
+    }
+
+    function getOccupancyApcModeLoadFactorPassengerCount(MonitoredVehicleJourney, addDashedLine){
+
+        if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities === undefined ||
+            MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount === undefined ||
+            MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor === undefined)
+            return '';
+
+        var occupancyLoad = "N/A";
+
+        if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "Low"){
+            occupancyLoad = '<span id="apcTextG">Low ('+
+                MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount +' Passengers)</span>';
+            if(addDashedLine == true){
+                occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadG.png"></div>';
+            }
+        }
+        else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "Medium"){
+            occupancyLoad = '<span id="apcTextY">Medium ('+
+                MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount +' Passengers)</span>';
+            if(addDashedLine == true){
+                occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadY.png"></div>';
+            }
+        }
+        else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "High"){
+            occupancyLoad = '<span id="apcTextR">High ('+
+                MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount +' Passengers)</span>';
+            if(addDashedLine == true){
+                occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadR.png"></div>';
+            }
+        }
+
+        return occupancyLoad;
+    }
+
+	function getOccupancyApcModeLoadFactor(MonitoredVehicleJourney, addDashedLine) {
+		if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities === undefined ||
+			MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor === undefined)
+			return '';
+
+		var occupancyLoad = "N/A";
+
+		if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "Low"){
+			occupancyLoad = ' <span id="apcTextG">Low</span>';
+			if(addDashedLine == true){
+				occupancyLoad += ' <span class="apcDashedLine"><img src="img/occupancy/apcLoadG.png"></span>';
+			}
+		}
+		else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "Medium"){
+			occupancyLoad = ' <span id="apcTextY">Medium</span>';
+			if(addDashedLine == true){
+				occupancyLoad += ' <span class="apcDashedLine"><img src="img/occupancy/apcLoadY.png"></span>';
+			}
+		}
+		else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "High"){
+			occupancyLoad = ' <span id="apcTextR">High</span>';
+			if(addDashedLine == true){
+				occupancyLoad += ' <span class="apcDashedLine"><img src="img/occupancy/apcLoadR.png"></span>';
+			}
+		}
+
+		return occupancyLoad;
+	}
+
+    function getOccupancyApcModePassengerCount(MonitoredVehicleJourney, addDashedLine){
+
+        if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities === undefined ||
+            MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount === undefined )
+            return '';
+
+        var occupancyLoad = '<span>~' + MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount + ' passengers on vehicle</span>';
+
+        return occupancyLoad;
+    }
 		
 	
 	function getOccupancyForBus(MonitoredVehicleJourney){
@@ -540,9 +631,9 @@ OBA.Popups = (function() {
 						var layoverLateDepartureText = " <span class='not_bold'>(at terminal)</span>";
 						var prevTripSchedDepartureText = "";
 						var prevTripLateDepartureText = " <span class='not_bold'>(+ scheduled layover at terminal)</span>";
-						
-						var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
+
 						var loadOccupancy = getOccupancyForStop(monitoredVehicleJourney);
+						var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance + loadOccupancy;
 						
 						var timePrediction = null;
 						if(typeof monitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime !== 'undefined' 
@@ -601,7 +692,7 @@ OBA.Popups = (function() {
 						
 						// time mode
 						if(timePrediction != null) {
-							timePrediction += ", " + distance + loadOccupancy;
+							timePrediction += ", " + distance;
 							
 							if(isDepartureTimeAvailable){
 								if(layover === true) {

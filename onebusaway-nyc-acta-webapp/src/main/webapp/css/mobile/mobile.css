@@ -405,6 +405,13 @@ small {
         font-weight: bold;
 }
 
+.apcTextSmallG {
+	 color: #268C0B;
+	 display: inline-block;
+	 white-space: nowrap;
+	 font-size: 14px;
+}
+
 .apcDotY {
         height: 12px;
         width: 12px;
@@ -421,6 +428,13 @@ small {
         font-weight: bold;
 }
 
+.apcTextSmallY {
+	color: #EF8424;
+	display: inline-block;
+	white-space: nowrap;
+	font-size: 14px;
+}
+
 .apcDotR {
         height: 12px;
         width: 12px;
@@ -435,6 +449,13 @@ small {
         white-space: nowrap;
         font-size: 14px;
         font-weight: bold;
+}
+
+.apcTextSmallR {
+	color: #CA001F;
+	display: inline-block;
+	white-space: nowrap;
+	font-size: 14px;
 }
 
 .apcicong {
