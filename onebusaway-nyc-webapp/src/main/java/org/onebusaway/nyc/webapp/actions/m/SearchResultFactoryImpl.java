@@ -494,36 +494,116 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 	  
 	  return null;
   }
-  
-  
-  private String getPresentableOccupancy(
-			MonitoredVehicleJourneyStructure journey, long updateTime) {
-	  	
 
-		// if data is old, no occupancy
-		int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
-		long age = (System.currentTimeMillis() - updateTime) / 1000;
+  private String getPresentableOccupancy(MonitoredVehicleJourneyStructure journey, long updateTime){
+      // if data is old, no occupancy
+      int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+      long age = (System.currentTimeMillis() - updateTime) / 1000;
 
-		if (age > staleTimeout) {
-			return "";
-		}
+      if (age > staleTimeout) {
+          return "";
+      }
+
+      String apcMode = _configurationService.getConfigurationValueAsString("display.apcMode", "none");
+
+      if (apcMode == null) return "";
+      switch (apcMode.toUpperCase()) {
+          case "NONE":
+              return "";
+          case "OCCUPANCY":
+              return getApcModeOccupancy(journey);
+          case "LOADFACTOR":
+              return getApcModeLoadFactor(journey);
+          case "PASSENGERCOUNT":
+              return getApcModePassengerCount(journey);
+          case "LOADFACTORPASSENGERCOUNT":
+              return getApcModeLoadFactorPassengerCount(journey);
+      }
+      return "";
+  }
+
+  private String getApcModeOccupancy(MonitoredVehicleJourneyStructure journey) {
+
+      if (journey.getOccupancy() != null) {
+
+          String loadOccupancy = journey.getOccupancy().toString();
+          loadOccupancy = loadOccupancy.toUpperCase();
+          //TODO: Modify output load text here
+          if (loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE")) {
+              loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotG'></span> <span class='apcTextG'>Seats Available</span></div>";
+              //loadOccupancy = "<icon class='apcicong'> </icon>";
+          } else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE") || loadOccupancy.equals("STANDING_AVAILABLE")) {
+              loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotY'></span> <span class='apcTextY'>Limited Seating</span></div>";
+              //loadOccupancy = "<icon class='apcicony'> </icon>";
+          } else if (loadOccupancy.equals("FULL")) {
+              loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotR'></span> <span class='apcTextR'>Standing Room Only</span></div>";
+              //loadOccupancy = "<icon class='apciconr'> </icon>";
+          }
+
+          return " " + loadOccupancy;
+      } else
+          return "";
+  }
+
+    private String getApcModePassengerCount(MonitoredVehicleJourneyStructure journey) {
+
+        SiriExtensionWrapper wrapper = (SiriExtensionWrapper)journey.getMonitoredCall().getExtensions().getAny();
+
+        if(wrapper.getCapacities() != null && wrapper.getCapacities().getPassengerCount() != null) {
+
+            String loadOccupancy = wrapper.getCapacities().getPassengerCount() + " passengers on vehicle";
+
+            return ", " +loadOccupancy;
+        }else
+            return "";
+
+    }
+
+    private String getApcModeLoadFactor(MonitoredVehicleJourneyStructure journey) {
+
+        SiriExtensionWrapper wrapper = (SiriExtensionWrapper)journey.getMonitoredCall().getExtensions().getAny();
+
+        if(wrapper.getCapacities() != null && wrapper.getCapacities().getPassengerCount() != null &&
+                wrapper.getCapacities().getOccupancyLoadFactor() != null) {
+
+            String loadOccupancy = wrapper.getCapacities().getOccupancyLoadFactor();
+            loadOccupancy = loadOccupancy.toUpperCase();
+            if(loadOccupancy.equals("LOW")){
+                loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextG'>Low Occupancy</span></div>";
+            }
+            else if (loadOccupancy.equals("MEDIUM")){
+                loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextY'>Medium Occupancy</span></div>";
+            }
+            else if (loadOccupancy.equals("HIGH")){
+                loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextR'>High Occupancy</span></div>";
+            }
+
+            return " " +loadOccupancy;
+        }else
+            return "";
+
+    }
+  
+  private String getApcModeLoadFactorPassengerCount(MonitoredVehicleJourneyStructure journey) {
+
+		SiriExtensionWrapper wrapper = (SiriExtensionWrapper)journey.getMonitoredCall().getExtensions().getAny();
 		
-		if(journey.getOccupancy() != null) {
+		if(wrapper.getCapacities() != null && wrapper.getCapacities().getPassengerCount() != null &&
+                wrapper.getCapacities().getOccupancyLoadFactor() != null) {
 			
-			String loadOccupancy = journey.getOccupancy().toString();
+			String loadOccupancy = wrapper.getCapacities().getOccupancyLoadFactor();
 			loadOccupancy = loadOccupancy.toUpperCase();
-			//TODO: Modify output load text here
-			if(loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE")){
-				loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotG'></span> <span class='apcTextG'>Seats Available</span></div>";
-				//loadOccupancy = "<icon class='apcicong'> </icon>";
+			if(loadOccupancy.equals("LOW")){
+				loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextG'>Low Occupancy </span> <span class='apcTextSmallG'> (" +
+                        wrapper.getCapacities().getPassengerCount() + " passengers)</span></div>";
 			}
-			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE") || loadOccupancy.equals("STANDING_AVAILABLE")){
-				loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotY'></span> <span class='apcTextY'>Limited Seating</span></div>";
-				//loadOccupancy = "<icon class='apcicony'> </icon>";
+			else if (loadOccupancy.equals("MEDIUM")){
+				loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextY'>Medium Occupancy </span> <span class='apcTextSmallY'> (" +
+                        wrapper.getCapacities().getPassengerCount() + " passengers)</span></div>";
 			}
-			else if (loadOccupancy.equals("FULL")){
-				loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotR'></span> <span class='apcTextR'>Standing Room Only</span></div>";
-				//loadOccupancy = "<icon class='apciconr'> </icon>";
+			else if (loadOccupancy.equals("HIGH")){
+				loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextR'>High Occupancy </span> <span class='apcTextSmallR'> (" +
+                        wrapper.getCapacities().getPassengerCount() + " passengers)</span></div>";
 			}
 			
 			return " " +loadOccupancy;
