@@ -180,9 +180,13 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
         servletResponse.setContentType("application/xml");
         return _realtimeService.getSiriXmlSerializer().getXml(_response);
       } else {
-        servletResponse.setContentType("application/json");
-        return _realtimeService.getSiriJsonSerializer().getJson(_response,
-            ServletActionContext.getRequest().getParameter("callback"));
+        String callback = ServletActionContext.getRequest().getParameter("callback");
+        if(callback != null){
+          servletResponse.setContentType("application/javascript");
+        } else {
+          servletResponse.setContentType("application/json");
+        }
+        return _realtimeService.getSiriJsonSerializer().getJson(_response, callback);
       }
     } catch (Exception e) {
       return e.getMessage();
