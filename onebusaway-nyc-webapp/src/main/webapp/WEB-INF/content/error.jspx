@@ -25,7 +25,12 @@
 
 <jsp:directive.page contentType="text/html" />
 
-
+<jsp:scriptlet>
+<![CDATA[
+	// todo this isn't very pretty
+	response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+]]>
+</jsp:scriptlet>
 
 <head>
 	<title>Error</title>
