@@ -72,4 +72,6 @@ public class StopOnRoute {
     this.hasRealtime = hasRealtime;
   }
 
+  public List<String> getVehicleIds() { return vehicleIds; }
+
 }

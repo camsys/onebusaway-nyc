@@ -261,9 +261,10 @@ public class PresentationServiceImpl implements PresentationService {
 
     @Override
     public SiriApcExtension getPresentableApc(VehicleOccupancyRecord vor) {
-        if (vor == null ||
-                (vor.getCapacity() == null
-                 && vor.getRawCount() == null)) {
+        if (vor == null) return null;
+        if (vor.getLoadDescription() == null
+                && vor.getCapacity() == null
+                && vor.getRawCount() == null) {
             // we don't have enough information
             return null;
         }
