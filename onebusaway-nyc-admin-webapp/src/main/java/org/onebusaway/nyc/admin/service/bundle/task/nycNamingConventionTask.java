@@ -48,7 +48,7 @@ public class nycNamingConventionTask  implements Runnable {
                     {"M","manhattan"},
                     {"MTABC","mtabc"},
                     {"Q","queens"},
-                    {"S","staten-island"},
+                    {"S","staten_island"},
             }).collect(Collectors.toMap(mapEntry -> mapEntry[0], mapEntry -> mapEntry[1]));
     public String ARG_MODIFIED = "modified";
 
