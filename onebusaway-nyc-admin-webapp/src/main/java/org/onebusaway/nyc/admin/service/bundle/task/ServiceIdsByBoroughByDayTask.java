@@ -121,7 +121,11 @@ public class ServiceIdsByBoroughByDayTask implements Runnable {
             if (outputZoneAndSubzone == null) {
                 outputZoneAndSubzone = new ArrayList<>();
                 for (AgencyAndId serviceId : serviceIds) {
-                    String[] zoneAndSubzone = zoneAndSubzoneForServiceIds.get(serviceId).split(",");
+                    String mergedZoneAndSubzone = zoneAndSubzoneForServiceIds.get(serviceId);
+                    if(mergedZoneAndSubzone == null){
+                        continue;
+                    }
+                    String[] zoneAndSubzone = mergedZoneAndSubzone.split(",");
                     String zone = zoneAndSubzone[0];
                     String subzone = zoneAndSubzone[1];
                     if(!zone.equals(prevZone)){
@@ -175,11 +179,17 @@ public class ServiceIdsByBoroughByDayTask implements Runnable {
     }
 
 
-    private Map<Date,List<AgencyAndId>> sortByZone(Map<Date,List<AgencyAndId>> serviceIdsByDate, Map<AgencyAndId,String> zoneAndSubzoneForServiceIds){
+    private Map<Date,List<AgencyAndId>> sortByZone (Map<Date,List<AgencyAndId>> serviceIdsByDate, Map<AgencyAndId,String> zoneAndSubzoneForServiceIds){
 
         Comparator<AgencyAndId> comparator = new Comparator<AgencyAndId>(){
             public int compare(AgencyAndId agencyAndId1, AgencyAndId agencyAndId2) {
-                return zoneAndSubzoneForServiceIds.get(agencyAndId1).compareTo(zoneAndSubzoneForServiceIds.get(agencyAndId2));
+                String zoneAndSubzone1 = zoneAndSubzoneForServiceIds.get(agencyAndId1);
+                String zoneAndSubzone2 = zoneAndSubzoneForServiceIds.get(agencyAndId2);
+                if (zoneAndSubzone1 == null)
+                    return -1;
+                if (zoneAndSubzone2 == null)
+                    return 1;
+                return zoneAndSubzone1.compareTo(zoneAndSubzone2);
             }
         };
         for(Map.Entry<Date,List<AgencyAndId>> serviceIdsByDateEntry : serviceIdsByDate.entrySet()){
