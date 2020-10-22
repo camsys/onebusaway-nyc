@@ -23,9 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.ServletActionContext;
-import org.apache.xpath.operations.Bool;
+import org.onebusaway.nyc.api.lib.services.ApiKeyThrottledService;
+import org.onebusaway.nyc.api.lib.services.ApiKeyUsageMonitor;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.webapp.users.services.ApiKeyThrottledService;
 import org.onebusaway.users.services.ApiKeyPermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +62,9 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
   
   @Autowired
   private ApiKeyThrottledService _throttledKeyService;
+
+  @Autowired
+  private ApiKeyUsageMonitor _keyUsageMonitor;
 
   @Override
   public String intercept(ActionInvocation invocation) throws Exception {
@@ -115,6 +118,8 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
 
     if (keys == null || keys.length == 0)
       return HttpServletResponse.SC_UNAUTHORIZED;
+
+    _keyUsageMonitor.increment(keys[0]);
 
     boolean isPermitted = checkIsPermitted(_keyService.getPermission(keys[0], "api"));
 

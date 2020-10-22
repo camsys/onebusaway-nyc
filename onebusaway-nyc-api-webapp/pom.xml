@@ -107,13 +107,8 @@
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-cloud-noop</artifactId>
-            <version>0.0.10</version>
-        </dependency>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-cloud-aws</artifactId>
-            <version>0.0.10</version>
+            <artifactId>onebusaway-nyc-api-lib</artifactId>
+            <version>2.26.2.29-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -133,6 +128,8 @@
                 <dummy.permissions />
                 <tdm.host>tdm</tdm.host>
                 <log4j.appender>ROLL</log4j.appender>
+                <api.cache.host>sessions-memcache</api.cache.host>
+                <api.cache.disabled>true</api.cache.disabled>
             </properties>
         </profile>
         <profile>
@@ -145,6 +142,8 @@
                 <dummy.permissions />
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
+                <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+                <api.cache.disabled>true</api.cache.disabled>
             </properties>
         </profile>
         <profile>
@@ -156,6 +155,8 @@
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <dummy.permissions />
                 <log4j.appender>stdout</log4j.appender>
+                <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+                <api.cache.disabled>true</api.cache.disabled>
             </properties>
         </profile>
         <profile>
@@ -169,6 +170,8 @@
                 <dummy.permissions>    &lt;bean id="apiKeyService" class="org.onebusaway.api.services.DummyApiKeyPermissionService" primary="true"/&gt;    
                 </dummy.permissions>
                 <log4j.appender>stdout</log4j.appender>
+                <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+                <api.cache.disabled>true</api.cache.disabled>
             </properties>
         </profile>
         <profile>
@@ -183,6 +186,8 @@
                 <dummy.permissions>    &lt;bean id="apiKeyService" class="org.onebusaway.api.services.DummyApiKeyPermissionService" primary="true"/&gt;    
                 </dummy.permissions>
                 <log4j.appender>stdout</log4j.appender>
+                <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+                <api.cache.disabled>true</api.cache.disabled>
             </properties>
         </profile>
     </profiles>
