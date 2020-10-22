@@ -279,6 +279,7 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
                         _externalServices.publishMetrics(_publishingTopic,subsetKeysList, dimensionNameList, dimensionValueList, subsetValuesList);
                         subsetKeysList.clear();
                         subsetValuesList.clear();
+                        _log.debug("published {} out of {} api keys", i + 1, apiKeyCount);
                         Thread.sleep(getSleepTime(apiKeyCount, 1000, _publishBatchSize, _publishingFrequencySec));
                     }
                 }
