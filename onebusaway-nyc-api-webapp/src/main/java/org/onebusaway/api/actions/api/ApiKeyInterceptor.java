@@ -17,6 +17,7 @@ package org.onebusaway.api.actions.api;
 
 import org.onebusaway.api.ResponseCodes;
 import org.onebusaway.api.model.ResponseBean;
+import org.onebusaway.nyc.api.lib.impl.ApiKeyUsageMonitorImpl;
 import org.onebusaway.users.services.ApiKeyPermissionService;
 
 import com.opensymphony.xwork2.ActionContext;
@@ -42,6 +43,9 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
 
   @Autowired
   private ApiKeyPermissionService _keyService;
+
+  @Autowired
+  private ApiKeyUsageMonitorImpl _keyUsageMonitor;
 
   private ContentTypeHandlerManager _handlerSelector;
 
@@ -79,6 +83,8 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
 
     if( keys == null || keys.length == 0)
       return ApiKeyPermissionService.Status.UNAUTHORIZED;
+
+    _keyUsageMonitor.increment(keys[0]);
 
     return _keyService.getPermission(keys[0], "api");
   }
