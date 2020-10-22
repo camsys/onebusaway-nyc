@@ -111,6 +111,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.DoubleAdder;
 import java.util.stream.Collectors;
 
@@ -180,19 +181,34 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
         return _apiKeyCountMap;
     }
 
+    private ScheduledFuture<?> _updateTask = null;
+
     public void refreshConfig(){
         _maxKeyCountMetrics = _configurationService.getConfigurationValueAsInteger("api.key.maxKeyCountMetrics", 20);
         _publishBatchSize = _configurationService.getConfigurationValueAsInteger("api.key.publishBatchSize", 10);
-        _publishingFrequencySec = _configurationService.getConfigurationValueAsInteger("api.key.publishingFrequencySec", 60);
         _publishingTopic = _configurationService.getConfigurationValueAsString("api.key.publishingTopic", "ApiKeys");
         _publishingDimName = _configurationService.getConfigurationValueAsString("api.key.publishingDimName", "Env");
         _publishingDimValue = _configurationService.getConfigurationValueAsString("api.key.publishingDimValue", "dev");
+
+        int publishingFrequencySec = _configurationService.getConfigurationValueAsInteger("api.key.publishingFrequencySec", 60);
+        setUpdateFrequency(publishingFrequencySec);
+    }
+
+    private void setUpdateFrequency(int updateFrequencySecs) {
+        if (_updateTask != null) {
+            if(_publishingFrequencySec == updateFrequencySecs){
+                return;
+            }
+            _updateTask.cancel(true);
+        }
+        _publishingFrequencySec = updateFrequencySecs;
+        _log.info("api key usage refresh interval=" + updateFrequencySecs + "s");
+        _updateTask = _taskScheduler.scheduleAtFixedRate(new PublishApiKeyMetricsThread(), updateFrequencySecs * 1000);
     }
 
     @PostConstruct
     public void setup(){
         refreshConfig();
-        _taskScheduler.scheduleAtFixedRate(new PublishApiKeyMetricsThread(), _publishingFrequencySec * 1000);
         _externalServices = new ExternalServicesBridgeFactory().getExternalServices();
     }
 
