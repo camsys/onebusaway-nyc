@@ -62,12 +62,12 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-cloud-noop</artifactId>
-            <version>0.0.12-SNAPSHOT</version>
+            <version>0.0.11</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-cloud-aws</artifactId>
-            <version>0.0.12-SNAPSHOT</version>
+            <version>0.0.11</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
