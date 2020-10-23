@@ -393,21 +393,21 @@ OBA.Popups = (function() {
 
         var occupancyLoad = "N/A";
 
-        if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "Low"){
+        if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "L"){
             occupancyLoad = '<span id="apcTextG">Low ('+
                 MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount +' Passengers)</span>';
             if(addDashedLine == true){
                 occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadG.png"></div>';
             }
         }
-        else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "Medium"){
+        else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "M"){
             occupancyLoad = '<span id="apcTextY">Medium ('+
                 MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount +' Passengers)</span>';
             if(addDashedLine == true){
                 occupancyLoad += '<div class="apcDashedLine"><img src="img/occupancy/apcLoadY.png"></div>';
             }
         }
-        else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "High"){
+        else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "H"){
             occupancyLoad = '<span id="apcTextR">High ('+
                 MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount +' Passengers)</span>';
             if(addDashedLine == true){
@@ -425,19 +425,19 @@ OBA.Popups = (function() {
 
 		var occupancyLoad = "N/A";
 
-		if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "Low"){
+		if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "L"){
 			occupancyLoad = ' <span id="apcTextG">Low</span>';
 			if(addDashedLine == true){
 				occupancyLoad += ' <span class="apcDashedLine"><img src="img/occupancy/apcLoadG.png"></span>';
 			}
 		}
-		else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "Medium"){
+		else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "M"){
 			occupancyLoad = ' <span id="apcTextY">Medium</span>';
 			if(addDashedLine == true){
 				occupancyLoad += ' <span class="apcDashedLine"><img src="img/occupancy/apcLoadY.png"></span>';
 			}
 		}
-		else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "High"){
+		else if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerLoadFactor == "H"){
 			occupancyLoad = ' <span id="apcTextR">High</span>';
 			if(addDashedLine == true){
 				occupancyLoad += ' <span class="apcDashedLine"><img src="img/occupancy/apcLoadR.png"></span>';
@@ -451,9 +451,9 @@ OBA.Popups = (function() {
 
         if(MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities === undefined ||
             MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount === undefined )
-            return '';
+			return '';
 
-        var occupancyLoad = '<span>~' + MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount + ' passengers on vehicle</span>';
+        var occupancyLoad = ' <span>~' + MonitoredVehicleJourney.MonitoredCall.Extensions.Capacities.EstimatedPassengerCount + ' passengers on vehicle</span>';
 
         return occupancyLoad;
     }
