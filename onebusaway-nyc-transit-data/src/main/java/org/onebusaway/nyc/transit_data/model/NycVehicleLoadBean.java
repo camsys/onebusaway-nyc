@@ -44,6 +44,8 @@ public class NycVehicleLoadBean implements Serializable {
     //loading maps directly to SIRI OccupancyEnum
     private OccupancyStatus load;
 
+    private String loadDesc;
+
     //GTFS route_id
     private String route;
 
@@ -70,6 +72,7 @@ public class NycVehicleLoadBean implements Serializable {
         this.estLoad = b.estLoad;
         this.estCapacity = b.estCapacity;
         this.recordTimestamp = b.recordTimestamp;
+        this.loadDesc = b.loadDesc;
     }
 
     public Integer getEstimatedCount() {
@@ -80,7 +83,13 @@ public class NycVehicleLoadBean implements Serializable {
         return load;
     }
 
-    public Integer getEstLoad() { return estLoad; }
+    public String getLoadDesc() {
+        return loadDesc;
+    }
+
+    public Integer getEstLoad() {
+        return estLoad;
+    }
 
     public Long getRecordTimestamp() {
         return recordTimestamp;
@@ -114,6 +123,7 @@ public class NycVehicleLoadBean implements Serializable {
 
         private final String vehicleId;
         private final long recordTimestamp;
+        public String loadDesc;
         private OccupancyStatus load;
         private String direction;
         private String route;
@@ -137,6 +147,10 @@ public class NycVehicleLoadBean implements Serializable {
             } else {
                 this.load = OccupancyStatus.UNKNOWN;
             }
+            return this;
+        }
+        public NycVehicleLoadBeanBuilder loadDesc(String loadDesc){
+            this.loadDesc = loadDesc;
             return this;
         }
         public NycVehicleLoadBeanBuilder route(String route){

@@ -109,12 +109,13 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
     private VehicleOccupancyRecord toVehicleOccupancyRecord(NycVehicleLoadBean message) {
         VehicleOccupancyRecord vor = new VehicleOccupancyRecord();
         vor.setOccupancyStatus(message.getLoad());
-        vor.setRawCount(message.getEstLoad());
+        vor.setRawCount(message.getEstimatedCount());
         vor.setCapacity(message.getEstCapacity());
-        vor.setTimestamp(new Date(message.getRecordTimestamp()));
+        vor.setTimestamp(new Date(message.getRecordTimestamp()*1000));
         vor.setVehicleId(AgencyAndId.convertFromString(message.getVehicleId()));
         vor.setRouteId(message.getRoute());
         vor.setDirectionId(message.getDirection());
+        vor.setLoadDescription(message.getLoadDesc());
         return vor;
     }
 

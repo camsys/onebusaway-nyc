@@ -131,7 +131,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     if (agencyId != null) {
       agencyIds.add(agencyId);
     } else {
-      Map<String,List<CoordinateBounds>> agencies = _nycTransitDataService.getAgencyIdsWithCoverageArea();
+      Map<String, List<CoordinateBounds>> agencies = _nycTransitDataService.getAgencyIdsWithCoverageArea();
       agencyIds.addAll(agencies.keySet());
     }
 
@@ -210,7 +210,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       }
 
       // No vehicle id validation, so we pass null for error
-      _response = generateSiriResponse(activities, null, null, currentTimestamp);
+        _response = generateSiriResponse(activities, null, null, currentTimestamp);
 
       // *** CASE 2: by route, using direction id, if provided
     } else if (_request.getParameter("LineRef") != null) {
