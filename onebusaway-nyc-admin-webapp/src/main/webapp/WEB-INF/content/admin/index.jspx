@@ -70,6 +70,10 @@
 							<s:url var="url" action="edit-psa" namespace="/admin"/>
 							<s:a href="%{url}">Edit PSAs</s:a>
 						</li>
+						<li>
+							<s:url var="url" action="user-api-key-data" namespace="/admin"/>
+							<s:a href="%{url}">User API Key Data</s:a>
+						</li>
 					</s:if>
 					<li>
 						<s:url var="url" action="barcode"></s:url>
