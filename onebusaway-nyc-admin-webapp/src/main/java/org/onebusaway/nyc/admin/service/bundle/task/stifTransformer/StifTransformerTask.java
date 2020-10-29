@@ -58,6 +58,12 @@ public class StifTransformerTask implements Runnable {
     @Override
     public void run() {
 
+        _log.info("Begining Stif Transformer Task");
+
+        for(String stifLocation : response.getStifZipList()) {
+            _log.info("Stifs include: " + stifLocation);
+        }
+
         String stifTransformation = null;
         for (String transformationPath : response.getTransformationList()){
             if (transformationPath.toLowerCase().contains("stif")){
@@ -72,6 +78,8 @@ public class StifTransformerTask implements Runnable {
             }
             return;
         }
+
+        _log.info("Using transformation: " + stifTransformation);
 
         StifTransformerTaskSupport.transformStifFiles(response.getStifZipList().toArray(new String[response.getStifZipList().size()]),stifTransformation,stifOutputPath);
     }
