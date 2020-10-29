@@ -73,7 +73,8 @@ public class StifTransformerTask implements Runnable {
             return;
         }
 
-        StifTransformerTaskSupport.transformStifFiles(response.getStifZipList().toArray(new String[0]),stifTransformation,stifOutputPath);
+        StifTransformerTaskSupport.transformStifFiles(response.getStifZipList().toArray(new String[response.getStifZipList().size()]),stifTransformation,stifOutputPath);
     }
+
 
 }
