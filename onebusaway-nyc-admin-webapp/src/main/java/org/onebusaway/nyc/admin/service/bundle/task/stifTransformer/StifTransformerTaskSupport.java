@@ -25,12 +25,13 @@ import java.io.File;
 public class StifTransformerTaskSupport {
     private static Logger _log = LoggerFactory.getLogger(StifTransformerTaskSupport.class);
 
-    public static void transformStifFiles(String[] stifPathsLocation,String stifTransform,String stifOutputPath){
+    public static void transformStifFiles(String[] stifPathsLocation,String stifTransform,String stifOutputPath,String workingDirectoryPath){
         StifTransformerSuite stifTransformerSuite = new StifTransformerSuite();
         stifTransformerSuite.setOutputFormat(1);
         stifTransformerSuite.setInputPaths(stifPathsLocation);
         stifTransformerSuite.setTranform(stifTransform);
         stifTransformerSuite.setOutputPath(stifOutputPath);
+        stifTransformerSuite.setWorkingDirPath(workingDirectoryPath);
         stifTransformerSuite.run();
 
 //        String includeExpression = ".*";
