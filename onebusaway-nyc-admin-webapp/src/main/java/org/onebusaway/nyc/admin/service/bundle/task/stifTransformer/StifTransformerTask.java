@@ -81,7 +81,11 @@ public class StifTransformerTask implements Runnable {
 
         _log.info("Using transformation: " + stifTransformation);
 
-        StifTransformerTaskSupport.transformStifFiles(response.getStifZipList().toArray(new String[response.getStifZipList().size()]),stifTransformation,stifOutputPath);
+        StifTransformerTaskSupport.transformStifFiles(
+                response.getStifZipList().toArray(new String[response.getStifZipList().size()]),
+                stifTransformation,
+                stifOutputPath,
+                response.getTmpDirectory()+"/StifWorkingDirectory");
     }
 
 
