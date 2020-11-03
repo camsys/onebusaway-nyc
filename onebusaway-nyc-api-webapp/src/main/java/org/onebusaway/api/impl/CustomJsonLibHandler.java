@@ -119,11 +119,7 @@ public class CustomJsonLibHandler implements ContentTypeHandler {
 
   @Override
   public String fromObject(ActionInvocation actionInvocation, Object obj, String resultCode, Writer stream) throws IOException {
-    String callback = null;
-    HttpServletRequest req = ServletActionContext.getRequest();
-    if (req != null)
-      callback = req.getParameter("callback");
-
+    String callback = getCallback();
     return fromObject(obj, resultCode, stream, callback);
   }
 
@@ -132,7 +128,20 @@ public class CustomJsonLibHandler implements ContentTypeHandler {
   }
 
   public String getContentType() {
+    String callback = getCallback();
+    if(callback != null){
+      return ("application/javascript");
+    }
     return "application/json";
+  }
+
+  private String getCallback(){
+    String callback = null;
+    HttpServletRequest req = ServletActionContext.getRequest();
+    if (req != null) {
+      callback = req.getParameter("callback");
+    }
+    return callback;
   }
 
   public String getExtension() {
