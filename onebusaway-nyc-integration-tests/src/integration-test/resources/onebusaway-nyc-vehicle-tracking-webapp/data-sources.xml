@@ -33,6 +33,8 @@
     
     <bean id="vehiclePulloutService" class="org.onebusaway.nyc.transit_data_federation.impl.vtw.DummyVehiclePulloutService" />
 
+    <bean id="unassignedVehcileService" class="org.onebusaway.nyc.vehicle_tracking.impl.unassigned.DummyUnassignedVehicleServiceImpl" />
+
     <!-- Database Connection Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.hsqldb.jdbcDriver" />

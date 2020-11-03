@@ -25,11 +25,13 @@
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
 
-    <!-- Specify our transit data source -->
-    <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+
+    <bean id="nycTransitDataService"
+          class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl"
-            value="http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
-        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
+                  value="http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
+        <property name="serviceInterface"
+                  value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
     </bean>
 
     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
@@ -38,15 +40,13 @@
         <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
     </bean>
 
-    <bean id="apiKeyValidationService" class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl">
+    <bean id="apiKeyValidationService"
+          class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl">
         <property name="providers">
             <list>
-                <bean class="org.onebusaway.users.impl.validation.KeyValidationProviderV1Impl">
-                    <property name="privateSalt" value="blah" />
-                </bean>
+                <bean class="org.onebusaway.users.impl.validation.SaltedPasswordValidationProviderV1Impl" />
             </list>
         </property>
-        <property name="defaultProviderId" value="v1" />
     </bean>
 
 </beans>

@@ -56,7 +56,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-@Component
 /**
  * Integrate with an external feed of depot pull-out vehicles.  If we don't have real-time
  * records for these vehicles we have SPOOKY buses (aka zombie buses) that are in service
@@ -152,6 +151,7 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     }
 
     private String _urlStr = null;
+
     @Override
     public void setUrl(URL url){
         _url = url;
@@ -166,7 +166,6 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     }
 
     @PostConstruct
-    @Override
     public void setup(){
         setupMapper();
     }
@@ -292,7 +291,6 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     }
 
     @PreDestroy
-    @Override
     public void destroy() {
         _log.info("destroy");
         if (_taskScheduler != null) {
