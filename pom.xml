@@ -24,7 +24,7 @@
         <struts.version>2.3.35</struts.version>
       <jetty.version>6.1.26</jetty.version>
       <spring.version>4.3.24.RELEASE</spring.version>
-      <onebusaway.app-modules.version>2.0.36.11-cs-nyc</onebusaway.app-modules.version>
+      <onebusaway.app-modules.version>2.0.36.12-cs-nyc-SNAPSHOT</onebusaway.app-modules.version>
       <gitDescribe>99999</gitDescribe>
       <xwiki.version>2.3.1</xwiki.version>
         <xwiki.integration.version>1.0.1</xwiki.integration.version>
@@ -412,12 +412,13 @@
                         <exclude>src/test/resources/**</exclude>
                         <exclude>**/git.properties</exclude>
                         <exclude>**/src/test/resources/**</exclude>
-                        <exclude>**/src/integration-test/resources/**</exclude>'
+                        <exclude>**/src/integration-test/resources/**</exclude>
                         <exclude>jgoogleanalyticstracker/**</exclude>
                         <exclude>onebusaway-nyc-tdm-util/logs/**,</exclude>
                         <exclude>onebusaway-nyc-tdm-util/modules/**</exclude>
                         <exclude>onebusaway-nyc-tdm-util/conf/**</exclude>
                         <exclude>onebusaway-nyc-tdm-util/public/**</exclude>
+                        <exclude>onebusaway-nyc-integration-tests/src/test/**</exclude>
                         <exclude>**/js/lib/**</exclude>
                         <exclude>.idea/**</exclude>
                         <exclude>**/.iml</exclude>
@@ -665,6 +666,12 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>5.1.48</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>1.8.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

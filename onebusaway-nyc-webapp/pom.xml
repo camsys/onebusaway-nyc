@@ -48,7 +48,14 @@
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-api-core</artifactId>
 			<version>2.26.2.32-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-beanutils</groupId>
+					<artifactId>commons-beanutils</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-util</artifactId>
@@ -61,7 +68,6 @@
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
-			<version>1.8.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
@@ -135,7 +141,7 @@
 		<dependency>
 			<groupId>org.owasp.esapi</groupId>
 			<artifactId>esapi</artifactId>
-			<version>2.1.0</version>
+			<version>2.1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
