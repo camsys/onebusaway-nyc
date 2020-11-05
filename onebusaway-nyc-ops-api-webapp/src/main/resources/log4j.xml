@@ -41,6 +41,13 @@
 		<level value="error" />
 		<appender-ref ref="${log4j.appender}" />
 	</logger>
+
+	<logger
+			name="org.hibernate.engine.internal.StatisticalLoggingSessionEventListener">
+		<level value="FATAL" />
+		<appender-ref ref="${log4j.appender}" />
+	</logger>
+
 	<!-- 0 or 1 root elements -->
 
 	<root>
