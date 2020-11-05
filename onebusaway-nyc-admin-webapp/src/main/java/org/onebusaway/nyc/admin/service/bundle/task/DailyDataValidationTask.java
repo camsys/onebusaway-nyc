@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.bundle.task;
 
 import org.joda.time.DateTimeConstants;
@@ -5,6 +21,7 @@ import org.joda.time.LocalDate;
 import org.onebusaway.gtfs.model.*;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
+import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
@@ -28,12 +45,10 @@ public class DailyDataValidationTask implements Runnable {
     private GtfsMutableRelationalDao _dao;
     private FederatedTransitDataBundle _bundle;
     private static final int MAX_STOP_CT = 150;
-    private String DEFAULT_TDS_VALUE_LOCATION_OF_ROUTE_MAPPING = "file_name_zone_route_mapping";
-    private String DEFAULT_LOCATION_OF_ROUTE_MAPPING = "routesByZone.txt";
-    private ConfigurationService _configurationService;
     private File _mappingsFile;
     int maxStops = 0;
     final private String internalDelimeter = "&%&%&%&%";
+    BundleRequestResponse requestResponse;
 
     @Autowired
     public void setLogger(MultiCSVLogger logger) {
@@ -51,18 +66,13 @@ public class DailyDataValidationTask implements Runnable {
     }
 
     @Autowired
-    public void setConfigurationService(ConfigurationService configurationService) {
-        _configurationService = configurationService;
+    public void setRequestResponse(BundleRequestResponse requestResponse) {
+        this.requestResponse = requestResponse;
     }
 
     @Override
     public void run() {
         _log.info("starting DailyDataValidationTask");
-        if(_configurationService == null){
-            ConfigurationServiceImpl configurationServiceImpl = new ConfigurationServiceImpl();
-            configurationServiceImpl.setTransitDataManagerApiLibrary(new TransitDataManagerApiLibrary("tdm.dev.obanyc.com", 80, "/api"));
-            _configurationService = configurationServiceImpl;
-        }
         setMappingsFile();
         if (! _mappingsFile.isFile()) {
             _log.info("missing mapping file,{} exiting", _mappingsFile.getAbsolutePath());
@@ -73,16 +83,17 @@ public class DailyDataValidationTask implements Runnable {
             _log.info("done");
         } catch (Exception e) {
             _log.error("exception with dailyVa:", e);
+            requestResponse.getResponse().setException(e);
         }
 
     }
 
     private void setMappingsFile(){
-        _mappingsFile = new File(_bundle.getPath().getParentFile().getParent() +"/" + getLocationOfRouteMappingFile());
+        _mappingsFile = new File(requestResponse.getRequest().getRouteMappings());
     }
 
     private void process(){
-        _log.info("Creating daily route data validation from this file" + getLocationOfRouteMappingFile());
+        _log.info("Creating daily route data validation from this file" + _mappingsFile);
 
         Map<AgencyAndId,Set<String>> RouteInfoByServiceId = getRouteInfoByServiceId(_dao);
         _log.info("Gotten TripCountsByRouteInfoByServiceId organized");
@@ -248,9 +259,11 @@ public class DailyDataValidationTask implements Runnable {
                     serviceIdsByDate.get(date).add(serviceId);
                 }
                 if(calDate.getExceptionType() == 2){
-                    serviceIdsByDate.get(date).remove(serviceId);
-                    if(serviceIdsByDate.get(date).size() == 0){
-                        serviceIdsByDate.remove(date);
+                    if(serviceIdsByDate.get(date) != null) {
+                        serviceIdsByDate.get(date).remove(serviceId);
+                        if (serviceIdsByDate.get(date).size() == 0) {
+                            serviceIdsByDate.remove(date);
+                        }
                     }
                 }
 
@@ -319,17 +332,6 @@ public class DailyDataValidationTask implements Runnable {
             e.printStackTrace();
         }
         return zoneforRoutes;
-    }
-
-    /*
-     * This method will use the config service to retrieve the file name where
-     * each zones route id's were placed. This file was created in the mod task.
-     * The location is stored in config.json.
-     *
-     * @return the URL to use to retrieve the modes and routes to be reported on
-     */
-    private String getLocationOfRouteMappingFile(){
-        return _configurationService.getConfigurationValueAsString(DEFAULT_TDS_VALUE_LOCATION_OF_ROUTE_MAPPING, DEFAULT_LOCATION_OF_ROUTE_MAPPING);
     }
 
     class TripTotals {

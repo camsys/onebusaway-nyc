@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.util.impl;
 
 import java.io.BufferedReader;
@@ -24,8 +40,7 @@ import com.google.gson.JsonParser;
 
 public class RestApiLibrary {
   
-  private static int DEFAULT_READ_TIMEOUT = Integer.parseInt(System.getProperty("oba.defaultReadTimeout", "60000")); // 60 * 1000;
-  private static int DEFAULT_CONNECTION_TIMEOUT = Integer.parseInt(System.getProperty("oba.defaultConnectTimeout", "60000")); // 60 * 1000;
+
 
 	private String _host = null;
 
@@ -33,16 +48,16 @@ public class RestApiLibrary {
 
 	private int _port = 80;
 
-	private int readTimeout = DEFAULT_READ_TIMEOUT;
-	private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+	private Integer readTimeout = null;
+	private Integer connectionTimeout = null;
 	
 	private static Logger log = LoggerFactory.getLogger(RestApiLibrary.class);
 
-	public void setReadTimeout(int readTimeout) {
+	public void setReadTimeout(Integer readTimeout) {
 	  this.readTimeout = readTimeout;
 	}
 	
-	public void setConnectionTimeout(int connectionTimeout) {
+	public void setConnectionTimeout(Integer connectionTimeout) {
 	  this.connectionTimeout = connectionTimeout;
 	}
 	
@@ -80,41 +95,10 @@ public class RestApiLibrary {
 		
 		return url;
 	}
-	
+
+
 	public String getContentsOfUrlAsString(URL requestUrl) throws IOException {
-		BufferedReader br = null;
-		InputStream inStream = null;
-		URLConnection conn = null;
-		
-		try{
-			conn = requestUrl.openConnection();
-			conn.setConnectTimeout(connectionTimeout);
-			conn.setReadTimeout(readTimeout);
-			inStream = conn.getInputStream();
-			br = new BufferedReader(new InputStreamReader(inStream));
-			StringBuilder output = new StringBuilder();
-			
-			int cp;
-			while ((cp = br.read()) != -1) {
-				output.append((char) cp);
-			}
-			
-			return output.toString();
-		}
-		catch(IOException ioe){
-			String url = requestUrl != null ? requestUrl.toExternalForm() : "url unavailable";
-			log.error("Error getting contents of url: " + url);	
-			throw ioe;
-		}finally{
-			try{
-				if(br != null) br.close();
-				if(inStream != null) inStream.close();
-			}
-			catch(IOException ioe2){
-				log.error("Error closing connection");
-			}
-		}
-		
+		return UrlUtility.readAsString(requestUrl, connectionTimeout, readTimeout);
 	}
 
 	public ArrayList<JsonObject> getJsonObjectsForString(String string) throws Exception {

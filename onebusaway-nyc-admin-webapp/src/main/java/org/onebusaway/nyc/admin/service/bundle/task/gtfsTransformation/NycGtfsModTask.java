@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.bundle.task.gtfsTransformation;
 
         import au.com.bytecode.opencsv.CSVReader;
@@ -37,16 +53,6 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     private final String DEFAULT_ZONES_VALUES = "bronx,brooklyn,manhattan,mtabc,queens,staten-island,google-transit-mta-agency";
     private final String DEFAULT_CONFIG_KEYS = "zones,coordinate,modurl,zones-to-avoid-transforming,maxDistancetoZoneCenter,_";
     private final String DEFAULT_CATAGORIZED_AS_DEFAULT_ZONE = "google-transit-mta-agency";
-    private static final Map<String, String> DEFAULT_TRANSFORMATION_URLS =
-            Arrays.stream(new String[][] {
-                    {"bronx_modurl","https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/bronx_modifications.md"},
-                    {"brooklyn_modurl","https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/brooklyn_modifications.md"},
-                    {"manhattan_modurl","https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/manhattan_modifications.md"},
-                    {"mtabc_modurl","https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/mtabc_modifications.md"},
-                    {"queens_modurl","https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/queens_modifications.md"},
-                    {"staten-island_modurl","https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/staten-island_modifications.md"},
-                    {"google-transit-mta-agency_modurl","https://raw.githubusercontent.com/wiki/camsys/onebusaway-nyc/google-transit-mta-agency_modifications.md"},
-            }).collect(Collectors.toMap(mapEntry -> mapEntry[0], mapEntry -> mapEntry[1]));
 
     private static final Map<String, String> DEFAULT_ZONE_COORDINATES =
             Arrays.stream(new String[][] {
@@ -69,6 +75,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     private String DEFAULT_LOCATION_OF_RAW_ROUTE_MAPPING = "ListOfRoutesInGtfs.txt";
     private String DEFAULT_LOCATION_OF_ROUTE_MAPPING = "routesByZone.txt";
     private boolean DEFAULT_WRITE_ROUTE_MAPPING = true;
+    private String transformationsOutputFolder;
 
 
 
@@ -76,6 +83,9 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     public void setRequestResponse(BundleRequestResponse requestResponse) {
         _requestResponse = requestResponse;
     }
+
+    @Autowired
+    public void setTransformationsOutputFolder(String transformationsOutputFolder){this.transformationsOutputFolder = transformationsOutputFolder;}
 
     @Override
     public void run() {
@@ -93,8 +103,9 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
             getZoneCoordinates(zones);
             List zonesToAvoidTransforming = Arrays.asList(zonesToAvoidTransforming());
             _log.info("GtfsModTask Starting");
+            File outputDestination;
             for (GtfsBundle gtfsBundle : getGtfsBundles(_applicationContext).getBundles()) {
-                File outputDestination = gtfsBundle.getPath().getAbsoluteFile();
+                outputDestination = gtfsBundle.getPath().getAbsoluteFile();
 
                 File tmpDir = new File(gtfsBundle.getPath().getParentFile(), "tmpTransformationFolder");
                 tmpDir.mkdir();
@@ -108,12 +119,19 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
                 if (zonesToAvoidTransforming.contains(zone)) {
                     continue;
                 }
-                String modUrl = getModUrl(zone);
-                _log.info("using modUrl=" + modUrl + " for zone " + zone + " and bundle " + gtfsBundle.getPath());
+                String modpath = getModFilePath(zone);
+                if (modpath == null){
+                    _log.error("No " + zone + " Transformation Found");
+                    requestResponse.getResponse().addStatusMessage("No " + zone + " Transformation Found");
+                }
+                _log.info("using modUrl=" + modpath + " for zone " + zone + " and bundle " + gtfsBundle.getPath());
                 String oldFilename = gtfsBundle.getPath().getPath();
                 String transform = null;
-                String newFilename = runModifications(gtfsBundle, zone, modUrl, transform);
-                _log.info("Transformed " + oldFilename + " to " + newFilename + " according to url " + getModUrl(agencyId));
+                if(_requestResponse.getRequest().getPredate()){
+                    transform ="{\"op\":\"transform\", \"class\":\"org.onebusaway.gtfs_transformer.impl.PredateCalendars\"}";
+                }
+                String newFilename = runModifications(gtfsBundle, zone, modpath, transform);
+                _log.info("Transformed " + oldFilename + " to " + newFilename + " according to using file " + modpath);
 
                 outputDestination.delete();
                 outputDestination = new File(outputDestination.getParentFile(), gtfsBundle.getPath().getName());
@@ -153,6 +171,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
         catch (IOException exception){
             _log.error("Issue writing listOfRoutes in ModTask/NycGtfsModTask for later use in FixedRouteValidationTask");
         }
+        _requestResponse.getRequest().setRouteMappings(mergedOutputs.getAbsolutePath());
         rawOutput.delete();
     }
 
@@ -278,16 +297,13 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
         return zone;
     }
 
-
-    private String getModUrl(String zone){
-        String configurationItemKey = zone+_delimiter+_transformationUrl;
-        String urlString = configurationService.getConfigurationValueAsString( configurationItemKey,null);
-        if (urlString == null){
-            urlString = DEFAULT_TRANSFORMATION_URLS.get(configurationItemKey);
-            _log.error("Looking for URL for Transformations. Expected to find [zone][delimiter][url] -> address "
-                    + " . Found null when searching for " + configurationItemKey + ". Using defaults.");
+    private String getModFilePath(String zone){
+        for(String transformation : _requestResponse.getResponse().getTransformationList()){
+            if(transformation.toLowerCase().contains(zone.toLowerCase())){
+                return transformation;
+            }
         }
-        return urlString;
+        return null;
     }
 
     @Override

@@ -24,16 +24,6 @@
 	<label class="headerLabel">Compare Bundles</label>
 </div>
 
-<div id="selectArchiveDiv">
-	<input type="checkbox" id="useArchiveCheckbox" value="useArchivedData">Use archived data for Fixed Route Comparison</input>
-</div>
-<div id="buildingReportDiv">
-	<s:url var="url" value="/css/img/ajax-loader.gif" />
-	<img id="buildingReportIcon" src="${url}" alt="Ajax loader" class="progress" />
-	<label id="buildingReportMsg" class="adminLabel">Fixed Route Comparison Report in Progress...</label>
-</div>
-
-
 <div id="bundleSelectionDiv">
 	<div id="currentBundleDiv">
 		<fieldset>
@@ -150,7 +140,7 @@
 					</span>
 			</caption>
 			<thead>
-			<tr>
+			<tr id="fixedComparisonTableHeader">
 				<th class="modeColumn">Mode</th>
 				<th class="rtNumColumn">Rt</th>
 				<th class="rtNameColumn">Route Name</th>
@@ -162,7 +152,7 @@
 				<th class="sunTripsColumn" ># of Sun trips</th>
 			</tr>
 			</thead>
-			<tbody class="fixedRouteScrollable">
+			<tbody class="fixedRouteScrollable" id ="fixedRouteComparisonTableBody">
 			<!--  prevent jsxp minimiztion -->
 			</tbody>
 		</table>
@@ -184,7 +174,7 @@
 					</span>
 			</caption>
 			<thead>
-			<tr>
+			<tr id="dailyComparisonTableHeader">
 				<th class="modeColumn">Mode</th>
 				<th class="rtNumColumn">Rt</th>
 				<th class="rtNameColumn">Route Name</th>
@@ -194,7 +184,7 @@
 				<th class="weekdayTripColumn"># Trips</th>
 			</tr>
 			</thead>
-			<tbody class="dailyRouteScrollable">
+			<tbody class="dailyRouteScrollable" id ="dailyRouteComparisonTableBody">
 			<!--  prevent jsxp minimiztion -->
 			</tbody>
 		</table>

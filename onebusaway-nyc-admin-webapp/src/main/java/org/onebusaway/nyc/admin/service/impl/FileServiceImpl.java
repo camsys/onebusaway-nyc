@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.impl;
 
 import com.amazonaws.AmazonClientException;
@@ -45,6 +61,8 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 
 	// the stif directory relative to the bundle directory; e.g. stif_latest
 	private String _stifPath;
+	// the transformation directory relative to the bundle directory; e.g. transformations_latest
+	private String _transformationPath;
 	// the config directory, relative to the bundle directory; e.g., config
 	private String _configPath;
 	private String _buildPath;
@@ -89,6 +107,16 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 	@Override
 	public String getStifPath() {
 		return _stifPath;
+	}
+
+	@Override
+	public void setTransformationPath(String transformationPath) {
+		this._transformationPath = transformationPath;
+	}
+
+	@Override
+	public String getTransformationPath() {
+		return _transformationPath;
 	}
 
 	@Override
@@ -196,6 +224,9 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 			result = _s3.putObject(request);
 			request = new PutObjectRequest(_bucketName, filename + "/" +
 					this.getStifPath() + "/README.txt", tmpFile);
+			result = _s3.putObject(request);
+			request = new PutObjectRequest(_bucketName, filename + "/" +
+					this.getTransformationPath() + "/README.txt", tmpFile);
 			result = _s3.putObject(request);
 			request = new PutObjectRequest(_bucketName, filename + "/" +
 					this.getBuildPath() + "/README.txt", tmpFile);

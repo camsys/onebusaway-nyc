@@ -82,8 +82,8 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
                 continue;
             }
 
-            OccupancyStatus occupancy = getOccupancyStatus(vehicle);
-            VehiclePosition.Builder pos = _feedBuilder.makeVehicleUpdate(vehicle, vlr, occupancy);
+            VehicleOccupancyRecord vor = getVehicleOccupancyRecord(vehicle);
+            VehiclePosition.Builder pos = _feedBuilder.makeVehicleUpdate(vehicle, vlr, vor);
 
             FeedEntity.Builder entity = FeedEntity.newBuilder();
             entity.setVehicle(pos);
@@ -95,6 +95,20 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
         _log.info("{} VehicleStatusBeans are missing VLRs", nMissing);
 
         return entities;
+    }
+
+    private VehicleOccupancyRecord getVehicleOccupancyRecord(VehicleStatusBean vehicleStatus) {
+        TripStatusBean tripStatus = vehicleStatus.getTripStatus();
+        if (tripStatus != null) {
+            VehicleOccupancyRecord vor =
+                    _transitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(
+                            AgencyAndId.convertFromString(tripStatus.getVehicleId()),
+                            tripStatus.getActiveTrip().getRoute().getId(),
+                            tripStatus.getActiveTrip().getDirectionId());
+            if (vor != null)
+                return vor;
+        }
+        return null;
     }
 
     private OccupancyStatus getOccupancyStatus(VehicleStatusBean vehicleStatus){

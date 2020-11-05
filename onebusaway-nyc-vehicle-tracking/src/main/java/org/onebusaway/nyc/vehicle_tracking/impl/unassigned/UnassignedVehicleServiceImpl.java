@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.vehicle_tracking.impl.unassigned;
 
 import com.google.gson.JsonElement;
@@ -40,7 +56,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-@Component
 /**
  * Integrate with an external feed of depot pull-out vehicles.  If we don't have real-time
  * records for these vehicles we have SPOOKY buses (aka zombie buses) that are in service
@@ -105,7 +120,9 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
 
     private URL _url;
 
-    Integer _maxActiveVehicleAgeSecs;
+    private Integer _maxActiveVehicleAgeSecs;
+
+    private Integer _updateIntervalSecs = null;
 
     private static final List<UnassignedVehicleRecord> EMPTY_RECORDS = Collections.unmodifiableList(new ArrayList<UnassignedVehicleRecord>());
 
@@ -113,7 +130,10 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     @Autowired
     public void setConfigurationService(ConfigurationService configurationService) {
         this._configurationService = configurationService;
-        configChanged();
+        getConfig();
+        ConfigThread config = new ConfigThread(this);
+        // we do this quite frequently has the config values themselves refresh slowly
+        _taskScheduler.scheduleWithFixedDelay(config, 1 * 60 * 1000);
     }
 
     @Autowired
@@ -130,6 +150,8 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         return _url;
     }
 
+    private String _urlStr = null;
+
     @Override
     public void setUrl(URL url){
         _url = url;
@@ -144,7 +166,6 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     }
 
     @PostConstruct
-    @Override
     public void setup(){
         setupMapper();
     }
@@ -164,11 +185,29 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         }
     }
 
+    private void getConfig()  {
+        String urlStr = _configurationService.getConfigurationValueAsString("vtw.unassignedVehicleServiceUrl", null);
+        Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("vtw.unassignedVehicleServiceRefreshInterval", 30);
+        boolean enabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("vtw.unassignedVehicleServiceEnabled", "true"));
+        Integer maxActiveVehicleAgeSecs = _configurationService.getConfigurationValueAsInteger("vtw.maxActiveVehicleAgeSecs", 120);
 
-    @Refreshable(dependsOn = {"vtw.unassignedVehicleServiceUrl", "vtw.unassignedVehicleServiceEnabled", "vtw.unassignedVehicleServiceRefreshInterval", "vtw.maxActiveVehicleAgeSecs"})
+        // if any of our configuration has changed update our entire configuration
+        if ((_urlStr == null && _urlStr != urlStr)
+                ||!_urlStr.equals(urlStr)
+                || (_updateIntervalSecs == null && _updateIntervalSecs != updateIntervalSecs)
+                || _updateIntervalSecs != updateIntervalSecs
+                || _enabled != enabled
+                || (_maxActiveVehicleAgeSecs == null && _maxActiveVehicleAgeSecs != maxActiveVehicleAgeSecs)
+                || _maxActiveVehicleAgeSecs != maxActiveVehicleAgeSecs) {
+            configChanged();
+        }
+    }
+
     private void configChanged() {
         String url = _configurationService.getConfigurationValueAsString("vtw.unassignedVehicleServiceUrl", null);
+        _urlStr = url;
         Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("vtw.unassignedVehicleServiceRefreshInterval", 30);
+        _updateIntervalSecs = updateIntervalSecs;
         boolean previousEnablement = _enabled;
         _enabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("vtw.unassignedVehicleServiceEnabled", "true"));
         _maxActiveVehicleAgeSecs = _configurationService.getConfigurationValueAsInteger("vtw.maxActiveVehicleAgeSecs", 120);
@@ -187,6 +226,8 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         if (updateIntervalSecs != null) {
             setUpdateFrequency(updateIntervalSecs);
         }
+
+
     }
 
 
@@ -250,7 +291,6 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     }
 
     @PreDestroy
-    @Override
     public void destroy() {
         _log.info("destroy");
         if (_taskScheduler != null) {
@@ -270,7 +310,7 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
                     processUnassignedVehicles(filterRecords(getUnassignedVehicleRecordsDirect(getUrl())));
                 }
             } catch (Exception e) {
-                _log.error("refreshData() failed: " + e.getMessage());
+                _log.error("refreshData() failed: " + e.getMessage(), e);
                 e.printStackTrace();
             }
         }
@@ -410,6 +450,7 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
                 }
                 AgencyAndId vehicleId = new AgencyAndId(record.getAgencyId(), record.getVehicleId());
                 if(!vehicleActive(vehicleId, System.currentTimeMillis())) {
+                    if (_vehicleLocationInferenceService == null) return;
                     VehicleInferenceInstance instance = _vehicleLocationInferenceService.getInstanceByVehicleId(vehicleId);
                     NycQueuedInferredLocationBean ieBean = null;
                     if (instance != null) {
@@ -464,7 +505,12 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
                     Integer schDev = null;
                     VehicleInferenceInstance instance = _vehicleLocationInferenceService.getInstanceByVehicleId(vehicleId);
                     if (instance != null) {
-                        schDev = instance.getCurrentStateAsNycQueuedInferredLocationBean().getScheduleDeviation();
+                        if (instance.getCurrentStateAsNycQueuedInferredLocationBean() != null
+                                && instance.getCurrentStateAsNycQueuedInferredLocationBean().getScheduleDeviation() != null) {
+                            schDev = instance.getCurrentStateAsNycQueuedInferredLocationBean().getScheduleDeviation();
+                        } else {
+                            schDev = 0;
+                        }
                     }
                     if (timeReceived != null) {
                         _log.info("CONFLICT Vehicle with id {} marked as unassigned but has been recently updated at {}s with max of {}s and schDev {}",
@@ -492,7 +538,8 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
     }
 
     public boolean vehicleActive(AgencyAndId vehicleId, long currentTime) {
-        if (_vehicleLocationInferenceService.getTimeReceivedByVehicleId(vehicleId) ==  null) return false;
+        if (_vehicleLocationInferenceService == null ||
+                _vehicleLocationInferenceService.getTimeReceivedByVehicleId(vehicleId) ==  null) return false;
 
         Long timeReceived = _vehicleLocationInferenceService.getTimeReceivedByVehicleId(vehicleId);
         if(timeReceived != null && ((currentTime - timeReceived) / 1000) <= getMaxActiveVehicleAgeSecs()){
@@ -513,6 +560,17 @@ public class UnassignedVehicleServiceImpl implements UnassignedVehicleService {
         inferredLocationBean.setPhase(record.getPhase());
         inferredLocationBean.setStatus(record.getStatus());
         return inferredLocationBean;
+    }
+
+    private class ConfigThread implements Runnable {
+        private UnassignedVehicleServiceImpl impl = null;
+        public ConfigThread(UnassignedVehicleServiceImpl impl) {
+            this.impl = impl;
+        }
+
+        public void run() {
+            impl.getConfig();
+        }
     }
 
 }

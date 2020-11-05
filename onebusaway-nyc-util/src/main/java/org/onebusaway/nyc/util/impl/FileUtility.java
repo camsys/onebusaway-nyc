@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.util.impl;
 
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -10,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -256,12 +274,9 @@ public class FileUtility {
     File basePathDir = new File(basePath);
     String[] files = basePathDir.list();
     if (includeBaseFolder){
-      String[] tmpFiles = new String[files.length+1];
-      for (int i = 0; i < files.length; i++) {
-        tmpFiles[i] = files[i];
-      }
-      tmpFiles[files.length] = basePath;
-      files = tmpFiles;
+        files = new String[1];
+        files[0] = basePathDir.getName();
+        basePath = basePathDir.getParent();
     }
 
     if (files == null) {
@@ -310,7 +325,7 @@ public class FileUtility {
         File basePathDir = new File(basePathSubFolder);
         String[] filesSubfolder = basePathDir.list();
         zipFolderRecursively(zos,filesSubfolder,originalBasePath,basePathSubFolder, recursiveFilePath);
-        return;
+        continue;
       }
       _log.info("compressing " + recursiveFilePath);
       ZipEntry ze = new ZipEntry(recursiveFilePath);
@@ -347,6 +362,37 @@ public class FileUtility {
     return count;
   }
 
+  public boolean printFromUrl(String url, String destination){
+    return printFromUrl(url,null,destination);
+  }
 
+  public boolean printFromUrl(String url, String additionalText, String destination){
+    try{
+      URL inputAddress = new URL(url);
+      InputStream in = inputAddress.openStream();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+      File targetAdress = new File(destination);
+      OutputStream out = new FileOutputStream(targetAdress);
+      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
+
+      String line = null;
+
+      while ((line = reader.readLine()) != null) {
+        writer.write(line);
+      }
+      if(additionalText!=null){
+        writer.newLine();
+        writer.write(additionalText);
+      }
+      writer.close();
+      return true;
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return false;
+  }
   
 }

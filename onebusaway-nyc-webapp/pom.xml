@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>onebusaway-nyc</artifactId>
 		<groupId>org.onebusaway</groupId>
-		<version>2.26.2.7-j11-SNAPSHOT</version>
+		<version>2.26.2.33-j11-SNAPSHOT</version>
 	</parent>
 	<groupId>org.onebusaway</groupId>
 	<artifactId>onebusaway-nyc-webapp</artifactId>
@@ -32,17 +32,17 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-siri-support</artifactId>
-			<version>2.26.2.7-j11-SNAPSHOT</version>
+			<version>2.26.2.33-j11-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-presentation</artifactId>
-			<version>2.26.2.7-j11-SNAPSHOT</version>
+			<version>2.26.2.33-j11-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-transit-data</artifactId>
-			<version>2.26.2.7-j11-SNAPSHOT</version>
+			<version>2.26.2.33-j11-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
@@ -53,21 +53,19 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-api-core</artifactId>
-			<version>2.26.2.7-j11-SNAPSHOT</version>
+			<version>2.26.2.33-j11-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-beanutils</groupId>
+					<artifactId>commons-beanutils</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-util</artifactId>
-			<version>2.26.2.7-j11-SNAPSHOT</version>
-			<!-- Prevents the following error, with JDK 11+ -->
-			<!-- Due to conflicts between javax.annotation-api and jsr250-api :' -->
-			<!-- NoSuchMethodError: 'java.lang.String javax.annotation.Resource.lookup()' -->
-			<exclusions>
-				<exclusion>
-					<groupId>javax.annotation</groupId>
-					<artifactId>jsr250-api</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>2.26.2.33-j11-SNAPSHOT</version>
 		</dependency>
 		
 		<!-- Wiki Integration Support -->
@@ -76,7 +74,6 @@
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
-			<version>1.9.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
@@ -152,7 +149,7 @@
 		<dependency>
 			<groupId>org.owasp.esapi</groupId>
 			<artifactId>esapi</artifactId>
-			<version>2.1.0</version>
+			<version>2.1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

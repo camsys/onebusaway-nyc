@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.impl;
 
 import static org.junit.Assert.*;
@@ -110,7 +126,7 @@ public class BundleRequestServiceImplTest {
         if (apiCall.equals("/validate/remote/2012Jan/test_0/1/create")) {
           BundleResponse br = new BundleResponse("1");
           return (T) br;
-        } else if (apiCall.equals("/build/remote/2012Jan/test_0/null/1/2012-04-08/2012-07-07/create")) {
+        } else if (apiCall.equals("/build/remote/2012Jan/test_0/null/1/2012-04-08/2012-07-07/false/create")) {
           BundleBuildResponse br = new BundleBuildResponse("1");
           return (T) br;
         } else if (apiCall.equals("/ping/remote")) {

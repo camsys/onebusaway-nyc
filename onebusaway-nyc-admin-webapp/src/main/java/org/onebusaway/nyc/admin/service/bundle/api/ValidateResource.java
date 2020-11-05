@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.bundle.api;
 
 import org.onebusaway.nyc.admin.model.BundleRequest;
@@ -13,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.io.StringWriter;
+import java.io.*;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -84,5 +100,51 @@ public class ValidateResource extends AuthenticatedResource {
       response = Response.serverError().build();
     }
     return response;
-  }  
+  }
+
+  @Path("/{id}/getValidationResults")
+  @GET
+  public String getValidationResults(@PathParam("id") String id) {
+    Response response = null;
+    if (!isAuthorized()) {
+      return "Not Authorized";
+    }
+    try {
+      BundleResponse bundleResponse = null;
+      bundleResponse = _bundleService.lookupValidationRequest(id);
+      String validationWarnings = "";
+      for(String fileName : bundleResponse.getValidationFiles()){
+        if(fileName.contains("filtered")){
+          InputStream in = new FileInputStream(bundleResponse.getTmpDirectory()+ "/" +fileName);
+          BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+          String line = null;
+          boolean prevLineIndicatesImport = false;
+          boolean firstIssueToReportInFile = true;
+          while ((line = reader.readLine()) != null) {
+            if(line.contains("###")){
+              prevLineIndicatesImport = true;
+            } else{
+              if (prevLineIndicatesImport){
+                if(firstIssueToReportInFile){
+                  validationWarnings +="\n" + fileName;
+                }
+                validationWarnings +="\n" + line;
+              }
+            }
+          }
+        }
+      }
+
+      if(validationWarnings == ""){
+        validationWarnings = "No Critical issues";
+      }
+      return validationWarnings;
+    }catch (FileNotFoundException exception){
+      _log.error(exception.toString());
+      return exception.toString();
+    } catch (IOException e) {
+      _log.error(e.toString());
+      return e.toString();
+    }
+  }
 }

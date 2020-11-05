@@ -1,17 +1,17 @@
-/**
+/*
  * Copyright (c) 2011 Metropolitan Transportation Authority
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /*var OBA = window.OBA || {};
@@ -241,6 +241,11 @@ jQuery(function() {
 	jQuery("#prepDeployBuildNameList").on("change", prepDeployBuildNameChange);
 	jQuery("#prepDeployBundle_prepDeployButton").click(copyBundleToDeployLocation);
 
+	jQuery("#printFixedRouteRptButton").click(onPrintRouteRptClick);
+	jQuery("#printDailyRouteRptButton").click(onPrintRouteRptClick);
+
+	window.onscroll = function() {stickyAddRemove()};
+
 
 
 
@@ -404,7 +409,7 @@ jQuery(function() {
 												addSpacer = true;
 											}
 											if (addSpacer) {
-												var new_spacer_row = '<tr class="spacer"> \
+												var new_spacer_row = '<tr class="spacer "'+value.modeName+'_fixed_diff_item"> \
 													<td></td> \
 													<td></td> \
 													<td></td> \
@@ -417,7 +422,7 @@ jQuery(function() {
 													</tr>';
 												$('#fixedRouteDiffTable').append(new_spacer_row);
 											}
-											var new_row = '<tr class="fixedRouteDiff' + modeFirstLineClass + routeFirstLineClass + '"> \
+											var new_row = '<tr class="fixedRouteDiff' + modeFirstLineClass + routeFirstLineClass + ' '+  value.modeName+'_fixed_diff_item>"> \
 												<td class="' + modeClass + ' modeName" >' + modeName + '</td> \
 												<td class="' + routeClass + routeFirstLineClass + ' rtNum" >' + routeNum + '</td> \
 												<td class="' + routeClass + routeFirstLineClass + '">' + routeName + '</td> \
@@ -455,6 +460,9 @@ jQuery(function() {
 	jQuery("#create_continue").click(onCreateContinueClick);
 
 	jQuery("#prevalidate_continue").click(onPrevalidateContinueClick);
+	jQuery("#upload_continue").click(onUploadContinueClick);
+	jQuery("#prepDeploy_continue").click(onPrepDeployContinueClick);
+	jQuery("#build_continue").click(onBuildContinueClick);
 
 	jQuery("#upload_continue").click(onUploadContinueClick);
 
@@ -468,6 +476,9 @@ jQuery(function() {
 	//toggle validation progress list
 	jQuery("#prevalidateInputs #prevalidate_progress #expand").bind({
 		'click' : toggleValidationResultList});
+
+	jQuery("#prevalidateInputs #prevalidate_warnings #expand").bind({
+		'click' : toggleValidationWarningList});
 
 	//toggle bundle build progress list
 	jQuery("#buildBundle #buildBundle_progress #expand").bind({
@@ -525,6 +536,50 @@ function onPrevalidateContinueClick() {
 	var $tabs = jQuery("#tabs");
 	$tabs.tabs('select', 3);
 }
+
+function onBuildContinueClick() {
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 4);
+}
+
+function onPrepDeployContinueClick(){
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 7);
+}
+
+function stickyAddRemove(){
+	if(!$("#Compare").hasClass("ui-tabs-hide")){
+		if (window.pageYOffset >= $("#fixedRouteComparisonTableBody").offset().top - jQuery("#fixedComparisonTableHeader").innerHeight()&&
+			window.pageYOffset <= $("#fixedRouteComparisonTableBody").offset().top + $("#fixedRouteComparisonTableBody").innerHeight()) {
+			if(!jQuery("#fixedComparisonTableHeaderClone").hasClass("sticky")){
+				jQuery("#fixedComparisonTableHeader").clone().attr("id","fixedComparisonTableHeaderClone").insertBefore(jQuery("#fixedComparisonTableHeader"))
+				jQuery("#fixedComparisonTableHeaderClone").addClass("sticky")
+				jQuery("#fixedComparisonTableHeaderClone").css("background-color","white")
+				jQuery("#fixedComparisonTableHeaderClone").css("width",$("#fixedRouteComparisonTableBody").width())
+			}
+		} else{
+			if(jQuery("#fixedComparisonTableHeaderClone").hasClass("sticky")) {
+				jQuery("#fixedComparisonTableHeaderClone").remove()
+			}
+		}
+
+		if (window.pageYOffset >= $("#dailyRouteComparisonTableBody").offset().top - jQuery("#dailyComparisonTableHeader").innerHeight()&&
+			window.pageYOffset <= $("#dailyRouteComparisonTableBody").offset().top + $("#dailyRouteComparisonTableBody").innerHeight()) {
+			if(!jQuery("#dailyComparisonTableHeaderClone").hasClass("sticky")){
+				jQuery("#dailyComparisonTableHeader").clone().attr("id","dailyComparisonTableHeaderClone").insertBefore(jQuery("#dailyComparisonTableHeader"))
+				jQuery("#dailyComparisonTableHeaderClone").addClass("sticky")
+				jQuery("#dailyComparisonTableHeaderClone").css("background-color","white")
+				jQuery("#dailyComparisonTableHeaderClone").css("width",$("#dailyRouteComparisonTableBody").width())
+			}
+		} else{
+			if(jQuery("#dailyComparisonTableHeaderClone").hasClass("sticky")) {
+				jQuery("#dailyComparisonTableHeaderClone").remove()
+			}
+		}
+	}
+}
+
+
 
 function onSelectClick() {
 	getBundlesForDir();
@@ -601,6 +656,13 @@ function toggleValidationResultList() {
 	changeImageSrc($image);
 	//Toggle progress result list
 	jQuery("#prevalidateInputs #prevalidate_resultList").toggle();
+}
+
+function toggleValidationWarningList() {
+	var $image = jQuery("#prevalidateInputs #prevalidate_warnings #expand");
+	changeImageSrc($image);
+	//Toggle progress result list
+	jQuery("#prevalidate_resultWarnings").toggle();
 }
 
 function toggleBuildBundleResultList() {
@@ -781,6 +843,19 @@ function updateValidateList(id) {
 			}, 10000);
 		}
 	});
+	updateValidateWarningResults()
+}
+
+function updateValidateWarningResults(id) {
+	var id = jQuery("#prevalidate_id").text();
+	jQuery.ajax({
+		url: "../../api/validate/" + id + "/getValidationResults?ts=" +new Date().getTime(),
+		type: "GET",
+		async: false,
+		success: function(response) {
+			console.log(response);
+			$("#prevalidate_resultWarnings").html(response);
+		}});
 }
 
 function onBuildClick() {
@@ -788,12 +863,13 @@ function onBuildClick() {
 	var bundleName = jQuery("#buildBundle_bundleName").val();
 	var startDate = jQuery("#startDate").val();
 	var endDate = jQuery("#endDate").val();
+	var predate = jQuery("#buildBundle_predateCheckbox")[0].checked;
 
 	var valid = validateBundleBuildFields(bundleDir, bundleName, startDate, endDate);
 	if(valid == false) {
 		return;
 	}
-	buildBundle(bundleName, startDate, endDate);
+	buildBundle(bundleName, startDate, endDate, predate);
 }
 
 function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
@@ -858,12 +934,17 @@ function bundleUrl() {
 		window.setTimeout(bundleUrl, 5000);
 	}
 }
+
 function buildBundle(bundleName, startDate, endDate){
+	buildBundle(bundleName, startDate, endDate,false)
+}
+
+function buildBundle(bundleName, startDate, endDate, predate){
 	var bundleDirectory = jQuery("#buildBundle_bundleDirectory").text();
 	var email = jQuery("#buildBundle_email").val();
 	if (email == "") { email = "null"; }
 	jQuery.ajax({
-		url: "../../api/build/" + bundleDirectory + "/" + bundleName + "/" + email + "/" + startDate + "/" + endDate + "/create?ts=" +new Date().getTime(),
+		url: "../../api/build/" + bundleDirectory + "/" + bundleName + "/" + email + "/" + startDate + "/" + endDate + "/" + predate + "/create?ts=" +new Date().getTime(),
 		type: "GET",
 		async: false,
 		success: function(response) {
@@ -948,9 +1029,8 @@ function updateBuildList(id) {
 			summaryList = response;
 		}
 	});
-	var url = $("buildBundle_slack").innerText;
-	var text = "Bundle Build " + jQuery("#buildBundle_id").text();
-	+ " is complete"
+	var url = $("#buildBundle_slack")[0].value;
+	var text = "Bundle Build " + jQuery("#buildBundle_id").text() + " is complete";
 	$.ajax({
 		data: 'payload=' + JSON.stringify({
 			"text": text
@@ -1271,6 +1351,11 @@ function onCompareToBuildNameChange() {
 		}
 	}
 }
+
+function onPrintRouteRptClick() {
+	window.print();
+}
+
 function onCompareToDateChange(){
 	compareToDate = jQuery("#compareToDate").val();
 	if (compareToDate == 0) {
@@ -1313,7 +1398,7 @@ function updateFixedRouteParams(datasetName) {
 
 function getExistingBuildList(datasetName) {
 	var buildNameList;
-	var useArchivedGtfs = jQuery("#useArchiveCheckbox").is(":checked");
+	var useArchivedGtfs = false
 	var data = {};
 	data[csrfParameter] = csrfToken;
 	data["selectedBundleName"] = datasetName;
@@ -1357,7 +1442,7 @@ function initBuildNameList($buildNameList, buildNameMap) {
 }
 
 function resetCurrentReportDataset() {
-	if (!jQuery("#useArchiveCheckbox").is(":checked")) {
+	if (!false) {
 		currentReportDataset = "";
 		currentReportBuildName = "";
 		$("#currentDatasetList").val("0");
@@ -1372,7 +1457,7 @@ function resetCurrentReportDataset() {
 	}
 }
 function resetCompareToDataset() {
-	if (!jQuery("#useArchiveCheckbox").is(":checked")) {
+	if (!false) {
 		compareToDataset = "";
 		compareToBuildName = "";
 		$("#compareToDatasetList").val("0");
@@ -1425,7 +1510,7 @@ function buildDiffReport() {
 	// Clear any previous reports
 	$("#diffResultsTable tbody").empty();
 	$('#fixedRouteDiffTable tbody').empty();
-	var useArchived = jQuery("#useArchiveCheckbox").is(":checked");
+	var useArchived = false;
 	if (!useArchived) {
 		var dataset_1 = currentReportDataset;
 		var dataset_1_build_id = 0;
@@ -1463,7 +1548,6 @@ function buildDiffReport() {
 		async: false,
 		success: function(data) {
 			console.log(data);
-			$('#Compare #buildingReportDiv').hide();
 			$.each(data.diffResults, function(index, value) {
 				// Skip first three rows of results
 				if (index >= 3) {
@@ -1473,9 +1557,11 @@ function buildDiffReport() {
 			});
 			var baseBundle = dataset_1 + " / " + buildName_1;
 			var compareToBundle = dataset_2 + " / " + buildName_2;
+			var allModeDiffItems = new Set();
 			$("#baseBundle").text(baseBundle + " (green)");
 			$("#compareToBundle").text(compareToBundle + " (red)");
 			$.each(data.fixedRouteDiffs, function(index, value) {
+                //$('#fixedRouteDiffTable').append('<tr id="' + value.modeName +'FixedDiffContainer"></tr>');
 				var modeName = value.modeName;
 				var modeClass = "";
 				var modeFirstLineClass=" modeFirstLine";
@@ -1570,8 +1656,14 @@ function buildDiffReport() {
 									&& dirIdx == 0 && index3 == 0) {
 									addSpacer = true;
 								}
+								var modeFixedDiffItemClass = " " + value.modeName+'FixedDiffItem';
+								allModeDiffItems.add(value.modeName+'FixedDiffItem');
+								var possiblyModeFixedDiffItemClass = " ";
+								if(modeName == ""){
+								    possiblyModeFixedDiffItemClass = modeFixedDiffItemClass;
+                                };
 								if (addSpacer) {
-									var new_spacer_row = '<tr class="spacer"> \
+									var new_spacer_row = '<tr class="spacer '+  modeFixedDiffItemClass +'"> \
 										<td></td> \
 										<td></td> \
 										<td></td> \
@@ -1582,20 +1674,29 @@ function buildDiffReport() {
 										<td></td> \
 										<td></td> \
 										</tr>';
-									$('#fixedRouteDiffTable').append(new_spacer_row);
+                                    //$('#' + value.modeName+'FixedDiffContainer').append(new_spacer_row);
+                                    $('#fixedRouteDiffTable').append(new_spacer_row);
+
 								}
-								var new_row = '<tr class="fixedRouteDiff' + modeFirstLineClass + routeFirstLineClass + '"> \
-									<td class="' + modeClass + ' modeName" >' + modeName + '</td> \
-									<td class="' + routeClass + routeFirstLineClass + ' rtNum" >' + routeNum + '</td> \
-									<td class="' + routeClass + routeFirstLineClass + '">' + routeName + '</td> \
-									<td class="' + headsignClass + routeFirstLineClass + headsignBorderClass + '">' + headsignName + '</td> \
-									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + dirName + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + stopCt + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + weekdayTrips + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + satTrips + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + sunTrips + '</td> \
+								var modeTd = "";
+								if (modeName == "") {
+									modeTd = '<td class="' + modeClass +  modeName+ '" onclick = "showhide(\''+ value.modeName+'FixedDiffItem'+'\')"></td>'
+								}
+								else{
+									modeTd = '<td class="' + modeClass +  modeName+ '"><input type="button" onclick = "showhide(\''+ value.modeName+'FixedDiffItem'+'\')" value ="' + modeName + '"</td>'
+								}
+								var new_row = '<tr class="fixedRouteDiff' + modeFirstLineClass + routeFirstLineClass + possiblyModeFixedDiffItemClass +  '"> \
+									'+ modeTd + '\
+									<td class="' + routeClass + routeFirstLineClass + ' rtNum'+ modeFixedDiffItemClass +'" >' + routeNum + '</td> \
+									<td class="' + routeClass + routeFirstLineClass + ''+ modeFixedDiffItemClass +'">' + routeName + '</td> \
+									<td class="' + headsignClass + routeFirstLineClass + headsignBorderClass + ''+ modeFixedDiffItemClass +'">' + headsignName + '</td> \
+									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeFixedDiffItemClass +'">' + dirName + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeFixedDiffItemClass +'">' + stopCt + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeFixedDiffItemClass +'">' + weekdayTrips + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeFixedDiffItemClass +'">' + satTrips + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeFixedDiffItemClass +'">' + sunTrips + '</td> \
 									</tr>';
-								$('#fixedRouteDiffTable').append(new_row);
+                                $('#fixedRouteDiffTable').append(new_row);
 							});
 						});
 					});
@@ -1614,19 +1715,28 @@ function buildDiffReport() {
 				<td></td> \
 				</tr>';
 			$('#fixedRouteDiffTable').append(new_spacer_row);
+			allModeDiffItems.forEach(modeDiffItem => showhide(modeDiffItem))
 		}
 	})
 }
 
 
-
+function showhide(className){
+    var items = $("."+className);
+    if (items[0].style.display == "none"){
+        items.show()
+    }
+    else{
+        items.hide()
+    }
+}
 
 
 function buildDailyDiffReport() {
 	// Clear any previous reports
 	$("#diffResultsTable tbody").empty();
 	$('#dailyRouteDiffTable tbody').empty();
-	var useArchived = jQuery("#useArchiveCheckbox").is(":checked");
+	var useArchived = false;
 	if (!useArchived) {
 		var dataset_1 = currentReportDataset;
 		var dataset_1_build_id = 0;
@@ -1664,7 +1774,6 @@ function buildDailyDiffReport() {
 		async: false,
 		success: function (data) {
 			console.log(data);
-			$('#Compare #buildingReportDiv').hide();
 			$.each(data.diffResults, function (index, value) {
 				// Skip first three rows of results
 				if (index >= 3) {
@@ -1674,6 +1783,7 @@ function buildDailyDiffReport() {
 			});
 			var baseBundle = dataset_1 + " / " + buildName_1;
 			var compareToBundle = dataset_2 + " / " + buildName_2;
+			var allModeDailyDiffItems = new Set();
 			$("#baseBundle").text(baseBundle + " (green)");
 			$("#compareToBundle").text(compareToBundle + " (red)");
 			$.each(data.fixedRouteDiffs, function (index, value) {
@@ -1753,9 +1863,7 @@ function buildDailyDiffReport() {
 								} else if (value3.srcCode == 2) {
 									stopClass = "selectedStopCt";
 								}
-								var weekdayTrips = value3.tripCts[0];
-								var satTrips = value3.tripCts[1];
-								var sunTrips = value3.tripCts[2];
+								var dailyTrips = value3.tripCts[0];
 								if (index3 > 0) {
 									modeName = "";
 									modeFirstLineClass = "";
@@ -1772,8 +1880,15 @@ function buildDailyDiffReport() {
 									&& dirIdx == 0 && index3 == 0) {
 									addSpacer = true;
 								}
+								var modeDailyDiffItemClass = " " + value.modeName+'DailyDiffItem';
+								allModeDailyDiffItems.add(value.modeName+'DailyDiffItem');
+								var possiblyModeDailyDiffItemClass = " ";
+								if(modeName == ""){
+									possiblyModeDailyDiffItemClass = modeDailyDiffItemClass;
+								};
 								if (addSpacer) {
-									var new_spacer_row = '<tr class="spacer"> \
+									var new_spacer_row = '<tr class="spacer '+  modeDailyDiffItemClass +'"> \
+										<td></td> \
 										<td></td> \
 										<td></td> \
 										<td></td> \
@@ -1783,17 +1898,25 @@ function buildDailyDiffReport() {
 										<td></td> \
 										<td></td> \
 										</tr>';
+									//$('#' + value.modeName+'FixedDiffContainer').append(new_spacer_row);
 									$('#dailyRouteDiffTable').append(new_spacer_row);
+
 								}
-								var new_row = '<tr class="dailyRouteDiff' + modeFirstLineClass + routeFirstLineClass + '"> \
-									<td class="' + modeClass + ' modeName" >' + modeName + '</td> \
-									<td class="' + routeClass + routeFirstLineClass + ' rtNum" >' + routeNum + '</td> \
-									<td class="' + routeClass + routeFirstLineClass + '">' + routeName + '</td> \
-									<td class="' + headsignClass + routeFirstLineClass + headsignBorderClass + '">' + headsignName + '</td> \
-									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + dirName + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + stopCt + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + weekdayTrips + '</td> \
-									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + '">' + serviceId + '</td> \
+								var modeTd = "";
+								if (modeName == "") {
+									modeTd = '<td class="' + modeClass +  modeName+ '" onclick = "showhide(\''+ value.modeName+'DailyDiffItem'+'\')"></td>'
+								}
+								else{
+									modeTd = '<td class="' + modeClass +  modeName+ '"><input type="button" onclick = "showhide(\''+ value.modeName+'DailyDiffItem'+'\')" value ="' + modeName + '"</td>'
+								}
+								var new_row = '<tr class="dailyRouteDiff' + modeFirstLineClass + routeFirstLineClass + possiblyModeDailyDiffItemClass +  '"> \
+									'+ modeTd + '\
+									<td class="' + routeClass + routeFirstLineClass + ' rtNum'+ modeDailyDiffItemClass +'" >' + routeNum + '</td> \
+									<td class="' + routeClass + routeFirstLineClass + ''+ modeDailyDiffItemClass +'">' + routeName + '</td> \
+									<td class="' + headsignClass + routeFirstLineClass + headsignBorderClass + ''+ modeDailyDiffItemClass +'">' + headsignName + '</td> \
+									<td class="' + dirClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + dirName + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + stopCt + '</td> \
+									<td class="' + stopClass + routeFirstLineClass + headsignBorderClass + dirBorderClass + ''+ modeDailyDiffItemClass +'">' + dailyTrips + '</td> \
 									</tr>';
 								$('#dailyRouteDiffTable').append(new_row);
 							});
@@ -1813,6 +1936,7 @@ function buildDailyDiffReport() {
 				<td></td> \
 				</tr>';
 			$('#dailyRouteDiffTable').append(new_spacer_row);
+			allModeDiffItems.forEach(modeDiffItem => showhide(modeDiffItem))
 		}
 	})
 }
@@ -1862,22 +1986,7 @@ function formatDiffRow(value) {
 
 
 
-
-/**
- * Copyright (c) 2011 Metropolitan Transportation Authority
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
+//Analyze
 
 var analyzeDataset = "";
 var analyzeBuildName = "";
@@ -1936,13 +2045,16 @@ function resetAnalyzeDataset(){
 	$("#analyzeBuildNameList").find('option').remove().end().append(row_0);
 }
 
-function addZoneForAnalysis(zone){
-	if(!analyzeData.has(analyzeDataset + "," + analyzeBuildName + "," + zone)) {
+function addZoneForAnalysis(zoneIdentifier){
+	if(!analyzeData.has(zoneIdentifier)) {
+        var dataset = zoneIdentifier.split(",")[0];
+        var buildName = zoneIdentifier.split(",")[1];
+        var zone = zoneIdentifier.split(",")[2];
 		var data = {};
 		data[csrfParameter] = csrfToken;
-		data["datasetName"] = analyzeDataset;
+		data["datasetName"] = dataset;
 		data["dataset_build_id"] = 0;
-		data["buildName"] = analyzeBuildName;
+		data["buildName"] = buildName;
 		data["zone"] = zone;
 
 		jQuery.ajax({
@@ -1952,7 +2064,7 @@ function addZoneForAnalysis(zone){
 			async: false,
 			success: function (zoneData) {
 				console.log(zoneData);
-				analyzeData.set(analyzeDataset + "," + analyzeBuildName + "," + zone, zoneData);
+				analyzeData.set(dataset + "," + buildName + "," + zone, zoneData);
 			}
 		})
 	}
@@ -1965,6 +2077,11 @@ function updateChart(){
 
 function drawChart(){
 	var requestedAnalyzeData = getRequestedAnalyzeData();
+	if (requestedAnalyzeData.size == 0){
+		$('#chart_div').empty();
+		analyzeChart = null;
+		return;
+	}
 	var data = new google.visualization.DataTable();
 	var oldestDate = null;
 	var lastDate = null;
@@ -1998,17 +2115,15 @@ function drawChart(){
 		itt += 1;
 	}
 	data.addRows(formattedRequestAnalyzeData);
-	console.log(formattedRequestAnalyzeData)
-	console.log(data)
-
-
 
 	if(analyzeChart == null) {
 		analyzeChart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
 	}
 
 	var options = {
-		displayAnnotations: false
+		displayAnnotations: false,
+		dateFormat: 'EEEEEEEE',
+		displayZoomButtons: false
 	};
 
 	analyzeChart.draw(data, options);
@@ -2035,21 +2150,24 @@ function updateZoneSelection(){
 		async: false,
 		success: function (zoneData) {
 			console.log(zoneData);
+            var sectionLabel = $(document.createElement("p")).html(analyzeDataset + ": " + analyzeBuildName)
+            $("#zone_selection").append(sectionLabel)
 			var existingZoneNodes = $("#zone_selection").children();
 			var existingZones = new Set();
 			for (i = 0; i< existingZoneNodes.length; i++){
 				existingZones.add(existingZoneNodes[i].name);
 			}
 			for (itt in zoneData){
-				currentZone = zoneData[itt];
+				var currentZone = zoneData[itt];
 				if(!existingZones.has(currentZone)) {
-					childCheckbox = $(document.createElement("input")).attr({
+					var childCheckbox = $(document.createElement("input"));
+					childCheckbox.attr({
 						id: 'zone_' + currentZone,
-						name: currentZone,
+						name: analyzeDataset + "," + analyzeBuildName + "," + currentZone,
 						value: 'zone' + currentZone,
 						type: "checkbox",
 						class: "analyzeCheckbox"
-					})
+					});
 					$(childCheckbox).change(function(){
 						if(this.checked){
 							addZoneForAnalysis(this.name);
@@ -2058,7 +2176,7 @@ function updateZoneSelection(){
 							updateChart();
 						}
 					})
-					childLabel = $(document.createElement("label")).attr({
+					var childLabel = $(document.createElement("label")).attr({
 						for: 'zone_' + currentZone
 					}).html(currentZone)
 					$("#zone_selection").append(childCheckbox)
@@ -2069,20 +2187,13 @@ function updateZoneSelection(){
 	})
 }
 
-function clearChart(){
-	var chartDiv = document.getElementById('chart_div');
-	var data = new google.visualization.DataTable();
-	var materialChart = new google.charts.Line(chartDiv);
-	materialChart.draw(data, analyzeDataMaterialChartOptions);
-}
-
 
 
 function getRequestedAnalyzeData(){
 	var requestedAnalyzeData = new Map();
 	var selectedZones = getSelectedZones();
 	for (var i = 0; i<selectedZones.length; i++)
-		requestedAnalyzeData.set(selectedZones[i], analyzeData.get(analyzeDataset + "," + analyzeBuildName + "," + selectedZones[i]));
+		requestedAnalyzeData.set(selectedZones[i], analyzeData.get(selectedZones[i]));
 	return requestedAnalyzeData;
 }
 
@@ -2317,6 +2428,8 @@ function copyBundleToDeployLocation(){
 			console.log(messages);
 			for (messagesIndex in messages)
 				$("#prepDeployMessages").append($(document.createElement("p")).html(messages[messagesIndex]))
+			var continueButton = jQuery("#prepDeploy_continue");
+			enableContinueButton(continueButton);
 		}
 	})
 }

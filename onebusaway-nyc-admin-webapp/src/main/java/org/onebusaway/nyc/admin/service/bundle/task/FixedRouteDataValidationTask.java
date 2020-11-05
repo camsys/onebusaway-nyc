@@ -20,6 +20,7 @@ import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDate;
 import org.onebusaway.gtfs.model.*;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
+import org.onebusaway.nyc.admin.model.BundleRequestResponse;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
 import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
@@ -39,13 +40,10 @@ public class FixedRouteDataValidationTask implements Runnable {
     private Logger _log = LoggerFactory.getLogger(FixedRouteDataValidationTask.class);
     private MultiCSVLogger logger;
     private GtfsMutableRelationalDao _dao;
-    private FederatedTransitDataBundle _bundle;
     private static final int MAX_STOP_CT = 150;
-    private String DEFAULT_TDS_VALUE_LOCATION_OF_ROUTE_MAPPING = "file_name_zone_route_mapping";
-    private String DEFAULT_LOCATION_OF_ROUTE_MAPPING = "routesByZone.txt";
-    private ConfigurationService _configurationService;
     private File _mappingsFile;
     int maxStops = 0;
+    BundleRequestResponse requestResponse;
 
     @Autowired
     public void setLogger(MultiCSVLogger logger) {
@@ -58,23 +56,13 @@ public class FixedRouteDataValidationTask implements Runnable {
     }
 
     @Autowired
-    public void setBundle(FederatedTransitDataBundle bundle) {
-        _bundle = bundle;
-    }
-
-    @Autowired
-    public void setConfigurationService(ConfigurationService configurationService) {
-        _configurationService = configurationService;
+    public void setRequestResponse(BundleRequestResponse requestResponse) {
+        this.requestResponse = requestResponse;
     }
 
     @Override
     public void run() {
         _log.info("starting FixedRouteDataValidationTask");
-        if(_configurationService == null){
-            ConfigurationServiceImpl configurationServiceImpl = new ConfigurationServiceImpl();
-            configurationServiceImpl.setTransitDataManagerApiLibrary(new TransitDataManagerApiLibrary("tdm.dev.obanyc.com", 80, "/api"));
-            _configurationService = configurationServiceImpl;
-        }
         setMappingsFile();
         if (! _mappingsFile.isFile()) {
             _log.info("missing mapping file,{} exiting", _mappingsFile.getAbsolutePath());
@@ -84,18 +72,19 @@ public class FixedRouteDataValidationTask implements Runnable {
             process();
             _log.info("done");
         } catch (Exception e) {
+            requestResponse.getResponse().setException(e);
             _log.error("exception with FixedRouteDataValidationTask:", e);
         }
 
     }
 
     private void setMappingsFile(){
-        _mappingsFile = new File(_bundle.getPath().getParentFile().getParent() +"/" + getLocationOfRouteMappingFile());
+        _mappingsFile = new File(requestResponse.getRequest().getRouteMappings());
     }
 
     private void process() throws Exception {
 
-        _log.info("Creating fixed route data validation from this file" + getLocationOfRouteMappingFile());
+        _log.info("Creating fixed route data validation from this file" + _mappingsFile);
         logger.header(FILENAME, "Mode,Route,Headsign,Direction,# of stops,# of weekday trips,# of Sat trips,# of Sunday trips");
 
         // Use next Wednesday date (including today) to serve as weekday check date.
@@ -194,9 +183,11 @@ public class FixedRouteDataValidationTask implements Runnable {
                         AgencyAndId tripSvcId = trip.getServiceId();
                         if (weekdaySvcIds.contains(tripSvcId)) {
                             ++wkdayTrips[stopCt];
-                        } else if (saturdaySvcIds.contains(tripSvcId)) {
+                        }
+                        if (saturdaySvcIds.contains(tripSvcId)) {
                             ++satTrips[stopCt];
-                        } else if (sundaySvcIds.contains(tripSvcId)) {
+                        }
+                        if (sundaySvcIds.contains(tripSvcId)) {
                             ++sunTrips[stopCt];
                         }
                         tripMap.put(trip.getTripHeadsign(), tripTotals);
@@ -278,16 +269,6 @@ public class FixedRouteDataValidationTask implements Runnable {
         return routeIdsForZones;
     }
 
-    /*
-     * This method will use the config service to retrieve the file name where
-     * each zones route id's were placed. This file was created in the mod task.
-     * The location is stored in config.json.
-     *
-     * @return the URL to use to retrieve the modes and routes to be reported on
-     */
-    private String getLocationOfRouteMappingFile(){
-       return _configurationService.getConfigurationValueAsString(DEFAULT_TDS_VALUE_LOCATION_OF_ROUTE_MAPPING, DEFAULT_LOCATION_OF_ROUTE_MAPPING);
-    }
 
     class TripTotals {
         int[] wkdayTrips_0;
