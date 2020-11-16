@@ -471,7 +471,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
           return "";
       }
 
-      String apcMode = _configurationService.getConfigurationValueAsString("display.apcMode", "none");
+      String apcMode = _configurationService.getConfigurationValueAsString("display.apcMode", "PASSENGERCOUNT");
 
       String occupancyStr = "";
       if (apcMode != null) {
