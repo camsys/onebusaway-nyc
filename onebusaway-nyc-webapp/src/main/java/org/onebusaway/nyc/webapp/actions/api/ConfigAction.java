@@ -96,6 +96,6 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   }
 
   public String getApcMode() {
-    return _configurationService.getConfigurationValueAsString("display.apcMode", "none");
+    return _configurationService.getConfigurationValueAsString("display.apcMode", "PASSENGERCOUNT");
   }
 }

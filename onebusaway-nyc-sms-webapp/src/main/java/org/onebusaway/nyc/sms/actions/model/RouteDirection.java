@@ -21,8 +21,10 @@ import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBea
 
 import java.io.Serializable;
 import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Route destination--without stops.
@@ -39,12 +41,16 @@ public class RouteDirection implements Serializable {
 
   private List<NaturalLanguageStringBean> serviceAlerts;
 
-  private HashMap<Double, String> distanceAwaysByDistanceFromStrings;
+  private HashMap<Double, VehicleResult> distanceAwaysByVehicleResult;
+
   
-  public RouteDirection(StopGroupBean stopGroup, Boolean hasUpcomingScheduledService, HashMap<Double, String> distanceAwaysByDistanceFromString, List<NaturalLanguageStringBean> serviceAlerts) {
+  public RouteDirection(StopGroupBean stopGroup,
+                        Boolean hasUpcomingScheduledService,
+                        HashMap<Double, VehicleResult> distanceAwaysByVehicleResult,
+                        List<NaturalLanguageStringBean> serviceAlerts) {
     this.destination = stopGroup.getName().getName();    
     this.hasUpcomingScheduledService = hasUpcomingScheduledService;
-    this.distanceAwaysByDistanceFromStrings = distanceAwaysByDistanceFromString;
+    this.distanceAwaysByVehicleResult = distanceAwaysByVehicleResult;
     this.serviceAlerts = serviceAlerts;
   }
 
@@ -57,18 +63,68 @@ public class RouteDirection implements Serializable {
   }
     
   public List<String> getDistanceAways() {
-    if(distanceAwaysByDistanceFromStrings == null) 
+    if(distanceAwaysByVehicleResult == null)
       return new ArrayList<String>();
-    else
-      return new ArrayList<String>(distanceAwaysByDistanceFromStrings.values());
+    else {
+      ArrayList<String> distanceAwayStrings = new ArrayList<>();
+      for (VehicleResult vr : distanceAwaysByVehicleResult.values()) {
+        distanceAwayStrings.add(vr.getTimeOrDistance());
+      }
+      return distanceAwayStrings;
+    }
   }
 
   public HashMap<Double, String> getDistanceAwaysWithSortKey() {
-    return distanceAwaysByDistanceFromStrings;
+    if (distanceAwaysByVehicleResult == null)
+      return null;
+    HashMap<Double, String> distanceAwaysWithSortKey = new HashMap<>();
+    for (Map.Entry<Double, VehicleResult> e: distanceAwaysByVehicleResult.entrySet()) {
+      distanceAwaysWithSortKey.put(e.getKey(), e.getValue().getTimeOrDistance());
+    }
+    return distanceAwaysWithSortKey;
   }
+
+  public HashMap<Double, String> getDistanceAwaysAndOccupancyWithSortKey() {
+    if (distanceAwaysByVehicleResult == null)
+      return null;
+    HashMap<Double, String> distanceAwaysAndOccupancyWithSortKey = new HashMap<>();
+    for (Map.Entry<Double, VehicleResult> e: distanceAwaysByVehicleResult.entrySet()) {
+      distanceAwaysAndOccupancyWithSortKey.put(e.getKey(), e.getValue().getTimeOrDistanceAndOccupancy());
+    }
+    return distanceAwaysAndOccupancyWithSortKey;
+  }
+
 
   public List<NaturalLanguageStringBean> getSerivceAlerts() {
     return serviceAlerts;
   }
 
+  /**
+   * does any of the results contain valid occupancy data
+   * @return
+   */
+  public boolean hasApc() {
+    if (distanceAwaysByVehicleResult == null) {
+      return false;
+    }
+    for (VehicleResult values : distanceAwaysByVehicleResult.values()) {
+      if (values.hasApc())
+        return true;
+    }
+    return false;
+  }
+
+  /**
+   * Does the value at distanceAway contain valid occupancy data
+   * @param distanceAway
+   * @return
+   */
+  public boolean hasApc(Double distanceAway) {
+    if (distanceAway != null) {
+      if (distanceAwaysByVehicleResult.containsKey(distanceAway)) {
+        return distanceAwaysByVehicleResult.get(distanceAway).hasApc();
+      }
+    }
+    return false;
+  }
 }

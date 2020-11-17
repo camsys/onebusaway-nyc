@@ -26,6 +26,22 @@
     <!-- Provides support for specifying "${some.java.system.property}" for bean values -->
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
 
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <!--
+                  By default, we throw an exception when an invalid stop-to-shape mapping is
+                  found for a GTFS feed. Override that behavior by setting this parameter to
+                  false.
+
+                  throwExceptionOnInvalidStopToShapeMappingException - when true, an
+                  exception is thrown on invalid stop-to-shape mappings
+                -->
+                <prop key="tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException">true</prop>
+            </props>
+        </property>
+    </bean>
+
     <bean id="bundle" class="org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle">
       <property name="path" value="${bundlePath}" />
     </bean>

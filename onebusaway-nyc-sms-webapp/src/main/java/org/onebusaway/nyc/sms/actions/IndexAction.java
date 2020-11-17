@@ -122,6 +122,9 @@ public class IndexAction extends SessionedIndexAction {
       // We are all set, let the existing stop results be processed given the route command string
     } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && StringUtils.isNumeric(commandString)) {
       // We are all set, let the existing stop results be processed given the number (which is the users choice of stop) command string
+    } else if(_lastQuery != null && "O".equals(commandString)) {
+      // occupancy query -- redo last query
+      _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
     } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && "N".equals(commandString)) {
       // We are all set, show neighboring stops
     } else if ((queryString == null || queryString.isEmpty()) && commandString != null && _searchResults != null && _searchResults.getSuggestions().size() > 0) {
@@ -135,7 +138,7 @@ public class IndexAction extends SessionedIndexAction {
       if(_searchResults.getMatches().size() > 0) {
         // route identifier search
         if(_searchResults.getMatches().size() == 1 && "RouteResult".equals(_searchResults.getResultType())) {
-          RouteResult route = (RouteResult)_searchResults.getMatches().get(0);
+          RouteResult route = (RouteResult) _searchResults.getMatches().get(0);
 
           // If we get a route back, but there is no direction information in it,
           // this is a route in the bundle with no trips/stops/etc.
@@ -143,22 +146,22 @@ public class IndexAction extends SessionedIndexAction {
           if (route.getDirections() != null && route.getDirections().size() == 0) {
             _response = errorResponse("No results.");
             break;
-            
+
           } else if (commandString != null && commandString.equals("C")) {
             // find a unique set of service alerts for the route found
             Set<String> alerts = new HashSet<String>();
-            for(RouteDirection direction : route.getDirections()) {
-              for(NaturalLanguageStringBean alert : direction.getSerivceAlerts()) {
+            for (RouteDirection direction : route.getDirections()) {
+              for (NaturalLanguageStringBean alert : direction.getSerivceAlerts()) {
                 alerts.add(alert.getValue());
               }
             }
 
             // make the alerts into results
-            SearchResultCollection newResults = new SearchResultCollection();                        
-            for(String alert : alerts) {
+            SearchResultCollection newResults = new SearchResultCollection();
+            for (String alert : alerts) {
               newResults.addMatch(new ServiceAlertResult(alert));
             }
-            
+
             if (newResults.getMatches().size() == 0) {
               _response = errorResponse("No " + route.getShortName() + " alerts.");
               break;
@@ -166,9 +169,9 @@ public class IndexAction extends SessionedIndexAction {
 
             _searchResults = newResults;
             continue;
-            
+
             // route schedule status
-          } else {
+          }else {
             _response = routeResponse(route);
             break;
           }
@@ -188,6 +191,8 @@ public class IndexAction extends SessionedIndexAction {
             
             _response = directionDisambiguationResponse();
             
+          } if ((commandString != null && commandString.equals("O"))) {
+            _response = occuapancyResponse();
           } else if (_searchResults.getMatches().size() > 1 && commandString != null && getRoutesInSearchResults().contains(commandString)) {
             // We presented a list of routes for nearby stops to the user and they chose a route.
             // Filter the search results to those that contain the chosen route and have the user
@@ -434,7 +439,71 @@ public class IndexAction extends SessionedIndexAction {
       return body;
     }    
   }
-  
+
+  // from a stop result show the occupancy of vehicles
+  private String occuapancyResponse() throws Exception {
+    int offset = 0;
+    if (_searchResults.getMatches().isEmpty()) {
+      // nothing to do
+      return errorResponse("No Results");
+    }
+    if (!(_searchResults.getMatches().get(0) instanceof StopResult)) {
+      // we shouldn't be here
+      return errorResponse("No Results");
+
+    }
+    TreeMap<Double, String> observationsByDistanceFromStopAcrossAllRoutes =
+            new TreeMap<Double, String>();
+
+    StopResult stopResult = (StopResult)_searchResults.getMatches().get(0);
+    // in the future we may optionally support paging
+    if (offset >= stopResult.getRoutesAvailable().size())
+      return errorResponse("No more.");
+    int i = offset;
+    boolean hasRouteFilter = _searchResults.getRouteFilter() != null && !_searchResults.getRouteFilter().isEmpty();
+    while (i < stopResult.getRoutesAvailable().size()) {
+      RouteAtStop routeAtStop = stopResult.getRoutesAvailable().get(i);
+
+      for (RouteDirection routeDirection : routeAtStop.getDirections()) {
+        if (!hasRouteFilter || matchesRouteFilter(routeAtStop, _searchResults.getRouteFilter())) {
+          HashMap<Double, String> sortableDistanceAways = routeDirection.getDistanceAwaysAndOccupancyWithSortKey();
+          if (sortableDistanceAways != null) {
+            for (Double distanceAway : sortableDistanceAways.keySet()) {
+              String distanceAwayString = sortableDistanceAways.get(distanceAway);
+              observationsByDistanceFromStopAcrossAllRoutes.put(distanceAway, routeAtStop.getShortName() + ": " + distanceAwayString);
+            }
+          }
+        }
+      }
+      i++;
+    }
+
+
+    String message = "";
+    String body = (observationsByDistanceFromStopAcrossAllRoutes.isEmpty()? "No Results.": "");
+    String header = "";
+    String footer = "\nO to refresh";
+    for(String observationString : observationsByDistanceFromStopAcrossAllRoutes.values()) {
+      String textToAdd = observationString + "\n";
+
+      if(message.length() + body.length() + header.length()  + textToAdd.length() < MAX_SMS_CHARACTER_COUNT) {
+        body += textToAdd;
+      } else {
+        break;
+      }
+    }
+    return header + body + message + footer;
+  }
+
+  private boolean matchesRouteFilter(RouteAtStop routeAtStop, Set<RouteBean> routeFilter) {
+    for (RouteBean rb : routeFilter) {
+      if (routeAtStop.getRoute().equals(rb)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // whether a route has scheduled service or not--always returns a message that fits into one SMS.
   private String routeResponse(RouteResult result) throws Exception {
     String header = result.getShortName() + "\n\n";
@@ -458,6 +527,20 @@ public class IndexAction extends SessionedIndexAction {
     if (aDirectionWithServiceAlerts != null) {
       footer += "\nC " + result.getShortName() + " for *svc alert";
     }
+
+    RouteDirection aVehicleWithAPC = (RouteDirection)CollectionUtils.find(result.getDirections(), new Predicate() {
+      @Override
+      public boolean evaluate(Object o) {
+        RouteDirection rd = (RouteDirection)o;
+        if (rd.hasApc())
+          return true;
+        return false;
+      }
+    });
+
+    if (aVehicleWithAPC != null) {
+      footer += "\nO for #occupancy";
+    }
     
     // find biggest headsign
     int routeDirectionTruncationLength = -1;
@@ -469,22 +552,28 @@ public class IndexAction extends SessionedIndexAction {
     String body = null;    
     while(body == null || header.length() + body.length() + footer.length() >= MAX_SMS_CHARACTER_COUNT) {
       body = "";
-      for(RouteDirection direction : result.getDirections()) {
-        String headsign = direction.getDestination();
+      for(RouteDirection routeDirection : result.getDirections()) {
+        String headsign = routeDirection.getDestination();
         
         String alertString = "";
-        if (direction.getSerivceAlerts().size() > 0) {
+        if (routeDirection.getSerivceAlerts().size() > 0) {
           alertString = "*";
         }
 
+        String occupancyString = "";
+        // test if any vehicle in that route+direction combo has apc
+        if (routeDirection.hasApc()) {
+          occupancyString = " #";
+        }
+
         if(headsign.length() + alertString.length() > routeDirectionTruncationLength) {
-          body += "to " + headsign.substring(0, Math.min(routeDirectionTruncationLength, headsign.length())) + "..." + alertString;
+          body += "to " + headsign.substring(0, Math.min(routeDirectionTruncationLength, headsign.length())) + "..." + alertString + occupancyString;
         } else {
-          body += "to " + headsign + alertString;
+          body += "to " + headsign + alertString + occupancyString;
         }        
         body += "\n";
         
-        if(direction.hasUpcomingScheduledService() == false) {
+        if(routeDirection.hasUpcomingScheduledService() == false) {
           body += "not scheduled\n";
         } else {
           body += "is scheduled\n";        
@@ -723,7 +812,10 @@ public class IndexAction extends SessionedIndexAction {
     }
 
     // worst case for footer length
+    String alertsAndOccupancyFooter = footer + "C+ROUTE for *svc alert\nO for #occupancy\n";
     String alertsFooter = footer + "C+ROUTE for *svc alert\n";
+    String occupancyFooter = footer + "O for #occupancy\n";
+
 
     // body content for stops
     String body = "";
@@ -749,23 +841,37 @@ public class IndexAction extends SessionedIndexAction {
           continue;
         }
         
-        for(RouteDirection direction : routeHere.getDirections()) {
+        for(RouteDirection routeDirection : routeHere.getDirections()) {
           String prefix = "";
-          if(!direction.getSerivceAlerts().isEmpty()) {
-            footer = alertsFooter;
-            prefix += "*";
-          }            
+          String suffix = "";
+          if(!routeDirection.getSerivceAlerts().isEmpty()) {
+            if (routeDirection.hasApc()) {
+              footer = alertsAndOccupancyFooter;
+            } else {
+              footer = alertsFooter;
+            }
+            suffix += " *";
+
+          } else {
+            // no service alerts footer
+            if (routeDirection.hasApc()) {
+              footer = occupancyFooter;
+            }
+          }
+
           prefix += routeHere.getShortName();
           
-          if(!direction.hasUpcomingScheduledService() && direction.getDistanceAways().isEmpty()) {
+          if(!routeDirection.hasUpcomingScheduledService() && routeDirection.getDistanceAways().isEmpty()) {
             notScheduledRoutes.add(prefix);
           } else {
-            if(!direction.getDistanceAways().isEmpty()) {
-              HashMap<Double, String> sortableDistanceAways = direction.getDistanceAwaysWithSortKey();
+            if(!routeDirection.getDistanceAways().isEmpty()) {
+              HashMap<Double, String> sortableDistanceAways = routeDirection.getDistanceAwaysWithSortKey();
               for(Double distanceAway : sortableDistanceAways.keySet()) {
                 String distanceAwayString = sortableDistanceAways.get(distanceAway);
-                
-                observationsByDistanceFromStopAcrossAllRoutes.put(distanceAway, prefix + ": " + distanceAwayString);
+                observationsByDistanceFromStopAcrossAllRoutes.put(distanceAway, prefix + ": "
+                        + distanceAwayString
+                        + suffix
+                        + (routeDirection.hasApc(distanceAway)? " #": ""));
               }
             } else {
               notEnRouteRoutes.add(prefix);
@@ -943,7 +1049,12 @@ public class IndexAction extends SessionedIndexAction {
         ("StopResult".equals(_searchResults.getResultType()) || "ServiceAlertResult".equals(_searchResults.getResultType()))) {
       return "N";
     }
-    
+
+    // occupancy query
+    if (query != null && _lastQuery != null && query.toUpperCase().startsWith("O")) {
+      return "O";
+    }
+
     // Check if it's a route currently in our result set
     if (query != null && _searchResults != null && "StopResult".equals(_searchResults.getResultType()) && getRoutesInSearchResults().contains(query.toUpperCase())) {
       return query.toUpperCase();

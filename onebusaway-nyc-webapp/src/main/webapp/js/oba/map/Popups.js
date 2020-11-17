@@ -354,8 +354,6 @@ OBA.Popups = (function() {
 
         var occupancyLoad = "N/A";
 
-        console.log('occupancy: '+ MonitoredVehicleJourney.Occupancy);
-
         if(MonitoredVehicleJourney.Occupancy == "seatsAvailable"){
             occupancyLoad = '<span class="apcDotG"></span>'+
                 '<span id="apcTextG">Seats Available</span>';
