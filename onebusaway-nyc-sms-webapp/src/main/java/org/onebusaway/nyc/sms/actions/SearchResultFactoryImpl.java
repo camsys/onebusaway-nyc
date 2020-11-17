@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.impl.search.AbstractSearchResultFactoryImpl;
 import org.onebusaway.nyc.presentation.model.SearchResult;
@@ -34,8 +35,10 @@ import org.onebusaway.nyc.sms.actions.model.RouteAtStop;
 import org.onebusaway.nyc.sms.actions.model.RouteDirection;
 import org.onebusaway.nyc.sms.actions.model.RouteResult;
 import org.onebusaway.nyc.sms.actions.model.StopResult;
+import org.onebusaway.nyc.sms.actions.model.VehicleResult;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
@@ -45,6 +48,7 @@ import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
@@ -115,7 +119,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 		List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
 		boolean matchesRouteIdFilter = false;
 
-		HashMap<String, HashMap<Double, String>> distanceAwayStringsByDistanceFromStopAndRouteAndDirection = 
+		HashMap<String, HashMap<Double, VehicleResult>> distanceAwayResultsByDistanceFromStopAndRouteAndDirection =
 				getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(stopBean);
 
 		for(RouteBean routeBean : stopBean.getRoutes()) {
@@ -139,14 +143,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 					if(!stopGroupBean.getStopIds().contains(stopBean.getId()))
 						continue;
 
-					HashMap<Double, String> distanceAwayStringsByDistanceFromStop = 
-							distanceAwayStringsByDistanceFromStopAndRouteAndDirection.get(routeBean.getId() + "_" + stopGroupBean.getId());
+					HashMap<Double, VehicleResult> distanceAwayResultsByDistanceFromStop =
+							distanceAwayResultsByDistanceFromStopAndRouteAndDirection.get(routeBean.getId() + "_" + stopGroupBean.getId());
 
 					Boolean hasUpcomingScheduledService = 
 							_nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
 
 					// if there are buses on route, always have "scheduled service"
-					if(distanceAwayStringsByDistanceFromStop != null && !distanceAwayStringsByDistanceFromStop.isEmpty()) {
+					if(distanceAwayResultsByDistanceFromStop != null && !distanceAwayResultsByDistanceFromStop.isEmpty()) {
 						hasUpcomingScheduledService = true;
 					}
 
@@ -155,7 +159,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 					List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
 					populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
 
-					directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, distanceAwayStringsByDistanceFromStop, serviceAlertDescriptions));
+					directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, distanceAwayResultsByDistanceFromStop, serviceAlertDescriptions));
 				}
 			}
 
@@ -174,8 +178,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 	/*** 
 	 * PRIVATE METHODS
 	 */
-	private HashMap<String, HashMap<Double, String>> getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(StopBean stopBean) {
-		HashMap<String, HashMap<Double, String>> result = new HashMap<String, HashMap<Double, String>>();
+	private HashMap<String, HashMap<Double, VehicleResult>> getDistanceAwayStringsForStopByDistanceFromStopAndRouteAndDirection(StopBean stopBean) {
+		HashMap<String, HashMap<Double, VehicleResult>> result = new HashMap<String, HashMap<Double, VehicleResult>>();
 
 		Boolean showApc = _realtimeService.showApc();
 		Boolean showRawApc = _realtimeService.showRawApc();
@@ -204,16 +208,23 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 			String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
 			String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
 			String key = routeId + "_" + directionId;
+			String vehicleId = visit.getMonitoredVehicleJourney().getVehicleRef().getValue();
+			AgencyAndId vehicleAgencyAndId = AgencyAndId.convertFromString(vehicleId);
+			AgencyAndId routeAgencyAndId = AgencyAndIdLibrary.convertFromString(routeId);
+			//  here we are careful to query apc for route+direction so trip boundaries are considered
+			VehicleOccupancyRecord vor = _nycTransitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(vehicleAgencyAndId,
+							AgencyAndIdLibrary.convertToString(routeAgencyAndId),
+							directionId);
 
-			HashMap<Double, String> map = result.get(key);
+			HashMap<Double, VehicleResult> map = result.get(key);
 			if(map == null) {
-				map = new HashMap<Double,String>();
+				map = new HashMap<Double,VehicleResult>();
 			}
 
 			if(timePrediction != null) {
-				map.put(distanceExtension.getDistanceFromCall(), timePrediction);
+				map.put(distanceExtension.getDistanceFromCall(), new VehicleResult(timePrediction, vehicleId, vor, getOccupancyConfig()));
 			} else {
-				map.put(distanceExtension.getDistanceFromCall(), distance);
+				map.put(distanceExtension.getDistanceFromCall(), new VehicleResult(distance, vehicleId, vor, getOccupancyConfig()));
 			}
 
 			result.put(key, map);
@@ -221,6 +232,26 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
 		return result;
 	}
+
+	private VehicleResult.OccupancyConfig getOccupancyConfig() {
+		String config = _configurationService.getConfigurationValueAsString("display.apcMode", "PASSENGERCOUNT");
+		if ("NONE".equals(config)) {
+			return VehicleResult.OccupancyConfig.NONE;
+		} else if ("OCCUPANCY".equals(config)) {
+			return VehicleResult.OccupancyConfig.OCCUPANCY;
+		} else if ("LOADFACTOR".equals(config)) {
+			return VehicleResult.OccupancyConfig.LOAD_FACTOR;
+		} else if ("PASSENGERCOUNT".equals(config)) {
+			return VehicleResult.OccupancyConfig.PASSENGER_COUNT;
+		} else if ("LOADFACTORPASSENGERCOUNT".equals(config)) {
+			return VehicleResult.OccupancyConfig.LOAD_FACTOR_PASSENGER_COUNT;
+		} else {
+			// we are likely misconfigured; default to PASSENGER_COUNT
+			return VehicleResult.OccupancyConfig.PASSENGER_COUNT;
+		}
+
+	}
+
 
 	private String getPresentableOccupancy(
 			MonitoredVehicleJourneyStructure journey, long updateTime,
@@ -259,7 +290,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 	private String getPresentableTime(
 			MonitoredVehicleJourneyStructure journey, long updateTime,
 			boolean isStopContext) {
-
+		String presentableTime = null;
 		NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
 		MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
 
@@ -282,24 +313,23 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 			SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
 			SiriDistanceExtension distanceExtension = wrapper.getDistances();
 			String distance = distanceExtension.getPresentableDistance();
-			String loadOccupancy = getPresentableOccupancy(journey, updateTime, isStopContext);
-			
+			// loadOccupancy has been moved to additional request like service alerts
 			double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
 			String timeString = Math.round(minutes) + " min" + ((Math.abs(minutes) != 1) ? "s." : ".");
 
 			// if wrapped, only show prediction, if not wrapped, show both
 			if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-				return timeString+", "+loadOccupancy;
+				presentableTime = timeString;
 			} 
 			else if(progressStatus != null && progressStatus.getValue().contains("layover")){
-				return getPresentableDistance(journey, updateTime, isStopContext);
+				presentableTime = getPresentableDistance(journey, updateTime, isStopContext);
 			}
 			else {
-				return timeString + ", " + distance +", "+loadOccupancy;
+				presentableTime = timeString + ", " + distance;
 			}
 		}
 
-		return null;
+		return presentableTime;
 	}	  
 
 	private String getPresentableDistance(MonitoredVehicleJourneyStructure journey, long updateTime, boolean isStopContext) {
@@ -349,4 +379,6 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 		else
 			return distance + " "+loadOccupancy;
 	}
+
+
 }
