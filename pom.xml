@@ -73,6 +73,17 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>repository.mulesoft.org</id>
+            <url>https://repository.mulesoft.org/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+       <!-- <repository>
             <id>snapshots.staging.obanyc.com</id>
             <url>http://build.staging.obanyc.com/archiva/repository/snapshots/</url>
             <releases>
@@ -142,7 +153,7 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-        </repository>
+        </repository>-->
     </repositories>
 
     <pluginRepositories>
