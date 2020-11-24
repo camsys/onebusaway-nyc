@@ -60,6 +60,15 @@
             </snapshots>
         </repository>
         <repository>
+            <id>repo.osgeo.org</id>
+            <url>https://repo.osgeo.org/repository/release/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
             <id>snapshots.staging.obanyc.com</id>
             <url>http://build.staging.obanyc.com/archiva/repository/snapshots/</url>
             <releases>
