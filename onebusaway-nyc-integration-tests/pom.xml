@@ -71,6 +71,12 @@
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-util</artifactId>
+            <version>2.26.2.33-j11-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-transit-data-federation-builder</artifactId>
             <version>${onebusaway.app-modules.version}</version>
         </dependency>
@@ -109,11 +115,6 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20090211</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opentripplanner</groupId>
-            <artifactId>opentripplanner-routing</artifactId>
-            <version>0.3</version>
         </dependency>
     </dependencies>
 
