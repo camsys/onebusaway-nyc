@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 @Component
 public class PredictionCacheServiceImpl implements PredictionCacheService {
@@ -53,7 +53,7 @@ public class PredictionCacheServiceImpl implements PredictionCacheService {
 	
 	@PostConstruct
 	private void setup(){
-		_cache = Caffeine.newBuilder()
+		_cache = CacheBuilder.newBuilder()
         		.expireAfterWrite(DEFAULT_CACHE_TIMEOUT, TimeUnit.SECONDS).build();
 	}
 	

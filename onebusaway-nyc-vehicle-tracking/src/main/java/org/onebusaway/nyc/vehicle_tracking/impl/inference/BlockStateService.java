@@ -18,6 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;

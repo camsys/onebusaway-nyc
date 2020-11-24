@@ -15,9 +15,10 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.cache.CacheBuilder;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalAnswers;
@@ -58,7 +59,7 @@ public class QueuePredictionIntegrationServiceImplTest {
     service = new QueuePredictionIntegrationServiceImpl();
     service.setConfigurationService(config);
     service.setTransitDataService(tds);
-    service.setCache(Caffeine.newBuilder().<String, List<TimepointPredictionRecord>>build());
+    service.setCache(CacheBuilder.newBuilder().<String, List<TimepointPredictionRecord>>build());
   }
 
   @Test

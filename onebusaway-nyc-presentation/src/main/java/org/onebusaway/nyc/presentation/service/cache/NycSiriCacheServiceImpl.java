@@ -22,12 +22,11 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 public class NycSiriCacheServiceImpl extends NycCacheService<Integer, String> {
 
@@ -46,9 +45,9 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, String> {
   protected synchronized void refreshCache() {
     if (_cache == null) return;
     int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
-    _log.info("rebuilding siri cache with " + _cache.estimatedSize() + " entries after refresh with timeout=" + timeout + "...");
+    _log.info("rebuilding siri cache with " + _cache.size() + " entries after refresh with timeout=" + timeout + "...");
     ConcurrentMap<Integer, String> map = _cache.asMap();
-    _cache = Caffeine.newBuilder()
+    _cache = CacheBuilder.newBuilder()
         .expireAfterWrite(timeout, TimeUnit.SECONDS)
         .build();
     for (Entry<Integer, String> entry : map.entrySet()) {
