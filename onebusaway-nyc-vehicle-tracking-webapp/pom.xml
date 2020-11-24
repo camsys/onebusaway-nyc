@@ -91,7 +91,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson2.version}</version>
         </dependency>
         <dependency>
           <groupId>mysql</groupId>
@@ -101,7 +100,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${jackson2.version}</version>
         </dependency>
     </dependencies>
 
