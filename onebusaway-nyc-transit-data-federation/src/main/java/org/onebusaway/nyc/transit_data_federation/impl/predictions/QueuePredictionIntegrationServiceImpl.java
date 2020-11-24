@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
 import java.util.ArrayList;
@@ -9,6 +25,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.TimeQueueListenerTask;
@@ -25,8 +43,6 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
@@ -77,7 +93,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 
 			int timeout = _configurationService.getConfigurationValueAsInteger(CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
 			_log.info("creating initial prediction cache with timeout " + timeout + "...");
-			_cache = Caffeine.newBuilder()
+			_cache = CacheBuilder.newBuilder()
 					.expireAfterWrite(timeout, TimeUnit.SECONDS)
 					.build();
 			_log.info("done");
@@ -101,9 +117,9 @@ public class QueuePredictionIntegrationServiceImpl extends
 	private synchronized void refreshCache() {
 		if (_cache == null) return; // nothing to do
 		int timeout = _configurationService.getConfigurationValueAsInteger(CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
-		_log.info("rebuilding prediction cache with " + _cache.estimatedSize() + " entries after refresh with timeout=" + timeout + "...");
+		_log.info("rebuilding prediction cache with " + _cache.size() + " entries after refresh with timeout=" + timeout + "...");
 		ConcurrentMap<String, List<TimepointPredictionRecord>> map = _cache.asMap();
-		_cache = Caffeine.newBuilder()
+		_cache = CacheBuilder.newBuilder()
 				.expireAfterWrite(timeout, TimeUnit.SECONDS)
 				.build();
 		for (Entry<String, List<TimepointPredictionRecord>> entry : map.entrySet()) {

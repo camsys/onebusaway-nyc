@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.bundle.task;
 
 import com.google.common.collect.Lists;
@@ -32,8 +48,9 @@ public class nycNamingConventionTask  implements Runnable {
                     {"M","manhattan"},
                     {"MTABC","mtabc"},
                     {"Q","queens"},
-                    {"S","staten-island"},
+                    {"S","staten_island"},
             }).collect(Collectors.toMap(mapEntry -> mapEntry[0], mapEntry -> mapEntry[1]));
+    public String ARG_MODIFIED = "modified";
 
 
     @Autowired
@@ -43,6 +60,8 @@ public class nycNamingConventionTask  implements Runnable {
 
     @Autowired
     public void setStifDirectory(File stifDirectory){this.stifDirectory = stifDirectory;}
+
+    public void setARG_MODIFIED(String ARG_MODIFIED){this.ARG_MODIFIED = ARG_MODIFIED;}
 
 
     @Override
@@ -58,8 +77,11 @@ public class nycNamingConventionTask  implements Runnable {
                 originalStifFiles.add(new File(stifPath));
             }
 
-            for (String gtfsPath : requestResponse.getResponse().getGtfsList()){
-                gtfsFiles.add(new File(gtfsPath));
+            File[] gtfsModified = new File(requestResponse.getResponse().getBundleOutputDirectory() + "/" + ARG_MODIFIED).listFiles();
+            if (gtfsModified != null) {
+                for (File gtfsFile : gtfsModified) {
+                    gtfsFiles.add(gtfsFile);
+                }
             }
             // go through each file in stif directory and run cleanup to zip them
             File[] stifFolders = stifDirectory.listFiles(new FilenameFilter() {
@@ -77,6 +99,7 @@ public class nycNamingConventionTask  implements Runnable {
             // set up some defaults but use the TDM to allow for nameing convention changes
             List<File> stifFiles = Lists.newArrayList(stifDirectory.listFiles());
             _log.info("Renaming based on old Gtfs Files");
+
             gtfsLoop : for (File gtfsFile : gtfsFiles){
                 if(gtfsFile.getName().contains("GTFS")){
                     String sufix = gtfsFile.getName().substring(4);
@@ -85,8 +108,10 @@ public class nycNamingConventionTask  implements Runnable {
                     for (File stifFile : stifFiles){
                         if(stifZone != null && stifFile.getName().contains(stifZone)){
                             stifFiles.remove(stifFile);
-                            filesToRename.put(gtfsFile,new File(gtfsFile.getParent() + "/" + "google_transit_"+stifZone));
-                            filesToRename.put(stifFile,new File(stifFile.getParent() + "/" + "STIF"+sufix));
+                            if(!gtfsAbbr.contains("MTABC")){
+                                filesToRename.put(gtfsFile,new File(gtfsFile.getParent() + "/" + "google_transit_"+stifZone+".zip"));
+                            }
+                            filesToRename.put(stifFile,new File(stifFile.getParent() + "/" + "STIF"+sufix+".zip"));
                             continue gtfsLoop;
                         }
                     }
@@ -113,6 +138,7 @@ public class nycNamingConventionTask  implements Runnable {
             }
 
         } catch (Throwable ex) {
+            requestResponse.getResponse().setException((Exception) ex);
             throw new IllegalStateException("error loading gtfs", ex);
         }
         finally {

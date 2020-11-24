@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.presentation.service.cache;
 
 import java.util.List;
@@ -6,12 +22,11 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 public class NycSiriCacheServiceImpl extends NycCacheService<Integer, String> {
 
@@ -30,9 +45,9 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, String> {
   protected synchronized void refreshCache() {
     if (_cache == null) return;
     int timeout = _configurationService.getConfigurationValueAsInteger(SIRI_CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
-    _log.info("rebuilding siri cache with " + _cache.estimatedSize() + " entries after refresh with timeout=" + timeout + "...");
+    _log.info("rebuilding siri cache with " + _cache.size() + " entries after refresh with timeout=" + timeout + "...");
     ConcurrentMap<Integer, String> map = _cache.asMap();
-    _cache = Caffeine.newBuilder()
+    _cache = CacheBuilder.newBuilder()
         .expireAfterWrite(timeout, TimeUnit.SECONDS)
         .build();
     for (Entry<Integer, String> entry : map.entrySet()) {
@@ -41,16 +56,25 @@ public class NycSiriCacheServiceImpl extends NycCacheService<Integer, String> {
     _log.info("done");
   }
   
-  private Integer hash(int maximumOnwardCalls, List<String> agencies, String outputType, String version){
+  private Integer _hash(int maximumOnwardCalls, List<String> agencies, String outputType, String version,
+                        boolean showApc, boolean showRawApc){
 	// Use properties of a TreeSet to obtain consistent ordering of like combinations of agencies
 	TreeSet<String> set = new TreeSet<String>(agencies);
-	return maximumOnwardCalls + set.toString().hashCode() + outputType.hashCode() + version.hashCode();
+	return maximumOnwardCalls + set.toString().hashCode() + outputType.hashCode() + version.hashCode()
+            + new Boolean(showApc).hashCode() + new Boolean(showRawApc).hashCode();
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public Integer hash(Object...factors){
-    return hash((Integer)factors[0], (List<String>)factors[1], (String)factors[2], (String)factors[3]);  
+
+    return _hash((Integer)factors[0], /*maximumOnwardCalls*/
+            (List<String>)factors[1], /*agencies*/
+            (String)factors[2], /*outputType*/
+            (String)factors[3], /*version*/
+            (Boolean)factors[4], /*showApc*/
+            (Boolean)factors[5] /*showRawApc*/
+              );
   }
 
   public void store(Integer key, String value) {

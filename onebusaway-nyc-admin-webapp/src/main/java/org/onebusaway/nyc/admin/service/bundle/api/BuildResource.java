@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.bundle.api;
 
 import java.io.IOException;
@@ -40,14 +56,15 @@ public class BuildResource extends AuthenticatedResource {
 	private final ObjectMapper _mapper = new ObjectMapper();
 	private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
 
-	@Path("/{bundleDirectory}/{bundleName}/{email}/{bundleStartDate}/{bundleEndDate}/create")
+	@Path("/{bundleDirectory}/{bundleName}/{email}/{bundleStartDate}/{bundleEndDate}/{predate}/create")
 	@GET
 	@Produces("application/json")
 	public Response build(@PathParam("bundleDirectory") String bundleDirectory,
 			@PathParam("bundleName") String bundleName,
 			@PathParam("email") String email,
 			@PathParam("bundleStartDate") String bundleStartDate,
-			@PathParam("bundleEndDate") String bundleEndDate) {
+			@PathParam("bundleEndDate") String bundleEndDate,
+			@PathParam("predate") String predate){
 		Response response = null;
 		if (!isAuthorized()) {
 			return Response.noContent().build();
@@ -76,8 +93,66 @@ public class BuildResource extends AuthenticatedResource {
 			buildRequest.setEmailAddress(email);
 			buildRequest.setBundleStartDate(bundleStartDate);
 			buildRequest.setBundleEndDate(bundleEndDate);
+			if(predate.equals("true")) {
+				buildRequest.setPredate(true);
+			}
 			
 			
+			try {
+				String message = "Starting bundle building process for bundle '" + buildRequest.getBundleName()
+						+ "' initiated by user : " + _currentUserService.getCurrentUserDetails().getUsername();
+				String component = System.getProperty("admin.chefRole");
+				loggingService.log(component, Level.INFO, message);
+				buildResponse =_bundleService.build(buildRequest);
+				buildResponse = _bundleService.buildBundleResultURL(buildResponse.getId());
+				response = constructResponse(buildResponse);
+			} catch (Exception any) {
+				_log.error("exception in build:", any);
+				response = Response.serverError().build();
+			}
+		}
+
+		return response;
+	}
+
+	@Path("/{bundleDirectory}/{bundleName}/{email}/{bundleStartDate}/{bundleEndDate}/create")
+	@GET
+	@Produces("application/json")
+	public Response build(@PathParam("bundleDirectory") String bundleDirectory,
+						  @PathParam("bundleName") String bundleName,
+						  @PathParam("email") String email,
+						  @PathParam("bundleStartDate") String bundleStartDate,
+						  @PathParam("bundleEndDate") String bundleEndDate){
+		Response response = null;
+		if (!isAuthorized()) {
+			return Response.noContent().build();
+		}
+
+		BundleBuildResponse buildResponse = null;
+
+		try {
+			validateDates(bundleStartDate, bundleEndDate);
+		} catch(DateValidationException e) {
+			try {
+				buildResponse = new BundleBuildResponse();
+				buildResponse.setException(e);
+				response = constructResponse(buildResponse);
+			} catch (Exception any) {
+				_log.error("exception in build:", any);
+				response = Response.serverError().build();
+			}
+		}
+
+		//Proceed only if date validation passes
+		if(response == null) {
+			BundleBuildRequest buildRequest = new BundleBuildRequest();
+			buildRequest.setBundleDirectory(bundleDirectory);
+			buildRequest.setBundleName(bundleName);
+			buildRequest.setEmailAddress(email);
+			buildRequest.setBundleStartDate(bundleStartDate);
+			buildRequest.setBundleEndDate(bundleEndDate);
+
+
 			try {
 				String message = "Starting bundle building process for bundle '" + buildRequest.getBundleName()
 						+ "' initiated by user : " + _currentUserService.getCurrentUserDetails().getUsername();

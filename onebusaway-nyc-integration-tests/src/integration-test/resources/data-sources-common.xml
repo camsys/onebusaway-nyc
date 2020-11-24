@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context"
     xsi:schemaLocation="
@@ -7,11 +25,13 @@
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
 
-    <!-- Specify our transit data source -->
-    <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+
+    <bean id="nycTransitDataService"
+          class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl"
-            value="http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
-        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
+                  value="http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
+        <property name="serviceInterface"
+                  value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
     </bean>
 
     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
@@ -20,15 +40,13 @@
         <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
     </bean>
 
-    <bean id="apiKeyValidationService" class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl">
+    <bean id="apiKeyValidationService"
+          class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl">
         <property name="providers">
             <list>
-                <bean class="org.onebusaway.users.impl.validation.KeyValidationProviderV1Impl">
-                    <property name="privateSalt" value="blah" />
-                </bean>
+                <bean class="org.onebusaway.users.impl.validation.SaltedPasswordValidationProviderV1Impl" />
             </list>
         </property>
-        <property name="defaultProviderId" value="v1" />
     </bean>
 
 </beans>

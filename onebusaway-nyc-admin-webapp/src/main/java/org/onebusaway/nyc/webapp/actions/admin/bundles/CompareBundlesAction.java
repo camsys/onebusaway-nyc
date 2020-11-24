@@ -431,8 +431,7 @@ public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
                         break;
                     }
                     else{
-                        if ((currentStopCt.getTripCts()[0] != selectedStopCt.getTripCts()[0])
-                            || !(currentStopCt.getServiceId().equals(selectedStopCt.getServiceId()))) {
+                        if (currentStopCt.getTripCts()[0] != selectedStopCt.getTripCts()[0]) {
                             currentStopCt.setSrcCode("1");
                             diffDirection.getStopCounts().add(currentStopCt);
                             selectedStopCt.setSrcCode("2");

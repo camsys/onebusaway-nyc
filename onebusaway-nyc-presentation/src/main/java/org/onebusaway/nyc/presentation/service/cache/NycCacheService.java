@@ -1,5 +1,23 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.presentation.service.cache;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -14,9 +32,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 public abstract class NycCacheService<K, V> {
 
@@ -55,7 +70,7 @@ public abstract class NycCacheService<K, V> {
     if (_cache == null) {
       _log.info("creating initial " + type + " cache with timeout " + timeout
           + "...");
-      _cache = Caffeine.newBuilder().expireAfterWrite(timeout,
+      _cache = CacheBuilder.newBuilder().expireAfterWrite(timeout,
           TimeUnit.SECONDS).build();
       _log.info("done");
     }

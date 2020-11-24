@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.presentation.impl.realtime;
 
 import java.util.*;
@@ -100,7 +116,7 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Override
   public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, String directionId,
                                                                    int maximumOnwardCalls, long currentTime,
-                                                                   boolean showApc) {
+                                                                   boolean showApc, boolean showRawApc) {
     List<VehicleActivityStructure> output = new ArrayList<VehicleActivityStructure>();
     
     ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId, currentTime);
@@ -123,7 +139,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       SiriSupport ss = new SiriSupport(_configurationService);
       ss.fillMonitoredVehicleJourney(activity.getMonitoredVehicleJourney(), 
           tripDetails.getTrip(), tripDetails.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
-          _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime, showApc);
+          _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime, showApc, showRawApc);
             
       output.add(activity);
     }
@@ -145,7 +161,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
   @Override
   public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, int maximumOnwardCalls,
-                                                               long currentTime, boolean showApc) {
+                                                               long currentTime, boolean showApc, boolean showRawApc) {
   
 	TripForVehicleQueryBean query = new TripForVehicleQueryBean();
     query.setTime(new Date(currentTime));
@@ -168,7 +184,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       SiriSupport ss = new SiriSupport(_configurationService);
       ss.fillMonitoredVehicleJourney(output.getMonitoredVehicleJourney(), 
     	  tripDetailsForCurrentTrip.getTrip(), tripDetailsForCurrentTrip.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
-    	  _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime, showApc);
+    	  _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime, showApc, showRawApc);
 
       return output;
     }
@@ -178,7 +194,8 @@ public class RealtimeServiceImpl implements RealtimeService {
 
   @Override
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls,
-                                                                         long currentTime, boolean showApc) {
+                                                                         long currentTime, boolean showApc,
+                                                                         boolean showRawApc) {
     List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
 	    for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
@@ -203,7 +220,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 	      SiriSupport ss = new SiriSupport(_configurationService);
 	      ss.fillMonitoredVehicleJourney(stopVisit.getMonitoredVehicleJourney(), 
 	    	  tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), OnwardCallsMode.STOP_MONITORING,
-	    	  _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime, showApc);
+	    	  _presentationService, _nycTransitDataService, maximumOnwardCalls, currentTime, showApc, showRawApc);
 	
 	      output.add(stopVisit);
 	    }
@@ -359,6 +376,36 @@ public class RealtimeServiceImpl implements RealtimeService {
     }
     return false;
   }
+
+  @Override
+  public boolean showRawApc(String apiKey){
+      if(!useApc()){
+          return false;
+      }
+      String apc = _configurationService.getConfigurationValueAsString("display.validRawApcKeys", "");
+      List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
+      for(String key : keys){
+          if(apiKey.equalsIgnoreCase(key.trim()) || key.trim().equals("*")){
+              return true;
+          }
+      }
+      return false;
+  }
+
+    @Override
+    public boolean showRawApc(){
+        if(!useApc()){
+            return false;
+        }
+        String apc = _configurationService.getConfigurationValueAsString("display.validRawApcKeys", "");
+        List<String> keys = Arrays.asList(apc.split("\\s*;\\s*"));
+        for(String key : keys){
+            if(key.trim().equals("*")){
+                return true;
+            }
+        }
+        return false;
+    }
 
   /**
    * PRIVATE METHODS

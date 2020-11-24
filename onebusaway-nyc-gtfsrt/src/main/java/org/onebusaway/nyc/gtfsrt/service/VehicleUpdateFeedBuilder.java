@@ -16,9 +16,8 @@
 package org.onebusaway.nyc.gtfsrt.service;
 
 import com.google.transit.realtime.GtfsRealtime;
-import com.google.transit.realtime.GtfsRealtime.VehiclePosition.Builder;
 
-import org.onebusaway.realtime.api.OccupancyStatus;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 
@@ -27,5 +26,5 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
  */
 public interface VehicleUpdateFeedBuilder {
 
-    GtfsRealtime.VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record, OccupancyStatus occupancy);
+    GtfsRealtime.VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record, VehicleOccupancyRecord vor);
 }

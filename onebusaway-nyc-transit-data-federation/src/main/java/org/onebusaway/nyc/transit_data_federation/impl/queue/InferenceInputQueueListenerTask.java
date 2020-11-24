@@ -1,17 +1,17 @@
 /**
- * Copyright (c) 2011 Metropolitan Transportation Authority
+ * Copyright (C) 2011 Metropolitan Transportation Authority
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
@@ -39,7 +39,7 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 	@Autowired
 	private VehicleLocationListener _vehicleLocationListener;
 
-	@Autowired
+	@Autowired(required = false)
 	private PredictionIntegrationService _predictionIntegrationService;
 
 	private boolean useTimePredictions = false;
@@ -113,14 +113,13 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 		vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
 		vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getPhase()));
 		vlr.setStatus(inferredResult.getStatus());
-		// by contract, schDev can't be null.  If it is, fix upstream data, not here
-		if (inferredResult.getScheduleDeviation() != null) {
+		// by contract, schDev shouldn't be null.  Still, no need to throw an NPE
+		if (inferredResult.getScheduleDeviation() != null)
 			vlr.setScheduleDeviation(inferredResult.getScheduleDeviation());
-		}
 		if (_vehicleLocationListener != null) {
 			_vehicleLocationListener.handleVehicleLocationRecord(vlr);
 		}
-		if (useTimePredictions) {
+		if (_predictionIntegrationService != null && useTimePredictions) {
 			// if we're updating time predictions with the generation service,
 			// tell the integration service to fetch
 			// a new set of predictions now that the TDS has been updated

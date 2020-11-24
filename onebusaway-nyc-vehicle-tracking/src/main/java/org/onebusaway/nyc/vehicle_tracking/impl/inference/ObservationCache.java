@@ -1,34 +1,36 @@
 /**
- * Copyright (c) 2011 Metropolitan Transportation Authority
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.primitives.Longs;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Predicate;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.CacheLoader;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.MinMaxPriorityQueue;
 
@@ -44,7 +46,8 @@ public class ObservationCache {
    * observation cache per vehicle-id. The observation caches hold only the last
    * two entries.
    */
-  private final LoadingCache<AgencyAndId, MinMaxPriorityQueue<ObservationContents>> _contentsByVehicleId = Caffeine.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build(
+  private final LoadingCache<AgencyAndId, MinMaxPriorityQueue<ObservationContents>> _contentsByVehicleId = CacheBuilder
+          .newBuilder().concurrencyLevel(4).expireAfterWrite(30, TimeUnit.MINUTES).build(
       new CacheLoader<AgencyAndId, MinMaxPriorityQueue<ObservationContents>>() {
 
         @Override
@@ -54,7 +57,7 @@ public class ObservationCache {
           return MinMaxPriorityQueue.orderedBy(new Comparator<ObservationContents>() {
             @Override
             public int compare(ObservationContents o1, ObservationContents o2) {
-              return -Long.compare(o1.getObservation().getTime(), o2.getObservation().getTime());
+              return -Longs.compare(o1.getObservation().getTime(), o2.getObservation().getTime());
             }
             
           }).maximumSize(2).create();
@@ -66,13 +69,13 @@ public class ObservationCache {
   public <T> T getValueForObservation(Observation observation,
       EObservationCacheKey key) {
     final NycRawLocationRecord record = observation.getRecord();
-    final MinMaxPriorityQueue<ObservationContents> contentsCache =  _contentsByVehicleId.get(record.getVehicleId());
+    final MinMaxPriorityQueue<ObservationContents> contentsCache =  _contentsByVehicleId.getUnchecked(record.getVehicleId());
     /*
      * Synchronize for integration tests, which can do crazy things.
      */
     final ObservationContents contents;
     synchronized (contentsCache) {
-      contents = Iterables.find(contentsCache, new ObsSearch(observation));
+      contents = Iterables.find(contentsCache, new ObsSearch(observation), null);
       
       if (contents == null) {
         /*
@@ -90,9 +93,9 @@ public class ObservationCache {
   }
 
   public void putValueForObservation(Observation observation,
-      EObservationCacheKey key, Object value) {
+      EObservationCacheKey key, Object value)  {
     final NycRawLocationRecord record = observation.getRecord();
-    final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.get(record.getVehicleId());
+    final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
 
     /*
      * Synchronize for integration tests, which can do crazy things.
@@ -162,7 +165,7 @@ public class ObservationCache {
   }
 
   public void purge(AgencyAndId vehicleId) {
-    final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.get(vehicleId);
+    final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(vehicleId);
     if (contentsCache != null) {
       contentsCache.clear();
     }

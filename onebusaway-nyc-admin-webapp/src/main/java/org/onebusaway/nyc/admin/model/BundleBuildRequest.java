@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.model;
 
 import org.joda.time.LocalDate;
@@ -15,6 +31,8 @@ public class BundleBuildRequest {
 	private String _emailAddress;
 	private String _bundleStartDate;
 	private String _bundleEndDate;
+	private String _routeMappings = "";
+	private boolean _predate = false;
 
 	public String getBundleDirectory() {
 		return _bundleDirectory;
@@ -31,6 +49,10 @@ public class BundleBuildRequest {
 	public void setTmpDirectory(String tmpDirectory) {
 		_tmpDirectory = tmpDirectory;
 	}
+
+	public boolean getPredate(){return _predate;}
+
+	public void setPredate(boolean predate){_predate = predate;}
 
 	// TODO this should come from config service
 	public List<String> getNotInServiceDSCList() {
@@ -94,4 +116,11 @@ public class BundleBuildRequest {
 		_id = id;
 	}
 
+	public void setRouteMappings(String routeMappings){
+		_routeMappings = routeMappings;
+	}
+
+	public String getRouteMappings() {
+		return _routeMappings;
+	}
 }

@@ -59,11 +59,13 @@ public class SaveGtfsTask  implements Runnable {
 
     @Override
     public void run() {
+        String outputDirString = outputDirectory.getPath();
+        outputDirString = outputDirString.substring(0,outputDirString.length()-".zip".length());
+        outputDirectory = new File(outputDirString);
+        outputDirectory.mkdir();
         try {
-
             GtfsWritingSupport.writeGtfsFromStore(applicationContext, dao,outputDirectory);
             cleanup(outputDirectory);
-
 
         } catch (Throwable ex) {
             throw new IllegalStateException("error loading gtfs", ex);
