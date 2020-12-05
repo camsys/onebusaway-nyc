@@ -46,9 +46,6 @@ public class MergedGtfsModTask implements Runnable{
     @Override
     public void run() {
         GtfsTransformer mod = new GtfsTransformer();
-        // add support for KCM Pattern Pairs
-//        mod.getReader().getEntityClasses().add(PatternPair.class);
-//        mod.getWriter().getEntityClasses().add(PatternPair.class);
 
         //TransformFactory factory = mod.getTransformFactory();
         // the transformer may be called twice causing erroneous duplicate messages
