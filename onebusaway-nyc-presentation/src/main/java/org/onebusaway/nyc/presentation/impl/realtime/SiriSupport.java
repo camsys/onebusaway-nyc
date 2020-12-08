@@ -133,9 +133,8 @@ public final class SiriSupport {
 			monitoredCallStopBean = currentVehicleTripStatus.getNextStop();
 		}
 
-
-		//List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTripStatus(currentVehicleTripStatus.getVehicleId(), currentVehicleTripStatus);
-		List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForTrip(currentVehicleTripStatus.getActiveTrip().getRoute().getAgency().getId(), currentVehicleTripStatus);
+		//List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForTrip(currentVehicleTripStatus.getActiveTrip().getRoute().getAgency().getId(), currentVehicleTripStatus);
+		List<TimepointPredictionRecord> currentTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTripStatus(currentVehicleTripStatus.getVehicleId(), currentVehicleTripStatus);
 		List<TimepointPredictionRecord> nextTripPredictions = null;
 
 		TripBean nextTripBean = null;
@@ -144,7 +143,6 @@ public final class SiriSupport {
 						"display.showNextTripPredictions", "false"))) {
 			nextTripBean = getNextTrip(currentVehicleTripStatus, nycTransitDataService);
 			if (nextTripBean != null) {
-				// TODO!  Next trip support!
 				nextTripPredictions = nycTransitDataService.getPredictionRecordsForVehicleAndTrip(currentVehicleTripStatus.getVehicleId(), nextTripBean.getId());
 			}
 		}
@@ -308,9 +306,17 @@ public final class SiriSupport {
 
 		/*Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = new HashMap<String, SiriSupportPredictionTimepointRecord>();*/
 		Map<String, TimepointPredictionRecord> stopIdToPredictionRecordMap = new HashMap<String, TimepointPredictionRecord>();
-		if(currentTripPredictions != null) {
-			for(TimepointPredictionRecord tpr : currentTripPredictions) {
-				stopIdToPredictionRecordMap.put(AgencyAndId.convertToString(tpr.getTimepointId()), tpr);
+
+		if(presentationService.useTimePredictionsIfAvailable()) {
+			if (currentTripPredictions != null) {
+				for (TimepointPredictionRecord tpr : currentTripPredictions) {
+					stopIdToPredictionRecordMap.put(AgencyAndId.convertToString(tpr.getTimepointId()), tpr);
+				}
+			}
+			if(nextTripPredictions != null && nextTripBean != null){
+				for (TimepointPredictionRecord tpr : nextTripPredictions) {
+					stopIdToPredictionRecordMap.put(AgencyAndId.convertToString(tpr.getTimepointId()), tpr);
+				}
 			}
 		}
 
