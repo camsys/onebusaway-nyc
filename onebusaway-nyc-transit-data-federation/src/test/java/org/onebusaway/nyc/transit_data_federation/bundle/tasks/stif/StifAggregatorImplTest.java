@@ -47,7 +47,7 @@ public class StifAggregatorImplTest {
   @Before
   public void setUp() throws Exception {
     BasicConfigurator.configure();
-    _log.setLevel(Level.DEBUG);
+    _log.setLevel(Level.INFO);
   }
 
   
