@@ -684,8 +684,6 @@ OBA.Popups = (function() {
 						if (typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && monitoredVehicleJourney.ProgressStatus !== null && monitoredVehicleJourney.ProgressStatus === 'spooking') {
 							spooking = true;
 							arrival = "scheduled_arrival";
-							tripId += "(Estimated)";
-							scheduledArrivalTime += "(Estimated)";
 						}
 						
 						// time mode
