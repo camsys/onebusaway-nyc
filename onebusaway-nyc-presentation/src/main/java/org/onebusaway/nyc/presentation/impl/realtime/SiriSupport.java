@@ -305,7 +305,7 @@ public final class SiriSupport {
 		}
 
 		/*Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = new HashMap<String, SiriSupportPredictionTimepointRecord>();*/
-		Map<String, TimepointPredictionRecord> stopIdToPredictionRecordMap = new HashMap<String, TimepointPredictionRecord>();
+		/*Map<String, TimepointPredictionRecord> stopIdToPredictionRecordMap = new HashMap<String, TimepointPredictionRecord>();
 
 		if(presentationService.useTimePredictionsIfAvailable()) {
 			if (currentTripPredictions != null) {
@@ -316,6 +316,30 @@ public final class SiriSupport {
 			if(nextTripPredictions != null && nextTripBean != null){
 				for (TimepointPredictionRecord tpr : nextTripPredictions) {
 					stopIdToPredictionRecordMap.put(AgencyAndId.convertToString(tpr.getTimepointId()), tpr);
+				}
+			}
+		}*/
+
+		Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = new HashMap<String, SiriSupportPredictionTimepointRecord>();
+
+		// (build map of stop IDs to TPRs)
+		if(presentationService.useTimePredictionsIfAvailable()){
+			if(currentTripPredictions != null) {
+				for(TimepointPredictionRecord tpr : currentTripPredictions) {
+					SiriSupportPredictionTimepointRecord r = new SiriSupportPredictionTimepointRecord();
+					r.setStopId(tpr.getTimepointId().toString());
+					r.setTripId(currentVehicleTripStatus.getActiveTrip().getId());
+					r.setTimepointPredictionRecord(tpr);
+					stopIdToPredictionRecordMap.put(r.getKey(), r);
+				}
+			}
+			if(nextTripPredictions != null && nextTripBean != null){
+				for(TimepointPredictionRecord tpr : nextTripPredictions) {
+					SiriSupportPredictionTimepointRecord r = new SiriSupportPredictionTimepointRecord();
+					r.setStopId(tpr.getTimepointId().toString());
+					r.setTripId(nextTripBean.getId());
+					r.setTimepointPredictionRecord(tpr);
+					stopIdToPredictionRecordMap.put(r.getKey(), r);
 				}
 			}
 		}
@@ -367,7 +391,7 @@ public final class SiriSupport {
 	private void fillOnwardCalls(MonitoredVehicleJourneyStructure monitoredVehicleJourney,
 								 BlockInstanceBean blockInstance, TripBean framedJourneyTripBean, TripStatusBean currentVehicleTripStatus, OnwardCallsMode onwardCallsMode,
 								 PresentationService presentationService, NycTransitDataService nycTransitDataService,
-								 Map<String, TimepointPredictionRecord> stopLevelPredictions, int maximumOnwardCalls, long responseTimestamp) {
+								 Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions, int maximumOnwardCalls, long responseTimestamp) {
 
 		String tripIdOfMonitoredCall = framedJourneyTripBean.getId();
 
@@ -447,7 +471,7 @@ public final class SiriSupport {
 								stopTime.getDistanceAlongBlock() - blockTrip.getDistanceAlongBlock(),
 								stopTime.getDistanceAlongBlock() - distanceOfVehicleAlongBlock,
 								blockTripStopsAfterTheVehicle - 1,
-								stopLevelPredictions.get(stopTime.getStopTime().getStop().getId()), 
+								stopLevelPredictions.get(stopPredictionKey),
                                 responseTimestamp, 
                                 stopTime.getStopTime().getArrivalTime()));
 
@@ -467,7 +491,7 @@ public final class SiriSupport {
 	private void fillMonitoredCall(MonitoredVehicleJourneyStructure monitoredVehicleJourney,
 								   BlockInstanceBean blockInstance, TripStatusBean tripStatus, StopBean monitoredCallStopBean,
 								   PresentationService presentationService, NycTransitDataService nycTransitDataService,
-								   Map<String, TimepointPredictionRecord> stopLevelPredictions, boolean showApc,
+								   Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions, boolean showApc,
 								   boolean showRawApc, long responseTimestamp) {
 
 		List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
@@ -530,7 +554,7 @@ public final class SiriSupport {
 										stopTime.getDistanceAlongBlock() - distanceOfVehicleAlongBlock,
 										visitNumber,
 										blockTripStopsAfterTheVehicle - 1,
-										stopLevelPredictions.get(monitoredCallStopBean.getId()),
+										stopLevelPredictions.get(stopPredictionKey),
 										tripStatus.getVehicleId(),
                                         showApc,
                                         showRawApc,
@@ -626,7 +650,7 @@ public final class SiriSupport {
 	private static OnwardCallStructure getOnwardCallStructure(StopBean stopBean,
 															  PresentationService presentationService,
 															  double distanceOfCallAlongTrip, double distanceOfVehicleFromCall, int index,
-															  TimepointPredictionRecord prediction, long responseTimestamp, int arrivalTime) {
+															  SiriSupportPredictionTimepointRecord prediction, long responseTimestamp, int arrivalTime) {
 
 		OnwardCallStructure onwardCallStructure = new OnwardCallStructure();
 
@@ -642,15 +666,15 @@ public final class SiriSupport {
 		if (distanceOfCallAlongTrip < 100) isNearFirstStop = true;
 
 		if(prediction != null) {
-			if (prediction.getTimepointPredictedArrivalTime() < responseTimestamp) {
+			if (prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime() < responseTimestamp) {
 				if (!isNearFirstStop) { onwardCallStructure.setExpectedArrivalTime(new Date(responseTimestamp));}
 				else {
 					onwardCallStructure.setExpectedDepartureTime(new Date(responseTimestamp));
 				}
 			} else {
-				if (!isNearFirstStop) {	onwardCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictedArrivalTime()));}
+				if (!isNearFirstStop) {	onwardCallStructure.setExpectedArrivalTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime()));}
 				else {
-					onwardCallStructure.setExpectedDepartureTime(new Date(prediction.getTimepointPredictedDepartureTime()));
+					onwardCallStructure.setExpectedDepartureTime(new Date(prediction.getTimepointPredictionRecord().getTimepointPredictedDepartureTime()));
 				}
 			}
 		}
@@ -690,7 +714,7 @@ public final class SiriSupport {
 															 double distanceOfCallAlongTrip,
 															 double distanceOfVehicleFromCall,
 															 int visitNumber, int index,
-															 TimepointPredictionRecord prediction,
+															 SiriSupportPredictionTimepointRecord prediction,
 															 String vehicleId,
 															 boolean showApc,
 															 boolean showRawApc,
@@ -710,8 +734,8 @@ public final class SiriSupport {
 
 		if(prediction != null) {
 			fillExpectedArrivalDepartureTimes(monitoredCallStructure,
-					prediction.getTimepointPredictedArrivalTime(),
-					prediction.getTimepointPredictedDepartureTime(),
+					prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime(),
+					prediction.getTimepointPredictionRecord().getTimepointPredictedDepartureTime(),
 					responseTimestamp);
 		}
 
