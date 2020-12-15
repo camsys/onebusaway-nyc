@@ -712,7 +712,7 @@ OBA.Popups = (function() {
 								}
 							}
 							if(spooking) {
-								timePrediction += "(Estimated)";
+								timePrediction += " (Estimated)";
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
@@ -737,7 +737,7 @@ OBA.Popups = (function() {
 								}
 							}
 							if(spooking) {
-								distance += "(Estimated)";
+								distance += " (Estimated)";
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
