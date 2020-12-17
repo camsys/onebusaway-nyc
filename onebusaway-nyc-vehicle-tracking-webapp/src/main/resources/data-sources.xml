@@ -61,9 +61,9 @@
       <constructor-arg type="java.lang.Boolean" value="true" />
     </bean>
     
-    <bean id="vehiclePulloutService" class="org.onebusaway.nyc.transit_data_federation.impl.vtw.VehiclePulloutServiceImpl" />
+    <bean id="vehiclePulloutService" class="org.onebusaway.nyc.transit_data_federation.impl.vtw.${vehicle.pipo.service}" />
 
-    <bean id="unassignedVehicleService" class="org.onebusaway.nyc.vehicle_tracking.impl.unassigned.UnassignedVehicleServiceImpl" />
+    <bean id="unassignedVehicleService" class="org.onebusaway.nyc.vehicle_tracking.impl.unassigned.${unassigned.vehicle.service}" />
 
     <!-- Input Queue Configuration -->
 	<!-- This option listens to the queue with pilot and SI data on it. -->
