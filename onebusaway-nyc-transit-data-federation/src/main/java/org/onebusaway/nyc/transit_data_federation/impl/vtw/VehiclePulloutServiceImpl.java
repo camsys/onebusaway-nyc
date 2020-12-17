@@ -162,6 +162,9 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   }
 
   public void processVehiclePipoList(ObaSchPullOutList schPulloutList){
+    if(!_enabled){
+      return;
+    }
     Map<AgencyAndId, SCHPullInOutInfo> updatedVehicleIdToPullouts = new ConcurrentHashMap<>(10000);
     String errorCode = schPulloutList.getErrorCode();
     if (errorCode != null && !errorCode.equals("0")){
@@ -188,6 +191,9 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   @Override
   public String getAssignedBlockId(AgencyAndId vehicleId) {
+    if(!_enabled){
+      return null;
+    }
     SCHPullInOutInfo info = getVehiclePullout(vehicleId);
     String agency = vehicleId.getAgencyId();
     if (info==null || info.getBlock()==null || agency == null) {
@@ -198,7 +204,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   @Override
   public SCHPullInOutInfo getVehiclePullout(AgencyAndId vehicle) {
-    if (vehicle==null)
+    if (!_enabled || vehicle==null)
       return null;
     return _vehicleIdToPullouts.get(vehicle);
   }
