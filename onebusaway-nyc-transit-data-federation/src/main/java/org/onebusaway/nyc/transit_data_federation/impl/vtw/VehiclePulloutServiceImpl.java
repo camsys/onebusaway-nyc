@@ -84,6 +84,14 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     _url = url;
   }
 
+  public boolean getEnabled(){
+    return _enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    _enabled = enabled;
+  }
+
   public Map<AgencyAndId, SCHPullInOutInfo> getVehicleIdToPullouts(){
     return _vehicleIdToPullouts;
   }

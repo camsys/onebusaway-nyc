@@ -61,6 +61,7 @@ public class VehiclePulloutServiceImplTest {
     MockitoAnnotations.initMocks(this);
     tcipUtil.setup();
     service.setTcipUtil(tcipUtil);
+    service.setEnabled(true);
   }
 
   @Test
