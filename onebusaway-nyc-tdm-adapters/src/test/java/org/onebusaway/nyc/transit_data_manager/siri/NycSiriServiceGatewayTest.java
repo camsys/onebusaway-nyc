@@ -108,6 +108,17 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
     assertEquals("&#x2014; descriptionText",
             serviceAlertBean.getDescriptions().get(0).getValue());
 
+    // m4 <A0><A0><A0> issue
+    ptSituation = siriHelper.createPtSituationElementStructure(
+            "summaryText", "\240\240\240 descriptionText    ", "    MTA NYCT_270232",
+            "2020-11-23T00:00:00.000Z", "", "MTA NYCT_M4", "statusType");
+    endpointDetails = new SiriEndpointDetails();
+    serviceAlertBean = NycSiriUtil.getPtSituationAsServiceAlertBean(ptSituation, endpointDetails);
+
+    assertNotNull(serviceAlertBean.getSummaries());
+    assertEquals(" descriptionText",
+            serviceAlertBean.getDescriptions().get(0).getValue());
+
   }
 
   @Test
