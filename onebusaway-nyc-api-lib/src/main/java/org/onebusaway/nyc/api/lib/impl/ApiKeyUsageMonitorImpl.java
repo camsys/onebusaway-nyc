@@ -244,13 +244,11 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
         public void run() {
             try {
                 refreshConfig();
-                // Blocking to make sure we don't lose entries while we get a sorted map of the keys and
-                // subsequently clear them out
+
                 Map<String, Double> sortedKeysMap;
-                synchronized(_apiKeyCountMap) {
-                    sortedKeysMap = getKeysSortedByUsage(_apiKeyCountMap);
-                    _apiKeyCountMap.clear();
-                }
+                sortedKeysMap = getKeysSortedByUsage(_apiKeyCountMap);
+
+                _apiKeyCountMap.clear();
 
                 int apiKeyCount = getMapKeyCount(sortedKeysMap.entrySet().size());
 
