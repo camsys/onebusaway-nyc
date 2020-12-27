@@ -22,12 +22,12 @@
 <jsp:directive.page contentType="text/html" />
 <jsp:output omit-xml-declaration="yes"/>
 <head>
-	<s:url var="url" value="/js/lib/jquery.ui.js">
+	<s:url var="url" value="/js/biblio/jquery.ui.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   	</s:url>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-	<s:url var="url" value="/js/lib/dateFormat.js">
+	<s:url var="url" value="/js/biblio/dateFormat.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   	</s:url>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
