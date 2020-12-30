@@ -436,21 +436,29 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		    
 		  Date originDepartureTime = journey.getOriginAimedDepartureTime();
 
+
+		  String timePrefix = distanceBold;
+		  if(Boolean.parseBoolean(_configurationService.getConfigurationValueAsString(
+                  "display.showNextTripPredictions", "false"))) {
+            timePrefix = timeAndDistance;
+          }
+
 		  if(originDepartureTime != null && isLayover(progressStatus)){
 			  if(isDepartureOnSchedule(originDepartureTime)){
-				  return distanceBold + " (at terminal, scheduled to depart at " + 
+				  return timePrefix + " (at terminal, scheduled to depart at " +
 						  getFormattedOriginAimedDepartureTime(originDepartureTime) + ")";
 			  }
 			  
-			  return distanceBold + " (at terminal)";
+			  return timePrefix + " (at terminal)";
 		  }
 		  else if(originDepartureTime != null && isPrevTrip(progressStatus)) {
+
 			  if(isDepartureOnSchedule(originDepartureTime)) {
-		    		return distanceBold + " (+ layover, scheduled to depart terminal at " 
-		    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
+		    		return timePrefix + " (+ layover, scheduled to depart terminal at "
+		    				+ getFormattedOriginAimedDepartureTime(originDepartureTime) + ")";
 		    	}
 		    	else{
-		    		return distanceBold + " (+ scheduled layover at terminal)";
+		    		return timePrefix + " (+ scheduled layover at terminal)";
 		    	}
 	  	  }
 		  else {
