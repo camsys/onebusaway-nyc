@@ -20,11 +20,12 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.nyc.presentation.impl.realtime.SiriSupport.OnwardCallsMode;
+import org.onebusaway.nyc.presentation.impl.realtime.siri.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.*;
@@ -63,8 +64,9 @@ public class SiriSupportTest {
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);
     MonitoredVehicleJourney journey = new MonitoredVehicleJourney();
-    SiriSupport ss = new SiriSupport(null);
-    ss.fillMonitoredVehicleJourney(journey, trip.getTrip(), trip.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
+    SiriSupport ss = new SiriSupport(null, nycTransitDataService, presentationService);
+
+    ss.fillMonitoredVehicleJourney(journey, trip.getTrip(), trip.getStatus(), null, Collections.emptyMap(), OnwardCallsMode.VEHICLE_MONITORING,
         presentationService, nycTransitDataService, 0, System.currentTimeMillis(), Boolean.FALSE, Boolean.FALSE);
     
     assertNotNull(journey);
