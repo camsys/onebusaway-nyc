@@ -19,15 +19,13 @@ package org.onebusaway.nyc.webapp.actions.api.siri.impl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportPredictionTimepointRecord;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.siri.support.SiriApcExtension;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
@@ -114,7 +112,7 @@ public final class SiriSupportV2 {
 			PresentationService presentationService,
 			NycTransitDataService nycTransitDataService,
 			int maximumOnwardCalls,
-			List<TimepointPredictionRecord> stopLevelPredictions,
+			Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap,
 			DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters,
 			boolean showApc, boolean showRawApc) {
@@ -218,6 +216,10 @@ public final class SiriSupportV2 {
 			progressStatuses.add("layover");
 		}
 
+		if (presentationService.isSpooking(currentVehicleTripStatus)) {
+			progressStatuses.add("spooking");
+		}
+
 		// "prevTrip" really means not on the framedvehiclejourney trip
 		if (!framedJourneyTripBean.getId().equals(
 				currentVehicleTripStatus.getActiveTrip().getId())) {
@@ -277,21 +279,11 @@ public final class SiriSupportV2 {
 			}
 		}
 
-		Map<String, TimepointPredictionRecord> stopIdToPredictionRecordMap = new HashMap<String, TimepointPredictionRecord>();
-
-		// (build map of stop IDs to TPRs)
-		if (stopLevelPredictions != null) {
-			for (TimepointPredictionRecord tpr : stopLevelPredictions) {
-				stopIdToPredictionRecordMap.put(
-						AgencyAndId.convertToString(tpr.getTimepointId()), tpr);
-			}
-		}
-
 		// monitored call
 		if (!presentationService.isOnDetour(currentVehicleTripStatus))
 			fillMonitoredCall(monitoredVehicleJourney, blockInstance,
-					currentVehicleTripStatus, monitoredCallStopBean,
-					presentationService, nycTransitDataService,
+					framedJourneyTripBean, currentVehicleTripStatus,
+					monitoredCallStopBean, presentationService, nycTransitDataService,
 					stopIdToPredictionRecordMap, detailLevel, showApc, showRawApc, responseTimestamp);
 
 
@@ -608,7 +600,7 @@ public final class SiriSupportV2 {
 			OnwardCallsMode onwardCallsMode,
 			PresentationService presentationService,
 			NycTransitDataService nycTransitDataService,
-			Map<String, TimepointPredictionRecord> stopLevelPredictions,
+			Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions,
 			int maximumOnwardCalls, long responseTimestamp) {
 
 		String tripIdOfMonitoredCall = framedJourneyTripBean.getId();
@@ -695,6 +687,9 @@ public final class SiriSupportV2 {
 					blockTripStopsAfterTheVehicle++;
 				}
 
+				String stopPredictionKey = SiriSupportPredictionTimepointRecord
+						.convertTripAndStopToKey(blockTrip.getTrip().getId(), stopTime.getStopTime().getStop().getId());
+
 				monitoredVehicleJourney
 				.getOnwardCalls()
 				.getOnwardCall()
@@ -706,8 +701,7 @@ public final class SiriSupportV2 {
 						stopTime.getDistanceAlongBlock()
 						- distanceOfVehicleAlongBlock,
 						 blockTripStopsAfterTheVehicle - 1,
-						stopLevelPredictions.get(stopTime.getStopTime()
-								.getStop().getId()),
+						stopLevelPredictions.get(stopPredictionKey),
 						responseTimestamp));
 
 				onwardCallsAdded++;
@@ -726,11 +720,11 @@ public final class SiriSupportV2 {
 
 	private static void fillMonitoredCall(
 			MonitoredVehicleJourneyStructure monitoredVehicleJourney,
-			BlockInstanceBean blockInstance, TripStatusBean tripStatus,
+			BlockInstanceBean blockInstance, TripBean arrivalDepartureTrip, TripStatusBean tripStatus,
 			StopBean monitoredCallStopBean,
 			PresentationService presentationService,
 			NycTransitDataService nycTransitDataService,
-			Map<String, TimepointPredictionRecord> stopLevelPredictions,
+			Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions,
 			DetailLevel detailLevel,
 			boolean showApc,
 			boolean showRawApc,
@@ -743,28 +737,31 @@ public final class SiriSupportV2 {
 		int blockTripStopsAfterTheVehicle = 0;
 
 		boolean foundActiveTrip = false;
+		boolean foundArrivalDepartureTrip = false;
+
 		for (int i = 0; i < blockTrips.size(); i++) {
 			BlockTripBean blockTrip = blockTrips.get(i);
 
-			if (!foundActiveTrip) {
-				if (tripStatus.getActiveTrip().getId()
-						.equals(blockTrip.getTrip().getId())) {
-					distanceOfVehicleAlongBlock += tripStatus
-							.getDistanceAlongTrip();
-
+			if(foundActiveTrip != true){
+				if(tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
+					distanceOfVehicleAlongBlock = blockTrip.getDistanceAlongBlock()  + tripStatus.getDistanceAlongTrip();
 					foundActiveTrip = true;
-				} else {
-					// a block trip's distance along block is the *beginning* of
-					// that block trip along the block
-					// so to get the size of this one, we have to look at the
-					// next.
-					if (i + 1 < blockTrips.size()) {
-						distanceOfVehicleAlongBlock = blockTrips.get(i + 1)
-								.getDistanceAlongBlock();
+				}
+				else {
+					continue;
+				}
+			}
+			// Skip trips that don't match arrival departure (including active trip)
+			if(foundActiveTrip && !foundArrivalDepartureTrip) {
+				if(arrivalDepartureTrip.getId().equals(blockTrip.getTrip().getId())) {
+					foundArrivalDepartureTrip = true;
+					// If not active trip, don't show apc
+					if(!tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
+						showApc = false;
+						showRawApc = false;
 					}
-
-					// bus has already served this trip, so no need to go
-					// further
+				} else {
+					// bus has already served this trip, so no need to go further
 					continue;
 				}
 			}
@@ -772,14 +769,12 @@ public final class SiriSupportV2 {
 			HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();
 
 			for (BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
-				int visitNumber = getVisitNumber(visitNumberForStopMap,
-						stopTime.getStopTime().getStop());
+				int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStopTime().getStop());
 
 				// block trip stops away--on this trip, only after we've passed
 				// the stop,
 				// on future trips, count always.
-				if (tripStatus.getActiveTrip().getId()
-						.equals(blockTrip.getTrip().getId())) {
+				if (arrivalDepartureTrip.getId().equals(blockTrip.getTrip().getId())) {
 					if (stopTime.getDistanceAlongBlock() >= distanceOfVehicleAlongBlock) {
 						blockTripStopsAfterTheVehicle++;
 					} else {
@@ -795,26 +790,27 @@ public final class SiriSupportV2 {
 				}
 
 				// monitored call
-				if (stopTime.getStopTime().getStop().getId()
-						.equals(monitoredCallStopBean.getId())) {
+				if (stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())) {
 					if (!presentationService.isOnDetour(tripStatus)) {
-						monitoredVehicleJourney
-						.setMonitoredCall(getMonitoredCallStructure(
+						SiriSupportPredictionTimepointRecord ssptr = new SiriSupportPredictionTimepointRecord();
+						String stopPredictionKey = ssptr.getKey(blockTrip.getTrip().getId(), stopTime.getStopTime().getStop().getId());
+						monitoredVehicleJourney.setMonitoredCall(
+							getMonitoredCallStructure(
 								stopTime.getStopTime().getStop(),
 								nycTransitDataService,
 								presentationService,
-								stopTime.getDistanceAlongBlock()
-								- blockTrip
-								.getDistanceAlongBlock(),
-								stopTime.getDistanceAlongBlock()
-								- distanceOfVehicleAlongBlock,
+								stopTime.getDistanceAlongBlock() - blockTrip.getDistanceAlongBlock(),
+								stopTime.getDistanceAlongBlock() - distanceOfVehicleAlongBlock,
 								visitNumber,
 								blockTripStopsAfterTheVehicle - 1,
-								stopLevelPredictions.get(stopTime
-										.getStopTime().getStop()
-										.getId()), detailLevel,
+								stopLevelPredictions.get(stopPredictionKey),
+								detailLevel,
 								tripStatus.getVehicleId(),
-								showApc, showRawApc, responseTimestamp));
+								showApc,
+								showRawApc,
+								responseTimestamp,
+								stopTime.getStopTime().getArrivalTime())
+						);
 
 					}
 
@@ -840,7 +836,7 @@ public final class SiriSupportV2 {
 	}
 
 	private static OccupancyEnumeration mapOccupancyStatusToEnumeration(VehicleOccupancyRecord vor) {
-		if (vor == null) return null;
+		if (vor == null || vor.getOccupancyStatus() == null) return null;
 		switch (vor.getOccupancyStatus()) {
 			case UNKNOWN:
 				return null;
@@ -882,7 +878,7 @@ public final class SiriSupportV2 {
 	private static OnwardCallStructure getOnwardCallStructure(
 			StopBean stopBean, PresentationService presentationService,
 			double distanceOfCallAlongTrip, double distanceOfVehicleFromCall,
-			int index, TimepointPredictionRecord prediction,
+			int index, SiriSupportPredictionTimepointRecord prediction,
 			long responseTimestamp) {
 
 		OnwardCallStructure onwardCallStructure = new OnwardCallStructure();
@@ -898,23 +894,16 @@ public final class SiriSupportV2 {
 		boolean isNearFirstStop = false;
 		if (distanceOfCallAlongTrip < 100) isNearFirstStop = true;
 
-		if (prediction != null) {
-			if (prediction.getTimepointPredictedArrivalTime() < responseTimestamp) {
-				// TODO - LCARABALLO - should this be setExpectedArrivalTime?
-				if (!isNearFirstStop) {
-					onwardCallStructure.setExpectedArrivalTime(DateUtil.toXmlGregorianCalendar(responseTimestamp));
-				}
-				else{
+		if(prediction != null) {
+			if (prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime() < responseTimestamp) {
+				if (!isNearFirstStop) { onwardCallStructure.setExpectedArrivalTime(DateUtil.toXmlGregorianCalendar(responseTimestamp));}
+				else {
 					onwardCallStructure.setExpectedDepartureTime(DateUtil.toXmlGregorianCalendar(responseTimestamp));
 				}
 			} else {
-				if (!isNearFirstStop){
-					onwardCallStructure.setExpectedArrivalTime(DateUtil
-							.toXmlGregorianCalendar(prediction.getTimepointPredictedArrivalTime()));
-				} 
+				if (!isNearFirstStop) {	onwardCallStructure.setExpectedArrivalTime(DateUtil.toXmlGregorianCalendar(prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime()));}
 				else {
-					onwardCallStructure.setExpectedDepartureTime(DateUtil
-							.toXmlGregorianCalendar(prediction.getTimepointPredictedDepartureTime()));
+					onwardCallStructure.setExpectedDepartureTime(DateUtil.toXmlGregorianCalendar(prediction.getTimepointPredictionRecord().getTimepointPredictedDepartureTime()));
 				}
 			}
 		}
@@ -933,11 +922,20 @@ public final class SiriSupportV2 {
 	}
 
 	private static MonitoredCallStructure getMonitoredCallStructure(
-			StopBean stopBean, NycTransitDataService nycTransitDataService,
+			StopBean stopBean,
+			NycTransitDataService nycTransitDataService,
 			PresentationService presentationService,
-			double distanceOfCallAlongTrip, double distanceOfVehicleFromCall,
-			int visitNumber, int index, TimepointPredictionRecord prediction,
-			DetailLevel detailLevel, String vehicleId, boolean showApc, boolean showRawApc, long responseTimestamp) {
+			double distanceOfCallAlongTrip,
+			double distanceOfVehicleFromCall,
+			int visitNumber,
+			int index,
+			SiriSupportPredictionTimepointRecord prediction,
+			DetailLevel detailLevel,
+			String vehicleId,
+			boolean showApc,
+			boolean showRawApc,
+			long responseTimestamp,
+			int arrivalTime) {
 
 		MonitoredCallStructure monitoredCallStructure = new MonitoredCallStructure();
 		monitoredCallStructure.setVisitNumber(BigInteger.valueOf(visitNumber));
@@ -949,30 +947,20 @@ public final class SiriSupportV2 {
 		NaturalLanguageStringStructure stopPoint = new NaturalLanguageStringStructure();
 		stopPoint.setValue(stopBean.getName());
 
-		if (prediction != null) {
-			// do not allow predicted times to be less than ResponseTimestamp
-			if (prediction.getTimepointPredictedArrivalTime() < responseTimestamp) {
-				/*
-				 * monitoredCall has less precision than onwardCall (date vs.
-				 * timestamp) which results in a small amount of error when
-				 * converting back to timestamp. Add a second here to prevent
-				 * negative values from showing up in the UI (actual precision
-				 * of the value is 1 minute, so a second has little influence)
-				 */
-				monitoredCallStructure.setExpectedArrivalTime(DateUtil
-						.toXmlGregorianCalendar(responseTimestamp + 1000));
-				monitoredCallStructure.setExpectedDepartureTime(DateUtil
-						.toXmlGregorianCalendar(responseTimestamp + 1000));
-			} else {
-				monitoredCallStructure.setExpectedArrivalTime(DateUtil
-						.toXmlGregorianCalendar(prediction
-								.getTimepointPredictedArrivalTime()));
-				monitoredCallStructure.setExpectedDepartureTime(DateUtil
-						.toXmlGregorianCalendar(prediction
-								.getTimepointPredictedDepartureTime()));
-			}
-
+		if(prediction != null) {
+			fillExpectedArrivalDepartureTimes(monitoredCallStructure,
+					prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime(),
+					prediction.getTimepointPredictionRecord().getTimepointPredictedDepartureTime(),
+					responseTimestamp);
 		}
+
+		GregorianCalendar calendar = new GregorianCalendar(); // gets a calendar using the default time zone and locale.
+		int year = calendar.get(Calendar.YEAR);
+		int month = calendar.get(Calendar.MONTH);
+		int day = calendar.get(Calendar.DATE);
+		calendar.set(year, month, day, 0, 0, 0);
+		calendar.add(Calendar.SECOND, arrivalTime);
+		monitoredCallStructure.setAimedArrivalTime(DateUtil.toXmlGregorianCalendar(calendar));
 
 		// NOTE!  distances have been moved into spec!
 
@@ -1017,6 +1005,46 @@ public final class SiriSupportV2 {
 		}
 
 		return monitoredCallStructure;
+	}
+
+	private static void fillExpectedArrivalDepartureTimes(MonitoredCallStructure monitoredCallStructure,
+												   long arrivalTime,
+												   long departureTime,
+												   long responseTimestamp){
+
+		// Both arrival and departure time are in past
+		if (arrivalTime < responseTimestamp && departureTime < responseTimestamp) {
+			monitoredCallStructure.setExpectedArrivalTime(DateUtil
+					.toXmlGregorianCalendar(responseTimestamp + 1000));
+			monitoredCallStructure.setExpectedDepartureTime(DateUtil
+					.toXmlGregorianCalendar(responseTimestamp + 1000));
+		}
+		// arrival time undefined and departure time in the future
+		else if(arrivalTime < 0 && departureTime > responseTimestamp ) {
+			monitoredCallStructure.setExpectedArrivalTime(DateUtil
+					.toXmlGregorianCalendar(departureTime));
+			monitoredCallStructure.setExpectedDepartureTime(DateUtil
+					.toXmlGregorianCalendar(departureTime));
+		}
+		// arrival time
+		else if(arrivalTime < responseTimestamp){
+			monitoredCallStructure.setExpectedArrivalTime(DateUtil
+					.toXmlGregorianCalendar(responseTimestamp + 1000));
+			monitoredCallStructure.setExpectedDepartureTime(DateUtil
+					.toXmlGregorianCalendar(departureTime));
+		}
+		else if(departureTime < responseTimestamp){
+			monitoredCallStructure.setExpectedArrivalTime(DateUtil
+					.toXmlGregorianCalendar(arrivalTime));
+			monitoredCallStructure.setExpectedDepartureTime(DateUtil
+					.toXmlGregorianCalendar(arrivalTime));
+		}
+		else {
+			monitoredCallStructure.setExpectedArrivalTime(DateUtil
+					.toXmlGregorianCalendar(arrivalTime));
+			monitoredCallStructure.setExpectedDepartureTime(DateUtil
+					.toXmlGregorianCalendar(departureTime));
+		}
 	}
 
 	private static int getVisitNumber(
