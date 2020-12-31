@@ -68,7 +68,7 @@
                 <a href="${url}">CSV</a>
             </div>
             <div id="tableWrapper">
-                <table id="userApiKeyData">
+                <table id="userApiKeyData" class="display">
                     <thead>
                     <tr>
                         <th>Created</th>

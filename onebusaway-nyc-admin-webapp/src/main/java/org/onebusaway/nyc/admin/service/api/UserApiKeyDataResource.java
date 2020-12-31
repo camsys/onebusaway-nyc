@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.supercsv.cellprocessor.FmtDate;
+import org.supercsv.cellprocessor.Optional;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.CsvBeanWriter;
 import org.supercsv.io.ICsvBeanWriter;
@@ -113,7 +114,7 @@ public class UserApiKeyDataResource {
         ICsvBeanWriter csvWriter = new CsvBeanWriter(writer, CsvPreference.STANDARD_PREFERENCE);
         String[] csvHeader = {"Created", "Name", "Email", "Project Name", "Project URL", "Platform", "API Key", "Comment"};
         String[] nameMapping = {"created", "name", "email", "projectName", "projectUrl", "platform", "apiKey", "comment"};
-        CellProcessor[] processors = { new FmtDate("yyyy/MM/dd HH:mm:ss"),null,null,null,null,null,null,null };
+        CellProcessor[] processors = { new Optional(new FmtDate("yyyy/MM/dd HH:mm:ss")),null,null,null,null,null,null,null };
 
         csvWriter.writeHeader(csvHeader);
 
