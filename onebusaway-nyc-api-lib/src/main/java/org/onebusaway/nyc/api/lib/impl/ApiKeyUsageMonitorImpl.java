@@ -121,6 +121,12 @@ import static java.util.stream.Collectors.toMap;
 public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
     private static Logger _log = LoggerFactory.getLogger(ApiKeyUsageMonitorImpl.class);
 
+    public static final int DEFAULT_MAX_KEY_COUNT_METRICS = 20;
+    public static final int DEFAULT_PUBLISH_BATCH_SIZE = 10;
+    public static final String DEFAULT_PUBLISHING_TOPIC = "ApiKeys";
+    public static final String DEFAULT_PUBLISHING_DIM_NAME = "Env";
+    public static final String DEFAULT_PUBLISHING_DIM_VALUE = "dev";
+
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
 
@@ -146,6 +152,10 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
     @Override
     public void setExternalServices(ExternalServices externalServices){
         _externalServices = externalServices;
+    }
+
+    public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler){
+        _taskScheduler = taskScheduler;
     }
 
     @Override
@@ -184,14 +194,17 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
     private ScheduledFuture<?> _updateTask = null;
 
     public void refreshConfig(){
-        _maxKeyCountMetrics = _configurationService.getConfigurationValueAsInteger("api.key.maxKeyCountMetrics", 20);
-        _publishBatchSize = _configurationService.getConfigurationValueAsInteger("api.key.publishBatchSize", 10);
-        _publishingTopic = _configurationService.getConfigurationValueAsString("api.key.publishingTopic", "ApiKeys");
-        _publishingDimName = _configurationService.getConfigurationValueAsString("api.key.publishingDimName", "Env");
-        _publishingDimValue = _configurationService.getConfigurationValueAsString("api.key.publishingDimValue", "dev");
-
+        updateConfig();
         int publishingFrequencySec = _configurationService.getConfigurationValueAsInteger("api.key.publishingFrequencySec", 60);
         setUpdateFrequency(publishingFrequencySec);
+    }
+
+    public void updateConfig(){
+        _maxKeyCountMetrics = _configurationService.getConfigurationValueAsInteger("api.key.maxKeyCountMetrics", DEFAULT_MAX_KEY_COUNT_METRICS);
+        _publishBatchSize = _configurationService.getConfigurationValueAsInteger("api.key.publishBatchSize", DEFAULT_PUBLISH_BATCH_SIZE);
+        _publishingTopic = _configurationService.getConfigurationValueAsString("api.key.publishingTopic", DEFAULT_PUBLISHING_TOPIC);
+        _publishingDimName = _configurationService.getConfigurationValueAsString("api.key.publishingDimName", DEFAULT_PUBLISHING_DIM_NAME);
+        _publishingDimValue = _configurationService.getConfigurationValueAsString("api.key.publishingDimValue", DEFAULT_PUBLISHING_DIM_VALUE);
     }
 
     private void setUpdateFrequency(int updateFrequencySecs) {

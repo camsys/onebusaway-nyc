@@ -83,21 +83,24 @@ package org.onebusaway.nyc.api.lib;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.cloud.api.ExternalServices;
 import org.onebusaway.cloud.api.ExternalServicesBridgeFactory;
 import org.onebusaway.nyc.api.lib.impl.ApiKeyUsageMonitorImpl;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.Map;
 
 import static org.junit.Assert.*;
+import static org.onebusaway.nyc.api.lib.impl.ApiKeyUsageMonitorImpl.DEFAULT_MAX_KEY_COUNT_METRICS;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApiKeyUsageMonitorTest {
 
-    ExternalServices _es;
-    ConfigurationServiceImpl _configurationService;
+    private ExternalServices _es;
+    private ConfigurationServiceImpl _configurationService;
 
     @Before
     public void setup(){
@@ -129,11 +132,11 @@ public class ApiKeyUsageMonitorTest {
         ApiKeyUsageMonitorImpl apiMonitor = new ApiKeyUsageMonitorImpl();
         apiMonitor.setExternalServices(_es);
         apiMonitor.setConfigurationService(_configurationService);
-        apiMonitor.refreshConfig();
+        apiMonitor.updateConfig();
 
-        assertEquals(60, apiMonitor.getMapKeyCount(60));
-        assertNotSame(300, apiMonitor.getMapKeyCount(300));
-        assertEquals(apiMonitor.getMaxKeyCountMetrics(), apiMonitor.getMapKeyCount(300));
+        assertEquals(apiMonitor.getMaxKeyCountMetrics() -1, apiMonitor.getMapKeyCount(apiMonitor.getMaxKeyCountMetrics() - 1));
+        assertNotSame(apiMonitor.getMaxKeyCountMetrics() + 1, apiMonitor.getMapKeyCount(apiMonitor.getMaxKeyCountMetrics() + 1));
+        assertEquals(apiMonitor.getMaxKeyCountMetrics(), apiMonitor.getMapKeyCount(apiMonitor.getMaxKeyCountMetrics() + 1));
     }
 
     @Test
@@ -141,7 +144,7 @@ public class ApiKeyUsageMonitorTest {
         ApiKeyUsageMonitorImpl apiMonitor = new ApiKeyUsageMonitorImpl();
         apiMonitor.setExternalServices(_es);
         apiMonitor.setConfigurationService(_configurationService);
-        apiMonitor.refreshConfig();
+        apiMonitor.updateConfig();
 
         int keyCount = 200;
         int sleepTime = 2000;
