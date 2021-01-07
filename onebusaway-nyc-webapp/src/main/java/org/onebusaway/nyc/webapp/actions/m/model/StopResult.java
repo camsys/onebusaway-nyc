@@ -22,6 +22,7 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -52,7 +53,12 @@ public class StopResult implements SearchResult {
 		this.routesWithNoVehiclesEnRoute = routesWithNoVehiclesEnRoute;
 		this.routesWithNoScheduledService = routesWithNoScheduledService;
 		this.filteredRoutes = filteredRoutes;
-		this.stopServiceAlerts = serviceAlerts;
+		if(serviceAlerts == null){
+			this.stopServiceAlerts = Collections.emptySet();
+		} else {
+			this.stopServiceAlerts = serviceAlerts;
+		}
+
 	}
 
 	public String getId() {
