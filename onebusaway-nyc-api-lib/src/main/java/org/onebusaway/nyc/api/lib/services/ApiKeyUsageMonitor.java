@@ -116,7 +116,5 @@ import org.onebusaway.cloud.api.ExternalServices;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
 public interface ApiKeyUsageMonitor {
-    void setExternalServices(ExternalServices externalServices);
-    void setConfigurationService(ConfigurationService configurationService);
     void increment(String key);
 }

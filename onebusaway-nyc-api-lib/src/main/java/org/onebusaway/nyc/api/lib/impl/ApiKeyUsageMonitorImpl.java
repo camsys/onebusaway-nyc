@@ -123,6 +123,7 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
 
     public static final int DEFAULT_MAX_KEY_COUNT_METRICS = 20;
     public static final int DEFAULT_PUBLISH_BATCH_SIZE = 10;
+    public static final int DEFAULT_PUBLISHING_FREQUENCY_SEC = 60;
     public static final String DEFAULT_PUBLISHING_TOPIC = "ApiKeys";
     public static final String DEFAULT_PUBLISHING_DIM_NAME = "Env";
     public static final String DEFAULT_PUBLISHING_DIM_VALUE = "dev";
@@ -130,7 +131,6 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
 
-    @Autowired
     private ConfigurationService _configurationService;
 
     private Map<String, DoubleAdder> _apiKeyCountMap = new ConcurrentHashMap<>();
@@ -149,16 +149,12 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
 
     private String _publishingDimValue;
 
-    @Override
     public void setExternalServices(ExternalServices externalServices){
         _externalServices = externalServices;
     }
 
-    public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler){
-        _taskScheduler = taskScheduler;
-    }
 
-    @Override
+    @Autowired
     public void setConfigurationService(ConfigurationService configurationService){
         _configurationService = configurationService;
     }
@@ -200,16 +196,25 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
     }
 
     public void updateConfig(){
+        _log.debug("Starting update config new");
         _maxKeyCountMetrics = _configurationService.getConfigurationValueAsInteger("api.key.maxKeyCountMetrics", DEFAULT_MAX_KEY_COUNT_METRICS);
+        _log.debug("Starting update config 1");
         _publishBatchSize = _configurationService.getConfigurationValueAsInteger("api.key.publishBatchSize", DEFAULT_PUBLISH_BATCH_SIZE);
+        _log.debug("Starting update config 2");
         _publishingTopic = _configurationService.getConfigurationValueAsString("api.key.publishingTopic", DEFAULT_PUBLISHING_TOPIC);
+        _log.debug("Starting update config 3");
         _publishingDimName = _configurationService.getConfigurationValueAsString("api.key.publishingDimName", DEFAULT_PUBLISHING_DIM_NAME);
+        _log.debug("Starting update config 4");
         _publishingDimValue = _configurationService.getConfigurationValueAsString("api.key.publishingDimValue", DEFAULT_PUBLISHING_DIM_VALUE);
+        _log.debug("Starting update config finished");
     }
 
     private void setUpdateFrequency(int updateFrequencySecs) {
+        _log.debug("Starting update frequency");
         if (_updateTask != null) {
+            _log.debug("Update task not null");
             if(_publishingFrequencySec == updateFrequencySecs){
+                _log.debug("Update frequency has not changed, exiting");
                 return;
             }
             _updateTask.cancel(true);
@@ -221,7 +226,7 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
 
     @PostConstruct
     public void setup(){
-        refreshConfig();
+        setUpdateFrequency(DEFAULT_PUBLISHING_FREQUENCY_SEC);
         _externalServices = new ExternalServicesBridgeFactory().getExternalServices();
     }
 
