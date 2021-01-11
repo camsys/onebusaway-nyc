@@ -20,6 +20,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
@@ -29,6 +30,7 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -45,6 +47,8 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
 
     private TripUpdateFeedBuilder _feedBuilder;
     private NycTransitDataService _transitDataService;
+    private PresentationService _presentationService;
+
 
     private static final Logger _log = LoggerFactory.getLogger(TripUpdateServiceImpl.class);
 
@@ -56,6 +60,12 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
     @Autowired
     public void setTransitDataService(NycTransitDataService transitDataService) {
         _transitDataService = transitDataService;
+    }
+
+    @Autowired
+    @Qualifier("NycPresentationService")
+    public void setPresentationService(PresentationService presentationService) {
+        _presentationService = presentationService;
     }
 
     private Cache<String, BlockInstanceBean> _blockCache = CacheBuilder.newBuilder()
@@ -79,16 +89,11 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
     public List<FeedEntity.Builder> getEntities(long time) {
         _log.debug("getEntities(" + new Date(time) + ")");
 
-        Collection<VehicleStatusBean> vehicles = getAllVehicles(_transitDataService, time);
+        Collection<VehicleStatusBean> vehicles = getAllVehicles(_transitDataService, _presentationService, time);
         _log.debug("found " + vehicles.size() + " vehicles");
         List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
         for (VehicleStatusBean vehicle : vehicles) {
-
-            if (vehicle.getTrip() == null) {
-                _log.warn("no trip for vehicle=" + vehicle.getVehicleId());
-                continue;
-            }
 
             int tripSequence = vehicle.getTripStatus().getBlockTripSequence();
             BlockInstanceBean block = getBlock(vehicle);

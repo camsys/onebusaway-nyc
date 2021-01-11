@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>onebusaway-nyc</artifactId>
 		<groupId>org.onebusaway</groupId>
-		<version>2.26.0-gtfs-SNAPSHOT</version>
+		<version>2.26.2.38-SNAPSHOT</version>
 	</parent>
 	<groupId>org.onebusaway</groupId>
 	<artifactId>onebusaway-nyc-admin-webapp</artifactId>
@@ -21,6 +21,10 @@
 		<repository>
 			<id>xwiki</id>
 			<url>http://maven.xwiki.org/releases</url>
+		</repository>
+		<repository>
+			<id>oba-dev</id>
+			<url>http://developer.onebusaway.org/modules/</url>
 		</repository>
 	</repositories>
 	<dependencies>
@@ -60,7 +64,6 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.17</version>
 		</dependency>
 		<dependency>
 			<groupId>org.tuckey</groupId>
@@ -78,17 +81,27 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-presentation</artifactId>
-			<version>2.26.0-gtfs-SNAPSHOT</version>
+			<version>2.26.2.38-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-nyc-transit-data</artifactId>
-			<version>2.26.0-gtfs-SNAPSHOT</version>
+			<version>2.26.2.38-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-transit-data-federation-builder</artifactId>
 			<version>${onebusaway.app-modules.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.java-diff-utils</groupId>
+			<artifactId>diffutils</artifactId>
+			<version>1.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
@@ -135,8 +148,31 @@
 			<artifactId>mail</artifactId>
 			<version>1.4</version>
 		</dependency>
-		<!-- dependency> <groupId>org.codehaus.jackson</groupId> <artifactId>jackson-core-asl</artifactId> 
-			<version>1.9.0</version> </dependency -->
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-nyc-util</artifactId>
+			<version>2.26.2.38-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>2.3</version>
+			<scope>compile</scope>
+		</dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-transit-data-federation-builder</artifactId>
+            <version>${onebusaway.app-modules.version}</version>
+            <scope>compile</scope>
+        </dependency>
+		<dependency>
+			<groupId>net.sf.supercsv</groupId>
+			<artifactId>super-csv</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+        <!-- dependency> <groupId>org.codehaus.jackson</groupId> <artifactId>jackson-core-asl</artifactId>
+            <version>1.9.0</version> </dependency -->
 	</dependencies>
 
 	<profiles>

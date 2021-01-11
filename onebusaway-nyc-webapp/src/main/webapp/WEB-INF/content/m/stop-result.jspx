@@ -2,17 +2,17 @@
 
     Copyright (c) 2011 Metropolitan Transportation Authority
 
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not
-    use this file except in compliance with the License. You may obtain a copy of
-    the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+            http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-    License for the specific language governing permissions and limitations under
-    the License.
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 
 -->
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
@@ -41,7 +41,7 @@
 			<s:if test="%{routesWithArrivals.size&gt;0}">
 				<p class="stopResultGroupHeader">Buses en-route:</p>
 				<s:iterator value="routesWithArrivals">
-					<s:iterator value="directions">
+					<s:iterator var="routeDirection" value="directions">
 						<div class="directionAtStop">
 							<p>
 								<s:url var="url" namespace="/m" action="index" anchor="%{directionId}-%{q}">
@@ -53,12 +53,22 @@
 									<strong><s:property value="shortName" />&amp;nbsp;&amp;nbsp;<s:property value="destination" /></strong>
 								</a>
 							</p>
-							
-							<ol class="arrivalsAtStop">
-								<c:forEach var="distanceAway" items="${distanceAways}">
-									<li>${distanceAway}</li>
-								</c:forEach>
-							</ol>
+							<s:iterator value="stops" status="stopIndex">
+								<s:if test="%{!#routeDirection.hasRealtimes[#stopIndex.index]}">
+									<ol class="arrivalsAtStopSchedule">
+										<c:forEach var="distanceAway" items="${distanceAways}">
+											<li>${distanceAway} <span class="scheduleAlert"> (Estimated)</span></li>
+										</c:forEach>
+									</ol>
+								</s:if>
+								<s:else>
+									<ol class="arrivalsAtStop">
+										<c:forEach var="distanceAway" items="${distanceAways}" varStatus="status">
+											<li>${distanceAway}  <small>Vehicle ${vehicleIds[status.index]}</small></li>
+										</c:forEach>
+									</ol>
+								</s:else>
+							</s:iterator>
 						</div>
 					</s:iterator>
 				</s:iterator>

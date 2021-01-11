@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+
+    Copyright (C) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
 <ns2:schPullOutList deactivation="2040-01-04T23:59:00-08:00" noNameSpaceSchemaLocation="http://www.aptatcip.com/APTA-TCIP-S-01%204.0_files/Schema%20Set.zip" sourceapp="YardBoss" schVersion="TCIP 4.0" created="2011-06-01T04:59:00-08:00" xmlns:ns2="http://www.TCIP-Final-4-0-0" xmlns:ns4="http://www.lrms-final-09-07-for-atis" xmlns:ns3="http://www.lrms-final-09-07" xmlns:ns5="http://www.atis-partial-03-00-74">
     <subscriptionInfo>
         <requestedType>Event</requestedType>

@@ -4,7 +4,7 @@
   <parent>
     <artifactId>onebusaway-nyc</artifactId>
     <groupId>org.onebusaway</groupId>
-    <version>2.26.0-gtfs-SNAPSHOT</version>
+    <version>2.26.2.38-SNAPSHOT</version>
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-queue-test</artifactId>
@@ -18,9 +18,8 @@
     </dependency>
     <dependency>
       <groupId>org.zeromq</groupId>
-      <artifactId>jzmq</artifactId>
-      <version>053c2d7</version><!-- git revision -->
-      <scope>compile</scope>
+      <artifactId>jeromq</artifactId>
+      <version>0.3.4</version>
     </dependency>
     <!-- build servlet -->
     <dependency>
@@ -55,12 +54,12 @@
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-nyc-queue-realtime</artifactId>
-      <version>2.26.0-gtfs-SNAPSHOT</version>
+      <version>2.26.2.38-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-nyc-transit-data</artifactId>
-      <version>2.26.0-gtfs-SNAPSHOT</version>
+      <version>2.26.2.38-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
@@ -70,7 +69,7 @@
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-nyc-queue-subscriber</artifactId>
-      <version>2.26.0-gtfs-SNAPSHOT</version>
+      <version>2.26.2.38-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <build>

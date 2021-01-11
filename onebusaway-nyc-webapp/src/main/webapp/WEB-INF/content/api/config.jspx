@@ -2,17 +2,17 @@
 
     Copyright (c) 2011 Metropolitan Transportation Authority
 
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not
-    use this file except in compliance with the License. You may obtain a copy of
-    the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+            http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-    License for the specific language governing permissions and limitations under
-    the License.
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 
 -->
 <jsp:root version="2.0" xmlns:jsp="http://java.sun.com/JSP/Page"
@@ -33,6 +33,8 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 	OBA.Config.signDefaultAgencyId='<s:text name="sign.default.agency.id" />';
 	OBA.Config.showVehicleIdInStopPopup=<s:property value="showVehicleIdInStopPopup" />;
 
+	OBA.Config.apcMode='<s:property value="apcMode" />';
+
 	OBA.Config.siriSMUrl = "api/siri/stop-monitoring.json?key=" + OBA.Config.obaApiKey;
 	OBA.Config.siriVMUrl = "api/siri/vehicle-monitoring.json?key=" + OBA.Config.obaApiKey;
 	
@@ -46,7 +48,7 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 
 				html += 'Send stop code <strong>' + query + '</strong> as a text to <strong>' + OBA.Config.shortCode + '</strong>';
 				html += '<br/>';
-				html += 'or check <a href="m/?q=' + query + '">this stop</a> on your smartphone.';
+				html += 'or check &lt;a href=&quot;m/?q=' + query + '&quot;>this stop&lt;/a> on your smartphone.';
 
 				html += '</div>';
 
@@ -55,7 +57,7 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 				html += '<span class="header">While at the bus stop...</span>';
 				html += '<br/>';
 				
-				html += 'Check <a href="m/?q=' + query + '">this route</a> on your smartphone.';
+				html += 'Check &lt;a href=&quot;m/?q=' + query + '&quot;>this route&lt;/a> on your smartphone.';
 
 				html += '</div>';				
 

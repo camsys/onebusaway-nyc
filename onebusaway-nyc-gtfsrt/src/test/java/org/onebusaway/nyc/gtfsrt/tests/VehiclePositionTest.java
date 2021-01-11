@@ -21,8 +21,10 @@ import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.impl.VehicleUpdateFeedBuilderImpl;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
+import org.onebusaway.nyc.gtfsrt.tds.MockConfigurationService;
 import org.onebusaway.nyc.gtfsrt.tds.MockTransitDataService;
 import org.onebusaway.nyc.gtfsrt.util.InferredLocationReader;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -50,14 +52,18 @@ public abstract class VehiclePositionTest extends TestCase {
 
     private TransitDataService _transitDataService;
 
+    private ConfigurationService _configurationService;
+
 
     public VehiclePositionTest(String gtfsFile, String defaultAgencyId, String blockTripMapFile, String inferenceFile) {
 
         _transitDataService = new MockTransitDataService(defaultAgencyId, gtfsFile, blockTripMapFile);
+        _configurationService = new MockConfigurationService();
         _inferenceFile = inferenceFile;
 
 
         VehicleUpdateFeedBuilderImpl feedBuilder = new VehicleUpdateFeedBuilderImpl();
+        feedBuilder.setConfigurationService(_configurationService);
         _feedBuilder = feedBuilder;
 
     }

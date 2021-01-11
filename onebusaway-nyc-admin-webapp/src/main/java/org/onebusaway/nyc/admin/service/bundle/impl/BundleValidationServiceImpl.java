@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.bundle.impl;
 
 import org.apache.commons.io.IOUtils;
@@ -223,9 +239,11 @@ public class BundleValidationServiceImpl implements BundleValidationService {
           }
           _log.info("results of " + gtfsZipFileName + " at " + outputFile);
           response.addValidationFile(new FileUtils().parseFileName(outputFile));
-          upload(request, response);
-          response.addStatusMessage("complete");
+          String filteredOutputFile = FilterGtfsValidatorOutput.generateFilteredGtfsValidatorFile(outputFile);
+          response.addValidationFile(new FileUtils().parseFileName(filteredOutputFile));
         }
+    upload(request, response);
+    response.addStatusMessage("complete");
   } 
   
 	  
@@ -238,6 +256,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
   public void downloadFeedValidator() {
 	  _gtfsValidationService.downloadFeedValidator();
   }
+
 
   public void upload(BundleRequest request, BundleResponse response) {
     String destDirectory = request.getBundleDirectory() + File.separator

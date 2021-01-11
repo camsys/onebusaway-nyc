@@ -19,6 +19,7 @@ import com.google.transit.realtime.GtfsRealtime.*;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -29,10 +30,12 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -43,6 +46,7 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
 
     private VehicleUpdateFeedBuilder _feedBuilder;
     private NycTransitDataService _transitDataService;
+    private PresentationService _presentationService;
 
     private static final Logger _log = LoggerFactory.getLogger(VehicleUpdateServiceImpl.class);
 
@@ -56,9 +60,15 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
         _transitDataService = transitDataService;
     }
 
+    @Autowired
+    @Qualifier("NycPresentationService")
+    public void setPresentationService(PresentationService presentationService) {
+        _presentationService = presentationService;
+    }
+
     @Override
     public List<FeedEntity.Builder> getEntities(long time) {
-        Collection<VehicleStatusBean> vehicles = getAllVehicles(_transitDataService, time);
+        Collection<VehicleStatusBean> vehicles = getAllVehicles(_transitDataService, _presentationService, time);
 
         List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
@@ -66,18 +76,14 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
 
         for (VehicleStatusBean vehicle : vehicles) {
 
-            if (vehicle.getTrip() == null) {
-                continue;
-            }
-
             VehicleLocationRecordBean vlr = _transitDataService.getVehicleLocationRecordForVehicleId(vehicle.getVehicleId(), time);
             if (vlr == null) {
                 nMissing++;
                 continue;
             }
-            
-            OccupancyStatus occupancy = getOccupancyStatus(vehicle);
-            VehiclePosition.Builder pos = _feedBuilder.makeVehicleUpdate(vehicle, vlr, occupancy);
+
+            VehicleOccupancyRecord vor = getVehicleOccupancyRecord(vehicle);
+            VehiclePosition.Builder pos = _feedBuilder.makeVehicleUpdate(vehicle, vlr, vor);
 
             FeedEntity.Builder entity = FeedEntity.newBuilder();
             entity.setVehicle(pos);
@@ -90,7 +96,21 @@ public class VehicleUpdateServiceImpl extends AbstractFeedMessageService {
 
         return entities;
     }
-    
+
+    private VehicleOccupancyRecord getVehicleOccupancyRecord(VehicleStatusBean vehicleStatus) {
+        TripStatusBean tripStatus = vehicleStatus.getTripStatus();
+        if (tripStatus != null) {
+            VehicleOccupancyRecord vor =
+                    _transitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(
+                            AgencyAndId.convertFromString(tripStatus.getVehicleId()),
+                            tripStatus.getActiveTrip().getRoute().getId(),
+                            tripStatus.getActiveTrip().getDirectionId());
+            if (vor != null)
+                return vor;
+        }
+        return null;
+    }
+
     private OccupancyStatus getOccupancyStatus(VehicleStatusBean vehicleStatus){
       TripStatusBean tripStatus = vehicleStatus.getTripStatus();
       

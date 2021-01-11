@@ -4,7 +4,7 @@
   <parent>
     <artifactId>onebusaway-nyc</artifactId>
     <groupId>org.onebusaway</groupId>
-    <version>2.26.0-gtfs-SNAPSHOT</version>
+    <version>2.26.2.38-SNAPSHOT</version>
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-util</artifactId>
@@ -38,6 +38,7 @@
     	<artifactId>onebusaway-container</artifactId>
     	<version>${onebusaway.app-modules.version}</version>
     </dependency>
+
     <dependency>
     	<groupId>org.mockito</groupId>
     	<artifactId>mockito-all</artifactId>
@@ -47,6 +48,28 @@
       <artifactId>commons-compress</artifactId>
       <version>1.2</version>
     </dependency>
+      <dependency>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-core-asl</artifactId>
+          <version>1.9.13</version>
+          <scope>compile</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-mapper-asl</artifactId>
+          <version>1.9.13</version>
+          <scope>compile</scope>
+      </dependency>
+      <dependency>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+          <version>2.6</version>
+          <scope>compile</scope>
+      </dependency>
+      <dependency>
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+      </dependency>
   </dependencies>
   
   <profiles>

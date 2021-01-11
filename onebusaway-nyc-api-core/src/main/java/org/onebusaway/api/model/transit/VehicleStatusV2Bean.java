@@ -21,7 +21,7 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 
 public final class VehicleStatusV2Bean implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2L;
 
   private String vehicleId;
 
@@ -30,6 +30,10 @@ public final class VehicleStatusV2Bean implements Serializable {
   private String status;
 
   private Integer occupancyStatus = null;
+
+  private Integer occupancyCount = null;
+
+  private Integer occupancyCapacity = null;
 
   private long lastUpdateTime;
 
@@ -100,4 +104,20 @@ public final class VehicleStatusV2Bean implements Serializable {
   }
 
   public Integer getOccupancyStatus() { return occupancyStatus; }
+
+  public Integer getOccupancyCount() {
+    return occupancyCount;
+  }
+
+  public void setOccupancyCount(Integer occupancyCount) {
+    this.occupancyCount = occupancyCount;
+  }
+
+  public Integer getOccupancyCapacity() {
+    return occupancyCapacity;
+  }
+
+  public void setOccupancyCapacity(Integer occupancyCapacity) {
+    this.occupancyCapacity = occupancyCapacity;
+  }
 }

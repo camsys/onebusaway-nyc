@@ -1,19 +1,89 @@
 /**
- * Copyright (c) 2011 Metropolitan Transportation Authority
+ * Copyright (C) 2011 Metropolitan Transportation Authority
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
- 
+
+#createDirectory #selectExistingContents #currentDirectories,
+#compareBundles #compareExistingContents #compareCurrentDirectories,
+#compareBuilds #compareExistingBuilds #compareSelectedBuild {
+	margin-top: 7px;
+	overflow: auto;
+	height: 200px;
+	border: solid 1px #C0C0C0;
+	width: 600px;
+}
+
+#compareDiff #diffResult{
+	margin-top: 7px;
+	overflow: auto;
+	height: 500px;
+	border: solid 1px #C0C0C0;
+	width: 850px;
+	font-size: 12px;
+}
+
+#buildingReportDiv {
+	color: green;
+}
+
+#currentDirectories #listItem,
+#compareCurrentDirectories #compareListItem,
+#compareSelectedBuild #compareBuildListItem {
+	cursor: pointer;
+	display: table-row;
+	width: 600px;
+}
+
+#diffResult #diffResultItems{
+	cursor: pointer;
+	display: table-row;
+	width: 850px;
+}
+
+#currentDirectories .listData,
+#compareCurrentDirectories .listData
+{
+	width: 200px;
+	font-size: 12px;
+	display: table-cell;
+}
+
+#compareSelectedBuild .listData{
+	width: 600px;
+	font-size: 12px;
+	display: table-cell;
+}
+
+.grayListData{
+	background-color: #A8A8A8 ;
+	table-layout: fixed;
+}
+
+.redListData{
+	background-color: #FF9999;
+	table-layout: fixed;
+}
+
+.greenListData{
+	background-color: #99FF99;
+//table-layout: fixed;
+}
+
+.blueListData{
+	background-color: #CEF6F5;
+//table-layout: fixed;
+}
  
 #tabs {
 	padding: 0px;
@@ -253,7 +323,7 @@
 	padding-top: 20px;
 }
 
-#uploadFiles #instruction {
+#uploadFiles .instruction {
 	background-color: #C3FDB8;
 	z-index: 1;
 	/* These three lines are for transparency in all browsers. */
@@ -262,7 +332,7 @@
 	opacity: 0.6;
 }
 
-#instruction p {
+.instruction p {
 	padding-left: 30px;
 	font-weight: bold;
 	color: #004E00;
@@ -317,9 +387,13 @@
 	margin-right: 10px;
 }
 
-#prevalidateInputs #prevalidate_resultList {
+#prevalidateInputs #prevalidate_resultList #prevalidate_resultWarnings{
 	display: none;
 	padding-top : 10px;
+}
+
+#prevalidate_resultWarnings{
+	display: none;
 }
 
 #prevalidateInputs #prevalidate_fileList {
@@ -555,3 +629,188 @@
 	padding-top : 10px;
 }
 
+
+#Compare #compareDiff {
+	margin-bottom: 2em;
+}
+
+#Compare #currentBundleDiv {
+	float: left;
+	width: 48%;
+	margin-bottom: 2px;
+}
+
+#Compare #compareToBundleDiv {
+	float: right;
+	width: 48%;
+}
+
+#Compare #currentBundleDiv fieldset,
+#Compare #compareToBundleDiv fieldset {
+	border: 1px solid gray;
+//width: 45%;
+}
+
+
+#Compare #currentBundleDiv legend,
+#Compare #compareToBundleDiv legend {
+	font-weight: bold;
+	font-size: 1.3em;
+	margin-top: .5em;
+	margin-bottom: .3em;
+	line-height: 1em;
+	text-align: left;
+}
+
+#Compare #diffResultsTable caption,
+#Compare #fixedRouteDiffTable caption,
+#Compare #dailyRouteDiffTable caption{
+	font-weight: bold;
+	font-size: 1.3em;
+	margin-bottom: .3em;
+	line-height: 1em;
+}
+
+#Compare #diffResultsTable th,
+#Compare #fixedRouteDiffTable th,
+#Compare #dailyRouteDiffTable th{
+	margin-bottom: .1em;
+	padding: .3em;
+}
+
+#Compare #diffResultsTable td {
+	padding-top: 3px;
+	padding-right: 10px;
+	padding-bottom: 3px;
+	padding-left: 10px;
+}
+
+#Compare #compareDiff {
+	margin-top: 10em;
+}
+
+#Compare #fixedRouteDiffTable th.modeColumn,
+#Compare #dailyRouteDiffTable th.modeColumn {
+	text-align: left;
+}
+
+#Compare #diffResultsTable .numericTd {
+	text-align: right;
+}
+
+#Compare #printFixedRouteRptButton {
+	margin-bottom: 1em;
+}
+
+#Compare #baseBundle, #Compare #compareToBundle {
+	font-size: .7em;
+}
+
+#Compare #fixedRouteDiffTable tr .routeFirstLine,
+#Compare #dailyRouteDiffTable tr .routeFirstLine {
+//margin-top: 15px;
+//padding-top: 15px;
+}
+
+#Compare #fixedRouteDiffTable .modeName,
+#Compare #dailyRouteDiffTable .modeName {
+	font-weight: bold;
+	padding-right: 1em;
+	padding-left: .3em;
+}
+
+#Compare #fixedRouteDiffTable tr.spacer td,
+#Compare #dailyRouteDiffTable tr.spacer td {
+	padding-top: 7px;
+	border-top: thin black solid;
+}
+
+#Compare #fixedRouteDiffTable tr.spacer td,
+#Compare #dailyRouteDiffTable tr.spacer td {
+	border-top: thin black solid;
+}
+
+#Compare #fixedRouteDiffTable tr.spacer td:first-child,
+#Compare #dailyRouteDiffTable tr.spacer td:first-child {
+	border-top: none;
+}
+
+#Compare #fixedRouteDiffTable tr.spacer td:nth-child(2),
+#Compare #fixedRouteDiffTable tr.spacer td:last-child,
+#Compare #dailyRouteDiffTable tr.spacer td:nth-child(2),
+#Compare #dailyRouteDiffTable tr.spacer td:last-child{
+	border-left: none;
+	border-right: none;
+}
+
+#Compare #fixedRouteDiffTable td.rtNum,
+#Compare #dailyRouteDiffTable td.rtNum{
+	text-align: right;
+	padding-left: .3em;
+	padding-right: .5em;
+}
+
+#Compare #fixedRouteDiffTable tr.routeFirstLine td,
+#Compare #dailyRouteDiffTable tr.routeFirstLine td {
+	border-top: thin black solid;
+}
+
+#Compare #fixedRouteDiffTable tr.routeFirstLine td:first-child,
+#Compare #dailyRouteDiffTable tr.routeFirstLine td:first-child {
+	border-top: none;
+}
+
+#Compare #fixedRouteDiffTable tr td:nth-child(2),
+#Compare #dailyRouteDiffTable tr td:nth-child(2) {
+	border-left: thin black solid;
+}
+
+#Compare #fixedRouteDiffTable tr td:last-child,
+#Compare #dailyRouteDiffTable tr td:last-child {
+	border-right: thin black solid;
+}
+/*
+#Compare #fixedRouteDiffTable tr:first-child td {
+	border-bottom: 1px solid gray;
+}
+*/
+
+#Compare #fixedRouteDiffTable td.headsignBorder,
+#Compare #fixedRouteDiffTable td.dirBorder,
+#Compare #dailyRouteDiffTable td.headsignBorder,
+#Compare #dailyRouteDiffTable td.dirBorder {
+	border-top: 1px solid gray;
+}
+
+#Compare #fixedRouteDiffTable .currentStopCt,
+#Compare #dailyRouteDiffTable .currentStopCt {
+	text-align: right;
+	padding-right: 30px;
+	background-color: #9F9;
+}
+
+#Compare #fixedRouteDiffTable .selectedStopCt,
+#Compare #dailyRouteDiffTable .selectedStopCt {
+	text-align: right;
+	padding-right: 30px;
+	background-color: #F99;
+}
+
+#Compare #fixedRouteDiffTable .currentRpt,
+#Compare #dailyRouteDiffTable .currentRpt {
+	background-color: #9F9;
+}
+
+#Compare #fixedRouteDiffTable .selectedRpt,
+#Compare #dailyRouteDiffTable .selectedRpt {
+	background-color: #F99;
+}
+
+.analyzeCheckbox{
+	padding: 0px 20px;
+}
+
+.sticky {
+	position: fixed;
+	top: 0;
+}

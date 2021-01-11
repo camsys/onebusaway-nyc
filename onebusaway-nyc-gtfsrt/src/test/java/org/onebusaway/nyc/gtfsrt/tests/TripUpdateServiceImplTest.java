@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.gtfsrt.tests;
 
 import com.google.transit.realtime.GtfsRealtime.*;
@@ -6,6 +22,7 @@ import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.impl.TripUpdateServiceImpl;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
@@ -13,6 +30,8 @@ import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 import java.util.Arrays;
@@ -23,12 +42,15 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TripUpdateServiceImplTest {
   private TripUpdateServiceImpl service;
   private NycTransitDataService tds;
+  private PresentationService presentationService;
 
   @Before
   public void setup() {
@@ -39,12 +61,18 @@ public class TripUpdateServiceImplTest {
       }
     };
 
+    presentationService = mock(PresentationService.class);
+    when(presentationService.include(any(TripStatusBean.class))).thenReturn(Boolean.TRUE);
+    doNothing().when(presentationService).setTime(any(Long.class));
+
     tds = mock(NycTransitDataService.class);
     when(tds.getAgenciesWithCoverage()).thenReturn(UnitTestSupport.agenciesWithCoverage("agency"));
+    when(tds.getTripDetailsForVehicleAndTime(any(TripForVehicleQueryBean.class))).thenReturn(new TripDetailsBean());
 
     service = new TripUpdateServiceImpl();
     service.setFeedBuilder(feedBuilder);
     service.setTransitDataService(tds);
+    service.setPresentationService(presentationService);
   }
 
   @Test
@@ -133,7 +161,7 @@ public class TripUpdateServiceImplTest {
     TimepointPredictionRecord tpr = new TimepointPredictionRecord();
     tpr.setStopSequence(sequence);
     tpr.setTimepointId(new AgencyAndId("agency", stop));
-    tpr.setTimepointPredictedTime(time);
+    tpr.setTimepointPredictedArrivalTime(time);
     tpr.setTimepointScheduledTime(time);
     return tpr;
   }

@@ -31,12 +31,14 @@
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
 
   <import resource="classpath:org/onebusaway/users/application-context.xml" />
+  <import resource="classpath:org/onebusaway/nyc/api/application-context-lib-services.xml" />
   <!-- This turns on automatic annotation configuration -->
   <context:annotation-config />
 
   <aop:aspectj-autoproxy />
 
   <context:component-scan base-package="org.onebusaway.api.impl" />
+  <context:component-scan base-package="org.onebusaway.nyc.api.lib.impl" />
 
   <bean id="psaHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
     <property name="target" value="hibernateAnnotatedClasses" />
@@ -50,5 +52,5 @@
   <bean class="org.onebusaway.util.service.psa.PsaDaoImpl" />
    
   <bean class="org.onebusaway.util.service.psa.PsaServiceImpl" />
-  
+
 </beans>

@@ -1,17 +1,17 @@
 /**
- * Copyright (c) 2018 Cambridge Systematics, Inc.
+ * Copyright (C) 2018 Metropolitan Transportation Authority
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
@@ -20,13 +20,10 @@ import org.onebusaway.nyc.transit_data_federation.services.predictions.Predictio
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
-import org.onebusaway.transit_data.model.TripStopTimesBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.impl.realtime.mybus.TimepointPrediction;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -75,9 +72,12 @@ public class ScheduleBasedPredictionIntegrationServiceImpl implements Prediction
             tpr.setStopSequence(stopTime.getGtfsSequence());
             tpr.setTimepointId(AgencyAndId.convertFromString(stopTime.getStop().getId()));
             // tpr time is milliseconds unix epoch time
-            long time = tripDetails.getServiceDate() + (stopTime.getDepartureTime() * 1000);
-            tpr.setTimepointPredictedTime(time);
-            tpr.setTimepointScheduledTime(time);
+            long arrivalTime = tripDetails.getServiceDate() + (stopTime.getArrivalTime() * 1000);
+            long departureTime = tripDetails.getServiceDate() + (stopTime.getDepartureTime() * 1000);
+
+            tpr.setTimepointPredictedArrivalTime(arrivalTime);
+            tpr.setTimepointPredictedDepartureTime(departureTime);
+            tpr.setTimepointScheduledTime(stopTime.getArrivalTime());
             predictions.add(tpr);
         }
         return predictions;

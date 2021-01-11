@@ -47,44 +47,37 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
 
     public Boolean useApcIfAvailable() {
         if (!Status.ENABLED.equals(status)) return false;
-        return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useApc", ""));
+        return _configurationService.getConfigurationValueAsBoolean("tds.useApc", Boolean.FALSE);
     }
 
 
     @Override
     public boolean processMessage(String contents, byte[] buff) throws Exception {        
-      
-      /*
-         * TODO Need to refactor this. 
-          Contents should contain topic and buff should contain message. 
-          Currently contents and buff both contain message therefore 
-          topic must get parsed out from the message body.
-          */
-      
+        if(!useApcIfAvailable()){
+            return false;
+        }
         if(StringUtils.isBlank(contents)){
           _log.warn("rejected message, message is empty");
           return false;
         }   
-        
-        String message[] = contents.split(getQueueName());
-        if (message.length <= 1 || ! useApcIfAvailable()) {
-          _log.warn("rejected message for queue " + contents);
-          return false;
+
+        if(!getQueueName().endsWith(contents)) {
+            _log.warn("rejected message for queue " + contents);
         }
 
         try {
-            NycVehicleLoadBean bean = _mapper.readValue(message[1], NycVehicleLoadBean.class);
-            processResult(bean, contents);
+            NycVehicleLoadBean bean = _mapper.readValue(new String(buff), NycVehicleLoadBean.class);
+            processResult(bean, new String(buff));
             return true;
         } catch (Exception any) {
             _log.warn("received corrupted APC message from queue; discarding: " + any.getMessage(), any);
-            _log.warn("Contents=" + contents);
+            _log.warn("Contents=|" + contents + "|, buff=|" + new String(buff) + "|");
             return false;
         }
     }
 
     @Override
-    @Refreshable(dependsOn = { "tds.apcQueueHost", "tds.apcQueuePort", "tds.apcQueueName" })
+    @Refreshable(dependsOn = { "tds.apcQueueHost", "tds.apcQueuePort", "tds.apcQueueName", "tds.useApc" })
     public void startListenerThread() {
         if (_initialized == true) {
             _log.warn("Configuration service tried to reconfigure apc input queue reader; this service is not reconfigurable once started.");

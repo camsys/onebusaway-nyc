@@ -17,6 +17,7 @@ package org.onebusaway.api.actions.api;
 
 import org.onebusaway.api.ResponseCodes;
 import org.onebusaway.api.model.ResponseBean;
+import org.onebusaway.nyc.api.lib.impl.ApiKeyUsageMonitorImpl;
 import org.onebusaway.users.services.ApiKeyPermissionService;
 
 import com.opensymphony.xwork2.ActionContext;
@@ -42,7 +43,10 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
 
   @Autowired
   private ApiKeyPermissionService _keyService;
-  
+
+  @Autowired
+  private ApiKeyUsageMonitorImpl _keyUsageMonitor;
+
   private ContentTypeHandlerManager _handlerSelector;
 
   @Inject
@@ -62,30 +66,50 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
         return invocation.invoke();
     }
 
-    boolean allowed = isAllowed(invocation);
-    
-    if (!allowed) {
+    ApiKeyPermissionService.Status allowed = isAllowed(invocation);
+
+    if (ApiKeyPermissionService.Status.AUTHORIZED != allowed) {
       //this user is not authorized to use the API, at least for now
-      return unauthorized(invocation, "permission denied");
+      return unauthorized(invocation, allowed);
     }
-        
+
     return invocation.invoke();
   }
 
-  private boolean isAllowed(ActionInvocation invocation) {
+  private ApiKeyPermissionService.Status isAllowed(ActionInvocation invocation) {
     ActionContext context = invocation.getInvocationContext();
     Map<String, Object> parameters = context.getParameters();
     String[] keys = (String[]) parameters.get("key");
-    
+
     if( keys == null || keys.length == 0)
-      return false;
+      return ApiKeyPermissionService.Status.UNAUTHORIZED;
+
+    _keyUsageMonitor.increment(keys[0]);
 
     return _keyService.getPermission(keys[0], "api");
   }
 
-  private String unauthorized(ActionInvocation invocation, String reason) throws IOException {
+  // package private for unit tests
+  String unauthorized(ActionInvocation invocation, ApiKeyPermissionService.Status reason) throws IOException {
     ActionProxy proxy = invocation.getProxy();
-    ResponseBean response = new ResponseBean(1, ResponseCodes.RESPONSE_UNAUTHORIZED, reason, null);
+    int httpCode = ResponseCodes.RESPONSE_UNAUTHORIZED;
+    String message = "permission denied";
+    switch (reason) {
+      case UNAUTHORIZED:
+        httpCode = ResponseCodes.RESPONSE_UNAUTHORIZED;
+        break;
+      case  RATE_EXCEEDED:
+        httpCode = ResponseCodes.RESPONSE_TOO_MANY_REQUESTS;
+        message = "rate limit exceeded";
+        break;
+      case  AUTHORIZED:
+        // this should never happen!
+        throw new IllegalStateException("Valid status code " + reason + " in unauthorized response");
+      default:
+        httpCode = ResponseCodes.RESPONSE_UNAUTHORIZED;
+    }
+
+    ResponseBean response = new ResponseBean(1, httpCode, message, null);
     DefaultHttpHeaders methodResult = new DefaultHttpHeaders().withStatus(response.getCode());
     return _handlerSelector.handleResult(proxy.getConfig(), methodResult, response);
   }

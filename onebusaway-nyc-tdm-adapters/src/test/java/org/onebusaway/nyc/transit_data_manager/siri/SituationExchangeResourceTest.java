@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import static org.junit.Assert.assertEquals;
@@ -28,6 +44,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.nyc.transit_data_manager.util.NycEnvironment;
+import org.onebusaway.nyc.transit_data_manager.util.NycSiriUtil;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import uk.org.siri.siri.AffectsScopeStructure;
@@ -341,4 +358,22 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
     return body;
   }
 
+  @Test
+  public void testSanitizedRoute(){
+    String expected = "MTA NYCT_M101";
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("MTA NYCT_M101-LTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("MTA NYCT_M101_LTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("MTA NYCT_M101LTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("MTA NYCT_M101"));
+
+    expected = "SIM1C";
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("SIM1C-LTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("SIM1C_LTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("SIM1CLTD"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("SIM1C"));
+
+    expected = "M14A+";
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("M14A-SBS"));
+    assertEquals(expected, NycSiriUtil.getSanitizedLineRef("M14A+"));
+  }
 }

@@ -1,5 +1,22 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.webapp.actions.m.model;
 
+import org.apache.xpath.operations.Bool;
 import org.onebusaway.transit_data.model.StopGroupBean;
 
 import java.util.List;
@@ -18,6 +35,8 @@ public class RouteDirection {
   private List<StopOnRoute> stops;
   
   private List<String> distanceAways;
+
+  private List<Boolean> hasRealtimes;
   
   private Boolean hasUpcomingScheduledService;
 
@@ -27,6 +46,15 @@ public class RouteDirection {
     this.stops = stops;
     this.hasUpcomingScheduledService = hasUpcomingScheduledService;
     this.distanceAways = distanceAways;
+  }
+
+  public RouteDirection(String destinationName, StopGroupBean stopGroup, List<StopOnRoute> stops, Boolean hasUpcomingScheduledService, List<String> distanceAways, List<Boolean> hasRealtimes) {
+    this.directionId = stopGroup.getId();
+    this.destination = destinationName;
+    this.stops = stops;
+    this.hasUpcomingScheduledService = hasUpcomingScheduledService;
+    this.distanceAways = distanceAways;
+    this.hasRealtimes = hasRealtimes;
   }
 
   public String getDirectionId() {
@@ -48,5 +76,9 @@ public class RouteDirection {
   public List<String> getDistanceAways() {
     return distanceAways;
   }
+
+  public List<Boolean> getHasRealtimes() { return hasRealtimes; }
+
+  public void setHasRealtimes(List<Boolean> hasRealtimes) { this.hasRealtimes=hasRealtimes; }
 
 }

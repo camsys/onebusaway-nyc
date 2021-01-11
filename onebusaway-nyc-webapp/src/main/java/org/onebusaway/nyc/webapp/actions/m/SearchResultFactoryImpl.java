@@ -1,20 +1,21 @@
 /**
- * Copyright (c) 2011 Metropolitan Transportation Authority
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.util.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +58,8 @@ import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
+
+import javax.management.monitor.Monitor;
 
 public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl implements SearchResultFactory {
 
@@ -95,7 +99,13 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     }
 
     // add stops in both directions
-    Map<String, List<String>> stopIdAndDirectionToDistanceAwayStringMap = getStopIdAndDirectionToDistanceAwayStringsListMapForRoute(routeBean);
+    //Map<String, List<String>> stopIdAndDirectionToDistanceAwayStringMap = getStopIdAndDirectionToDistanceAwayStringsListMapForRoute(routeBean);
+
+    Map<String, List<String>> stopIdToDistanceAwayStringMap = new HashMap<>();
+    Map<String, List<String>> stopIdToVehicleIdMap = new HashMap<>();
+    Map<String, Boolean> stopIdToRealtimeDataMap = new HashMap<>();
+
+    fillDistanceVehicleAndRealtime(routeBean, stopIdToDistanceAwayStringMap, stopIdToVehicleIdMap, stopIdToRealtimeDataMap);
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
@@ -108,12 +118,12 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
         // service in this direction
         Boolean hasUpcomingScheduledService = _nycTransitDataService.routeHasUpcomingScheduledService(
-        	(routeBean.getAgency()!=null?routeBean.getAgency().getId():null),	
+        	(routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
             System.currentTimeMillis(), routeBean.getId(),
             stopGroupBean.getId());
 
         // if there are buses on route, always have "scheduled service"
-        Boolean routeHasVehiclesInService = 
+        Boolean routeHasVehiclesInService =
       		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
 
         if(routeHasVehiclesInService) {
@@ -125,14 +135,19 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
         if (!stopGroupBean.getStopIds().isEmpty()) {
           stopsOnRoute = new ArrayList<StopOnRoute>();
 
-          for (String stopId : stopGroupBean.getStopIds()) { 
+          for (String stopId : stopGroupBean.getStopIds()) {
         	  if (_nycTransitDataService.stopHasRevenueServiceOnRoute((routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
                       stopId, routeBean.getId(), stopGroupBean.getId())) {
+        	    String key = getKey(stopId, stopGroupBean.getId());
                 stopsOnRoute.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId),
-            		stopIdAndDirectionToDistanceAwayStringMap.get(stopId + "_" + stopGroupBean.getId())));
-              }  
+                                                  stopIdToDistanceAwayStringMap.get(key),
+                                                  stopIdToRealtimeDataMap.get(key),
+                                                  stopIdToVehicleIdMap.get(key)
+                ));
+            }
           }
         }
+
 
         directions.add(new RouteDirection(stopGroupBean.getName().getName(), stopGroupBean, stopsOnRoute,
             hasUpcomingScheduledService, null));
@@ -140,7 +155,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     }
 
     // service alerts in this direction
-    Set<String> serviceAlertDescriptions = new HashSet<String>();
+    Set<String> serviceAlertDescriptions = new HashSet<>();
 
     List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRoute(routeBean.getId());
     populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans);
@@ -148,102 +163,97 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     return new RouteResult(routeBean, directions, serviceAlertDescriptions);
   }
 
+
+
   @Override
   // TODO: this method needs refactoring to consider route and direction for routes with loops
   public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
-    List<RouteAtStop> routesWithArrivals = new ArrayList<RouteAtStop>();
-    List<RouteAtStop> routesWithNoVehiclesEnRoute = new ArrayList<RouteAtStop>();
-    List<RouteAtStop> routesWithNoScheduledService = new ArrayList<RouteAtStop>();
-    List<RouteBean> filteredRoutes = new ArrayList<RouteBean>();
-    
-    Set<String> serviceAlertDescriptions = new HashSet<String>();
 
-    for (RouteBean routeBean : stopBean.getRoutes()) {
-      if (routeFilter != null && !routeFilter.isEmpty()
-          && !routeFilter.contains(routeBean)) {
-        filteredRoutes.add(routeBean);
-        continue;
-      }
+      List<RouteAtStop> routesWithArrivals = new ArrayList<>();
+      List<RouteAtStop> routesWithNoVehiclesEnRoute = new ArrayList<>();
+      List<RouteAtStop> routesWithNoScheduledService = new ArrayList<>();
+      List<RouteBean> filteredRoutes = new ArrayList<>();
 
-      StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
+      Set<String> serviceAlertDescriptions = new HashSet<>();
 
-      List<RouteDirection> directions = new ArrayList<RouteDirection>();
-      List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
-      for (StopGroupingBean stopGroupingBean : stopGroupings) {
-        for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
-          NameBean name = stopGroupBean.getName();
-          String type = name.getType();
+      for (RouteBean routeBean : stopBean.getRoutes()) {
+        if (routeFilter != null && !routeFilter.isEmpty()
+                && !routeFilter.contains(routeBean)) {
+          filteredRoutes.add(routeBean);
+          continue;
+        }
 
-          if (!type.equals("destination"))
-            continue;
+        StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
-          // filter out route directions that don't stop at this stop
-          if (!stopGroupBean.getStopIds().contains(stopBean.getId()))
-            continue;
+        List<RouteDirection> directions = new ArrayList<>();
+        List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
 
-          // arrivals in this direction
-          Map<String, List<String>> arrivalsForRouteAndDirection = getDisplayStringsByHeadsignForStopAndRouteAndDirection(
-              stopBean, routeBean, stopGroupBean);
+        for (StopGroupingBean stopGroupingBean : stopGroupings) {
+          for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
+            NameBean name = stopGroupBean.getName();
+            String type = name.getType();
 
-          // service alerts for this route + direction
-          List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(
-              routeBean.getId(), stopGroupBean.getId());
-          populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans);
-          
-          // service in this direction
-          Boolean hasUpcomingScheduledService = _nycTransitDataService.stopHasUpcomingScheduledService(
-        	  (routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
-              System.currentTimeMillis(), stopBean.getId(), routeBean.getId(),
-              stopGroupBean.getId());
+            if (!type.equals("destination"))
+              continue;
 
-          // if there are buses on route, always have "scheduled service"
-          if (!arrivalsForRouteAndDirection.isEmpty()) {
-            hasUpcomingScheduledService = true;
-          }
+            // filter out route directions that don't stop at this stop
+            if (!stopGroupBean.getStopIds().contains(stopBean.getId()))
+              continue;
 
-          if(arrivalsForRouteAndDirection.isEmpty()) {
-            directions.add(new RouteDirection(stopGroupBean.getName().getName(), stopGroupBean, null, 
-                hasUpcomingScheduledService, Collections.<String>emptyList()));
-          } else {          
-            for (Map.Entry<String,List<String>> entry : arrivalsForRouteAndDirection.entrySet()) {
-              directions.add(new RouteDirection(entry.getKey(), stopGroupBean, null, 
-                 hasUpcomingScheduledService, entry.getValue()));
+            // arrivals in this direction
+            Map<String, List<StopOnRoute>> arrivalsForRouteAndDirection = getDisplayStringsByHeadsignForStopAndRouteAndDirection(
+                    stopBean, routeBean, stopGroupBean);
+
+            // service alerts for this route + direction
+            List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(
+                    routeBean.getId(), stopGroupBean.getId());
+            populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans);
+
+            // service in this direction
+            Boolean hasUpcomingScheduledService = _nycTransitDataService.stopHasUpcomingScheduledService(
+                    (routeBean.getAgency() != null ? routeBean.getAgency().getId() : null),
+                    System.currentTimeMillis(), stopBean.getId(), routeBean.getId(),
+                    stopGroupBean.getId());
+
+            // if there are buses on route, always have "scheduled service"
+            if (!arrivalsForRouteAndDirection.isEmpty()) {
+              hasUpcomingScheduledService = true;
+            }
+
+            Map<String, List<Boolean>> hasRealtimes = getHasRealtimesForStopAndRouteAndDirection(stopBean, routeBean, stopGroupBean);
+
+            if (arrivalsForRouteAndDirection.isEmpty()) {
+              directions.add(new RouteDirection(stopGroupBean.getName().getName(), stopGroupBean,  Collections.emptyList(),
+                      hasUpcomingScheduledService, Collections.emptyList()));
+            } else {
+
+              for (Map.Entry<String, List<StopOnRoute>> entry : arrivalsForRouteAndDirection.entrySet()) {
+                directions.add(new RouteDirection(entry.getKey(), stopGroupBean, entry.getValue(),
+                        hasUpcomingScheduledService, Collections.emptyList(), hasRealtimes.get(entry.getKey())));
+
+              }
             }
           }
         }
-      }
 
-      RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions,
-          serviceAlertDescriptions);
+        // For each direction, determine whether the route has no service, has no vehicles,
+        // or has service with vehicles en route. Add RouteAtStop object to appropriate collection.
+        // Now one RouteAtStop object exists for each direction for each route.
+        for (RouteDirection direction : directions) {
+          List<RouteDirection> directionList = Collections.singletonList(direction);
 
-      // Keep track of service and no service per route and direction. 
-      // in case the route has loops, we must consider both directions
-      boolean arrivalsFound = false;
-      boolean nssm = false;
-      for (RouteDirection direction : routeAtStop.getDirections()) {
-        if (direction.getHasUpcomingScheduledService() == false 
-            && direction.getDistanceAways().isEmpty()) {
-          nssm = true;
-        } else {
-          if (!direction.getDistanceAways().isEmpty()) {
-            arrivalsFound = true;
-            break;
-          }
+          RouteAtStop routeAtStop = new RouteAtStop(routeBean, directionList, serviceAlertDescriptions);
+          if (!direction.getStops().isEmpty())
+            routesWithArrivals.add(routeAtStop);
+          else if (Boolean.FALSE.equals(direction.getHasUpcomingScheduledService()))
+            routesWithNoScheduledService.add(routeAtStop);
+          else
+            routesWithNoVehiclesEnRoute.add(routeAtStop);
         }
       }
-      if (arrivalsFound) {
-        routesWithArrivals.add(routeAtStop);
-      } else if (nssm) {
-        routesWithNoScheduledService.add(routeAtStop);
-      } else {
-        routesWithNoVehiclesEnRoute.add(routeAtStop);
-      }
-    }
 
-    
-    
-    return new StopResult(stopBean, routesWithArrivals,
-        routesWithNoVehiclesEnRoute, routesWithNoScheduledService, filteredRoutes, serviceAlertDescriptions);
+      return new StopResult(stopBean, routesWithArrivals,
+              routesWithNoVehiclesEnRoute, routesWithNoScheduledService, filteredRoutes, serviceAlertDescriptions);
   }
 
   @Override
@@ -252,14 +262,74 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   // stop view
-  private Map<String, List<String>> getDisplayStringsByHeadsignForStopAndRouteAndDirection(
+  private Map<String, List<StopOnRoute>> getDisplayStringsByHeadsignForStopAndRouteAndDirection(
       StopBean stopBean, RouteBean routeBean, StopGroupBean stopGroupBean) {
-    
-    Map<String, List<String>> results = new HashMap<String, List<String>>();
+
+    Map<String, List<StopOnRoute>> results = new HashMap<String, List<StopOnRoute>>();
+
+    Boolean showApc = _realtimeService.showApc();
+    Boolean showRawApc = _realtimeService.showRawApc();
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
-        stopBean.getId(), 0, System.currentTimeMillis());
+        stopBean.getId(), 0, System.currentTimeMillis(), showApc, showRawApc);
+
+    for (MonitoredStopVisitStructure visit : visitList) {
+      String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
+      if (routeId != null && !routeBean.getId().equals(routeId))
+        continue;
+
+      String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
+      if (directionId != null && !stopGroupBean.getId().equals(directionId))
+        continue;
+
+      // on detour?
+      MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
+      if (monitoredCall == null)
+        continue;
+
+      if (!results.containsKey(visit.getMonitoredVehicleJourney().getDestinationName().getValue()))
+        results.put(visit.getMonitoredVehicleJourney().getDestinationName().getValue(), new ArrayList<StopOnRoute>());
+
+      if(results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).size() >= 3)
+        continue;
+      
+      String distance = getPresentableDistance(visit.getMonitoredVehicleJourney(),
+    		visit.getRecordedAtTime().getTime(), true);
+    	  
+      String timePrediction = getPresentableTime(visit.getMonitoredVehicleJourney(),
+    	 	visit.getRecordedAtTime().getTime(), true);
+
+      String vehicleId = null;
+      if (visit.getMonitoredVehicleJourney() != null && visit.getMonitoredVehicleJourney().getVehicleRef() != null) {
+        vehicleId = visit.getMonitoredVehicleJourney().getVehicleRef().getValue();
+      } else {
+        vehicleId = "N/A"; // insert an empty element so it aligns with distanceAways
+      }
+
+      List<String> distanceAways = new ArrayList<String>();
+      List<String> vehicleIds = new ArrayList<String>();
+      if (vehicleId.contains("_")) vehicleId = vehicleId.split("_")[1];
+      vehicleIds.add(vehicleId);
+      if(timePrediction != null) {
+        distanceAways.add(timePrediction);
+      } else {
+        distanceAways.add(distance);
+      }
+
+      results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).add(
+              new StopOnRoute(stopBean,distanceAways, visit.getMonitoredVehicleJourney().isMonitored(), vehicleIds));
+
+    }
+
+    return results;
+  }
+
+  private Map<String,List<Boolean>> getHasRealtimesForStopAndRouteAndDirection(StopBean stopBean, RouteBean routeBean, StopGroupBean stopGroupBean){
+
+    Map<String,List<Boolean>> hasRealtimes = new HashMap<>();
+    List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
+        stopBean.getId(), 0, System.currentTimeMillis(), _realtimeService.showApc(), _realtimeService.showRawApc());
 
     for (MonitoredStopVisitStructure visit : visitList) {
       String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
@@ -270,31 +340,19 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       if (!stopGroupBean.getId().equals(directionId))
         continue;
 
-      // on detour?
-      MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
-      if (monitoredCall == null)
-        continue;
+      if (!hasRealtimes.containsKey(visit.getMonitoredVehicleJourney().getDestinationName().getValue()))
+        hasRealtimes.put(visit.getMonitoredVehicleJourney().getDestinationName().getValue(), new ArrayList<>());
 
-      if (!results.containsKey(visit.getMonitoredVehicleJourney().getDestinationName().getValue()))
-        results.put(visit.getMonitoredVehicleJourney().getDestinationName().getValue(), new ArrayList<String>());
-      
-      if(results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).size() >= 3)
+      if(hasRealtimes.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).size() >= 3)
         continue;
-      
-      String distance = getPresentableDistance(visit.getMonitoredVehicleJourney(),
-    		visit.getRecordedAtTime().getTime(), true);
-    	  
-      String timePrediction = getPresentableTime(visit.getMonitoredVehicleJourney(),
-    	 	visit.getRecordedAtTime().getTime(), true);
-
-      if(timePrediction != null) {
-        results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).add(timePrediction);
-      } else {
-        results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).add(distance);
+      try {
+        hasRealtimes.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).add(!visit.getMonitoredVehicleJourney().getProgressStatus().getValue().equals("spooking"));
+      } catch (Exception e) {
+        hasRealtimes.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).add(true);
       }
     }
 
-    return results;
+    return hasRealtimes;
   }
 
   // route view
@@ -302,9 +360,12 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       RouteBean routeBean) {
     Map<String, List<String>> result = new HashMap<String, List<String>>();
 
-    // stop visits
+    Boolean showApc = _realtimeService.showApc();
+    Boolean showRawApc = _realtimeService.showApc();
+
+      // stop visits
     List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(
-        routeBean.getId(), null, 0, System.currentTimeMillis());
+        routeBean.getId(), null, 0, System.currentTimeMillis(), showApc, showRawApc);
 
     // build map of stop IDs to list of distance strings
     for (VehicleActivityStructure journey : journeyList) {
@@ -355,7 +416,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		  SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
 		  SiriDistanceExtension distanceExtension = wrapper.getDistances();
 		  String distance = distanceExtension.getPresentableDistance();
-		  String distanceBold = "<strong>" + distance + "</strong>";
+		  //add space to the distance so that occupancy lines up correctly with time [pjm]
+		  String distanceBold = " <strong>" + distance + "</strong>";
 
 		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
 		  String timeString = Math.round(minutes) + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
@@ -364,21 +426,29 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 		    
 		  Date originDepartureTime = journey.getOriginAimedDepartureTime();
 
+
+		  String timePrefix = distanceBold;
+		  if(Boolean.parseBoolean(_configurationService.getConfigurationValueAsString(
+                  "display.showNextTripPredictions", "false"))) {
+            timePrefix = timeAndDistance;
+          }
+
 		  if(originDepartureTime != null && isLayover(progressStatus)){
 			  if(isDepartureOnSchedule(originDepartureTime)){
-				  return distanceBold + " (at terminal, scheduled to depart at " + 
+				  return timePrefix + " (at terminal, scheduled to depart at " +
 						  getFormattedOriginAimedDepartureTime(originDepartureTime) + ")";
 			  }
 			  
-			  return distanceBold + " (at terminal)";
+			  return timePrefix + " (at terminal)";
 		  }
 		  else if(originDepartureTime != null && isPrevTrip(progressStatus)) {
+
 			  if(isDepartureOnSchedule(originDepartureTime)) {
-		    		return distanceBold + " (+ layover, scheduled to depart terminal at " 
-		    				+ getFormattedOriginAimedDepartureTime(originDepartureTime);
+		    		return timePrefix + " (+ layover, scheduled to depart terminal at "
+		    				+ getFormattedOriginAimedDepartureTime(originDepartureTime) + ")";
 		    	}
 		    	else{
-		    		return distanceBold + " (+ scheduled layover at terminal)";
+		    		return timePrefix + " (+ scheduled layover at terminal)";
 		    	}
 	  	  }
 		  else {
@@ -388,37 +458,221 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 	  
 	  return null;
   }
-  
-  
-  private String getPresentableOccupancy(
-			MonitoredVehicleJourneyStructure journey, long updateTime) {
-	  	
 
-		// if data is old, no occupancy
-		int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
-		long age = (System.currentTimeMillis() - updateTime) / 1000;
+  private String getPresentableOccupancy(MonitoredVehicleJourneyStructure journey, long updateTime){
+      // if data is old, no occupancy
+      int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+      long age = (System.currentTimeMillis() - updateTime) / 1000;
+      if (age > staleTimeout) {
+          System.out.println("tossing record "+ journey.getVehicleRef().getValue()
+                  + " with age " + age + "s old");
+          return "";
+      }
 
-		if (age > staleTimeout) {
-			return "";
-		}
+      String apcMode = _configurationService.getConfigurationValueAsString("display.apcMode", "PASSENGERCOUNT");
+
+      String occupancyStr = "";
+      if (apcMode != null) {
+        switch (apcMode.toUpperCase()) {
+          case "NONE":
+            occupancyStr = "";
+            break;
+          case "OCCUPANCY":
+            occupancyStr = getApcModeOccupancy(journey);
+            break;
+          case "LOADFACTOR":
+            occupancyStr = getApcModeLoadFactor(journey);
+            break;
+          case "PASSENGERCOUNT":
+            occupancyStr = getApcModePassengerCount(journey);
+            break;
+          case "LOADFACTORPASSENGERCOUNT":
+            occupancyStr = getApcModeLoadFactorPassengerCount(journey);
+            break;
+        }
+      }
+      return occupancyStr;
+  }
+
+  private String getApcModeOccupancy(MonitoredVehicleJourneyStructure journey) {
+
+      if (journey.getOccupancy() != null) {
+
+          String loadOccupancy = journey.getOccupancy().toString();
+          loadOccupancy = loadOccupancy.toUpperCase();
+          //TODO: Modify output load text here
+          if (loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE")) {
+              loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotG'></span> <span class='apcTextG'>Seats Available</span></div>";
+              //loadOccupancy = "<icon class='apcicong'> </icon>";
+          } else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE") || loadOccupancy.equals("STANDING_AVAILABLE")) {
+              loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotY'></span> <span class='apcTextY'>Limited Seating</span></div>";
+              //loadOccupancy = "<icon class='apcicony'> </icon>";
+          } else if (loadOccupancy.equals("FULL")) {
+              loadOccupancy = "<div class='apcLadderContainer'><span class='apcDotR'></span> <span class='apcTextR'>Standing Room Only</span></div>";
+              //loadOccupancy = "<icon class='apciconr'> </icon>";
+          }
+
+          return " " + loadOccupancy;
+      } else
+          return "";
+  }
+
+  private String getApcModePassengerCount(MonitoredVehicleJourneyStructure journey) {
+
+      SiriExtensionWrapper wrapper = (SiriExtensionWrapper)journey.getMonitoredCall().getExtensions().getAny();
+
+      if(wrapper.getCapacities() != null && wrapper.getCapacities().getPassengerCount() != null) {
+
+          String loadOccupancy = wrapper.getCapacities().getPassengerCount() + " passengers on vehicle";
+
+          return ", " +loadOccupancy;
+      }else
+          return "";
+
+  }
+
+  private String getApcModeLoadFactor(MonitoredVehicleJourneyStructure journey) {
+
+      SiriExtensionWrapper wrapper = (SiriExtensionWrapper)journey.getMonitoredCall().getExtensions().getAny();
+
+      if(wrapper.getCapacities() != null && wrapper.getCapacities().getPassengerCount() != null &&
+              wrapper.getCapacities().getOccupancyLoadFactor() != null) {
+
+          String loadOccupancy = wrapper.getCapacities().getOccupancyLoadFactor();
+          loadOccupancy = loadOccupancy.toUpperCase();
+          if(loadOccupancy.equals("L")){
+              loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextG'>Low Occupancy</span></div>";
+          }
+          else if (loadOccupancy.equals("M")){
+              loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextY'>Medium Occupancy</span></div>";
+          }
+          else if (loadOccupancy.equals("H")){
+              loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextR'>High Occupancy</span></div>";
+          }
+
+          return " " +loadOccupancy;
+      }else
+          return "";
+
+  }
+  
+  private String getApcModeLoadFactorPassengerCount(MonitoredVehicleJourneyStructure journey) {
+
+		SiriExtensionWrapper wrapper = (SiriExtensionWrapper)journey.getMonitoredCall().getExtensions().getAny();
 		
-		if(journey.getOccupancy() != null) {
+		if(wrapper.getCapacities() != null && wrapper.getCapacities().getPassengerCount() != null &&
+                wrapper.getCapacities().getOccupancyLoadFactor() != null) {
 			
-			String loadOccupancy = journey.getOccupancy().toString();
+			String loadOccupancy = wrapper.getCapacities().getOccupancyLoadFactor();
 			loadOccupancy = loadOccupancy.toUpperCase();
-			//TODO: Modify output load text here
-			if(loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE"))
-				loadOccupancy = "<icon class='apcicong'> </icon>";
-			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE") || loadOccupancy.equals("STANDING_AVAILABLE"))
-				loadOccupancy = "<icon class='apcicony'> </icon>";
-			else if (loadOccupancy.equals("FULL"))
-				loadOccupancy = "<icon class='apciconr'> </icon>";
+			if(loadOccupancy.equals("L")){
+				loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextG'>Low Occupancy </span> <span class='apcTextSmallG'> (" +
+                        wrapper.getCapacities().getPassengerCount() + " passengers)</span></div>";
+			}
+			else if (loadOccupancy.equals("M")){
+				loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextY'>Medium Occupancy </span> <span class='apcTextSmallY'> (" +
+                        wrapper.getCapacities().getPassengerCount() + " passengers)</span></div>";
+			}
+			else if (loadOccupancy.equals("H")){
+				loadOccupancy = "<div class='apcLadderContainer'><span class='apcTextR'>High Occupancy </span> <span class='apcTextSmallR'> (" +
+                        wrapper.getCapacities().getPassengerCount() + " passengers)</span></div>";
+			}
 			
 			return " " +loadOccupancy;
 		}else
 			return "";
 
-	}
+  }
+
+  private void fillDistanceVehicleAndRealtime(RouteBean routeBean,
+                                              Map<String, List<String>> stopIdAndDirectionToDistanceAwayStringMap,
+                                              Map<String, List<String>> stopIdAndDirectionToVehicleIdMap,
+                                              Map<String, Boolean> stopIdAndDirectionToRealtimeDataMap) {
+
+    Boolean showApc = _realtimeService.showApc();
+    Boolean showRawApc = _realtimeService.showRawApc();
+
+    List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(
+            routeBean.getId(), null, 0, SystemTime.currentTimeMillis(), showApc, showRawApc);
+
+    // build map of stop IDs to list of distance strings
+    for (VehicleActivityStructure journey : journeyList) {
+      // on detour?
+      MonitoredCallStructure monitoredCall = journey.getMonitoredVehicleJourney().getMonitoredCall();
+      if (monitoredCall == null) {
+        continue;
+      }
+
+      VehicleActivityStructure.MonitoredVehicleJourney monitoredVehicleJourney = journey.getMonitoredVehicleJourney();
+      Date recordedAtTime = journey.getRecordedAtTime();
+      String direction = journey.getMonitoredVehicleJourney().getDirectionRef().getValue();
+      String stopId = monitoredCall.getStopPointRef().getValue();
+
+      fillDistanceAwayStringsList(monitoredVehicleJourney,recordedAtTime, stopId, direction, stopIdAndDirectionToDistanceAwayStringMap);
+      fillVehicleIdsStringList(monitoredVehicleJourney, stopId, direction, stopIdAndDirectionToVehicleIdMap);
+      fillRealtimeData(monitoredVehicleJourney, stopId, direction, stopIdAndDirectionToRealtimeDataMap);
+    }
+  }
+
+  private void fillDistanceAwayStringsList(
+      VehicleActivityStructure.MonitoredVehicleJourney mvj,
+      Date recordedAtTime,
+      String stopId,
+      String direction,
+      Map<String, List<String>> map) {
+
+    String key = getKey(stopId, direction);
+
+    // Distance Away
+    List<String> distanceStrings = map.get(key);
+    if (distanceStrings == null) {
+      distanceStrings = new ArrayList<>();
+      map.put(key, distanceStrings);
+    }
+
+    distanceStrings.add(getPresentableDistance(
+        mvj,
+        recordedAtTime.getTime(), false));
+  }
+
+  private void fillVehicleIdsStringList(
+      VehicleActivityStructure.MonitoredVehicleJourney mvj,
+      String stopId,
+      String direction,
+      Map<String, List<String>> map) {
+
+    String key = getKey(stopId, direction);
+
+    List<String> vehicleIdStrings = map.get(key);
+    if (vehicleIdStrings ==null) {
+      vehicleIdStrings = new ArrayList<>();
+      map.put(key, vehicleIdStrings);
+    }
+    if (mvj != null && mvj.getVehicleRef() != null) {
+      String id = mvj.getVehicleRef().getValue();
+      if (id.contains("_")) id = id.split("_")[1];
+      vehicleIdStrings.add(id);
+    } else {
+      vehicleIdStrings.add("N/A");
+    }
+  }
+
+
+  private void fillRealtimeData(
+      VehicleActivityStructure.MonitoredVehicleJourney mvj,
+      String stopId,
+      String direction,
+      Map<String, Boolean> map) {
+
+    // Realtime Data Check for Stop
+    Boolean spooking = false;
+    try {
+      spooking = mvj.getProgressStatus().getValue() == "spooking";
+    } catch (Exception e) {
+      //nothing
+    }
+    map.put(getKey(stopId,direction), (mvj.isMonitored() && !spooking));
+  }
   
   private String getPresentableDistance(
       MonitoredVehicleJourneyStructure journey, long updateTime,
@@ -428,7 +682,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     SiriDistanceExtension distanceExtension = wrapper.getDistances();
 
     String message = "";
-    String distance = "<strong>" + distanceExtension.getPresentableDistance() + "</strong>";
+    //add space to the distance so that occupancy lines up correctly with time [pjm]
+    String distance = " <strong>" + distanceExtension.getPresentableDistance() + "</strong>";
     String loadOccupancy = getPresentableOccupancy(journey, updateTime);
     
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
@@ -469,7 +724,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     }
 
     if (message.length() > 0)
-      return distance + " (" + message + ")";
+      // here we choose not to show occupancy as it is likely a different trip
+      return distance + " (" + message + ") ";
     else
       return distance + loadOccupancy;
   }
@@ -489,5 +745,16 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   private String getFormattedOriginAimedDepartureTime(Date originAimedDepartureTime){
 	  DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
 	  return formatter.format(originAimedDepartureTime);
+  }
+
+  private String getKey(String... keyParams){
+    String key = null;
+    for(String keyParam : keyParams){
+      if(key != null){
+        key += "_";
+      }
+      key += keyParam;
+    }
+    return key;
   }
 }

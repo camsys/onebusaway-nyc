@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.bundle.api.remote;
 
 import java.io.StringWriter;
@@ -53,11 +69,61 @@ public class BuildRemoteResource extends AuthenticatedResource {
   @GET
   @Produces("application/json")
   public Response build(@PathParam("bundleDirectory") String bundleDirectory,
+                        @PathParam("bundleName") String bundleName,
+                        @PathParam("email") String email,
+                        @PathParam("id") String id,
+                        @PathParam("bundleStartDate") String bundleStartDate,
+                        @PathParam("bundleEndDate") String bundleEndDate){
+    Response response = null;
+    if (!isAuthorized()) {
+      return Response.noContent().build();
+    }
+    _log.info("in build(local)");
+
+
+    BundleBuildRequest bundleRequest = new BundleBuildRequest();
+    bundleRequest.setBundleDirectory(bundleDirectory);
+    bundleRequest.setBundleName(bundleName);
+    bundleRequest.setBundleDirectory(bundleDirectory);
+    bundleRequest.setEmailAddress(email);
+    bundleRequest.setId(id);
+    bundleRequest.setBundleStartDate(bundleStartDate);
+    bundleRequest.setBundleEndDate(bundleEndDate);
+
+    BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
+
+    try {
+      bundleResponse.addStatusMessage("server started");
+      bundleResponse.addStatusMessage("queueing");
+      // place execution in its own thread
+      _executorService.execute(new BuildThread(bundleRequest, bundleResponse));
+      // place handle to response in map
+      _buildMap.put(id, bundleResponse);
+      final StringWriter sw = new StringWriter();
+      final MappingJsonFactory jsonFactory = new MappingJsonFactory();
+      final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
+      // write back response
+      _log.info("returning id=" + bundleResponse.getId() + " for bundleResponse=" + bundleResponse);
+      _mapper.writeValue(jsonGenerator, bundleResponse);
+      response = Response.ok(sw.toString()).build();
+    } catch (Exception any) {
+      _log.error("execption in build:", any);
+      response = Response.serverError().build();
+    }
+
+    return response;
+  }
+
+  @Path("/{bundleDirectory}/{bundleName}/{email}/{id}/{bundleStartDate}/{bundleEndDate}/{predate}/create")
+  @GET
+  @Produces("application/json")
+  public Response build(@PathParam("bundleDirectory") String bundleDirectory,
       @PathParam("bundleName") String bundleName,
       @PathParam("email") String email,
       @PathParam("id") String id,
       @PathParam("bundleStartDate") String bundleStartDate,
-      @PathParam("bundleEndDate") String bundleEndDate) {
+      @PathParam("bundleEndDate") String bundleEndDate,
+      @PathParam("predate") String predate){
     Response response = null;
     if (!isAuthorized()) {
       return Response.noContent().build();
@@ -73,6 +139,9 @@ public class BuildRemoteResource extends AuthenticatedResource {
     bundleRequest.setId(id);
     bundleRequest.setBundleStartDate(bundleStartDate);
     bundleRequest.setBundleEndDate(bundleEndDate);
+    if(predate.equals("true")) {
+      bundleRequest.setPredate(true);
+    }
     
     BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
     
@@ -87,7 +156,7 @@ public class BuildRemoteResource extends AuthenticatedResource {
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
       // write back response
-      _log.error("returning id=" + bundleResponse.getId() + " for bundleResponse=" + bundleResponse);
+      _log.info("returning id=" + bundleResponse.getId() + " for bundleResponse=" + bundleResponse);
       _mapper.writeValue(jsonGenerator, bundleResponse);
       response = Response.ok(sw.toString()).build();
     } catch (Exception any) {

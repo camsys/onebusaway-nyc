@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.queue;
 
 import org.apache.commons.lang.StringUtils;
@@ -60,14 +76,28 @@ public class RmcUtil {
     }
 
     static boolean isRmcDateValid(Date rmcDate, long timeReceived){
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(timeReceived);
-        cal.add(Calendar.WEEK_OF_YEAR, -1024);
+        Calendar calPast = Calendar.getInstance();
+        calPast.setTimeInMillis(timeReceived);
+        calPast.add(Calendar.WEEK_OF_YEAR, -1024);
 
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTime(rmcDate);
+        Calendar calFuture = Calendar.getInstance();
+        calFuture.setTimeInMillis(timeReceived);
+        calFuture.add(Calendar.WEEK_OF_YEAR, 1023);
 
-        return !(cal.get(cal.WEEK_OF_YEAR) == cal2.get(cal2.WEEK_OF_YEAR));
+        Calendar rmcCal = Calendar.getInstance();
+        rmcCal.setTime(rmcDate);
+
+        int calPastWeek = calPast.get(calPast.WEEK_OF_YEAR);
+        int rmcCalWeek = rmcCal.get(rmcCal.WEEK_OF_YEAR);
+
+        int calPastWeekDiff = Math.abs(calPastWeek - rmcCalWeek);
+
+        if(calPastWeekDiff <= 1){
+            return false;
+        } else if(rmcCal.getTimeInMillis() >= calFuture.getTimeInMillis()){
+            return false;
+        }
+        return true;
     }
 
     static boolean isRmcTimeValid(Date rmcDate, Date timeReceived){

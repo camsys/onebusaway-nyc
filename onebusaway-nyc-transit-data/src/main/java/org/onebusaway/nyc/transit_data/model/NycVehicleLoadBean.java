@@ -44,15 +44,21 @@ public class NycVehicleLoadBean implements Serializable {
     //loading maps directly to SIRI OccupancyEnum
     private OccupancyStatus load;
 
+    private String loadDesc;
+
     //GTFS route_id
     private String route;
 
     //GTFS direction_id, typed as String to keep in pattern with rest of OBA.
     private String direction;
 
-    //estimated count for debugging only
+    //estimated count
     @JsonDeserialize(using = OccupancyDeserializer.class)
     private Integer estimatedCount;
+
+    private Integer estLoad;
+
+    private Integer estCapacity;
     
 
     public NycVehicleLoadBean(){}
@@ -63,15 +69,26 @@ public class NycVehicleLoadBean implements Serializable {
         this.route = b.route;
         this.direction = b.direction;
         this.estimatedCount = b.estimatedCount;
+        this.estLoad = b.estLoad;
+        this.estCapacity = b.estCapacity;
         this.recordTimestamp = b.recordTimestamp;
+        this.loadDesc = b.loadDesc;
     }
 
-    public int getEstimatedCount() {
+    public Integer getEstimatedCount() {
         return estimatedCount;
     }
 
     public OccupancyStatus getLoad() {
         return load;
+    }
+
+    public String getLoadDesc() {
+        return loadDesc;
+    }
+
+    public Integer getEstLoad() {
+        return estLoad;
     }
 
     public Long getRecordTimestamp() {
@@ -90,6 +107,10 @@ public class NycVehicleLoadBean implements Serializable {
         return route;
     }
 
+    public Integer getEstCapacity() {
+        return estCapacity;
+    }
+
     /* builder pattern class for NycVehicleLoadBean
      * to use this, call something like:
      * new NycVehicleLoadBean.NycVehicleLoadBeanBuilder('vehicle_1234',1234566789)
@@ -102,10 +123,13 @@ public class NycVehicleLoadBean implements Serializable {
 
         private final String vehicleId;
         private final long recordTimestamp;
+        public String loadDesc;
         private OccupancyStatus load;
         private String direction;
         private String route;
-        private int estimatedCount;
+        private Integer estimatedCount;
+        private Integer estLoad;
+        public Integer estCapacity;
 
         public NycVehicleLoadBeanBuilder(String vehicleId, long recordTimestamp){
             this.vehicleId = vehicleId;
@@ -125,6 +149,10 @@ public class NycVehicleLoadBean implements Serializable {
             }
             return this;
         }
+        public NycVehicleLoadBeanBuilder loadDesc(String loadDesc){
+            this.loadDesc = loadDesc;
+            return this;
+        }
         public NycVehicleLoadBeanBuilder route(String route){
             this.route = route;
             return this;
@@ -141,7 +169,7 @@ public class NycVehicleLoadBean implements Serializable {
         public NycVehicleLoadBean build() throws IllegalStateException{
 
             if (load == null){ load = OccupancyStatus.UNKNOWN; }
-            if (estimatedCount > ERROR_LOAD){
+            if (estimatedCount != null && estimatedCount > ERROR_LOAD){
                 throw new IllegalStateException("Load is greater than " + ERROR_LOAD + ", which is unlikely on a bus.");
             }
 

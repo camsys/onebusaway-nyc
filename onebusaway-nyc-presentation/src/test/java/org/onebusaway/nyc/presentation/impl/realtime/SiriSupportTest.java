@@ -1,21 +1,35 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.presentation.impl.realtime;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.nyc.presentation.impl.realtime.SiriSupport.OnwardCallsMode;
+import org.onebusaway.nyc.presentation.impl.realtime.siri.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.RouteBean.Builder;
-import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data.model.TripStopTimeBean;
-import org.onebusaway.transit_data.model.TripStopTimesBean;
 import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
@@ -46,13 +60,14 @@ public class SiriSupportTest {
     blockInstance.setBlockConfiguration(blockConfig);
     
     when(nycTransitDataService.getBlockInstance("BLOCK", 0)).thenReturn(blockInstance);
-    
+
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);
     MonitoredVehicleJourney journey = new MonitoredVehicleJourney();
-    SiriSupport ss = new SiriSupport(null);
-    ss.fillMonitoredVehicleJourney(journey, trip.getTrip(), trip.getStatus(), null, OnwardCallsMode.VEHICLE_MONITORING,
-        presentationService, nycTransitDataService, 0, System.currentTimeMillis());
+    SiriSupport ss = new SiriSupport(null, nycTransitDataService, presentationService);
+
+    ss.fillMonitoredVehicleJourney(journey, trip.getTrip(), trip.getStatus(), null, Collections.emptyMap(), OnwardCallsMode.VEHICLE_MONITORING,
+        presentationService, nycTransitDataService, 0, System.currentTimeMillis(), Boolean.FALSE, Boolean.FALSE);
     
     assertNotNull(journey);
     List<SituationRefStructure> situationRefs = journey.getSituationRef();
@@ -69,10 +84,10 @@ public class SiriSupportTest {
     TripBean tripBean = new TripBean();
     tripBean.setId("TEST_TRIP_ID");
     tripDetails.setTrip(tripBean);
-    Builder routeBeanBuilder = RouteBean.builder();
-    routeBeanBuilder.setId("foo");
-    RouteBean route = routeBeanBuilder.create();
-    tripBean.setRoute(route);
+    Builder routeBuilder = RouteBean.builder();
+    routeBuilder.setAgency(new AgencyBean());
+    routeBuilder.setId("foo");
+    tripBean.setRoute(routeBuilder.create());
     tripBean.setBlockId("BLOCK");
     TripStatusBean status = new TripStatusBean();
     CoordinatePoint location = new CoordinatePoint(90.0, 90.0);

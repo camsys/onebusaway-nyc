@@ -1,18 +1,29 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.admin.service.impl;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.s3.model.*;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.util.FileUtils;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +35,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -53,6 +61,8 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 
 	// the stif directory relative to the bundle directory; e.g. stif_latest
 	private String _stifPath;
+	// the transformation directory relative to the bundle directory; e.g. transformations_latest
+	private String _transformationPath;
 	// the config directory, relative to the bundle directory; e.g., config
 	private String _configPath;
 	private String _buildPath;
@@ -63,6 +73,7 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 	public void setS3User(String user) {
 		_username = user;
 	}
+
 	@Override
 	public void setS3Password(String password) {
 		_password = password;
@@ -98,15 +109,27 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 		return _stifPath;
 	}
 
- @Override
-  public String getConfigPath() {
-   return _configPath;
-  }
-  @Override
-  public void setConfigPath(String configPath) {
-    _configPath = configPath;
-    
-  }
+	@Override
+	public void setTransformationPath(String transformationPath) {
+		this._transformationPath = transformationPath;
+	}
+
+	@Override
+	public String getTransformationPath() {
+		return _transformationPath;
+	}
+
+	@Override
+	public String getConfigPath() {
+		return _configPath;
+	}
+
+	@Override
+	public void setConfigPath(String configPath) {
+		_configPath = configPath;
+
+	}
+
 	@Override
 	public void setBuildPath(String buildPath) {
 		this._buildPath = buildPath;
@@ -121,12 +144,12 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 	@Override
 	public void setup() {
 		try {
-		    _log.info("setting up s3user=" + _username);
+			_log.info("setting up s3user=" + _username);
 			_credentials = new BasicAWSCredentials(_username, _password);
 			_s3 = new AmazonS3Client(_credentials);
 			_log.info("setup complete");
 		} catch (Throwable t) {
-		    _log.error("FileServiceImpl setup failed, likely due to missing or invalid credentials");
+			_log.error("FileServiceImpl setup failed, likely due to missing or invalid credentials");
 			_log.error(t.toString());
 		}
 
@@ -146,10 +169,10 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 			}
 			String bucketName = servletContext.getInitParameter("s3.bundle.bucketName");
 			if (bucketName != null) {
-			  _log.info("servlet context provided bucketName=" + bucketName);
-			  setBucketName(bucketName);
+				_log.info("servlet context provided bucketName=" + bucketName);
+				setBucketName(bucketName);
 			} else {
-			  _log.info("servlet context missing bucketName, using " + getBucketName());
+				_log.info("servlet context missing bucketName, using " + getBucketName());
 			}
 		}
 	}
@@ -164,6 +187,19 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 				null, null, 1);
 		ObjectListing listing = _s3.listObjects(request);
 		return listing.getObjectSummaries().size() > 0;
+	}
+
+	@Override
+	/**
+	 * delete an object from s3
+	 */
+	public void deleteObject(String filename) {
+		try {
+			_s3.deleteObject(_bucketName, filename);
+		} catch (AmazonClientException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -188,6 +224,9 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 			result = _s3.putObject(request);
 			request = new PutObjectRequest(_bucketName, filename + "/" +
 					this.getStifPath() + "/README.txt", tmpFile);
+			result = _s3.putObject(request);
+			request = new PutObjectRequest(_bucketName, filename + "/" +
+					this.getTransformationPath() + "/README.txt", tmpFile);
 			result = _s3.putObject(request);
 			request = new PutObjectRequest(_bucketName, filename + "/" +
 					this.getBuildPath() + "/README.txt", tmpFile);
@@ -223,7 +262,7 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 							lastModifiedStr = "" + lastModified.toString();
 						}
 						String[] columns = {
-								parseKey(key), getStatus(key), lastModifiedStr 
+								parseKey(key), getStatus(key), lastModifiedStr
 						};
 						rows.add(columns);
 					}
@@ -247,6 +286,109 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 		return rows;
 	}
 
+
+	@Override
+	/**
+	 * Copies an s3 object from one location to another
+	 */
+	public void copyS3Object(String fromObjectKey, String toObjectKey) {
+		try {
+			_s3.copyObject(_bucketName, fromObjectKey, _bucketName, toObjectKey);
+		} catch( Exception e){
+			throw new RuntimeException(e);
+		}
+	}
+
+
+
+
+
+
+@Override
+	/**
+	 * Return tabular data (filename, flag, modified date) about bundle directories.
+	 */
+	public List<String> listBundleBuilds(String directoryName, int maxResults) {
+		List<String> rows = new ArrayList<String>();
+		HashMap<String, String> map = new HashMap<String, String>();
+		ListObjectsRequest request = new ListObjectsRequest(_bucketName, directoryName, null,
+				"/", maxResults);
+
+		ObjectListing listing = null;
+		do {
+			if (listing == null) {
+				listing = _s3.listObjects(request);
+				if (listing.getCommonPrefixes() != null) {
+					// short circuit if common prefixes works
+					List<String> commonPrefixes = listing.getCommonPrefixes();
+					for (String key : commonPrefixes) {
+						rows.add(key);
+					}
+					return rows;
+				}
+				_log.error("prefixes=" + listing.getCommonPrefixes());
+			} else {
+				listing = _s3.listNextBatchOfObjects(listing);
+			}
+			for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+				String key = parseKey(summary.getKey());
+				if (!map.containsKey(key)) {
+					rows.add(key);
+					map.put(key, key);
+				}
+			}
+
+		} while (listing.isTruncated());
+		return rows;
+	}
+
+	@Override
+	/**
+	 * Return files' names at a specified location.
+	 */
+	public List<String> listFiles(String directoryName, int maxResults) {
+		List<String> rows = new ArrayList<String>();
+		ListObjectsRequest request = new ListObjectsRequest(_bucketName, directoryName, null,
+				"/", maxResults);
+
+		ObjectListing listing = null;
+		do {
+			if (listing == null) {
+			listing = _s3.listObjects(request);
+			}
+			for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+				rows.add(summary.getKey());
+			}
+
+		} while (listing.isTruncated());
+		return rows;
+	}
+
+
+	@Override
+	/**
+	 * Return fileName of objects in an S3 file.
+	 */
+	public List<String> listObjects(String directoryName, int maxResults) {
+		List<String> rows = new ArrayList<String>();
+		HashMap<String, String> map = new HashMap<String, String>();
+		ListObjectsRequest request = new ListObjectsRequest(_bucketName, directoryName, null,
+				"/", maxResults);
+
+		ObjectListing listing = null;
+		if (listing == null) {
+			listing = _s3.listObjects(request);
+			if (listing.getObjectSummaries() != null) {
+				// short circuit if common prefixes works
+				List<S3ObjectSummary> s3objectSummaries = listing.getObjectSummaries();
+				for (S3ObjectSummary s3ObjectSummary : s3objectSummaries) {
+					String[] keyParts = s3ObjectSummary.getKey().split("/");
+					rows.add(keyParts[keyParts.length - 1]);
+				}
+			}
+		}
+		return rows;
+	}
 
 	private Date getLastModifiedTimeForKey(String key) {
 		ListObjectsRequest request = new ListObjectsRequest(_bucketName, key, null,
@@ -423,6 +565,27 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 					"traversal attack");
 		}
 	}
+
+
+	/**
+	 * Return tabular data (filename, flag, modified date) about objects on S3.
+	 */
+	public List<Map<String,String>> listObjectsTabular (String directory, int maxResults){
+
+	ListObjectsRequest request = new ListObjectsRequest(_bucketName, directory,
+			null, null, maxResults);
+	ObjectListing listing = _s3.listObjects(request);
+	List<Map<String,String>> rows = new ArrayList();
+	for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+		HashMap<String,String> objectDetails = new HashMap<String,String>();
+		objectDetails.put("bucketName",summary.getBucketName());
+		objectDetails.put("key",summary.getKey());
+		objectDetails.put("eTag",summary.getETag());
+		objectDetails.put("lastModified",summary.getLastModified().toString());
+		rows.add(objectDetails);
+	}
+	return rows;
+}
 
 	
 }

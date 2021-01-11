@@ -1,25 +1,27 @@
 /**
- * Copyright (c) 2011 Metropolitan Transportation Authority
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -32,6 +34,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -105,7 +108,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
 
-  private static final long MIN_RECORD_INTERVAL = 3 * 1000; // 5 seconds
+  private static final long MIN_RECORD_INTERVAL = 3 * 1000; // 3 seconds
 
   @Autowired
   private ObservationCache _observationCache;
@@ -128,7 +131,7 @@ public class VehicleLocationInferenceServiceImpl implements
   @Autowired
   private VehicleLocationListener _vehicleLocationListener;
 
-  @Autowired
+  @Autowired(required = false)
   private PredictionIntegrationService _predictionIntegrationService;
 
   @Autowired
@@ -138,6 +141,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private ExecutorService _executorService;
 
+  private ThreadPoolExecutor _threadPoolExecutor;
+
   private int _skippedUpdateLogCounter = 0;
 
   private int _numberOfProcessingThreads = 2 + (Runtime.getRuntime().availableProcessors() * 20);
@@ -146,6 +151,10 @@ public class VehicleLocationInferenceServiceImpl implements
     
   private final ConcurrentMap<AgencyAndId, Long> _timeReceivedByVehicleId = new ConcurrentHashMap<AgencyAndId, Long>(
       10000);
+
+  private final ConcurrentMap<AgencyAndId, Long> _timeSpentByVehicleId = new ConcurrentHashMap<AgencyAndId, Long>(
+          10000);
+
 
   private ApplicationContext _applicationContext;
 
@@ -185,8 +194,9 @@ public class VehicleLocationInferenceServiceImpl implements
           "numberOfProcessingThreads must be positive");
 
     _log.info("Creating thread pool of size=" + _numberOfProcessingThreads);
-    _executorService = Executors.newFixedThreadPool(_numberOfProcessingThreads);
-    
+    _threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(_numberOfProcessingThreads);
+    _executorService = _threadPoolExecutor;
+
   }
   
   @PreDestroy
@@ -313,9 +323,9 @@ public class VehicleLocationInferenceServiceImpl implements
 
     final Angle bearing = message.getDirection();
     if (bearing != null) {
-      final Integer degrees = bearing.getCdeg();
+      final BigDecimal degrees = bearing.getDeg();
       if (degrees != null)
-        r.setBearing(degrees);
+        r.setBearing(degrees.doubleValue());
     }
 
     r.setSpeed(message.getSpeed());
@@ -717,6 +727,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
     @Override
     public void run() {
+      long start = System.currentTimeMillis();
+      long stop = 0;
     	try {
     		if (_simulation) {
     			setupSimulationBeforeRun();
@@ -770,6 +782,20 @@ public class VehicleLocationInferenceServiceImpl implements
     				_outputQueueSenderService.enqueue(record);
     			}
     		}
+    		stop = System.currentTimeMillis();
+          _timeSpentByVehicleId.put(_vehicleId, (stop - start));
+
+            if (_threadPoolExecutor != null && _threadPoolExecutor.getCompletedTaskCount() % 1000 == 0) {
+              _log.warn("processing " + _threadPoolExecutor.getActiveCount()
+                      + " of " +  _numberOfProcessingThreads
+                      + " with " + _vehicleInstancesByVehicleId.size()
+                      + " active vehicles and " + _bundleManagementService.getInferenceProcessingThreadQueueSize()
+                      + " outstanding threads not reaped"
+                      + " with avg processing time " + computeProcessingTime(_timeSpentByVehicleId.values())
+                      + "ms"
+              );
+              _timeSpentByVehicleId.clear();
+            }
     	} catch (final ProjectionException e) {
     		// discard this one
     	} catch (final Throwable ex) {
@@ -779,6 +805,13 @@ public class VehicleLocationInferenceServiceImpl implements
     	}
     }
 
+    private double computeProcessingTime(Collection<Long> pTimes) {
+      long sum = 0;
+      for (Long pTime : pTimes) {
+        sum += pTime;
+      }
+      return (double)sum / pTimes.size();
+    }
     /**
      * If we're running within a simulation context, we need to stub some services into inference instance
      * so that we can deliver data from the trace file.
@@ -876,7 +909,7 @@ public class VehicleLocationInferenceServiceImpl implements
     if (_vehicleLocationListener != null) {
       _vehicleLocationListener.handleVehicleLocationRecord(vlr);
     }
-    if (useTimePredictions) {
+    if (_predictionIntegrationService != null && useTimePredictions) {
       // if we're updating time predictions with the generation service,
       // tell the integration service to fetch
       // a new set of predictions now that the TDS has been updated
@@ -905,8 +938,18 @@ public class VehicleLocationInferenceServiceImpl implements
       }
       if(isValid)
         _timeReceivedByVehicleId.put(vid, timeReceived);
-      
+//        _log.info("put: " + vid + ", " + timeReceived + ", size: " + _timeReceivedByVehicleId.size());
       return isValid;
     }
+  }
+
+  @Override
+  public Long getTimeReceivedByVehicleId(AgencyAndId vid){
+    return _timeReceivedByVehicleId.get(vid);
+  }
+
+  @Override
+  public VehicleInferenceInstance getInstanceByVehicleId(AgencyAndId vid) {
+    return _vehicleInstancesByVehicleId.get(vid);
   }
 }

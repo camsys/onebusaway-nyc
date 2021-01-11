@@ -1,15 +1,18 @@
-/*
- * Copyright 2010, OpenPlans Licensed under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
+/**
+ * Copyright (C) 2010 OpenPlans
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
@@ -40,6 +43,7 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import uk.org.siri.siri.ErrorDescriptionStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
@@ -60,7 +64,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   @Autowired
   public NycTransitDataService _nycTransitDataService;
 
-  @Autowired  
+  @Autowired
+  @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
   
   @Autowired
@@ -90,6 +95,10 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     _monitoringActionSupport.setupGoogleAnalytics(_request, _configurationService);
   
     _realtimeService.setTime(responseTimestamp);
+
+    boolean showApc = _realtimeService.showApc(_request.getParameter("key"));
+
+    boolean showRawApc = _realtimeService.showRawApc(_request.getParameter("key"));
 
     String directionId = _request.getParameter("DirectionRef");
     
@@ -206,7 +215,9 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       if (!stopId.hasValues()) continue;
       
       // Stop ids can only be valid here because we only added valid ones to stopIds.
-      List<MonitoredStopVisitStructure> visitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(), maximumOnwardCalls, responseTimestamp);
+      List<MonitoredStopVisitStructure> visitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(),
+              maximumOnwardCalls, responseTimestamp, showApc, showRawApc);
+
       if (visitsForStop != null) visits.addAll(visitsForStop); 
     }
     
@@ -354,8 +365,13 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
         this._servletResponse.setContentType("application/xml");
         return _realtimeService.getSiriXmlSerializer().getXml(_response);
       } else {
-        this._servletResponse.setContentType("application/json");
-        return _realtimeService.getSiriJsonSerializer().getJson(_response, _request.getParameter("callback"));
+        String callback = _request.getParameter("callback");
+        if(callback != null){
+          this._servletResponse.setContentType("application/javascript");
+        } else {
+          this._servletResponse.setContentType("application/json");
+        }
+        return _realtimeService.getSiriJsonSerializer().getJson(_response, callback);
       }
     } catch(Exception e) {
       return e.getMessage();

@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.onebusaway.nyc.transit_data_federation.impl.bundle;
 
 import java.io.File;
@@ -335,6 +351,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		}
 	}
 
+	public int getInferenceProcessingThreadQueueSize() {
+		return _inferenceProcessingThreads.size();
+	}
+
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
 		if(bundleId == null || !_applicableBundles.containsKey(bundleId)) {
@@ -393,13 +413,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTIONS_DATA);
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTION_SEARCH_DATA);
 			_refreshService.refresh(RefreshableResources.STOP_SEARCH_DATA);
-			_refreshService.refresh(RefreshableResources.WALK_PLANNER_GRAPH);
-			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA_BUNDLE);
+			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA);
 			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_SERVICE);
-			_refreshService.refresh(RefreshableResources.STOP_TRANSFER_DATA);
 			_refreshService.refresh(RefreshableResources.SHAPE_GEOSPATIAL_INDEX);
 			_refreshService.refresh(RefreshableResources.STOP_GEOSPATIAL_INDEX);
-			_refreshService.refresh(RefreshableResources.TRANSFER_PATTERNS);
 			_refreshService.refresh(RefreshableResources.NARRATIVE_DATA);
 			_refreshService.refresh(RefreshableResources.REVENUE_STOP_ROUTE_INDEX);
 
@@ -409,7 +426,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_refreshService.refresh(NycRefreshableResources.NON_REVENUE_MOVES_DATA);
 			_refreshService.refresh(NycRefreshableResources.NON_REVENUE_STOP_DATA);
 		} catch(Exception e) {
-			_log.error("Bundle " + bundleId + " failed to load. Disabling for this session...");
+			_log.error("Bundle " + bundleId + " failed to load. Disabling for this session...",e);
 			_applicableBundles.remove(bundleId);
 			reevaluateBundleAssignment();
 

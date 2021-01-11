@@ -1,17 +1,17 @@
 /**
- * Copyright (c) 2011 Metropolitan Transportation Authority
+ * Copyright (C) 2011 Metropolitan Transportation Authority
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 /* =Reset default CSS. 
     http://programming4.us/mobile/1284.aspx
@@ -384,6 +384,80 @@ small {
 	visibility: hidden;
 }
 
+.apcLadderContainer {
+        display: inline-block;
+        height: 0;
+}
+
+.apcDotG {
+        height: 12px;
+        width: 12px;
+        background-color: #268C0B;
+        border-radius: 50%;
+        display: inline-block;
+}
+
+.apcTextG {
+        color: #268C0B;
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 14px;
+        font-weight: bold;
+}
+
+.apcTextSmallG {
+	 color: #268C0B;
+	 display: inline-block;
+	 white-space: nowrap;
+	 font-size: 14px;
+}
+
+.apcDotY {
+        height: 12px;
+        width: 12px;
+        background-color: #EF8424;
+        border-radius: 50%;
+        display: inline-block;
+}
+
+.apcTextY {
+        color: #EF8424;
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 14px;
+        font-weight: bold;
+}
+
+.apcTextSmallY {
+	color: #EF8424;
+	display: inline-block;
+	white-space: nowrap;
+	font-size: 14px;
+}
+
+.apcDotR {
+        height: 12px;
+        width: 12px;
+        background-color: #CA001F;
+        border-radius: 50%;
+        display: inline-block;
+}
+
+.apcTextR {
+        color: #CA001F;
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 14px;
+        font-weight: bold;
+}
+
+.apcTextSmallR {
+	color: #CA001F;
+	display: inline-block;
+	white-space: nowrap;
+	font-size: 14px;
+}
+
 .apcicong {
 	background-image: url("img/apcicong.png");
 	background-repeat: no-repeat;
@@ -408,6 +482,13 @@ small {
 	display: inline-block;
 }
 
+
+.scheduleAlert{
+	font-size: .9em;
+	color: #ff0000;
+}
+
+
 .arrivalsOnRoute li {
 	margin-left: 10px;
 	padding-left: 16px;
@@ -417,8 +498,25 @@ small {
 	white-space: nowrap;
 	display: inline;
 }
+.arrivalsOnRouteSchedule li {
+	margin-left: 10px;
+	padding-left: 16px;
+	background-image: url('img/schedule_bullet_bus_v2.png');
+	background-repeat: no-repeat;
+	background-position: left center;
+	white-space: nowrap;
+	display: inline;
+}
 
-.arrivalsOnRoute {
+/*.arrivalsOnRouteSchedule li::before {
+	content: url('img/route_icon.png');
+	filter: sepia(40%) hue-rotate(315deg) saturate(1000%);
+	position: relative;
+	top: 3px;
+}*/
+
+
+.arrivalsOnRoute, .arrivalsOnRouteSchedule {
 	display: inline;
 	zoom: 1;  /* hasLayout fix for IE */
 }
@@ -431,6 +529,38 @@ small {
 	background-position: left top;
 	zoom: 1;   /* hasLayout fix for IE */
 	line-height: 1.2em;
+}
+
+.arrivalsAtStop li small {
+	display: inline-block;
+	text-align: center;
+}
+
+.arrivalsAtStopSchedule li {
+	margin-left: 10px;
+	padding-left: 16px;
+	background-image: url('img/schedule_bullet_bus_v2.png');
+	background-repeat: no-repeat;
+	background-position: left top;
+	zoom: 1;   /* hasLayout fix for IE */
+	line-height: 1.2em;
+}
+/*.arrivalsAtStopSchedule li::before {
+	content: url('img/schedule_bullet_bus.png');
+	filter: sepia(40%) hue-rotate(315deg) saturate(1000%);
+	position: relative;
+	top: 3px;
+}*/
+.scheduleItem {
+	padding-left: 0px !important;
+	background-image: none !important;
+}
+
+.scheduleItem::before {
+	content: url('img/schedule_bullet_bus.png');
+	filter: sepia(40%) hue-rotate(315deg) saturate(1000%);
+	position: relative;
+	top: 3px;
 }
 
 .routeList a {

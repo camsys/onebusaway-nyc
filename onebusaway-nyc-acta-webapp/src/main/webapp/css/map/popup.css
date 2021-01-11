@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 .popup {
     font-size: 12px;
 	color: #333333;
@@ -79,6 +95,55 @@
 	margin-top: 3px;
 }
 
+.popup .apcDotG {
+        height: 12px;
+        width: 12px;
+        background-color: #268C0B;
+        border-radius: 50%;
+        display: inline-block;
+}
+#apcTextG {
+        color: #268C0B;
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: bold;
+}
+
+.popup .apcDotY {
+        height: 12px;
+        width: 12px;
+        background-color: #EF8424;
+        border-radius: 50%;
+        display: inline-block;
+}
+#apcTextY {
+        color: #EF8424;
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: bold;
+}
+.popup .apcDotR {
+        height: 12px;
+        width: 12px;
+        background-color: #CA001F;
+        border-radius: 50%;
+        display: inline-block;
+}
+#apcTextR {
+        color: #CA001F;
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: bold;
+}
+
+.popup .apcDashedLine {
+        margin-top: -1px;
+        height: 10px;
+}
+
 .popup .apcicong {
 	background-image: url("img/apcicong.png");
 	background-repeat: no-repeat;
@@ -150,6 +215,23 @@
 	background-position: left top;
 	background-repeat: no-repeat;
 }
+
+.popup ul li.scheduled_arrival {
+	white-space: nowrap;
+	height: 16px;
+	font-weight: bold;
+	padding-left: 19px;
+	background: url("img/schedule_bullet_bus_v2.png");
+	background-position: left top;
+	background-repeat: no-repeat;
+}
+
+/*.popup ul li.scheduled_arrival::before {
+	content: url('img/schedule_bullet_bus.png');
+	filter: sepia(40%) hue-rotate(315deg) saturate(1000%);
+	position: relative;
+	top: 3px;
+}*/
 
 .popup ul li.arrival .not_bold {
 	font-weight: normal;

@@ -16,7 +16,7 @@
 package org.onebusaway.nyc.transit_data_federation.impl;
 
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
-import org.onebusaway.transit_data.model.TimepointPredictionBean;
+import org.onebusaway.transit_data.model.trips.TimepointPredictionBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.PredictionHelperService;
@@ -32,7 +32,7 @@ import java.util.List;
  * for the tripStatus, or prediction records if available.
  *
  */
-@Component
+
 public class PredictionHelper implements PredictionHelperService {
 
     private static Logger _log = LoggerFactory.getLogger(PredictionHelper.class);
@@ -58,12 +58,10 @@ public class PredictionHelper implements PredictionHelperService {
 
                 tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(bean.getTimepointId()));
                 tpr.setTimepointScheduledTime(bean.getTimepointScheduledTime());
-                tpr.setTimepointPredictedTime(bean.getTimepointPredictedArrivalTime());
-                // TODO refactor NYC to support unified changes
-//                tpr.setTimepointPredictedArrivalTime(bean.getTimepointPredictedArrivalTime());
-//                tpr.setTimepointPredictedDepartureTime(bean.getTimepointPredictedDepartureTime());
-//                tpr.setStopSequence(bean.getStopSequence());
-//                tpr.setTripId(AgencyAndIdLibrary.convertFromString(bean.getTripId()));
+                tpr.setTimepointPredictedArrivalTime(bean.getTimepointPredictedArrivalTime());
+                tpr.setTimepointPredictedDepartureTime(bean.getTimepointPredictedDepartureTime());
+                tpr.setStopSequence(bean.getStopSequence());
+                tpr.setTripId(AgencyAndIdLibrary.convertFromString(bean.getTripId()));
 
                 records.add(tpr);
             }
@@ -74,10 +72,8 @@ public class PredictionHelper implements PredictionHelperService {
         TimepointPredictionRecord tpr = new TimepointPredictionRecord();
         tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(tripStatus.getNextStop().getId()));
         tpr.setTimepointScheduledTime(tripStatus.getLastUpdateTime() + tripStatus.getNextStopTimeOffset() * 1000);
-        tpr.setTimepointPredictedTime((long) (tpr.getTimepointScheduledTime() + tripStatus.getScheduleDeviation()));
-        // TODO refactor NYC to support unified changes
-//        tpr.setTimepointPredictedArrivalTime((long) (tpr.getTimepointScheduledTime() + tripStatus.getScheduleDeviation()));
-//        tpr.setTimepointPredictedDepartureTime((long) (tpr.getTimepointScheduledTime() + tripStatus.getScheduleDeviation()));
+        tpr.setTimepointPredictedArrivalTime((long) (tpr.getTimepointScheduledTime() + tripStatus.getScheduleDeviation()));
+        tpr.setTimepointPredictedDepartureTime((long) (tpr.getTimepointScheduledTime() + tripStatus.getScheduleDeviation()));
 
 
         records.add(tpr);
@@ -122,12 +118,10 @@ public class PredictionHelper implements PredictionHelperService {
 
                 tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(bean.getTimepointId()));
                 tpr.setTimepointScheduledTime(bean.getTimepointScheduledTime());
-                tpr.setTimepointPredictedTime(bean.getTimepointPredictedArrivalTime());
-                // TODO refactor NYC to support unified changes
-//                tpr.setTimepointPredictedArrivalTime(bean.getTimepointPredictedArrivalTime());
-//                tpr.setTimepointPredictedDepartureTime(bean.getTimepointPredictedDepartureTime());
-//                tpr.setStopSequence(bean.getStopSequence());
-//                tpr.setTripId(AgencyAndIdLibrary.convertFromString(bean.getTripId()));
+                tpr.setTimepointPredictedArrivalTime(bean.getTimepointPredictedArrivalTime());
+                tpr.setTimepointPredictedDepartureTime(bean.getTimepointPredictedDepartureTime());
+                tpr.setStopSequence(bean.getStopSequence());
+                tpr.setTripId(AgencyAndIdLibrary.convertFromString(bean.getTripId()));
 
                 records.add(tpr);
             }
@@ -138,10 +132,8 @@ public class PredictionHelper implements PredictionHelperService {
         TimepointPredictionRecord tpr = new TimepointPredictionRecord();
         tpr.setTimepointId(AgencyAndIdLibrary.convertFromString(tripStatus.getNextStop().getId()));
         tpr.setTimepointScheduledTime(tripStatus.getLastUpdateTime() + tripStatus.getNextStopTimeOffset() * 1000);
-        tpr.setTimepointPredictedTime((long) (tpr.getTimepointScheduledTime() + tripStatus.getScheduleDeviation()));
-        // TODO refactor NYC to support unified changes
-//        tpr.setTimepointPredictedArrivalTime((long) (tpr.getTimepointScheduledTime() + tripStatus.getScheduleDeviation()));
-//        tpr.setTimepointPredictedDepartureTime((long) (tpr.getTimepointScheduledTime() + tripStatus.getScheduleDeviation()));
+        tpr.setTimepointPredictedArrivalTime((long) (tpr.getTimepointScheduledTime() + tripStatus.getScheduleDeviation()));
+        tpr.setTimepointPredictedDepartureTime((long) (tpr.getTimepointScheduledTime() + tripStatus.getScheduleDeviation()));
         records.add(tpr);
         return records;
     }
