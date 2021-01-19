@@ -15,11 +15,13 @@
  */
 package org.onebusaway.api;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.onebusaway.cloud.api.ExternalResult;
 import org.onebusaway.cloud.api.ExternalServices;
 import org.onebusaway.cloud.api.ExternalServicesBridgeFactory;
 
+@Ignore
 public class ExternalServicesTest {
 
     @Test

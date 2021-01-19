@@ -220,18 +220,18 @@
 	white-space: nowrap;
 	height: 16px;
 	font-weight: bold;
-	/*padding-left: 19px;*/
-	/*background: url("img/schedule_bullet_bus.png");*/
-	/*background-position: left top;*/
-	/*background-repeat: no-repeat;*/
+	padding-left: 19px;
+	background: url("img/schedule_bullet_bus_v2.png");
+	background-position: left top;
+	background-repeat: no-repeat;
 }
 
-.popup ul li.scheduled_arrival::before {
+/*.popup ul li.scheduled_arrival::before {
 	content: url('img/schedule_bullet_bus.png');
 	filter: sepia(40%) hue-rotate(315deg) saturate(1000%);
 	position: relative;
 	top: 3px;
-}
+}*/
 
 .popup ul li.arrival .not_bold {
 	font-weight: normal;

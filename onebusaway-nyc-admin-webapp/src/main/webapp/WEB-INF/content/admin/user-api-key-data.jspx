@@ -1,0 +1,87 @@
+<!--
+  ~ Copyright (C)  2011 Metropolitan Transportation Authority
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~          http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:s="/struts-tags"
+      xmlns:sec="http://www.springframework.org/security/tags">
+    <jsp:directive.page contentType="text/html" />
+    <head>
+        <title>Api Keys</title>
+
+        <sec:csrfMetaTags />
+
+        <!-- Used to pass context path to JS -->
+        <link id="contextPathHolder" data-contextPath="${pageContext.request.contextPath}" />
+
+        <!-- STYLING -->
+        <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" />
+
+        <s:url var="url" value="/css/user-api-key-data.css" />
+        <link rel="stylesheet" type="text/css" href="${url}">
+            <!-- //prevent jspx minimization -->
+        </link>
+
+        <!-- JAVASCRIPT -->
+        <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.js">
+            <!-- //prevent jspx minimization -->
+        </script>
+
+        <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.js">
+            <!-- //prevent jspx minimization -->
+        </script>
+
+        <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js">
+            <!-- //prevent jspx minimization -->
+        </script>
+
+        <s:url var="url" value="/js/oba/user-api-key-data.js">
+        </s:url>
+        <script type="text/javascript" src="${url}">
+            <!-- //prevent jspx minimization -->
+        </script>
+    </head>
+    <body>
+        <head><title>Api Keys</title></head>
+        <div id="content">
+            <div id="header">
+                <h1>User Api Key Data</h1>
+            </div>
+            <div id="export">
+                <span>Export All: </span>
+                <s:url var="url" value="/api/api-key/export/csv">
+                </s:url>
+                <a href="${url}">CSV</a>
+            </div>
+            <div id="tableWrapper">
+                <table id="userApiKeyData" class="display">
+                    <thead>
+                    <tr>
+                        <th>Created</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Project Name</th>
+                        <th>Project URL</th>
+                        <th>Platform</th>
+                        <th>API Key</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>

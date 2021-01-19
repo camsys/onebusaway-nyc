@@ -135,6 +135,8 @@
                 <timePredictions.status>DISABLED</timePredictions.status>
                 <pipo.host>yardtrek.mtabuscis.net</pipo.host>
                 <gtfs.editor.host>gtfs-editor</gtfs.editor.host>
+                <vehicle.pipo.service>VehiclePulloutServiceImpl</vehicle.pipo.service>
+                <unassigned.vehicle.service>UnassignedVehicleServiceImpl</unassigned.vehicle.service>
             </properties>
         </profile>
         <profile>
@@ -167,6 +169,8 @@
                  <timePredictions.status>DISABLED</timePredictions.status>
                  <pipo.host>yardtrek.mtabuscis.net</pipo.host>
                  <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
+                 <vehicle.pipo.service>VehiclePulloutServiceImpl</vehicle.pipo.service>
+                <unassigned.vehicle.service>UnassignedVehicleServiceImpl</unassigned.vehicle.service>
           </properties>
         </profile>
         <profile>
@@ -200,6 +204,8 @@
                  <timePredictions.status>DISABLED</timePredictions.status>
                  <pipo.host>yardtrek.mtabuscis.net</pipo.host>
                  <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
+                 <vehicle.pipo.service>VehiclePulloutServiceImpl</vehicle.pipo.service>
+                 <unassigned.vehicle.service>UnassignedVehicleServiceImpl</unassigned.vehicle.service>
           </properties>
         </profile>
         <profile>
@@ -236,6 +242,8 @@
                  <timePredictions.status>DISABLED</timePredictions.status>
                  <pipo.host>yardtrek.mtabuscis.net</pipo.host>
                  <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
+                 <vehicle.pipo.service>DummyVehiclePulloutService</vehicle.pipo.service>
+                 <unassigned.vehicle.service>DummyUnassignedVehicleServiceImpl</unassigned.vehicle.service>
           </properties>
         </profile>
         <profile>
@@ -266,6 +274,8 @@
                  <timePredictions.status>DISABLED</timePredictions.status>
                  <pipo.host>yardtrek.mtabuscis.net</pipo.host>
                  <gtfs.editor.host>gtfs-editor.dev.obanyc.com</gtfs.editor.host>
+                 <vehicle.pipo.service>VehiclePulloutServiceImpl</vehicle.pipo.service>
+                 <unassigned.vehicle.service>UnassignedVehicleServiceImpl</unassigned.vehicle.service>
           </properties>
         </profile>
 

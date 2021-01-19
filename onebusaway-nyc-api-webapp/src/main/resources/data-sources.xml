@@ -68,4 +68,9 @@
         </property>
     </bean>
 
+    <bean id="apiKeyThrottlingCacheService" class="org.onebusaway.nyc.api.lib.impl.ApiKeyThrottlingMemcacheServiceImpl">
+        <property name="cacheHost" value="${api.cache.host}" />
+        <property name="disabled" value="${api.cache.disabled}" />
+    </bean>
+
 </beans>

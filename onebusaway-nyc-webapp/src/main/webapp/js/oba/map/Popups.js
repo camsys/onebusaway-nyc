@@ -354,8 +354,6 @@ OBA.Popups = (function() {
 
         var occupancyLoad = "N/A";
 
-        console.log('occupancy: '+ MonitoredVehicleJourney.Occupancy);
-
         if(MonitoredVehicleJourney.Occupancy == "seatsAvailable"){
             occupancyLoad = '<span class="apcDotG"></span>'+
                 '<span id="apcTextG">Seats Available</span>';
@@ -686,8 +684,6 @@ OBA.Popups = (function() {
 						if (typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && monitoredVehicleJourney.ProgressStatus !== null && monitoredVehicleJourney.ProgressStatus === 'spooking') {
 							spooking = true;
 							arrival = "scheduled_arrival";
-							tripId += "(Estimated)";
-							scheduledArrivalTime += "(Estimated)";
 						}
 						
 						// time mode
@@ -716,7 +712,7 @@ OBA.Popups = (function() {
 								}
 							}
 							if(spooking) {
-								timePrediction += "(Estimated)";
+								timePrediction += " (Estimated)";
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
@@ -741,7 +737,7 @@ OBA.Popups = (function() {
 								}
 							}
 							if(spooking) {
-								distance += "(Estimated)";
+								distance += " (Estimated)";
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");

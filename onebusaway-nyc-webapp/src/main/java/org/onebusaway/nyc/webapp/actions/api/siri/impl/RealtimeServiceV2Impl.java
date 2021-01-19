@@ -24,6 +24,8 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportPredictionTimepointRecord;
+import org.onebusaway.nyc.presentation.service.realtime.PredictionsSupportService;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializerV2;
@@ -62,6 +64,8 @@ import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -84,9 +88,13 @@ import uk.org.siri.siri_2.VehicleActivityStructure.MonitoredVehicleJourney;
 @Component
 public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
+	private static Logger _log = LoggerFactory.getLogger(RealtimeServiceV2Impl.class);
+
 	private NycTransitDataService _nycTransitDataService;
 
 	private PresentationService _presentationService;
+
+	private PredictionsSupportService _predictionsSupportService;
 
 	private SiriXmlSerializerV2 _siriXmlSerializer = new SiriXmlSerializerV2();
 
@@ -124,6 +132,11 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	@Autowired
 	public void setConfigurationService(ConfigurationService configurationService){
 		_configurationService = configurationService;
+	}
+
+	@Autowired
+	public void setPredictionsSupportService(PredictionsSupportService predictionsSupportService){
+		_predictionsSupportService = predictionsSupportService;
 	}
 
 	@Override
@@ -177,12 +190,9 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					.toXmlGregorianCalendar(tripDetails.getStatus()
 							.getLastUpdateTime()));
 
-			List<TimepointPredictionRecord> timePredictionRecords = null;
-			if (useTimePredictionsIfAvailable == true) {
-				timePredictionRecords = _nycTransitDataService
-						.getPredictionRecordsForTrip(AgencyAndId
-								.convertFromString(routeId).getAgencyId(),
-								tripDetails.getStatus());
+			Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = null;
+			if(_presentationService.useTimePredictionsIfAvailable()) {
+				stopIdToPredictionRecordMap = _predictionsSupportService.getStopIdToPredictionRecordMap(tripDetails.getStatus());
 			}
 
 			activity.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
@@ -191,7 +201,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetails.getTrip(), tripDetails.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, detailLevel, currentTime, null, showApc, showRawApc);
+					stopIdToPredictionRecordMap, detailLevel, currentTime, null, showApc, showRawApc);
 
 			output.add(activity);
 		}
@@ -245,12 +255,9 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					.toXmlGregorianCalendar(tripDetailsForCurrentTrip
 							.getStatus().getLastUpdateTime()));
 
-			List<TimepointPredictionRecord> timePredictionRecords = null;
-			if (useTimePredictionsIfAvailable == true) {
-				timePredictionRecords = _nycTransitDataService
-						.getPredictionRecordsForTrip(AgencyAndId
-								.convertFromString(vehicleId).getAgencyId(),
-								tripDetailsForCurrentTrip.getStatus());
+			Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = null;
+			if(_presentationService.useTimePredictionsIfAvailable()) {
+				stopIdToPredictionRecordMap = _predictionsSupportService.getStopIdToPredictionRecordMap(tripDetailsForCurrentTrip.getStatus());
 			}
 
 			output.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
@@ -260,7 +267,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetailsForCurrentTrip.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, detailLevel,currentTime, null, showApc, showRawApc);
+					stopIdToPredictionRecordMap, detailLevel,currentTime, null, showApc, showRawApc);
 
 			return output;
 		}
@@ -310,38 +317,35 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			stopVisit.setRecordedAtTime(DateUtil
 					.toXmlGregorianCalendar(statusBeanForCurrentTrip
 							.getLastUpdateTime()));
-
-			List<TimepointPredictionRecord> timePredictionRecords = null;
-			if (useTimePredictionsIfAvailable == true) {
-				timePredictionRecords = _nycTransitDataService
-						.getPredictionRecordsForTrip(AgencyAndId
-								.convertFromString(stopId).getAgencyId(),
-								statusBeanForCurrentTrip);
-			}
 			
 			MonitoredVehicleJourneyStructure mvjourney = new MonitoredVehicleJourneyStructure();
 			stopVisit.setMonitoredVehicleJourney(mvjourney);
 			
 			
-		// FILTERS
-      AgencyAndId thisRouteId = AgencyAndIdLibrary
-          .convertFromString(tripBeanForAd.getRoute().getId());
-     
-      String thisDirectionId = tripBeanForAd.getDirectionId();
+			// FILTERS
+		  	AgencyAndId thisRouteId = AgencyAndIdLibrary
+			  .convertFromString(tripBeanForAd.getRoute().getId());
 
-      if (routeIds.size() > 0 && !routeIds.contains(thisRouteId))
-        continue;
+		  	String thisDirectionId = tripBeanForAd.getDirectionId();
 
-      if (directionId != null && !thisDirectionId.equals(directionId))
-        continue;
-      
-			
+		  	if (routeIds.size() > 0 && !routeIds.contains(thisRouteId))
+				continue;
+
+		  	if (directionId != null && !thisDirectionId.equals(directionId))
+				continue;
+
+			Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = null;
+			if(_presentationService.useTimePredictionsIfAvailable()) {
+				stopIdToPredictionRecordMap = _predictionsSupportService.getStopIdToPredictionRecordMap(statusBeanForCurrentTrip);
+			}
+
 			SiriSupportV2.fillMonitoredVehicleJourney(
 					mvjourney, tripBeanForAd,
 					statusBeanForCurrentTrip, adBean.getStop(),
 					OnwardCallsMode.STOP_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					timePredictionRecords, detailLevel, currentTime, filters, showApc, showRawApc);
+					stopIdToPredictionRecordMap, detailLevel, currentTime, filters, showApc, showRawApc);
+
 
 			// Monitored Stop Visits
 			Map<String, MonitoredStopVisitStructure> visitsMap = new HashMap<String, MonitoredStopVisitStructure>();

@@ -31,6 +31,11 @@ import org.onebusaway.nyc.transit_data_federation.impl.queue.ApcQueueListenerTas
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.VehicleOccupancyListener;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
+import org.onebusaway.transit_data_federation.model.TargetTime;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
+import org.onebusaway.transit_data_federation.services.realtime.BlockLocationService;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -59,6 +64,9 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
     @Autowired
     private NycTransitDataService _tds;
+
+    @Autowired
+    private BlockLocationService _blockLocationService;
 
     @Autowired
     private VehicleOccupancyListener _listener;
@@ -90,7 +98,9 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
         }
 
 
-        RawCountWebServicePollerThread thread = new RawCountWebServicePollerThread(_tds, _configurationService, _listener, _vehicleToQueueOccupancyCache, getRawCountUrl());
+        RawCountWebServicePollerThread thread = new RawCountWebServicePollerThread(_tds,
+                _blockLocationService, _configurationService, _listener,
+                _vehicleToQueueOccupancyCache, getRawCountUrl());
         _taskScheduler.scheduleWithFixedDelay(thread, 30 * 1000);
     }
 
@@ -121,6 +131,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
     public static class RawCountWebServicePollerThread extends Thread {
         private NycTransitDataService tds;
+        private BlockLocationService blockLocationService;
         private ConfigurationService configService;
         private VehicleOccupancyListener listener;
         private Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache;
@@ -133,11 +144,13 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
 
         public RawCountWebServicePollerThread(NycTransitDataService tds,
+                                              BlockLocationService blockLocationService,
                                               ConfigurationService cs,
                                               VehicleOccupancyListener listener,
                                               Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache,
                                               String url) {
             this.tds = tds;
+            this.blockLocationService = blockLocationService;
             this.configService = cs;
             this.listener = listener;
             this.vehicleToQueueOccupancyCache = vehicleToQueueOccupancyCache;
@@ -206,18 +219,26 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
             // CASE 1:  no ApcData element from webservice, return whatever matches from cache
             if (additionalApcData == null  || !isTimely(vehicleId, additionalApcData.getTimestamp())) {
-                return queueRecord;
+                if (queueRecord != null && queueRecord.getTimestamp() != null && isTimely(vehicleId, queueRecord.getTimestamp().getTime()))
+                    return queueRecord;
+                else
+                    return null;
             }
             // CASE 2:  no enumeration from queue, return ApcData as VehicleOccupancyRecord
             if (queueRecord == null || !isTimely(vehicleId, queueRecord.getTimestamp().getTime())) {
-                return toVehicleOccupancyRecord(additionalApcData);
+                if (additionalApcData != null && isTimely(vehicleId, additionalApcData.getTimestamp()))
+                    return toVehicleOccupancyRecord(additionalApcData);
+                else
+                    return null;
             }
             // CASE 3:  we have both, merge raw counts/capacity into queue record and return
             VehicleOccupancyRecord vor = queueRecord.deepCopy();
-            vor.setRawCount(additionalApcData.getEstLoadAsInt());
-            vor.setCapacity(additionalApcData.getEstCapacityAsInt());
-            vor.setVehicleId(vehicleId);
-            vor.setTimestamp(new Date(additionalApcData.getTimestamp()));
+            if (vor.getRawCount() == null || additionalApcData.getTimestamp() > queueRecord.getTimestamp().getTime()) {
+                // only merge data is absent or update more recent
+                vor.setRawCount(additionalApcData.getEstLoadAsInt());
+                vor.setCapacity(additionalApcData.getEstCapacityAsInt());
+                vor.setTimestamp(new Date(additionalApcData.getTimestamp()));
+            }
             return vor;
 
         }
@@ -231,7 +252,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
                 _log.debug("dropping v " + vehicleId + " as its " + (delta/60000) + " mins early");
                 return false;
             }
-            if (late > delta) {
+            if (delta > late) {
                 lateCount++;
                 _log.debug("dropping v" + vehicleId + " as its " + (delta/60000) + " mins late");
                 return false;
@@ -259,6 +280,26 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
         private VehicleOccupancyRecord toVehicleOccupancyRecord(ApcLoadData data) {
             VehicleOccupancyRecord vor = new VehicleOccupancyRecord();
+            /*
+             * in order to populate route cache we need route + direction
+             * route + direction ensure the data expires at the end of a trip
+             * By using the timestamp of the record we index into the correct trip!
+            */
+            AgencyAndId vehicleAgencyAndId = new AgencyAndId(data.getAgencyId(),data.getVehicle());
+            TargetTime target = new TargetTime(System.currentTimeMillis(), data.getTimestamp());
+            BlockLocation blockLocation = blockLocationService.getLocationForVehicleAndTime(
+                    vehicleAgencyAndId, target);
+
+            if (blockLocation != null) {
+                if (blockLocation.getActiveTrip() != null) {
+                    TripEntry trip = blockLocation.getActiveTrip().getTrip();
+                    if (trip.getRoute() != null) {
+                        // fully qualified
+                        vor.setRouteId(AgencyAndIdLibrary.convertToString(trip.getRoute().getId()));
+                        vor.setDirectionId(trip.getDirectionId());
+                    }
+                }
+            }
             vor.setVehicleId(data.getVehicleAsId());
             vor.setTimestamp(new Date(data.getTimestamp()));
             vor.setCapacity(data.getEstCapacityAsInt());

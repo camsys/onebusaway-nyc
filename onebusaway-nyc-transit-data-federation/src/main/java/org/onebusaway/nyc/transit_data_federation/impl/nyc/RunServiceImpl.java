@@ -447,7 +447,7 @@ public class RunServiceImpl implements RunService {
     if (!bothTrips.isEmpty())
       return bothTrips;
     
-    return null;
+    return Collections.EMPTY_LIST;
   }
 
   @Override

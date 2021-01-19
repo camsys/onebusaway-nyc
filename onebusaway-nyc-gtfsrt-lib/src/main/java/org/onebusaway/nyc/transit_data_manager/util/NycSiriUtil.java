@@ -199,8 +199,8 @@ public class NycSiriUtil {
   }
 
   private static String cleanHtml(String htmlText) {
-    String[] searchList = new String[]{"•", "·","—"};
-    String[] replaceList = new String[]{"&#x2022;","&middot;","&#x2014;"};
+    String[] searchList = new String[]{"•", "·","—","\240"};
+    String[] replaceList = new String[]{"&#x2022;","&middot;","&#x2014;",""};
     return StringUtils.replaceEach(htmlText,searchList, replaceList);
   }
 
