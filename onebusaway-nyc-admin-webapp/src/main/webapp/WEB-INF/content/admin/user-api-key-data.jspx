@@ -62,7 +62,7 @@
                 <h1>User Api Key Data</h1>
             </div>
             <div id="export">
-                <span>Export: </span>
+                <span>Export All: </span>
                 <s:url var="url" value="/api/api-key/export/csv">
                 </s:url>
                 <a href="${url}">CSV</a>
