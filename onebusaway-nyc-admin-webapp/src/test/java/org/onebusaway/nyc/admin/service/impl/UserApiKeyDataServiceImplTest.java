@@ -29,6 +29,7 @@ import org.onebusaway.nyc.admin.model.UserApiKeyData;
 import org.onebusaway.nyc.admin.service.UserApiKeyDataService;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -37,6 +38,8 @@ public class UserApiKeyDataServiceImplTest {
 
     private SessionFactory _sessionFactory;
     private UserApiKeyDataService _service;
+
+    private static Date date = new Date();
 
     @Before
     public void setup() throws IOException {
@@ -65,6 +68,8 @@ public class UserApiKeyDataServiceImplTest {
     public void getAllUserApiKeyDataTest(){
         Transaction t = getSession().beginTransaction();
         UserApiKeyData data = new UserApiKeyData();
+
+        data.setCreated(date);
         data.setName("test user");
         data.setEmail("testemail@email.com");
         data.setProjectName("test project name");
@@ -84,8 +89,8 @@ public class UserApiKeyDataServiceImplTest {
         assertEquals(data.getProjectUrl(), dbData.getProjectUrl());
         assertEquals(data.getPlatform(), dbData.getPlatform());
         assertEquals(data.getApiKey(), dbData.getApiKey());
+        assertEquals(data.getCreated(), dbData.getCreated());
         t.commit();
-
     }
 
     @Test
