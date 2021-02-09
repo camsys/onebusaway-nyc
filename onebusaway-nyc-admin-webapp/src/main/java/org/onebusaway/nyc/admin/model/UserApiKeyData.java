@@ -52,11 +52,6 @@ public class UserApiKeyData {
     @Column(name="comment", length=1024)
     private String comment;
 
-    @PrePersist
-    protected void onCreate() {
-        created = new Date();
-    }
-
     public Long getId() {
         return id;
     }
@@ -124,6 +119,5 @@ public class UserApiKeyData {
     public void setComment(String comment) {
         this.comment = comment;
     }
-
 
 }
