@@ -261,13 +261,12 @@ public class StifTripLoader {
           String reliefRunId = tripRecord.getReliefRunId();
           String nextOperatorRunId = tripRecord.getNextTripOperatorRunIdWithDepot();
 
+          StifTrip stifTrip = new StifTrip(tripRecord, tripType, agencyId, serviceCode,
+                firstEventRecord, eventRecord, path, tripLineNumber,
+                support.getStopIdForLocation(firstEventRecord.getLocation()),
+                support.getStopIdForLocation(eventRecord.getLocation()),
+                currentStifStopTimes);
 
-          StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
-                  tripRecord.getReliefRunId(),
-                  tripRecord.getNextTripOperatorRunId(),
-                  StifTripType.byValue(tripType), tripRecord.getSignCode(), tripRecord.getBusType(), tripRecord.getDirection());
-
-          setStifTripProperties(stifTrip,agencyId,serviceCode,tripRecord,firstEventRecord,eventRecord,path,tripLineNumber);
           rawDataByServiceCode.get(serviceCode).add(stifTrip);
 
           String destSignCode = tripRecord.getSignCode();
