@@ -65,6 +65,7 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
   public String serviceId;
   public ArrayList<Trip> serviceIdBasedGtfsTrips = new ArrayList<>();
   public ArrayList<StifStopTime> stifStopTimes;
+  public String gtfsId;
 
 
   public StifTrip(String runId, String reliefRunId, String nextRun,

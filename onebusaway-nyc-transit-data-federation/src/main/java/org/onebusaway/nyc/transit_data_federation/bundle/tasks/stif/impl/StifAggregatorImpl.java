@@ -82,6 +82,7 @@ public class StifAggregatorImpl {
   }
 
   public void computeBlocksFromRuns() {
+    writeDataLoggerHeaders();
     useServiceId = !(!_stifLoader.getIsModernTripSyntax() | !useServiceId);
     int blockNo = 0;
 
@@ -236,6 +237,12 @@ public class StifAggregatorImpl {
     determineIfRoutesAreInStif();
   }
 
+  private void writeDataLoggerHeaders(){
+    _AbnormalStifDataLogger.header("gtfs_trips_with_no_stif_match.csv", "gtfs_trip_id,stif_trip");
+    _AbnormalStifDataLogger.header("route_ids_with_no_trips.csv", "agency_id,route_id");
+    _AbnormalStifDataLogger.header("gtfs_and_stif_without_name_match.csv", "stif_trip_id, stif_trip_path, stif_trip_lineNumber, stif_trip_gtfsId, gtfs_trip_id");
+  }
+
   private void populateTripDetails(List<StifTrip> rawTrips){
 	  tripsByRun.clear();
 	  pullouts.clear();
@@ -352,6 +359,11 @@ public class StifAggregatorImpl {
       if(setGtfsBlockId) {
         logStopMismtaches(trip, gtfsTrip);
         gtfsTrip.setBlockId(blockId);
+        if (!gtfsTrip.getId().getId().equals(lastTrip.gtfsId)) {
+          _log.info("Gtfs and Stif trips do not share an Id");
+          _AbnormalStifDataLogger.log("gtfs_and_stif_without_name_match.csv", trip.id, trip.path,
+                  trip.lineNumber,trip.gtfsId,gtfsTrip.getId());
+        }
       }
       _stifLoader.getGtfsMutableRelationalDao().updateEntity(gtfsTrip);
 
@@ -408,6 +420,11 @@ public class StifAggregatorImpl {
       blockIds.add(new ImmutablePair<>(blockId, gtfsTrip.getServiceId().getId()));
       if(setGtfsBlockId) {
         gtfsTrip.setBlockId(blockId);
+        if (!gtfsTrip.getId().getId().equals(lastTrip.gtfsId)) {
+          _log.info("Gtfs and Stif trips do not share an Id");
+          _AbnormalStifDataLogger.log("gtfs_and_stif_without_name_match.csv", trip.id, trip.path,
+                  trip.lineNumber,trip.gtfsId,gtfsTrip.getId());
+        }
       }
       _stifLoader.getGtfsMutableRelationalDao().updateEntity(gtfsTrip);
 
@@ -537,8 +554,6 @@ public class StifAggregatorImpl {
   }
 
   private void determineIfRoutesAreInStif() {
-
-    _AbnormalStifDataLogger.header("gtfs_trips_with_no_stif_match.csv", "gtfs_trip_id,stif_trip");
     Collection<Trip> allTrips = _stifLoader.getGtfsMutableRelationalDao().getAllTrips();
 
     for (Trip trip : allTrips) {
@@ -551,7 +566,6 @@ public class StifAggregatorImpl {
       }
     }
 
-    _AbnormalStifDataLogger.header("route_ids_with_no_trips.csv", "agency_id,route_id");
     for (Route route : _stifLoader.getGtfsMutableRelationalDao().getAllRoutes()) {
       if (routesWithTrips.contains(route)) {
         continue;

@@ -289,7 +289,7 @@ public class StifTripLoader {
           stifTrip.lineNumber = tripLineNumber;
           stifTrip.blockId = tripRecord.getBlockNumber();
           stifTrip.setStifStopTimes(currentStifStopTimes);
-
+          stifTrip.gtfsId = tripRecord.getGtfsTripId();
           rawDataByServiceCode.get(serviceCode).add(stifTrip);
 
           String destSignCode = tripRecord.getSignCode();
@@ -478,7 +478,7 @@ public class StifTripLoader {
     }
   }
 
-private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, TripRecord tripRecord,
+  private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, TripRecord tripRecord,
 		ServiceCode serviceCode, String agencyId, int tripType) {
 	StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
 	    tripRecord.getReliefRunId(),
@@ -564,7 +564,6 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
     csvLogger.header(
         "trips_with_duplicate_run_and_start_time.csv",
         "stif_trip1,stif_filename1,stif_trip_record_line_num1,stif_trip2,stif_filename2,stif_trip_record_line_num2");
-
   }
 
   public StifTripLoaderSupport getSupport() {
