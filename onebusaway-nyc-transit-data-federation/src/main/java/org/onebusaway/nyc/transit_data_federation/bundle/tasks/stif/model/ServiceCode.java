@@ -29,7 +29,7 @@ public enum ServiceCode {
 	LABOR_DAY, 
 	JULY_FOURTH, 
 	COLUMBUS_DAY,
-	Snow_Curtailment_Schedule,
+	SNOW_CURTAILMENT_SCHEDULE,
 	THANKSGIVING, 
 	DAY_AFTER_THANKSGIVING, 
 	CHRISTMAS_EVE, 
@@ -59,7 +59,7 @@ public enum ServiceCode {
 		mapServiceCode("M", JULY_FOURTH);
 		mapServiceCode("N", LABOR_DAY);
 		mapServiceCode("O", COLUMBUS_DAY);
-		mapServiceCode("P", Snow_Curtailment_Schedule);
+		mapServiceCode("P", SNOW_CURTAILMENT_SCHEDULE);
 		mapServiceCode("R", THANKSGIVING);
 		mapServiceCode("S", DAY_AFTER_THANKSGIVING);
 		mapServiceCode("T", CHRISTMAS_EVE);
