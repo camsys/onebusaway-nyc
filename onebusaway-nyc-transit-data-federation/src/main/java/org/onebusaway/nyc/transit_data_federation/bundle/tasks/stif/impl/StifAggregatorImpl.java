@@ -362,7 +362,7 @@ public class StifAggregatorImpl {
         if (!gtfsTrip.getId().getId().equals(lastTrip.gtfsId)) {
           _log.info("Gtfs and Stif trips do not share an Id");
           _AbnormalStifDataLogger.log("gtfs_and_stif_without_name_match.csv", trip.id, trip.path,
-                  trip.lineNumber,trip.gtfsId,gtfsTrip.getId());
+                  trip.lineNumber,trip.gtfsId,gtfsTrip.getId().getId());
         }
       }
       _stifLoader.getGtfsMutableRelationalDao().updateEntity(gtfsTrip);
@@ -423,7 +423,7 @@ public class StifAggregatorImpl {
         if (!gtfsTrip.getId().getId().equals(lastTrip.gtfsId)) {
           _log.info("Gtfs and Stif trips do not share an Id");
           _AbnormalStifDataLogger.log("gtfs_and_stif_without_name_match.csv", trip.id, trip.path,
-                  trip.lineNumber,trip.gtfsId,gtfsTrip.getId());
+                  trip.lineNumber,trip.gtfsId,gtfsTrip.getId().getId());
         }
       }
       _stifLoader.getGtfsMutableRelationalDao().updateEntity(gtfsTrip);
