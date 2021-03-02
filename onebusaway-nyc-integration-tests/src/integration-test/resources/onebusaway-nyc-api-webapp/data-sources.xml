@@ -31,6 +31,10 @@
 	<!-- Create default API key -->
 	<bean class="org.onebusaway.users.impl.CreateApiKeyAction">
     	<property name="key" value="TEST"/>
-  	</bean>    
+  	</bean>
+
+	<bean id="apiKeyThrottlingCacheService" class="org.onebusaway.nyc.api.lib.impl.ApiKeyThrottlingMemcacheServiceImpl">
+		<property name="disabled" value="true" />
+	</bean>
 
 </beans>
