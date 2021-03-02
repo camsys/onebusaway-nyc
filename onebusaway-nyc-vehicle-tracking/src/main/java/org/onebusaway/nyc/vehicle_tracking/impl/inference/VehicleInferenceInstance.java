@@ -252,6 +252,19 @@ public class VehicleInferenceInstance {
     final CoordinatePoint location = new CoordinatePoint(record.getLatitude(),
         record.getLongitude());
 
+    // vehicle properties
+    final AgencyAndId vehicleId = record.getVehicleId();
+    String agencyId = null;
+    String assignedBlockId = null;
+    String blockId = null;
+
+    if(vehicleId != null){
+      agencyId = vehicleId.getAgencyId();
+      assignedBlockId = _pulloutService.getAssignedBlockId(vehicleId);
+      blockId = assignedBlockId;
+    }
+
+
     /**
      * Sometimes, DSCs take the form "  11", where there is whitespace in there.
      * Let's clean it up.
@@ -271,17 +284,18 @@ public class VehicleInferenceInstance {
       lastValidDestinationSignCode = _lastValidDestinationSignCode;
     }
 
+
     final boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
     final boolean atTerminal = false;
     final boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode);
     final boolean hasValidDsc = !_destinationSignCodeService.isMissingDestinationSignCode(lastValidDestinationSignCode)
-        && !_destinationSignCodeService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
+        && !_destinationSignCodeService.isUnknownDestinationSignCode(lastValidDestinationSignCode, agencyId);
 
     Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
     if (_previousObservation == null
         || !StringUtils.equals(_lastValidDestinationSignCode,
             lastValidDestinationSignCode)) {
-      routeIds = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(lastValidDestinationSignCode, record.getVehicleId().getAgencyId());
+      routeIds = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(lastValidDestinationSignCode, agencyId);
     } else {
       routeIds = _previousObservation.getDscImpliedRouteCollections();
     }
@@ -293,17 +307,6 @@ public class VehicleInferenceInstance {
     } else {
       runResults = updateRunIdMatches(record,
           _previousObservation.getRunResults());
-    }
-    
-    final AgencyAndId vehicleId = record.getVehicleId();
-    String assignedBlockId = null;
-    String agencyId = null;
-    String blockId = null;
-    
-    if(vehicleId != null){
-      agencyId = vehicleId.getAgencyId();
-      assignedBlockId = _pulloutService.getAssignedBlockId(vehicleId);
-      blockId = assignedBlockId;
     }
     
     BlockInstance blockInstance = null;

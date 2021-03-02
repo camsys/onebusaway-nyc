@@ -17,11 +17,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.PostConstruct;
 
@@ -53,8 +49,10 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
 
   private Map<String, List<AgencyAndId>> _dscToTripMap;
 
+  private Map<String, Map<String, List<AgencyAndId>>> _dscToAgencyIdToTripMap;
+
   private Map<AgencyAndId, String> _tripToDscMap;
-  
+
   private Set<String> _notInServiceDscs;
   
   @Autowired
@@ -73,8 +71,11 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   	File dscToTripPath = _bundle.getDSCForTripIndex();
   	if (dscToTripPath.exists()) {
   		_dscToTripMap = ObjectSerializationLibrary.readObject(dscToTripPath);
+  		// TODO - Probably don't need both. Replace _dscToTripMap with _dscToAgencyIdToTripMap
+        _dscToAgencyIdToTripMap = groupDscToTripByAgency(_dscToTripMap);
   	} else {
   		_dscToTripMap = null;
+        _dscToAgencyIdToTripMap = null;
   	}
   
   	File tripToDscPath = _bundle.getTripsForDSCIndex();
@@ -90,18 +91,42 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   	} else {
   		_notInServiceDscs = null;
   	}
-  }	
+  }
+
+  private Map<String, Map<String, List<AgencyAndId>>> groupDscToTripByAgency(Map<String, List<AgencyAndId>> dscToTripMap){
+      Map<String, Map<String, List<AgencyAndId>>> dscToAgencyIdToTripMap = new HashMap<>();
+      for(Map.Entry<String, List<AgencyAndId>>  entry : dscToTripMap.entrySet()){
+          String dsc = entry.getKey();
+
+          Map<String, List<AgencyAndId>> agencyIdToTripMap = dscToAgencyIdToTripMap.get(dsc);
+
+          if(agencyIdToTripMap == null) {
+              agencyIdToTripMap = new HashMap<>();
+              dscToAgencyIdToTripMap.put(dsc, agencyIdToTripMap);
+          }
+
+          for(AgencyAndId tripId : entry.getValue()){
+              List<AgencyAndId> tripIds = agencyIdToTripMap.get(tripId.getAgencyId());
+              if(tripIds == null){
+                  tripIds = new ArrayList<>();
+                  agencyIdToTripMap.put(tripId.getAgencyId(), tripIds);
+              }
+              agencyIdToTripMap.get(tripId.getAgencyId()).add(tripId);
+          }
+      }
+      return dscToAgencyIdToTripMap;
+  }
 	
   @Override
   public List<AgencyAndId> getTripIdsForDestinationSignCode(String dsc,
       String agencyId) {
     if (agencyId == null) return _dscToTripMap.get(dsc);
     List<AgencyAndId> filtered = new ArrayList<AgencyAndId>();
-    List<AgencyAndId> dscs =  _dscToTripMap.get(dsc);
-    if (dscs == null) return filtered;
-    for (AgencyAndId agency : dscs) {
-      if (agencyId.equals(agency.getAgencyId())) {
-        filtered.add(agency);
+    List<AgencyAndId> tripIds =  _dscToTripMap.get(dsc);
+    if (tripIds == null) return filtered;
+    for (AgencyAndId tripId : tripIds) {
+      if (agencyId.equals(tripId.getAgencyId())) {
+        filtered.add(tripId);
       }
     }
     return filtered;
@@ -151,11 +176,18 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   }
 
   @Override
-  public boolean isUnknownDestinationSignCode(String destinationSignCode) {
-	  if(_notInServiceDscs.contains(destinationSignCode) 
-			  || _dscToTripMap.containsKey(destinationSignCode))
-		  return false;
-	  else
-		  return true;
+  public boolean isUnknownDestinationSignCode(String destinationSignCode, String agencyId) {
+	  if(_notInServiceDscs.contains(destinationSignCode) ||
+              (agencyId == null && _dscToTripMap.containsKey(destinationSignCode))){
+	      return false;
+      }
+      else if(agencyId != null){
+          Map<String, List<AgencyAndId>> agencyIdToTripMap = _dscToAgencyIdToTripMap.get(destinationSignCode);
+          if(agencyIdToTripMap != null && agencyIdToTripMap.containsKey(agencyId)){
+              return agencyIdToTripMap.isEmpty();
+          }
+      }
+      return true;
   }
+
 }
