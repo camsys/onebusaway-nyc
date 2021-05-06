@@ -64,7 +64,7 @@ public class DepotAssignsQueryJob extends QuartzJobBean {
         _depotFileDir = depotFileDir;
     }
 
-    private static Logger _log = LoggerFactory.getLogger(DepotAssignsSOAPQueryJob.class);
+    private static Logger _log = LoggerFactory.getLogger(DepotAssignsQueryJob.class);
 
 
     public String getUrl(){
