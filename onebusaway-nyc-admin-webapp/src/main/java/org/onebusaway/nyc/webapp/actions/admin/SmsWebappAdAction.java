@@ -27,6 +27,8 @@ package org.onebusaway.nyc.webapp.actions.admin;
 
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.onebusaway.nyc.admin.model.ParametersResponse;
+import org.onebusaway.nyc.admin.service.ParametersService;
 import org.onebusaway.presentation.impl.NextActionSupport;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
@@ -37,6 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Creates API key for the user. Also authorizes the user to use API. 
  * @author abelsare
@@ -44,31 +49,20 @@ import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
  */
 @Results({@Result(type = "redirectAction", name = "redirect", params = {
         "actionName", "sms-webapp-ad"})})
-public class SmsWebappAdAction extends NextActionSupport{
+public class SmsWebappAdAction extends ParametersAction{
 
     private static final long serialVersionUID = 1L;
+
+    private String showAd;
     private String label;
     private String content;
-    private UserService userService;
-    private UserPropertiesService userPropertiesService;
+    private String contentDescription;
 
-    /**
-     * Injects {@link UserService}
-     * @param userService the userService to set
-     */
-    @Autowired
-    public void setUserService(UserService userService) {
-        this.userService = userService;
-    }
+    private String ARG_SHOW_AD_NAME = "smsShowAd";
+    private String ARG_LABEL_NAME = "smsAdLabel";
+    private String ARG_CONTENT_NAME = "smsAdText";
+    private String ARG_CONTENT_DESCRIPTION_NAME = "smsAdDescriptionText";
 
-    /**
-     * Injects {@link UserPropertiesService}
-     * @param userPropertiesService the userPropertiesService to set
-     */
-    @Autowired
-    public void setUserPropertiesService(UserPropertiesService userPropertiesService) {
-        this.userPropertiesService = userPropertiesService;
-    }
 
     /**
      * Returns the label of the ad being created
@@ -105,12 +99,56 @@ public class SmsWebappAdAction extends NextActionSupport{
     }
 
     /**
+     * Injects the content of the ad being created
+     * @param contentDescription the key to set
+     */
+    public void setContentDescription(String contentDescription) {
+        this.contentDescription = contentDescription;
+    }
+
+    /**
+     * Returns the content of the ad being created
+     * @return the content
+     */
+    //@RequiredStringValidator(message="Ad content is required")
+    public String getContentDescription() {
+        return contentDescription;
+    }
+
+    /**
+     * Updates whether the ad will be shown
+     * @param showAd is set
+     */
+    public void setShowAd(String showAd) {
+        this.showAd = showAd;
+    }
+
+    /**
+     * Returns whether the ad will be shown
+     * @return showAd
+     */
+    //@RequiredStringValidator(message="ShowAd is required")
+    public String getShowAd() {
+        return showAd;
+    }
+
+    /**
      * Updates the SMS Webapp Advert
      * @return success message
      */
-    public String updateWebapp() {
+    public void updateWebapp() {
+        if(showAd.equals("true")){
+            params = new String[4];
+            params[1]=ARG_LABEL_NAME+":"+label;
+            params[2]=ARG_CONTENT_NAME+":"+content;
+            params[3]=ARG_CONTENT_DESCRIPTION_NAME+":"+contentDescription;
 
-        return SUCCESS;
+        }
+        else {
+            params = new String[1];
+        }
+        params[0]=ARG_SHOW_AD_NAME+":"+showAd;
+        saveParameters();
     }
 
 

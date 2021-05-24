@@ -30,6 +30,14 @@
 <head>
     <s:url var="url" value="/css/admin.css"/>
     <link rel="stylesheet" href="${url}" type="text/css"/>
+    <s:url var="url" value="/js/lib/jquery.js" />
+    <script type="text/javascript" src="${url}">
+        <!-- //prevent jspx minimization -->
+    </script>
+    <s:url var="url" value="/js/oba/sms-webapp-advert.js" />
+    <script type="text/javascript" src="${url}">
+        <!-- //prevent jspx minimization -->
+    </script>
 </head>
 <body>
 <div id="content">
@@ -37,18 +45,24 @@
         <h2>Update SMS Webapp Advert</h2>
         <s:form action="sms-webapp-ad!updateWebapp" namespace="/admin">
             <fieldset>
-                <label class="top">disable the sms ad</label>
-                <s:checkbox name="disable" required="true"/>
+                <label class="top">Show sms ad?</label>
+                <s:select name="showAd"
+                    id = "showAd"
+                    list="#{'false':'hide','true':'show'}"/>
             </fieldset>
-            <fieldset>
+            <fieldset class="advert_conditional_display">
                 <label class="top">Ad Label</label>
-                <s:textfield name="label" required="true"/>
+                <s:textfield name="label" maxlength="20"/>
             </fieldset>
-            <fieldset>
+            <fieldset class="advert_conditional_display">
                 <label class="top">Ad Content</label>
-                <s:textfield name="content" required="true"/>
+                <s:textfield name="content" maxlength="140"/>
             </fieldset>
-            <s:submit align="left" value="Submit"/>
+            <fieldset class="advert_conditional_display">
+                <label class="top">Ad Content Description</label>
+                <s:textfield name="contentDescription" maxlength="140"/>
+            </fieldset>
+            <s:submit align="left" value="Submit" disabled="disabled"/>
             <div id="result">
                 <s:actionmessage />
                 <s:fielderror/>

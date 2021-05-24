@@ -64,7 +64,11 @@ public class ConfigurationKeyTranslator {
 		configToUIKeys.put("operational-api.historicalRecordLimit", "opsApiMaxRecordLimitKey");
 		configToUIKeys.put("tdm.systemTime.enabled", "tdmSystemTimeEnabledKey");
 		configToUIKeys.put("tdm.systemTime.adjustment", "tdmSystemTimeAdjustmentKey");
-		
+		configToUIKeys.put("sms.showAd", "smsShowAd");
+		configToUIKeys.put("sms.adText", "smsAdText");
+		configToUIKeys.put("sms.adLabel", "smsAdLabel");
+		configToUIKeys.put("sms.adDescriptionText", "smsAdDescriptionText");
+
 		//Create another map with inverse mapping that is ui to config keys
 		uiToConfigKeys = configToUIKeys.inverse();
 		
