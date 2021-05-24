@@ -41,7 +41,7 @@ public class ParametersAction extends OneBusAwayNYCAdminActionSupport {
 	private ParametersResponse parametersResponse;
 	private ParametersService parametersService;
 	
-	private String[] params;
+	protected String[] params;
 	
 	
 	public String getParameters() {
@@ -52,10 +52,14 @@ public class ParametersAction extends OneBusAwayNYCAdminActionSupport {
 		
 		return "parameters";
 	}
-	
+
 	public String saveParameters() {
+	return saveParameters(params);
+	}
+
+	public String saveParameters(String [] params) {
 		parametersResponse = new ParametersResponse();
-		Map<String, String> parameters = buildParameters();
+		Map<String, String> parameters = buildParameters(params);
 		if(parametersService.saveParameters(parameters)) {
 			parametersResponse.setSaveSuccess(true);
 		} else {
@@ -64,7 +68,7 @@ public class ParametersAction extends OneBusAwayNYCAdminActionSupport {
 		return "parameters";
 	}
 	
-	private Map<String, String> buildParameters() {
+	private Map<String, String> buildParameters(String[] params) {
 		Map<String, String> parameters = new HashMap<String, String>();
 		
 		for(String param : params) {
