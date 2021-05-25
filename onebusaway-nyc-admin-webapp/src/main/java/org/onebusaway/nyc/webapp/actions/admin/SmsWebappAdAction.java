@@ -47,107 +47,95 @@ import java.util.Map;
  * @author abelsare
  *
  */
-@Results({@Result(type = "redirectAction", name = "redirect", params = {
-        "actionName", "sms-webapp-ad"})})
+
+@Results({
+        @Result(name="parameters", type="json", params= {"root","sms-webapp-ad"})
+})
 public class SmsWebappAdAction extends ParametersAction{
 
     private static final long serialVersionUID = 1L;
 
-    private String showAd;
-    private String label;
-    private String content;
-    private String contentDescription;
+    private ParametersResponse parametersResponse;
+    private ParametersService parametersService;
 
-    private String ARG_SHOW_AD_NAME = "smsShowAd";
-    private String ARG_LABEL_NAME = "smsAdLabel";
-    private String ARG_CONTENT_NAME = "smsAdText";
-    private String ARG_CONTENT_DESCRIPTION_NAME = "smsAdDescriptionText";
+    protected String[] params;
+
+
+    public String getParameters() {
+        Map<String, String> configParameters = parametersService.getParameters();
+
+        parametersResponse = new ParametersResponse();
+        parametersResponse.setConfigParameters(configParameters);
+
+        return "parameters";
+    }
+
+
+    public String saveParameters() {
+        return saveParameters(params);
+    }
+
+    public String saveParameters(String [] params) {
+        parametersResponse = new ParametersResponse();
+        Map<String, String> parameters = buildParameters(params);
+        if(parametersService.saveParameters(parameters)) {
+            parametersResponse.setSaveSuccess(true);
+        } else {
+            parametersResponse.setSaveSuccess(false);
+        }
+        return "parameters";
+    }
 
 
     /**
-     * Returns the label of the ad being created
-     * @return the label
+     * @return the parametersResponse
      */
-    //@RequiredStringValidator(message="Ad label is required")
-    public String getKey() {
-        return label;
+    public ParametersResponse getParametersResponse() {
+        return parametersResponse;
+    }
+
+
+    /**
+     * Injects parameters service
+     * @param parametersService the parametersService to set
+     */
+    @Autowired
+    public void setParametersService(ParametersService parametersService) {
+        this.parametersService = parametersService;
     }
 
     /**
-     * Injects the label of the ad being created
-     * @param label the key to set
+     * @param params the params to set
      */
-    public void setLabel(String label) {
-        this.label = label;
+    public void setParams(String[] params) {
+        this.params = params;
     }
 
-    /**
-     * Injects the content of the ad being created
-     * @param content the key to set
-     */
-    public void setContent(String content) {
-        this.content = content;
+    public String[] getParams() {
+        return params;
     }
 
-    /**
-     * Returns the content of the ad being created
-     * @return the content
-     */
-    //@RequiredStringValidator(message="Ad content is required")
-    public String getContent() {
-        return content;
+    private Map<String, String> buildParameters(String[] params) {
+        Map<String, String> parameters = new HashMap<String, String>();
+
+        for(String param : params) {
+            String [] configPairs = param.split(":");
+            if(configPairs.length < 2) {
+                throw new RuntimeException("Expecting config data in key value pairs");
+            }
+            parameters.put(configPairs[0], configPairs[1]);
+        }
+
+        return parameters;
     }
 
-    /**
-     * Injects the content of the ad being created
-     * @param contentDescription the key to set
-     */
-    public void setContentDescription(String contentDescription) {
-        this.contentDescription = contentDescription;
-    }
-
-    /**
-     * Returns the content of the ad being created
-     * @return the content
-     */
-    //@RequiredStringValidator(message="Ad content is required")
-    public String getContentDescription() {
-        return contentDescription;
-    }
-
-    /**
-     * Updates whether the ad will be shown
-     * @param showAd is set
-     */
-    public void setShowAd(String showAd) {
-        this.showAd = showAd;
-    }
-
-    /**
-     * Returns whether the ad will be shown
-     * @return showAd
-     */
-    //@RequiredStringValidator(message="ShowAd is required")
-    public String getShowAd() {
-        return showAd;
-    }
 
     /**
      * Updates the SMS Webapp Advert
      * @return success message
      */
     public void updateWebapp() {
-        if(showAd.equals("true")){
-            params = new String[4];
-            params[1]=ARG_LABEL_NAME+":"+label;
-            params[2]=ARG_CONTENT_NAME+":"+content;
-            params[3]=ARG_CONTENT_DESCRIPTION_NAME+":"+contentDescription;
 
-        }
-        else {
-            params = new String[1];
-        }
-        params[0]=ARG_SHOW_AD_NAME+":"+showAd;
         saveParameters();
     }
 

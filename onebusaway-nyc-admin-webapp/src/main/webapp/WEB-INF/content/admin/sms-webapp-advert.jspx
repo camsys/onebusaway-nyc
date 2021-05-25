@@ -43,34 +43,33 @@
 <div id="content">
     <div id="text">
         <h2>Update SMS Webapp Advert</h2>
-        <s:form action="sms-webapp-ad!updateWebapp" namespace="/admin">
             <fieldset>
-                <label class="top">Show sms ad?</label>
-                <s:select name="showAd"
+                <label class="top">Display sms ad?</label>
+                <s:select class = "ad_update"
+                    name="smsShowAd"
                     id = "showAd"
-                    list="#{'false':'hide','true':'show'}"/>
+                    list="#{'false':'hide','true':'display'}"/>
             </fieldset>
             <fieldset class="advert_conditional_display">
                 <label class="top">Ad Label</label>
-                <s:textfield name="label" maxlength="20"/>
+                <s:textfield class = "ad_update" name="smsAdLabel" maxlength="20"/>
             </fieldset>
             <fieldset class="advert_conditional_display">
                 <label class="top">Ad Content</label>
-                <s:textfield name="content" maxlength="140"/>
+                <s:textfield class = "ad_update"  name="smsAdText" maxlength="140"/>
             </fieldset>
             <fieldset class="advert_conditional_display">
                 <label class="top">Ad Content Description</label>
-                <s:textfield name="contentDescription" maxlength="140"/>
+                <s:textfield class = "ad_update"  name="smsAdDescriptionText" maxlength="140"/>
             </fieldset>
-            <s:submit align="left" value="Submit" disabled="disabled"/>
+            <button align="left" value="Submit" onclick="saveParameters()" class="submit_disabled"> submit
+            </button>
             <div id="result">
-                <s:actionmessage />
-                <s:fielderror/>
+                <p id="message"></p>
             </div>
-            <input type="hidden"
-                   name="${_csrf.parameterName}"
-                   value="${_csrf.token}"/>
-        </s:form>
+        <input type="hidden"
+               name="${_csrf.parameterName}"
+               value="${_csrf.token}"/>
     </div>
 </div>
 </body>
