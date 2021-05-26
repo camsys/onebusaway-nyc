@@ -29,7 +29,6 @@ $(function() {
     csrfParameter = $("meta[name='_csrf_parameter']").attr("content");
     csrfHeader = $("meta[name='_csrf_header']").attr("content");
     csrfToken = $("meta[name='_csrf_token']").attr("content");
-    $('.advert_conditional_display').hide();
     $('#showAd').change(function(){
         if($('#showAd').val() == 'true') {
             $('.advert_conditional_display').show();
@@ -37,6 +36,7 @@ $(function() {
             $('.advert_conditional_display').hide();
         }
     });
+    getConfigParameters();
 });
 
 
@@ -112,4 +112,31 @@ function getTime() {
     var time = hours + ":" +  minutes + ":" + seconds + " " +meridian;
 
     return time;
+}
+
+function getConfigParameters() {
+    $.ajax({
+        url: "parameters!getParameters.action?ts=" + new Date().getTime(),
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            updateParametersView(response.configParameters);
+        },
+        error: function(request) {
+            alert("Error loading parameters from the server : ", request.statusText);
+        }
+
+    });
+}
+
+function updateParametersView(parameters){
+    var elements = $(".ad_update")
+    for(var i=0; i<elements.length; i++) {
+        $(".ad_update")[i].value = parameters[$(".ad_update")[i].name]
+    }
+    if($('#showAd').val() == 'true') {
+        $('.advert_conditional_display').show();
+    } else {
+        $('.advert_conditional_display').hide();
+    }
 }
