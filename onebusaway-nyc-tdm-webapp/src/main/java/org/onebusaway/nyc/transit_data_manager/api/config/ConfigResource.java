@@ -194,6 +194,37 @@ public class ConfigResource {
 
   }
 
+  @Path("/{component}/{key}/delete")
+  @GET
+  @Consumes("application/json")
+  @Produces("application/json")
+  public String deleteConfigVal(String configStr, @PathParam("component")
+          String component, @PathParam("key")
+                                     String key) throws JsonParseException, JsonMappingException, IOException {
+
+    _log.info("Starting deleteConfigItemByKey for component " + component + " and key " + key);
+
+    ConfigItem configItem = datastore.deleteConfigItemByKey(component, key);
+
+    boolean keyNotFoundError = configItem == null;
+
+    Message statusMessage = new Message();
+
+    if (keyNotFoundError){
+      statusMessage.setStatus("ERROR");
+      statusMessage.setMessageText("No Value entered. Nothing saved.");
+    } else {
+      statusMessage = new Message();
+      statusMessage.setMessageText("Successfully deleted Config Item for Key " + configItem.getKey()
+              + " with value "  + configItem.getValue());
+      statusMessage.setStatus("OK");
+    }
+
+    _log.info("Returning result in setConfigVal.");
+    return mapper.writeValueAsString(statusMessage);
+
+  }
+
   /**
    * Get the object mapper. This function does any setup necessary, such
    * as adding a null value serializer

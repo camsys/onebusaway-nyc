@@ -90,6 +90,21 @@ public class XMLConfigurationDatastore implements
   }
 
   @Override
+  public synchronized ConfigItem deleteConfigItemByKey(String component, String key){
+    ConfigItem deletedConfigItem = configuration.deleteConfigForComponentKey(component, key);
+
+    if(deletedConfigItem != null) {
+      try {
+        saveConfiguration();
+      } catch (JAXBException e) {
+        e.printStackTrace();
+      }
+    }
+
+    return deletedConfigItem;
+  }
+
+  @Override
   public synchronized boolean getHasComponent(String component) {
     return configuration.getComponentMap().keySet().contains(component);
   }
