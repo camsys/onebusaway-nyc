@@ -500,6 +500,9 @@ public class IndexAction extends SessionedIndexAction {
 
   private String adDescriptionTextResponse() throws Exception {
     String adDescriptionText = _configurationService.getConfigurationValueAsString("sms.adDescriptionText", "");
+    if(adDescriptionText.length() > 150){
+      adDescriptionText = StringUtils.abbreviate(adDescriptionText, 150);
+    }
     return adDescriptionText;
   }
 
@@ -1184,6 +1187,9 @@ public class IndexAction extends SessionedIndexAction {
     Boolean showAd = _configurationService.getConfigurationValueAsBoolean("sms.showAd", false);
     String adLabel = _configurationService.getConfigurationValueAsString("sms.adLabel", null);
     if(showAd && adLabel != null){
+      if(adLabel.length() > 16){
+        adLabel = StringUtils.abbreviate(adLabel, 16);
+      }
       return "S for " + adLabel;
     }
     return "";
