@@ -78,6 +78,9 @@ function buildData() {
         var value = elements[i].value;
         if(value!=""&value!=null) {
             var key = elements[i].name;
+            if(key === 'smsAdDescriptionText'){
+                value = value.replace(/(?:\r\n|\r|\n)/g, '\n');
+            }
             data.push(key + ":" + value);
         }
     }
@@ -132,7 +135,8 @@ function getConfigParameters() {
 function updateParametersView(parameters){
     var elements = $(".ad_update")
     for(var i=0; i<elements.length; i++) {
-        $(".ad_update")[i].value = parameters[$(".ad_update")[i].name]
+        var configValue = parameters[$(".ad_update")[i].name];
+        $(".ad_update")[i].value = configValue;
     }
     if($('#showAd').val() == 'true') {
         $('.advert_conditional_display').show();
