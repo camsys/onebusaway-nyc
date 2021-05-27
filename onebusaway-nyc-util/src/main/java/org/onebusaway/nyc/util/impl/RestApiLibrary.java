@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,11 +158,14 @@ public class RestApiLibrary {
 		HttpURLConnection conn = getHttpURLConnection(requestUrl);
 		int responseCode = 0;
 		try {
-			String content = "{\"config\":{\"value\":\"" + value +"\"}}";
+			JSONObject valueJson = new JSONObject();
+			JSONObject configJson = new JSONObject();
+			valueJson.put("value", value);
+			configJson.put("config", valueJson);
 			conn.connect();
 
 			OutputStreamWriter outputStreamWriter = new OutputStreamWriter(conn.getOutputStream());
-			outputStreamWriter.write(content);
+			outputStreamWriter.write(configJson.toString());
 			outputStreamWriter.close();
 
 			responseCode = conn.getResponseCode();

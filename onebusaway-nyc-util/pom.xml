@@ -70,6 +70,12 @@
           <groupId>joda-time</groupId>
           <artifactId>joda-time</artifactId>
       </dependency>
+      <dependency>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+          <version>20210307</version>
+      </dependency>
+
   </dependencies>
   
   <profiles>
