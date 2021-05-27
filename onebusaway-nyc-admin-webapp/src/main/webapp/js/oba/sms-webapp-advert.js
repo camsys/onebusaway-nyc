@@ -25,7 +25,7 @@ var csrfParameter = "";
 var csrfToken = "";
 var csrfHeader = "";
 
-$(function() {
+jQuery(function() {
     csrfParameter = $("meta[name='_csrf_parameter']").attr("content");
     csrfHeader = $("meta[name='_csrf_header']").attr("content");
     csrfToken = $("meta[name='_csrf_token']").attr("content");
