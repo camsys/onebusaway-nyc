@@ -80,4 +80,6 @@ public interface ConfigurationDatastoreInterface {
    * @return
    */
   public boolean getComponentHasKey (String component, String key);
+
+  public ConfigItem deleteConfigItemByKey(String component, String key);
 }
