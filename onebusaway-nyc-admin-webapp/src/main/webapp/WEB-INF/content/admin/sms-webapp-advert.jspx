@@ -52,15 +52,11 @@
             </fieldset>
             <fieldset class="advert_conditional_display">
                 <label class="top">Ad Label</label>
-                <s:textfield class = "ad_update" name="smsAdLabel" maxlength="20"/>
+                <s:textfield class = "ad_update" name="smsAdLabel" maxlength="16"/>
             </fieldset>
             <fieldset class="advert_conditional_display">
-                <label class="top">Ad Content</label>
-                <s:textfield class = "ad_update"  name="smsAdText" maxlength="140"/>
-            </fieldset>
-            <fieldset class="advert_conditional_display">
-                <label class="top">Ad Content Description</label>
-                <s:textfield class = "ad_update"  name="smsAdDescriptionText" maxlength="140"/>
+                <label class="top">Ad Description</label>
+                <s:textarea class = "ad_update" style = "{font-size:11px}" name="smsAdDescriptionText" maxlength="150"/>
             </fieldset>
             <button align="left" value="Submit" onclick="saveParameters()" class="submit_disabled"> submit
             </button>
