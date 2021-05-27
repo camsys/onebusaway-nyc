@@ -56,7 +56,7 @@
             </fieldset>
             <fieldset class="advert_conditional_display">
                 <label class="top">Ad Description</label>
-                <s:textarea class = "ad_update" style = "{font-size:11px}" name="smsAdDescriptionText" maxlength="150"/>
+                <s:textarea class = "ad_update" style = "{font-size:11px}" cols="35" rows="10" name="smsAdDescriptionText" maxlength="150"/>
             </fieldset>
             <button align="left" value="Submit" onclick="saveParameters()" class="submit_disabled"> submit
             </button>
