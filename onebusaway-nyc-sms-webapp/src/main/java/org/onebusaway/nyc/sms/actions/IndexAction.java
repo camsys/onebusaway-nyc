@@ -108,6 +108,8 @@ public class IndexAction extends SessionedIndexAction {
       _lastCommandString = commandString;
     }
 
+    Boolean showAd = _configurationService.getConfigurationValueAsBoolean("sms.showAd", false);
+
     if(queryString != null && !queryString.isEmpty()) {
       _lastQuery = queryString;
       _searchResults = _searchService.getSearchResults(queryString, _resultFactory);
@@ -125,7 +127,7 @@ public class IndexAction extends SessionedIndexAction {
     } else if(_lastQuery != null && "O".equals(commandString)) {
       // occupancy query -- redo last query
       _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
-    } else if(_lastQuery != null && "S".equals(commandString)) {
+    } else if(_lastQuery != null && showAd && "S".equals(commandString)) {
       _response = adDescriptionTextResponse();
       return SUCCESS;
     } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && "N".equals(commandString)) {
