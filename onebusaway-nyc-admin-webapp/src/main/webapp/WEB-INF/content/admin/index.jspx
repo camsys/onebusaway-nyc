@@ -79,6 +79,10 @@
 						<s:url var="url" action="barcode"></s:url>
 						<s:a href="%{url}">QR Code Generation</s:a>
 					</li>
+					<li>
+						<s:url var="url" action="sms-webapp-advert"/>
+						<s:a href="%{url}">Update Sms Webapp Ad</s:a>
+					</li>
 				</ul>
 			</div>
 		</div>

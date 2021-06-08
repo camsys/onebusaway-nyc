@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
+<!--
+  Created by IntelliJ IDEA.
+  User: caylasavitzky
+  Date: 5/21/21
+  Time: 8:01 PM
+  To change this template use File | Settings | File Templates.
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+      xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
+<jsp:directive.page contentType="text/html" />
+<head>
+    <s:url var="url" value="/css/admin.css"/>
+    <link rel="stylesheet" href="${url}" type="text/css"/>
+    <s:url var="url" value="/js/lib/jquery.js" />
+    <script type="text/javascript" src="${url}">
+        <!-- //prevent jspx minimization -->
+    </script>
+    <s:url var="url" value="/js/oba/sms-webapp-advert.js" />
+    <script type="text/javascript" src="${url}">
+        <!-- //prevent jspx minimization -->
+    </script>
+</head>
+<body>
+<div id="content">
+    <div id="text">
+        <h2>Update SMS Webapp Advert</h2>
+            <fieldset>
+                <label class="top">Display sms ad?</label>
+                <s:select class = "ad_update"
+                    name="smsShowAd"
+                    id = "showAd"
+                    list="#{'false':'hide','true':'display'}"/>
+            </fieldset>
+            <fieldset class="advert_conditional_display">
+                <label class="top">Ad Label</label>
+                <s:textfield class = "ad_update" name="smsAdLabel" maxlength="16"/>
+            </fieldset>
+            <fieldset class="advert_conditional_display">
+                <label class="top">Ad Description</label>
+                <s:textarea class = "ad_update" style = "{font-size:11px}" cols="35" rows="10" name="smsAdDescriptionText" maxlength="150"/>
+            </fieldset>
+            <button align="left" value="Submit" onclick="saveParameters()" class="submit_disabled"> submit
+            </button>
+            <div id="result">
+                <p id="message"></p>
+            </div>
+        <input type="hidden"
+               name="${_csrf.parameterName}"
+               value="${_csrf.token}"/>
+    </div>
+</div>
+</body>
+</html>
+
+

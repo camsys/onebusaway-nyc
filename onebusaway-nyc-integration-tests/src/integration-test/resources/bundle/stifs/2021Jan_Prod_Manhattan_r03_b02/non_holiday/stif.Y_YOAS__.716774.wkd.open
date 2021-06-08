@@ -1,0 +1,25 @@
+11YO  Y OAS   1 YONKERS                 YONKERS AS ASSIGNED     716774   330 S MB  20210115                                         YOAS  YOAS         
+1579a46 AV                  W 35 ST               000000000000M  W34ST    N    40750341 -73987222 450066
+1552013 AV                  E 33 ST               000000000000M  E34ST    N    40744963 -73978601 450228
+152b5dRFK BRIDGE ENTRANCE   E 124 ST              000000000000M           N    40801719 -73932055 991010
+1591c0BABCOCK PL            POLYCHROME PL         000000000000W  BABCK    N    40940786 -73900638 995001
+1529ebYONKERS DEPOT         YONKERS DEPOT         000000000000W  YO       D    40940947 -73900682 995002
+155aa8CENTRAL PK            YONKERS AV            000000000000W           N    40921097 -73863283 995003
+21520100097000N 1 91c000114900       991YOAS_0004     YOAS                        H22   N N               19426 YO    5686063    991   YOAS 00114900    0   YOAS    991   YOAS 00085500 450228 995001              YO YO 29616582-YOPA1-YO_A1-Weekday-40-SDon    
+31520100097000D ST   N     0 450228
+312b5d00101458T NN   N  4838 991010
+315aa800111700T NN   N 15952 995003
+3191c000114900A NT   N 19425 995001
+2179a400097000N 1 91c000114900       992YOAS_0005     YOAS                        H22   N N               19898 YO    5686123    992   YOAS 00114900    0   YOAS    992   YOAS 00084000 450066 995001              YO YO 29616583-YOPA1-YO_A1-Weekday-40-SDon    
+3179a400097000D ST   N     0 450066
+312b5d00101776T NN   N  5310 991010
+315aa800111776T NN   N 16425 995003
+3191c000114900A NT   N 19898 995001
+2191c000114900N 3 29eb00115000       991YOAS_0001     YOAS                        H0012 N C                   1 YO    5686063                               YOAS    991   YOAS 00097000 995001 995002                 YO 29616790-YOPA1-YO_A1-Weekday-40-SDon    
+3191c000114900D NT   N     0 995001
+3129eb00115000A NT   N     1 995002
+2191c000114900  3 29eb00115000       992YOAS_0001     YOAS                        H0012 N C                   1 YO    5686123                               YOAS    992   YOAS 00097000 995001 995002                 YO 29617065-YOPA1-YO_A1-Weekday-40-SDon    
+3191c000114900D NT   N     0 995001
+3129eb00115000A NT   N     1 995002
+350012    YOAS      NOT IN SERVICE                                                                                      
+3522      YOAS      MTA BUS                                                                                             

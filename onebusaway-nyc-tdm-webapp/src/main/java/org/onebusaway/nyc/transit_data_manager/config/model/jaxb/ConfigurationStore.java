@@ -77,4 +77,11 @@ public class ConfigurationStore {
 
   }
 
+  public ConfigItem deleteConfigForComponentKey(String component, String key){
+    if (getComponentMap().get(component) == null){
+      return null;
+    }
+    return getComponentMap().get(component).removeItemForKey(key);
+  }
+
 }

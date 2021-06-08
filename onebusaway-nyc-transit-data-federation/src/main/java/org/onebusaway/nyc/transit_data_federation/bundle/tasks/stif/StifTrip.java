@@ -25,6 +25,7 @@ import java.util.List;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.EventRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TripRecord;
 
 public class StifTrip implements Comparable<StifTrip>, Serializable {
   private static final long serialVersionUID = 2L;
@@ -65,6 +66,7 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
   public String serviceId;
   public ArrayList<Trip> serviceIdBasedGtfsTrips = new ArrayList<>();
   public ArrayList<StifStopTime> stifStopTimes;
+  public String gtfsId;
 
 
   public StifTrip(String runId, String reliefRunId, String nextRun,
@@ -76,6 +78,44 @@ public class StifTrip implements Comparable<StifTrip>, Serializable {
     this.dsc = dsc;
     this.busType = busType;
     this.direction = direction;
+  }
+
+
+  public StifTrip(TripRecord tripRecord, int tripType, String agencyId,
+                  ServiceCode serviceCode, EventRecord firstEventRecord,
+                  EventRecord eventRecord, File path, int tripLineNumber,
+                  String firstStop, String lastStop,
+                  ArrayList<StifStopTime> currentStifStopTimes) {
+    this.runId = tripRecord.getRunId();
+    this.reliefRunId = tripRecord.getReliefRunId();
+    this.nextRun = tripRecord.getNextTripOperatorRunId();
+    this.type = StifTripType.byValue(tripType);
+    this.dsc = tripRecord.getSignCode();
+    this.busType = tripRecord.getBusType();
+    this.direction = tripRecord.getDirection();
+    this.agencyId = agencyId;
+    this.serviceCode = serviceCode;
+    this.depot = tripRecord.getDepotCode();
+    if (tripRecord.getNextTripOperatorDepotCode() != null) {
+      this.nextTripOperatorDepot = tripRecord.getNextTripOperatorDepotCode();
+    } else {
+      this.nextTripOperatorDepot = tripRecord.getDepotCode();
+    }
+    this.firstStopTime = firstEventRecord.getTime();
+    this.lastStopTime = eventRecord.getTime();
+    this.firstStop = firstStop;
+    this.lastStop = lastStop;
+    this.listedFirstStopTime = tripRecord.getOriginTime();
+    this.listedLastStopTime = tripRecord.getDestinationTime();
+    this.recoveryTime = tripRecord.getRecoveryTime();
+    this.firstTripInSequence = tripRecord.isFirstTripInSequence();
+    this.lastTripInSequence = tripRecord.isLastTripInSequence();
+    this.signCodeRoute = tripRecord.getSignCodeRoute();
+    this.path = path;
+    this.lineNumber = tripLineNumber;
+    this.blockId = tripRecord.getBlockNumber();
+    this.setStifStopTimes(currentStifStopTimes);
+    this.gtfsId = tripRecord.getGtfsTripId();
   }
 
   // this is just for creating bogus objects for searching

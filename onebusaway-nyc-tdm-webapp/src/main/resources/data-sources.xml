@@ -141,8 +141,8 @@
 		<property name="cronExpression" value="0 10 4 * * ?" />
 	</bean>
 	
-	<bean name="depotAssignsSoapQueryJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-		<property name="jobClass" value="org.onebusaway.nyc.transit_data_manager.job.DepotAssignsSOAPQueryJob" />
+	<bean name="depotAssignsQueryJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="jobClass" value="org.onebusaway.nyc.transit_data_manager.job.DepotAssignsQueryJob" />
 		<property name="jobDataAsMap">
 			<map>
 				<entry key="configurationService" value-ref="configurationService"/>
@@ -152,8 +152,8 @@
 		<property name="durability" value="true" />
 	</bean>
 
-	<bean id="depotAssignsSoapQueryTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-		<property name="jobDetail" ref="depotAssignsSoapQueryJob" />
+	<bean id="depotAssignsQueryTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="depotAssignsQueryJob" />
 		<property name="cronExpression" value="0 0 * * * ?" />
 	</bean>
 	
@@ -161,7 +161,7 @@
 		<property name="triggers">
 			<list>
 				<ref bean="persistTrigger" />
-				<ref bean="depotAssignsSoapQueryTrigger" />
+				<ref bean="depotAssignsQueryTrigger" />
 			</list>
 		</property>
 	</bean>

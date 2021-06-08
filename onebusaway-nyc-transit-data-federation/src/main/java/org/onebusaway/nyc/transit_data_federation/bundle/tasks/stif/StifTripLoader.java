@@ -261,34 +261,11 @@ public class StifTripLoader {
           String reliefRunId = tripRecord.getReliefRunId();
           String nextOperatorRunId = tripRecord.getNextTripOperatorRunIdWithDepot();
 
-
-          StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
-                  tripRecord.getReliefRunId(),
-                  tripRecord.getNextTripOperatorRunId(),
-                  StifTripType.byValue(tripType), tripRecord.getSignCode(), tripRecord.getBusType(), tripRecord.getDirection());
-
-          stifTrip.agencyId = agencyId;
-          stifTrip.serviceCode = serviceCode;
-          stifTrip.depot = tripRecord.getDepotCode();
-          if (tripRecord.getNextTripOperatorDepotCode() != null) {
-            stifTrip.nextTripOperatorDepot = tripRecord.getNextTripOperatorDepotCode();
-          } else {
-            stifTrip.nextTripOperatorDepot = tripRecord.getDepotCode();
-          }
-          stifTrip.firstStopTime = firstEventRecord.getTime();
-          stifTrip.lastStopTime = eventRecord.getTime();
-          stifTrip.firstStop = support.getStopIdForLocation(firstEventRecord.getLocation());
-          stifTrip.lastStop = support.getStopIdForLocation(eventRecord.getLocation());
-          stifTrip.listedFirstStopTime = tripRecord.getOriginTime();
-          stifTrip.listedLastStopTime = tripRecord.getDestinationTime();
-          stifTrip.recoveryTime = tripRecord.getRecoveryTime();
-          stifTrip.firstTripInSequence = tripRecord.isFirstTripInSequence();
-          stifTrip.lastTripInSequence = tripRecord.isLastTripInSequence();
-          stifTrip.signCodeRoute = tripRecord.getSignCodeRoute();
-          stifTrip.path = path;
-          stifTrip.lineNumber = tripLineNumber;
-          stifTrip.blockId = tripRecord.getBlockNumber();
-          stifTrip.setStifStopTimes(currentStifStopTimes);
+          StifTrip stifTrip = new StifTrip(tripRecord, tripType, agencyId, serviceCode,
+                firstEventRecord, eventRecord, path, tripLineNumber,
+                support.getStopIdForLocation(firstEventRecord.getLocation()),
+                support.getStopIdForLocation(eventRecord.getLocation()),
+                currentStifStopTimes);
 
           rawDataByServiceCode.get(serviceCode).add(stifTrip);
 
@@ -478,7 +455,35 @@ public class StifTripLoader {
     }
   }
 
-private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, TripRecord tripRecord,
+  private void setStifTripProperties(StifTrip stifTrip, String agencyId, ServiceCode serviceCode,
+                                     TripRecord tripRecord, EventRecord firstEventRecord,
+                                     EventRecord eventRecord, File path, int tripLineNumber){
+    stifTrip.agencyId = agencyId;
+    stifTrip.serviceCode = serviceCode;
+    stifTrip.depot = tripRecord.getDepotCode();
+    if (tripRecord.getNextTripOperatorDepotCode() != null) {
+      stifTrip.nextTripOperatorDepot = tripRecord.getNextTripOperatorDepotCode();
+    } else {
+      stifTrip.nextTripOperatorDepot = tripRecord.getDepotCode();
+    }
+    stifTrip.firstStopTime = firstEventRecord.getTime();
+    stifTrip.lastStopTime = eventRecord.getTime();
+    stifTrip.firstStop = support.getStopIdForLocation(firstEventRecord.getLocation());
+    stifTrip.lastStop = support.getStopIdForLocation(eventRecord.getLocation());
+    stifTrip.listedFirstStopTime = tripRecord.getOriginTime();
+    stifTrip.listedLastStopTime = tripRecord.getDestinationTime();
+    stifTrip.recoveryTime = tripRecord.getRecoveryTime();
+    stifTrip.firstTripInSequence = tripRecord.isFirstTripInSequence();
+    stifTrip.lastTripInSequence = tripRecord.isLastTripInSequence();
+    stifTrip.signCodeRoute = tripRecord.getSignCodeRoute();
+    stifTrip.path = path;
+    stifTrip.lineNumber = tripLineNumber;
+    stifTrip.blockId = tripRecord.getBlockNumber();
+    stifTrip.setStifStopTimes(currentStifStopTimes);
+    stifTrip.gtfsId = tripRecord.getGtfsTripId();
+  }
+
+  private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, TripRecord tripRecord,
 		ServiceCode serviceCode, String agencyId, int tripType) {
 	StifTrip stifTrip = new StifTrip(tripRecord.getRunId(),
 	    tripRecord.getReliefRunId(),
@@ -564,7 +569,6 @@ private StifTrip getTripFromNonRevenueRecord(File path, int tripLineNumber, Trip
     csvLogger.header(
         "trips_with_duplicate_run_and_start_time.csv",
         "stif_trip1,stif_filename1,stif_trip_record_line_num1,stif_trip2,stif_filename2,stif_trip_record_line_num2");
-
   }
 
   public StifTripLoaderSupport getSupport() {

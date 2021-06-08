@@ -37,7 +37,7 @@ public interface DestinationSignCodeService {
   
   public boolean isMissingDestinationSignCode(String destinationSignCode);
   
-  public boolean isUnknownDestinationSignCode(String destinationSignCode);
+  public boolean isUnknownDestinationSignCode(String destinationSignCode, String agencyId);
 
   public Set<AgencyAndId> getRouteCollectionIdsForDestinationSignCode(
       String destinationSignCode, String agencyId);

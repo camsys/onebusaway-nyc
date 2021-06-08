@@ -56,5 +56,9 @@ public class ComponentConfiguration {
   public void setItemForKey(String key, ConfigItem config) {
     getConfigMap().put(key, config);
   }
+
+  public ConfigItem removeItemForKey(String key){
+    return getConfigMap().remove(key);
+  }
   
 }

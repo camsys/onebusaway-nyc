@@ -94,6 +94,12 @@
           <groupId>org.locationtech.jts</groupId>
           <artifactId>jts-core</artifactId>
       </dependency>
+      <dependency>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+          <version>20210307</version>
+      </dependency>
+
   </dependencies>
   
   <profiles>
