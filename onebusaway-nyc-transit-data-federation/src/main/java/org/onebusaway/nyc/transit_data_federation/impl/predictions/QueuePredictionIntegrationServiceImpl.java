@@ -292,14 +292,24 @@ public class QueuePredictionIntegrationServiceImpl extends
 	private boolean isPredictionRecordPastAgeLimit(FeedMessage message){
 		long difference = computeTimeDifference(message.getHeader().getTimestamp());
 		if (difference > _predictionAgeLimit) {
-			if (message.getEntity(0).getVehicle() != null)
-				_log.info("Prediction Trip Update for "
-						+ message.getEntity(0).getTripUpdate().getVehicle()
-						.getId() + " discarded.");
+			for(GtfsRealtime.FeedEntity feedEntity : message.getEntityList()){
+				if(feedEntity.hasTripUpdate()){
+					TripUpdate tripUpdate = feedEntity.getTripUpdate();
+					String tripId = tripUpdate.hasTrip() ? tripUpdate.getTrip().getTripId() : null;
+					String routeId = tripUpdate.hasTrip() ? tripUpdate.getTrip().getRouteId() : null;
+					String vehicleId = tripUpdate.hasVehicle() ? tripUpdate.getVehicle().getId() : null;
+					_log.warn("Prediction record timestamp is {} sec old and is past the age limit of {} sec. " +
+									"Prediction Trip Update with trip {} on route {} and vehicle {} discarded.",
+							difference, _predictionAgeLimit, tripId, routeId, vehicleId);
+
+				}
+			}
 			return true;
 		}
 		return false;
 	}
+
+
 
 	protected long computeTimeDifference(long timestamp) {
 		return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds
