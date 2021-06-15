@@ -327,7 +327,7 @@
 			<dependency>
 				<groupId>org.yaml</groupId>
 				<artifactId>snakeyaml</artifactId>
-				<version>1.6</version>
+				<version>1.26</version>
 				<scope>provided</scope>
 			</dependency>
 
