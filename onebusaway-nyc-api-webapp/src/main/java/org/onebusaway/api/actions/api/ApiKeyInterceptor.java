@@ -15,6 +15,8 @@
  */
 package org.onebusaway.api.actions.api;
 
+import org.apache.struts2.dispatcher.HttpParameters;
+import org.apache.struts2.dispatcher.Parameter;
 import org.onebusaway.api.ResponseCodes;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.nyc.api.lib.impl.ApiKeyUsageMonitorImpl;
@@ -30,6 +32,7 @@ import org.apache.struts2.rest.ContentTypeHandlerManager;
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
@@ -78,14 +81,14 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
 
   private ApiKeyPermissionService.Status isAllowed(ActionInvocation invocation) {
     ActionContext context = invocation.getInvocationContext();
-    Map<String, Object> parameters = context.getParameters();
-    String[] keys = (String[]) parameters.get("key");
-
-    if( keys == null || keys.length == 0)
+    HttpParameters parameters = context.getParameters();
+    Parameter key = parameters.get("key");
+    if(key == null || key.getMultipleValues() == null || key.getMultipleValues().length == 0){
       return ApiKeyPermissionService.Status.UNAUTHORIZED;
+    }
 
+    String[] keys = key.getMultipleValues();
     _keyUsageMonitor.increment(keys[0]);
-
     return _keyService.getPermission(keys[0], "api");
   }
 
