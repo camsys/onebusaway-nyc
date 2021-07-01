@@ -36,8 +36,9 @@ public class PublicServiceAnnouncement {
   @Id
   @GeneratedValue(strategy=GenerationType.AUTO)
   private Long id;
-  
-  @Column(nullable = false, name = "text", length=1024)
+
+
+  @Column(nullable = false, name = "text", columnDefinition = "LONGTEXT", length=1024)
   private String text = "";
   
   public Long getId() {
