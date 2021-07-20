@@ -626,10 +626,10 @@
             <!-- switched from org.onebusaway.plugins to fr.avianey.mojo as -->
             <!-- hsqldb was outdated.  If you can find source of -->
             <!-- org.onebusaway.plugins please update the hsqldb version -->
-            <plugin>
+            <!--<plugin>
                 <groupId>org.onebusaway.plugins</groupId>
                 <artifactId>maven-hsqldb-plugin</artifactId>
-                <!-- version 1.0.1 supports hsqldb 2.3.2 -->
+                &lt;!&ndash; version 1.0.1 supports hsqldb 2.3.2 &ndash;&gt;
                 <version>1.0.1</version>
                 <executions>
                     <execution>
@@ -645,7 +645,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
             <!-- Start up all the webapps using the cargo plugin -->
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
