@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
@@ -84,8 +85,9 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
   // See urlrewrite.xml as to how this is set. Which means this action doesn't
   // respect an HTTP Accept: header.
   private String _type = "xml";
-  
-  @Resource(name="siriCacheService")
+
+  @Autowired
+  @Qualifier("siriCacheService")
   private NycCacheService<Integer, String> _siriCacheService;
   
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();
