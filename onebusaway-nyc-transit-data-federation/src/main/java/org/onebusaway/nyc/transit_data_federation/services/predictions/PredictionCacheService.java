@@ -18,10 +18,10 @@ package org.onebusaway.nyc.transit_data_federation.services.predictions;
 
 import java.util.List;
 
+import com.google.common.cache.Cache;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
-import com.google.common.cache.Cache;
 
 public interface PredictionCacheService {
 	Cache<String, List<TimepointPredictionRecord>> getCache();

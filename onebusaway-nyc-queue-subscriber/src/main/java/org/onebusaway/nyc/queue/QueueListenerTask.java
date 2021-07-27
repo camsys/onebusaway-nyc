@@ -24,7 +24,8 @@ import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
@@ -47,7 +48,7 @@ public abstract class QueueListenerTask {
 	private ThreadPoolTaskScheduler _taskScheduler;
 	private ExecutorService _executorService = null;
 	protected boolean _initialized = false;
-	protected ObjectMapper _mapper = new ObjectMapper();
+	protected ObjectMapper _mapper = new ObjectMapper().registerModule(new JaxbAnnotationModule());
 
 	protected DNSResolver _resolver = null;
 	protected ZMQ.Context _context = null;

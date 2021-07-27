@@ -154,10 +154,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
      * based on that time and the travel time to that location (for when
      * we're not anywhere nearby).
      */
-    final int startSchedTime = Iterables.getFirst(
-        blockInstance.getBlock().getStopTimes(), null).getStopTime().getArrivalTime();
+    final int startSchedTime = Iterables.get(
+        blockInstance.getBlock().getStopTimes(), 0).getStopTime().getArrivalTime();
     final int endSchedTime = Iterables.getLast(
-        blockInstance.getBlock().getStopTimes(), null).getStopTime().getDepartureTime();
+        blockInstance.getBlock().getStopTimes()).getStopTime().getDepartureTime();
     
     final double timeToGetToCurrentTimeLoc;
     if (currentTime > startSchedTime
@@ -242,10 +242,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     final int currentTime = (int) (obs.getTime() - parentBlockState.getBlockInstance().getServiceDate()) / 1000;
     final int newSchedTime = currentTime - (int) (newSchedDev * 60.0);
 
-    final int startSchedTime = Iterables.getFirst(
-        parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime().getArrivalTime();
+    final int startSchedTime = Iterables.get(
+        parentBlockState.getBlockInstance().getBlock().getStopTimes(), 0).getStopTime().getArrivalTime();
     final int endSchedTime = Iterables.getLast(
-        parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime().getDepartureTime();
+        parentBlockState.getBlockInstance().getBlock().getStopTimes()).getStopTime().getDepartureTime();
     BlockStateObservation schedState;
     if (newSchedTime < startSchedTime) {
       schedState = _blocksFromObservationService.getBlockStateObservationFromDist(

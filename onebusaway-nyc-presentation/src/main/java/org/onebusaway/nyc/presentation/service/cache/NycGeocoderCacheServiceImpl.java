@@ -21,13 +21,12 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 public class NycGeocoderCacheServiceImpl extends NycCacheService<String, List<NycGeocoderResult>> {
 

@@ -16,6 +16,8 @@
 
 package org.onebusaway.nyc.presentation.service.cache;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -30,9 +32,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 public abstract class NycCacheService<K, V> {
 

@@ -34,8 +34,13 @@
 
         <!-- 0 or more logger/category elements -->
 
-        <!-- 0 or 1 root elements -->
+        <logger
+                name="org.hibernate.engine.internal.StatisticalLoggingSessionEventListener">
+                <level value="FATAL" />
+                <appender-ref ref="stdout" />
+        </logger>
 
+        <!-- 0 or 1 root elements -->
         <root>
                 <priority value="info" />
                 <appender-ref ref="stdout" />

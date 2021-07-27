@@ -18,6 +18,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 import com.google.common.cache.CacheBuilder;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalAnswers;

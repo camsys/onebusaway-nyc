@@ -296,7 +296,7 @@ public class VehicleStateLibrary {
      * we're at a potential layover spot.
      */
     final BlockStopTimeEntry tripFirstStop = Iterables.getLast(stopTimes1);
-    final BlockStopTimeEntry tripLastStop = Iterables.getFirst(location.getActiveTrip().getStopTimes(), null);
+    final BlockStopTimeEntry tripLastStop = Iterables.get(location.getActiveTrip().getStopTimes(), 0);
     if (tripFirstStop.equals(closestStop)
         || tripLastStop.equals(closestStop))
       return closestStop;

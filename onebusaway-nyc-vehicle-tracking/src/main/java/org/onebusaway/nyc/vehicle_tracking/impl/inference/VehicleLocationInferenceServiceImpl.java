@@ -93,7 +93,7 @@ import tcip_final_3_0_5_1.CcLocationReport;
 import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
 
 import com.amazonaws.services.cloudwatch.model.StandardUnit;
-import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
@@ -837,7 +837,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
       final String assignedRun = _nycTestInferredLocationRecord.getAssignedRunId();
       final String operatorId = _nycTestInferredLocationRecord.getOperatorId();
-      if (!Strings.isNullOrEmpty(assignedRun) && !Strings.isNullOrEmpty(operatorId)) {
+      if (!StringUtils.isEmpty(assignedRun) && !StringUtils.isEmpty(operatorId)) {
       	final String[] runParts = assignedRun.split("-");
       	if (runParts.length > 2) {
           opSvc.setOperatorAssignment(new AgencyAndId(

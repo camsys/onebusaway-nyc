@@ -21,7 +21,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.nyc.util.git.GitRepositoryHelper;
 import org.onebusaway.nyc.util.model.GitRepositoryState;
 import org.springframework.stereotype.Component;

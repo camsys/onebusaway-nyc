@@ -27,8 +27,7 @@ import java.util.ArrayList;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
+
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.nyc.ops.util.OpsApiLibrary;
@@ -63,9 +62,7 @@ public class CcAndInferredLocationServiceImplTest {
 
 	  	Configuration config = new Configuration();
 	  	config = config.configure("org/onebusaway/nyc/ops/hibernate-configuration.xml");
-	  	ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(
-	  	config.getProperties()). buildServiceRegistry();
-	  	_sessionFactory = config.buildSessionFactory(serviceRegistry);
+	  	_sessionFactory = config.buildSessionFactory();
 
 	    _jsonTool = new LowerCaseWDashesGsonJsonTool(false);
 	    _service = new CcAndInferredLocationServiceImpl();

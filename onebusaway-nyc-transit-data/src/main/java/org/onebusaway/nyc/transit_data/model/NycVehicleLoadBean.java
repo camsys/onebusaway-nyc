@@ -17,7 +17,7 @@ package org.onebusaway.nyc.transit_data.model;
 
 import org.onebusaway.realtime.api.OccupancyStatus;
 
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.onebusaway.nyc.transit_data.serialization.OccupancyDeserializer;
 
 import java.io.Serializable;

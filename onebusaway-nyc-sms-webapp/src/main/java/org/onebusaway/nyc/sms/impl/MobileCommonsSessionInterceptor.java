@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.sms.impl;
 
+import org.apache.struts2.dispatcher.HttpParameters;
+import org.apache.struts2.dispatcher.Parameter;
 import org.onebusaway.nyc.sms.services.GoogleAnalyticsSessionAware;
 import org.onebusaway.nyc.sms.services.SessionManager;
 import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
@@ -50,9 +52,14 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
   @Override
   public String intercept(ActionInvocation invocation) throws Exception {
     ActionContext context = invocation.getInvocationContext();
-    Map<String, Object> parameters = context.getParameters();
+    HttpParameters parameters = context.getParameters();
+    Parameter sessionParameter = parameters.get(_sessionIdParameterName);
 
-    Object rawSessionId = parameters.get(_sessionIdParameterName);
+    if(!sessionParameter.isDefined()) {
+      return invocation.invoke();
+    }
+
+    Object rawSessionId = sessionParameter.getObject();
     if (rawSessionId == null)
       return invocation.invoke();
 

@@ -19,8 +19,6 @@ import static org.junit.Assert.*;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 import org.junit.Ignore;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 
@@ -55,9 +53,7 @@ public class CcLocationReportDaoImplTest {
 
     Configuration config = new Configuration();
     config = config.configure("org/onebusaway/nyc/report_archive/hibernate-configuration.xml");
-    ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(
-    config.getProperties()). buildServiceRegistry();
-    _sessionFactory = config.buildSessionFactory(serviceRegistry);
+    _sessionFactory = config.buildSessionFactory();
 
     _dao = new CcLocationReportDaoImpl();
     _dao.setSessionFactory(_sessionFactory);

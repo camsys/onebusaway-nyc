@@ -21,11 +21,11 @@ import org.onebusaway.csv_entities.*;
 import org.onebusaway.csv_entities.exceptions.CsvEntityException;
 import org.onebusaway.csv_entities.schema.BeanWrapper;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.WKTWriter;
 
 public class GeometryFieldMappingFactory implements org.onebusaway.csv_entities.schema.FieldMappingFactory {
 

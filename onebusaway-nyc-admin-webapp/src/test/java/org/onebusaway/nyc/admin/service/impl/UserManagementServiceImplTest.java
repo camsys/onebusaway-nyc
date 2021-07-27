@@ -37,7 +37,7 @@ import org.onebusaway.users.model.UserRole;
 import org.onebusaway.users.services.StandardAuthoritiesService;
 import org.onebusaway.users.services.UserDao;
 import org.onebusaway.users.services.UserService;
-import org.springframework.security.authentication.encoding.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Tests {@link UserManagementServiceImpl}
@@ -124,7 +124,7 @@ public class UserManagementServiceImplTest {
 		
 		assertFalse("Unable to update non existing user", success);
 		
-		verify(passwordEncoder, times(0)).encodePassword("password", "admin2");
+		verify(passwordEncoder, times(0)).encode("password");
 		verify(userDao, times(0)).saveOrUpdateUser(user);
 	}
 	
@@ -150,7 +150,7 @@ public class UserManagementServiceImplTest {
 		
 		when(userDao.getUserForId(userId)).thenReturn(user);
 		
-		when(passwordEncoder.encodePassword("password", "admin")).thenReturn(credentials);
+		when(passwordEncoder.encode("password")).thenReturn(credentials);
 		
 		when(user.getUserIndices()).thenReturn(userIndices);
 		when(user.getRoles()).thenReturn(userRoles);
@@ -161,7 +161,7 @@ public class UserManagementServiceImplTest {
 		
 		assertTrue("User updated successfully", success);
 		
-		verify(passwordEncoder).encodePassword("password", "admin");
+		verify(passwordEncoder).encode("password");
 		verify(authoritiesService).getAdministratorRole();
 		verify(userDao).saveOrUpdateUser(user);
 		
@@ -195,7 +195,7 @@ public class UserManagementServiceImplTest {
 		
 		when(userDao.getUserForId(userId)).thenReturn(user);
 		
-		when(passwordEncoder.encodePassword("password", "admin")).thenReturn(credentials);
+		when(passwordEncoder.encode("password")).thenReturn(credentials);
 		
 		when(user.getUserIndices()).thenReturn(userIndices);
 		when(user.getRoles()).thenReturn(userRoles);
@@ -204,7 +204,7 @@ public class UserManagementServiceImplTest {
 		
 		assertTrue("User's password updated successfully", success);
 		
-		verify(passwordEncoder).encodePassword("password", "admin");
+		verify(passwordEncoder).encode("password");
 		verify(authoritiesService, times(0)).getAdministratorRole();
 		verify(userDao).saveOrUpdateUser(user);
 		
@@ -237,7 +237,7 @@ public class UserManagementServiceImplTest {
 		
 		assertTrue("User's password updated successfully", success);
 		
-		verify(passwordEncoder, times(0)).encodePassword("", "admin");
+		verify(passwordEncoder, times(0)).encode("");
 		verify(authoritiesService).getAdministratorRole();
 		verify(userDao).saveOrUpdateUser(user);
 		

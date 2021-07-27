@@ -98,7 +98,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   // respect an HTTP Accept: header.
   private String _type = "xml";
 
-  @Resource(name="siriCacheService")
+  @Autowired
+  @Qualifier("siriCacheService")
   private NycCacheService<Integer, String> _siriCacheService;
 
   private MonitoringActionSupport _monitoringActionSupport = new MonitoringActionSupport();

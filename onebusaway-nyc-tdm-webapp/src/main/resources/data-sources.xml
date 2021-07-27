@@ -81,7 +81,7 @@
 	</bean>
 
 	<bean id="appSessionFactory"
-		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="annotatedClasses">
 			<list>
@@ -93,18 +93,17 @@
 		</property>
 		<property name="hibernateProperties">
 			<props>
-				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
 				<prop key="hibernate.connection.pool_size">1</prop>
 				<prop key="hibernate.cache.provider_class">org.hibernate.cache.internal.NoCachingRegionFactory</prop>
 				<prop key="hibernate.show_sql">false</prop>
-				<prop key="hibernate.hbm2ddl.auto">validate</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
 				<prop key="hibernate.jdbc.batch_size">1000</prop>
 			</props>
 		</property>
 	</bean>
 
 	<bean id="archiveSessionFactory"
-		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
 		<property name="dataSource" ref="archiveDataSource" />
 		<property name="annotatedClasses">
 			<list>
@@ -116,11 +115,10 @@
 		</property>
 		<property name="hibernateProperties">
 			<props>
-				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
 				<prop key="hibernate.connection.pool_size">1</prop>
 				<prop key="hibernate.cache.provider_class">org.hibernate.cache.internal.NoCachingRegionFactory</prop>
 				<prop key="hibernate.show_sql">false</prop>
-				<prop key="hibernate.hbm2ddl.auto">validate</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
 				<prop key="hibernate.jdbc.batch_size">1000</prop>
 			</props>
 		</property>
@@ -168,12 +166,12 @@
 		</property>
 	</bean>
 	
-	<bean id="transactionManagerApp" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+	<bean id="transactionManagerApp" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
         <property name="sessionFactory" ref="appSessionFactory" />
         <qualifier value="appDB"/>
     </bean>
 	
-	 <bean id="transactionManagerArchive" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+	 <bean id="transactionManagerArchive" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
         <property name="sessionFactory" ref="archiveSessionFactory" />
         <qualifier value="archiveDB"/>
     </bean>

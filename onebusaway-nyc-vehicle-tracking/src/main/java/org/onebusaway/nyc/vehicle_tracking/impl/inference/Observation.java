@@ -24,7 +24,7 @@ import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
+import java.util.StringJoiner;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
@@ -155,8 +155,8 @@ public class Observation implements Comparable<Observation> {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper("Observation").add("atBase", atBase).add(
-        "atTerminal", atTerminal).addValue(_record.toString()).toString();
+    return new StringJoiner("Observation").add("atBase=" + atBase).add(
+        "atTerminal=" + atTerminal).add(_record.toString()).toString();
   }
 
   public Set<AgencyAndId> getDscImpliedRouteCollections() {

@@ -21,7 +21,7 @@ import java.io.Serializable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripType;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 public class NonRevenueMoveData implements Serializable {
 

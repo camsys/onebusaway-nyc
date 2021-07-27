@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 @Component
 public class NonRevenueMovementServiceImpl implements NonRevenueMovementService {

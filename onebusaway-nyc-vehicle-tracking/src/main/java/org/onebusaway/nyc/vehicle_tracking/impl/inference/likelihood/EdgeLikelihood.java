@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
 import cern.jet.math.Bessel;
 
 import com.google.common.base.Objects;
-import com.vividsolutions.jts.algorithm.Angle;
+import org.locationtech.jts.algorithm.Angle;
 
 @Component
 public class EdgeLikelihood implements SensorModelRule {

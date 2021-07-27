@@ -18,9 +18,6 @@ package org.onebusaway.nyc.ops.impl;
 import static org.junit.Assert.*;
 
 import org.hibernate.Transaction;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
-import org.onebusaway.nyc.ops.impl.CcAndInferredLocationDaoImpl;
 import org.onebusaway.nyc.report.impl.CcAndInferredLocationFilter;
 import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.impl.RecordValidationServiceImpl;
@@ -55,9 +52,7 @@ public class  CcAndInferredLocationDaoImplTest {
 
       Configuration config = new Configuration();
       config = config.configure("org/onebusaway/nyc/ops/hibernate-configuration.xml");
-      ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(
-              config.getProperties()). buildServiceRegistry();
-      _sessionFactory = config.buildSessionFactory(serviceRegistry);
+      _sessionFactory = config.buildSessionFactory();
 
     _cache = new CcLocationCache(10);
     

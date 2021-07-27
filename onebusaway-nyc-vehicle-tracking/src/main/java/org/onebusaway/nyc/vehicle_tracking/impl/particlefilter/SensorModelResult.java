@@ -21,6 +21,7 @@ import org.apache.commons.math.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 public class SensorModelResult {
 
@@ -126,11 +127,11 @@ public class SensorModelResult {
 
   @Override
   public String toString() {
-    final Objects.ToStringHelper toStringHelper = Objects.toStringHelper("SensorModelResult");
-    toStringHelper.add(name, getProbability());
+    final StringJoiner toStringHelper = new StringJoiner("SensorModelResult");
+    toStringHelper.add(name + "=" + getProbability());
     if (results != null) {
       for (final SensorModelResult res : results) {
-        toStringHelper.addValue("\n\t" + res.toString());
+        toStringHelper.add("\n\t" + res.toString());
       }
     }
     return toStringHelper.toString();

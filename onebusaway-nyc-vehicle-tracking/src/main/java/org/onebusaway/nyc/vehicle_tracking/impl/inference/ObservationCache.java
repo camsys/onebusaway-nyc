@@ -17,21 +17,22 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.primitives.Longs;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Predicate;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.MinMaxPriorityQueue;
-import com.google.common.primitives.Longs;
 
 @Component
 public class ObservationCache {
@@ -45,8 +46,8 @@ public class ObservationCache {
    * observation cache per vehicle-id. The observation caches hold only the last
    * two entries.
    */
-  private final LoadingCache<AgencyAndId, MinMaxPriorityQueue<ObservationContents>> _contentsByVehicleId = CacheBuilder.newBuilder().concurrencyLevel(
-      4).expireAfterWrite(30, TimeUnit.MINUTES).build(
+  private final LoadingCache<AgencyAndId, MinMaxPriorityQueue<ObservationContents>> _contentsByVehicleId = CacheBuilder
+          .newBuilder().concurrencyLevel(4).expireAfterWrite(30, TimeUnit.MINUTES).build(
       new CacheLoader<AgencyAndId, MinMaxPriorityQueue<ObservationContents>>() {
 
         @Override
@@ -92,7 +93,7 @@ public class ObservationCache {
   }
 
   public void putValueForObservation(Observation observation,
-      EObservationCacheKey key, Object value) {
+      EObservationCacheKey key, Object value)  {
     final NycRawLocationRecord record = observation.getRecord();
     final MinMaxPriorityQueue<ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
 
@@ -101,7 +102,7 @@ public class ObservationCache {
      */
     ObservationContents contents;
     synchronized (contentsCache) {
-      contents = Iterables.find(contentsCache, new ObsSearch(observation), null);
+      contents = Iterables.find(contentsCache, new ObsSearch(observation));
       
       if (contents == null) {
         contents = new ObservationContents(observation);

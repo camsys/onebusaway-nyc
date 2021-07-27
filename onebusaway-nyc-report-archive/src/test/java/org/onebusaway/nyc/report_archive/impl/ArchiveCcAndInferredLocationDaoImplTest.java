@@ -17,8 +17,6 @@ package org.onebusaway.nyc.report_archive.impl;
 
 import static org.junit.Assert.*;
 
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 import org.onebusaway.nyc.report.impl.CcAndInferredLocationFilter;
 import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.impl.RecordValidationServiceImpl;
@@ -54,9 +52,7 @@ public class  ArchiveCcAndInferredLocationDaoImplTest {
 
     Configuration config = new Configuration();
     config = config.configure("org/onebusaway/nyc/report_archive/hibernate-configuration.xml");
-    ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(
-            config.getProperties()). buildServiceRegistry();
-    _sessionFactory = config.buildSessionFactory(serviceRegistry);
+    _sessionFactory = config.buildSessionFactory();
     _cache = new CcLocationCache(10);
     
     _dao = new ArchiveCcAndInferredLocationDaoImpl();

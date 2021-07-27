@@ -28,6 +28,7 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
 import javax.annotation.Nullable;
+import java.util.StringJoiner;
 
 public final class BlockState implements Comparable<BlockState> {
 
@@ -78,14 +79,14 @@ public final class BlockState implements Comparable<BlockState> {
     final Boolean runTripMatches = (tripId != null && runTrip != null)
         ? tripId.equals(runTrip.getTripEntry().getId()) : null;
     final int mins = blockLocation.getScheduledTime() / 60;
-    return Objects.toStringHelper("BlockState").add("blockId",
+    return new StringJoiner("BlockState").add("blockId=" +
         blockInstance.getBlock().getBlock().getId()).add(
-        "scheduledTime",
+        "scheduledTime=" +
         Integer.toString(mins / 60) + ":" + Integer.toString(mins % 60) + " ("
             + Integer.toString(blockLocation.getScheduledTime()) + ")").add(
-        "distanceAlongBlock", blockLocation.getDistanceAlongBlock()).add(
-        "tripId", tripId).add("dsc", destinationSignCode).add(
-        "runTripMatchesActiveTrip", runTripMatches).toString();
+        "distanceAlongBlock=" + blockLocation.getDistanceAlongBlock()).add(
+        "tripId=" + tripId).add("dsc=" + destinationSignCode).add(
+        "runTripMatchesActiveTrip=" + runTripMatches).toString();
   }
 
   public String getRunId() {

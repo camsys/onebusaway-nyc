@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.geocoder.impl;
 
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.onebusaway.geocoder.model.GeocoderResults;
 import org.onebusaway.geocoder.services.GeocoderService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -23,14 +24,13 @@ import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
-import org.geotools.geometry.jts.JTSFactoryFinder;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -27,7 +27,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Objects;
+import java.util.StringJoiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
@@ -169,10 +169,10 @@ public final class BlockStateObservation implements
 
   @Override
   public String toString() {
-    return Objects.toStringHelper("BlockStateObservation").addValue(_blockState).add(
-        "isSnapped", _isSnapped).add("isOpAssigned", _isOpAssigned).add(
-        "isRunReported", _isRunReported).add("isRunFormal", _isRunFormal).add(
-        "schedDev", _scheduleDeviation).toString();
+    return new StringJoiner("BlockStateObservation").add(String.valueOf(_blockState)).add(
+        "isSnapped=" + _isSnapped).add("isOpAssigned=" + _isOpAssigned).add(
+        "isRunReported=" + _isRunReported).add("isRunFormal=" + _isRunFormal).add(
+        "schedDev=" + _scheduleDeviation).toString();
   }
 
   public boolean isAtPotentialLayoverSpot() {

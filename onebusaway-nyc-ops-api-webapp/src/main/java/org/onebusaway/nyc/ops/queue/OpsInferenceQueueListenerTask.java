@@ -24,7 +24,7 @@ import java.util.concurrent.ScheduledFuture;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.codehaus.jackson.map.DeserializationConfig;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.ops.services.CcAndInferredLocationService;
 import org.onebusaway.nyc.presentation.service.cache.NycCacheService;
@@ -187,7 +187,7 @@ public class OpsInferenceQueueListenerTask extends
     super.setup();
 
     // make parsing lenient
-    _mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,
+    _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
     
    // get current state from backup ops api or archiver
