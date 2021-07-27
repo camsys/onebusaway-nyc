@@ -16,23 +16,28 @@
 
 package org.onebusaway.nyc.siri.support;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.map.BeanPropertyDefinition;
-import org.codehaus.jackson.map.JsonSerializer;
-import org.codehaus.jackson.map.Module;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-import org.codehaus.jackson.map.introspect.BasicBeanDescription;
-import org.codehaus.jackson.map.ser.BeanSerializer;
-import org.codehaus.jackson.map.ser.BeanSerializerModifier;
-import org.codehaus.jackson.map.ser.std.BeanSerializerBase;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import com.fasterxml.jackson.databind.ser.BeanSerializer;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.impl.ObjectIdWriter;
+import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
+import com.fasterxml.jackson.databind.ser.std.EnumSerializer;
+import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
+import com.fasterxml.jackson.databind.util.EnumValues;
 import org.springframework.util.ReflectionUtils;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import uk.org.siri.siri.Siri;
 
@@ -42,16 +47,17 @@ import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
-/** 
+/**
  * Serializer for XSD-generated SIRI classes, creating JSON in the format suitable
  * for Bus Time front-ends and third-party apps.
- * 
+ *
  * @author jmaki
  *
  */
 public class SiriJsonSerializer {
-  
+
   private static class CustomValueObjectSerializer extends BeanSerializerBase {
 
     private String fieldName = null;
@@ -73,38 +79,99 @@ public class SiriJsonSerializer {
         Object value = valueField.get(bean);
 
         provider.defaultSerializeValue(value, jgen);
-      } catch (Exception e) {
+      } catch(Exception e) {
         jgen.writeNull();
       }
     }
 
+    public BeanSerializerBase withObjectIdWriter(ObjectIdWriter var1) {
+      return null;
+    }
+
+    public BeanSerializerBase withFilterId(Object var1) {
+      return null;
+    }
+
+    @Override
+    protected BeanSerializerBase withProperties(BeanPropertyWriter[] beanPropertyWriters, BeanPropertyWriter[] beanPropertyWriters1) {
+      return null;
+    }
+
+    protected BeanSerializerBase withIgnorals(Set<String> var1) {
+      return null;
+    }
+
+    @Override
+    protected BeanSerializerBase withByNameInclusion(Set<String> set, Set<String> set1) {
+      return null;
+    }
+
+    public BeanSerializerBase asArraySerializer() {
+      return null;
+    }
+
   }
-  
+
+  /**
+   * force enums to be lower case to be historically consistent.
+   */
+  private static class CustomEnumSerializer extends StdScalarSerializer {
+
+    protected CustomEnumSerializer(EnumSerializer src) {
+      super(src);
+    }
+
+    @Override
+    public void serialize(Object bean, JsonGenerator jgen,
+                          SerializerProvider provider) throws IOException, JsonGenerationException {
+
+      try {
+        provider.defaultSerializeValue(bean.toString().toLowerCase(), jgen);
+      } catch(Exception e) {
+        jgen.writeNull();
+      }
+    }
+
+    public BeanSerializerBase withFilterId(Object var1) {
+      return null;
+    }
+
+  }
+
   private static class CustomBeanSerializerModifier extends BeanSerializerModifier {
+
 
     @Override
     public JsonSerializer<?> modifySerializer(SerializationConfig config,
-        BasicBeanDescription beanDesc, JsonSerializer<?> serializer) {
-      
-      if(serializer instanceof BeanSerializer) {
+                                              BeanDescription beanDesc, JsonSerializer<?> serializer) {
+
+
+      if (serializer instanceof BeanSerializer) {
         List<BeanPropertyDefinition> properties = beanDesc.findProperties();
         for(BeanPropertyDefinition property : properties) {
-          if(property.getName().equals("value") || property.getName().equals("any")) {
-            String fieldName = property.getField().getName();
+          if(property.getInternalName().equals("value") || property.getInternalName().equals("any")) {
+            String fieldName = property.getInternalName();
             if(fieldName != null)
               return super.modifySerializer(config, beanDesc, new CustomValueObjectSerializer((BeanSerializer)serializer, fieldName));
           }
         }
-        
+
+      } else if (serializer instanceof EnumSerializer) {
+        EnumValues enumValues = ((EnumSerializer) serializer).getEnumValues();
+
+        List<Enum<?>> enums = enumValues.enums();
+        for (Enum anEnum: enumValues.enums()) {
+          return super.modifyEnumSerializer(config, null, beanDesc, new CustomEnumSerializer((EnumSerializer) serializer));
+        }
       }
-      
+
       return super.modifySerializer(config, beanDesc, serializer);
     }
   }
-  
-  private static class JacksonModule extends Module {
+
+  private static class SiriJacksonModule extends Module {
     private final static Version VERSION = new Version(1,0,0, null);
-    
+
     @Override
     public String getModuleName() {
       return "CustomSerializer";
@@ -120,14 +187,14 @@ public class SiriJsonSerializer {
       context.addBeanSerializerModifier(new CustomBeanSerializerModifier());
     }
   }
-  
+
   private static class RFC822SimpleDateFormat extends SimpleDateFormat {
     private static final long serialVersionUID = 1L;
 
     public RFC822SimpleDateFormat() {
       super("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     }
-    
+
     @Override
     public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos) {
       StringBuffer sb = super.format(date, toAppendTo, pos);
@@ -136,23 +203,23 @@ public class SiriJsonSerializer {
     }
   }
 
-  public String getJson(Siri siri) throws Exception {    
+  public String getJson(Siri siri) throws Exception {
     return getJson(siri, null);
   }
-  
-  public String getJson(Siri siri, String callback) throws Exception {    
+
+  public String getJson(Siri siri, String callback) throws Exception {
     ObjectMapper mapper = new ObjectMapper();
-    mapper.setSerializationInclusion(Inclusion.NON_NULL);
-    mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, false);
-    mapper.configure(SerializationConfig.Feature.WRAP_ROOT_VALUE, true);
+    mapper.setSerializationInclusion(Include.NON_EMPTY);
+    mapper.setPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE);
+    mapper.configure(SerializationFeature.INDENT_OUTPUT, false);
+    mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
 
     mapper.setDateFormat(new RFC822SimpleDateFormat());
 
-    AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
-    SerializationConfig config = mapper.getSerializationConfig().withAnnotationIntrospector(introspector);
-    mapper.setSerializationConfig(config);
+    // Method A: Standard registration -- Direct introspection not necessary
+    SiriJacksonModule module = new SiriJacksonModule();
+    mapper.registerModule(module);
 
-    mapper.registerModule(new JacksonModule());
 
     String output = "";
 
@@ -165,6 +232,6 @@ public class SiriJsonSerializer {
       output += ")";
 
     return output;
-  }  
-  
+  }
+
 }
