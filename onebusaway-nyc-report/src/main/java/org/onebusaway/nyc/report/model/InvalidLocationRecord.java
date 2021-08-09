@@ -16,17 +16,15 @@
 
 package org.onebusaway.nyc.report.model;
 
+import org.hibernate.annotations.*;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Index;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
+import javax.persistence.*;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
@@ -45,7 +43,8 @@ public class InvalidLocationRecord implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+  @GenericGenerator(name = "native", strategy = "native")
   @AccessType("property")
   private Integer id;
 

@@ -23,6 +23,7 @@
  */
 package org.onebusaway.nyc.report_archive.model;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
 import org.hibernate.annotations.AccessType;
@@ -33,11 +34,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "obanyc_nycqueuedinferredlocation_archive")
@@ -48,7 +45,8 @@ public class NycQueuedInferredLocationRecord implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+  @GenericGenerator(name = "native", strategy = "native")
   @AccessType("property")
   private Integer id;
 

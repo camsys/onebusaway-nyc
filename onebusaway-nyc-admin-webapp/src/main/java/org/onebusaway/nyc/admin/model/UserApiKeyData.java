@@ -15,6 +15,7 @@
  */
 
 package org.onebusaway.nyc.admin.model;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Index;
 import javax.persistence.*;
 import java.util.Date;
@@ -23,7 +24,8 @@ import java.util.Date;
 @Table(name = "obanyc_api_key_data")
 public class UserApiKeyData {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+    @GenericGenerator(name = "native", strategy = "native")
     private Long id;
 
     @Column(name="name", nullable = false)
