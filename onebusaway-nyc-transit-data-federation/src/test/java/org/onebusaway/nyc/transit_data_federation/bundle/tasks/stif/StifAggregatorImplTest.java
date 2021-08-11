@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
@@ -33,7 +35,6 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripLoader;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.AbnormalStifDataLoggerImpl;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifAggregatorImpl;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifLoaderImpl;
@@ -42,12 +43,12 @@ import static org.mockito.Mockito.*;
 
 
 public class StifAggregatorImplTest {
-  final static Logger _log = Logger.getRootLogger();
+  final static Logger _log = LogManager.getRootLogger();
   
   @Before
   public void setUp() throws Exception {
-    BasicConfigurator.configure();
-    _log.setLevel(Level.INFO);
+    Configurator.initialize(new DefaultConfiguration());
+    Configurator.setRootLevel(Level.INFO);
   }
 
   

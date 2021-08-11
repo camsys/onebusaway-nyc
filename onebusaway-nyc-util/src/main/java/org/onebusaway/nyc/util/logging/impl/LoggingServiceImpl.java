@@ -17,7 +17,7 @@
 package org.onebusaway.nyc.util.logging.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ public class LoggingServiceImpl implements LoggingService {
 			throw new IllegalArgumentException("Message to log cannot be blank");
 		}
 		
-		String responseText = transitDataManagerApiLibrary.log("log", component, priority.toInt(), message);
+		String responseText = transitDataManagerApiLibrary.log("log", component,priority.intLevel(), message);
 		
 		log.info("Returning response from server");
 		

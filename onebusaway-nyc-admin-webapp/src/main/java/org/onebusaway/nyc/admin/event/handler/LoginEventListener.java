@@ -16,7 +16,7 @@
 
 package org.onebusaway.nyc.admin.event.handler;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;

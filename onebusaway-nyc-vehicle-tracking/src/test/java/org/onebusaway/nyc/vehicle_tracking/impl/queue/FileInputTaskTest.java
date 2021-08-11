@@ -20,11 +20,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.when;
 
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,8 +53,7 @@ public class FileInputTaskTest {
 
   @Before
   public void setup() throws Exception {
-	
-	BasicConfigurator.configure();
+    Configurator.initialize(new DefaultConfiguration());
     
 	final ArrayList<AgencyAndId> list = new ArrayList<AgencyAndId>();
     list.add(AgencyAndIdLibrary.convertFromString("MTA NYCT_8140"));

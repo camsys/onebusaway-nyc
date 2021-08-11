@@ -28,6 +28,7 @@
         <jersey-version>2.31</jersey-version>
         <jetty.version>6.1.26</jetty.version>
         <jts-core.version>1.16.1</jts-core.version>
+        <log4j.version>2.14.1</log4j.version>
         <mysql.connector.version>5.1.48</mysql.connector.version>
         <nyc_site_id>build.staging.obanyc.com</nyc_site_id>
         <nyc_site_deployment_base>scp://${nyc_site_id}/var/www/sites/developer/modules</nyc_site_deployment_base>
@@ -39,7 +40,6 @@
         <onebusaway.siri.version>1.0.0</onebusaway.siri.version>
         <onebusaway.siri_2.version>1.0.3</onebusaway.siri_2.version>
         <protobuf.version>2.6.1</protobuf.version>
-        <slf4j.version>1.7.5</slf4j.version>
         <spring.version>5.2.6.RELEASE</spring.version>
         <struts.version>2.5.26</struts.version>
         <xwiki.integration.version>1.0.1</xwiki.integration.version>
@@ -574,24 +574,19 @@
 
             <!-- logging -->
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4j.version}</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.16</version>
-            </dependency>
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>apache-log4j-extras</artifactId>
-                <version>1.1</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
             <!-- testing -->
             <dependency>

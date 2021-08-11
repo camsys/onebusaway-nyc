@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsCrewAssignment;

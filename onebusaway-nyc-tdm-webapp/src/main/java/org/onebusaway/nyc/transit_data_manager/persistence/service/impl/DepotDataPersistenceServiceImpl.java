@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.VehicleDepotData;

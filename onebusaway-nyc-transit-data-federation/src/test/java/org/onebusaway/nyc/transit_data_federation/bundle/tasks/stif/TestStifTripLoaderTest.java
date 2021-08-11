@@ -18,19 +18,18 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
@@ -38,17 +37,15 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.MultiCSVLogger;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.impl.StifLoaderImpl;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 
 public class TestStifTripLoaderTest {
   //it's log, log, it's better than bad, it's good.
-  final static Logger _log = Logger.getRootLogger();
+  final static Logger _log = LogManager.getRootLogger();
   
   @BeforeClass
   public static void setUp() {
-    BasicConfigurator.configure();
-    _log.setLevel(Level.INFO);
+    Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.INFO);
   }
   
   @Test
