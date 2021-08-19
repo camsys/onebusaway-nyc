@@ -421,6 +421,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       transProb.addResultAsAnd(nullLocationLikelihood.likelihood(context));
       transProb.addResultAsAnd(movedLikelihood.likelihood(context));
       transProb.addResultAsAnd(blockLikelihood.likelihood(context));
+      transProb.addResultAsAnd(blockLikelihood.likelihood(context));
 
       /*
        * TODO: this is mainly for debug and can/should be removed.
@@ -469,6 +470,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       transProb.addResultAsAnd(nullStateLikelihood.likelihood(context));
       transProb.addResultAsAnd(nullLocationLikelihood.likelihood(context));
       transProb.addResultAsAnd(movedLikelihood.likelihood(context));
+      transProb.addResultAsAnd(blockLikelihood.likelihood(context));
       transProb.addResultAsAnd(blockLikelihood.likelihood(context));
       newParticle = new Particle(timestamp, parent.getElement(), 0.0, nullState);
       newParticle.setResult(transProb);

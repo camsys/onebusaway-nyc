@@ -205,6 +205,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         transProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(context));
         transProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(context));
         transProb.addResultAsAnd(_motionModel.blockLikelihood.likelihood(context));
+        transProb.addResultAsAnd(_motionModel.blockLikelihood.likelihood(context));
+
 
         final Particle newParticle = new Particle(timestamp, null, 0.0, state);
         newParticle.setResult(transProb);
