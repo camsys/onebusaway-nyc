@@ -35,8 +35,8 @@ public class InputQueueServiceImpl extends InputServiceImpl implements
 	}
 	
 	private String replaceAllStringOccurances(String contents){
-		final String[] searchList = new String[] { "vehiclepowerstate" };
-		final String[] replacementList = new String[] { "vehiclePowerState" };
+		final String[] searchList = new String[] { "vehiclepowerstate","emergency-code" };
+		final String[] replacementList = new String[] { "vehiclePowerState","emergencyCode" };
 		return StringUtils.replaceEach(contents, searchList, replacementList);
 	}
 
