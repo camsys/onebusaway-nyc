@@ -115,9 +115,8 @@ public abstract class QueueListenerTask {
 					try {
 						processMessage(address, buff);
 						processedCount++;
-
 					} catch(Exception ex) {
-						_log.error("#####>>>>> processMessage() failed, exception was: " + ex.getMessage(), ex);
+						_log.error("#####>>>>> processMessage() failed", ex);
 					}
 						
 					Thread.yield();

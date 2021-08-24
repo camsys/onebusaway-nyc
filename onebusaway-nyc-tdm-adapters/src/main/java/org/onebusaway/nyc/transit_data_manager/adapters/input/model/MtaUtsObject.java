@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.transit_data_manager.adapters.input.model;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,11 @@ public class MtaUtsObject {
   
   public void setPassNumberField(String passNumberField) {
     this.passNumberField = passNumberField;
-    setPassNumber(this.passNumberField);
+    if(StringUtils.isBlank(passNumberField)){
+      _log.debug("passNumberField is blank");
+    } else {
+      setPassNumber(this.passNumberField);
+    }
   }
   
   public void setAuthIdField(String authIdField) {

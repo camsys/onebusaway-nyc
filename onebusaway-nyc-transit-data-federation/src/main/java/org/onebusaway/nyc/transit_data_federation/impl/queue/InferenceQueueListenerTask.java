@@ -37,8 +37,9 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 
 	@Override
 	public boolean processMessage(String address, byte[] buff) {
-	  String contents = new String(buff);
+	  String contents = null;
 		try {
+			contents= new String(buff);
 			if (address == null || !address.equals(getQueueName())) {
 				return false;
 			}

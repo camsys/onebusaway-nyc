@@ -357,13 +357,15 @@ public class VehicleLocationInferenceServiceImpl implements
     if (gpsData != null && gpsData.getNMEA() != null) {
       final NMEA nemaSentences = gpsData.getNMEA();
       final List<String> sentenceStrings = nemaSentences.getSentence();
-
       for (final String sentence : sentenceStrings) {
-        if (sentence.startsWith("$GPGGA"))
-          r.setGga(sentence);
-
-        if (sentence.startsWith("$GPRMC"))
-          r.setRmc(sentence);
+        if(sentence != null){
+          if (sentence.startsWith("$GPGGA"))
+            r.setGga(sentence);
+          if (sentence.startsWith("$GPRMC"))
+            r.setRmc(sentence);
+        } else {
+            _log.warn("Problem processing sentence for UUID {} and vehicle {}", envelope.getUUID(), vehicleId);
+        }
       }
     }
     final DateTime time = XML_DATE_TIME_FORMAT.parseDateTime(message.getTimeReported());
