@@ -413,18 +413,21 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTIONS_DATA);
 			_refreshService.refresh(RefreshableResources.ROUTE_COLLECTION_SEARCH_DATA);
 			_refreshService.refresh(RefreshableResources.STOP_SEARCH_DATA);
-			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA);
 			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_SERVICE);
 			_refreshService.refresh(RefreshableResources.SHAPE_GEOSPATIAL_INDEX);
 			_refreshService.refresh(RefreshableResources.STOP_GEOSPATIAL_INDEX);
 			_refreshService.refresh(RefreshableResources.NARRATIVE_DATA);
 			_refreshService.refresh(RefreshableResources.REVENUE_STOP_ROUTE_INDEX);
-
+			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA_BUNDLE);
+			_refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA_GRAPH);
+			_refreshService.refresh(RefreshableResources.STOP_CONSOLIDATION_FILE);
+			
 			_refreshService.refresh(NycRefreshableResources.DESTINATION_SIGN_CODE_DATA);
 			_refreshService.refresh(NycRefreshableResources.TERMINAL_DATA);
 			_refreshService.refresh(NycRefreshableResources.RUN_DATA);
 			_refreshService.refresh(NycRefreshableResources.NON_REVENUE_MOVES_DATA);
 			_refreshService.refresh(NycRefreshableResources.NON_REVENUE_STOP_DATA);
+
 		} catch(Exception e) {
 			_log.error("Bundle " + bundleId + " failed to load. Disabling for this session...",e);
 			_applicableBundles.remove(bundleId);
