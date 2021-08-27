@@ -51,11 +51,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.sun.jersey.api.spring.Autowire;
-
 @Path("/keys")
 @Component
-@Autowire
 @Scope("singleton")
 public class KeysResource {
 

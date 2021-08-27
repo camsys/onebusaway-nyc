@@ -34,6 +34,7 @@
     <constant name="struts.convention.action.checkImplementsAction" value="false" />
     <constant name="struts.convention.default.parent.package" value="onebusaway-admin-webapp-default" />
     <constant name="struts.enable.DynamicMethodInvocation" value="true" />
+    <constant name="struts.custom.i18n.resources" value="onebusaway-nyc" />
     <constant name="struts.multipart.saveDir" value="/tmp"></constant>
 
     <package name="onebusaway-admin-webapp-default" extends="struts-default">

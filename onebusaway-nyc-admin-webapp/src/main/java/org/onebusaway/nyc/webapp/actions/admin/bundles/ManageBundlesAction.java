@@ -28,6 +28,7 @@ import java.util.TreeMap;
 
 import javax.servlet.ServletContext;
 
+import org.apache.struts2.convention.annotation.AllowedMethods;
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
@@ -76,6 +77,9 @@ import org.springframework.web.context.ServletContextAware;
         "contentDisposition", "attachment;filename=\"${downloadFilename}\"",
         "bufferSize", "1024"})
 })
+@AllowedMethods({"selectDirectory", "copyDirectory", "deleteDirectory", "createDirectory",
+		"fileList", "updateBundleComments", "existingBuildList", "download", "buildList",
+		"buildOutputZip", "downloadOutputFile", "downloadBundle", "downloadValidateFile"})
 public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport implements ServletContextAware {
   private static Logger _log = LoggerFactory.getLogger(ManageBundlesAction.class);
 	private static final long serialVersionUID = 1L;
@@ -240,7 +244,12 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport impleme
 	public String downloadOutputFile() {
 	  _log.info("downloadOutputFile with id=" + id + " and file=" + this.downloadFilename);
 	  fileService.validateFileName(downloadFilename);
-	  this.bundleBuildResponse = this.bundleRequestService.lookupBuildRequest(getId());
+	  try {
+		  this.bundleBuildResponse = this.bundleRequestService.lookupBuildRequest(getId());
+	  } catch(Throwable t){
+	  	_log.error("transaction issue " + t, t);
+	  }
+
 	  if (this.bundleBuildResponse != null) {
 	    String s3Key = bundleBuildResponse.getRemoteOutputDirectory() + File.separator + this.downloadFilename;
 	    _log.info("get request for s3Key=" + s3Key);

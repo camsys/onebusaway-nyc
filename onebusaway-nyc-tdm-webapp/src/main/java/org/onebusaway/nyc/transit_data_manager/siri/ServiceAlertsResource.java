@@ -21,7 +21,6 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 
-import com.sun.jersey.api.spring.Autowire;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,6 @@ import javax.xml.bind.JAXBException;
 @Path("/service-alerts")
 @Component
 @Scope("request")
-@Autowire
 public class ServiceAlertsResource {
 
 	private static Logger _log = LoggerFactory

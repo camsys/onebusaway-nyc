@@ -16,13 +16,11 @@
     limitations under the License.
 
 -->
+<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://java.sun.com/xml/ns/javaee"
-         xmlns:web="http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
-         version="2.4">
-    <display-name>Archetype Created Web Application</display-name>
+    <display-name>Onebusaway-Nyc-Transit-Data-Federation-Webapp</display-name>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
@@ -42,9 +40,10 @@
 
     <servlet>
         <servlet-name>Jersey Spring Web Application</servlet-name>
-        <servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+
     <servlet-mapping>
         <servlet-name>Jersey Spring Web Application</servlet-name>
         <url-pattern>/siri/*</url-pattern>

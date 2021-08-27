@@ -53,13 +53,10 @@ import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
 import uk.org.siri.siri.SubscriptionRequest;
 import uk.org.siri.siri.SubscriptionResponseStructure;
 
-import com.sun.jersey.api.client.ClientResponse.Status;
-import com.sun.jersey.api.spring.Autowire;
 
 @Path("/situation-exchange")
 @Component
 @Scope("request")
-@Autowire
 public class SituationExchangeResource {
 
   static final boolean INCREMENTAL = true;
@@ -132,7 +129,7 @@ public class SituationExchangeResource {
 
     if (serviceRequest == null && subscriptionRequests == null) {
       _log.warn("Bad request from client, did not contain service delivery, service request, nor subscription request.");
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
     _log.info(responseSiri.toString());

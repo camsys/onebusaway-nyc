@@ -1,7 +1,5 @@
 package org.onebusaway.nyc.transit_data_manager.api.apc;
 
-
-import com.sun.jersey.api.spring.Autowire;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -24,7 +22,6 @@ import java.io.IOException;
 
 @Path("/apc")
 @Component
-@Autowire
 /**
  * Proxy APC Raw Counts information.
  * Providing an oppourtunity for a stable API, caching, etc.

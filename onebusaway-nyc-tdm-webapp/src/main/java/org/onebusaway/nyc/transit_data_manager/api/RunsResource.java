@@ -51,12 +51,10 @@ import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.sun.jersey.api.spring.Autowire;
 
 @Path("/runs")
 @Component
 @Scope("request")
-@Autowire
 public class RunsResource {
 
   public RunsResource() throws IOException {

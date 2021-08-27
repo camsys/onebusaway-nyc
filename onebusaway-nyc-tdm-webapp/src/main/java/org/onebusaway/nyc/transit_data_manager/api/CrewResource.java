@@ -45,12 +45,9 @@ import org.springframework.stereotype.Component;
 
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 
-import com.sun.jersey.api.spring.Autowire;
-
 @Path("/crew/{serviceDate}/list")
 @Component
 @Scope("request")
-@Autowire
 public class CrewResource {
 
   public CrewResource() throws IOException {

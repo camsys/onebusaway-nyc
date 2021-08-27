@@ -16,7 +16,6 @@
 
 package org.onebusaway.nyc.transit_data_manager.api.config;
 
-import com.sun.jersey.api.spring.Autowire;
 import org.apache.commons.io.IOUtils;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
@@ -41,7 +40,6 @@ import java.net.URL;
  */
 @Path("/ghostbus")
 @Component
-@Autowire
 @Scope("singleton")
 public class GhostBusResource {
     public static final int DEFAULT_CONNECTION_TIMEOUT = 5 * 1000;

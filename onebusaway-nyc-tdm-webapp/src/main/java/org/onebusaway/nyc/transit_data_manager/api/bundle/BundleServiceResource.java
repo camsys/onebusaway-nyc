@@ -42,6 +42,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundleDeployer;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundlesListMessage;
@@ -60,7 +61,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.stereotype.Component;
 
-import com.sun.jersey.core.header.ContentDisposition;
 
 @Path("/bundle")
 @Component
