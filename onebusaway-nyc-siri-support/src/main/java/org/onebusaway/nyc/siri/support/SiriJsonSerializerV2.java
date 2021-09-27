@@ -26,16 +26,11 @@ import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializer;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
@@ -43,6 +38,7 @@ import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
 import com.fasterxml.jackson.databind.ser.std.EnumSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.util.EnumValues;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import org.springframework.util.ReflectionUtils;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ser.impl.ObjectIdWriter;
@@ -115,9 +111,13 @@ public class SiriJsonSerializerV2 {
    * force enums to be lower case to be historically consistent.
    */
   private static class CustomEnumSerializer extends StdScalarSerializer {
+    private String enumValue = null;
 
-    protected CustomEnumSerializer(EnumSerializer src) {
+    protected CustomEnumSerializer(EnumSerializer src, SerializableString enumValue) {
       super(src);
+      if(enumValue != null){
+        this.enumValue = enumValue.getValue();
+      }
     }
 
     @Override
@@ -125,7 +125,7 @@ public class SiriJsonSerializerV2 {
                           SerializerProvider provider) throws IOException, JsonGenerationException {
 
       try {
-        provider.defaultSerializeValue(bean.toString().toLowerCase(), jgen);
+        provider.defaultSerializeValue(enumValue, jgen);
       } catch(Exception e) {
         jgen.writeNull();
       }
@@ -154,11 +154,10 @@ public class SiriJsonSerializerV2 {
         }
 
       } else if (serializer instanceof EnumSerializer) {
-        EnumValues enumValues = ((EnumSerializer) serializer).getEnumValues();
-
-        List<Enum<?>> enums = enumValues.enums();
-        for (Enum anEnum: enumValues.enums()) {
-          return super.modifyEnumSerializer(config, null, beanDesc, new SiriJsonSerializerV2.CustomEnumSerializer((EnumSerializer) serializer));
+        EnumSerializer enumSerializer = (EnumSerializer) serializer;
+        for (SerializableString enumValue: enumSerializer.getEnumValues().values()) {
+          return super.modifyEnumSerializer(config, null, beanDesc,
+                  new SiriJsonSerializerV2.CustomEnumSerializer((EnumSerializer) serializer, enumValue));
         }
       }
 
@@ -207,15 +206,15 @@ public class SiriJsonSerializerV2 {
   public String getJson(Siri siri, String callback) throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     mapper.setSerializationInclusion(Include.NON_EMPTY);
-    mapper.setPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE);
     mapper.configure(SerializationFeature.INDENT_OUTPUT, false);
     mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
-
+    mapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
     mapper.setDateFormat(new RFC822SimpleDateFormat());
 
     // Method A: Standard registration -- Direct introspection not necessary
     SiriJsonSerializerV2.SiriJacksonModule module = new SiriJsonSerializerV2.SiriJacksonModule();
     mapper.registerModule(module);
+    mapper.registerModules(new JaxbAnnotationModule());
 
     String output = "";
 
