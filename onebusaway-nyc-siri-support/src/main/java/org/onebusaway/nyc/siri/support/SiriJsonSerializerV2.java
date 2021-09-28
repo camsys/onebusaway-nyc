@@ -26,7 +26,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.Module;
@@ -35,9 +34,6 @@ import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializer;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
-import com.fasterxml.jackson.databind.ser.std.EnumSerializer;
-import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-import com.fasterxml.jackson.databind.util.EnumValues;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import org.springframework.util.ReflectionUtils;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -107,36 +103,6 @@ public class SiriJsonSerializerV2 {
     }
   }
 
-  /**
-   * force enums to be lower case to be historically consistent.
-   */
-  private static class CustomEnumSerializer extends StdScalarSerializer {
-    private String enumValue = null;
-
-    protected CustomEnumSerializer(EnumSerializer src, SerializableString enumValue) {
-      super(src);
-      if(enumValue != null){
-        this.enumValue = enumValue.getValue();
-      }
-    }
-
-    @Override
-    public void serialize(Object bean, JsonGenerator jgen,
-                          SerializerProvider provider) throws IOException, JsonGenerationException {
-
-      try {
-        provider.defaultSerializeValue(enumValue, jgen);
-      } catch(Exception e) {
-        jgen.writeNull();
-      }
-    }
-
-    public BeanSerializerBase withFilterId(Object var1) {
-      return null;
-    }
-
-  }
-
   private static class CustomBeanSerializerModifier extends BeanSerializerModifier {
 
     @Override
@@ -146,6 +112,7 @@ public class SiriJsonSerializerV2 {
       if (serializer instanceof BeanSerializer) {
         List<BeanPropertyDefinition> properties = beanDesc.findProperties();
         for(BeanPropertyDefinition property : properties) {
+          // Enums contain value property
           if(property.getInternalName().equalsIgnoreCase("value") || property.getInternalName().equalsIgnoreCase("any")) {
             String fieldName = property.getInternalName();
             if(fieldName != null)
@@ -153,12 +120,6 @@ public class SiriJsonSerializerV2 {
           }
         }
 
-      } else if (serializer instanceof EnumSerializer) {
-        EnumSerializer enumSerializer = (EnumSerializer) serializer;
-        for (SerializableString enumValue: enumSerializer.getEnumValues().values()) {
-          return super.modifyEnumSerializer(config, null, beanDesc,
-                  new SiriJsonSerializerV2.CustomEnumSerializer((EnumSerializer) serializer, enumValue));
-        }
       }
 
       return super.modifySerializer(config, beanDesc, serializer);
@@ -214,6 +175,8 @@ public class SiriJsonSerializerV2 {
     // Method A: Standard registration -- Direct introspection not necessary
     SiriJsonSerializerV2.SiriJacksonModule module = new SiriJsonSerializerV2.SiriJacksonModule();
     mapper.registerModule(module);
+
+    // Needed to process SIRI JAXB Annotations
     mapper.registerModules(new JaxbAnnotationModule());
 
     String output = "";
