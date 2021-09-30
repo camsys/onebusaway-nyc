@@ -18,11 +18,15 @@ package org.onebusaway.nyc.sms.actions.model;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 
+import java.io.Serializable;
+
 /**
  * Represents the specific vehicle and some data about it that
  * is returned in a search.
  */
-public class VehicleResult {
+public class VehicleResult implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   public enum OccupancyConfig {
     NONE,
