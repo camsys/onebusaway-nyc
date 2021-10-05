@@ -45,11 +45,7 @@ public class MtaUtsObject {
   
   public void setPassNumberField(String passNumberField) {
     this.passNumberField = passNumberField;
-    if(StringUtils.isBlank(passNumberField)){
-      _log.debug("passNumberField is blank");
-    } else {
-      setPassNumber(this.passNumberField);
-    }
+    setPassNumber(this.passNumberField);
   }
   
   public void setAuthIdField(String authIdField) {
