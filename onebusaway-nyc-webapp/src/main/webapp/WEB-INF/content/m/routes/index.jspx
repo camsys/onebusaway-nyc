@@ -22,8 +22,8 @@
       xmlns:wiki="/oba-wiki-tags">
     <jsp:directive.page contentType="text/html" />
     <jsp:output omit-xml-declaration="yes"/>
-    <s:set name="useAgencyId" value="useAgencyId" />
-    <s:set name="showAgencyNames" value="showAgencyNames" />
+    <s:set var="useAgencyId" value="useAgencyId" />
+    <s:set var="showAgencyNames" value="showAgencyNames" />
     <head>
 
 
