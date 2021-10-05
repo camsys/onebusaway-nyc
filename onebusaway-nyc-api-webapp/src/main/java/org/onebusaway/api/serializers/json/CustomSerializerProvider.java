@@ -1,13 +1,11 @@
 package org.onebusaway.api.serializers.json;
 
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import com.fasterxml.jackson.databind.ser.SerializerFactory;
 
 import java.util.Collection;
+import java.util.List;
 
 public class CustomSerializerProvider extends DefaultSerializerProvider {
 
@@ -31,7 +29,7 @@ public class CustomSerializerProvider extends DefaultSerializerProvider {
             return Serializers.EMPTY_STRING_SERIALIZER_INSTANCE;
         if (property.getType().getRawClass().equals(Long.class))
             return Serializers.NULL_LONG_SERIALIZER_INSTANCE;
-        if (property.getType().getRawClass().equals(Collection.class))
+        if (property.getType().getRawClass().equals(Collection.class) || property.getType().getRawClass().equals(List.class))
             return Serializers.NULL_COLLECTION_SERIALIZER_INSTANCE;
         else
             return super.findNullValueSerializer(property);
