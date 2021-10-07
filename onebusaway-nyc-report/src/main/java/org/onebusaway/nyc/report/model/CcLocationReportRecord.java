@@ -34,11 +34,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import static org.onebusaway.nyc.util.impl.queue.CCLocationRecordUtil.*;
 
@@ -128,6 +124,7 @@ public class CcLocationReportRecord implements Serializable {
   @Column(name = "nmea_sentence_gprmc", length = 160)
   private String nmeaSentenceGPRMC;
 
+  @Lob
   @Column(nullable = false, name = "raw_message", length = 1400)
   private String rawMessage;
   

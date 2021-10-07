@@ -56,9 +56,11 @@ public class InvalidLocationRecord implements Serializable {
   @Index(name = "archive_time_received")
   private Date archiveTimeReceived;
 
+  @Lob
   @Column(nullable = false, name = "raw_message", length = 1400)
   private String rawMessage;
 
+  @Lob
   @Column(nullable = false, name = "exception_message", length = 1400)
   private String exceptionMessage;
 
