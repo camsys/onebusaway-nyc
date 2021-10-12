@@ -496,12 +496,18 @@ OBA.Popups = (function() {
 		// update time across all arrivals
 		var updateTimestampReference = OBA.Util.ISO8601StringToDate(siri.Siri.ServiceDelivery.ResponseTimestamp).getTime();
 		var maxUpdateTimestamp = null;
-		jQuery.each(siri.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit, function(_, monitoredJourney) {
+
+		var monitoredStopVisit = [];
+		if(siri.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit){
+			monitoredStopVisit = siri.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
+		}
+
+		jQuery.each(monitoredStopVisit, function(_, monitoredJourney) {
 			var updateTimestamp = OBA.Util.ISO8601StringToDate(monitoredJourney.RecordedAtTime).getTime();
 			if(updateTimestamp > maxUpdateTimestamp) {
 				maxUpdateTimestamp = updateTimestamp;
 			}
-		});	
+		});
 		
 		if (maxUpdateTimestamp === null) {
 			maxUpdateTimestamp = updateTimestampReference;
@@ -569,7 +575,11 @@ OBA.Popups = (function() {
 	    });
 	    
 	    // ...now those with and without arrivals
-	    var visits = siri.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
+		var visits = [];
+		if(siri.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit){
+			var visits = siri.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
+		}
+
 	    jQuery.each(visits, function(_, monitoredJourney) {
 			var routeId = monitoredJourney.MonitoredVehicleJourney.LineRef;
 			var routeShortName = monitoredJourney.MonitoredVehicleJourney.PublishedLineName;
