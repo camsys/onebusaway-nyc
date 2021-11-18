@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -102,8 +103,11 @@ public class ObservationCache {
      */
     ObservationContents contents;
     synchronized (contentsCache) {
-      contents = Iterables.find(contentsCache, new ObsSearch(observation));
-      
+      try {
+        contents = Iterables.find(contentsCache, new ObsSearch(observation));
+      } catch(NoSuchElementException e){
+        contents = null;
+      }
       if (contents == null) {
         contents = new ObservationContents(observation);
         /*
