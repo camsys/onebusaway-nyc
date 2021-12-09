@@ -287,11 +287,16 @@ public class ApiKeyUsageMonitorImpl implements ApiKeyUsageMonitor {
                 List<Double> subsetValuesList = new ArrayList<>(_publishBatchSize);
 
                 for(int i=0; i < apiKeyCount; i++){
+                    int keyCount = i+1;
                     subsetKeysList.add(allKeysList.get(i));
                     subsetValuesList.add(allValuesList.get(i));
                     // publish if number of metrics equals batch size OR
                     // publish if we've reached the last metric
-                    if(i+1 % _publishBatchSize == 0 || i + 1 == apiKeyCount){
+                    if(keyCount % _publishBatchSize == 0 || keyCount == apiKeyCount){
+                        if(keyCount == apiKeyCount){
+                            dimensionNameList = new ArrayList(Collections.nCopies(keyCount, _publishingDimName));
+                            dimensionValueList = new ArrayList(Collections.nCopies(keyCount, _publishingDimValue));
+                        }
                         _externalServices.publishMetrics(_publishingTopic,subsetKeysList, dimensionNameList, dimensionValueList, subsetValuesList);
                         subsetKeysList.clear();
                         subsetValuesList.clear();
