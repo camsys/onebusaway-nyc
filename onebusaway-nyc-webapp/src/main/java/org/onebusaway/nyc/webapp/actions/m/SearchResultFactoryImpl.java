@@ -525,7 +525,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
           String loadOccupancy = wrapper.getCapacities().getPassengerCount() + " passengers on vehicle";
 
-          return ", " +loadOccupancy;
+          return ", ~" +loadOccupancy;
       }else
           return "";
 
