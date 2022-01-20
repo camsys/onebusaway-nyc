@@ -16,6 +16,13 @@
 
 package org.onebusaway.nyc.transit_data.model;
 
+/**
+ * Serializable model bean for cancled trips
+ *
+ * @author caylasavitzky
+ *
+ */
+
 import java.io.Serializable;
 
 public class NycCancledTripBean implements Serializable {
