@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.transit_data_manager.api.canceledTripsApi;
 
-import org.onebusaway.nyc.transit_data.model.NycCancledTripBean;
+import org.onebusaway.nyc.transit_data.model.NycCanceledTripBean;
 
 
 public class CanceledTripsOutputQueueSenderServiceImpl {
@@ -28,7 +28,9 @@ public class CanceledTripsOutputQueueSenderServiceImpl {
      *
      */
 
-    public void enqueue(NycCancledTripBean r){
+//    todo write the damn thing
+
+    public void enqueue(NycCanceledTripBean r){
         return;
     }
 

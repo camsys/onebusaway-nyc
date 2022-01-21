@@ -23,9 +23,12 @@ package org.onebusaway.nyc.transit_data.model;
  *
  */
 
-import java.io.Serializable;
+import org.joda.time.DateTime;
 
-public class NycCancledTripBean implements Serializable {
+import java.io.Serializable;
+import java.util.Date;
+
+public class NycCanceledTripBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -37,13 +40,13 @@ public class NycCancledTripBean implements Serializable {
 
     private String actor;
 
-    private long timestamp;
+    private Date timestamp;
 
-    public void setTimestamp(long timestamp) {
+    public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 
-    public long getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 

@@ -1,21 +1,9 @@
-/**
- * Copyright (C) 2011 Metropolitan Transportation Authority
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.onebusaway.nyc.transit_data_manager.api.canceledTripsApi;
 
-import org.onebusaway.nyc.transit_data.model.NycCancledTripBean;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.onebusaway.nyc.transit_data.model.NycCanceledTripBean;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +12,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Component
@@ -36,6 +24,9 @@ public class CanceledTripsIntegrator {
      * @author caylasavitzky
      *
      */
+
+
+//    todo: finish setup configs & update configs source
 
     public static final int DEFAULT_CONNECTION_TIMEOUT = 5 * 1000;
     public static final int DEFAULT_REFRESH_INTERVAL = 15 * 1000;
@@ -94,11 +85,15 @@ public class CanceledTripsIntegrator {
         return new StringBuffer();
     }
 
-    public List<NycCancledTripBean> makeCancelledTripBeansFromCapiOutput(StringBuffer buffer){
-        return new ArrayList<>();
+    public List<NycCanceledTripBean>  makeCancelledTripBeansFromCapiOutput(StringBuffer buffer) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+        objectMapper.setDateFormat(df);
+        NycCanceledTripBeansContainer beansContainer = objectMapper.readValue(buffer.toString(), new TypeReference<NycCanceledTripBeansContainer>(){});
+        return beansContainer.getBeans();
     }
 
-    public void enqueueBeans(List<NycCancledTripBean> beans){
+    public void enqueueBeans(List<NycCanceledTripBean> beans){
     }
 
 
@@ -114,7 +109,6 @@ public class CanceledTripsIntegrator {
         }
 
         public void run() {
-            _resource.completeInitialization("");
         }
     }
 
@@ -129,8 +123,8 @@ public class CanceledTripsIntegrator {
         public void run() {
             try {
                 StringBuffer canceledTripData = _resource.getCanceledTripsData();
-                List<NycCancledTripBean>  cancledTripBeans = _resource.makeCancelledTripBeansFromCapiOutput(canceledTripData);
-                _resource.enqueueBeans(cancledTripBeans);
+                List<NycCanceledTripBean>  canceledTripBeans = _resource.makeCancelledTripBeansFromCapiOutput(canceledTripData);
+                _resource.enqueueBeans(canceledTripBeans);
             } catch (Exception e) {
                 // bury
             }
