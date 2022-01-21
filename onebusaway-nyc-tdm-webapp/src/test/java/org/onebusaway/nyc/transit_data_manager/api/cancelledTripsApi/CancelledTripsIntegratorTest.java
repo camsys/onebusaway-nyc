@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class CancelledTripsIntegratorTest {
 
@@ -49,7 +50,7 @@ public class CancelledTripsIntegratorTest {
 
         MockitoAnnotations.initMocks(this);
 
-        String fakeCAPIOutput = "{\"Impacted\": [{\"block\": \"MTA NYCT 1\", \"trip\": \"MTA NYCT 1_1\", \"status\": \"Cancelled\", \"actor\": \"Jim Jones\", \"timestamp\": \"20210114 12:45:00\"},{\"block\": \"MTA NYCT 2\", \"trip\": \"MTA NYCT 2_1\", \"status\": \"Cancelled\", \"actor\": \"Jim Johns\", \"timestamp\": \"20210114 12:46:00\"}]}";
+        String fakeCAPIOutput = "{\"impacted\":{\"block\":\"MTABC_JKPA2-JK_A2-Weekday-01-SDon_6193636\"\"trip\":\"MTABC_32246617-JKPA2-JK_A2-Weekday-01-SDon\"\"status\":\"canceled\"\"timestamp\":1642743832000\"scheduledPullOut\":\"2022-01-21T07:03:00\"\"humanReadableTimestamp\":\"2022-01-21T00:43:52\"\"serviceDate\":\"2022-01-21\"\"route\":\"Q9\"\"firstStopId\":\"MTA_550031\"\"firstStopDepartureTime\":\"07:23:00\"},{\"block\":\"MTA NYCT_FB_A2-Weekday-SDon_E_FB_26580_B41-207\"\"trip\":\"MTA NYCT_FB_A2-Weekday-SDon-044900_B41_207\"\"status\":\"canceled\"\"timestamp\":1642734418000\"scheduledPullOut\":\"2022-01-21T07:23:00\"\"humanReadableTimestamp\":\"2022-01-20T22:06:58\"\"serviceDate\":\"2022-01-21\"\"route\":\"B41\"\"firstStopId\":\"MTA_303215\"\"firstStopDepartureTime\"}],\"timestamp\":\"2022-01-21T10:40:51\"}";
         StringBuffer buffer = new StringBuffer();
         buffer.append(fakeCAPIOutput);
         CancelledTripsIntegrator integrator = new CancelledTripsIntegrator();
@@ -58,22 +59,20 @@ public class CancelledTripsIntegratorTest {
 
         NycCancelledTripBean bean1 = beans.get(0);
         assertEquals(bean1.getBlock(),"MTA NYCT 1");
-        assertEquals(bean1.getActor(),"Jim Jones");
         assertEquals(bean1.getStatus(),"Cancelled");
         assertEquals(bean1.getTrip(),"MTA NYCT 1_1");
         Calendar cal = Calendar.getInstance();
         //20210114 12:45:00
         cal.set(2021,00,14,12,45,00);
         SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println("The date 1 is: " + sdformat.format(cal.getTime()));
-        System.out.println("The date 2 is: " + sdformat.format(bean1.getTimestamp()));
-        int datesAreTheSame = bean1.getTimestamp().compareTo(cal.getTime());
-//        todo find out why these are not the same WHEN THEY LOOK EXACTLY THE SAME??
+//        System.out.println("The date 1 is: " + sdformat.format(cal.getTime()));
+//        System.out.println("The date 2 is: " + sdformat.format(bean1.getTimestamp()));
+//        int datesAreTheSame = bean1.getTimestamp().compareTo(cal.getTime());
+////        todo find out why these are not the same WHEN THEY LOOK EXACTLY THE SAME??
 //        assertTrue(datesAreTheSame==0);
 
         NycCancelledTripBean bean2 = beans.get(1);
         assertEquals(bean2.getBlock(),"MTA NYCT 2");
-        assertEquals(bean2.getActor(),"Jim Johns");
         assertEquals(bean2.getStatus(),"Cancelled");
         assertEquals(bean2.getTrip(),"MTA NYCT 2_1");
         cal.set(2021,01,14,12,46,00);
@@ -81,15 +80,18 @@ public class CancelledTripsIntegratorTest {
     }
 
 
-//    @Test
-//    public void testDataCollection(){
-//
-//        MockitoAnnotations.initMocks(this);
-//
-//        CanceledTripsIntegrator integrator = new CanceledTripsIntegrator();
-//
-//        integrator.setUrl("testUrl");
-//        StringBuffer buffer = integrator.getCanceledTripsData();
-//        assertEquals("testResult",buffer.toString());
-//    }
+    @Test
+    public void testDataCollectionToCancelledTripBeans() throws JsonProcessingException {
+
+        MockitoAnnotations.initMocks(this);
+
+        CancelledTripsIntegrator integrator = new CancelledTripsIntegrator();
+
+        integrator.setUrl("http://capi.dev.obanyc.com:8084/api/canceled-trips.json");
+        StringBuffer buffer = integrator.getCancelledTripsData();
+        String string = buffer.toString();
+        List<NycCancelledTripBean> beans = integrator.makeCancelledTripBeansFromCapiOutput(buffer);
+        assertTrue(beans.size()<0);
+
+    }
 }
