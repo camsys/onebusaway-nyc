@@ -12,13 +12,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
-//import com.fasterxml.jackson.datatype.*;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 import javax.annotation.PostConstruct;
 import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 @Component
@@ -113,6 +114,9 @@ public class CancelledTripsIntegrator {
 
     public List<NycCancelledTripBean>  makeCancelledTripBeansFromCapiOutput(StringBuffer buffer) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JodaModule());
+        objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+        objectMapper.setTimeZone(Calendar.getInstance().getTimeZone());
         NycCancelledTripBeansContainer beansContainer = objectMapper.readValue(buffer.toString(), new TypeReference<NycCancelledTripBeansContainer>(){});
         return beansContainer.getBeans();
     }
