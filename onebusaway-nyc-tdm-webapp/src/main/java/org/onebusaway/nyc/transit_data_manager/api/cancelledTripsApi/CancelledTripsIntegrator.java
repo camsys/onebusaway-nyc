@@ -3,15 +3,21 @@ package org.onebusaway.nyc.transit_data_manager.api.cancelledTripsApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
+import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
+//import com.fasterxml.jackson.datatype.*;
 
 import javax.annotation.PostConstruct;
+import java.io.ByteArrayOutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -82,13 +88,31 @@ public class CancelledTripsIntegrator {
     }
 
     public StringBuffer getCancelledTripsData(){
-        return new StringBuffer();
+        long start = System.currentTimeMillis();
+        StringBuffer sb = new StringBuffer();
+        HttpURLConnection connection = null;
+        if (getUrl() == null) {
+            _log.warn("Cancelled trips url not configured, exiting");
+            return null;
+        }
+        try {
+            connection = (HttpURLConnection) new URL(_url).openConnection();
+            connection.setConnectTimeout(_connectionTimeout);
+            connection.setReadTimeout(_connectionTimeout);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IOUtils.copy(connection.getInputStream(), baos);
+
+            sb.append(baos.toString());
+            _log.debug("retrieved " + getUrl() + " in " + (System.currentTimeMillis() - start) + " ms");
+            return sb;
+        } catch (Exception any) {
+            _log.error("issue retrieving " + getUrl() + ", " + any.toString());
+            return null;
+        }
     }
 
     public List<NycCancelledTripBean>  makeCancelledTripBeansFromCapiOutput(StringBuffer buffer) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
-        objectMapper.setDateFormat(df);
         NycCancelledTripBeansContainer beansContainer = objectMapper.readValue(buffer.toString(), new TypeReference<NycCancelledTripBeansContainer>(){});
         return beansContainer.getBeans();
     }
