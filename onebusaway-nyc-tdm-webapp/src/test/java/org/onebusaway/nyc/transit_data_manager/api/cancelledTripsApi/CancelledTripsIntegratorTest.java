@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.nyc.transit_data_manager.api.canceledTripsApi;
+package org.onebusaway.nyc.transit_data_manager.api.cancelledTripsApi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Test;
@@ -52,7 +52,7 @@ public class CancelledTripsIntegratorTest {
         String fakeCAPIOutput = "{\"Impacted\": [{\"block\": \"MTA NYCT 1\", \"trip\": \"MTA NYCT 1_1\", \"status\": \"Cancelled\", \"actor\": \"Jim Jones\", \"timestamp\": \"20210114 12:45:00\"},{\"block\": \"MTA NYCT 2\", \"trip\": \"MTA NYCT 2_1\", \"status\": \"Cancelled\", \"actor\": \"Jim Johns\", \"timestamp\": \"20210114 12:46:00\"}]}";
         StringBuffer buffer = new StringBuffer();
         buffer.append(fakeCAPIOutput);
-        CanceledTripsIntegrator integrator = new CanceledTripsIntegrator();
+        CancelledTripsIntegrator integrator = new CancelledTripsIntegrator();
 
         List<NycCancelledTripBean> beans = integrator.makeCancelledTripBeansFromCapiOutput(buffer);
 

@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.transit_data_manager.api.canceledTripsApi;
+package org.onebusaway.nyc.transit_data_manager.api.cancelledTripsApi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -16,10 +16,10 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Component
-public class CanceledTripsIntegrator {
+public class CancelledTripsIntegrator {
 
     /**
-     * pulls in data from Cancledtrips API, generates beans, and pushes to queue
+     * pulls in data from Cancelledtrips API, generates beans, and pushes to queue
      *
      * @author caylasavitzky
      *
@@ -31,7 +31,7 @@ public class CanceledTripsIntegrator {
     public static final int DEFAULT_CONNECTION_TIMEOUT = 5 * 1000;
     public static final int DEFAULT_REFRESH_INTERVAL = 15 * 1000;
 
-    private static Logger _log = LoggerFactory.getLogger(CanceledTripsIntegrator.class);
+    private static Logger _log = LoggerFactory.getLogger(CancelledTripsIntegrator.class);
 
     private ThreadPoolTaskScheduler _taskScheduler;
     @Autowired
@@ -43,7 +43,7 @@ public class CanceledTripsIntegrator {
     private int _refreshIntervalMillis = DEFAULT_REFRESH_INTERVAL;
     private int _connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
 
-    private CanceledTripsOutputQueueSenderServiceImpl _outputQueueSenderService;
+    private CancelledTripsOutputQueueSenderServiceImpl _outputQueueSenderService;
 
     private String _url = null;
 
@@ -81,7 +81,7 @@ public class CanceledTripsIntegrator {
         }
     }
 
-    public StringBuffer getCanceledTripsData(){
+    public StringBuffer getCancelledTripsData(){
         return new StringBuffer();
     }
 
@@ -103,8 +103,8 @@ public class CanceledTripsIntegrator {
     }
 
     public static class InitThread implements Runnable {
-        private CanceledTripsIntegrator _resource;
-        public InitThread(CanceledTripsIntegrator resource) {
+        private CancelledTripsIntegrator _resource;
+        public InitThread(CancelledTripsIntegrator resource) {
             this._resource = resource;
         }
 
@@ -114,17 +114,17 @@ public class CanceledTripsIntegrator {
 
     public static class UpdateThread implements Runnable {
 
-        private CanceledTripsIntegrator _resource;
-        public UpdateThread(CanceledTripsIntegrator resource) {
+        private CancelledTripsIntegrator _resource;
+        public UpdateThread(CancelledTripsIntegrator resource) {
             this._resource = resource;
         }
 
         @Override
         public void run() {
             try {
-                StringBuffer cancelledTripData = _resource.getCanceledTripsData();
-                List<NycCancelledTripBean>  canceledTripBeans = _resource.makeCancelledTripBeansFromCapiOutput(cancelledTripData);
-                _resource.enqueueBeans(canceledTripBeans);
+                StringBuffer cancelledTripData = _resource.getCancelledTripsData();
+                List<NycCancelledTripBean>  cancelledTripBeans = _resource.makeCancelledTripBeansFromCapiOutput(cancelledTripData);
+                _resource.enqueueBeans(cancelledTripBeans);
             } catch (Exception e) {
                 // bury
             }

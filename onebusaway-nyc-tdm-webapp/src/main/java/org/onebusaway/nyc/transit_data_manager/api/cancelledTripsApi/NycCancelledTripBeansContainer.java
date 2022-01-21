@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.transit_data_manager.api.canceledTripsApi;
+package org.onebusaway.nyc.transit_data_manager.api.cancelledTripsApi;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joda.time.DateTime;

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.nyc.transit_data_manager.api.canceledTripsApi;
+package org.onebusaway.nyc.transit_data_manager.api.cancelledTripsApi;
 
-import org.onebusaway.nyc.transit_data.model.NycCanceledTripBean;
+import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 
 
-public class CanceledTripsOutputQueueSenderServiceImpl {
+public class CancelledTripsOutputQueueSenderServiceImpl {
 
     /**
      * enqueues NycCanceledTripBeans,
@@ -30,7 +30,7 @@ public class CanceledTripsOutputQueueSenderServiceImpl {
 
 //    todo write the damn thing
 
-    public void enqueue(NycCanceledTripBean r){
+    public void enqueue(NycCancelledTripBean r){
         return;
     }
 
