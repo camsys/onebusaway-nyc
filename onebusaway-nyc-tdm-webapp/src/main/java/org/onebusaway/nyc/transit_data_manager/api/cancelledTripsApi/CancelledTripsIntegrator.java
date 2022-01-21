@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Untainted;
 import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -75,20 +76,13 @@ public class CancelledTripsIntegrator {
     public void setUrl(String url) {
         _url = url;
     }
-    public void setQueuePort(int queuePort){
-        _queuePort = queuePort;
-        if(_outputQueueSenderService!=null){
-            _outputQueueSenderService.setPort(queuePort);
-        }
-    }
-    public void setQueueLocation(String queueLocation){
-        _queueLocation = queueLocation;
-        if(_outputQueueSenderService!=null){
-            _outputQueueSenderService.setLocation(queueLocation);
-        }
-    }
     public String getUrl() {
         return _url;
+    }
+
+    @Autowired
+    public void setOutputQueueSenderService(CancelledTripsOutputQueueSenderServiceImpl outputQueueSenderService) {
+        _outputQueueSenderService = outputQueueSenderService;
     }
 
     @Autowired
@@ -151,18 +145,9 @@ public class CancelledTripsIntegrator {
         }
     }
 
-    public void initializeQueueSender(){
-//        todo: initialize queue sender
-        _outputQueueSenderService = new CancelledTripsOutputQueueSenderServiceImpl();
-        _outputQueueSenderService.setLocation(_queueLocation);
-        _outputQueueSenderService.setPort(_queuePort);
-    }
-
 
     public void completeInitialization(String url,String queueLocation){
         setUrl(url);
-        setQueueLocation(queueLocation);
-        initializeQueueSender();
         _log.info("CancelledTripsApi configured to " + url);
 
         final UpdateThread updateThread = new UpdateThread(this);
@@ -189,15 +174,12 @@ public class CancelledTripsIntegrator {
                 ConfigItem connectionTimeout = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIConnectionTimeout");
                 ConfigItem queuePort = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIQueuePort");
                 ConfigItem queueLocation = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIQueueLocation");
-                if (url != null & queueLocation != null) {
+                if (url != null) {
                     if(refreshInterval!=null){
                         _resource.setRefreshIntervalMillis(Integer.valueOf(refreshInterval.getValue()));
                     }
                     if(connectionTimeout!=null){
                         _resource.setConnectionTimeout(Integer.valueOf(connectionTimeout.getValue()));
-                    }
-                    if(queuePort!=null){
-                        _resource.setQueuePort(Integer.valueOf(queuePort.getValue()));
                     }
                     _resource.completeInitialization(url.getValue(),queueLocation.getValue());
                     return;
