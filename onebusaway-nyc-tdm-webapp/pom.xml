@@ -99,6 +99,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-joda</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-siri-api-v13</artifactId>
             <version>${onebusaway.siri.version}</version>
