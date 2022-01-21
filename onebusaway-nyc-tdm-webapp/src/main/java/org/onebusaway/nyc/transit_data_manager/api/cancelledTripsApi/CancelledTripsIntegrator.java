@@ -37,6 +37,8 @@ public class CancelledTripsIntegrator {
 
     public static final int DEFAULT_CONNECTION_TIMEOUT = 5 * 1000;
     public static final int DEFAULT_REFRESH_INTERVAL = 15 * 1000;
+    public static final int DEFAULT_QUEUE_PORT = 5577;
+    public static final String DEFAULT_QUEUE_LOCATION = "";
 
     private static Logger _log = LoggerFactory.getLogger(CancelledTripsIntegrator.class);
 
@@ -49,6 +51,10 @@ public class CancelledTripsIntegrator {
 
     private int _refreshIntervalMillis = DEFAULT_REFRESH_INTERVAL;
     private int _connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+    private int _queuePort = DEFAULT_QUEUE_PORT;
+    private String _queueLocation = DEFAULT_QUEUE_LOCATION;
+
+
 
     private CancelledTripsOutputQueueSenderServiceImpl _outputQueueSenderService;
 
@@ -69,9 +75,27 @@ public class CancelledTripsIntegrator {
     public void setUrl(String url) {
         _url = url;
     }
+    public void setQueuePort(int queuePort){
+        _queuePort = queuePort;
+        if(_outputQueueSenderService!=null){
+            _outputQueueSenderService.setPort(queuePort);
+        }
+    }
+    public void setQueueLocation(String queueLocation){
+        _queueLocation = queueLocation;
+        if(_outputQueueSenderService!=null){
+            _outputQueueSenderService.setLocation(queueLocation);
+        }
+    }
     public String getUrl() {
         return _url;
     }
+
+    @Autowired
+    public void setConfig(ConfigurationDatastoreInterface config) {
+        _config = config;
+    }
+
     @Autowired
     public void setTaskScheduler(ThreadPoolTaskScheduler scheduler) {
         _taskScheduler = scheduler;
@@ -122,10 +146,25 @@ public class CancelledTripsIntegrator {
     }
 
     public void enqueueBeans(List<NycCancelledTripBean> beans){
+        for(NycCancelledTripBean bean : beans){
+            _outputQueueSenderService.enqueue(bean);
+        }
+    }
+
+    public void initializeQueueSender(){
+//        todo: initialize queue sender
+        _outputQueueSenderService = new CancelledTripsOutputQueueSenderServiceImpl();
+        _outputQueueSenderService.setLocation(_queueLocation);
+        _outputQueueSenderService.setPort(_queuePort);
     }
 
 
-    public void completeInitialization(String url){
+    public void completeInitialization(String url,String queueLocation){
+        setUrl(url);
+        setQueueLocation(queueLocation);
+        initializeQueueSender();
+        _log.info("CancelledTripsApi configured to " + url);
+
         final UpdateThread updateThread = new UpdateThread(this);
         _taskScheduler.scheduleWithFixedDelay(updateThread, _refreshIntervalMillis);
     }
@@ -137,6 +176,40 @@ public class CancelledTripsIntegrator {
         }
 
         public void run() {
+            if (_resource.getConfig() == null) {
+                _log.warn("missing config service, bailing");
+                return;
+            }
+            int nTries = 20;
+            int tries = 0;
+            while (tries < nTries) {
+                tries++;
+                ConfigItem url = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIUrl");
+                ConfigItem refreshInterval = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIRefreshInterval");
+                ConfigItem connectionTimeout = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIConnectionTimeout");
+                ConfigItem queuePort = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIQueuePort");
+                ConfigItem queueLocation = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIQueueLocation");
+                if (url != null & queueLocation != null) {
+                    if(refreshInterval!=null){
+                        _resource.setRefreshIntervalMillis(Integer.valueOf(refreshInterval.getValue()));
+                    }
+                    if(connectionTimeout!=null){
+                        _resource.setConnectionTimeout(Integer.valueOf(connectionTimeout.getValue()));
+                    }
+                    if(queuePort!=null){
+                        _resource.setQueuePort(Integer.valueOf(queuePort.getValue()));
+                    }
+                    _resource.completeInitialization(url.getValue(),queueLocation.getValue());
+                    return;
+                }
+                try {
+                    _log.info("Sleeping on configuration");
+                    Thread.sleep(30 * 1000);
+                } catch (InterruptedException ie) {
+                    return;
+                }
+            }
+            _log.error("giving up on configuration!  cancelledtrips API will not be available");
         }
     }
 

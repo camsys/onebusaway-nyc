@@ -39,7 +39,6 @@ public class NycCancelledTripBean implements Serializable {
     private String status;
     private long timestamp;
     private DateTime scheduledPullOut;
-    //@JsonDeserialize(using = DateTimeSerializerBase<>.class)
     private DateTime humanReadableTimestamp;
     private Date serviceDate;
     private String route;

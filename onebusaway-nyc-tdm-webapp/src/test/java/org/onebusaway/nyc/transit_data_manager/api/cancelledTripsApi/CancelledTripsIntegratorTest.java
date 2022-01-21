@@ -19,15 +19,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Test;
-import org.mockito.Mock;
+import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
+import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -42,11 +43,14 @@ public class CancelledTripsIntegratorTest {
      *
      */
 
-    @Mock
-    ConfigurationDatastoreInterface datastoreInterface;
+    @InjectMocks
+    PersonalConfigurationDatastoreInterface datastoreInterface = new PersonalConfigurationDatastoreInterface();
 
-    @Mock
-    ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    @InjectMocks
+    ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+
+    @InjectMocks
+    CancelledTripsOutputQueueSenderServiceImpl senderService = new MockingCancelledTripsOutputQueueSenderServiceImpl();
 
     @Test
     public void testCapiOutToNYCCancelledTripBeans() throws JsonProcessingException, ParseException {
@@ -72,8 +76,6 @@ public class CancelledTripsIntegratorTest {
         assertEquals("MTA_303215",bean.getFirstStopId());
         assertEquals(new SimpleDateFormat("HH:mm:ss").parse("07:29:00").getTime(),bean.getFirstStopDepartureTime().getTime());
         assertTrue(bean.getTimestamp()==Long.valueOf("1642734418000"));
-
-//        todo: set datetime read in as the correct timezone
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
         DateTime dateTime = new DateTime(format.parse("2022-01-21T07:23:00"),DateTimeZone.getDefault());
         assertEquals(dateTime,bean.getScheduledPullOut());
@@ -84,7 +86,7 @@ public class CancelledTripsIntegratorTest {
 
     @Test
     public void testDataCollectionToCancelledTripBeans() throws JsonProcessingException {
-//        todo fix this test to work if the api isn't on'
+//        todo fix this test to work if the api isn't on
         MockitoAnnotations.initMocks(this);
 
         CancelledTripsIntegrator integrator = new CancelledTripsIntegrator();
@@ -94,6 +96,85 @@ public class CancelledTripsIntegratorTest {
         String string = buffer.toString();
         List<NycCancelledTripBean> beans = integrator.makeCancelledTripBeansFromCapiOutput(buffer);
         assertTrue(beans.size()>0);
+    }
 
+
+    @Test
+    public void SetupTest() {
+        MockitoAnnotations.initMocks(this);
+        datastoreInterface.setConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIUrl","http://capi.dev.obanyc.com:8084/api/canceled-trips.json");
+        datastoreInterface.setConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIQueueLocation","http://FAKEQUEUELOCATION");
+
+        CancelledTripsIntegrator integrator = new CancelledTripsIntegrator();
+        integrator.setConfig(datastoreInterface);
+        integrator.setup();
+    }
+
+
+
+
+
+
+
+
+
+
+
+    private class PersonalConfigurationDatastoreInterface implements ConfigurationDatastoreInterface {
+        HashMap<String,HashMap<String,ConfigItem>> configs = new HashMap<String,HashMap<String,ConfigItem>>();
+
+        @Override
+        public List<ConfigItem> getCompleteSetConfigItems() {
+            return null;
+        }
+
+        @Override
+        public List<ConfigItem> getConfigItemsForComponent(String component) {
+            return null;
+        }
+
+        @Override
+        public ConfigItem getConfigItemByComponentKey(String component, String key) {
+            return configs.get(component).get(key);
+        }
+
+        public void setConfigItemByComponentKey(String component, String key, String configString) {
+            ConfigItem config = new ConfigItem();
+            config.setValue(configString);
+            if(!configs.containsKey(component)) {
+                configs.put(component,new HashMap<String, ConfigItem>());
+            }
+            configs.get(component).put(key,config);
+        }
+
+        @Override
+        public void setConfigItemByComponentKey(String component, String key, ConfigItem config) {
+            if(!configs.containsKey(component)) {
+                configs.put(component,new HashMap<String, ConfigItem>());
+            }
+            configs.get(component).put(key,config);
+        }
+
+        @Override
+        public boolean getHasComponent(String component) {
+            return false;
+        }
+
+        @Override
+        public boolean getComponentHasKey(String component, String key) {
+            return false;
+        }
+
+        @Override
+        public ConfigItem deleteConfigItemByKey(String component, String key) {
+            return null;
+        }
+    };
+
+    public class MockingCancelledTripsOutputQueueSenderServiceImpl extends CancelledTripsOutputQueueSenderServiceImpl {
+        @Override
+        public void enqueue(NycCancelledTripBean r){
+            return;
+        }
     }
 }
