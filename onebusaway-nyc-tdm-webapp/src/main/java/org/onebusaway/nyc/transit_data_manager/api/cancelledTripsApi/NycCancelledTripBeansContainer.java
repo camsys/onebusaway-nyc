@@ -22,7 +22,7 @@ public class NycCancelledTripBeansContainer implements Serializable {
         return timestamp;
     }
 
-    @JsonProperty("Impacted")
+    @JsonProperty("impacted")
     public void setBeans(ArrayList<NycCancelledTripBean> beans) {
         this.beans = beans;
     }
