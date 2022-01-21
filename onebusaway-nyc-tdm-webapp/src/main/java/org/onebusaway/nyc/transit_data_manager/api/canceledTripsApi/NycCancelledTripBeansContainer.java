@@ -2,16 +2,16 @@ package org.onebusaway.nyc.transit_data_manager.api.canceledTripsApi;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joda.time.DateTime;
-import org.onebusaway.nyc.transit_data.model.NycCanceledTripBean;
+import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class NycCanceledTripBeansContainer implements Serializable {
+public class NycCancelledTripBeansContainer implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    ArrayList<NycCanceledTripBean> beans;
+    ArrayList<NycCancelledTripBean> beans;
     DateTime timestamp;
 
     public void setTimestamp(DateTime timestamp) {
@@ -23,11 +23,11 @@ public class NycCanceledTripBeansContainer implements Serializable {
     }
 
     @JsonProperty("Impacted")
-    public void setBeans(ArrayList<NycCanceledTripBean> beans) {
+    public void setBeans(ArrayList<NycCancelledTripBean> beans) {
         this.beans = beans;
     }
 
-    public ArrayList<NycCanceledTripBean> getBeans() {
+    public ArrayList<NycCancelledTripBean> getBeans() {
         return beans;
     }
 }

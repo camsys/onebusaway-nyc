@@ -28,7 +28,7 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.util.Date;
 
-public class NycCanceledTripBean implements Serializable {
+public class NycCancelledTripBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

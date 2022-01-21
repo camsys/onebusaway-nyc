@@ -3,7 +3,7 @@ package org.onebusaway.nyc.transit_data_manager.api.canceledTripsApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.onebusaway.nyc.transit_data.model.NycCanceledTripBean;
+import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,15 +85,15 @@ public class CanceledTripsIntegrator {
         return new StringBuffer();
     }
 
-    public List<NycCanceledTripBean>  makeCancelledTripBeansFromCapiOutput(StringBuffer buffer) throws JsonProcessingException {
+    public List<NycCancelledTripBean>  makeCancelledTripBeansFromCapiOutput(StringBuffer buffer) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
         objectMapper.setDateFormat(df);
-        NycCanceledTripBeansContainer beansContainer = objectMapper.readValue(buffer.toString(), new TypeReference<NycCanceledTripBeansContainer>(){});
+        NycCancelledTripBeansContainer beansContainer = objectMapper.readValue(buffer.toString(), new TypeReference<NycCancelledTripBeansContainer>(){});
         return beansContainer.getBeans();
     }
 
-    public void enqueueBeans(List<NycCanceledTripBean> beans){
+    public void enqueueBeans(List<NycCancelledTripBean> beans){
     }
 
 
@@ -122,8 +122,8 @@ public class CanceledTripsIntegrator {
         @Override
         public void run() {
             try {
-                StringBuffer canceledTripData = _resource.getCanceledTripsData();
-                List<NycCanceledTripBean>  canceledTripBeans = _resource.makeCancelledTripBeansFromCapiOutput(canceledTripData);
+                StringBuffer cancelledTripData = _resource.getCanceledTripsData();
+                List<NycCancelledTripBean>  canceledTripBeans = _resource.makeCancelledTripBeansFromCapiOutput(cancelledTripData);
                 _resource.enqueueBeans(canceledTripBeans);
             } catch (Exception e) {
                 // bury

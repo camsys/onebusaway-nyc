@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.onebusaway.nyc.transit_data.model.NycCanceledTripBean;
+import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -29,7 +29,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class CanceledTripsIntegratorTest {
+public class CancelledTripsIntegratorTest {
 
     /**
      * unit testing for canceled trips integrator
@@ -45,7 +45,7 @@ public class CanceledTripsIntegratorTest {
     ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
     @Test
-    public void testCapiOutToNYCCanceledTripBeans() throws JsonProcessingException {
+    public void testCapiOutToNYCCancelledTripBeans() throws JsonProcessingException {
 
         MockitoAnnotations.initMocks(this);
 
@@ -54,9 +54,9 @@ public class CanceledTripsIntegratorTest {
         buffer.append(fakeCAPIOutput);
         CanceledTripsIntegrator integrator = new CanceledTripsIntegrator();
 
-        List<NycCanceledTripBean> beans = integrator.makeCancelledTripBeansFromCapiOutput(buffer);
+        List<NycCancelledTripBean> beans = integrator.makeCancelledTripBeansFromCapiOutput(buffer);
 
-        NycCanceledTripBean bean1 = beans.get(0);
+        NycCancelledTripBean bean1 = beans.get(0);
         assertEquals(bean1.getBlock(),"MTA NYCT 1");
         assertEquals(bean1.getActor(),"Jim Jones");
         assertEquals(bean1.getStatus(),"Cancelled");
@@ -71,7 +71,7 @@ public class CanceledTripsIntegratorTest {
 //        todo find out why these are not the same WHEN THEY LOOK EXACTLY THE SAME??
 //        assertTrue(datesAreTheSame==0);
 
-        NycCanceledTripBean bean2 = beans.get(1);
+        NycCancelledTripBean bean2 = beans.get(1);
         assertEquals(bean2.getBlock(),"MTA NYCT 2");
         assertEquals(bean2.getActor(),"Jim Johns");
         assertEquals(bean2.getStatus(),"Cancelled");
