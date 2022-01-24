@@ -10,21 +10,29 @@ import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Untainted;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+@Path("/cancelledTrips")
 @Component
-public class CancelledTripsIntegrator {
+@Scope("singleton")
+public class CancelledTripsResource {
 
     /**
      * pulls in data from Cancelledtrips API, generates beans, and pushes to queue
@@ -41,7 +49,7 @@ public class CancelledTripsIntegrator {
     public static final int DEFAULT_QUEUE_PORT = 5577;
     public static final String DEFAULT_QUEUE_LOCATION = "";
 
-    private static Logger _log = LoggerFactory.getLogger(CancelledTripsIntegrator.class);
+    private static Logger _log = LoggerFactory.getLogger(CancelledTripsResource.class);
 
     private ThreadPoolTaskScheduler _taskScheduler;
     @Autowired
@@ -50,14 +58,42 @@ public class CancelledTripsIntegrator {
     // make sure we only initialize once
     private static boolean _initialized = false;
 
+    // this needs to be static as Spring creates a new instance on invocation
+    private static StringBuffer _response = new StringBuffer();
+
     private int _refreshIntervalMillis = DEFAULT_REFRESH_INTERVAL;
     private int _connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     private int _queuePort = DEFAULT_QUEUE_PORT;
     private String _queueLocation = DEFAULT_QUEUE_LOCATION;
+    private List<NycCancelledTripBean> _cancelledTrips;
+    private ObjectMapper _mapper;
 
+    @Path("/list")
+    @GET
+    @Produces("application/json")
+    public Response getCancelledTripsList() throws Exception {
+        StringWriter writer = null;
+        String output = null;
+        try {
+            writer = new StringWriter();
+            _mapper.writeValue(writer, _cancelledTrips);
+            output = writer.toString();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException e) {}
+        }
 
+        Response response = Response.ok(output).build();
 
-    private CancelledTripsOutputQueueSenderServiceImpl _outputQueueSenderService;
+        _log.info("Returning response ok.");
+
+        return response;
+    }
+
 
     private String _url = null;
 
@@ -80,10 +116,7 @@ public class CancelledTripsIntegrator {
         return _url;
     }
 
-    @Autowired
-    public void setOutputQueueSenderService(CancelledTripsOutputQueueSenderServiceImpl outputQueueSenderService) {
-        _outputQueueSenderService = outputQueueSenderService;
-    }
+
 
     @Autowired
     public void setConfig(ConfigurationDatastoreInterface config) {
@@ -99,11 +132,19 @@ public class CancelledTripsIntegrator {
     public void setup() {
         if (!_initialized) {
             _log.info("setting up...");
+            setupObjectMapper();
             // move configuration to background thread to allow TDM to startup
             final InitThread initThread = new InitThread(this);
-            new Thread(initThread).start();
+            new Thread(initThread).run();
             _initialized = true;
         }
+    }
+
+    protected void setupObjectMapper(){
+        _mapper = new ObjectMapper();
+        _mapper.registerModule(new JodaModule());
+        _mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+        _mapper.setTimeZone(Calendar.getInstance().getTimeZone());
     }
 
     public StringBuffer getCancelledTripsData(){
@@ -131,32 +172,35 @@ public class CancelledTripsIntegrator {
     }
 
     public List<NycCancelledTripBean>  makeCancelledTripBeansFromCapiOutput(StringBuffer buffer) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JodaModule());
-        objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
-        objectMapper.setTimeZone(Calendar.getInstance().getTimeZone());
-        NycCancelledTripBeansContainer beansContainer = objectMapper.readValue(buffer.toString(), new TypeReference<NycCancelledTripBeansContainer>(){});
+        IncomingNycCancelledTripBeansContainer beansContainer = _mapper.readValue(buffer.toString(), new TypeReference<IncomingNycCancelledTripBeansContainer>(){});
         return beansContainer.getBeans();
     }
 
-    public void enqueueBeans(List<NycCancelledTripBean> beans){
-        for(NycCancelledTripBean bean : beans){
-            _outputQueueSenderService.enqueue(bean);
+    public void setCancelledTripsBeans(List<NycCancelledTripBean> beans){
+        _cancelledTrips = beans;
+    }
+
+    public void update(){
+        try {
+            StringBuffer cancelledTripData = getCancelledTripsData();
+            setCancelledTripsBeans(makeCancelledTripBeansFromCapiOutput(cancelledTripData));
+        } catch (Exception e) {
+            // bury
         }
     }
 
-
-    public void completeInitialization(String url,String queueLocation){
+    public void completeInitialization(String url){
         setUrl(url);
         _log.info("CancelledTripsApi configured to " + url);
 
         final UpdateThread updateThread = new UpdateThread(this);
+        updateThread.run();
         _taskScheduler.scheduleWithFixedDelay(updateThread, _refreshIntervalMillis);
     }
 
     public static class InitThread implements Runnable {
-        private CancelledTripsIntegrator _resource;
-        public InitThread(CancelledTripsIntegrator resource) {
+        private CancelledTripsResource _resource;
+        public InitThread(CancelledTripsResource resource) {
             this._resource = resource;
         }
 
@@ -172,8 +216,6 @@ public class CancelledTripsIntegrator {
                 ConfigItem url = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIUrl");
                 ConfigItem refreshInterval = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIRefreshInterval");
                 ConfigItem connectionTimeout = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIConnectionTimeout");
-                ConfigItem queuePort = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIQueuePort");
-                ConfigItem queueLocation = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIQueueLocation");
                 if (url != null) {
                     if(refreshInterval!=null){
                         _resource.setRefreshIntervalMillis(Integer.valueOf(refreshInterval.getValue()));
@@ -181,7 +223,7 @@ public class CancelledTripsIntegrator {
                     if(connectionTimeout!=null){
                         _resource.setConnectionTimeout(Integer.valueOf(connectionTimeout.getValue()));
                     }
-                    _resource.completeInitialization(url.getValue(),queueLocation.getValue());
+                    _resource.completeInitialization(url.getValue());
                     return;
                 }
                 try {
@@ -197,20 +239,14 @@ public class CancelledTripsIntegrator {
 
     public static class UpdateThread implements Runnable {
 
-        private CancelledTripsIntegrator _resource;
-        public UpdateThread(CancelledTripsIntegrator resource) {
+        private CancelledTripsResource _resource;
+        public UpdateThread(CancelledTripsResource resource) {
             this._resource = resource;
         }
 
         @Override
         public void run() {
-            try {
-                StringBuffer cancelledTripData = _resource.getCancelledTripsData();
-                List<NycCancelledTripBean>  cancelledTripBeans = _resource.makeCancelledTripBeansFromCapiOutput(cancelledTripData);
-                _resource.enqueueBeans(cancelledTripBeans);
-            } catch (Exception e) {
-                // bury
-            }
+            _resource.update();
         }
     }
 }
