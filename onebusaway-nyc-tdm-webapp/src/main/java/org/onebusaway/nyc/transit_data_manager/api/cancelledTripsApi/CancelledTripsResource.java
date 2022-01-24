@@ -42,10 +42,8 @@ public class CancelledTripsResource {
      */
 
 
-//    todo: finish setup configs & update configs source
-
-    public static final int DEFAULT_CONNECTION_TIMEOUT = 5 * 1000;
     public static final int DEFAULT_REFRESH_INTERVAL = 15 * 1000;
+    public static final int DEFAULT_CONNECTION_TIMEOUT = 5 * 1000;
     public static final int DEFAULT_QUEUE_PORT = 5577;
     public static final String DEFAULT_QUEUE_LOCATION = "";
 
