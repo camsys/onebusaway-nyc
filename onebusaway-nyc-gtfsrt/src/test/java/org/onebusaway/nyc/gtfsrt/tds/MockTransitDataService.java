@@ -30,6 +30,7 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.nyc.gtfsrt.util.BlockTripMapReader;
+import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.OccupancyStatusBean;
@@ -140,6 +141,11 @@ public class MockTransitDataService implements NycTransitDataService {
 
     @Override
     public boolean isTripCancelled(AgencyAndId tripId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<NycCancelledTripBean> getAllCancelledTrips() {
         throw new UnsupportedOperationException();
     }
 
