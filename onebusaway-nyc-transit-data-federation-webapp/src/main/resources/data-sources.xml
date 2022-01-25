@@ -72,6 +72,10 @@
         <property name="status" value="ENABLED"/>
     </bean>
 
+    <!--  Cancelled Trip Configuration -->
+    <bean id="cancelledTripService" class="org.onebusaway.nyc.transit_data_federation.impl.queue.CancelledTripHttpListenerTask">
+    </bean>
+
 	<!-- Other Stuff: -->
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">

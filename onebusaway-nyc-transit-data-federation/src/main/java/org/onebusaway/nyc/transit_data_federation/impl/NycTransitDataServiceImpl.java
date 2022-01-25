@@ -30,6 +30,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.cancelled.CancelledTripService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -86,6 +87,9 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Autowired(required=false)
 	private PredictionIntegrationService _predictionIntegrationService;
+
+	@Autowired(required=false)
+	private CancelledTripService _cancelledTripService;
 
 	@Autowired
 	@Qualifier("NycBundleSearchService")
@@ -711,5 +715,23 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	public ListBean<ServiceAlertRecordBean> getAllServiceAlertRecordsForAgencyId(String agencyId) {
 		blockUntilBundleIsReady();
 		return _transitDataService.getAllServiceAlertRecordsForAgencyId(agencyId);
+	}
+
+	@Override
+	public boolean isTripCancelled(String tripId){
+		blockUntilBundleIsReady();
+		if(_cancelledTripService != null) {
+			return _cancelledTripService.isTripCancelled(tripId);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isTripCancelled(AgencyAndId tripId){
+		blockUntilBundleIsReady();
+		if(_cancelledTripService != null){
+			return _cancelledTripService.isTripCancelled(tripId);
+		}
+		return false;
 	}
 }
