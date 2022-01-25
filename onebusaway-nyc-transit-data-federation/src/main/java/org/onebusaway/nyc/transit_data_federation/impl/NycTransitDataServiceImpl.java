@@ -26,6 +26,7 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
+import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
@@ -733,5 +734,14 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 			return _cancelledTripService.isTripCancelled(tripId);
 		}
 		return false;
+	}
+
+	@Override
+	public List<NycCancelledTripBean> getAllCancelledTrips(){
+		blockUntilBundleIsReady();
+		if(_cancelledTripService != null){
+			return _cancelledTripService.getAllCancelledTrips();
+		}
+		return Collections.EMPTY_LIST;
 	}
 }

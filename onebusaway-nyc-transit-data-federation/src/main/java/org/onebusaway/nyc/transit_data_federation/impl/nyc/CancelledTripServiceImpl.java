@@ -78,6 +78,11 @@ public class CancelledTripServiceImpl implements CancelledTripService {
     }
 
     @Override
+    public List<NycCancelledTripBean> getAllCancelledTrips() {
+        return new ArrayList<>(_cancelledTripsCache.values());
+    }
+
+    @Override
     public void updateCancelledTrips(Map<AgencyAndId, NycCancelledTripBean> cancelledTripsCache){
         _cancelledTripsCache = cancelledTripsCache;
     }
