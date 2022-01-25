@@ -7,7 +7,7 @@ import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class NycCancelledTripBeansContainer implements Serializable {
+public class IncomingNycCancelledTripBeansContainer implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

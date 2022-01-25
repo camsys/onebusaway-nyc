@@ -17,7 +17,7 @@
 package org.onebusaway.nyc.transit_data.model;
 
 /**
- * Serializable model bean for cancled trips
+ * Serializable model bean for cancelled trips
  *
  * @author caylasavitzky
  *
@@ -39,12 +39,12 @@ public class NycCancelledTripBean implements Serializable {
     private String status;
     private long timestamp;
     private DateTime scheduledPullOut;
-    //@JsonDeserialize(using = DateTimeSerializerBase<>.class)
     private DateTime humanReadableTimestamp;
     private Date serviceDate;
     private String route;
     private String firstStopId;
     private Time firstStopDepartureTime;
+    private Time lastStopArrivalTime;
 
 //        block	"MTABC_JKPA2-JK_A2-Weekday-01-SDon_6193636"
 //        trip	"MTABC_32246617-JKPA2-JK_A2-Weekday-01-SDon"
@@ -80,6 +80,10 @@ public class NycCancelledTripBean implements Serializable {
 
     public void setFirstStopDepartureTime(Time firstStopDepartureTime) {
         this.firstStopDepartureTime = firstStopDepartureTime;
+    }
+
+    public void setLastStopArrivalTime(Time lastStopArrivalTime) {
+        this.lastStopArrivalTime = lastStopArrivalTime;
     }
 
     public void setFirstStopId(String firstStopId) {
@@ -136,5 +140,9 @@ public class NycCancelledTripBean implements Serializable {
 
     public Date getFirstStopDepartureTime() {
         return firstStopDepartureTime;
+    }
+
+    public Time getLastStopArrivalTime() {
+        return lastStopArrivalTime;
     }
 }
