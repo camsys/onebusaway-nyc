@@ -138,7 +138,7 @@ public class NycCancelledTripBean implements Serializable {
         return firstStopId;
     }
 
-    public Date getFirstStopDepartureTime() {
+    public Time getFirstStopDepartureTime() {
         return firstStopDepartureTime;
     }
 
