@@ -1,12 +1,11 @@
-package org.onebusaway.nyc.transit_data_manager.api.cancelledTripsApi;
+package org.onebusaway.nyc.transit_data_manager.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
-import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
-import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-@Path("/cancelledTrips")
+@Path("/cancelled-trips")
 @Component
 @Scope("singleton")
 public class CancelledTripsResource {
@@ -51,7 +50,7 @@ public class CancelledTripsResource {
 
     private ThreadPoolTaskScheduler _taskScheduler;
     @Autowired
-    private ConfigurationDatastoreInterface _config;
+    private ConfigurationService _configurationService;
 
     // make sure we only initialize once
     private static boolean _initialized = false;
@@ -77,8 +76,7 @@ public class CancelledTripsResource {
             _mapper.writeValue(writer, _cancelledTrips);
             output = writer.toString();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            _log.error("exception parsing json " + e, e);
         } finally {
             try {
                 writer.close();
@@ -95,8 +93,8 @@ public class CancelledTripsResource {
 
     private String _url = null;
 
-    protected ConfigurationDatastoreInterface getConfig() {
-        return _config;
+    protected ConfigurationService getConfig() {
+        return _configurationService;
     }
     public void setConnectionTimeout(int timeout) {
         _connectionTimeout = timeout;
@@ -117,8 +115,8 @@ public class CancelledTripsResource {
 
 
     @Autowired
-    public void setConfig(ConfigurationDatastoreInterface config) {
-        _config = config;
+    public void setConfig(ConfigurationService config) {
+        _configurationService = config;
     }
 
     @Autowired
@@ -128,13 +126,17 @@ public class CancelledTripsResource {
 
     @PostConstruct
     public void setup() {
-        if (!_initialized) {
-            _log.info("setting up...");
-            setupObjectMapper();
-            // move configuration to background thread to allow TDM to startup
-            final InitThread initThread = new InitThread(this);
-            new Thread(initThread).run();
-            _initialized = true;
+        try {
+            if (!_initialized) {
+                _log.info("setting up...");
+                setupObjectMapper();
+                // move configuration to background thread to allow TDM to startup
+                final InitThread initThread = new InitThread(this);
+                new Thread(initThread).run();
+                _initialized = true;
+            }
+        } catch (Throwable t) {
+            _log.error("exception setting up cancelledTripResource: "+ t, t);
         }
     }
 
@@ -213,17 +215,17 @@ public class CancelledTripsResource {
             int tries = 0;
             while (tries < nTries) {
                 tries++;
-                ConfigItem url = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIUrl");
-                ConfigItem refreshInterval = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIRefreshInterval");
-                ConfigItem connectionTimeout = _resource.getConfig().getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIConnectionTimeout");
+                String url = _resource.getConfig().getConfigurationValueAsString("cancelledTrips.CAPIUrl", null);
+                Integer refreshInterval = _resource.getConfig().getConfigurationValueAsInteger( "cancelledTrips.CAPIRefreshInterval", null);
+                Integer connectionTimeout = _resource.getConfig().getConfigurationValueAsInteger("cancelledTrips.CAPIConnectionTimeout", null);
                 if (url != null) {
                     if(refreshInterval!=null){
-                        _resource.setRefreshIntervalMillis(Integer.valueOf(refreshInterval.getValue()));
+                        _resource.setRefreshIntervalMillis(refreshInterval);
                     }
                     if(connectionTimeout!=null){
-                        _resource.setConnectionTimeout(Integer.valueOf(connectionTimeout.getValue()));
+                        _resource.setConnectionTimeout(connectionTimeout);
                     }
-                    _resource.completeInitialization(url.getValue());
+                    _resource.completeInitialization(url);
                     return;
                 }
                 try {
