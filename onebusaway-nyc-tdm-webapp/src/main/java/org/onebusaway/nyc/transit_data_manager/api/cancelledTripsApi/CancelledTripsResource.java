@@ -193,7 +193,9 @@ public class CancelledTripsResource {
 
         final UpdateThread updateThread = new UpdateThread(this);
         updateThread.run();
-        _taskScheduler.scheduleWithFixedDelay(updateThread, _refreshIntervalMillis);
+        if (_taskScheduler != null) {
+            _taskScheduler.scheduleWithFixedDelay(updateThread, _refreshIntervalMillis);
+        }
     }
 
     public static class InitThread implements Runnable {
