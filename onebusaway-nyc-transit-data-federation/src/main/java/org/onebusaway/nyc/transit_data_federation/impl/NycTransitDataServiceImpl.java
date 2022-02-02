@@ -15,11 +15,8 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -743,5 +740,17 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 			return _cancelledTripService.getAllCancelledTrips();
 		}
 		return Collections.EMPTY_LIST;
+	}
+
+	@Override
+	public void overrideCancelledTrips(List<NycCancelledTripBean> beans){
+		blockUntilBundleIsReady();
+		if(_cancelledTripService != null){
+			Map<AgencyAndId, NycCancelledTripBean> cancelledTripsCache = new ConcurrentHashMap<>();
+			for(NycCancelledTripBean bean : beans){
+				cancelledTripsCache.put(AgencyAndId.convertFromString(bean.getTrip()),bean);
+			}
+			_cancelledTripService.updateCancelledTrips(cancelledTripsCache);
+		}
 	}
 }

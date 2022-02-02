@@ -150,6 +150,11 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
+    public void overrideCancelledTrips(List<NycCancelledTripBean> beans) {
+
+    }
+
+    @Override
     public List<StopBean> getAllRevenueStops(AgencyWithCoverageBean agencyWithCoverageBean) {
         return null;
     }
