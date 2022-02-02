@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.nyc.transit_data_manager.api.cancelledTripsApi;
+package org.onebusaway.nyc.transit_data_manager.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -25,20 +25,15 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
-import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
-import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -53,7 +48,7 @@ public class CancelledTripsResourceTest {
      */
 
     @InjectMocks
-    PersonalConfigurationDatastoreInterface datastoreInterface = new PersonalConfigurationDatastoreInterface();
+    PersonalConfigurationService datastoreInterface = new PersonalConfigurationService();
 
     @InjectMocks
     ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
@@ -117,64 +112,56 @@ public class CancelledTripsResourceTest {
     }
 
     @Test
-    public void SetupTest() {
+    public void SetupTest() throws Exception {
         MockitoAnnotations.initMocks(this);
-        datastoreInterface.setConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIUrl","http://capi.dev.obanyc.com:8084/api/canceled-trips.json");
+        datastoreInterface.setConfigurationValue("tdm", "cancelledTrips.CAPIUrl","http://capi.dev.obanyc.com:8084/api/canceled-trips.json");
         CancelledTripsResource resource = new CancelledTripsResource();
         resource.setConfig(datastoreInterface);
         resource.setup();
-        assertEquals(resource.getUrl(),datastoreInterface.getConfigItemByComponentKey("cancelledTrips", "cancelledTrips.CAPIUrl").getValue());
+        assertEquals(resource.getUrl(),datastoreInterface.getConfigurationValueAsString( "cancelledTrips.CAPIUrl", null));
     }
 
 
-    private class PersonalConfigurationDatastoreInterface implements ConfigurationDatastoreInterface {
-        HashMap<String,HashMap<String,ConfigItem>> configs = new HashMap<String,HashMap<String,ConfigItem>>();
+    private class PersonalConfigurationService implements ConfigurationService {
+        Map<String, String> configMap = new HashMap<>();
+
 
         @Override
-        public List<ConfigItem> getCompleteSetConfigItems() {
+        public String getConfigurationValueAsString(String configurationItemKey,
+                                                    String defaultValue) {
+            return configMap.get(configurationItemKey);
+        }
+
+        @Override
+        public Float getConfigurationValueAsFloat(String configurationItemKey, Float defaultValue) {
             return null;
         }
 
         @Override
-        public List<ConfigItem> getConfigItemsForComponent(String component) {
+        public Integer getConfigurationValueAsInteger(String configurationItemKey,
+                                                      Integer defaultValue) {
+            String str = configMap.get(configurationItemKey);
+            if (str == null) return null;
+            return Integer.valueOf(str);
+        }
+
+        @Override
+        public Boolean getConfigurationValueAsBoolean(String configurationItemKey, Boolean defaultValue) {
             return null;
         }
 
         @Override
-        public ConfigItem getConfigItemByComponentKey(String component, String key) {
-            return configs.get(component).get(key);
+        public void setConfigurationValue(String component, String configurationItemKey, String value) throws Exception {
+            configMap.put(configurationItemKey, value);
+        }
+
+        @Override
+        public Map<String, String> getConfiguration() {
+            return null;
         }
 
         public void setConfigItemByComponentKey(String component, String key, String configString) {
-            ConfigItem config = new ConfigItem();
-            config.setValue(configString);
-            if(!configs.containsKey(component)) {
-                configs.put(component,new HashMap<String, ConfigItem>());
-            }
-            configs.get(component).put(key,config);
-        }
 
-        @Override
-        public void setConfigItemByComponentKey(String component, String key, ConfigItem config) {
-            if(!configs.containsKey(component)) {
-                configs.put(component,new HashMap<String, ConfigItem>());
-            }
-            configs.get(component).put(key,config);
-        }
-
-        @Override
-        public boolean getHasComponent(String component) {
-            return false;
-        }
-
-        @Override
-        public boolean getComponentHasKey(String component, String key) {
-            return false;
-        }
-
-        @Override
-        public ConfigItem deleteConfigItemByKey(String component, String key) {
-            return null;
         }
     };
 

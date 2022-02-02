@@ -246,7 +246,7 @@ public class VehicleLocationInferenceServiceImpl implements
   public void handleNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
-
+    _nycTransitDataService.overrideCancelledTrips(record.getCancelledTripBeans());
     if (isValidRecord(record.getVehicleId(), record.getTimestamp())) {
       final VehicleInferenceInstance i = getInstanceForVehicle(record.getVehicleId());
       final Future<?> result = _executorService.submit(new ProcessingTask(i,
