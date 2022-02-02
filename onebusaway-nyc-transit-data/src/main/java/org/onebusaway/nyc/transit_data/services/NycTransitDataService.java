@@ -71,4 +71,6 @@ public interface NycTransitDataService extends TransitDataService {
 	boolean isTripCancelled(AgencyAndId tripId);
 
 	List<NycCancelledTripBean> getAllCancelledTrips();
+
+	void overrideCancelledTrips(List<NycCancelledTripBean> beans);
 }
