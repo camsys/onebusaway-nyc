@@ -111,12 +111,13 @@ public class SituationExchangeResource {
     Unmarshaller u = jc.createUnmarshaller();
     Siri incomingSiri = (Siri) u.unmarshal(new StringReader(body));
 
-    CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService);
-    ServiceDelivery delivery = transformer.mergeImpactedAlerts(incomingSiri.getServiceDelivery());
+
+    ServiceDelivery delivery = incomingSiri.getServiceDelivery();
 
     if (delivery != null && deliveryIsForThisEnvironment(delivery)) {
+      CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService);
       SituationExchangeResults result = new SituationExchangeResults();
-      _siriService.handleServiceDeliveries(result, delivery);
+      _siriService.handleServiceDeliveries(result, transformer.mergeImpactedAlerts(incomingSiri.getServiceDelivery()));
       _log.info(result.toString());
       return Response.ok(result).build();
     }
