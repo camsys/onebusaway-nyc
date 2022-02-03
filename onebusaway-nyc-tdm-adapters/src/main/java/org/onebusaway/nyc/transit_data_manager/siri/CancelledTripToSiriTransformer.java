@@ -81,10 +81,10 @@ public class CancelledTripToSiriTransformer {
 
   // do the conversion of a bean to PtSituationElementStructure
   private PtSituationElementStructure fillPtSituationElement(NycCancelledTripBean cancelledTrip) {
-    if (cancelledTrip.getRoute() == null) return null;
+    if (cancelledTrip.getRouteId() == null) return null;
     AgencyAndId affectedRoute = null;
     try {
-      affectedRoute = AgencyAndIdLibrary.convertFromString(cancelledTrip.getRoute());
+      affectedRoute = AgencyAndIdLibrary.convertFromString(cancelledTrip.getRouteId());
     } catch (IllegalStateException ise) {
       TripBean trip = _nycTransitDataService.getTrip(cancelledTrip.getTrip());
       if (trip != null) {

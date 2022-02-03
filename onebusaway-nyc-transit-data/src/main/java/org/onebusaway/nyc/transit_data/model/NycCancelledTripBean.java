@@ -42,6 +42,7 @@ public class NycCancelledTripBean implements Serializable {
     private DateTime humanReadableTimestamp;
     private Date serviceDate;
     private String route;
+    private String routeId;
     private String firstStopId;
     private Time firstStopDepartureTime;
     private Time lastStopArrivalTime;
@@ -54,6 +55,7 @@ public class NycCancelledTripBean implements Serializable {
 //        humanReadableTimestamp	"2022-01-21T00:43:52"
 //        serviceDate	"2022-01-21"
 //        route	"Q9"
+//        routeId "MTABC_Q09"
 //        firstStopId	"MTA_550031"
 //        firstStopDepartureTime	"07:23:00"
 
@@ -76,6 +78,14 @@ public class NycCancelledTripBean implements Serializable {
 
     public void setRoute(String route) {
         this.route = route;
+    }
+
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public void setRouteId(String routeId) {
+        this.routeId = routeId;
     }
 
     public void setFirstStopDepartureTime(Time firstStopDepartureTime) {
