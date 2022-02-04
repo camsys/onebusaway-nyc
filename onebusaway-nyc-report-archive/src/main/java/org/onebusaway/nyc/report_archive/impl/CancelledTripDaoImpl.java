@@ -18,6 +18,7 @@ package org.onebusaway.nyc.report_archive.impl;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.model.NycCancelledTripRecord;
 import org.onebusaway.nyc.report_archive.services.CancelledTripDao;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -62,5 +64,13 @@ public class CancelledTripDaoImpl implements CancelledTripDao {
         }
         getSession().flush();
         getSession().clear();
+    }
+
+    //TODO: 1/31/22
+    @Transactional
+    @Override
+    public List<NycCancelledTripRecord> getReports(){
+        Query query = getSession().createQuery("FROM NycCancelledTripRecord");
+        return query.list();
     }
 }

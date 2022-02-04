@@ -20,10 +20,14 @@ import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report.services.LocationDao;
 import org.onebusaway.nyc.report_archive.model.NycCancelledTripRecord;
 
+import java.util.List;
+
 public interface CancelledTripDao {
 
   void saveReport(NycCancelledTripRecord report);
 
   void saveReports(NycCancelledTripRecord... reports);
+
+  List<NycCancelledTripRecord> getReports();
 
 }
