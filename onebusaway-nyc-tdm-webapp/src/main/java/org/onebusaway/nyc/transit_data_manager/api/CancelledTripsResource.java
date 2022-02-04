@@ -132,7 +132,7 @@ public class CancelledTripsResource {
     @PostConstruct
     public void setup() {
         try {
-            if (!_initialized) {
+            if (!_initialized && _taskScheduler != null) {
                 _log.info("setting up...");
                 setupObjectMapper();
                 // move configuration to background thread to allow TDM to startup

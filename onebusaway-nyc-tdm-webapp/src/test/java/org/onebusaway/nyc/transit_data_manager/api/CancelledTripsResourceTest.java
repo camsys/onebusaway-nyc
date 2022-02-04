@@ -108,13 +108,13 @@ public class CancelledTripsResourceTest {
         resource.update();
         Response response = resource.getCancelledTripsList();
         assertEquals(200,response.getStatus());
-        assertEquals("null",response.getEntity());
+        assertEquals("[]",response.getEntity());
     }
 
     @Test
     public void SetupTest() throws Exception {
         MockitoAnnotations.initMocks(this);
-        datastoreInterface.setConfigurationValue("tdm", "cancelledTrips.CAPIUrl","http://capi.dev.obanyc.com:8084/api/canceled-trips.json");
+        datastoreInterface.setConfigurationValue("tdm", "cancelledTrips.CAPIUrl",null);
         CancelledTripsResource resource = new CancelledTripsResource();
         resource.setConfig(datastoreInterface);
         resource.setup();
