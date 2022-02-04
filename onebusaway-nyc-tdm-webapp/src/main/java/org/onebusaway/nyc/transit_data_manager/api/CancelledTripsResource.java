@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -54,6 +55,8 @@ public class CancelledTripsResource {
 
     // make sure we only initialize once
     private static boolean _initialized = false;
+    // keep track of if we've logged the initialization
+    private static boolean _initializedLogged = false;
 
     // this needs to be static as Spring creates a new instance on invocation
     private static StringBuffer _response = new StringBuffer();
@@ -62,7 +65,7 @@ public class CancelledTripsResource {
     private int _connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     private int _queuePort = DEFAULT_QUEUE_PORT;
     private String _queueLocation = DEFAULT_QUEUE_LOCATION;
-    private List<NycCancelledTripBean> _cancelledTrips;
+    private List<NycCancelledTripBean> _cancelledTrips = null;
     private ObjectMapper _mapper;
 
     @Path("/list")
@@ -73,6 +76,8 @@ public class CancelledTripsResource {
         String output = null;
         try {
             writer = new StringWriter();
+            if (_cancelledTrips == null)
+                _cancelledTrips = new ArrayList<>();
             _mapper.writeValue(writer, _cancelledTrips);
             output = writer.toString();
         } catch (IOException e) {
@@ -85,7 +90,7 @@ public class CancelledTripsResource {
 
         Response response = Response.ok(output).build();
 
-        _log.info("Returning response ok.");
+        _log.info("Returning response ok for url=" + _url);
 
         return response;
     }
@@ -131,9 +136,14 @@ public class CancelledTripsResource {
                 _log.info("setting up...");
                 setupObjectMapper();
                 // move configuration to background thread to allow TDM to startup
-                final InitThread initThread = new InitThread(this);
-                new Thread(initThread).run();
-                _initialized = true;
+                final ConfigThread configThread = new ConfigThread(this);
+                _taskScheduler.scheduleWithFixedDelay(configThread, 2 * 60 * 1000);
+
+                final UpdateThread updateThread = new UpdateThread(this);
+                if (_taskScheduler != null) {
+                    _taskScheduler.scheduleWithFixedDelay(updateThread, _refreshIntervalMillis);
+                }
+
             }
         } catch (Throwable t) {
             _log.error("exception setting up cancelledTripResource: "+ t, t);
@@ -193,16 +203,11 @@ public class CancelledTripsResource {
         setUrl(url);
         _log.info("CancelledTripsApi configured to " + url);
 
-        final UpdateThread updateThread = new UpdateThread(this);
-        updateThread.run();
-        if (_taskScheduler != null) {
-            _taskScheduler.scheduleWithFixedDelay(updateThread, _refreshIntervalMillis);
-        }
     }
 
-    public static class InitThread implements Runnable {
+    public static class ConfigThread implements Runnable {
         private CancelledTripsResource _resource;
-        public InitThread(CancelledTripsResource resource) {
+        public ConfigThread(CancelledTripsResource resource) {
             this._resource = resource;
         }
 
@@ -211,31 +216,31 @@ public class CancelledTripsResource {
                 _log.warn("missing config service, bailing");
                 return;
             }
-            int nTries = 20;
-            int tries = 0;
-            while (tries < nTries) {
-                tries++;
-                String url = _resource.getConfig().getConfigurationValueAsString("cancelledTrips.CAPIUrl", null);
-                Integer refreshInterval = _resource.getConfig().getConfigurationValueAsInteger( "cancelledTrips.CAPIRefreshInterval", null);
-                Integer connectionTimeout = _resource.getConfig().getConfigurationValueAsInteger("cancelledTrips.CAPIConnectionTimeout", null);
-                if (url != null) {
-                    if(refreshInterval!=null){
-                        _resource.setRefreshIntervalMillis(refreshInterval);
-                    }
-                    if(connectionTimeout!=null){
-                        _resource.setConnectionTimeout(connectionTimeout);
-                    }
-                    _resource.completeInitialization(url);
-                    return;
+            String url = _resource.getConfig().getConfigurationValueAsString("tdm.CAPIUrl", null);
+            Integer refreshInterval = _resource.getConfig().getConfigurationValueAsInteger( "tdm.CAPIRefreshInterval", 30*1000);
+            Integer connectionTimeout = _resource.getConfig().getConfigurationValueAsInteger("tdm.CAPIConnectionTimeout", 1000);
+            if (url != null) {
+                if (refreshInterval != null) {
+                    _resource.setRefreshIntervalMillis(refreshInterval);
                 }
-                try {
-                    _log.info("Sleeping on configuration");
-                    Thread.sleep(30 * 1000);
-                } catch (InterruptedException ie) {
-                    return;
+                if (connectionTimeout != null) {
+                    _resource.setConnectionTimeout(connectionTimeout);
                 }
+
+                if (_resource.getUrl() != null && !_resource.getUrl().equals(url)) {
+                    _log.info("tdm.CAPIUrl set to " + url);
+                }
+                _resource.setUrl(url);
+                _initialized = true;
+            } else {
+                _resource.setUrl(null);
+                if (!_initializedLogged) {
+                    // only log CAPI disabled once to keep the logs tidy
+                    _log.warn("tdm.CAPIUrl not set, capi disabled");
+                    _initializedLogged = true;
+                }
+                _initialized = false;
             }
-            _log.error("giving up on configuration!  cancelledtrips API will not be available");
         }
     }
 
@@ -248,7 +253,11 @@ public class CancelledTripsResource {
 
         @Override
         public void run() {
-            _resource.update();
+            if (_resource._initialized) {
+                _resource.update();
+            } else {
+                _resource.setCancelledTripsBeans(new ArrayList<>());
+            }
         }
     }
 }
