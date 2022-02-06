@@ -58,6 +58,7 @@ public class CancelledTripListenerTask {
 
     @PostConstruct
     public void setup() {
+        refreshConfig();
 
         ConfigThread configThread = new ConfigThread(this);
         _taskScheduler.scheduleWithFixedDelay(configThread, 2 * 1000);

@@ -579,4 +579,8 @@ public class NycTestInferredLocationRecord implements Serializable {
     _mapper.setTimeZone(Calendar.getInstance().getTimeZone());
     cancelledTripBeans = _mapper.readValue(cancelledTrips, new TypeReference<List<NycCancelledTripBean>>(){});
   }
+
+  public String getCancelledTrips(){
+    return cancelledTrips;
+  }
 }

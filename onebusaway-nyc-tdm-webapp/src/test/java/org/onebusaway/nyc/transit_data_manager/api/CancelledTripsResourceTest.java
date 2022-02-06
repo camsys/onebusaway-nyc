@@ -29,11 +29,15 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.ws.rs.core.Response;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -58,8 +62,7 @@ public class CancelledTripsResourceTest {
 
         MockitoAnnotations.initMocks(this);
         String capiData = "";
-        capiData = "{\"impacted\":[{\"block\":\"MTABC_JKPA2-JK_A2-Weekday-01-SDon_6193636\",\"trip\":\"MTABC_32246617-JKPA2-JK_A2-Weekday-01-SDon\",\"status\":\"canceled\",\"timestamp\":1642743832000,\"scheduledPullOut\":\"2022-01-21T07:03:00\",\"humanReadableTimestamp\":\"2022-01-21T00:43:52\",\"serviceDate\":\"2022-01-21\",\"route\":\"Q9\",\"firstStopId\":\"MTA_550031\",\"firstStopDepartureTime\":\"07:23:00\",\"lastStopArrivalTime\":\"07:43:00\"},{\"block\":\"MTA NYCT_FB_A2-Weekday-SDon_E_FB_26580_B41-207\",\"trip\":\"MTA NYCT_FB_A2-Weekday-SDon-044900_B41_207\",\"status\":\"canceled\",\"timestamp\":1642734418000,\"scheduledPullOut\":\"2022-01-21T07:23:00\",\"humanReadableTimestamp\":\"2022-01-20T22:06:58\",\"serviceDate\":\"2022-01-21\",\"route\":\"B41\",\"firstStopId\":\"MTA_303215\",\"firstStopDepartureTime\":\"07:29:00\",\"lastStopArrivalTime\":\"07:49:00\"},{\"block\":\"MTA NYCT_FP_A2-Weekday-SDon_E_FP_34740_Q54-721\",\"trip\":\"MTA NYCT_FP_A2-Weekday-SDon-058900_Q54_721\",\"status\":\"canceled\",\"timestamp\":1642734447000,\"scheduledPullOut\":\"2022-01-21T09:39:00\",\"humanReadableTimestamp\":\"2022-01-20T22:07:27\",\"serviceDate\":\"2022-01-21\",\"route\":\"Q54\",\"firstStopId\":\"MTA_308488\",\"firstStopDepartureTime\":\"09:49:00\",\"lastStopArrivalTime\":\"09:59:00\"}],\"timestamp\":\"2022-01-21T10:40:51\"}";
-        //capiData = new String(this.getClass().getResourceAsStream("CAPI_202201241142.txt").readAllBytes());
+        capiData = getData("capi_output.json");
         StringBuffer cancelledTripData = new StringBuffer();
         cancelledTripData.append(capiData);
         CancelledTripsResource resource = new CancelledTripsResource();
@@ -86,6 +89,13 @@ public class CancelledTripsResourceTest {
         assertEquals(dateTime,bean.getScheduledPullOut());
         dateTime = new DateTime(format.parse("2022-01-20T22:06:58"),DateTimeZone.getDefault());
         assertEquals(dateTime,bean.getHumanReadableTimestamp());
+    }
+
+    public String getData(String dataFile) {
+        InputStream input = getClass().getResourceAsStream(dataFile);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        String data = reader.lines().collect(Collectors.joining());
+        return data;
     }
 
     private List<NycCancelledTripBean> readOutput(String str) throws JsonProcessingException {
