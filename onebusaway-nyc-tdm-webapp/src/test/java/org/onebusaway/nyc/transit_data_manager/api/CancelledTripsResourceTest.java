@@ -19,8 +19,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
@@ -85,10 +83,8 @@ public class CancelledTripsResourceTest {
         assertEquals("07:49:00",bean.getLastStopArrivalTime());
         assertTrue(bean.getTimestamp()==Long.valueOf("1642734418000"));
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
-        DateTime dateTime = new DateTime(format.parse("2022-01-21T07:23:00"),DateTimeZone.getDefault());
-        assertEquals(dateTime,bean.getScheduledPullOut());
-        dateTime = new DateTime(format.parse("2022-01-20T22:06:58"),DateTimeZone.getDefault());
-        assertEquals(dateTime,bean.getHumanReadableTimestamp());
+        assertEquals("2022-01-21T07:23:00",bean.getScheduledPullOut());
+        assertEquals("2022-01-20T22:06:58",bean.getHumanReadableTimestamp());
     }
 
     public String getData(String dataFile) {
