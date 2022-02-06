@@ -67,7 +67,7 @@ public class CancelledTripToSiriTransformer {
 
     if (_nycTransitDataService != null) {
       // no retrieve cancelled trips from the TDS and add to the above ServiceDelivery instance
-      for (NycCancelledTripBean cancelledTrip : _nycTransitDataService.getAllCancelledTrips()) {
+      for (NycCancelledTripBean cancelledTrip : _nycTransitDataService.getAllCancelledTrips().getList()) {
         // convert a cancelled trip model into a situation element
         PtSituationElementStructure pt = fillPtSituationElement(cancelledTrip);
         if (pt != null) {

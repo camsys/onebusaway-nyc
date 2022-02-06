@@ -74,10 +74,10 @@ public class NycCancelledTripRecord implements Serializable {
     private String firstStopId;
 
     @Column(name = "firstStopDepartureTime")
-    private Time firstStopDepartureTime;
+    private String firstStopDepartureTime;
 
     @Column(name = "lastStopArrivalTime")
-    private Time lastStopArrivalTime;
+    private String lastStopArrivalTime;
 
     public NycCancelledTripRecord(){}
 
@@ -96,7 +96,7 @@ public class NycCancelledTripRecord implements Serializable {
             setTimestamp(new Date(nycCancelledTripBean.getTimestamp()));
         }
         if(nycCancelledTripBean.getScheduledPullOut() != null){
-            setScheduledPullOut(nycCancelledTripBean.getScheduledPullOut().toDate());
+            setScheduledPullOut(new Date(nycCancelledTripBean.getScheduledPullOut()));
         }
     }
 
@@ -180,19 +180,19 @@ public class NycCancelledTripRecord implements Serializable {
         this.firstStopId = firstStopId;
     }
 
-    public Time getFirstStopDepartureTime() {
+    public String getFirstStopDepartureTime() {
         return firstStopDepartureTime;
     }
 
-    public void setFirstStopDepartureTime(Time firstStopDepartureTime) {
+    public void setFirstStopDepartureTime(String firstStopDepartureTime) {
         this.firstStopDepartureTime = firstStopDepartureTime;
     }
 
-    public Time getLastStopArrivalTime() {
+    public String getLastStopArrivalTime() {
         return lastStopArrivalTime;
     }
 
-    public void setLastStopArrivalTime(Time lastStopArrivalTime) {
+    public void setLastStopArrivalTime(String lastStopArrivalTime) {
         this.lastStopArrivalTime = lastStopArrivalTime;
     }
 

@@ -78,8 +78,8 @@ public class CancelledTripsResourceTest {
         assertEquals(new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-21"),bean.getServiceDate());
         assertEquals("B41",bean.getRoute());
         assertEquals("MTA_303215",bean.getFirstStopId());
-        assertEquals(new SimpleDateFormat("HH:mm:ss").parse("07:29:00").getTime(),bean.getFirstStopDepartureTime().getTime());
-        assertEquals(new SimpleDateFormat("HH:mm:ss").parse("07:49:00").getTime(),bean.getLastStopArrivalTime().getTime());
+        assertEquals("07:29:00",bean.getFirstStopDepartureTime());
+        assertEquals("07:49:00",bean.getLastStopArrivalTime());
         assertTrue(bean.getTimestamp()==Long.valueOf("1642734418000"));
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
         DateTime dateTime = new DateTime(format.parse("2022-01-21T07:23:00"),DateTimeZone.getDefault());

@@ -108,7 +108,7 @@ public class CancelledTripPersistenceServiceImpl implements
         messages.clear();
       }
     } else {
-      _log.info("0 updated cancelled trips");
+      _log.info("0 updated cancelled trips from " + cancelledTripRecordMap.size() + " entries");
     }
   }
 

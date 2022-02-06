@@ -18,8 +18,8 @@ package org.onebusaway.nyc.transit_data_federation.services.cancelled;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
+import org.onebusaway.transit_data.model.ListBean;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +30,7 @@ public interface CancelledTripService {
 
     Set<AgencyAndId> getCancelledTripIds();
 
-    List<NycCancelledTripBean> getAllCancelledTrips();
+    ListBean<NycCancelledTripBean> getAllCancelledTrips();
 
     void updateCancelledTrips(Map<AgencyAndId, NycCancelledTripBean> cancelledTripsCache);
 }

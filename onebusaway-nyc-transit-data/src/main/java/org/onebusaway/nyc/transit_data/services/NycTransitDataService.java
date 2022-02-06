@@ -20,6 +20,7 @@ import java.util.List;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
@@ -70,7 +71,7 @@ public interface NycTransitDataService extends TransitDataService {
 
 	boolean isTripCancelled(AgencyAndId tripId);
 
-	List<NycCancelledTripBean> getAllCancelledTrips();
+	ListBean<NycCancelledTripBean> getAllCancelledTrips();
 
 	void overrideCancelledTrips(List<NycCancelledTripBean> beans);
 }

@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class CancelledTripListenerTask {
 
     private static Logger _log = LoggerFactory.getLogger(CancelledTripListenerTask.class);
+    private static final int DEFAULT_REFRESH_INTERVAL = 30;
 
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
@@ -78,7 +79,7 @@ public class CancelledTripListenerTask {
     @Refreshable(dependsOn = {"archiver.enableCapi","archive.capiRefreshIntervalSec"})
     protected void refreshConfig() {
         isEnabled = _configurationService.getConfigurationValueAsBoolean("archive.enableCapi", false);
-        capiRefreshInterval = _configurationService.getConfigurationValueAsInteger("archive.capiRefreshIntervalSec", 30);
+        capiRefreshInterval = _configurationService.getConfigurationValueAsInteger("archive.capiRefreshIntervalSec", DEFAULT_REFRESH_INTERVAL);
     }
 
     public Boolean isEnabled() {
@@ -86,6 +87,8 @@ public class CancelledTripListenerTask {
     }
 
     public Integer getCapiRefreshInterval() {
+        if (capiRefreshInterval == null)
+            return DEFAULT_REFRESH_INTERVAL;
         return capiRefreshInterval;
     }
 
@@ -105,7 +108,7 @@ public class CancelledTripListenerTask {
             if(!allowCapi()){
                 return;
             }
-            List<NycCancelledTripBean> cancelledTrips = tds.getAllCancelledTrips();
+            List<NycCancelledTripBean> cancelledTrips = tds.getAllCancelledTrips().getList();
             processCancelledTrips(cancelledTrips);
         }
 
