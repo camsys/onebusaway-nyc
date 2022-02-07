@@ -23,9 +23,12 @@ package org.onebusaway.nyc.transit_data.model;
  *
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 import java.util.Date;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NycCancelledTripBean implements Serializable {
 
     private static final long serialVersionUID = 2L;

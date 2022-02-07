@@ -20,6 +20,8 @@ import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
 import uk.org.siri.siri.AffectsScopeStructure;
 import uk.org.siri.siri.DefaultedTextStructure;
@@ -35,12 +37,15 @@ import uk.org.siri.siri.SituationSourceStructure;
 import uk.org.siri.siri.SituationSourceTypeEnumeration;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Transform Cancelled Trip models into simple service alerts via
  * SIRI PtSituationElementStructures
  */
 public class CancelledTripToSiriTransformer {
+
+  protected static Logger _log = LoggerFactory.getLogger(CancelledTripToSiriTransformer.class);
 
   private static String DEFAULT_LANG = "EN";
 
@@ -65,17 +70,21 @@ public class CancelledTripToSiriTransformer {
       s = serviceDelivery.getSituationExchangeDelivery().get(0).getSituations();
     }
 
+    int addedAlerts = 0;
     if (_nycTransitDataService != null) {
+      List<NycCancelledTripBean> cancelledTripBeans = _nycTransitDataService.getAllCancelledTrips().getList();
       // no retrieve cancelled trips from the TDS and add to the above ServiceDelivery instance
-      for (NycCancelledTripBean cancelledTrip : _nycTransitDataService.getAllCancelledTrips().getList()) {
+      for (NycCancelledTripBean cancelledTrip : cancelledTripBeans) {
         // convert a cancelled trip model into a situation element
         PtSituationElementStructure pt = fillPtSituationElement(cancelledTrip);
         if (pt != null) {
           s.getPtSituationElement().add(pt);
+          addedAlerts++;
         }
       }
+      _log.info("generated " + addedAlerts + " service alerts for "
+              + cancelledTripBeans.size() + " CAPI trips");
     }
-
     return serviceDelivery;
   }
 

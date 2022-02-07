@@ -116,7 +116,7 @@ public class CancelledTripPersistenceServiceImpl implements
     NycCancelledTripRecord uncancelledTripRecord = SerializationUtils.clone(record);
     uncancelledTripRecord.setId(null);
     uncancelledTripRecord.setStatus("uncanceled");
-    uncancelledTripRecord.setRecordTimeStamp(new Date(System.currentTimeMillis()));
+    uncancelledTripRecord.setRecordTimeStamp(System.currentTimeMillis());
     return uncancelledTripRecord;
   }
 

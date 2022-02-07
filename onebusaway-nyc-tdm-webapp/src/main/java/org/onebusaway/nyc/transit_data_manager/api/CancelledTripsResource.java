@@ -19,8 +19,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -152,14 +152,14 @@ public class CancelledTripsResource {
 
     protected void setupObjectMapper(){
         _mapper = new ObjectMapper();
+
         _mapper.registerModule(new JodaModule());
         _mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
         _mapper.setTimeZone(Calendar.getInstance().getTimeZone());
     }
 
-    public StringBuffer getCancelledTripsData(){
+    public InputStream getCancelledTripsData(){
         long start = System.currentTimeMillis();
-        StringBuffer sb = new StringBuffer();
         HttpURLConnection connection = null;
         if (getUrl() == null) {
             _log.warn("Cancelled trips url not configured, exiting");
@@ -169,40 +169,40 @@ public class CancelledTripsResource {
             connection = (HttpURLConnection) new URL(_url).openConnection();
             connection.setConnectTimeout(_connectionTimeout);
             connection.setReadTimeout(_connectionTimeout);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IOUtils.copy(connection.getInputStream(), baos);
-
-            sb.append(baos.toString());
-            _log.debug("retrieved " + getUrl() + " in " + (System.currentTimeMillis() - start) + " ms");
-            return sb;
+            return connection.getInputStream();
         } catch (Exception any) {
             _log.error("issue retrieving " + getUrl() + ", " + any.toString());
             return null;
         }
     }
 
-    public List<NycCancelledTripBean>  makeCancelledTripBeansFromCapiOutput(StringBuffer buffer) throws JsonProcessingException {
-        IncomingNycCancelledTripBeansContainer beansContainer = _mapper.readValue(buffer.toString(), new TypeReference<IncomingNycCancelledTripBeansContainer>(){});
-        return beansContainer.getBeans();
+    public List<NycCancelledTripBean> makeCancelledTripBeansFromCapiOutput(InputStream input) throws IOException {
+        _log.debug("reading from stream...");
+        try {
+            IncomingNycCancelledTripBeansContainer beansContainer = _mapper.readValue(input, IncomingNycCancelledTripBeansContainer.class);
+            if (beansContainer != null && beansContainer.getBeans() != null) {
+                _log.debug("parsed " + beansContainer.getBeans().size() + " records");
+            } else {
+                _log.debug("empty beanContainer");
+            }
+            return beansContainer.getBeans();
+        } catch (Exception any) {
+            _log.error("issue parsing json: " + any, any);
+        }
+        return null;
     }
 
     public void setCancelledTripsBeans(List<NycCancelledTripBean> beans){
         _cancelledTrips = beans;
     }
 
-    public void update(){
+    public void update() {
         try {
-            StringBuffer cancelledTripData = getCancelledTripsData();
-            setCancelledTripsBeans(makeCancelledTripBeansFromCapiOutput(cancelledTripData));
+            InputStream input = getCancelledTripsData();
+            setCancelledTripsBeans(makeCancelledTripBeansFromCapiOutput(input));
         } catch (Exception e) {
             // bury
         }
-    }
-
-    public void completeInitialization(String url){
-        setUrl(url);
-        _log.info("CancelledTripsApi configured to " + url);
-
     }
 
     public static class ConfigThread implements Runnable {
@@ -253,9 +253,13 @@ public class CancelledTripsResource {
 
         @Override
         public void run() {
+
             if (_resource._initialized) {
+                _log.info("refreshing...");
                 _resource.update();
+                _log.info("refresh complete");
             } else {
+                _log.info("disabled refresh");
                 _resource.setCancelledTripsBeans(new ArrayList<>());
             }
         }

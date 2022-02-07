@@ -59,13 +59,13 @@ public class CancelledTripsResourceTest {
     public void testCapiOutToNYCCancelledTripBeans() throws Exception {
 
         MockitoAnnotations.initMocks(this);
-        String capiData = "";
-        capiData = getData("capi_output.json");
+
+        InputStream input = getData("capi_output.json");
         StringBuffer cancelledTripData = new StringBuffer();
-        cancelledTripData.append(capiData);
+        cancelledTripData.append(input);
         CancelledTripsResource resource = new CancelledTripsResource();
         resource.setupObjectMapper();
-        resource.setCancelledTripsBeans(resource.makeCancelledTripBeansFromCapiOutput(cancelledTripData));
+        resource.setCancelledTripsBeans(resource.makeCancelledTripBeansFromCapiOutput(input));
 
         List<NycCancelledTripBean> beans = readOutput((String) resource.getCancelledTripsList().getEntity());
 
@@ -87,11 +87,8 @@ public class CancelledTripsResourceTest {
         assertEquals("2022-01-20T22:06:58",bean.getHumanReadableTimestamp());
     }
 
-    public String getData(String dataFile) {
-        InputStream input = getClass().getResourceAsStream(dataFile);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        String data = reader.lines().collect(Collectors.joining());
-        return data;
+    public InputStream getData(String dataFile) {
+        return getClass().getResourceAsStream(dataFile);
     }
 
     private List<NycCancelledTripBean> readOutput(String str) throws JsonProcessingException {

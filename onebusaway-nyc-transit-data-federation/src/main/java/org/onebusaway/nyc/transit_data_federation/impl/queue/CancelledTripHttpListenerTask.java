@@ -165,6 +165,7 @@ public class CancelledTripHttpListenerTask {
 
 
         public void run() {
+            refreshConfig();
             if(!allowCapi()){
                 return;
             }

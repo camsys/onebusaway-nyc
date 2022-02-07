@@ -47,7 +47,7 @@ public class NycCancelledTripRecord implements Serializable {
     private Long id;
 
     @Column(nullable = false, name = "record_timestamp")
-    private Date recordTimeStamp;
+    private long recordTimeStamp;
 
     @Column(name = "block")
     private String block;
@@ -62,7 +62,7 @@ public class NycCancelledTripRecord implements Serializable {
     private Date timestamp;
 
     @Column(name = "scheduledPullOut")
-    private Date scheduledPullOut;
+    private String scheduledPullOut;
 
     @Column(name = "serviceDate")
     private Date serviceDate;
@@ -94,13 +94,13 @@ public class NycCancelledTripRecord implements Serializable {
         setServiceDate(nycCancelledTripBean.getServiceDate());
         setFirstStopDepartureTime(nycCancelledTripBean.getFirstStopDepartureTime());
         setLastStopArrivalTime(nycCancelledTripBean.getLastStopArrivalTime());
-        setRecordTimeStamp(new Date());
+        setRecordTimeStamp(System.currentTimeMillis());
 
         if(nycCancelledTripBean.getTimestamp() > 0){
             setTimestamp(new Date(nycCancelledTripBean.getTimestamp()));
         }
         if(nycCancelledTripBean.getScheduledPullOut() != null){
-            setScheduledPullOut(new Date(nycCancelledTripBean.getScheduledPullOut()));
+            setScheduledPullOut(nycCancelledTripBean.getScheduledPullOut());
         }
     }
 
@@ -112,11 +112,11 @@ public class NycCancelledTripRecord implements Serializable {
         this.id = id;
     }
 
-    public Date getRecordTimeStamp() {
+    public long getRecordTimeStamp() {
         return recordTimeStamp;
     }
 
-    public void setRecordTimeStamp(Date recordTimeStamp) {
+    public void setRecordTimeStamp(long recordTimeStamp) {
         this.recordTimeStamp = recordTimeStamp;
     }
 
@@ -152,11 +152,11 @@ public class NycCancelledTripRecord implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public Date getScheduledPullOut() {
+    public String getScheduledPullOut() {
         return scheduledPullOut;
     }
 
-    public void setScheduledPullOut(Date scheduledPullOut) {
+    public void setScheduledPullOut(String scheduledPullOut) {
         this.scheduledPullOut = scheduledPullOut;
     }
 
