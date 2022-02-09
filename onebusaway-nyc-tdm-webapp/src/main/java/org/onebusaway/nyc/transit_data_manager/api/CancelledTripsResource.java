@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
@@ -133,7 +133,7 @@ public class CancelledTripsResource {
 
     protected void setupObjectMapper(){
         _mapper = new ObjectMapper();
-        _mapper.registerModule(new JodaModule());
+        _mapper.registerModule(new JavaTimeModule());
         _mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
         _mapper.setTimeZone(Calendar.getInstance().getTimeZone());
     }

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
@@ -31,6 +32,9 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +71,7 @@ public class CancelledTripsResourceTest {
         resource.setupObjectMapper();
         resource.setCancelledTripsBeans(resource.makeCancelledTripBeansFromCapiOutput(input));
 
+        Response r = resource.getCancelledTripsList();
         List<NycCancelledTripBean> beans = readOutput((String) resource.getCancelledTripsList().getEntity());
 
         assertTrue(beans.size()==3);
@@ -79,12 +84,12 @@ public class CancelledTripsResourceTest {
         assertEquals(new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-21"),bean.getServiceDate());
         assertEquals("B41",bean.getRoute());
         assertEquals("MTA_303215",bean.getFirstStopId());
-        assertEquals("07:29:00",bean.getFirstStopDepartureTime());
-        assertEquals("07:49:00",bean.getLastStopArrivalTime());
+        assertEquals(LocalTime.of(7,29,0,0),bean.getFirstStopDepartureTime());
+        assertEquals(LocalTime.of(7,49,0,0),bean.getLastStopArrivalTime());
         assertTrue(bean.getTimestamp()==Long.valueOf("1642734418000"));
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
         assertEquals("2022-01-21T07:23:00",bean.getScheduledPullOut());
-        assertEquals("2022-01-20T22:06:58",bean.getHumanReadableTimestamp());
+        assertEquals(LocalDateTime.of(LocalDate.of(2022,1,20),LocalTime.of(22,6,58,0)),bean.getHumanReadableTimestamp());
     }
 
     public InputStream getData(String dataFile) {
@@ -93,7 +98,7 @@ public class CancelledTripsResourceTest {
 
     private List<NycCancelledTripBean> readOutput(String str) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JodaModule());
+        mapper.registerModule(new JavaTimeModule());
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
         mapper.setTimeZone(Calendar.getInstance().getTimeZone());
         return mapper.readValue(str, new TypeReference<List<NycCancelledTripBean>>(){});

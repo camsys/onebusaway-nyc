@@ -26,6 +26,8 @@ package org.onebusaway.nyc.transit_data.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -38,13 +40,13 @@ public class NycCancelledTripBean implements Serializable {
     private String status;
     private long timestamp;
     private String scheduledPullOut;
-    private String humanReadableTimestamp;
+    private LocalDateTime humanReadableTimestamp;
     private Date serviceDate;
     private String route;
     private String routeId;
     private String firstStopId;
-    private String firstStopDepartureTime;
-    private String lastStopArrivalTime;
+    private LocalTime firstStopDepartureTime;
+    private LocalTime lastStopArrivalTime;
 
 //        block	"MTABC_JKPA2-JK_A2-Weekday-01-SDon_6193636"
 //        trip	"MTABC_32246617-JKPA2-JK_A2-Weekday-01-SDon"
@@ -87,11 +89,11 @@ public class NycCancelledTripBean implements Serializable {
         this.routeId = routeId;
     }
 
-    public void setFirstStopDepartureTime(String firstStopDepartureTime) {
+    public void setFirstStopDepartureTime(LocalTime firstStopDepartureTime) {
         this.firstStopDepartureTime = firstStopDepartureTime;
     }
 
-    public void setLastStopArrivalTime(String lastStopArrivalTime) {
+    public void setLastStopArrivalTime(LocalTime lastStopArrivalTime) {
         this.lastStopArrivalTime = lastStopArrivalTime;
     }
 
@@ -99,7 +101,7 @@ public class NycCancelledTripBean implements Serializable {
         this.firstStopId = firstStopId;
     }
 
-    public void setHumanReadableTimestamp(String humanReadableTimestamp) {
+    public void setHumanReadableTimestamp(LocalDateTime humanReadableTimestamp) {
         this.humanReadableTimestamp = humanReadableTimestamp;
     }
 
@@ -131,7 +133,7 @@ public class NycCancelledTripBean implements Serializable {
         return route;
     }
 
-    public String getHumanReadableTimestamp() {
+    public LocalDateTime getHumanReadableTimestamp() {
         return humanReadableTimestamp;
     }
 
@@ -147,11 +149,11 @@ public class NycCancelledTripBean implements Serializable {
         return firstStopId;
     }
 
-    public String getFirstStopDepartureTime() {
+    public LocalTime getFirstStopDepartureTime() {
         return firstStopDepartureTime;
     }
 
-    public String getLastStopArrivalTime() {
+    public LocalTime getLastStopArrivalTime() {
         return lastStopArrivalTime;
     }
 }
