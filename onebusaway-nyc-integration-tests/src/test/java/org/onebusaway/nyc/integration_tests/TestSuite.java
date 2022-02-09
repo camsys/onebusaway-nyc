@@ -113,6 +113,11 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.*;
 	//2021Jan_Prod_Manhattan_r03_b02
 	Trace_3958_20210125_dsc_to_agency_fix_IntegrationTest.class,
 
+	//2022Jan_Prod_r03_b02
+//	Trace_259_20220202_capi_first_trip_IntegrationTest.class,
+//	Trace_258_20220202_capi_switching_trips_IntegrationTest.class
+
+
 	/*
 	 * Wrapping logic tests
 	 */
