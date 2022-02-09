@@ -1,12 +1,9 @@
 package org.onebusaway.nyc.report_archive.api;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
+import org.hibernate.query.Query;
 import org.onebusaway.nyc.report_archive.api.HistoricalRecordsResource;
 import org.onebusaway.nyc.report_archive.api.json.HistoricalCancelledTripRecordsMessage;
 import org.onebusaway.nyc.report_archive.impl.CancelledTripDaoImpl;
@@ -18,15 +15,20 @@ import org.onebusaway.nyc.report.api.json.JsonTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
 
 @Component
-@Path("/jared")
+@Scope("request")
+@Path("/cancelled-trips/{serviceDate}/list")
 public class HistoricalCancelledTripRecordsResource {
 
 
@@ -36,18 +38,30 @@ public class HistoricalCancelledTripRecordsResource {
     @Autowired
     private CancelledTripDao cancelledTripDao;
 
-    @Path("/list")
     @GET
     @Produces("application/json")
-    public Response getHistoricalCancelledTripRecords() {
+    public Response getHistoricalCancelledTripRecords(
+            @QueryParam(value="numberOfRecords")  Integer requestedNumberOfRecords,
+            @QueryParam(value="trip")  String requestedTrip,
+            @PathParam(value="serviceDate") String requestedDate
+    ) {
+        final Integer MAX_RECORDS = 5000;
+        Integer numberOfRecords = MAX_RECORDS;
+        if (requestedNumberOfRecords != null){
+            numberOfRecords = (requestedNumberOfRecords < MAX_RECORDS) ? requestedNumberOfRecords: MAX_RECORDS;
+        }
+
         log.info("Starting getHistoricalRecords");
         long now = System.currentTimeMillis();
+
+
 
         List<NycCancelledTripRecord> historicalRecords = null;
         HistoricalCancelledTripRecordsMessage recordsMessage = new HistoricalCancelledTripRecordsMessage();
 
+
         try {
-            historicalRecords = cancelledTripDao.getReports();
+            historicalRecords = cancelledTripDao.getReports(requestedDate, numberOfRecords, requestedTrip);
             log.info("HistoriicalRecords= "+historicalRecords);
             recordsMessage.setRecords(historicalRecords);
             recordsMessage.setStatus("OK");
@@ -56,6 +70,9 @@ public class HistoricalCancelledTripRecordsResource {
             // here we make the assumption that an exception means query timeout
             recordsMessage.setRecords(null);
             recordsMessage.setStatus("QUERY_TIMEOUT");
+        } catch (java.text.ParseException p){
+            recordsMessage.setRecords(null);
+            recordsMessage.setStatus("Unable to parse date: "+p);
         }
 
         String outputJson;
@@ -82,13 +99,6 @@ public class HistoricalCancelledTripRecordsResource {
         record.setBlock("Test");
         CancelledTripDaoImpl dao = new CancelledTripDaoImpl();
         dao.saveReport(record);
-    }
-
-    public List<NycCancelledTripRecord> getReports(){
-        List<NycCancelledTripRecord> result = cancelledTripDao.getReports();
-        log.info("Resource result="+result);
-        return result;
-
     }
 
     private String getObjectAsJsonString(Object object) throws IOException {

@@ -15,7 +15,6 @@ import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonPartEquals;
 import static org.mockito.Mockito.mock;
@@ -24,14 +23,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class HistoricalCancelledTripRecordsResourceTest {
 
-    @Test
-    public void testGetCancelledTripRecords(){
-        HistoricalCancelledTripRecordsResource  H = new HistoricalCancelledTripRecordsResource();
-        List<NycCancelledTripRecord> result = H.getReports();
-        System.out.println("Test result ="+result);
-
-
-    }
     @Test
     public void testMakeJson(){
         HistoricalCancelledTripRecordsResource r = new HistoricalCancelledTripRecordsResource();
@@ -49,7 +40,7 @@ public class HistoricalCancelledTripRecordsResourceTest {
 
         r.setCancelledTripDao(dao);
 
-        Response response  = r.getHistoricalCancelledTripRecords();
+        Response response  = r.getHistoricalCancelledTripRecords(500, null, null);
         System.out.println("response= "+response);
 
         Object entity = response.getEntity();

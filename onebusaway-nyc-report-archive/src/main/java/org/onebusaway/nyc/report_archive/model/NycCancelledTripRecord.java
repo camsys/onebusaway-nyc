@@ -31,8 +31,9 @@ import java.util.Date;
 @Entity
 @Table(name = "obanyc_cancelledtrip",
         indexes = {
-        @Index(name = "record_time_stamp_index", columnList = "record_timestamp"),
-        @Index(name = "trip_index", columnList = "trip")
+                @Index(name = "record_time_stamp_index", columnList = "record_timestamp"),
+                @Index(name = "service_date_index", columnList = "serviceDate"),
+                @Index(name = "trip_index", columnList = "trip")
 })
 @AccessType("field")
 @Cache(usage = CacheConcurrencyStrategy.NONE)

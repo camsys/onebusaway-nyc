@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.report_archive.impl;
 
+import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -29,8 +30,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -66,11 +70,39 @@ public class CancelledTripDaoImpl implements CancelledTripDao {
         getSession().clear();
     }
 
-    //TODO: 1/31/22
     @Transactional
     @Override
     public List<NycCancelledTripRecord> getReports(){
-        Query query = getSession().createQuery("FROM NycCancelledTripRecord");
+        Query query = getSession().createQuery("from NycCancelledTripRecord");
         return query.list();
     }
+    @Transactional
+    @Override
+    public List<NycCancelledTripRecord> getReports(String requestedDate, Integer numberOfRecords, String trip) throws java.text.ParseException {
+
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Date serviceDate = formatter.parse(requestedDate);
+
+        String hql = "FROM NycCancelledTripRecord r where r.serviceDate = :sd";
+
+        if (trip != null){
+            hql += " and r.trip = :t";
+        }
+
+        hql += " ORDER BY r.recordTimeStamp";
+        Query q = getSession().createQuery(hql);
+
+        q.setParameter("sd", serviceDate);
+        if (trip != null){
+            q.setParameter("t", trip);
+        }
+
+
+        q.setMaxResults(numberOfRecords);
+
+        return q.list();
+
+    }
+
+
 }
