@@ -18,6 +18,7 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.slf4j.Logger;
@@ -107,8 +108,12 @@ public class CancelledTripToSiriTransformer {
     s.setValue(cancelledTrip.getTrip());
     pt.setSituationNumber(s);
     // ideally this would be configurable/templated
-    String descriptionText = "Trip departing at " + cancelledTrip.getFirstStopDepartureTime().toString()
-            + " on route " + affectedRoute.getId() + " delayed or cancelled";
+    // The 10:49am B38 bus from [terminal] is…
+    String descriptionText = "The " + formatTime(cancelledTrip.getFirstStopDepartureTime())
+            + " " + affectedRoute.getId()
+            + " bus from "
+            + lookupStopName(cancelledTrip.getFirstStopId())
+            + " is delayed or cancelled";
     pt.setDescription(toText(descriptionText));
     pt.setCreationTime(new Date(cancelledTrip.getTimestamp()));
     pt.setPlanned(false);
@@ -132,6 +137,22 @@ public class CancelledTripToSiriTransformer {
     pt.getConsequences().getConsequence().add(consequence);
 
     return pt;
+  }
+
+  private String formatTime(String firstStopDepartureTime) {
+    if (firstStopDepartureTime == null) return null;
+    if (firstStopDepartureTime.contains(":")) {
+      String[] parts = firstStopDepartureTime.split(":");
+      if (parts.length > 2)
+      return parts[0] + ":" + parts[1];
+    }
+    return firstStopDepartureTime;
+  }
+
+  private String lookupStopName(String stopId) {
+    StopBean stop = _nycTransitDataService.getStop(stopId);
+    if (stop == null) return stopId;
+    return stop.getName();
   }
 
 
