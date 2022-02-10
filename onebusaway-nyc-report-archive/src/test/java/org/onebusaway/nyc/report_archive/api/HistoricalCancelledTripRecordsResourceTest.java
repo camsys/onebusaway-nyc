@@ -13,10 +13,13 @@ import org.onebusaway.nyc.report_archive.services.CancelledTripDao;
 import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
 
 import javax.ws.rs.core.Response;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonPartEquals;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +27,7 @@ import static org.mockito.Mockito.when;
 public class HistoricalCancelledTripRecordsResourceTest {
 
     @Test
-    public void testMakeJson(){
+    public void testMakeJson() throws ParseException {
         HistoricalCancelledTripRecordsResource r = new HistoricalCancelledTripRecordsResource();
         // this is normally autowired.  See application-context.xml.
         r.setJsonTool(new LowerCaseWDashesGsonJsonTool(true));
@@ -36,7 +39,7 @@ public class HistoricalCancelledTripRecordsResourceTest {
         cancelledTripRecord.setBlock("test block");
         results.add(cancelledTripRecord);
         System.out.println("results= "+results);
-        when(dao.getReports()).thenReturn(results);
+        when(dao.getReports( anyString(),anyInt(), anyString())).thenReturn(results);
 
         r.setCancelledTripDao(dao);
 

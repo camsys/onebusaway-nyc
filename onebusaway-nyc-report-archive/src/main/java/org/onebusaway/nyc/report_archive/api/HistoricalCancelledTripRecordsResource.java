@@ -62,7 +62,7 @@ public class HistoricalCancelledTripRecordsResource {
 
         try {
             historicalRecords = cancelledTripDao.getReports(requestedDate, numberOfRecords, requestedTrip);
-            log.info("HistoriicalRecords= "+historicalRecords);
+            log.info("HistoricalRecords= {}",historicalRecords);
             recordsMessage.setRecords(historicalRecords);
             recordsMessage.setStatus("OK");
 
@@ -89,7 +89,6 @@ public class HistoricalCancelledTripRecordsResource {
         Response response = Response.ok(outputJson, "application/json").build();
 
         log.info("Returning response from getHistoricalRecords, query took " + (System.currentTimeMillis() - now)  + "ms");
-        //log.info(filtersToString(filters));
 
         return response;
     }
