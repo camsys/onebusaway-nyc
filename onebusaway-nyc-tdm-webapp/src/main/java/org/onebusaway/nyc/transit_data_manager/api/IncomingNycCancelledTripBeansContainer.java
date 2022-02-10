@@ -1,24 +1,27 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joda.time.DateTime;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class IncomingNycCancelledTripBeansContainer implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     ArrayList<NycCancelledTripBean> beans;
-    DateTime timestamp;
+    LocalDateTime timestamp;
 
-    public void setTimestamp(DateTime timestamp) {
+    public void setTimestamp( LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
 
-    public DateTime getTimestamp() {
+    public LocalDateTime getTimestamp() {
         return timestamp;
     }
 

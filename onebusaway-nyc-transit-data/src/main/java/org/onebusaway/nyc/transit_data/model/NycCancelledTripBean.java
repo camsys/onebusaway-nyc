@@ -23,28 +23,30 @@ package org.onebusaway.nyc.transit_data.model;
  *
  */
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.joda.time.DateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
-import java.sql.Time;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NycCancelledTripBean implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private String block;
     private String trip;
     private String status;
     private long timestamp;
-    private DateTime scheduledPullOut;
-    private DateTime humanReadableTimestamp;
+    private String scheduledPullOut;
+    private LocalDateTime humanReadableTimestamp;
     private Date serviceDate;
     private String route;
+    private String routeId;
     private String firstStopId;
-    private Time firstStopDepartureTime;
-    private Time lastStopArrivalTime;
+    private LocalTime firstStopDepartureTime;
+    private LocalTime lastStopArrivalTime;
 
 //        block	"MTABC_JKPA2-JK_A2-Weekday-01-SDon_6193636"
 //        trip	"MTABC_32246617-JKPA2-JK_A2-Weekday-01-SDon"
@@ -54,6 +56,7 @@ public class NycCancelledTripBean implements Serializable {
 //        humanReadableTimestamp	"2022-01-21T00:43:52"
 //        serviceDate	"2022-01-21"
 //        route	"Q9"
+//        routeId "MTABC_Q09"
 //        firstStopId	"MTA_550031"
 //        firstStopDepartureTime	"07:23:00"
 
@@ -78,11 +81,19 @@ public class NycCancelledTripBean implements Serializable {
         this.route = route;
     }
 
-    public void setFirstStopDepartureTime(Time firstStopDepartureTime) {
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public void setRouteId(String routeId) {
+        this.routeId = routeId;
+    }
+
+    public void setFirstStopDepartureTime(LocalTime firstStopDepartureTime) {
         this.firstStopDepartureTime = firstStopDepartureTime;
     }
 
-    public void setLastStopArrivalTime(Time lastStopArrivalTime) {
+    public void setLastStopArrivalTime(LocalTime lastStopArrivalTime) {
         this.lastStopArrivalTime = lastStopArrivalTime;
     }
 
@@ -90,11 +101,11 @@ public class NycCancelledTripBean implements Serializable {
         this.firstStopId = firstStopId;
     }
 
-    public void setHumanReadableTimestamp(DateTime humanReadableTimestamp) {
+    public void setHumanReadableTimestamp(LocalDateTime humanReadableTimestamp) {
         this.humanReadableTimestamp = humanReadableTimestamp;
     }
 
-    public void setScheduledPullOut(DateTime scheduledPullOut) {
+    public void setScheduledPullOut(String scheduledPullOut) {
         this.scheduledPullOut = scheduledPullOut;
     }
 
@@ -122,11 +133,11 @@ public class NycCancelledTripBean implements Serializable {
         return route;
     }
 
-    public DateTime getHumanReadableTimestamp() {
+    public LocalDateTime getHumanReadableTimestamp() {
         return humanReadableTimestamp;
     }
 
-    public DateTime getScheduledPullOut() {
+    public String getScheduledPullOut() {
         return scheduledPullOut;
     }
 
@@ -138,11 +149,11 @@ public class NycCancelledTripBean implements Serializable {
         return firstStopId;
     }
 
-    public Time getFirstStopDepartureTime() {
+    public LocalTime getFirstStopDepartureTime() {
         return firstStopDepartureTime;
     }
 
-    public Time getLastStopArrivalTime() {
+    public LocalTime getLastStopArrivalTime() {
         return lastStopArrivalTime;
     }
 }

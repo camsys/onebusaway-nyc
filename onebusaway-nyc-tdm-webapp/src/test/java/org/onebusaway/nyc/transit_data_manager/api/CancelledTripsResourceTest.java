@@ -17,23 +17,36 @@ package org.onebusaway.nyc.transit_data_manager.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
+import org.onebusaway.nyc.transit_data_manager.api.dao.CapiDaoFileImpl;
+import org.onebusaway.nyc.transit_data_manager.api.dao.CapiDaoHttpImpl;
+import org.onebusaway.nyc.transit_data_manager.api.service.CapiRetrievalService;
+import org.onebusaway.nyc.transit_data_manager.api.service.CapiRetrievalServiceImpl;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.ws.rs.core.Response;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -47,88 +60,86 @@ public class CancelledTripsResourceTest {
      *
      */
 
-    @InjectMocks
     PersonalConfigurationService datastoreInterface = new PersonalConfigurationService();
 
-    @InjectMocks
-    ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+    @Spy
+    CapiDaoFileImpl capiFileDao;
+
+    @Spy
+    CapiDaoHttpImpl capiHttpDao;
+
+    @Spy
+    CapiRetrievalServiceImpl capiService;
+
+    ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
+                            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
+                            .setTimeZone(Calendar.getInstance().getTimeZone());
+
+    @Before
+    public void setup(){
+        MockitoAnnotations.initMocks(this);
+    }
+
 
     @Test
     public void testCapiOutToNYCCancelledTripBeans() throws Exception {
+        capiFileDao.setLocation("sample_capi_input.json");
+        capiService.setCapiDao(capiFileDao);
+        capiService.setupObjectMapper();
+        capiService.updateCancelledTripBeans();
 
-        MockitoAnnotations.initMocks(this);
-        String capiData = "";
-        capiData = "{\"impacted\":[{\"block\":\"MTABC_JKPA2-JK_A2-Weekday-01-SDon_6193636\",\"trip\":\"MTABC_32246617-JKPA2-JK_A2-Weekday-01-SDon\",\"status\":\"canceled\",\"timestamp\":1642743832000,\"scheduledPullOut\":\"2022-01-21T07:03:00\",\"humanReadableTimestamp\":\"2022-01-21T00:43:52\",\"serviceDate\":\"2022-01-21\",\"route\":\"Q9\",\"firstStopId\":\"MTA_550031\",\"firstStopDepartureTime\":\"07:23:00\",\"lastStopArrivalTime\":\"07:43:00\"},{\"block\":\"MTA NYCT_FB_A2-Weekday-SDon_E_FB_26580_B41-207\",\"trip\":\"MTA NYCT_FB_A2-Weekday-SDon-044900_B41_207\",\"status\":\"canceled\",\"timestamp\":1642734418000,\"scheduledPullOut\":\"2022-01-21T07:23:00\",\"humanReadableTimestamp\":\"2022-01-20T22:06:58\",\"serviceDate\":\"2022-01-21\",\"route\":\"B41\",\"firstStopId\":\"MTA_303215\",\"firstStopDepartureTime\":\"07:29:00\",\"lastStopArrivalTime\":\"07:49:00\"},{\"block\":\"MTA NYCT_FP_A2-Weekday-SDon_E_FP_34740_Q54-721\",\"trip\":\"MTA NYCT_FP_A2-Weekday-SDon-058900_Q54_721\",\"status\":\"canceled\",\"timestamp\":1642734447000,\"scheduledPullOut\":\"2022-01-21T09:39:00\",\"humanReadableTimestamp\":\"2022-01-20T22:07:27\",\"serviceDate\":\"2022-01-21\",\"route\":\"Q54\",\"firstStopId\":\"MTA_308488\",\"firstStopDepartureTime\":\"09:49:00\",\"lastStopArrivalTime\":\"09:59:00\"}],\"timestamp\":\"2022-01-21T10:40:51\"}";
-        //capiData = new String(this.getClass().getResourceAsStream("CAPI_202201241142.txt").readAllBytes());
-        StringBuffer cancelledTripData = new StringBuffer();
-        cancelledTripData.append(capiData);
         CancelledTripsResource resource = new CancelledTripsResource();
+        resource.setCapiService(capiService);
         resource.setupObjectMapper();
-        resource.setCancelledTripsBeans(resource.makeCancelledTripBeansFromCapiOutput(cancelledTripData));
 
-        List<NycCancelledTripBean> beans = readOutput((String) resource.getCancelledTripsList().getEntity());
+        Response r = resource.getCancelledTripsList();
+        String outputJson = (String) r.getEntity();
 
+        JsonNode tdmCapiOutput = mapper.readTree(outputJson);
+        JsonNode expectedCapiOutput = mapper.readTree(getClass().getResourceAsStream("expected_capi_output.json"));
+
+        // Check that json string output matches expected value
+        assertEquals(tdmCapiOutput,expectedCapiOutput);
+
+        // Check that json can be deserialized
+        List<NycCancelledTripBean> beans = readOutput((String) r.getEntity());
         assertTrue(beans.size()==3);
+
+        // Check that deserialized values match expected values
         NycCancelledTripBean bean = beans.get(1);
-
-
         assertEquals("MTA NYCT_FB_A2-Weekday-SDon_E_FB_26580_B41-207",bean.getBlock());
         assertEquals("MTA NYCT_FB_A2-Weekday-SDon-044900_B41_207",bean.getTrip());
         assertEquals("canceled",bean.getStatus());
         assertEquals(new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-21"),bean.getServiceDate());
         assertEquals("B41",bean.getRoute());
+        assertEquals("MTA NYCT_B41", bean.getRouteId());
         assertEquals("MTA_303215",bean.getFirstStopId());
-        assertEquals(new SimpleDateFormat("HH:mm:ss").parse("07:29:00").getTime(),bean.getFirstStopDepartureTime().getTime());
-        assertEquals(new SimpleDateFormat("HH:mm:ss").parse("07:49:00").getTime(),bean.getLastStopArrivalTime().getTime());
+        assertEquals(LocalTime.of(7,29,0,0),bean.getFirstStopDepartureTime());
+        assertEquals(LocalTime.of(7,49,0,0),bean.getLastStopArrivalTime());
         assertTrue(bean.getTimestamp()==Long.valueOf("1642734418000"));
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
-        DateTime dateTime = new DateTime(format.parse("2022-01-21T07:23:00"),DateTimeZone.getDefault());
-        assertEquals(dateTime,bean.getScheduledPullOut());
-        dateTime = new DateTime(format.parse("2022-01-20T22:06:58"),DateTimeZone.getDefault());
-        assertEquals(dateTime,bean.getHumanReadableTimestamp());
+        assertEquals("2022-01-21T07:23:00",bean.getScheduledPullOut());
+        assertEquals(LocalDateTime.of(LocalDate.of(2022,1,20),LocalTime.of(22,6,58,0)),bean.getHumanReadableTimestamp());
     }
 
     private List<NycCancelledTripBean> readOutput(String str) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JodaModule());
-        mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
-        mapper.setTimeZone(Calendar.getInstance().getTimeZone());
         return mapper.readValue(str, new TypeReference<List<NycCancelledTripBean>>(){});
     }
 
 
     @Test
-    public void testFailedDataCollectionToResponse() throws Exception {
-        MockitoAnnotations.initMocks(this);
-
-        CancelledTripsResource resource = new CancelledTripsResource();
-        resource.setupObjectMapper();
-
-        resource.setUrl("http://blookyisdsflijewnmvldinejkd.com");
-        resource.update();
-        Response response = resource.getCancelledTripsList();
-        assertEquals(200,response.getStatus());
-        assertEquals("null",response.getEntity());
+    public void testConfig() throws Exception {
+        datastoreInterface.setConfigurationValue("tdm", "cancelledTrips.CAPIUrl",null);
+        capiHttpDao.setConfig(datastoreInterface);
+        capiHttpDao.refreshConfig();
+        assertEquals(capiHttpDao.getLocation(),datastoreInterface.getConfigurationValueAsString( "cancelledTrips.CAPIUrl", null));
     }
-
-    @Test
-    public void SetupTest() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        datastoreInterface.setConfigurationValue("tdm", "cancelledTrips.CAPIUrl","http://capi.dev.obanyc.com:8084/api/canceled-trips.json");
-        CancelledTripsResource resource = new CancelledTripsResource();
-        resource.setConfig(datastoreInterface);
-        resource.setup();
-        assertEquals(resource.getUrl(),datastoreInterface.getConfigurationValueAsString( "cancelledTrips.CAPIUrl", null));
-    }
-
 
     private class PersonalConfigurationService implements ConfigurationService {
         Map<String, String> configMap = new HashMap<>();
 
 
         @Override
-        public String getConfigurationValueAsString(String configurationItemKey,
-                                                    String defaultValue) {
+        public String getConfigurationValueAsString(String configurationItemKey, String defaultValue) {
             return configMap.get(configurationItemKey);
         }
 
@@ -138,10 +149,9 @@ public class CancelledTripsResourceTest {
         }
 
         @Override
-        public Integer getConfigurationValueAsInteger(String configurationItemKey,
-                                                      Integer defaultValue) {
+        public Integer getConfigurationValueAsInteger(String configurationItemKey, Integer defaultValue) {
             String str = configMap.get(configurationItemKey);
-            if (str == null) return null;
+            if (str == null) return defaultValue;
             return Integer.valueOf(str);
         }
 

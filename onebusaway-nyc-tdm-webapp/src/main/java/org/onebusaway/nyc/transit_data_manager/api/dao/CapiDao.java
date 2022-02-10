@@ -14,23 +14,15 @@
  *  limitations under the License.
  */
 
-package org.onebusaway.nyc.transit_data_federation.services.cancelled;
+package org.onebusaway.nyc.transit_data_manager.api.dao;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
-import org.onebusaway.transit_data.model.ListBean;
+import java.io.InputStream;
 
-import java.util.Map;
-import java.util.Set;
+public interface CapiDao {
 
-public interface CancelledTripService {
-    boolean isTripCancelled(String tripId);
+    void setLocation(String location);
 
-    boolean isTripCancelled(AgencyAndId tripId);
+    InputStream getCancelledTripData();
 
-    Set<AgencyAndId> getCancelledTripIds();
-
-    ListBean<NycCancelledTripBean> getAllCancelledTrips();
-
-    void updateCancelledTrips(Map<AgencyAndId, NycCancelledTripBean> cancelledTripsCache);
+    String getLocation();
 }

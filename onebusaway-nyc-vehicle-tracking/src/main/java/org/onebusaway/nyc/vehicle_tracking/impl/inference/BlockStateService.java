@@ -29,6 +29,7 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
@@ -151,6 +152,9 @@ public class BlockStateService {
 
   @Autowired
   private BlockIndexService _blockIndexService;
+
+  @Autowired
+  private NycTransitDataService _nycTransitDataService;
 
   private TransitGraphDao _transitGraphDao;
 
@@ -567,7 +571,10 @@ public class BlockStateService {
 	            activeTrip.getTrip(), scheduledTime);
     	
         for(RunTripEntry r : rte){
-        
+            if(_nycTransitDataService.isTripCancelled(r.getTripEntry().getId())){
+                _log.info("skipping cancelled trip " + r.getTripEntry().getId() + " in particle creation for " + r.getRunId());
+                continue;
+            };
 	        final BlockState state = new BlockState(instance, location, r, dsc);
 	        final BlockLocationKey key = new BlockLocationKey(instance, 0,
 	            Double.POSITIVE_INFINITY);

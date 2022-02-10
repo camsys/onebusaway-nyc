@@ -734,12 +734,12 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public List<NycCancelledTripBean> getAllCancelledTrips(){
+	public ListBean<NycCancelledTripBean> getAllCancelledTrips(){
 		blockUntilBundleIsReady();
 		if(_cancelledTripService != null){
 			return _cancelledTripService.getAllCancelledTrips();
 		}
-		return Collections.EMPTY_LIST;
+		return new ListBean<>(Collections.EMPTY_LIST, false);
 	}
 
 	@Override

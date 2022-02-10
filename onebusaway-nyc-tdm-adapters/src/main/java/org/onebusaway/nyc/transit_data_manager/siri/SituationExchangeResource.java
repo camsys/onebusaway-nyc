@@ -31,6 +31,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_manager.util.NycEnvironment;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.slf4j.Logger;
@@ -65,6 +66,9 @@ public class SituationExchangeResource {
 
   @Autowired
   NycSiriService _siriService;
+
+  @Autowired
+  private NycTransitDataService _nycTransitDataService;
 
   private JAXBContext jc;
 
@@ -107,11 +111,13 @@ public class SituationExchangeResource {
     Unmarshaller u = jc.createUnmarshaller();
     Siri incomingSiri = (Siri) u.unmarshal(new StringReader(body));
 
+
     ServiceDelivery delivery = incomingSiri.getServiceDelivery();
 
     if (delivery != null && deliveryIsForThisEnvironment(delivery)) {
+      CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService);
       SituationExchangeResults result = new SituationExchangeResults();
-      _siriService.handleServiceDeliveries(result, delivery);
+      _siriService.handleServiceDeliveries(result, transformer.mergeImpactedAlerts(incomingSiri.getServiceDelivery()));
       _log.info(result.toString());
       return Response.ok(result).build();
     }

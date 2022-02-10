@@ -51,8 +51,6 @@ import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.services.cancelled.CancelledTripService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.realtime.api.VehicleOccupancyListener;
-import org.onebusaway.transit_data_federation.services.realtime.BlockLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,10 +59,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -86,11 +82,10 @@ public class CancelledTripHttpListenerTask {
     @Autowired
     private CancelledTripService _cancelledTripService;
 
-    private Boolean isEnabled;
-
+    private CapiWebServicePollerThread thread;
+    private boolean isEnabled = false;
     private String capiUrl;
 
-    private Integer capiRefreshInterval;
 
     public void setConfigurationService(ConfigurationService configurationService) {
         _configurationService = configurationService;
@@ -100,55 +95,32 @@ public class CancelledTripHttpListenerTask {
         this._tds = _tds;
     }
 
-    public String getCapiUrl() {
-        return capiUrl;
-    }
-
-    public Boolean isEnabled() {
-        return isEnabled;
-    }
-
-    public Integer getCapiRefreshInterval() {
-        return capiRefreshInterval;
-    }
-
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
 
     @PostConstruct
     public void setup() {
-        refreshConfig();
-
-        if(!allowCapi()){
-            return;
+        if (_taskScheduler != null) {
+            ConfigThread configThread = new ConfigThread(this);
+            _taskScheduler.scheduleWithFixedDelay(configThread, 60 * 1000);
         }
-
-        CapiWebServicePollerThread thread = new CapiWebServicePollerThread(getCapiUrl(), _tds, _cancelledTripService);
-
-        _taskScheduler.scheduleWithFixedDelay(thread, TimeUnit.SECONDS.toMillis(getCapiRefreshInterval()));
     }
 
     @Refreshable(dependsOn = {"tds.enableCapi", "tds.capiUrl"})
     protected void refreshConfig() {
-        capiUrl= _configurationService.getConfigurationValueAsString("tds.capiUrl", null);
+        boolean wasEnabled = isEnabled;
+        capiUrl = _configurationService.getConfigurationValueAsString("tds.capiUrl", null);
         isEnabled = _configurationService.getConfigurationValueAsBoolean("tds.enableCapi", false);
-        capiRefreshInterval = _configurationService.getConfigurationValueAsInteger("tds.capiRefreshIntervalSec", 30);
+        long refresh = _configurationService.getConfigurationValueAsInteger("tds.capiRefreshIntervalSec", 30);
+        if (!wasEnabled && isEnabled && thread == null) {
+            _log.info("confiuring update thread now");
+            thread = new CapiWebServicePollerThread(_tds, _cancelledTripService);
+            _taskScheduler.scheduleWithFixedDelay(thread, TimeUnit.SECONDS.toMillis(refresh));
+        }
     }
 
-    private boolean allowCapi() {
-        if (!isEnabled()){
-            _log.warn("capi is not enabled in configuration");
-            return false;
-        }
-        if (StringUtils.isBlank(getCapiUrl())) {
-            _log.warn("url not configured, Capi polling via webservice disabled.");
-            return false;
-        }
-        return true;
-    }
 
     public class CapiWebServicePollerThread extends Thread {
-        private String url;
         private NycTransitDataService tds;
         private CancelledTripService cancelledTripService;
 
@@ -157,30 +129,42 @@ public class CancelledTripHttpListenerTask {
                 .registerModule(new JodaModule());
 
 
-        public CapiWebServicePollerThread(String url, NycTransitDataService tds, CancelledTripService cancelledTripService) {
-            this.url = url;
+        public CapiWebServicePollerThread(NycTransitDataService tds, CancelledTripService cancelledTripService) {
             this.tds = tds;
             this.cancelledTripService = cancelledTripService;
         }
 
 
+        private boolean allowCapi() {
+            if (!isEnabled){
+                _log.warn("capi is not enabled in configuration");
+                return false;
+            }
+            if (StringUtils.isBlank(capiUrl)) {
+                _log.warn("url not configured, Capi polling via webservice disabled.");
+                return false;
+            }
+            return true;
+        }
+
         public void run() {
+
             if(!allowCapi()){
                 return;
             }
 
-            _log.info("retrieving feed at " + url);
+            _log.debug("retrieving feed at " + capiUrl);
 
             Map<AgencyAndId, NycCancelledTripBean> recordMap = getFeed();
             cancelledTripService.updateCancelledTrips(recordMap);
 
-            _log.info("retreived {} cancelled trip records", recordMap.keySet().size());
+            _log.debug("retreived {} cancelled trip records", recordMap.keySet().size());
         }
 
         // package private for unit tests
         Map<AgencyAndId, NycCancelledTripBean> getFeed() {
             Map<AgencyAndId, NycCancelledTripBean> results = new ConcurrentHashMap<>();
-            HttpGet get = new HttpGet(url);
+            HttpGet get = new HttpGet(capiUrl);
             try {
                 HttpResponse response = getHttpClient().execute(get);
                 InputStreamReader reader = new InputStreamReader(response.getEntity().getContent());
@@ -196,9 +180,9 @@ public class CancelledTripHttpListenerTask {
                 return results;
 
             } catch (IOException ioe) {
-                _log.error("failure retrieving " + url + ", " + ioe, ioe);
+                _log.error("failure retrieving " + capiUrl + ", " + ioe, ioe);
             } catch (Throwable t) {
-                _log.error("unexpected exception retrieving " + url, t);
+                _log.error("unexpected exception retrieving " + capiUrl, t);
             }
 
             return results;
@@ -226,6 +210,18 @@ public class CancelledTripHttpListenerTask {
             HttpClient httpClient = new DefaultHttpClient(httpParams);
 
             return httpClient;
+        }
+    }
+
+    public static class ConfigThread implements Runnable {
+        CancelledTripHttpListenerTask task;
+        public ConfigThread(CancelledTripHttpListenerTask cancelledTripHttpListenerTask) {
+            this.task = cancelledTripHttpListenerTask;
+        }
+
+        @Override
+        public void run() {
+            task.refreshConfig();
         }
     }
 }

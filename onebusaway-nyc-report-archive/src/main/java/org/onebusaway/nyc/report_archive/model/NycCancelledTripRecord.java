@@ -48,7 +48,7 @@ public class NycCancelledTripRecord implements Serializable {
     private Long id;
 
     @Column(nullable = false, name = "record_timestamp")
-    private Date recordTimeStamp;
+    private long recordTimeStamp;
 
     @Column(name = "block")
     private String block;
@@ -63,7 +63,7 @@ public class NycCancelledTripRecord implements Serializable {
     private Date timestamp;
 
     @Column(name = "scheduledPullOut")
-    private Date scheduledPullOut;
+    private String scheduledPullOut;
 
     @Column(name = "serviceDate")
     private Date serviceDate;
@@ -71,14 +71,17 @@ public class NycCancelledTripRecord implements Serializable {
     @Column(name = "route")
     private String route;
 
+    @Column(name = "routeId")
+    private String routeId;
+
     @Column(name = "firstStopId")
     private String firstStopId;
 
     @Column(name = "firstStopDepartureTime")
-    private Time firstStopDepartureTime;
+    private String firstStopDepartureTime;
 
     @Column(name = "lastStopArrivalTime")
-    private Time lastStopArrivalTime;
+    private String lastStopArrivalTime;
 
     public NycCancelledTripRecord(){}
 
@@ -87,17 +90,18 @@ public class NycCancelledTripRecord implements Serializable {
         setTrip(nycCancelledTripBean.getTrip());
         setStatus(nycCancelledTripBean.getStatus());
         setRoute(nycCancelledTripBean.getRoute());
+        setRouteId(nycCancelledTripBean.getRouteId());
         setFirstStopId(nycCancelledTripBean.getFirstStopId());
         setServiceDate(nycCancelledTripBean.getServiceDate());
         setFirstStopDepartureTime(nycCancelledTripBean.getFirstStopDepartureTime());
         setLastStopArrivalTime(nycCancelledTripBean.getLastStopArrivalTime());
-        setRecordTimeStamp(new Date());
+        setRecordTimeStamp(System.currentTimeMillis());
 
         if(nycCancelledTripBean.getTimestamp() > 0){
             setTimestamp(new Date(nycCancelledTripBean.getTimestamp()));
         }
         if(nycCancelledTripBean.getScheduledPullOut() != null){
-            setScheduledPullOut(nycCancelledTripBean.getScheduledPullOut().toDate());
+            setScheduledPullOut(nycCancelledTripBean.getScheduledPullOut());
         }
     }
 
@@ -109,11 +113,11 @@ public class NycCancelledTripRecord implements Serializable {
         this.id = id;
     }
 
-    public Date getRecordTimeStamp() {
+    public long getRecordTimeStamp() {
         return recordTimeStamp;
     }
 
-    public void setRecordTimeStamp(Date recordTimeStamp) {
+    public void setRecordTimeStamp(long recordTimeStamp) {
         this.recordTimeStamp = recordTimeStamp;
     }
 
@@ -149,11 +153,11 @@ public class NycCancelledTripRecord implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public Date getScheduledPullOut() {
+    public String getScheduledPullOut() {
         return scheduledPullOut;
     }
 
-    public void setScheduledPullOut(Date scheduledPullOut) {
+    public void setScheduledPullOut(String scheduledPullOut) {
         this.scheduledPullOut = scheduledPullOut;
     }
 
@@ -173,6 +177,14 @@ public class NycCancelledTripRecord implements Serializable {
         this.route = route;
     }
 
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public void setRouteId(String routeId) {
+        this.routeId = routeId;
+    }
+
     public String getFirstStopId() {
         return firstStopId;
     }
@@ -181,19 +193,19 @@ public class NycCancelledTripRecord implements Serializable {
         this.firstStopId = firstStopId;
     }
 
-    public Time getFirstStopDepartureTime() {
+    public String getFirstStopDepartureTime() {
         return firstStopDepartureTime;
     }
 
-    public void setFirstStopDepartureTime(Time firstStopDepartureTime) {
+    public void setFirstStopDepartureTime(String firstStopDepartureTime) {
         this.firstStopDepartureTime = firstStopDepartureTime;
     }
 
-    public Time getLastStopArrivalTime() {
+    public String getLastStopArrivalTime() {
         return lastStopArrivalTime;
     }
 
-    public void setLastStopArrivalTime(Time lastStopArrivalTime) {
+    public void setLastStopArrivalTime(String lastStopArrivalTime) {
         this.lastStopArrivalTime = lastStopArrivalTime;
     }
 
@@ -211,6 +223,7 @@ public class NycCancelledTripRecord implements Serializable {
                 Objects.equal(scheduledPullOut, record.scheduledPullOut) &&
                 Objects.equal(serviceDate, record.serviceDate) &&
                 Objects.equal(route, record.route) &&
+                Objects.equal(routeId, record.routeId) &&
                 Objects.equal(firstStopId, record.firstStopId) &&
                 Objects.equal(firstStopDepartureTime, record.firstStopDepartureTime) &&
                 Objects.equal(lastStopArrivalTime, record.lastStopArrivalTime);
@@ -218,7 +231,7 @@ public class NycCancelledTripRecord implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, recordTimeStamp, block, trip, status, timestamp, scheduledPullOut, serviceDate, route, firstStopId, firstStopDepartureTime, lastStopArrivalTime);
+        return Objects.hashCode(id, recordTimeStamp, block, trip, status, timestamp, scheduledPullOut, serviceDate, route, routeId, firstStopId, firstStopDepartureTime, lastStopArrivalTime);
     }
 
     @Override
@@ -233,6 +246,7 @@ public class NycCancelledTripRecord implements Serializable {
                 ", scheduledPullOut=" + scheduledPullOut +
                 ", serviceDate=" + serviceDate +
                 ", route='" + route + '\'' +
+                ", routeId='" + routeId + '\'' +
                 ", firstStopId='" + firstStopId + '\'' +
                 ", firstStopDepartureTime=" + firstStopDepartureTime +
                 ", lastStopArrivalTime=" + lastStopArrivalTime +

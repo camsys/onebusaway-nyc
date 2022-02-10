@@ -145,7 +145,7 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public List<NycCancelledTripBean> getAllCancelledTrips() {
+    public ListBean<NycCancelledTripBean> getAllCancelledTrips() {
         throw new UnsupportedOperationException();
     }
 

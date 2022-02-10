@@ -36,6 +36,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data_federation.services.cancelled.CancelledTripService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.transit_data.model.ListBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,8 +79,12 @@ public class CancelledTripServiceImpl implements CancelledTripService {
     }
 
     @Override
-    public List<NycCancelledTripBean> getAllCancelledTrips() {
-        return new ArrayList<>(_cancelledTripsCache.values());
+    public ListBean<NycCancelledTripBean> getAllCancelledTrips() {
+        List<NycCancelledTripBean> serializedList = new ArrayList<>();
+        for (NycCancelledTripBean bean : _cancelledTripsCache.values()) {
+            serializedList.add(bean);
+        }
+        return new ListBean(serializedList, false);
     }
 
     @Override

@@ -108,7 +108,7 @@ public class CancelledTripPersistenceServiceImpl implements
         messages.clear();
       }
     } else {
-      _log.info("0 updated cancelled trips");
+      _log.info("0 updated cancelled trips from " + cancelledTripRecordMap.size() + " entries");
     }
   }
 
@@ -116,7 +116,7 @@ public class CancelledTripPersistenceServiceImpl implements
     NycCancelledTripRecord uncancelledTripRecord = SerializationUtils.clone(record);
     uncancelledTripRecord.setId(null);
     uncancelledTripRecord.setStatus("uncanceled");
-    uncancelledTripRecord.setRecordTimeStamp(new Date(System.currentTimeMillis()));
+    uncancelledTripRecord.setRecordTimeStamp(System.currentTimeMillis());
     return uncancelledTripRecord;
   }
 

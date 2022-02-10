@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class CancelledTripListenerTask {
 
     private static Logger _log = LoggerFactory.getLogger(CancelledTripListenerTask.class);
+    private static final int DEFAULT_REFRESH_INTERVAL = 30;
 
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
@@ -59,9 +60,8 @@ public class CancelledTripListenerTask {
     public void setup() {
         refreshConfig();
 
-        if(!allowCapi()){
-            return;
-        }
+        ConfigThread configThread = new ConfigThread(this);
+        _taskScheduler.scheduleWithFixedDelay(configThread, 2 * 1000);
 
         CancelledTripListenerThread thread = new CancelledTripListenerThread(_nycTransitDataService, _persistor,
                                                 _validationService);
@@ -80,7 +80,7 @@ public class CancelledTripListenerTask {
     @Refreshable(dependsOn = {"archiver.enableCapi","archive.capiRefreshIntervalSec"})
     protected void refreshConfig() {
         isEnabled = _configurationService.getConfigurationValueAsBoolean("archive.enableCapi", false);
-        capiRefreshInterval = _configurationService.getConfigurationValueAsInteger("archive.capiRefreshIntervalSec", 30);
+        capiRefreshInterval = _configurationService.getConfigurationValueAsInteger("archive.capiRefreshIntervalSec", DEFAULT_REFRESH_INTERVAL);
     }
 
     public Boolean isEnabled() {
@@ -88,6 +88,8 @@ public class CancelledTripListenerTask {
     }
 
     public Integer getCapiRefreshInterval() {
+        if (capiRefreshInterval == null)
+            return DEFAULT_REFRESH_INTERVAL;
         return capiRefreshInterval;
     }
 
@@ -107,7 +109,7 @@ public class CancelledTripListenerTask {
             if(!allowCapi()){
                 return;
             }
-            List<NycCancelledTripBean> cancelledTrips = tds.getAllCancelledTrips();
+            List<NycCancelledTripBean> cancelledTrips = tds.getAllCancelledTrips().getList();
             processCancelledTrips(cancelledTrips);
         }
 
@@ -133,6 +135,18 @@ public class CancelledTripListenerTask {
             return true;
         }
 
+    }
+
+    public static class ConfigThread implements Runnable {
+        private CancelledTripListenerTask _task;
+        public ConfigThread(CancelledTripListenerTask task) {
+            _task = task;
+        }
+
+        @Override
+        public void run() {
+            _task.refreshConfig();
+        }
     }
 
 }
