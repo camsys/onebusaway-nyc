@@ -52,6 +52,8 @@ public class CancelledTripListenerTask {
     @Autowired
     private CancelledTripRecordValidationService _validationService;
 
+    private CancelledTripListenerThread _cancelledTripListenerThread;
+
     private Boolean isEnabled;
 
     private Integer capiRefreshInterval;
@@ -59,14 +61,38 @@ public class CancelledTripListenerTask {
     @PostConstruct
     public void setup() {
         refreshConfig();
+        createConfigThread();
+        createCancelledTripListenerThread();
+    }
 
-        ConfigThread configThread = new ConfigThread(this);
-        _taskScheduler.scheduleWithFixedDelay(configThread, 2 * 1000);
+    @Refreshable(dependsOn = {"archiver.enableCapi","archive.capiRefreshIntervalSec"})
+    protected void refreshConfig() {
+        isEnabled = _configurationService.getConfigurationValueAsBoolean("archive.enableCapi", false);
+        capiRefreshInterval = _configurationService.getConfigurationValueAsInteger("archive.capiRefreshIntervalSec", DEFAULT_REFRESH_INTERVAL);
+    }
 
-        CancelledTripListenerThread thread = new CancelledTripListenerThread(_nycTransitDataService, _persistor,
-                                                _validationService);
+    protected void updateThreadsPostConfigRefresh(){
+        createCancelledTripListenerThread();
+    }
 
-        _taskScheduler.scheduleWithFixedDelay(thread, TimeUnit.SECONDS.toMillis(getCapiRefreshInterval()));
+    private void createConfigThread(){
+        if(_taskScheduler != null) {
+            ConfigThread configThread = new ConfigThread(this);
+            _taskScheduler.scheduleWithFixedDelay(configThread, 60 * 1000);
+        } else {
+            _log.warn("Unable to create config thread, task scheduler unavailable");
+        }
+    }
+
+    private void createCancelledTripListenerThread(){
+        if(allowCapi() && _cancelledTripListenerThread == null && _taskScheduler != null) {
+            _cancelledTripListenerThread = new CancelledTripListenerThread(_nycTransitDataService, _persistor,
+                    _validationService);
+            _taskScheduler.scheduleWithFixedDelay(
+                    _cancelledTripListenerThread, TimeUnit.SECONDS.toMillis(getCapiRefreshInterval()));
+        } else {
+            _log.warn("Unable to create cancelled trip listener thread, task scheduler unavailable");
+        }
     }
 
     private boolean allowCapi() {
@@ -75,12 +101,6 @@ public class CancelledTripListenerTask {
             return false;
         }
         return true;
-    }
-
-    @Refreshable(dependsOn = {"archiver.enableCapi","archive.capiRefreshIntervalSec"})
-    protected void refreshConfig() {
-        isEnabled = _configurationService.getConfigurationValueAsBoolean("archive.enableCapi", false);
-        capiRefreshInterval = _configurationService.getConfigurationValueAsInteger("archive.capiRefreshIntervalSec", DEFAULT_REFRESH_INTERVAL);
     }
 
     public Boolean isEnabled() {
@@ -109,8 +129,12 @@ public class CancelledTripListenerTask {
             if(!allowCapi()){
                 return;
             }
-            List<NycCancelledTripBean> cancelledTrips = tds.getAllCancelledTrips().getList();
-            processCancelledTrips(cancelledTrips);
+            try {
+                List<NycCancelledTripBean> cancelledTrips = tds.getAllCancelledTrips().getList();
+                processCancelledTrips(cancelledTrips);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
         }
 
 
@@ -146,6 +170,7 @@ public class CancelledTripListenerTask {
         @Override
         public void run() {
             _task.refreshConfig();
+            _task.updateThreadsPostConfigRefresh();
         }
     }
 
