@@ -86,6 +86,9 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
     @Refreshable(dependsOn = {"tdm.CAPIRefreshInterval"})
     protected void refreshConfig() {
         _refreshInterval = getConfig().getConfigurationValueAsInteger( "tdm.CAPIRefreshInterval", DEFAULT_REFRESH_INTERVAL);
+    }
+
+    protected void refreshUpdateThreadPostConfig(){
         // Only creates if does not already exist
         createUpdateThread();
     }
@@ -186,6 +189,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
         @Override
         public void run() {
             resource.refreshConfig();
+            resource.refreshUpdateThreadPostConfig();
         }
     }
 
