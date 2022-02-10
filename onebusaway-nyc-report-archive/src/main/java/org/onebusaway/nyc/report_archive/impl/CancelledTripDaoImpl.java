@@ -89,7 +89,7 @@ public class CancelledTripDaoImpl implements CancelledTripDao {
             hql += " and r.trip = :t";
         }
 
-        hql += " ORDER BY r.recordTimeStamp";
+        hql += " ORDER BY r.recordTimeStamp DESC";
         Query q = getSession().createQuery(hql);
 
         q.setParameter("sd", serviceDate);
