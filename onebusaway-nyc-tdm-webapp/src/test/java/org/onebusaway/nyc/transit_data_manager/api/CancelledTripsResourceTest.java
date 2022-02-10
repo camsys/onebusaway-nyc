@@ -110,7 +110,7 @@ public class CancelledTripsResourceTest {
         assertEquals("MTA NYCT_FB_A2-Weekday-SDon_E_FB_26580_B41-207",bean.getBlock());
         assertEquals("MTA NYCT_FB_A2-Weekday-SDon-044900_B41_207",bean.getTrip());
         assertEquals("canceled",bean.getStatus());
-        assertEquals(new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-21"),bean.getServiceDate());
+        assertEquals(LocalDate.of(2022,01,21),bean.getServiceDate());
         assertEquals("B41",bean.getRoute());
         assertEquals("MTA NYCT_B41", bean.getRouteId());
         assertEquals("MTA_303215",bean.getFirstStopId());
