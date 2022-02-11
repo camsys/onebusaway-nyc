@@ -19,7 +19,6 @@ package org.onebusaway.nyc.transit_data_manager.api.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data_manager.api.IncomingNycCancelledTripBeansContainer;
@@ -76,7 +75,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
 
     private UpdateThread updateThread;
 
-    private Boolean isEnabled;
+    private Boolean _isEnabled;
 
     @PostConstruct
     public void setup(){
@@ -86,8 +85,9 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
         createUpdateThread();
     }
 
-    @Refreshable(dependsOn = {"tdm.CAPIRefreshInterval"})
+    @Refreshable(dependsOn = {"tdm.CAPIRefreshInterval","tdm.CAPIEnabled"})
     protected void refreshConfig() {
+        _isEnabled = getConfig().getConfigurationValueAsBoolean( "tdm.CAPIEnabled", Boolean.FALSE);
         _refreshInterval = getConfig().getConfigurationValueAsInteger( "tdm.CAPIRefreshInterval", DEFAULT_REFRESH_INTERVAL);
     }
 
@@ -134,7 +134,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
     }
 
     public Boolean isEnabled() {
-        return isEnabled;
+        return _isEnabled;
     }
 
     @Override
