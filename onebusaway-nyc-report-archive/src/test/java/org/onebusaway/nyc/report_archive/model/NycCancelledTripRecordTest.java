@@ -39,7 +39,7 @@ public class NycCancelledTripRecordTest {
         String status = "canceled";
         long timestamp = 1642734418000l;
         LocalTime firstDepartureTime = LocalTime.of(7,29,0,0);
-        LocalTime lastStopArrivalTime = LocalTime.of(7,29,0,0);
+        LocalTime lastStopArrivalTime = LocalTime.of(7,49,0,0);
         LocalDateTime humanReadableTimestamp = LocalDateTime.of(LocalDate.of(2022,1,20),
                 LocalTime.of(22,6,58,0));
         LocalDate serviceDate = LocalDate.of(2022,1,21);
@@ -47,19 +47,29 @@ public class NycCancelledTripRecordTest {
 
         NycCancelledTripBean nycCancelledTripBean = new NycCancelledTripBean();
         nycCancelledTripBean.setBlock(blockId);
-        nycCancelledTripBean.setFirstStopDepartureTime(firstDepartureTime);
+        nycCancelledTripBean.setFirstStopDepartureTime(firstDepartureTime.toString());
         nycCancelledTripBean.setFirstStopId(firstStopId);
-        nycCancelledTripBean.setHumanReadableTimestamp(humanReadableTimestamp);
-        nycCancelledTripBean.setLastStopArrivalTime(lastStopArrivalTime);
+        nycCancelledTripBean.setHumanReadableTimestamp(humanReadableTimestamp.toString());
+        nycCancelledTripBean.setLastStopArrivalTime(lastStopArrivalTime.toString());
         nycCancelledTripBean.setRoute(route);
         nycCancelledTripBean.setRouteId(routeId);
         nycCancelledTripBean.setScheduledPullOut(scheduledPullout);
-        nycCancelledTripBean.setServiceDate(serviceDate);
+        nycCancelledTripBean.setServiceDate(serviceDate.toString());
         nycCancelledTripBean.setStatus(status);
         nycCancelledTripBean.setTimestamp(timestamp);
         nycCancelledTripBean.setTrip(tripId);
 
-        NycCancelledTripRecord record = new NycCancelledTripRecord(nycCancelledTripBean);
+        NycCancelledTripRecord record = new NycCancelledTripRecord(nycCancelledTripBean, System.currentTimeMillis());
         assertEquals(blockId, record.getBlock());
+        assertEquals(firstDepartureTime, record.getFirstStopDepartureTime());
+        assertEquals(firstStopId, record.getFirstStopId());
+        assertEquals(lastStopArrivalTime, record.getLastStopArrivalTime());
+        assertEquals(route, record.getRoute());
+        assertEquals(routeId, record.getRouteId());
+        assertEquals(scheduledPullout, record.getScheduledPullOut());
+        assertEquals(serviceDate, record.getServiceDate());
+        assertEquals(status, record.getStatus());
+        assertEquals(timestamp, record.getTimestamp().getTime());
+        assertEquals(tripId, record.getTrip());
     }
 }

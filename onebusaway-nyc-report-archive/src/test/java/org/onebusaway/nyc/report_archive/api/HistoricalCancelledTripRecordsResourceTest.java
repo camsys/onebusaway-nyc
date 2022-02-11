@@ -45,8 +45,6 @@ public class HistoricalCancelledTripRecordsResourceTest {
     @Test
     public void testMakeJson() throws ParseException {
         HistoricalCancelledTripRecordsResource r = new HistoricalCancelledTripRecordsResource();
-        // this is normally autowired.  See application-context.xml.
-        r.setJsonTool(new LowerCaseWDashesGsonJsonTool(true));
 
         CancelledTripDao dao = mock(CancelledTripDao.class);
         List<NycCancelledTripRecord> results = new ArrayList<NycCancelledTripRecord>();

@@ -83,8 +83,7 @@
 		<property name="batchSize" value="1000" />
 	</bean>
 
-	<bean id="cancelledTripTask" class="org.onebusaway.nyc.report_archive.queue.CancelledTripListenerTask">
-	</bean>
+	<bean id="cancelledTripTask" class="org.onebusaway.nyc.report_archive.queue.CancelledTripListenerTask" />
 
   <!-- Transit Data Service -->
     

@@ -16,9 +16,15 @@
 
 package org.onebusaway.nyc.report_archive.api;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.onebusaway.nyc.report_archive.api.json.HistoricalCancelledTripRecordsMessage;
 import org.onebusaway.nyc.report_archive.impl.CancelledTripDaoImpl;
 import org.onebusaway.nyc.report_archive.model.NycCancelledTripRecord;
@@ -33,6 +39,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 @Component
@@ -41,8 +49,13 @@ import java.util.List;
 public class HistoricalCancelledTripRecordsResource {
 
 
-    private static Logger log = LoggerFactory.getLogger(HistoricalRecordsResource.class);
-    private JsonTool jsonTool;
+    private static Logger log = LoggerFactory.getLogger(HistoricalCancelledTripRecordsResource.class);
+
+    private static ObjectMapper _mapper = new ObjectMapper()
+            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"))
+            .registerModule(new JavaTimeModule())
+            .setTimeZone(Calendar.getInstance().getTimeZone())
+            .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
     @Autowired
     private CancelledTripDao cancelledTripDao;
@@ -109,38 +122,25 @@ public class HistoricalCancelledTripRecordsResource {
         dao.saveReport(record);
     }
 
-    private String getObjectAsJsonString(Object object) throws IOException {
-        log.info("In getObjectAsJsonString, serializing input object as json.");
-
-        String outputJson = null;
-
+    public String getObjectAsJsonString(Object object) throws IOException {
         StringWriter writer = null;
-
+        String output = null;
         try {
             writer = new StringWriter();
-            jsonTool.writeJson(writer, object);
-            outputJson = writer.toString();
+            _mapper.writeValue(writer, object);
+            output = writer.toString();
         } catch (IOException e) {
-            throw new IOException("IOException while using jsonTool to write object as json.", e);
+            log.error("exception parsing json " + e, e);
         } finally {
-            if (writer != null)
-                try {
-                    writer.close();
-                } catch (IOException e) { }
+            try {
+                writer.close();
+            } catch (IOException e) {
+                log.error("Error closing writer", e);
+            }
         }
 
-        if (outputJson == null) throw new IOException("After using jsontool to write json, output was still null.");
-
-        return outputJson;
-    }
-
-    /**
-     * Injects json tool
-     * @param jsonTool the jsonTool to set
-     */
-    @Autowired
-    public void setJsonTool(JsonTool jsonTool) {
-        this.jsonTool = jsonTool;
+        if (output == null) throw new IOException("Unable to parse object into json");
+        return output;
     }
 
     /**

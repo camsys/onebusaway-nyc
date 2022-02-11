@@ -71,7 +71,10 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
 
     private Integer _refreshInterval;
 
-    private ObjectReader _objectReader;
+    private ObjectReader _objectReader = new ObjectMapper()
+                                            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
+                                            .setTimeZone(Calendar.getInstance().getTimeZone())
+                                            .readerFor(IncomingNycCancelledTripBeansContainer.class);
 
     private UpdateThread updateThread;
 
@@ -80,7 +83,6 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
     @PostConstruct
     public void setup(){
         refreshConfig();
-        setupObjectMapper();
         createConfigThread();
         createUpdateThread();
     }
@@ -94,14 +96,6 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
     protected void refreshUpdateThreadPostConfig(){
         // Only creates if does not already exist
         createUpdateThread();
-    }
-
-    public void setupObjectMapper(){
-        _objectReader = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
-                .setTimeZone(Calendar.getInstance().getTimeZone())
-                .readerFor(IncomingNycCancelledTripBeansContainer.class);
     }
 
     private void createConfigThread(){
@@ -126,7 +120,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
             _log.warn("capi is not enabled in configuration");
             return false;
         }
-        if (getLocation() != null){
+        if (getLocation() == null){
             _log.warn("capi url is not defined");
             return false;
         }

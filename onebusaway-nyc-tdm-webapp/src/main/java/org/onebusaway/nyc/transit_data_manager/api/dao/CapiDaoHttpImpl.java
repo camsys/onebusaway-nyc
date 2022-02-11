@@ -72,18 +72,25 @@ public class CapiDaoHttpImpl implements CapiDao{
 
     @PostConstruct
     public void setup() {
-        if (_taskScheduler != null) {
-            ConfigThread configThread = new ConfigThread(this);
-            _taskScheduler.scheduleWithFixedDelay(configThread, 60 * 1000);
-        }
+        _log.info("starting dao");
+        refreshConfig();
+        createConfigThread();
     }
 
     @Refreshable(dependsOn = {"tdm.capiUrl", "tdm.capiConnectionTimeout"})
     public void refreshConfig() {
         setLocation(getConfig().getConfigurationValueAsString("tdm.capiUrl", null));
         setConnectionTimeout(getConfig().getConfigurationValueAsInteger("tdm.capiConnectionTimeout", 1000));
+        _log.debug("successfully refreshed configuration");
     }
 
+    private void createConfigThread() {
+        if (_taskScheduler != null) {
+            ConfigThread configThread = new ConfigThread(this);
+            _taskScheduler.scheduleWithFixedDelay(configThread, 60 * 1000);
+            _log.info("config thread successfully created");
+        }
+    }
 
     @Override
     public InputStream getCancelledTripData(){

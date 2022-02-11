@@ -156,7 +156,7 @@ public class CancelledTripHttpListenerTask {
             _log.warn("capi is not enabled in configuration");
             return false;
         }
-        if (getLocation() != null){
+        if (getLocation() == null){
             _log.warn("capi url is not defined");
             return false;
         }

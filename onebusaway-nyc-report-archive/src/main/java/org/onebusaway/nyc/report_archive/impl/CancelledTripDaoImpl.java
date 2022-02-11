@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -80,8 +81,7 @@ public class CancelledTripDaoImpl implements CancelledTripDao {
     @Override
     public List<NycCancelledTripRecord> getReports(String requestedDate, Integer numberOfRecords, String trip) throws java.text.ParseException {
 
-        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date serviceDate = formatter.parse(requestedDate);
+        LocalDate serviceDate = LocalDate.parse(requestedDate);
 
         String hql = "FROM NycCancelledTripRecord r where r.serviceDate = :sd";
 
@@ -89,7 +89,7 @@ public class CancelledTripDaoImpl implements CancelledTripDao {
             hql += " and r.trip = :t";
         }
 
-        hql += " ORDER BY r.recordTimeStamp DESC";
+        hql += " ORDER BY r.recordTimeStamp DESC, r.id DESC";
         Query q = getSession().createQuery(hql);
 
         q.setParameter("sd", serviceDate);

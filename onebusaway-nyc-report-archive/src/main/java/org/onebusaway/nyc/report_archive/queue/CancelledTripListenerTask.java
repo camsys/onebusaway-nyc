@@ -90,8 +90,7 @@ public class CancelledTripListenerTask {
                     _validationService);
             _taskScheduler.scheduleWithFixedDelay(
                     _cancelledTripListenerThread, TimeUnit.SECONDS.toMillis(getCapiRefreshInterval()));
-        } else {
-            _log.warn("Unable to create cancelled trip listener thread, task scheduler unavailable");
+            _log.info("Successfully created cancelled trip listener thread.");
         }
     }
 
@@ -130,10 +129,12 @@ public class CancelledTripListenerTask {
                 return;
             }
             try {
+                _log.info("starting cancelled trips retrieval");
                 List<NycCancelledTripBean> cancelledTrips = tds.getAllCancelledTrips().getList();
+                _log.info("getting {} trips", cancelledTrips.size());
                 processCancelledTrips(cancelledTrips);
             } catch (Exception e){
-                e.printStackTrace();
+               _log.error("error retrieving cancelled trips", e);
             }
         }
 
@@ -142,8 +143,9 @@ public class CancelledTripListenerTask {
             Map<String, NycCancelledTripRecord> recordSet = new HashMap<>();
             NycCancelledTripRecord record = null;
             try {
+                long recordTimestamp = System.currentTimeMillis();
                 for(NycCancelledTripBean cancelledTrip : cancelledTrips){
-                    record = new NycCancelledTripRecord(cancelledTrip);
+                    record = new NycCancelledTripRecord(cancelledTrip, recordTimestamp);
                     boolean isValid = validationService.isValidRecord(record);
                     if(isValid){
                         recordSet.put(record.getTrip(), record);

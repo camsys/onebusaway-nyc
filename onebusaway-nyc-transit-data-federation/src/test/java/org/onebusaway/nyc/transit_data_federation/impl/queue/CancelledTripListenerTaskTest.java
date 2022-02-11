@@ -75,14 +75,13 @@ public class CancelledTripListenerTaskTest {
         assertEquals("MTA NYCT_FB_A2-Weekday-SDon_E_FB_26580_B41-207",bean.getBlock());
         assertEquals("MTA NYCT_FB_A2-Weekday-SDon-044900_B41_207",bean.getTrip());
         assertEquals("canceled",bean.getStatus());
-        assertEquals(LocalDate.of(2022,01,21),bean.getServiceDate());
+        assertEquals("2022-01-21",bean.getServiceDate());
         assertEquals("B41",bean.getRoute());
         assertEquals("MTA NYCT_B41", bean.getRouteId());
         assertEquals("MTA_303215",bean.getFirstStopId());
-        assertEquals(LocalTime.of(7,29,0,0),bean.getFirstStopDepartureTime());
-        assertEquals(LocalTime.of(7,49,0,0),bean.getLastStopArrivalTime());
+        assertEquals("07:29:00",bean.getFirstStopDepartureTime());
+        assertEquals("07:49:00",bean.getLastStopArrivalTime());
         assertTrue(bean.getTimestamp()==Long.valueOf("1642734418000"));
         assertEquals("2022-01-21T07:23:00",bean.getScheduledPullOut());
-        assertEquals(LocalDateTime.of(LocalDate.of(2022,1,20),LocalTime.of(22,6,58,0)),bean.getHumanReadableTimestamp());
-    }
+        assertEquals("2022-01-20T22:06:58",bean.getHumanReadableTimestamp());    }
 }
