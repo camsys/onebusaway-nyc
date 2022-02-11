@@ -85,10 +85,10 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
         createUpdateThread();
     }
 
-    @Refreshable(dependsOn = {"tdm.CAPIRefreshInterval","tdm.CAPIEnabled"})
+    @Refreshable(dependsOn = {"tdm.capiRefreshInterval","tdm.enableCapi"})
     protected void refreshConfig() {
-        _isEnabled = getConfig().getConfigurationValueAsBoolean( "tdm.CAPIEnabled", Boolean.FALSE);
-        _refreshInterval = getConfig().getConfigurationValueAsInteger( "tdm.CAPIRefreshInterval", DEFAULT_REFRESH_INTERVAL);
+        _isEnabled = getConfig().getConfigurationValueAsBoolean( "tdm.enableCapi", Boolean.FALSE);
+        _refreshInterval = getConfig().getConfigurationValueAsInteger( "tdm.capiRefreshInterval", DEFAULT_REFRESH_INTERVAL);
     }
 
     protected void refreshUpdateThreadPostConfig(){

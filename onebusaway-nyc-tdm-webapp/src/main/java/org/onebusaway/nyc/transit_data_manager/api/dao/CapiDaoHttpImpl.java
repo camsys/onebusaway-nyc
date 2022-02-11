@@ -78,10 +78,10 @@ public class CapiDaoHttpImpl implements CapiDao{
         }
     }
 
-    @Refreshable(dependsOn = {"tdm.CAPIUrl", "tdm.CAPIConnectionTimeout"})
+    @Refreshable(dependsOn = {"tdm.capiUrl", "tdm.capiConnectionTimeout"})
     public void refreshConfig() {
-        setLocation(getConfig().getConfigurationValueAsString("tdm.CAPIUrl", null));
-        setConnectionTimeout(getConfig().getConfigurationValueAsInteger("tdm.CAPIConnectionTimeout", 1000));
+        setLocation(getConfig().getConfigurationValueAsString("tdm.capiUrl", null));
+        setConnectionTimeout(getConfig().getConfigurationValueAsInteger("tdm.capiConnectionTimeout", 1000));
     }
 
 
