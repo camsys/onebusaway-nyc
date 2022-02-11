@@ -34,105 +34,121 @@ package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
-import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.transit_data_federation.services.cancelled.CancelledTripService;
+import org.onebusaway.nyc.transit_data_federation.services.capi.CancelledTripService;
+import org.onebusaway.nyc.transit_data_federation.services.capi.CapiDao;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.realtime.api.VehicleOccupancyListener;
-import org.onebusaway.transit_data_federation.services.realtime.BlockLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 public class CancelledTripHttpListenerTask {
 
     protected static Logger _log = LoggerFactory.getLogger(CancelledTripHttpListenerTask.class);
 
-    // in progress read connection timeout in millis
-    private static final int TIMEOUT_CONNECTION = 5000;
-    // socket connection timeout in millis
-    private static final int TIMEOUT_SOCKET = 5000;
+    public static final int DEFAULT_REFRESH_INTERVAL = 15 * 1000;
+
+    private ThreadPoolTaskScheduler _taskScheduler;
 
     @Autowired
+    public void setTaskScheduler(ThreadPoolTaskScheduler scheduler) {
+        _taskScheduler = scheduler;
+    }
+
+    private CapiDao _capiDao;
+
+    @Autowired
+    public void setCapiDao(CapiDao capiDao) {
+        _capiDao = capiDao;
+    }
+
     private ConfigurationService _configurationService;
 
+    public ConfigurationService getConfig() {
+        return _configurationService;
+    }
+
     @Autowired
+    public void setConfig(ConfigurationService config) {
+        _configurationService = config;
+    }
+
     private NycTransitDataService _tds;
 
     @Autowired
+    public void setNycTransitDataService(NycTransitDataService tds){
+        _tds = tds;
+    }
+
     private CancelledTripService _cancelledTripService;
 
-    private Boolean isEnabled;
-
-    private String capiUrl;
-
-    private Integer capiRefreshInterval;
-
-    public void setConfigurationService(ConfigurationService configurationService) {
-        _configurationService = configurationService;
-    }
-
-    public void setTds(NycTransitDataService _tds) {
-        this._tds = _tds;
-    }
-
-    public String getCapiUrl() {
-        return capiUrl;
-    }
-
-    public Boolean isEnabled() {
-        return isEnabled;
-    }
-
-    public Integer getCapiRefreshInterval() {
-        return capiRefreshInterval;
-    }
-
     @Autowired
-    private ThreadPoolTaskScheduler _taskScheduler;
+    public void setCancelledTripService(CancelledTripService cancelledTripService){
+        _cancelledTripService = cancelledTripService;
+    }
+
+
+    private Integer _refreshInterval;
+
+    private ObjectMapper _objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
+            .setTimeZone(Calendar.getInstance().getTimeZone());
+
+    private UpdateThread updateThread;
+
+    private Boolean _isEnabled;
 
     @PostConstruct
-    public void setup() {
+    public void setup(){
         refreshConfig();
-
-        if(!allowCapi()){
-            return;
-        }
-
-        CapiWebServicePollerThread thread = new CapiWebServicePollerThread(getCapiUrl(), _tds, _cancelledTripService);
-
-        _taskScheduler.scheduleWithFixedDelay(thread, TimeUnit.SECONDS.toMillis(getCapiRefreshInterval()));
+        createConfigThread();
+        createUpdateThread();
     }
 
-    @Refreshable(dependsOn = {"tds.enableCapi", "tds.capiUrl"})
+
+    @Refreshable(dependsOn = {"tds.enableCapi","tds.capiRefreshInterval"})
     protected void refreshConfig() {
-        capiUrl= _configurationService.getConfigurationValueAsString("tds.capiUrl", null);
-        isEnabled = _configurationService.getConfigurationValueAsBoolean("tds.enableCapi", false);
-        capiRefreshInterval = _configurationService.getConfigurationValueAsInteger("tds.capiRefreshIntervalSec", 30);
+        _refreshInterval = getConfig().getConfigurationValueAsInteger( "tds.capiRefreshInterval", DEFAULT_REFRESH_INTERVAL);
+        _isEnabled =  getConfig().getConfigurationValueAsBoolean("tds.enableCapi", Boolean.FALSE);
+    }
+
+    private void createConfigThread(){
+        if(_taskScheduler != null) {
+            ConfigThread configThread = new ConfigThread(this);
+            _taskScheduler.scheduleWithFixedDelay(configThread, 60 * 1000);
+        } else {
+            _log.warn("Unable to create config thread, task scheduler unavailable");
+        }
+    }
+
+    private void createUpdateThread(){
+        if (allowCapi() && updateThread == null && _taskScheduler != null) {
+            updateThread = new UpdateThread(this);
+            _log.info("configuring update thread now");
+            _taskScheduler.scheduleWithFixedDelay(updateThread, _refreshInterval);
+        }
+    }
+
+    protected void refreshUpdateThreadPostConfig(){
+        // Only creates if does not already exist
+        createUpdateThread();
     }
 
     private boolean allowCapi() {
@@ -140,93 +156,101 @@ public class CancelledTripHttpListenerTask {
             _log.warn("capi is not enabled in configuration");
             return false;
         }
-        if (StringUtils.isBlank(getCapiUrl())) {
-            _log.warn("url not configured, Capi polling via webservice disabled.");
+        if (getLocation() == null){
+            _log.warn("capi url is not defined");
             return false;
         }
         return true;
     }
 
-    public class CapiWebServicePollerThread extends Thread {
-        private String url;
-        private NycTransitDataService tds;
-        private CancelledTripService cancelledTripService;
+    public Boolean isEnabled() {
+        return _isEnabled;
+    }
 
-        private ObjectMapper mapper = new ObjectMapper()
-                .registerModule(new JaxbAnnotationModule())
-                .registerModule(new JodaModule());
+    public String getLocation() {
+        return _capiDao.getLocation();
+    }
 
 
-        public CapiWebServicePollerThread(String url, NycTransitDataService tds, CancelledTripService cancelledTripService) {
-            this.url = url;
-            this.tds = tds;
-            this.cancelledTripService = cancelledTripService;
+    public void updateCancelledTripBeans()  {
+        try {
+            InputStream inputStream = getCancelledTripData();
+            List<NycCancelledTripBean> cancelledTripBeans = convertResponseToCancelledTripBeans(inputStream);
+            Map<AgencyAndId, NycCancelledTripBean> cancelledTripsMap = convertCancelledTripsToMap(cancelledTripBeans);
+            _cancelledTripService.updateCancelledTrips(cancelledTripsMap);
+        } catch (Exception e){
+            _log.error("Unable to process cancelled trip beans from {}", getLocation());
+        }
+    }
+
+    private InputStream getCancelledTripData(){
+        return _capiDao.getCancelledTripData();
+    }
+
+    private List<NycCancelledTripBean> convertResponseToCancelledTripBeans(InputStream input) {
+        try {
+            List<NycCancelledTripBean> list = _objectMapper.readValue(input,
+                    new TypeReference<List<NycCancelledTripBean>>() {});
+            return list;
+        } catch (Exception any) {
+            _log.error("issue parsing json: " + any, any);
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+
+    private Map<AgencyAndId, NycCancelledTripBean> convertCancelledTripsToMap(List<NycCancelledTripBean> cancelledTripBeans) {
+        Map<AgencyAndId, NycCancelledTripBean> results = new ConcurrentHashMap<>();
+        for (NycCancelledTripBean cancelledTrip : cancelledTripBeans) {
+            if (isValidCancelledTrip(cancelledTrip)) {
+                results.put(AgencyAndId.convertFromString(cancelledTrip.getTrip()), cancelledTrip);
+            }
+        }
+        return results;
+    }
+
+    private boolean isValidCancelledTrip(NycCancelledTripBean cancelledTripBean) {
+        try {
+            if ((cancelledTripBean.getStatus().equalsIgnoreCase("canceled") ||
+                    cancelledTripBean.getStatus().equalsIgnoreCase("cancelled")) &&
+                    _tds.getTrip(cancelledTripBean.getTrip()) != null) {
+                return true;
+            }
+        } catch (ServiceException e) {
+            _log.warn("Error retrieving cancelled trip", e);
+        }
+        return false;
+    }
+
+    public static class UpdateThread implements Runnable {
+
+        private CancelledTripHttpListenerTask resource;
+
+        public UpdateThread(CancelledTripHttpListenerTask resource) {
+            this.resource = resource;
         }
 
-
+        @Override
         public void run() {
-            refreshConfig();
-            if(!allowCapi()){
-                return;
+            if (resource.allowCapi()) {
+                _log.debug("refreshing...");
+                resource.updateCancelledTripBeans();
+                _log.debug("refresh complete");
+            } else {
+                _log.debug("disabled refresh");
             }
-
-            _log.info("retrieving feed at " + url);
-
-            Map<AgencyAndId, NycCancelledTripBean> recordMap = getFeed();
-            cancelledTripService.updateCancelledTrips(recordMap);
-
-            _log.info("retreived {} cancelled trip records", recordMap.keySet().size());
         }
+    }
 
-        // package private for unit tests
-        Map<AgencyAndId, NycCancelledTripBean> getFeed() {
-            Map<AgencyAndId, NycCancelledTripBean> results = new ConcurrentHashMap<>();
-            HttpGet get = new HttpGet(url);
-            try {
-                HttpResponse response = getHttpClient().execute(get);
-                InputStreamReader reader = new InputStreamReader(response.getEntity().getContent());
-                // we need to give a hint on how to load a map
-                List<NycCancelledTripBean> list = mapper.readValue(reader,
-                        new TypeReference<List<NycCancelledTripBean>>() {});
-                // for our results we want fully qualified agency id to be the key
-                for (NycCancelledTripBean cancelledTrip : list) {
-                    if (isValidCancelledTrip(cancelledTrip)) {
-                        results.put(AgencyAndId.convertFromString(cancelledTrip.getTrip()), cancelledTrip);
-                    }
-                }
-                return results;
-
-            } catch (IOException ioe) {
-                _log.error("failure retrieving " + url + ", " + ioe, ioe);
-            } catch (Throwable t) {
-                _log.error("unexpected exception retrieving " + url, t);
-            }
-
-            return results;
+    public static class ConfigThread implements Runnable {
+        private CancelledTripHttpListenerTask resource;
+        public ConfigThread(CancelledTripHttpListenerTask resource) {
+            this.resource = resource;
         }
-
-        private boolean isValidCancelledTrip(NycCancelledTripBean message) {
-            try {
-                if ((message.getStatus().equalsIgnoreCase("canceled") ||
-                        message.getStatus().equalsIgnoreCase("cancelled")) &&
-                        tds.getTrip(message.getTrip()) != null) {
-                    return true;
-                }
-            } catch (ServiceException e) {
-                _log.warn("Error retrieving cancelled trip", e);
-            }
-            return false;
-        }
-
-        // allow unit tests to override
-        protected HttpClient getHttpClient() {
-            HttpParams httpParams = new BasicHttpParams();
-            // recover from bad network conditions
-            HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_CONNECTION);
-            HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_SOCKET);
-            HttpClient httpClient = new DefaultHttpClient(httpParams);
-
-            return httpClient;
+        @Override
+        public void run() {
+            resource.refreshConfig();
+            resource.refreshUpdateThreadPostConfig();
         }
     }
 }

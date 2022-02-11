@@ -6,7 +6,9 @@ import org.joda.time.DateTime;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IncomingNycCancelledTripBeansContainer implements Serializable {
@@ -14,13 +16,13 @@ public class IncomingNycCancelledTripBeansContainer implements Serializable {
     private static final long serialVersionUID = 1L;
 
     ArrayList<NycCancelledTripBean> beans;
-    DateTime timestamp;
+    Date timestamp;
 
-    public void setTimestamp(DateTime timestamp) {
+    public void setTimestamp( Date timestamp) {
         this.timestamp = timestamp;
     }
 
-    public DateTime getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 

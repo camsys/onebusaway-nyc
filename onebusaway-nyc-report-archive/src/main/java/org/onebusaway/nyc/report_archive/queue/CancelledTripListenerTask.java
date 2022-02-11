@@ -52,6 +52,8 @@ public class CancelledTripListenerTask {
     @Autowired
     private CancelledTripRecordValidationService _validationService;
 
+    private CancelledTripListenerThread _cancelledTripListenerThread;
+
     private Boolean isEnabled;
 
     private Integer capiRefreshInterval;
@@ -59,14 +61,37 @@ public class CancelledTripListenerTask {
     @PostConstruct
     public void setup() {
         refreshConfig();
+        createConfigThread();
+        createCancelledTripListenerThread();
+    }
 
-        ConfigThread configThread = new ConfigThread(this);
-        _taskScheduler.scheduleWithFixedDelay(configThread, 2 * 1000);
+    @Refreshable(dependsOn = {"archiver.enableCapi","archive.capiRefreshIntervalSec"})
+    protected void refreshConfig() {
+        isEnabled = _configurationService.getConfigurationValueAsBoolean("archive.enableCapi", false);
+        capiRefreshInterval = _configurationService.getConfigurationValueAsInteger("archive.capiRefreshIntervalSec", DEFAULT_REFRESH_INTERVAL);
+    }
 
-        CancelledTripListenerThread thread = new CancelledTripListenerThread(_nycTransitDataService, _persistor,
-                                                _validationService);
+    protected void updateThreadsPostConfigRefresh(){
+        createCancelledTripListenerThread();
+    }
 
-        _taskScheduler.scheduleWithFixedDelay(thread, TimeUnit.SECONDS.toMillis(getCapiRefreshInterval()));
+    private void createConfigThread(){
+        if(_taskScheduler != null) {
+            ConfigThread configThread = new ConfigThread(this);
+            _taskScheduler.scheduleWithFixedDelay(configThread, 60 * 1000);
+        } else {
+            _log.warn("Unable to create config thread, task scheduler unavailable");
+        }
+    }
+
+    private void createCancelledTripListenerThread(){
+        if(allowCapi() && _cancelledTripListenerThread == null && _taskScheduler != null) {
+            _cancelledTripListenerThread = new CancelledTripListenerThread(_nycTransitDataService, _persistor,
+                    _validationService);
+            _taskScheduler.scheduleWithFixedDelay(
+                    _cancelledTripListenerThread, TimeUnit.SECONDS.toMillis(getCapiRefreshInterval()));
+            _log.info("Successfully created cancelled trip listener thread.");
+        }
     }
 
     private boolean allowCapi() {
@@ -75,12 +100,6 @@ public class CancelledTripListenerTask {
             return false;
         }
         return true;
-    }
-
-    @Refreshable(dependsOn = {"archiver.enableCapi","archive.capiRefreshIntervalSec"})
-    protected void refreshConfig() {
-        isEnabled = _configurationService.getConfigurationValueAsBoolean("archive.enableCapi", false);
-        capiRefreshInterval = _configurationService.getConfigurationValueAsInteger("archive.capiRefreshIntervalSec", DEFAULT_REFRESH_INTERVAL);
     }
 
     public Boolean isEnabled() {
@@ -109,8 +128,14 @@ public class CancelledTripListenerTask {
             if(!allowCapi()){
                 return;
             }
-            List<NycCancelledTripBean> cancelledTrips = tds.getAllCancelledTrips().getList();
-            processCancelledTrips(cancelledTrips);
+            try {
+                _log.info("starting cancelled trips retrieval");
+                List<NycCancelledTripBean> cancelledTrips = tds.getAllCancelledTrips().getList();
+                _log.info("getting {} trips", cancelledTrips.size());
+                processCancelledTrips(cancelledTrips);
+            } catch (Exception e){
+               _log.error("error retrieving cancelled trips", e);
+            }
         }
 
 
@@ -118,8 +143,9 @@ public class CancelledTripListenerTask {
             Map<String, NycCancelledTripRecord> recordSet = new HashMap<>();
             NycCancelledTripRecord record = null;
             try {
+                long recordTimestamp = System.currentTimeMillis();
                 for(NycCancelledTripBean cancelledTrip : cancelledTrips){
-                    record = new NycCancelledTripRecord(cancelledTrip);
+                    record = new NycCancelledTripRecord(cancelledTrip, recordTimestamp);
                     boolean isValid = validationService.isValidRecord(record);
                     if(isValid){
                         recordSet.put(record.getTrip(), record);
@@ -146,6 +172,7 @@ public class CancelledTripListenerTask {
         @Override
         public void run() {
             _task.refreshConfig();
+            _task.updateThreadsPostConfigRefresh();
         }
     }
 

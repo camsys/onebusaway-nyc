@@ -16,6 +16,8 @@
 
 package org.onebusaway.nyc.report_archive.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Objects;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
@@ -25,20 +27,24 @@ import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Entity
 @Table(name = "obanyc_cancelledtrip",
         indexes = {
-        @Index(name = "record_time_stamp_index", columnList = "record_timestamp"),
-        @Index(name = "trip_index", columnList = "trip")
+                @Index(name = "timestamp_index", columnList = "timestamp"),
+                @Index(name = "service_date_index", columnList = "serviceDate"),
+                @Index(name = "trip_index", columnList = "trip"),
+                @Index(name = "block_index", columnList = "block")
 })
 @AccessType("field")
 @Cache(usage = CacheConcurrencyStrategy.NONE)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NycCancelledTripRecord implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
@@ -58,14 +64,15 @@ public class NycCancelledTripRecord implements Serializable {
     @Column(nullable = false, name = "status")
     private String status;
 
-    @Column(name = "timestamp")
+    @Column(nullable = false, name = "timestamp")
     private Date timestamp;
 
     @Column(name = "scheduledPullOut")
     private String scheduledPullOut;
 
     @Column(name = "serviceDate")
-    private Date serviceDate;
+    @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+    private LocalDate serviceDate;
 
     @Column(name = "route")
     private String route;
@@ -77,24 +84,26 @@ public class NycCancelledTripRecord implements Serializable {
     private String firstStopId;
 
     @Column(name = "firstStopDepartureTime")
-    private String firstStopDepartureTime;
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="HH:mm:ss")
+    private LocalTime firstStopDepartureTime;
 
     @Column(name = "lastStopArrivalTime")
-    private String lastStopArrivalTime;
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="HH:mm:ss")
+    private LocalTime lastStopArrivalTime;
 
     public NycCancelledTripRecord(){}
 
-    public NycCancelledTripRecord(NycCancelledTripBean nycCancelledTripBean){
+    public NycCancelledTripRecord(NycCancelledTripBean nycCancelledTripBean, long recordTimeStamp){
         setBlock(nycCancelledTripBean.getBlock());
         setTrip(nycCancelledTripBean.getTrip());
         setStatus(nycCancelledTripBean.getStatus());
         setRoute(nycCancelledTripBean.getRoute());
         setRouteId(nycCancelledTripBean.getRouteId());
         setFirstStopId(nycCancelledTripBean.getFirstStopId());
-        setServiceDate(nycCancelledTripBean.getServiceDate());
-        setFirstStopDepartureTime(nycCancelledTripBean.getFirstStopDepartureTime());
-        setLastStopArrivalTime(nycCancelledTripBean.getLastStopArrivalTime());
-        setRecordTimeStamp(System.currentTimeMillis());
+        setServiceDate(LocalDate.parse(nycCancelledTripBean.getServiceDate()));
+        setFirstStopDepartureTime(LocalTime.parse(nycCancelledTripBean.getFirstStopDepartureTime()));
+        setLastStopArrivalTime(LocalTime.parse(nycCancelledTripBean.getLastStopArrivalTime()));
+        setRecordTimeStamp(recordTimeStamp);
 
         if(nycCancelledTripBean.getTimestamp() > 0){
             setTimestamp(new Date(nycCancelledTripBean.getTimestamp()));
@@ -160,11 +169,11 @@ public class NycCancelledTripRecord implements Serializable {
         this.scheduledPullOut = scheduledPullOut;
     }
 
-    public Date getServiceDate() {
+    public LocalDate getServiceDate() {
         return serviceDate;
     }
 
-    public void setServiceDate(Date serviceDate) {
+    public void setServiceDate(LocalDate serviceDate) {
         this.serviceDate = serviceDate;
     }
 
@@ -192,19 +201,19 @@ public class NycCancelledTripRecord implements Serializable {
         this.firstStopId = firstStopId;
     }
 
-    public String getFirstStopDepartureTime() {
+    public LocalTime getFirstStopDepartureTime() {
         return firstStopDepartureTime;
     }
 
-    public void setFirstStopDepartureTime(String firstStopDepartureTime) {
+    public void setFirstStopDepartureTime(LocalTime firstStopDepartureTime) {
         this.firstStopDepartureTime = firstStopDepartureTime;
     }
 
-    public String getLastStopArrivalTime() {
+    public LocalTime getLastStopArrivalTime() {
         return lastStopArrivalTime;
     }
 
-    public void setLastStopArrivalTime(String lastStopArrivalTime) {
+    public void setLastStopArrivalTime(LocalTime lastStopArrivalTime) {
         this.lastStopArrivalTime = lastStopArrivalTime;
     }
 
@@ -213,8 +222,8 @@ public class NycCancelledTripRecord implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NycCancelledTripRecord record = (NycCancelledTripRecord) o;
-        return Objects.equal(id, record.id) &&
-                Objects.equal(recordTimeStamp, record.recordTimeStamp) &&
+        return recordTimeStamp == record.recordTimeStamp &&
+                Objects.equal(id, record.id) &&
                 Objects.equal(block, record.block) &&
                 Objects.equal(trip, record.trip) &&
                 Objects.equal(status, record.status) &&
@@ -242,7 +251,7 @@ public class NycCancelledTripRecord implements Serializable {
                 ", trip='" + trip + '\'' +
                 ", status='" + status + '\'' +
                 ", timestamp=" + timestamp +
-                ", scheduledPullOut=" + scheduledPullOut +
+                ", scheduledPullOut='" + scheduledPullOut + '\'' +
                 ", serviceDate=" + serviceDate +
                 ", route='" + route + '\'' +
                 ", routeId='" + routeId + '\'' +

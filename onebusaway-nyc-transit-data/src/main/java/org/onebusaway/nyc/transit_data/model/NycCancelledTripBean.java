@@ -26,12 +26,11 @@ package org.onebusaway.nyc.transit_data.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
-import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NycCancelledTripBean implements Serializable {
 
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
 
     private String block;
     private String trip;
@@ -39,7 +38,7 @@ public class NycCancelledTripBean implements Serializable {
     private long timestamp;
     private String scheduledPullOut;
     private String humanReadableTimestamp;
-    private Date serviceDate;
+    private String serviceDate;
     private String route;
     private String routeId;
     private String firstStopId;
@@ -107,7 +106,7 @@ public class NycCancelledTripBean implements Serializable {
         this.scheduledPullOut = scheduledPullOut;
     }
 
-    public void setServiceDate(Date serviceDate) {
+    public void setServiceDate(String serviceDate) {
         this.serviceDate = serviceDate;
     }
 
@@ -139,7 +138,7 @@ public class NycCancelledTripBean implements Serializable {
         return scheduledPullOut;
     }
 
-    public Date getServiceDate() {
+    public String getServiceDate() {
         return serviceDate;
     }
 

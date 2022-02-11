@@ -40,8 +40,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import uk.org.siri.siri.AffectedVehicleJourneyStructure;
+import uk.org.siri.siri.AffectsScopeStructure;
 import uk.org.siri.siri.DefaultedTextStructure;
+import uk.org.siri.siri.DirectionRefStructure;
 import uk.org.siri.siri.ErrorDescriptionStructure;
+import uk.org.siri.siri.LineRefStructure;
 import uk.org.siri.siri.ParticipantRefStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
@@ -117,7 +121,7 @@ public class SituationExchangeResource {
     if (delivery != null && deliveryIsForThisEnvironment(delivery)) {
       CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService);
       SituationExchangeResults result = new SituationExchangeResults();
-      _siriService.handleServiceDeliveries(result, transformer.mergeImpactedAlerts(incomingSiri.getServiceDelivery()));
+      _siriService.handleServiceDeliveries(result, transformer.mergeImpactedAlerts(ensureDirections(incomingSiri.getServiceDelivery())));
       _log.info(result.toString());
       return Response.ok(result).build();
     }
@@ -140,6 +144,55 @@ public class SituationExchangeResource {
 
     _log.info(responseSiri.toString());
     return Response.ok(responseSiri).build();
+  }
+
+  // for legacy reasons add directions to a route
+  private ServiceDelivery ensureDirections(ServiceDelivery incomingSiriServiceDelivery) {
+    if (incomingSiriServiceDelivery == null) return null;
+    if (incomingSiriServiceDelivery.getSituationExchangeDelivery() == null) return incomingSiriServiceDelivery;
+    for (SituationExchangeDeliveryStructure situationExchangeDeliveryStructure : incomingSiriServiceDelivery.getSituationExchangeDelivery()) {
+      if (situationExchangeDeliveryStructure == null
+            || situationExchangeDeliveryStructure.getSituations() == null
+            || situationExchangeDeliveryStructure.getSituations().getPtSituationElement() == null) continue;
+      for (PtSituationElementStructure ptSituationElementStructure : situationExchangeDeliveryStructure.getSituations().getPtSituationElement()) {
+        if (ptSituationElementStructure == null) continue;
+        boolean foundDirection = false;
+        AffectsScopeStructure affects = ptSituationElementStructure.getAffects();
+        if (affects == null) continue;
+        for (AffectedVehicleJourneyStructure affectedVehicleJourneyStructure : affects.getVehicleJourneys().getAffectedVehicleJourney()) {
+          if (affectedVehicleJourneyStructure.getDirectionRef() != null
+            && affectedVehicleJourneyStructure.getDirectionRef().getValue() != null) {
+            foundDirection = true;
+          }
+        }
+        if (!foundDirection) {
+          insertDirections(affects.getVehicleJourneys());
+        }
+      }
+    }
+    return incomingSiriServiceDelivery;
+  }
+
+  // for legacy reasons a LineRef needs DirectionRefs 0 and 1
+  private void insertDirections(AffectsScopeStructure.VehicleJourneys vehicleJourneys) {
+    List<AffectedVehicleJourneyStructure> afj = vehicleJourneys.getAffectedVehicleJourney();
+    if (afj.isEmpty()) return;
+    if (afj.size() == 1) {
+      AffectedVehicleJourneyStructure direction0 = afj.get(0);
+      if (direction0.getLineRef() != null) {
+        direction0.setDirectionRef(new DirectionRefStructure());
+        direction0.getDirectionRef().setValue("0");
+        afj.add(new AffectedVehicleJourneyStructure());
+        AffectedVehicleJourneyStructure direction1 = afj.get(1);
+        direction1.setDirectionRef(new DirectionRefStructure());
+        direction1.getDirectionRef().setValue("1");
+        direction1.setLineRef(new LineRefStructure());
+        direction1.getLineRef().setValue(
+                direction0.getLineRef().getValue()
+        );
+      }
+    }
+
   }
 
   private boolean requestIsForThisEnvironment(SubscriptionRequest subscriptionRequest, Siri responseSiri) {
