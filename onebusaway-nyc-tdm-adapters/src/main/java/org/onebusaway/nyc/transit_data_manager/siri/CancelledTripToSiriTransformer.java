@@ -110,7 +110,7 @@ public class CancelledTripToSiriTransformer {
     pt.setSituationNumber(s);
     // ideally this would be configurable/templated
     // The 10:49am B38 bus from [terminal] is…
-    String descriptionText = "The " + formatTime(cancelledTrip.getFirstStopDepartureTime())
+    String descriptionText = "The " + formatTime(cancelledTrip.getFirstStopDepartureTime().toString())
             + " " + affectedRoute.getId()
             + " bus from "
             + lookupStopName(cancelledTrip.getFirstStopId())

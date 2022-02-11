@@ -25,14 +25,16 @@ import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Entity
 @Table(name = "obanyc_cancelledtrip",
         indexes = {
-        @Index(name = "record_time_stamp_index", columnList = "record_timestamp"),
-        @Index(name = "trip_index", columnList = "trip")
+                @Index(name = "record_time_stamp_index", columnList = "record_timestamp"),
+                @Index(name = "service_date_index", columnList = "serviceDate"),
+                @Index(name = "trip_index", columnList = "trip")
 })
 @AccessType("field")
 @Cache(usage = CacheConcurrencyStrategy.NONE)
@@ -65,7 +67,7 @@ public class NycCancelledTripRecord implements Serializable {
     private String scheduledPullOut;
 
     @Column(name = "serviceDate")
-    private Date serviceDate;
+    private LocalDate serviceDate;
 
     @Column(name = "route")
     private String route;
@@ -77,10 +79,10 @@ public class NycCancelledTripRecord implements Serializable {
     private String firstStopId;
 
     @Column(name = "firstStopDepartureTime")
-    private String firstStopDepartureTime;
+    private LocalTime firstStopDepartureTime;
 
     @Column(name = "lastStopArrivalTime")
-    private String lastStopArrivalTime;
+    private LocalTime lastStopArrivalTime;
 
     public NycCancelledTripRecord(){}
 
@@ -160,11 +162,11 @@ public class NycCancelledTripRecord implements Serializable {
         this.scheduledPullOut = scheduledPullOut;
     }
 
-    public Date getServiceDate() {
+    public LocalDate getServiceDate() {
         return serviceDate;
     }
 
-    public void setServiceDate(Date serviceDate) {
+    public void setServiceDate(LocalDate serviceDate) {
         this.serviceDate = serviceDate;
     }
 
@@ -192,19 +194,19 @@ public class NycCancelledTripRecord implements Serializable {
         this.firstStopId = firstStopId;
     }
 
-    public String getFirstStopDepartureTime() {
+    public LocalTime getFirstStopDepartureTime() {
         return firstStopDepartureTime;
     }
 
-    public void setFirstStopDepartureTime(String firstStopDepartureTime) {
+    public void setFirstStopDepartureTime(LocalTime firstStopDepartureTime) {
         this.firstStopDepartureTime = firstStopDepartureTime;
     }
 
-    public String getLastStopArrivalTime() {
+    public LocalTime getLastStopArrivalTime() {
         return lastStopArrivalTime;
     }
 
-    public void setLastStopArrivalTime(String lastStopArrivalTime) {
+    public void setLastStopArrivalTime(LocalTime lastStopArrivalTime) {
         this.lastStopArrivalTime = lastStopArrivalTime;
     }
 
@@ -213,8 +215,8 @@ public class NycCancelledTripRecord implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NycCancelledTripRecord record = (NycCancelledTripRecord) o;
-        return Objects.equal(id, record.id) &&
-                Objects.equal(recordTimeStamp, record.recordTimeStamp) &&
+        return recordTimeStamp == record.recordTimeStamp &&
+                Objects.equal(id, record.id) &&
                 Objects.equal(block, record.block) &&
                 Objects.equal(trip, record.trip) &&
                 Objects.equal(status, record.status) &&
@@ -242,7 +244,7 @@ public class NycCancelledTripRecord implements Serializable {
                 ", trip='" + trip + '\'' +
                 ", status='" + status + '\'' +
                 ", timestamp=" + timestamp +
-                ", scheduledPullOut=" + scheduledPullOut +
+                ", scheduledPullOut='" + scheduledPullOut + '\'' +
                 ", serviceDate=" + serviceDate +
                 ", route='" + route + '\'' +
                 ", routeId='" + routeId + '\'' +
