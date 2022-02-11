@@ -79,7 +79,8 @@ public class CancelledTripDaoImpl implements CancelledTripDao {
     }
     @Transactional
     @Override
-    public List<NycCancelledTripRecord> getReports(String requestedDate, Integer numberOfRecords, String trip) throws java.text.ParseException {
+    public List<NycCancelledTripRecord> getReports(String requestedDate, Integer numberOfRecords, String trip,
+                                                   String block) throws java.text.ParseException {
 
         LocalDate serviceDate = LocalDate.parse(requestedDate);
 
@@ -88,15 +89,22 @@ public class CancelledTripDaoImpl implements CancelledTripDao {
         if (trip != null){
             hql += " and r.trip = :t";
         }
+        if (block != null){
+            hql += " and r.block = :b";
+        }
 
-        hql += " ORDER BY r.recordTimeStamp DESC, r.id DESC";
+        hql += " ORDER BY r.timestamp DESC, r.id DESC";
+
         Query q = getSession().createQuery(hql);
 
         q.setParameter("sd", serviceDate);
+
         if (trip != null){
             q.setParameter("t", trip);
         }
-
+        if (block != null){
+            q.setParameter("b", block);
+        }
 
         q.setMaxResults(numberOfRecords);
 

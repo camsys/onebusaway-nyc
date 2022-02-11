@@ -33,5 +33,6 @@ public interface CancelledTripDao {
   List<NycCancelledTripRecord> getReports();
 
   @Transactional
-  List<NycCancelledTripRecord> getReports(String requestedDate, Integer numberOfRecords, String trip) throws java.text.ParseException;
+  List<NycCancelledTripRecord> getReports(String requestedDate, Integer numberOfRecords, String trip, String block)
+          throws java.text.ParseException;
 }

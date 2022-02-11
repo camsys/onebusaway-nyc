@@ -53,11 +53,11 @@ public class HistoricalCancelledTripRecordsResourceTest {
         cancelledTripRecord.setBlock("test block");
         results.add(cancelledTripRecord);
         System.out.println("results= "+results);
-        when(dao.getReports( anyString(),anyInt(), anyString())).thenReturn(results);
+        when(dao.getReports( anyString(),anyInt(), anyString(), anyString())).thenReturn(results);
 
         r.setCancelledTripDao(dao);
 
-        Response response  = r.getHistoricalCancelledTripRecords(500, null, null);
+        Response response  = r.getHistoricalCancelledTripRecords(500, null, null, null);
         System.out.println("response= "+response);
 
         Object entity = response.getEntity();

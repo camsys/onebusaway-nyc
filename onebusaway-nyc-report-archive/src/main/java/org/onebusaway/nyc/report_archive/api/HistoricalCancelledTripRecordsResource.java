@@ -65,6 +65,7 @@ public class HistoricalCancelledTripRecordsResource {
     public Response getHistoricalCancelledTripRecords(
             @QueryParam(value="numberOfRecords")  Integer requestedNumberOfRecords,
             @QueryParam(value="trip")  String requestedTrip,
+            @QueryParam(value="block")  String requestedBlock,
             @PathParam(value="serviceDate") String requestedDate
     ) {
         final Integer MAX_RECORDS = 5000;
@@ -76,14 +77,11 @@ public class HistoricalCancelledTripRecordsResource {
         log.info("Starting getHistoricalRecords");
         long now = System.currentTimeMillis();
 
-
-
         List<NycCancelledTripRecord> historicalRecords = null;
         HistoricalCancelledTripRecordsMessage recordsMessage = new HistoricalCancelledTripRecordsMessage();
 
-
         try {
-            historicalRecords = cancelledTripDao.getReports(requestedDate, numberOfRecords, requestedTrip);
+            historicalRecords = cancelledTripDao.getReports(requestedDate, numberOfRecords, requestedTrip, requestedBlock);
             log.info("HistoricalRecords= {}",historicalRecords);
             recordsMessage.setRecords(historicalRecords);
             recordsMessage.setStatus("OK");
