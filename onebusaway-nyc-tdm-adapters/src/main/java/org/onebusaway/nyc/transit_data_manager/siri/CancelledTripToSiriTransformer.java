@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
 import uk.org.siri.siri.AffectsScopeStructure;
 import uk.org.siri.siri.DefaultedTextStructure;
+import uk.org.siri.siri.DirectionRefStructure;
 import uk.org.siri.siri.EntryQualifierStructure;
 import uk.org.siri.siri.LineRefStructure;
 import uk.org.siri.siri.PtConsequenceStructure;
@@ -126,9 +127,19 @@ public class CancelledTripToSiriTransformer {
     pt.setAffects(affects);
     AffectsScopeStructure.VehicleJourneys vj = new AffectsScopeStructure.VehicleJourneys();
     affects.setVehicleJourneys(vj);
-    AffectedVehicleJourneyStructure avj = new AffectedVehicleJourneyStructure();
-    pt.getAffects().getVehicleJourneys().getAffectedVehicleJourney().add(avj);
-    avj.setLineRef(toLineRef(affectedRoute.toString()));
+    // for legacy reasons routes expect direction 0 and 1 to be set
+    // direction 0
+    AffectedVehicleJourneyStructure avj0 = new AffectedVehicleJourneyStructure();
+    pt.getAffects().getVehicleJourneys().getAffectedVehicleJourney().add(avj0);
+    avj0.setLineRef(toLineRef(affectedRoute.toString()));
+    avj0.setDirectionRef(toDirectionRef("0"));
+
+    // direction 1
+    AffectedVehicleJourneyStructure avj1 = new AffectedVehicleJourneyStructure();
+    pt.getAffects().getVehicleJourneys().getAffectedVehicleJourney().add(avj1);
+    avj1.setLineRef(toLineRef(affectedRoute.toString()));
+    avj1.setDirectionRef(toDirectionRef("1"));
+
 
     // consequences
     PtConsequenceStructure consequence = new PtConsequenceStructure();
@@ -169,4 +180,9 @@ public class CancelledTripToSiriTransformer {
     return s;
   }
 
+  private DirectionRefStructure toDirectionRef(String directionId) {
+    DirectionRefStructure d = new DirectionRefStructure();
+    d.setValue(directionId);
+    return d;
+  }
 }
