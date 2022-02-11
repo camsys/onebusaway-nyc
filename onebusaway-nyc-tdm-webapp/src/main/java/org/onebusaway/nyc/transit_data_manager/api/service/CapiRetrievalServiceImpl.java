@@ -19,6 +19,7 @@ package org.onebusaway.nyc.transit_data_manager.api.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data_manager.api.IncomingNycCancelledTripBeansContainer;
@@ -75,6 +76,8 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
 
     private UpdateThread updateThread;
 
+    private Boolean isEnabled;
+
     @PostConstruct
     public void setup(){
         refreshConfig();
@@ -111,11 +114,27 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
     }
 
     private void createUpdateThread(){
-        if (updateThread == null && _taskScheduler != null && getLocation() != null) {
+        if (updateThread == null && _taskScheduler != null && allowCapi()) {
             updateThread = new UpdateThread(this);
             _log.info("configuring update thread now");
             _taskScheduler.scheduleWithFixedDelay(updateThread, _refreshInterval);
         }
+    }
+
+    private boolean allowCapi() {
+        if (!isEnabled()){
+            _log.warn("capi is not enabled in configuration");
+            return false;
+        }
+        if (getLocation() != null){
+            _log.warn("capi url is not defined");
+            return false;
+        }
+        return true;
+    }
+
+    public Boolean isEnabled() {
+        return isEnabled;
     }
 
     @Override
@@ -170,7 +189,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
 
         @Override
         public void run() {
-            if (resource.getLocation() != null) {
+            if (resource.allowCapi()) {
                 _log.debug("refreshing...");
                 resource.updateCancelledTripBeans();
                 _log.debug("refresh complete");
