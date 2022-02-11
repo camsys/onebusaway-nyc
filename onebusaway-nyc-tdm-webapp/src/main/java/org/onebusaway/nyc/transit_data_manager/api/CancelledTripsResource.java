@@ -59,18 +59,21 @@ public class CancelledTripsResource {
     @Path("/list")
     @GET
     @Produces("application/json")
-    public Response getCancelledTripsList() throws Exception {
-        List<NycCancelledTripBean> cancelledTripBeans = _capiService.getCancelledTripBeans();
-        String output = getAsJson(cancelledTripBeans);
-        Response response = Response.ok(output).build();
-        _log.debug("Returning response ok for url=" + _capiService.getLocation());
-
-        return response;
+    public Response getCancelledTripsList() {
+        try {
+            List<NycCancelledTripBean> cancelledTripBeans = _capiService.getCancelledTripBeans();
+            String output = getAsJson(cancelledTripBeans);
+            _log.debug("Returning response ok for url=" + _capiService.getLocation());
+            return Response.ok(output).build();
+        } catch (Exception e){
+            _log.error("Unable to process cancelled trips list request", e);
+            return Response.serverError().build();
+        }
     }
 
     public String getAsJson(Object object){
         StringWriter writer = null;
-        String output = null;
+        String output = "";
         try {
             writer = new StringWriter();
             _mapper.writeValue(writer, object);
