@@ -64,7 +64,7 @@ public class NycCancelledTripRecord implements Serializable {
     @Column(nullable = false, name = "status")
     private String status;
 
-    @Column(name = "timestamp")
+    @Column(nullable = false, name = "timestamp")
     private Date timestamp;
 
     @Column(name = "scheduledPullOut")
