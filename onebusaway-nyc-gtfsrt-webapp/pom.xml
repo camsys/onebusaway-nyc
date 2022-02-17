@@ -12,14 +12,6 @@
 
 	<name>onebusaway-nyc-gtfsrt-webapp</name>
 
-	<repositories>
-		<!-- Required for the xwiki-rendering-macros -->
-		<repository>
-			<id>xwiki</id>
-			<url>http://maven.xwiki.org/releases</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 
 		<!-- OneBusAway Dependencies -->
