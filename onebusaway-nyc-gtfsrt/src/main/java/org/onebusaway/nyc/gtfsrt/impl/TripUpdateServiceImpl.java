@@ -21,8 +21,10 @@ import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
+import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
@@ -35,8 +37,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -90,6 +95,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         _log.debug("getEntities(" + new Date(time) + ")");
 
         Collection<VehicleStatusBean> vehicles = getAllVehicles(_transitDataService, _presentationService, time);
+        Set<String> cancelledTripIds = getCanceledTripIds();
         _log.debug("found " + vehicles.size() + " vehicles");
         List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
@@ -101,23 +107,46 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
 
             for (int i = tripSequence; i < trips.size(); i++) {
                 TripBean trip = trips.get(i).getTrip();
-                List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), trip.getId());
-                if (tprs == null || tprs.isEmpty()) {
-                    _log.debug("no tprs for time=" + new Date(time));
-                    break;
+
+                if (cancelledTripIds.contains(trip.getId())) {
+                    // we have a cancelled trip, ignore any vehicle associated with it
+                    // and send schedule relationship CANCELED
+                    GtfsRealtime.TripUpdate.Builder tu = _feedBuilder.makeCanceledTrip(trip);
+                    FeedEntity.Builder entity = FeedEntity.newBuilder();
+                    entity.setTripUpdate(tu);
+                    entity.setId(tu.getTrip().getTripId());
+                    entities.add(entity);
+                } else {
+
+                    List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), trip.getId());
+                    if (tprs == null || tprs.isEmpty()) {
+                        _log.debug("no tprs for time=" + new Date(time));
+                        break;
+                    }
+
+                    GtfsRealtime.TripUpdate.Builder tu = _feedBuilder.makeTripUpdate(trip, vehicle, tprs);
+
+                    FeedEntity.Builder entity = FeedEntity.newBuilder();
+                    entity.setTripUpdate(tu);
+                    entity.setId(tu.getTrip().getTripId());
+                    entities.add(entity);
                 }
-
-                GtfsRealtime.TripUpdate.Builder tu  = _feedBuilder.makeTripUpdate(trip, vehicle, tprs);
-
-                FeedEntity.Builder entity = FeedEntity.newBuilder();
-                entity.setTripUpdate(tu);
-                entity.setId(tu.getTrip().getTripId());
-                entities.add(entity);
             }
 
         }
         _log.debug("returning " + entities.size() + " entities");
         return entities;
     }
+
+    private Set<String> getCanceledTripIds() {
+        ListBean<NycCancelledTripBean> allCancelledTrips = _transitDataService.getAllCancelledTrips();
+        Set<String> canceled = new HashSet<>();
+        if (allCancelledTrips == null || allCancelledTrips.getList() == null) return Collections.emptySet();
+        for (NycCancelledTripBean bean : allCancelledTrips.getList()) {
+            canceled.add(bean.getTrip());
+        }
+        return canceled;
+    }
+
 
 }

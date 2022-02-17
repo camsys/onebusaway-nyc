@@ -109,8 +109,10 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 		vlr.setBlockId(AgencyAndIdLibrary.convertFromString(inferredResult.getBlockId()));
 		vlr.setTripId(AgencyAndIdLibrary.convertFromString(inferredResult.getTripId()));
 		vlr.setServiceDate(inferredResult.getServiceDate());
-		vlr.setCurrentLocationLat(inferredResult.getInferredLatitude());
-		vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
+		if (inferredResult.getInferredLatitude() != null)
+			vlr.setCurrentLocationLat(inferredResult.getInferredLatitude());
+		if (inferredResult.getInferredLongitude() != null)
+			vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
 		vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getPhase()));
 		vlr.setStatus(inferredResult.getStatus());
 		// by contract, schDev shouldn't be null.  Still, no need to throw an NPE
