@@ -158,6 +158,7 @@ public class TripUpdateServiceImplTest {
     when(tds.getAllVehiclesForAgency("agency", 0)).thenReturn(UnitTestSupport.listBean(vsb));
     when(tds.getBlockInstance("1_block", 0)).thenReturn(block);
     when(tds.getAllCancelledTrips()).thenReturn(beans);
+    when(tds.getTrip("1_trip1")).thenReturn(blockTripRoute("1_trip1", "1_route1").getTrip());
     List<FeedEntity.Builder> entities = service.getEntities(0);
     assertTrue(entities.size() == 1);
     assertEquals("trip1", entities.get(0).getId());  // note that agency doesn't come back
