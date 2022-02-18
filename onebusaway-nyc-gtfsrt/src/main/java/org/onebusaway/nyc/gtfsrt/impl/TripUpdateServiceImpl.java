@@ -112,7 +112,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
 
                 if (cancelledTripIds.contains(trip.getId())) {
                     // CAPI contradicts this data, drop it from feed
-                    _log.info("suppressing trip " + trip.getId() + " as its in CAPI");
+                    _log.warn("suppressing trip " + trip.getId() + " as its in CAPI");
                 } else {
 
                     List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), trip.getId());
@@ -142,6 +142,8 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
                 entity.setTripUpdate(tu);
                 entity.setId(tu.getTrip().getTripId());
                 entities.add(entity);
+            } else {
+                _log.warn("no trip for id " + bean.getTrip());
             }
         }
 

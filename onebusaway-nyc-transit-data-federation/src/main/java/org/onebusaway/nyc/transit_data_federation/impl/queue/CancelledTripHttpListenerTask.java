@@ -212,9 +212,13 @@ public class CancelledTripHttpListenerTask {
     private boolean isValidCancelledTrip(NycCancelledTripBean cancelledTripBean) {
         try {
             if ((cancelledTripBean.getStatus().equalsIgnoreCase("canceled") ||
-                    cancelledTripBean.getStatus().equalsIgnoreCase("cancelled")) &&
-                    _tds.getTrip(cancelledTripBean.getTrip()) != null) {
-                return true;
+                    cancelledTripBean.getStatus().equalsIgnoreCase("cancelled"))) {
+                if (_tds.getTrip(cancelledTripBean.getTrip()) == null) {
+                    _log.debug("unknown tripId=" + cancelledTripBean.getTrip());
+                    return false;
+                } else {
+                    return true;
+                }
             }
         } catch (ServiceException e) {
             _log.warn("Error retrieving cancelled trip", e);
