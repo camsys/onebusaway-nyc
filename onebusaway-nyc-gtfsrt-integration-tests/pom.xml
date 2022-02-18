@@ -89,8 +89,8 @@
             <plugin>
                 <groupId>org.onebusaway.plugins</groupId>
                 <artifactId>maven-hsqldb-plugin</artifactId>
-                <!-- version 1.0.1 supports hsqldb 2.3.2 -->
-                <version>1.0.1</version>
+                <!-- version 1.0.2 supports hsqldb 2.3.5 -->
+                <version>1.0.2</version>
                 <executions>
                     <execution>
                         <id>user-database-start</id>
