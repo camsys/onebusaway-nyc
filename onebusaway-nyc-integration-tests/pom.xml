@@ -88,6 +88,7 @@
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
+            <version>2.3.5</version><!-- force newer version -->
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>
@@ -623,14 +624,11 @@
                 </executions>
             </plugin>
             <!-- Start up an embedded database for sharing the user database between webapps -->
-            <!-- switched from org.onebusaway.plugins to fr.avianey.mojo as -->
-            <!-- hsqldb was outdated.  If you can find source of -->
-            <!-- org.onebusaway.plugins please update the hsqldb version -->
-            <!--<plugin>
+            <plugin>
                 <groupId>org.onebusaway.plugins</groupId>
                 <artifactId>maven-hsqldb-plugin</artifactId>
-                &lt;!&ndash; version 1.0.1 supports hsqldb 2.3.2 &ndash;&gt;
-                <version>1.0.1</version>
+                <!-- version 1.0.2 supports hsqldb 2.3.5 -->
+                <version>1.0.2</version>
                 <executions>
                     <execution>
                         <id>user-database-start</id>
@@ -645,12 +643,12 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
             <!-- Start up all the webapps using the cargo plugin -->
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
                 <artifactId>cargo-maven2-plugin</artifactId>
-                <version>1.5.0</version>
+                <version>1.6.2</version>
                 <!-- start container -->
                 <configuration>
                     <container>
