@@ -13,9 +13,10 @@
     <name>onebusaway-nyc-integration-tests</name>
 
     <properties>
-        <tomcat-version>7.0.70</tomcat-version>
+        <tomcat-version>8.5.75</tomcat-version>
+        <tomcat-container>tomcat7x</tomcat-container>
         <cargo.jvmargs>-Xmx7G -XX:MaxPermSize=256m -Duser.timezone=America/New_York</cargo.jvmargs>
-        <cargo.logging>high</cargo.logging>
+        <cargo.logging>medium</cargo.logging>
         <hsqldb.port>9930</hsqldb.port>
 
 		<!-- Useful for debugging: leaves cargo running but doesn't run the tests -->
@@ -165,7 +166,7 @@
                             </includes>
                             <systemPropertyVariables>
                                 <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
-                                <org.onebusaway.webapp.port>${org.onebusaway.api_webapp.port}</org.onebusaway.webapp.port>
+                                <org.onebusaway.webapp.port>${org.onebusaway.webapp.port}</org.onebusaway.webapp.port>
                                 <pauseDuringIntegrationTest>${pauseDuringIntegrationTest}</pauseDuringIntegrationTest>
                             </systemPropertyVariables>
                             <argLine>${argLine}</argLine>
@@ -656,14 +657,16 @@
                         <log>${java.io.tmpdir}/cargo-webapp.log</log>
                         <output>${java.io.tmpdir}/cargo-webapp.out</output>
                         <append>true</append>
-                        <containerId>tomcat7x</containerId>
+                        <containerId>${tomcat-container}</containerId>
                         <zipUrlInstaller>
                             <url>http://developer.onebusaway.org/dist/apache-tomcat-${tomcat-version}.zip</url>
                         </zipUrlInstaller>
                         <systemProperties>
                             <onebusaway_prefix>${basedir}</onebusaway_prefix>
                             <hsqldb.port>${hsqldb.port}</hsqldb.port>
+                            <org.onebusaway.webapp.port>${org.onebusaway.webapp.port}</org.onebusaway.webapp.port>
                             <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
+                            <org.onebusaway.nyc.tdm.bundle.batchmode>true</org.onebusaway.nyc.tdm.bundle.batchmode>
                         </systemProperties>
                     </container>
                     <deployables>
@@ -682,7 +685,7 @@
                         </goals>
                         <configuration>
                             <configuration>
-                                <home>${project.build.directory}/tomcat7x/onebusaway-nyc-vehicle-tracking-webapp</home>
+                                <home>${project.build.directory}/${tomcat-container}/onebusaway-nyc-vehicle-tracking-webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
                                     <!-- Use this to attach the debugger to the VTW running within cargo -->
@@ -717,7 +720,7 @@
                         <configuration>
 
                             <configuration>
-                                <home>${project.build.directory}/tomcat7x/webapp</home>
+                                <home>${project.build.directory}/${tomcat-container}/webapp</home>
                                 <properties>
                                     <onebusaway_prefix>${basedir}</onebusaway_prefix>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
@@ -763,10 +766,10 @@
                         </goals>
                         <configuration>
                             <container>
-                                <containerId>tomcat7x</containerId>
+                                <containerId>${tomcat-container}</containerId>
                             </container>
                             <configuration>
-                                <home>${project.build.directory}/tomcat7x/webapp</home>
+                                <home>${project.build.directory}/${tomcat-container}/webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
                                     <cargo.servlet.port>${org.onebusaway.webapp.port}</cargo.servlet.port>
@@ -788,10 +791,10 @@
                         </goals>
                         <configuration>
                             <container>
-                                <containerId>tomcat7x</containerId>
+                                <containerId>${tomcat-container}</containerId>
                             </container>
                             <configuration>
-                                <home>${project.build.directory}/tomcat7x/onebusaway-nyc-vehicle-tracking-webapp</home>
+                                <home>${project.build.directory}/${tomcat-container}/onebusaway-nyc-vehicle-tracking-webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
                                     <cargo.servlet.port>${org.onebusaway.transit_data_federation_webapp.port}</cargo.servlet.port>

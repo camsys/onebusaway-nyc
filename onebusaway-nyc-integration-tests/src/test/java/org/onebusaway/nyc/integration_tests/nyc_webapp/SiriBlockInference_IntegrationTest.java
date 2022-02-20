@@ -16,6 +16,8 @@
 package org.onebusaway.nyc.integration_tests.nyc_webapp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -57,6 +59,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   @Test
   public void testBlockSetOnSM() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA", "903036");
+	 assertNotNull(smResponse);
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
@@ -128,6 +131,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   @Test
   public void testStatusOnCurrentTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA", "903036");
+	 assertNotNull(smResponse);
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
@@ -159,6 +163,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   @Test
   public void testWrapping() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA", "404050");
+	 assertNotNull(smResponse);
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
@@ -172,10 +177,13 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   @Test
   public void testBusIsWrappedOnlyOnce() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA", "903037");
-	  
+	 assertNotNull(smResponse);
+
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
 	 ArrayList<Object> stopMonitoringDelivery = (ArrayList<Object>)serviceDelivery.get("StopMonitoringDelivery");
+	 assertNotNull(stopMonitoringDelivery);
+	 assertFalse(stopMonitoringDelivery.isEmpty() );
 	 HashMap<String,Object> monitoredStopVisit = (HashMap<String,Object>)stopMonitoringDelivery.get(0);
 	 ArrayList<Object> mvjs = (ArrayList<Object>) monitoredStopVisit.get("MonitoredStopVisit");
 
@@ -186,6 +194,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   @Test
   public void testNextTripIdOnCurrentTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA", "903036");
+	 assertNotNull(smResponse);
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
@@ -203,6 +212,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   @Test
   public void testNextTripIdOnNextTrip() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA", "404050");
+	 assertNotNull(smResponse);
 	  
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
