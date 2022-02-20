@@ -17,34 +17,31 @@
 
 -->
 
-<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
-
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+<Configuration>
 
 	<!-- 0 or more renderer elements -->
 
 	<!-- 0 or more appender elements -->
-
-	<appender name="ROLL" class="org.apache.log4j.rolling.RollingFileAppender">
-		<rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
-			<param name="FileNamePattern" value="/tmp/vtw-it.%d.log" />
-		</rollingPolicy>
-
-		<layout class="org.apache.log4j.PatternLayout">
-			<!-- The log message pattern -->
-			<param name="ConversionPattern" value="%d{ISO8601} %-5p [%F:%L] : %m%n" />
-		</layout>
-	</appender>
-
+	<Appenders>
+		<RollingFile name="ROLL" fileName="/tmp/logs/webapp-it.log"
+					 filePattern="/tmp/logs/webapp-it.%d{yyyy-MM-dd}-%i.log.gz">
+			<PatternLayout>
+				<Pattern>%d{ISO8601} %-5p [%F:%L] : %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="250 MB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="14"/>
+		</RollingFile>
+	</Appenders>
 	<!-- 0 or more logger/category elements -->
 	
 	<!-- 0 or 1 root elements -->
+	<Loggers>
+		<Root level="info">
+			<AppenderRef ref="ROLL"/>
+		</Root>
+	</Loggers>
 
-	<root>
-		<priority value="ERROR" />
-		<appender-ref ref="ROLL" />
-	</root>
-
-	<!-- 0 or 1 categoryFactory elements -->
-
-</log4j:configuration>
+</Configuration>

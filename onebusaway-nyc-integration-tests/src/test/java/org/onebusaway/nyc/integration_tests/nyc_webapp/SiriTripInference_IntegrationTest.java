@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.integration_tests.nyc_webapp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class SiriTripInference_IntegrationTest extends SiriIntegrationTestBase {
   @Test
   public void testBlockNotSetOnSM() throws HttpException, IOException {
 	 HashMap<String,Object> smResponse = getSmResponse("MTA", "903036");
-	  
+	 assertNotNull(smResponse);
 	 HashMap<String,Object> siri = (HashMap<String, Object>)smResponse.get("Siri");
 	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
 	 ArrayList<Object> stopMonitoringDelivery = (ArrayList<Object>)serviceDelivery.get("StopMonitoringDelivery");

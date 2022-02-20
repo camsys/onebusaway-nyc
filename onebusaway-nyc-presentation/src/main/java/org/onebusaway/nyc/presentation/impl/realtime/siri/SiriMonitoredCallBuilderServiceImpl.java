@@ -184,7 +184,7 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                 stopTime.getDistanceAlongBlock() - distanceOfVehicleAlongBlock,
                                 visitNumber,
                                 blockTripStopsAfterTheVehicle - 1,
-                                stopLevelPredictions.get(stopPredictionKey),
+                                (stopLevelPredictions == null ? null : stopLevelPredictions.get(stopPredictionKey)),
                                 currentlyActiveTripOnBlock.getVehicleId(),
                                 showRawApc,
                                 stopTime.getStopTime().getArrivalTime(),
