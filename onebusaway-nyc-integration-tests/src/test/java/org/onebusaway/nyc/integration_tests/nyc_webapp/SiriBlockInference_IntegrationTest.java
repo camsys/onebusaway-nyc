@@ -96,6 +96,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
   public void testOpenVM() throws HttpException, IOException {
     long start = System.currentTimeMillis();
     HashMap<String, Object> vmResponse1 = getVmResponse(null, null);
+		assertNotNull(vmResponse1);
     long end = System.currentTimeMillis();
     long vmTime1 = (end - start);
     // assuming we are the first call to the cache
@@ -186,8 +187,10 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 assertFalse(stopMonitoringDelivery.isEmpty() );
 	 HashMap<String,Object> monitoredStopVisit = (HashMap<String,Object>)stopMonitoringDelivery.get(0);
 	 ArrayList<Object> mvjs = (ArrayList<Object>) monitoredStopVisit.get("MonitoredStopVisit");
+	 // this behaviour changed slighglty
+	// we now get null mvvs instead of empty
+	 assertTrue(mvjs == null || mvjs.isEmpty());
 
-	 assertEquals(mvjs.size(), 0);
   }  
 
   // trip data matches trip bus would be on then
