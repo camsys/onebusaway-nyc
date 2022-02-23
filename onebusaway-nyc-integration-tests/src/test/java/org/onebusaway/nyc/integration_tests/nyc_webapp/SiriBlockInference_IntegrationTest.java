@@ -191,6 +191,9 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	// we now get null mvvs instead of empty
 	 assertTrue(mvjs == null || mvjs.isEmpty());
 
+		// this behaviour changed slighglty
+		// we now get null mvvs instead of empty
+		assertTrue(mvjs == null || mvjs.isEmpty());
   }  
 
   // trip data matches trip bus would be on then
