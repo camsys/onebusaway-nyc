@@ -17,6 +17,7 @@ package org.onebusaway.nyc.integration_tests.nyc_webapp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -104,6 +105,8 @@ public class SiriTripInference_IntegrationTest extends SiriIntegrationTestBase {
 	 HashMap<String,Object> monitoredStopVisit = (HashMap<String,Object>)stopMonitoringDelivery.get(0);
 	 ArrayList<Object> mvjs = (ArrayList<Object>) monitoredStopVisit.get("MonitoredStopVisit");
 
-	 assertEquals(mvjs.size(), 0);	 
-  }  
+		// this behaviour changed slightly
+		// we now get null mvjs instead of empty
+		assertTrue(mvjs == null || mvjs.isEmpty());
+	}
 }

@@ -188,7 +188,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 HashMap<String,Object> monitoredStopVisit = (HashMap<String,Object>)stopMonitoringDelivery.get(0);
 	 ArrayList<Object> mvjs = (ArrayList<Object>) monitoredStopVisit.get("MonitoredStopVisit");
 
-		// this behaviour changed slighglty
+		// this behaviour changed slightly
 		// we now get null mvvs instead of empty
 		assertTrue(mvjs == null || mvjs.isEmpty());
   }  
