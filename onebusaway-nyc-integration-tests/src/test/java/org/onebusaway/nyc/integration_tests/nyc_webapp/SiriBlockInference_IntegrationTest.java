@@ -191,7 +191,7 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	// we now get null mvvs instead of empty
 	 assertTrue(mvjs == null || mvjs.isEmpty());
 
-		// this behaviour changed slighglty
+		// this behaviour changed slightly
 		// we now get null mvvs instead of empty
 		assertTrue(mvjs == null || mvjs.isEmpty());
   }  
