@@ -16,14 +16,7 @@
 		<branding-webapp>{project.name}</branding-webapp>
 	</properties>
 
-	<repositories>
-		<!-- Required for the xwiki-rendering-macros -->
-		<repository>
-			<id>xwiki</id>
-			<url>http://maven.xwiki.org/releases</url>
-		</repository>
-	</repositories>
-	
+
   <dependencies>
     <dependency>
 		<groupId>org.onebusaway</groupId>
