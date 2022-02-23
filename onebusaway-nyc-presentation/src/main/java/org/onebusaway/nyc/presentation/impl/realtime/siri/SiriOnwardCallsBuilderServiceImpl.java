@@ -192,7 +192,7 @@ public class SiriOnwardCallsBuilderServiceImpl implements SiriOnwardCallsBuilder
 
                     OnwardCallStructure onwardCallStructure = getOnwardCallStructure(blockTrip, stopTime,
                             distanceOfVehicleAlongBlock, blockTripStopsAfterTheVehicle,
-                            (stopLevelPredictions == null?null:stopLevelPredictions.get(stopPredictionKey)),
+                            stopLevelPredictions.get(stopPredictionKey),
                             responseTimestamp);
 
                     onwardCallsStructures.getOnwardCall().add(onwardCallStructure);
