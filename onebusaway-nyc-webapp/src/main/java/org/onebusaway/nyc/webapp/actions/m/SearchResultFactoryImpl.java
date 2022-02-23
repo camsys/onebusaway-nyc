@@ -463,7 +463,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       // if data is old, no occupancy
       int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
       long age = (System.currentTimeMillis() - updateTime) / 1000;
-      if (age > staleTimeout) {
+      if (age > staleTimeout && journey != null && journey.getVehicleRef() != null) {
           System.out.println("tossing record "+ journey.getVehicleRef().getValue()
                   + " with age " + age + "s old");
           return "";
