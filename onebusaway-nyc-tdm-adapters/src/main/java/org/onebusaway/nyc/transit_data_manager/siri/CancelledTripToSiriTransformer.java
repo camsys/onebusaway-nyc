@@ -18,8 +18,12 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,12 +113,28 @@ public class CancelledTripToSiriTransformer {
     s.setValue(cancelledTrip.getTrip());
     pt.setSituationNumber(s);
     // ideally this would be configurable/templated
-    // The 10:49am B38 bus from [terminal] is…
-    String descriptionText = "The " + formatTime(cancelledTrip.getFirstStopDepartureTime().toString())
-            + " " + affectedRoute.getId()
-            + " bus from "
-            + lookupStopName(cancelledTrip.getFirstStopId())
-            + " is delayed or cancelled";
+    // we lookup the last stop name, if that succees the format is:
+    // The 10:49am B38 bus to [dest terminal] is cannceled
+    // if that lookup fails, we fall back to
+    // The 10:49am B38 bus from [orig terminal] is cannceled
+
+    String lastStopName = lookupLastStopName(cancelledTrip.getTrip());
+    String descriptionText = null;
+    if (lastStopName == null) {
+      descriptionText = "The " + formatTime(cancelledTrip.getFirstStopDepartureTime())
+              + " " + affectedRoute.getId()
+              + " from "
+              +  lookupStopName(cancelledTrip.getFirstStopId())
+              + " is canceled";
+
+    } else {
+      descriptionText = "The " + formatTime(cancelledTrip.getFirstStopDepartureTime())
+              + " " + affectedRoute.getId()
+              + " to "
+              + lastStopName
+              + " is canceled";
+    }
+
     pt.setDescription(toText(descriptionText));
     pt.setCreationTime(new Date(cancelledTrip.getTimestamp()));
     pt.setPlanned(false);
@@ -150,12 +170,50 @@ public class CancelledTripToSiriTransformer {
     return pt;
   }
 
+  // query the TDS for the stop list for the trip and return the last stop name
+  private String lookupLastStopName(String trip) {
+    TripDetailsQueryBean query = new TripDetailsQueryBean();
+    query.setTripId(trip);
+    ListBean<TripDetailsBean> tripDetails = _nycTransitDataService.getTripDetails(query);
+    if (tripDetails == null || tripDetails.getList() == null
+        || tripDetails.getList().isEmpty()) {
+      _log.error("no trip details");
+      return null;
+    }
+    TripDetailsBean tripDetailsBean = tripDetails.getList().get(0);
+    if (tripDetailsBean.getSchedule() == null
+            || tripDetailsBean.getSchedule().getStopTimes() == null) {
+      _log.error("no schedule");
+      return null;
+    }
+    List<TripStopTimeBean> stopTimes = tripDetailsBean.getSchedule().getStopTimes();
+    int size = stopTimes.size();
+    if (size <= 1) {
+      _log.error("no stop times");
+      return null;
+    }
+    TripStopTimeBean tripStopTimeBean = stopTimes.get(size - 1);
+    return tripStopTimeBean.getStop().getName();
+  }
+
   private String formatTime(String firstStopDepartureTime) {
     if (firstStopDepartureTime == null) return null;
     if (firstStopDepartureTime.contains(":")) {
       String[] parts = firstStopDepartureTime.split(":");
-      if (parts.length > 2)
-      return parts[0] + ":" + parts[1];
+      if (parts.length > 2) {
+        try {
+          // convert 24h to local
+          int hour = Integer.parseInt(parts[0]);
+          int minute = Integer.parseInt(parts[1]);
+          if (hour <= 12) {
+            return hour + ":" + minute + "am";
+          } else {
+            return (hour-12) + ":" + minute + "pm";
+          }
+        } catch (NumberFormatException nfe) {
+          _log.error("invalid time format " + firstStopDepartureTime);
+        }
+      }
     }
     return firstStopDepartureTime;
   }
