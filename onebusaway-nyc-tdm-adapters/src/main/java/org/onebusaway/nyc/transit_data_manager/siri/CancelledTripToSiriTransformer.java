@@ -18,6 +18,7 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
@@ -56,14 +57,20 @@ public class CancelledTripToSiriTransformer {
   private static String DEFAULT_LANG = "EN";
 
   private NycTransitDataService _nycTransitDataService;
-  public CancelledTripToSiriTransformer(NycTransitDataService nycTransitDataService) {
+  private ConfigurationService _configService;
+
+  public CancelledTripToSiriTransformer(NycTransitDataService nycTransitDataService, ConfigurationService configurationService) {
     _nycTransitDataService = nycTransitDataService;
+    _configService = configurationService;
   }
 
   public ServiceDelivery mergeImpactedAlerts(ServiceDelivery serviceDelivery) {
     // make sure we have a valid ServiceDelivery object to add to
     if (serviceDelivery == null) {
       serviceDelivery = new ServiceDelivery();
+    }
+    if (isDisabled()) {
+      return serviceDelivery;
     }
     SituationExchangeDeliveryStructure.Situations s;
     if (serviceDelivery.getSituationExchangeDelivery() == null
@@ -92,6 +99,15 @@ public class CancelledTripToSiriTransformer {
               + cancelledTripBeans.size() + " CAPI trips");
     }
     return serviceDelivery;
+  }
+
+  private boolean isDisabled() {
+    if (_configService == null) return false;
+    boolean disabled = _configService.getConfigurationValueAsBoolean("tdm.disableCapiAlerts", false);
+    if (disabled) {
+      _log.error("CAPI Alerts Disabled!");
+    }
+    return disabled;
   }
 
   // do the conversion of a bean to PtSituationElementStructure
