@@ -33,6 +33,7 @@ import javax.xml.bind.Unmarshaller;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_manager.util.NycEnvironment;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,9 @@ public class SituationExchangeResource {
 
   @Autowired
   private NycTransitDataService _nycTransitDataService;
+
+  @Autowired
+  private ConfigurationService _configurationService;
 
   private JAXBContext jc;
 
@@ -119,7 +123,7 @@ public class SituationExchangeResource {
     ServiceDelivery delivery = incomingSiri.getServiceDelivery();
 
     if (delivery != null && deliveryIsForThisEnvironment(delivery)) {
-      CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService);
+      CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService, _configurationService);
       SituationExchangeResults result = new SituationExchangeResults();
       _siriService.handleServiceDeliveries(result, transformer.mergeImpactedAlerts(ensureDirections(incomingSiri.getServiceDelivery())));
       _log.info(result.toString());
