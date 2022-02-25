@@ -175,7 +175,7 @@ public class NycSiriUtil {
 
 
     // NEW!  advice has longer versions of description
-    ServiceAlerts.TranslatedString description = translation(ptSituation.getAdvice());
+    DefaultedTextStructure description = ptSituation.getDescription();
     if (description != null) {
       // Handle new alerts advice field
       // Only append advice to description is description is available
