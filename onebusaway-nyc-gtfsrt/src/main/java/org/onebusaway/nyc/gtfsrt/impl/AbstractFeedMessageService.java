@@ -55,7 +55,8 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
     public synchronized FeedMessage getFeedMessage() {
         return getFeedMessage(null);
     }
-        @Override
+
+    @Override
     public synchronized FeedMessage getFeedMessage(Long requestTime) {
         long time = System.currentTimeMillis();
         if (requestTime != null && requestTime > 0)

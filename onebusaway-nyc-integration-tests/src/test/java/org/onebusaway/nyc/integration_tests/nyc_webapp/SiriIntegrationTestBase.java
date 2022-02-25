@@ -228,8 +228,14 @@ public class SiriIntegrationTestBase {
   private HashMap<String,Object> getHashMapFromJsonResponse (String response) throws JsonParseException, JsonMappingException, IOException{
     JsonFactory factory = new JsonFactory(); 
     ObjectMapper mapper = new ObjectMapper(factory); 
-    TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {}; 
-    HashMap<String,Object> o = mapper.readValue(response, typeRef);
+    TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+    HashMap<String, Object> o = null;
+    try {
+      o = mapper.readValue(response, typeRef);
+    } catch (Throwable t) {
+      _log.error("exception " + t, t);
+      return null;
+    }
     return o;
   }
   

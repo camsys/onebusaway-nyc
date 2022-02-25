@@ -48,7 +48,7 @@ public class DummyVehiclePulloutService implements
     SCHPullInOutInfo info = getVehiclePullout(vehicle);
     String agency = vehicle.getAgencyId();
     String id = null;
-    if (info != null && info.getBlock() != null && agency != null) {
+    if (info != null && info.getBlock() != null && info.getBlock().getId() != null && agency != null) {
       id = agency + AgencyAndId.ID_SEPARATOR + info.getBlock().getId();
     }
     _log.info("getAssignedBlockId for " + vehicle + " returning " + id);
