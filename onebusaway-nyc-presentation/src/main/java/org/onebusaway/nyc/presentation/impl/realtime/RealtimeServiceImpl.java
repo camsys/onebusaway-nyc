@@ -49,6 +49,7 @@ import org.springframework.stereotype.Component;
 
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.ProgressStatusEnumeration;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
@@ -94,6 +95,14 @@ public class RealtimeServiceImpl implements RealtimeService {
       return System.currentTimeMillis();
   }
 
+  @Autowired
+  public void setNycTransitDataService(NycTransitDataService transitDataService){
+    _nycTransitDataService = transitDataService;
+  }
+
+  public void setSiriMvjBuilderService(SiriMonitoredVehicleJourneyBuilderService siriMvjBuilderService) {
+    _siriMvjBuilderService = siriMvjBuilderService;
+  }
   @Autowired
   @Qualifier("NycPresentationService")
   public void setPresentationService(PresentationService presentationService) {
@@ -228,12 +237,17 @@ public class RealtimeServiceImpl implements RealtimeService {
       TripBean tripBeanForAd = adBean.getTrip();
       final RouteBean routeBean = tripBeanForAd.getRoute();
 
+      String tripId = tripBeanForAd.getId();
+
+      //TODO find another way to get this info without making a call to the TDS from within this method (which runs every time a siri endpoint is accessed). Maybe include tripstatus in the arrivaldeparturebean.
+      boolean isCancelledTrip = _nycTransitDataService.isTripCancelled(tripId);
+
       if(statusBeanForCurrentTrip == null) {
         continue;
       }
 
-      if(!_presentationService.include(statusBeanForCurrentTrip) ||
-              !_presentationService.include(adBean, statusBeanForCurrentTrip)) {
+      if(!isCancelledTrip && (!_presentationService.include(statusBeanForCurrentTrip) ||
+              !_presentationService.include(adBean, statusBeanForCurrentTrip))) {
         continue;
       }
 
@@ -256,7 +270,14 @@ public class RealtimeServiceImpl implements RealtimeService {
               tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), stopIdToPredictionRecordMap,
               OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc);
 
+      if(isCancelledTrip){
+        monitoredVehicleJourney.getMonitoredCall().setArrivalStatus(ProgressStatusEnumeration.CANCELLED);
+        monitoredVehicleJourney.getMonitoredCall().setDepartureStatus(ProgressStatusEnumeration.CANCELLED);
+      }
+
       stopVisit.setMonitoredVehicleJourney(monitoredVehicleJourney);
+
+
 
       output.add(stopVisit);
     }
