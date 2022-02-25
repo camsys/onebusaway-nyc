@@ -177,7 +177,14 @@ public class NycSiriUtil {
     // NEW!  advice has longer versions of description
     ServiceAlerts.TranslatedString description = translation(ptSituation.getAdvice());
     if (description != null) {
-      serviceAlert.setDescriptions(naturalLanguageStringBeanFromTranslatedString(description, true));
+      // Handle new alerts advice field
+      // Only append advice to description is description is available
+      DefaultedTextStructure advice = ptSituation.getAdvice();
+      if(advice != null){
+        description.setValue(description.getValue() + System.lineSeparator() + advice.getValue());
+      }
+      ServiceAlerts.TranslatedString translatedDescription = translation(description);
+      serviceAlert.setDescriptions(naturalLanguageStringBeanFromTranslatedString(translatedDescription, true));
     }
   }
 
