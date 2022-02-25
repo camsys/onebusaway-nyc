@@ -173,7 +173,9 @@ public class NycSiriUtil {
     if (summary != null)
       serviceAlert.setSummaries(naturalLanguageStringBeanFromTranslatedString(summary));
 
-    ServiceAlerts.TranslatedString description = translation(ptSituation.getDescription());
+
+    // NEW!  advice has longer versions of description
+    ServiceAlerts.TranslatedString description = translation(ptSituation.getAdvice());
     if (description != null) {
       serviceAlert.setDescriptions(naturalLanguageStringBeanFromTranslatedString(description, true));
     }
