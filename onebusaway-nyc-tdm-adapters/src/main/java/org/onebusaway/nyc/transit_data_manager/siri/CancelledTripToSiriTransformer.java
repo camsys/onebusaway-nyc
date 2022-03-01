@@ -222,9 +222,9 @@ public class CancelledTripToSiriTransformer {
           int hour = Integer.parseInt(parts[0]);
           int minute = Integer.parseInt(parts[1]);
           if (hour <= 12) {
-            return hour + ":" + minute + "am";
+            return hour + ":" + leftPad(minute) + "am";
           } else {
-            return (hour-12) + ":" + minute + "pm";
+            return (hour-12) + ":" + leftPad(minute) + "pm";
           }
         } catch (NumberFormatException nfe) {
           _log.error("invalid time format " + firstStopDepartureTime);
@@ -232,6 +232,17 @@ public class CancelledTripToSiriTransformer {
       }
     }
     return firstStopDepartureTime;
+  }
+
+  String leftPad(int minute) {
+    String minuteStr = String.valueOf(minute);
+    if (minuteStr == null || minuteStr.length() == 0) {
+      minuteStr = "00";
+    }
+    if (minuteStr.length() < 2) {
+      minuteStr = "0" + minuteStr;
+    }
+    return minuteStr;
   }
 
   private String lookupStopName(String stopId) {
