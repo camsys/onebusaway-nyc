@@ -58,10 +58,12 @@ public class CancelledTripToSiriTransformer {
 
   private NycTransitDataService _nycTransitDataService;
   private ConfigurationService _configService;
+  private boolean _performMerge;
 
-  public CancelledTripToSiriTransformer(NycTransitDataService nycTransitDataService, ConfigurationService configurationService) {
+  public CancelledTripToSiriTransformer(NycTransitDataService nycTransitDataService, ConfigurationService configurationService, boolean merge) {
     _nycTransitDataService = nycTransitDataService;
     _configService = configurationService;
+    _performMerge = merge;
   }
 
   public ServiceDelivery mergeImpactedAlerts(ServiceDelivery serviceDelivery) {
@@ -83,20 +85,24 @@ public class CancelledTripToSiriTransformer {
       s = serviceDelivery.getSituationExchangeDelivery().get(0).getSituations();
     }
 
-    int addedAlerts = 0;
-    if (_nycTransitDataService != null) {
-      List<NycCancelledTripBean> cancelledTripBeans = _nycTransitDataService.getAllCancelledTrips().getList();
-      // no retrieve cancelled trips from the TDS and add to the above ServiceDelivery instance
-      for (NycCancelledTripBean cancelledTrip : cancelledTripBeans) {
-        // convert a cancelled trip model into a situation element
-        PtSituationElementStructure pt = fillPtSituationElement(cancelledTrip);
-        if (pt != null) {
-          s.getPtSituationElement().add(pt);
-          addedAlerts++;
+    if (_performMerge) {
+      int addedAlerts = 0;
+      if (_nycTransitDataService != null) {
+        List<NycCancelledTripBean> cancelledTripBeans = _nycTransitDataService.getAllCancelledTrips().getList();
+        // no retrieve cancelled trips from the TDS and add to the above ServiceDelivery instance
+        for (NycCancelledTripBean cancelledTrip : cancelledTripBeans) {
+          // convert a cancelled trip model into a situation element
+          PtSituationElementStructure pt = fillPtSituationElement(cancelledTrip);
+          if (pt != null) {
+            s.getPtSituationElement().add(pt);
+            addedAlerts++;
+          }
         }
+        _log.info("generated " + addedAlerts + " service alerts for "
+                + cancelledTripBeans.size() + " CAPI trips");
       }
-      _log.info("generated " + addedAlerts + " service alerts for "
-              + cancelledTripBeans.size() + " CAPI trips");
+    } else {
+      _log.debug("skipping merge");
     }
     return serviceDelivery;
   }
