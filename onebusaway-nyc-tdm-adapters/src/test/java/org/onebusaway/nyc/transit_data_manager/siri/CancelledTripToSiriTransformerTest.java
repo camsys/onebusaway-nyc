@@ -8,7 +8,7 @@ public class CancelledTripToSiriTransformerTest {
 
   @Test
   public void leftPad() {
-    CancelledTripToSiriTransformer t = new CancelledTripToSiriTransformer(null, null);
+    CancelledTripToSiriTransformer t = new CancelledTripToSiriTransformer(null, null, false);
     assertEquals("00", t.leftPad(0));
     assertEquals("01", t.leftPad(1));
     assertEquals("09", t.leftPad(9));
