@@ -18,6 +18,7 @@ package org.onebusaway.nyc.presentation.impl.realtime;
 
 import java.util.*;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.realtime.siri.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PredictionsSupportService;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
@@ -26,6 +27,7 @@ import org.onebusaway.nyc.presentation.service.realtime.siri.SiriMonitoredVehicl
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializer;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
+import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -49,6 +51,7 @@ import org.springframework.stereotype.Component;
 
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.ProgressStatusEnumeration;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
@@ -228,13 +231,17 @@ public class RealtimeServiceImpl implements RealtimeService {
       TripBean tripBeanForAd = adBean.getTrip();
       final RouteBean routeBean = tripBeanForAd.getRoute();
       boolean isCancelled = false;
+      
+      if(_nycTransitDataService.isTripCancelled(AgencyAndId.convertFromString(tripBeanForAd.getId()))){
+        isCancelled = true;
+      }
 
       if(statusBeanForCurrentTrip == null) {
         continue;
       }
 
-      if(!_presentationService.include(statusBeanForCurrentTrip) ||
-              !_presentationService.include(adBean, statusBeanForCurrentTrip)) {
+      if(!isCancelled && (!_presentationService.include(statusBeanForCurrentTrip) ||
+              !_presentationService.include(adBean, statusBeanForCurrentTrip))) {
         continue;
       }
 
@@ -244,7 +251,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         continue;
       }
 
-      Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = null;
+      Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = Collections.emptyMap();
       if(_presentationService.useTimePredictionsIfAvailable()) {
         stopIdToPredictionRecordMap = _predictionsSupportService.getStopIdToPredictionRecordMap(statusBeanForCurrentTrip);
       }
@@ -256,6 +263,11 @@ public class RealtimeServiceImpl implements RealtimeService {
       MonitoredVehicleJourneyStructure monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourneyStructure(
               tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), stopIdToPredictionRecordMap,
               OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, isCancelled);
+
+      if(isCancelled){
+        monitoredVehicleJourney.getMonitoredCall().setArrivalStatus(ProgressStatusEnumeration.CANCELLED);
+        monitoredVehicleJourney.getMonitoredCall().setDepartureStatus(ProgressStatusEnumeration.CANCELLED);
+      }
 
       stopVisit.setMonitoredVehicleJourney(monitoredVehicleJourney);
 

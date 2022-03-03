@@ -116,15 +116,15 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                                     boolean isCancelled,
                                                     long responseTimestamp
                                                     ){
-        SiriMonitoredCallBuilder siriMonitoredCallBuilder = new SiriMonitoredCallBuilder();
 
         List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
 
-        Double distanceOfVehicleAlongBlock = null;
+        Double distanceOfVehicleAlongBlock = 0d;
         int blockTripStopsAfterTheVehicle = 0;
 
         // Loop through all trips on block to find the stoptime info for trip in question
         // to populate monitored call
+        boolean foundActiveTrip = false;
         for(int i = 0; i < blockTrips.size(); i++) {
 
             BlockTripBean blockTrip = blockTrips.get(i);
@@ -141,13 +141,25 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
             boolean foundArrivalDepartureTripOnBlock = false;
 
             // Loop through all stop times until we reach the one for monitored call
-            for(BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
+            for (BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
                 int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStopTime().getStop());
 
                 // block trip stops away--on this trip, only after we've passed the stop,
                 // on future trips, count always.
-                if(currentlyActiveTripOnBlock.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
-                    if(stopTime.getDistanceAlongBlock() >= distanceOfVehicleAlongBlock) {
+                if (currentlyActiveTripOnBlock.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
+                    double distanceAlongTrip;
+                    // TODO - this should include a check to see if its realtime or not
+
+                    if (isCancelled) {
+                        distanceAlongTrip = currentlyActiveTripOnBlock.getScheduledDistanceAlongTrip();
+                    } else {
+                        distanceAlongTrip = currentlyActiveTripOnBlock.getDistanceAlongTrip();
+                    }
+
+                    distanceOfVehicleAlongBlock += distanceAlongTrip;
+
+
+                    if (stopTime.getDistanceAlongBlock() >= distanceOfVehicleAlongBlock) {
                         blockTripStopsAfterTheVehicle++;
                     } else {
                         // bus has passed this stop already--no need to go further
@@ -161,21 +173,21 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
 
                 // Check to see if blockTrip matches trip that we are searching
                 // Only continue processing monitored call if blockTrip matches trip we are searching
-                if(!foundArrivalDepartureTripOnBlock){
+                if (!foundArrivalDepartureTripOnBlock) {
                     foundArrivalDepartureTripOnBlock = tripOnBlock.getId().equals(blockTrip.getTrip().getId());
-                    if(!foundArrivalDepartureTripOnBlock){
+                    if (!foundArrivalDepartureTripOnBlock) {
                         break;
                     }
                     // Check to see if trip is in the future
-                    else if(!currentlyActiveTripOnBlock.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
+                    else if (!currentlyActiveTripOnBlock.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
                         // Hide APC if trip is in the future
                         showRawApc = false;
                     }
                 }
 
                 // monitored call
-                if(stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())) {
-                    if(!_presentationService.isOnDetour(currentlyActiveTripOnBlock)) {
+                if (stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())) {
+                    if (!_presentationService.isOnDetour(currentlyActiveTripOnBlock)) {
 
                         String stopPredictionKey = SiriSupportPredictionTimepointRecord
                                 .convertTripAndStopToKey(blockTrip.getTrip().getId(), stopTime.getStopTime().getStop().getId());
@@ -190,18 +202,21 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                 currentlyActiveTripOnBlock.getVehicleId(),
                                 showRawApc,
                                 stopTime.getStopTime().getArrivalTime(),
+                                getScheduledArrivalTime(currentlyActiveTripOnBlock, stopTime),
+                                getScheduledDepartureTime(currentlyActiveTripOnBlock, stopTime),
                                 responseTimestamp
                         );
 
                     }
                 }
             }
+
         }
 
         return null;
     }
 
-    private int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
+    private static int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
         int visitNumber;
 
         if (visitNumberForStop.containsKey(stop.getId())) {
@@ -215,6 +230,14 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
         return visitNumber;
     }
 
+    private static long getScheduledArrivalTime(TripStatusBean tripStatus, BlockStopTimeBean stopTime){
+        return tripStatus.getServiceDate() + (stopTime.getStopTime().getArrivalTime() * 1000);
+    }
+
+    private static long getScheduledDepartureTime(TripStatusBean tripStatus, BlockStopTimeBean stopTime){
+        return tripStatus.getServiceDate() + (stopTime.getStopTime().getDepartureTime() * 1000);
+    }
+
     private MonitoredCallStructure getMonitoredCallStructure(StopBean stopBean,
                                                              double distanceOfCallAlongTrip,
                                                              double distanceOfVehicleFromCall,
@@ -224,6 +247,8 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                                              String vehicleId,
                                                              boolean showRawApc,
                                                              int arrivalTime,
+                                                             long scheduledArrivalTime,
+                                                             long scheduledDepartureTime,
                                                              long responseTimestamp
                                                              ) {
 
@@ -242,13 +267,13 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
             fillExpectedArrivalDepartureTimes(siriMonitoredCallBuilder, prediction, responseTimestamp);
         }
 
-        Calendar calendar = Calendar.getInstance(); // gets a calendar using the default time zone and locale.
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, day, 0, 0, 0);
-        calendar.add(Calendar.SECOND, arrivalTime);
-        siriMonitoredCallBuilder.setAimedArrivalTime(calendar.getTime());
+        // Set Aimed Arrival and Departure Times
+        if(scheduledArrivalTime > 0){
+            siriMonitoredCallBuilder.setAimedArrivalTime(new Date(scheduledArrivalTime));
+        }
+        if(scheduledDepartureTime > 0){
+            siriMonitoredCallBuilder.setAimedDepartureTime(new Date(scheduledDepartureTime));
+        }
 
         // siri extensions
         SiriExtensionWrapper wrapper = new SiriExtensionWrapper();

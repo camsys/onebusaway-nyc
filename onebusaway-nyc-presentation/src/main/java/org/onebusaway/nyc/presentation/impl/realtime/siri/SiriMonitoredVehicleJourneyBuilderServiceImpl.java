@@ -351,7 +351,8 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
         if (!showApc
                 ||currentVehicleTripStatus == null
                 || currentVehicleTripStatus.getActiveTrip() == null
-                || currentVehicleTripStatus.getActiveTrip().getRoute() ==  null) {
+                || currentVehicleTripStatus.getActiveTrip().getRoute() ==  null
+                || currentVehicleTripStatus.getVehicleId() == null) {
             return false;
         }
         return true;
