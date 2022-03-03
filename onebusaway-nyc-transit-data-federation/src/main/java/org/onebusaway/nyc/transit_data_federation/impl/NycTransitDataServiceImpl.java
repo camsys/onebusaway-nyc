@@ -714,15 +714,6 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public boolean isTripCancelled(String tripId){
-		blockUntilBundleIsReady();
-		if(_cancelledTripService != null) {
-			return _cancelledTripService.isTripCancelled(tripId);
-		}
-		return false;
-	}
-
-	@Override
 	public boolean isTripCancelled(AgencyAndId tripId){
 		blockUntilBundleIsReady();
 		if(_cancelledTripService != null){
