@@ -134,10 +134,6 @@ public class MockTransitDataService implements NycTransitDataService {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public boolean isTripCancelled(String tripId) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public boolean isTripCancelled(AgencyAndId tripId) {
