@@ -105,6 +105,7 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
         _siriBuilderServiceHelper = siriBuilderServiceHelper;
     }
 
+
     @Override
     public MonitoredCallStructure makeMonitoredCall(BlockInstanceBean blockInstance,
                                                     TripBean tripOnBlock,
@@ -112,6 +113,7 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                                     StopBean monitoredCallStopBean,
                                                     Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions,
                                                     boolean showRawApc,
+                                                    boolean isCancelled,
                                                     long responseTimestamp
                                                     ){
         SiriMonitoredCallBuilder siriMonitoredCallBuilder = new SiriMonitoredCallBuilder();

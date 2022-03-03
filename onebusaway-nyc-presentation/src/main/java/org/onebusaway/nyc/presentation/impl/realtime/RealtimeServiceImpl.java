@@ -157,7 +157,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       MonitoredVehicleJourney monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourney(
               tripDetails.getTrip(), tripDetails.getStatus(), null, stopIdToPredictionRecordMap,
-              OnwardCallsMode.VEHICLE_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc);
+              OnwardCallsMode.VEHICLE_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false);
 
       activity.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
@@ -207,7 +207,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       MonitoredVehicleJourney monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourney(
               tripDetailsForCurrentTrip.getTrip(), tripDetailsForCurrentTrip.getStatus(), null, stopIdToPredictionRecordMap,
-              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc);
+              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false);
 
       output.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
@@ -227,6 +227,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
       TripBean tripBeanForAd = adBean.getTrip();
       final RouteBean routeBean = tripBeanForAd.getRoute();
+      boolean isCancelled = false;
 
       if(statusBeanForCurrentTrip == null) {
         continue;
@@ -254,7 +255,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       MonitoredVehicleJourneyStructure monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourneyStructure(
               tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), stopIdToPredictionRecordMap,
-              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc);
+              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, isCancelled);
 
       stopVisit.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
