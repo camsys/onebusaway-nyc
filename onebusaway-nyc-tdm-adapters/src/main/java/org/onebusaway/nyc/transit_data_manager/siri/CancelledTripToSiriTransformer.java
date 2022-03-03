@@ -58,10 +58,12 @@ public class CancelledTripToSiriTransformer {
 
   private NycTransitDataService _nycTransitDataService;
   private ConfigurationService _configService;
+  private boolean _performMerge;
 
-  public CancelledTripToSiriTransformer(NycTransitDataService nycTransitDataService, ConfigurationService configurationService) {
+  public CancelledTripToSiriTransformer(NycTransitDataService nycTransitDataService, ConfigurationService configurationService, boolean merge) {
     _nycTransitDataService = nycTransitDataService;
     _configService = configurationService;
+    _performMerge = merge;
   }
 
   public ServiceDelivery mergeImpactedAlerts(ServiceDelivery serviceDelivery) {
@@ -83,20 +85,24 @@ public class CancelledTripToSiriTransformer {
       s = serviceDelivery.getSituationExchangeDelivery().get(0).getSituations();
     }
 
-    int addedAlerts = 0;
-    if (_nycTransitDataService != null) {
-      List<NycCancelledTripBean> cancelledTripBeans = _nycTransitDataService.getAllCancelledTrips().getList();
-      // no retrieve cancelled trips from the TDS and add to the above ServiceDelivery instance
-      for (NycCancelledTripBean cancelledTrip : cancelledTripBeans) {
-        // convert a cancelled trip model into a situation element
-        PtSituationElementStructure pt = fillPtSituationElement(cancelledTrip);
-        if (pt != null) {
-          s.getPtSituationElement().add(pt);
-          addedAlerts++;
+    if (_performMerge) {
+      int addedAlerts = 0;
+      if (_nycTransitDataService != null) {
+        List<NycCancelledTripBean> cancelledTripBeans = _nycTransitDataService.getAllCancelledTrips().getList();
+        // no retrieve cancelled trips from the TDS and add to the above ServiceDelivery instance
+        for (NycCancelledTripBean cancelledTrip : cancelledTripBeans) {
+          // convert a cancelled trip model into a situation element
+          PtSituationElementStructure pt = fillPtSituationElement(cancelledTrip);
+          if (pt != null) {
+            s.getPtSituationElement().add(pt);
+            addedAlerts++;
+          }
         }
+        _log.info("generated " + addedAlerts + " service alerts for "
+                + cancelledTripBeans.size() + " CAPI trips");
       }
-      _log.info("generated " + addedAlerts + " service alerts for "
-              + cancelledTripBeans.size() + " CAPI trips");
+    } else {
+      _log.debug("skipping merge");
     }
     return serviceDelivery;
   }
@@ -212,19 +218,24 @@ public class CancelledTripToSiriTransformer {
     return tripStopTimeBean.getStop().getName();
   }
 
-  private String formatTime(String firstStopDepartureTime) {
+  String formatTime(String firstStopDepartureTime) {
     if (firstStopDepartureTime == null) return null;
     if (firstStopDepartureTime.contains(":")) {
       String[] parts = firstStopDepartureTime.split(":");
       if (parts.length > 2) {
         try {
           // convert 24h to local
-          int hour = Integer.parseInt(parts[0]);
+          int hour = Integer.parseInt(parts[0]) % 24;
           int minute = Integer.parseInt(parts[1]);
-          if (hour <= 12) {
-            return hour + ":" + minute + "am";
-          } else {
-            return (hour-12) + ":" + minute + "pm";
+          String am_pm = hour < 12 ? "am" : "pm";
+          if(hour == 0){
+            return (hour+12) + ":" + leftPad(minute) + am_pm;
+          }
+          else if (hour <= 12) {
+            return hour + ":" + leftPad(minute) + am_pm;
+          }
+          else {
+            return (hour-12) + ":" + leftPad(minute) + am_pm;
           }
         } catch (NumberFormatException nfe) {
           _log.error("invalid time format " + firstStopDepartureTime);
@@ -232,6 +243,17 @@ public class CancelledTripToSiriTransformer {
       }
     }
     return firstStopDepartureTime;
+  }
+
+  String leftPad(int minute) {
+    String minuteStr = String.valueOf(minute);
+    if (minuteStr == null || minuteStr.length() == 0) {
+      minuteStr = "00";
+    }
+    if (minuteStr.length() < 2) {
+      minuteStr = "0" + minuteStr;
+    }
+    return minuteStr;
   }
 
   private String lookupStopName(String stopId) {

@@ -123,7 +123,7 @@ public class SituationExchangeResource {
     ServiceDelivery delivery = incomingSiri.getServiceDelivery();
 
     if (delivery != null && deliveryIsForThisEnvironment(delivery)) {
-      CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService, _configurationService);
+      CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService, _configurationService, deliveryIsFromExternal(delivery));
       SituationExchangeResults result = new SituationExchangeResults();
       _siriService.handleServiceDeliveries(result, transformer.mergeImpactedAlerts(ensureDirections(incomingSiri.getServiceDelivery())));
       _log.info(result.toString());
@@ -234,6 +234,16 @@ public class SituationExchangeResource {
       return true;
     CheckEnvironmentHandler checkEnvironment = checkEnvironment(delivery.getProducerRef());
     return checkEnvironment.isStatus();
+  }
+
+  // if we were called from an external source, we are likely the TDM
+  // in this configuration we perform additional operations/merges of data
+  private boolean deliveryIsFromExternal(ServiceDelivery delivery) {
+    if (delivery == null)
+      return true;
+    if (delivery.getProducerRef() == null)
+      return true;
+    return false;
   }
 
   private CheckEnvironmentHandler checkEnvironment(ParticipantRefStructure participantRefStructure) {
