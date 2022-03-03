@@ -48,6 +48,7 @@ public class SiriMonitoredCallBuilder {
     private Date expectedArrivalTime = null;
     private Date expectedDepartureTime = null;
     private Date aimedArrivalTime = null;
+    private Date aimedDepartureTime = null;
     private ExtensionsStructure anyExtensions = null;
 
     public SiriMonitoredCallBuilder(){}
@@ -82,6 +83,11 @@ public class SiriMonitoredCallBuilder {
         return this;
     }
 
+    public SiriMonitoredCallBuilder setAimedDepartureTime(Date aimedDepartureTime) {
+        this.aimedDepartureTime = aimedDepartureTime;
+        return this;
+    }
+
     public SiriMonitoredCallBuilder setExtensions(ExtensionsStructure anyExtensions) {
         this.anyExtensions = anyExtensions;
         return this;
@@ -95,6 +101,7 @@ public class SiriMonitoredCallBuilder {
         monitoredCall.setExpectedArrivalTime(expectedArrivalTime);
         monitoredCall.setExpectedDepartureTime(expectedDepartureTime);
         monitoredCall.setAimedArrivalTime(aimedArrivalTime);
+        monitoredCall.setAimedDepartureTime(aimedDepartureTime);
         monitoredCall.setExtensions(anyExtensions);
         return monitoredCall;
     }

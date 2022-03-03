@@ -251,9 +251,9 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       }
       
       // unique stops filters
-      if (visit.getMonitoredVehicleJourney() == null || 
-    		  visit.getMonitoredVehicleJourney().getVehicleRef() == null ||
-    		  StringUtils.isBlank(visit.getMonitoredVehicleJourney().getVehicleRef().getValue())){
+      if (visit.getMonitoredVehicleJourney() == null || visit.getMonitoredVehicleJourney().isMonitored() &&
+              (visit.getMonitoredVehicleJourney().getVehicleRef() == null ||
+    		  StringUtils.isBlank(visit.getMonitoredVehicleJourney().getVehicleRef().getValue()))){
     	  continue;
       }
       else{

@@ -110,11 +110,11 @@ public class MonitoredVehicleJourneyServiceTest {
 
     MonitoredVehicleJourney journey = mvjService.makeMonitoredVehicleJourney(tripDetails.getTrip(), tripDetails.getStatus(),
             null, Collections.emptyMap(), OnwardCallsMode.VEHICLE_MONITORING,
-            0, System.currentTimeMillis(), Boolean.FALSE, Boolean.FALSE);
+            0, System.currentTimeMillis(), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
 
     MonitoredVehicleJourney futureJourney = mvjService.makeMonitoredVehicleJourney(futureTripDetails.getTrip(), futureTripDetails.getStatus(),
             null, Collections.emptyMap(), OnwardCallsMode.VEHICLE_MONITORING,
-            0, System.currentTimeMillis(), Boolean.FALSE, Boolean.FALSE);
+            0, System.currentTimeMillis(), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
 
     assertNotNull(journey);
     assertNotNull(futureJourney);

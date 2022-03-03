@@ -18,6 +18,7 @@ package org.onebusaway.nyc.presentation.impl.realtime;
 
 import java.util.*;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.realtime.siri.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PredictionsSupportService;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
@@ -26,6 +27,7 @@ import org.onebusaway.nyc.presentation.service.realtime.siri.SiriMonitoredVehicl
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializer;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
+import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -166,7 +168,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       MonitoredVehicleJourney monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourney(
               tripDetails.getTrip(), tripDetails.getStatus(), null, stopIdToPredictionRecordMap,
-              OnwardCallsMode.VEHICLE_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc);
+              OnwardCallsMode.VEHICLE_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false);
 
       activity.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
@@ -216,7 +218,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       MonitoredVehicleJourney monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourney(
               tripDetailsForCurrentTrip.getTrip(), tripDetailsForCurrentTrip.getStatus(), null, stopIdToPredictionRecordMap,
-              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc);
+              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false);
 
       output.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
@@ -236,6 +238,11 @@ public class RealtimeServiceImpl implements RealtimeService {
       TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
       TripBean tripBeanForAd = adBean.getTrip();
       final RouteBean routeBean = tripBeanForAd.getRoute();
+      boolean isCancelled = false;
+      
+      if(_nycTransitDataService.isTripCancelled(AgencyAndId.convertFromString(tripBeanForAd.getId()))){
+        isCancelled = true;
+      }
 
       String tripId = tripBeanForAd.getId();
 
@@ -246,7 +253,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         continue;
       }
 
-      if(!isCancelledTrip && (!_presentationService.include(statusBeanForCurrentTrip) ||
+      if(!isCancelled && (!_presentationService.include(statusBeanForCurrentTrip) ||
               !_presentationService.include(adBean, statusBeanForCurrentTrip))) {
         continue;
       }
@@ -257,7 +264,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         continue;
       }
 
-      Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = null;
+      Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = Collections.emptyMap();
       if(_presentationService.useTimePredictionsIfAvailable()) {
         stopIdToPredictionRecordMap = _predictionsSupportService.getStopIdToPredictionRecordMap(statusBeanForCurrentTrip);
       }
@@ -268,9 +275,9 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       MonitoredVehicleJourneyStructure monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourneyStructure(
               tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), stopIdToPredictionRecordMap,
-              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc);
+              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, isCancelled);
 
-      if(isCancelledTrip){
+      if(isCancelled){
         monitoredVehicleJourney.getMonitoredCall().setArrivalStatus(ProgressStatusEnumeration.CANCELLED);
         monitoredVehicleJourney.getMonitoredCall().setDepartureStatus(ProgressStatusEnumeration.CANCELLED);
       }

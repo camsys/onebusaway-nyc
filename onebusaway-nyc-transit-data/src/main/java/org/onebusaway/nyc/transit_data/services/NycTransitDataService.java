@@ -67,8 +67,6 @@ public interface NycTransitDataService extends TransitDataService {
 	   */
 	  public Boolean stopHasRevenueService(String agencyId, String stopId);
 
-	boolean isTripCancelled(String tripId);
-
 	boolean isTripCancelled(AgencyAndId tripId);
 
 	ListBean<NycCancelledTripBean> getAllCancelledTrips();
