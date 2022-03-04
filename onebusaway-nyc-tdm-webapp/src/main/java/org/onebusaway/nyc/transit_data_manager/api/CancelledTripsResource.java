@@ -2,8 +2,8 @@ package org.onebusaway.nyc.transit_data_manager.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data_manager.api.service.CapiRetrievalService;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +61,7 @@ public class CancelledTripsResource {
     @Produces("application/json")
     public Response getCancelledTripsList() {
         try {
-            List<NycCancelledTripBean> cancelledTripBeans = _capiService.getCancelledTripBeans();
+            List<CancelledTripBean> cancelledTripBeans = _capiService.getCancelledTripBeans();
             String output = getAsJson(cancelledTripBeans);
             _log.debug("Returning response ok for url=" + _capiService.getLocation());
             return Response.ok(output).build();

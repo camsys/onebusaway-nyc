@@ -21,16 +21,12 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.transit_data_federation.impl.capi.CancelledTripServiceImpl;
+import org.onebusaway.transit_data_federation.impl.CancelledTripServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.capi.CapiDaoFileImpl;
 import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -66,12 +62,12 @@ public class CancelledTripListenerTaskTest {
         listenerTask.setCapiDao(capiFileDao);
         listenerTask.setCancelledTripService(cancelledTripService);
         listenerTask.updateCancelledTripBeans();
-        ListBean<NycCancelledTripBean> beans = cancelledTripService.getAllCancelledTrips();
+        ListBean<CancelledTripBean> beans = cancelledTripService.getAllCancelledTrips();
 
         assertEquals(3,beans.getList().size());
 
         // Check that deserialized values match expected values
-        NycCancelledTripBean bean = beans.getList().get(1);
+        CancelledTripBean bean = beans.getList().get(1);
         assertEquals("MTA NYCT_FB_A2-Weekday-SDon_E_FB_26580_B41-207",bean.getBlock());
         assertEquals("MTA NYCT_FB_A2-Weekday-SDon-044900_B41_207",bean.getTrip());
         assertEquals("canceled",bean.getStatus());

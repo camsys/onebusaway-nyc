@@ -35,15 +35,14 @@ package org.onebusaway.nyc.transit_data_federation.impl.queue;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.apache.http.HttpResponse;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.transit_data_federation.services.capi.CancelledTripService;
+import org.onebusaway.transit_data_federation.services.CancelledTripService;
 import org.onebusaway.nyc.transit_data_federation.services.capi.CapiDao;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,8 +174,8 @@ public class CancelledTripHttpListenerTask {
     public void updateCancelledTripBeans()  {
         try {
             InputStream inputStream = getCancelledTripData();
-            List<NycCancelledTripBean> cancelledTripBeans = convertResponseToCancelledTripBeans(inputStream);
-            Map<AgencyAndId, NycCancelledTripBean> cancelledTripsMap = convertCancelledTripsToMap(cancelledTripBeans);
+            List<CancelledTripBean> cancelledTripBeans = convertResponseToCancelledTripBeans(inputStream);
+            Map<AgencyAndId, CancelledTripBean> cancelledTripsMap = convertCancelledTripsToMap(cancelledTripBeans);
             _cancelledTripService.updateCancelledTrips(cancelledTripsMap);
         } catch (Exception e){
             _log.error("Unable to process cancelled trip beans from {}", getLocation());
@@ -187,10 +186,10 @@ public class CancelledTripHttpListenerTask {
         return _capiDao.getCancelledTripData();
     }
 
-    private List<NycCancelledTripBean> convertResponseToCancelledTripBeans(InputStream input) {
+    private List<CancelledTripBean> convertResponseToCancelledTripBeans(InputStream input) {
         try {
-            List<NycCancelledTripBean> list = _objectMapper.readValue(input,
-                    new TypeReference<List<NycCancelledTripBean>>() {});
+            List<CancelledTripBean> list = _objectMapper.readValue(input,
+                    new TypeReference<List<CancelledTripBean>>() {});
             return list;
         } catch (Exception any) {
             _log.error("issue parsing json: " + any, any);
@@ -199,9 +198,9 @@ public class CancelledTripHttpListenerTask {
     }
 
 
-    private Map<AgencyAndId, NycCancelledTripBean> convertCancelledTripsToMap(List<NycCancelledTripBean> cancelledTripBeans) {
-        Map<AgencyAndId, NycCancelledTripBean> results = new ConcurrentHashMap<>();
-        for (NycCancelledTripBean cancelledTrip : cancelledTripBeans) {
+    private Map<AgencyAndId, CancelledTripBean> convertCancelledTripsToMap(List<CancelledTripBean> cancelledTripBeans) {
+        Map<AgencyAndId, CancelledTripBean> results = new ConcurrentHashMap<>();
+        for (CancelledTripBean cancelledTrip : cancelledTripBeans) {
             if (isValidCancelledTrip(cancelledTrip)) {
                 results.put(AgencyAndId.convertFromString(cancelledTrip.getTrip()), cancelledTrip);
             }
@@ -209,7 +208,7 @@ public class CancelledTripHttpListenerTask {
         return results;
     }
 
-    private boolean isValidCancelledTrip(NycCancelledTripBean cancelledTripBean) {
+    private boolean isValidCancelledTrip(CancelledTripBean cancelledTripBean) {
         try {
             if ((cancelledTripBean.getStatus().equalsIgnoreCase("canceled") ||
                     cancelledTripBean.getStatus().equalsIgnoreCase("cancelled"))) {

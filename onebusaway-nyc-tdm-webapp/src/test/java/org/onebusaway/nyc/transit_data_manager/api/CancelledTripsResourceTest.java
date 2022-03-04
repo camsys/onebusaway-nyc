@@ -19,34 +19,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data_manager.api.dao.CapiDaoFileImpl;
 import org.onebusaway.nyc.transit_data_manager.api.dao.CapiDaoHttpImpl;
-import org.onebusaway.nyc.transit_data_manager.api.service.CapiRetrievalService;
 import org.onebusaway.nyc.transit_data_manager.api.service.CapiRetrievalServiceImpl;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 
 import javax.ws.rs.core.Response;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -101,11 +90,11 @@ public class CancelledTripsResourceTest {
         assertEquals(tdmCapiOutput,expectedCapiOutput);
 
         // Check that json can be deserialized
-        List<NycCancelledTripBean> beans = readOutput((String) r.getEntity());
+        List<CancelledTripBean> beans = readOutput((String) r.getEntity());
         assertTrue(beans.size()==3);
 
         // Check that deserialized values match expected values
-        NycCancelledTripBean bean = beans.get(1);
+        CancelledTripBean bean = beans.get(1);
         assertEquals("MTA NYCT_FB_A2-Weekday-SDon_E_FB_26580_B41-207",bean.getBlock());
         assertEquals("MTA NYCT_FB_A2-Weekday-SDon-044900_B41_207",bean.getTrip());
         assertEquals("canceled",bean.getStatus());
@@ -120,8 +109,8 @@ public class CancelledTripsResourceTest {
         assertEquals("2022-01-20T22:06:58",bean.getHumanReadableTimestamp());
     }
 
-    private List<NycCancelledTripBean> readOutput(String str) throws JsonProcessingException {
-        return mapper.readValue(str, new TypeReference<List<NycCancelledTripBean>>(){});
+    private List<CancelledTripBean> readOutput(String str) throws JsonProcessingException {
+        return mapper.readValue(str, new TypeReference<List<CancelledTripBean>>(){});
     }
 
 

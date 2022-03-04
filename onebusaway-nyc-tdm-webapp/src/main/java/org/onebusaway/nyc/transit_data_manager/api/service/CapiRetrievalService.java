@@ -16,16 +16,16 @@
 
 package org.onebusaway.nyc.transit_data_manager.api.service;
 
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 
 import java.util.List;
 
 public interface CapiRetrievalService {
     String getLocation();
 
-    List<NycCancelledTripBean> getCancelledTripBeans();
+    List<CancelledTripBean> getCancelledTripBeans();
 
-    void setCancelledTripBeans(List<NycCancelledTripBean> cancelledTripsBeans);
+    void setCancelledTripBeans(List<CancelledTripBean> cancelledTripsBeans);
 
     void updateCancelledTripBeans();
 }

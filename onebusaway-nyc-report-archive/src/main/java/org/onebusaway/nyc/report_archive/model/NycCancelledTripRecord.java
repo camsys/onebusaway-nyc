@@ -23,7 +23,7 @@ import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -93,7 +93,7 @@ public class NycCancelledTripRecord implements Serializable {
 
     public NycCancelledTripRecord(){}
 
-    public NycCancelledTripRecord(NycCancelledTripBean nycCancelledTripBean, long recordTimeStamp){
+    public NycCancelledTripRecord(CancelledTripBean nycCancelledTripBean, long recordTimeStamp){
         setBlock(nycCancelledTripBean.getBlock());
         setTrip(nycCancelledTripBean.getTrip());
         setStatus(nycCancelledTripBean.getStatus());

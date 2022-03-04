@@ -17,7 +17,7 @@
 package org.onebusaway.nyc.report_archive.model;
 
 import org.junit.Test;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -45,7 +45,7 @@ public class NycCancelledTripRecordTest {
         LocalDate serviceDate = LocalDate.of(2022,1,21);
 
 
-        NycCancelledTripBean nycCancelledTripBean = new NycCancelledTripBean();
+        CancelledTripBean nycCancelledTripBean = new CancelledTripBean();
         nycCancelledTripBean.setBlock(blockId);
         nycCancelledTripBean.setFirstStopDepartureTime(firstDepartureTime.toString());
         nycCancelledTripBean.setFirstStopId(firstStopId);
