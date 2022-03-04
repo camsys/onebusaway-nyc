@@ -98,14 +98,6 @@ public class RealtimeServiceImpl implements RealtimeService {
   }
 
   @Autowired
-  public void setNycTransitDataService(NycTransitDataService transitDataService){
-    _nycTransitDataService = transitDataService;
-  }
-
-  public void setSiriMvjBuilderService(SiriMonitoredVehicleJourneyBuilderService siriMvjBuilderService) {
-    _siriMvjBuilderService = siriMvjBuilderService;
-  }
-  @Autowired
   @Qualifier("NycPresentationService")
   public void setPresentationService(PresentationService presentationService) {
     _presentationService = presentationService;
@@ -244,11 +236,6 @@ public class RealtimeServiceImpl implements RealtimeService {
         isCancelled = true;
       }
 
-      String tripId = tripBeanForAd.getId();
-
-      //TODO find another way to get this info without making a call to the TDS from within this method (which runs every time a siri endpoint is accessed). Maybe include tripstatus in the arrivaldeparturebean.
-      boolean isCancelledTrip = _nycTransitDataService.isTripCancelled(tripId);
-
       if(statusBeanForCurrentTrip == null) {
         continue;
       }
@@ -272,8 +259,9 @@ public class RealtimeServiceImpl implements RealtimeService {
       MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
 
       stopVisit.setRecordedAtTime(new Date(statusBeanForCurrentTrip.getLastUpdateTime()));
+      MonitoredVehicleJourneyStructure monitoredVehicleJourney;
 
-      MonitoredVehicleJourneyStructure monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourneyStructure(
+      monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourneyStructure(
               tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), stopIdToPredictionRecordMap,
               OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, isCancelled);
 
@@ -283,8 +271,6 @@ public class RealtimeServiceImpl implements RealtimeService {
       }
 
       stopVisit.setMonitoredVehicleJourney(monitoredVehicleJourney);
-
-
 
       output.add(stopVisit);
     }

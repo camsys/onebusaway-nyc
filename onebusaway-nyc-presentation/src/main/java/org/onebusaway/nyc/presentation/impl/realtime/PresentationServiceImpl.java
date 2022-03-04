@@ -293,7 +293,7 @@ public class PresentationServiceImpl implements PresentationService {
     // hide non-realtime
     if(statusBean.isPredicted() == false) {
       _log.debug("  " + statusBean.getVehicleId() + " filtered out because is not realtime.");
-      //return false;
+      return false;
     }
 
     if(statusBean.getVehicleId() == null || statusBean.getPhase() == null) {

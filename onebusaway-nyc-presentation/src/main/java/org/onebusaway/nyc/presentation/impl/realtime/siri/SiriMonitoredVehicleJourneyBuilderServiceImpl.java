@@ -349,10 +349,11 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
 
     private boolean displayEnumeratedOccupancy(boolean showApc, TripStatusBean currentVehicleTripStatus){
         if (!showApc
-                ||currentVehicleTripStatus == null
+                || currentVehicleTripStatus == null
                 || currentVehicleTripStatus.getActiveTrip() == null
                 || currentVehicleTripStatus.getActiveTrip().getRoute() ==  null
-                || currentVehicleTripStatus.getVehicleId() == null) {
+                || currentVehicleTripStatus.getVehicleId() == null)
+        {
             return false;
         }
         return true;
