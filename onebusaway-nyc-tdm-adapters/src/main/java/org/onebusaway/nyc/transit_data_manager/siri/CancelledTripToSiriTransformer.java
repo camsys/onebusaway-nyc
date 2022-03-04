@@ -218,19 +218,24 @@ public class CancelledTripToSiriTransformer {
     return tripStopTimeBean.getStop().getName();
   }
 
-  private String formatTime(String firstStopDepartureTime) {
+  String formatTime(String firstStopDepartureTime) {
     if (firstStopDepartureTime == null) return null;
     if (firstStopDepartureTime.contains(":")) {
       String[] parts = firstStopDepartureTime.split(":");
       if (parts.length > 2) {
         try {
           // convert 24h to local
-          int hour = Integer.parseInt(parts[0]);
+          int hour = Integer.parseInt(parts[0]) % 24;
           int minute = Integer.parseInt(parts[1]);
-          if (hour <= 12) {
-            return hour + ":" + leftPad(minute) + "am";
-          } else {
-            return (hour-12) + ":" + leftPad(minute) + "pm";
+          String am_pm = hour < 12 ? "am" : "pm";
+          if(hour == 0){
+            return (hour+12) + ":" + leftPad(minute) + am_pm;
+          }
+          else if (hour <= 12) {
+            return hour + ":" + leftPad(minute) + am_pm;
+          }
+          else {
+            return (hour-12) + ":" + leftPad(minute) + am_pm;
           }
         } catch (NumberFormatException nfe) {
           _log.error("invalid time format " + firstStopDepartureTime);
