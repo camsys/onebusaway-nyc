@@ -37,8 +37,8 @@ import uk.org.siri.siri.LineRefStructure;
 import uk.org.siri.siri.PtConsequenceStructure;
 import uk.org.siri.siri.PtConsequencesStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
+import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
-import uk.org.siri.siri.SeverityEnumeration;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
 import uk.org.siri.siri.SituationSourceStructure;
 import uk.org.siri.siri.SituationSourceTypeEnumeration;
@@ -184,10 +184,13 @@ public class CancelledTripToSiriTransformer {
 
 
     // consequences
-    PtConsequenceStructure consequence = new PtConsequenceStructure();
-    consequence.setSeverity(SeverityEnumeration.UNDEFINED);
-    pt.setConsequences(new PtConsequencesStructure());
-    pt.getConsequences().getConsequence().add(consequence);
+    // mark the alert as disrupted to differentiate from traditional alerts
+    PtConsequencesStructure ptConsequences = new PtConsequencesStructure();
+    pt.setConsequences(ptConsequences);
+    PtConsequenceStructure ptConsequenceStructure = new PtConsequenceStructure();
+    ServiceConditionEnumeration serviceCondition = ServiceConditionEnumeration.DISRUPTED;
+    ptConsequenceStructure.setCondition(serviceCondition);
+    ptConsequences.getConsequence().add(ptConsequenceStructure);
 
     return pt;
   }
