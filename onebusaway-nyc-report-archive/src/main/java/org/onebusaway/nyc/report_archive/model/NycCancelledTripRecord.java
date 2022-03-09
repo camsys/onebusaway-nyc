@@ -18,12 +18,14 @@ package org.onebusaway.nyc.report_archive.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.onebusaway.transit_data.model.trips.CancelledTripBean;
+import org.onebusaway.nyc.report_archive.api.json.CustomDateSerializer;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -52,6 +54,7 @@ public class NycCancelledTripRecord implements Serializable {
     private Long id;
 
     @Column(nullable = false, name = "record_timestamp")
+    @JsonSerialize(using = CustomDateSerializer.class)
     private long recordTimeStamp;
 
     @Column(name = "block")
