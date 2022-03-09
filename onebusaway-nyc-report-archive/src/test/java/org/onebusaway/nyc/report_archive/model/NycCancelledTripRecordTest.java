@@ -17,7 +17,7 @@
 package org.onebusaway.nyc.report_archive.model;
 
 import org.junit.Test;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -45,21 +45,21 @@ public class NycCancelledTripRecordTest {
         LocalDate serviceDate = LocalDate.of(2022,1,21);
 
 
-        NycCancelledTripBean nycCancelledTripBean = new NycCancelledTripBean();
-        nycCancelledTripBean.setBlock(blockId);
-        nycCancelledTripBean.setFirstStopDepartureTime(firstDepartureTime.toString());
-        nycCancelledTripBean.setFirstStopId(firstStopId);
-        nycCancelledTripBean.setHumanReadableTimestamp(humanReadableTimestamp.toString());
-        nycCancelledTripBean.setLastStopArrivalTime(lastStopArrivalTime.toString());
-        nycCancelledTripBean.setRoute(route);
-        nycCancelledTripBean.setRouteId(routeId);
-        nycCancelledTripBean.setScheduledPullOut(scheduledPullout);
-        nycCancelledTripBean.setServiceDate(serviceDate.toString());
-        nycCancelledTripBean.setStatus(status);
-        nycCancelledTripBean.setTimestamp(timestamp);
-        nycCancelledTripBean.setTrip(tripId);
+        CancelledTripBean cancelledTripBean = new CancelledTripBean();
+        cancelledTripBean.setBlock(blockId);
+        cancelledTripBean.setFirstStopDepartureTime(firstDepartureTime.toString());
+        cancelledTripBean.setFirstStopId(firstStopId);
+        cancelledTripBean.setHumanReadableTimestamp(humanReadableTimestamp.toString());
+        cancelledTripBean.setLastStopArrivalTime(lastStopArrivalTime.toString());
+        cancelledTripBean.setRoute(route);
+        cancelledTripBean.setRouteId(routeId);
+        cancelledTripBean.setScheduledPullOut(scheduledPullout);
+        cancelledTripBean.setServiceDate(serviceDate.toString());
+        cancelledTripBean.setStatus(status);
+        cancelledTripBean.setTimestamp(timestamp);
+        cancelledTripBean.setTrip(tripId);
 
-        NycCancelledTripRecord record = new NycCancelledTripRecord(nycCancelledTripBean, System.currentTimeMillis());
+        NycCancelledTripRecord record = new NycCancelledTripRecord(cancelledTripBean, System.currentTimeMillis());
         assertEquals(blockId, record.getBlock());
         assertEquals(firstDepartureTime, record.getFirstStopDepartureTime());
         assertEquals(firstStopId, record.getFirstStopId());

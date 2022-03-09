@@ -23,12 +23,10 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
-import org.onebusaway.nyc.transit_data_federation.services.capi.CancelledTripService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -52,16 +50,10 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
-import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
-import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
-import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
-import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl;
+import org.onebusaway.transit_data_federation.services.CancelledTripService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -723,7 +715,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public ListBean<NycCancelledTripBean> getAllCancelledTrips(){
+	public ListBean<CancelledTripBean> getAllCancelledTrips(){
 		blockUntilBundleIsReady();
 		if(_cancelledTripService != null){
 			return _cancelledTripService.getAllCancelledTrips();
@@ -732,11 +724,11 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public void overrideCancelledTrips(List<NycCancelledTripBean> beans){
+	public void overrideCancelledTrips(List<CancelledTripBean> beans){
 		blockUntilBundleIsReady();
 		if(_cancelledTripService != null){
-			Map<AgencyAndId, NycCancelledTripBean> cancelledTripsCache = new ConcurrentHashMap<>();
-			for(NycCancelledTripBean bean : beans){
+			Map<AgencyAndId, CancelledTripBean> cancelledTripsCache = new ConcurrentHashMap<>();
+			for(CancelledTripBean bean : beans){
 				cancelledTripsCache.put(AgencyAndId.convertFromString(bean.getTrip()),bean);
 			}
 			_cancelledTripService.updateCancelledTrips(cancelledTripsCache);

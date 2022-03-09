@@ -20,9 +20,9 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.report_archive.model.NycCancelledTripRecord;
 import org.onebusaway.nyc.report_archive.services.CancelledTripPersistenceService;
 import org.onebusaway.nyc.report_archive.services.CancelledTripRecordValidationService;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,7 +130,7 @@ public class CancelledTripListenerTask {
             }
             try {
                 _log.info("starting cancelled trips retrieval");
-                List<NycCancelledTripBean> cancelledTrips = tds.getAllCancelledTrips().getList();
+                List<CancelledTripBean> cancelledTrips = tds.getAllCancelledTrips().getList();
                 _log.info("getting {} trips", cancelledTrips.size());
                 processCancelledTrips(cancelledTrips);
             } catch (Exception e){
@@ -139,12 +139,12 @@ public class CancelledTripListenerTask {
         }
 
 
-        public boolean processCancelledTrips(List<NycCancelledTripBean> cancelledTrips) {
+        public boolean processCancelledTrips(List<CancelledTripBean> cancelledTrips) {
             Map<String, NycCancelledTripRecord> recordSet = new HashMap<>();
             NycCancelledTripRecord record = null;
             try {
                 long recordTimestamp = System.currentTimeMillis();
-                for(NycCancelledTripBean cancelledTrip : cancelledTrips){
+                for(CancelledTripBean cancelledTrip : cancelledTrips){
                     record = new NycCancelledTripRecord(cancelledTrip, recordTimestamp);
                     boolean isValid = validationService.isValidRecord(record);
                     if(isValid){

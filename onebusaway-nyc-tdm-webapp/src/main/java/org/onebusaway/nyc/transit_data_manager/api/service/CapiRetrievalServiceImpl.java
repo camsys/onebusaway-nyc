@@ -18,12 +18,11 @@ package org.onebusaway.nyc.transit_data_manager.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data_manager.api.IncomingNycCancelledTripBeansContainer;
 import org.onebusaway.nyc.transit_data_manager.api.dao.CapiDao;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
 
     private ThreadPoolTaskScheduler _taskScheduler;
 
-    private List<NycCancelledTripBean> _cancelledTripBeans;
+    private List<CancelledTripBean> _cancelledTripBeans;
 
     @Autowired
     public void setTaskScheduler(ThreadPoolTaskScheduler scheduler) {
@@ -137,19 +136,19 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
     }
 
     @Override
-    public List<NycCancelledTripBean> getCancelledTripBeans(){
+    public List<CancelledTripBean> getCancelledTripBeans(){
         return _cancelledTripBeans;
     }
 
     @Override
-    public void setCancelledTripBeans(List<NycCancelledTripBean> cancelledTripBeans){
+    public void setCancelledTripBeans(List<CancelledTripBean> cancelledTripBeans){
         _cancelledTripBeans = cancelledTripBeans;
     }
 
     @Override
     public void updateCancelledTripBeans(){
         InputStream inputStream = getCancelledTripData();
-        List<NycCancelledTripBean> cancelledTripBeans = convertCapiInputToCancelledTripBeans(inputStream);
+        List<CancelledTripBean> cancelledTripBeans = convertCapiInputToCancelledTripBeans(inputStream);
         _cancelledTripBeans = cancelledTripBeans;
     }
 
@@ -157,7 +156,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
         return _capiDao.getCancelledTripData();
     }
 
-    private List<NycCancelledTripBean> convertCapiInputToCancelledTripBeans(InputStream input) {
+    private List<CancelledTripBean> convertCapiInputToCancelledTripBeans(InputStream input) {
         _log.debug("reading from stream...");
         try {
             IncomingNycCancelledTripBeansContainer beansContainer = _objectReader.readValue(input, IncomingNycCancelledTripBeansContainer.class);

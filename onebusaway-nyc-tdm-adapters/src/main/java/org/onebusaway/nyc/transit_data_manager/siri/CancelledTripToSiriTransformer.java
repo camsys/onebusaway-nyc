@@ -16,12 +16,12 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
@@ -88,9 +88,9 @@ public class CancelledTripToSiriTransformer {
     if (_performMerge) {
       int addedAlerts = 0;
       if (_nycTransitDataService != null) {
-        List<NycCancelledTripBean> cancelledTripBeans = _nycTransitDataService.getAllCancelledTrips().getList();
+        List<CancelledTripBean> cancelledTripBeans = _nycTransitDataService.getAllCancelledTrips().getList();
         // no retrieve cancelled trips from the TDS and add to the above ServiceDelivery instance
-        for (NycCancelledTripBean cancelledTrip : cancelledTripBeans) {
+        for (CancelledTripBean cancelledTrip : cancelledTripBeans) {
           // convert a cancelled trip model into a situation element
           PtSituationElementStructure pt = fillPtSituationElement(cancelledTrip);
           if (pt != null) {
@@ -117,7 +117,7 @@ public class CancelledTripToSiriTransformer {
   }
 
   // do the conversion of a bean to PtSituationElementStructure
-  private PtSituationElementStructure fillPtSituationElement(NycCancelledTripBean cancelledTrip) {
+  private PtSituationElementStructure fillPtSituationElement(CancelledTripBean cancelledTrip) {
     if (cancelledTrip.getRouteId() == null) return null;
     AgencyAndId affectedRoute = null;
     try {

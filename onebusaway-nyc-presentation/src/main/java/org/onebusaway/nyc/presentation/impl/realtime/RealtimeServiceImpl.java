@@ -28,11 +28,7 @@ import org.onebusaway.nyc.siri.support.SiriJsonSerializer;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
-import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
-import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
+import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
@@ -226,6 +222,9 @@ public class RealtimeServiceImpl implements RealtimeService {
     for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
       TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
       TripBean tripBeanForAd = adBean.getTrip();
+
+      boolean isCancelled = adBean.getStatus() != null && adBean.getStatus().equals(TransitDataConstants.STATUS_CANCELED);
+
       final RouteBean routeBean = tripBeanForAd.getRoute();
 
       if(statusBeanForCurrentTrip == null) {

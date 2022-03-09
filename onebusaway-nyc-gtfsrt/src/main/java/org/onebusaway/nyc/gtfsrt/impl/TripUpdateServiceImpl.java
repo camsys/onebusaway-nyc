@@ -21,13 +21,13 @@ import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +94,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
     public List<FeedEntity.Builder> getEntities(long time) {
         _log.debug("getEntities(" + new Date(time) + ")");
 
-        List<NycCancelledTripBean> allCancelledTrips = getAllCanceledTrips();
+        List<CancelledTripBean> allCancelledTrips = getAllCanceledTrips();
 
         Collection<VehicleStatusBean> vehicles = getAllVehicles(_transitDataService, _presentationService, time);
         Set<String> cancelledTripIds = getCanceledTripIds(allCancelledTrips);
@@ -132,7 +132,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
 
         }
 
-        for (NycCancelledTripBean bean : allCancelledTrips) {
+        for (CancelledTripBean bean : allCancelledTrips) {
             // we have a cancelled trip, ignore any vehicle associated with it
             // and send schedule relationship CANCELED
             TripBean tripBean = getBeanForTrip(bean.getTrip());
@@ -151,8 +151,8 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         return entities;
     }
 
-    private List<NycCancelledTripBean> getAllCanceledTrips() {
-        ListBean<NycCancelledTripBean> listBean = _transitDataService.getAllCancelledTrips();
+    private List<CancelledTripBean> getAllCanceledTrips() {
+        ListBean<CancelledTripBean> listBean = _transitDataService.getAllCancelledTrips();
         if (listBean != null) {
             return listBean.getList();
         }
@@ -163,10 +163,10 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         return _transitDataService.getTrip(tripId);
     }
 
-    private Set<String> getCanceledTripIds(List<NycCancelledTripBean> allCancelledTrips) {
+    private Set<String> getCanceledTripIds(List<CancelledTripBean> allCancelledTrips) {
         if (allCancelledTrips == null) return Collections.emptySet();
         Set<String> canceled = new HashSet<>();
-        for (NycCancelledTripBean bean : allCancelledTrips) {
+        for (CancelledTripBean bean : allCancelledTrips) {
             canceled.add(bean.getTrip());
         }
         return canceled;

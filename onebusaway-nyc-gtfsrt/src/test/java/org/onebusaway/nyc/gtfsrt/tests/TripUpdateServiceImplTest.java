@@ -24,7 +24,6 @@ import org.onebusaway.nyc.gtfsrt.impl.TripUpdateServiceImpl;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ListBean;
@@ -33,10 +32,7 @@ import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.model.trips.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -147,11 +143,11 @@ public class TripUpdateServiceImplTest {
 
   @Test
   public void testCancelled() {
-    List <NycCancelledTripBean> canceledList = new ArrayList<>();
-    NycCancelledTripBean cancelledTripBean = new NycCancelledTripBean();
+    List <CancelledTripBean> canceledList = new ArrayList<>();
+    CancelledTripBean cancelledTripBean = new CancelledTripBean();
     cancelledTripBean.setTrip("1_trip1");
     canceledList.add(cancelledTripBean);
-    ListBean<NycCancelledTripBean> beans = new ListBean(canceledList, false);
+    ListBean<CancelledTripBean> beans = new ListBean(canceledList, false);
 
     VehicleStatusBean vsb = vehicleStatus("vehicle", "1_block", 1);
     BlockInstanceBean block = blockInstance(blockTrip("1_trip0"), blockTripRoute("1_trip1", "1_route1"));
