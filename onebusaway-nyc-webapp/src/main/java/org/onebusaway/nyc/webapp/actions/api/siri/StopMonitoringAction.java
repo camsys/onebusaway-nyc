@@ -36,11 +36,9 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +92,12 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     boolean showApc = _realtimeService.showApc(_request.getParameter("key"));
 
     boolean showRawApc = _realtimeService.showRawApc(_request.getParameter("key"));
+
+    boolean showCancelledTrips = false;
+    String showCancelledTripsParam = _request.getParameter("showCancelled");
+    if(showCancelledTripsParam != null){
+      showCancelledTrips = Boolean.parseBoolean(showCancelledTripsParam);
+    }
 
     String directionId = _request.getParameter("DirectionRef");
     
@@ -211,7 +215,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       
       // Stop ids can only be valid here because we only added valid ones to stopIds.
       List<MonitoredStopVisitStructure> visitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(),
-              maximumOnwardCalls, responseTimestamp, showApc, showRawApc);
+              maximumOnwardCalls, responseTimestamp, showApc, showRawApc, showCancelledTrips);
 
       if (visitsForStop != null) visits.addAll(visitsForStop); 
     }

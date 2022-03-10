@@ -27,7 +27,6 @@ import org.onebusaway.nyc.presentation.service.realtime.siri.SiriMonitoredVehicl
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializer;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -223,15 +222,15 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Override
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls,
                                                                          long currentTime, boolean showApc,
-                                                                         boolean showRawApc) {
+                                                                         boolean showRawApc, boolean showCancelledTrips) {
     List<MonitoredStopVisitStructure> output = new ArrayList<>();
 
     for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
       TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
       TripBean tripBeanForAd = adBean.getTrip();
       final RouteBean routeBean = tripBeanForAd.getRoute();
+
       boolean isCancelled = false;
-      
       if(_nycTransitDataService.isTripCancelled(AgencyAndId.convertFromString(tripBeanForAd.getId()))){
         isCancelled = true;
       }
@@ -240,7 +239,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         continue;
       }
 
-      if(!isCancelled && (!_presentationService.include(statusBeanForCurrentTrip) ||
+      if(((!showCancelledTrips) || (showCancelledTrips && !isCancelled)) && (!_presentationService.include(statusBeanForCurrentTrip) ||
               !_presentationService.include(adBean, statusBeanForCurrentTrip))) {
         continue;
       }
@@ -259,13 +258,12 @@ public class RealtimeServiceImpl implements RealtimeService {
       MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
 
       stopVisit.setRecordedAtTime(new Date(statusBeanForCurrentTrip.getLastUpdateTime()));
-      MonitoredVehicleJourneyStructure monitoredVehicleJourney;
 
-      monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourneyStructure(
+      MonitoredVehicleJourneyStructure monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourneyStructure(
               tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), stopIdToPredictionRecordMap,
               OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, isCancelled);
 
-      if(isCancelled){
+      if(showCancelledTrips && isCancelled){
         monitoredVehicleJourney.getMonitoredCall().setArrivalStatus(ProgressStatusEnumeration.CANCELLED);
         monitoredVehicleJourney.getMonitoredCall().setDepartureStatus(ProgressStatusEnumeration.CANCELLED);
       }

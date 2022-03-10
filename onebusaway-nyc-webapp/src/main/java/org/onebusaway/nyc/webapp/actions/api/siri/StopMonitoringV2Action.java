@@ -31,24 +31,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
-import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.ServiceAlertsHelperV2;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
-import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
-import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
-import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
 import uk.org.siri.siri_2.ServiceDelivery;
 import uk.org.siri.siri_2.ServiceDeliveryErrorConditionStructure;
@@ -88,6 +79,13 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 
 		_realtimeService.setTime(responseTimestamp);
 		String detailLevelParam = _request.getParameter(STOP_MONITORING_DETAIL_LEVEL);
+
+		Boolean showCancelledTrips = false;
+		String showCancelledTripsParam = _request.getParameter(SHOW_CANCELLED_TRIPS);
+
+		if(showCancelledTripsParam != null){
+			showCancelledTrips = Boolean.parseBoolean(showCancelledTripsParam);
+		}
 		
 		//get the detail level parameter or set it to default if not specified
 	    DetailLevel detailLevel;
@@ -163,7 +161,7 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 			// to stopIds.
 			List<MonitoredStopVisitStructure> visitsForStop = _realtimeService
 					.getMonitoredStopVisitsForStop(stopId.toString(),
-							maximumOnwardCalls, detailLevel, responseTimestamp, routeIds, filters, showApc, showRawApc);
+							maximumOnwardCalls, detailLevel, responseTimestamp, routeIds, filters, showApc, showRawApc, showCancelledTrips);
 			if (visitsForStop != null)
 				visits.addAll(visitsForStop);
 		}
