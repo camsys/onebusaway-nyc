@@ -93,11 +93,9 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
 
     boolean showRawApc = _realtimeService.showRawApc(_request.getParameter("key"));
 
-    boolean showCancelledTrips = false;
     String showCancelledTripsParam = _request.getParameter("showCancelled");
-    if(showCancelledTripsParam != null){
-      showCancelledTrips = Boolean.parseBoolean(showCancelledTripsParam);
-    }
+
+    boolean showCancelledTrips = showCancelledTripsParam != null && Boolean.parseBoolean(showCancelledTripsParam);
 
     String directionId = _request.getParameter("DirectionRef");
     

@@ -228,18 +228,18 @@ public class RealtimeServiceImpl implements RealtimeService {
     for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
       TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
       TripBean tripBeanForAd = adBean.getTrip();
-      final RouteBean routeBean = tripBeanForAd.getRoute();
 
-      boolean isCancelled = false;
-      if(_nycTransitDataService.isTripCancelled(AgencyAndId.convertFromString(tripBeanForAd.getId()))){
-        isCancelled = true;
-      }
+      final boolean isCancelled = adBean.getStatus() != null &&
+                                  adBean.getStatus().equals(TransitDataConstants.STATUS_CANCELED) &&
+                                  showCancelledTrips;
+
+      final RouteBean routeBean = tripBeanForAd.getRoute();
 
       if(statusBeanForCurrentTrip == null) {
         continue;
       }
 
-      if(((!showCancelledTrips) || (showCancelledTrips && !isCancelled)) && (!_presentationService.include(statusBeanForCurrentTrip) ||
+      if(!isCancelled && (!_presentationService.include(statusBeanForCurrentTrip) ||
               !_presentationService.include(adBean, statusBeanForCurrentTrip))) {
         continue;
       }

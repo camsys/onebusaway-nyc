@@ -80,12 +80,9 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 		_realtimeService.setTime(responseTimestamp);
 		String detailLevelParam = _request.getParameter(STOP_MONITORING_DETAIL_LEVEL);
 
-		Boolean showCancelledTrips = false;
 		String showCancelledTripsParam = _request.getParameter(SHOW_CANCELLED_TRIPS);
 
-		if(showCancelledTripsParam != null){
-			showCancelledTrips = Boolean.parseBoolean(showCancelledTripsParam);
-		}
+		boolean showCancelledTrips = showCancelledTripsParam != null && Boolean.parseBoolean(showCancelledTripsParam);
 		
 		//get the detail level parameter or set it to default if not specified
 	    DetailLevel detailLevel;
@@ -161,7 +158,8 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 			// to stopIds.
 			List<MonitoredStopVisitStructure> visitsForStop = _realtimeService
 					.getMonitoredStopVisitsForStop(stopId.toString(),
-							maximumOnwardCalls, detailLevel, responseTimestamp, routeIds, filters, showApc, showRawApc, showCancelledTrips);
+							maximumOnwardCalls, detailLevel, responseTimestamp, routeIds, filters,
+							showApc, showRawApc, showCancelledTrips);
 			if (visitsForStop != null)
 				visits.addAll(visitsForStop);
 		}
