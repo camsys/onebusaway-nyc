@@ -139,11 +139,12 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
                                                                                         int maximumOnwardCalls,
                                                                                         long responseTimestamp,
                                                                                         boolean showApc,
-                                                                                        boolean showRawApc){
+                                                                                        boolean showRawApc,
+                                                                                        boolean isCancelled){
 
         SiriMonitoredVehicleJourneyBuilder siriMonitoredVehicleJourneyBuilder = processMonitoredVehicleJourneyStructureWithBuilder(
             tripOnBlock, currentlyActiveTripOnBlock, monitoredCallStopBean, stopIdToPredictionRecordMap,
-            onwardCallsMode, maximumOnwardCalls, responseTimestamp, showApc, showRawApc);
+            onwardCallsMode, maximumOnwardCalls, responseTimestamp, showApc, showRawApc, isCancelled);
 
         return siriMonitoredVehicleJourneyBuilder.buildMonitoredVehicleJourney();
     }
@@ -157,11 +158,12 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
                                                                                  int maximumOnwardCalls,
                                                                                  long responseTimestamp,
                                                                                  boolean showApc,
-                                                                                 boolean showRawApc){
+                                                                                 boolean showRawApc,
+                                                                                 boolean isCancelled){
 
         SiriMonitoredVehicleJourneyBuilder siriMonitoredVehicleJourneyBuilder = processMonitoredVehicleJourneyStructureWithBuilder(
                 tripOnBlock, currentlyActiveTripOnBlock, monitoredCallStopBean, stopIdToPredictionRecordMap,
-                onwardCallsMode, maximumOnwardCalls, responseTimestamp, showApc, showRawApc);
+                onwardCallsMode, maximumOnwardCalls, responseTimestamp, showApc, showRawApc, isCancelled);
 
         return siriMonitoredVehicleJourneyBuilder.buildMonitoredVehicleJourneyStructure();
     }
@@ -174,7 +176,8 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
                                                                            int maximumOnwardCalls,
                                                                            long responseTimestamp,
                                                                            boolean showApc,
-                                                                           boolean showRawApc){
+                                                                           boolean showRawApc,
+                                                                           boolean isCancelled){
         SiriMonitoredVehicleJourneyBuilder siriMonitoredVehicleJourneyBuilder = new SiriMonitoredVehicleJourneyBuilder();
 
         // Get Block Instance For Current Vehicle Trip
@@ -248,7 +251,7 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
         if(!_presentationService.isOnDetour(currentlyActiveTripOnBlock)) {
             MonitoredCallStructure monitoredCall = _siriMonitoredCallBuilderService.makeMonitoredCall(
                     blockInstance, tripOnBlock, currentlyActiveTripOnBlock, monitoredCallStopBean,
-                    stopIdToPredictionRecordMap, showRawApc, responseTimestamp);
+                    stopIdToPredictionRecordMap, showRawApc, isCancelled, responseTimestamp);
             siriMonitoredVehicleJourneyBuilder.setMonitoredCall(monitoredCall);
         }
 
@@ -346,9 +349,11 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
 
     private boolean displayEnumeratedOccupancy(boolean showApc, TripStatusBean currentVehicleTripStatus){
         if (!showApc
-                ||currentVehicleTripStatus == null
+                || currentVehicleTripStatus == null
                 || currentVehicleTripStatus.getActiveTrip() == null
-                || currentVehicleTripStatus.getActiveTrip().getRoute() ==  null) {
+                || currentVehicleTripStatus.getActiveTrip().getRoute() ==  null
+                || currentVehicleTripStatus.getVehicleId() == null)
+        {
             return false;
         }
         return true;

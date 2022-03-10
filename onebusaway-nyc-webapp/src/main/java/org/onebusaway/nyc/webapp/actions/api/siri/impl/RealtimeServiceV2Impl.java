@@ -27,7 +27,6 @@ import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportPredictionTimepointRecord;
 import org.onebusaway.nyc.presentation.service.realtime.PredictionsSupportService;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
-import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializerV2;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializerV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -41,20 +40,7 @@ import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteForDirection;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.StopOnRoute;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirection;
 import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
-import org.onebusaway.realtime.api.TimepointPredictionRecord;
-import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
-import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
-import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.model.NameBean;
-import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.model.RoutesBean;
-import org.onebusaway.transit_data.model.SearchQueryBean;
-import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data.model.StopGroupBean;
-import org.onebusaway.transit_data.model.StopGroupingBean;
-import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
-import org.onebusaway.transit_data.model.StopsBean;
-import org.onebusaway.transit_data.model.StopsForRouteBean;
+import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
@@ -76,6 +62,7 @@ import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri_2.VehicleActivityStructure;
 import uk.org.siri.siri_2.VehicleActivityStructure.MonitoredVehicleJourney;
+import uk.org.siri.siri_2.VehicleStatusEnumeration;
 
 /**
  * A source of SIRI classes containing real time data, subject to the
@@ -201,7 +188,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetails.getTrip(), tripDetails.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					stopIdToPredictionRecordMap, detailLevel, currentTime, null, showApc, showRawApc);
+					stopIdToPredictionRecordMap, detailLevel, currentTime, null, showApc, showRawApc, false);
 
 			output.add(activity);
 		}
@@ -267,7 +254,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					tripDetailsForCurrentTrip.getStatus(), null,
 					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					stopIdToPredictionRecordMap, detailLevel,currentTime, null, showApc, showRawApc);
+					stopIdToPredictionRecordMap, detailLevel,currentTime, null, showApc, showRawApc, false);
 
 			return output;
 		}
@@ -277,9 +264,9 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(
-			String stopId, int maximumOnwardCalls, DetailLevel detailLevel, 
+			String stopId, int maximumOnwardCalls, DetailLevel detailLevel,
 			long currentTime, List<AgencyAndId> routeIds, Map<Filters, String> filters, boolean showApc,
-			boolean showRawApc) {
+			boolean showRawApc, boolean showCancelledTrips) {
 
 		List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
@@ -301,17 +288,21 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			TripBean tripBeanForAd = adBean.getTrip();
 			final RouteBean routeBean = tripBeanForAd.getRoute();
 
+			final boolean isCancelled = adBean.getStatus() != null &&
+					adBean.getStatus().equals(TransitDataConstants.STATUS_CANCELED) && showCancelledTrips;
+
 			if (statusBeanForCurrentTrip == null)
 				continue;
 
-			if (!_presentationService.include(statusBeanForCurrentTrip)
-					|| !_presentationService.include(adBean,
-							statusBeanForCurrentTrip))
+			if (!isCancelled && (!_presentationService.include(statusBeanForCurrentTrip)
+					|| !_presentationService.include(adBean, statusBeanForCurrentTrip))) {
 				continue;
+			}
 
 			if(!_nycTransitDataService.stopHasRevenueServiceOnRoute((routeBean.getAgency()!=null?routeBean.getAgency().getId():null),
-					stopId, routeBean.getId(), adBean.getTrip().getDirectionId()))
+					stopId, routeBean.getId(), adBean.getTrip().getDirectionId())) {
 				continue;
+			}
 
 			MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
 			stopVisit.setRecordedAtTime(DateUtil
@@ -344,7 +335,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					statusBeanForCurrentTrip, adBean.getStop(),
 					OnwardCallsMode.STOP_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
-					stopIdToPredictionRecordMap, detailLevel, currentTime, filters, showApc, showRawApc);
+					stopIdToPredictionRecordMap, detailLevel, currentTime, filters, showApc, showRawApc, isCancelled);
 
 
 			// Monitored Stop Visits
@@ -381,13 +372,17 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 						visitsMap.remove(visitKey);
 						visitsMap.put(visitKey, stopVisit);
 					}
-					continue;
+					if(!isCancelled) {
+						continue;
+					}
 				} else {
 					visitsMap.put(stopVisit.getMonitoredVehicleJourney()
 							.getVehicleRef().getValue(), stopVisit);
 				}
 			}
-			
+			if(showCancelledTrips && isCancelled) {
+				stopVisit.getMonitoredVehicleJourney().setVehicleStatus(VehicleStatusEnumeration.CANCELLED);
+			}
 			output.add(stopVisit);
 			
 			visitCount++;
