@@ -130,7 +130,8 @@ public class SiriOnwardCallsBuilderServiceImpl implements SiriOnwardCallsBuilder
 
                 // First get DistanceAlongBlock for currently active trip on block
                 if(distanceOfVehicleAlongBlock == null){
-                    distanceOfVehicleAlongBlock = _siriBuilderServiceHelper.getDistanceOfVehicleAlongBlock(currentlyActiveTripOnBlock, blockTrip);
+                    distanceOfVehicleAlongBlock = _siriBuilderServiceHelper.getDistanceOfVehicleAlongBlock(
+                            currentlyActiveTripOnBlock, blockTrip, false);
                     if(distanceOfVehicleAlongBlock == null) {
                         continue;
                     }

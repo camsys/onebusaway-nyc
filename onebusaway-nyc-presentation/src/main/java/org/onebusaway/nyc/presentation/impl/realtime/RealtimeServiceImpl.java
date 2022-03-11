@@ -235,8 +235,9 @@ public class RealtimeServiceImpl implements RealtimeService {
         continue;
       }
 
-      if(!isCancelled && (!_presentationService.include(statusBeanForCurrentTrip) ||
-              !_presentationService.include(adBean, statusBeanForCurrentTrip))) {
+      if(!isCancelled &&
+              (!_presentationService.include(statusBeanForCurrentTrip) ||
+                !_presentationService.include(adBean, statusBeanForCurrentTrip))) {
         continue;
       }
 
@@ -324,7 +325,8 @@ public class RealtimeServiceImpl implements RealtimeService {
   public boolean getVehiclesInServiceForStopAndRoute(String stopId, String routeId, long currentTime) {
 	  for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
 		  TripStatusBean statusBean = adBean.getTripStatus();
-		  if(!_presentationService.include(statusBean) || !_presentationService.include(adBean, statusBean))
+		  if(!_presentationService.include(statusBean) ||
+                  !_presentationService.include(adBean, statusBean))
 			  continue;
 
 		  // filtered out by user

@@ -119,7 +119,7 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
 
         List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
 
-        Double distanceOfVehicleAlongBlock = 0d;
+        Double distanceOfVehicleAlongBlock = null;
         int blockTripStopsAfterTheVehicle = 0;
 
         // Loop through all trips on block to find the stoptime info for trip in question
@@ -131,7 +131,8 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
 
             // First get DistanceAlongBlock for currently active trip on block
             if(distanceOfVehicleAlongBlock == null){
-                distanceOfVehicleAlongBlock = _siriBuilderServiceHelper.getDistanceOfVehicleAlongBlock(currentlyActiveTripOnBlock, blockTrip);
+                distanceOfVehicleAlongBlock = _siriBuilderServiceHelper.getDistanceOfVehicleAlongBlock(
+                        currentlyActiveTripOnBlock, blockTrip, isCancelled);
                 if(distanceOfVehicleAlongBlock == null) {
                     continue;
                 }
@@ -147,17 +148,6 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                 // block trip stops away--on this trip, only after we've passed the stop,
                 // on future trips, count always.
                 if (currentlyActiveTripOnBlock.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
-                    double distanceAlongTrip;
-                    // TODO - this should include a check to see if its realtime or not
-
-                    if (isCancelled) {
-                        distanceAlongTrip = currentlyActiveTripOnBlock.getScheduledDistanceAlongTrip();
-                    } else {
-                        distanceAlongTrip = currentlyActiveTripOnBlock.getDistanceAlongTrip();
-                    }
-
-                    distanceOfVehicleAlongBlock += distanceAlongTrip;
-
 
                     if (stopTime.getDistanceAlongBlock() >= distanceOfVehicleAlongBlock) {
                         blockTripStopsAfterTheVehicle++;

@@ -289,7 +289,7 @@ public class PresentationServiceImpl implements PresentationService {
       return false;
 
     _log.debug(statusBean.getVehicleId() + " running through filter: ");
-    
+
     // hide non-realtime
     if(statusBean.isPredicted() == false) {
       _log.debug("  " + statusBean.getVehicleId() + " filtered out because is not realtime.");

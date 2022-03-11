@@ -756,7 +756,11 @@ public final class SiriSupportV2 {
 
 			if(foundActiveTrip != true){
 				if(tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
-					distanceOfVehicleAlongBlock = blockTrip.getDistanceAlongBlock()  + tripStatus.getDistanceAlongTrip();
+					if(!isCancelled) {
+						distanceOfVehicleAlongBlock = blockTrip.getDistanceAlongBlock() + tripStatus.getDistanceAlongTrip();
+					} else {
+						distanceOfVehicleAlongBlock = blockTrip.getDistanceAlongBlock() + tripStatus.getScheduledDistanceAlongTrip();
+					}
 					foundActiveTrip = true;
 				}
 				else {

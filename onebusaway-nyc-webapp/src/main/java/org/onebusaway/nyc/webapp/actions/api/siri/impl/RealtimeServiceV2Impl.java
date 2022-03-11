@@ -233,8 +233,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		TripDetailsBean tripDetailsForCurrentTrip = _nycTransitDataService
 				.getTripDetailsForVehicleAndTime(query);
 		if (tripDetailsForCurrentTrip != null) {
-			if (!_presentationService.include(tripDetailsForCurrentTrip
-					.getStatus()))
+			if (!_presentationService.include(tripDetailsForCurrentTrip.getStatus()))
 				return null;
 
 			VehicleActivityStructure output = new VehicleActivityStructure();

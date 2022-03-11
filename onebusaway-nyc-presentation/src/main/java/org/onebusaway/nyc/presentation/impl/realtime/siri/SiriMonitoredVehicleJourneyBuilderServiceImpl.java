@@ -178,6 +178,7 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
                                                                            boolean showApc,
                                                                            boolean showRawApc,
                                                                            boolean isCancelled){
+
         SiriMonitoredVehicleJourneyBuilder siriMonitoredVehicleJourneyBuilder = new SiriMonitoredVehicleJourneyBuilder();
 
         // Get Block Instance For Current Vehicle Trip
