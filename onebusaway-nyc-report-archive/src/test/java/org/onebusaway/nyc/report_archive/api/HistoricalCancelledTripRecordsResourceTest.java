@@ -59,7 +59,8 @@ public class HistoricalCancelledTripRecordsResourceTest {
 
         r.setCancelledTripDao(dao);
 
-        Response response  = r.getHistoricalCancelledTripRecords(500, null, null, null);
+        Response response  = r.getHistoricalCancelledTripRecords(500, null,
+                null, "2022-03-11", null, null);
         System.out.println("response= "+response);
 
         Object entity = response.getEntity();

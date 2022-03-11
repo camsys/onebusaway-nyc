@@ -66,9 +66,9 @@ public class HistoricalCancelledTripRecordsResource {
             @QueryParam(value="numberOfRecords")  Integer requestedNumberOfRecords,
             @QueryParam(value="trip")  String requestedTrip,
             @QueryParam(value="block")  String requestedBlock,
+            @PathParam(value="serviceDate") String requestedDate,
             @QueryParam(value="startTime")  String startTime,
-            @QueryParam(value="endTime")  String endTime,
-            @PathParam(value="serviceDate") String requestedDate
+            @QueryParam(value="endTime")  String endTime
     ) {
         final Integer MAX_RECORDS = 5000;
         Integer numberOfRecords = MAX_RECORDS;
