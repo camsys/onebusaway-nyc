@@ -28,17 +28,25 @@ import java.util.TimeZone;
 
 public class CustomDateSerializer  extends StdSerializer<Long> {
 
+    protected CustomDateSerializer() {
+        this(null);
+    }
+
     protected CustomDateSerializer(Class<Long> t) {
         super(t);
     }
 
     @Override
     public void serialize(Long aLong, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-        LocalDateTime dateTime =
-                LocalDateTime.ofInstant(Instant.ofEpochMilli(aLong), TimeZone.getDefault().toZoneId());
+        String output = null;
+        if(aLong != null){
+            LocalDateTime dateTime =
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(aLong), TimeZone.getDefault().toZoneId());
 
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_ZONED_DATE_TIME;
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            output = dateTime.format(formatter);
 
-        jsonGenerator.writeString(dateTime.format(formatter));
+        }
+        jsonGenerator.writeString(output);
     }
 }

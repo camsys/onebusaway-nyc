@@ -55,7 +55,7 @@ public class NycCancelledTripRecord implements Serializable {
 
     @Column(nullable = false, name = "record_timestamp")
     @JsonSerialize(using = CustomDateSerializer.class)
-    private long recordTimeStamp;
+    private Long recordTimeStamp;
 
     @Column(name = "block")
     private String block;
@@ -95,7 +95,7 @@ public class NycCancelledTripRecord implements Serializable {
 
     public NycCancelledTripRecord(){}
 
-    public NycCancelledTripRecord(CancelledTripBean cancelledTripBean, long recordTimeStamp){
+    public NycCancelledTripRecord(CancelledTripBean cancelledTripBean, Long recordTimeStamp){
         setBlock(cancelledTripBean.getBlock());
         setTrip(cancelledTripBean.getTrip());
         setStatus(cancelledTripBean.getStatus());
@@ -123,11 +123,11 @@ public class NycCancelledTripRecord implements Serializable {
         this.id = id;
     }
 
-    public long getRecordTimeStamp() {
+    public Long getRecordTimeStamp() {
         return recordTimeStamp;
     }
 
-    public void setRecordTimeStamp(long recordTimeStamp) {
+    public void setRecordTimeStamp(Long recordTimeStamp) {
         this.recordTimeStamp = recordTimeStamp;
     }
 

@@ -18,6 +18,7 @@ package org.onebusaway.nyc.report_archive.services;
 
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report.services.LocationDao;
+import org.onebusaway.nyc.report_archive.api.HistoricalCancelledTripQuery;
 import org.onebusaway.nyc.report_archive.model.NycCancelledTripRecord;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,6 @@ public interface CancelledTripDao {
   List<NycCancelledTripRecord> getReports();
 
   @Transactional
-  List<NycCancelledTripRecord> getReports(String requestedDate, Integer numberOfRecords, String trip, String block)
+  List<NycCancelledTripRecord> getReports(HistoricalCancelledTripQuery query)
           throws java.text.ParseException;
 }
