@@ -20,6 +20,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.api.HistoricalCancelledTripQuery;
 import org.onebusaway.nyc.report_archive.model.NycCancelledTripRecord;

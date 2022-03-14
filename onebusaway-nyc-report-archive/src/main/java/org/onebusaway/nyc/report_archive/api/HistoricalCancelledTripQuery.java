@@ -34,7 +34,7 @@ public class HistoricalCancelledTripQuery {
     }
 
     public void setRequestedDate(String requestedDate) {
-        LocalDate.parse(requestedDate);
+        this.requestedDate = LocalDate.parse(requestedDate);
     }
 
     public Integer getNumberOfRecords() {

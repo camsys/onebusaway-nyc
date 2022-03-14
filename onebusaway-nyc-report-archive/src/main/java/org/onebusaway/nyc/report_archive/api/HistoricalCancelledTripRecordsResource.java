@@ -83,7 +83,7 @@ public class HistoricalCancelledTripRecordsResource {
         HistoricalCancelledTripRecordsMessage recordsMessage = new HistoricalCancelledTripRecordsMessage();
 
         HistoricalCancelledTripQuery query = new HistoricalCancelledTripQuery();
-        query.setNumberOfRecords(requestedNumberOfRecords);
+        query.setNumberOfRecords(numberOfRecords);
         query.setRequestedTrip(requestedTrip);
         query.setRequestedBlock(requestedBlock);
         query.setRequestedDate(requestedDate);
@@ -92,7 +92,7 @@ public class HistoricalCancelledTripRecordsResource {
 
         try {
             historicalRecords = cancelledTripDao.getReports(query);
-            log.info("HistoricalRecords= {}",historicalRecords);
+            log.info("HistoricalRecords= {}",historicalRecords.size());
             recordsMessage.setRecords(historicalRecords);
             recordsMessage.setStatus("OK");
 
