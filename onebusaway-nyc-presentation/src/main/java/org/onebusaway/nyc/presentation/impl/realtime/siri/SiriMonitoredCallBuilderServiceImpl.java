@@ -120,6 +120,7 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
         List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
 
         Double distanceOfVehicleAlongBlock = null;
+
         int blockTripStopsAfterTheVehicle = 0;
 
         // Loop through all trips on block to find the stoptime info for trip in question
@@ -138,17 +139,19 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                 }
             }
 
+            boolean blockTripMatchesActiveTrip =
+                    currentlyActiveTripOnBlock.getActiveTrip().getId().equals(blockTrip.getTrip().getId());
+
             HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();
+
             boolean foundArrivalDepartureTripOnBlock = false;
 
             // Loop through all stop times until we reach the one for monitored call
             for (BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
-                int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStopTime().getStop());
 
                 // block trip stops away--on this trip, only after we've passed the stop,
                 // on future trips, count always.
-                if (currentlyActiveTripOnBlock.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
-
+                if (blockTripMatchesActiveTrip) {
                     if (stopTime.getDistanceAlongBlock() >= distanceOfVehicleAlongBlock) {
                         blockTripStopsAfterTheVehicle++;
                     } else {
@@ -176,6 +179,7 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                 }
 
                 // monitored call
+                int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStopTime().getStop());
                 if (stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())) {
                     if (!_presentationService.isOnDetour(currentlyActiveTripOnBlock)) {
 

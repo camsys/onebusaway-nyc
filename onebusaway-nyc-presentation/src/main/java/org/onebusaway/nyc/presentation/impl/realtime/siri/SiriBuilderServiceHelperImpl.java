@@ -59,12 +59,10 @@ public class SiriBuilderServiceHelperImpl implements SiriBuilderServiceHelper {
 
         if(currentlyActiveTripId.equals(blockTripId)) {
             Double distanceOfVehicleAlongBlock = blockTrip.getDistanceAlongBlock();
-            Double distanceOfVehicleAlongTrip;
+            Double distanceOfVehicleAlongTrip = currentlyActiveTripOnBlock.getDistanceAlongTrip();
 
-            if (isCancelled) {
-                distanceOfVehicleAlongTrip = currentlyActiveTripOnBlock.getScheduledDistanceAlongTrip();
-            } else {
-                distanceOfVehicleAlongTrip = currentlyActiveTripOnBlock.getDistanceAlongTrip();
+            if (Double.isNaN(distanceOfVehicleAlongTrip)) {
+                distanceOfVehicleAlongTrip = 0d;
             }
 
             if(distanceOfVehicleAlongBlock != null && distanceOfVehicleAlongTrip != null){
