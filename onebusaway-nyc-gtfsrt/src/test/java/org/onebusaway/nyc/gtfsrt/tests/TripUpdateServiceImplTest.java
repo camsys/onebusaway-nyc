@@ -22,18 +22,19 @@ import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.impl.TripUpdateServiceImpl;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
+import org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.model.trips.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,6 +59,13 @@ public class TripUpdateServiceImplTest {
       @Override
       public TripUpdate.Builder makeTripUpdate(TripBean trip, VehicleStatusBean vehicle, List<TimepointPredictionRecord> records) {
         return TripUpdate.newBuilder().setTrip(TripDescriptor.newBuilder().setTripId(trip.getId()));
+      }
+
+      @Override
+      public TripUpdate.Builder makeCanceledTrip(TripBean trip) {
+        TripStatusBean bean = new TripStatusBean();
+        bean.setServiceDate(System.currentTimeMillis());
+        return GtfsRealtimeLibrary.makeCanceledTrip(trip, bean);
       }
     };
 
@@ -133,10 +141,41 @@ public class TripUpdateServiceImplTest {
     assertTrip("trip1", ret.get(0));
   }
 
+  @Test
+  public void testCancelled() {
+    List <CancelledTripBean> canceledList = new ArrayList<>();
+    CancelledTripBean cancelledTripBean = new CancelledTripBean();
+    cancelledTripBean.setTrip("1_trip1");
+    canceledList.add(cancelledTripBean);
+    ListBean<CancelledTripBean> beans = new ListBean(canceledList, false);
+
+    VehicleStatusBean vsb = vehicleStatus("vehicle", "1_block", 1);
+    BlockInstanceBean block = blockInstance(blockTrip("1_trip0"), blockTripRoute("1_trip1", "1_route1"));
+    when(tds.getAllVehiclesForAgency("agency", 0)).thenReturn(UnitTestSupport.listBean(vsb));
+    when(tds.getBlockInstance("1_block", 0)).thenReturn(block);
+    when(tds.getAllCancelledTrips()).thenReturn(beans);
+    when(tds.getTrip("1_trip1")).thenReturn(blockTripRoute("1_trip1", "1_route1").getTrip());
+    List<FeedEntity.Builder> entities = service.getEntities(0);
+    assertTrue(entities.size() == 1);
+    assertEquals("trip1", entities.get(0).getId());  // note that agency doesn't come back
+    assertEquals(TripDescriptor.ScheduleRelationship.CANCELED, entities.get(0).getTripUpdate().getTrip().getScheduleRelationship());
+  }
+
   private BlockTripBean blockTrip(String tripId) {
     BlockTripBean btb = new BlockTripBean();
     btb.setTrip(new TripBean());
     btb.getTrip().setId(tripId);
+    return btb;
+  }
+
+  private BlockTripBean blockTripRoute(String tripId, String routeId) {
+    BlockTripBean btb = new BlockTripBean();
+    btb.setTrip(new TripBean());
+    btb.getTrip().setId(tripId);
+    RouteBean.Builder routeBuilder = RouteBean.builder();
+    routeBuilder.setId(routeId);
+    btb.getTrip().setRoute(routeBuilder.create());
+    btb.getTrip().setDirectionId("0");
     return btb;
   }
 

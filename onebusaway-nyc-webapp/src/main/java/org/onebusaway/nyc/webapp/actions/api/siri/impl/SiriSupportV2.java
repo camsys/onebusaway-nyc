@@ -38,7 +38,6 @@ import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteForDirection;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.StopOnRoute;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirection;
-import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
@@ -102,7 +101,8 @@ public final class SiriSupportV2 {
 	/**
 	 * NOTE: The tripDetails bean here may not be for the trip the vehicle is
 	 * currently on in the case of A-D for stop!
-	 * @param filters 
+	 * @param filters
+	 * @param isCancelled
 	 */
 	public static void fillMonitoredVehicleJourney(
 			MonitoredVehicleJourneyStructure monitoredVehicleJourney,
@@ -115,7 +115,7 @@ public final class SiriSupportV2 {
 			Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap,
 			DetailLevel detailLevel,
 			long responseTimestamp, Map<Filters, String> filters,
-			boolean showApc, boolean showRawApc) {
+			boolean showApc, boolean showRawApc, boolean isCancelled) {
 
 		BlockInstanceBean blockInstance = nycTransitDataService
 				.getBlockInstance(currentVehicleTripStatus.getActiveTrip()
@@ -165,7 +165,19 @@ public final class SiriSupportV2 {
 
 		// Vehicle Id
 		VehicleRefStructure vehicleRef = new VehicleRefStructure();
-		vehicleRef.setValue(currentVehicleTripStatus.getVehicleId());
+		if(currentVehicleTripStatus.getVehicleId() == null){
+			String tripId = framedJourneyTripBean.getId();
+			String blockId = framedJourneyTripBean.getBlockId();
+			String directionId = framedJourneyTripBean.getDirectionId();
+			String vehicleIdHash = Integer.toString((tripId + blockId + directionId).hashCode());
+			String agencyName = tripId.split("_")[0];
+			String vehicleId = agencyName + "_" + vehicleIdHash;
+
+			vehicleRef.setValue(vehicleId);
+		}
+		else{
+			vehicleRef.setValue(currentVehicleTripStatus.getVehicleId());
+		}
 
 		// Set Origin and Destination stops from Block trips. 
 		StopBean lastStop = new StopBean();
@@ -284,7 +296,7 @@ public final class SiriSupportV2 {
 			fillMonitoredCall(monitoredVehicleJourney, blockInstance,
 					framedJourneyTripBean, currentVehicleTripStatus,
 					monitoredCallStopBean, presentationService, nycTransitDataService,
-					stopIdToPredictionRecordMap, detailLevel, showApc, showRawApc, responseTimestamp);
+					stopIdToPredictionRecordMap, detailLevel, showApc, showRawApc, responseTimestamp, isCancelled);
 
 
 		// detail level - minimal
@@ -319,7 +331,7 @@ public final class SiriSupportV2 {
 					currentVehicleTripStatus.getPhase()));
 
 
-			if(showApc) {
+			if(showApc && !isCancelled) {
 				fillOccupancy(monitoredVehicleJourney,
 						nycTransitDataService,
 						currentVehicleTripStatus);
@@ -728,7 +740,7 @@ public final class SiriSupportV2 {
 			DetailLevel detailLevel,
 			boolean showApc,
 			boolean showRawApc,
-			long responseTimestamp) {
+			long responseTimestamp, boolean isCancelled) {
 
 		List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration()
 				.getTrips();
@@ -744,7 +756,11 @@ public final class SiriSupportV2 {
 
 			if(foundActiveTrip != true){
 				if(tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
-					distanceOfVehicleAlongBlock = blockTrip.getDistanceAlongBlock()  + tripStatus.getDistanceAlongTrip();
+					if(!isCancelled) {
+						distanceOfVehicleAlongBlock = blockTrip.getDistanceAlongBlock() + tripStatus.getDistanceAlongTrip();
+					} else {
+						distanceOfVehicleAlongBlock = blockTrip.getDistanceAlongBlock() + tripStatus.getScheduledDistanceAlongTrip();
+					}
 					foundActiveTrip = true;
 				}
 				else {
@@ -809,7 +825,7 @@ public final class SiriSupportV2 {
 								showApc,
 								showRawApc,
 								responseTimestamp,
-								stopTime.getStopTime().getArrivalTime())
+								stopTime.getStopTime().getArrivalTime(), isCancelled)
 						);
 
 					}
@@ -935,7 +951,8 @@ public final class SiriSupportV2 {
 			boolean showApc,
 			boolean showRawApc,
 			long responseTimestamp,
-			int arrivalTime) {
+			int arrivalTime,
+			boolean isCancelled) {
 
 		MonitoredCallStructure monitoredCallStructure = new MonitoredCallStructure();
 		monitoredCallStructure.setVisitNumber(BigInteger.valueOf(visitNumber));
@@ -990,8 +1007,11 @@ public final class SiriSupportV2 {
 				.getPresentableDistance(distanceOfVehicleFromCall, index));
 
 		monitoredCallStructure.setNumberOfStopsAway(BigInteger.valueOf(index));
-		monitoredCallStructure.setDistanceFromStop(new BigDecimal(distanceOfVehicleFromCall).toBigInteger());
-		monitoredCallStructure.setArrivalProximityText(presentableDistance);
+		if(!isCancelled) {
+			monitoredCallStructure.setDistanceFromStop(new BigDecimal(distanceOfVehicleFromCall).toBigInteger());
+			monitoredCallStructure.setArrivalProximityText(presentableDistance);
+		}
+
 
 
 		// basic 

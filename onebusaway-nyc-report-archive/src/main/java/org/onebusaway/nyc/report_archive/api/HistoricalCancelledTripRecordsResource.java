@@ -66,7 +66,9 @@ public class HistoricalCancelledTripRecordsResource {
             @QueryParam(value="numberOfRecords")  Integer requestedNumberOfRecords,
             @QueryParam(value="trip")  String requestedTrip,
             @QueryParam(value="block")  String requestedBlock,
-            @PathParam(value="serviceDate") String requestedDate
+            @PathParam(value="serviceDate") String requestedDate,
+            @QueryParam(value="startTime")  String startTime,
+            @QueryParam(value="endTime")  String endTime
     ) {
         final Integer MAX_RECORDS = 5000;
         Integer numberOfRecords = MAX_RECORDS;
@@ -80,9 +82,17 @@ public class HistoricalCancelledTripRecordsResource {
         List<NycCancelledTripRecord> historicalRecords = null;
         HistoricalCancelledTripRecordsMessage recordsMessage = new HistoricalCancelledTripRecordsMessage();
 
+        HistoricalCancelledTripQuery query = new HistoricalCancelledTripQuery();
+        query.setNumberOfRecords(numberOfRecords);
+        query.setRequestedTrip(requestedTrip);
+        query.setRequestedBlock(requestedBlock);
+        query.setRequestedDate(requestedDate);
+        query.setStartTime(startTime);
+        query.setEndTime(endTime);
+
         try {
-            historicalRecords = cancelledTripDao.getReports(requestedDate, numberOfRecords, requestedTrip, requestedBlock);
-            log.info("HistoricalRecords= {}",historicalRecords);
+            historicalRecords = cancelledTripDao.getReports(query);
+            log.info("HistoricalRecords= {}",historicalRecords.size());
             recordsMessage.setRecords(historicalRecords);
             recordsMessage.setStatus("OK");
 

@@ -30,12 +30,12 @@ import org.onebusaway.nyc.report_archive.services.HistoricalRecordsDao;
 
 import javax.ws.rs.core.Response;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonPartEquals;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -51,13 +51,16 @@ public class HistoricalCancelledTripRecordsResourceTest {
         NycCancelledTripRecord cancelledTripRecord = new NycCancelledTripRecord();
         cancelledTripRecord.setId((long) 1);
         cancelledTripRecord.setBlock("test block");
+        cancelledTripRecord.setServiceDate(LocalDate.now());
+        cancelledTripRecord.setRecordTimeStamp(1647030102000l);
         results.add(cancelledTripRecord);
         System.out.println("results= "+results);
-        when(dao.getReports( anyString(),anyInt(), anyString(), anyString())).thenReturn(results);
+        when(dao.getReports(any(HistoricalCancelledTripQuery.class))).thenReturn(results);
 
         r.setCancelledTripDao(dao);
 
-        Response response  = r.getHistoricalCancelledTripRecords(500, null, null, null);
+        Response response  = r.getHistoricalCancelledTripRecords(500, null,
+                null, "2022-03-11", null, null);
         System.out.println("response= "+response);
 
         Object entity = response.getEntity();

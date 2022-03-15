@@ -17,13 +17,9 @@
 package org.onebusaway.nyc.report_archive.impl;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.model.NycCancelledTripRecord;
 import org.onebusaway.nyc.report_archive.services.CancelledTripDao;
 import org.onebusaway.nyc.report_archive.services.CancelledTripPersistenceService;
-import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
-import org.onebusaway.nyc.report_archive.services.RealtimePersistenceService;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

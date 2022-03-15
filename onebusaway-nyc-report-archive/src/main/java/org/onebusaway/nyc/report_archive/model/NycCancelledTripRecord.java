@@ -18,13 +18,14 @@ package org.onebusaway.nyc.report_archive.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
-import org.onebusaway.nyc.transit_data.model.NycCancelledTripBean;
-
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
+import org.onebusaway.nyc.report_archive.api.json.CustomDateSerializer;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -53,7 +54,8 @@ public class NycCancelledTripRecord implements Serializable {
     private Long id;
 
     @Column(nullable = false, name = "record_timestamp")
-    private long recordTimeStamp;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Long recordTimeStamp;
 
     @Column(name = "block")
     private String block;
@@ -93,23 +95,23 @@ public class NycCancelledTripRecord implements Serializable {
 
     public NycCancelledTripRecord(){}
 
-    public NycCancelledTripRecord(NycCancelledTripBean nycCancelledTripBean, long recordTimeStamp){
-        setBlock(nycCancelledTripBean.getBlock());
-        setTrip(nycCancelledTripBean.getTrip());
-        setStatus(nycCancelledTripBean.getStatus());
-        setRoute(nycCancelledTripBean.getRoute());
-        setRouteId(nycCancelledTripBean.getRouteId());
-        setFirstStopId(nycCancelledTripBean.getFirstStopId());
-        setServiceDate(LocalDate.parse(nycCancelledTripBean.getServiceDate()));
-        setFirstStopDepartureTime(LocalTime.parse(nycCancelledTripBean.getFirstStopDepartureTime()));
-        setLastStopArrivalTime(LocalTime.parse(nycCancelledTripBean.getLastStopArrivalTime()));
+    public NycCancelledTripRecord(CancelledTripBean cancelledTripBean, Long recordTimeStamp){
+        setBlock(cancelledTripBean.getBlock());
+        setTrip(cancelledTripBean.getTrip());
+        setStatus(cancelledTripBean.getStatus());
+        setRoute(cancelledTripBean.getRoute());
+        setRouteId(cancelledTripBean.getRouteId());
+        setFirstStopId(cancelledTripBean.getFirstStopId());
+        setServiceDate(LocalDate.parse(cancelledTripBean.getServiceDate()));
+        setFirstStopDepartureTime(LocalTime.parse(cancelledTripBean.getFirstStopDepartureTime()));
+        setLastStopArrivalTime(LocalTime.parse(cancelledTripBean.getLastStopArrivalTime()));
         setRecordTimeStamp(recordTimeStamp);
 
-        if(nycCancelledTripBean.getTimestamp() > 0){
-            setTimestamp(new Date(nycCancelledTripBean.getTimestamp()));
+        if(cancelledTripBean.getTimestamp() > 0){
+            setTimestamp(new Date(cancelledTripBean.getTimestamp()));
         }
-        if(nycCancelledTripBean.getScheduledPullOut() != null){
-            setScheduledPullOut(nycCancelledTripBean.getScheduledPullOut());
+        if(cancelledTripBean.getScheduledPullOut() != null){
+            setScheduledPullOut(cancelledTripBean.getScheduledPullOut());
         }
     }
 
@@ -121,11 +123,11 @@ public class NycCancelledTripRecord implements Serializable {
         this.id = id;
     }
 
-    public long getRecordTimeStamp() {
+    public Long getRecordTimeStamp() {
         return recordTimeStamp;
     }
 
-    public void setRecordTimeStamp(long recordTimeStamp) {
+    public void setRecordTimeStamp(Long recordTimeStamp) {
         this.recordTimeStamp = recordTimeStamp;
     }
 

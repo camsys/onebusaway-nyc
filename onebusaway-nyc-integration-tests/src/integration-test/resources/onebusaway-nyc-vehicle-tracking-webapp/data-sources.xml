@@ -43,12 +43,7 @@
         <property name="password" value="" />
     </bean>
 
-    <bean id="mutableDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-        <property name="url" value="jdbc:hsqldb:file:${onebusaway_prefix}/target/org_onebusaway_database_mutable" />
-        <property name="username" value="sa" />
-        <property name="password" value="" />
-    </bean>
+    <alias name="dataSource" alias="mutableDataSource" />
 
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="hibernateProperties" />
@@ -99,8 +94,8 @@
     </bean>
     
     <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-                <property name="bundleStoreRoot" value="${bundle.location}" />
-                <property name="standaloneMode" value="${bundle.mode.standalone}" />
+                <property name="bundleStoreRoot" value="${onebusaway_prefix}/target/transit-data-bundle" />
+                <property name="standaloneMode" value="true" />
     </bean>
 
     <!-- GTFS-Sometimes -->

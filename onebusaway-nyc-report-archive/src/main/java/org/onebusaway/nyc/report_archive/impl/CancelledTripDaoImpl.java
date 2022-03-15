@@ -20,7 +20,9 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report_archive.api.HistoricalCancelledTripQuery;
 import org.onebusaway.nyc.report_archive.model.NycCancelledTripRecord;
 import org.onebusaway.nyc.report_archive.services.CancelledTripDao;
 import org.slf4j.Logger;
@@ -31,8 +33,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -79,10 +84,14 @@ public class CancelledTripDaoImpl implements CancelledTripDao {
     }
     @Transactional
     @Override
-    public List<NycCancelledTripRecord> getReports(String requestedDate, Integer numberOfRecords, String trip,
-                                                   String block) throws java.text.ParseException {
+    public List<NycCancelledTripRecord> getReports(HistoricalCancelledTripQuery hctQuery) throws java.text.ParseException {
 
-        LocalDate serviceDate = LocalDate.parse(requestedDate);
+        LocalDate serviceDate = hctQuery.getRequestedDate();
+        String trip = hctQuery.getRequestedTrip();
+        String block = hctQuery.getRequestedBlock();
+        Integer numberOfRecords = hctQuery.getNumberOfRecords();
+        LocalTime startTime = hctQuery.getStartTime();
+        LocalTime endTime = hctQuery.getEndTime();
 
         String hql = "FROM NycCancelledTripRecord r where r.serviceDate = :sd";
 
@@ -92,6 +101,21 @@ public class CancelledTripDaoImpl implements CancelledTripDao {
         if (block != null){
             hql += " and r.block = :b";
         }
+        if(startTime != null){
+            try {
+                hql += " and r.timestamp >= :startTime";
+            } catch (Exception e){
+                _log.error("Unable to parse start time {}", startTime, e);
+            }
+        }
+        if(endTime != null){
+            try {
+                hql += " and r.timestamp >= :endTime";
+            } catch (Exception e){
+                _log.error("Unable to parse end time {}", endTime, e);
+            }
+        }
+
 
         hql += " ORDER BY r.timestamp DESC, r.id DESC";
 
@@ -104,6 +128,12 @@ public class CancelledTripDaoImpl implements CancelledTripDao {
         }
         if (block != null){
             q.setParameter("b", block);
+        }
+        if(startTime != null){
+            q.setParameter("startTime", LocalDateTime.of(serviceDate, startTime));
+        }
+        if(endTime != null){
+            q.setParameter("endTime", LocalDateTime.of(serviceDate, endTime));
         }
 
         q.setMaxResults(numberOfRecords);

@@ -80,6 +80,7 @@ public interface SiriMonitoredCallBuilderService {
                                              StopBean monitoredCallStopBean,
                                              Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions,
                                              boolean showRawApc,
+                                             boolean isCancelled,
                                              long responseTimestamp
 
     );

@@ -49,9 +49,25 @@ public class SiriBuilderServiceHelperImpl implements SiriBuilderServiceHelper {
     }
 
     @Override
-    public Double getDistanceOfVehicleAlongBlock(TripStatusBean currentlyActiveTripOnBlock, BlockTripBean blockTrip) {
-        if(currentlyActiveTripOnBlock.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
-            return blockTrip.getDistanceAlongBlock()  + currentlyActiveTripOnBlock.getDistanceAlongTrip();
+    public Double getDistanceOfVehicleAlongBlock(TripStatusBean currentlyActiveTripOnBlock, BlockTripBean blockTrip,
+                                                 boolean isCancelled) {
+
+        // TODO - this should include a check to see if its realtime or not
+
+        String currentlyActiveTripId = currentlyActiveTripOnBlock.getActiveTrip().getId();
+        String blockTripId = blockTrip.getTrip().getId();
+
+        if(currentlyActiveTripId.equals(blockTripId)) {
+            Double distanceOfVehicleAlongBlock = blockTrip.getDistanceAlongBlock();
+            Double distanceOfVehicleAlongTrip = currentlyActiveTripOnBlock.getDistanceAlongTrip();
+
+            if (Double.isNaN(distanceOfVehicleAlongTrip)) {
+                distanceOfVehicleAlongTrip = 0d;
+            }
+
+            if(distanceOfVehicleAlongBlock != null && distanceOfVehicleAlongTrip != null){
+                return distanceOfVehicleAlongBlock  + distanceOfVehicleAlongTrip;
+            }
         }
         return null;
     }

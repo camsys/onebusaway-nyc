@@ -42,8 +42,7 @@ public interface RealtimeService {
   public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, 
 	      String directionId, int maximumOnwardCalls, long currentTime, boolean showApc, boolean showRawApc);
 	    
-  public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, 
-      int maximumOnwardCalls, long currentTime, boolean showApc, boolean showRawApc);
+  public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls, long currentTime, boolean showApc, boolean showRawApc, boolean showCancelledTrips);
 
   
   public boolean getVehiclesInServiceForRoute(String routeId, String directionId, long currentTime);
