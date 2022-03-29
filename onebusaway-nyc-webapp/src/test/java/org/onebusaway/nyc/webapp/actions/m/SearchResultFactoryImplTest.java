@@ -237,7 +237,7 @@ public class SearchResultFactoryImplTest {
     when(monCall.getExtensions()).thenReturn(extensions );
     when(monVehJourney.getMonitoredCall()).thenReturn(monCall );
     
-    when(_realtimeService.getMonitoredStopVisitsForStop(eq(TEST_STOP_ID), eq(0), anyLong(), anyBoolean(), anyBoolean(), false)).thenReturn(monitoredStopVisits );
+    when(_realtimeService.getMonitoredStopVisitsForStop(eq(TEST_STOP_ID), eq(0), anyLong(), anyBoolean(), anyBoolean(), anyBoolean())).thenReturn(monitoredStopVisits );
 
     when(_nycTransitDataService.getStopsForRoute(anyString())).thenReturn(
         stopsForRouteBean);
