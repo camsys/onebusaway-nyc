@@ -16,9 +16,8 @@
 package org.onebusaway.nyc.gtfsrt.controller;
 
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
-import org.onebusaway.nyc.gtfsrt.impl.TripUpdateServiceImpl;
-import org.onebusaway.nyc.gtfsrt.impl.VehicleUpdateServiceImpl;
 import org.onebusaway.nyc.gtfsrt.service.FeedMessageService;
+import org.onebusaway.nyc.transit_data_manager.siri.NycSiriService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -31,9 +30,25 @@ import java.io.IOException;
 @Controller
 public class GtfsRealtimeController {
 
+    private static long DEFAULT_ALERT_REFRESH_INTERVAL = 60 * 1000;
+
     private FeedMessageService _vehicleUpdateService;
     private FeedMessageService _tripUpdateService;
     private FeedMessageService _serviceAlertService;
+    @Autowired
+    private NycSiriService _siriService;
+
+    private long lastAlertInvocation = System.currentTimeMillis();
+
+    private long alertRefreshInMillis = DEFAULT_ALERT_REFRESH_INTERVAL;
+    public void setAlertRefreshInMillis(long interval) {
+        this.alertRefreshInMillis = interval;
+    }
+    private long getAlertRefreshIntervalInMillis() {
+        return alertRefreshInMillis;
+    }
+
+
 
     @Autowired
     @Qualifier("vehicleUpdateServiceImpl")
@@ -76,8 +91,19 @@ public class GtfsRealtimeController {
                           @RequestParam(value = "debug", defaultValue = "false") boolean debug,
                           @RequestParam(value = "time", required = false) Long time)
         throws IOException {
+        forceReloadOfAlerts();
         FeedMessage msg = _serviceAlertService.getFeedMessage(time);
         writeFeed(response, msg, debug);
+    }
+
+    // SIRI subscription doesn't work for gtfsrt -- and we wouldn't want
+    // that endpoint public regardless.  Manually reload alerts on a
+    // configurable interval
+    private synchronized void forceReloadOfAlerts() {
+        if (System.currentTimeMillis() - lastAlertInvocation > getAlertRefreshIntervalInMillis()) {
+            _siriService.setup();
+            lastAlertInvocation = System.currentTimeMillis();
+        }
     }
 
     private void writeFeed(HttpServletResponse response, FeedMessage msg, boolean debug)
