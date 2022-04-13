@@ -136,9 +136,9 @@ public class CancelledTripToSiriTransformer {
     pt.setSituationNumber(s);
     // ideally this would be configurable/templated
     // we lookup the last stop name, if that succees the format is:
-    // The 10:49am B38 bus to [dest terminal] is cannceled
+    // The 10:49am B38 bus to [dest terminal] is canceled
     // if that lookup fails, we fall back to
-    // The 10:49am B38 bus from [orig terminal] is cannceled
+    // The 10:49am B38 bus from [orig terminal] is canceled
 
     String lastStopName = lookupLastStopName(cancelledTrip.getTrip());
     String descriptionText = null;

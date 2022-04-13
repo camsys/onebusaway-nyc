@@ -19,6 +19,7 @@ package org.onebusaway.nyc.transit_data_manager.api.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_manager.api.IncomingNycCancelledTripBeansContainer;
 import org.onebusaway.nyc.transit_data_manager.api.dao.CapiDao;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -31,6 +32,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import javax.annotation.PostConstruct;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -41,9 +43,17 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
 
     public static final int DEFAULT_REFRESH_INTERVAL = 15 * 1000;
 
+
+    private NycTransitDataService _nycTransitDataService;
+
     private ThreadPoolTaskScheduler _taskScheduler;
 
     private List<CancelledTripBean> _cancelledTripBeans;
+
+    @Autowired
+    public void setNycTransitDataService(NycTransitDataService tds) {
+        _nycTransitDataService = tds;
+    }
 
     @Autowired
     public void setTaskScheduler(ThreadPoolTaskScheduler scheduler) {
@@ -165,11 +175,22 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
             } else {
                 _log.debug("empty beanContainer");
             }
-            return beansContainer.getBeans();
+            List<CancelledTripBean> validBeans = new ArrayList<>();
+            for (CancelledTripBean bean : beansContainer.getBeans()) {
+                if (isValid(bean)) {
+                    validBeans.add(bean);
+                }
+            }
+            return validBeans;
+
         } catch (Exception any) {
             _log.error("issue parsing json: " + any, any);
         }
         return Collections.EMPTY_LIST;
+    }
+
+    private boolean isValid(CancelledTripBean bean) {
+        return _nycTransitDataService.getTrip(bean.getTrip()) != null;
     }
 
     public static class UpdateThread implements Runnable {

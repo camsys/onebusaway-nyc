@@ -134,8 +134,13 @@ public class SituationExchangeResource {
 
     ServiceRequest serviceRequest = incomingSiri.getServiceRequest();
 
-    if (serviceRequest != null && requestIsForThisEnvironment(serviceRequest, responseSiri))
+    if (serviceRequest != null && requestIsForThisEnvironment(serviceRequest, responseSiri)) {
+      // deliver CAPI and traditional alerts as part of service request
+      CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService, _configurationService, deliveryIsFromExternal(delivery));
+      ServiceDelivery serviceDelivery = transformer.mergeImpactedAlerts(ensureDirections(incomingSiri.getServiceDelivery()));
+      responseSiri.setServiceDelivery(serviceDelivery);
       _siriService.handleServiceRequests(serviceRequest, responseSiri);
+    }
 
     SubscriptionRequest subscriptionRequests = incomingSiri.getSubscriptionRequest();
     if (subscriptionRequests != null && requestIsForThisEnvironment(subscriptionRequests, responseSiri))
