@@ -22,13 +22,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_manager.api.dao.CapiDaoFileImpl;
 import org.onebusaway.nyc.transit_data_manager.api.dao.CapiDaoHttpImpl;
 import org.onebusaway.nyc.transit_data_manager.api.service.CapiRetrievalServiceImpl;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.trips.CancelledTripBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
 
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
@@ -40,6 +43,8 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
 
 public class CancelledTripsResourceTest {
 
@@ -61,6 +66,9 @@ public class CancelledTripsResourceTest {
     @Spy
     CapiRetrievalServiceImpl capiService;
 
+    @Mock
+    NycTransitDataService tds;
+
     ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
                             .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
                             .setTimeZone(Calendar.getInstance().getTimeZone());
@@ -68,6 +76,7 @@ public class CancelledTripsResourceTest {
     @Before
     public void setup(){
         MockitoAnnotations.initMocks(this);
+        when(tds.getTrip(anyString())).thenReturn(new TripBean());
     }
 
 
@@ -75,6 +84,7 @@ public class CancelledTripsResourceTest {
     public void testCapiOutToNYCCancelledTripBeans() throws Exception {
         capiFileDao.setLocation("sample_capi_input.json");
         capiService.setCapiDao(capiFileDao);
+        capiService.setNycTransitDataService(tds);
         capiService.updateCancelledTripBeans();
 
         CancelledTripsResource resource = new CancelledTripsResource();
@@ -88,7 +98,7 @@ public class CancelledTripsResourceTest {
         JsonNode expectedCapiOutput = mapper.readTree(getClass().getResourceAsStream("expected_capi_output.json"));
 
         // Check that json string output matches expected value
-        assertEquals(tdmCapiOutput,expectedCapiOutput);
+        assertEquals(expectedCapiOutput, tdmCapiOutput);
 
         // Check that json can be deserialized
         List<CancelledTripBean> beans = readOutput((String) r.getEntity());
