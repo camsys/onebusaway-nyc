@@ -154,17 +154,17 @@ public class ServiceAlertsHelper {
 
   public void addSituationExchangeToServiceDelivery(ServiceDelivery serviceDelivery,
       Collection<ServiceAlertBean> serviceAlerts) {
-    Situations situations = new Situations();
+    if (serviceDelivery.getSituationExchangeDelivery().isEmpty()) {
+      serviceDelivery.getSituationExchangeDelivery().add(new SituationExchangeDeliveryStructure());
+    }
+    if (serviceDelivery.getSituationExchangeDelivery().get(0).getSituations() == null) {
+      serviceDelivery.getSituationExchangeDelivery().get(0).setSituations(new Situations());
+    }
+
+    Situations situations = serviceDelivery.getSituationExchangeDelivery().get(0).getSituations();
     for (ServiceAlertBean serviceAlert : serviceAlerts) {
       situations.getPtSituationElement().add(
           getServiceAlertBeanAsPtSituationElementStructure(serviceAlert));
-    }
-
-    if (situations.getPtSituationElement().size() > 0) {
-      SituationExchangeDeliveryStructure situationExchangeDelivery = new SituationExchangeDeliveryStructure();
-      situationExchangeDelivery.setSituations(situations);
-      serviceDelivery.getSituationExchangeDelivery().add(
-          situationExchangeDelivery);
     }
   }
 

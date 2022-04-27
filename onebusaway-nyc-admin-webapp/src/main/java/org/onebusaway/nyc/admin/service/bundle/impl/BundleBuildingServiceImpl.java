@@ -277,6 +277,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         for (File stifSubDir : stifDirectories) {
           String cmd = request.getTmpDirectory() + File.separator + stifUtilName + " "
                   + stifSubDir.getCanonicalPath();
+          // fixup paths that may have extra slashes
+          cmd = cmd.replaceAll("//", "/");
 
           // kick off process and collect output
           ProcessUtil pu = new ProcessUtil(cmd);

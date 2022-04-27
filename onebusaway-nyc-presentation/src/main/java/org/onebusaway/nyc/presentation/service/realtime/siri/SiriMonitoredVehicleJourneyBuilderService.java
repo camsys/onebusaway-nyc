@@ -75,7 +75,7 @@ import uk.org.siri.siri.VehicleActivityStructure;
 import java.util.Map;
 
 public interface SiriMonitoredVehicleJourneyBuilderService {
-    MonitoredVehicleJourneyStructure makeMonitoredVehicleJourneyStructure(TripBean tripOnBlock,
+/*    MonitoredVehicleJourneyStructure makeMonitoredVehicleJourneyStructure(TripBean tripOnBlock,
                                                                  TripStatusBean currentlyActiveTripOnBlock,
                                                                  StopBean monitoredCallStopBean,
                                                                  Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap,
@@ -83,7 +83,17 @@ public interface SiriMonitoredVehicleJourneyBuilderService {
                                                                  int maximumOnwardCalls,
                                                                  long responseTimestamp,
                                                                  boolean showApc,
-                                                                 boolean showRawApc);
+                                                                 boolean showRawApc);*/
+
+/*    VehicleActivityStructure.MonitoredVehicleJourney makeMonitoredVehicleJourney(TripBean tripOnBlock,
+                                                                                 TripStatusBean currentlyActiveTripOnBlock,
+                                                                                 StopBean monitoredCallStopBean,
+                                                                                 Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap,
+                                                                                 OnwardCallsMode onwardCallsMode,
+                                                                                 int maximumOnwardCalls,
+                                                                                 long responseTimestamp,
+                                                                                 boolean showApc,
+                                                                                 boolean showRawApc);*/
 
     VehicleActivityStructure.MonitoredVehicleJourney makeMonitoredVehicleJourney(TripBean tripOnBlock,
                                                                                  TripStatusBean currentlyActiveTripOnBlock,
@@ -93,5 +103,17 @@ public interface SiriMonitoredVehicleJourneyBuilderService {
                                                                                  int maximumOnwardCalls,
                                                                                  long responseTimestamp,
                                                                                  boolean showApc,
-                                                                                 boolean showRawApc);
+                                                                                 boolean showRawApc,
+                                                                                 boolean isCancelled);
+
+    MonitoredVehicleJourneyStructure makeMonitoredVehicleJourneyStructure(TripBean tripOnBlock,
+                                                                          TripStatusBean currentlyActiveTripOnBlock,
+                                                                          StopBean monitoredCallStopBean,
+                                                                          Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap,
+                                                                          OnwardCallsMode onwardCallsMode,
+                                                                          int maximumOnwardCalls,
+                                                                          long responseTimestamp,
+                                                                          boolean showApc,
+                                                                          boolean showRawApc,
+                                                                          boolean isCancelled);
 }

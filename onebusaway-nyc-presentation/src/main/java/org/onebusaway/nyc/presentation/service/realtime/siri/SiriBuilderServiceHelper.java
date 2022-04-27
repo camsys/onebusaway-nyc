@@ -55,5 +55,6 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 public interface SiriBuilderServiceHelper {
     boolean isNonRevenueStop(TripStatusBean currentlyActiveTripOnBlock, BlockStopTimeBean stopTime);
 
-    Double getDistanceOfVehicleAlongBlock(TripStatusBean currentlyActiveTripOnBlock, BlockTripBean blockTrip);
+    Double getDistanceOfVehicleAlongBlock(TripStatusBean currentlyActiveTripOnBlock, BlockTripBean blockTrip,
+                                          boolean isCancelled);
 }

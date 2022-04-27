@@ -74,6 +74,10 @@
         <property name="status" value="ENABLED"/>
     </bean>
 
+    <!--  Cancelled Trip Configuration -->
+    <bean id="cancelledTripService" class="org.onebusaway.nyc.transit_data_federation.impl.queue.CancelledTripHttpListenerTask">
+    </bean>
+
     <!-- Service alerts. -->
 
     <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">

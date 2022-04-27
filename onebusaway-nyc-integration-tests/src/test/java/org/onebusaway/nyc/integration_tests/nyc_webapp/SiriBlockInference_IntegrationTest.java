@@ -187,10 +187,10 @@ public class SiriBlockInference_IntegrationTest extends SiriIntegrationTestBase 
 	 assertFalse(stopMonitoringDelivery.isEmpty() );
 	 HashMap<String,Object> monitoredStopVisit = (HashMap<String,Object>)stopMonitoringDelivery.get(0);
 	 ArrayList<Object> mvjs = (ArrayList<Object>) monitoredStopVisit.get("MonitoredStopVisit");
+	 // this behaviour changed slighglty
+	// we now get null mvvs instead of empty
+	 assertTrue(mvjs == null || mvjs.isEmpty());
 
-		// this behaviour changed slightly
-		// we now get null mvvs instead of empty
-		assertTrue(mvjs == null || mvjs.isEmpty());
   }  
 
   // trip data matches trip bus would be on then

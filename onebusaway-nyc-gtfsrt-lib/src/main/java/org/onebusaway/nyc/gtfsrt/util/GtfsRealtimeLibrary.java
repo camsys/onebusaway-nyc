@@ -54,6 +54,20 @@ public class GtfsRealtimeLibrary {
         return makeTripDescriptor(vehicle.getTrip(), vehicle.getTripStatus());
     }
 
+    // create a ScheduleRelationship CANCELED for the trip
+    public static TripUpdate.Builder makeCanceledTrip(TripBean tb, TripStatusBean bean) {
+        TripUpdate.Builder tripUpdate = TripUpdate.newBuilder();
+        tripUpdate.setTrip(makeCanceledTripDescriptor(tb, bean));
+        tripUpdate.setTimestamp(System.currentTimeMillis());
+        return tripUpdate;
+    }
+
+    private static TripDescriptor.Builder makeCanceledTripDescriptor(TripBean trip, TripStatusBean bean) {
+        TripDescriptor.Builder builder = makeTripDescriptor(trip, bean);
+        builder.setScheduleRelationship(TripDescriptor.ScheduleRelationship.CANCELED);
+        return builder;
+    }
+
     public static Position.Builder makePosition(VehicleLocationRecordBean record) {
         Position.Builder pos = Position.newBuilder();
         pos.setLatitude((float) record.getCurrentLocation().getLat());

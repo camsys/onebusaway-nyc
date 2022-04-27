@@ -15,6 +15,10 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
@@ -22,10 +26,12 @@ import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFact
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class NycTestInferredLocationRecord implements Serializable {
 
@@ -146,6 +152,12 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   @CsvField(optional = true)
   private double inferredBlockLon = Double.NaN;
+
+  @CsvField(optional = true)
+  private String cancelledTrips;
+
+  @CsvField(optional = true, ignore = true)
+  private List<CancelledTripBean> cancelledTripBeans;
 
   /****
    * Stats debugging information
@@ -549,5 +561,26 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public void setBearing(double bearing) {
     this.bearing = bearing;
+  }
+
+  public List<CancelledTripBean> getCancelledTripBeans() {
+    if(cancelledTripBeans==null){
+      return new ArrayList<>();
+    }
+    return cancelledTripBeans;
+  }
+
+  public void setCancelledTrips(String cancelledTrips) throws JsonProcessingException {
+    this.cancelledTrips = cancelledTrips;
+    ObjectMapper _mapper;
+    _mapper = new ObjectMapper();
+    _mapper.registerModule(new JodaModule());
+    _mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+    _mapper.setTimeZone(Calendar.getInstance().getTimeZone());
+    cancelledTripBeans = _mapper.readValue(cancelledTrips, new TypeReference<List<CancelledTripBean>>(){});
+  }
+
+  public String getCancelledTrips(){
+    return cancelledTrips;
   }
 }

@@ -18,7 +18,6 @@ package org.onebusaway.nyc.gtfsrt.tds;
 import com.google.common.collect.Maps;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -53,14 +52,7 @@ import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
-import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
-import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
-import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
-import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import java.io.File;
@@ -131,6 +123,22 @@ public class MockTransitDataService implements NycTransitDataService {
     @Override
     public Boolean stopHasRevenueService(String agencyId, String stopId) {
         throw new UnsupportedOperationException();
+    }
+
+
+    @Override
+    public boolean isTripCancelled(AgencyAndId tripId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ListBean<CancelledTripBean> getAllCancelledTrips() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void overrideCancelledTrips(List<CancelledTripBean> beans) {
+
     }
 
     @Override

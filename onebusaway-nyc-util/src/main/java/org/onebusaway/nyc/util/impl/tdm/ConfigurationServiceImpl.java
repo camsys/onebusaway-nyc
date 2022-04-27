@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.util.impl.tdm;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -99,7 +100,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@SuppressWarnings("unused")
 	@PostConstruct
 	private void startUpdateProcess() throws Exception {
-		getConfiguration(); // possible failure, ie if on TDM
+		getConfiguration();  // this will fail for the TDM
+		// wait one minute before looking up configuration
+		// especially important when on the TDM
+		_taskScheduler.schedule(new UpdateThread(), new Date(System.currentTimeMillis() + 60 * 1000)); // in 1 minute
+		// schedule update for every 5 minutes
 		_taskScheduler.scheduleWithFixedDelay(new UpdateThread(), 5 * 60 * 1000); // 5m
 	}
 
@@ -108,7 +113,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			String defaultValue) {
 	  try {
       if (_configurationKeyToValueMap.size() == 0) {
-        _log.warn("No configuration values are present!");
+        _log.debug("No configuration values are present!");
       } else {
         _log.debug("Have " + _configurationKeyToValueMap.size()
             + " configuration parameters.");
@@ -189,7 +194,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public Map<String, String> getConfiguration() {
-		try {				
+		try {
 			refreshConfiguration();
 		} catch(Exception e) {
 			_log.error("Error updating configuration from TDM: " + e.getMessage());

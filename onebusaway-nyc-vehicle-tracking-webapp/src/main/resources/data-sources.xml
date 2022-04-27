@@ -63,6 +63,10 @@
     
     <bean id="vehiclePulloutService" class="org.onebusaway.nyc.transit_data_federation.impl.vtw.${vehicle.pipo.service}" />
 
+    <!--  Cancelled Trip Configuration -->
+    <bean id="cancelledTripService" class="org.onebusaway.nyc.transit_data_federation.impl.queue.CancelledTripHttpListenerTask">
+    </bean>
+
     <bean id="unassignedVehicleService" class="org.onebusaway.nyc.vehicle_tracking.impl.unassigned.${unassigned.vehicle.service}" />
 
     <!-- Input Queue Configuration -->

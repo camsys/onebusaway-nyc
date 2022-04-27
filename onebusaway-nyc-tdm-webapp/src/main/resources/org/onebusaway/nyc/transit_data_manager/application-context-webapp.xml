@@ -113,6 +113,10 @@
     <property name="persister" ref="siriServicePersister" />
   </bean>
 
+  <!--  Cancelled Trip Configuration -->
+  <bean id="cancelledTripService" class="org.onebusaway.nyc.transit_data_federation.impl.queue.CancelledTripHttpListenerTask">
+  </bean>
+
   <bean id="urlToEmbedStopIdReplace" class="java.lang.String">
     <constructor-arg type="java.lang.String" value="${qrBarcodes.stopIdReplaceUrl}" />
     </bean>

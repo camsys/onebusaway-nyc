@@ -44,14 +44,7 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import uk.org.siri.siri.ErrorDescriptionStructure;
-import uk.org.siri.siri.MonitoredStopVisitStructure;
-import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
-import uk.org.siri.siri.OtherErrorStructure;
-import uk.org.siri.siri.ServiceDelivery;
-import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
-import uk.org.siri.siri.Siri;
-import uk.org.siri.siri.StopMonitoringDeliveryStructure;
+import uk.org.siri.siri.*;
 
 @ParentPackage("onebusaway-webapp-api")
 public class StopMonitoringAction extends OneBusAwayNYCActionSupport 
@@ -99,6 +92,10 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     boolean showApc = _realtimeService.showApc(_request.getParameter("key"));
 
     boolean showRawApc = _realtimeService.showRawApc(_request.getParameter("key"));
+
+    String showCancelledTripsParam = _request.getParameter("showCancelled");
+
+    boolean showCancelledTrips = showCancelledTripsParam != null && Boolean.parseBoolean(showCancelledTripsParam);
 
     String directionId = _request.getParameter("DirectionRef");
     
@@ -216,7 +213,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       
       // Stop ids can only be valid here because we only added valid ones to stopIds.
       List<MonitoredStopVisitStructure> visitsForStop = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(),
-              maximumOnwardCalls, responseTimestamp, showApc, showRawApc);
+              maximumOnwardCalls, responseTimestamp, showApc, showRawApc, showCancelledTrips);
 
       if (visitsForStop != null) visits.addAll(visitsForStop); 
     }
@@ -256,9 +253,9 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       }
       
       // unique stops filters
-      if (visit.getMonitoredVehicleJourney() == null || 
-    		  visit.getMonitoredVehicleJourney().getVehicleRef() == null ||
-    		  StringUtils.isBlank(visit.getMonitoredVehicleJourney().getVehicleRef().getValue())){
+      if (visit.getMonitoredVehicleJourney() == null || visit.getMonitoredVehicleJourney().isMonitored() &&
+              (visit.getMonitoredVehicleJourney().getVehicleRef() == null ||
+    		  StringUtils.isBlank(visit.getMonitoredVehicleJourney().getVehicleRef().getValue()))){
     	  continue;
       }
       else{
