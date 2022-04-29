@@ -79,6 +79,9 @@ public class NycCancelledTripRecord implements Serializable {
     @Column(name = "route")
     private String route;
 
+    @Column(name = "runId")
+    private String runId;
+
     @Column(name = "routeId")
     private String routeId;
 
@@ -100,6 +103,7 @@ public class NycCancelledTripRecord implements Serializable {
         setTrip(cancelledTripBean.getTrip());
         setStatus(cancelledTripBean.getStatus());
         setRoute(cancelledTripBean.getRoute());
+        setRunId(cancelledTripBean.getRunId());
         setRouteId(cancelledTripBean.getRouteId());
         setFirstStopId(cancelledTripBean.getFirstStopId());
         setServiceDate(LocalDate.parse(cancelledTripBean.getServiceDate()));
@@ -195,6 +199,14 @@ public class NycCancelledTripRecord implements Serializable {
         this.routeId = routeId;
     }
 
+    public String getRunId() {
+        return runId;
+    }
+
+    public void setRunId(String runId) {
+        this.runId = runId;
+    }
+
     public String getFirstStopId() {
         return firstStopId;
     }
@@ -233,6 +245,7 @@ public class NycCancelledTripRecord implements Serializable {
                 Objects.equal(scheduledPullOut, record.scheduledPullOut) &&
                 Objects.equal(serviceDate, record.serviceDate) &&
                 Objects.equal(route, record.route) &&
+                Objects.equal(runId, record.runId) &&
                 Objects.equal(routeId, record.routeId) &&
                 Objects.equal(firstStopId, record.firstStopId) &&
                 Objects.equal(firstStopDepartureTime, record.firstStopDepartureTime) &&
@@ -256,7 +269,8 @@ public class NycCancelledTripRecord implements Serializable {
                 ", scheduledPullOut='" + scheduledPullOut + '\'' +
                 ", serviceDate=" + serviceDate +
                 ", route='" + route + '\'' +
-                ", routeId='" + routeId + '\'' +
+                ", runId='" + runId + '\'' +
+                 ", routeId='" + routeId + '\'' +
                 ", firstStopId='" + firstStopId + '\'' +
                 ", firstStopDepartureTime=" + firstStopDepartureTime +
                 ", lastStopArrivalTime=" + lastStopArrivalTime +
