@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
@@ -68,6 +69,9 @@ public class BlocksFromObservationServiceImpl implements
   private BlockStateService _blockStateService;
 
   private RunService _runService;
+
+  @Autowired
+  private NycTransitDataService _nycTransitDataService;
 
   private long noPotentialTripsCount = 0;
 
@@ -236,6 +240,11 @@ public class BlocksFromObservationServiceImpl implements
       Observation obs, BlockInstance blockInstance, double distanceAlong) {
     final BlockState bs = _blockStateService.getAsState(blockInstance,
         distanceAlong);
+    AgencyAndId tripId = bs.getBlockLocation().getActiveTrip().getTrip().getId();
+    if(_nycTransitDataService.isTripCancelled(tripId)){
+      _log.info("skipping cancelled trip " + tripId + " in particle creation for " + obs.getOpAssignedRunId());
+      return null;
+    }
     return new BlockStateObservation(bs, obs, false);
   }
 
@@ -380,10 +389,15 @@ public class BlocksFromObservationServiceImpl implements
     final long timeTo = time + _tripSearchTimeBeforeFirstStop;
 
     for (final AgencyAndId tripId : tripIds) {
-
       /**
        * Only consider a trip if it exists and has stop times
        */
+
+      if(_nycTransitDataService.isTripCancelled(tripId)){
+        _log.info("skipping cancelled trip " + tripId + " in particle creation for " + observation.getOpAssignedRunId());
+        continue;
+      };
+
       final TripEntry trip = _transitGraphDao.getTripEntryForId(tripId);
       if (trip == null)
         continue;

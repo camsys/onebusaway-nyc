@@ -188,7 +188,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 		// stop visits
 		List<MonitoredStopVisitStructure> visitList = 
 				_realtimeService.getMonitoredStopVisitsForStop(stopBean.getId(), 0,
-						System.currentTimeMillis(), showApc, showRawApc);
+						System.currentTimeMillis(), showApc, showRawApc, false);
 
 		for(MonitoredStopVisitStructure visit : visitList) {
 			// on detour? don't show it. 

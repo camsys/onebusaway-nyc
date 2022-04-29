@@ -74,12 +74,23 @@
   </bean>
   <bean id="output_queue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInferenceQueueListenerTask">
   </bean>
-  
+
+	<!-- Cancelled Trip Beans -->
+	<bean id="cancelledTripRecordValidationService" class="org.onebusaway.nyc.report_archive.impl.CancelledTripRecordValidationServiceImpl">
+	</bean>
+
+	<bean id="cancelledTripPersistorService" class="org.onebusaway.nyc.report_archive.impl.CancelledTripPersistenceServiceImpl">
+		<property name="batchSize" value="1000" />
+	</bean>
+
+	<bean id="cancelledTripTask" class="org.onebusaway.nyc.report_archive.queue.CancelledTripListenerTask" />
+
   <!-- Transit Data Service -->
     
   <bean id="nycTransitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
        <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
+	   <property name="hessian2Reply" value="false" />
   </bean>
   
 	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
@@ -90,6 +101,7 @@
 				<value>org.onebusaway.nyc.report.model.InvalidLocationRecord</value>
 				<value>org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord</value>
 				<value>org.onebusaway.nyc.report.model.CcAndInferredLocationRecord</value>
+				<value>org.onebusaway.nyc.report_archive.model.NycCancelledTripRecord</value>
 			</list>
 		</property>
 		<property name="hibernateProperties">
@@ -113,6 +125,7 @@
 				<value>org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord</value>
 				<value>org.onebusaway.nyc.report.model.CcAndInferredLocationRecord</value>
 				<value>org.onebusaway.nyc.report.model.InvalidLocationRecord</value>
+				<value>org.onebusaway.nyc.report_archive.model.NycCancelledTripRecord</value>
 			</list>
 		</property>
 		<property name="hibernateProperties">

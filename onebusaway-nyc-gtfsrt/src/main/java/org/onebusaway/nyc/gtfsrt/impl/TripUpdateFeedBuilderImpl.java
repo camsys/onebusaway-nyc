@@ -15,14 +15,17 @@
  */
 package org.onebusaway.nyc.gtfsrt.impl;
 
+import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
+import org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
@@ -92,6 +95,12 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
         return tripUpdate;
     }
 
+    @Override
+    public GtfsRealtime.TripUpdate.Builder makeCanceledTrip(TripBean trip) {
+        TripStatusBean empty = new TripStatusBean();
+        empty.setServiceDate(System.currentTimeMillis());
+        return GtfsRealtimeLibrary.makeCanceledTrip(trip, empty);
+    }
 
     // see appmods GtfsRealtimeTripLibrary:870
 

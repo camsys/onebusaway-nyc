@@ -80,11 +80,22 @@
     <rule>
         <from>^/api/siri/([^.]*)\.(xml|json)$</from>
         <to last="true">/api/siri/$1.action?type=$2</to>
-    </rule>   
-            
-	<!--
-		Remove action from URLs.
-	-->	
+    </rule>
+
+    <rule>
+        <condition type="parameter" name="version">2</condition>
+        <from>^/api/2/siri/([^.]*)\.(xml|json)$</from>
+        <to last="true">/api/siri/$1-v2.action?type=$2&amp;showCancelled=true</to>
+    </rule>
+    <rule>
+        <from>^/api/2/siri/([^.]*)\.(xml|json)$</from>
+        <to last="true">/api/siri/$1.action?type=$2&amp;showCancelled=true</to>
+    </rule>
+
+
+    <!--
+        Remove action from URLs.
+    -->
     <rule>
         <condition type="request-uri" operator="notequal">^.*_login$</condition>
         <condition type="request-uri" operator="notequal">^.*\.ico$</condition>

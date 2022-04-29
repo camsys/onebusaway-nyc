@@ -28,4 +28,6 @@ import java.util.List;
 public interface TripUpdateFeedBuilder {
     GtfsRealtime.TripUpdate.Builder makeTripUpdate(TripBean trip, VehicleStatusBean vehicle,
                                            List<TimepointPredictionRecord> records);
+
+    GtfsRealtime.TripUpdate.Builder makeCanceledTrip(TripBean trip);
 }

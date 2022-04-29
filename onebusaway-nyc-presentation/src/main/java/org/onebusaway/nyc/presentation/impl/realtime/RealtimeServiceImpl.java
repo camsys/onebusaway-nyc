@@ -18,6 +18,7 @@ package org.onebusaway.nyc.presentation.impl.realtime;
 
 import java.util.*;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.realtime.siri.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PredictionsSupportService;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
@@ -28,11 +29,7 @@ import org.onebusaway.nyc.siri.support.SiriJsonSerializer;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
-import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
-import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
+import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
@@ -49,6 +46,7 @@ import org.springframework.stereotype.Component;
 
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.ProgressStatusEnumeration;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
@@ -157,7 +155,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       MonitoredVehicleJourney monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourney(
               tripDetails.getTrip(), tripDetails.getStatus(), null, stopIdToPredictionRecordMap,
-              OnwardCallsMode.VEHICLE_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc);
+              OnwardCallsMode.VEHICLE_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false);
 
       activity.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
@@ -207,7 +205,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       MonitoredVehicleJourney monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourney(
               tripDetailsForCurrentTrip.getTrip(), tripDetailsForCurrentTrip.getStatus(), null, stopIdToPredictionRecordMap,
-              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc);
+              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false);
 
       output.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
@@ -220,20 +218,26 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Override
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls,
                                                                          long currentTime, boolean showApc,
-                                                                         boolean showRawApc) {
+                                                                         boolean showRawApc, boolean showCancelledTrips) {
     List<MonitoredStopVisitStructure> output = new ArrayList<>();
 
     for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
       TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
       TripBean tripBeanForAd = adBean.getTrip();
+
+      final boolean isCancelled = adBean.getStatus() != null &&
+                                  adBean.getStatus().equals(TransitDataConstants.STATUS_CANCELED) &&
+                                  showCancelledTrips;
+
       final RouteBean routeBean = tripBeanForAd.getRoute();
 
       if(statusBeanForCurrentTrip == null) {
         continue;
       }
 
-      if(!_presentationService.include(statusBeanForCurrentTrip) ||
-              !_presentationService.include(adBean, statusBeanForCurrentTrip)) {
+      if(!isCancelled &&
+              (!_presentationService.include(statusBeanForCurrentTrip) ||
+                !_presentationService.include(adBean, statusBeanForCurrentTrip))) {
         continue;
       }
 
@@ -243,7 +247,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         continue;
       }
 
-      Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = null;
+      Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = Collections.emptyMap();
       if(_presentationService.useTimePredictionsIfAvailable()) {
         stopIdToPredictionRecordMap = _predictionsSupportService.getStopIdToPredictionRecordMap(statusBeanForCurrentTrip);
       }
@@ -254,7 +258,12 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       MonitoredVehicleJourneyStructure monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourneyStructure(
               tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), stopIdToPredictionRecordMap,
-              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc);
+              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, isCancelled);
+
+      if(showCancelledTrips && isCancelled){
+        monitoredVehicleJourney.getMonitoredCall().setArrivalStatus(ProgressStatusEnumeration.CANCELLED);
+        monitoredVehicleJourney.getMonitoredCall().setDepartureStatus(ProgressStatusEnumeration.CANCELLED);
+      }
 
       stopVisit.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
@@ -316,7 +325,8 @@ public class RealtimeServiceImpl implements RealtimeService {
   public boolean getVehiclesInServiceForStopAndRoute(String stopId, String routeId, long currentTime) {
 	  for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
 		  TripStatusBean statusBean = adBean.getTripStatus();
-		  if(!_presentationService.include(statusBean) || !_presentationService.include(adBean, statusBean))
+		  if(!_presentationService.include(statusBean) ||
+                  !_presentationService.include(adBean, statusBean))
 			  continue;
 
 		  // filtered out by user

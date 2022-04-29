@@ -231,10 +231,11 @@ public abstract class NycSiriService {
   private void handleServiceRequest(SituationExchangeRequestStructure request,
       Siri responseSiri) {
     ServiceAlertsHelper helper = new ServiceAlertsHelper();
-    ServiceDelivery serviceDelivery = new ServiceDelivery();
-    helper.addSituationExchangeToServiceDelivery(serviceDelivery,
+    if (responseSiri.getServiceDelivery() == null) {
+      responseSiri.setServiceDelivery(new ServiceDelivery());
+    }
+    helper.addSituationExchangeToServiceDelivery(responseSiri.getServiceDelivery(),
         getPersister().getAllActiveServiceAlerts());
-    responseSiri.setServiceDelivery(serviceDelivery);
     return;
   }
 

@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
-import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,8 +57,6 @@ import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
-
-import javax.management.monitor.Monitor;
 
 public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl implements SearchResultFactory {
 
@@ -272,7 +269,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
-        stopBean.getId(), 0, System.currentTimeMillis(), showApc, showRawApc);
+        stopBean.getId(), 0, System.currentTimeMillis(), showApc, showRawApc, false);
 
     for (MonitoredStopVisitStructure visit : visitList) {
       String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
@@ -329,7 +326,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     Map<String,List<Boolean>> hasRealtimes = new HashMap<>();
     List<MonitoredStopVisitStructure> visitList = _realtimeService.getMonitoredStopVisitsForStop(
-        stopBean.getId(), 0, System.currentTimeMillis(), _realtimeService.showApc(), _realtimeService.showRawApc());
+        stopBean.getId(), 0, System.currentTimeMillis(), _realtimeService.showApc(), _realtimeService.showRawApc(), false);
 
     for (MonitoredStopVisitStructure visit : visitList) {
       String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();

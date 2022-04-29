@@ -31,7 +31,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_manager.util.NycEnvironment;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +41,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import uk.org.siri.siri.AffectedVehicleJourneyStructure;
+import uk.org.siri.siri.AffectsScopeStructure;
 import uk.org.siri.siri.DefaultedTextStructure;
+import uk.org.siri.siri.DirectionRefStructure;
 import uk.org.siri.siri.ErrorDescriptionStructure;
+import uk.org.siri.siri.LineRefStructure;
 import uk.org.siri.siri.ParticipantRefStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
@@ -65,6 +71,12 @@ public class SituationExchangeResource {
 
   @Autowired
   NycSiriService _siriService;
+
+  @Autowired
+  private NycTransitDataService _nycTransitDataService;
+
+  @Autowired
+  private ConfigurationService _configurationService;
 
   private JAXBContext jc;
 
@@ -107,11 +119,13 @@ public class SituationExchangeResource {
     Unmarshaller u = jc.createUnmarshaller();
     Siri incomingSiri = (Siri) u.unmarshal(new StringReader(body));
 
+
     ServiceDelivery delivery = incomingSiri.getServiceDelivery();
 
     if (delivery != null && deliveryIsForThisEnvironment(delivery)) {
+      CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService, _configurationService, deliveryIsFromExternal(delivery));
       SituationExchangeResults result = new SituationExchangeResults();
-      _siriService.handleServiceDeliveries(result, delivery);
+      _siriService.handleServiceDeliveries(result, transformer.mergeImpactedAlerts(ensureDirections(incomingSiri.getServiceDelivery())));
       _log.info(result.toString());
       return Response.ok(result).build();
     }
@@ -120,8 +134,13 @@ public class SituationExchangeResource {
 
     ServiceRequest serviceRequest = incomingSiri.getServiceRequest();
 
-    if (serviceRequest != null && requestIsForThisEnvironment(serviceRequest, responseSiri))
+    if (serviceRequest != null && requestIsForThisEnvironment(serviceRequest, responseSiri)) {
+      // deliver CAPI and traditional alerts as part of service request
+      CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService, _configurationService, deliveryIsFromExternal(delivery));
+      ServiceDelivery serviceDelivery = transformer.mergeImpactedAlerts(ensureDirections(incomingSiri.getServiceDelivery()));
+      responseSiri.setServiceDelivery(serviceDelivery);
       _siriService.handleServiceRequests(serviceRequest, responseSiri);
+    }
 
     SubscriptionRequest subscriptionRequests = incomingSiri.getSubscriptionRequest();
     if (subscriptionRequests != null && requestIsForThisEnvironment(subscriptionRequests, responseSiri))
@@ -134,6 +153,55 @@ public class SituationExchangeResource {
 
     _log.info(responseSiri.toString());
     return Response.ok(responseSiri).build();
+  }
+
+  // for legacy reasons add directions to a route
+  private ServiceDelivery ensureDirections(ServiceDelivery incomingSiriServiceDelivery) {
+    if (incomingSiriServiceDelivery == null) return null;
+    if (incomingSiriServiceDelivery.getSituationExchangeDelivery() == null) return incomingSiriServiceDelivery;
+    for (SituationExchangeDeliveryStructure situationExchangeDeliveryStructure : incomingSiriServiceDelivery.getSituationExchangeDelivery()) {
+      if (situationExchangeDeliveryStructure == null
+            || situationExchangeDeliveryStructure.getSituations() == null
+            || situationExchangeDeliveryStructure.getSituations().getPtSituationElement() == null) continue;
+      for (PtSituationElementStructure ptSituationElementStructure : situationExchangeDeliveryStructure.getSituations().getPtSituationElement()) {
+        if (ptSituationElementStructure == null) continue;
+        boolean foundDirection = false;
+        AffectsScopeStructure affects = ptSituationElementStructure.getAffects();
+        if (affects == null) continue;
+        for (AffectedVehicleJourneyStructure affectedVehicleJourneyStructure : affects.getVehicleJourneys().getAffectedVehicleJourney()) {
+          if (affectedVehicleJourneyStructure.getDirectionRef() != null
+            && affectedVehicleJourneyStructure.getDirectionRef().getValue() != null) {
+            foundDirection = true;
+          }
+        }
+        if (!foundDirection) {
+          insertDirections(affects.getVehicleJourneys());
+        }
+      }
+    }
+    return incomingSiriServiceDelivery;
+  }
+
+  // for legacy reasons a LineRef needs DirectionRefs 0 and 1
+  private void insertDirections(AffectsScopeStructure.VehicleJourneys vehicleJourneys) {
+    List<AffectedVehicleJourneyStructure> afj = vehicleJourneys.getAffectedVehicleJourney();
+    if (afj.isEmpty()) return;
+    if (afj.size() == 1) {
+      AffectedVehicleJourneyStructure direction0 = afj.get(0);
+      if (direction0.getLineRef() != null) {
+        direction0.setDirectionRef(new DirectionRefStructure());
+        direction0.getDirectionRef().setValue("0");
+        afj.add(new AffectedVehicleJourneyStructure());
+        AffectedVehicleJourneyStructure direction1 = afj.get(1);
+        direction1.setDirectionRef(new DirectionRefStructure());
+        direction1.getDirectionRef().setValue("1");
+        direction1.setLineRef(new LineRefStructure());
+        direction1.getLineRef().setValue(
+                direction0.getLineRef().getValue()
+        );
+      }
+    }
+
   }
 
   private boolean requestIsForThisEnvironment(SubscriptionRequest subscriptionRequest, Siri responseSiri) {
@@ -171,6 +239,16 @@ public class SituationExchangeResource {
       return true;
     CheckEnvironmentHandler checkEnvironment = checkEnvironment(delivery.getProducerRef());
     return checkEnvironment.isStatus();
+  }
+
+  // if we were called from an external source, we are likely the TDM
+  // in this configuration we perform additional operations/merges of data
+  private boolean deliveryIsFromExternal(ServiceDelivery delivery) {
+    if (delivery == null)
+      return true;
+    if (delivery.getProducerRef() == null)
+      return true;
+    return false;
   }
 
   private CheckEnvironmentHandler checkEnvironment(ParticipantRefStructure participantRefStructure) {

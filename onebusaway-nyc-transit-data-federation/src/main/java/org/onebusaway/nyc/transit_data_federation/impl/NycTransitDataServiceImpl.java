@@ -15,11 +15,8 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -53,24 +50,16 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
-import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
-import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
-import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
-import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl;
+import org.onebusaway.transit_data_federation.services.CancelledTripService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
 
 @Primary
 @Component(value = "nycTransitDataServiceImpl")
@@ -86,6 +75,9 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Autowired(required=false)
 	private PredictionIntegrationService _predictionIntegrationService;
+
+	@Autowired(required=false)
+	private CancelledTripService _cancelledTripService;
 
 	@Autowired
 	@Qualifier("NycBundleSearchService")
@@ -711,5 +703,35 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	public ListBean<ServiceAlertRecordBean> getAllServiceAlertRecordsForAgencyId(String agencyId) {
 		blockUntilBundleIsReady();
 		return _transitDataService.getAllServiceAlertRecordsForAgencyId(agencyId);
+	}
+
+	@Override
+	public boolean isTripCancelled(AgencyAndId tripId){
+		blockUntilBundleIsReady();
+		if(_cancelledTripService != null){
+			return _cancelledTripService.isTripCancelled(tripId);
+		}
+		return false;
+	}
+
+	@Override
+	public ListBean<CancelledTripBean> getAllCancelledTrips(){
+		blockUntilBundleIsReady();
+		if(_cancelledTripService != null){
+			return _cancelledTripService.getAllCancelledTrips();
+		}
+		return new ListBean<>(Collections.EMPTY_LIST, false);
+	}
+
+	@Override
+	public void overrideCancelledTrips(List<CancelledTripBean> beans){
+		blockUntilBundleIsReady();
+		if(_cancelledTripService != null){
+			Map<AgencyAndId, CancelledTripBean> cancelledTripsCache = new ConcurrentHashMap<>();
+			for(CancelledTripBean bean : beans){
+				cancelledTripsCache.put(AgencyAndId.convertFromString(bean.getTrip()),bean);
+			}
+			_cancelledTripService.updateCancelledTrips(cancelledTripsCache);
+		}
 	}
 }
