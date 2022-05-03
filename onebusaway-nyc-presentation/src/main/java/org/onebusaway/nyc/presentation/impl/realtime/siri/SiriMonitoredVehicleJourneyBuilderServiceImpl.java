@@ -260,7 +260,7 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
         if(!_presentationService.isOnDetour(currentlyActiveTripOnBlock)){
             OnwardCallsStructure onwardCallStructure = _siriOnwardCallsBuilderService
                     .makeOnwardCalls(blockInstance, tripOnBlock,currentlyActiveTripOnBlock, onwardCallsMode,
-                            stopIdToPredictionRecordMap, maximumOnwardCalls, responseTimestamp);
+                            stopIdToPredictionRecordMap, maximumOnwardCalls,isCancelled, responseTimestamp);
             siriMonitoredVehicleJourneyBuilder.setOnwardCalls(onwardCallStructure);
         }
 

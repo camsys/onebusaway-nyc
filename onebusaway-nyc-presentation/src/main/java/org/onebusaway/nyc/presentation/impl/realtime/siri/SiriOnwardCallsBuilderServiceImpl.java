@@ -108,6 +108,7 @@ public class SiriOnwardCallsBuilderServiceImpl implements SiriOnwardCallsBuilder
                                                 OnwardCallsMode onwardCallsMode,
                                                 Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions,
                                                 int maximumOnwardCalls,
+                                                boolean isCancelled,
                                                 long responseTimestamp){
 
         OnwardCallsStructure onwardCallsStructures = new OnwardCallsStructure();
@@ -131,7 +132,7 @@ public class SiriOnwardCallsBuilderServiceImpl implements SiriOnwardCallsBuilder
                 // First get DistanceAlongBlock for currently active trip on block
                 if(distanceOfVehicleAlongBlock == null){
                     distanceOfVehicleAlongBlock = _siriBuilderServiceHelper.getDistanceOfVehicleAlongBlock(
-                            currentlyActiveTripOnBlock, blockTrip, false);
+                            currentlyActiveTripOnBlock, blockTrip, isCancelled);
                     if(distanceOfVehicleAlongBlock == null) {
                         continue;
                     }
