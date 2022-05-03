@@ -80,5 +80,6 @@ public interface SiriOnwardCallsBuilderService {
                                          OnwardCallsMode onwardCallsMode,
                                          Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions,
                                          int maximumOnwardCalls,
+                                         boolean isCancelled,
                                          long responseTimestamp);
 }

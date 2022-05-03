@@ -44,10 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import uk.org.siri.siri.MonitoredStopVisitStructure;
-import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
-import uk.org.siri.siri.ProgressStatusEnumeration;
-import uk.org.siri.siri.VehicleActivityStructure;
+import uk.org.siri.siri.*;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
 /**
@@ -263,7 +260,17 @@ public class RealtimeServiceImpl implements RealtimeService {
       if(showCancelledTrips && isCancelled){
         monitoredVehicleJourney.getMonitoredCall().setArrivalStatus(ProgressStatusEnumeration.CANCELLED);
         monitoredVehicleJourney.getMonitoredCall().setDepartureStatus(ProgressStatusEnumeration.CANCELLED);
+
+        OnwardCallsStructure onwardCallsStructure = monitoredVehicleJourney.getOnwardCalls();
+        if(onwardCallsStructure != null && !onwardCallsStructure.getOnwardCall().isEmpty()) {
+          for (OnwardCallStructure onwardCall : onwardCallsStructure.getOnwardCall()) {
+            onwardCall.setArrivalStatus(ProgressStatusEnumeration.CANCELLED);
+            onwardCall.setDepartureStatus(ProgressStatusEnumeration.CANCELLED);
+          }
+        }
       }
+
+
 
       stopVisit.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
