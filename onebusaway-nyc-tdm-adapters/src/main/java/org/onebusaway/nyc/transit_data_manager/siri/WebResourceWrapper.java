@@ -38,9 +38,9 @@ public class WebResourceWrapper {
     Response response = invocationBuilder.post(Entity.entity(siri, MediaType.APPLICATION_XML));
     String responseStr = response.readEntity(String.class);
     if (response.getStatus() != 200) {
-      _log.info("failed to update service alerts for " + webTarget.getUri());
+      _log.warn("failed to update service alerts for " + webTarget.getUri());
     }
-    _log.info("response=" + responseStr + " for address=" + webTarget.getUri());
+    _log.debug("response=" + responseStr + " for address=" + webTarget.getUri());
     return responseStr;
   }
 
