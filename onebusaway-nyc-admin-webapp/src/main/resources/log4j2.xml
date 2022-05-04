@@ -44,6 +44,9 @@
 				additivity="false">
 			<AppenderRef ref="${log4j.appender}"/>
 		</Logger>
+		<Logger name="org.springframework.security.web.authentication.AnonymousAuthenticationFilter" level="debug" additivity="false">
+			<AppenderRef ref="ROLL"/>
+		</Logger>
 		<Root level="info">
 			<AppenderRef ref="${log4j.appender}"/>
 		</Root>
