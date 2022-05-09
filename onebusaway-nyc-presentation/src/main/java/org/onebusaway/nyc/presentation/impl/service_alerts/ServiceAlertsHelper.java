@@ -148,9 +148,26 @@ public class ServiceAlertsHelper {
   }
 
   public void addSituationExchangeToServiceDelivery(ServiceDelivery serviceDelivery,
-                                                    Collection<ServiceAlertBean> serviceAlerts) {
+                                                    Collection<ServiceAlertBean> serviceAlerts){
+    addSituationExchangeToServiceDelivery(serviceDelivery, serviceAlerts, true);
+  }
 
-    Situations situations = new Situations();
+  public void addSituationExchangeToServiceDelivery(ServiceDelivery serviceDelivery,
+                                                    Collection<ServiceAlertBean> serviceAlerts,
+                                                    boolean clearExistingAlerts) {
+    Situations situations;
+
+    if(!clearExistingAlerts){
+      if (serviceDelivery.getSituationExchangeDelivery().isEmpty()) {
+        serviceDelivery.getSituationExchangeDelivery().add(new SituationExchangeDeliveryStructure());
+      }
+      if (serviceDelivery.getSituationExchangeDelivery().get(0).getSituations() == null) {
+        serviceDelivery.getSituationExchangeDelivery().get(0).setSituations(new Situations());
+      }
+      situations = serviceDelivery.getSituationExchangeDelivery().get(0).getSituations();
+    } else{
+      situations = new Situations();
+    }
 
     if (serviceDelivery.getSituationExchangeDelivery().isEmpty()) {
       serviceDelivery.getSituationExchangeDelivery().add(new SituationExchangeDeliveryStructure());
@@ -212,7 +229,7 @@ public class ServiceAlertsHelper {
   }
 
   public void addSituationExchangeToServiceDelivery(ServiceDelivery serviceDelivery,
-      Map<String, ServiceAlertBean> currentServiceAlerts) {
+                                                    Map<String, ServiceAlertBean> currentServiceAlerts) {
     addSituationExchangeToServiceDelivery(serviceDelivery, currentServiceAlerts.values());
   }
 

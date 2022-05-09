@@ -165,10 +165,8 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
   private void verifySituationExchangeDelivery(Siri responseSiri) {
     ServiceDelivery serviceDelivery = responseSiri.getServiceDelivery();
     assertTrue(serviceDelivery.getErrorCondition() == null);
-    SituationExchangeDeliveryStructure situationExchange = serviceDelivery.getSituationExchangeDelivery().get(
-        0);
-    PtSituationElementStructure situation = situationExchange.getSituations().getPtSituationElement().get(
-        0);
+    SituationExchangeDeliveryStructure situationExchange = serviceDelivery.getSituationExchangeDelivery().get(0);
+    PtSituationElementStructure situation = situationExchange.getSituations().getPtSituationElement().get(0);
     assertEquals("description", situation.getDescription().getValue());
   }
 
