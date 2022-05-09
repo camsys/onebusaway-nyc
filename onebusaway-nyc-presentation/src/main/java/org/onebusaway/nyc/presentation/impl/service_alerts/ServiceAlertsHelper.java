@@ -156,12 +156,12 @@ public class ServiceAlertsHelper {
       serviceDelivery.getSituationExchangeDelivery().add(new SituationExchangeDeliveryStructure());
     }
     if (serviceDelivery.getSituationExchangeDelivery().get(0).getSituations() == null) {
-      serviceDelivery.getSituationExchangeDelivery().get(0).setSituations(new Situations());
+      serviceDelivery.getSituationExchangeDelivery().get(0).setSituations(situations);
     }
 
     for (ServiceAlertBean serviceAlert : serviceAlerts) {
-      situations.getPtSituationElement().add(
-              getServiceAlertBeanAsPtSituationElementStructure(serviceAlert));
+      PtSituationElementStructure ptSituationElementStructure = getServiceAlertBeanAsPtSituationElementStructure(serviceAlert);
+      situations.getPtSituationElement().add(ptSituationElementStructure);
     }
   }
 
