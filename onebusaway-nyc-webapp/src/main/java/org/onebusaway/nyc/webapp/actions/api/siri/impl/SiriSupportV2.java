@@ -879,15 +879,22 @@ public final class SiriSupportV2 {
 			return;
 		}
 
+		Set<String> uniqueSituationId = new HashSet<>();
+
 		List<SituationRefStructure> situationRef = monitoredVehicleJourney
 				.getSituationRef();
 
 		for (ServiceAlertBean situation : tripStatus.getSituations()) {
+			String situationId = situation.getId();
+			if(uniqueSituationId.contains(situationId)){
+				continue;
+			}
 			SituationRefStructure sitRef = new SituationRefStructure();
 			SituationSimpleRefStructure sitSimpleRef = new SituationSimpleRefStructure();
-			sitSimpleRef.setValue(situation.getId());
+			sitSimpleRef.setValue(situationId);
 			sitRef.setSituationSimpleRef(sitSimpleRef);
 			situationRef.add(sitRef);
+			uniqueSituationId.add(situationId);
 		}
 	}
 

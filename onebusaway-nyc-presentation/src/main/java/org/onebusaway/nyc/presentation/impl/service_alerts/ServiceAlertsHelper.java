@@ -59,12 +59,7 @@ import uk.org.siri.siri.SituationRefStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ServiceAlertsHelper {
 
@@ -153,18 +148,37 @@ public class ServiceAlertsHelper {
   }
 
   public void addSituationExchangeToServiceDelivery(ServiceDelivery serviceDelivery,
-      Collection<ServiceAlertBean> serviceAlerts) {
+                                                    Collection<ServiceAlertBean> serviceAlerts){
+    addSituationExchangeToServiceDelivery(serviceDelivery, serviceAlerts, true);
+  }
+
+  public void addSituationExchangeToServiceDelivery(ServiceDelivery serviceDelivery,
+                                                    Collection<ServiceAlertBean> serviceAlerts,
+                                                    boolean clearExistingAlerts) {
+    Situations situations;
+
+    if(!clearExistingAlerts){
+      if (serviceDelivery.getSituationExchangeDelivery().isEmpty()) {
+        serviceDelivery.getSituationExchangeDelivery().add(new SituationExchangeDeliveryStructure());
+      }
+      if (serviceDelivery.getSituationExchangeDelivery().get(0).getSituations() == null) {
+        serviceDelivery.getSituationExchangeDelivery().get(0).setSituations(new Situations());
+      }
+      situations = serviceDelivery.getSituationExchangeDelivery().get(0).getSituations();
+    } else{
+      situations = new Situations();
+    }
+
     if (serviceDelivery.getSituationExchangeDelivery().isEmpty()) {
       serviceDelivery.getSituationExchangeDelivery().add(new SituationExchangeDeliveryStructure());
     }
     if (serviceDelivery.getSituationExchangeDelivery().get(0).getSituations() == null) {
-      serviceDelivery.getSituationExchangeDelivery().get(0).setSituations(new Situations());
+      serviceDelivery.getSituationExchangeDelivery().get(0).setSituations(situations);
     }
 
-    Situations situations = serviceDelivery.getSituationExchangeDelivery().get(0).getSituations();
     for (ServiceAlertBean serviceAlert : serviceAlerts) {
-      situations.getPtSituationElement().add(
-          getServiceAlertBeanAsPtSituationElementStructure(serviceAlert));
+      PtSituationElementStructure ptSituationElementStructure = getServiceAlertBeanAsPtSituationElementStructure(serviceAlert);
+      situations.getPtSituationElement().add(ptSituationElementStructure);
     }
   }
 
@@ -215,7 +229,7 @@ public class ServiceAlertsHelper {
   }
 
   public void addSituationExchangeToServiceDelivery(ServiceDelivery serviceDelivery,
-      Map<String, ServiceAlertBean> currentServiceAlerts) {
+                                                    Map<String, ServiceAlertBean> currentServiceAlerts) {
     addSituationExchangeToServiceDelivery(serviceDelivery, currentServiceAlerts.values());
   }
 

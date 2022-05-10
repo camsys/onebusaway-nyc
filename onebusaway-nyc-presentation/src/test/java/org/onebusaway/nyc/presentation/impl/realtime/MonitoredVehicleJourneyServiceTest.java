@@ -85,7 +85,8 @@ public class MonitoredVehicleJourneyServiceTest {
     when(presentationService.getPresentableDistance(any(SiriDistanceExtension.class))).thenReturn("Distance Here");
     when(presentationService.isOnDetour(any(TripStatusBean.class))).thenReturn(false);
 
-    when(siriOnwardCallsBuilderService.makeOnwardCalls(any(BlockInstanceBean.class), any(TripBean.class), any(TripStatusBean.class), any(OnwardCallsMode.class), anyMap(), anyInt(), anyLong())).thenReturn(null);
+    when(siriOnwardCallsBuilderService.makeOnwardCalls(any(BlockInstanceBean.class), any(TripBean.class),
+            any(TripStatusBean.class), any(OnwardCallsMode.class), anyMap(), anyInt(), anyBoolean(), anyLong())).thenReturn(null);
 
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);

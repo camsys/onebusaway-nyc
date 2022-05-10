@@ -113,7 +113,7 @@ public class SituationExchangeResource {
   }
 
   public Response handleRequest(String body) throws JAXBException, Exception {
-    _log.info("SituationExchangeResource.handlePost");
+    /*_log.info("SituationExchangeResource.handlePost");
     _log.debug("---begin body---\n" + body + "\n---end body---");
 
     Unmarshaller u = jc.createUnmarshaller();
@@ -137,6 +137,47 @@ public class SituationExchangeResource {
     if (serviceRequest != null && requestIsForThisEnvironment(serviceRequest, responseSiri)) {
       // deliver CAPI and traditional alerts as part of service request
       CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService, _configurationService, deliveryIsFromExternal(delivery));
+      ServiceDelivery serviceDelivery = transformer.mergeImpactedAlerts(ensureDirections(incomingSiri.getServiceDelivery()));
+      responseSiri.setServiceDelivery(serviceDelivery);
+      _siriService.handleServiceRequests(serviceRequest, responseSiri);
+    }
+
+    SubscriptionRequest subscriptionRequests = incomingSiri.getSubscriptionRequest();
+    if (subscriptionRequests != null && requestIsForThisEnvironment(subscriptionRequests, responseSiri))
+      _siriService.handleSubscriptionRequests(subscriptionRequests, responseSiri);
+
+    if (serviceRequest == null && subscriptionRequests == null) {
+      _log.warn("Bad request from client, did not contain service delivery, service request, nor subscription request.");
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+
+    _log.info(responseSiri.toString());
+    return Response.ok(responseSiri).build();*/
+
+    _log.info("SituationExchangeResource.handlePost");
+    _log.debug("---begin body---\n" + body + "\n---end body---");
+
+    Unmarshaller u = jc.createUnmarshaller();
+    Siri incomingSiri = (Siri) u.unmarshal(new StringReader(body));
+
+    ServiceDelivery delivery = incomingSiri.getServiceDelivery();
+
+    if (delivery != null && deliveryIsForThisEnvironment(delivery)) {
+      CancelledTripToSiriTransformer transformer = new CancelledTripToSiriTransformer(_nycTransitDataService, _configurationService, deliveryIsFromExternal(delivery));
+      SituationExchangeResults result = new SituationExchangeResults();
+      _siriService.handleServiceDeliveries(result, transformer.mergeImpactedAlerts(ensureDirections(incomingSiri.getServiceDelivery())));
+      _log.info(result.toString());
+      return Response.ok(result).build();
+    }
+
+    Siri responseSiri = new Siri();
+
+    ServiceRequest serviceRequest = incomingSiri.getServiceRequest();
+
+    if (serviceRequest != null && requestIsForThisEnvironment(serviceRequest, responseSiri)) {
+      // deliver CAPI and traditional alerts as part of service request
+      CancelledTripToSiriTransformer transformer =
+              new CancelledTripToSiriTransformer(_nycTransitDataService, _configurationService, deliveryIsFromExternal(delivery));
       ServiceDelivery serviceDelivery = transformer.mergeImpactedAlerts(ensureDirections(incomingSiri.getServiceDelivery()));
       responseSiri.setServiceDelivery(serviceDelivery);
       _siriService.handleServiceRequests(serviceRequest, responseSiri);

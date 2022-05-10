@@ -220,8 +220,7 @@ public abstract class NycSiriService {
     }
   }
 
-  public void handleServiceRequests(ServiceRequest serviceRequest,
-      Siri responseSiri) {
+  public void handleServiceRequests(ServiceRequest serviceRequest, Siri responseSiri) {
     List<SituationExchangeRequestStructure> requests = serviceRequest.getSituationExchangeRequest();
     for (SituationExchangeRequestStructure request : requests) {
       handleServiceRequest(request, responseSiri);
@@ -235,7 +234,8 @@ public abstract class NycSiriService {
       responseSiri.setServiceDelivery(new ServiceDelivery());
     }
     helper.addSituationExchangeToServiceDelivery(responseSiri.getServiceDelivery(),
-        getPersister().getAllActiveServiceAlerts());
+                                                 getPersister().getAllActiveServiceAlerts(),
+                                                 false);
     return;
   }
 
