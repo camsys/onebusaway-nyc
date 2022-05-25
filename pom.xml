@@ -40,7 +40,7 @@
         <onebusaway.siri.version>1.0.0</onebusaway.siri.version>
         <onebusaway.siri_2.version>1.0.3</onebusaway.siri_2.version>
         <protobuf.version>2.6.1</protobuf.version>
-        <spring.version>5.2.20.RELEASE</spring.version>
+        <spring.version>5.2.22.RELEASE</spring.version>
         <struts.version>2.5.30</struts.version>
         <xwiki.integration.version>1.0.1</xwiki.integration.version>
         <xwiki.version>2.3.1</xwiki.version>
