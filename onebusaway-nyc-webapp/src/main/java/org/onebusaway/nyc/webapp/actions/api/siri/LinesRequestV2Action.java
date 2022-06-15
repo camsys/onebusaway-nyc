@@ -41,7 +41,8 @@ import org.onebusaway.nyc.webapp.actions.api.siri.impl.ServiceAlertsHelperV2;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
 import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri_2.AnnotatedLineStructure;

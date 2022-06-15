@@ -32,8 +32,9 @@ import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
 import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDetails;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
+import org.onebusaway.alerts.service.ServiceAlerts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.org.siri.siri.AffectedCallStructure;
