@@ -60,6 +60,8 @@ public class IndexAction extends SessionedIndexAction {
 
   private static final int MAX_SMS_CHARACTER_COUNT = 160;
 
+  private static final int MAX_FOOTER_CHARACTER_COUNT = 24;
+
   @Autowired
   @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
@@ -556,7 +558,7 @@ public class IndexAction extends SessionedIndexAction {
       footer += "\nO for #occupancy";
     }
 
-    footer += "\n" + getAdFooter();
+    footer += "\n" + StringUtils.abbreviate(getAdFooter(), MAX_FOOTER_CHARACTER_COUNT);
 
     // find biggest headsign
     int routeDirectionTruncationLength = -1;
@@ -583,7 +585,7 @@ public class IndexAction extends SessionedIndexAction {
         }
 
         if(headsign.length() + alertString.length() > routeDirectionTruncationLength) {
-          body += "to " + headsign.substring(0, Math.min(routeDirectionTruncationLength, headsign.length())) + "..." + alertString + occupancyString;
+          body += "to " + StringUtils.abbreviate(headsign, routeDirectionTruncationLength) + alertString + occupancyString;
         } else {
           body += "to " + headsign + alertString + occupancyString;
         }
@@ -1188,14 +1190,10 @@ public class IndexAction extends SessionedIndexAction {
 
   private String getAdFooter(){
     Boolean showAd = _configurationService.getConfigurationValueAsBoolean("sms.showAd", false);
-    Boolean adLabelOnly = _configurationService.getConfigurationValueAsBoolean("sms.adLabelOnly", false);
+    Boolean adLabelOnly = _configurationService.getConfigurationValueAsBoolean("sms.adLabelOnly", true);
     String adLabel = _configurationService.getConfigurationValueAsString("sms.adLabel", null);
-    Integer adMaxWidth = _configurationService.getConfigurationValueAsInteger("sms.adMaxWidth", 16);
 
     if(showAd && !StringUtils.isBlank(adLabel)){
-      if(adLabel.length() > adMaxWidth){
-        adLabel = StringUtils.abbreviate(adLabel, adMaxWidth);
-      }
       if(adLabelOnly) {
         return adLabel;
       } else {
