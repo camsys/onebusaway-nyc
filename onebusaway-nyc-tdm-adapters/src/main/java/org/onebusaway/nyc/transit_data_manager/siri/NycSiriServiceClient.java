@@ -40,7 +40,7 @@ public class NycSiriServiceClient extends NycSiriService {
         sendAndProcessSubscriptionAndServiceRequest();
         setupDone = true;
       } catch (Exception e) {
-        _log.error("Setup for client failed, exception is: " + e.getMessage());
+        _log.error("Setup for client failed, exception is: " + e.getMessage(), e);
         _log.error("Retrying in 60 seconds.");
         Thread.sleep(60 * 1000);
       }
