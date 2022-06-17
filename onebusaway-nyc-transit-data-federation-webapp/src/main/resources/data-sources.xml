@@ -86,6 +86,7 @@
                 <prop key="blockStatusServiceImpl.runningLateWindow">3600</prop>
             </props>
         </property>
+
     </bean>
     
     <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
@@ -93,10 +94,10 @@
         <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
-    <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
-        <property name="serviceAlertsUrl" value="${service.alerts.url}" />
-        <property name="subscriptionPath" value="${service.alerts.subscription.path}" />        
-    </bean>
+<!--    <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">-->
+<!--        <property name="serviceAlertsUrl" value="${service.alerts.url}" />-->
+<!--        <property name="subscriptionPath" value="${service.alerts.subscription.path}" />        -->
+<!--    </bean>-->
 
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />
     <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
@@ -105,6 +106,11 @@
     <bean id="gtfsSometimesClient" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesJsonClientImpl">
         <property name="url" value="http://${gtfs.editor.host}/api/gtfs-servicechange/list" />
         <property name="transitDataService" ref="nycTransitDataServiceImpl" />
+    </bean>
+
+    <bean id="mta_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+        <property name="alertsUrl" value="http://localhost:9999/api/alerts/all.pb"/>
+        <property name="refreshInterval" value="60"/>
     </bean>
 
 </beans>

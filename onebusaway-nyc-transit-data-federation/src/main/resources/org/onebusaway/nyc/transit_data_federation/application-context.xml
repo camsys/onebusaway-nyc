@@ -93,4 +93,19 @@
     <context:component-scan base-package="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl"/>
     <context:component-scan base-package="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph"/>
 
+    <context:component-scan base-package="org.onebusaway.alerts.impl"/>
+
+    <bean id="nycTDFHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
+        <property name="target" value="hibernateAnnotatedClasses" />
+        <property name="values">
+            <list>
+                <value>org.onebusaway.alerts.impl.ServiceAlertRecord</value>
+                <value>org.onebusaway.alerts.impl.ServiceAlertLocalizedString</value>
+                <value>org.onebusaway.alerts.impl.ServiceAlertTimeRange</value>
+                <value>org.onebusaway.alerts.impl.ServiceAlertsSituationAffectsClause</value>
+                <value>org.onebusaway.alerts.impl.ServiceAlertSituationConsequenceClause</value>
+            </list>
+        </property>
+    </bean>
+
 </beans>
