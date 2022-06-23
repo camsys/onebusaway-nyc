@@ -181,6 +181,10 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
                     validBeans.add(bean);
                 }
             }
+            if(beansContainer.getBeans().size() > 0 && validBeans.size() == 0){
+                _log.warn("Found {} cancelled trips but none of them were valid", beansContainer.getBeans().size());
+            }
+            _log.debug("found {} valid beans", validBeans.size());
             return validBeans;
 
         } catch (Exception any) {
@@ -190,6 +194,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
     }
 
     private boolean isValid(CancelledTripBean bean) {
+        _log.debug("checking to see if bean trip exists for trip {}", bean.getTrip());
         return _nycTransitDataService.getTrip(bean.getTrip()) != null;
     }
 
