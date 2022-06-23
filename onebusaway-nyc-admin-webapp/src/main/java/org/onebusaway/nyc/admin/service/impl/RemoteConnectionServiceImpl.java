@@ -87,18 +87,21 @@ public class RemoteConnectionServiceImpl implements RemoteConnectionService {
 	}
 
 	@Override
-	public <T> T postBinaryData(String url, File data, Class<T> responseType) {
+	public <T> T postBinaryData(String url, File data, Class<T> reponseType) {
+		return postBinaryData(url, data, MediaType.APPLICATION_OCTET_STREAM, reponseType);
+	}
+	@Override
+	public <T> T postBinaryData(String url, File data, String contentType, Class<T> responseType) {
 		T response = null;
 		Client client = ClientBuilder.newClient();
 		WebTarget target = client.target(url);
 
 		try {
-			target.request()
-					.accept("text/csv").accept("text/csv")
-					.post(Entity.entity(new FileInputStream(data), MediaType.APPLICATION_OCTET_STREAM), responseType);
+			response = target.request()
+					.accept(MediaType.WILDCARD)
+					.post(Entity.entity(new FileInputStream(data), contentType), responseType);
 		} catch (FileNotFoundException e) {
-			log.error("CSV File not found. It is not uploaded correctly");
-			e.printStackTrace();
+			log.error("CSV File not found. It is not uploaded correctly", e);
 		}
 
 		return response;

@@ -60,6 +60,8 @@ public class IndexAction extends SessionedIndexAction {
 
   private static final int MAX_SMS_CHARACTER_COUNT = 160;
 
+  private static final int MAX_FOOTER_CHARACTER_COUNT = 24;
+
   @Autowired
   @Qualifier("NycRealtimeService")
   private RealtimeService _realtimeService;
@@ -109,6 +111,7 @@ public class IndexAction extends SessionedIndexAction {
     }
 
     Boolean showAd = _configurationService.getConfigurationValueAsBoolean("sms.showAd", false);
+    Boolean adLabelOnly = _configurationService.getConfigurationValueAsBoolean("sms.adLabelOnly", false);
 
     if(queryString != null && !queryString.isEmpty()) {
       _lastQuery = queryString;
@@ -127,7 +130,7 @@ public class IndexAction extends SessionedIndexAction {
     } else if(_lastQuery != null && "O".equals(commandString)) {
       // occupancy query -- redo last query
       _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
-    } else if(_lastQuery != null && showAd && "S".equals(commandString)) {
+    } else if(_lastQuery != null && showAd && !adLabelOnly && "S".equals(commandString)) {
       _response = adDescriptionTextResponse();
       return SUCCESS;
     } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && "N".equals(commandString)) {
@@ -555,7 +558,7 @@ public class IndexAction extends SessionedIndexAction {
       footer += "\nO for #occupancy";
     }
 
-    footer += "\n" + getAdFooter();
+    footer += "\n" + StringUtils.abbreviate(getAdFooter(), MAX_FOOTER_CHARACTER_COUNT);
 
     // find biggest headsign
     int routeDirectionTruncationLength = -1;
@@ -582,7 +585,7 @@ public class IndexAction extends SessionedIndexAction {
         }
 
         if(headsign.length() + alertString.length() > routeDirectionTruncationLength) {
-          body += "to " + headsign.substring(0, Math.min(routeDirectionTruncationLength, headsign.length())) + "..." + alertString + occupancyString;
+          body += "to " + StringUtils.abbreviate(headsign, routeDirectionTruncationLength) + alertString + occupancyString;
         } else {
           body += "to " + headsign + alertString + occupancyString;
         }
@@ -1187,12 +1190,15 @@ public class IndexAction extends SessionedIndexAction {
 
   private String getAdFooter(){
     Boolean showAd = _configurationService.getConfigurationValueAsBoolean("sms.showAd", false);
+    Boolean adLabelOnly = _configurationService.getConfigurationValueAsBoolean("sms.adLabelOnly", true);
     String adLabel = _configurationService.getConfigurationValueAsString("sms.adLabel", null);
-    if(showAd && adLabel != null){
-      if(adLabel.length() > 16){
-        adLabel = StringUtils.abbreviate(adLabel, 16);
+
+    if(showAd && !StringUtils.isBlank(adLabel)){
+      if(adLabelOnly) {
+        return adLabel;
+      } else {
+        return "S for " + adLabel;
       }
-      return "S for " + adLabel;
     }
     return "";
   }
