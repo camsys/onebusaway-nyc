@@ -177,9 +177,10 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService {
             }
             List<CancelledTripBean> validBeans = new ArrayList<>();
             for (CancelledTripBean bean : beansContainer.getBeans()) {
-                if (isValid(bean)) {
+                /*if (isValid(bean)) {
                     validBeans.add(bean);
-                }
+                }*/
+                validBeans.add(bean);
             }
             if(beansContainer.getBeans().size() > 0 && validBeans.size() == 0){
                 _log.warn("Found {} cancelled trips but none of them were valid", beansContainer.getBeans().size());
