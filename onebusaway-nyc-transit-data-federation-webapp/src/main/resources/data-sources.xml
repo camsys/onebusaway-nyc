@@ -111,6 +111,7 @@
     <bean id="mta_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
         <property name="alertsUrl" value="http://localhost:9999/api/alerts/all.pb"/>
         <property name="refreshInterval" value="60"/>
+        <property name="agencyId" value="MTA"/>
     </bean>
 
 </beans>
