@@ -133,6 +133,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     final BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(
         obs, parentBlockState.getBlockInstance(), distAlongSample);
+    if(distState== null){
+      return null;
+    }
     return orientationCheck(parentBlockStateObs, distState, obs);
   }
 
@@ -212,6 +215,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     if (newSchedTime < startSchedTime) {
       schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
           obs, blockInstance, 0.0);
+      if(schedState== null){
+        return null;
+      }
     } else if (endSchedTime < newSchedTime) {
       return null;
     } else {
@@ -250,6 +256,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     if (newSchedTime < startSchedTime) {
       schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
           obs, parentBlockState.getBlockInstance(), 0.0);
+      if(schedState== null){
+        return null;
+      }
     } else if (endSchedTime < newSchedTime) {
       return null;
     } else {
