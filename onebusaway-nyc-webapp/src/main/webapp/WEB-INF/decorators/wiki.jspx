@@ -31,11 +31,19 @@
   <title><decorator:title default="${title}" /></title>
 
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  
-  <link rel="shortcut icon" href="http://web.mta.info/siteimages/favicon.ico" type="image/x-icon"/>
 
-  <script type="text/javascript" src="https://web.mta.info/js/csshorizontalmenu.js"><!-- //prevent jspx minimization --></script>
-  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"><!-- jspx --></script>
+	<s:url var="url" value="/favicon.ico">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<link rel="shortcut icon" href="${url}" type="image/x-icon"/>
+
+
+	<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"><!-- jspx --></script>
+
+	<s:url var="url" value="/js/oba/csshorizontalmenu.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<link rel="stylesheet" type="text/javascript" href="${url}"/>
 
   <s:url var="url" value="/css/reset.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
