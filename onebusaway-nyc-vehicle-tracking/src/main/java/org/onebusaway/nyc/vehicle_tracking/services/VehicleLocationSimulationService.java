@@ -66,7 +66,7 @@ public interface VehicleLocationSimulationService {
       InputStream traceInputStream, boolean runInRealtime,
       boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
       boolean bypassInference, boolean fillActualProperties, boolean loop,
-      int historySize) throws IOException;
+      int historySize, String capiFile, InputStream capiInputStream, int capiStart) throws IOException;
 
   public VehicleLocationDetails getTransitionParticleDetails(int taskId,
       int particleId, int transParticleNum, int recordIndex);

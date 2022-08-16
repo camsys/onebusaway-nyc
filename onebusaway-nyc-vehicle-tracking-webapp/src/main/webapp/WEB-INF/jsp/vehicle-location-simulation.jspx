@@ -100,6 +100,17 @@ table td, table th {
         </select></td>
     </tr>
     <tr>
+        <td>CAPI File?:</td>
+        <td><input type="file" name="capiFile" /></td>
+    </tr>
+    <tr>
+        <td>CAPI Start:</td>
+        <td>
+            <p><input type="text" name="capiStart"
+                      value="0" /> - The step number at which CAPI data should be processed.</p>
+        </td>
+    </tr>
+    <tr>
         <td></td>
         <td><input type="submit" value="submit" /></td>
     </tr>
