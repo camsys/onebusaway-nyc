@@ -570,14 +570,21 @@ public class NycTestInferredLocationRecord implements Serializable {
     return cancelledTripBeans;
   }
 
-  public void setCancelledTrips(String cancelledTrips) throws JsonProcessingException {
+  public void setCancelledTrips(String cancelledTrips) throws JsonProcessingException{
+    cancelledTripBeans = new ArrayList<>();
+    addCancelledTrips(cancelledTrips);
+  }
+  public void addCancelledTrips(String cancelledTrips) throws JsonProcessingException {
+    if(cancelledTripBeans==null){
+      cancelledTripBeans = new ArrayList<>();
+    }
     this.cancelledTrips = cancelledTrips;
     ObjectMapper _mapper;
     _mapper = new ObjectMapper();
     _mapper.registerModule(new JodaModule());
     _mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
     _mapper.setTimeZone(Calendar.getInstance().getTimeZone());
-    cancelledTripBeans = _mapper.readValue(cancelledTrips, new TypeReference<List<CancelledTripBean>>(){});
+    cancelledTripBeans.addAll(_mapper.readValue(cancelledTrips, new TypeReference<List<CancelledTripBean>>(){}));
   }
 
   public String getCancelledTrips(){

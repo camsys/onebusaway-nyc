@@ -69,10 +69,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -228,7 +225,9 @@ public class VehicleLocationSimulationController {
       @RequestParam(required = false, defaultValue = "false") boolean fillActualProperties,
       @RequestParam(value = "loop", required = false, defaultValue = "false") boolean loop,
       @RequestParam(required = false, defaultValue = "false") boolean returnId,
-      @RequestParam(required = false, defaultValue = "-1") int historySize)
+      @RequestParam(required = false, defaultValue = "-1") int historySize,
+      @RequestParam(required = false, value = "capiFile") MultipartFile capiFile,
+      @RequestParam(value = "capiStart", required = false, defaultValue = "0") int capiStart)
       throws IOException {
 
     int taskId = -1;
@@ -243,11 +242,15 @@ public class VehicleLocationSimulationController {
 
       if (historySize < 0)
         historySize = Integer.MAX_VALUE;
+
+      String capiFileName = capiFile.getOriginalFilename();
+
+      InputStream capiIn = capiFile.getInputStream();
       
       taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(
           name, traceType, in, realtime, pauseOnStart, shiftStartTime,
           minimumRecordInterval, bypassInference, fillActualProperties, loop,
-          historySize);
+          historySize, capiFileName, capiIn, capiStart);
     }
 
     if (returnId) {

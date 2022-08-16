@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -575,6 +576,12 @@ public class SimulatorTask implements Runnable, EntityHandler {
       _details.add(details);
 
     return true;
+  }
+
+  public void injectCapi(String cancelledTripBeans, int capiStart) throws JsonProcessingException {
+    for(int i = capiStart; i<_records.size();i++){
+      _records.get(i).addCancelledTrips(cancelledTripBeans);
+    }
   }
 
   public String getFilename() {

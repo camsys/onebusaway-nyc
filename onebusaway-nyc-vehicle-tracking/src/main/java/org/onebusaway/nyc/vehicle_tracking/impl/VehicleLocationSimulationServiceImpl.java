@@ -63,6 +63,7 @@ import umontreal.iro.lecuyer.rng.RandomStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -178,10 +179,10 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public int simulateLocationsFromTrace(String filename, String traceType,
-      InputStream traceInputStream, boolean runInRealtime,
-      boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
-      boolean bypassInference, boolean fillActualProperties, boolean loop,
-      int historySize) throws IOException {
+     InputStream traceInputStream, boolean runInRealtime, boolean pauseOnStart,
+     boolean shiftStartTime, int minimumRecordInterval, boolean bypassInference,
+     boolean fillActualProperties, boolean loop, int historySize, String capiFile,
+     InputStream capiInputStream, int capiStart) throws IOException {
 
     final SimulatorTask task = new SimulatorTask();
     task.setFilename(filename);
@@ -205,6 +206,10 @@ public class VehicleLocationSimulationServiceImpl implements
     }
     traceInputStream.close();
 
+    if(!capiFile.equals("")){
+      String cancelledTripData = readCapiFile(capiInputStream);
+      task.injectCapi(cancelledTripData,capiStart);
+    }
     return addTask(task);
   }
 
@@ -888,5 +893,13 @@ public class VehicleLocationSimulationServiceImpl implements
       return false;
     final String value = properties.getProperty(ARG_INCLUDE_START).toLowerCase();
     return value.equals("true") || value.equals("yes") || value.equals("1");
+  }
+
+  private String readCapiFile (InputStream capiIn) throws IOException {
+    String capiData = null;
+    try (Scanner scanner = new Scanner(capiIn, StandardCharsets.UTF_8.name())) {
+      capiData = scanner.useDelimiter("\\A").next();
+    }
+    return capiData;
   }
 }
