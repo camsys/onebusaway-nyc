@@ -32,19 +32,21 @@
   <import resource="classpath:data-sources.xml" />
 
 
-  <import resource="classpath:org/onebusaway/users/application-context.xml" />
-  <import resource="classpath:org/onebusaway/users/application-context-security.xml" />
-  <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
-  <import resource="classpath:org/onebusaway/presentation/application-context-services.xml" />
-  <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
 
 
   <import resource="classpath:org/onebusaway/nyc/report/application-context.xml" />
+  <import resource="classpath:org/onebusaway/users/application-context.xml" />
 
-<!--  <context:component-scan base-package="org.onebusaway.nyc.api.lib" />-->
+  <context:component-scan base-package="org.onebusaway.nyc.api.lib" />
   <context:component-scan base-package="org.onebusaway.nyc.ops" />
+  <context:component-scan base-package="org.onebusaway.users.impl"/>
 
   <bean id="ccAndInferredLocationDao" class="org.onebusaway.nyc.ops.impl.CcAndInferredLocationDaoImpl" />
+
+<!--  <bean id="userDao" class="org.onebusaway.users.impl.UserDaoImpl"/>-->
+<!--  <bean id="standardAuthoritiesService" class="org.onebusaway.users.impl.StandardAuthoritiesServiceImpl"/>-->
+<!--  <bean id="apiKeyUserService" class="org.onebusaway.users.impl.UserServiceImpl"/>-->
+<!--  <bean id="apiKeyPermissionService" class="org.onebusaway.users.impl.ApiKeyPermissionServiceImpl"/>-->
 
   <!--	API Key management-->
   <!--	<bean id="apiKeyValidationService" class="org.onebusaway.nyc.ops.util.ApiKeyInterceptor"/>-->

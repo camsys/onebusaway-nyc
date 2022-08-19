@@ -85,6 +85,7 @@
 				<value>org.onebusaway.nyc.report.model.CcLocationReportRecord</value>
 				<value>org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord</value>
 				<value>org.onebusaway.nyc.report.model.CcAndInferredLocationRecord</value>
+				<value>org.onebusaway.users.model.UserRole</value>
 			</list>
 		</property>
 		<property name="hibernateProperties">
@@ -96,7 +97,8 @@
 		       	<prop key="hibernate.order_inserts">false</prop>
 		       	<prop key="hibernate.order_updates">false</prop>
 		       	<prop key="hibernate.show_sql">false</prop>
-		       	<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+				<prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</prop>
+				<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
 			</props>
 		</property>
 	</bean>
@@ -122,6 +124,10 @@
 			</list>
 		</property>
 	</bean>
+
+<!--	<bean class="org.onebusaway.users.impl.CreateApiKeyAction">-->
+<!--		<property name="key" value="TEST"/>-->
+<!--	</bean>-->
 
 
 </beans>
