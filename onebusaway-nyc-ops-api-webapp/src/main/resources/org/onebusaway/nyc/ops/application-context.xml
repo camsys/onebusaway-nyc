@@ -26,12 +26,32 @@
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
 
+  <!-- This turns on automatic annotation configuration -->
+  <context:annotation-config />
+
   <import resource="classpath:data-sources.xml" />
-  <import resource="classpath:org/onebusaway/container/application-context.xml" />
+
+
+  <import resource="classpath:org/onebusaway/users/application-context.xml" />
+  <import resource="classpath:org/onebusaway/users/application-context-security.xml" />
+  <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
+  <import resource="classpath:org/onebusaway/presentation/application-context-services.xml" />
+  <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
+
+
   <import resource="classpath:org/onebusaway/nyc/report/application-context.xml" />
-	
+
+<!--  <context:component-scan base-package="org.onebusaway.nyc.api.lib" />-->
   <context:component-scan base-package="org.onebusaway.nyc.ops" />
 
   <bean id="ccAndInferredLocationDao" class="org.onebusaway.nyc.ops.impl.CcAndInferredLocationDaoImpl" />
+
+  <!--	API Key management-->
+  <!--	<bean id="apiKeyValidationService" class="org.onebusaway.nyc.ops.util.ApiKeyInterceptor"/>-->
+
+  <!--	<bean id="ç" class="org.onebusaway.nyc.api.lib.impl.ApiKeyThrottlingMemcacheServiceImpl">-->
+  <!--		<property name="cacheHost" value="${api.cache.host}" />-->
+  <!--		<property name="disabled" value="${api.cache.disabled}" />-->
+  <!--	</bean>-->
   
 </beans>

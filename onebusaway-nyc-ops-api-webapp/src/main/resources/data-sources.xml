@@ -24,14 +24,14 @@
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 
- <!-- WebServices Connection Configuration -->   
+ <!-- WebServices Connection Configuration -->
 
   <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary">
     <constructor-arg type="java.lang.String" value="${tdm.host}" />
     <constructor-arg type="java.lang.Integer" value="80" />
     <constructor-arg type="java.lang.String" value="/api/" />
   </bean>
-  
+
    <bean id="opsApiLibrary" class="org.onebusaway.nyc.ops.util.OpsApiLibrary">
 		<constructor-arg type="java.lang.String" value="${ops.host}" />
 		<constructor-arg type="java.lang.Integer" value="${ops.port}" />
@@ -49,19 +49,35 @@
 
   <!-- Input Queue Configuration -->
   <bean id="bhsInputQueue" class="org.onebusaway.nyc.ops.queue.OpsInputQueueListenerTask">
-  </bean> 
+  </bean>
   <bean id="output_queue" class="org.onebusaway.nyc.ops.queue.OpsInferenceQueueListenerTask">
   </bean>
-	
+
 	<!-- Database Connection Configuration -->
-	
+
 	 <bean id="hsqlDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
 	    <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
 	    <property name="url" value="jdbc:hsqldb:mem:onebusaway_temporary"/>
 	    <property name="username" value="sa"/>
 	    <property name="password" value=""/>
    	 </bean>
-	   
+
+	<bean id="dataSource"
+		  class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiName"
+				  value="java:comp/env/jdbc/appDB"/>
+		<property name="lookupOnStartup"
+				  value="true"/>
+		<property name="cache"
+				  value="true"/>
+		<property name="proxyInterface"
+				  value="javax.sql.DataSource"/>
+		<property name="resourceRef"
+				  value="true" />
+	</bean>
+
+	<alias name="dataSource" alias="mutableDataSource" />
+
 	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
 		<property name="dataSource" ref="hsqlDataSource" />
 		<property name="annotatedClasses">
@@ -80,16 +96,32 @@
 		       	<prop key="hibernate.order_inserts">false</prop>
 		       	<prop key="hibernate.order_updates">false</prop>
 		       	<prop key="hibernate.show_sql">false</prop>
-		       	<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>              	
+		       	<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
 			</props>
 		</property>
 	</bean>
-	
+
 	 <bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
         <property name="sessionFactory" ref="sessionFactory" />
         <qualifier value="sessionFactory"/>
     </bean>
-	
+
     <tx:annotation-driven transaction-manager="transactionManager"/>
+
+<!--	API Key management-->
+	<bean id="memcacheService" class="org.onebusaway.nyc.api.lib.impl.ApiKeyThrottlingMemcacheServiceImpl">
+		<property name="cacheHost" value="${api.cache.host}" />
+		<property name="disabled" value="${api.cache.disabled}" />
+	</bean>
+
+	<bean id="apiKeyValidationService"
+		  class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl">
+		<property name="providers">
+			<list>
+				<bean class="org.onebusaway.users.impl.validation.SaltedPasswordValidationProviderV1Impl" />
+			</list>
+		</property>
+	</bean>
+
 
 </beans>
