@@ -35,13 +35,18 @@
 
 
   <import resource="classpath:org/onebusaway/nyc/report/application-context.xml" />
-  <import resource="classpath:org/onebusaway/users/application-context.xml" />
+
 
   <context:component-scan base-package="org.onebusaway.nyc.api.lib" />
   <context:component-scan base-package="org.onebusaway.nyc.ops" />
-  <context:component-scan base-package="org.onebusaway.users.impl"/>
 
   <bean id="ccAndInferredLocationDao" class="org.onebusaway.nyc.ops.impl.CcAndInferredLocationDaoImpl" />
+
+
+  <import resource="classpath:org/onebusaway/users/application-context.xml" />
+  <context:component-scan base-package="org.onebusaway.users.impl"/>
+
+
 
 <!--  <bean id="userDao" class="org.onebusaway.users.impl.UserDaoImpl"/>-->
 <!--  <bean id="standardAuthoritiesService" class="org.onebusaway.users.impl.StandardAuthoritiesServiceImpl"/>-->
