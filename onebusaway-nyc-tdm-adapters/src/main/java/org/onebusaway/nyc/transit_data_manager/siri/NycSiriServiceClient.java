@@ -58,18 +58,18 @@ public class NycSiriServiceClient extends NycSiriService {
   void addOrUpdateServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
       String defaultAgencyId) {
-//    getTransitDataService().createServiceAlert(defaultAgencyId,
-//        serviceAlertBean);
-//    result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
-//        "added");
+    getTransitDataService().createServiceAlert(defaultAgencyId,
+        serviceAlertBean);
+    result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
+        "added");
   }
 
   @Override
   void removeServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, String serviceAlertId) {
-//    getTransitDataService().removeServiceAlert(serviceAlertId);
-//    result.countPtSituationElementResult(deliveryResult, serviceAlertId,
-//        "removed");
+    getTransitDataService().removeServiceAlert(serviceAlertId);
+    result.countPtSituationElementResult(deliveryResult, serviceAlertId,
+        "removed");
   }
 
   @Override
@@ -115,12 +115,12 @@ public class NycSiriServiceClient extends NycSiriService {
 
   @Override
   public void deleteAllServiceAlerts() {
-//    for (AgencyWithCoverageBean agency : getTransitDataService().getAgenciesWithCoverage()) {
-//      _log.info("Clearing service alerts for agency "
-//          + agency.getAgency().getId());
-//      getTransitDataService().removeAllServiceAlertsForAgencyId(
-//          agency.getAgency().getId());
-//    }
+    for (AgencyWithCoverageBean agency : getTransitDataService().getAgenciesWithCoverage()) {
+      _log.info("Clearing service alerts for agency "
+          + agency.getAgency().getId());
+      getTransitDataService().removeAllServiceAlertsForAgencyId(
+          agency.getAgency().getId());
+    }
 
   }
 
