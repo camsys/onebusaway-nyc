@@ -505,7 +505,7 @@ small {
 	background-repeat: no-repeat;
 	background-position: left center;
 	white-space: nowrap;
-	display: inline;
+	display: block;
 }
 
 /*.arrivalsOnRouteSchedule li::before {
