@@ -107,10 +107,10 @@
         <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
-<!--    <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">-->
-<!--        <property name="serviceAlertsUrl" value="${service.alerts.url}" />-->
-<!--        <property name="subscriptionPath" value="${service.alerts.subscription.path}" />        -->
-<!--    </bean>-->
+    <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
+        <property name="serviceAlertsUrl" value="${service.alerts.url}" />
+        <property name="subscriptionPath" value="${service.alerts.subscription.path}" />        
+    </bean>
 
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />
     <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
@@ -123,9 +123,8 @@
 
     <bean id="mta_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
         <property name="alertsUrl" value=""/>
-        <property name="refreshInterval" value="30"/>
+        <property name="refreshInterval" value="60"/>
         <property name="agencyId" value="MTA"/>
-        <property name="debugFeed" value = "Jared"/>
     </bean>
 
 
