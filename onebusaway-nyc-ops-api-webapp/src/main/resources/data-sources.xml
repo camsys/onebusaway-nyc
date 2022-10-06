@@ -76,6 +76,12 @@
 		<property name="annotatedClasses">
 			<list>
 				<value>org.onebusaway.users.model.UserRole</value>
+				<value>org.onebusaway.users.model.UserIndex</value>
+				<value>org.onebusaway.users.model.UserIndexKey</value>
+				<value>org.onebusaway.users.model.UserProperties</value>
+				<value>org.onebusaway.users.model.UserPropertiesV1</value>
+				<value>org.onebusaway.users.model.User</value>
+				<value>org.onebusaway.users.model.IndexedUserDetails</value>
 			</list>
 		</property>
 		<property name="hibernateProperties">
