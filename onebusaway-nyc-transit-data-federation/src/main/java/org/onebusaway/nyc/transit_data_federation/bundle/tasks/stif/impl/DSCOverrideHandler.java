@@ -25,7 +25,8 @@ import java.util.Map;
 import org.onebusaway.csv_entities.CSVLibrary;
 import org.onebusaway.csv_entities.CSVListener;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 
 public class DSCOverrideHandler {
 

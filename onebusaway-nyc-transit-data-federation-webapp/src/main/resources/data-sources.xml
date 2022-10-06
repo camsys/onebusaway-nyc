@@ -21,7 +21,7 @@
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-
+    <context:component-scan base-package="org.onebusaway.alerts.impl" />
     <!-- define which TDM to use -->
     <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
       <constructor-arg type="java.lang.String" value="${tdm.host}"/>
@@ -33,12 +33,26 @@
     <!-- Database Configuration -->
     
       <!-- Database Connection Configuration -->
-	  <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-	    <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-	    <property name="url" value="jdbc:hsqldb:file:${bundle.location}/onebusaway_nyc" />
-	    <property name="username" value="sa" />
-	    <property name="password" value="" />
-	  </bean>
+<!--	  <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
+<!--	    <property name="driverClassName" value="org.hsqldb.jdbcDriver" />-->
+<!--	    <property name="url" value="jdbc:hsqldb:file:${bundle.location}/onebusaway_nyc" />-->
+<!--	    <property name="username" value="sa" />-->
+<!--	    <property name="password" value="" />-->
+<!--	  </bean>-->
+
+    <bean id="dataSource"
+          class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName"
+                  value="java:comp/env/jdbc/appDB"/>
+        <property name="lookupOnStartup"
+                  value="true"/>
+        <property name="cache"
+                  value="true"/>
+        <property name="proxyInterface"
+                  value="javax.sql.DataSource"/>
+        <property name="resourceRef"
+                  value="true" />
+    </bean>
     
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="hibernateProperties" />
@@ -106,5 +120,13 @@
         <property name="url" value="http://${gtfs.editor.host}/api/gtfs-servicechange/list" />
         <property name="transitDataService" ref="nycTransitDataServiceImpl" />
     </bean>
+
+    <bean id="mta_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+        <property name="alertsUrl" value=""/>
+        <property name="refreshInterval" value="60"/>
+        <property name="agencyId" value="MTA"/>
+    </bean>
+
+
 
 </beans>

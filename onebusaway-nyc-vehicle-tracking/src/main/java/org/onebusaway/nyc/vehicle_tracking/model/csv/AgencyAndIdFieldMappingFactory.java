@@ -22,7 +22,8 @@ import org.onebusaway.csv_entities.schema.EntitySchemaFactory;
 import org.onebusaway.csv_entities.schema.FieldMapping;
 import org.onebusaway.csv_entities.schema.FieldMappingFactory;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 
 import java.util.Collection;
 import java.util.Map;

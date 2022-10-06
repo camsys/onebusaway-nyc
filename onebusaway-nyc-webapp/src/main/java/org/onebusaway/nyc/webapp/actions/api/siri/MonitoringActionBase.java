@@ -31,7 +31,8 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class MonitoringActionBase extends OneBusAwayNYCActionSupport{

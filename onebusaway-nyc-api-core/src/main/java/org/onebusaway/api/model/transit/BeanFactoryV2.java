@@ -80,7 +80,8 @@ import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 
 public class BeanFactoryV2 {
 

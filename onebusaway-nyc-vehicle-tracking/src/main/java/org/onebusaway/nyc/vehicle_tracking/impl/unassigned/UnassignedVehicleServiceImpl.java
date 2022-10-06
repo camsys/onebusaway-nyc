@@ -34,7 +34,8 @@ import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInf
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.onebusaway.nyc.vehicle_tracking.services.unassigned.UnassignedVehicleService;
 import org.onebusaway.realtime.api.EVehiclePhase;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
