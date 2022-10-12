@@ -8,6 +8,7 @@ import org.apache.struts2.dispatcher.HttpParameters;
 import org.apache.struts2.dispatcher.Parameter;
 import org.onebusaway.nyc.api.lib.services.ApiKeyThrottledService;
 import org.onebusaway.nyc.api.lib.services.ApiKeyUsageMonitor;
+import org.onebusaway.nyc.api.lib.services.ApiKeyWithRolesPermissionService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.users.services.ApiKeyPermissionService;
 import org.slf4j.Logger;
@@ -40,7 +41,7 @@ public class ApiKeyInterceptor implements Filter {
     private Siri _response;
 
 
-    private ApiKeyPermissionService _keyService;
+    private ApiKeyWithRolesPermissionService _keyService;
 
 
     private ApiKeyThrottledService _throttledKeyService;
@@ -55,7 +56,7 @@ public class ApiKeyInterceptor implements Filter {
                 .getRequiredWebApplicationContext(filterConfig.getServletContext());
         _keyUsageMonitor = ctx.getBean(org.onebusaway.nyc.api.lib.services.ApiKeyUsageMonitor.class);
         _throttledKeyService =  ctx.getBean(org.onebusaway.nyc.api.lib.services.ApiKeyThrottledService.class);
-        _keyService = ctx.getBean(org.onebusaway.users.services.ApiKeyPermissionService.class);
+        _keyService = ctx.getBean(org.onebusaway.nyc.api.lib.services.ApiKeyWithRolesPermissionService.class);
         int a = 23;
     }
 
@@ -119,7 +120,7 @@ public class ApiKeyInterceptor implements Filter {
         }
 
         _keyUsageMonitor.increment(key);
-        boolean isPermitted = checkIsPermitted(_keyService.getPermission(key, "api"));
+        boolean isPermitted = checkIsPermitted(_keyService.getOperatorOnlyPermission(key, "api"));
         boolean notThrottled = _throttledKeyService.isAllowed(key);
 
         if (isPermitted && notThrottled)
@@ -139,7 +140,7 @@ public class ApiKeyInterceptor implements Filter {
     }
 
     @Autowired
-    public void setKeyService(ApiKeyPermissionService _keyService) {
+    public void setKeyService(ApiKeyWithRolesPermissionService _keyService) {
         this._keyService = _keyService;
     }
 

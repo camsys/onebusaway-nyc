@@ -139,18 +139,18 @@
 		</property>
 	</bean>
 
-	<bean id="hsqltransactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+	<bean id="hsqlTransactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
 		<property name="sessionFactory" ref="hsqlSessionFactory" />
 		<qualifier value="hsqlSessionFactory"/>
 	</bean>
-	<tx:annotation-driven transaction-manager="hsqltransactionManager"/>
+	<tx:annotation-driven transaction-manager="hsqlTransactionManager"/>
 
 
 
 	<!--	API Key management-->
 	<bean id="memcacheService" class="org.onebusaway.nyc.api.lib.impl.ApiKeyThrottlingMemcacheServiceImpl">
 		<property name="cacheHost" value="${api.cache.host}" />
-		<property name="disabled" value="${api.cache.disabled}" />
+		<property name="disabled" value="false" />
 	</bean>
 
 	<bean id="apiKeyValidationService"
@@ -162,9 +162,9 @@
 		</property>
 	</bean>
 
-	<!--	<bean class="org.onebusaway.users.impl.CreateApiKeyAction">-->
-	<!--		<property name="key" value="TEST"/>-->
-	<!--	</bean>-->
+		<bean class="org.onebusaway.users.impl.CreateApiKeyAction">
+			<property name="key" value="TEST"/>
+		</bean>
 
 
 </beans>
