@@ -22,6 +22,9 @@ import org.slf4j.LoggerFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.onebusaway.cloud.api.ExternalServices;
+import org.onebusaway.cloud.api.ExternalServicesBridgeFactory;
+
 /**
  * Utility class to test if DNS resolution of a hostname has changed.
  */
@@ -29,6 +32,8 @@ public class DNSResolver {
 	protected static Logger _log = LoggerFactory.getLogger(DNSResolver.class);
 	private InetAddress currentAddress = null;
 	private String host = null;
+	private ExternalServices externalServices = new ExternalServicesBridgeFactory().getExternalServices();
+
 
 	public DNSResolver(String host) {
 		this.host = host;
@@ -68,20 +73,7 @@ public class DNSResolver {
 	 * Tests if this host is at the IP corresponding to the DNS address.
 	 */
 	public boolean isPrimary() {
-		InetAddress newAddress = getInetAddressByName(host);
-		if (newAddress == null) {
-			_log.warn("Primary host did not resolve, assuming primary.  host=" + host);
-			return true;
-		}
-		try {
-			if (InetAddress.getLocalHost().equals(newAddress)) { // compares IP
-				return true;
-			}
-		} catch (UnknownHostException uhe) {
-			_log.error("misconfigured host, unable to resolve localhost");
-			_log.error(uhe.toString());
-		}
-		return false;
+		return externalServices.isInstancePrimary();
 	}
 
 	/**
