@@ -26,6 +26,7 @@ import java.util.Date;
 import javax.persistence.*;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.transaction.Transactional;
 
 @Entity
 @Table(name = "obanyc_invalidlocationreport")
