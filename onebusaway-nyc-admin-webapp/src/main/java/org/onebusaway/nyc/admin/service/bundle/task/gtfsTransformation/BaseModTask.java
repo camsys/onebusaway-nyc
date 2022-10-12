@@ -107,8 +107,8 @@ public class BaseModTask {
         // the transformer may be called twice causing erroneous duplicate messages
         mod.getReader().setOverwriteDuplicates(true);
 
-        mod.setWriteZoneRouteMapping(ARG_WRITE_ZONE_ROUTE_MAPPING);
-        mod.setRouteMappingOutputName(ARG_ROUTE_MAPPING_OUTPUT_FILE_NAME);
+        //mod.setWriteZoneRouteMapping(ARG_WRITE_ZONE_ROUTE_MAPPING);
+        //mod.setRouteMappingOutputName(ARG_ROUTE_MAPPING_OUTPUT_FILE_NAME);
         addAgencyMappings(mod.getReader(), gtfsBundle);
 
         String outputDirectory = parseDirectory(gtfsBundle.getPath().getPath());
