@@ -120,7 +120,7 @@ public class ApiKeyInterceptor implements Filter {
         }
 
         _keyUsageMonitor.increment(key);
-        boolean isPermitted = checkIsPermitted(_keyService.getOperatorOnlyPermission(key, "api"));
+        boolean isPermitted = checkIsPermitted(_keyService.getOpsApiOnlyPermission(key, "api"));
         boolean notThrottled = _throttledKeyService.isAllowed(key);
 
         if (isPermitted && notThrottled)

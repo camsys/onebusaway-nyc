@@ -19,7 +19,9 @@ package org.onebusaway.nyc.api.lib.services;
 import org.onebusaway.users.services.ApiKeyPermissionService;
 
 public interface ApiKeyWithRolesPermissionService extends ApiKeyPermissionService{
+    public Status getRoleOnlyPermission(String key, String service, String roleToMatch);
     public Status getAdminOnlyPermission(String key, String service);
     public Status getUserOnlyPermission(String key, String service);
     public Status getOperatorOnlyPermission(String key, String service);
+    public Status getOpsApiOnlyPermission(String key, String service);
 }

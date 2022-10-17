@@ -77,7 +77,7 @@ public class ApiKeyWithRolesPermissionServiceImpl implements ApiKeyWithRolesPerm
         return ok;
     }
 
-    private Status getRoleOnlyPermission(String key, String service, String roleToMatch) {
+    public Status getRoleOnlyPermission(String key, String service, String roleToMatch) {
         Status ok = getPermission(key, service);
         if (ok == Status.AUTHORIZED) {
             ok = Status.UNAUTHORIZED;
@@ -109,6 +109,11 @@ public class ApiKeyWithRolesPermissionServiceImpl implements ApiKeyWithRolesPerm
     @Override
     public Status getOperatorOnlyPermission(String key, String service) {
         return getRoleOnlyPermission(key,service,_authoritiesService.getReportingRole().getName());
+    }
+
+    @Override
+    public Status getOpsApiOnlyPermission(String key, String service) {
+        return getRoleOnlyPermission(key,service,_authoritiesService.getOpsApiRole().getName());
     }
 
 
