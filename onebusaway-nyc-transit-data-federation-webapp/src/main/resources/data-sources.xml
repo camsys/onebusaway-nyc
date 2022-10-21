@@ -125,7 +125,6 @@
         <property name="alertsUrl" value=""/>
         <property name="refreshInterval" value="30"/>
         <property name="agencyId" value="MTA"/>
-        <property name="debugFeed" value = "Jared"/>
     </bean>
 
 
