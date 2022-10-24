@@ -89,7 +89,7 @@
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>2.3.5</version><!-- force newer version -->
+            <version>2.7.1</version><!-- force newer version -->
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>
