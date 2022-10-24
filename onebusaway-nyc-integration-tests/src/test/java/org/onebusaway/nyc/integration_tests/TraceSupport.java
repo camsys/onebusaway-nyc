@@ -68,7 +68,6 @@ public class TraceSupport {
       if(_bypassInference == true) {
     	  bypassInference = new StringPart("bypassInference", "true");
       }
-      
       post.setRequestEntity(new MultipartRequestEntity(new Part[] {
           filePart, returnIdParam, shiftStartTimeParam, traceTypeParam, historySize, bypassInference},
           new HttpMethodParams()));
