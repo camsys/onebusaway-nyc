@@ -193,7 +193,6 @@ public class ConfigResource {
 
   @Path("/{component}/{key}/delete")
   @GET
-  @Consumes("application/json")
   @Produces("application/json")
   public String deleteConfigVal(String configStr, @PathParam("component")
           String component, @PathParam("key")
