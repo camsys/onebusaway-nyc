@@ -144,6 +144,28 @@ public class KeysResource {
     return response;
   }
 
+  @Path("/createOpsKey")
+  @GET
+  @Produces("application/json")
+  public Response createOpsKey() throws JsonGenerationException,
+          JsonMappingException, IOException {
+    _log.info("Starting createKey with no parameter");
+    Response response = createOpsKey(UUID.randomUUID().toString());
+
+    return response;
+  }
+
+  @Path("/create/{keyValue}")
+  @GET
+  @Produces("application/json")
+  public Response createOpsKey(@PathParam("keyValue")
+                                    String keyValue) throws JsonGenerationException, JsonMappingException,
+          IOException {
+    Response response = createKey(keyValue);
+    addOpsApiRoleToKey(keyValue);
+    return response;
+  }
+
   @Path("/delete/{keyValue}")
   @GET
   @Produces("application/json")
@@ -189,6 +211,14 @@ public class KeysResource {
 
     // Clear the cached value here
     _userService.getMinApiRequestIntervalForKey(apiKey, true);
+  }
+
+  private void addOpsApiRoleToKey(String apiKey){
+    UserIndexKey indexKey = new UserIndexKey(UserIndexTypes.API_KEY, apiKey);
+    UserIndex userIndex = _userService.getUserIndexForId(indexKey);
+
+    _userService.enableOpsApiRoleForUser(userIndex.getUser());
+
   }
 
   private void delete(String apiKey) throws Exception {
