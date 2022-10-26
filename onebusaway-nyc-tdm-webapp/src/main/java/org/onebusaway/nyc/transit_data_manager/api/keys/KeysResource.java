@@ -42,6 +42,7 @@ import org.onebusaway.nyc.transit_data_manager.util.ObjectMapperProvider;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
+import org.onebusaway.users.services.StandardAuthoritiesService;
 import org.onebusaway.users.services.UserIndexTypes;
 import org.onebusaway.users.services.UserPropertiesService;
 import org.onebusaway.users.services.UserService;
@@ -144,25 +145,38 @@ public class KeysResource {
     return response;
   }
 
-  @Path("/createOpsKey")
+  @Path("/role/{roleName}/create")
   @GET
   @Produces("application/json")
-  public Response createOpsKey() throws JsonGenerationException,
+  public Response createRoleKey(@PathParam("roleName") String roleName) throws JsonGenerationException,
           JsonMappingException, IOException {
     _log.info("Starting createKey with no parameter");
-    Response response = createOpsKey(UUID.randomUUID().toString());
+
+    Response response = createRoleKey(roleName, UUID.randomUUID().toString());
 
     return response;
   }
 
-  @Path("/create/{keyValue}")
+  @Path("/role/{roleName}/create/{keyValue}")
   @GET
   @Produces("application/json")
-  public Response createOpsKey(@PathParam("keyValue")
-                                    String keyValue) throws JsonGenerationException, JsonMappingException,
+  public Response createRoleKey(@PathParam("roleName") String roleName,
+                                @PathParam("keyValue") String keyValue) throws JsonGenerationException, JsonMappingException,
           IOException {
-    Response response = createKey(keyValue);
-    addOpsApiRoleToKey(keyValue);
+
+    Response response;
+
+    try{
+      UserRoleForKey userRole = UserRoleForKey.valueOfLabel(roleName);
+      response = createKey(keyValue);
+      addRoleToKey(userRole.getRoleName(), keyValue);
+    }catch (Exception e){
+      KeyMessage message = new KeyMessage();
+      message.setStatus("ERROR");
+      message.setMessageText("Failed to create key with role " + roleName + " : " + e.getMessage());
+      response = generateResponse(message);
+    }
+
     return response;
   }
 
@@ -213,11 +227,20 @@ public class KeysResource {
     _userService.getMinApiRequestIntervalForKey(apiKey, true);
   }
 
-  private void addOpsApiRoleToKey(String apiKey){
-    UserIndexKey indexKey = new UserIndexKey(UserIndexTypes.API_KEY, apiKey);
-    UserIndex userIndex = _userService.getUserIndexForId(indexKey);
+  private void addRoleToKey(String roleName, String apiKey) throws Exception{
+    UserIndexKey key = new UserIndexKey(UserIndexTypes.API_KEY, apiKey);
+    UserIndex userIndexForId = _userService.getUserIndexForId(key);
 
-    _userService.enableOpsApiRoleForUser(userIndex.getUser());
+    if (userIndexForId == null) {
+      throw new Exception("API key " + apiKey + " not found");
+    }
+
+    _log.info("Adding role " + roleName);
+    try{
+      _userService.enableRoleForUser(userIndexForId.getUser(), roleName);
+    } catch (Exception e){
+      _log.error("Error adding role " + roleName + " for user", e);
+    }
 
   }
 
