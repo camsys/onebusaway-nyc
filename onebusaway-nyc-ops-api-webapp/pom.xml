@@ -171,8 +171,10 @@
         <ops.path>/api/record/</ops.path>
         <archive.host>archive</archive.host>
         <log4j.appender>ROLL</log4j.appender>
-        <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
+        <log4j.hFibernate.sql>OFF</log4j.hFibernate.sql>
         <log4j.hibernate.type>OFF</log4j.hibernate.type>
+        <api.cache.host>sessions-memcache</api.cache.host>
+        <api.cache.disabled>false</api.cache.disabled>
       </properties>
     </profile>
     <profile>
@@ -194,6 +196,8 @@
         <log4j.appender>stdout</log4j.appender>
         <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
         <log4j.hibernate.type>OFF</log4j.hibernate.type>
+        <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+        <api.cache.disabled>true</api.cache.disabled>
       </properties>
     </profile>
     <!-- archive can't run single port because zeromq can't be shared (classloader issues) -->
@@ -229,6 +233,8 @@
         <log4j.appender>stdout</log4j.appender>
         <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
         <log4j.hibernate.type>OFF</log4j.hibernate.type>
+        <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+        <api.cache.disabled>true</api.cache.disabled>
       </properties>
     </profile>
     <profile>
@@ -245,6 +251,8 @@
         <log4j.appender>stdout</log4j.appender>
         <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
         <log4j.hibernate.type>OFF</log4j.hibernate.type>
+        <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+        <api.cache.disabled>true</api.cache.disabled>
       </properties>
     </profile>
   </profiles>

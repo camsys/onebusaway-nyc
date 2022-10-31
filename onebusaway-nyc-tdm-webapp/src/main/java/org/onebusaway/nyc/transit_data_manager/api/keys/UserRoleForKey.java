@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.transit_data_manager.api.keys;
 
+import org.onebusaway.users.model.UserRole;
 import org.onebusaway.users.services.StandardAuthoritiesService;
 
 import java.util.Arrays;
@@ -26,6 +27,9 @@ public enum UserRoleForKey {
     OPS("OPS") {
         public String getRoleName(){
             return StandardAuthoritiesService.OPS_API;
+        }
+        public UserRole getRole(StandardAuthoritiesService _authServ){
+            return _authServ.getOpsApiRole();
         }
     };
 
@@ -54,6 +58,8 @@ public enum UserRoleForKey {
     }
 
     public abstract String getRoleName();
+
+    public abstract UserRole getRole(StandardAuthoritiesService _authServ);
 
     @Override
     public String toString() {

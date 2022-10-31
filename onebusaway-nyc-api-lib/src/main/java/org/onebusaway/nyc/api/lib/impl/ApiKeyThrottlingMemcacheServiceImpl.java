@@ -80,9 +80,7 @@
 
 package org.onebusaway.nyc.api.lib.impl;
 
-import net.spy.memcached.AddrUtil;
-import net.spy.memcached.BinaryConnectionFactory;
-import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.*;
 import org.onebusaway.nyc.api.lib.services.ApiKeyThrottlingCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +88,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.annotation.PostConstruct;
+import java.net.SocketAddress;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.TimerTask;
 
 public class ApiKeyThrottlingMemcacheServiceImpl implements
@@ -138,6 +140,18 @@ public class ApiKeyThrottlingMemcacheServiceImpl implements
 			MemcacheCheckThread memcacheCheckThread = new MemcacheCheckThread();
 			_taskScheduler.scheduleWithFixedDelay(memcacheCheckThread,
 					INTERVAL_SECONDS * 300);
+		}
+	}
+
+	public void test(String key) throws NullPointerException{
+		for (MemcachedNode node : _cache.getNodeLocator().getAll()) {
+			if (!node.isActive()) {
+				System.out.println("Failed to connect to Memcached server");
+				//Handle accordingly
+			}
+			else{
+				System.out.println("connected to " + node.toString());
+			}
 		}
 	}
 

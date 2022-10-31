@@ -42,6 +42,7 @@ import org.onebusaway.nyc.transit_data_manager.util.ObjectMapperProvider;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
+import org.onebusaway.users.model.UserRole;
 import org.onebusaway.users.services.StandardAuthoritiesService;
 import org.onebusaway.users.services.UserIndexTypes;
 import org.onebusaway.users.services.UserPropertiesService;
@@ -64,6 +65,9 @@ public class KeysResource {
 
   @Autowired
   private UserPropertiesService _userPropertiesService;
+
+  @Autowired
+  private StandardAuthoritiesService _authoritiesService;
 
   public KeysResource() {
   }
@@ -169,7 +173,7 @@ public class KeysResource {
     try{
       UserRoleForKey userRole = UserRoleForKey.valueOfLabel(roleName);
       response = createKey(keyValue);
-      addRoleToKey(userRole.getRoleName(), keyValue);
+      addRoleToKey(userRole.getRole(_authoritiesService), keyValue);
     }catch (Exception e){
       KeyMessage message = new KeyMessage();
       message.setStatus("ERROR");
@@ -227,7 +231,7 @@ public class KeysResource {
     _userService.getMinApiRequestIntervalForKey(apiKey, true);
   }
 
-  private void addRoleToKey(String roleName, String apiKey) throws Exception{
+  private void addRoleToKey(UserRole roleName, String apiKey) throws Exception{
     UserIndexKey key = new UserIndexKey(UserIndexTypes.API_KEY, apiKey);
     UserIndex userIndexForId = _userService.getUserIndexForId(key);
 

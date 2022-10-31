@@ -38,7 +38,7 @@
 		<constructor-arg type="java.lang.String" value="${ops.path}" />
 		<constructor-arg type="java.lang.String" value="${archive.host}" />
 		<constructor-arg type="java.lang.Integer" value="80" />
-		<constructor-arg type="java.lang.String" value="/api/record/" />
+		<constructor-arg type="java.lang.String" value="/api/history/record/" />
 	</bean>
 
 	<!-- Input and Inference Queue Configuration -->
@@ -87,13 +87,13 @@
 		<property name="hibernateProperties">
 			<props>
 				<prop key="hibernate.connection.pool_size">1</prop>
-				<prop key="hibernate.cache.provider_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</prop>
 				<prop key="hibernate.hbm2ddl.auto">create</prop>
 				<prop key="hibernate.jdbc.batch_size">1000</prop>
 				<prop key="hibernate.order_inserts">false</prop>
 				<prop key="hibernate.order_updates">false</prop>
 				<prop key="hibernate.show_sql">false</prop>
-				<prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</prop>
+<!--				<prop key="hibernate.cache.provider_class">net.sf.ehcache.hibernate.EhCacheProvider</prop>-->
+				<prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory</prop>
 				<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
 			</props>
 		</property>
