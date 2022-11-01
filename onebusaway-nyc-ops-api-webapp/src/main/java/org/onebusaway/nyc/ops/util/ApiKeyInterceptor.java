@@ -72,8 +72,8 @@ public class ApiKeyInterceptor implements Filter {
         int allowed = isAllowed(request);
 
         if (allowed != HttpServletResponse.SC_OK) {
+            String reason = "";
             try {
-                String reason = "";
                 switch(allowed){
                     case HttpServletResponse.SC_UNAUTHORIZED:
                         reason = "API key required.";
@@ -91,6 +91,8 @@ public class ApiKeyInterceptor implements Filter {
                 _log.error(e.getMessage());
                 e.printStackTrace();
             }
+            ((HttpServletResponse) response).setStatus(allowed);
+            ((HttpServletResponse) response).sendError(allowed,reason);
             return;
         }
 
