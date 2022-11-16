@@ -116,5 +116,9 @@
 		<property name="cacheHost" value="${api.cache.host}" />
 		<property name="disabled" value="${api.cache.disabled}" />
 	</bean>
+
+    <bean class="org.onebusaway.users.impl.CreateApiKeyAction">
+        <property name="key" value="TEST"/>
+    </bean>
     
 </beans>

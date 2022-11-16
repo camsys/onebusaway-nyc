@@ -19,7 +19,8 @@ package org.onebusaway.nyc.webapp.actions.m.model;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 
 import java.util.ArrayList;
 import java.util.Collections;

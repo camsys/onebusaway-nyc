@@ -18,7 +18,8 @@ package org.onebusaway.nyc.transit_data_federation.impl;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.trips.TimepointPredictionBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 import org.onebusaway.transit_data_federation.services.PredictionHelperService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -20,11 +20,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.Route;
-import org.onebusaway.gtfs.model.Stop;
-import org.onebusaway.gtfs.model.StopTime;
-import org.onebusaway.gtfs.model.Trip;
+import org.onebusaway.gtfs.model.*;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
@@ -670,7 +666,7 @@ public class MockTransitDataService implements NycTransitDataService {
         return status;
     }
 
-    private StopBean stopBean(Stop stop) {
+    private StopBean stopBean(StopLocation stop) {
         StopBean bean = new StopBean();
         bean.setId(stop.getId().toString());
         bean.setName(stop.getName());
