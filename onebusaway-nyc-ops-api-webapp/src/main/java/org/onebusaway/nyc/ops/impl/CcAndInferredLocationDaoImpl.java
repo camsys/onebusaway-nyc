@@ -191,7 +191,7 @@ public class CcAndInferredLocationDaoImpl implements CcAndInferredLocationDao {
 		return realtime;
 	}
 
-	@Transactional(value = "transactionManager", rollbackFor = Throwable.class)
+	@Transactional(value = "hsqlTransactionManager", rollbackFor = Throwable.class)
 	@Override
 	public List<CcAndInferredLocationRecord> getAllLastKnownRecords(
 			final Map<CcAndInferredLocationFilter, String> filter) {
