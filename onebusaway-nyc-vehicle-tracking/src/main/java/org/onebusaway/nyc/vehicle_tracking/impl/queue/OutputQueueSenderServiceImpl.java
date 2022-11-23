@@ -16,7 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.DNSResolver;
+import org.onebusaway.nyc.queue.LeadershipElectionResolver;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.web.context.ServletContextAware;
 import org.zeromq.ZMQ;
 
 import java.io.IOException;
@@ -42,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.servlet.ServletContext;
 
 /**
  * Sends inference output to the inference output queue.
@@ -50,8 +48,7 @@ import javax.servlet.ServletContext;
  * @author sheldonabrown
  *
  */
-public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
-    ServletContextAware {
+public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
   private static Logger _log = LoggerFactory.getLogger(OutputQueueSenderServiceImpl.class);
 
@@ -73,13 +70,9 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   public boolean _isPrimaryInferenceInstance = true;
 
-  public String _primaryHostname = null;
-
   private final ObjectMapper _mapper = new ObjectMapper();
 
-  protected DNSResolver _outputQueueResolver = null;
-
-  protected DNSResolver _primaryResolver = null;
+  protected LeadershipElectionResolver _primaryResolver = null;
 
   protected ZMQ.Context _context = null;
 
@@ -92,19 +85,6 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
-
-  @Override
-  public void setServletContext(ServletContext servletContext) {
-    // check for primaryHost name
-    String hostname = null;
-    if (servletContext != null) {
-      hostname = servletContext.getInitParameter("primary.host.name");
-      _log.info("servlet context provied primary.host.name=" + hostname);
-    }
-    if (hostname != null) {
-      setPrimaryHostname(hostname);
-    }
-  }
   
   public void setCountInterval(int countInterval) {
     this._countInterval = countInterval;  
@@ -189,7 +169,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
         while (!Thread.currentThread().isInterrupted()) {
           final long markTimestamp = System.currentTimeMillis();
           if (_isPrimaryInferenceInstance) {
-            final String msg = getHeartbeatMessage(getPrimaryHostname(),
+            final String msg = getHeartbeatMessage(_isPrimaryInferenceInstance,
                 markTimestamp, _interval);
             _heartbeatBuffer.put(msg);
           }
@@ -200,33 +180,32 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
       }
     }
 
-    private String getHeartbeatMessage(String hostname, long timestamp,
+    private String getHeartbeatMessage(Boolean isPrimary, long timestamp,
         long interval) {
       /*
        * remember that only one IE for each depot will be transmitting at a
        * time, so we can use the primaryhostname to identify this IE in the
        * heartbeat message.
        */
-      final String msg = "{\"heartbeat\": {\"hostname\":\"%1$s\",\"heartbeat_timestamp\":%2$s,\"heartbeat_interval\":%3$s}}";
-      return String.format(msg, getPrimaryHostname(), timestamp, interval);
+      final String msg = "{\"heartbeat\": {\"isPrimary\":\"%1$b\",\"heartbeat_timestamp\":%2$s,\"heartbeat_interval\":%3$s}}";
+      return String.format(msg, isPrimary, timestamp, interval);
     }
   }
 
-  private class OutputQueueCheckThread extends TimerTask {
-
-    @Override
-    public void run() {
-      try {
-        if (_outputQueueResolver.hasAddressChanged()) {
-          _log.warn("Resolver Changed");
-          reinitializeQueue();
-        }
-      } catch (final Exception e) {
-        _log.error(e.toString());
-        _outputQueueResolver.reset();
-      }
-    }
-  }
+//  private class OutputQueueCheckThread extends TimerTask {
+//
+//    @Override
+//    public void run() {
+//      try {
+//        if (_outputQueueResolver.getPrimaryHasChanged()) {
+//          _log.warn("Primary has changed");
+//          reinitializeQueue();
+//        }
+//      } catch (final Exception e) {
+//        _log.error(e.toString(),e);
+//      }
+//    }
+//  }
 
   private class PrimaryCheckThread extends TimerTask {
 
@@ -239,7 +218,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
           _isPrimaryInferenceInstance = primaryValue;
         }
       } catch (final Exception e) {
-        _log.error(e.toString());
+        _log.error(e.toString(),e);
       }
     }
   }
@@ -265,19 +244,13 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   @PostConstruct
   public void setup() {
-    _outputQueueResolver = new DNSResolver(getQueueHost());
-    final OutputQueueCheckThread outputQueueCheckThread = new OutputQueueCheckThread();
+    _primaryResolver = new LeadershipElectionResolver();
+    //final OutputQueueCheckThread outputQueueCheckThread = new OutputQueueCheckThread();
     // every 10 seconds
-    _taskScheduler.scheduleWithFixedDelay(outputQueueCheckThread, 10 * 1000);
+    //_taskScheduler.scheduleWithFixedDelay(outputQueueCheckThread, 10 * 1000);
 
-    if (getPrimaryHostname() != null && getPrimaryHostname().length() > 0) {
-      _primaryResolver = new DNSResolver(getPrimaryHostname());
-      _log.warn("Primary Inference instance configured to be "
-          + getPrimaryHostname() + " on "
-          + _primaryResolver.getLocalHostString());
-      final PrimaryCheckThread primaryCheckThread = new PrimaryCheckThread();
-      _taskScheduler.scheduleWithFixedDelay(primaryCheckThread, 10 * 1000);
-    }
+    final PrimaryCheckThread primaryCheckThread = new PrimaryCheckThread();
+    _taskScheduler.scheduleWithFixedDelay(primaryCheckThread, 10 * 1000);
     _executorService = Executors.newFixedThreadPool(1);
     _heartbeatService = Executors.newFixedThreadPool(1);
     startListenerThread();
@@ -310,7 +283,6 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
     try {
       initializeQueue(host, queueName, port);
     } catch (final Exception any) {
-      _outputQueueResolver.reset();
     }
 
   }
@@ -320,7 +292,6 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
       initializeQueue(getQueueHost(), getQueueName(), getQueuePort());
     } catch (final InterruptedException ie) {
       _log.error("reinitialize failed:", ie);
-      _outputQueueResolver.reset();
       return;
     }
   }
@@ -376,16 +347,6 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
   @Override
   public boolean getIsPrimaryInferenceInstance() {
     return _isPrimaryInferenceInstance;
-  }
-
-  @Override
-  public void setPrimaryHostname(String hostname) {
-    _primaryHostname = hostname;
-  }
-
-  @Override
-  public String getPrimaryHostname() {
-    return _primaryHostname;
   }
 
 }

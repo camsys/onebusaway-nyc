@@ -26,7 +26,6 @@ import javax.annotation.PreDestroy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
-import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +49,7 @@ public abstract class QueueListenerTask {
 	protected boolean _initialized = false;
 	protected ObjectMapper _mapper = new ObjectMapper().registerModule(new JaxbAnnotationModule());
 
-	protected DNSResolver _resolver = null;
+	protected LeadershipElectionResolver _resolver = null;
 	protected ZMQ.Context _context = null;
 	protected ZMQ.Socket _socket = null;
 	protected ZMQ.Poller _poller = null;
@@ -73,16 +72,6 @@ public abstract class QueueListenerTask {
 
 	public void setCountInterval(int countInterval) {
 	  this._countInterval = countInterval;  
-	}
-	
-	public void startDNSCheckThread() {
-		String host = getQueueHost();
-		_resolver = new DNSResolver(host);
-		if (_taskScheduler != null) {
-			DNSCheckThread dnsCheckThread = new DNSCheckThread();
-			// ever 10 seconds
-			_taskScheduler.scheduleWithFixedDelay(dnsCheckThread, 10 * 1000);
-		}
 	}
 
 	private class ReadThread implements Runnable {
@@ -151,7 +140,6 @@ public abstract class QueueListenerTask {
 	public void setup() {
 		_executorService = Executors.newFixedThreadPool(1);
 		startListenerThread();
-		startDNSCheckThread();
 		_log.warn("threads started for queue " + getQueueName());
 	}
 
@@ -203,20 +191,5 @@ public abstract class QueueListenerTask {
 
 	}
 
-	private class DNSCheckThread extends TimerTask {
-
-		@Override
-		public void run() {
-			try {
-				if (_resolver.hasAddressChanged()) {
-					_log.warn("Resolver Changed -- re-binding queue connection");
-					reinitializeQueue();
-				}
-			} catch (Exception e) {
-				_log.error(e.toString());
-				_resolver.reset();
-			}
-		}
-	}
 
 }

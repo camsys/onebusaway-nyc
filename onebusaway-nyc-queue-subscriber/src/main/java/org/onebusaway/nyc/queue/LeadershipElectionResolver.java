@@ -28,52 +28,22 @@ import org.onebusaway.cloud.api.ExternalServicesBridgeFactory;
 /**
  * Utility class to test if DNS resolution of a hostname has changed.
  */
-public class DNSResolver {
-	protected static Logger _log = LoggerFactory.getLogger(DNSResolver.class);
-	private InetAddress currentAddress = null;
-	private String host = null;
+public class LeadershipElectionResolver {
+	protected static Logger _log = LoggerFactory.getLogger(LeadershipElectionResolver.class);
 	private ExternalServices externalServices = new ExternalServicesBridgeFactory().getExternalServices();
 
+	boolean primaryHasChanged = false;
+	boolean isPrimary;
 
-	public DNSResolver(String host) {
-		this.host = host;
-		currentAddress = getInetAddressByName(host);
-	}
-
-	/**
-	 * Reset any cached state.  Useful for forcing a comparison/state change in 
-	 * the next call.
-	 */
-	public synchronized void reset() {
-		currentAddress = null;
-	}
-
-	/**
-	 * test if the host this object was constructed with resolves to the same
-	 * IP.
-	 */
-	public synchronized boolean hasAddressChanged() {
-		InetAddress newAddress = getInetAddressByName(host);
-		// test if not previously resolved
-		if (currentAddress == null) {
-			if (newAddress != null) {
-				_log.warn("Previous unresolvable address resolved to " + newAddress);
-				currentAddress = newAddress;
-				return true;
-			}
-		} else if (!currentAddress.equals(newAddress)) {
-			_log.warn("Resolver changed from " + currentAddress + " to " + newAddress);
-			currentAddress = newAddress;
-			return true;
-		}
-		return false;
-	}
 
 	/**
 	 * Tests if this host is at the IP corresponding to the DNS address.
 	 */
 	public boolean isPrimary() {
-		return externalServices.isInstancePrimary();
+		boolean result = externalServices.isInstancePrimary();
+		primaryHasChanged = (result == isPrimary);
+		isPrimary = result;
+		return isPrimary;
 	}
 
 	/**
@@ -99,17 +69,8 @@ public class DNSResolver {
 		return "unknown";
 	}
 
-	/**
-	 * null-safe lookup of a host.
-	 */
-	public InetAddress getInetAddressByName(String host) {
-		InetAddress address = null;
-		try {
-			address = InetAddress.getByName(host);
-		} catch (UnknownHostException uhe) {
-			System.out.println("unknown host=" + host);
-		}
-		return address;
+public boolean getPrimaryHasChanged(){
+	return primaryHasChanged;
 	}
 
 

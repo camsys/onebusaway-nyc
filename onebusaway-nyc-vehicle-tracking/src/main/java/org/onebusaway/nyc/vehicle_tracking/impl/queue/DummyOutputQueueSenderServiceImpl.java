@@ -79,14 +79,4 @@ public class DummyOutputQueueSenderServiceImpl implements
     return _isPrimaryInferenceInstance;
   }
 
-  @Override
-  public void setPrimaryHostname(String hostname) {
-    _primaryHostname = hostname;
-  }
-
-  @Override
-  public String getPrimaryHostname() {
-    return _primaryHostname;
-  }
-
 }

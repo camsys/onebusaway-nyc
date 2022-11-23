@@ -129,13 +129,4 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
         return _configurationService.getConfigurationValueAsInteger("tds.apcQueueOutputPort", 5576);
     }
 
-    @Override
-    public void startDNSCheckThread() {
-        if (!useApcIfAvailable()) {
-            _log.error("apc integration disabled; DNS check exiting");
-            return;
-        }
-        _log.info("starting DNS check for APC queue " + getQueueName());
-        super.startDNSCheckThread();
-    }
 }

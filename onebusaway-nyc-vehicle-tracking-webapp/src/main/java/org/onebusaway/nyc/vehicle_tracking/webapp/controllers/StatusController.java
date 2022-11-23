@@ -75,7 +75,6 @@ public class StatusController {
 	  }
   	  StatusModel status = new StatusModel();
 	  status.setOutputService(queueSenderService.getClass().getName());
-	  status.setHostname(queueSenderService.getPrimaryHostname());
 	  status.setPrimary(queueSenderService.getIsPrimaryInferenceInstance());
 	  status.setListenerTask(inputTask.getClass().getName());
 	  status.setDepotList(inputTask.getDepotPartitionKey());
@@ -119,7 +118,6 @@ public class StatusController {
   
   public static class StatusModel {
 
-	private String hostname;
     private boolean isPrimary;
 	private String depotList;
 	private String outputService;
@@ -131,12 +129,7 @@ public class StatusController {
 	private String publicHostname;
 	private String internalHostname;
 
-    public String getHostname() {
-		return hostname;
-	}
-	public void setHostname(String hostname) {
-		this.hostname = hostname;
-	}
+
 	public void setPrimary(boolean isPrimary) {
 		this.isPrimary = isPrimary;
 	}
@@ -203,7 +196,6 @@ public class StatusController {
 		return "Status:{"
 				+ "listenerTask=" + this.listenerTask
 				+ ", outputService=" + this.outputService
-				+ ", hostname=" + this.hostname
 				+ ", depotList=" + this.depotList + "}";
 	}
   }
