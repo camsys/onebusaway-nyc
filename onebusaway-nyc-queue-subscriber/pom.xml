@@ -19,7 +19,7 @@
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-cloud-aws</artifactId>
-      <version>0.0.12</version>
+      <version>0.0.13-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.zeromq</groupId>
