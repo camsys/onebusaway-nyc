@@ -49,7 +49,8 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 import org.onebusaway.nyc.presentation.service.cache.NycCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

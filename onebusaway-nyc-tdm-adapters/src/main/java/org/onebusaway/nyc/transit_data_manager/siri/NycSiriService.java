@@ -39,7 +39,8 @@ import org.onebusaway.nyc.transit_data_manager.util.NycEnvironment;
 import org.onebusaway.siri.core.ESiriModuleType;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDetails;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

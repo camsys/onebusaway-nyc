@@ -32,7 +32,8 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.VehicleOccupancyListener;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data_federation.model.TargetTime;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;

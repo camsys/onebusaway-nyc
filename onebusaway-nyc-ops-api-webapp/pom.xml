@@ -3,8 +3,12 @@
   <parent>
     <artifactId>onebusaway-nyc</artifactId>
     <groupId>org.onebusaway</groupId>
-    <version>2.33.0</version>
+    <version>2.34.0</version>
   </parent>
+  <properties>
+    <spring.version>5.2.20.RELEASE</spring.version>
+    <struts.version>2.5.30</struts.version>
+  </properties>
   <artifactId>onebusaway-nyc-ops-api-webapp</artifactId>
   <packaging>war</packaging>
   <name>onebusaway-nyc-ops-api-webapp</name>
@@ -64,6 +68,45 @@
       <version>1.9.0-rc1</version>
     </dependency>
 
+
+    <!-- struts dependencies -->
+    <dependency>
+      <groupId>org.apache.struts</groupId>
+      <artifactId>struts2-core</artifactId>
+      <version>${struts.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.struts</groupId>
+      <artifactId>struts2-spring-plugin</artifactId>
+      <version>${struts.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.struts</groupId>
+      <artifactId>struts2-convention-plugin</artifactId>
+      <version>${struts.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.struts</groupId>
+      <artifactId>struts2-rest-plugin</artifactId>
+      <version>${struts.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.struts</groupId>
+      <artifactId>struts2-sitemesh-plugin</artifactId>
+      <version>${struts.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.struts</groupId>
+      <artifactId>struts2-json-plugin</artifactId>
+      <version>${struts.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.struts</groupId>
+      <artifactId>struts2-config-browser-plugin</artifactId>
+      <version>2.3.20</version>
+    </dependency>
+
+
     <!-- jersey dependency -->
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
@@ -107,6 +150,12 @@
       <version>2.4</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-nyc-api-lib</artifactId>
+      <version>2.34.0</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -122,8 +171,10 @@
         <ops.path>/api/record/</ops.path>
         <archive.host>archive</archive.host>
         <log4j.appender>ROLL</log4j.appender>
-        <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
+        <log4j.hFibernate.sql>OFF</log4j.hFibernate.sql>
         <log4j.hibernate.type>OFF</log4j.hibernate.type>
+        <api.cache.host>sessions-memcache</api.cache.host>
+        <api.cache.disabled>false</api.cache.disabled>
       </properties>
     </profile>
     <profile>
@@ -145,6 +196,8 @@
         <log4j.appender>stdout</log4j.appender>
         <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
         <log4j.hibernate.type>OFF</log4j.hibernate.type>
+        <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+        <api.cache.disabled>true</api.cache.disabled>
       </properties>
     </profile>
     <!-- archive can't run single port because zeromq can't be shared (classloader issues) -->
@@ -163,6 +216,8 @@
         <log4j.appender>stdout</log4j.appender>
         <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
         <log4j.hibernate.type>OFF</log4j.hibernate.type>
+        <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+        <api.cache.disabled>true</api.cache.disabled>
       </properties>
     </profile>
     <profile>
@@ -178,6 +233,8 @@
         <log4j.appender>stdout</log4j.appender>
         <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
         <log4j.hibernate.type>OFF</log4j.hibernate.type>
+        <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+        <api.cache.disabled>true</api.cache.disabled>
       </properties>
     </profile>
     <profile>
@@ -194,6 +251,8 @@
         <log4j.appender>stdout</log4j.appender>
         <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
         <log4j.hibernate.type>OFF</log4j.hibernate.type>
+        <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
+        <api.cache.disabled>true</api.cache.disabled>
       </properties>
     </profile>
   </profiles>

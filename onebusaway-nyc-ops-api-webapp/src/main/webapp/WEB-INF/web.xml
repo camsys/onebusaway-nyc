@@ -25,7 +25,7 @@
     <res-auth>Container</res-auth>
   </resource-ref>
   <resource-ref>
-    <description>DB Connection</description>
+    <description>DB Connection2</description>
     <res-ref-name>jdbc/appDB</res-ref-name>
     <res-type>javax.sql.DataSource</res-type>
     <res-auth>Container</res-auth>
@@ -57,4 +57,15 @@
     <servlet-name>Jersey Spring Web Application</servlet-name>
     <url-pattern>/api/*</url-pattern>
   </servlet-mapping>
+
+
+  <filter>
+    <filter-name>SomeFilter</filter-name>
+    <filter-class>org.onebusaway.nyc.ops.util.ApiKeyInterceptor</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>SomeFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
 </web-app>

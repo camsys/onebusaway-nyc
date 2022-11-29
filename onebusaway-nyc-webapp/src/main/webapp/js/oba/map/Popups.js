@@ -155,24 +155,37 @@ OBA.Popups = (function() {
 	
 	function processAlertData(situationExchangeDelivery) {
 		var alertData = {};
-		
+
 		if (situationExchangeDelivery && situationExchangeDelivery.length > 0) {
-            jQuery.each(situationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
-            	// Skip the alert if there is no VehicleJourneys... It's probably a global alert.
-            	if (!ptSituationElement.Affects.hasOwnProperty('VehicleJourneys'))
-            		return true;
-            	jQuery.each(ptSituationElement.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, affectedVehicleJourney) {
-            		var lineRef = affectedVehicleJourney.LineRef;
-            		if (!(lineRef in alertData)) {
-            			alertData[lineRef] = {};
-            		}
-            		if (!(ptSituationElement.SituationNumber in alertData[lineRef])) {
-            			alertData[lineRef][ptSituationElement.SituationNumber] = ptSituationElement;
-            		}
-            	});
-            });
+			jQuery.each(situationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
+				if (ptSituationElement.Affects.hasOwnProperty('VehicleJourneys')) {
+					jQuery.each(ptSituationElement.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, affectedVehicleJourney) {
+						var lineRef = affectedVehicleJourney.LineRef;
+						if (!(lineRef in alertData)) {
+							alertData[lineRef] = {};
+						}
+						if (!(ptSituationElement.SituationNumber in alertData[lineRef])) {
+							alertData[lineRef][ptSituationElement.SituationNumber] = ptSituationElement;
+						}
+					});
+				}
+				// a stop can have BOTH route and stop level service alerts
+				if (ptSituationElement.Affects.hasOwnProperty('StopPoints')) {
+					jQuery.each(ptSituationElement.Affects.StopPoints.AffectedStopPoint, function(_, affectedStopPoint) {
+						var stopPointRef = affectedStopPoint.StopPointRef;
+						if (!(stopPointRef in alertData)) {
+							alertData[stopPointRef] = {};
+						}
+						if (!(ptSituationElement.SituationNumber in alertData[stopPointRef])) {
+							alertData[stopPointRef][ptSituationElement.SituationNumber] = ptSituationElement;
+						}
+					});
+				}
+				else {
+					return true;
+				}
+			});
 		}
-		
 		return alertData;
 	}
 	
@@ -184,7 +197,7 @@ OBA.Popups = (function() {
 			var stopId = idParts[1];
 			var routeId = idParts[2];
 			var routeShortName = idParts[3];
-			
+
 			element.click(function(e) {
 				e.preventDefault();
 				var alertElement = jQuery('#alerts-' + routeId.hashCode());
@@ -194,7 +207,7 @@ OBA.Popups = (function() {
 				} else {
 					$("#searchbar").animate({
 						scrollTop: alertElement.parent().offset().top - jQuery("#searchbar").offset().top + jQuery("#searchbar").scrollTop()
-						}, 
+						},
 						500,
 						function() {
 							if (alertElement.accordion("option", "active") !== 0) {
@@ -211,7 +224,7 @@ OBA.Popups = (function() {
 						});
 				}
 			});
-			
+
 		});
 	}
 	
@@ -488,6 +501,12 @@ OBA.Popups = (function() {
 		var stopId = stopResult.id;
 		var stopIdParts = stopId.split("_");
 		var stopIdWithoutAgency = stopIdParts[1];
+		var uniqueStopId = stopId.match(/\d*$/);
+		var stopCode = stopResult.code;
+		var alertIds = [];
+
+		if(stopCode == null)
+			stopCode = uniqueStopId;
 		
 		html += '<div class="header stop">';
 		html += '<p class="title">' + stopResult.name + '</p><p>';
@@ -528,6 +547,50 @@ OBA.Popups = (function() {
 		// (end header)
 		html += '  </p>';
 		html += ' </div>';
+
+		//check for stop level alerts
+		if (stopId in alertData) {
+
+			var serviceAlertHeader = jQuery("<p class='popupServiceAlert'>" + "Service Alert" + " for " + stopCode + ". Click for info</p>");
+
+			var serviceAlertList = jQuery("" +
+				"<ul></ul>")
+				.addClass("popupAlerts");
+
+			jQuery.each(alertData[stopId], function (_, ptSituationElement) {
+				if (ptSituationElement.Affects.hasOwnProperty('StopPoints')) {
+					jQuery.each(ptSituationElement.Affects.StopPoints.AffectedStopPoint, function (_, affectedStopPoint) {
+						var stopPointRef = affectedStopPoint.StopPointRef;
+						if (stopId == stopPointRef) {
+							var summary = "";
+							if (ptSituationElement.Summary != null && ptSituationElement.Summary.length > 0) {
+								summary = '<strong>' + ptSituationElement.Summary + ':</strong><br/><br/>';
+							}
+							var description = "";
+							if (ptSituationElement.Description != null && summary != ptSituationElement.Description) {
+								description = ptSituationElement.Description;
+							}
+							var message = '<li>'
+								+ summary
+								+ description
+								+ '</li>';
+							if (!alertIds.includes(ptSituationElement.SituationNumber)) {
+								alertIds.push(ptSituationElement.SituationNumber)
+								serviceAlertList.append(message);
+							}
+						}
+					});
+				}
+			});
+
+			var serviceAlertContainer = jQuery("<div></div>")
+				.addClass("popupServiceAlertContainer")
+				.append(serviceAlertHeader)
+				.append(serviceAlertList);
+
+			html += serviceAlertContainer[0].outerHTML;
+
+		} // end stop level service alerts
 		
 	    var routeAndDirectionWithArrivals = {};
 	    var routeAndDirectionWithArrivalsCount = 0;
@@ -818,7 +881,17 @@ OBA.Popups = (function() {
 			map.setCenter(marker.getPosition());
 			map.setZoom(16);
 		});
-		
+
+        var popupServiceAlertContainer = content.find(".popupServiceAlertContainer:first");
+
+        popupServiceAlertContainer.accordion({
+            header: 'p.popupServiceAlert',
+            collapsible: true,
+            active: false,
+            autoHeight: false
+        });
+
+
 		marker.setVisible(true);
 		
 		activateAlertLinks(content);

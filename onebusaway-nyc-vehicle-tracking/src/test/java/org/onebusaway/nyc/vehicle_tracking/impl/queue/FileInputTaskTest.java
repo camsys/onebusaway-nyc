@@ -25,7 +25,8 @@ import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
