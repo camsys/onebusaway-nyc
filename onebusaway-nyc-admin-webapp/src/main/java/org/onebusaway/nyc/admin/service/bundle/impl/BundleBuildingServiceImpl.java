@@ -349,7 +349,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // swap standard out for logging
       System.setOut(logFile);
       configureLogging(System.out);
-
       FederatedTransitDataBundleCreator creator = new FederatedTransitDataBundleCreator();
 
       Map<String, BeanDefinition> beans = new HashMap<String, BeanDefinition>();
@@ -739,6 +738,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
    * setup a logger just for the bundle building activity.
    */
   private void configureLogging(OutputStream os) {
+    _log.info("configuring logging");
     final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     final Configuration config = ctx.getConfiguration();
 
@@ -752,7 +752,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     config.addAppender(wa);
     ctx.updateLoggers();
 
-    _log.info("configuring logging");
+    _log.info("configured logging");
 
   }
 
