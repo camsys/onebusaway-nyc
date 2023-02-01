@@ -105,6 +105,7 @@ public class XMLBusDepotAssignsInputConverter implements
       
       depAssign = new MtaBusDepotAssignment();
       depAssign.setAgencyId(mappingTool.getAgencyIdFromAgency(tableDepotAssign.getAGENCY()));
+      depAssign.setKneeling("T".equals(tableDepotAssign.getSTROLLER())?true:false);
       if (tableDepotAssign.getBUSNUMBER().matches("[0-9]*")){
     	  depAssign.setBusNumber(Integer.decode(stripLeadingZeros(tableDepotAssign.getBUSNUMBER())));
         // Convert any lowercase depot letters to uppercase (Jira issue OBANYC-2258)
