@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.transit_data_manager.api.service;
 
-import java.io.InputStream;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
+
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -12,11 +14,14 @@ public interface KneelingVehiclesDataExtractionService {
      *
      * @author caylasavitzky
      *
+     * @param resourceAsStream
      */
 
-    void setInputSource(InputStream resourceAsStream);
+    void setInputOverride(File resourceAsStream);
 
-    List getKneelingVehiclesList();
+    List getKneelingVehiclesAsList(DepotIdTranslator depotIdTranslator);
 
-    Map getKneelingVehiclesMap();
+    Map getKneelingVehiclesAsMap(DepotIdTranslator depotIdTranslator);
+
+
 }
