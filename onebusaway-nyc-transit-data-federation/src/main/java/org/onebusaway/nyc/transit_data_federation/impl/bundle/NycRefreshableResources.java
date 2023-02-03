@@ -36,6 +36,12 @@ public final class NycRefreshableResources {
 
   public static final String SUPPLIMENTAL_TRIP_DATA = "__supplimental_trip_info";
 
+  public static final String BUSTREKDATA_REMARK = "__bustrekdata_remark";
+
+  public static final String BUSTREKDATA_TRIP_INFO = "__bustrekdata_trip_info";
+
+  public static final String BUSTREKDATA_TIME_POINT = "__bustrekdata_time_point";
+
   private NycRefreshableResources() {}
 
 }

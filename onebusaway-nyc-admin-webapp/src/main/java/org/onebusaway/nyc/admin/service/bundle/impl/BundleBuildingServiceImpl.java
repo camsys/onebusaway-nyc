@@ -38,8 +38,8 @@ import org.onebusaway.nyc.admin.util.ProcessUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.*;
 import org.onebusaway.nyc.admin.service.bundle.task.save.SaveGtfsTask;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.nyc.admin.service.bundle.task.stifTransformer.StifTransformerTask;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifImport.StifImportTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.logging.LoggingService;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
@@ -462,8 +462,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       task.addPropertyReference("task", "stifTransformerTask");
       beans.put("stifTransformerTaskDef", task.getBeanDefinition());
 
+      // STEP 3.5
+      BeanDefinitionBuilder StifExtractTask = BeanDefinitionBuilder.genericBeanDefinition(org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifExtract.StifExtractTask.class);
+      StifExtractTask.addPropertyReference("logger", "multiCSVLogger");
+      StifExtractTask.addPropertyValue("stifPaths", stifOutputPath);
+//      StifExtractTask.addPropertyValue("stifPaths", request.getTmpDirectory() + File.separator + "stif");
+      beans.put("stifExtractTask", StifExtractTask.getBeanDefinition());
+
+      task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
+      task.addPropertyValue("taskName", "stifExtractTask");
+//      task.addPropertyValue("afterTaskName", "clearCSVTask");
+      task.addPropertyValue("afterTaskName", "stifTransformerTask");
+      task.addPropertyValue("beforeTaskName", "stifLoaderTask");
+//      task.addPropertyValue("beforeTaskName", "gtfs");
+      task.addPropertyReference("task", "stifExtractTask");
+      beans.put("stifExtractTaskDef", task.getBeanDefinition());
+
       // STEP 4
-      BeanDefinitionBuilder stifLoaderTask = BeanDefinitionBuilder.genericBeanDefinition(StifTask.class);
+      BeanDefinitionBuilder stifLoaderTask = BeanDefinitionBuilder.genericBeanDefinition(StifImportTask.class);
       stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
       stifLoaderTask.addPropertyReference("logger", "multiCSVLogger");
       // TODO this is a convention, pull out into config?
@@ -491,7 +507,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
       task.addPropertyValue("taskName", "stifLoaderTask");
-      task.addPropertyValue("afterTaskName", "stifTransformerTask");
+//      task.addPropertyValue("afterTaskName", "stifExtractTask");
+      task.addPropertyValue("afterTaskName", "clearCSVTask");
       task.addPropertyValue("beforeTaskName", "transit_graph");
       task.addPropertyReference("task", "stifLoaderTask");
       beans.put("stifLoaderTaskDef", task.getBeanDefinition());

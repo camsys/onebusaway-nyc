@@ -106,7 +106,7 @@
         <property name="task" ref="checkShapesTask" />
     </bean>
 
-    <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">
+    <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifImport.StifImportTask">
         <property name="logger" ref="multiCSVLogger"/>
         <property name="stifPath"
             value="${onebusaway_prefix}/src/integration-test/resources/bundle/stifs/2012July_r04_b02" />
