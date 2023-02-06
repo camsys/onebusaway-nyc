@@ -1,0 +1,2 @@
+agency_id,route_id,route_short_name,route_long_name,route_type,route_desc,route_url,route_color,route_text_color
+MTA NYCT,B1,B1,Bay Ridge - Manhattan Beach,3,via 86th St / Ocean Pkwy,http://web.mta.info/nyct/bus/schedule/bkln/b001cur.pdf,00AEEF,FFFFFF

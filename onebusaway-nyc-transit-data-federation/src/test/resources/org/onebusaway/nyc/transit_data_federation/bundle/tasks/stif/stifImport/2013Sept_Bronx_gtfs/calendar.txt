@@ -1,0 +1,4 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+GH_Y4-Weekday,1,1,1,1,1,0,0,20140101,20140101
+KB_Y4-Weekday,1,1,1,1,1,0,0,20140101,20140101
+WF_Y4-Weekday,1,1,1,1,1,0,0,20140101,20140101

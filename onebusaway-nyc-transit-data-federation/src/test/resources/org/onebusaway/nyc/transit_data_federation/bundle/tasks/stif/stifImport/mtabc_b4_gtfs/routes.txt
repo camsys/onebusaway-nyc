@@ -1,0 +1,20 @@
+agency_id,route_id,route_short_name,route_long_name,route_type,route_desc,route_url,route_color,route_text_color
+MTABC,BXM9,BxM9,Throgs Neck - Midtown,3,,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,Q25,Q25,127 Street - Kissena Bl - Parsons Bl,3,Via Parsons Blvd/Kissena Blvd/127Th St,http://www.mta.info/busco/schedules,00AEEF,FFFFFF
+MTABC,Q34,Q34,Willets Pt Bl - Kissena Bl - Parsons Bl,3,Via Parsons / Kissena / Willets Pt Blvd,http://www.mta.info/busco/schedules,FAA61A,FFFFFF
+MTABC,Q38,Q38,Eliot Ave - Penelope Ave,3,Via Penelope Av/Metropolitan Av/Eliot Av,http://www.mta.info/busco/schedules,EE352E,FFFFFF
+MTABC,Q53,Q53,Woodside - Rockaway Pk Limited,3,,http://www.mta.info/busco/schedules,FAA61A,FFFFFF
+MTABC,Q65,Q65,College Point Bl - 164 St,3,,http://www.mta.info/busco/schedules,00AEEF,FFFFFF
+MTABC,Q66,Q66,Northern Blvd/Queens Plaza S,3,Via Northern Blvd / 21St St / Queens Plz,http://www.mta.info/busco/schedules,EE352E,FFFFFF
+MTABC,QM1,QM1,Fresh Meadows - Midtown,3,Via 188Th St / Union Turnpike,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM10,QM10,Lefrak City - Midtown,3,Via 63Rd Rd / 57Th Av,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM11,QM11,Forest Hills - Downtown,3,Via Queens Blvd / 63Rd Rd / 57Th Av,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM12,QM12,Forest Hills - Midtown,3,,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM2,QM2,Bay Terrace - Midtown,3,Via Cross Island Pkwy / Whitestone Expwy,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM20,QM20,Bay Terrace - Midtown,3,Via 26 Ave / Utopia Pkwy / Willets Pt Bl,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM3,QM3,Little Neck - Midtown,3,Via Northern Blvd,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM4,QM4,Electchester - Midtown,3,Via 164Th St / Jewel Av,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM5,QM5,Glen Oaks - Midtown,3,Via Horace Harding Exp/73 Ave/Union Tpk,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM6,QM6,Lake Success - Midtown,3,Via North Shore Towers / Union Turnpike,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM7,QM7,Fresh Meadows - Downtown,3,Via 188Th St / Union Turnpike,http://www.mta.info/busco/schedules,00933C,FFFFFF
+MTABC,QM8,QM8,Glen Oaks - Downtown,3,Via Little Neck Pkwy / H H Expwy / 73 Av,http://www.mta.info/busco/schedules,00933C,FFFFFF

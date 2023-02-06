@@ -1,0 +1,6 @@
+agency_id,route_id,route_short_name,route_long_name,route_type,route_desc,route_url,route_color,route_text_color
+MTA NYCT,B1,B1,Bay Ridge - Manhattan Beach,3,via 86th St / Ocean Pkwy,http://www.mta.info/nyct/bus/schedule/bkln/b001cur.pdf,00AEEF,FFFFFF
+MTA NYCT,B3,B3,Bensonhurst - Bergen Beach,3,via Avenue U,http://www.mta.info/nyct/bus/schedule/bkln/b003cur.pdf,EE352E,FFFFFF
+MTA NYCT,B36,B36,Sheepshead Bay - Coney Island,3,via Avenue Z / Surf Av,http://www.mta.info/nyct/bus/schedule/bkln/b036cur.pdf,FAA61A,FFFFFF
+MTA NYCT,B6,B6,Bath Beach - East New York,3,via Bay Pkwy / Avenue J / Flatlands Av,http://www.mta.info/nyct/bus/schedule/bkln/b006cur.pdf,EE352E,FFFFFF
+MTA NYCT,B64,B64,Bay Ridge - Coney Island,3,via Bay Ridge Av / Bath Av,http://www.mta.info/nyct/bus/schedule/bkln/b064cur.pdf,6CBE45,FFFFFF

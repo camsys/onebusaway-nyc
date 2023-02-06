@@ -1,0 +1,2 @@
+service_id,date,exception_type
+EN_C3-Saturday,20130704,1

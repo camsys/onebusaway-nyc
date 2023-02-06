@@ -1,0 +1,2 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+EN_C3-Saturday,0,0,0,0,0,1,0,20130704,20130907

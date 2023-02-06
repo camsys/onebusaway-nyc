@@ -1,0 +1,6 @@
+agency_id,route_id,route_short_name,route_long_name,route_type,route_desc,route_url,route_color,route_text_color
+MTABC,BXM1,BxM1,Riverdale - Midtown Via 3 Ave,3,Via Riverdale / H. Hudson / Lex & 3 Av,http://web.mta.info/busco/schedules/bxm1cur.pdf,00933C,FFFFFF
+MTABC,BXM11,BxM11,Wakefield - Midtown,3,Via White Plains Rd / 5Th & Madison Av,http://web.mta.info/busco/schedules/bxm11cur.pdf,00933C,FFFFFF
+MTABC,BXM2,BxM2,Riverdale - Midtown Via 7 Ave,3,Via Riverdale / H. Hudson / 6Th & 7Th Av,http://web.mta.info/busco/schedules/bxm2cur.pdf,00933C,FFFFFF
+MTABC,BXM3,BxM3,Yonkers - Midtown,3,Via Bway / Sedgwick Av / 5Th & Madison,http://web.mta.info/busco/schedules/bxm3cur.pdf,00933C,FFFFFF
+MTABC,BXM4,BxM4,Woodlawn - Midtown,3,,http://web.mta.info/busco/schedules/bxm4cur.pdf,00933C,FFFFFF

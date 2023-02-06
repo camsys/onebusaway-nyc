@@ -1,0 +1,43 @@
+agency_id,route_id,route_short_name,route_long_name,route_type,route_desc,route_url,route_color,route_text_color
+MTA NYCT,BX1,Bx1,Riverdale - Mott Haven,3,via Grand Concourse / E 138th St,http://www.mta.info/nyct/bus/schedule/bronx/bx001cur.pdf,00AEEF,FFFFFF
+MTA NYCT,BX10,Bx10,Riverdale - Norwood,3,via Riverdale Av / W 231st St / Jerome Av,http://www.mta.info/nyct/bus/schedule/bronx/bx010cur.pdf,006CB7,FFFFFF
+MTA NYCT,BX11,Bx11,West Farms Rd - Southern Blvd & GW Bridge,3,via Claremont Pkwy / E 170th St,http://www.mta.info/nyct/bus/schedule/bronx/bx011cur.pdf,FAA61A,FFFFFF
+MTA NYCT,BX12,Bx12,Pelham Pkwy - Fordham Rd,3,via Pelham Pkwy / Fordham Rd,http://www.mta.info/nyct/bus/schedule/bronx/bx012cur.pdf,006CB7,FFFFFF
+MTA NYCT,BX12+,Bx12-SBS,Pelham Pkwy - Fordham Rd,3,Select Bus Service via Pelham Pkwy / Fordham Rd / Bay Plaza Shop Ctr,http://www.mta.info/nyct/bus/schedule/bronx/bx012scur.pdf,006CB7,FFFFFF
+MTA NYCT,BX13,Bx13,George Washington Bridge - Yankee Stadium,3,via Ogden Av / W 181st St,http://www.mta.info/nyct/bus/schedule/bronx/bx013cur.pdf,006CB7,FFFFFF
+MTA NYCT,BX15,Bx15,Fordham Plaza - Manhattanville,3,via 3rd Av / 125th St,http://www.mta.info/nyct/bus/schedule/bronx/bx015cur.pdf,FAA61A,FFFFFF
+MTA NYCT,BX16,Bx16,Pelham - Norwood,3,via E 233rd St / Nereid Av,http://www.mta.info/nyct/bus/schedule/bronx/bx016cur.pdf,00AEEF,FFFFFF
+MTA NYCT,BX17,Bx17,Fordham Plaza - Port Morris,3,via Crotona Av / Prospect Av,http://www.mta.info/nyct/bus/schedule/bronx/bx017cur.pdf,006CB7,FFFFFF
+MTA NYCT,BX18,Bx18,Tremont - Morris Heights,3,via Macombs Rd,http://www.mta.info/nyct/bus/schedule/bronx/bx018cur.pdf,6CBE45,FFFFFF
+MTA NYCT,BX19,Bx19,NY Botanical Garden - Riverbank Park,3,via Southern Blvd / E 149th St,http://www.mta.info/nyct/bus/schedule/bronx/bx019cur.pdf,B933AD,FFFFFF
+MTA NYCT,BX2,Bx2,Kingsbridge Heights - Mott Haven,3,via Grand Concourse / E 149th St,http://www.mta.info/nyct/bus/schedule/bkln/b002cur.pdf,FAA61A,FFFFFF
+MTA NYCT,BX21,Bx21,Westchester Sq - Mott Haven,3,via Morris Park Av / Boston Rd,http://www.mta.info/nyct/bus/schedule/bronx/bx021cur.pdf,6CBE45,FFFFFF
+MTA NYCT,BX22,Bx22,Bedford Park - Castle Hill,3,via Castle Hill Av,http://www.mta.info/nyct/bus/schedule/bronx/bx022cur.pdf,EE352E,FFFFFF
+MTA NYCT,BX24,Bx24,Pelham Bay - Country Club Loop,3,via Country Club Loop,http://www.mta.info/nyct/bus/schedule/bronx/bx024cur.pdf,6CBE45,FFFFFF
+MTA NYCT,BX26,Bx26,Co-op City Section 5 - Bedford Park,3,via Allerton Av,http://www.mta.info/nyct/bus/schedule/bronx/bx026cur.pdf,FAA61A,FFFFFF
+MTA NYCT,BX27,Bx27,Clasons Pt - West Farms Rd & Southern Blvd,3,via Westchester Av / Soundview Av,http://www.mta.info/nyct/bus/schedule/bronx/bx027cur.pdf,00AEEF,FFFFFF
+MTA NYCT,BX28,Bx28,Co-op City Section 5 - Fordham Center,3,via E Gun Hill Rd / Bartow Av,http://www.mta.info/nyct/bus/schedule/bronx/bx028cur.pdf,00AEEF,FFFFFF
+MTA NYCT,BX29,Bx29,City Island - Co-op City Bay Plaza,3,via City Island Rd / City Island Av,http://www.mta.info/nyct/bus/schedule/bronx/bx029cur.pdf,00AEEF,FFFFFF
+MTA NYCT,BX3,Bx3,Riverdale - George Washington Bridge,3,via University Av / W 181st St,http://www.mta.info/nyct/bus/schedule/bronx/bx003cur.pdf,EE352E,FFFFFF
+MTA NYCT,BX30,Bx30,Co-op City Section 5 - Norwood,3,via Boston Rd / E Gun Hill Rd,http://www.mta.info/nyct/bus/schedule/bronx/bx030cur.pdf,EE352E,FFFFFF
+MTA NYCT,BX31,Bx31,Woodlawn - Westchester Sq,3,via Eastchester Rd,http://www.mta.info/nyct/bus/schedule/bronx/bx031cur.pdf,EE352E,FFFFFF
+MTA NYCT,BX32,Bx32,Kingsbridge VA Hospital - Mott Haven,3,via Morris Av / Jerome Av,http://www.mta.info/nyct/bus/schedule/bronx/bx032cur.pdf,6CBE45,FFFFFF
+MTA NYCT,BX33,Bx33,Port Morris - Harlem,3,via E 138th St / W 135th St,http://www.mta.info/nyct/bus/schedule/bronx/bx033cur.pdf,6CBE45,FFFFFF
+MTA NYCT,BX34,Bx34,Woodlawn - Fordham Center,3,via Bainbridge Av,http://www.mta.info/nyct/bus/schedule/bronx/bx034cur.pdf,B933AD,FFFFFF
+MTA NYCT,BX35,Bx35,West Farms Rd & Southern Blvd - GW Bridge,3,via E 167th / W 181st St,http://www.mta.info/nyct/bus/schedule/bronx/bx035cur.pdf,00AEEF,FFFFFF
+MTA NYCT,BX36,Bx36,Soundview - George Washington Bridge,3,via E 174th / E 180th St,http://www.mta.info/nyct/bus/schedule/bronx/bx036cur.pdf,B933AD,FFFFFF
+MTA NYCT,BX38,Bx38,Co-op City Bay Plaza - Norwood,3,via E Gun Hill Rd / Co-op City Blvd,http://www.mta.info/nyct/bus/schedule/bkln/b038cur.pdf,FAA61A,FFFFFF
+MTA NYCT,BX39,Bx39,Wakefield - Clasons Pt,3,via White Plains Rd,http://www.mta.info/nyct/bus/schedule/bronx/bx039cur.pdf,FAA61A,FFFFFF
+MTA NYCT,BX4,Bx4,Westchester Sq - The Hub,3,via Westchester Av,http://www.mta.info/nyct/bus/schedule/bronx/bx004cur.pdf,FAA61A,FFFFFF
+MTA NYCT,BX40,Bx40,Throgs Neck - River Park Towers,3,via Tremont Av Crosstown,http://www.mta.info/nyct/bus/schedule/bronx/bx040cur.pdf,006CB7,FFFFFF
+MTA NYCT,BX41,Bx41,Williamsbridge - The Hub,3,via Webster Av / E Gun Hill Rd,http://www.mta.info/nyct/bus/schedule/bronx/bx041cur.pdf,EE352E,FFFFFF
+MTA NYCT,BX41+,Bx41-SBS,Williamsbridge - Select Bus Service,3,via East Gun Hill Rd/White Plains Rd,http://www.mta.info/nyct/bus/schedule/bronx/bx041scur.pdf,EE352E,FFFFFF
+MTA NYCT,BX42,Bx42,Throgs Neck - River Park Towers,3,via Tremont Av Crosstown,http://www.mta.info/nyct/bus/schedule/bronx/bx040cur.pdf,EE352E,FFFFFF
+MTA NYCT,BX46,Bx46,Prospect Av - Westchester Av / Hunts Point Market,3,via Barretto PK,http://www.mta.info/nyct/bus/schedule/bronx/bx046cur.pdf,EE352E,FFFFFF
+MTA NYCT,BX4A,Bx4A,Westchester Sq - The Hub,3,via Metropolitan Oval / Westchester Av,http://www.mta.info/nyct/bus/schedule/bronx/bx004cur.pdf,FAA61A,FFFFFF
+MTA NYCT,BX5,Bx5,Pelham Bay - West Farms Rd & Southern Blvd,3,via Bruckner Blvd Svc Rd / Story Av,http://www.mta.info/nyct/bus/schedule/bronx/bx005cur.pdf,EE352E,FFFFFF
+MTA NYCT,BX6,Bx6,Hunts Point - Riverside Dr,3,via E 161st St / E 163rd St,http://www.mta.info/nyct/bus/schedule/bronx/bx006cur.pdf,EE352E,FFFFFF
+MTA NYCT,BX7,Bx7,Riverdale - Washington Heights,3,via Riverdale Av / Broadway,http://www.mta.info/nyct/bus/schedule/bronx/bx007cur.pdf,EE352E,FFFFFF
+MTA NYCT,BX8,Bx8,Williamsbridge - Locust Point,3,via Bronxwood Av / Williamsbridge Rd / Crosby Av,http://www.mta.info/nyct/bus/schedule/bronx/bx008cur.pdf,FAA61A,FFFFFF
+MTA NYCT,BX9,Bx9,Riverdale - West Farms Sq,3,via Broadway / Kingsbridge Rd / Southern Blvd,http://www.mta.info/nyct/bus/schedule/bronx/bx009cur.pdf,FAA61A,FFFFFF
+MTA NYCT,M100,M100,Inwood - East Harlem,3,via Broadway / Amsterdam Av / 125th St,http://www.mta.info/nyct/bus/schedule/manh/m100cur.pdf,00AEEF,FFFFFF

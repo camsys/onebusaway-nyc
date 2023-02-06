@@ -1,0 +1,76 @@
+agency_id,route_id,route_short_name,route_long_name,route_type,route_desc,route_url,route_color,route_text_color
+MTABC,B100,B100,Mill Basin - Midwood,3,,http://web.mta.info/busco/schedules/b100cur.pdf,B933AD,FFFFFF
+MTABC,B103,B103,Canarsie - Downtown Brooklyn Ltd,3,,http://web.mta.info/busco/schedules/b103cur.pdf,FAA61A,FFFFFF
+MTABC,BM1,BM1,Mill Basin - Downtown/Midtown,3,Via Cortelyou Rd / Ave K / E 66Th St,http://web.mta.info/busco/schedules/bm001cur.pdf,00933C,FFFFFF
+MTABC,BM2,BM2,Canarsie/Spring Creek - Downtown/Midtown,3,,http://web.mta.info/busco/schedules/bm002cur.pdf,00933C,FFFFFF
+MTABC,BM3,BM3,Sheepshead Bay - Downtown/Midtown,3,Via Emmons Av / Ocean Av / Cortelyou Rd,http://web.mta.info/busco/schedules/bm003cur.pdf,00933C,FFFFFF
+MTABC,BM4,BM4,Gerritsen Beach - Downtown/Midtown,3,Via Gerritsen Av / Nostrand Av / Ocean Av,http://web.mta.info/busco/schedules/bm004cur.pdf,00933C,FFFFFF
+MTABC,BM5,BM5,Spring Creek - Midtown,3,Via Pennsylvania Av / Woodhaven Blvd,http://web.mta.info/busco/schedules/bm005cur.pdf,00933C,FFFFFF
+MTABC,BX23,Bx23,Pelham Bay - Co-Op City,3,,http://web.mta.info/busco/schedules/bx023cur.pdf,B933AD,FFFFFF
+MTABC,BXM10,BxM10,Williamsbridge/Morris Park - Midtown,3,Via Eastchester / Morris Pk,http://web.mta.info/busco/schedules/bxm10cur.pdf,00933C,FFFFFF
+MTABC,BXM6,BxM6,Parkchester - Midtown,3,Via Metropolitan Oval / 5Th & Madison,http://web.mta.info/busco/schedules/bxm6cur.pdf,00933C,FFFFFF
+MTABC,BXM7,BxM7,Co-Op City - Midtown,3,Via Co-Op City Bl / Bartow / 5Th & Mad,http://web.mta.info/busco/schedules/bxm7cur.pdf,00933C,FFFFFF
+MTABC,BXM8,BxM8,Pelham Bay/City Island - Midtown,3,Via Bruckner Blvd / 5Th & Madison,http://web.mta.info/busco/schedules/bxm8cur.pdf,00933C,FFFFFF
+MTABC,BXM9,BxM9,Throgs Neck - Midtown,3,,http://web.mta.info/busco/schedules/bxm9cur.pdf,00933C,FFFFFF
+MTABC,Q06,Q6,Sutphin Boulevard,3,Via Sutphin Blvd / Rockaway Blvd,http://web.mta.info/busco/schedules/q006cur.pdf,B933AD,FFFFFF
+MTABC,Q07,Q7,Rockaway Boulevard,3,Via Rockaway Blvd,http://web.mta.info/busco/schedules/q007cur.pdf,6CBE45,FFFFFF
+MTABC,Q08,Q8,101St Avenue,3,Via 101St Av,http://web.mta.info/busco/schedules/q008cur.pdf,B933AD,FFFFFF
+MTABC,Q09,Q9,Lincoln Street,3,Via Van Wyck Expwy / 135Th St / Lincoln St,http://web.mta.info/busco/schedules/q009cur.pdf,B933AD,FFFFFF
+MTABC,Q10,Q10,Kew Gardens - Jfk Airport,3,Via Lefferts Blvd,http://web.mta.info/busco/schedules/q010cur.pdf,FAA61A,FFFFFF
+MTABC,Q100,Q100,Rikers Island - Long Island City,3,Via 20Th Av / 21St St,http://web.mta.info/busco/schedules/q100cur.pdf,FAA61A,FFFFFF
+MTABC,Q101,Q101,Steinway Street,3,,http://web.mta.info/busco/schedules/q101cur.pdf,6CBE45,FFFFFF
+MTABC,Q102,Q102,31 St - Roosevelt Island,3,,http://web.mta.info/busco/schedules/q102cur.pdf,006CB7,FFFFFF
+MTABC,Q103,Q103,27 Ave - Borden Ave,3,Via Vernon Blvd,http://web.mta.info/busco/schedules/q103cur.pdf,EE352E,FFFFFF
+MTABC,Q104,Q104,Broadway - 48 Street,3,Via 48Th St / Broadway,http://web.mta.info/busco/schedules/q104cur.pdf,B933AD,FFFFFF
+MTABC,Q11,Q11,Woodhaven Blvd,3,Via Woodhaven Blvd,http://web.mta.info/busco/schedules/q011cur.pdf,6CBE45,FFFFFF
+MTABC,Q110,Q110,Jamaica Ave - Hempstead Ave,3,,http://web.mta.info/busco/schedules/q110cur.pdf,006CB7,FFFFFF
+MTABC,Q111,Q111,Guy Brewer Blvd - 147Th Ave,3,,http://web.mta.info/busco/schedules/q111cur.pdf,EE352E,FFFFFF
+MTABC,Q112,Q112,Liberty Ave,3,Via Liberty Av / South Rd,http://web.mta.info/busco/schedules/q112cur.pdf,EE352E,FFFFFF
+MTABC,Q113,Q113,Guy Brewer Blvd - Nassau Expwy Ltd,3,,http://web.mta.info/busco/schedules/q113cur.pdf,EE352E,FFFFFF
+MTABC,Q114,Q114,Guy Brewer Blvd Ltd - Rockaway Tpk,3,,http://web.mta.info/busco/schedules/q113cur.pdf,FAA61A,FFFFFF
+MTABC,Q18,Q18,30 Ave - 58 St - 65 Pl,3,Via 65Th Pl / 58Th St / 30Th Av,http://web.mta.info/busco/schedules/q018cur.pdf,00AEEF,FFFFFF
+MTABC,Q19,Q19,Astoria Blvd,3,,http://web.mta.info/busco/schedules/q019cur.pdf,00AEEF,FFFFFF
+MTABC,Q21,Q21,Cross Bay - Woodhaven Blvds,3,Via Woodhaven Blvd / Cross Bay Blvd,http://web.mta.info/busco/schedules/q011cur.pdf,006CB7,FFFFFF
+MTABC,Q22,Q22,Rockaway Beach Blvd - Beach Channel Dr,3,Via Rockaway Beach Blvd / Beach Channel Dr,http://web.mta.info/busco/schedules/q022cur.pdf,EE352E,FFFFFF
+MTABC,Q23,Q23,108 Street,3,Via 108Th St,http://web.mta.info/busco/schedules/q023cur.pdf,FAA61A,FFFFFF
+MTABC,Q25,Q25,127 Street - Kissena Bl - Parsons Bl,3,Via Parsons Blvd/Kissena Blvd/127Th St,http://web.mta.info/busco/schedules/q025cur.pdf,00AEEF,FFFFFF
+MTABC,Q29,Q29,Dry Harbor Road - 80 Street,3,Via Dry Harbor Rd / 80Th St,http://web.mta.info/busco/schedules/q029cur.pdf,00AEEF,FFFFFF
+MTABC,Q33,Q33,82 St/83 St - 95 St & Ditmars Blvd,3,Via Roosevelt Av / 82Nd & 83Rd St,http://web.mta.info/busco/schedules/q033cur.pdf,EE352E,FFFFFF
+MTABC,Q34,Q34,Willets Pt Bl - Kissena Bl - Parsons Bl,3,Via Parsons / Kissena / Willets Pt Blvd,http://web.mta.info/busco/schedules/q025cur.pdf,FAA61A,FFFFFF
+MTABC,Q35,Q35,Rockaway Park - Brooklyn College,3,,http://web.mta.info/busco/schedules/q035cur.pdf,006CB7,FFFFFF
+MTABC,Q37,Q37,111Th Street,3,Via 135Th Av / 111St St / Park Ln South,http://web.mta.info/busco/schedules/q037cur.pdf,00AEEF,FFFFFF
+MTABC,Q38,Q38,Eliot Ave - Penelope Ave,3,Via Penelope Av/Metropolitan Av/Eliot Av,http://web.mta.info/busco/schedules/q038cur.pdf,EE352E,FFFFFF
+MTABC,Q39,Q39,48 Ave - 58 St - Forest Ave,3,Via Forest Av / 58Th St / 48Th Av,http://web.mta.info/busco/schedules/q039cur.pdf,B933AD,FFFFFF
+MTABC,Q40,Q40,142Nd Street,3,Via 142Nd St / Lakewood Av / Sutphin Blvd,http://web.mta.info/busco/schedules/q040cur.pdf,6CBE45,FFFFFF
+MTABC,Q41,Q41,127Th Street - 109Th Avenue,3,Via 127Th St / 109Th Av / Cross Bay Blvd,http://web.mta.info/busco/schedules/q041cur.pdf,B933AD,FFFFFF
+MTABC,Q47,Q47,Atlas Mall - Laguardia Main Term,3,Via Atlas Mall / 80Th St / 74Th St Bus Terminal,http://web.mta.info/busco/schedules/q047cur.pdf,6CBE45,FFFFFF
+MTABC,Q49,Q49,35 Ave,3,Via 35Th Av / 89Th & 92Nd St / Astoria Blvd,http://web.mta.info/busco/schedules/q049cur.pdf,006CB7,FFFFFF
+MTABC,Q50,Q50,Co-Op City/Pelham Bay - Flushing,3,,http://web.mta.info/busco/schedules/q050cur.pdf,FAA61A,FFFFFF
+MTABC,Q52,Q52,Elmhurst - Arverne Limited,3,Via Woodhaven Blvd / Cross Bay Blvd,http://web.mta.info/busco/schedules/q052cur.pdf,FAA61A,FFFFFF
+MTABC,Q53,Q53,Woodside - Rockaway Pk Limited,3,,http://web.mta.info/busco/schedules/q052cur.pdf,FAA61A,FFFFFF
+MTABC,Q60,Q60,Queens Boulevard,3,Via Sutphin Blvd / Queens Blvd,http://web.mta.info/busco/schedules/q060cur.pdf,EE352E,FFFFFF
+MTABC,Q64,Q64,Jewel Ave,3,,http://web.mta.info/busco/schedules/q064cur.pdf,EE352E,FFFFFF
+MTABC,Q65,Q65,College Point Bl - 164 St,3,,http://web.mta.info/busco/schedules/q065cur.pdf,00AEEF,FFFFFF
+MTABC,Q66,Q66,Northern Blvd/Queens Plaza S,3,Via Northern Blvd / 21St St / Queens Plz,http://web.mta.info/busco/schedules/q066cur.pdf,EE352E,FFFFFF
+MTABC,Q67,Q67,Borden Ave - 69 Street,3,Via 69Th St / Borden Av,http://web.mta.info/busco/schedules/q067cur.pdf,FAA61A,FFFFFF
+MTABC,Q69,Q69,21 St - Ditmars Blvd,3,Via 21St St / Ditmars Blvd,http://web.mta.info/busco/schedules/q069cur.pdf,00AEEF,FFFFFF
+MTABC,Q72,Q72,Junction Blvd - Laguardia Main Term,3,Via Junction Blvd / 94Th St,http://web.mta.info/busco/schedules/q072cur.pdf,B933AD,FFFFFF
+MTABC,QM1,QM1,Fresh Meadows - Midtown,3,Via 188Th St / Union Turnpike,http://web.mta.info/busco/schedules/qm001cur.pdf,00933C,FFFFFF
+MTABC,QM10,QM10,Lefrak City - Midtown,3,Via 63Rd Rd / 57Th Av,http://web.mta.info/busco/schedules/qm010cur.pdf,00933C,FFFFFF
+MTABC,QM11,QM11,Forest Hills - Downtown,3,Via Queens Blvd / 63Rd Rd / 57Th Av,http://web.mta.info/busco/schedules/qm010cur.pdf,00933C,FFFFFF
+MTABC,QM12,QM12,Forest Hills - Midtown,3,,http://web.mta.info/busco/schedules/qm012cur.pdf,00933C,FFFFFF
+MTABC,QM15,QM15,Lindenwood - Midtown Express,3,Via 157Th Av / Woodhaven Blvd,http://web.mta.info/busco/schedules/qm015cur.pdf,00933C,FFFFFF
+MTABC,QM16,QM16,Neponsit - Midtown Express,3,Via Rockaway Beach Blvd / Cross Bay Blvd,http://web.mta.info/busco/schedules/qm16cur.pdf,00933C,FFFFFF
+MTABC,QM17,QM17,Far Rockaway - Midtown Express,3,Via Beach Channel Dr / Rockaway Beach Blvd / Cross Bay Blvd,http://web.mta.info/busco/schedules/qm16cur.pdf,00933C,FFFFFF
+MTABC,QM18,QM18,South Ozone Park - Midtown Express,3,Via Lefferts Blvd / Queens Blvd,http://web.mta.info/busco/schedules/qm18cur.pdf,00933C,FFFFFF
+MTABC,QM2,QM2,Bay Terrace - Midtown,3,Via Cross Island Pkwy / Whitestone Expwy,http://web.mta.info/busco/schedules/qm002cur.pdf,00933C,FFFFFF
+MTABC,QM20,QM20,Bay Terrace - Midtown,3,Via 26 Ave / Utopia Pkwy / Willets Pt Bl,http://web.mta.info/busco/schedules/qm020cur.pdf,00933C,FFFFFF
+MTABC,QM21,QM21,Rochdale Village - Midtown,3,Via Bedell St/Guy Brewer Blvd / Linden,http://web.mta.info/busco/schedules/qm21cur.pdf,00933C,FFFFFF
+MTABC,QM24,QM24,Glendale - Midtown,3,Via Myrtle Av / Fresh Pond Rd / Eliot Av,http://web.mta.info/busco/schedules/qm024cur.pdf,00933C,FFFFFF
+MTABC,QM25,QM25,Glendale - Downtown,3,,http://web.mta.info/busco/schedules/qm025cur.pdf,00933C,FFFFFF
+MTABC,QM3,QM3,Little Neck - Midtown,3,Via Northern Blvd,http://web.mta.info/busco/schedules/qm003cur.pdf,00933C,FFFFFF
+MTABC,QM4,QM4,Electchester - Midtown,3,,http://web.mta.info/busco/schedules/qm004cur.pdf,00933C,FFFFFF
+MTABC,QM5,QM5,Glen Oaks - Midtown,3,Via Horace Harding Exp/73 Ave/Union Tpk,http://web.mta.info/busco/schedules/qm001cur.pdf,00933C,FFFFFF
+MTABC,QM6,QM6,Lake Success - Midtown,3,Via North Shore Towers / Union Turnpike,http://web.mta.info/busco/schedules/qm001cur.pdf,00933C,FFFFFF
+MTABC,QM7,QM7,Fresh Meadows - Downtown,3,Via 188Th St / Union Turnpike,http://web.mta.info/busco/schedules/qm007cur.pdf,00933C,FFFFFF
+MTABC,QM8,QM8,Glen Oaks - Downtown,3,Via Little Neck Pkwy / H H Expwy / 73 Av,http://web.mta.info/busco/schedules/qm007cur.pdf,00933C,FFFFFF

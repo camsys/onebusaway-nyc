@@ -1,0 +1,2 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+CPPB4-CP_B4-Weekday-50-SDon,1,1,1,1,1,0,0,20140407,20140627

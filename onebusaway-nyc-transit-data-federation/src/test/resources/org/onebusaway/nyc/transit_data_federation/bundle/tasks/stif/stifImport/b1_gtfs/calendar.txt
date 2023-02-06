@@ -1,0 +1,2 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+UP_A6-Sunday,0,0,0,0,0,0,1,20160103,20160327
