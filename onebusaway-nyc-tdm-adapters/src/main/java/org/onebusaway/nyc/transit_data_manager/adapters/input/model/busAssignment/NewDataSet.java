@@ -131,7 +131,7 @@ public class NewDataSet {
    * 
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"busnumber", "agency", "depot"})
+  @XmlType(name = "", propOrder = {"busnumber", "agency", "depot","stroller"})
   public static class Table {
 
     @XmlElement(name = "BUS_NUMBER")
@@ -140,18 +140,18 @@ public class NewDataSet {
     protected int agency;
     @XmlElement(name = "DEPOT", required = true)
     protected String depot;
+    @XmlElement(name = "STROLLER", required = false)
+    protected String stroller;
 
     /**
      * Gets the value of the busnumber property.
-     * 
      */
-    public String  getBUSNUMBER() {
+    public String getBUSNUMBER() {
       return busnumber;
     }
 
     /**
      * Sets the value of the busnumber property.
-     * 
      */
     public void setBUSNUMBER(String value) {
       this.busnumber = value;
@@ -159,7 +159,6 @@ public class NewDataSet {
 
     /**
      * Gets the value of the agency property.
-     * 
      */
     public int getAGENCY() {
       return agency;
@@ -167,7 +166,6 @@ public class NewDataSet {
 
     /**
      * Sets the value of the agency property.
-     * 
      */
     public void setAGENCY(int value) {
       this.agency = value;
@@ -175,9 +173,8 @@ public class NewDataSet {
 
     /**
      * Gets the value of the depot property.
-     * 
+     *
      * @return possible object is {@link String }
-     * 
      */
     public String getDEPOT() {
       return depot;
@@ -185,14 +182,30 @@ public class NewDataSet {
 
     /**
      * Sets the value of the depot property.
-     * 
+     *
      * @param value allowed object is {@link String }
-     * 
      */
     public void setDEPOT(String value) {
       this.depot = value;
     }
 
+    /**
+     * Gets the value of the depot property.
+     *
+     * @return possible object is {@link String }
+     */
+    public String getSTROLLER() {
+      return stroller;
+    }
+
+    /**
+     * Sets the value of the depot property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    public void setSTROLLER(String value) {
+      this.stroller = value;
+    }
   }
 
 }
