@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model;
 
+import java.util.Locale;
+
 public class TripRecord implements StifRecord {
 	private String signCode;
 	private String blockNumber;
@@ -23,10 +25,12 @@ public class TripRecord implements StifRecord {
 	private int destinationTime;
 	private String originLocation;
 	private String signCodeRoute;
+	private String rawSignCodeRoute;
 	private String reliefRun;
 	private String runNumber;
 	private String previousRunNumber;
 	private int reliefTime;
+	private String reliefLocation;
 	private String reliefRunRoute;
 	private String runRoute;
 	private String nextTripOperatorRunNumber;
@@ -41,6 +45,42 @@ public class TripRecord implements StifRecord {
 	private String gtfsTripId;
 	private char busType;
 	private String direction;
+
+	private String rawRunRoute;
+
+
+	private String rawLastTripInSequence;
+	private String recordType = "";
+	private String pickCode = "";
+	private String primaryRunNumber = "";
+	private String pathCode = "";
+	private String primaryRunRoute = "";
+	private String midtripReliefRunNumber = "";
+	private String midtripReliefRunRoute = "";
+	private String midtripReliefTime = "";
+	private String midtripReliefLocation = "";
+	private String busTypeCode = "";
+	private String firsttripinSequence = "";
+	private String lastTripinSequence = "";
+	private String primaryReliefStatus = "";
+	private String nextOperatorRunNumber = "";
+	private String nextOperatorRoute = "";
+	private String tripMileage = "";
+	private String nextTripOperatorRoute = "";
+	private String nextTripOriginTime = "";
+	private String recoveryTimeafterThisTrip = "";
+	private String signCodeRouteForThisTrip = "";
+	private String previousTripOperatorRunNumber = "";
+	private String previousTripOperatorRoute = "";
+	private String previousTripOriginTime = "";
+	private String originLocationBoxID = "";
+	private String destinationLocationBoxID = "";
+	private String reliefLocationBoxID = "";
+	private String midtripReliefDepot = "";
+	private String nextOperatorDepot = "";
+	private String nextTripOperatorDepot = "";
+	private String previousTripOperatorDepot = "";
+	private String gTFSTripID = "";
 	
 	public String toString() {
 		return "tripRecord of " + gtfsTripId + " on " + runRoute + runNumber + " direction:" + direction; 
@@ -108,13 +148,22 @@ public class TripRecord implements StifRecord {
 	}
 
 	public void setSignCodeRoute(String signCodeRoute) {
+		rawSignCodeRoute=signCodeRoute;
 		this.signCodeRoute = signCodeRoute.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
+	}
+
+	public String getRawSignCodeRoute() {
+		return rawSignCodeRoute;
 	}
 
 	public String getReliefRunNumber() {
 		if (reliefRun == null) {
 			return runNumber;
 		}
+		return reliefRun;
+	}
+
+	public String getRawReliefRunNumber() {
 		return reliefRun;
 	}
 
@@ -154,6 +203,10 @@ public class TripRecord implements StifRecord {
 		return reliefTime;
 	}
 
+	public String getRawRunRoute() {
+		return rawRunRoute;
+	}
+
 	public String getRunRoute() {
 		return runRoute;
 	}
@@ -182,7 +235,8 @@ public class TripRecord implements StifRecord {
 	}
 
 	public void setRunRoute(String runRoute) {
-		this.runRoute = runRoute;
+		this.rawRunRoute = runRoute;
+		this.runRoute = runRoute.toUpperCase();
 	}
 
 	public void setNextTripOperatorRunNumber(String runNumber) {
@@ -210,10 +264,6 @@ public class TripRecord implements StifRecord {
 		return nextTripOperatorRunRoute;
 	}
 
-	public void setNextTripOperatorRunRoute(String route) {
-		this.nextTripOperatorRunRoute = route;
-	}
-
 	public void setPreviousRunRoute(String route) {
 		this.previousRunRoute = route;
 	}
@@ -238,6 +288,14 @@ public class TripRecord implements StifRecord {
 		this.lastTripInSequence = last;
 	}
 
+	public void setLastTripInSequence(String rawLastTripInSequence) {
+		this.rawLastTripInSequence = rawLastTripInSequence;
+		if(rawLastTripInSequence.equals("Y"))
+			this.lastTripInSequence = true;
+		else
+			this.lastTripInSequence = false;
+	}
+
 	public void setFirstTripInSequence(boolean first) {
 		this.firstTripInSequence = first;
 	}
@@ -248,6 +306,10 @@ public class TripRecord implements StifRecord {
 
 	public boolean isLastTripInSequence() {
 		return lastTripInSequence;
+	}
+
+	public String getRawIsLastTripInSequence() {
+		return rawLastTripInSequence;
 	}
 
 	public String getDepotCode() {
@@ -282,4 +344,145 @@ public class TripRecord implements StifRecord {
 		return direction;
 	}
 
+
+	public void setOriginLocationBoxID (String originLocationBoxID){
+		this.originLocationBoxID = originLocationBoxID;
+	}
+	public void setDestinationLocationBoxID (String destinationLocationBoxID){
+		this.destinationLocationBoxID = destinationLocationBoxID;
+	}
+	public void setReliefLocationBoxID (String reliefLocationBoxID){
+		this.reliefLocationBoxID = reliefLocationBoxID;
+	}
+	public void setMidtripReliefDepot (String midtripReliefDepot){
+		this.midtripReliefDepot = midtripReliefDepot;
+	}
+	public void setNextOperatorDepot (String nextOperatorDepot){
+		this.nextOperatorDepot = nextOperatorDepot;
+	}
+	public void setNextTripOperatorDepot (String nextTripOperatorDepot){
+		this.nextTripOperatorDepot = nextTripOperatorDepot;
+	}
+	public void setPreviousTripOperatorDepot (String previousTripOperatorDepot){
+		this.previousTripOperatorDepot = previousTripOperatorDepot;
+	}
+
+	public void setNextTripOperatorRoute (String nextTripOperatorRoute){
+		this.nextTripOperatorRunRoute = nextTripOperatorRoute.toUpperCase(Locale.ROOT);
+		this.nextTripOperatorRoute = nextTripOperatorRoute;
+	}
+	public void setNextTripOriginTime (String nextTripOriginTime){
+		this.nextTripOriginTime = nextTripOriginTime;
+	}
+
+	public void setNextOperatorRunNumber (String nextOperatorRunNumber){
+		this.nextOperatorRunNumber = nextOperatorRunNumber;
+	}
+	public void setNextOperatorRoute (String nextOperatorRoute){
+		this.nextOperatorRoute = nextOperatorRoute;
+	}
+	public void setTripMileage (String tripMileage){
+		this.tripMileage=tripMileage;
+	}
+
+
+	public String getOriginLocationBoxID (){
+		return this.originLocationBoxID;
+	}
+	public String getDestinationLocationBoxID (){
+		return this.destinationLocationBoxID;
+	}
+	public String getReliefLocationBoxID (){
+		return this.reliefLocationBoxID;
+	}
+	public String getMidtripReliefDepot (){
+		return this.midtripReliefDepot;
+	}
+	public String getNextOperatorDepot (){
+		return this.nextOperatorDepot;
+	}
+	public String getNextTripOperatorDepot (){
+		return this.nextTripOperatorDepot;
+	}
+	public String getPreviousTripOperatorDepot (){
+		return this.previousTripOperatorDepot;
+	}
+
+
+	public String getNextOperatorRunNumber (){
+		return this.nextOperatorRunNumber;
+	}
+	public String getNextOperatorRoute (){
+		return this.nextOperatorRoute;
+	}
+	public String getTripMileage (){
+		return this.tripMileage;
+	}
+
+	public String getNextTripOperatorRoute (){
+		return this.nextTripOperatorRoute; }
+
+	public String getNextTripOriginTime (){
+		return this.nextTripOriginTime;
+	}
+
+
+	public String getReliefLocation() {
+		return reliefLocation;
+	}
+
+	public void setReliefLocation(String reliefLocation) {
+		this.reliefLocation = reliefLocation;
+	}
+
+	public void setPrimaryReliefStatus(String primaryReliefStatus) {
+		this.primaryReliefStatus = primaryReliefStatus;
+	}
+
+	public String getPrimaryReliefStatus() {
+		return primaryReliefStatus;
+	}
+
+	public void setPreviousTripOriginTime(String previousTripOriginTime) {
+		this.previousTripOriginTime = previousTripOriginTime;
+	}
+
+	public String getPreviousTripOriginTime() {
+		return previousTripOriginTime;
+	}
+
+
+
+
+
+	private String rawOriginTime;
+	private String rawDestinationTime;
+
+	public String getRawOriginTime() {
+		return rawOriginTime;
+	}
+
+	public void setRawOriginTime(String rawOrginTime) {
+		setOriginTime(processTime(rawOrginTime));
+		this.rawOriginTime = rawOrginTime;
+	}
+
+	public String getRawDestinationTime() {
+		return rawDestinationTime;
+	}
+
+	public void setRawDestinationTime(String rawDestinationTime) {
+		setDestinationTime(processTime(rawDestinationTime));
+		this.rawDestinationTime = rawDestinationTime;
+	}
+
+	public int processTime(String rawTime){
+		int centiminutes = -1;
+		try {
+			centiminutes = Integer.parseInt(rawTime);
+		} catch (NumberFormatException e) {
+			//todo: this should do *some* kinda error or log
+		}
+		return ((int)Math.round(((centiminutes * 60.0) / 100.0)));
+	}
 }

@@ -65,7 +65,7 @@ public class CancelledTripListenerTaskTest {
         listenerTask.setNycTransitDataService(tds);
         listenerTask.setCapiDao(capiFileDao);
         listenerTask.setCancelledTripService(cancelledTripService);
-        listenerTask.updateCancelledTripBeans();
+        listenerTask.updateData();
         ListBean<CancelledTripBean> beans = cancelledTripService.getAllCancelledTrips();
 
         assertEquals(3,beans.getList().size());

@@ -31,6 +31,7 @@ public class Vehicle {
 	private String agencyId;
 	private String vehicleId;
 	private String depotId;
+	private Boolean kneeling;
 
 	public void setAgencyId(String agencyId) {
 		this.agencyId = agencyId;
@@ -48,6 +49,10 @@ public class Vehicle {
 		return vehicleId;
 	}
 
+	public void setKneeling(Boolean kneeling) {
+		this.kneeling = kneeling;
+	}
+
 	/**
 	 * @return the agencyId
 	 */
@@ -62,4 +67,11 @@ public class Vehicle {
 		return depotId;
 	}
 
+	/**
+	 *
+	 * @return if the vehicle is a kneeling buss
+	 */
+	public Boolean isKneeling() {
+		return kneeling;
+	}
 }
