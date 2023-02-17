@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.admin.service.bundle.impl;
 
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -272,10 +273,19 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         }
         // make executable
         fs.chmod("500", request.getTmpDirectory() + File.separator + stifUtilName);
-
         // for each subdirectory of stif, run the script
+        String program = "python";
         for (File stifSubDir : stifDirectories) {
-          String cmd = "python " + request.getTmpDirectory() + File.separator + stifUtilName + " "
+          String cmd;
+          File bin = new File("/usr/bin/");
+          FileFilter pythonFilter = new WildcardFileFilter(program+"*");
+          File[] files = bin.listFiles(pythonFilter);
+          if(files.length < 1){
+            throw new Exception("could not find "+program+" in /usr/bin/");
+          } else{
+            cmd = files[0].getAbsolutePath()+" ";
+          }
+          cmd += request.getTmpDirectory() + File.separator + stifUtilName + " "
                   + stifSubDir.getCanonicalPath();
           // fixup paths that may have extra slashes
           cmd = cmd.replaceAll("//", "/");
