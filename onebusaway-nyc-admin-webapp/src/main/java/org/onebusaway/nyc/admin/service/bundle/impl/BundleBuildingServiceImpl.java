@@ -275,7 +275,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
         // for each subdirectory of stif, run the script
         for (File stifSubDir : stifDirectories) {
-          String cmd = request.getTmpDirectory() + File.separator + stifUtilName + " "
+          String cmd = "python " + request.getTmpDirectory() + File.separator + stifUtilName + " "
                   + stifSubDir.getCanonicalPath();
           // fixup paths that may have extra slashes
           cmd = cmd.replaceAll("//", "/");
