@@ -72,4 +72,8 @@ public interface NycTransitDataService extends TransitDataService {
 	ListBean<CancelledTripBean> getAllCancelledTrips();
 
 	void overrideCancelledTrips(List<CancelledTripBean> beans);
+
+	public boolean isVehicleKneeling(AgencyAndId vehicleId);
+	public ListBean<AgencyAndId> getAllKneelingVehicles();
+	public void overrideKneelingVehicles(List<AgencyAndId> busIds);
 }
