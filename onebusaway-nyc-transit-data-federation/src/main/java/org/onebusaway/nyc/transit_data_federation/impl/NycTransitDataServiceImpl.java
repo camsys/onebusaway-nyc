@@ -57,7 +57,7 @@ import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl;
 import org.onebusaway.transit_data_federation.services.CancelledTripService;
-//import org.onebusaway.transit_data_federation.services.KneelingVehicleService;
+import org.onebusaway.transit_data_federation.services.KneelingVehicleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,8 +86,8 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	@Autowired(required=false)
 	private BusTrekDataService _busTrekDataService;
 
-//	@Autowired(required=false)
-//	private KneelingVehicleService _kneelingVehicleService;
+	@Autowired(required=false)
+	private KneelingVehicleService _kneelingVehicleService;
 
 	@Autowired
 	@Qualifier("NycBundleSearchService")
@@ -753,34 +753,34 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 		return new ListBean<>(Collections.EMPTY_LIST, false);
 	}
 
-//todo: uncomment kneelingVehicleService lines
+
 	@Override
 	public boolean isVehicleKneeling(AgencyAndId vehicleId){
 		blockUntilBundleIsReady();
-//		if(_kneelingVehicleService != null){
-//			return _kneelingVehicleService.isVehicleKneeling(vehicleId);
-//		}
+		if(_kneelingVehicleService != null){
+			return _kneelingVehicleService.isVehicleKneeling(vehicleId);
+		}
 		return false;
 	}
 
 	@Override
 	public Set<AgencyAndId> getAllKneelingVehicles(){
 		blockUntilBundleIsReady();
-//		if(_kneelingVehicleService != null){
-//			return _kneelingVehicleService.getKneelingVehicleIds();
-//		}
+		if(_kneelingVehicleService != null){
+			return _kneelingVehicleService.getKneelingVehicleIds();
+		}
 		return new HashSet<>();
 	}
 
 	@Override
 	public void overrideKneelingVehicles(List<AgencyAndId> busIds){
 		blockUntilBundleIsReady();
-//		if(_kneelingVehicleService != null){
-//			Set<AgencyAndId> kneelingVehicleCache = new HashSet<>();
-//			for(AgencyAndId busId : busIds){
-//				kneelingVehicleCache.add(busId);
-//			}
-//			_kneelingVehicleService.updateKneelingVehicles(kneelingVehicleCache);
-//		}
+		if(_kneelingVehicleService != null){
+			Set<AgencyAndId> kneelingVehicleCache = new HashSet<>();
+			for(AgencyAndId busId : busIds){
+				kneelingVehicleCache.add(busId);
+			}
+			_kneelingVehicleService.updateKneelingVehicles(kneelingVehicleCache);
+		}
 	}
 }
