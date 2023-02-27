@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.VehicleDepotData;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.api.service.KneelingVehiclesDataExtractionService;
@@ -22,6 +23,7 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Path("/kneeling")
 @Component
@@ -56,19 +58,16 @@ public class KneelingVehiclesResource {
     @Autowired
     KneelingVehiclesDataExtractionService _kneelingVehiclesDataExtractionService;
 
-    @Path("/list")
+    @Path("/set")
     @GET
     @Produces("application/json")
-    public Response getKneelingVehiclesList() {
-        List kneelingVehiclesData = _kneelingVehiclesDataExtractionService.getKneelingVehiclesAsList(depotIdTranslator);
+    public Response getKneelingVehiclesSet() {
+        Set<AgencyAndId> kneelingVehiclesData = _kneelingVehiclesDataExtractionService.getKneelingVehiclesAsSet(depotIdTranslator);
         String output;
         try {
             StringWriter stringWriter = new StringWriter();
-
             jsonTool.writeJson(stringWriter, kneelingVehiclesData);
-
             output = stringWriter.toString();
-
             stringWriter.close();
         }catch (Exception e){
             _log.error("Unable to process cancelled trips list request", e);

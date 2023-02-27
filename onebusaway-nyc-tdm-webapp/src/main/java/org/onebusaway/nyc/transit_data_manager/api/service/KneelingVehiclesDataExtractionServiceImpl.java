@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -51,8 +52,8 @@ public class KneelingVehiclesDataExtractionServiceImpl implements KneelingVehicl
     }
 
     @Override
-    public List getKneelingVehiclesAsList(DepotIdTranslator depotIdTranslator) {
-        return processVehiclesToList(getVehiclesData(depotIdTranslator));
+    public Set<AgencyAndId> getKneelingVehiclesAsSet(DepotIdTranslator depotIdTranslator) {
+        return processVehiclesToSet(getVehiclesData(depotIdTranslator));
     }
 
     public List<MtaBusDepotAssignment> getVehiclesData(DepotIdTranslator depotIdTranslator) {
@@ -84,9 +85,12 @@ public class KneelingVehiclesDataExtractionServiceImpl implements KneelingVehicl
         return resultData;
     }
 
-
     private List<AgencyAndId> processVehiclesToList(List<MtaBusDepotAssignment> data){
         return data.stream().filter(d -> d.isKneeling()).map(d-> createAgencyAndIdFromMTABusAssig(d)).collect(Collectors.toList());
+    }
+
+    private Set<AgencyAndId> processVehiclesToSet(List<MtaBusDepotAssignment> data){
+        return data.stream().filter(d -> d.isKneeling()).map(d-> createAgencyAndIdFromMTABusAssig(d)).collect(Collectors.toSet());
     }
 
     private Map<AgencyAndId,Boolean> processVehiclesToMap(List<MtaBusDepotAssignment> data){

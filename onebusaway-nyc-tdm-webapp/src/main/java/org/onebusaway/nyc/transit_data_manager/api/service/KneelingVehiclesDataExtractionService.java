@@ -1,10 +1,12 @@
 package org.onebusaway.nyc.transit_data_manager.api.service;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface KneelingVehiclesDataExtractionService {
 
@@ -19,9 +21,9 @@ public interface KneelingVehiclesDataExtractionService {
 
     void setInputOverride(File resourceAsStream);
 
-    List getKneelingVehiclesAsList(DepotIdTranslator depotIdTranslator);
+    Set<AgencyAndId> getKneelingVehiclesAsSet(DepotIdTranslator depotIdTranslator);
 
-    Map getKneelingVehiclesAsMap(DepotIdTranslator depotIdTranslator);
+    Map<AgencyAndId,Boolean> getKneelingVehiclesAsMap(DepotIdTranslator depotIdTranslator);
 
 
 }
