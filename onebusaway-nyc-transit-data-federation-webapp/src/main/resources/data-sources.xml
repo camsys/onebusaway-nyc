@@ -90,7 +90,13 @@
     <bean id="cancelledTripListener" class="org.onebusaway.nyc.transit_data_federation.impl.queue.CancelledTripHttpListenerTask">
     </bean>
 
-	<!-- Other Stuff: -->
+    <!-- Kneeling Vehicle Configuration -->
+    <bean id="kneelingVehicleListener" class="org.onebusaway.nyc.transit_data_federation.impl.queue.KneelingVehicleHttpListenerTask">
+    </bean>
+
+
+
+    <!-- Other Stuff: -->
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
