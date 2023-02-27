@@ -10,7 +10,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.services.capi.CapiDao;
 import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 import org.onebusaway.transit_data_federation.services.CancelledTripService;
-import org.onebusaway.transit_data_federation.services.KneelingVehicleService;
+//import org.onebusaway.transit_data_federation.services.KneelingVehicleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,11 +52,11 @@ public class KneelingBusHttpListenerTask extends HTTPListenerTask{
         _tds = tds;
     }
 
-    private KneelingVehicleService _kneelingVehicleService;
-    @Autowired
-    public void setKneelingVehicleService(KneelingVehicleService kneelingVehicleService){
-        _kneelingVehicleService = kneelingVehicleService;
-    }
+//    private KneelingVehicleService _kneelingVehicleService;
+//    @Autowired
+//    public void setKneelingVehicleService(KneelingVehicleService kneelingVehicleService){
+//        _kneelingVehicleService = kneelingVehicleService;
+//    }
 
     private ObjectMapper _objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
@@ -69,7 +69,7 @@ public class KneelingBusHttpListenerTask extends HTTPListenerTask{
             InputStream inputStream = getInputData();
             Set<AgencyAndId> cancelledTripsSet = convertKneelingVehiclesSet(inputStream);
             cancelledTripsSet = filterForValidVehicles(cancelledTripsSet);
-            _kneelingVehicleService.updateKneelingVehicles(cancelledTripsSet);
+//            _kneelingVehicleService.updateKneelingVehicles(cancelledTripsSet);
         } catch (Exception e){
             _log.error("Unable to process cancelled trip beans from {}", getLocation());
         }
