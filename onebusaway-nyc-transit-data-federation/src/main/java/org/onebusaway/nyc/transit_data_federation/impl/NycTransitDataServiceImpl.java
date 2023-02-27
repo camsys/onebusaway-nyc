@@ -64,7 +64,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import tcip_final_3_0_5_1.CPTVehicleIden;
 
 @Primary
 @Component(value = "nycTransitDataServiceImpl")
@@ -765,12 +764,12 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public ListBean<AgencyAndId> getAllKneelingVehicles(){
+	public Set<AgencyAndId> getAllKneelingVehicles(){
 		blockUntilBundleIsReady();
 		if(_kneelingVehicleService != null){
-			return _kneelingVehicleService.getAllKneelingVehicles();
+			return _kneelingVehicleService.getKneelingVehicleIds();
 		}
-		return new ListBean<>(Collections.EMPTY_LIST, false);
+		return new HashSet<>();
 	}
 
 	@Override
