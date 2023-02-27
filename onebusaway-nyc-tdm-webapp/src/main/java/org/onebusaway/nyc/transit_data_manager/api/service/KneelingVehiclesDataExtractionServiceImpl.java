@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.api.service;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.MtaBusDepotFileToDataCreator;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicle;
@@ -107,17 +108,17 @@ public class KneelingVehiclesDataExtractionServiceImpl implements KneelingVehicl
 
 
     private List processVehiclesToList(List<MtaBusDepotAssignment> data){
-        return data.stream().filter(d -> d.isKneeling()).map(d->createCPTFromMTABusAssig(d)).collect(Collectors.toList());
+        return data.stream().filter(d -> d.isKneeling()).map(d-> createAgencyAndIdFromMTABusAssig(d)).collect(Collectors.toList());
     }
 
     private Map processVehiclesToMap(List<MtaBusDepotAssignment> data){
-        return data.stream().collect(Collectors.toMap(d->createCPTFromMTABusAssig(d),d->d));
+        return data.stream().collect(Collectors.toMap(d-> createAgencyAndIdFromMTABusAssig(d), d->d));
     }
 
-    private CPTVehicleIden createCPTFromMTABusAssig(MtaBusDepotAssignment assignment) {
-        CPTVehicleIden bus = new CPTVehicleIden();
-        bus.setAgencyId(assignment.getAgencyId());
-        bus.setVehicleId(assignment.getBusNumber());
+    private AgencyAndId createAgencyAndIdFromMTABusAssig(MtaBusDepotAssignment assignment) {
+        AgencyAndId bus = new AgencyAndId();
+        bus.setAgencyId(String.valueOf(assignment.getAgencyId()));
+        bus.setId(String.valueOf(assignment.getBusNumber()));
         return bus;
     }
 
