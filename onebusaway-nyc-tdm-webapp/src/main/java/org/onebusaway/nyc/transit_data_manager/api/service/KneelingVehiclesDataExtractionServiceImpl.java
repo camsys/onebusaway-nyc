@@ -85,39 +85,17 @@ public class KneelingVehiclesDataExtractionServiceImpl implements KneelingVehicl
     }
 
 
-
-    public List getKneelingVehiclesList(List<CPTFleetSubsetGroup> depotGroups) {
-        List<Vehicle> vehicles = new ArrayList<Vehicle>();
-
-        //Loop through all depot groups and create vehicles with the required info
-        for(CPTFleetSubsetGroup depotGroup : depotGroups) {
-            List<CPTVehicleIden> tcipVehciles = depotGroup.getGroupMembers().getGroupMember();
-            for(CPTVehicleIden tcipVehicle : tcipVehciles) {
-                Vehicle vehicle = new Vehicle();
-
-                vehicle.setDepotId(depotGroup.getGroupGarage().getFacilityName());
-                vehicle.setVehicleId(String.valueOf(tcipVehicle.getVehicleId()));
-                vehicle.setAgencyId(mappingTool.getJsonModelAgencyIdByTcipId(tcipVehicle.getAgencyId()));
-
-                vehicles.add(vehicle);
-            }
-        }
-
-        return vehicles;
-    }
-
-
-    private List processVehiclesToList(List<MtaBusDepotAssignment> data){
+    private List<AgencyAndId> processVehiclesToList(List<MtaBusDepotAssignment> data){
         return data.stream().filter(d -> d.isKneeling()).map(d-> createAgencyAndIdFromMTABusAssig(d)).collect(Collectors.toList());
     }
 
-    private Map processVehiclesToMap(List<MtaBusDepotAssignment> data){
-        return data.stream().collect(Collectors.toMap(d-> createAgencyAndIdFromMTABusAssig(d), d->d));
+    private Map<AgencyAndId,Boolean> processVehiclesToMap(List<MtaBusDepotAssignment> data){
+        return data.stream().collect(Collectors.toMap(d-> createAgencyAndIdFromMTABusAssig(d), d->d.isKneeling()));
     }
 
     private AgencyAndId createAgencyAndIdFromMTABusAssig(MtaBusDepotAssignment assignment) {
         AgencyAndId bus = new AgencyAndId();
-        bus.setAgencyId(String.valueOf(assignment.getAgencyId()));
+        bus.setAgencyId(mappingTool.getJsonModelAgencyIdByTcipId(assignment.getAgencyId()));
         bus.setId(String.valueOf(assignment.getBusNumber()));
         return bus;
     }
