@@ -18,7 +18,7 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model;
 abstract class SignCodeFieldSetter extends StifFieldSetter<SignCodeRecord> {}
 
 public class SignCodeRecordFactory extends StifRecordFactory<SignCodeRecord> {
-	static class FieldDef extends StifFieldDefinition <SignCodeRecord>{
+	static class FieldDef extends StifFieldDefinition<SignCodeRecord> {
 		public FieldDef(int length, String name,
 				StifFieldSetter<SignCodeRecord> setter) {
 			super(length, name, setter);

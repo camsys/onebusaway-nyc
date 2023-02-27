@@ -24,9 +24,12 @@ import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifExtract.model.BustrekDatum;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifExtract.model.Remark;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.BusTrekDataService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -80,6 +83,9 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Autowired(required=false)
 	private CancelledTripService _cancelledTripService;
+
+	@Autowired(required=false)
+	private BusTrekDataService _busTrekDataService;
 
 	@Autowired(required=false)
 	private KneelingVehicleService _kneelingVehicleService;
@@ -738,6 +744,14 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 			}
 			_cancelledTripService.updateCancelledTrips(cancelledTripsCache);
 		}
+	}
+
+	public ListBean<BustrekDatum> getStifRemarks() {
+		blockUntilBundleIsReady();
+		if (_busTrekDataService != null) {
+			return _busTrekDataService.getStifRemarks();
+		}
+		return new ListBean<>(Collections.EMPTY_LIST, false);
 	}
 
 

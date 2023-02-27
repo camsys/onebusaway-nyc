@@ -24,6 +24,7 @@ public class GeographyRecord implements StifRecord, Serializable {
 	private float latitude;
 	private float longitude;
 	private String boxID;
+	private String timepoint;
 
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
@@ -54,5 +55,13 @@ public class GeographyRecord implements StifRecord, Serializable {
 	
 	public String getBoxID() {
 		return boxID;
+	}
+
+	public String getTimepoint() {
+		return timepoint;
+	}
+
+	public void setTimepoint(String timepoint) {
+		this.timepoint = timepoint;
 	}
 }
