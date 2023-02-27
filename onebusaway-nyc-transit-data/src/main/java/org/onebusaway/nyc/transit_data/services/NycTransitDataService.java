@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.transit_data.services;
 
 import java.util.List;
+import java.util.Set;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
@@ -72,4 +73,8 @@ public interface NycTransitDataService extends TransitDataService {
 	ListBean<CancelledTripBean> getAllCancelledTrips();
 
 	void overrideCancelledTrips(List<CancelledTripBean> beans);
+
+	public boolean isVehicleKneeling(AgencyAndId vehicleId);
+	public Set<AgencyAndId> getAllKneelingVehicles();
+	public void overrideKneelingVehicles(List<AgencyAndId> busIds);
 }

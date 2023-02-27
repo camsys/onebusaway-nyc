@@ -1,0 +1,2 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+FP_E3-Weekday-SDon,1,1,1,1,1,0,0,20130909,20131115

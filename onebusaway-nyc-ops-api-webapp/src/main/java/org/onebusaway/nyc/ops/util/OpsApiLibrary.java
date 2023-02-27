@@ -56,8 +56,8 @@ public class OpsApiLibrary {
   private String _archiveHostname = null;
   
   private Integer _archivePort = 80;
-  
-  private String _archiveApiEndpointPath = "/api/record/";
+
+  private String _archiveApiEndpointPath = "/api/history/record/";
   
   private RestApiLibrary _restApiLibrary;
 

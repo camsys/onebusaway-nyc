@@ -193,11 +193,8 @@ public class ConfigResource {
 
   @Path("/{component}/{key}/delete")
   @GET
-  @Consumes("application/json")
   @Produces("application/json")
-  public String deleteConfigVal(String configStr, @PathParam("component")
-          String component, @PathParam("key")
-                                     String key) throws JsonParseException, JsonMappingException, IOException {
+  public String deleteConfigVal(@PathParam("component") String component, @PathParam("key")  String key) throws JsonParseException, JsonMappingException, IOException {
 
     _log.info("Starting deleteConfigItemByKey for component " + component + " and key " + key);
 

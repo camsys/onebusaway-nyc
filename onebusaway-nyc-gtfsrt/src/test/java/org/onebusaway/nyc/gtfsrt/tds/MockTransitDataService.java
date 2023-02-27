@@ -20,11 +20,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.Route;
-import org.onebusaway.gtfs.model.Stop;
-import org.onebusaway.gtfs.model.StopTime;
-import org.onebusaway.gtfs.model.Trip;
+import org.onebusaway.gtfs.model.*;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
@@ -57,13 +53,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
+import java.util.*;
 
 import static org.junit.Assert.fail;
 
@@ -139,6 +129,21 @@ public class MockTransitDataService implements NycTransitDataService {
     @Override
     public void overrideCancelledTrips(List<CancelledTripBean> beans) {
 
+    }
+
+    @Override
+    public boolean isVehicleKneeling(AgencyAndId vehicleId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set<AgencyAndId> getAllKneelingVehicles() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void overrideKneelingVehicles(List<AgencyAndId> busIds) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -670,7 +675,7 @@ public class MockTransitDataService implements NycTransitDataService {
         return status;
     }
 
-    private StopBean stopBean(Stop stop) {
+    private StopBean stopBean(StopLocation stop) {
         StopBean bean = new StopBean();
         bean.setId(stop.getId().toString());
         bean.setName(stop.getName());

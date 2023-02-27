@@ -41,7 +41,11 @@ public class GeographyRecordFactory extends StifRecordFactory<GeographyRecord> {
         new FieldDef(63 - 51, "geocode", null),
         new FieldDef(65 - 63, "borough code", null),
         new FieldDef(66 - 65, "empty", null),
-        new FieldDef(74 - 66, "timepoint identifier", null),
+        new FieldDef(74 - 66, "timepoint identifier", new GeographyFieldSetter() {
+          public void setField(GeographyRecord record) {
+            record.setTimepoint(getStringData());
+          }
+        }),
         new FieldDef(75 - 74, "empty", null),
         new FieldDef(77 - 75, "location type", null),
         new FieldDef(78 - 77, "empty", null),

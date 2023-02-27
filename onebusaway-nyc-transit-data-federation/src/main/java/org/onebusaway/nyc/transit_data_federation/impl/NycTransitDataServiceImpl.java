@@ -24,9 +24,12 @@ import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifExtract.model.BustrekDatum;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifExtract.model.Remark;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.BusTrekDataService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -54,6 +57,7 @@ import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl;
 import org.onebusaway.transit_data_federation.services.CancelledTripService;
+import org.onebusaway.transit_data_federation.services.KneelingVehicleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +82,12 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Autowired(required=false)
 	private CancelledTripService _cancelledTripService;
+
+	@Autowired(required=false)
+	private BusTrekDataService _busTrekDataService;
+
+	@Autowired(required=false)
+	private KneelingVehicleService _kneelingVehicleService;
 
 	@Autowired
 	@Qualifier("NycBundleSearchService")
@@ -732,6 +742,45 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 				cancelledTripsCache.put(AgencyAndId.convertFromString(bean.getTrip()),bean);
 			}
 			_cancelledTripService.updateCancelledTrips(cancelledTripsCache);
+		}
+	}
+
+	public ListBean<BustrekDatum> getStifRemarks() {
+		blockUntilBundleIsReady();
+		if (_busTrekDataService != null) {
+			return _busTrekDataService.getStifRemarks();
+		}
+		return new ListBean<>(Collections.EMPTY_LIST, false);
+	}
+
+
+	@Override
+	public boolean isVehicleKneeling(AgencyAndId vehicleId){
+		blockUntilBundleIsReady();
+		if(_kneelingVehicleService != null){
+			return _kneelingVehicleService.isVehicleKneeling(vehicleId);
+		}
+		return false;
+	}
+
+	@Override
+	public Set<AgencyAndId> getAllKneelingVehicles(){
+		blockUntilBundleIsReady();
+		if(_kneelingVehicleService != null){
+			return _kneelingVehicleService.getKneelingVehicleIds();
+		}
+		return new HashSet<>();
+	}
+
+	@Override
+	public void overrideKneelingVehicles(List<AgencyAndId> busIds){
+		blockUntilBundleIsReady();
+		if(_kneelingVehicleService != null){
+			Set<AgencyAndId> kneelingVehicleCache = new HashSet<>();
+			for(AgencyAndId busId : busIds){
+				kneelingVehicleCache.add(busId);
+			}
+			_kneelingVehicleService.updateKneelingVehicles(kneelingVehicleCache);
 		}
 	}
 }

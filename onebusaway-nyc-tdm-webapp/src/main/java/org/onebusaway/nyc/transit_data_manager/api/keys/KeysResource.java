@@ -42,6 +42,8 @@ import org.onebusaway.nyc.transit_data_manager.util.ObjectMapperProvider;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
+import org.onebusaway.users.model.UserRole;
+import org.onebusaway.users.services.StandardAuthoritiesService;
 import org.onebusaway.users.services.UserIndexTypes;
 import org.onebusaway.users.services.UserPropertiesService;
 import org.onebusaway.users.services.UserService;
@@ -63,6 +65,9 @@ public class KeysResource {
 
   @Autowired
   private UserPropertiesService _userPropertiesService;
+
+  @Autowired
+  private StandardAuthoritiesService _authoritiesService;
 
   public KeysResource() {
   }
@@ -144,6 +149,41 @@ public class KeysResource {
     return response;
   }
 
+  @Path("/role/{roleName}/create")
+  @GET
+  @Produces("application/json")
+  public Response createRoleKey(@PathParam("roleName") String roleName) throws JsonGenerationException,
+          JsonMappingException, IOException {
+    _log.info("Starting createKey with no parameter");
+
+    Response response = createRoleKey(roleName, UUID.randomUUID().toString());
+
+    return response;
+  }
+
+  @Path("/role/{roleName}/create/{keyValue}")
+  @GET
+  @Produces("application/json")
+  public Response createRoleKey(@PathParam("roleName") String roleName,
+                                @PathParam("keyValue") String keyValue) throws JsonGenerationException, JsonMappingException,
+          IOException {
+
+    Response response;
+
+    try{
+      UserRoleForKey userRole = UserRoleForKey.valueOfLabel(roleName);
+      response = createKey(keyValue);
+      addRoleToKey(userRole.getRole(_authoritiesService), keyValue);
+    }catch (Exception e){
+      KeyMessage message = new KeyMessage();
+      message.setStatus("ERROR");
+      message.setMessageText("Failed to create key with role " + roleName + " : " + e.getMessage());
+      response = generateResponse(message);
+    }
+
+    return response;
+  }
+
   @Path("/delete/{keyValue}")
   @GET
   @Produces("application/json")
@@ -189,6 +229,23 @@ public class KeysResource {
 
     // Clear the cached value here
     _userService.getMinApiRequestIntervalForKey(apiKey, true);
+  }
+
+  private void addRoleToKey(UserRole roleName, String apiKey) throws Exception{
+    UserIndexKey key = new UserIndexKey(UserIndexTypes.API_KEY, apiKey);
+    UserIndex userIndexForId = _userService.getUserIndexForId(key);
+
+    if (userIndexForId == null) {
+      throw new Exception("API key " + apiKey + " not found");
+    }
+
+    _log.info("Adding role " + roleName);
+    try{
+      _userService.enableRoleForUser(userIndexForId.getUser(), roleName);
+    } catch (Exception e){
+      _log.error("Error adding role " + roleName + " for user", e);
+    }
+
   }
 
   private void delete(String apiKey) throws Exception {

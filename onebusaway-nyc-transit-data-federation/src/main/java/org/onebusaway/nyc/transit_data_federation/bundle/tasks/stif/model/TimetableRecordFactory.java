@@ -17,7 +17,7 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model;
 
 abstract class TimetableFieldSetter extends StifFieldSetter<TimetableRecord> {}
 public class TimetableRecordFactory extends StifRecordFactory<TimetableRecord> {
-	static class FieldDef extends StifFieldDefinition <TimetableRecord>{
+	static class FieldDef extends StifFieldDefinition<TimetableRecord> {
 		public FieldDef(int length, String name,
 				StifFieldSetter<TimetableRecord> setter) {
 			super(length, name, setter);
@@ -75,7 +75,6 @@ public class TimetableRecordFactory extends StifRecordFactory<TimetableRecord> {
       	ServiceCode a = record.getServiceCode();
       	if (a != null){
       		boolean b = a.isHoliday();
-      		System.out.print(b);
 		}
         if (record.getServiceCode() == null || !record.getServiceCode().isHoliday()) {
           String data = getStringData();

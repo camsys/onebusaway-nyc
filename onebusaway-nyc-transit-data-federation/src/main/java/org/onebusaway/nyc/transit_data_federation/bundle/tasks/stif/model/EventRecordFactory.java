@@ -75,6 +75,10 @@ public class EventRecordFactory extends StifRecordFactory<EventRecord> {
         public void setField(EventRecord record) {
           record.setDistanceFromStartOfTrip(getIntegerSafe());
         }
+      }),new FieldDef(36 - 29, "BoxId", new EventFieldSetter() {
+        public void setField(EventRecord record) {
+          record.setBoxId(getStringData());
+        }
       })
   };
   @Override

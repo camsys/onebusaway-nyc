@@ -19,7 +19,7 @@ package org.onebusaway.nyc.transit_data_federation.model.nyc;
 import java.io.Serializable;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripType;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifImport.StifTripType;
 
 import org.locationtech.jts.geom.Coordinate;
 

@@ -53,9 +53,7 @@ public class NycFederatedTransitDataBundle {
     return new File(_path, "NonRevenueStops.obj");
   }
 
-  public File getNotInServiceDSCs() {
-    return new File(_path, "NotInServiceDSCs.obj");
-  }
+  public File getNotInServiceDSCs() { return new File(_path, "NotInServiceDSCs.obj"); }
 
   public File getTripsForDSCIndex() {
     return new File(_path, "TripsForDSCIndices.obj");
@@ -77,7 +75,24 @@ public class NycFederatedTransitDataBundle {
     return new File(_path, "TripRunData.obj");
   }
 
-public File getSupplimentalTrioInfo() {
-	return new File(_path, "SupplimentalTripInfo.obj");
-}
+  public File getSupplimentalTrioInfo() {return new File(_path, "SupplimentalTripInfo.obj");}
+
+  public File getRemarksObjPath() {
+    return new File(_path, "Remarks.obj");
+  }
+  public File getTripInfoObjPath() {
+    return new File(_path, "TripInfo.obj");
+  }
+  public File getTimePointsObjPath() {
+    return new File(_path, "TimePoints.obj");
+  }
+  public File getRemarksCsvPath() {
+    return new File(_path, "Remarks.csv");
+  }
+  public File getTripInfoCsvPath() {
+    return new File(_path, "TripInfo.csv");
+  }
+  public File getTimePointsCsvPath() {
+    return new File(_path, "TimePoints.csv");
+  }
 }
