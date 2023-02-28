@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.VehicleDepotData;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
@@ -20,10 +22,8 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Path("/kneeling")
 @Component
@@ -39,6 +39,8 @@ public class KneelingVehiclesResource {
      */
 
     private DepotIdTranslator depotIdTranslator = null;
+
+    private ObjectMapper _mapper = new ObjectMapper();
 
     @Autowired
     private JsonTool jsonTool;
@@ -65,15 +67,13 @@ public class KneelingVehiclesResource {
         Set<AgencyAndId> kneelingVehiclesData = _kneelingVehiclesDataExtractionService.getKneelingVehiclesAsSet(depotIdTranslator);
         String output;
         try {
-            StringWriter stringWriter = new StringWriter();
-            jsonTool.writeJson(stringWriter, kneelingVehiclesData);
-            output = stringWriter.toString();
-            stringWriter.close();
+            StringWriter writer = new StringWriter();
+            _mapper.writeValue(writer, kneelingVehiclesData);
+            output = writer.toString();
         }catch (Exception e){
-            _log.error("Unable to process cancelled trips list request", e);
+            _log.error("Unable to process kneeling vehicles data", e);
             return Response.serverError().build();
         }
-//            String output = processKneelingVehiclesData(kneelingVehiclesData);
         _log.debug("Returning response ok for url=" + null);
         return Response.ok(output).build();
     }
@@ -85,6 +85,4 @@ public class KneelingVehiclesResource {
     public void setJsonTool(JsonTool tool){
         this.jsonTool=tool;
     }
-
-
 }
