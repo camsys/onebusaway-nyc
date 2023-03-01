@@ -30,6 +30,8 @@ public interface PresentationService {
 
   public Boolean hasFormalBlockLevelMatch(TripStatusBean statusBean);
 
+  public Boolean isKneeling(TripStatusBean statusBean);
+
   public Boolean isSpooking(TripStatusBean statusBean);
 
   public Boolean isInLayover(TripStatusBean statusBean);
