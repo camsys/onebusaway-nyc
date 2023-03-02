@@ -73,6 +73,8 @@ import org.onebusaway.nyc.presentation.service.realtime.siri.SiriMonitoredCallBu
 import org.onebusaway.nyc.presentation.service.realtime.siri.SiriMonitoredVehicleJourneyBuilderService;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.siri.SiriOnwardCallsBuilderService;
+import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
+import org.onebusaway.nyc.siri.support.SiriVehicleFeatures;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -83,6 +85,7 @@ import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.model.trips.VehicleFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.org.siri.siri.*;
@@ -140,11 +143,13 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
                                                                                         long responseTimestamp,
                                                                                         boolean showApc,
                                                                                         boolean showRawApc,
-                                                                                        boolean isCancelled){
+                                                                                        boolean isCancelled,
+                                                                                        Set<VehicleFeature> vehicleFeatures){
+
 
         SiriMonitoredVehicleJourneyBuilder siriMonitoredVehicleJourneyBuilder = processMonitoredVehicleJourneyStructureWithBuilder(
             tripOnBlock, currentlyActiveTripOnBlock, monitoredCallStopBean, stopIdToPredictionRecordMap,
-            onwardCallsMode, maximumOnwardCalls, responseTimestamp, showApc, showRawApc, isCancelled);
+            onwardCallsMode, maximumOnwardCalls, responseTimestamp, showApc, showRawApc, isCancelled, vehicleFeatures);
 
         return siriMonitoredVehicleJourneyBuilder.buildMonitoredVehicleJourney();
     }
@@ -159,11 +164,12 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
                                                                                  long responseTimestamp,
                                                                                  boolean showApc,
                                                                                  boolean showRawApc,
-                                                                                 boolean isCancelled){
+                                                                                 boolean isCancelled,
+                                                                                 Set<VehicleFeature> vehicleFeatures){
 
         SiriMonitoredVehicleJourneyBuilder siriMonitoredVehicleJourneyBuilder = processMonitoredVehicleJourneyStructureWithBuilder(
                 tripOnBlock, currentlyActiveTripOnBlock, monitoredCallStopBean, stopIdToPredictionRecordMap,
-                onwardCallsMode, maximumOnwardCalls, responseTimestamp, showApc, showRawApc, isCancelled);
+                onwardCallsMode, maximumOnwardCalls, responseTimestamp, showApc, showRawApc, isCancelled, vehicleFeatures);
 
         return siriMonitoredVehicleJourneyBuilder.buildMonitoredVehicleJourneyStructure();
     }
@@ -177,7 +183,8 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
                                                                            long responseTimestamp,
                                                                            boolean showApc,
                                                                            boolean showRawApc,
-                                                                           boolean isCancelled){
+                                                                           boolean isCancelled,
+                                                                           Set<VehicleFeature> vehicleFeatures){
 
         SiriMonitoredVehicleJourneyBuilder siriMonitoredVehicleJourneyBuilder = new SiriMonitoredVehicleJourneyBuilder();
 
@@ -252,7 +259,7 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
         if(!_presentationService.isOnDetour(currentlyActiveTripOnBlock)) {
             MonitoredCallStructure monitoredCall = _siriMonitoredCallBuilderService.makeMonitoredCall(
                     blockInstance, tripOnBlock, currentlyActiveTripOnBlock, monitoredCallStopBean,
-                    stopIdToPredictionRecordMap, showRawApc, isCancelled, responseTimestamp);
+                    stopIdToPredictionRecordMap, showRawApc, isCancelled, responseTimestamp,vehicleFeatures);
             siriMonitoredVehicleJourneyBuilder.setMonitoredCall(monitoredCall);
         }
 

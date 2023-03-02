@@ -52,6 +52,7 @@ import uk.org.siri.siri.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 
 public final class SiriMonitoredVehicleJourneyBuilder {
@@ -77,6 +78,7 @@ public final class SiriMonitoredVehicleJourneyBuilder {
     private MonitoredCallStructure monitoredCall = null;
     private OnwardCallsStructure onwardCalls = null;
     List<SituationRefStructure> situationRef = null;
+    private ExtensionsStructure anyExtensions = null;
 
 
     public SiriMonitoredVehicleJourneyBuilder(LineRefStructure lineRef,
@@ -256,6 +258,7 @@ public final class SiriMonitoredVehicleJourneyBuilder {
         if(situationRef != null){
             monitoredVehicleJourney.getSituationRef().addAll(situationRef);
         }
+//        monitoredVehicleJourney.setExtensions(anyExtensions);
         return monitoredVehicleJourney;
     }
 
@@ -284,6 +287,7 @@ public final class SiriMonitoredVehicleJourneyBuilder {
         if(situationRef != null){
             monitoredVehicleJourney.getSituationRef().addAll(situationRef);
         }
+        monitoredCall.setExtensions(anyExtensions);
         return monitoredVehicleJourney;
     }
 }
