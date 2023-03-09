@@ -243,6 +243,27 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				}
 				var icon = new L.Icon({iconUrl: "img/vehicle/vehicle-" + orientationAngle + ".png", iconSize: [51, 51]});
 
+				if(typeof activity.MonitoredVehicleJourney.ProgressStatus != 'undefined' && activity.MonitoredVehicleJourney.ProgressStatus != null && activity.MonitoredVehicleJourney.ProgressStatus == "spooking") {
+					icon.url = "img/vehicle/scheduled/vehicle-" + orientationAngle + ".png";
+					marker.setOpacity(0.6);
+				}
+
+				if(typeof activity.MonitoredVehicleJourney.MonitoredCall !='undefined' &&
+					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
+					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
+					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle !='undefined' &&
+					activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle == true){
+					console.log("matched true")
+					icon.url = "img/vehicle/kneeling/vehicle-" + orientationAngle + ".png";
+				}
+				if(typeof activity.MonitoredVehicleJourney.MonitoredCall !='undefined' &&
+					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
+					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
+					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle !='undefined' &&
+					activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle == false){
+					console.log("matched false")
+				}
+
 				marker.setIcon(icon);
 				
 				// position
