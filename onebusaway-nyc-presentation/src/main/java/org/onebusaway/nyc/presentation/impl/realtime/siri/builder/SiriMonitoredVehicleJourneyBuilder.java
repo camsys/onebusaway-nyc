@@ -78,7 +78,6 @@ public final class SiriMonitoredVehicleJourneyBuilder {
     private MonitoredCallStructure monitoredCall = null;
     private OnwardCallsStructure onwardCalls = null;
     List<SituationRefStructure> situationRef = null;
-    private ExtensionsStructure anyExtensions = null;
 
 
     public SiriMonitoredVehicleJourneyBuilder(LineRefStructure lineRef,
@@ -258,7 +257,6 @@ public final class SiriMonitoredVehicleJourneyBuilder {
         if(situationRef != null){
             monitoredVehicleJourney.getSituationRef().addAll(situationRef);
         }
-//        monitoredVehicleJourney.setExtensions(anyExtensions);
         return monitoredVehicleJourney;
     }
 
@@ -287,7 +285,6 @@ public final class SiriMonitoredVehicleJourneyBuilder {
         if(situationRef != null){
             monitoredVehicleJourney.getSituationRef().addAll(situationRef);
         }
-        monitoredCall.setExtensions(anyExtensions);
         return monitoredVehicleJourney;
     }
 }
