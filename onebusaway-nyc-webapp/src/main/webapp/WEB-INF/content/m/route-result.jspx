@@ -98,11 +98,22 @@
 											</ol>
 										</c:when>
 										<c:otherwise>
-											<ol class="arrivalsOnRoute">
-												<c:forEach var="distanceAway" items="${distanceAways}">
-													<li>${distanceAway}</li>
-												</c:forEach>
-											</ol>
+											<c:choose>
+												<c:when test="${isKneeling}">
+													<ol class="arrivalsOnRouteKneeling">
+														<c:forEach var="distanceAway" items="${distanceAways}">
+															<li>${distanceAway}</li>
+														</c:forEach>
+													</ol>
+												</c:when>
+												<c:otherwise>
+													<ol class="arrivalsOnRoute">
+														<c:forEach var="distanceAway" items="${distanceAways}">
+															<li>${distanceAway}</li>
+														</c:forEach>
+													</ol>
+												</c:otherwise>
+											</c:choose>
 										</c:otherwise>
 									</c:choose>
 								</c:when>

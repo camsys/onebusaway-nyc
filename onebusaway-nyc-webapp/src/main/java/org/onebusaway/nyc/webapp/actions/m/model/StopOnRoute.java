@@ -37,6 +37,8 @@ public class StopOnRoute {
 
   private Boolean hasRealtime = true;
 
+  private Boolean isKneeling = false;
+
   public StopOnRoute(StopBean stop, List<String> distanceAways, Boolean hasRealtime, List<String> vehicleIds) {
     this.stop = stop;
     this.distanceAways = distanceAways;
@@ -63,6 +65,11 @@ public class StopOnRoute {
   
   public List<String> getDistanceAways() {
     return distanceAways;
+  }
+
+  //todo:this may not be kneeling
+  public Boolean getIsKneeling() {
+    return true;
   }
 
   public Boolean getHasRealtime() {
