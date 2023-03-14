@@ -266,13 +266,13 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 					orientationAngle = Math.floor(orientation / 5) * 5;
 				}
 					
-				var icon = new google.maps.MarkerImage("img/vehicle/vehicle-" + orientationAngle + ".png",
+				var icon = new google.maps.MarkerImage("img/vehicle/",
 						new google.maps.Size(51, 51),
 						new google.maps.Point(0,0),
 						new google.maps.Point(25, 25));
 
 				if(typeof activity.MonitoredVehicleJourney.ProgressStatus != 'undefined' && activity.MonitoredVehicleJourney.ProgressStatus != null && activity.MonitoredVehicleJourney.ProgressStatus == "spooking") {
-					icon.url = "img/vehicle/scheduled/vehicle-" + orientationAngle + ".png";
+					icon.url = icon.url + "scheduled/";
 					marker.setOpacity(0.6);
 				}
 
@@ -281,16 +281,12 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
 					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle !='undefined' &&
 					activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle == true){
-					console.log("matched true")
-					icon.url = "img/vehicle/kneeling/vehicle-" + orientationAngle + ".png";
+					icon.url = icon.url + "kneeling/";
 				}
-				if(typeof activity.MonitoredVehicleJourney.MonitoredCall !='undefined' &&
-					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
-					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
-					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle !='undefined' &&
-					activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle == false){
-					console.log("matched false")
-				}
+
+
+
+				icon.url = icon.url + "vehicle-" + orientationAngle + ".png"
 
 				marker.setIcon(icon);
 
