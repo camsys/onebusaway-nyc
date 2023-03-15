@@ -34,13 +34,7 @@ import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
-import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
-import org.onebusaway.nyc.webapp.actions.m.model.RouteDirection;
-import org.onebusaway.nyc.webapp.actions.m.model.RouteInRegionResult;
-import org.onebusaway.nyc.webapp.actions.m.model.RouteResult;
-import org.onebusaway.nyc.webapp.actions.m.model.StopOnRoute;
-import org.onebusaway.nyc.webapp.actions.m.model.StopResult;
+import org.onebusaway.nyc.webapp.actions.m.model.*;
 import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
@@ -98,11 +92,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     // add stops in both directions
     //Map<String, List<String>> stopIdAndDirectionToDistanceAwayStringMap = getStopIdAndDirectionToDistanceAwayStringsListMapForRoute(routeBean);
 
-    Map<String, List<String>> stopIdToDistanceAwayStringMap = new HashMap<>();
-    Map<String, List<String>> stopIdToVehicleIdMap = new HashMap<>();
-    Map<String, Boolean> stopIdToRealtimeDataMap = new HashMap<>();
 
-    fillDistanceVehicleAndRealtime(routeBean, stopIdToDistanceAwayStringMap, stopIdToVehicleIdMap, stopIdToRealtimeDataMap);
+    Map<String, List<VehicleRealtimeStopDistance>> stopIdToVehicleRealtimeStopDistanceMap = new HashMap<>();
+
+    fillDistanceVehicleAndRealtime(routeBean, stopIdToVehicleRealtimeStopDistanceMap);
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
@@ -137,9 +130,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
                       stopId, routeBean.getId(), stopGroupBean.getId())) {
         	    String key = getKey(stopId, stopGroupBean.getId());
                 stopsOnRoute.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId),
-                                                  stopIdToDistanceAwayStringMap.get(key),
-                                                  stopIdToRealtimeDataMap.get(key),
-                                                  stopIdToVehicleIdMap.get(key)
+                        stopIdToVehicleRealtimeStopDistanceMap.get(key)
                 ));
             }
           }
@@ -304,18 +295,21 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
         vehicleId = "N/A"; // insert an empty element so it aligns with distanceAways
       }
 
-      List<String> distanceAways = new ArrayList<String>();
-      List<String> vehicleIds = new ArrayList<String>();
+      List<VehicleRealtimeStopDistance> vrsdList = new ArrayList<>();
+      VehicleRealtimeStopDistance vrsd = new VehicleRealtimeStopDistance();
+
       if (vehicleId.contains("_")) vehicleId = vehicleId.split("_")[1];
-      vehicleIds.add(vehicleId);
+      vrsd.setVehicleId(vehicleId);
       if(timePrediction != null) {
-        distanceAways.add(timePrediction);
+        vrsd.setDistanceAway(timePrediction);
       } else {
-        distanceAways.add(distance);
+        vrsd.setDistanceAway(distance);
       }
 
+      vrsd.setHasRealtime(visit.getMonitoredVehicleJourney().isMonitored());
+
       results.get(visit.getMonitoredVehicleJourney().getDestinationName().getValue()).add(
-              new StopOnRoute(stopBean,distanceAways, visit.getMonitoredVehicleJourney().isMonitored(), vehicleIds));
+              new StopOnRoute(stopBean,vrsdList));
 
     }
 
@@ -582,9 +576,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   }
 
   private void fillDistanceVehicleAndRealtime(RouteBean routeBean,
-                                              Map<String, List<String>> stopIdAndDirectionToDistanceAwayStringMap,
-                                              Map<String, List<String>> stopIdAndDirectionToVehicleIdMap,
-                                              Map<String, Boolean> stopIdAndDirectionToRealtimeDataMap) {
+                                              Map<String, List<VehicleRealtimeStopDistance>> stopIdAndDirToVRSDMap) {
 
     Boolean showApc = _realtimeService.showApc();
     Boolean showRawApc = _realtimeService.showRawApc();
@@ -605,61 +597,38 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       String direction = journey.getMonitoredVehicleJourney().getDirectionRef().getValue();
       String stopId = monitoredCall.getStopPointRef().getValue();
 
-      fillDistanceAwayStringsList(monitoredVehicleJourney,recordedAtTime, stopId, direction, stopIdAndDirectionToDistanceAwayStringMap);
-      fillVehicleIdsStringList(monitoredVehicleJourney, stopId, direction, stopIdAndDirectionToVehicleIdMap);
-      fillRealtimeData(monitoredVehicleJourney, stopId, direction, stopIdAndDirectionToRealtimeDataMap);
+      List<VehicleRealtimeStopDistance> vrsdList = stopIdAndDirToVRSDMap.get(getKey(stopId,direction));
+      if(vrsdList==null) vrsdList=new ArrayList<>();
+      VehicleRealtimeStopDistance vehicleAndStopDistance = new VehicleRealtimeStopDistance();
+      vehicleAndStopDistance.setDistanceAway(getDistanceAway(monitoredVehicleJourney,recordedAtTime));
+      vehicleAndStopDistance.setVehicleId(getVehicleId(monitoredVehicleJourney));
+      vehicleAndStopDistance.setHasRealtime(hasRealtimeData(monitoredVehicleJourney));
+      vrsdList.add(vehicleAndStopDistance);
     }
   }
 
-  private void fillDistanceAwayStringsList(
+  private String getDistanceAway(
       VehicleActivityStructure.MonitoredVehicleJourney mvj,
-      Date recordedAtTime,
-      String stopId,
-      String direction,
-      Map<String, List<String>> map) {
-
-    String key = getKey(stopId, direction);
-
-    // Distance Away
-    List<String> distanceStrings = map.get(key);
-    if (distanceStrings == null) {
-      distanceStrings = new ArrayList<>();
-      map.put(key, distanceStrings);
-    }
-
-    distanceStrings.add(getPresentableDistance(
+      Date recordedAtTime) {
+    return getPresentableDistance(
         mvj,
-        recordedAtTime.getTime(), false));
+        recordedAtTime.getTime(), false);
   }
 
-  private void fillVehicleIdsStringList(
-      VehicleActivityStructure.MonitoredVehicleJourney mvj,
-      String stopId,
-      String direction,
-      Map<String, List<String>> map) {
-
-    String key = getKey(stopId, direction);
-
-    List<String> vehicleIdStrings = map.get(key);
-    if (vehicleIdStrings ==null) {
-      vehicleIdStrings = new ArrayList<>();
-      map.put(key, vehicleIdStrings);
-    }
+  private String getVehicleId(
+      VehicleActivityStructure.MonitoredVehicleJourney mvj) {
     if (mvj != null && mvj.getVehicleRef() != null) {
       String id = mvj.getVehicleRef().getValue();
       if (id.contains("_")) id = id.split("_")[1];
-      vehicleIdStrings.add(id);
+      return id;
     } else {
-      vehicleIdStrings.add("N/A");
+      return "N/A";
     }
   }
 
 
-  private void fillRealtimeData(
-      VehicleActivityStructure.MonitoredVehicleJourney mvj,
-      String stopId,
-      String direction,
-      Map<String, Boolean> map) {
+  private Boolean hasRealtimeData(
+      VehicleActivityStructure.MonitoredVehicleJourney mvj) {
 
     // Realtime Data Check for Stop
     Boolean spooking = false;
@@ -668,7 +637,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     } catch (Exception e) {
       //nothing
     }
-    map.put(getKey(stopId,direction), (mvj.isMonitored() && !spooking));
+    return mvj.isMonitored() && !spooking;
   }
   
   private String getPresentableDistance(

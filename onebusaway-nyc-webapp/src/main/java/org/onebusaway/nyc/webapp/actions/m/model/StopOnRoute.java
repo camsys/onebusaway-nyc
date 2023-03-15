@@ -21,6 +21,7 @@ import org.onebusaway.util.AgencyAndIdLibrary;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A stop on a route, the route being the top-level search result.
@@ -35,20 +36,21 @@ public class StopOnRoute {
 
   private List<String> vehicleIds; // in approximate order with distanceAways;
 
+  private List<Boolean> realtimes;
+
   private Boolean hasRealtime = true;
 
   private Boolean isKneeling = false;
 
-  public StopOnRoute(StopBean stop, List<String> distanceAways, Boolean hasRealtime, List<String> vehicleIds) {
+  List<VehicleRealtimeStopDistance> vehicleRealtimeStopDistance = null;
+
+  public StopOnRoute(StopBean stop, List<VehicleRealtimeStopDistance> vehicleRealtimeStopDistance) {
     this.stop = stop;
-    this.distanceAways = distanceAways;
-    if(hasRealtime != null)
-      this.hasRealtime = hasRealtime;
-    this.vehicleIds = vehicleIds;
-  }
-  public StopOnRoute(StopBean stop, List<String> distanceAways) {
-    this.stop = stop;
-    this.distanceAways = distanceAways;
+    this.vehicleRealtimeStopDistance = vehicleRealtimeStopDistance;
+    this.distanceAways = vehicleRealtimeStopDistance.stream().map(v->v.getDistanceAway()).collect(Collectors.toList());
+    this.vehicleIds = vehicleRealtimeStopDistance.stream().map(v->v.getVehicleId()).collect(Collectors.toList());
+    this.realtimes = vehicleRealtimeStopDistance.stream().map(v->v.getHasRealtime()).collect(Collectors.toList());
+    hasRealtime=realtimes.isEmpty() ? false:realtimes.get(0);
   }
   
   public String getId() {
