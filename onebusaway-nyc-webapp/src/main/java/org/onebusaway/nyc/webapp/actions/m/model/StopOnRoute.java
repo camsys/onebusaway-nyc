@@ -38,6 +38,8 @@ public class StopOnRoute {
 
   private List<Boolean> realtimes;
 
+  private List<Boolean> kneelings;
+
   private Boolean hasRealtime = true;
 
   private Boolean isKneeling = false;
@@ -47,6 +49,7 @@ public class StopOnRoute {
   public StopOnRoute(StopBean stop, List<VehicleRealtimeStopDistance> vehicleRealtimeStopDistance) {
     this.stop = stop;
     this.vehicleRealtimeStopDistance = vehicleRealtimeStopDistance;
+    if(vehicleRealtimeStopDistance == null) return;
     this.distanceAways = vehicleRealtimeStopDistance.stream().map(v->v.getDistanceAway()).collect(Collectors.toList());
     this.vehicleIds = vehicleRealtimeStopDistance.stream().map(v->v.getVehicleId()).collect(Collectors.toList());
     this.realtimes = vehicleRealtimeStopDistance.stream().map(v->v.getHasRealtime()).collect(Collectors.toList());

@@ -297,6 +297,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
       List<VehicleRealtimeStopDistance> vrsdList = new ArrayList<>();
       VehicleRealtimeStopDistance vrsd = new VehicleRealtimeStopDistance();
+      vrsdList.add(vrsd);
 
       if (vehicleId.contains("_")) vehicleId = vehicleId.split("_")[1];
       vrsd.setVehicleId(vehicleId);
@@ -598,7 +599,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       String stopId = monitoredCall.getStopPointRef().getValue();
 
       List<VehicleRealtimeStopDistance> vrsdList = stopIdAndDirToVRSDMap.get(getKey(stopId,direction));
-      if(vrsdList==null) vrsdList=new ArrayList<>();
+      if(vrsdList==null) {
+          vrsdList=new ArrayList<>();
+          stopIdAndDirToVRSDMap.put(getKey(stopId,direction),vrsdList);
+      }
       VehicleRealtimeStopDistance vehicleAndStopDistance = new VehicleRealtimeStopDistance();
       vehicleAndStopDistance.setDistanceAway(getDistanceAway(monitoredVehicleJourney,recordedAtTime));
       vehicleAndStopDistance.setVehicleId(getVehicleId(monitoredVehicleJourney));
