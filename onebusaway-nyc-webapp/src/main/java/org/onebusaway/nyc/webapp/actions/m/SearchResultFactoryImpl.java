@@ -288,6 +288,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       String timePrediction = getPresentableTime(visit.getMonitoredVehicleJourney(),
     	 	visit.getRecordedAtTime().getTime(), true);
 
+      boolean isKneeling = getIsKneeling(visit.getMonitoredVehicleJourney());
+
       String vehicleId = null;
       if (visit.getMonitoredVehicleJourney() != null && visit.getMonitoredVehicleJourney().getVehicleRef() != null) {
         vehicleId = visit.getMonitoredVehicleJourney().getVehicleRef().getValue();
@@ -306,6 +308,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       } else {
         vrsd.setDistanceAway(distance);
       }
+      vrsd.setIsKneeling(isKneeling);
 
       vrsd.setHasRealtime(visit.getMonitoredVehicleJourney().isMonitored());
 
@@ -607,6 +610,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       vehicleAndStopDistance.setDistanceAway(getDistanceAway(monitoredVehicleJourney,recordedAtTime));
       vehicleAndStopDistance.setVehicleId(getVehicleId(monitoredVehicleJourney));
       vehicleAndStopDistance.setHasRealtime(hasRealtimeData(monitoredVehicleJourney));
+      vehicleAndStopDistance.setIsKneeling(getIsKneeling(monitoredVehicleJourney));
       vrsdList.add(vehicleAndStopDistance);
     }
   }
@@ -642,6 +646,12 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       //nothing
     }
     return mvj.isMonitored() && !spooking;
+  }
+
+  private boolean getIsKneeling(MonitoredVehicleJourneyStructure journey){
+    MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
+    SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
+    return wrapper.getFeatures().getKneelingVehicle();
   }
   
   private String getPresentableDistance(

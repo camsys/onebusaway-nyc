@@ -44,15 +44,16 @@ public class StopOnRoute {
 
   private Boolean isKneeling = false;
 
-  List<VehicleRealtimeStopDistance> vehicleRealtimeStopDistance = null;
+  List<VehicleRealtimeStopDistance> vehicleRealtimeStopDistances = null;
 
-  public StopOnRoute(StopBean stop, List<VehicleRealtimeStopDistance> vehicleRealtimeStopDistance) {
+  public StopOnRoute(StopBean stop, List<VehicleRealtimeStopDistance> vehicleRealtimeStopDistances) {
     this.stop = stop;
-    this.vehicleRealtimeStopDistance = vehicleRealtimeStopDistance;
-    if(vehicleRealtimeStopDistance == null) return;
-    this.distanceAways = vehicleRealtimeStopDistance.stream().map(v->v.getDistanceAway()).collect(Collectors.toList());
-    this.vehicleIds = vehicleRealtimeStopDistance.stream().map(v->v.getVehicleId()).collect(Collectors.toList());
-    this.realtimes = vehicleRealtimeStopDistance.stream().map(v->v.getHasRealtime()).collect(Collectors.toList());
+    this.vehicleRealtimeStopDistances = vehicleRealtimeStopDistances;
+    if(vehicleRealtimeStopDistances == null) return;
+    this.distanceAways = vehicleRealtimeStopDistances.stream().map(v->v.getDistanceAway()).collect(Collectors.toList());
+    this.vehicleIds = vehicleRealtimeStopDistances.stream().map(v->v.getVehicleId()).collect(Collectors.toList());
+    this.realtimes = vehicleRealtimeStopDistances.stream().map(v->v.getHasRealtime()).collect(Collectors.toList());
+    this.kneelings = vehicleRealtimeStopDistances.stream().map(v->v.getIsKneeling()).collect(Collectors.toList());
     hasRealtime=realtimes.isEmpty() ? false:realtimes.get(0);
   }
   
@@ -87,4 +88,16 @@ public class StopOnRoute {
 
   public List<String> getVehicleIds() { return vehicleIds; }
 
+  public List<Boolean> getKneelings() {return kneelings;}
+
+  public Boolean getIsKneeling(int i) {
+    if(kneelings!=null & i>-1 & i < kneelings.size() -1){
+      return kneelings.get(i);
+    }
+    return false;
+  }
+
+  public List<VehicleRealtimeStopDistance> getVehicleRealtimeStopDistances() {
+    return vehicleRealtimeStopDistances;
+  }
 }
