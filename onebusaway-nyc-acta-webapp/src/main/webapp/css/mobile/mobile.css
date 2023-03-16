@@ -545,6 +545,21 @@ small {
 	text-align: center;
 }
 
+.kneelingArrivalsAtStop li {
+	margin-left: 10px;
+	padding-left: 16px;
+	background-image: url('img/kneeling_bullet_bus.png');
+	background-repeat: no-repeat;
+	background-position: left top;
+	zoom: 1;   /* hasLayout fix for IE */
+	line-height: 1.2em;
+}
+
+.kneelingArrivalsAtStop li small {
+	display: inline-block;
+	text-align: center;
+}
+
 .arrivalsAtStopSchedule li {
 	margin-left: 10px;
 	padding-left: 16px;
