@@ -90,6 +90,10 @@ public class StopOnRoute {
 
   public List<Boolean> getKneelings() {return kneelings;}
 
+  public List<Boolean> getRealtimes() {
+    return realtimes;
+  }
+
   public Boolean getIsKneeling(int i) {
     if(kneelings!=null & i>-1 & i < kneelings.size() -1){
       return kneelings.get(i);
