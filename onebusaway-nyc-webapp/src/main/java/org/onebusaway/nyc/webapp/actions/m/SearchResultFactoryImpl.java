@@ -651,6 +651,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
   private boolean getIsKneeling(MonitoredVehicleJourneyStructure journey){
     MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
     SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
+    if(wrapper.getFeatures()==null){
+      return false;
+    }
     return wrapper.getFeatures().getKneelingVehicle();
   }
   
