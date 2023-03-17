@@ -758,6 +758,13 @@ OBA.Popups = (function() {
 							spooking = true;
 							arrival = "scheduled_arrival";
 						}
+						if(typeof monitoredVehicleJourney.MonitoredCall !='undefined' &&
+							typeof monitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
+							typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
+							typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle !='undefined' &&
+							monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle == true) {
+							arrival = "kneeling_"+arrival;
+						}
 						
 						// time mode
 						if(timePrediction != null) {

@@ -52,6 +52,7 @@ import uk.org.siri.siri.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 
 public final class SiriMonitoredVehicleJourneyBuilder {

@@ -67,17 +67,13 @@ public class KneelingVehicleHttpListenerTask extends HTTPListenerTask{
         _kneelingVehicleService = kneelingVehicleService;
     }
 
-    private ObjectMapper _objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
-            .setTimeZone(Calendar.getInstance().getTimeZone());
+    private ObjectMapper _objectMapper = new ObjectMapper();
 
     @Override
     public void updateData()  {
         try {
             InputStream inputStream = getInputData();
             Set<AgencyAndId> cancelledTripsSet = convertKneelingVehiclesSet(inputStream);
-            cancelledTripsSet = filterForValidVehicles(cancelledTripsSet);
             _kneelingVehicleService.updateKneelingVehicles(cancelledTripsSet);
         } catch (Exception e){
             _log.error("Unable to process cancelled trip beans from {}", getLocation());
@@ -112,22 +108,5 @@ public class KneelingVehicleHttpListenerTask extends HTTPListenerTask{
         return Collections.EMPTY_SET;
     }
 
-    private Set<AgencyAndId> filterForValidVehicles(Set<AgencyAndId> kneelingVehicles){
-        return kneelingVehicles.stream().filter((AgencyAndId vehicleId) -> isValidKneelingVehicle(vehicleId)).collect(Collectors.toSet());
-    }
 
-    private boolean isValidKneelingVehicle(AgencyAndId kneelingVehicle) {
-        try {
-            Long vehicleAgency = Long.parseLong(kneelingVehicle.getAgencyId());
-            if (_tds.getVehicleForAgency(kneelingVehicle.getId(),vehicleAgency) == null) {
-                _log.debug("unknown Vehicle= " + kneelingVehicle);
-                return false;
-            } else {
-                return true;
-            }
-        } catch (ServiceException e) {
-            _log.warn("Error retrieving kneelingVehicle", e);
-        }
-        return false;
-    }
 }
