@@ -122,9 +122,8 @@
     </bean>
 
     <bean id="mta_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
-        <property name="alertsUrl" value=""/>
-        <property name="refreshInterval" value="30"/>
-        <property name="agencyId" value="MTA"/>
+        <property name="alertsUrl" value="https://collector-otp-prod.camsys-apps.com/realtime/gtfsrt/MTABUS/alerts"/>
+        <property name="refreshInterval" value="60"/>
     </bean>
 
 
