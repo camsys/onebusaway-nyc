@@ -288,7 +288,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       String timePrediction = getPresentableTime(visit.getMonitoredVehicleJourney(),
     	 	visit.getRecordedAtTime().getTime(), true);
 
-      boolean isKneeling = getIsKneeling(visit.getMonitoredVehicleJourney());
+      boolean isStroller = getIsStroller(visit.getMonitoredVehicleJourney());
 
       String vehicleId = null;
       if (visit.getMonitoredVehicleJourney() != null && visit.getMonitoredVehicleJourney().getVehicleRef() != null) {
@@ -308,7 +308,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       } else {
         vrsd.setDistanceAway(distance);
       }
-      vrsd.setIsKneeling(isKneeling);
+      vrsd.setIsStroller(isStroller);
 
       vrsd.setHasRealtime(visit.getMonitoredVehicleJourney().isMonitored());
 
@@ -610,7 +610,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
       vehicleAndStopDistance.setDistanceAway(getDistanceAway(monitoredVehicleJourney,recordedAtTime));
       vehicleAndStopDistance.setVehicleId(getVehicleId(monitoredVehicleJourney));
       vehicleAndStopDistance.setHasRealtime(hasRealtimeData(monitoredVehicleJourney));
-      vehicleAndStopDistance.setIsKneeling(getIsKneeling(monitoredVehicleJourney));
+      vehicleAndStopDistance.setIsStroller(getIsStroller(monitoredVehicleJourney));
       vrsdList.add(vehicleAndStopDistance);
     }
   }
@@ -648,13 +648,13 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     return mvj.isMonitored() && !spooking;
   }
 
-  private boolean getIsKneeling(MonitoredVehicleJourneyStructure journey){
+  private boolean getIsStroller(MonitoredVehicleJourneyStructure journey){
     MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
     SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
     if(wrapper.getFeatures()==null){
       return false;
     }
-    return wrapper.getFeatures().getKneelingVehicle();
+    return wrapper.getFeatures().getStrollerVehicle();
   }
   
   private String getPresentableDistance(

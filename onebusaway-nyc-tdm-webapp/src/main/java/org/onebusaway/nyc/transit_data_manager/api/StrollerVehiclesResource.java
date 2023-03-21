@@ -2,11 +2,9 @@ package org.onebusaway.nyc.transit_data_manager.api;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data_manager.adapters.data.VehicleDepotData;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
-import org.onebusaway.nyc.transit_data_manager.api.service.KneelingVehiclesDataExtractionService;
+import org.onebusaway.nyc.transit_data_manager.api.service.StrollerVehiclesDataExtractionService;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,21 +15,19 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
-@Path("/kneeling")
+@Path("/stroller")
 @Component
 @Scope("request")
-public class KneelingVehiclesResource {
+public class StrollerVehiclesResource {
 
     /**
-     * tdm api resource to expose kneeling bus data extracted from SPEAR
+     * tdm api resource to expose stroller bus data extracted from SPEAR
      * epic link: https://camsys.atlassian.net/browse/OBANYC-3296
      *
      * @author caylasavitzky
@@ -45,7 +41,7 @@ public class KneelingVehiclesResource {
     @Autowired
     private JsonTool jsonTool;
 
-    public KneelingVehiclesResource() throws IOException {
+    public StrollerVehiclesResource() throws IOException {
         try {
             depotIdTranslator = new DepotIdTranslator(new File(System.getProperty("tdm.depotIdTranslationFile")));
         } catch (IOException | NullPointerException e) {
@@ -55,31 +51,31 @@ public class KneelingVehiclesResource {
         }
     }
 
-    private static Logger _log = LoggerFactory.getLogger(KneelingVehiclesResource.class);
+    private static Logger _log = LoggerFactory.getLogger(StrollerVehiclesResource.class);
 
     @Autowired
-    KneelingVehiclesDataExtractionService _kneelingVehiclesDataExtractionService;
+    StrollerVehiclesDataExtractionService _strollerVehiclesDataExtractionService;
 
     @Path("/set")
     @GET
     @Produces("application/json")
-    public Response getKneelingVehiclesSet() {
-        Set<AgencyAndId> kneelingVehiclesData = _kneelingVehiclesDataExtractionService.getKneelingVehiclesAsSet(depotIdTranslator);
+    public Response getStrollerVehiclesSet() {
+        Set<AgencyAndId> strollerVehiclesData = _strollerVehiclesDataExtractionService.getStrollerVehiclesAsSet(depotIdTranslator);
         String output;
         try {
             StringWriter writer = new StringWriter();
-            _mapper.writeValue(writer, kneelingVehiclesData);
+            _mapper.writeValue(writer, strollerVehiclesData);
             output = writer.toString();
         }catch (Exception e){
-            _log.error("Unable to process kneeling vehicles data", e);
+            _log.error("Unable to process stroller vehicles data", e);
             return Response.serverError().build();
         }
         _log.debug("Returning response ok for url=" + null);
         return Response.ok(output).build();
     }
 
-    public void setKneelingVehiclesDataExtractionService(KneelingVehiclesDataExtractionService kneelingVehiclesDataExtractionService) {
-        _kneelingVehiclesDataExtractionService = kneelingVehiclesDataExtractionService;
+    public void setStrollerVehiclesDataExtractionService(StrollerVehiclesDataExtractionService strollerVehiclesDataExtractionService) {
+        _strollerVehiclesDataExtractionService = strollerVehiclesDataExtractionService;
     }
 
     public void setJsonTool(JsonTool tool){

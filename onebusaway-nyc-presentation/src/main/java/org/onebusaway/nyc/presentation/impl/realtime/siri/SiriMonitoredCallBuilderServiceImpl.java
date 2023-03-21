@@ -302,7 +302,7 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
 
 
         SiriVehicleFeatures siriVehicleFeatures = new SiriVehicleFeatures();
-        siriVehicleFeatures.setKneelingVehicle(vehicleFeatures.contains(VehicleFeature.KNEELING));
+        siriVehicleFeatures.setStrollerVehicle(vehicleFeatures.contains(VehicleFeature.STROLLER));
         wrapper.setFeatures(siriVehicleFeatures);
 
         anyExtensions.setAny(wrapper);

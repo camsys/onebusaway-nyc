@@ -761,9 +761,9 @@ OBA.Popups = (function() {
 						if(typeof monitoredVehicleJourney.MonitoredCall !='undefined' &&
 							typeof monitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
 							typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
-							typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle !='undefined' &&
-							monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle == true) {
-							arrival = "kneeling_"+arrival;
+							typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle !='undefined' &&
+							monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle == true) {
+							arrival = "stroller_"+arrival;
 						}
 						
 						// time mode

@@ -2,12 +2,10 @@ package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.transit_data_federation.services.KneelingVehicleService;
+import org.onebusaway.transit_data_federation.services.StrollerVehicleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,21 +13,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class KneelingVehicleHttpListenerTask extends HTTPListenerTask{
+public class StrollerVehicleHttpListenerTask extends HTTPListenerTask{
 
 
-    protected static Logger _log = LoggerFactory.getLogger(KneelingVehicleHttpListenerTask.class);
+    protected static Logger _log = LoggerFactory.getLogger(StrollerVehicleHttpListenerTask.class);
     public static final int DEFAULT_REFRESH_INTERVAL = 15 * 60 * 1000;
-    public static final String DEFAULT_KNEELING_URL = "http://tdm.dev.obanyc.com/api/kneeling/list";
+    public static final String DEFAULT_STROLLER_URL = "http://tdm.dev.obanyc.com/api/stroller/list";
 
 
     public static final int DEFAULT_CONNECTION_TIMEOUT = 5 * 1000;
     public int _connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
-    public String _kneelingUrl = DEFAULT_KNEELING_URL;
+    public String _strollerUrl = DEFAULT_STROLLER_URL;
 
     public void setConnectionTimeout(int timeout) {
         _connectionTimeout = timeout;
@@ -37,22 +33,22 @@ public class KneelingVehicleHttpListenerTask extends HTTPListenerTask{
 
     @Override
     boolean getIsEnabled() {
-        return getConfig().getConfigurationValueAsBoolean("tds.enableKneelingVehicles", Boolean.FALSE);
+        return getConfig().getConfigurationValueAsBoolean("tds.enableStrollerVehicles", Boolean.FALSE);
     }
     @Override
     Integer getRefreshInterval() {
-        return getConfig().getConfigurationValueAsInteger( "tds.kneelingVehiclesRefreshInterval", DEFAULT_REFRESH_INTERVAL);
+        return getConfig().getConfigurationValueAsInteger( "tds.strollerVehiclesRefreshInterval", DEFAULT_REFRESH_INTERVAL);
     }
 
     @Override
-    @Refreshable(dependsOn = {"tds.kneelingVehiclesUrl","tds.kneelingVehiclesRefreshInterval","tds.enableKneelingVehicles"})
+    @Refreshable(dependsOn = {"tds.strollerVehiclesUrl","tds.strollerVehiclesRefreshInterval","tds.enableStrollerVehicles"})
     protected void refreshConfig() {
-        _kneelingUrl = getConfig().getConfigurationValueAsString("tds.kneelingVehiclesUrl", _kneelingUrl);
+        _strollerUrl = getConfig().getConfigurationValueAsString("tds.strollerVehiclesUrl", _strollerUrl);
         super.refreshConfig();    }
 
     @Override
     public String getLocation() {
-        return _kneelingUrl;
+        return _strollerUrl;
     }
 
     private NycTransitDataService _tds;
@@ -61,10 +57,10 @@ public class KneelingVehicleHttpListenerTask extends HTTPListenerTask{
         _tds = tds;
     }
 
-    private KneelingVehicleService _kneelingVehicleService;
+    private StrollerVehicleService _strollerVehicleService;
     @Autowired
-    public void setKneelingVehicleService(KneelingVehicleService kneelingVehicleService){
-        _kneelingVehicleService = kneelingVehicleService;
+    public void setStrollerVehicleService(StrollerVehicleService strollerVehicleService){
+        _strollerVehicleService = strollerVehicleService;
     }
 
     private ObjectMapper _objectMapper = new ObjectMapper();
@@ -73,8 +69,8 @@ public class KneelingVehicleHttpListenerTask extends HTTPListenerTask{
     public void updateData()  {
         try {
             InputStream inputStream = getInputData();
-            Set<AgencyAndId> cancelledTripsSet = convertKneelingVehiclesSet(inputStream);
-            _kneelingVehicleService.updateKneelingVehicles(cancelledTripsSet);
+            Set<AgencyAndId> cancelledTripsSet = convertStrollerVehiclesSet(inputStream);
+            _strollerVehicleService.updateStrollerVehicles(cancelledTripsSet);
         } catch (Exception e){
             _log.error("Unable to process cancelled trip beans from {}", getLocation());
         }
@@ -83,7 +79,7 @@ public class KneelingVehicleHttpListenerTask extends HTTPListenerTask{
     private InputStream getInputData(){
         HttpURLConnection connection;
         if (getLocation() == null) {
-            _log.warn("KneelingVehicle url not configured, exiting");
+            _log.warn("StrollerVehicle url not configured, exiting");
             return null;
         }
         try {
@@ -97,7 +93,7 @@ public class KneelingVehicleHttpListenerTask extends HTTPListenerTask{
         }
     }
 
-    private Set<AgencyAndId> convertKneelingVehiclesSet(InputStream input) {
+    private Set<AgencyAndId> convertStrollerVehiclesSet(InputStream input) {
         try {
             Set<AgencyAndId> list = _objectMapper.readValue(input,
                     new TypeReference<Set<AgencyAndId>>() {});

@@ -5,7 +5,7 @@ import java.util.List;
 public class VehicleRealtimeStopDistance {
     private String vehicleId;
     private String distanceAway;
-    private Boolean isKneeling;
+    private Boolean isStroller;
     private Boolean hasRealtime;
 
 
@@ -17,8 +17,8 @@ public class VehicleRealtimeStopDistance {
         this.distanceAway = distanceAway;
     }
 
-    public void setIsKneeling(Boolean isKneeling) {
-        this.isKneeling = isKneeling;
+    public void setIsStroller(Boolean isStroller) {
+        this.isStroller = isStroller;
     }
 
     public void setVehicleId(String vehicleId) {
@@ -33,8 +33,8 @@ public class VehicleRealtimeStopDistance {
         return distanceAway;
     }
 
-    public Boolean getIsKneeling() {
-        return isKneeling;
+    public Boolean getIsStroller() {
+        return isStroller;
     }
 
     public Boolean getHasRealtime() {
