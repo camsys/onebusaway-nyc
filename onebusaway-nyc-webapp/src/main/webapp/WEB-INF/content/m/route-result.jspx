@@ -96,8 +96,8 @@
 													<li>${distanceAway} <span class="scheduleAlert"> (Estimated)</span></li>
 												</ol>
 											</c:when>
-											<c:when test="${kneelings[status.index]}">
-												<ol class="arrivalsOnRouteKneeling">
+											<c:when test="${strollers[status.index]}">
+												<ol class="arrivalsOnRouteStroller">
 													<li>${distanceAway}</li>
 												</ol>
 											</c:when>

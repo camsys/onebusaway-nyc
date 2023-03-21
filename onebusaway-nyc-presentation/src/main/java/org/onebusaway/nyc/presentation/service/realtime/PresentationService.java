@@ -30,7 +30,7 @@ public interface PresentationService {
 
   public Boolean hasFormalBlockLevelMatch(TripStatusBean statusBean);
 
-  public Boolean isKneeling(TripStatusBean statusBean);
+  public Boolean isStroller(TripStatusBean statusBean);
 
   public Boolean isSpooking(TripStatusBean statusBean);
 

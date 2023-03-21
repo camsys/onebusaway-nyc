@@ -251,9 +251,9 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				if(typeof activity.MonitoredVehicleJourney.MonitoredCall !='undefined' &&
 					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
 					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
-					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle !='undefined' &&
-					activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.KneelingVehicle == true){
-					icon.url = icon.url + "-kneeling";
+					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle !='undefined' &&
+					activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle == true){
+					icon.url = icon.url + "-stroller";
 				}
 
 				icon.url = icon.url + "/vehicle-" + orientationAngle + ".png"

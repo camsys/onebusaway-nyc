@@ -155,9 +155,9 @@ public class PresentationServiceImpl implements PresentationService {
   }
 
 //  @Override
-    public Boolean isKneeling(TripStatusBean statusBean) {
+    public Boolean isStroller(TripStatusBean statusBean) {
         if (statusBean != null) {
-            if(statusBean.hasVehicleFeature(VehicleFeature.KNEELING)){
+            if(statusBean.hasVehicleFeature(VehicleFeature.STROLLER)){
                 return true;
             } else {
                 return false;

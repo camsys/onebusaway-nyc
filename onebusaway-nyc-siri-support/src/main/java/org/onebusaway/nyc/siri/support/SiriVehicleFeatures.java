@@ -10,13 +10,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class SiriVehicleFeatures {
 
-    private boolean kneelingVehicle;
+    private boolean strollerVehicle;
 
-    @XmlElement(name="KneelingVehicle")
-    public Boolean getKneelingVehicle() {
-        return kneelingVehicle;
+    @XmlElement(name="StrollerVehicle")
+    public Boolean getStrollerVehicle() {
+        return strollerVehicle;
     }
 
-    public void setKneelingVehicle(boolean kneelingVehicle){
-        this.kneelingVehicle = kneelingVehicle;}
+    public void setStrollerVehicle(boolean strollerVehicle){
+        this.strollerVehicle = strollerVehicle;}
 }

@@ -38,11 +38,11 @@ public class StopOnRoute {
 
   private List<Boolean> realtimes;
 
-  private List<Boolean> kneelings;
+  private List<Boolean> strollers;
 
   private Boolean hasRealtime = true;
 
-  private Boolean isKneeling = false;
+  private Boolean isStroller = false;
 
   List<VehicleRealtimeStopDistance> vehicleRealtimeStopDistances = null;
 
@@ -53,7 +53,7 @@ public class StopOnRoute {
     this.distanceAways = vehicleRealtimeStopDistances.stream().map(v->v.getDistanceAway()).collect(Collectors.toList());
     this.vehicleIds = vehicleRealtimeStopDistances.stream().map(v->v.getVehicleId()).collect(Collectors.toList());
     this.realtimes = vehicleRealtimeStopDistances.stream().map(v->v.getHasRealtime()).collect(Collectors.toList());
-    this.kneelings = vehicleRealtimeStopDistances.stream().map(v->v.getIsKneeling()).collect(Collectors.toList());
+    this.strollers = vehicleRealtimeStopDistances.stream().map(v->v.getIsStroller()).collect(Collectors.toList());
     hasRealtime=realtimes.isEmpty() ? false:realtimes.get(0);
   }
   
@@ -73,8 +73,8 @@ public class StopOnRoute {
     return distanceAways;
   }
 
-  //todo:this may not be kneeling
-  public Boolean getIsKneeling() {
+  //todo:this may not be stroller
+  public Boolean getIsStroller() {
     return true;
   }
 
@@ -88,15 +88,15 @@ public class StopOnRoute {
 
   public List<String> getVehicleIds() { return vehicleIds; }
 
-  public List<Boolean> getKneelings() {return kneelings;}
+  public List<Boolean> getStrollers() {return strollers;}
 
   public List<Boolean> getRealtimes() {
     return realtimes;
   }
 
-  public Boolean getIsKneeling(int i) {
-    if(kneelings!=null & i>-1 & i < kneelings.size() -1){
-      return kneelings.get(i);
+  public Boolean getIsStroller(int i) {
+    if(strollers!=null & i>-1 & i < strollers.size() -1){
+      return strollers.get(i);
     }
     return false;
   }
