@@ -796,7 +796,17 @@ OBA.Popups = (function() {
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
-							html += '<li class="' + arrival + lastClass + '">' + timePrediction + '</li>';
+							html += '<li class="' + arrival + lastClass + '">';
+
+							if(typeof monitoredVehicleJourney.MonitoredCall !='undefined' &&
+								typeof monitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
+								typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
+								typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle !='undefined' &&
+								monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle == true) {
+								html += "(stroller pilot) ";
+							}
+
+							html += timePrediction + '</li>';
 
 						// distance mode
 						} else {
@@ -821,7 +831,17 @@ OBA.Popups = (function() {
 							}
 
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
-							html += '<li class="' + arrival + lastClass + '">' + distance + '</li>';
+
+							html += '<li class="' + arrival + lastClass + '">';
+
+							if(typeof monitoredVehicleJourney.MonitoredCall !='undefined' &&
+								typeof monitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
+								typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
+								typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle !='undefined' &&
+								monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle == true) {
+								html += "(stroller pilot) ";
+							}
+							html += distance + '</li>';
 						}
 					}
 				});
