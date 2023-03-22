@@ -32,7 +32,7 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.NonRevenueStopData;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifImport.NonRevenueStopData;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.NycRefreshableResources;
 import org.onebusaway.nyc.transit_data_federation.model.nyc.BaseLocationRecord;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;

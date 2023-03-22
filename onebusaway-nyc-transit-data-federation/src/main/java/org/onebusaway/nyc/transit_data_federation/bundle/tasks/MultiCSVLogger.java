@@ -120,6 +120,16 @@ public class MultiCSVLogger {
     log.stream.print(header + "\n");
   }
 
+  public void nullHeader(String file){
+    Log log = logs.get(file);
+    if (log == null) {
+      log = new Log(file);
+      logs.put(file, log);
+    } else {
+      throw new RuntimeException("header called more than once for file " + file);
+    }
+  }
+
   public void summarize() {
     FileOutputStream outputStream;
     try {

@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.NonRevenueStopData;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifImport.NonRevenueStopData;
 
 /**
  * Locations of bases/depots.

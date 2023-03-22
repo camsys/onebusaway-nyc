@@ -216,6 +216,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
     return "{1}".equals(json);
   }
 
+  //todo: this being hardcoded to 8080 is unfortunate if you want to run the admin server & tdm locally at once
    private String generateUrl(String host, String apiCall) {
      if (LOCAL_HOST.equalsIgnoreCase(host)) 
        return "http://" + host + ":8080/onebusaway-nyc-admin-webapp/api" + apiCall;

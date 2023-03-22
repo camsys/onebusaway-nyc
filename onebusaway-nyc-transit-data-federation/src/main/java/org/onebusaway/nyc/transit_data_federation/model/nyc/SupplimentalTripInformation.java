@@ -18,7 +18,7 @@ package org.onebusaway.nyc.transit_data_federation.model.nyc;
 
 import java.io.Serializable;
 
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripType;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifImport.StifTripType;
 
 /**
  * Additional non-customer information for a trip. 

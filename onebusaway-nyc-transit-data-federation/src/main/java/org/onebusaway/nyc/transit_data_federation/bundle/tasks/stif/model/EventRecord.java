@@ -53,6 +53,7 @@ public class EventRecord implements StifRecord {
   private boolean timepoint;
   private String locationTypeCode;
   private int boardAlightFlag;
+  private String boxId;
 
   public String getLocation() {
     return location;
@@ -107,4 +108,11 @@ public class EventRecord implements StifRecord {
 
   }
 
+  public void setBoxId(String boxId){
+    this.boxId = boxId;
+  }
+
+  public String getBoxId() {
+    return boxId;
+  }
 }
