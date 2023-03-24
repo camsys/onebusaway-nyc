@@ -98,7 +98,7 @@
 											</c:when>
 											<c:when test="${strollers[status.index]}">
 												<ol class="arrivalsOnRouteStroller">
-													<li>${distanceAway}</li>
+													<li>${distanceAway} (stroller pilot)</li>
 												</ol>
 											</c:when>
 											<c:otherwise>

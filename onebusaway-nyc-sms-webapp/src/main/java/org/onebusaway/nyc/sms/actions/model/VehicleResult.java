@@ -40,15 +40,18 @@ public class VehicleResult implements Serializable {
   private String vehicleId;
   private VehicleOccupancyRecord vor;
   private OccupancyConfig occupancyConfig;
+  private boolean isStroller;
 
   public VehicleResult(String timeOrDistance,
                        String vehicleId,
                        VehicleOccupancyRecord vor,
-                       OccupancyConfig vorConfig) {
+                       OccupancyConfig vorConfig,
+                       boolean isStroller) {
     this.timeOrDistance = timeOrDistance;
     this.vehicleId = vehicleId;
     this.vor = vor;
     this.occupancyConfig = vorConfig;
+    this.isStroller = isStroller;
   }
 
   public String getTimeOrDistance() {
@@ -72,6 +75,8 @@ public class VehicleResult implements Serializable {
     }
     return timeOrDistance + occupancyStr;
   }
+
+  public String getStrollerString(){return isStroller? " S":"";}
 
   public String getVehicleId() {
     return vehicleId;
