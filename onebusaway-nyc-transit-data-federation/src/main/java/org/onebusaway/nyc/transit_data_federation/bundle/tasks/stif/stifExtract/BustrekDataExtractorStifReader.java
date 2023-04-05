@@ -182,11 +182,12 @@ public class BustrekDataExtractorStifReader extends BasicStifReader {
         if(record.isTimepoint()){
             locationToLocationEventInfoMap.put(record.getLocation(), new LocationEventInfo(record,"GOOD, ST"));
         }
-        if (record.isRevenue() & record.isTimepoint()){
+        if ((record.isRevenue() | ! record.isRevenue())& record.isTimepoint()){
             TimePoint timePoint = new TimePoint(
                     previousTripRecord.getGtfsTripId(),
                     record.getBoxId(),
-                    boxIdToTimepointMap.get(record.getBoxId()));
+                    boxIdToTimepointMap.get(record.getBoxId()),
+                    record.getRawDistanceFromStartOfTrip());
             timePoints.add(timePoint);
         }
     }
