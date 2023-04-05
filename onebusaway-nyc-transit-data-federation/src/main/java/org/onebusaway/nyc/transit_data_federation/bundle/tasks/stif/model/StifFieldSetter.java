@@ -57,6 +57,10 @@ public abstract class StifFieldSetter<T extends StifRecord> {
 
 	public int getIntegerSafe() {
 		String data = getStringData();
+		return transformIntegerSafe(data);
+	}
+
+	public int transformIntegerSafe(String data) {
 		try {
 			return Integer.parseInt(data);
 		} catch (NumberFormatException e) {

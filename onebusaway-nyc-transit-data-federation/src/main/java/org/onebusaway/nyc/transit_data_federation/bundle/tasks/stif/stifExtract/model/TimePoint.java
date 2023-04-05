@@ -9,11 +9,13 @@ public class TimePoint extends BustrekDatum implements Serializable {
     private String tripId;
     private String stopId;
     private String timePt;
+    private String dist;
 
-    public TimePoint(String tripId, String stopId, String timePt){
+    public TimePoint(String tripId, String stopId, String timePt,String dist){
         this.tripId=tripId;
         this.stopId=stopId;
         this.timePt=timePt;
+        this.dist=dist;
     }
 
     public String getStopId() {
@@ -28,11 +30,14 @@ public class TimePoint extends BustrekDatum implements Serializable {
         return tripId;
     }
 
+    public String getDist() {return dist;}
+
     @Override
     public String toString(){
         return tripId + "," +
                 stopId + "," +
-                timePt;
+                timePt + "," +
+                dist;
     }
 
     @Override
@@ -40,13 +45,25 @@ public class TimePoint extends BustrekDatum implements Serializable {
         if (getClass() == o.getClass()) {
             TimePoint that = (TimePoint) o;
             int out = 0;
-            out = tripId.compareTo(that.getTripId());
+            out = compare(this.tripId,that.getTripId());
             if (out != 0) return out;
-            out = stopId.compareTo(that.getStopId());
+            out = compare(this.stopId,that.getStopId());
             if (out != 0) return out;
-            out = timePt.compareTo(that.getTimePt());
+            out = compare(this.timePt,that.getTimePt());
+            if (out !=0) return out;
+            out = compare(this.dist,that.getDist());
             return out;
         }
         return 1;
+    }
+
+    private int compare(String mine, String theirs){
+        if(mine==null) {
+            if (theirs != null) {
+                return -1;
+            }
+            return 0;
+        }
+        return mine.compareTo(theirs);
     }
 }
