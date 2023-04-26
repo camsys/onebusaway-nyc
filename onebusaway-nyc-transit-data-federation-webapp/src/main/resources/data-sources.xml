@@ -107,10 +107,10 @@
         <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
-<!--    <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">-->
-<!--        <property name="serviceAlertsUrl" value="${service.alerts.url}" />-->
-<!--        <property name="subscriptionPath" value="${service.alerts.subscription.path}" />        -->
-<!--    </bean>-->
+    <bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
+        <property name="serviceAlertsUrl" value="${service.alerts.url}" />
+        <property name="subscriptionPath" value="${service.alerts.subscription.path}" />        
+    </bean>
 
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />
     <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
