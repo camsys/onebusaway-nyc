@@ -121,10 +121,10 @@
         <property name="transitDataService" ref="nycTransitDataServiceImpl" />
     </bean>
 
-    <bean id="mta_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
-        <property name="alertsUrl" value=""/>
-        <property name="refreshInterval" value="60"/>
-    </bean>
+<!--    <bean id="mta_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">-->
+<!--        <property name="alertsUrl" value=""/>-->
+<!--        <property name="refreshInterval" value="60"/>-->
+<!--    </bean>-->
 
 
 
