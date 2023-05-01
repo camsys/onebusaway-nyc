@@ -34,10 +34,12 @@
     <package name="onebusaway-webapp-default" extends="struts-default">
 
         <interceptors>
+            <interceptor name="CspHeaderInterceptor" class="org.onebusaway.nyc.webapp.web.CspHeaderInterceptor" />
             <interceptor-stack name="secureParamInterceptor">
                 <interceptor-ref name="defaultStack">
                     <param name="params.excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*</param>
                 </interceptor-ref>
+                <interceptor-ref name="CspHeaderInterceptor" />
             </interceptor-stack>
         </interceptors>
 
