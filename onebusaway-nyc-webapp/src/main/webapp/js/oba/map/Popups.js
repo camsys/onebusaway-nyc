@@ -243,9 +243,18 @@ OBA.Popups = (function() {
 		var hasRealtime = activity.MonitoredVehicleJourney.Monitored;
 
 		var html = '<div id="' + popupContainerId + '" class="popup">';
+
+		var stroller = ""
+		if(typeof activity.MonitoredVehicleJourney.MonitoredCall !='undefined' &&
+			typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
+			typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
+			typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle !='undefined' &&
+			activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle == true) {
+			stroller = "stroller"
+		}
 		
 		// header
-		html += '<div class="header vehicle">';
+		html += '<div class="header vehicle '+stroller+'">';
 		html += '<p class="title">' + activity.MonitoredVehicleJourney.PublishedLineName + " " + activity.MonitoredVehicleJourney.DestinationName + '</p><p>';
 		html += '<span class="type">Vehicle #' + vehicleIdWithoutAgency + '</span>';
 
@@ -803,7 +812,7 @@ OBA.Popups = (function() {
 								typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
 								typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle !='undefined' &&
 								monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle == true) {
-								html += "(stroller pilot) ";
+								html += "";
 							}
 
 							html += timePrediction + '</li>';
@@ -839,7 +848,7 @@ OBA.Popups = (function() {
 								typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
 								typeof monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle !='undefined' &&
 								monitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle == true) {
-								html += "(stroller pilot) ";
+								html += "";
 							}
 							html += distance + '</li>';
 						}

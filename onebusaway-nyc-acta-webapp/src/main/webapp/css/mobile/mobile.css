@@ -509,7 +509,7 @@ small {
 }
 .arrivalsOnRouteStroller li {
 	margin-left: 10px;
-	padding-left: 16px;
+	padding-left: 28px;
 	background-image: url('img/stroller_bullet_bus.png');
 	background-repeat: no-repeat;
 	background-position: left center;
@@ -547,7 +547,7 @@ small {
 
 .strollerArrivalsAtStop li {
 	margin-left: 10px;
-	padding-left: 16px;
+	padding-left: 28px;
 	background-image: url('img/stroller_bullet_bus.png');
 	background-repeat: no-repeat;
 	background-position: left top;
@@ -590,7 +590,7 @@ small {
 
 .arrivalsAtStopStroller li {
 	margin-left: 10px;
-	padding-left: 16px;
+	padding-left: 28px;
 	background-image: url('img/stroller_bullet_bus.png');
 	background-repeat: no-repeat;
 	background-position: left top;

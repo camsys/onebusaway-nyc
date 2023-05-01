@@ -76,7 +76,7 @@ public class VehicleResult implements Serializable {
     return timeOrDistance + occupancyStr;
   }
 
-  public String getStrollerString(){return isStroller? " S":"";}
+  public String getStrollerString(){return isStroller? " Str":"";}
 
   public String getVehicleId() {
     return vehicleId;
