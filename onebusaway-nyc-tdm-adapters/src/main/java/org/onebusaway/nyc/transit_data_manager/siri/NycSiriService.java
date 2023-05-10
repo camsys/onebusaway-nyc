@@ -20,8 +20,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -91,9 +93,10 @@ public abstract class NycSiriService {
   abstract void removeServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, String serviceAlertId);
 
-  abstract void addOrUpdateServiceAlert(SituationExchangeResults result,
-      DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
-      String defaultAgencyId);
+  abstract void addOrUpdateServiceAlert(Map<String, List<ServiceAlertBean>> agencyIdToServiceAlerts,
+                                        SituationExchangeResults result,
+                                        DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
+                                        String defaultAgencyId);
 
   abstract void postServiceDeliveryActions(SituationExchangeResults result,
       Collection<String> deletedIds) throws Exception;
@@ -103,6 +106,9 @@ public abstract class NycSiriService {
   abstract public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions();
 
   abstract public SiriServicePersister getPersister();
+
+  abstract public ServiceAlertsPersister getServiceAlertsPersister();
+
 
   abstract public void setPersister(SiriServicePersister _siriServicePersister);
 
@@ -209,16 +215,23 @@ public abstract class NycSiriService {
     }
     
     String defaultAgencyId = null;
+    Map<String, List<ServiceAlertBean>> agencyIdToServiceAlerts = new HashMap<>();
     if (!CollectionsLibrary.isEmpty(endpointDetails.getDefaultAgencyIds()))
       defaultAgencyId = endpointDetails.getDefaultAgencyIds().get(0);
 
+    // save service alerts to siri tables
     for (ServiceAlertBean serviceAlertBean : serviceAlertsToUpdate) {
-      addOrUpdateServiceAlert(result, deliveryResult, serviceAlertBean,
+      addOrUpdateServiceAlert(agencyIdToServiceAlerts, result, deliveryResult, serviceAlertBean,
           defaultAgencyId);
     }
     for (String serviceAlertId : serviceAlertIdsToRemove) {
       removeServiceAlert(result, deliveryResult, serviceAlertId);
     }
+    // now save the alerts to the app tables for app to read
+    for (String agencyId : agencyIdToServiceAlerts.keySet()) {
+      getServiceAlertsPersister().saveOrUpdateServiceAlerts(agencyId, agencyIdToServiceAlerts.get(agencyId));
+    }
+
   }
 
   public void handleServiceRequests(ServiceRequest serviceRequest, Siri responseSiri) {

@@ -105,12 +105,17 @@
     <property name="prettyPrintOutput" value="${tdm.prettyPrintOutput}" />
   </bean>
 
+  <bean id="serviceAlertsPersister" class="org.onebusaway.nyc.transit_data_manager.siri.ServiceAlertsPersisterImpl">
+    <property name="serviceAlertsBeanService" ref="serviceAlertsBeanServiceImpl" />
+
+  </bean>
   <bean id="siriServicePersister" class="org.onebusaway.nyc.transit_data_manager.siri.SiriServiceDao">
     </bean>
 
   <bean id="nycSiriService"
     class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceGateway">
     <property name="persister" ref="siriServicePersister" />
+    <property name="serviceAlertsPersister" ref="serviceAlertsPersister" />
   </bean>
 
   <!--  Cancelled Trip Configuration -->
