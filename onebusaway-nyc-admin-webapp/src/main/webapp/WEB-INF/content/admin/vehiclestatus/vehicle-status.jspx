@@ -23,63 +23,63 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 	<s:url var="url" value="/css/jquery-ui.css" />
-	<link rel="stylesheet" type="text/css" href="${url}">
+	<link rel="stylesheet" type="text/css" nonce="${cspNonce}" href="${url}">
 		<!-- //prevent jspx minimization -->
 	</link>
 	
 	<s:url var="url" value="/css/ui.jqgrid.css" />
-	<link rel="stylesheet" type="text/css" href="${url}">
+	<link rel="stylesheet" type="text/css" nonce="${cspNonce}" href="${url}">
 		<!-- //prevent jspx minimization -->
 	</link>
 	
 	<s:url var="url" value="/css/vehiclestatus.css" />
-	<link rel="stylesheet" type="text/css" href="${url}">
+	<link rel="stylesheet" type="text/css" nonce="${cspNonce}" href="${url}">
 		<!-- //prevent jspx minimization -->
 	</link>
 	
 	<s:url var="url" value="/js/lib/jquery.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 	
 	<s:url var="url" value="/js/lib/jquery.ui.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 	
 	<s:url var="url" value="/js/lib/grid.locale-en.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 	
 	<s:url var="url" value="/js/lib/jqGrid.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 	
 	
 	<s:url var="url" value="/js/lib/ember.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 	
 	<s:url var="url" value="/js/oba/vehiclestatus/vehiclestatus.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 
 	<s:url var="url" value="/js/lib/modal.popup.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 
 	<s:url var="url" value="/css/popup.css" />
-	<link rel="stylesheet" type="text/css" href="${url}">
+	<link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}">
 		<!-- //prevent jspx minimization -->
 	</link>
  
 	<s:url var="url" value="/js/oba/vehiclestatus/popup.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 	
@@ -90,7 +90,7 @@
 	<s:param name="key"><s:property value="googleMapsApiKey" /></s:param>
 	<s:param name="channel"><s:property value="googleMapsChannel" /></s:param>
 	</s:url>
-	<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+	<script src="${url}" nonce="${cspNonce}" type="text/javascript"><!-- //prevent jspx minimization --></script>
 
 
 </head>

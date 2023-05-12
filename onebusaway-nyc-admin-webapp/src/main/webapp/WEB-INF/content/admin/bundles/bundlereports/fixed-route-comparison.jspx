@@ -23,37 +23,37 @@
     <title>Fixed Route Mode Comparison</title>
 
     <s:url var="url" value="/css/jquery-ui.css" />
-    <link rel="stylesheet" type="text/css" href="${url}">
+    <link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}">
         <!-- //prevent jspx minimization -->
     </link>
 
     <s:url var="url" value="/css/admin.css"/>
-    <link rel="stylesheet" type="text/css" href="${url}" />
+    <link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}" />
 
     <s:url var="url" value="/css/bundles.css" />
-    <link rel="stylesheet" type="text/css" href="${url}">
+    <link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}">
         <!-- //prevent jspx minimization -->
     </link>
 
     <s:url var="url" value="/css/bundle-reports.css" />
-    <link rel="stylesheet" type="text/css" href="${url}">
+    <link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}">
         <!-- //prevent jspx minimization -->
     </link>
 
     <s:url var="url" value="/css/print-bundle-report.css" />
-    <link rel="stylesheet" type="text/css" media="print" href="${url}">
+    <link rel="stylesheet" nonce="${cspNonce}" type="text/css" media="print" href="${url}">
         <!-- //prevent jspx minimization -->
     </link>
 
     <s:url var="url" value="/js/lib/jquery.js" />
-    <script type="text/javascript" src="${url}">
+    <script type="text/javascript" nonce="${cspNonce}" src="${url}">
         <!-- //prevent jspx minimization -->
     </script>
 
     <s:url var="url" value="/js/lib/jquery.ui.js">
         <!-- //prevent jspx minimization -->
     </s:url>
-    <script type="text/javascript" src="${url}">
+    <script type="text/javascript" nonce="${cspNonce}" src="${url}">
         <!-- //prevent jspx minimization -->
 
     </script>
@@ -61,7 +61,7 @@
     <s:url var="url" value="/js/oba/bundlereports/bundle-reports.js">
         <!-- //prevent jspx minimization -->
     </s:url>
-    <script type="text/javascript" src="${url}">
+    <script type="text/javascript" nonce="${cspNonce}" src="${url}">
         <!-- //prevent jspx minimization -->
 
     </script>

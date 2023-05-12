@@ -25,24 +25,24 @@
 	<s:url var="url" value="/js/lib/jquery.ui.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
 	<s:url var="url" value="/js/lib/dateFormat.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
 	<s:url var="url" value="/js/oba/m/Mobile.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 	
 	<s:if test="!routeColors.equals('')">	
 		<s:url var="url" value="/m/color-stylesheet">
   			<s:param name="colors"><s:property value="routeColors" /></s:param>
 			<s:param name="v"><s:property value="cacheBreaker" /></s:param>
 	  	</s:url>
-  		<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
+  		<link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css" media="screen"/>
   	</s:if>
 </head>
 

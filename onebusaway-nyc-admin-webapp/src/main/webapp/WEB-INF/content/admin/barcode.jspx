@@ -24,12 +24,12 @@
 	<title>OneBusAway NYC: QR Barcode Generator</title>
 
 	<s:url var="url" value="/js/lib/jquery.js" />	
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 		<!-- //prevent jspx minimization -->
 	</script>
 	
-	<s:url var="url" value="/js/oba/barcode.js" />
-	<script type="text/javascript" src="${url}"><!-- Prevent jspx minimization --></script>
+	<s:url var="url" nonce="${cspNonce}" value="/js/oba/barcode.js" />
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- Prevent jspx minimization --></script>
 	
 </head>
 <body>

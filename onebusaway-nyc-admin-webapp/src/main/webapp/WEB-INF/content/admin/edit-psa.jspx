@@ -22,23 +22,23 @@
 <head>
 	<title>Admin Webapp</title>
 	<s:url var="url" value="/css/admin.css"/>
-	<link rel="stylesheet" type="text/css" href="${url}" />
+	<link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}" />
 
 	<s:url var="url" value="/css/jquery-ui.css" />
-	<link rel="stylesheet" type="text/css" href="${url}" />
+	<link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}" />
 
 	<s:url var="url" value="/js/lib/jquery.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 
 	<s:url var="url" value="/js/lib/jquery.ui.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 		<!-- //prevent jspx minimization -->
 	</script>
 
 	<s:url var="url" value="/js/oba/edit-psa.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 </head>

@@ -23,8 +23,8 @@
 <head>
 <title>Vehicle Location Simulations - Block</title>
 
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"><!-- //prevent jspx minimization --></script>
-<script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="http://openlayers.org/api/OpenLayers.js"><!-- //prevent jspx minimization --></script>
 
 <script type="text/javascript">
 /* <![CDATA[ */

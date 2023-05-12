@@ -22,42 +22,42 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 	<s:url var="url" value="/css/jquery-ui.css" />
-	<link rel="stylesheet" type="text/css" href="${url}">
+	<link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}">
 		<!-- //prevent jspx minimization -->
 	</link>
 	
 	<s:url var="url" value="/css/vehiclestatus.css" />
-	<link rel="stylesheet" type="text/css" href="${url}">
+	<link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}">
 		<!-- //prevent jspx minimization -->
 	</link>
 
 	<s:url var="url" value="/css/jquery-ui-timepicker-addon.css" />
-	<link rel="stylesheet" type="text/css" href="${url}">
+	<link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}">
 		<!-- //prevent jspx minimization -->
 	</link>
 	
 	<s:url var="url" value="/js/lib/jquery.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 	
 	<s:url var="url" value="/js/lib/jquery.ui.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 	
 	<s:url var="url" value="/js/lib/jquery.numeric.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 
 	<s:url var="url" value="/js/lib/jquery-ui-timepicker-addon.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
         <!-- //prevent jspx minimization -->
 	</script>
 	
 	<s:url var="url" value="/js/oba/parameters.js" />
-	<script type="text/javascript" src="${url}">
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 	<!-- //prevent jspx minimization -->
 	</script>
 </head>

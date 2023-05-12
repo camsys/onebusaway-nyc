@@ -28,30 +28,30 @@
         <link id="contextPathHolder" data-contextPath="${pageContext.request.contextPath}" />
 
         <!-- STYLING -->
-        <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
-        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" />
+        <link rel="stylesheet" type="text/css" nonce="${cspNonce}" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+        <link rel="stylesheet" type="text/css" nonce="${cspNonce}" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" />
 
         <s:url var="url" value="/css/user-api-key-data.css" />
-        <link rel="stylesheet" type="text/css" href="${url}">
+        <link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}">
             <!-- //prevent jspx minimization -->
         </link>
 
         <!-- JAVASCRIPT -->
-        <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.js">
+        <script type="text/javascript" nonce="${cspNonce}" src="https://code.jquery.com/jquery-1.12.4.js">
             <!-- //prevent jspx minimization -->
         </script>
 
-        <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.js">
+        <script type="text/javascript" nonce="${cspNonce}" src="https://code.jquery.com/ui/1.12.1/jquery-ui.js">
             <!-- //prevent jspx minimization -->
         </script>
 
-        <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js">
+        <script type="text/javascript" nonce="${cspNonce}" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js">
             <!-- //prevent jspx minimization -->
         </script>
 
         <s:url var="url" value="/js/oba/user-api-key-data.js">
         </s:url>
-        <script type="text/javascript" src="${url}">
+        <script type="text/javascript" nonce="${cspNonce}" src="${url}">
             <!-- //prevent jspx minimization -->
         </script>
     </head>

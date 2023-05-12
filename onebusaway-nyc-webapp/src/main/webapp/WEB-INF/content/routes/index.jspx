@@ -26,12 +26,12 @@
         <s:url var="url" value="/css/routes/routes.css">
             <s:param name="v"><s:property value="frontEndVersion" /></s:param>
         </s:url>
-        <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+        <link rel="stylesheet" href="${url}" nonce="${cspNonce}" type="text/css" media="screen,print"/>
         
         <s:url var="url" value="/js/oba/Routes.js">
             <s:param name="v"><s:property value="frontEndVersion" /></s:param>
         </s:url>
-        <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+        <script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
         <title><s:property value="getText('routes.title')"/></title>
     </head>

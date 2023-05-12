@@ -22,25 +22,30 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 
+<s:url var="url" value="/css/main.css">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
+<link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css" media="screen,print"/>
+
 <s:url var="url" value="/css/map/map.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+<link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css" media="screen,print"/>
 
 <s:url var="url" value="/css/map/leaflet.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+<link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css" media="screen,print"/>
 
 <s:url var="url" value="/css/map/popup.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+<link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css" media="screen,print"/>
 
 <s:url var="url" value="/css/map/wizard.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+<link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css" media="screen,print"/>
 
 <jsp:text>
 &lt;!--[if IE 6]&gt;
@@ -48,7 +53,7 @@
 	<s:url var="url" value="/css/ie6.css">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
-	<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+	<link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css" media="screen,print"/>
 <jsp:text>
 &lt;![endif]--&gt;
 </jsp:text>
@@ -60,75 +65,75 @@
 	<s:param name="key"><s:property value="googleMapsApiKey" /></s:param>
 	<s:param name="channel"><s:property value="googleMapsChannel" /></s:param>
 </s:url>
-<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+<script src="${url}" nonce="${cspNonce}" type="text/javascript"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/lib/leaflet.js">
+<s:url var="url"  value="/js/lib/leaflet.js">
 </s:url>
-<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+<script src="${url}" nonce="${cspNonce}" type="text/javascript"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/js/lib/jquery.ui.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/js/lib/jquery.history.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/lib/markerManager.js">
+<!--<s:url var="url" value="/js/lib/markerManager.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="${url}">&lt;!&ndash; //prevent jspx minimization &ndash;&gt;</script>-->
 
 <s:url var="url" value="/js/lib/rgbcolor.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/js/lib/dateFormat.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/js/lib/popover.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/js/oba/map/Wizard.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/api/config">
 	<s:param name="v"><s:property value="cacheBreaker" /></s:param>
 </s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/js/oba/Util.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <!-- Google Maps Instance -->
 <s:if test="mapInstance.equals('google')">
 	<s:url var="url" value="/js/oba/map/GoogleMapWrapper.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 	<s:url var="url" value="/js/oba/map/Popups.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 		<s:url var="url" value="/js/oba/map/RouteMap.js">
 			<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 		</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 		<s:url var="url" value="/js/oba/map/Sidebar.js">
 			<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 		</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 </s:if>
 <s:else>
 	<!-- Leaflet Maps (Google) Instance -->
@@ -141,26 +146,33 @@
 		<s:url var="url" value="/js/lib/leaflet-bing.js">
 		</s:url>
 	</s:elseif>
-	<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+
+	<script src="${url}" nonce="${cspNonce}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+
 	<s:url var="url" value="/js/oba/map/LeafletMapWrapper.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
+
 	<s:url var="url" value="/js/oba/map/LeafletPopups.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
+
 	<s:url var="url" value="/js/oba/map/LeafletRouteMap.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
+
 	<s:url var="url" value="/js/oba/map/LeafletSidebar.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
+
 </s:else>
 
-<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"><!-- jspx --></script>
+<script type="text/javascript" nonce="${cspNonce}" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"><!-- jspx --></script>
+
 
 </head>
 <body>
@@ -301,7 +313,7 @@
 		</div>
 		<div id="wizard_finaltip">
 			<div>
-				<p><span style="font-weight: bold;">Tips:</span> <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a> <s:property value="getText('main.application.name')" /> is also available via <a id="wizard_mobile" rel="popover">Mobile Web</a> or <a id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
+				<p><span class="bold">Tips:</span> <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a> <s:property value="getText('main.application.name')" /> is also available via <a id="wizard_mobile" rel="popover">Mobile Web</a> or <a id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
 				<p>Remember your 6-digit Stopcode from the pop-ups or find it on a <a id="tips_code_popup" rel="popover" data-placement="above">bus stop pole box</a>.</p>
 				<p id="sharelinks"><a id="wizard_share" rel="popover">Share</a> this link and tell others about <s:property value="getText('main.application.name')" />!
 					<s:set var="link" value="getText('main.agency.twitter.link')" />

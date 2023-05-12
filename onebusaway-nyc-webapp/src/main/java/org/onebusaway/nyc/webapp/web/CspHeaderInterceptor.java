@@ -68,24 +68,25 @@ public class CspHeaderInterceptor implements Interceptor {
     @Override
     public void destroy() {}
 
-    public String nonce;
-
-    public String getNonce(){
-        return this.nonce;
-    }
-
     @Override
     public String intercept(ActionInvocation invocation) throws Exception {
         byte[] nonceBytes = new byte[16];
         new SecureRandom().nextBytes(nonceBytes);
-        this.nonce = Base64.getEncoder().encodeToString(nonceBytes);
+        String nonce = Base64.getEncoder().encodeToString(nonceBytes);
         HttpServletResponse response = (HttpServletResponse) invocation.getInvocationContext().get(HTTP_RESPONSE);
-        String policy = "default-src * 'unsafe-inline' 'unsafe-eval'; " +
-                        "script-src * 'unsafe-inline' 'unsafe-eval'; " +
-                        "connect-src * 'unsafe-inline'; " +
-                        "img-src * data: blob: 'unsafe-inline'; " +
-                        "frame-src *; " +
-                        "style-src * 'unsafe-inline';";
+
+        // Store the nonce value in the ActionContext
+        ActionContext.getContext().put("cspNonce", nonce);
+
+        String policy = "script-src 'nonce-%1$s' 'strict-dynamic' https: http:; " +
+                        "object-src 'none';" +
+                        "img-src 'self' https://*.googleapis.com https://*.gstatic.com *.google.com *.googleusercontent.com *.google-analytics.com *.obanyc.com data:;" +
+                        "frame-src *.google.com *.youtube.com;" +
+                        "connect-src 'self' https://*.googleapis.com *.google.com https://*.gstatic.com; " +
+                        "font-src https://fonts.gstatic.com; " +
+                        "style-src 'unsafe-inline' 'self' https://fonts.googleapis.com https://*.gstatic.com; " +
+                        "worker-src;";
+        policy = String.format(policy, nonce);
         response.setHeader("Content-Security-Policy", policy);
         return invocation.invoke();
     }

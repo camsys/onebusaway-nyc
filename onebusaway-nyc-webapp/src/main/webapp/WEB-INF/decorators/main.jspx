@@ -38,17 +38,17 @@
   <s:url var="url" value="/css/reset.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   </s:url>
-  <link rel="stylesheet" type="text/css" href="${url}"/>
+  <link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}"/>
 
   <s:url var="url" value="/css/screen.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   </s:url>
-  <link rel="stylesheet" type="text/css" href="${url}"/>
+  <link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}"/>
 
   <s:url var="url" value="/css/branding.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   </s:url>
-  <link rel="stylesheet" type="text/css" href="${url}"/>
+  <link rel="stylesheet" nonce="${cspNonce}" type="text/css" href="${url}"/>
 
 <jsp:text>
 &lt;!--[if IE 6]&gt;
@@ -56,7 +56,7 @@
   <s:url var="url" value="/css/ie6.css">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   </s:url>
-  <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+  <link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css" media="screen,print"/>
 <jsp:text>
 &lt;![endif]--&gt;
 </jsp:text>
@@ -64,13 +64,13 @@
   <s:url var="url" value="/js/lib/jquery.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   </s:url>
-  <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-  <s:url var="url" value="/js/oba/Config.js">
-    <s:param name="v"><s:property value="frontEndVersion" /></s:param>
-  </s:url>
-  <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+  <script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
 
-  
+  <s:url var="url" value="/js/oba/Config.js">
+  	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+  </s:url>
+  <script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
+
   <decorator:head />
 </head>
 
@@ -89,7 +89,7 @@
 			<ul id="topbar-links">
 				<c:if test="${showWeekender}">
 					<s:set var="link" value="getText('main.weekender.link')" />
-					<li class="list_h" style="margin-left:4px;"><a href="${link}">The Weekender</a></li>
+					<li class="list_h" ><a href="${link}">The Weekender</a></li>
 				</c:if>			
 			</ul>
 		</div>

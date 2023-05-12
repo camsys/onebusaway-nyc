@@ -195,6 +195,15 @@
 	vertical-align: baseline;
 }
 
+#horizontalcssmenu {
+    clear: both;
+}
+
+.wiki-contentbox {
+    margin-bottom: 10px;
+    padding:0;
+}
+
 .wiki_content .meta span#timestamp {
 	color: #FFFFFF;
 }
@@ -317,6 +326,7 @@ html, body {
     background-repeat: no-repeat;
     display: inline;
     padding-left: 10px;
+    margin-left:4px;
 }
 #topbar .list_h a {
     font-weight: bold;

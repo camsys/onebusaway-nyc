@@ -27,27 +27,27 @@
 
 	<title><s:property value="getText('main.title')"/><s:property value="title" /></title>
 	
-  	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo="/>
+  	<link rel="icon" nonce="${cspNonce}" type="image/png" href="data:image/png;base64,iVBORw0KGgo="/>
 
   	<s:url var="url" value="/css/mobile/mobile.css">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   	</s:url>
-  	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
+  	<link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css" media="screen"/>
 
   	<s:url var="url" value="/css/mobile/branding.css">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   	</s:url>
-  	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
+  	<link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css" media="screen"/>
   	
   	<s:url var="url" value="/js/lib/jquery.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
   	
   	<s:url var="url" value="/js/oba/Config.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
-  	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+  	<script type="text/javascript" nonce="${cspNonce}" src="${url}"><!-- //prevent jspx minimization --></script>
   	
   	<decorator:head/>
   	
@@ -77,7 +77,7 @@
 		</p>
 	</div>
 
-	<script type="text/javascript">
+	<script nonce="${cspNonce}" type="text/javascript">
 		_gaq.push(['_setAccount', "<s:property value="googleAnalyticsSiteId" />"]);
 		_gaq.push(['_setDomainName', 'none']);
 		_gaq.push(['_setAllowLinker', true]);

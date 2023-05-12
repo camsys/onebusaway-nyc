@@ -31,11 +31,11 @@
     <s:url var="url" value="/css/admin.css"/>
     <link rel="stylesheet" href="${url}" type="text/css"/>
     <s:url var="url" value="/js/lib/jquery.js" />
-    <script type="text/javascript" src="${url}">
+    <script type="text/javascript" nonce="${cspNonce}" src="${url}">
         <!-- //prevent jspx minimization -->
     </script>
     <s:url var="url" value="/js/oba/sms-webapp-advert.js" />
-    <script type="text/javascript" src="${url}">
+    <script type="text/javascript" nonce="${cspNonce}" src="${url}">
         <!-- //prevent jspx minimization -->
     </script>
 </head>

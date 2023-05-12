@@ -24,23 +24,23 @@
 <title>Create, Update or Delete users/roles</title>
 
 <s:url var="url" value="/css/jquery-ui.css"/>
-<link rel="stylesheet" href="${url}" type="text/css"/>
+<link rel="stylesheet" nonce="${cspNonce}" href="${url}" type="text/css"/>
 
 <s:url var="url" value="/css/user-management.css"/>
 <link rel="stylesheet" href="${url}" type="text/css"/>
 
 <s:url var="url" value="/js/lib/jquery.js" />
-<script type="text/javascript" src="${url}">
+<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 <!-- //prevent jspx minimization -->
 </script>
 
 <s:url var="url" value="/js/lib/jquery.ui.js" />
-<script type="text/javascript" src="${url}">
+<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 <!-- //prevent jspx minimization -->
 </script>
 
 <s:url var="url" value="/js/oba/user-management.js" />
-<script type="text/javascript" src="${url}">
+<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 <!-- //prevent jspx minimization -->
 </script>
 

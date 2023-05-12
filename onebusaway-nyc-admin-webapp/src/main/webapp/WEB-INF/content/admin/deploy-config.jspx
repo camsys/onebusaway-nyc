@@ -24,14 +24,14 @@
 <link rel="stylesheet" type="text/css" href="${url}" />
 <s:url var="url" value="/js/lib/jquery.js">
 </s:url>
-<script type="text/javascript" src="${url}">
+<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 <!-- //prevent jspx minimization -->
 	
 </script>
 
 <s:url var="url" value="/js/lib/jquery.ui.js">
 </s:url>
-<script type="text/javascript" src="${url}">
+<script type="text/javascript" nonce="${cspNonce}" src="${url}">
 <!-- //prevent jspx minimization -->
 	
 </script>
