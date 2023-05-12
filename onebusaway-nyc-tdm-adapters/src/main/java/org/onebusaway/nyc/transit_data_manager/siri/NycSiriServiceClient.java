@@ -19,6 +19,7 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.JAXBException;
@@ -55,9 +56,10 @@ public class NycSiriServiceClient extends NycSiriService {
   }
 
   @Override
-  void addOrUpdateServiceAlert(SituationExchangeResults result,
-      DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
-      String defaultAgencyId) {
+  void addOrUpdateServiceAlert(Map<String, List<ServiceAlertBean>> agencyIdToServiceAlerts,
+                               SituationExchangeResults result,
+                               DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
+                               String defaultAgencyId) {
     getTransitDataService().createServiceAlert(defaultAgencyId,
         serviceAlertBean);
     result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
@@ -104,6 +106,12 @@ public class NycSiriServiceClient extends NycSiriService {
 
   @Override
   public SiriServicePersister getPersister() {
+    // not used in client mode
+    return null;
+  }
+
+  @Override
+  public ServiceAlertsPersister getServiceAlertsPersister() {
     // not used in client mode
     return null;
   }

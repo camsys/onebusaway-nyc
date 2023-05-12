@@ -57,6 +57,7 @@ import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl;
 import org.onebusaway.transit_data_federation.services.CancelledTripService;
+import org.onebusaway.transit_data_federation.services.StrollerVehicleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +85,9 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 
 	@Autowired(required=false)
 	private BusTrekDataService _busTrekDataService;
+
+	@Autowired(required=false)
+	private StrollerVehicleService _strollerVehicleService;
 
 	@Autowired
 	@Qualifier("NycBundleSearchService")
@@ -747,5 +751,36 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 			return _busTrekDataService.getStifRemarks();
 		}
 		return new ListBean<>(Collections.EMPTY_LIST, false);
+	}
+
+
+	@Override
+	public boolean isVehicleStroller(AgencyAndId vehicleId){
+		blockUntilBundleIsReady();
+		if(_strollerVehicleService != null){
+			return _strollerVehicleService.isVehicleStroller(vehicleId);
+		}
+		return false;
+	}
+
+	@Override
+	public Set<AgencyAndId> getAllStrollerVehicles(){
+		blockUntilBundleIsReady();
+		if(_strollerVehicleService != null){
+			return _strollerVehicleService.getStrollerVehicleIds();
+		}
+		return new HashSet<>();
+	}
+
+	@Override
+	public void overrideStrollerVehicles(List<AgencyAndId> busIds){
+		blockUntilBundleIsReady();
+		if(_strollerVehicleService != null){
+			Set<AgencyAndId> strollerVehicleCache = new HashSet<>();
+			for(AgencyAndId busId : busIds){
+				strollerVehicleCache.add(busId);
+			}
+			_strollerVehicleService.updateStrollerVehicles(strollerVehicleCache);
+		}
 	}
 }

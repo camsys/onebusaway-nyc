@@ -514,63 +514,65 @@ OBA.Sign = function() {
 
 			var applicableSituations = {};
 			var r = 0;
-			jQuery.each(json.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit, function(_, monitoredStopVisit) {
-				var journey = monitoredStopVisit.MonitoredVehicleJourney;
+			if(json.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit!=null) {
+				jQuery.each(json.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit, function (_, monitoredStopVisit) {
+					var journey = monitoredStopVisit.MonitoredVehicleJourney;
 
-				if(typeof journey.MonitoredCall === 'undefined') {
-					return;
-				}
-				
-				var routeId = journey.LineRef;
-				var routeIdParts = routeId.split("_");
-				var routeIdWithoutAgency = routeIdParts[1];
-				
-				var headsign = journey.DestinationName;
-				var routeIdAndHeadsign = routeId + "_" + headsign;
-				var updateTimestampReference = OBA.Util.ISO8601StringToDate(json.Siri.ServiceDelivery.ResponseTimestamp).getTime();
-				if(typeof headsignToDistanceAways[routeIdAndHeadsign] === 'undefined') {
-					headsignToDistanceAways[routeIdAndHeadsign] = [];
-					r++;
-				}
+					if (typeof journey.MonitoredCall === 'undefined') {
+						return;
+					}
+
+					var routeId = journey.LineRef;
+					var routeIdParts = routeId.split("_");
+					var routeIdWithoutAgency = routeIdParts[1];
+
+					var headsign = journey.DestinationName;
+					var routeIdAndHeadsign = routeId + "_" + headsign;
+					var updateTimestampReference = OBA.Util.ISO8601StringToDate(json.Siri.ServiceDelivery.ResponseTimestamp).getTime();
+					if (typeof headsignToDistanceAways[routeIdAndHeadsign] === 'undefined') {
+						headsignToDistanceAways[routeIdAndHeadsign] = [];
+						r++;
+					}
 
 
-				if(typeof journey.SituationRef !== 'undefined') {
-					jQuery.each(journey.SituationRef, function (_, situationRef) {
-						if (typeof situationsById[situationRef.SituationSimpleRef] !== 'undefined') {
-							applicableSituations[situationRef.SituationSimpleRef] = situationsById[situationRef.SituationSimpleRef];
-						}
-					});
-				}
-				
-				var vehicleInfo = {};
-				vehicleInfo.distanceAway = journey.MonitoredCall.Extensions.Distances.PresentableDistance;
-				vehicleInfo.vehicleId = journey.VehicleRef.split("_")[1];
-				vehicleInfo.lineRef = journey.LineRef;
-				vehicleInfo.monitored = journey.Monitored;
-				
-				vehicleInfo.occupancyLoad = getOccupancyForBus(journey)
-				if (typeof journey.MonitoredCall.ExpectedDepartureTime != 'undefined') {
-					//vehicleInfo.expectedDepartureTime = OBA.Util.ISO8601StringToDate(journey.MonitoredCall.ExpectedDepartureTime);
-					vehicleInfo.timePrediction = OBA.Util.getArrivalEstimateForISOString(
-							journey.MonitoredCall.ExpectedArrivalTime, 
+					if (typeof journey.SituationRef !== 'undefined') {
+						jQuery.each(journey.SituationRef, function (_, situationRef) {
+							if (typeof situationsById[situationRef.SituationSimpleRef] !== 'undefined') {
+								applicableSituations[situationRef.SituationSimpleRef] = situationsById[situationRef.SituationSimpleRef];
+							}
+						});
+					}
+
+					var vehicleInfo = {};
+					vehicleInfo.distanceAway = journey.MonitoredCall.Extensions.Distances.PresentableDistance;
+					vehicleInfo.vehicleId = journey.VehicleRef.split("_")[1];
+					vehicleInfo.lineRef = journey.LineRef;
+					vehicleInfo.monitored = journey.Monitored;
+
+					vehicleInfo.occupancyLoad = getOccupancyForBus(journey)
+					if (typeof journey.MonitoredCall.ExpectedDepartureTime != 'undefined') {
+						//vehicleInfo.expectedDepartureTime = OBA.Util.ISO8601StringToDate(journey.MonitoredCall.ExpectedDepartureTime);
+						vehicleInfo.timePrediction = OBA.Util.getArrivalEstimateForISOString(
+							journey.MonitoredCall.ExpectedArrivalTime,
 							updateTimestampReference);
-				}
-				
-				headsignToDistanceAways[routeIdAndHeadsign].push(vehicleInfo);
-				var routeShortName = routeInfo[routeId].shortName;
-				var sortKeys = {
+					}
+
+					headsignToDistanceAways[routeIdAndHeadsign].push(vehicleInfo);
+					var routeShortName = routeInfo[routeId].shortName;
+					var sortKeys = {
 						routeIdAndHeadsign: routeIdAndHeadsign,
 						routeShortName: routeShortName,
-						
-				};
-				
-				if (!containsSortKeys(routeIdAndHeadsign, sortedArrivalTimes)) {
-					sortedArrivalTimes.push(sortKeys);
-				}
-				if (!containsSortKeys(routeIdAndHeadsign, sortedRouteIds)) {
-					sortedRouteIds.push(sortKeys);
-				}
-			});
+
+					};
+
+					if (!containsSortKeys(routeIdAndHeadsign, sortedArrivalTimes)) {
+						sortedArrivalTimes.push(sortKeys);
+					}
+					if (!containsSortKeys(routeIdAndHeadsign, sortedRouteIds)) {
+						sortedRouteIds.push(sortKeys);
+					}
+				});
+			}
 
 			var sortOrderAndRouteIdAndHeadsign = sortedArrivalTimes;
 			// default is to sort by arrival times / arrival distances			

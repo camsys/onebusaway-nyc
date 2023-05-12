@@ -33,7 +33,7 @@ public class VehicleResultTest {
         try {
             VehicleOccupancyRecord vor = new VehicleOccupancyRecord();
             VehicleResult.OccupancyConfig occupancyConfig = VehicleResult.OccupancyConfig.PASSENGER_COUNT;
-            VehicleResult vehicleResult = new VehicleResult("test", "test", vor, occupancyConfig);
+            VehicleResult vehicleResult = new VehicleResult("test", "test", vor, occupancyConfig,false);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(vehicleResult);

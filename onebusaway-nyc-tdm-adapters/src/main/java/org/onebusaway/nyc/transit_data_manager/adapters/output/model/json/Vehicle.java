@@ -31,7 +31,7 @@ public class Vehicle {
 	private String agencyId;
 	private String vehicleId;
 	private String depotId;
-	private Boolean kneeling;
+	private Boolean stroller;
 
 	public void setAgencyId(String agencyId) {
 		this.agencyId = agencyId;
@@ -49,8 +49,8 @@ public class Vehicle {
 		return vehicleId;
 	}
 
-	public void setKneeling(Boolean kneeling) {
-		this.kneeling = kneeling;
+	public void setStroller(Boolean stroller) {
+		this.stroller = stroller;
 	}
 
 	/**
@@ -69,9 +69,9 @@ public class Vehicle {
 
 	/**
 	 *
-	 * @return if the vehicle is a kneeling buss
+	 * @return if the vehicle is a stroller buss
 	 */
-	public Boolean isKneeling() {
-		return kneeling;
+	public Boolean isStroller() {
+		return stroller;
 	}
 }

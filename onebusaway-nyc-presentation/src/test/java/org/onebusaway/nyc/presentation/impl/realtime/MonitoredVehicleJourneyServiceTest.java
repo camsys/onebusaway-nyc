@@ -46,6 +46,7 @@ import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -111,11 +112,11 @@ public class MonitoredVehicleJourneyServiceTest {
 
     MonitoredVehicleJourney journey = mvjService.makeMonitoredVehicleJourney(tripDetails.getTrip(), tripDetails.getStatus(),
             null, Collections.emptyMap(), OnwardCallsMode.VEHICLE_MONITORING,
-            0, System.currentTimeMillis(), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+            0, System.currentTimeMillis(), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE,new HashSet<>());
 
     MonitoredVehicleJourney futureJourney = mvjService.makeMonitoredVehicleJourney(futureTripDetails.getTrip(), futureTripDetails.getStatus(),
             null, Collections.emptyMap(), OnwardCallsMode.VEHICLE_MONITORING,
-            0, System.currentTimeMillis(), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+            0, System.currentTimeMillis(), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE,new HashSet<>());
 
     assertNotNull(journey);
     assertNotNull(futureJourney);

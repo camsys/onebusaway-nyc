@@ -90,7 +90,13 @@
     <bean id="cancelledTripListener" class="org.onebusaway.nyc.transit_data_federation.impl.queue.CancelledTripHttpListenerTask">
     </bean>
 
-	<!-- Other Stuff: -->
+    <!-- Stroller Vehicle Configuration -->
+    <bean id="strollerVehicleListener" class="org.onebusaway.nyc.transit_data_federation.impl.queue.StrollerVehicleHttpListenerTask">
+    </bean>
+
+
+
+    <!-- Other Stuff: -->
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
@@ -123,7 +129,8 @@
 
 <!--    <bean id="mta_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">-->
 <!--        <property name="alertsUrl" value=""/>-->
-<!--        <property name="refreshInterval" value="60"/>-->
+<!--        <property name="refreshInterval" value="30"/>-->
+<!--        <property name="agencyId" value="MTA"/>-->
 <!--    </bean>-->
 
 

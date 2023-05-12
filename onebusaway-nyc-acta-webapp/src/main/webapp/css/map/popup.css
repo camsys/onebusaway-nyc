@@ -55,6 +55,13 @@
 	background-position: left center;
 }
 
+.popup .header.vehicle.stroller {
+	background-image: url("img/header_bus_stroller.png");
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 70px;
+}
+
 .popup .header .title {
 	white-space: nowrap;
     font-size: 16px;
@@ -222,6 +229,16 @@
 	font-weight: bold;
 	padding-left: 19px;
 	background: url("img/schedule_bullet_bus_v2.png");
+	background-position: left top;
+	background-repeat: no-repeat;
+}
+
+.popup ul li.stroller_arrival {
+	white-space: nowrap;
+	height: 16px;
+	font-weight: bold;
+	padding-left: 28px;
+	background: url("img/stroller_bullet_bus.png");
 	background-position: left top;
 	background-repeat: no-repeat;
 }

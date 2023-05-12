@@ -53,13 +53,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
+import java.util.*;
 
 import static org.junit.Assert.fail;
 
@@ -135,6 +129,21 @@ public class MockTransitDataService implements NycTransitDataService {
     @Override
     public void overrideCancelledTrips(List<CancelledTripBean> beans) {
 
+    }
+
+    @Override
+    public boolean isVehicleStroller(AgencyAndId vehicleId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set<AgencyAndId> getAllStrollerVehicles() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void overrideStrollerVehicles(List<AgencyAndId> busIds) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

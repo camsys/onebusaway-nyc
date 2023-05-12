@@ -1,8 +1,8 @@
 package org.onebusaway.nyc.transit_data_manager.api.service;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.MtaBusDepotFileToDataCreator;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotAssignment;
-import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicle;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
@@ -11,30 +11,28 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
-import tcip_final_3_0_5_1.CPTVehicleIden;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-public class KneelingVehiclesDataExtractionServiceImpl implements KneelingVehiclesDataExtractionService{
+public class StrollerVehiclesDataExtractionServiceImpl implements StrollerVehiclesDataExtractionService {
 
     /**
-     * service impl to support tdm api resource to expose kneeling bus data extracted from SPEAR
+     * service impl to support tdm api resource to expose Stroller bus data extracted from SPEAR
      * epic link: https://camsys.atlassian.net/browse/OBANYC-3296
      *
      * @author caylasavitzky
      *
      */
 
-    private static Logger log = LoggerFactory.getLogger(KneelingVehiclesDataExtractionServiceImpl.class);
+    private static Logger log = LoggerFactory.getLogger(StrollerVehiclesDataExtractionServiceImpl.class);
     private MostRecentFilePicker mostRecentFilePicker;
     private TcipMappingTool mappingTool;
     private File inputOverride;
@@ -45,13 +43,13 @@ public class KneelingVehiclesDataExtractionServiceImpl implements KneelingVehicl
     }
 
     @Override
-    public Map getKneelingVehiclesAsMap(DepotIdTranslator depotIdTranslator) {
+    public Map getStrollerVehiclesAsMap(DepotIdTranslator depotIdTranslator) {
         return processVehiclesToMap(getVehiclesData(depotIdTranslator));
     }
 
     @Override
-    public List getKneelingVehiclesAsList(DepotIdTranslator depotIdTranslator) {
-        return processVehiclesToList(getVehiclesData(depotIdTranslator));
+    public Set<AgencyAndId> getStrollerVehiclesAsSet(DepotIdTranslator depotIdTranslator) {
+        return processVehiclesToSet(getVehiclesData(depotIdTranslator));
     }
 
     public List<MtaBusDepotAssignment> getVehiclesData(DepotIdTranslator depotIdTranslator) {
@@ -83,41 +81,22 @@ public class KneelingVehiclesDataExtractionServiceImpl implements KneelingVehicl
         return resultData;
     }
 
-
-
-    public List getKneelingVehiclesList(List<CPTFleetSubsetGroup> depotGroups) {
-        List<Vehicle> vehicles = new ArrayList<Vehicle>();
-
-        //Loop through all depot groups and create vehicles with the required info
-        for(CPTFleetSubsetGroup depotGroup : depotGroups) {
-            List<CPTVehicleIden> tcipVehciles = depotGroup.getGroupMembers().getGroupMember();
-            for(CPTVehicleIden tcipVehicle : tcipVehciles) {
-                Vehicle vehicle = new Vehicle();
-
-                vehicle.setDepotId(depotGroup.getGroupGarage().getFacilityName());
-                vehicle.setVehicleId(String.valueOf(tcipVehicle.getVehicleId()));
-                vehicle.setAgencyId(mappingTool.getJsonModelAgencyIdByTcipId(tcipVehicle.getAgencyId()));
-
-                vehicles.add(vehicle);
-            }
-        }
-
-        return vehicles;
+    private List<AgencyAndId> processVehiclesToList(List<MtaBusDepotAssignment> data){
+        return data.stream().filter(d -> d.isStroller()).map(d-> createAgencyAndIdFromMTABusAssig(d)).collect(Collectors.toList());
     }
 
-
-    private List processVehiclesToList(List<MtaBusDepotAssignment> data){
-        return data.stream().filter(d -> d.isKneeling()).map(d->createCPTFromMTABusAssig(d)).collect(Collectors.toList());
+    private Set<AgencyAndId> processVehiclesToSet(List<MtaBusDepotAssignment> data){
+        return data.stream().filter(d -> d.isStroller()).map(d-> createAgencyAndIdFromMTABusAssig(d)).collect(Collectors.toSet());
     }
 
-    private Map processVehiclesToMap(List<MtaBusDepotAssignment> data){
-        return data.stream().collect(Collectors.toMap(d->createCPTFromMTABusAssig(d),d->d));
+    private Map<AgencyAndId,Boolean> processVehiclesToMap(List<MtaBusDepotAssignment> data){
+        return data.stream().collect(Collectors.toMap(d-> createAgencyAndIdFromMTABusAssig(d), d->d.isStroller()));
     }
 
-    private CPTVehicleIden createCPTFromMTABusAssig(MtaBusDepotAssignment assignment) {
-        CPTVehicleIden bus = new CPTVehicleIden();
-        bus.setAgencyId(assignment.getAgencyId());
-        bus.setVehicleId(assignment.getBusNumber());
+    private AgencyAndId createAgencyAndIdFromMTABusAssig(MtaBusDepotAssignment assignment) {
+        AgencyAndId bus = new AgencyAndId();
+        bus.setAgencyId(mappingTool.getJsonModelAgencyIdByTcipId(assignment.getAgencyId()));
+        bus.setId(String.valueOf(assignment.getBusNumber()));
         return bus;
     }
 

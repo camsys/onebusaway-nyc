@@ -145,7 +145,9 @@ public class ServiceAlertsHelper {
     ServiceAlertsHelper helper = new ServiceAlertsHelper();
     for (ServiceAlertBean bean : serviceAlerts.getList()) {
       PtSituationElementStructure ptSit = helper.getServiceAlertBeanAsPtSituationElementStructure(bean);
-      ptSituationElements.put(ptSit.getSituationNumber().getValue(), ptSit);
+      if (ptSit != null) {
+        ptSituationElements.put(ptSit.getSituationNumber().getValue(), ptSit);
+      }
     }
   }
 
@@ -180,7 +182,9 @@ public class ServiceAlertsHelper {
 
     for (ServiceAlertBean serviceAlert : serviceAlerts) {
       PtSituationElementStructure ptSituationElementStructure = getServiceAlertBeanAsPtSituationElementStructure(serviceAlert);
-      situations.getPtSituationElement().add(ptSituationElementStructure);
+      if (ptSituationElementStructure != null) {
+        situations.getPtSituationElement().add(ptSituationElementStructure);
+      }
     }
   }
 
@@ -262,7 +266,9 @@ public class ServiceAlertsHelper {
       String situationId = situationRef.getSituationSimpleRef().getValue();
       ServiceAlertBean serviceAlert = nycTransitDataService.getServiceAlertForId(situationId);
       PtSituationElementStructure e = getServiceAlertBeanAsPtSituationElementStructure(serviceAlert);
-      ptSituationElements.put(situationId, e);
+      if (e != null) {
+        ptSituationElements.put(situationId, e);
+      }
     }
   }
 
@@ -313,13 +319,16 @@ public class ServiceAlertsHelper {
     if (serviceAlertBeans == null) return;
     Map<String, PtSituationElementStructure> ptSituationElements = new HashMap<String, PtSituationElementStructure>();
     for (ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
-      ptSituationElements.put(serviceAlertBean.getId(), getServiceAlertBeanAsPtSituationElementStructure(serviceAlertBean));
+      if (serviceAlertBean != null) {
+        ptSituationElements.put(serviceAlertBean.getId(), getServiceAlertBeanAsPtSituationElementStructure(serviceAlertBean));
+      }
     }
     addPtSituationElementsToServiceDelivery(serviceDelivery, ptSituationElements);
   }
 
   public PtSituationElementStructure getServiceAlertBeanAsPtSituationElementStructure(
       ServiceAlertBean serviceAlert) {
+    if (serviceAlert == null) return null;
     PtSituationElementStructure ptSit = new PtSituationElementStructure();
 
     EntryQualifierStructure value = new EntryQualifierStructure();
