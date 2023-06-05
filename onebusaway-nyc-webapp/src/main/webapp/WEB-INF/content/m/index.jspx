@@ -105,7 +105,13 @@
 			<s:if test="%{results.suggestions.size&gt;0}">
 				<!-- route search with no direct matches -->
 				<s:if test="results.resultType.equals('RouteResult')">
-					<c:import url="route-suggestion-picker.jspx"/>
+					<!-- route search with no direct matches -->
+					<s:if test="results.getFirstSuggestion.type==711">
+						<c:import url="shuttle-suggestions.jspx"/>
+					</s:if>
+					<s:else>
+						<c:import url="route-suggestion-picker.jspx"/>
+					</s:else>
 				</s:if>
 	
 				<!-- amigbuous address -->
