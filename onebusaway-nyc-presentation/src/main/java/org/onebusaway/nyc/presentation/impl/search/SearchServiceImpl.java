@@ -46,14 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,7 +86,12 @@ public class SearchServiceImpl implements SearchService {
 
 	private Map<String, RouteBean> _routeLongNameToRouteBeanMap = new HashMap<String, RouteBean>();
 
+	private Set<RouteBean> _shuttleSet = new HashSet<>();
+
 	private String _bundleIdForCaches = null;
+
+	private String SHUTTLE_KEYWORD = "SHUTTLE";
+	private int SHUTTLE_ROUTE_TYPE = 711;
 
 	// we keep an internal cache of route short/long names because if we moved
 	// this into the
@@ -113,11 +111,15 @@ public class SearchServiceImpl implements SearchService {
 
 		_routeShortNameToRouteBeanMap.clear();
 		_routeLongNameToRouteBeanMap.clear();
+		_shuttleSet.clear();
 
 		for (AgencyWithCoverageBean agency : _nycTransitDataService.getAgenciesWithCoverage()) {
 			for (RouteBean routeBean : _nycTransitDataService.getRoutesForAgencyId(agency.getAgency().getId()).getList()) {
 				_routeShortNameToRouteBeanMap.put(routeBean.getShortName().toUpperCase(), routeBean);
 				_routeLongNameToRouteBeanMap.put(routeBean.getLongName(), routeBean);
+				if(routeBean.getType()==SHUTTLE_ROUTE_TYPE){
+					_shuttleSet.add(routeBean);
+				}
 			}
 		}
 
@@ -293,6 +295,10 @@ public class SearchServiceImpl implements SearchService {
 
 		tryAsRoute(results, normalizedQuery, resultFactory);
 
+		if(normalizedQuery.toUpperCase(Locale.ROOT).contains(SHUTTLE_KEYWORD)) {
+			tryAsShuttle(results, normalizedQuery, resultFactory);
+		}
+
 		if (results.isEmpty() && StringUtils.isNumeric(normalizedQuery)) {
 			tryAsStop(results, normalizedQuery, resultFactory);
 		}
@@ -436,6 +442,12 @@ public class SearchServiceImpl implements SearchService {
 			}
 		}
 
+	}
+
+	private void tryAsShuttle(SearchResultCollection results, String routeQuery, SearchResultFactory resultFactory) {
+		for(RouteBean shuttle : _shuttleSet) {
+			results.addSuggestion(resultFactory.getRouteResult(shuttle));
+		}
 	}
 
 	private void tryAsStop(SearchResultCollection results, String stopQuery, SearchResultFactory resultFactory) {

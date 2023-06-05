@@ -112,7 +112,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 			}
 		}
 
-		return new RouteResult(routeBean, directions);
+		int type = routeBean.getType();
+
+		return new RouteResult(routeBean, directions,type);
 	}
 
 	@Override
