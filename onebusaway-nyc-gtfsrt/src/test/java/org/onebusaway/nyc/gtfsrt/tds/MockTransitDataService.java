@@ -132,17 +132,17 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public boolean isVehicleKneeling(AgencyAndId vehicleId) {
+    public boolean isVehicleStroller(AgencyAndId vehicleId) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Set<AgencyAndId> getAllKneelingVehicles() {
+    public Set<AgencyAndId> getAllStrollerVehicles() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void overrideKneelingVehicles(List<AgencyAndId> busIds) {
+    public void overrideStrollerVehicles(List<AgencyAndId> busIds) {
         throw new UnsupportedOperationException();
     }
 

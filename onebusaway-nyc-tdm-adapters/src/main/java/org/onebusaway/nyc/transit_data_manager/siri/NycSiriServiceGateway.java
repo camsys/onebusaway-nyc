@@ -19,17 +19,22 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.util.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class NycSiriServiceGateway extends NycSiriService {
 
   @Autowired
   private SiriServicePersister _siriServicePersister;
+  @Autowired
+  private ServiceAlertsPersister _serviceAlertsPersister;
 
   @Override
   void setupForMode() throws Exception, JAXBException {
@@ -37,19 +42,52 @@ public class NycSiriServiceGateway extends NycSiriService {
   }
 
   @Override
-  void addOrUpdateServiceAlert(SituationExchangeResults result,
-      DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
-      String defaultAgencyId) {
-    boolean isNew = getPersister().saveOrUpdateServiceAlert(serviceAlertBean);
-    result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
-        (isNew ? "added" : "updated"));
+  void addOrUpdateServiceAlert(Map<String, List<ServiceAlertBean>> agencyIdToServiceAlerts,
+                               SituationExchangeResults result,
+                               DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
+                               String defaultAgencyId) {
+
+    if (defaultAgencyId == null) {
+      if (serviceAlertBean != null && serviceAlertBean.getId() != null) {
+        try {
+          AgencyAndId serviceAlertId = AgencyAndIdLibrary.convertFromString(serviceAlertBean.getId());
+          defaultAgencyId = serviceAlertId.getAgencyId();
+        } catch (IllegalStateException ise) {
+          // bury
+        }
+      }
+    }
+    try {
+      boolean isNew = getPersister().saveOrUpdateServiceAlert(serviceAlertBean);
+      if (!agencyIdToServiceAlerts.containsKey(defaultAgencyId)) {
+        agencyIdToServiceAlerts.put(defaultAgencyId, new ArrayList<>());
+      }
+      agencyIdToServiceAlerts.get(defaultAgencyId).add(serviceAlertBean);
+      result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
+              (isNew ? "added" : "updated"));
+    } catch (Throwable t) {
+      _log.error("service alert " + serviceAlertBean + " failed on save");
+    }
   }
 
   void removeServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, String serviceAlertId) {
     result.countPtSituationElementResult(deliveryResult, serviceAlertId,
         "removed");
-    getPersister().deleteServiceAlertById(serviceAlertId);
+    try {
+      // delete from siri tables
+      getPersister().deleteServiceAlertById(serviceAlertId);
+    } catch (Exception t) {
+      _log.error("exception deleting siri alert: ", t, t);
+    }
+    try {
+      // also delete from app tables
+      getServiceAlertsPersister().deleteServiceAlertById(serviceAlertId);
+    } catch (Exception t) {
+      _log.error("exception delting service alert: ", t, t);
+    }
+
+
   }
 
   List<String> getExistingAlertIds(Set<String> agencies) {
@@ -119,8 +157,17 @@ public class NycSiriServiceGateway extends NycSiriService {
     return _siriServicePersister;
   }
 
+  public ServiceAlertsPersister getServiceAlertsPersister() {
+    return _serviceAlertsPersister;
+  }
+
+
   public void setPersister(SiriServicePersister _siriServicePersister) {
     this._siriServicePersister = _siriServicePersister;
+  }
+
+  public void setServiceAlertsPersister(ServiceAlertsPersister persister) {
+    this._serviceAlertsPersister = persister;
   }
 
   @Override

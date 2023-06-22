@@ -54,6 +54,7 @@ public class EventRecord implements StifRecord {
   private String locationTypeCode;
   private int boardAlightFlag;
   private String boxId;
+  private String rawDistanceFromStartOfTrip;
 
   public String getLocation() {
     return location;
@@ -101,6 +102,14 @@ public class EventRecord implements StifRecord {
 
   public void setBoardAlightFlag(int flag) {
     this.boardAlightFlag = flag;
+  }
+
+  public void setRawDistanceFromStartOfTrip(String dist) {
+    rawDistanceFromStartOfTrip = dist;
+  }
+
+  public String getRawDistanceFromStartOfTrip() {
+    return rawDistanceFromStartOfTrip;
   }
 
   public void setDistanceFromStartOfTrip(int integer) {

@@ -204,7 +204,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 					visit.getRecordedAtTime().getTime(), true);
 
 			SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
-			SiriDistanceExtension distanceExtension = wrapper.getDistances();    
+			SiriDistanceExtension distanceExtension = wrapper.getDistances();
+
+			boolean isStroller = wrapper.getFeatures().getStrollerVehicle();
 
 			String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
 			String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
@@ -223,9 +225,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 			}
 
 			if(timePrediction != null) {
-				map.put(distanceExtension.getDistanceFromCall(), new VehicleResult(timePrediction, vehicleId, vor, getOccupancyConfig()));
+				map.put(distanceExtension.getDistanceFromCall(), new VehicleResult(timePrediction, vehicleId, vor, getOccupancyConfig(),isStroller));
 			} else {
-				map.put(distanceExtension.getDistanceFromCall(), new VehicleResult(distance, vehicleId, vor, getOccupancyConfig()));
+				map.put(distanceExtension.getDistanceFromCall(), new VehicleResult(distance, vehicleId, vor, getOccupancyConfig(),isStroller));
 			}
 
 			result.put(key, map);

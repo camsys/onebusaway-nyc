@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface KneelingVehiclesDataExtractionService {
+public interface StrollerVehiclesDataExtractionService {
 
     /**
-     * service to support tdm api resource to expose kneeling bus data extracted from SPEAR
+     * service to support tdm api resource to expose stroller bus data extracted from SPEAR
      * epic link: https://camsys.atlassian.net/browse/OBANYC-3296
      *
      * @author caylasavitzky
@@ -21,9 +21,9 @@ public interface KneelingVehiclesDataExtractionService {
 
     void setInputOverride(File resourceAsStream);
 
-    Set<AgencyAndId> getKneelingVehiclesAsSet(DepotIdTranslator depotIdTranslator);
+    Set<AgencyAndId> getStrollerVehiclesAsSet(DepotIdTranslator depotIdTranslator);
 
-    Map<AgencyAndId,Boolean> getKneelingVehiclesAsMap(DepotIdTranslator depotIdTranslator);
+    Map<AgencyAndId,Boolean> getStrollerVehiclesAsMap(DepotIdTranslator depotIdTranslator);
 
 
 }

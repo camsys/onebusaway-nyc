@@ -69,10 +69,12 @@ import org.onebusaway.nyc.presentation.impl.realtime.siri.OnwardCallsMode;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.model.trips.VehicleFeature;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface SiriMonitoredVehicleJourneyBuilderService {
 /*    MonitoredVehicleJourneyStructure makeMonitoredVehicleJourneyStructure(TripBean tripOnBlock,
@@ -104,7 +106,8 @@ public interface SiriMonitoredVehicleJourneyBuilderService {
                                                                                  long responseTimestamp,
                                                                                  boolean showApc,
                                                                                  boolean showRawApc,
-                                                                                 boolean isCancelled);
+                                                                                 boolean isCancelled,
+                                                                                 Set<VehicleFeature> vehicleFeatures);
 
     MonitoredVehicleJourneyStructure makeMonitoredVehicleJourneyStructure(TripBean tripOnBlock,
                                                                           TripStatusBean currentlyActiveTripOnBlock,
@@ -115,5 +118,6 @@ public interface SiriMonitoredVehicleJourneyBuilderService {
                                                                           long responseTimestamp,
                                                                           boolean showApc,
                                                                           boolean showRawApc,
-                                                                          boolean isCancelled);
+                                                                          boolean isCancelled,
+                                                                          Set<VehicleFeature> vehicleFeatures);
 }

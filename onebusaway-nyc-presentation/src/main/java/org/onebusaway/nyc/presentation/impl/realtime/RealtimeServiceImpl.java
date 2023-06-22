@@ -32,12 +32,7 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
-import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
-import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data.model.trips.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,9 +145,11 @@ public class RealtimeServiceImpl implements RealtimeService {
         stopIdToPredictionRecordMap = _predictionsSupportService.getStopIdToPredictionRecordMap(tripDetails.getStatus());
       }
 
+      Set<VehicleFeature> vehicleFeatures = tripDetails.getStatus().getVehicleFeatures();
+
       MonitoredVehicleJourney monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourney(
               tripDetails.getTrip(), tripDetails.getStatus(), null, stopIdToPredictionRecordMap,
-              OnwardCallsMode.VEHICLE_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false);
+              OnwardCallsMode.VEHICLE_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false,vehicleFeatures);
 
       activity.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
@@ -200,9 +197,11 @@ public class RealtimeServiceImpl implements RealtimeService {
       VehicleActivityStructure output = new VehicleActivityStructure();
       output.setRecordedAtTime(new Date(tripDetailsForCurrentTrip.getStatus().getLastUpdateTime()));
 
+      Set<VehicleFeature> vehicleFeatures = tripDetailsForCurrentTrip.getStatus().getVehicleFeatures();
+
       MonitoredVehicleJourney monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourney(
               tripDetailsForCurrentTrip.getTrip(), tripDetailsForCurrentTrip.getStatus(), null, stopIdToPredictionRecordMap,
-              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false);
+              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false,vehicleFeatures);
 
       output.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
@@ -253,9 +252,11 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       stopVisit.setRecordedAtTime(new Date(statusBeanForCurrentTrip.getLastUpdateTime()));
 
+      Set<VehicleFeature> vehicleFeatures = statusBeanForCurrentTrip.getVehicleFeatures();
+
       MonitoredVehicleJourneyStructure monitoredVehicleJourney = _siriMvjBuilderService.makeMonitoredVehicleJourneyStructure(
               tripBeanForAd, statusBeanForCurrentTrip, adBean.getStop(), stopIdToPredictionRecordMap,
-              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, isCancelled);
+              OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, isCancelled,vehicleFeatures);
 
       if(showCancelledTrips && isCancelled){
         monitoredVehicleJourney.getMonitoredCall().setArrivalStatus(ProgressStatusEnumeration.CANCELLED);

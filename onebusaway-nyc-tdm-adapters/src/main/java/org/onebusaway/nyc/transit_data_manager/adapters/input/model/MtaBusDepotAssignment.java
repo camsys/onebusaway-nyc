@@ -25,7 +25,7 @@ public class MtaBusDepotAssignment {
   private String depot;
   private Long agencyId;
   private int busNumber;
-  private boolean kneeling;
+  private boolean stroller;
 
   public String getDepot() {
     return depot;
@@ -51,11 +51,11 @@ public class MtaBusDepotAssignment {
     this.busNumber = busNumber;
   }
 
-  public void setKneeling(boolean kneeling) {
-    this.kneeling = kneeling;
+  public void setStroller(boolean stroller) {
+    this.stroller = stroller;
   }
 
-  public boolean isKneeling() {
-    return kneeling;
+  public boolean isStroller() {
+    return stroller;
   }
 }

@@ -21,6 +21,7 @@ import org.onebusaway.util.AgencyAndIdLibrary;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A stop on a route, the route being the top-level search result.
@@ -35,18 +36,25 @@ public class StopOnRoute {
 
   private List<String> vehicleIds; // in approximate order with distanceAways;
 
+  private List<Boolean> realtimes;
+
+  private List<Boolean> strollers;
+
   private Boolean hasRealtime = true;
 
-  public StopOnRoute(StopBean stop, List<String> distanceAways, Boolean hasRealtime, List<String> vehicleIds) {
+  private Boolean isStroller = false;
+
+  List<VehicleRealtimeStopDistance> vehicleRealtimeStopDistances = null;
+
+  public StopOnRoute(StopBean stop, List<VehicleRealtimeStopDistance> vehicleRealtimeStopDistances) {
     this.stop = stop;
-    this.distanceAways = distanceAways;
-    if(hasRealtime != null)
-      this.hasRealtime = hasRealtime;
-    this.vehicleIds = vehicleIds;
-  }
-  public StopOnRoute(StopBean stop, List<String> distanceAways) {
-    this.stop = stop;
-    this.distanceAways = distanceAways;
+    this.vehicleRealtimeStopDistances = vehicleRealtimeStopDistances;
+    if(vehicleRealtimeStopDistances == null) return;
+    this.distanceAways = vehicleRealtimeStopDistances.stream().map(v->v.getDistanceAway()).collect(Collectors.toList());
+    this.vehicleIds = vehicleRealtimeStopDistances.stream().map(v->v.getVehicleId()).collect(Collectors.toList());
+    this.realtimes = vehicleRealtimeStopDistances.stream().map(v->v.getHasRealtime()).collect(Collectors.toList());
+    this.strollers = vehicleRealtimeStopDistances.stream().map(v->v.getIsStroller()).collect(Collectors.toList());
+    hasRealtime=realtimes.isEmpty() ? false:realtimes.get(0);
   }
   
   public String getId() {
@@ -65,6 +73,11 @@ public class StopOnRoute {
     return distanceAways;
   }
 
+  //todo:this may not be stroller
+  public Boolean getIsStroller() {
+    return true;
+  }
+
   public Boolean getHasRealtime() {
     return hasRealtime;
   }
@@ -75,4 +88,20 @@ public class StopOnRoute {
 
   public List<String> getVehicleIds() { return vehicleIds; }
 
+  public List<Boolean> getStrollers() {return strollers;}
+
+  public List<Boolean> getRealtimes() {
+    return realtimes;
+  }
+
+  public Boolean getIsStroller(int i) {
+    if(strollers!=null & i>-1 & i < strollers.size() -1){
+      return strollers.get(i);
+    }
+    return false;
+  }
+
+  public List<VehicleRealtimeStopDistance> getVehicleRealtimeStopDistances() {
+    return vehicleRealtimeStopDistances;
+  }
 }

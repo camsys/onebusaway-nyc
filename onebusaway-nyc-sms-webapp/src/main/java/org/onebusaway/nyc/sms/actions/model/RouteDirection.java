@@ -68,7 +68,7 @@ public class RouteDirection implements Serializable {
     else {
       ArrayList<String> distanceAwayStrings = new ArrayList<>();
       for (VehicleResult vr : distanceAwaysByVehicleResult.values()) {
-        distanceAwayStrings.add(vr.getTimeOrDistance());
+        distanceAwayStrings.add(vr.getTimeOrDistance()+vr.getStrollerString());
       }
       return distanceAwayStrings;
     }
@@ -79,7 +79,7 @@ public class RouteDirection implements Serializable {
       return null;
     HashMap<Double, String> distanceAwaysWithSortKey = new HashMap<>();
     for (Map.Entry<Double, VehicleResult> e: distanceAwaysByVehicleResult.entrySet()) {
-      distanceAwaysWithSortKey.put(e.getKey(), e.getValue().getTimeOrDistance());
+      distanceAwaysWithSortKey.put(e.getKey(), e.getValue().getTimeOrDistance()+e.getValue().getStrollerString());
     }
     return distanceAwaysWithSortKey;
   }
@@ -89,7 +89,7 @@ public class RouteDirection implements Serializable {
       return null;
     HashMap<Double, String> distanceAwaysAndOccupancyWithSortKey = new HashMap<>();
     for (Map.Entry<Double, VehicleResult> e: distanceAwaysByVehicleResult.entrySet()) {
-      distanceAwaysAndOccupancyWithSortKey.put(e.getKey(), e.getValue().getTimeOrDistanceAndOccupancy());
+      distanceAwaysAndOccupancyWithSortKey.put(e.getKey(), e.getValue().getTimeOrDistanceAndOccupancy()+e.getValue().getStrollerString());
     }
     return distanceAwaysAndOccupancyWithSortKey;
   }

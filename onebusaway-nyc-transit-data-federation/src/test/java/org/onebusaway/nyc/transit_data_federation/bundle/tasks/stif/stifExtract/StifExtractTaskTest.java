@@ -59,10 +59,8 @@ public class StifExtractTaskTest {
     }
 
 
-
     @Test
     public void test_all() throws IOException, ClassNotFoundException {
-        //todo: write this test so it works piecemeal, cause timepoints for all those is ~65M
         stif_m_0003_2H4283_wkd_closed();
         stif_b_0027x_4H8422_wkd_closed();
         testAgainst_d_0090_921011_sat();
@@ -246,8 +244,7 @@ public class StifExtractTaskTest {
     }
 
     private void compareCsvWithBustrekDatumArray(ArrayList<BustrekDatum> bustrekDatumArray, String bustrekDataSource, Class bustrekDataType) throws IOException {
-        // todo: comment this line out
-        _breakOnThisLineNumber = 27;
+//        _breakOnThisLineNumber = 606352;
         Comparator<BustrekDatum> bustrekDatumComparator = (BustrekDatum::compareTo);
         bustrekDatumArray.sort(bustrekDatumComparator);
         long start = System.currentTimeMillis();
@@ -269,7 +266,6 @@ public class StifExtractTaskTest {
                 throw e;
             }
             trueBustrekDataString = truebustrekDataReader.readLine();
-//            bustrekDatumArray.remove(datumLocation);
             bustrekDataIndex++;
             if (false) {
                 _log.info("");
@@ -277,7 +273,6 @@ public class StifExtractTaskTest {
                 _log.info("match    : " + bustrekDatumArray.get(bustrekDatumArray.indexOf(trueData)));
             }
         }
-//        assert (bustrekDatumArray.size() == 0);
         assert (bustrekDatumArray.size() == bustrekDataIndex);
         _log.info(bustrekDataType.getName() + " data compared with "+bustrekDataSource +" in seconds: "+((System.currentTimeMillis()-start)/1000));
     }
@@ -302,7 +297,6 @@ public class StifExtractTaskTest {
                 _log.info("current index: " + bustrekDataIndex);
                 throw e;
             }
-//            bustrekDatumArray.remove(datumLocation);
             bustrekDataIndex++;
             if (false) {
                 _log.info("");
@@ -310,7 +304,6 @@ public class StifExtractTaskTest {
                 _log.info("match    : " + bustrekDatumArray.get(bustrekDatumArray.indexOf(trueData)));
             }
         }
-//        assert (bustrekDatumArray.size() == 0);
         assert (bustrekDatumArray.size() == bustrekDataIndex);
         _log.info("done in seconds: "+((System.currentTimeMillis()-start)/1000));
     }
@@ -325,8 +318,15 @@ public class StifExtractTaskTest {
         } else if (TripInfo.class.equals(intendedClass)) {
             return new TripInfo(dataArray);
         } else if (TimePoint.class.equals(intendedClass)) {
-            return new TimePoint(dataArray[0], dataArray[1], dataArray[2]);
+            return new TimePoint(noBlank(dataArray[0]), noBlank(dataArray[1]), noBlank(dataArray[2]), noBlank(dataArray[3]));
         }
         return null;
+    }
+
+    private String noBlank(String self){
+        if(self!=null)
+            if(self.equals(""))
+                return null;
+        return self;
     }
 }

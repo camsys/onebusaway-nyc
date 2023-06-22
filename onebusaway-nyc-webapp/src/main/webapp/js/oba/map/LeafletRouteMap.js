@@ -241,7 +241,23 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				if(orientation !== null && orientation !== 'NaN') {
 					orientationAngle = Math.floor(orientation / 5) * 5;
 				}
-				var icon = new L.Icon({iconUrl: "img/vehicle/vehicle-" + orientationAngle + ".png", iconSize: [51, 51]});
+				var icon = new L.Icon({iconUrl: "img/vehicle/", iconSize: [51, 51]});
+
+				if(typeof activity.MonitoredVehicleJourney.ProgressStatus != 'undefined' && activity.MonitoredVehicleJourney.ProgressStatus != null && activity.MonitoredVehicleJourney.ProgressStatus == "spooking") {
+					icon.url = icon.url + "scheduled";
+					marker.setOpacity(0.6);
+				}
+
+				if(typeof activity.MonitoredVehicleJourney.MonitoredCall !='undefined' &&
+					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
+					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
+					typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle !='undefined' &&
+					activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle == true){
+					icon.url = icon.url + "-stroller";
+				}
+
+				icon.url = icon.url + "/vehicle-" + orientationAngle + ".png"
+
 
 				marker.setIcon(icon);
 				

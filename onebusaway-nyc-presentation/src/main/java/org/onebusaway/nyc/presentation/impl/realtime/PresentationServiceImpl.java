@@ -27,6 +27,7 @@ import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.model.trips.VehicleFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,6 +153,18 @@ public class PresentationServiceImpl implements PresentationService {
 
     return null;
   }
+
+//  @Override
+    public Boolean isStroller(TripStatusBean statusBean) {
+        if (statusBean != null) {
+            if(statusBean.hasVehicleFeature(VehicleFeature.STROLLER)){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return null;
+    }
 
 
 //  @Override

@@ -19,6 +19,7 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.JAXBException;
@@ -31,33 +32,34 @@ public class NycSiriServiceClient extends NycSiriService {
 
   @Override
   void setupForMode() throws Exception, JAXBException {
-//    boolean setupDone = false;
-//    int attempts = 0;
-//    do {
-//      attempts += 1;
-//      try {
-//        _log.info("Setting up for client mode.");
-//        sendAndProcessSubscriptionAndServiceRequest();
-//        setupDone = true;
-//      } catch (Exception e) {
-//        _log.error("Setup for client failed, exception is: " + e.getMessage(), e);
-//        _log.error("Retrying in 60 seconds.");
-//        Thread.sleep(60 * 1000);
-//      }
-//    } while (!setupDone && attempts <= 4);
-//    if (setupDone) {
-//      _log.info("Setup for client mode complete.");
-//      return;
-//    }
-//    _log.error("*********************************************************************\n"
-//        + "Setup for client mode DID NOT COMPLETE SUCCESSFULLY AFTER 4 ATTEMPTS.\n"
-//        + "*********************************************************************");
+    boolean setupDone = false;
+    int attempts = 0;
+    do {
+      attempts += 1;
+      try {
+        _log.info("Setting up for client mode.");
+        sendAndProcessSubscriptionAndServiceRequest();
+        setupDone = true;
+      } catch (Exception e) {
+        _log.error("Setup for client failed, exception is: " + e.getMessage(), e);
+        _log.error("Retrying in 60 seconds.");
+        Thread.sleep(60 * 1000);
+      }
+    } while (!setupDone && attempts <= 4);
+    if (setupDone) {
+      _log.info("Setup for client mode complete.");
+      return;
+    }
+    _log.error("*********************************************************************\n"
+        + "Setup for client mode DID NOT COMPLETE SUCCESSFULLY AFTER 4 ATTEMPTS.\n"
+        + "*********************************************************************");
   }
 
   @Override
-  void addOrUpdateServiceAlert(SituationExchangeResults result,
-      DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
-      String defaultAgencyId) {
+  void addOrUpdateServiceAlert(Map<String, List<ServiceAlertBean>> agencyIdToServiceAlerts,
+                               SituationExchangeResults result,
+                               DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
+                               String defaultAgencyId) {
     getTransitDataService().createServiceAlert(defaultAgencyId,
         serviceAlertBean);
     result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
@@ -104,6 +106,12 @@ public class NycSiriServiceClient extends NycSiriService {
 
   @Override
   public SiriServicePersister getPersister() {
+    // not used in client mode
+    return null;
+  }
+
+  @Override
+  public ServiceAlertsPersister getServiceAlertsPersister() {
     // not used in client mode
     return null;
   }

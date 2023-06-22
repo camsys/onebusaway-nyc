@@ -69,9 +69,11 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.model.trips.VehicleFeature;
 import uk.org.siri.siri.MonitoredCallStructure;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface SiriMonitoredCallBuilderService {
     MonitoredCallStructure makeMonitoredCall(BlockInstanceBean blockInstance,
@@ -81,7 +83,7 @@ public interface SiriMonitoredCallBuilderService {
                                              Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions,
                                              boolean showRawApc,
                                              boolean isCancelled,
-                                             long responseTimestamp
+                                             long responseTimestamp,
 
-    );
+                                             Set<VehicleFeature> vehicleFeatures);
 }

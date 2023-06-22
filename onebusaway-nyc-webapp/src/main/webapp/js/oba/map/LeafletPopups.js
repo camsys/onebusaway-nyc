@@ -212,8 +212,17 @@ OBA.Popups = (function() {
 
 		var html = '<div id="' + popupContainerId + '" class="popup">';
 
+		var stroller = ""
+		if(typeof activity.MonitoredVehicleJourney.MonitoredCall !='undefined' &&
+			typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions !='undefined'  &&
+			typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures !='undefined' &&
+			typeof activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle !='undefined' &&
+			activity.MonitoredVehicleJourney.MonitoredCall.Extensions.VehicleFeatures.StrollerVehicle == true) {
+			stroller = "stroller"
+		}
+
 		// header
-		html += '<div class="header vehicle">';
+		html += '<div class="header vehicle '+stroller+'">';
 		html += '<p class="title">' + activity.MonitoredVehicleJourney.PublishedLineName + " " + activity.MonitoredVehicleJourney.DestinationName + '</p><p>';
 		html += '<span class="type">Vehicle #' + vehicleIdWithoutAgency + '</span>';
 

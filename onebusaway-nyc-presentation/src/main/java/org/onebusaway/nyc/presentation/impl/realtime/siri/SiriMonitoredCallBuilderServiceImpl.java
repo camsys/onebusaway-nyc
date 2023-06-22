@@ -57,6 +57,7 @@ import org.onebusaway.nyc.presentation.service.realtime.siri.SiriMonitoredCallBu
 import org.onebusaway.nyc.siri.support.SiriApcExtension;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
+import org.onebusaway.nyc.siri.support.SiriVehicleFeatures;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -66,6 +67,7 @@ import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.model.trips.VehicleFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.org.siri.siri.*;
@@ -114,7 +116,8 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                                     Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions,
                                                     boolean showRawApc,
                                                     boolean isCancelled,
-                                                    long responseTimestamp
+                                                    long responseTimestamp,
+                                                    Set<VehicleFeature> vehicleFeatures
                                                     ){
 
         List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
@@ -198,7 +201,7 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                 stopTime.getStopTime().getArrivalTime(),
                                 getScheduledArrivalTime(currentlyActiveTripOnBlock, stopTime),
                                 getScheduledDepartureTime(currentlyActiveTripOnBlock, stopTime),
-                                responseTimestamp
+                                responseTimestamp, vehicleFeatures
                         );
 
                     }
@@ -243,7 +246,8 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                                              int arrivalTime,
                                                              long scheduledArrivalTime,
                                                              long scheduledDepartureTime,
-                                                             long responseTimestamp
+                                                             long responseTimestamp,
+                                                             Set<VehicleFeature> vehicleFeatures
                                                              ) {
 
         SiriMonitoredCallBuilder siriMonitoredCallBuilder = new SiriMonitoredCallBuilder();
@@ -295,6 +299,11 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                 }
             }
         }
+
+
+        SiriVehicleFeatures siriVehicleFeatures = new SiriVehicleFeatures();
+        siriVehicleFeatures.setStrollerVehicle(vehicleFeatures.contains(VehicleFeature.STROLLER));
+        wrapper.setFeatures(siriVehicleFeatures);
 
         anyExtensions.setAny(wrapper);
         siriMonitoredCallBuilder.setExtensions(anyExtensions);
