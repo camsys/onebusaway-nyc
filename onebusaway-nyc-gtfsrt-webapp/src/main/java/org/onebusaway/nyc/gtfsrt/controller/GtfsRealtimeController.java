@@ -17,7 +17,6 @@ package org.onebusaway.nyc.gtfsrt.controller;
 
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import org.onebusaway.nyc.gtfsrt.service.FeedMessageService;
-import org.onebusaway.nyc.transit_data_manager.siri.NycSiriService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -35,8 +34,6 @@ public class GtfsRealtimeController {
     private FeedMessageService _vehicleUpdateService;
     private FeedMessageService _tripUpdateService;
     private FeedMessageService _serviceAlertService;
-    @Autowired
-    private NycSiriService _siriService;
 
     private long lastAlertInvocation = System.currentTimeMillis();
 
@@ -91,20 +88,10 @@ public class GtfsRealtimeController {
                           @RequestParam(value = "debug", defaultValue = "false") boolean debug,
                           @RequestParam(value = "time", required = false) Long time)
         throws IOException {
-        forceReloadOfAlerts();
         FeedMessage msg = _serviceAlertService.getFeedMessage(time);
         writeFeed(response, msg, debug);
     }
 
-    // SIRI subscription doesn't work for gtfsrt -- and we wouldn't want
-    // that endpoint public regardless.  Manually reload alerts on a
-    // configurable interval
-    private synchronized void forceReloadOfAlerts() {
-        if (System.currentTimeMillis() - lastAlertInvocation > getAlertRefreshIntervalInMillis()) {
-            _siriService.setup();
-            lastAlertInvocation = System.currentTimeMillis();
-        }
-    }
 
     private void writeFeed(HttpServletResponse response, FeedMessage msg, boolean debug)
         throws IOException {
