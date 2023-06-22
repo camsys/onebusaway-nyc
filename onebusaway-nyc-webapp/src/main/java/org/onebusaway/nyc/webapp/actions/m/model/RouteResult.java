@@ -70,6 +70,8 @@ public class RouteResult implements SearchResult {
 		return serviceAlerts;
 	}
 
+	public int getType() {return route.getType();}
+
 	public List<RouteDirection> getDirections() {
 		return directions;
 	}
