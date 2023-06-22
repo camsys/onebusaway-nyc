@@ -24,14 +24,24 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeUnit;
+
 public class WebResourceWrapper {
 
   public static final int USE_DEFAULT_TIMEOUTS = -1;
   @SuppressWarnings("unused")
   transient private static final Logger _log = LoggerFactory.getLogger(WebResourceWrapper.class);
 
+  private static final int CONNECTION_TIMEOUT = 5000;
+  private static final int READ_TIMEOUT = 20000;
+
   public String post(String siri, String tdm) {
-    Client client = ClientBuilder.newClient( new ClientConfig().register( WebResourceWrapper.class ) );
+    Client client =  ClientBuilder.newBuilder()
+                      .withConfig(new ClientConfig().register( WebResourceWrapper.class ))
+                      .connectTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
+                      .readTimeout(READ_TIMEOUT, TimeUnit.MILLISECONDS)
+                      .build();
+    _log.info("Sending SIRI {} to {}", siri, tdm);
     WebTarget webTarget = client.target(tdm);
 
     Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_XML);
