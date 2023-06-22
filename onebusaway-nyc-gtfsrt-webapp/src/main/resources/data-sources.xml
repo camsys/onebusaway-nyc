@@ -78,12 +78,6 @@
     <bean id="cancelledTripService" class="org.onebusaway.nyc.transit_data_federation.impl.queue.CancelledTripHttpListenerTask">
     </bean>
 
-    <!-- Service alerts. -->
-
-    <!--<bean id="nycSiriService" class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
-        <property name="serviceAlertsUrl" value="${service.alerts.url}" />
-        <property name="subscriptionPath" value="${service.alerts.subscription.path}" />
-    </bean>-->
 
     <!-- define which TDM to use -->
     <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
