@@ -293,7 +293,7 @@ OBA.Sign = function() {
 				});
 
 
-					var summary = "";
+				var summary = "";
 				if(situation.Summary !== null && typeof situation.Summary !=="undefined"){
 					summary = situation.Summary.replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ");
 				}
