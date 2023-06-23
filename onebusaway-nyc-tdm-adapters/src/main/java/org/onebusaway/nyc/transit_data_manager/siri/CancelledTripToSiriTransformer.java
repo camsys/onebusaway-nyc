@@ -158,6 +158,7 @@ public class CancelledTripToSiriTransformer {
               + " is canceled";
     }
 
+    pt.setSummary(toText("Bus Cancellation on " + affectedRoute.getId()));
     pt.setDescription(toText(descriptionText));
     pt.setCreationTime(new Date(cancelledTrip.getTimestamp()));
     pt.setPlanned(false);
