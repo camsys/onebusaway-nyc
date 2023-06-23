@@ -252,12 +252,18 @@ OBA.Sign = function() {
 			var found = false;
 			jQuery.each(applicableSituations, function(situationId, situation) {
 				jQuery.each(situation.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, journey) {
+
 					if (typeof situation.Affects.VehicleJourneys != "undefined") {
 						if (journey.LineRef in routeInfo) {
 							found = true;
 							return false;
                         }
                     }
+					if( (situation.Summary === null || typeof situation.Summary ==="undefined") &&
+						(situation.Description  === null || typeof  situation.Description==="undefined")) {
+						found = true;
+						return false;
+					}
                 });
 			});
 
@@ -286,12 +292,22 @@ OBA.Sign = function() {
 					}
 				});
 
+
+					var summary = "";
+				if(situation.Summary !== null && typeof situation.Summary !=="undefined"){
+					summary = situation.Summary.replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ");
+				}
+				var description = "";
+				if(situation.Description  !== null && typeof  situation.Description!=="undefined") {
+					description = situation.Description.replace(/$/g, "<br/><br/>").replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ");
+				}
+
+
 				var alert = jQuery("<div></div>")
-								.addClass("alert")
-								.html('<p class="alert_summary">' + situation.Summary.replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ") + '</p><p>' + situation.Description.replace(/$/g, "<br/><br/>").replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ") + '</p>');
+					.addClass("alert")
+					.html('<p class="alert_summary">' + summary + '</p><p>' + description + '</p>');
 
 				alert.prepend(signWrapper);
-
 				stopElement.find("div.scroller").append(alert);
 			});
 		}
