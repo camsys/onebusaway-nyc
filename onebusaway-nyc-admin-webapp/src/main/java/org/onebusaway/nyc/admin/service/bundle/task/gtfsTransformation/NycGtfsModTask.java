@@ -42,7 +42,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
 
     private static Logger _log = LoggerFactory.getLogger(NycGtfsModTask.class);
 
-    private BundleRequestResponse _requestResponse;
+    protected BundleRequestResponse _requestResponse;
     private HashMap<String,CoordinatePoint> coordinatesForZone = new HashMap<String, CoordinatePoint>();
     private final int CONFIG_KEY_ARG_ZONE = 0;
     private final int CONFIG_KEY_ARG_COORDINATE = 1;
@@ -50,7 +50,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     private final int CONFIG_KEY_ARG_TRANSFORMATION_EXCEPTIONS = 3;
     private final int CONFIG_KEY_ARG_DISTANCE_FROM_ZONE_CENTER = 4;
     private final int CONFIG_KEY_ARG_DELIMETER = 5;
-    private final String DEFAULT_ZONES_VALUES = "bronx,brooklyn,manhattan,mtabc,queens,staten-island,google-transit-mta-agency";
+    private final String DEFAULT_ZONES_VALUES = "bronx,brooklyn,manhattan,mtabc,queens,staten-island,google-transit-mta-agency,shuttles";
     private final String DEFAULT_CONFIG_KEYS = "zones,coordinate,modurl,zones-to-avoid-transforming,maxDistancetoZoneCenter,_";
     private final String DEFAULT_CATAGORIZED_AS_DEFAULT_ZONE = "google-transit-mta-agency";
 
@@ -63,6 +63,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
                 {"queens_coordinate","(40.738186,-73.78097)"},
                 {"staten-island_coordinate","(40.607594,-74.123276)"},
                 {"google-transit-mta-agency_coordinate","(-999,-999)"},
+                {"shuttles_coordinate","(-999,-999)"}
             }).collect(Collectors.toMap(mapEntry -> mapEntry[0], mapEntry -> mapEntry[1]));
     private String _zone;
     private String _coordinate;
@@ -175,7 +176,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
         rawOutput.delete();
     }
 
-    private void getModTaskConfigKeys() {
+    protected void getModTaskConfigKeys() {
         String configKeysString = configurationService.getConfigurationValueAsString("ModTaskConfigKeys", DEFAULT_CONFIG_KEYS);
 //                    When setting ModTaskConfigKeys in TDM. Please include the following keys:
 //                    key for comma seperated list of zones
@@ -198,7 +199,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
         return configurationService.getConfigurationValueAsFloat(_distanceFromZoneCenter, (float) .05);
     }
 
-    private String[] getZones(){
+    protected String[] getZones(){
         return configurationService.getConfigurationValueAsString(_zone,DEFAULT_ZONES_VALUES).
                 replaceAll("\\s_","").split(",");
     }
@@ -215,7 +216,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
                 replaceAll("\\s_","").split(",");
     }
 
-    private void getZoneCoordinates(String[] zones){
+    protected void getZoneCoordinates(String[] zones){
         for (String zone : zones){
             String configurationItemKey = zone+_delimiter+_coordinate;
             String coordinateString = configurationService.getConfigurationValueAsString(configurationItemKey,null);
@@ -233,7 +234,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
         }
     }
 
-    private String determineZone(GtfsBundle bundle){
+    protected String determineZone(GtfsBundle bundle){
         String zone = null;
 
         Set<String> routes = new HashSet<String>();
@@ -286,6 +287,10 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     private String categorizeByZone(CoordinatePoint zoneCoordinate, File path){
         _log.info("Median coordinate for: "+ path.getName() +
                 " is at: " +zoneCoordinate.toString());
+        if(path.getName().toUpperCase(Locale.ROOT).contains("SHUTTLE")){
+            // This is an overide based on names because shuttles midpoints change so frequently
+            return "shuttles";
+        }
         float shortestDistance = getMaxDistance();
         String zone = DEFAULT_CATAGORIZED_AS_DEFAULT_ZONE;
         for(Map.Entry<String,CoordinatePoint> entry: coordinatesForZone.entrySet()) {
@@ -309,7 +314,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     @Override
     public void addExtraMods(GtfsTransformer mod) {
         SimpleFeedVersionStrategy strategy = new SimpleFeedVersionStrategy();
-        String name = requestResponse.getRequest().getBundleName();
+        String name = _requestResponse.getRequest().getBundleName();
         strategy.setVersion(name);
         mod.addTransform(strategy);
     }
