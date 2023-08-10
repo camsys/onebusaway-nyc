@@ -50,7 +50,7 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     private final int CONFIG_KEY_ARG_TRANSFORMATION_EXCEPTIONS = 3;
     private final int CONFIG_KEY_ARG_DISTANCE_FROM_ZONE_CENTER = 4;
     private final int CONFIG_KEY_ARG_DELIMETER = 5;
-    private final String DEFAULT_ZONES_VALUES = "bronx,brooklyn,manhattan,mtabc,queens,staten-island,google-transit-mta-agency";
+    private final String DEFAULT_ZONES_VALUES = "bronx,brooklyn,manhattan,mtabc,queens,staten-island,google-transit-mta-agency,shuttles";
     private final String DEFAULT_CONFIG_KEYS = "zones,coordinate,modurl,zones-to-avoid-transforming,maxDistancetoZoneCenter,_";
     private final String DEFAULT_CATAGORIZED_AS_DEFAULT_ZONE = "google-transit-mta-agency";
 
@@ -286,6 +286,10 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
     private String categorizeByZone(CoordinatePoint zoneCoordinate, File path){
         _log.info("Median coordinate for: "+ path.getName() +
                 " is at: " +zoneCoordinate.toString());
+        if(path.getName().toUpperCase(Locale.ROOT).contains("SHUTTLE")){
+            // This is an overide based on names because shuttles midpoints change so frequently
+            return "shuttles";
+        }
         float shortestDistance = getMaxDistance();
         String zone = DEFAULT_CATAGORIZED_AS_DEFAULT_ZONE;
         for(Map.Entry<String,CoordinatePoint> entry: coordinatesForZone.entrySet()) {
