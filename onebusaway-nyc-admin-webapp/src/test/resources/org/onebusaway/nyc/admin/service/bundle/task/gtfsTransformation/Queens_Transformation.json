@@ -1,0 +1,7 @@
+{"op":"update", "match": {"file": "calendar.txt", "service_id": "(d{8}[a-z]{2})"}, "update": {"service_id": "s/(d{8}[a-z]{2})/B_$1/"}} 
+{"op":"update", "match": {"file": "calendar_dates.txt", "service_id": "(d{8}[a-z]{2})"}, "update": {"service_id": "s/(d{8}[a-z]{2})/B_$1/"}} 
+{"op":"update", "match": {"file": "trips.txt", "service_id": "(d{8}[a-z]{2})"}, "update": {"service_id": "s/(d{8}[a-z]{2})/B_$1/"}}
+
+{"op":"transform", "class":"org.onebusaway.gtfs_transformer.impl.RemoveUnusedRoutes"}
+
+#{"op":"transform", "class":"org.onebusaway.gtfs_transformer.impl.RemoveOldCalendarStatements"}
