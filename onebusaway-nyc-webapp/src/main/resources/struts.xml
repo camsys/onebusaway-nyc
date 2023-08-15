@@ -31,15 +31,27 @@
     <constant name="struts.custom.i18n.resources" value="onebusaway-nyc" />
     <!-- constant name="struts.devMode" value="true" /-->
 
-    <package name="onebusaway-webapp-default" extends="struts-default">
+    <package name="onebusaway-webapp-default" extends="struts-default" namespace="/">
 
         <interceptors>
             <interceptor name="cspHeaderInterceptor" class="org.onebusaway.nyc.webapp.web.CspHeaderInterceptor"/>
+            <interceptor-stack name="cspStack">
+                <interceptor-ref name="cspHeaderInterceptor"/>
+            </interceptor-stack>
+        </interceptors>
+
+        <default-interceptor-ref name="cspStack"/>
+
+
+    </package>
+
+    <package name="onebusaway-webapp-default" extends="struts-default">
+
+        <interceptors>
             <interceptor-stack name="secureParamInterceptor">
                 <interceptor-ref name="defaultStack">
                     <param name="params.excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*</param>
                 </interceptor-ref>
-                <interceptor-ref name="cspHeaderInterceptor" />
             </interceptor-stack>
         </interceptors>
 
