@@ -60,7 +60,6 @@
 <jsp:text>
 &lt;![endif]--&gt;
 </jsp:text>
-
   <s:url var="url" value="/js/lib/jquery.js">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
   </s:url>
@@ -71,12 +70,16 @@
   </s:url>
   <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+	<s:url var="url" value="https://cdnjs.cloudflare.com/ajax/libs/jquery.hoverintent/1.10.2/jquery.hoverIntent.min.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
   <s:url var="url" value="/js/oba/Config.js">
     <s:param name="v"><s:property value="frontEndVersion" /></s:param>
   </s:url>
   <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-  
   <decorator:head />
 </head>
 
