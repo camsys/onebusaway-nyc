@@ -575,6 +575,30 @@
                         </configuration>
                     </execution>
 
+                    <execution>
+                        <id>graph-builder-execution-2023Sept_Prod_r02_b03_PREDATE_SHUTTLES</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx1500m</argument><!-- larger than this may fail on 32-bit machines -->
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-2023Sept_Prod_r02_b03_PREDATE_SHUTTLES.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/2023Sept_Prod_r02_b03_PREDATE_SHUTTLES</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
                     <!-- REMOVED -->
                     <!-- <execution>
                          <id>graph-builder-execution-2012September_Bronx_r10_b03</id>
