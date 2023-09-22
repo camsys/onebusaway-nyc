@@ -207,7 +207,7 @@ public class VehicleLocationSimulationServiceImpl implements
     }
     traceInputStream.close();
 
-    if(!capiFile.equals("")){
+    if(capiFile != null && !capiFile.isBlank()){
       String cancelledTripData = readCapiFile(capiInputStream);
       task.injectCapi(cancelledTripData,capiStart);
     }

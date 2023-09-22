@@ -244,9 +244,12 @@ public class VehicleLocationSimulationController {
       if (historySize < 0)
         historySize = Integer.MAX_VALUE;
 
-      String capiFileName = capiFile.getOriginalFilename();
-
-      InputStream capiIn = capiFile.getInputStream();
+      String capiFileName = null;
+      InputStream capiIn = null;
+      if (capiFile != null && !capiFile.isEmpty()){
+        capiFileName = capiFile.getOriginalFilename();
+        capiIn = capiFile.getInputStream();
+      }
       
       taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(
           name, traceType, in, realtime, pauseOnStart, shiftStartTime,
