@@ -86,11 +86,10 @@ public class  TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
         tripUpdate.setVehicle(makeVehicleDescriptor(vehicle));
         tripUpdate.setTimestamp(vehicle.getLastUpdateTime()/1000);
 
-        String status = "SPOOKING";
-        if(vehicle.getPhase().equals(status)){
+        if(vehicle.getPhase().equals("spooking")){
             GtfsRealtimeOneBusAway.OneBusAwayTripUpdate.Builder obaTripUpdate =
                     GtfsRealtimeOneBusAway.OneBusAwayTripUpdate.newBuilder();
-            obaTripUpdate.setIsEstimatedRealtime(vehicle.getPhase());
+            obaTripUpdate.setIsEstimatedRealtime(true);
             tripUpdate.setExtension(GtfsRealtimeOneBusAway.obaTripUpdate, obaTripUpdate.build());
         }
 
