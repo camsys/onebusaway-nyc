@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.gtfsrt.impl;
 
-import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.VehiclePosition;
 
 import com.google.transit.realtime.GtfsRealtimeCrowding;
@@ -30,7 +29,6 @@ import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 
 import org.onebusaway.transit_data.model.trips.VehicleFeature;
-import org.onebusaway.transit_data_federation.services.StrollerVehicleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +49,6 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
 
 	private ConfigurationService _configurationService;
 
-    private StrollerVehicleService _strollerVehicleService;
-
 	@Autowired
     public void setTransitDataService(NycTransitDataService transitDataService) {
         _transitDataService = transitDataService;
@@ -69,7 +65,6 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
         VehiclePosition.Builder position = VehiclePosition.newBuilder();
         position.setTimestamp(record.getTimeOfRecord()/1000);
         position.setPosition(makePosition(record));
-
         position.setVehicle(makeVehicleDescriptor(record));
 
         Set<VehicleFeature> features = status.getTripStatus().getVehicleFeatures();
