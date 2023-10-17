@@ -18,6 +18,7 @@ package org.onebusaway.nyc.gtfsrt.impl;
 import com.google.transit.realtime.GtfsRealtime.VehiclePosition;
 
 import com.google.transit.realtime.GtfsRealtimeCrowding;
+import com.google.transit.realtime.GtfsRealtimeOneBusAway;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.VehicleUpdateFeedBuilder;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -27,6 +28,7 @@ import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 
+import org.onebusaway.transit_data.model.trips.VehicleFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary.*;
 
@@ -45,7 +48,7 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
 	private NycTransitDataService _transitDataService;
 
 	private ConfigurationService _configurationService;
-	
+
 	@Autowired
     public void setTransitDataService(NycTransitDataService transitDataService) {
         _transitDataService = transitDataService;
@@ -55,7 +58,6 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
     public void setConfigurationService(ConfigurationService configurationService){
 	    _configurationService = configurationService;
     }
-
     @Override
     public VehiclePosition.Builder makeVehicleUpdate(VehicleStatusBean status, VehicleLocationRecordBean record, 
         VehicleOccupancyRecord vor) {
@@ -64,6 +66,16 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
         position.setTimestamp(record.getTimeOfRecord()/1000);
         position.setPosition(makePosition(record));
         position.setVehicle(makeVehicleDescriptor(record));
+
+        Set<VehicleFeature> features = status.getTripStatus().getVehicleFeatures();
+        for(VehicleFeature feature : features){
+            if(feature.equals(VehicleFeature.STROLLER)){
+                GtfsRealtimeOneBusAway.OneBusAwayVehicleDescriptor.Builder obaVehicleDescriptor =
+                        GtfsRealtimeOneBusAway.OneBusAwayVehicleDescriptor.newBuilder();
+                obaVehicleDescriptor.addVehicleFeature("STROLLER");
+                position.getVehicleBuilder().setExtension(GtfsRealtimeOneBusAway.obaVehicleDescriptor, obaVehicleDescriptor.build());
+            }
+        }
         if(showApc() && getGtfsrtOccupancy(status) != null){
             position.setOccupancyStatus(getGtfsrtOccupancy(status));
         }
