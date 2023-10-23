@@ -15,6 +15,7 @@
  */
 package org.onebusaway.api.actions.api.where;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -37,7 +38,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+import javax.ws.rs.*;
+
+@Path("/where")
+@Component
+//@Scope("request")
 public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -87,8 +95,13 @@ public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
     _query.setFrequencyMinutesAfter(frequencyMinutesAfter);
   }
 
-
-  public DefaultHttpHeaders show() throws ServiceException {
+  @Path("/arrivals-and-departures-for-stop/{stopId}")
+  @GET
+  @Produces("application/json")
+  public DefaultHttpHeaders getTripsByBlockId(
+          @PathParam("stopId") String stopId,
+          @DefaultValue("0") @QueryParam("time") String time
+  ) throws ParseException {
 
     if (hasErrors())
       return setValidationErrorsResponse();
@@ -97,24 +110,24 @@ public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
       _query.setTime(System.currentTimeMillis());
 
     StopWithArrivalsAndDeparturesBean result = _service.getStopWithArrivalsAndDepartures(
-        _id, _query);
+            stopId, _query);
 
     if (result == null)
       return setResourceNotFoundResponse();
 
     List<ArrivalAndDepartureBean> realTimeBeans = new LinkedList<ArrivalAndDepartureBean>();
     for (ArrivalAndDepartureBean bean : result.getArrivalsAndDepartures()){
-    	if (bean.isPredicted()){
-    		realTimeBeans.add(bean);
-    	}
+      if (bean.isPredicted()){
+        realTimeBeans.add(bean);
+      }
     }
-	result.getArrivalsAndDepartures().removeAll(realTimeBeans);
-    
+    result.getArrivalsAndDepartures().removeAll(realTimeBeans);
+
     if (isVersion(V1)) {
       // Convert data to v1 form
       List<ArrivalAndDepartureBeanV1> arrivals = getArrivalsAsV1(result);
       StopWithArrivalsAndDeparturesBeanV1 v1 = new StopWithArrivalsAndDeparturesBeanV1(
-          result.getStop(), arrivals, result.getNearbyStops());
+              result.getStop(), arrivals, result.getNearbyStops());
       return setOkResponse(v1);
     } else if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
@@ -122,7 +135,44 @@ public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
     } else {
       return setUnknownVersionResponse();
     }
+
   }
+//
+//  public DefaultHttpHeaders show() throws ServiceException {
+//
+//    if (hasErrors())
+//      return setValidationErrorsResponse();
+//
+//    if( _query.getTime() == 0)
+//      _query.setTime(System.currentTimeMillis());
+//
+//    StopWithArrivalsAndDeparturesBean result = _service.getStopWithArrivalsAndDepartures(
+//        _id, _query);
+//
+//    if (result == null)
+//      return setResourceNotFoundResponse();
+//
+//    List<ArrivalAndDepartureBean> realTimeBeans = new LinkedList<ArrivalAndDepartureBean>();
+//    for (ArrivalAndDepartureBean bean : result.getArrivalsAndDepartures()){
+//    	if (bean.isPredicted()){
+//    		realTimeBeans.add(bean);
+//    	}
+//    }
+//	result.getArrivalsAndDepartures().removeAll(realTimeBeans);
+//
+//    if (isVersion(V1)) {
+//      // Convert data to v1 form
+//      List<ArrivalAndDepartureBeanV1> arrivals = getArrivalsAsV1(result);
+//      StopWithArrivalsAndDeparturesBeanV1 v1 = new StopWithArrivalsAndDeparturesBeanV1(
+//          result.getStop(), arrivals, result.getNearbyStops());
+//      return setOkResponse(v1);
+//    } else if (isVersion(V2)) {
+//      BeanFactoryV2 factory = getBeanFactoryV2();
+//      return setOkResponse(factory.getResponse(result));
+//    } else {
+//      return setUnknownVersionResponse();
+//    }
+//  }
 
   private List<ArrivalAndDepartureBeanV1> getArrivalsAsV1(
       StopWithArrivalsAndDeparturesBean result) {

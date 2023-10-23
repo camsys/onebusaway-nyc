@@ -36,30 +36,29 @@
         </param-value>
   </context-param>
 
-	<!-- Filters -->
-  <filter>
-    <filter-name>struts-prepare-and-execute</filter-name>
-    <filter-class>org.apache.struts2.dispatcher.filter.StrutsPrepareAndExecuteFilter</filter-class>
-  </filter>
-  <filter-mapping>
-    <filter-name>struts-prepare-and-execute</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
 
-	<!-- Listeners -->
-  <listener>
-    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-  </listener>
-  <listener>
-    <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
-  </listener>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+    </listener>
 
-	<!-- Welcome file lists -->
-  <welcome-file-list>
-    <welcome-file>index.action</welcome-file>
-    <welcome-file>index.jsp</welcome-file>
-    <welcome-file>index.jspx</welcome-file>
-    <welcome-file>index.html</welcome-file>
-  </welcome-file-list>
+    <servlet>
+        <servlet-name>Jersey Spring Web Application</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>org.onebusaway.api,org.onebusaway.nyc.tools,org.onebusaway.nyc.api</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Jersey Spring Web Application</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+
+
 
 </web-app>
