@@ -24,14 +24,19 @@ public class AcceptsAdjustedServletRequest extends HttpServletRequestWrapper {
         uri = request.getRequestURI();
         String format = uri.substring(uri.length()-4);
         if(format.equals("json")){
-            acceptHeader = MediaType.APPLICATION_JSON_VALUE + acceptHeader;
+            acceptHeader = MediaType.APPLICATION_JSON_VALUE + "," + acceptHeader;
             acceptHeaders = addToHeaders(MediaType.APPLICATION_JSON_VALUE,acceptHeaders);
             uri = uri.substring(0,uri.length()-".json".length());
         }
         else if(format.equals(".xml")){
-            acceptHeader = MediaType.APPLICATION_XML_VALUE + acceptHeader;
+            acceptHeader = MediaType.APPLICATION_XML_VALUE + "," + acceptHeader;
             acceptHeaders = addToHeaders(MediaType.APPLICATION_XML_VALUE,acceptHeaders);
             uri = uri.substring(0,uri.length()-".xml".length());
+        }
+        else if(format.equals(".csv")){
+            acceptHeader = MediaType.TEXT_PLAIN_VALUE;
+            acceptHeaders = addToHeaders(MediaType.TEXT_PLAIN_VALUE,acceptHeaders);
+            uri = uri.substring(0,uri.length()-".csv".length());
         }
     }
 
@@ -62,9 +67,9 @@ public class AcceptsAdjustedServletRequest extends HttpServletRequestWrapper {
     private Enumeration<String> addToHeaders(String value,Enumeration<String> headers){
         List<String> out = new ArrayList<String>();
         out.add(value);
-        while(headers.hasMoreElements()){
-            out.add(headers.nextElement());
-        }
+//        while(headers.hasMoreElements()){
+//            out.add(headers.nextElement());
+//        }
         return Collections.enumeration(out);
     }
 

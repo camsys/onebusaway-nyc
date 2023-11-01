@@ -14,16 +14,7 @@ public class AcceptHeaderFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         request = new AcceptsAdjustedServletRequest((HttpServletRequest) request);
-
         chain.doFilter(request, response);
-//        List<String> names = Collections.list(req.getHeaderNames());
-//        names.addAll(Collections.list(req.getParameterNames()));
-////        for(String name : names)
-////        Enumeration<String> headers = req.getHeaders();
-//        List<String> accepts = Collections.list(req.getHeaders("accept"));
-//        Enumeration<String> acceptsActual = req.getHeaders("accept");
-//        acceptsActual
-//        int i = 11;
     }
 
     @Override

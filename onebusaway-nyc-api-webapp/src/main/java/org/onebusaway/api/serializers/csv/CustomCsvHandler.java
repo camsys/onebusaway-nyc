@@ -15,42 +15,53 @@
  */
 package org.onebusaway.api.serializers.csv;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+
 import java.util.Arrays;
 import java.util.List;
 
 import com.opensymphony.xwork2.ActionInvocation;
-import org.apache.struts2.rest.handler.ContentTypeHandler;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 import org.onebusaway.api.model.transit.ListWithReferencesBean;
+import org.onebusaway.api.serializers.xml.CustomXStreamHandler;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
 
-public class CustomCsvHandler implements ContentTypeHandler {
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.Provider;
 
-  @Deprecated
-  @Override
+@Provider
+@Produces(MediaType.TEXT_PLAIN)
+public class CustomCsvHandler extends CustomXStreamHandler {
+
+  public CustomCsvHandler(){
+    super(MediaType.TEXT_PLAIN_TYPE);
+  }
+
   public void toObject(Reader in, Object target) throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Override
   public void toObject(ActionInvocation actionInvocation, Reader in, Object target) throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Deprecated
-  @Override
   public String fromObject(Object obj, String resultCode, Writer stream)
       throws IOException {
     return null;
   }
 
-  @Override
   public String fromObject(ActionInvocation actionInvocation, Object obj, String resultCode, Writer stream) throws IOException {
+    return fromObject(obj,stream);
+  }
+
+  public String fromObject(Object obj, Writer stream) throws IOException {
     CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
     Class<?> entityType = getEntityType(obj);
     EntityHandler csvHandler = factory.createWriter(entityType, stream);
@@ -62,12 +73,10 @@ public class CustomCsvHandler implements ContentTypeHandler {
     return null;
   }
 
-  @Override
   public String getContentType() {
     return "text/plain";
   }
 
-  @Override
   public String getExtension() {
     return "csv";
   }
@@ -110,5 +119,20 @@ public class CustomCsvHandler implements ContentTypeHandler {
       return list.getList();
     }
     return Arrays.asList(obj);
+  }
+
+
+  @Override
+  public void writeTo(Object o, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
+    Writer outputWriter = new OutputStreamWriter(entityStream);
+    fromObject(o,outputWriter);
+    outputWriter.close();
+
+  }
+
+
+  @Override
+  public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
+    throw new UnsupportedOperationException();
   }
 }

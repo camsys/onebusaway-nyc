@@ -16,8 +16,6 @@
  */
 package org.onebusaway.api.serializers.xml;
 
-import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.DefaultActionInvocation;
 import org.onebusaway.api.actions.api.ValidationErrorBean;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.TimeBean;
@@ -72,6 +70,7 @@ import org.onebusaway.api.model.transit.tripplanning.StreetLegV2Bean;
 import org.onebusaway.api.model.transit.tripplanning.TransitLegV2Bean;
 import org.onebusaway.api.model.transit.tripplanning.VertexV2Bean;
 import org.onebusaway.api.model.where.ArrivalAndDepartureBeanV1;
+import org.onebusaway.api.serializers.CustomUniversalHandler;
 import org.onebusaway.geospatial.model.EncodedPolygonBean;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
@@ -84,23 +83,40 @@ import org.onebusaway.transit_data.model.StopGroupingBean;
 
 import com.thoughtworks.xstream.XStream;
 
-import org.apache.struts2.rest.handler.XStreamHandler;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.Provider;
+import java.io.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
-public class CustomXStreamHandler extends XStreamHandler {
+// todo: look into removing extraneous methods
+@Provider
+@Produces(MediaType.APPLICATION_XML)
+public class CustomXStreamHandler extends CustomUniversalHandler {
 
-  @Override
-  protected XStream createXStream(ActionInvocation actionInvocation) {
-    XStream xstream = super.createXStream(actionInvocation);
+    public CustomXStreamHandler(){
+        super(MediaType.APPLICATION_XML_TYPE);
+    }
+
+    public CustomXStreamHandler(MediaType type){
+        super(type);
+    }
+
+
+  private XStream createXStream() {
+    XStream xstream = new XStream();
     processXStreamAliases(xstream);
     return xstream;
   }
 
-  protected XStream createTestXStream() {
-    XStream xstream = super.createXStream();
+  private XStream createTestXStream() {
+    XStream xstream = new XStream();
     processXStreamAliases(xstream);
     return xstream;
   }
@@ -197,4 +213,20 @@ public class CustomXStreamHandler extends XStreamHandler {
         xstream.fromXML(in, target);
     }
 
+
+
+
+
+    @Override
+    public void writeTo(Object o, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
+        XStream xStream = createXStream();
+        xStream.toXML(o,entityStream);
+    }
+
+
+    @Override
+    public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
+        XStream xStream = createXStream();
+        return xStream.fromXML(entityStream,type);
+    }
 }

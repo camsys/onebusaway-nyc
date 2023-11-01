@@ -1,35 +1,46 @@
 package org.onebusaway.api.serializers.json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.*;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.inject.Inject;
-import org.apache.struts2.ServletActionContext;
-import org.apache.struts2.rest.handler.AbstractContentTypeHandler;
+import org.onebusaway.api.serializers.CustomUniversalHandler;
+
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.Provider;
+import java.io.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 
-public class CustomJsonLibHandler extends AbstractContentTypeHandler {
+@Provider
+@Produces(MediaType.APPLICATION_JSON)
+public class CustomJsonLibHandler extends CustomUniversalHandler {
+
+        // todo: look into removing extraneous methods
 
         private String defaultEncoding = "ISO-8859-1";
         private ObjectMapper mapper = new ObjectMapper();
 
-        public void toObject(ActionInvocation invocation, Reader in, Object target) throws IOException {
+        @Context
+        HttpServletRequest request;
+
+        public CustomJsonLibHandler(){
+                super(MediaType.APPLICATION_JSON_TYPE);
+        }
+
+        public void toObject(Reader in, Object target) throws IOException {
                 this.mapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
                 ObjectReader or = this.mapper.readerForUpdating(target);
                 or.readValue(in);
         }
 
-        public String fromObject(ActionInvocation invocation, Object obj, String resultCode, Writer stream) throws IOException {
-                String callback = getCallback();
-                return fromObject(invocation, obj, resultCode, stream, callback);
-        }
-
-        public String fromObject(ActionInvocation invocation, Object obj, String resultCode, Writer stream, String callback) throws IOException {
+        public String fromObject(Object obj, Writer stream, String callback) throws IOException {
                 mapper.setSerializerProvider(new CustomSerializerProvider());
                 mapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
                 mapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
@@ -43,18 +54,43 @@ public class CustomJsonLibHandler extends AbstractContentTypeHandler {
                 else {
                         stream.write(value);
                 }
-
                 return null;
         }
 
         public String getCallback(){
                 String callback = null;
-                HttpServletRequest req = ServletActionContext.getRequest();
-                if (req != null) {
-                        callback = req.getParameter("callback");
+                if (request != null) {
+                        callback = request.getParameter("callback");
                 }
                 return callback;
         }
+
+
+
+        @Inject("struts.i18n.encoding")
+        public void setDefaultEncoding(String val) {
+                this.defaultEncoding = val;
+        }
+
+
+        @Override
+        public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
+                this.mapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+                return mapper.readValue(entityStream,type);
+        }
+
+        @Override
+        public void writeTo(Object o, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
+                Writer writer = new OutputStreamWriter(entityStream);
+                fromObject(o,writer,getCallback());
+                writer.close();
+
+        }
+
+
+
+
+        // delete these after migration:
 
         public String getContentType() {
                 String callback = getCallback();
@@ -68,8 +104,12 @@ public class CustomJsonLibHandler extends AbstractContentTypeHandler {
                 return "json";
         }
 
-        @Inject("struts.i18n.encoding")
-        public void setDefaultEncoding(String val) {
-                this.defaultEncoding = val;
+        public String fromObject(ActionInvocation invocation, Object obj, String resultCode, Writer stream) throws IOException {
+                String callback = getCallback();
+                return fromObject(invocation, obj, resultCode, stream, callback);
+        }
+
+        public String fromObject(ActionInvocation invocation, Object obj, String resultCode, Writer stream, String callback) throws IOException {
+                return fromObject(obj,stream,callback);
         }
 }
