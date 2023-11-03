@@ -943,7 +943,7 @@ public class VehicleLocationInferenceServiceImpl implements
       }
       if(isValid)
         _timeReceivedByVehicleId.put(vid, timeReceived);
-//        _log.info("put: " + vid + ", " + timeReceived + ", size: " + _timeReceivedByVehicleId.size());
+        _log.debug("put: " + vid + ", " + timeReceived + ", size: " + _timeReceivedByVehicleId.size());
       return isValid;
     }
   }
