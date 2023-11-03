@@ -110,7 +110,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
 
-  private static final long MIN_RECORD_INTERVAL = 3 * 1000; // 3 seconds
+  private static final long MIN_RECORD_INTERVAL = 20 * 1000; // 20 seconds
 
   @Autowired
   private ObservationCache _observationCache;
