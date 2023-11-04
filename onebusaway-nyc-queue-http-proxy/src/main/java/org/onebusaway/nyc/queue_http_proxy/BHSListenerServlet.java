@@ -131,7 +131,14 @@ public class BHSListenerServlet extends HttpServlet {
 
   public void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    service(request.getInputStream());
+    try {
+      service(request.getInputStream());
+    } catch (Throwable t) {
+      t.printStackTrace();
+      _log.error("service failed with {}", t,t);
+      // by catching this we will implicitly return a 200
+      // the client will not know to retry
+    }
   }
 
   public void doGet(HttpServletRequest request, HttpServletResponse response)
