@@ -25,8 +25,4 @@ public interface OutputQueueSenderService {
 
   public boolean getIsPrimaryInferenceInstance();
 
-  public void setPrimaryHostname(String hostname);
-
-  public String getPrimaryHostname();
-
 }

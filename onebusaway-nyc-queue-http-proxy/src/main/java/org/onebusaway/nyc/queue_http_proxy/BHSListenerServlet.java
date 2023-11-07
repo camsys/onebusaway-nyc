@@ -19,7 +19,6 @@ package org.onebusaway.nyc.queue_http_proxy;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.TimerTask;
 
 import javax.servlet.ServletContext;
@@ -30,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.compress.utils.IOUtils;
-import org.onebusaway.nyc.queue.DNSResolver;
+import org.onebusaway.nyc.queue.LeadershipElectionResolver;
 import org.onebusaway.nyc.queue.IPublisher;
 import org.onebusaway.nyc.queue.Publisher;
 import org.slf4j.Logger;
@@ -56,7 +55,7 @@ public class BHSListenerServlet extends HttpServlet {
 
   private static final long serialVersionUID = 245140554274414196L;
   private static Logger _log = LoggerFactory.getLogger(BHSListenerServlet.class);
-  protected DNSResolver _resolver = null;
+  protected LeadershipElectionResolver _resolver = null;
   
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
@@ -67,17 +66,6 @@ public class BHSListenerServlet extends HttpServlet {
   private static final String DEFAULT_HOST = "*";
   private static final int DEFAULT_PORT = 5563;
 
-  public void startDNSCheckThread() {
-    String host = getHost();
-    _log.info("listening on interface " + host);
-    _resolver = new DNSResolver(host);
-
-    if (_taskScheduler != null) {
-      DNSCheckThread dnsCheckThread = new DNSCheckThread();
-      // ever 10 seconds
-      _taskScheduler.scheduleWithFixedDelay(dnsCheckThread, 10 * 1000);
-    }
-  }
 
   private String getHost() {
     try {
@@ -89,7 +77,6 @@ public class BHSListenerServlet extends HttpServlet {
   }
 
   public synchronized void init() throws ServletException {
-    startDNSCheckThread();
 
     IPublisher publisher = (IPublisher) getServletConfig().getServletContext().getAttribute(
         PUBLISHER_KEY);
@@ -192,19 +179,4 @@ public class BHSListenerServlet extends HttpServlet {
     return valueAsInt;
   }
 
-  private class DNSCheckThread extends TimerTask {
-
-    @Override
-    public void run() {
-      try {
-        if (_resolver.hasAddressChanged()) {
-          _log.warn("Resolver Changed -- re-binding queue connection");
-          init();
-        }
-      } catch (Exception e) {
-        _log.error(e.toString());
-        _resolver.reset();
-      }
-    }
-  }
 }
