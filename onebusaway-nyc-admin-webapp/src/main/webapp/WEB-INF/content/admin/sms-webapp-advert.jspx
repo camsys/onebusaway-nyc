@@ -47,7 +47,7 @@
                 <label class="top">Display sms ad?</label>
                 <s:select class = "ad_update"
                     name="smsShowAd"
-                    id = "showAd"
+                    id ="showAnnouncement"
                     list="#{'false':'hide','true':'display'}"/>
             </fieldset>
             <fieldset class="advert_conditional_display">
