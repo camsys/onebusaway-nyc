@@ -125,5 +125,8 @@
         <property name="url" value="http://${gtfs.editor.host}/api/gtfs-servicechange/list" />
         <property name="transitDataService" ref="nycTransitDataServiceImpl" />
     </bean>
+    <!-- Stroller Vehicle Configuration -->
+    <bean id="strollerVehicleListener" class="org.onebusaway.nyc.transit_data_federation.impl.queue.StrollerVehicleHttpListenerTask">
+    </bean>
 
 </beans>
