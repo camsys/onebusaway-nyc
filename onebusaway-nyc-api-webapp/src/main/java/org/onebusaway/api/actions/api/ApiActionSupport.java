@@ -28,6 +28,8 @@ import org.onebusaway.transit_data.services.TransitDataService;
 
 import com.opensymphony.xwork2.ModelDriven;
 
+import javax.ws.rs.core.Response;
+
 public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     ModelDriven<ResponseBean> {
 
@@ -107,6 +109,11 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     return new DefaultHttpHeaders();
   }
 
+  protected Response getOkResponse(Object data) {
+    return getResponseForResponseBean( new ResponseBean(getReturnVersion(), ResponseCodes.RESPONSE_OK,
+            "OK", data));
+  }
+
   protected DefaultHttpHeaders setValidationErrorsResponse() {
     ValidationErrorBean bean = new ValidationErrorBean(new ArrayList<String>(
         getActionErrors()), getFieldErrors());
@@ -115,16 +122,33 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     return new DefaultHttpHeaders().withStatus(_response.getCode());
   }
 
+  protected Response getValidationErrorsResponse() {
+    ValidationErrorBean bean = new ValidationErrorBean(new ArrayList<String>(
+            getActionErrors()), getFieldErrors());
+    return getResponseForResponseBean(new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean));
+  }
+
   protected DefaultHttpHeaders setResourceNotFoundResponse() {
     _response = new ResponseBean(getReturnVersion(),
         ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null);
     return new DefaultHttpHeaders().withStatus(_response.getCode());
   }
 
+  protected Response getResourceNotFoundResponse() {
+    return getResponseForResponseBean(new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null));
+  }
+
   protected DefaultHttpHeaders setExceptionResponse() {
     _response = new ResponseBean(getReturnVersion(),
         ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "internal error", null);
     return new DefaultHttpHeaders().withStatus(_response.getCode());
+  }
+
+  protected Response getExceptionResponse() {
+    return getResponseForResponseBean(new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "internal error", null));
   }
 
   protected DefaultHttpHeaders setUnknownVersionResponse() {
@@ -134,10 +158,23 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     return new DefaultHttpHeaders().withStatus(_response.getCode());
   }
 
+  protected Response getUnknownVersionResponse() {
+    return getResponseForResponseBean(new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "unknown version: "
+            + _version, null));
+  }
+
   protected int getReturnVersion() {
     if (_version == NO_VERSION)
       return _defaultVersion;
     return _version;
+  }
+
+
+  private Response getResponseForResponseBean(ResponseBean bean){
+    return Response.status(bean.getCode())
+            .entity(bean)
+            .build();
   }
 
 }

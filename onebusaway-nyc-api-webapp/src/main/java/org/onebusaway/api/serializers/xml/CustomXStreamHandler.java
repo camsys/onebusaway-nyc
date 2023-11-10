@@ -95,7 +95,7 @@ import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-// todo: look into removing extraneous methods
+// todo: struts to spring: look into removing extraneous methods
 @Provider
 @Produces(MediaType.APPLICATION_XML)
 public class CustomXStreamHandler extends CustomUniversalHandler {

@@ -15,18 +15,12 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.where.ArrivalAndDepartureBeanV1;
 import org.onebusaway.api.model.where.StopWithArrivalsAndDeparturesBeanV1;
-import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.RouteBean;
@@ -36,16 +30,14 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
 
-@Path("/where")
+
+@Path("/where/arrivals-and-departures-for-stop/{stopId}")
 @Component
-//@Scope("request")
 public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -65,7 +57,7 @@ public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
     super(V1);
   }
 
-  @RequiredFieldValidator(message = "whoa there")
+  @PathParam("stopId")
   public void setId(String id) {
     _id = id;
   }
@@ -74,46 +66,57 @@ public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
     return _id;
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateTimeConverter")
+  @QueryParam("Time")
   public void setTime(Date time) {
-    _query.setTime(time.getTime());
+    if(time!=null) {
+      _query.setTime(time.getTime());
+    }
   }
 
+  @DefaultValue("-1")
+  @QueryParam("MinutesBefore")
   public void setMinutesBefore(int minutesBefore) {
-    _query.setMinutesBefore(minutesBefore);
+    if(minutesBefore!=-1) {
+      _query.setMinutesBefore(minutesBefore);
+    }
   }
 
+  @DefaultValue("-1")
+  @QueryParam("MinutesAfter")
   public void setMinutesAfter(int minutesAfter) {
-    _query.setMinutesAfter(minutesAfter);
+    if(minutesAfter!=-1) {
+      _query.setMinutesAfter(minutesAfter);
+    }
   }
-  
+
+  @DefaultValue("-1")
+  @QueryParam("FrequencyMinutesBefore")
   public void setFrequencyMinutesBefore(int frequncyMinutesBefore) {
-    _query.setFrequencyMinutesBefore(frequncyMinutesBefore);
+    if(frequncyMinutesBefore!=-1) {
+      _query.setFrequencyMinutesBefore(frequncyMinutesBefore);
+    }
   }
 
+  @DefaultValue("-1")
+  @QueryParam("FrequencyMinutesAfter")
   public void setFrequencyMinutesAfter(int frequencyMinutesAfter) {
-    _query.setFrequencyMinutesAfter(frequencyMinutesAfter);
+    if(frequencyMinutesAfter!=-1) {
+      _query.setFrequencyMinutesAfter(frequencyMinutesAfter);
+    }
   }
 
-  @Path("/arrivals-and-departures-for-stop/{stopId}")
   @GET
-  @Produces("application/json")
-  public DefaultHttpHeaders getTripsByBlockId(
-          @PathParam("stopId") String stopId,
-          @DefaultValue("0") @QueryParam("time") String time
-  ) throws ParseException {
+  public Response getTripsByBlockId() {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
-    if( _query.getTime() == 0)
-      _query.setTime(System.currentTimeMillis());
 
     StopWithArrivalsAndDeparturesBean result = _service.getStopWithArrivalsAndDepartures(
-            stopId, _query);
+            _id, _query);
 
     if (result == null)
-      return setResourceNotFoundResponse();
+      return getResourceNotFoundResponse();
 
     List<ArrivalAndDepartureBean> realTimeBeans = new LinkedList<ArrivalAndDepartureBean>();
     for (ArrivalAndDepartureBean bean : result.getArrivalsAndDepartures()){
@@ -128,51 +131,15 @@ public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
       List<ArrivalAndDepartureBeanV1> arrivals = getArrivalsAsV1(result);
       StopWithArrivalsAndDeparturesBeanV1 v1 = new StopWithArrivalsAndDeparturesBeanV1(
               result.getStop(), arrivals, result.getNearbyStops());
-      return setOkResponse(v1);
+      return getOkResponse(v1);
     } else if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return setOkResponse(factory.getResponse(result));
+      return getOkResponse(factory.getResponse(result));
     } else {
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     }
 
   }
-//
-//  public DefaultHttpHeaders show() throws ServiceException {
-//
-//    if (hasErrors())
-//      return setValidationErrorsResponse();
-//
-//    if( _query.getTime() == 0)
-//      _query.setTime(System.currentTimeMillis());
-//
-//    StopWithArrivalsAndDeparturesBean result = _service.getStopWithArrivalsAndDepartures(
-//        _id, _query);
-//
-//    if (result == null)
-//      return setResourceNotFoundResponse();
-//
-//    List<ArrivalAndDepartureBean> realTimeBeans = new LinkedList<ArrivalAndDepartureBean>();
-//    for (ArrivalAndDepartureBean bean : result.getArrivalsAndDepartures()){
-//    	if (bean.isPredicted()){
-//    		realTimeBeans.add(bean);
-//    	}
-//    }
-//	result.getArrivalsAndDepartures().removeAll(realTimeBeans);
-//
-//    if (isVersion(V1)) {
-//      // Convert data to v1 form
-//      List<ArrivalAndDepartureBeanV1> arrivals = getArrivalsAsV1(result);
-//      StopWithArrivalsAndDeparturesBeanV1 v1 = new StopWithArrivalsAndDeparturesBeanV1(
-//          result.getStop(), arrivals, result.getNearbyStops());
-//      return setOkResponse(v1);
-//    } else if (isVersion(V2)) {
-//      BeanFactoryV2 factory = getBeanFactoryV2();
-//      return setOkResponse(factory.getResponse(result));
-//    } else {
-//      return setUnknownVersionResponse();
-//    }
-//  }
 
   private List<ArrivalAndDepartureBeanV1> getArrivalsAsV1(
       StopWithArrivalsAndDeparturesBean result) {

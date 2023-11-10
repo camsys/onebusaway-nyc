@@ -22,7 +22,7 @@ import java.lang.reflect.Type;
 @Produces(MediaType.APPLICATION_JSON)
 public class CustomJsonLibHandler extends CustomUniversalHandler {
 
-        // todo: look into removing extraneous methods
+        // todo: struts to spring: look into removing extraneous methods
 
         private String defaultEncoding = "ISO-8859-1";
         private ObjectMapper mapper = new ObjectMapper();
