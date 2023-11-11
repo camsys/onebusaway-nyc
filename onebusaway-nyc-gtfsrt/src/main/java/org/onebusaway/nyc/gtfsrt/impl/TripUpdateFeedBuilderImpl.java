@@ -22,6 +22,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -86,16 +87,17 @@ public class  TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
         tripUpdate.setVehicle(makeVehicleDescriptor(vehicle));
         tripUpdate.setTimestamp(vehicle.getLastUpdateTime()/1000);
 
-        if(vehicle.getPhase().equals("spooking")){
+        double delay = useEffectiveScheduleTime() ? getEffectiveScheduleTime(trip, vehicle) : vehicle.getTripStatus().getScheduleDeviation();
+        tripUpdate.setDelay((int) delay);
+
+        if (EVehiclePhase.SPOOKING.equals(EVehiclePhase.valueOf(vehicle.getPhase().toUpperCase()))) {
             GtfsRealtimeOneBusAway.OneBusAwayTripUpdate.Builder obaTripUpdate =
                     GtfsRealtimeOneBusAway.OneBusAwayTripUpdate.newBuilder();
             obaTripUpdate.setIsEstimatedRealtime(true);
             tripUpdate.setExtension(GtfsRealtimeOneBusAway.obaTripUpdate, obaTripUpdate.build());
+            // we don't make predictions if its SPOOKING
+            return tripUpdate;
         }
-
-
-        double delay = useEffectiveScheduleTime() ? getEffectiveScheduleTime(trip, vehicle) : vehicle.getTripStatus().getScheduleDeviation();
-        tripUpdate.setDelay((int) delay);
         for (TimepointPredictionRecord tpr : records) {
             tripUpdate.addStopTimeUpdate(makeStopTimeUpdate(tpr));
         }
