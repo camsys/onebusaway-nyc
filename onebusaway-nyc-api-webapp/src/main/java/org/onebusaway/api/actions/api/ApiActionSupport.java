@@ -16,6 +16,7 @@
 package org.onebusaway.api.actions.api;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.ResponseCodes;
@@ -177,4 +178,22 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
             .build();
   }
 
+
+  protected void ifMeaningfulValue(Consumer<String> c, String val){
+    if(val!=null){
+      c.accept(val);
+    }
+  }
+
+  protected void ifMeaningfulValue(Consumer<Integer> c, int val){
+    if(val!=-1){
+      c.accept(val);
+    }
+  }
+
+  protected void ifMeaningfulValue(Consumer<Long> c, long val){
+    if(val!=-1){
+      c.accept(val);
+    }
+  }
 }

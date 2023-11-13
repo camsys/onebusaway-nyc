@@ -30,15 +30,12 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.stereotype.Component;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 
 @Path("/where/arrivals-and-departures-for-stop/{stopId}")
-@Component
-public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
+public class ArrivalsAndDeparturesForStopResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -53,7 +50,7 @@ public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
   
   private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();
 
-  public ArrivalsAndDeparturesForStopAction() {
+  public ArrivalsAndDeparturesForStopResource() {
     super(V1);
   }
 
@@ -68,41 +65,27 @@ public class ArrivalsAndDeparturesForStopAction extends ApiActionSupport {
 
   @QueryParam("Time")
   public void setTime(Date time) {
-    if(time!=null) {
-      _query.setTime(time.getTime());
-    }
+    super.ifMeaningfulValue(_query::setTime, time.getTime());
   }
 
-  @DefaultValue("-1")
   @QueryParam("MinutesBefore")
   public void setMinutesBefore(int minutesBefore) {
-    if(minutesBefore!=-1) {
-      _query.setMinutesBefore(minutesBefore);
-    }
+    super.ifMeaningfulValue(_query::setMinutesBefore, minutesBefore);
   }
 
-  @DefaultValue("-1")
   @QueryParam("MinutesAfter")
   public void setMinutesAfter(int minutesAfter) {
-    if(minutesAfter!=-1) {
-      _query.setMinutesAfter(minutesAfter);
-    }
+    super.ifMeaningfulValue(_query::setMinutesAfter,minutesAfter);
   }
 
-  @DefaultValue("-1")
   @QueryParam("FrequencyMinutesBefore")
   public void setFrequencyMinutesBefore(int frequncyMinutesBefore) {
-    if(frequncyMinutesBefore!=-1) {
-      _query.setFrequencyMinutesBefore(frequncyMinutesBefore);
-    }
+    super.ifMeaningfulValue(_query::setFrequencyMinutesBefore,frequncyMinutesBefore);
   }
 
-  @DefaultValue("-1")
   @QueryParam("FrequencyMinutesAfter")
   public void setFrequencyMinutesAfter(int frequencyMinutesAfter) {
-    if(frequencyMinutesAfter!=-1) {
-      _query.setFrequencyMinutesAfter(frequencyMinutesAfter);
-    }
+    super.ifMeaningfulValue(_query::setFrequencyMinutesAfter,frequencyMinutesAfter);
   }
 
   @GET
