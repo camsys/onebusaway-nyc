@@ -16,9 +16,11 @@
 package org.onebusaway.api.actions.api;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.function.Consumer;
 
 import org.apache.struts2.rest.DefaultHttpHeaders;
+import org.joda.time.DateTime;
 import org.onebusaway.api.ResponseCodes;
 import org.onebusaway.api.actions.OneBusAwayApiActionSupport;
 import org.onebusaway.api.impl.MaxCountSupport;
@@ -178,6 +180,11 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
             .build();
   }
 
+  protected void ifMeaningfulValue(Consumer<Long> c, Date val){
+    if(val!=null){
+      c.accept(val.getTime());
+    }
+  }
 
   protected void ifMeaningfulValue(Consumer<String> c, String val){
     if(val!=null){
@@ -186,12 +193,6 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
   }
 
   protected void ifMeaningfulValue(Consumer<Integer> c, int val){
-    if(val!=-1){
-      c.accept(val);
-    }
-  }
-
-  protected void ifMeaningfulValue(Consumer<Long> c, long val){
     if(val!=-1){
       c.accept(val);
     }

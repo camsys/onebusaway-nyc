@@ -15,34 +15,31 @@
  */
 package org.onebusaway.api.actions.api;
 
-import org.apache.struts2.dispatcher.HttpParameters;
-import org.apache.struts2.dispatcher.Parameter;
-import org.onebusaway.api.ResponseCodes;
-import org.onebusaway.api.model.ResponseBean;
+
 import org.onebusaway.nyc.api.lib.impl.ApiKeyUsageMonitorImpl;
+import org.onebusaway.nyc.api.lib.services.ApiKeyThrottledService;
+import org.onebusaway.nyc.api.lib.services.ApiKeyWithRolesPermissionService;
 import org.onebusaway.users.services.ApiKeyPermissionService;
-
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.ActionProxy;
-import com.opensymphony.xwork2.inject.Inject;
-import com.opensymphony.xwork2.interceptor.AbstractInterceptor;
-
-import org.apache.struts2.rest.ContentTypeHandlerManager;
-import org.apache.struts2.rest.DefaultHttpHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 
-/**
- * Ensures that there is a valid API key for the API request, and that a given API key
- * is not used more frequently than it is permitted to.
- */
-public class ApiKeyInterceptor extends AbstractInterceptor {
+
+// todo: struts to spring: merge this and duplicate in Ops-API, probably should go to nyc-api-lib and then both should pull from it
+// todo: struts to spring: also, should do the same thing with the usagemonitor
+public class ApiKeyInterceptor implements Filter {
+
+  private static Logger _log = LoggerFactory.getLogger(ApiKeyInterceptor.class);
 
   private static final long serialVersionUID = 1L;
+
 
   @Autowired
   private ApiKeyPermissionService _keyService;
@@ -50,80 +47,98 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
   @Autowired
   private ApiKeyUsageMonitorImpl _keyUsageMonitor;
 
-  private ContentTypeHandlerManager _handlerSelector;
+  @Autowired
+  private ApiKeyThrottledService _throttledKeyService;
 
-  @Inject
-  public void setMimeTypeHandlerSelector(ContentTypeHandlerManager sel) {
-    _handlerSelector = sel;
-  }
 
   @Override
-  public String intercept(ActionInvocation invocation) throws Exception {
-
-    Object action = invocation.getAction();
-    Class<? extends Object> actionType = action.getClass();
-    ApiKeyAuthorization annotation = actionType.getAnnotation(ApiKeyAuthorization.class);
-
-    if (annotation != null) {
-      if (!annotation.enabled())
-        return invocation.invoke();
-    }
-
-    ApiKeyPermissionService.Status allowed = isAllowed(invocation);
-
-    if (ApiKeyPermissionService.Status.AUTHORIZED != allowed) {
-      //this user is not authorized to use the API, at least for now
-      return unauthorized(invocation, allowed);
-    }
-
-    return invocation.invoke();
+  public void init(FilterConfig filterConfig) {
+    ApplicationContext ctx = WebApplicationContextUtils
+            .getRequiredWebApplicationContext(filterConfig.getServletContext());
+    _keyUsageMonitor = ctx.getBean(org.onebusaway.nyc.api.lib.impl.ApiKeyUsageMonitorImpl.class);
+    _keyService = ctx.getBean(org.onebusaway.nyc.api.lib.impl.ApiKeyWithRolesPermissionServiceImpl.class);
+    _throttledKeyService = ctx.getBean(org.onebusaway.nyc.api.lib.impl.ApiKeyThrottledServiceImpl.class);
   }
 
-  private ApiKeyPermissionService.Status isAllowed(ActionInvocation invocation) {
-    ActionContext context = invocation.getInvocationContext();
-    HttpParameters parameters = context.getParameters();
-    Parameter key = parameters.get("key");
-    if(key == null || key.getMultipleValues() == null || key.getMultipleValues().length == 0){
-      return ApiKeyPermissionService.Status.UNAUTHORIZED;
+
+
+  @Override
+  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+
+    HttpServletRequest req = (HttpServletRequest) request;
+
+    int allowed = isAllowed(request);
+
+    if (allowed != HttpServletResponse.SC_OK) {
+      String reason = "";
+      try {
+        switch(allowed){
+          case HttpServletResponse.SC_UNAUTHORIZED:
+            reason = "API key required.";
+            break;
+          case HttpServletResponse.SC_EXPECTATION_FAILED:
+            reason = "API key request rate has been exceeded.";
+            break;
+          case HttpServletResponse.SC_FORBIDDEN:
+            reason = "API key is not authorized.";
+            break;
+          default:
+            reason = "A server error occurred.";
+        }
+      } catch (Exception e) {
+        _log.error(e.getMessage());
+        e.printStackTrace();
+      }
+      ((HttpServletResponse) response).setStatus(allowed);
+      ((HttpServletResponse) response).sendError(allowed,reason);
+      return;
     }
 
-    String[] keys = key.getMultipleValues();
-    _keyUsageMonitor.increment(keys[0]);
-    return _keyService.getPermission(keys[0], "api");
+    _log.debug("Starting a transaction for req : {}", req.getRequestURI());
+
+    chain.doFilter(request, response);
+    _log.debug("Committing a transaction for req : {}",req.getRequestURI());
   }
 
-  // package private for unit tests
-  String unauthorized(ActionInvocation invocation, ApiKeyPermissionService.Status reason) throws IOException {
-    ActionProxy proxy = invocation.getProxy();
-    int httpCode = ResponseCodes.RESPONSE_UNAUTHORIZED;
-    String message = "permission denied";
-    switch (reason) {
-      case UNAUTHORIZED:
-        httpCode = ResponseCodes.RESPONSE_UNAUTHORIZED;
-        break;
-      case  RATE_EXCEEDED:
-        httpCode = ResponseCodes.RESPONSE_TOO_MANY_REQUESTS;
-        message = "rate limit exceeded";
-        break;
-      case  AUTHORIZED:
-        // this should never happen!
-        throw new IllegalStateException("Valid status code " + reason + " in unauthorized response");
-      default:
-        httpCode = ResponseCodes.RESPONSE_UNAUTHORIZED;
+  private int isAllowed(ServletRequest request) {
+    String key = request.getParameter("key");
+    if(key == null  || key.length() == 0){
+      return HttpServletResponse.SC_UNAUTHORIZED;
     }
 
-    ResponseBean response = new ResponseBean(1, httpCode, message, null);
-    DefaultHttpHeaders methodResult = new DefaultHttpHeaders().withStatus(response.getCode());
-    return _handlerSelector.handleResult(proxy.getConfig(), methodResult, response);
+    _keyUsageMonitor.increment(key);
+    boolean isPermitted = checkIsPermitted(_keyService.getPermission(key, "api"));
+    boolean notThrottled = _throttledKeyService.isAllowed(key);
+
+    if (isPermitted && notThrottled)
+      return HttpServletResponse.SC_OK;
+    else if(!notThrottled){
+      //we are throttled
+      return HttpServletResponse.SC_EXPECTATION_FAILED;
+    }else
+      return HttpServletResponse.SC_FORBIDDEN;
+  }
+
+
+  private boolean checkIsPermitted(ApiKeyPermissionService.Status api) {
+    if(api != null && api.equals(ApiKeyPermissionService.Status.AUTHORIZED)){
+      return Boolean.TRUE;
+    }
+    return Boolean.FALSE;
   }
 
   @Autowired
-  public void setKeyService(ApiKeyPermissionService _keyService) {
+  public void setKeyService(ApiKeyWithRolesPermissionService _keyService) {
     this._keyService = _keyService;
   }
 
   public ApiKeyPermissionService getKeyService() {
     return _keyService;
+  }
+
+  @Override
+  public void destroy() {
+
   }
 
 }
