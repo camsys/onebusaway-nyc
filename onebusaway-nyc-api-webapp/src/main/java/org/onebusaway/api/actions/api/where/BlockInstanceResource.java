@@ -25,13 +25,12 @@ import org.onebusaway.api.model.transit.blocks.BlockInstanceV2Bean;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
-public class BlockInstanceAction extends ApiActionSupport {
+public class BlockInstanceResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -44,7 +43,7 @@ public class BlockInstanceAction extends ApiActionSupport {
 
   private long _serviceDate;
 
-  public BlockInstanceAction() {
+  public BlockInstanceResource() {
     super(V2);
   }
 

@@ -18,32 +18,37 @@ package org.onebusaway.api.actions.api.where;
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
-import org.onebusaway.api.model.transit.EntryWithReferencesBean;
-import org.onebusaway.api.model.transit.blocks.BlockV2Bean;
 import org.onebusaway.exceptions.ServiceException;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.transit_data.model.blocks.BlockBean;
+import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
-public class BlockAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
+
+@Path("where/Agency/{agencyId}")
+public class AgencyResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
+
+  private static final int V1 = 1;
 
   private static final int V2 = 2;
 
   @Autowired
-  private NycTransitDataService _service;
+  private TransitDataService _service;
 
   private String _id;
 
-  public BlockAction() {
+  public AgencyResource() {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("agencyId")
   public void setId(String id) {
     _id = id;
   }
@@ -52,21 +57,24 @@ public class BlockAction extends ApiActionSupport {
     return _id;
   }
 
-  public DefaultHttpHeaders show() throws ServiceException {
-
-    if (!isVersion(V2))
-      return setUnknownVersionResponse();
+  @GET
+  public Response show() throws ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
-    BlockBean block = _service.getBlockForId(_id);
+    AgencyBean agency = _service.getAgency(_id);
 
-    if (block == null)
-      return setResourceNotFoundResponse();
+    if (agency == null)
+      return getResourceNotFoundResponse();
 
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
-    EntryWithReferencesBean<BlockV2Bean> response = factory.getBlockResponse(block);
-    return setOkResponse(response);
+    if (isVersion(V1)) {
+      return getOkResponse(agency);
+    } else if (isVersion(V2)) {
+      BeanFactoryV2 factory = getBeanFactoryV2();
+      return getOkResponse(factory.getResponse(agency));
+    } else {
+      return getUnknownVersionResponse();
+    }
   }
 }

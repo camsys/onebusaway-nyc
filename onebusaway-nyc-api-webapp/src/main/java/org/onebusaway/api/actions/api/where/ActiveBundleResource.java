@@ -23,7 +23,12 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class ActiveBundleAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
+
+@Path("/where/ActiveBundle")
+public class ActiveBundleResource extends ApiActionSupport {
 
     private static final long serialVersionUID = 1L;
 
@@ -32,18 +37,19 @@ public class ActiveBundleAction extends ApiActionSupport {
     @Autowired
     private TransitDataService _service;
 
-    public ActiveBundleAction() {
+    public ActiveBundleResource() {
         super(V1);
     }
 
-    public DefaultHttpHeaders index() throws ServiceException {
+    @GET
+    public Response index() {
 
         if (hasErrors())
-            return setValidationErrorsResponse();
+            return getValidationErrorsResponse();
 
         String activeBundleId = _service.getActiveBundleId();
         ActiveBundleBeanV1 activeBundleBean = new ActiveBundleBeanV1(activeBundleId);
 
-        return setOkResponse(activeBundleBean);
+        return getOkResponse(activeBundleBean);
     }
 }

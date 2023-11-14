@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
-public class ArrivalAndDepartureForStopAction extends ApiActionSupport {
+public class ArrivalAndDepartureForStopResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -40,7 +40,7 @@ public class ArrivalAndDepartureForStopAction extends ApiActionSupport {
 
   private ArrivalAndDepartureForStopQueryBean _query = new ArrivalAndDepartureForStopQueryBean();
 
-  public ArrivalAndDepartureForStopAction() {
+  public ArrivalAndDepartureForStopResource() {
     super(V2);
   }
 

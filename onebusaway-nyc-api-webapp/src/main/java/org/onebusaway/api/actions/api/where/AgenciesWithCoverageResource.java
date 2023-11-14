@@ -15,17 +15,25 @@
  */
 package org.onebusaway.api.actions.api.where;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
+import org.onebusaway.api.impl.MaxCountSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
-import org.onebusaway.transit_data.model.AgencyBean;
+import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
-public class AgencyAction extends ApiActionSupport {
+@Path("/where/AgenciesWithCoverage")
+public class AgenciesWithCoverageResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -33,41 +41,35 @@ public class AgencyAction extends ApiActionSupport {
 
   private static final int V2 = 2;
 
+  private MaxCountSupport _maxCount = new MaxCountSupport();
+
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
-
-  public AgencyAction() {
-    super(V2);
+  public AgenciesWithCoverageResource() {
+    super(V1);
   }
 
-  @RequiredFieldValidator
-  public void setId(String id) {
-    _id = id;
+  @QueryParam("MaxCount")
+  public void setMaxCount(int maxCount) {
+    _maxCount.setMaxCount(maxCount);
   }
 
-  public String getId() {
-    return _id;
-  }
-
-  public DefaultHttpHeaders show() throws ServiceException {
+  @GET
+  public Response index() throws IOException, ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
-    AgencyBean agency = _service.getAgency(_id);
-
-    if (agency == null)
-      return setResourceNotFoundResponse();
+    List<AgencyWithCoverageBean> beans = _service.getAgenciesWithCoverage();
 
     if (isVersion(V1)) {
-      return setOkResponse(agency);
+      return getOkResponse(beans);
     } else if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return setOkResponse(factory.getResponse(agency));
+      return getOkResponse(factory.getResponse(beans));
     } else {
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     }
   }
 }
