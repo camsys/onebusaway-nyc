@@ -82,4 +82,6 @@
         <property name="disabled" value="${api.cache.disabled}" />
     </bean>
 
+    <bean id="apiKeyPermissionService" class="org.onebusaway.nyc.api.lib.impl.ApiKeyWithRolesPermissionServiceImpl"/>
+
 </beans>
