@@ -65,7 +65,7 @@ public class ArrivalsAndDeparturesForStopResource extends ApiActionSupport {
 
   @QueryParam("Time")
   public void setTime(Date time) {
-    super.ifMeaningfulValue(_query::setTime, time.getTime());
+    super.ifMeaningfulValue(_query::setTime, time);
   }
 
   @QueryParam("MinutesBefore")
