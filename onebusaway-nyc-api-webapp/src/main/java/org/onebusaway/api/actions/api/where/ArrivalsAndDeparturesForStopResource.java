@@ -17,6 +17,7 @@ package org.onebusaway.api.actions.api.where;
 
 import java.util.*;
 
+import org.joda.time.DateTime;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.where.ArrivalAndDepartureBeanV1;
@@ -64,7 +65,7 @@ public class ArrivalsAndDeparturesForStopResource extends ApiActionSupport {
   }
 
   @QueryParam("Time")
-  public void setTime(Date time) {
+  public void setTime(DateTime time) {
     super.ifMeaningfulValue(_query::setTime, time);
   }
 
@@ -90,9 +91,6 @@ public class ArrivalsAndDeparturesForStopResource extends ApiActionSupport {
 
   @GET
   public Response getTripsByBlockId() {
-
-    if (hasErrors())
-      return getValidationErrorsResponse();
 
 
     StopWithArrivalsAndDeparturesBean result = _service.getStopWithArrivalsAndDepartures(
