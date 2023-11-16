@@ -15,17 +15,21 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
-import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
-public class RouteAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+@Path("/where/stops-for-route/{stopId}")
+public class StopsForRouteResponse extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -34,15 +38,17 @@ public class RouteAction extends ApiActionSupport {
   private static final int V2 = 2;
 
   @Autowired
-  private TransitDataService _service;
+  private NycTransitDataService _service;
 
   private String _id;
 
-  public RouteAction() {
+  private boolean _includePolylines = true;
+
+  public StopsForRouteResponse() {
     super(V1);
   }
 
-  @RequiredFieldValidator
+  @PathParam("stopId")
   public void setId(String id) {
     _id = id;
   }
@@ -50,24 +56,32 @@ public class RouteAction extends ApiActionSupport {
   public String getId() {
     return _id;
   }
+  
+  @QueryParam("IncludePolylines")
+  public void setIncludePolylines(boolean includePolylines) {
+    _includePolylines = includePolylines;
+  }
 
-  public DefaultHttpHeaders show() throws ServiceException {
+
+  @GET
+  public Response show() throws ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
-    RouteBean route = _service.getRouteForId(_id);
+    StopsForRouteBean result = _service.getStopsForRoute(_id);
 
-    if (route == null)
-      return setResourceNotFoundResponse();
+    if (result == null)
+      return getResourceNotFoundResponse();
 
+    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    factory.filterNonRevenueStops(result);
     if (isVersion(V1)) {
-      return setOkResponse(route);
+      return getOkResponse(result);
     } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
-      return setOkResponse(factory.getResponse(route));
+      return getOkResponse(factory.getResponse(result,_includePolylines));
     } else {
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     }
   }
 }

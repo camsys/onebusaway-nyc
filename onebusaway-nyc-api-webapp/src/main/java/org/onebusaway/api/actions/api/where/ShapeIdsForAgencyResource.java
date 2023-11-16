@@ -18,29 +18,32 @@ package org.onebusaway.api.actions.api.where;
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
 
-public class StopIdsForAgencyAction extends ApiActionSupport {
+@Path("/where/shape-ids-for-agency/{shapeId}")
+public class ShapeIdsForAgencyResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
   private static final int V2 = 2;
 
   @Autowired
-  private NycTransitDataService _service;
+  private TransitDataService _service;
 
   private String _id;
 
-  public StopIdsForAgencyAction() {
+  public ShapeIdsForAgencyResource() {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("shapeId")
   public void setId(String id) {
     _id = id;
   }
@@ -49,17 +52,17 @@ public class StopIdsForAgencyAction extends ApiActionSupport {
     return _id;
   }
 
-  public DefaultHttpHeaders show() {
+  @GET
+  public Response show() {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     if( ! isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     
-    ListBean<String> stopIds = _service.getStopIdsForAgencyId(_id);
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
-    factory.filterNonRevenueStopIds(_id, stopIds.getList());
-    return setOkResponse(factory.getEntityIdsResponse(stopIds));
+    ListBean<String> stopIds = _service.getShapeIdsForAgencyId(_id);
+    BeanFactoryV2 factory = getBeanFactoryV2();
+    return getOkResponse(factory.getEntityIdsResponse(stopIds));
   }
 }

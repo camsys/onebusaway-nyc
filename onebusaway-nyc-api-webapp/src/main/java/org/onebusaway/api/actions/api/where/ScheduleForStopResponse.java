@@ -15,21 +15,27 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
-import org.onebusaway.api.model.transit.RouteV2Bean;
-import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.transit_data.model.StopScheduleBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
-public class RoutesForAgencyAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/schedule-for-stop/{stopId}")
+public class ScheduleForStopResponse extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -40,11 +46,13 @@ public class RoutesForAgencyAction extends ApiActionSupport {
 
   private String _id;
 
-  public RoutesForAgencyAction() {
+  private Date _date = new Date();
+
+  public ScheduleForStopResponse() {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("stopId")
   public void setId(String id) {
     _id = id;
   }
@@ -53,21 +61,20 @@ public class RoutesForAgencyAction extends ApiActionSupport {
     return _id;
   }
 
-  public DefaultHttpHeaders show() {
+  @QueryParam("Date")
+  public void setDate(Date date) {
+    _date = date;
+  }
+
+  @GET
+  public Response show() throws ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
-    if (!isVersion(V2))
-      return setUnknownVersionResponse();
-
-    ListBean<RouteBean> routes = _service.getRoutesForAgencyId(_id);
+    StopScheduleBean stopSchedule = _service.getScheduleForStop(_id, _date);
 
     BeanFactoryV2 factory = getBeanFactoryV2();
-    List<RouteV2Bean> beans = new ArrayList<RouteV2Bean>();
-    for (RouteBean route : routes.getList())
-      beans.add(factory.getRoute(route));
-
-    return setOkResponse(factory.list(beans, false));
+    return getOkResponse(factory.getResponse(stopSchedule));
   }
 }

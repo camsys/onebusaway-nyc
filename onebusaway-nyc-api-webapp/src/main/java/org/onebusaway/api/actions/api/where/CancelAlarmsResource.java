@@ -15,16 +15,21 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
+import java.util.List;
+
 import org.onebusaway.api.actions.api.ApiActionSupport;
-import org.onebusaway.api.model.transit.BeanFactoryV2;
-import org.onebusaway.geospatial.model.EncodedPolylineBean;
+import org.onebusaway.api.services.AlarmService;
+import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
-public class ShapeAction extends ApiActionSupport {
+@Path("/where/cancel-alarms")
+public class CancelAlarmsResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -33,32 +38,37 @@ public class ShapeAction extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
+  @Autowired
+  private AlarmService _alarmService;
 
-  public ShapeAction() {
+  private List<String> _ids;
+
+  public CancelAlarmsResource() {
     super(V2);
   }
 
-  @RequiredFieldValidator
-  public void setId(String id) {
-    _id = id;
+  @QueryParam("Ids")
+  public void setId(List<String> ids) {
+    _ids = ids;
   }
 
-  public String getId() {
-    return _id;
-  }
-
-  public DefaultHttpHeaders show() {
+  @GET
+  public Response index() throws ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
-    EncodedPolylineBean shape = _service.getShapeForId(_id);
+    if (_ids != null) {
+      for (String id : _ids) {
+        _service.cancelAlarmForArrivalAndDepartureAtStop(id);
+        _alarmService.cancelAlarm(id);
+      }
+    }
 
-    if (shape == null)
-      return setResourceNotFoundResponse();
-
-    BeanFactoryV2 factory = getBeanFactoryV2();
-    return setOkResponse(factory.getResponse(shape));
+    if (isVersion(V2)) {
+      return getOkResponse("");
+    } else {
+      return getUnknownVersionResponse();
+    }
   }
 }

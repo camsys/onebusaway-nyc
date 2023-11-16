@@ -17,7 +17,6 @@ package org.onebusaway.api.actions.api.where;
 
 import java.io.IOException;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.impl.MaxCountSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
@@ -32,7 +31,13 @@ import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class RoutesForLocationAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/routes-for-location")
+public class RoutesForLocationResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -61,30 +66,36 @@ public class RoutesForLocationAction extends ApiActionSupport {
 
   private MaxCountSupport _maxCount = new MaxCountSupport(10, 50);
 
-  public RoutesForLocationAction() {
+  public RoutesForLocationResource() {
     super(V1);
   }
 
+  @QueryParam("Lat")
   public void setLat(double lat) {
     _lat = lat;
   }
 
+  @QueryParam("Lon")
   public void setLon(double lon) {
     _lon = lon;
   }
 
+  @QueryParam("LatSpan")
   public void setLatSpan(double latSpan) {
     _latSpan = latSpan;
   }
 
+  @QueryParam("LonSpan")
   public void setLonSpan(double lonSpan) {
     _lonSpan = lonSpan;
   }
 
+  @QueryParam("Radius")
   public void setRadius(double radius) {
     _radius = radius;
   }
 
+  @QueryParam("Query")
   public void setQuery(String query) {
     _query = query;
   }
@@ -93,18 +104,20 @@ public class RoutesForLocationAction extends ApiActionSupport {
     return _query;
   }
 
+  @QueryParam("MaxCount")
   public void setMaxCount(int maxCount) {
     _maxCount.setMaxCount(maxCount);
   }
 
-  public DefaultHttpHeaders index() throws IOException, ServiceException {
+  @GET
+  public Response index() throws IOException, ServiceException {
 
     int maxCount = _maxCount.getMaxCount();
     if (maxCount <= 0)
       addFieldError("maxCount", "must be greater than zero");
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     CoordinateBounds bounds = getSearchBounds();
 
@@ -125,25 +138,25 @@ public class RoutesForLocationAction extends ApiActionSupport {
     }
   }
 
-  private DefaultHttpHeaders transformResult(RoutesBean result) {
+  private Response transformResult(RoutesBean result) {
     if (isVersion(V1)) {
-      return setOkResponse(result);
+      return getOkResponse(result);
     } else if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return setOkResponse(factory.getResponse(result));
+      return getOkResponse(factory.getResponse(result));
     } else {
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     }
   }
 
-  private DefaultHttpHeaders transformOutOfRangeResult() {
+  private Response transformOutOfRangeResult() {
     if (isVersion(V1)) {
-      return setOkResponse(new RoutesBean());
+      return getOkResponse(new RoutesBean());
     } else if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return setOkResponse(factory.getEmptyList(RouteV2Bean.class, true));
+      return getOkResponse(factory.getEmptyList(RouteV2Bean.class, true));
     } else {
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     }
   }
 

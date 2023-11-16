@@ -16,10 +16,8 @@
 
 package org.onebusaway.api.actions.api.where;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.where.ActiveBundleBeanV1;
-import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -27,7 +25,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
-@Path("/where/ActiveBundle")
+@Path("/where/active-bundle")
 public class ActiveBundleResource extends ApiActionSupport {
 
     private static final long serialVersionUID = 1L;

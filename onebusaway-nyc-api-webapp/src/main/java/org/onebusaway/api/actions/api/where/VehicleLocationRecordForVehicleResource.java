@@ -15,17 +15,23 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
+import java.io.IOException;
+import java.sql.Date;
+
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
-import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
-public class SituationAction extends ApiActionSupport {
+@Path("/where/vehicle-location-record-for-vehicle")
+public class VehicleLocationRecordForVehicleResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -36,35 +42,37 @@ public class SituationAction extends ApiActionSupport {
 
   private String _id;
 
-  public SituationAction() {
+  private long _time = System.currentTimeMillis();
+
+  public VehicleLocationRecordForVehicleResource() {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @QueryParam("VehicleId")
   public void setId(String id) {
     _id = id;
   }
 
-  public String getId() {
-    return _id;
+  @QueryParam("Time")
+  public void setTime(Date time) {
+    _time = time.getTime();
   }
 
-  public DefaultHttpHeaders show() throws ServiceException {
+  @GET
+  public Response show() throws IOException, ServiceException {
+
+    if (!isVersion(V2))
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
-    ServiceAlertBean situation = _service.getServiceAlertForId(_id);
+    BeanFactoryV2 factory = getBeanFactoryV2();
 
-    if (situation == null)
-      return setResourceNotFoundResponse();
-
-    if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
-      return setOkResponse(factory.getResponse(situation));
-    } else {
-      return setUnknownVersionResponse();
-    }
+    VehicleLocationRecordBean record = _service.getVehicleLocationRecordForVehicleId(
+        _id, _time);
+    if (record == null)
+      return getResourceNotFoundResponse();
+    return getOkResponse(factory.entry(factory.getVehicleLocationRecord(record)));
   }
 }
-

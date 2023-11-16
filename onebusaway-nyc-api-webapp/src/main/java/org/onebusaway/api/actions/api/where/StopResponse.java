@@ -15,18 +15,24 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
-import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
 
-public class ShapeIdsForAgencyAction extends ApiActionSupport {
+@Path("/where/stop-response/{stopId}")
+public class StopResponse extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
+
+  private static final int V1 = 1;
 
   private static final int V2 = 2;
 
@@ -35,29 +41,37 @@ public class ShapeIdsForAgencyAction extends ApiActionSupport {
 
   private String _id;
 
-  public ShapeIdsForAgencyAction() {
-    super(V2);
+  public StopResponse() {
+    super(V1);
   }
 
-  @RequiredFieldValidator
+  @PathParam("stopId")
   public void setId(String id) {
     _id = id;
   }
-  
+
   public String getId() {
     return _id;
   }
 
-  public DefaultHttpHeaders show() {
+  @GET
+  public Response show() throws ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
-    if( ! isVersion(V2))
-      return setUnknownVersionResponse();
-    
-    ListBean<String> stopIds = _service.getShapeIdsForAgencyId(_id);
-    BeanFactoryV2 factory = getBeanFactoryV2();
-    return setOkResponse(factory.getEntityIdsResponse(stopIds));
+    StopBean stop = _service.getStop(_id);
+
+    if (stop == null)
+      return getResourceNotFoundResponse();
+
+    if (isVersion(V1)) {
+      return getOkResponse(stop);
+    } else if (isVersion(V2)) {
+      BeanFactoryV2 factory = getBeanFactoryV2();
+      return getOkResponse(factory.getResponse(stop));
+    } else {
+      return getUnknownVersionResponse();
+    }
   }
 }

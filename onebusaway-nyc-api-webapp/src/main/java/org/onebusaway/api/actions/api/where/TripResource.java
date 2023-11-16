@@ -15,7 +15,6 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
@@ -25,9 +24,14 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
-public class TripAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/trip/{tripId}")
+public class TripResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -38,11 +42,11 @@ public class TripAction extends ApiActionSupport {
 
   private String _id;
 
-  public TripAction() {
+  public TripResource() {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("tripId")
   public void setId(String id) {
     _id = id;
   }
@@ -51,21 +55,22 @@ public class TripAction extends ApiActionSupport {
     return _id;
   }
 
-  public DefaultHttpHeaders show() throws ServiceException {
+  @GET
+  public Response show() throws ServiceException {
 
     if (!isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     TripBean trip = _service.getTrip(_id);
 
     if (trip == null)
-      return setResourceNotFoundResponse();
+      return getResourceNotFoundResponse();
 
     BeanFactoryV2 factory = getBeanFactoryV2();
     EntryWithReferencesBean<TripV2Bean> response = factory.getResponse(trip);
-    return setOkResponse(response);
+    return getOkResponse(response);
   }
 }

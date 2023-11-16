@@ -18,7 +18,6 @@ package org.onebusaway.api.actions.api.where;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.impl.MaxCountSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
@@ -30,13 +29,16 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
-public class TripsForRouteAction extends ApiActionSupport {
+@Path("/where/trips-for-route/{tripId}")
+public class TripsForRouteResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -57,11 +59,11 @@ public class TripsForRouteAction extends ApiActionSupport {
 
   private boolean _includeSchedule = false;
 
-  public TripsForRouteAction() {
+  public TripsForRouteResource() {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("tripId")
   public void setId(String id) {
     _id = id;
   }
@@ -70,34 +72,39 @@ public class TripsForRouteAction extends ApiActionSupport {
     return _id;
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateTimeConverter")
+  @QueryParam("Time")
   public void setTime(Date time) {
     _time = time.getTime();
   }
-  
+
+  @QueryParam("MaxCount")
   public void setMaxCount(int maxCount) {
     _maxCount.setMaxCount(maxCount);
   }
 
+  @QueryParam("IncludeTrip")
   public void setIncludeTrip(boolean includeTrip) {
     _includeTrip = includeTrip;
   }
-  
+
+  @QueryParam("IncludeStatus")
   public void setIncludeStatus(boolean includeStatus) {
     _includeStatus = includeStatus;
   }
 
+  @QueryParam("IncludeSchedule")
   public void setIncludeSchedule(boolean includeSchedule) {
     _includeSchedule = includeSchedule;
   }
 
-  public DefaultHttpHeaders show() throws IOException, ServiceException {
+  @GET
+  public Response show() throws IOException, ServiceException {
 
     if (!isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     long time = System.currentTimeMillis();
     if (_time != 0)
@@ -117,9 +124,9 @@ public class TripsForRouteAction extends ApiActionSupport {
 
     try {
       ListBean<TripDetailsBean> trips = _service.getTripsForRoute(query);
-      return setOkResponse(factory.getTripDetailsResponse(trips));
+      return getOkResponse(factory.getTripDetailsResponse(trips));
     } catch (OutOfServiceAreaServiceException ex) {
-      return setOkResponse(factory.getEmptyList(TripDetailsV2Bean.class, true));
+      return getOkResponse(factory.getEmptyList(TripDetailsV2Bean.class, true));
     }
   }
 }

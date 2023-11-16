@@ -30,6 +30,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/block-instance/{blockId}")
 public class BlockInstanceResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -47,7 +54,7 @@ public class BlockInstanceResource extends ApiActionSupport {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("blockId")
   public void setId(String id) {
     _id = id;
   }
@@ -56,28 +63,29 @@ public class BlockInstanceResource extends ApiActionSupport {
     return _id;
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateTimeConverter")
+  @QueryParam("ServiceDate")
   public void setServiceDate(Date serviceDate) {
     _serviceDate = serviceDate.getTime();
   }
 
-  public DefaultHttpHeaders show() throws ServiceException {
+  @GET
+  public Response show() throws ServiceException {
 
     if (!isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     BlockInstanceBean blockInstance = _service.getBlockInstance(_id,
         _serviceDate);
 
     if (blockInstance == null)
-      return setResourceNotFoundResponse();
+      return getResourceNotFoundResponse();
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     BlockInstanceV2Bean bean = factory.getBlockInstance(blockInstance);
     EntryWithReferencesBean<BlockInstanceV2Bean> response = factory.entry(bean);
-    return setOkResponse(response);
+    return getOkResponse(response);
   }
 }

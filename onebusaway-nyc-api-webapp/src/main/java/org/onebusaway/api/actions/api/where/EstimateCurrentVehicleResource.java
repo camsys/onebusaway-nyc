@@ -35,8 +35,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
+import javax.ws.rs.Path;
+
 @AddToStack("query")
-public class EstimateCurrentVehicleAction extends ApiActionSupport {
+public class EstimateCurrentVehicleResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -49,7 +51,7 @@ public class EstimateCurrentVehicleAction extends ApiActionSupport {
 
   private String _data;
 
-  public EstimateCurrentVehicleAction() {
+  public EstimateCurrentVehicleResource() {
     super(V2);
   }
 

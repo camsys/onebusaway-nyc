@@ -15,16 +15,20 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import java.util.List;
-
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
-import org.onebusaway.api.services.AlarmService;
+import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class CancelAlarmsAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/situation/{id}")
+public class SituationResponse extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -33,35 +37,38 @@ public class CancelAlarmsAction extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  @Autowired
-  private AlarmService _alarmService;
+  private String _id;
 
-  private List<String> _ids;
-
-  public CancelAlarmsAction() {
+  public SituationResponse() {
     super(V2);
   }
 
-  public void setId(List<String> ids) {
-    _ids = ids;
+  @PathParam("id")
+  public void setId(String id) {
+    _id = id;
   }
 
-  public DefaultHttpHeaders index() throws ServiceException {
+  public String getId() {
+    return _id;
+  }
+
+  @GET
+  public Response show() throws ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
-    if (_ids != null) {
-      for (String id : _ids) {
-        _service.cancelAlarmForArrivalAndDepartureAtStop(id);
-        _alarmService.cancelAlarm(id);
-      }
-    }
+    ServiceAlertBean situation = _service.getServiceAlertForId(_id);
+
+    if (situation == null)
+      return getResourceNotFoundResponse();
 
     if (isVersion(V2)) {
-      return setOkResponse("");
+      BeanFactoryV2 factory = getBeanFactoryV2();
+      return getOkResponse(factory.getResponse(situation));
     } else {
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     }
   }
 }
+

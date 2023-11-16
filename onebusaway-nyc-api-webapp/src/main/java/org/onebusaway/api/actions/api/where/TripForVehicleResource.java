@@ -15,28 +15,31 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import java.io.IOException;
 import java.util.Date;
 
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
-import org.onebusaway.api.impl.MaxCountSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
+import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 import org.onebusaway.api.model.transit.TripDetailsV2Bean;
-import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
-import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
-import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
-public class TripsForAgencyAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/trip-for-vehicle/{tripId}")
+public class TripForVehicleResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -47,21 +50,19 @@ public class TripsForAgencyAction extends ApiActionSupport {
 
   private String _id;
 
-  private Date _time;
-
-  private MaxCountSupport _maxCount = new MaxCountSupport();
-
-  private boolean _includeTrip = true;
-
-  private boolean _includeStatus = false;
+  private Date _time = new Date();
+  
+  private boolean _includeTrip = false;
 
   private boolean _includeSchedule = false;
+  
+  private boolean _includeStatus = true;
 
-  public TripsForAgencyAction() {
+  public TripForVehicleResource() {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("tripId")
   public void setId(String id) {
     _id = id;
   }
@@ -70,56 +71,51 @@ public class TripsForAgencyAction extends ApiActionSupport {
     return _id;
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateTimeConverter")
+  @QueryParam("Time")
   public void setTime(Date time) {
     _time = time;
   }
 
-  public void setMaxCount(int maxCount) {
-    _maxCount.setMaxCount(maxCount);
-  }
-
+  @QueryParam("IncludeTrip")
   public void setIncludeTrip(boolean includeTrip) {
     _includeTrip = includeTrip;
   }
 
-  public void setIncludeStatus(boolean includeStatus) {
-    _includeStatus = includeStatus;
-  }
-
+  @QueryParam("IncludeTrip")
   public void setIncludeSchedule(boolean includeSchedule) {
     _includeSchedule = includeSchedule;
   }
 
-  public DefaultHttpHeaders show() throws IOException, ServiceException {
+  @QueryParam("IncludeStatus")
+  public void setIncludeStatus(boolean includeStatus) {
+    _includeStatus = includeStatus;
+  }
+
+  @GET
+  public Response show() throws ServiceException {
 
     if (!isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
-
-    long time = System.currentTimeMillis();
-    if (_time != null)
-      time = _time.getTime();
-
-    TripsForAgencyQueryBean query = new TripsForAgencyQueryBean();
-    query.setAgencyId(_id);
-    query.setTime(time);
-    query.setMaxCount(_maxCount.getMaxCount());
-
+      return getValidationErrorsResponse();
+    
+    TripForVehicleQueryBean query = new TripForVehicleQueryBean();
+    query.setVehicleId(_id);
+    query.setTime(_time);
+    
     TripDetailsInclusionBean inclusion = query.getInclusion();
     inclusion.setIncludeTripBean(_includeTrip);
-    inclusion.setIncludeTripStatus(_includeStatus);
     inclusion.setIncludeTripSchedule(_includeSchedule);
+    inclusion.setIncludeTripStatus(_includeStatus);
+
+    TripDetailsBean trip = _service.getTripDetailsForVehicleAndTime(query);
+
+    if (trip == null)
+      return getResourceNotFoundResponse();
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
-
-    try {
-      ListBean<TripDetailsBean> trips = _service.getTripsForAgency(query);
-      return setOkResponse(factory.getTripDetailsResponse(trips));
-    } catch (OutOfServiceAreaServiceException ex) {
-      return setOkResponse(factory.getEmptyList(TripDetailsV2Bean.class, true));
-    }
+    EntryWithReferencesBean<TripDetailsV2Bean> response = factory.getResponse(trip);
+    return getOkResponse(response);
   }
 }

@@ -15,21 +15,22 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
-import org.onebusaway.exceptions.ServiceException;
-import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
-public class StopAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/route-ids-for-agency/{routeId}")
+public class RouteIdsForAgencyResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
-
-  private static final int V1 = 1;
 
   private static final int V2 = 2;
 
@@ -38,11 +39,11 @@ public class StopAction extends ApiActionSupport {
 
   private String _id;
 
-  public StopAction() {
-    super(V1);
+  public RouteIdsForAgencyResource() {
+    super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("routeId")
   public void setId(String id) {
     _id = id;
   }
@@ -51,23 +52,18 @@ public class StopAction extends ApiActionSupport {
     return _id;
   }
 
-  public DefaultHttpHeaders show() throws ServiceException {
+  @GET
+  public Response show() {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
-    StopBean stop = _service.getStop(_id);
+    if (!isVersion(V2))
+      return getUnknownVersionResponse();
 
-    if (stop == null)
-      return setResourceNotFoundResponse();
+    ListBean<String> routeIds = _service.getRouteIdsForAgencyId(_id);
 
-    if (isVersion(V1)) {
-      return setOkResponse(stop);
-    } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
-      return setOkResponse(factory.getResponse(stop));
-    } else {
-      return setUnknownVersionResponse();
-    }
+    BeanFactoryV2 factory = getBeanFactoryV2();
+    return getOkResponse(factory.getEntityIdsResponse(routeIds));
   }
 }

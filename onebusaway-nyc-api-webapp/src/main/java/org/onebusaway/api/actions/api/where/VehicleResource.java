@@ -18,7 +18,6 @@ package org.onebusaway.api.actions.api.where;
 import java.io.IOException;
 import java.sql.Date;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.VehicleStatusV2Bean;
@@ -28,10 +27,14 @@ import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
-public class VehicleAction extends ApiActionSupport {
+@Path("/where/vehicle/{vehicleId}")
+public class VehicleResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -44,11 +47,11 @@ public class VehicleAction extends ApiActionSupport {
 
   private long _time = 0;
 
-  public VehicleAction() {
+  public VehicleResource() {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("vehicleId")
   public void setId(String id) {
     _id = id;
   }
@@ -57,18 +60,19 @@ public class VehicleAction extends ApiActionSupport {
     return _id;
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateTimeConverter")
+  @QueryParam("Time")
   public void setTime(Date time) {
     _time = time.getTime();
   }
 
-  public DefaultHttpHeaders show() throws IOException, ServiceException {
+  @GET
+  public Response show() throws IOException, ServiceException {
 
     if (!isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     long time = System.currentTimeMillis();
     if (_time != 0)
@@ -80,12 +84,12 @@ public class VehicleAction extends ApiActionSupport {
       VehicleStatusBean vehicle = _service.getVehicleForAgency(_id, time);
 
       if (vehicle == null)
-        return setResourceNotFoundResponse();
+        return getResourceNotFoundResponse();
 
-      return setOkResponse(factory.getVehicleStatusResponse(vehicle));
+      return getOkResponse(factory.getVehicleStatusResponse(vehicle));
 
     } catch (OutOfServiceAreaServiceException ex) {
-      return setOkResponse(factory.getEmptyList(VehicleStatusV2Bean.class, true));
+      return getOkResponse(factory.getEmptyList(VehicleStatusV2Bean.class, true));
     }
   }
 }

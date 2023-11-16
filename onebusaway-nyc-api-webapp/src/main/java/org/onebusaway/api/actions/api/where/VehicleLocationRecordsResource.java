@@ -18,7 +18,6 @@ package org.onebusaway.api.actions.api.where;
 import java.io.IOException;
 import java.sql.Date;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.VehicleStatusV2Bean;
@@ -30,9 +29,13 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
-public class VehicleLocationRecordsAction extends ApiActionSupport {
+@Path("/where/vehicle-location-records")
+public class VehicleLocationRecordsResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -45,51 +48,56 @@ public class VehicleLocationRecordsAction extends ApiActionSupport {
 
   private String _vehicleId;
 
-  public VehicleLocationRecordsAction() {
+  public VehicleLocationRecordsResource() {
     super(V2);
   }
 
+  @QueryParam("BlockId")
   public void setBlockId(String blockId) {
     _query.setBlockId(blockId);
   }
 
+  @QueryParam("TripId")
   public void setTripId(String tripId) {
     _query.setTripId(tripId);
   }
 
+  @QueryParam("VehicleId")
   public void setVehicleId(String vehicleId) {
     _query.setVehicleId(_vehicleId);
   }
 
+  @QueryParam("ServiceDate")
   public void setServiceDate(long serviceDate) {
     _query.setServiceDate(serviceDate);
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateTimeConverter")
+  @QueryParam("FromTime")
   public void setFromTime(Date fromTime) {
     _query.setFromTime(fromTime.getTime());
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateTimeConverter")
+  @QueryParam("ToTime")
   public void setToTime(Date toTime) {
     _query.setToTime(toTime.getTime());
   }
 
-  public DefaultHttpHeaders index() throws IOException, ServiceException {
+  @GET
+  public Response index() throws IOException, ServiceException {
 
     if (!isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     BeanFactoryV2 factory = getBeanFactoryV2();
 
     try {
       ListBean<VehicleLocationRecordBean> vehicles = _service.getVehicleLocationRecords(_query);
-      return setOkResponse(factory.getVehicleLocationRecordResponse(vehicles));
+      return getOkResponse(factory.getVehicleLocationRecordResponse(vehicles));
     } catch (OutOfServiceAreaServiceException ex) {
-      return setOkResponse(factory.getEmptyList(VehicleStatusV2Bean.class, true));
+      return getOkResponse(factory.getEmptyList(VehicleStatusV2Bean.class, true));
     }
   }
 }

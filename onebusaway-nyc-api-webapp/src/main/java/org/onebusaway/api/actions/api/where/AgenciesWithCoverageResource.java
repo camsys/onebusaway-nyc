@@ -18,7 +18,6 @@ package org.onebusaway.api.actions.api.where;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.impl.MaxCountSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
@@ -32,7 +31,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-@Path("/where/AgenciesWithCoverage")
+@Path("/where/agencies-with-coverage")
 public class AgenciesWithCoverageResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;

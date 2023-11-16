@@ -16,34 +16,27 @@
 package org.onebusaway.api.actions.api.where;
 
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 import org.onebusaway.api.model.transit.TripDetailsV2Bean;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.transit_data.model.AgencyBean;
-import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data.model.TripStopTimeBean;
-import org.onebusaway.transit_data.model.TripStopTimesBean;
-import org.onebusaway.transit_data.model.schedule.StopTimeBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
-import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.util.AgencyAndIdLibrary;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
-public class TripDetailsAction extends ApiActionSupport {
+@Path("/where/trip-details")
+public class TripDetailsResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -66,11 +59,11 @@ public class TripDetailsAction extends ApiActionSupport {
   
   private boolean _includeStatus = true;
 
-  public TripDetailsAction() {
+  public TripDetailsResource() {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("tripId")
   public void setId(String id) {
     _id = id;
   }
@@ -79,39 +72,44 @@ public class TripDetailsAction extends ApiActionSupport {
     return _id;
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateConverter")
+  @QueryParam("Date")
   public void setServiceDate(Date date) {
     _serviceDate = date;
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateTimeConverter")
+  @QueryParam("Time")
   public void setTime(Date time) {
     _time = time;
   }
 
+  @QueryParam("VehicleId")
   public void setVehicleId(String vehicleId) {
     _vehicleId = vehicleId;
   }
-  
+
+  @QueryParam("IncludeTrip")
   public void setIncludeTrip(boolean includeTrip) {
     _includeTrip = includeTrip;
   }
 
+  @QueryParam("IncludeSchedule")
   public void setIncludeSchedule(boolean includeSchedule) {
     _includeSchedule = includeSchedule;
   }
-  
+
+  @QueryParam("IncludeStatus")
   public void setIncludeStatus(boolean includeStatus) {
     _includeStatus = includeStatus;
   }
 
-  public DefaultHttpHeaders show() throws ServiceException {
+  @GET
+  public Response show() throws ServiceException {
 
     if (!isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
     
     TripDetailsQueryBean query = new TripDetailsQueryBean();
     query.setTripId(_id);
@@ -128,11 +126,11 @@ public class TripDetailsAction extends ApiActionSupport {
       TripDetailsBean tripDetails = _service.getSingleTripDetails(query);
 
     if (tripDetails == null)
-      return setResourceNotFoundResponse();
+      return getResourceNotFoundResponse();
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     EntryWithReferencesBean<TripDetailsV2Bean> response = factory.getResponse(tripDetails);
-    return setOkResponse(response);
+    return getOkResponse(response);
   }
 
 }

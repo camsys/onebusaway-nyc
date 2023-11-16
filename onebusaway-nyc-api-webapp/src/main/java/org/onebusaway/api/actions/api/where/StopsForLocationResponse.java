@@ -30,10 +30,15 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class StopsForLocationAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/stop-for-location")
+public class StopsForLocationResponse extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -62,39 +67,47 @@ public class StopsForLocationAction extends ApiActionSupport {
 
   private String _query;
 
-  public StopsForLocationAction() {
+  public StopsForLocationResponse() {
     super(V1);
   }
 
+  @QueryParam("Lat")
   public void setLat(double lat) {
     _lat = lat;
   }
 
+  @QueryParam("Lon")
   public void setLon(double lon) {
     _lon = lon;
   }
 
+  @QueryParam("Radius")
   public void setRadius(double radius) {
     _radius = radius;
   }
 
+  @QueryParam("LatSpan")
   public void setLatSpan(double latSpan) {
     _latSpan = latSpan;
   }
 
+  @QueryParam("LonSpan")
   public void setLonSpan(double lonSpan) {
     _lonSpan = lonSpan;
   }
 
+  @QueryParam("Query")
   public void setQuery(String query) {
     _query = query;
   }
 
+  @QueryParam("MaxCount")
   public void setMaxCount(int maxCount) {
     _maxCount.setMaxCount(maxCount);
   }
 
-  public DefaultHttpHeaders index() throws IOException, ServiceException {
+  @GET
+  public Response index() throws IOException, ServiceException {
 
     int maxCount = _maxCount.getMaxCount();
 
@@ -102,7 +115,7 @@ public class StopsForLocationAction extends ApiActionSupport {
       addFieldError("maxCount", "must be greater than zero");
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     CoordinateBounds bounds = getSearchBounds();
 
@@ -123,26 +136,26 @@ public class StopsForLocationAction extends ApiActionSupport {
     }
   }
 
-  private DefaultHttpHeaders transformResult(StopsBean result) {
+  private Response transformResult(StopsBean result) {
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     factory.filterNonRevenueStops(result);
     if (isVersion(V1)) {
-      return setOkResponse(result);
+      return getOkResponse(result);
     } else if (isVersion(V2)) {
-      return setOkResponse(factory.getResponse(result));
+      return getOkResponse(factory.getResponse(result));
     } else {
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     }
   }
 
-  private DefaultHttpHeaders transformOutOfRangeResult() {
+  private Response transformOutOfRangeResult() {
     if (isVersion(V1)) {
-      return setOkResponse(new StopsBean());
+      return getOkResponse(new StopsBean());
     } else if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return setOkResponse(factory.getEmptyList(StopV2Bean.class, true));
+      return getOkResponse(factory.getEmptyList(StopV2Bean.class, true));
     } else {
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     }
   }
 

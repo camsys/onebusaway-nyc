@@ -16,19 +16,26 @@
 package org.onebusaway.api.actions.api.where;
 
 import java.io.IOException;
-import java.sql.Date;
+import java.util.Date;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
+import org.onebusaway.api.model.transit.VehicleStatusV2Bean;
+import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 import org.onebusaway.exceptions.ServiceException;
-import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
+import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
-public class VehicleLocationRecordForVehicleAction extends ApiActionSupport {
+@Path("/where/vehicles-for-agency/{vehicleId}")
+public class VehiclesForAgencyResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -39,35 +46,47 @@ public class VehicleLocationRecordForVehicleAction extends ApiActionSupport {
 
   private String _id;
 
-  private long _time = System.currentTimeMillis();
+  private long _time = 0;
 
-  public VehicleLocationRecordForVehicleAction() {
+  public VehiclesForAgencyResource() {
     super(V2);
   }
 
+  @PathParam("vehicleId")
   public void setId(String id) {
     _id = id;
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateTimeConverter")
+  public String getId() {
+    return _id;
+  }
+
+  @QueryParam("Time")
   public void setTime(Date time) {
     _time = time.getTime();
   }
 
-  public DefaultHttpHeaders show() throws IOException, ServiceException {
+  @GET
+  public Response show() throws IOException, ServiceException {
 
     if (!isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
+
+    long time = System.currentTimeMillis();
+    if (_time != 0)
+      time = _time;
 
     BeanFactoryV2 factory = getBeanFactoryV2();
 
-    VehicleLocationRecordBean record = _service.getVehicleLocationRecordForVehicleId(
-        _id, _time);
-    if (record == null)
-      return setResourceNotFoundResponse();
-    return setOkResponse(factory.entry(factory.getVehicleLocationRecord(record)));
+    try {
+      ListBean<VehicleStatusBean> vehicles = _service.getAllVehiclesForAgency(
+          _id, time);
+      return getOkResponse(factory.getVehicleStatusResponse(vehicles));
+    } catch (OutOfServiceAreaServiceException ex) {
+      return getOkResponse(factory.getEmptyList(VehicleStatusV2Bean.class, true));
+    }
   }
 }

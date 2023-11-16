@@ -27,6 +27,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/block/{blockId}")
 public class BlockResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -42,7 +48,7 @@ public class BlockResource extends ApiActionSupport {
     super(V2);
   }
 
-  @RequiredFieldValidator
+  @PathParam("blockId")
   public void setId(String id) {
     _id = id;
   }
@@ -51,21 +57,22 @@ public class BlockResource extends ApiActionSupport {
     return _id;
   }
 
-  public DefaultHttpHeaders show() throws ServiceException {
+  @GET
+  public Response show() throws ServiceException {
 
     if (!isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     BlockBean block = _service.getBlockForId(_id);
 
     if (block == null)
-      return setResourceNotFoundResponse();
+      return getResourceNotFoundResponse();
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     EntryWithReferencesBean<BlockV2Bean> response = factory.getBlockResponse(block);
-    return setOkResponse(response);
+    return getOkResponse(response);
   }
 }
