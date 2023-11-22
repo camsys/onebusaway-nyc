@@ -188,7 +188,7 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
 
   protected void ifMeaningfulValue(Consumer<Long> c, DateTime val){
     if(val!=null){
-      c.accept(val.toDate().getTime());
+      c.accept(val.getMillis());
     }
   }
 
