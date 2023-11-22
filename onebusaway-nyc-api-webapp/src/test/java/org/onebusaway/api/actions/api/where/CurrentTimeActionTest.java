@@ -28,16 +28,18 @@ import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.TimeBean;
 import org.onebusaway.utility.DateLibrary;
 
+import javax.ws.rs.core.Response;
+
 public class CurrentTimeActionTest {
 
   @Test
   public void test() throws ParseException {
 
-    CurrentTimeAction action = new CurrentTimeAction();
+    CurrentTimeResource action = new CurrentTimeResource();
 
     long t = System.currentTimeMillis();
 
-    DefaultHttpHeaders headers = action.index();
+    Response headers = action.index();
     assertEquals(200, headers.getStatus());
 
     ResponseBean response = action.getModel();

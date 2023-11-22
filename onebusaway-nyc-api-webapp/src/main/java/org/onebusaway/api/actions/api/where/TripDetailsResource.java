@@ -35,7 +35,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-@Path("/where/trip-details")
+@Path("/where/trip-details/{tripId}")
 public class TripDetailsResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;

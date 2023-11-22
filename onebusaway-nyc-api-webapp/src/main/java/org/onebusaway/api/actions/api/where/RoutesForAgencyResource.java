@@ -31,7 +31,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
-@Path("/where/routes-for-agency/{routeId}")
+@Path("/where/routes-for-agency/{agencyId}")
 public class RoutesForAgencyResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -47,7 +47,7 @@ public class RoutesForAgencyResource extends ApiActionSupport {
     super(V2);
   }
 
-  @PathParam("routeId")
+  @PathParam("agencyId")
   public void setId(String id) {
     _id = id;
   }

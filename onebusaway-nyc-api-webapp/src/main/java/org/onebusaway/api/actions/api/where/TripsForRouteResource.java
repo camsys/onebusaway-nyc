@@ -37,7 +37,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-@Path("/where/trips-for-route/{tripId}")
+@Path("/where/trips-for-route/{routeId}")
 public class TripsForRouteResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -63,7 +63,7 @@ public class TripsForRouteResource extends ApiActionSupport {
     super(V2);
   }
 
-  @PathParam("tripId")
+  @PathParam("routeId")
   public void setId(String id) {
     _id = id;
   }

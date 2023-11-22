@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
+import org.onebusaway.api.conversion.FieldErrorMessage;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.collections.Max;
 import org.onebusaway.exceptions.ServiceException;
@@ -33,10 +33,14 @@ import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateQueryBea
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
+@Path("/where/estimate-current-vehicle")
 @AddToStack("query")
 public class EstimateCurrentVehicleResource extends ApiActionSupport {
 
@@ -59,11 +63,13 @@ public class EstimateCurrentVehicleResource extends ApiActionSupport {
     return _query;
   }
 
+  @QueryParam("Query")
   public void setQuery(CurrentVehicleEstimateQueryBean query) {
     _query = query;
   }
 
-  @RequiredFieldValidator(message = Messages.MISSING_REQUIRED_FIELD)
+  @FieldErrorMessage(Messages.MISSING_REQUIRED_FIELD)
+  @QueryParam("Data")
   public void setData(String data) {
     _data = data;
   }
@@ -72,23 +78,24 @@ public class EstimateCurrentVehicleResource extends ApiActionSupport {
     return _data;
   }
 
-  public DefaultHttpHeaders index() throws IOException, ServiceException {
+  @GET
+  public Response index() throws IOException, ServiceException {
 
     if (!isVersion(V2))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     fillInQuery();
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     BeanFactoryV2 factory = getBeanFactoryV2();
 
     ListBean<CurrentVehicleEstimateBean> estimates = _service.getCurrentVehicleEstimates(_query);
-    return setOkResponse(factory.getCurrentVehicleEstimates(estimates));
+    return getOkResponse(factory.getCurrentVehicleEstimates(estimates));
   }
 
   private void fillInQuery() {

@@ -17,8 +17,8 @@ package org.onebusaway.api.actions.api.where;
 
 import java.util.Date;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
+import org.onebusaway.api.conversion.FieldErrorMessage;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -26,9 +26,15 @@ import org.onebusaway.transit_data.model.ArrivalAndDepartureForStopQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/arrival-and-departure-for-stop/{id}")
 public class ArrivalAndDepartureForStopResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -44,28 +50,30 @@ public class ArrivalAndDepartureForStopResource extends ApiActionSupport {
     super(V2);
   }
 
-  @RequiredFieldValidator(message = Messages.MISSING_REQUIRED_FIELD)
+  @FieldErrorMessage(Messages.MISSING_REQUIRED_FIELD)
+  @PathParam("id")
   public void setId(String id) {
-    _query.setStopId(id);
+    super.ifMeaningfulValue(_query::setStopId, id);
   }
 
   public String getId() {
     return _query.getStopId();
   }
 
-  @RequiredFieldValidator(message = Messages.MISSING_REQUIRED_FIELD)
+  @FieldErrorMessage(Messages.MISSING_REQUIRED_FIELD)
+  @QueryParam("TripId")
   public void setTripId(String tripId) {
-    _query.setTripId(tripId);
+    super.ifMeaningfulValue(_query::setTripId, tripId);
   }
 
   public String getTripId() {
     return _query.getTripId();
   }
 
-  @RequiredFieldValidator(message = Messages.MISSING_REQUIRED_FIELD)
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateConverter")
+  @FieldErrorMessage(Messages.MISSING_REQUIRED_FIELD)
+  @QueryParam("Date")
   public void setServiceDate(Date date) {
-    _query.setServiceDate(date.getTime());
+    super.ifMeaningfulValue(_query::setServiceDate, date);
   }
 
   public Date getServiceDate() {
@@ -74,31 +82,34 @@ public class ArrivalAndDepartureForStopResource extends ApiActionSupport {
     return new Date(_query.getServiceDate());
   }
 
+  @QueryParam("VehicleId")
   public void setVehicleId(String vehicleId) {
-    _query.setVehicleId(vehicleId);
+    super.ifMeaningfulValue(_query::setVehicleId, vehicleId);
   }
 
   public String getVehicleId() {
     return _query.getVehicleId();
   }
 
+  @QueryParam("StopSequence")
   public void setStopSequence(int stopSequence) {
-    _query.setStopSequence(stopSequence);
+    super.ifMeaningfulValue(_query::setStopSequence, stopSequence);
   }
 
   public int getStopSequence() {
     return _query.getStopSequence();
   }
 
-  @TypeConversion(converter = "org.onebusaway.presentation.impl.conversion.DateTimeConverter")
+  @QueryParam("Time")
   public void setTime(Date time) {
-    _query.setTime(time.getTime());
+    super.ifMeaningfulValue(_query::setTime, time);
   }
 
-  public DefaultHttpHeaders show() throws ServiceException {
+  @GET
+  public Response show() throws ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     if (_query.getTime() == 0)
       _query.setTime(System.currentTimeMillis());
@@ -106,13 +117,13 @@ public class ArrivalAndDepartureForStopResource extends ApiActionSupport {
     ArrivalAndDepartureBean result = _service.getArrivalAndDepartureForStop(_query);
 
     if (result == null)
-      return setResourceNotFoundResponse();
+      return getResourceNotFoundResponse();
 
     if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return setOkResponse(factory.getResponse(result));
+      return getOkResponse(factory.getResponse(result));
     } else {
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     }
   }
 }

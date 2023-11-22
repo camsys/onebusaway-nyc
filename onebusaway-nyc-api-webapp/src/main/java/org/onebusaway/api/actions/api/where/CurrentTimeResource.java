@@ -21,26 +21,30 @@ import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.TimeBean;
 import org.onebusaway.utility.DateLibrary;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
 
-public class CurrentTimeAction extends ApiActionSupport {
+@Path("/where/current-time-source")
+public class CurrentTimeResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
   private static final int V1 = 1;
 
-  public CurrentTimeAction() {
+  public CurrentTimeResource() {
     super(V1);
   }
 
-  public DefaultHttpHeaders index() {
+  @GET
+  public Response index() {
     
     if( ! isVersion(V1))
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     
     Date date = new Date();
     String readableTime = DateLibrary.getTimeAsIso8601String(date);
     TimeBean time = new TimeBean(date,readableTime);
-    return setOkResponse(time);
+    return getOkResponse(time);
   }
 }

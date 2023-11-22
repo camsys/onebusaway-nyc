@@ -17,17 +17,22 @@ package org.onebusaway.api.actions.api.where;
 
 import java.io.IOException;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
+import org.onebusaway.api.conversion.FieldErrorMessage;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.problems.EProblemReportStatus;
 import org.onebusaway.transit_data.model.problems.StopProblemReportBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
-public class ReportProblemWithStopAction extends ApiActionSupport {
+@Path("/where/report-problem-with-stop-resource")
+public class ReportProblemWithStopResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -36,11 +41,12 @@ public class ReportProblemWithStopAction extends ApiActionSupport {
 
   private StopProblemReportBean _model = new StopProblemReportBean();
 
-  public ReportProblemWithStopAction() {
+  public ReportProblemWithStopResource() {
     super(2);
   }
 
-  @RequiredStringValidator(message="requiredField.stopId")
+  @FieldErrorMessage("requiredField.stopId")
+  @QueryParam("StopId")
   public void setStopId(String stopId) {
     _model.setStopId(stopId);
   }
@@ -49,39 +55,45 @@ public class ReportProblemWithStopAction extends ApiActionSupport {
     return _model.getStopId();
   }
 
+  @QueryParam("Data")
   public void setData(String data) {
     _model.setData(data);
   }
 
+  @QueryParam("UserComment")
   public void setUserComment(String userComment) {
     _model.setUserComment(userComment);
   }
 
+  @QueryParam("UserLat")
   public void setUserLat(double userLat) {
     _model.setUserLat(userLat);
   }
 
+  @QueryParam("UserLon")
   public void setUserLon(double userLon) {
     _model.setUserLon(userLon);
   }
 
+  @QueryParam("UserLocationAccuracy")
   public void setUserLocationAccuracy(double userLocationAccuracy) {
     _model.setUserLocationAccuracy(userLocationAccuracy);
   }
 
-  public DefaultHttpHeaders create() throws IOException, ServiceException {
+  @GET
+  public Response create() throws IOException, ServiceException {
     return index();
   }
 
-  public DefaultHttpHeaders index() throws IOException, ServiceException {
+  public Response index() throws IOException, ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     _model.setTime(System.currentTimeMillis());
     _model.setStatus(EProblemReportStatus.NEW);
     _service.reportProblemWithStop(_model);
 
-    return setOkResponse(new Object());
+    return getOkResponse(new Object());
   }
 }

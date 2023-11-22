@@ -17,7 +17,6 @@ package org.onebusaway.api.actions.api.where;
 
 import java.util.Date;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
@@ -29,8 +28,6 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -38,7 +35,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-@Path("/where/trip-for-vehicle/{tripId}")
+@Path("/where/trip-for-vehicle/{vehicleId}")
 public class TripForVehicleResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -62,7 +59,7 @@ public class TripForVehicleResource extends ApiActionSupport {
     super(V2);
   }
 
-  @PathParam("tripId")
+  @PathParam("vehicleId")
   public void setId(String id) {
     _id = id;
   }

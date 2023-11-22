@@ -54,17 +54,17 @@ public class VehicleLocationRecordsResource extends ApiActionSupport {
 
   @QueryParam("BlockId")
   public void setBlockId(String blockId) {
-    _query.setBlockId(blockId);
+    super.ifMeaningfulValue(_query::setBlockId, blockId);
   }
 
   @QueryParam("TripId")
   public void setTripId(String tripId) {
-    _query.setTripId(tripId);
+    super.ifMeaningfulValue(_query::setTripId, tripId);
   }
 
   @QueryParam("VehicleId")
   public void setVehicleId(String vehicleId) {
-    _query.setVehicleId(_vehicleId);
+    super.ifMeaningfulValue(_query::setVehicleId, vehicleId);
   }
 
   @QueryParam("ServiceDate")
@@ -74,12 +74,12 @@ public class VehicleLocationRecordsResource extends ApiActionSupport {
 
   @QueryParam("FromTime")
   public void setFromTime(Date fromTime) {
-    _query.setFromTime(fromTime.getTime());
+    super.ifMeaningfulValue(_query::setFromTime, fromTime);
   }
 
   @QueryParam("ToTime")
   public void setToTime(Date toTime) {
-    _query.setToTime(toTime.getTime());
+    super.ifMeaningfulValue(_query::setToTime, toTime);
   }
 
   @GET

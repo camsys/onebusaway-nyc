@@ -15,16 +15,21 @@
  */
 package org.onebusaway.api.actions.api.where;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
+import org.onebusaway.api.conversion.FieldErrorMessage;
 import org.onebusaway.api.services.AlarmService;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
-public class CancelAlarmAction extends ApiActionSupport {
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
+@Path("/where/cancel-alarm")
+public class CancelAlarmResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -38,11 +43,12 @@ public class CancelAlarmAction extends ApiActionSupport {
 
   private String _id;
 
-  public CancelAlarmAction() {
+  public CancelAlarmResource() {
     super(V2);
   }
 
-  @RequiredFieldValidator(message = Messages.MISSING_REQUIRED_FIELD)
+  @FieldErrorMessage(Messages.MISSING_REQUIRED_FIELD)
+  @QueryParam("Id")
   public void setId(String id) {
     _id = id;
   }
@@ -51,18 +57,19 @@ public class CancelAlarmAction extends ApiActionSupport {
     return _id;
   }
 
-  public DefaultHttpHeaders show() throws ServiceException {
+  @GET
+  public Response show() throws ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponse();
 
     _service.cancelAlarmForArrivalAndDepartureAtStop(_id);
     _alarmService.cancelAlarm(_id);
 
     if (isVersion(V2)) {
-      return setOkResponse("");
+      return getOkResponse("");
     } else {
-      return setUnknownVersionResponse();
+      return getUnknownVersionResponse();
     }
   }
 }

@@ -186,6 +186,12 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     }
   }
 
+  protected void ifMeaningfulValue(Consumer<Long> c, DateTime val){
+    if(val!=null){
+      c.accept(val.toDate().getTime());
+    }
+  }
+
   protected void ifMeaningfulValue(Consumer<String> c, String val){
     if(val!=null){
       c.accept(val);

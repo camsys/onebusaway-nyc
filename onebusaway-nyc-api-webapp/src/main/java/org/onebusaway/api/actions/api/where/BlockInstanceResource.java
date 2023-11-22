@@ -17,7 +17,6 @@ package org.onebusaway.api.actions.api.where;
 
 import java.util.Date;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
@@ -27,8 +26,6 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
