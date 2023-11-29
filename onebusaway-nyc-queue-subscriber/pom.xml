@@ -101,6 +101,7 @@
                   <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
                 </manifest>
               </archive>
+              <classifier>jar-with-dependencies</classifier>
             </configuration>
             <executions>
               <execution>
