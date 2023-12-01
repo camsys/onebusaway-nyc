@@ -27,10 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-@Path("/where/vehicle-location-record-for-vehicle")
+@Path("/where/vehicle-location-record-for-vehicle/{id}")
 public class VehicleLocationRecordForVehicleResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -48,14 +49,15 @@ public class VehicleLocationRecordForVehicleResource extends ApiActionSupport {
     super(V2);
   }
 
-  @QueryParam("VehicleId")
+  @PathParam("id")
   public void setId(String id) {
     _id = id;
   }
 
   @QueryParam("Time")
   public void setTime(Date time) {
-    _time = time.getTime();
+    if(time!=null)
+      _time = time.getTime();
   }
 
   @GET

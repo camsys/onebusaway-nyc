@@ -65,7 +65,9 @@ public class EstimateCurrentVehicleResource extends ApiActionSupport {
 
   @QueryParam("Query")
   public void setQuery(CurrentVehicleEstimateQueryBean query) {
-    _query = query;
+    if(query!=null){
+      query=query;
+    }
   }
 
   @FieldErrorMessage(Messages.MISSING_REQUIRED_FIELD)
