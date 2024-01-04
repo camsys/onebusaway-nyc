@@ -70,7 +70,9 @@ public class TripForVehicleResource extends ApiActionSupport {
 
   @QueryParam("Time")
   public void setTime(Date time) {
-    _time = time;
+    if(time!=null) {
+      _time = time;
+    }
   }
 
   @QueryParam("IncludeTrip")
