@@ -116,7 +116,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
                 } else {
 
                     List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), trip.getId());
-                    if (tprs == null || tprs.isEmpty()) {
+                    if ((tprs == null || tprs.isEmpty()) && !vehicle.getPhase().equalsIgnoreCase("spooking")) {
                         _log.debug("no tprs for time=" + new Date(time));
                         break;
                     }
