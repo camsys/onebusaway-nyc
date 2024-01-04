@@ -22,6 +22,7 @@ import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
@@ -102,7 +103,6 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
         for (VehicleStatusBean vehicle : vehicles) {
-
             int tripSequence = vehicle.getTripStatus().getBlockTripSequence();
             BlockInstanceBean block = getBlock(vehicle);
             List<BlockTripBean> trips = block.getBlockConfiguration().getTrips();
@@ -114,9 +114,9 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
                     // CAPI contradicts this data, drop it from feed
                     _log.warn("suppressing trip " + trip.getId() + " as its in CAPI");
                 } else {
-
                     List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), trip.getId());
-                    if ((tprs == null || tprs.isEmpty()) && !vehicle.getPhase().equalsIgnoreCase("spooking")) {
+                    boolean isSpooking = vehicle != null && vehicle.getPhase() != null && !vehicle.getPhase().equalsIgnoreCase(EVehiclePhase.SPOOKING.toLabel());
+                    if ((tprs == null || tprs.isEmpty()) && isSpooking){
                         _log.debug("no tprs for time=" + new Date(time));
                         break;
                     }
