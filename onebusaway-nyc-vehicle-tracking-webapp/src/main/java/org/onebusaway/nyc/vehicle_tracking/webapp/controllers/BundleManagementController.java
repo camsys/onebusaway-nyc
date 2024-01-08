@@ -20,13 +20,14 @@ import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.utility.DateLibrary;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.List;
 
@@ -52,7 +53,20 @@ public class BundleManagementController {
 	  return new ModelAndView("bundle-change.jspx");
   }
 
-  @RequestMapping("/bundles.do")
+    @RequestMapping("/bundles.current.{property}.do")
+    @ResponseBody
+    public String current2(@PathVariable String property){
+      try {
+          BeanWrapper wrapper = new BeanWrapperImpl(_bundleManager.getCurrentBundleMetadata());
+          Object o = wrapper.getPropertyValue("get" + property);
+          return String.valueOf(o);
+      }catch(IllegalArgumentException e){
+          return e.getMessage();
+      }
+    }
+
+
+    @RequestMapping("/bundles.do")
   public ModelAndView index() {
     return new ModelAndView("bundles.jspx", "bms", _bundleManager);
   }
