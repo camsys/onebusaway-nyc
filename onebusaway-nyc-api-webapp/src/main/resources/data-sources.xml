@@ -10,11 +10,6 @@
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <bean name="handlerMapping" class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
-
-
-
-    <context:component-scan base-package="org.onebusaway.api.actions" />
 
 
 
@@ -83,5 +78,4 @@
     </bean>
 
     <bean id="apiKeyPermissionService" class="org.onebusaway.nyc.api.lib.impl.ApiKeyWithRolesPermissionServiceImpl"/>
-
 </beans>

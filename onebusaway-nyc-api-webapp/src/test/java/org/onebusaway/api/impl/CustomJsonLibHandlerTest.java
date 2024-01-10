@@ -22,7 +22,7 @@ import org.onebusaway.api.model.transit.ArrivalAndDepartureV2Bean;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 
 import org.junit.Test;
-import org.onebusaway.api.serializers.json.CustomJsonLibHandler;
+import org.onebusaway.api.web.serializers.json.CustomJsonLibHandler;
 
 import java.io.IOException;
 import java.io.StringWriter;

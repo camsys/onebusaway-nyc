@@ -1,12 +1,9 @@
 package org.onebusaway.api.conversion;
 
 import com.opensymphony.xwork2.conversion.TypeConversionException;
-import org.joda.time.DateTime;
-import org.onebusaway.api.actions.api.ValidationErrorBean;
-import org.onebusaway.api.model.ResponseBean;
+import org.onebusaway.api.web.actions.api.ValidationErrorBean;
 
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ParamConverter;
 import java.util.*;
