@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.api.actions.api;
+package org.onebusaway.api.interceptors;
 
 
 import org.onebusaway.nyc.api.lib.impl.ApiKeyUsageMonitorImpl;
