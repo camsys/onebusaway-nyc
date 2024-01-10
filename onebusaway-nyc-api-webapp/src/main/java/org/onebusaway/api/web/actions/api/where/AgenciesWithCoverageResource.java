@@ -17,6 +17,7 @@ package org.onebusaway.api.web.actions.api.where;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.impl.MaxCountSupport;
@@ -28,10 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.ws.rs.core.Response;
 
-@RequestMapping("/test/agencies-with-coverage")
+@RestController
+@RequestMapping("/where/agencies-with-coverage")
 public class AgenciesWithCoverageResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -49,9 +52,11 @@ public class AgenciesWithCoverageResource extends ApiActionSupport {
     super(V1);
   }
 
+
+
   @GetMapping
-  public Response index(@RequestParam(name = "MaxCount", required = false) int maxCount) throws IOException, ServiceException {
-    _maxCount.setMaxCount(maxCount);
+  public Response index(@RequestParam(name = "MaxCount", required = false) Optional<Integer> maxCount) throws IOException, ServiceException {
+    applyIfPresent(maxCount,_maxCount::setMaxCount);
     if (hasErrors())
       return getValidationErrorsResponse();
 

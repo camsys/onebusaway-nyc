@@ -17,6 +17,7 @@ package org.onebusaway.api.web.actions.api;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.apache.struts2.rest.DefaultHttpHeaders;
@@ -201,5 +202,9 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     if(val!=-1){
       c.accept(val);
     }
+  }
+
+  public static void applyIfPresent(Optional<Integer> value, Consumer<Integer> valueSetter) {
+    value.ifPresent(valueSetter);
   }
 }
