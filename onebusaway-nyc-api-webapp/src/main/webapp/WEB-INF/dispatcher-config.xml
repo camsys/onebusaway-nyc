@@ -43,6 +43,12 @@
         </property>
     </bean>
 
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <bean class="org.onebusaway.api.web.interceptors.ContentTypeHeaderInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
 
 
 
