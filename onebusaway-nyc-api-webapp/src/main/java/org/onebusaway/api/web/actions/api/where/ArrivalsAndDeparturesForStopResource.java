@@ -18,6 +18,7 @@ package org.onebusaway.api.web.actions.api.where;
 import java.util.*;
 
 import org.joda.time.DateTime;
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.where.ArrivalAndDepartureBeanV1;
@@ -85,15 +86,15 @@ public class ArrivalsAndDeparturesForStopResource extends ApiActionSupport {
 //  }
 //private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();
   @GetMapping
-  public Response getTripsByBlockId(@PathVariable("stopId") String _id,
-                                    ArrivalsAndDeparturesQueryBean _query) {
+  public ResponseBean getTripsByBlockId(@PathVariable("stopId") String _id,
+                                        ArrivalsAndDeparturesQueryBean _query) {
 
 
     StopWithArrivalsAndDeparturesBean result = _service.getStopWithArrivalsAndDepartures(
             _id, _query);
 
     if (result == null)
-      return getResourceNotFoundResponse();
+      return getResourceNotFoundResponseBean();
 
     List<ArrivalAndDepartureBean> realTimeBeans = new LinkedList<ArrivalAndDepartureBean>();
     for (ArrivalAndDepartureBean bean : result.getArrivalsAndDepartures()){
@@ -108,12 +109,12 @@ public class ArrivalsAndDeparturesForStopResource extends ApiActionSupport {
       List<ArrivalAndDepartureBeanV1> arrivals = getArrivalsAsV1(result);
       StopWithArrivalsAndDeparturesBeanV1 v1 = new StopWithArrivalsAndDeparturesBeanV1(
               result.getStop(), arrivals, result.getNearbyStops());
-      return getOkResponse(v1);
+      return getOkResponseBean(v1);
     } else if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponse(factory.getResponse(result));
+      return getOkResponseBean(factory.getResponse(result));
     } else {
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
     }
 
   }

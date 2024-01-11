@@ -117,6 +117,11 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
             "OK", data));
   }
 
+  protected ResponseBean getOkResponseBean(Object data) {
+    return new ResponseBean(getReturnVersion(), ResponseCodes.RESPONSE_OK,
+            "OK", data);
+  }
+
   protected DefaultHttpHeaders setValidationErrorsResponse() {
     ValidationErrorBean bean = new ValidationErrorBean(new ArrayList<String>(
         getActionErrors()), getFieldErrors());
@@ -132,6 +137,13 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
             ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean));
   }
 
+  protected ResponseBean getValidationErrorsResponseBean() {
+    ValidationErrorBean bean = new ValidationErrorBean(new ArrayList<String>(
+            getActionErrors()), getFieldErrors());
+    return new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean);
+  }
+
   protected DefaultHttpHeaders setResourceNotFoundResponse() {
     _response = new ResponseBean(getReturnVersion(),
         ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null);
@@ -141,6 +153,11 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
   protected Response getResourceNotFoundResponse() {
     return getResponseForResponseBean(new ResponseBean(getReturnVersion(),
             ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null));
+  }
+
+  protected ResponseBean getResourceNotFoundResponseBean() {
+    return new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null);
   }
 
   protected DefaultHttpHeaders setExceptionResponse() {
@@ -165,6 +182,12 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     return getResponseForResponseBean(new ResponseBean(getReturnVersion(),
             ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "unknown version: "
             + _version, null));
+  }
+
+  protected ResponseBean getUnknownVersionResponseBean() {
+    return new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "unknown version: "
+            + _version, null);
   }
 
   protected int getReturnVersion() {

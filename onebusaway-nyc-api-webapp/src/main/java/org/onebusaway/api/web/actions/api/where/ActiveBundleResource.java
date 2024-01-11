@@ -16,6 +16,7 @@
 
 package org.onebusaway.api.web.actions.api.where;
 
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.where.ActiveBundleBeanV1;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.transit_data.services.TransitDataService;
@@ -39,14 +40,14 @@ public class ActiveBundleResource extends ApiActionSupport {
     }
 
     @RequestMapping("/where/active-bundle")
-    public Response index() {
+    public ResponseBean index() {
 
         if (hasErrors())
-            return getValidationErrorsResponse();
+            return getValidationErrorsResponseBean();
 
         String activeBundleId = _service.getActiveBundleId();
         ActiveBundleBeanV1 activeBundleBean = new ActiveBundleBeanV1(activeBundleId);
 
-        return getOkResponse(activeBundleBean);
+        return getOkResponseBean(activeBundleBean);
     }
 }

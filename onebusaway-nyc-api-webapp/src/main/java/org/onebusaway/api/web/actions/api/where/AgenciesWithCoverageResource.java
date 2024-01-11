@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.impl.MaxCountSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
@@ -55,20 +56,20 @@ public class AgenciesWithCoverageResource extends ApiActionSupport {
 
 
   @GetMapping
-  public Response index(@RequestParam(name = "MaxCount", required = false) Optional<Integer> maxCount) throws IOException, ServiceException {
+  public ResponseBean index(@RequestParam(name = "MaxCount", required = false) Optional<Integer> maxCount) throws IOException, ServiceException {
     applyIfPresent(maxCount,_maxCount::setMaxCount);
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
     List<AgencyWithCoverageBean> beans = _service.getAgenciesWithCoverage();
 
     if (isVersion(V1)) {
-      return getOkResponse(beans);
+      return getOkResponseBean(beans);
     } else if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponse(factory.getResponse(beans));
+      return getOkResponseBean(factory.getResponse(beans));
     } else {
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
     }
   }
 }

@@ -17,9 +17,15 @@
         <property name="prefix" value="/WEB-INF/views/" />
         <property name="suffix" value=".jsp" />
     </bean>
-    <mvc:interceptors>
-        <bean class="org.onebusaway.api.web.interceptors.ExceptionInterceptor" />
-    </mvc:interceptors>
+
+
+
+    <mvc:annotation-driven conversion-service="conversionService">
+        <mvc:message-converters register-defaults="true">
+            <bean class="org.onebusaway.api.web.mapping.serializers.json.JsonMessageConverter"/>
+            <bean class="org.onebusaway.api.web.mapping.serializers.xml.XmlMessageConverter"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
 
 
     <!-- Bean definition for FormattingConversionService -->
@@ -37,7 +43,9 @@
         </property>
     </bean>
 
-    <mvc:annotation-driven  conversion-service="conversionService"/>
+
+
+
 
 <!--    <mvc:annotation-driven>-->
 <!--        <mvc:argument-resolvers>-->

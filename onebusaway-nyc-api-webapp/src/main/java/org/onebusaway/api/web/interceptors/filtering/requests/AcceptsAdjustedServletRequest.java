@@ -1,4 +1,4 @@
-package org.onebusaway.api.filtering.requests;
+package org.onebusaway.api.web.interceptors.filtering.requests;
 
 import org.springframework.http.MediaType;
 

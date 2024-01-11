@@ -1,6 +1,6 @@
-package org.onebusaway.api.filtering.filters;
+package org.onebusaway.api.web.interceptors.filtering.filters;
 
-import org.onebusaway.api.filtering.requests.AcceptsAdjustedServletRequest;
+import org.onebusaway.api.web.interceptors.filtering.requests.AcceptsAdjustedServletRequest;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
