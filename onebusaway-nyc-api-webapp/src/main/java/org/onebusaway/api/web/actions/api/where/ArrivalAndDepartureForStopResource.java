@@ -18,7 +18,7 @@ package org.onebusaway.api.web.actions.api.where;
 import java.util.Date;
 
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
-import org.onebusaway.api.conversion.FieldErrorMessage;
+import org.onebusaway.api.web.mapping.formatting.FieldErrorMessage;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;

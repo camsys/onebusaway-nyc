@@ -1,4 +1,4 @@
-package org.onebusaway.api.web.serializers.json;
+package org.onebusaway.api.web.mapping.serializers.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;

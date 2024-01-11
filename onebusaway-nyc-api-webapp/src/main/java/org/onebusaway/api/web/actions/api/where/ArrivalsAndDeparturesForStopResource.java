@@ -30,12 +30,17 @@ import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 
-@Path("/where/arrivals-and-departures-for-stop/{stopId}")
+@RestController
+@RequestMapping("/where/arrivals-and-departures-for-stop/{stopId}")
 public class ArrivalsAndDeparturesForStopResource extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -47,50 +52,41 @@ public class ArrivalsAndDeparturesForStopResource extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
   
-  private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();
+//  private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();
 
   public ArrivalsAndDeparturesForStopResource() {
     super(V1);
   }
-
-  @PathParam("stopId")
-  public void setId(String id) {
-    _id = id;
-  }
-
-  public String getId() {
-    return _id;
-  }
-
-  @QueryParam("Time")
-  public void setTime(DateTime time) {
-    super.ifMeaningfulValue(_query::setTime, time);
-  }
-
-  @QueryParam("MinutesBefore")
-  public void setMinutesBefore(int minutesBefore) {
-    super.ifMeaningfulValue(_query::setMinutesBefore, minutesBefore);
-  }
-
-  @QueryParam("MinutesAfter")
-  public void setMinutesAfter(int minutesAfter) {
-    super.ifMeaningfulValue(_query::setMinutesAfter,minutesAfter);
-  }
-
-  @QueryParam("FrequencyMinutesBefore")
-  public void setFrequencyMinutesBefore(int frequncyMinutesBefore) {
-    super.ifMeaningfulValue(_query::setFrequencyMinutesBefore,frequncyMinutesBefore);
-  }
-
-  @QueryParam("FrequencyMinutesAfter")
-  public void setFrequencyMinutesAfter(int frequencyMinutesAfter) {
-    super.ifMeaningfulValue(_query::setFrequencyMinutesAfter,frequencyMinutesAfter);
-  }
-
-  @GET
-  public Response getTripsByBlockId() {
+//
+//  @QueryParam("Time")
+//  public void setTime(DateTime time) {
+//    super.ifMeaningfulValue(_query::setTime, time);
+//  }
+//
+//  @QueryParam("MinutesBefore")
+//  public void setMinutesBefore(int minutesBefore) {
+//    super.ifMeaningfulValue(_query::setMinutesBefore, minutesBefore);
+//  }
+//
+//  @QueryParam("MinutesAfter")
+//  public void setMinutesAfter(int minutesAfter) {
+//    super.ifMeaningfulValue(_query::setMinutesAfter,minutesAfter);
+//  }
+//
+//  @QueryParam("FrequencyMinutesBefore")
+//  public void setFrequencyMinutesBefore(int frequncyMinutesBefore) {
+//    super.ifMeaningfulValue(_query::setFrequencyMinutesBefore,frequncyMinutesBefore);
+//  }
+//
+//  @QueryParam("FrequencyMinutesAfter")
+//  public void setFrequencyMinutesAfter(int frequencyMinutesAfter) {
+//    super.ifMeaningfulValue(_query::setFrequencyMinutesAfter,frequencyMinutesAfter);
+//  }
+//private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();
+  @GetMapping
+  public Response getTripsByBlockId(@PathVariable("stopId") String _id,
+                                    ArrivalsAndDeparturesQueryBean _query) {
 
 
     StopWithArrivalsAndDeparturesBean result = _service.getStopWithArrivalsAndDepartures(

@@ -1,4 +1,4 @@
-package org.onebusaway.api.conversion;
+package org.onebusaway.api.web.mapping.formatting;
 
 import com.opensymphony.xwork2.conversion.TypeConversionException;
 import org.onebusaway.api.web.actions.api.ValidationErrorBean;

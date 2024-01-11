@@ -1,9 +1,9 @@
-package org.onebusaway.api.web.serializers.json;
+package org.onebusaway.api.web.mapping.serializers.json;
 
 import com.fasterxml.jackson.databind.*;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.inject.Inject;
-import org.onebusaway.api.web.serializers.CustomUniversalHandler;
+import org.onebusaway.api.web.mapping.serializers.CustomUniversalHandler;
 
 
 import javax.servlet.http.HttpServletRequest;

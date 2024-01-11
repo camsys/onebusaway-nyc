@@ -16,7 +16,7 @@
 package org.onebusaway.api.web.actions.api.where;
 
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
-import org.onebusaway.api.conversion.FieldErrorMessage;
+import org.onebusaway.api.web.mapping.formatting.FieldErrorMessage;
 import org.onebusaway.api.services.AlarmService;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.services.TransitDataService;

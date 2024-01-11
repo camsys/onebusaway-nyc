@@ -24,7 +24,7 @@ import org.onebusaway.api.model.transit.ArrivalAndDepartureV2Bean;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 
 import org.junit.Test;
-import org.onebusaway.api.web.serializers.xml.CustomXStreamHandler;
+import org.onebusaway.api.web.mapping.serializers.xml.CustomXStreamHandler;
 
 import java.io.IOException;
 import java.io.StringWriter;

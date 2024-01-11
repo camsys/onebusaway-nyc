@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.api.web.serializers.xml;
+package org.onebusaway.api.web.mapping.serializers.xml;
 
 import org.onebusaway.api.web.actions.api.ValidationErrorBean;
 import org.onebusaway.api.model.ResponseBean;
@@ -70,7 +70,7 @@ import org.onebusaway.api.model.transit.tripplanning.StreetLegV2Bean;
 import org.onebusaway.api.model.transit.tripplanning.TransitLegV2Bean;
 import org.onebusaway.api.model.transit.tripplanning.VertexV2Bean;
 import org.onebusaway.api.model.where.ArrivalAndDepartureBeanV1;
-import org.onebusaway.api.web.serializers.CustomUniversalHandler;
+import org.onebusaway.api.web.mapping.serializers.CustomUniversalHandler;
 import org.onebusaway.geospatial.model.EncodedPolygonBean;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;

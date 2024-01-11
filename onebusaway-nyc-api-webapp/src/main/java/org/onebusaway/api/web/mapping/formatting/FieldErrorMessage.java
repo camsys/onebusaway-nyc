@@ -1,4 +1,4 @@
-package org.onebusaway.api.conversion;
+package org.onebusaway.api.web.mapping.formatting;
 
 import java.lang.annotation.*;
 

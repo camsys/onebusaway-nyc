@@ -1,4 +1,4 @@
-package org.onebusaway.api.web.serializers;
+package org.onebusaway.api.web.mapping.serializers;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyReader;

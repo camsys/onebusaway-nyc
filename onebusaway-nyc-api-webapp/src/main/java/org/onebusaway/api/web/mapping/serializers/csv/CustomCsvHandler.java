@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.api.web.serializers.csv;
+package org.onebusaway.api.web.mapping.serializers.csv;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -26,7 +26,7 @@ import com.opensymphony.xwork2.ActionInvocation;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 import org.onebusaway.api.model.transit.ListWithReferencesBean;
-import org.onebusaway.api.web.serializers.xml.CustomXStreamHandler;
+import org.onebusaway.api.web.mapping.serializers.xml.CustomXStreamHandler;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
 

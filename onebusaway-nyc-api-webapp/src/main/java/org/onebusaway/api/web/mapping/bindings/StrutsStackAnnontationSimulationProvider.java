@@ -1,9 +1,8 @@
-package org.onebusaway.api.web.actions.bindings;
+package org.onebusaway.api.web.mapping.bindings;
 
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.ext.Provider;
 
 //@Provider
 public class StrutsStackAnnontationSimulationProvider implements ContainerRequestFilter {
