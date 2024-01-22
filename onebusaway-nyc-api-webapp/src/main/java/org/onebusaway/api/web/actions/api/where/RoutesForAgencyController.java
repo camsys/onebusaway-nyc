@@ -25,14 +25,16 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.onebusaway.api.model.ResponseBean;
 
-@Path("/where/routes-for-agency/{agencyId}")
-public class RoutesForAgencyResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/routes-for-agency/{agencyId}")
+public class RoutesForAgencyController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -41,37 +43,27 @@ public class RoutesForAgencyResource extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
-
-  public RoutesForAgencyResource() {
+  public RoutesForAgencyController() {
     super(V2);
   }
 
-  @PathParam("agencyId")
-  public void setId(String id) {
-    _id = id;
-  }
 
-  public String getId() {
-    return _id;
-  }
-
-  @GET
-  public Response show() {
+  @GetMapping
+  public ResponseBean show(@PathVariable("agencyId") String id) {
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
-    ListBean<RouteBean> routes = _service.getRoutesForAgencyId(_id);
+    ListBean<RouteBean> routes = _service.getRoutesForAgencyId(id);
 
     BeanFactoryV2 factory = getBeanFactoryV2();
     List<RouteV2Bean> beans = new ArrayList<RouteV2Bean>();
     for (RouteBean route : routes.getList())
       beans.add(factory.getRoute(route));
 
-    return getOkResponse(factory.list(beans, false));
+    return getOkResponseBean(factory.list(beans, false));
   }
 }
