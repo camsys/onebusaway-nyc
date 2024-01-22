@@ -32,11 +32,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.core.Response;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.onebusaway.api.model.ResponseBean;
+import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/agencies-with-coverage")
-public class AgenciesWithCoverageResource extends ApiActionSupport {
+public class AgenciesWithCoverageController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -44,22 +49,17 @@ public class AgenciesWithCoverageResource extends ApiActionSupport {
 
   private static final int V2 = 2;
 
-  private MaxCountSupport _maxCount = new MaxCountSupport();
-
   @Autowired
   private TransitDataService _service;
 
-  public AgenciesWithCoverageResource() {
+  public AgenciesWithCoverageController() {
     super(V1);
   }
 
 
 
   @GetMapping
-  public ResponseBean index(@RequestParam(name = "MaxCount", required = false) Optional<Integer> maxCount) throws IOException, ServiceException {
-    applyIfPresent(maxCount,_maxCount::setMaxCount);
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
+  public ResponseBean index() throws IOException, ServiceException {
 
     List<AgencyWithCoverageBean> beans = _service.getAgenciesWithCoverage();
 
