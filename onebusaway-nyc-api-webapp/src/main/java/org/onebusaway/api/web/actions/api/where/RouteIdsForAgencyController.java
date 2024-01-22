@@ -15,20 +15,22 @@
  */
 package org.onebusaway.api.web.actions.api.where;
 
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
 
-@Path("/where/route-ids-for-agency/{agencyId}")
-public class RouteIdsForAgencyResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/route-ids-for-agency/{agencyId}")
+public class RouteIdsForAgencyController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -37,33 +39,22 @@ public class RouteIdsForAgencyResource extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
-
-  public RouteIdsForAgencyResource() {
+  public RouteIdsForAgencyController() {
     super(V2);
   }
 
-  @PathParam("agencyId")
-  public void setId(String id) {
-    _id = id;
-  }
-
-  public String getId() {
-    return _id;
-  }
-
-  @GET
-  public Response show() {
+  @GetMapping
+  public ResponseBean show(@PathVariable("agencyId") String id) {
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
-    ListBean<String> routeIds = _service.getRouteIdsForAgencyId(_id);
+    ListBean<String> routeIds = _service.getRouteIdsForAgencyId(id);
 
     BeanFactoryV2 factory = getBeanFactoryV2();
-    return getOkResponse(factory.getEntityIdsResponse(routeIds));
+    return getOkResponseBean(factory.getEntityIdsResponse(routeIds));
   }
 }
