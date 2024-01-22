@@ -21,13 +21,16 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
 
-@Path("/where/stop-ids-for-agency/{agencyId}")
-public class StopIdsForAgencyResponse extends ApiActionSupport {
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.onebusaway.api.model.ResponseBean;
+import org.onebusaway.api.model.ResponseBean;
+@RestController
+@RequestMapping("/where/stop-ids-for-agency/{agencyId}")
+public class StopIdsForAgencyController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -36,33 +39,22 @@ public class StopIdsForAgencyResponse extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-  private String _id;
-
-  public StopIdsForAgencyResponse() {
+  public StopIdsForAgencyController() {
     super(V2);
   }
 
-  @PathParam("agencyId")
-  public void setId(String id) {
-    _id = id;
-  }
-  
-  public String getId() {
-    return _id;
-  }
-
-  @GET
-  public Response show() {
+  @GetMapping
+  public ResponseBean show(@PathVariable("agencyId") String id) {
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
     if( ! isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
     
-    ListBean<String> stopIds = _service.getStopIdsForAgencyId(_id);
+    ListBean<String> stopIds = _service.getStopIdsForAgencyId(id);
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
-    factory.filterNonRevenueStopIds(_id, stopIds.getList());
-    return getOkResponse(factory.getEntityIdsResponse(stopIds));
+    factory.filterNonRevenueStopIds(id, stopIds.getList());
+    return getOkResponseBean(factory.getEntityIdsResponse(stopIds));
   }
 }
