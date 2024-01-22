@@ -36,13 +36,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
 
 
 @RestController
 @RequestMapping("/where/arrivals-and-departures-for-stop/{stopId}")
-public class ArrivalsAndDeparturesForStopResource extends ApiActionSupport {
+public class ArrivalsAndDeparturesForStopController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -56,42 +54,17 @@ public class ArrivalsAndDeparturesForStopResource extends ApiActionSupport {
   
 //  private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();
 
-  public ArrivalsAndDeparturesForStopResource() {
+  public ArrivalsAndDeparturesForStopController() {
     super(V1);
   }
-//
-//  @QueryParam("Time")
-//  public void setTime(DateTime time) {
-//    super.ifMeaningfulValue(_query::setTime, time);
-//  }
-//
-//  @QueryParam("MinutesBefore")
-//  public void setMinutesBefore(int minutesBefore) {
-//    super.ifMeaningfulValue(_query::setMinutesBefore, minutesBefore);
-//  }
-//
-//  @QueryParam("MinutesAfter")
-//  public void setMinutesAfter(int minutesAfter) {
-//    super.ifMeaningfulValue(_query::setMinutesAfter,minutesAfter);
-//  }
-//
-//  @QueryParam("FrequencyMinutesBefore")
-//  public void setFrequencyMinutesBefore(int frequncyMinutesBefore) {
-//    super.ifMeaningfulValue(_query::setFrequencyMinutesBefore,frequncyMinutesBefore);
-//  }
-//
-//  @QueryParam("FrequencyMinutesAfter")
-//  public void setFrequencyMinutesAfter(int frequencyMinutesAfter) {
-//    super.ifMeaningfulValue(_query::setFrequencyMinutesAfter,frequencyMinutesAfter);
-//  }
-//private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();
+
   @GetMapping
-  public ResponseBean getTripsByBlockId(@PathVariable("stopId") String _id,
-                                        ArrivalsAndDeparturesQueryBean _query) {
+  public ResponseBean getTripsByBlockId(@PathVariable("stopId") String id,
+                                        ArrivalsAndDeparturesQueryBean query) {
 
 
     StopWithArrivalsAndDeparturesBean result = _service.getStopWithArrivalsAndDepartures(
-            _id, _query);
+            id, query);
 
     if (result == null)
       return getResourceNotFoundResponseBean();
