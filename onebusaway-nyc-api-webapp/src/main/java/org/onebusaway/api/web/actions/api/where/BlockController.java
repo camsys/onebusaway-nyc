@@ -15,6 +15,7 @@
  */
 package org.onebusaway.api.web.actions.api.where;
 
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
@@ -23,14 +24,22 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.onebusaway.api.model.ResponseBean;
+import org.onebusaway.api.model.ResponseBean;
 
-@Path("/where/block/{blockId}")
-public class BlockResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/block/{blockId}")
+public class BlockController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -39,37 +48,37 @@ public class BlockResource extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-  private String _id;
+//  private String _id;
 
-  public BlockResource() {
+  public BlockController() {
     super(V2);
   }
+//
+//  @PathVariable("blockId")
+//  public void setId(String id) {
+//    _id = id;
+//  }
+//
+//  public String getId() {
+//    return _id;
+//  }
 
-  @PathParam("blockId")
-  public void setId(String id) {
-    _id = id;
-  }
-
-  public String getId() {
-    return _id;
-  }
-
-  @GET
-  public Response show() throws ServiceException {
+  @GetMapping
+  public ResponseBean show(@PathVariable("blockId") String id) throws ServiceException {
 
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    BlockBean block = _service.getBlockForId(_id);
+    BlockBean block = _service.getBlockForId(id);
 
     if (block == null)
-      return getResourceNotFoundResponse();
+      return getResourceNotFoundResponseBean();
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     EntryWithReferencesBean<BlockV2Bean> response = factory.getBlockResponse(block);
-    return getOkResponse(response);
+    return getOkResponseBean(response);
   }
 }
