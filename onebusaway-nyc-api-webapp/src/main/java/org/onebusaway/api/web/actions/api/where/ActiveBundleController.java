@@ -23,10 +23,10 @@ import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import javax.ws.rs.core.Response;
+
 
 @RestController
-public class ActiveBundleResource extends ApiActionSupport {
+public class ActiveBundleController extends ApiActionSupport {
 
     private static final long serialVersionUID = 1L;
 
@@ -35,7 +35,7 @@ public class ActiveBundleResource extends ApiActionSupport {
     @Autowired
     private TransitDataService _service;
 
-    public ActiveBundleResource() {
+    public ActiveBundleController() {
         super(V1);
     }
 
