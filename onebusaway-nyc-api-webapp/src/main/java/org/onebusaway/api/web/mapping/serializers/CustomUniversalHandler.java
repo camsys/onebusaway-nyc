@@ -10,7 +10,6 @@ public abstract class CustomUniversalHandler implements MessageBodyWriter<Object
 
     MediaType myType;
 
-
     public CustomUniversalHandler(MediaType type){
         myType = type;
     }
@@ -29,5 +28,9 @@ public abstract class CustomUniversalHandler implements MessageBodyWriter<Object
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return mediaType.isCompatible(myType);
+    }
+
+    public MediaType getMyType() {
+        return myType;
     }
 }

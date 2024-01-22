@@ -7,6 +7,9 @@ import org.springframework.format.Formatter;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
 
@@ -35,5 +38,14 @@ public class NycDateFormatter implements Formatter<Date> {
     @Override
     public String print(Date object, Locale locale) {
         return toString(object);
+    }
+
+    public Long stringToLong(String value){
+        if(value==null){
+            return Instant.now().atZone(ZoneId.systemDefault())
+                    .toLocalDate().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+        }
+        return convertFromString(value).getTime();
     }
 }

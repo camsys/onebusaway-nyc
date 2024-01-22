@@ -15,9 +15,7 @@
  */
 package org.onebusaway.api.web.actions.api;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 import org.apache.struts2.rest.DefaultHttpHeaders;
@@ -143,6 +141,11 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     return new ResponseBean(getReturnVersion(),
             ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean);
   }
+  protected ResponseBean getValidationErrorsResponseBean(Map<String,List<String>> fieldErrors) {
+    ValidationErrorBean bean = new ValidationErrorBean(null, fieldErrors);
+    return new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean);
+  }
 
   protected DefaultHttpHeaders setResourceNotFoundResponse() {
     _response = new ResponseBean(getReturnVersion(),
@@ -209,25 +212,25 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     }
   }
 
-  protected void ifMeaningfulValue(Consumer<Long> c, DateTime val){
-    if(val!=null){
-      c.accept(val.getMillis());
+  public static long longToTime(long time){
+    if(time==-1){
+      time = new Date().getTime();
     }
+    return time;
   }
 
-  protected void ifMeaningfulValue(Consumer<String> c, String val){
-    if(val!=null){
-      c.accept(val);
+  public static long longToDate(long time){
+    if(time==-1){
+      time = new Date().getTime();
+    } else{
+      time = new Date(time).getTime();
     }
+    return time;
   }
 
-  protected void ifMeaningfulValue(Consumer<Integer> c, int val){
-    if(val!=-1){
-      c.accept(val);
-    }
-  }
-
-  public static void applyIfPresent(Optional<Integer> value, Consumer<Integer> valueSetter) {
-    value.ifPresent(valueSetter);
+  public static MaxCountSupport createMaxCountFromArg(Long maxCount){
+    MaxCountSupport maxCountSupport = new MaxCountSupport();
+    if(maxCount!=-1) maxCountSupport.setMaxCount(maxCount.intValue());
+    return maxCountSupport;
   }
 }

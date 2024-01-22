@@ -21,7 +21,7 @@ public class StringToLongConverter implements Converter<String, Long> {
             try{
                 return _formatter.toLong(source,null);
             } catch (ParseException parseException) {
-                return null;
+                return Long.valueOf(-1);
             }
         }
     }
