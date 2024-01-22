@@ -24,14 +24,12 @@ import org.onebusaway.transit_data.model.StopScheduleBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
+import org.springframework.web.bind.annotation.*;
+import org.onebusaway.api.model.ResponseBean;
 
-@Path("/where/schedule-for-stop/{stopId}")
-public class ScheduleForStopResponse extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/schedule-for-stop/{stopId}")
+public class ScheduleForStopController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -40,37 +38,25 @@ public class ScheduleForStopResponse extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
-
-  private Date _date = new Date();
-
-  public ScheduleForStopResponse() {
+  public ScheduleForStopController() {
     super(V2);
   }
 
-  @PathParam("stopId")
-  public void setId(String id) {
-    _id = id;
-  }
+  @GetMapping
+  public ResponseBean show(@PathVariable("stopId") String id,
+                           @RequestParam(name ="Date", required = false) Long time) throws ServiceException {
 
-  public String getId() {
-    return _id;
-  }
+    FieldErrorSupport fieldErrors = new FieldErrorSupport()
+            .hasFieldError(time,"Date");
+    if (fieldErrors.hasErrors())
+      return getValidationErrorsResponseBean(fieldErrors.getErrors());
 
-  @QueryParam("Date")
-  public void setDate(Date date) {
-    _date = date;
-  }
+    time = longToTime(time);
+    Date date = new Date(time);
 
-  @GET
-  public Response show() throws ServiceException {
-
-    if (hasErrors())
-      return getValidationErrorsResponse();
-
-    StopScheduleBean stopSchedule = _service.getScheduleForStop(_id, _date);
+    StopScheduleBean stopSchedule = _service.getScheduleForStop(id, date);
 
     BeanFactoryV2 factory = getBeanFactoryV2();
-    return getOkResponse(factory.getResponse(stopSchedule));
+    return getOkResponseBean(factory.getResponse(stopSchedule));
   }
 }
