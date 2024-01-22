@@ -15,26 +15,31 @@
  */
 package org.onebusaway.api.web.actions.api.where;
 
-import java.util.Date;
 
+
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 import org.onebusaway.api.model.transit.blocks.BlockInstanceV2Bean;
+import org.onebusaway.api.web.mapping.formatting.NycDateFormatter;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
 
-@Path("/where/block-instance/{blockId}")
-public class BlockInstanceResource extends ApiActionSupport {
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
+@RestController
+@RequestMapping("/where/block-instance/{blockId}")
+public class BlockInstanceController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -43,46 +48,37 @@ public class BlockInstanceResource extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-  private String _id;
+  @Autowired
+  private NycDateFormatter _formatter;
 
-  private long _serviceDate;
 
-  public BlockInstanceResource() {
+  public BlockInstanceController() {
     super(V2);
   }
 
-  @PathParam("blockId")
-  public void setId(String id) {
-    _id = id;
-  }
 
-  public String getId() {
-    return _id;
-  }
-
-  @QueryParam("ServiceDate")
-  public void setServiceDate(Date serviceDate) {
-    _serviceDate = serviceDate.getTime();
-  }
-
-  @GET
-  public Response show() throws ServiceException {
-
+  @GetMapping
+  public ResponseBean show(@PathVariable("blockId") String id,
+                           @RequestParam(name ="ServiceDate", required = false) String serviceDateString
+                           ) throws ServiceException {
+    Long serviceDate = _formatter.stringToLong(serviceDateString);
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    BlockInstanceBean blockInstance = _service.getBlockInstance(_id,
-        _serviceDate);
+    BlockInstanceBean blockInstance = _service.getBlockInstance(id,
+        serviceDate);
 
+//        todo: this is the same result that once would have been returned, but seems inconsistent.
+//    404 responses should be when the user requests an api that doesn't exist :<
     if (blockInstance == null)
-      return getResourceNotFoundResponse();
+      return getResourceNotFoundResponseBean();
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     BlockInstanceV2Bean bean = factory.getBlockInstance(blockInstance);
     EntryWithReferencesBean<BlockInstanceV2Bean> response = factory.entry(bean);
-    return getOkResponse(response);
+    return getOkResponseBean(response);
   }
 }
