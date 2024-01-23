@@ -26,17 +26,13 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.onebusaway.api.model.ResponseBean;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-
-@Path("/where/trip-details/{tripId}")
-public class TripDetailsResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/trip-details/{tripId}")
+public class TripDetailsController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -45,92 +41,50 @@ public class TripDetailsResource extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-  private String _id;
-
-  private Date _serviceDate;
-
-  private Date _time = new Date();
-  
-  private String _vehicleId;
-  
-  private boolean _includeTrip = true;
-
-  private boolean _includeSchedule = true;
-  
-  private boolean _includeStatus = true;
-
-  public TripDetailsResource() {
+  public TripDetailsController() {
     super(V2);
   }
 
-  @PathParam("tripId")
-  public void setId(String id) {
-    _id = id;
-  }
+  @GetMapping
+  public ResponseBean show(@PathVariable("tripId") String id,
+                           @RequestParam(name ="ServiceDate", required=false) Date date,
+                           @RequestParam(name ="Time", required = false, defaultValue = "") Date time,
+                           @RequestParam(name ="VehicleId", required = false, defaultValue = "") String vehicleId,
+                           @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
+                           @RequestParam(name ="IncludeSchedule", required = false, defaultValue = "true") boolean includeSchedule,
+                           @RequestParam(name ="IncludeStatus", required = false, defaultValue = "true") boolean includeStatus
+                           ) throws ServiceException {
 
-  public String getId() {
-    return _id;
-  }
-
-  @QueryParam("Date")
-  public void setServiceDate(Date date) {
-    _serviceDate = date;
-  }
-
-  @QueryParam("Time")
-  public void setTime(Date time) {
-    _time = time;
-  }
-
-  @QueryParam("VehicleId")
-  public void setVehicleId(String vehicleId) {
-    _vehicleId = vehicleId;
-  }
-
-  @QueryParam("IncludeTrip")
-  public void setIncludeTrip(boolean includeTrip) {
-    _includeTrip = includeTrip;
-  }
-
-  @QueryParam("IncludeSchedule")
-  public void setIncludeSchedule(boolean includeSchedule) {
-    _includeSchedule = includeSchedule;
-  }
-
-  @QueryParam("IncludeStatus")
-  public void setIncludeStatus(boolean includeStatus) {
-    _includeStatus = includeStatus;
-  }
-
-  @GET
-  public Response show() throws ServiceException {
-
+//todo:confirm date is handled appropriately if no value is given
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
     if (hasErrors())
-      return getValidationErrorsResponse();
-    
+      return getValidationErrorsResponseBean();
+
+    if(time==null){
+      time = new Date();
+    }
     TripDetailsQueryBean query = new TripDetailsQueryBean();
-    query.setTripId(_id);
-    if( _serviceDate != null)
-      query.setServiceDate(_serviceDate.getTime());
-      query.setTime(_time.getTime());
-      query.setVehicleId(_vehicleId);
+    query.setTripId(id);
+    if( date != null)
+      query.setServiceDate(date.getTime());
+      query.setTime(time.getTime());
+      query.setVehicleId(vehicleId);
     
       TripDetailsInclusionBean inclusion = query.getInclusion();
-      inclusion.setIncludeTripBean(_includeTrip);
-      inclusion.setIncludeTripSchedule(_includeSchedule);
-      inclusion.setIncludeTripStatus(_includeStatus);
+      inclusion.setIncludeTripBean(includeTrip);
+      inclusion.setIncludeTripSchedule(includeSchedule);
+      inclusion.setIncludeTripStatus(includeStatus);
 
       TripDetailsBean tripDetails = _service.getSingleTripDetails(query);
 
     if (tripDetails == null)
-      return getResourceNotFoundResponse();
+      return getResourceNotFoundResponseBean();
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     EntryWithReferencesBean<TripDetailsV2Bean> response = factory.getResponse(tripDetails);
-    return getOkResponse(response);
+    return getOkResponseBean(response);
   }
 
 }
