@@ -16,7 +16,6 @@
 package org.onebusaway.api.web.actions.api.where;
 
 import java.io.IOException;
-import java.sql.Date;
 
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.impl.MaxCountSupport;
@@ -33,12 +32,14 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
+import org.springframework.web.bind.annotation.*;
+import org.onebusaway.api.model.ResponseBean;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/where/trips-for-location")
+@RestController
+@RequestMapping("/where/trips-for-location")
 public class TripsForLocationResponse extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -49,105 +50,50 @@ public class TripsForLocationResponse extends ApiActionSupport {
 
   @Autowired
   private NycTransitDataService _service;
-  
-  private SearchBoundsFactory _searchBoundsFactory = new SearchBoundsFactory(MAX_BOUNDS_RADIUS);
-
-  private long _time = 0;
-
-  private MaxCountSupport _maxCount = new MaxCountSupport();
-
-  private boolean _includeTrip = true;
-  
-  private boolean _includeStatus = false;
-
-  private boolean _includeSchedule = false;
 
   public TripsForLocationResponse() {
     super(V2);
   }
 
-  @QueryParam("Lat")
-  public void setLat(double lat) {
-    _searchBoundsFactory.setLat(lat);
-  }
 
-  @QueryParam("Lon")
-  public void setLon(double lon) {
-    _searchBoundsFactory.setLon(lon);
-  }
-
-  @QueryParam("Radius")
-  public void setRadius(double radius) {
-    _searchBoundsFactory.setRadius(radius);
-  }
-
-  @QueryParam("LatSpan")
-  public void setLatSpan(double latSpan) {
-    _searchBoundsFactory.setLatSpan(latSpan);
-  }
-
-  @QueryParam("LonSpan")
-  public void setLonSpan(double lonSpan) {
-    _searchBoundsFactory.setLonSpan(lonSpan);
-  }
-
-  @QueryParam("Date")
-  public void setTime(Date time) {
-    _time = time.getTime();
-  }
-
-  @QueryParam("MaxCount")
-  public void setMaxCount(int maxCount) {
-    _maxCount.setMaxCount(maxCount);
-  }
-
-  @QueryParam("IncludeTrip")
-  public void setIncludeTrip(boolean includeTrip) {
-    _includeTrip = includeTrip;
-  }
-
-  @QueryParam("IncludeStatus")
-  public void setIncludeStatus(boolean includeStatus) {
-    _includeStatus = includeStatus;
-  }
-
-  @QueryParam("IncludeSchedule")
-  public void setIncludeSchedule(boolean includeSchedule) {
-    _includeSchedule = includeSchedule;
-  }
-
-  @GET
-  public Response index() throws IOException, ServiceException {
-
+  @GetMapping
+  public ResponseBean index(SearchBoundsFactory searchBoundsFactory,
+                            @RequestParam(name ="Date", required = false) long time,
+                            @RequestParam(name ="MaxCount", required = false) Long maxCountArg,
+                            @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
+                            @RequestParam(name ="IncludeStatus", required = false, defaultValue = "false") boolean includeStatus,
+                            @RequestParam(name ="IncludeSchedule", required = false, defaultValue = "false") boolean includeSchedule) throws IOException, ServiceException {
+    MaxCountSupport maxCount = createMaxCountFromArg(maxCountArg);
+    time = longToTime(time);
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    CoordinateBounds bounds = _searchBoundsFactory.createBounds();
+    if(searchBoundsFactory.getMaxSearchRadius()==0){
+      searchBoundsFactory.setMaxSearchRadius(MAX_BOUNDS_RADIUS);
+    }
 
-    long time = System.currentTimeMillis();
-    if (_time != 0)
-      time = _time;
+    CoordinateBounds bounds = searchBoundsFactory.createBounds();
 
     TripsForBoundsQueryBean query = new TripsForBoundsQueryBean();
     query.setBounds(bounds);
     query.setTime(time);
-    query.setMaxCount(_maxCount.getMaxCount());
+    query.setMaxCount(maxCount.getMaxCount());
 
     TripDetailsInclusionBean inclusion = query.getInclusion();
-    inclusion.setIncludeTripBean(_includeTrip);
-    inclusion.setIncludeTripSchedule(_includeSchedule);
-    inclusion.setIncludeTripStatus(_includeStatus);
+    inclusion.setIncludeTripBean(includeTrip);
+    inclusion.setIncludeTripSchedule(includeSchedule);
+    inclusion.setIncludeTripStatus(includeStatus);
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
 
     try {
       ListBean<TripDetailsBean> trips = _service.getTripsForBounds(query);
-      return getOkResponse(factory.getTripDetailsResponse(trips));
+      return getOkResponseBean(factory.getTripDetailsResponse(trips));
     } catch (OutOfServiceAreaServiceException ex) {
-      return getOkResponse(factory.getEmptyList(TripDetailsV2Bean.class, true));
+      return getOkResponseBean(factory.getEmptyList(TripDetailsV2Bean.class, true));
     }
   }
 }
