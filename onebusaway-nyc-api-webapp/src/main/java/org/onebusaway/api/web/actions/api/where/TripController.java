@@ -23,15 +23,15 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.onebusaway.api.model.ResponseBean;
 
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
-
-@Path("/where/trip/{tripId}")
-public class TripResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/trip/{tripId}")
+public class TripController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -40,37 +40,26 @@ public class TripResource extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
-
-  public TripResource() {
+  public TripController() {
     super(V2);
   }
 
-  @PathParam("tripId")
-  public void setId(String id) {
-    _id = id;
-  }
-
-  public String getId() {
-    return _id;
-  }
-
-  @GET
-  public Response show() throws ServiceException {
+  @GetMapping
+  public ResponseBean show(@PathVariable("tripId")String id) throws ServiceException {
 
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    TripBean trip = _service.getTrip(_id);
+    TripBean trip = _service.getTrip(id);
 
     if (trip == null)
-      return getResourceNotFoundResponse();
+      return getResourceNotFoundResponseBean();
 
     BeanFactoryV2 factory = getBeanFactoryV2();
     EntryWithReferencesBean<TripV2Bean> response = factory.getResponse(trip);
-    return getOkResponse(response);
+    return getOkResponseBean(response);
   }
 }
