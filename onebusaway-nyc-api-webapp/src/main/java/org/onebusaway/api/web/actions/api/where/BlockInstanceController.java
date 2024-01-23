@@ -17,6 +17,7 @@ package org.onebusaway.api.web.actions.api.where;
 
 
 
+import com.opensymphony.xwork2.conversion.TypeConversionException;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
@@ -35,6 +36,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.text.ParseException;
 
 
 @RestController
@@ -61,12 +64,20 @@ public class BlockInstanceController extends ApiActionSupport {
   public ResponseBean show(@PathVariable("blockId") String id,
                            @RequestParam(name ="ServiceDate", required = false) String serviceDateString
                            ) throws ServiceException {
-    Long serviceDate = _formatter.stringToLong(serviceDateString);
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
+    Long serviceDate = null;
+    try {
+      serviceDate = _formatter.stringToLong(serviceDateString);
+    } catch (TypeConversionException e){
+      FieldErrorSupport fieldErrors = new FieldErrorSupport()
+              .invalidValue("ServiceDate");
+      if (fieldErrors.hasErrors())
+        return getValidationErrorsResponseBean(fieldErrors.getErrors());
+    }
+
+
 
     BlockInstanceBean blockInstance = _service.getBlockInstance(id,
         serviceDate);

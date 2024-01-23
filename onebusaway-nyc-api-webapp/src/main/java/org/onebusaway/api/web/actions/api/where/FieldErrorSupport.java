@@ -33,6 +33,10 @@ public class FieldErrorSupport {
     numDefault = -1;
   }
 
+  public FieldErrorSupport invalidValue(String s){
+    errorOutput.put(s,List.of(FieldErrorSupport.INVALID_FIELD_VALUE));
+    return this;
+  }
 
   public FieldErrorSupport hasFieldError(Object o, String s){
     if (o==null) errorOutput.put(s,List.of(FieldErrorSupport.MISSING_REQUIRED_FIELD));

@@ -1,5 +1,6 @@
 package org.onebusaway.api.web.mapping.formatting;
 
+import com.opensymphony.xwork2.conversion.TypeConversionException;
 import org.onebusaway.presentation.impl.conversion.DateConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,8 @@ import java.util.Locale;
 @Component
 public class NycDateFormatter implements Formatter<Date> {
     private static Logger _log = LoggerFactory.getLogger(NycDateTimeFormatter.class);
+
+    public static String DateFormat = "yyyy-MM-dd";
 
     DateConverter converter = new DateConverter();
 
@@ -40,7 +43,7 @@ public class NycDateFormatter implements Formatter<Date> {
         return toString(object);
     }
 
-    public Long stringToLong(String value){
+    public Long stringToLong(String value) throws TypeConversionException {
         if(value==null){
             return Instant.now().atZone(ZoneId.systemDefault())
                     .toLocalDate().atStartOfDay(ZoneId.systemDefault())

@@ -18,7 +18,11 @@ import java.util.Locale;
 public class NycDateTimeFormatter implements Formatter<DateTime> {
     private static Logger _log = LoggerFactory.getLogger(NycDateTimeFormatter.class);
 
-    SimpleDateFormat _format = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    private static String DATE_FORMAT = "yyyy-MM-dd_HH-mm-ss";
+
+
+
+    SimpleDateFormat _format = new SimpleDateFormat(DATE_FORMAT);
     DateTimeConverter converter = new DateTimeConverter();
 
 
@@ -49,7 +53,7 @@ public class NycDateTimeFormatter implements Formatter<DateTime> {
     }
 
     @Override
-    public DateTime parse(String text, Locale locale) throws ParseException {
+    public DateTime parse(String text, Locale locale) throws TypeConversionException {
         return convertFromString(text);
     }
 
@@ -59,7 +63,7 @@ public class NycDateTimeFormatter implements Formatter<DateTime> {
     }
 
 
-    public long toLong(String text, Locale locale) throws ParseException{
+    public long toLong(String text, Locale locale) throws TypeConversionException{
         return parse(text,locale).getMillis();
     }
 
