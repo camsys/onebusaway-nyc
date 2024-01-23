@@ -23,13 +23,14 @@ import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-@Path("/where/stops-for-route/{routeId}")
-public class StopsForRouteResponse extends ApiActionSupport {
+
+
+import org.springframework.web.bind.annotation.*;
+import org.onebusaway.api.model.ResponseBean;
+
+@RestController
+@RequestMapping("/where/stops-for-route/{routeId}")
+public class StopsForRouteController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -40,48 +41,32 @@ public class StopsForRouteResponse extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-  private String _id;
 
-  private boolean _includePolylines = true;
-
-  public StopsForRouteResponse() {
+  public StopsForRouteController() {
     super(V1);
   }
 
-  @PathParam("routeId")
-  public void setId(String id) {
-    _id = id;
-  }
 
-  public String getId() {
-    return _id;
-  }
-  
-  @QueryParam("IncludePolylines")
-  public void setIncludePolylines(boolean includePolylines) {
-    _includePolylines = includePolylines;
-  }
-
-
-  @GET
-  public Response show() throws ServiceException {
+  @GetMapping
+  public ResponseBean show(@PathVariable("routeId") String id,
+          @RequestParam(name ="IncludePolylines", required = false, defaultValue = "true") boolean includePolylines) throws ServiceException {
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    StopsForRouteBean result = _service.getStopsForRoute(_id);
+    StopsForRouteBean result = _service.getStopsForRoute(id);
 
     if (result == null)
-      return getResourceNotFoundResponse();
+      return getResourceNotFoundResponseBean();
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     factory.filterNonRevenueStops(result);
     if (isVersion(V1)) {
-      return getOkResponse(result);
+      return getOkResponseBean(result);
     } else if (isVersion(V2)) {
-      return getOkResponse(factory.getResponse(result,_includePolylines));
+      return getOkResponseBean(factory.getResponse(result,includePolylines));
     } else {
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
     }
   }
 }
