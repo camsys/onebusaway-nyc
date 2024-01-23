@@ -70,6 +70,10 @@ public class SearchBoundsFactory {
     _maxSearchRadius = maxSearchRadius;
   }
 
+  public double getMaxSearchRadius(){
+    return _maxSearchRadius;
+  }
+
   public CoordinateBounds createBounds() {
 
     CoordinateBounds bounds = createInternalBounds();
