@@ -31,13 +31,15 @@ import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-
-@Path("/where/stop-for-location")
-public class StopsForLocationResponse extends ApiActionSupport {
+import org.springframework.web.bind.annotation.*;
+import org.onebusaway.api.model.ResponseBean;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.onebusaway.api.model.ResponseBean;
+@RestController
+@RequestMapping("/where/stops-for-location")
+public class StopsForLocationController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -52,78 +54,39 @@ public class StopsForLocationResponse extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-  private double _lat;
 
-  private double _lon;
-
-  private double _radius;
-
-  private double _latSpan;
-
-  private double _lonSpan;
-
-  private MaxCountSupport _maxCount = new MaxCountSupport(100, 250);
-
-  private String _query;
-
-  public StopsForLocationResponse() {
+  public StopsForLocationController() {
     super(V1);
   }
 
-  @QueryParam("Lat")
-  public void setLat(double lat) {
-    _lat = lat;
-  }
 
-  @QueryParam("Lon")
-  public void setLon(double lon) {
-    _lon = lon;
-  }
-
-  @QueryParam("Radius")
-  public void setRadius(double radius) {
-    _radius = radius;
-  }
-
-  @QueryParam("LatSpan")
-  public void setLatSpan(double latSpan) {
-    _latSpan = latSpan;
-  }
-
-  @QueryParam("LonSpan")
-  public void setLonSpan(double lonSpan) {
-    _lonSpan = lonSpan;
-  }
-
-  @QueryParam("Query")
-  public void setQuery(String query) {
-    _query = query;
-  }
-
-  @QueryParam("MaxCount")
-  public void setMaxCount(int maxCount) {
-    _maxCount.setMaxCount(maxCount);
-  }
-
-  @GET
-  public Response index() throws IOException, ServiceException {
-
+  @GetMapping
+  public ResponseBean index( @RequestParam(name ="Lat", required = false)Double lat,
+                             @RequestParam(name ="Lon", required = false) Double lon,
+                             @RequestParam(name ="LatSpan", required = false) Double latSpan,
+                             @RequestParam(name ="LonSpan", required = false) Double lonSpan,
+                             @RequestParam(name ="Radius", required = false) Double radius,
+                             @RequestParam(name ="Query", required = false) String query,
+                             @RequestParam(name ="MaxCount", required = false) Long maxCountArg) throws IOException, ServiceException {
+    MaxCountSupport _maxCount = new MaxCountSupport(100, 250);
+    if(maxCountArg!=-1) _maxCount.setMaxCount(maxCountArg.intValue());
     int maxCount = _maxCount.getMaxCount();
 
     if (maxCount <= 0)
       addFieldError("maxCount", "must be greater than zero");
+//    todo: add field errors for Lat,Lon,LatSpan,LonSpan,Radius
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    CoordinateBounds bounds = getSearchBounds();
+    CoordinateBounds bounds = getSearchBounds(radius, lat, lon, latSpan, lonSpan, query);
 
     SearchQueryBean searchQuery = new SearchQueryBean();
     searchQuery.setBounds(bounds);
     searchQuery.setMaxCount(maxCount);
     searchQuery.setType(EQueryType.BOUNDS);
-    if (_query != null) {
-      searchQuery.setQuery(_query);
+    if (query != null) {
+      searchQuery.setQuery(query);
       searchQuery.setType(EQueryType.BOUNDS_OR_CLOSEST);
     }
 
@@ -135,42 +98,42 @@ public class StopsForLocationResponse extends ApiActionSupport {
     }
   }
 
-  private Response transformResult(StopsBean result) {
+  private ResponseBean transformResult(StopsBean result) {
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     factory.filterNonRevenueStops(result);
     if (isVersion(V1)) {
-      return getOkResponse(result);
+      return getOkResponseBean(result);
     } else if (isVersion(V2)) {
-      return getOkResponse(factory.getResponse(result));
+      return getOkResponseBean(factory.getResponse(result));
     } else {
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
     }
   }
 
-  private Response transformOutOfRangeResult() {
+  private ResponseBean transformOutOfRangeResult() {
     if (isVersion(V1)) {
-      return getOkResponse(new StopsBean());
+      return getOkResponseBean(new StopsBean());
     } else if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponse(factory.getEmptyList(StopV2Bean.class, true));
+      return getOkResponseBean(factory.getEmptyList(StopV2Bean.class, true));
     } else {
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
     }
   }
 
-  private CoordinateBounds getSearchBounds() {
+  private CoordinateBounds getSearchBounds(double radius, double lat, double lon, double latSpan,double lonSpan, String query) {
 
-    if (_radius > 0) {
-      return SphericalGeometryLibrary.bounds(_lat, _lon, _radius);
-    } else if (_latSpan > 0 && _lonSpan > 0) {
-      return SphericalGeometryLibrary.boundsFromLatLonOffset(_lat, _lon,
-          _latSpan / 2, _lonSpan / 2);
+    if (radius > 0) {
+      return SphericalGeometryLibrary.bounds(lat, lon, radius);
+    } else if (latSpan > 0 && lonSpan > 0) {
+      return SphericalGeometryLibrary.boundsFromLatLonOffset(lat, lon,
+          latSpan / 2, lonSpan / 2);
     } else {
-      if (_query != null)
-        return SphericalGeometryLibrary.bounds(_lat, _lon,
+      if (query != null)
+        return SphericalGeometryLibrary.bounds(lat, lon,
             DEFAULT_SEARCH_RADIUS_WITH_QUERY);
       else
-        return SphericalGeometryLibrary.bounds(_lat, _lon,
+        return SphericalGeometryLibrary.bounds(lat, lon,
             DEFAULT_SEARCH_RADIUS_WITHOUT_QUERY);
     }
   }
