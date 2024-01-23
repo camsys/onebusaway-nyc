@@ -22,13 +22,14 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
-
-@Path("/where/stop-response/{stopId}")
-public class StopResponse extends ApiActionSupport {
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.onebusaway.api.model.ResponseBean;
+@RestController
+@RequestMapping("/where/stop-response/{stopId}")
+public class StopController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -39,39 +40,30 @@ public class StopResponse extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
 
-  public StopResponse() {
+  public StopController() {
     super(V1);
   }
 
-  @PathParam("stopId")
-  public void setId(String id) {
-    _id = id;
-  }
 
-  public String getId() {
-    return _id;
-  }
-
-  @GET
-  public Response show() throws ServiceException {
+  @GetMapping
+  public ResponseBean show(@PathVariable("stopId") String id) throws ServiceException {
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    StopBean stop = _service.getStop(_id);
+    StopBean stop = _service.getStop(id);
 
     if (stop == null)
-      return getResourceNotFoundResponse();
+      return getResourceNotFoundResponseBean();
 
     if (isVersion(V1)) {
-      return getOkResponse(stop);
+      return getOkResponseBean(stop);
     } else if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponse(factory.getResponse(stop));
+      return getOkResponseBean(factory.getResponse(stop));
     } else {
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
     }
   }
 }
