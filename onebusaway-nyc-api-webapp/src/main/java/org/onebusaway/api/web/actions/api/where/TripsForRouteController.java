@@ -16,7 +16,6 @@
 package org.onebusaway.api.web.actions.api.where;
 
 import java.io.IOException;
-import java.util.Date;
 
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.impl.MaxCountSupport;
@@ -31,14 +30,12 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
+import org.springframework.web.bind.annotation.*;
+import org.onebusaway.api.model.ResponseBean;
 
-@Path("/where/trips-for-route/{routeId}")
-public class TripsForRouteResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/trips-for-route/{routeId}")
+public class TripsForRouteController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -47,86 +44,45 @@ public class TripsForRouteResource extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-  private String _id;
 
-  private long _time = 0;
-
-  private MaxCountSupport _maxCount = new MaxCountSupport();
-
-  private boolean _includeTrip = true;
-  
-  private boolean _includeStatus = false;
-
-  private boolean _includeSchedule = false;
-
-  public TripsForRouteResource() {
+  public TripsForRouteController() {
     super(V2);
   }
 
-  @PathParam("routeId")
-  public void setId(String id) {
-    _id = id;
-  }
-
-  public String getId() {
-    return _id;
-  }
-
-  @QueryParam("Time")
-  public void setTime(Date time) {
-    _time = time.getTime();
-  }
-
-  @QueryParam("MaxCount")
-  public void setMaxCount(int maxCount) {
-    _maxCount.setMaxCount(maxCount);
-  }
-
-  @QueryParam("IncludeTrip")
-  public void setIncludeTrip(boolean includeTrip) {
-    _includeTrip = includeTrip;
-  }
-
-  @QueryParam("IncludeStatus")
-  public void setIncludeStatus(boolean includeStatus) {
-    _includeStatus = includeStatus;
-  }
-
-  @QueryParam("IncludeSchedule")
-  public void setIncludeSchedule(boolean includeSchedule) {
-    _includeSchedule = includeSchedule;
-  }
-
-  @GET
-  public Response show() throws IOException, ServiceException {
+  @GetMapping
+  public ResponseBean show(@PathVariable("routeId") String id,
+          @RequestParam(name ="Time", required = false) Long time,
+          @RequestParam(name ="MaxCount", required = false, defaultValue = "-1") Long maxCountArg,
+          @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
+          @RequestParam(name ="IncludeStatus", required = false, defaultValue = "false") boolean includeStatus,
+          @RequestParam(name ="IncludeSchedule", required = false, defaultValue = "false") boolean includeSchedule) throws IOException, ServiceException {
+    time = longToTime(time);
+    MaxCountSupport maxCount = createMaxCountFromArg(maxCountArg);
 
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    long time = System.currentTimeMillis();
-    if (_time != 0)
-      time = _time;
 
     TripsForRouteQueryBean query = new TripsForRouteQueryBean();
-    query.setRouteId(_id);
+    query.setRouteId(id);
     query.setTime(time);
-    query.setMaxCount(_maxCount.getMaxCount());
+    query.setMaxCount(maxCount.getMaxCount());
 
     TripDetailsInclusionBean inclusion = query.getInclusion();
-    inclusion.setIncludeTripBean(_includeTrip);
-    inclusion.setIncludeTripSchedule(_includeSchedule);
-    inclusion.setIncludeTripStatus(_includeStatus);
+    inclusion.setIncludeTripBean(includeTrip);
+    inclusion.setIncludeTripSchedule(includeSchedule);
+    inclusion.setIncludeTripStatus(includeStatus);
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
 
     try {
       ListBean<TripDetailsBean> trips = _service.getTripsForRoute(query);
-      return getOkResponse(factory.getTripDetailsResponse(trips));
+      return getOkResponseBean(factory.getTripDetailsResponse(trips));
     } catch (OutOfServiceAreaServiceException ex) {
-      return getOkResponse(factory.getEmptyList(TripDetailsV2Bean.class, true));
+      return getOkResponseBean(factory.getEmptyList(TripDetailsV2Bean.class, true));
     }
   }
 }
