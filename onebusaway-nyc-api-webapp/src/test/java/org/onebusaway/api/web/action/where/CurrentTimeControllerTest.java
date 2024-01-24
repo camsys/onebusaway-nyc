@@ -26,24 +26,19 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.TimeBean;
-import org.onebusaway.api.web.actions.api.where.CurrentTimeResource;
+import org.onebusaway.api.web.actions.api.where.CurrentTimeController;
 import org.onebusaway.utility.DateLibrary;
 
-import javax.ws.rs.core.Response;
-
-public class CurrentTimeActionTest {
+public class CurrentTimeControllerTest {
 
   @Test
   public void test() throws ParseException {
 
-    CurrentTimeResource action = new CurrentTimeResource();
+    CurrentTimeController action = new CurrentTimeController();
 
     long t = System.currentTimeMillis();
 
-    Response headers = action.index();
-    Assert.assertEquals(200, headers.getStatus());
-
-    ResponseBean response = action.getModel();
+    ResponseBean response = action.index();
     Assert.assertEquals(200, response.getCode());
     Assert.assertEquals(1, response.getVersion());
 
