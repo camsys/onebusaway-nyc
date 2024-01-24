@@ -19,29 +19,26 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
-import org.onebusaway.api.web.mapping.formatting.FieldErrorMessage;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.collections.Max;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.presentation.impl.StackInterceptor.AddToStack;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateBean;
 import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateQueryBean;
 import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateQueryBean.Record;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-
-@Path("/where/estimate-current-vehicle")
-@AddToStack("query")
-public class EstimateCurrentVehicleResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/estimate-current-vehicle")
+public class EstimateCurrentVehicleController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -50,56 +47,50 @@ public class EstimateCurrentVehicleResource extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private CurrentVehicleEstimateQueryBean _query = new CurrentVehicleEstimateQueryBean();
-
-  private String _data;
-
-  public EstimateCurrentVehicleResource() {
+  public EstimateCurrentVehicleController() {
     super(V2);
   }
 
-  public CurrentVehicleEstimateQueryBean getQuery() {
-    return _query;
-  }
 
-  @QueryParam("Query")
-  public void setQuery(CurrentVehicleEstimateQueryBean query) {
-    if(query!=null){
-      query=query;
-    }
-  }
-
-  @FieldErrorMessage(Messages.MISSING_REQUIRED_FIELD)
-  @QueryParam("Data")
-  public void setData(String data) {
-    _data = data;
-  }
-
-  public String getData() {
-    return _data;
-  }
-
-  @GET
-  public Response index() throws IOException, ServiceException {
+/**
+ * Handles the API endpoint relating to current state of a vehicle.
+ * This method requires data in the "Data" field, formatted as multiple entries.
+ * Each entry must be a comma-separated value containing timestamp, latitude, longitude, and accuracy,
+ * and entries are separated by the pipe ('|') symbol.
+ *
+ * <p>The method also requires a "VehicleId" field to identify the vehicle.
+ *
+ * @param data A string containing the vehicle data. Each entry in the format
+ *             "timestamp,lat,lon,accuracy" and entries are separated by '|'.
+ *             For example: "1609459200000,34.0522,-118.2437,10|1609459260000,34.0522,-118.2437,15".
+ * @param query container for records, should include a vehicleId.
+ * @return some well wrapped CurrentVehicleEstimateV2Bean, or an error message if
+ *         the request is invalid.
+**/
+  @GetMapping
+  public ResponseBean index(@RequestParam(name ="Data", required = false) String data,
+                            CurrentVehicleEstimateQueryBean query) throws IOException, ServiceException {
 
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
-    if (hasErrors())
-      return getValidationErrorsResponse();
+    FieldErrorSupport fieldErrors = new FieldErrorSupport()
+            .hasFieldError(data,"Data");
+    if (fieldErrors.hasErrors())
+      return getValidationErrorsResponseBean(fieldErrors.getErrors());
 
-    fillInQuery();
+    fillInQuery(query,data);
 
-    if (hasErrors())
-      return getValidationErrorsResponse();
+//    if (hasErrors())
+//      return getValidationErrorsResponseBean();
 
     BeanFactoryV2 factory = getBeanFactoryV2();
 
-    ListBean<CurrentVehicleEstimateBean> estimates = _service.getCurrentVehicleEstimates(_query);
-    return getOkResponse(factory.getCurrentVehicleEstimates(estimates));
+    ListBean<CurrentVehicleEstimateBean> estimates = _service.getCurrentVehicleEstimates(query);
+    return getOkResponseBean(factory.getCurrentVehicleEstimates(estimates));
   }
 
-  private void fillInQuery() {
+  private void fillInQuery(CurrentVehicleEstimateQueryBean _query,String _data) {
 
     List<CurrentVehicleEstimateQueryBean.Record> records = new ArrayList<CurrentVehicleEstimateQueryBean.Record>();
     
@@ -110,7 +101,7 @@ public class EstimateCurrentVehicleResource extends ApiActionSupport {
       String[] tokens = record.split(",");
 
       if (tokens.length != 4) {
-        addFieldError("data", Messages.INVALID_FIELD_VALUE);
+        addFieldError("data", FieldErrorSupport.INVALID_FIELD_VALUE);
         return;
       }
 
@@ -129,7 +120,7 @@ public class EstimateCurrentVehicleResource extends ApiActionSupport {
         max.add(t, r);
 
       } catch (NumberFormatException ex) {
-        addFieldError("data", Messages.INVALID_FIELD_VALUE);
+        addFieldError("data", FieldErrorSupport.INVALID_FIELD_VALUE);
         return;
       }
     }
@@ -137,7 +128,7 @@ public class EstimateCurrentVehicleResource extends ApiActionSupport {
     _query.setRecords(records);
 
     if (records.isEmpty()) {
-      addFieldError("data", Messages.INVALID_FIELD_VALUE);
+      addFieldError("data", FieldErrorSupport.INVALID_FIELD_VALUE);
       return;
     }
     
