@@ -16,23 +16,18 @@
 package org.onebusaway.api.web.actions.api.where;
 
 import java.io.IOException;
-import java.sql.Date;
-
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.onebusaway.api.model.ResponseBean;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-
-@Path("/where/vehicle-location-record-for-vehicle/{id}")
-public class VehicleLocationRecordForVehicleResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/vehicle-location-record-for-vehicle")
+public class VehicleLocationRecordForVehicleController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -41,40 +36,28 @@ public class VehicleLocationRecordForVehicleResource extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
+//  private long _time = System.currentTimeMillis();
 
-  private long _time = System.currentTimeMillis();
-
-  public VehicleLocationRecordForVehicleResource() {
+  public VehicleLocationRecordForVehicleController() {
     super(V2);
   }
 
-  @PathParam("id")
-  public void setId(String id) {
-    _id = id;
-  }
-
-  @QueryParam("Time")
-  public void setTime(Date time) {
-    if(time!=null)
-      _time = time.getTime();
-  }
-
-  @GET
-  public Response show() throws IOException, ServiceException {
-
+  @GetMapping
+  public ResponseBean show(@RequestParam(value = "Id", required = false) String id,
+                           @RequestParam(name ="Time", required = false, defaultValue = "-1") Long time) throws IOException, ServiceException {
+    time = longToTime(time);
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
     BeanFactoryV2 factory = getBeanFactoryV2();
 
     VehicleLocationRecordBean record = _service.getVehicleLocationRecordForVehicleId(
-        _id, _time);
+        id, time);
     if (record == null)
-      return getResourceNotFoundResponse();
-    return getOkResponse(factory.entry(factory.getVehicleLocationRecord(record)));
+      return getResourceNotFoundResponseBean();
+    return getOkResponseBean(factory.entry(factory.getVehicleLocationRecord(record)));
   }
 }
