@@ -212,8 +212,8 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     }
   }
 
-  public static long longToTime(long time){
-    if(time==-1){
+  public static Long longToTime(Long time){
+    if(time==null || time==-1){
       time = new Date().getTime();
     }
     return time;

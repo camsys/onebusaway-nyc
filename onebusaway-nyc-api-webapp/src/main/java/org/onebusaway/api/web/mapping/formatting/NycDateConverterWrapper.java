@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.Locale;
 
 @Component
-public class NycDateFormatter implements Formatter<Date> {
+public class NycDateConverterWrapper implements Formatter<Date> {
     private static Logger _log = LoggerFactory.getLogger(NycDateTimeFormatter.class);
 
     public static String DateFormat = "yyyy-MM-dd";
@@ -45,10 +45,18 @@ public class NycDateFormatter implements Formatter<Date> {
 
     public Long stringToLong(String value) throws TypeConversionException {
         if(value==null){
-            return Instant.now().atZone(ZoneId.systemDefault())
-                    .toLocalDate().atStartOfDay(ZoneId.systemDefault())
-                    .toInstant().toEpochMilli();
+            return truncateToMidnight(Instant.now()).toEpochMilli();
         }
         return convertFromString(value).getTime();
+    }
+
+    public static Instant truncateToMidnight(Instant time){
+        return time.atZone(ZoneId.systemDefault())
+                .toLocalDate().atStartOfDay(ZoneId.systemDefault())
+                .toInstant();
+    }
+
+    public static Instant truncateToMidnight(long time){
+        return truncateToMidnight(Instant.ofEpochMilli(time));
     }
 }
