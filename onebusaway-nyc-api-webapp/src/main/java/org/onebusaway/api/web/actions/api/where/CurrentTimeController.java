@@ -16,35 +16,36 @@
 package org.onebusaway.api.web.actions.api.where;
 
 import java.util.Date;
-
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.TimeBean;
 import org.onebusaway.utility.DateLibrary;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
 
-@Path("/where/current-time-source")
-public class CurrentTimeResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/current-time")
+public class CurrentTimeController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
   private static final int V1 = 1;
 
-  public CurrentTimeResource() {
+  public CurrentTimeController() {
     super(V1);
   }
 
-  @GET
-  public Response index() {
+  @GetMapping
+  public ResponseBean index() {
     
     if( ! isVersion(V1))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
     
     Date date = new Date();
     String readableTime = DateLibrary.getTimeAsIso8601String(date);
     TimeBean time = new TimeBean(date,readableTime);
-    return getOkResponse(time);
+    return getOkResponseBean(time);
   }
 }
