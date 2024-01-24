@@ -56,6 +56,7 @@ public class TripsForRouteController extends ApiActionSupport {
           @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
           @RequestParam(name ="IncludeStatus", required = false, defaultValue = "false") boolean includeStatus,
           @RequestParam(name ="IncludeSchedule", required = false, defaultValue = "false") boolean includeSchedule) throws IOException, ServiceException {
+//   todo: may have a DateTime conversion error which is visible here, review w/ comb
     time = longToTime(time);
     MaxCountSupport maxCount = createMaxCountFromArg(maxCountArg);
 
