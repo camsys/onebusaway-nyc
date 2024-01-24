@@ -15,21 +15,22 @@
  */
 package org.onebusaway.api.web.actions.api.where;
 
+import java.util.List;
+
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
-import org.onebusaway.api.web.mapping.formatting.FieldErrorMessage;
 import org.onebusaway.api.services.AlarmService;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-
-@Path("/where/cancel-alarm")
-public class CancelAlarmResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/cancel-alarms")
+public class CancelAlarmsController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -41,35 +42,28 @@ public class CancelAlarmResource extends ApiActionSupport {
   @Autowired
   private AlarmService _alarmService;
 
-  private String _id;
-
-  public CancelAlarmResource() {
+  public CancelAlarmsController() {
     super(V2);
   }
 
-  @FieldErrorMessage(Messages.MISSING_REQUIRED_FIELD)
-  @QueryParam("Id")
-  public void setId(String id) {
-    _id = id;
-  }
 
-  public String getId() {
-    return _id;
-  }
-
-  @GET
-  public Response show() throws ServiceException {
+  @GetMapping
+  public ResponseBean index(@RequestParam(name ="Ids", required = false) List<String> ids) throws ServiceException {
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    _service.cancelAlarmForArrivalAndDepartureAtStop(_id);
-    _alarmService.cancelAlarm(_id);
+    if (ids != null) {
+      for (String id : ids) {
+        _service.cancelAlarmForArrivalAndDepartureAtStop(id);
+        _alarmService.cancelAlarm(id);
+      }
+    }
 
     if (isVersion(V2)) {
-      return getOkResponse("");
+      return getOkResponseBean("");
     } else {
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
     }
   }
 }
