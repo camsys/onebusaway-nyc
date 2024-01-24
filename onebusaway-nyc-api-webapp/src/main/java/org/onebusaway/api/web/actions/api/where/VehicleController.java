@@ -16,7 +16,6 @@
 package org.onebusaway.api.web.actions.api.where;
 
 import java.io.IOException;
-import java.sql.Date;
 
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
@@ -27,14 +26,12 @@ import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
+import org.springframework.web.bind.annotation.*;
+import org.onebusaway.api.model.ResponseBean;
 
-@Path("/where/vehicle/{vehicleId}")
-public class VehicleResource extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/vehicle/{vehicleId}")
+public class VehicleController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -43,53 +40,34 @@ public class VehicleResource extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
-
-  private long _time = 0;
-
-  public VehicleResource() {
+  public VehicleController() {
     super(V2);
   }
 
-  @PathParam("vehicleId")
-  public void setId(String id) {
-    _id = id;
-  }
-
-  public String getId() {
-    return _id;
-  }
-
-  @QueryParam("Time")
-  public void setTime(Date time) {
-    _time = time.getTime();
-  }
-
-  @GET
-  public Response show() throws IOException, ServiceException {
+  @GetMapping
+  public ResponseBean show(@PathVariable("vehicleId") String id,
+                           @RequestParam(name ="Time", required = false) Long time) throws IOException, ServiceException {
 
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    long time = System.currentTimeMillis();
-    if (_time != 0)
-      time = _time;
+    time = longToTime(time);
 
     BeanFactoryV2 factory = getBeanFactoryV2();
 
     try {
-      VehicleStatusBean vehicle = _service.getVehicleForAgency(_id, time);
+      VehicleStatusBean vehicle = _service.getVehicleForAgency(id, time);
 
       if (vehicle == null)
-        return getResourceNotFoundResponse();
+        return getResourceNotFoundResponseBean();
 
-      return getOkResponse(factory.getVehicleStatusResponse(vehicle));
+      return getOkResponseBean(factory.getVehicleStatusResponse(vehicle));
 
     } catch (OutOfServiceAreaServiceException ex) {
-      return getOkResponse(factory.getEmptyList(VehicleStatusV2Bean.class, true));
+      return getOkResponseBean(factory.getEmptyList(VehicleStatusV2Bean.class, true));
     }
   }
 }
