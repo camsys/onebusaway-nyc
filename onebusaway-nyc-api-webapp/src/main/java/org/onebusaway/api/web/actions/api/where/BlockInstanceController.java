@@ -23,7 +23,7 @@ import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 import org.onebusaway.api.model.transit.blocks.BlockInstanceV2Bean;
-import org.onebusaway.api.web.mapping.formatting.NycDateFormatter;
+import org.onebusaway.api.web.mapping.formatting.NycDateConverterWrapper;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
@@ -36,8 +36,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.text.ParseException;
 
 
 @RestController
@@ -52,7 +50,7 @@ public class BlockInstanceController extends ApiActionSupport {
   private NycTransitDataService _service;
 
   @Autowired
-  private NycDateFormatter _formatter;
+  private NycDateConverterWrapper _formatter;
 
 
   public BlockInstanceController() {
