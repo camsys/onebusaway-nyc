@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 package org.onebusaway.api.web.actions.api.datacollection;
-
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.services.DataCollectionService;
-
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+//@RestController
+//@RequestMapping("/datacollection/existing-data")
 public class ExistingDataAction extends ApiActionSupport {
   
   private static final int V1 = 1;
@@ -37,8 +39,9 @@ public class ExistingDataAction extends ApiActionSupport {
   }
 
   private static final long serialVersionUID = 1L;
-  
-  public DefaultHttpHeaders index() {
+
+//  @RequestMapping
+  public ResponseBean index() {
     List<String> values = new ArrayList<String>();
     File dataDirectory = _data.getDataDirectory();
     File[] files = dataDirectory.listFiles();
@@ -46,7 +49,7 @@ public class ExistingDataAction extends ApiActionSupport {
       for( File file : files)
         values.add(file.getName());
     }
-    return setOkResponse(values);
+    return getOkResponseBean(values);
   }
 
 }

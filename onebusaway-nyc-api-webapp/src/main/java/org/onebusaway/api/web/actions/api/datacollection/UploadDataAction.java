@@ -15,11 +15,14 @@
  */
 package org.onebusaway.api.web.actions.api.datacollection;
 
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.services.DataCollectionService;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -29,6 +32,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+//@RestController
+//@RequestMapping("/datacollection/upload-data")
 public class UploadDataAction extends ApiActionSupport {
 
   private static final int V1 = 1;
@@ -42,26 +47,16 @@ public class UploadDataAction extends ApiActionSupport {
   @Autowired
   private DataCollectionService _data;
 
-  private String _id;
-
-  private File _file;
-
-  public void setId(String id) {
-    _id = id;
-  }
-
-  public void setUpload(File file) {
-    _file = file;
-  }
-
-  public DefaultHttpHeaders update() throws IOException {
+//  @RequestMapping
+  public ResponseBean update(@RequestParam(name ="Id", required = false) String id,
+                             @RequestParam(name ="File", required = false) File file) throws IOException {
 
     File dataDirectory = _data.getDataDirectory();
-    File target = new File(dataDirectory, _id);
+    File target = new File(dataDirectory, id);
 
     InputStream from = new ByteArrayInputStream(new byte[0]);
-    if( _file.exists() )
-      from = new FileInputStream(_file);
+    if( file.exists() )
+      from = new FileInputStream(file);
     OutputStream to = new FileOutputStream(target);
 
     byte[] buffer = new byte[4096];
@@ -70,6 +65,6 @@ public class UploadDataAction extends ApiActionSupport {
     while ((bytesRead = from.read(buffer)) != -1)
       to.write(buffer, 0, bytesRead); // write
 
-    return setOkResponse(null);
+    return getOkResponseBean(null);
   }
 }
