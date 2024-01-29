@@ -21,14 +21,15 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.onebusaway.api.model.ResponseBean;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
-
-@Path("/where/situation/{id}")
-public class SituationResponse extends ApiActionSupport {
+@RestController
+@RequestMapping("/where/situation/{id}")
+public class SituationController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -37,37 +38,28 @@ public class SituationResponse extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private String _id;
 
-  public SituationResponse() {
+
+  public SituationController() {
     super(V2);
   }
 
-  @PathParam("id")
-  public void setId(String id) {
-    _id = id;
-  }
-
-  public String getId() {
-    return _id;
-  }
-
-  @GET
-  public Response show() throws ServiceException {
+  @GetMapping
+  public ResponseBean show(@PathVariable("id") String id) throws ServiceException {
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    ServiceAlertBean situation = _service.getServiceAlertForId(_id);
+    ServiceAlertBean situation = _service.getServiceAlertForId(id);
 
     if (situation == null)
-      return getResourceNotFoundResponse();
+      return getResourceNotFoundResponseBean();
 
     if (isVersion(V2)) {
       BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponse(factory.getResponse(situation));
+      return getOkResponseBean(factory.getResponse(situation));
     } else {
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
     }
   }
 }
