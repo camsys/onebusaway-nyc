@@ -16,8 +16,6 @@
 package org.onebusaway.api.web.actions.api.where;
 
 import java.io.IOException;
-import java.sql.Date;
-
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.VehicleStatusV2Bean;
@@ -28,14 +26,16 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.onebusaway.api.model.ResponseBean;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
 
-@Path("/where/vehicle-location-records")
-public class VehicleLocationRecordsResource extends ApiActionSupport {
+
+@RestController
+@RequestMapping("/where/vehicle-location-records")
+public class VehicleLocationRecordsController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
@@ -44,60 +44,27 @@ public class VehicleLocationRecordsResource extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  private VehicleLocationRecordQueryBean _query = new VehicleLocationRecordQueryBean();
-
-  private String _vehicleId;
-
-  public VehicleLocationRecordsResource() {
+  public VehicleLocationRecordsController() {
     super(V2);
   }
 
-  @QueryParam("BlockId")
-  public void setBlockId(String blockId) {
-    super.ifMeaningfulValue(_query::setBlockId, blockId);
-  }
 
-  @QueryParam("TripId")
-  public void setTripId(String tripId) {
-    super.ifMeaningfulValue(_query::setTripId, tripId);
-  }
-
-  @QueryParam("VehicleId")
-  public void setVehicleId(String vehicleId) {
-    super.ifMeaningfulValue(_query::setVehicleId, vehicleId);
-  }
-
-  @QueryParam("ServiceDate")
-  public void setServiceDate(long serviceDate) {
-    _query.setServiceDate(serviceDate);
-  }
-
-  @QueryParam("FromTime")
-  public void setFromTime(Date fromTime) {
-    super.ifMeaningfulValue(_query::setFromTime, fromTime);
-  }
-
-  @QueryParam("ToTime")
-  public void setToTime(Date toTime) {
-    super.ifMeaningfulValue(_query::setToTime, toTime);
-  }
-
-  @GET
-  public Response index() throws IOException, ServiceException {
+  @GetMapping
+  public ResponseBean index(VehicleLocationRecordQueryBean query) throws IOException, ServiceException {
 
     if (!isVersion(V2))
-      return getUnknownVersionResponse();
+      return getUnknownVersionResponseBean();
 
     if (hasErrors())
-      return getValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
     BeanFactoryV2 factory = getBeanFactoryV2();
 
     try {
-      ListBean<VehicleLocationRecordBean> vehicles = _service.getVehicleLocationRecords(_query);
-      return getOkResponse(factory.getVehicleLocationRecordResponse(vehicles));
+      ListBean<VehicleLocationRecordBean> vehicles = _service.getVehicleLocationRecords(query);
+      return getOkResponseBean(factory.getVehicleLocationRecordResponse(vehicles));
     } catch (OutOfServiceAreaServiceException ex) {
-      return getOkResponse(factory.getEmptyList(VehicleStatusV2Bean.class, true));
+      return getOkResponseBean(factory.getEmptyList(VehicleStatusV2Bean.class, true));
     }
   }
 }
