@@ -15,23 +15,20 @@
  */
 
 package org.onebusaway.api.web.actions.api;
-
 import java.util.List;
-
-import org.apache.struts2.ServletActionContext;
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.JsonObject;
-import com.opensymphony.xwork2.ActionSupport;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@ParentPackage("struts-default")
-public class PingAction extends ActionSupport {
+
+@RestController
+@RequestMapping("/ping")
+public class PingAction{
 
 	private static final long serialVersionUID = 1L;
 
@@ -39,14 +36,13 @@ public class PingAction extends ActionSupport {
 
 	private TransitDataService _tds;
 
-	private String _response = null;
-
 	@Autowired
 	public void setTransitDataService(TransitDataService tds) {
 		_tds = tds;
 	}
 
-	public DefaultHttpHeaders index() throws Exception {
+	@RequestMapping
+	public String index() throws Exception {
 		JsonObject jsonObject = new JsonObject();
 		
 		if(!hasAgenciesWithCoverage()){
@@ -56,12 +52,7 @@ public class PingAction extends ActionSupport {
 			jsonObject.addProperty("success", "true");
 		}
 
-		_response = jsonObject.toString();
-
-		ServletActionContext.getResponse().getWriter().write(_response);
-
-		return null;
-		
+		return jsonObject.toString();
 	}
 	
 	private boolean hasAgenciesWithCoverage(){

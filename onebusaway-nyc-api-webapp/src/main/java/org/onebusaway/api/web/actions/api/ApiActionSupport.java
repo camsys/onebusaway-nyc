@@ -16,10 +16,6 @@
 package org.onebusaway.api.web.actions.api;
 
 import java.util.*;
-import java.util.function.Consumer;
-
-import org.apache.struts2.rest.DefaultHttpHeaders;
-import org.joda.time.DateTime;
 import org.onebusaway.api.ResponseCodes;
 import org.onebusaway.api.web.actions.OneBusAwayApiActionSupport;
 import org.onebusaway.api.impl.MaxCountSupport;
@@ -27,12 +23,8 @@ import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 
-import com.opensymphony.xwork2.ModelDriven;
 
-import javax.ws.rs.core.Response;
-
-public class ApiActionSupport extends OneBusAwayApiActionSupport implements
-    ModelDriven<ResponseBean> {
+public class ApiActionSupport extends OneBusAwayApiActionSupport{
 
   private static final long serialVersionUID = 1L;
 
@@ -104,36 +96,11 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
    * Response Bean Generation Methods
    ****************************************************************************/
 
-  protected DefaultHttpHeaders setOkResponse(Object data) {
-    _response = new ResponseBean(getReturnVersion(), ResponseCodes.RESPONSE_OK,
-        "OK", data);
-    return new DefaultHttpHeaders();
-  }
-
-  protected Response getOkResponse(Object data) {
-    return getResponseForResponseBean( new ResponseBean(getReturnVersion(), ResponseCodes.RESPONSE_OK,
-            "OK", data));
-  }
-
   protected ResponseBean getOkResponseBean(Object data) {
     return new ResponseBean(getReturnVersion(), ResponseCodes.RESPONSE_OK,
             "OK", data);
   }
 
-  protected DefaultHttpHeaders setValidationErrorsResponse() {
-    ValidationErrorBean bean = new ValidationErrorBean(new ArrayList<String>(
-        getActionErrors()), getFieldErrors());
-    _response = new ResponseBean(getReturnVersion(),
-        ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean);
-    return new DefaultHttpHeaders().withStatus(_response.getCode());
-  }
-
-  protected Response getValidationErrorsResponse() {
-    ValidationErrorBean bean = new ValidationErrorBean(new ArrayList<String>(
-            getActionErrors()), getFieldErrors());
-    return getResponseForResponseBean(new ResponseBean(getReturnVersion(),
-            ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean));
-  }
 
   protected ResponseBean getValidationErrorsResponseBean() {
     ValidationErrorBean bean = new ValidationErrorBean(new ArrayList<String>(
@@ -147,44 +114,14 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
             ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean);
   }
 
-  protected DefaultHttpHeaders setResourceNotFoundResponse() {
-    _response = new ResponseBean(getReturnVersion(),
-        ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null);
-    return new DefaultHttpHeaders().withStatus(_response.getCode());
-  }
-
-  protected Response getResourceNotFoundResponse() {
-    return getResponseForResponseBean(new ResponseBean(getReturnVersion(),
-            ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null));
-  }
-
   protected ResponseBean getResourceNotFoundResponseBean() {
     return new ResponseBean(getReturnVersion(),
             ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null);
   }
 
-  protected DefaultHttpHeaders setExceptionResponse() {
-    _response = new ResponseBean(getReturnVersion(),
-        ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "internal error", null);
-    return new DefaultHttpHeaders().withStatus(_response.getCode());
-  }
-
-  protected Response getExceptionResponse() {
-    return getResponseForResponseBean(new ResponseBean(getReturnVersion(),
-            ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "internal error", null));
-  }
-
-  protected DefaultHttpHeaders setUnknownVersionResponse() {
-    _response = new ResponseBean(getReturnVersion(),
-        ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "unknown version: "
-            + _version, null);
-    return new DefaultHttpHeaders().withStatus(_response.getCode());
-  }
-
-  protected Response getUnknownVersionResponse() {
-    return getResponseForResponseBean(new ResponseBean(getReturnVersion(),
-            ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "unknown version: "
-            + _version, null));
+  protected ResponseBean getExceptionResponse() {
+    return new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "internal error", null);
   }
 
   protected ResponseBean getUnknownVersionResponseBean() {
@@ -197,19 +134,6 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport implements
     if (_version == NO_VERSION)
       return _defaultVersion;
     return _version;
-  }
-
-
-  private Response getResponseForResponseBean(ResponseBean bean){
-    return Response.status(bean.getCode())
-            .entity(bean)
-            .build();
-  }
-
-  protected void ifMeaningfulValue(Consumer<Long> c, Date val){
-    if(val!=null){
-      c.accept(val.getTime());
-    }
   }
 
   public static Long longToTime(Long time){

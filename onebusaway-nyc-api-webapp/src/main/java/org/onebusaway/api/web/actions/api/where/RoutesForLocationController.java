@@ -30,15 +30,11 @@ import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.onebusaway.api.model.ResponseBean;
-import org.onebusaway.api.model.ResponseBean;
 @RestController
 @RequestMapping("/where/routes-for-location")
 public class RoutesForLocationController extends ApiActionSupport {
@@ -61,15 +57,18 @@ public class RoutesForLocationController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean index( @RequestParam(name ="Lat", required = false)double lat,
-                             @RequestParam(name ="Lon", required = false) double lon,
-                             @RequestParam(name ="LatSpan", required = false) double latSpan,
-                             @RequestParam(name ="LonSpan", required = false) double lonSpan,
-                             @RequestParam(name ="Radius", required = false) double radius,
+  public ResponseBean index( @RequestParam(name ="Lat", required = false)Double lat,
+                             @RequestParam(name ="Lon", required = false) Double lon,
+                             @RequestParam(name ="LatSpan", required = false) Double latSpan,
+                             @RequestParam(name ="LonSpan", required = false) Double lonSpan,
+                             @RequestParam(name ="Radius", required = false) Double radius,
                              @RequestParam(name ="Query", required = false) String query,
                              @RequestParam(name ="MaxCount", required = false) Long maxCount) throws IOException, ServiceException {
 
-    if (maxCount <= 0)
+    if(maxCount==null){
+      addFieldError("maxCount", "is a required field");
+    }
+    else if (maxCount <= 0)
       addFieldError("maxCount", "must be greater than zero");
 
     if (hasErrors())

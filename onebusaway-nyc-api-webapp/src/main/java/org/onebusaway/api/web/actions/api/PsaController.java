@@ -15,20 +15,18 @@
  */
 
 package org.onebusaway.api.web.actions.api;
-
-import org.apache.struts2.ServletActionContext;
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.rest.DefaultHttpHeaders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.nyc.util.model.PublicServiceAnnouncement;
 import org.onebusaway.util.service.psa.PsaService;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
-@ParentPackage("struts-default")
-public class PsaAction {
+@RestController
+@RequestMapping("/psa")
+public class PsaController {
 
   private ObjectMapper _mapper = new ObjectMapper();
   private PsaService _service;
@@ -38,13 +36,11 @@ public class PsaAction {
     _service = service;
   }
 
-  public DefaultHttpHeaders index() throws Exception {
+  @GetMapping
+  public String index() throws Exception {
     List<PublicServiceAnnouncement> psas = _service.getAllPsas();
     String body = _mapper.writeValueAsString(psas);
-    HttpServletResponse response = ServletActionContext.getResponse();
-    response.setContentType("application/json");
-    response.getWriter().write(body);
-    return null;
+    return body;
   }
 
 

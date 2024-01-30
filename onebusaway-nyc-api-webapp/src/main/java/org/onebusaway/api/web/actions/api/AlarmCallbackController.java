@@ -15,49 +15,37 @@
  */
 package org.onebusaway.api.web.actions.api;
 
-import org.apache.struts2.rest.DefaultHttpHeaders;
-import org.onebusaway.api.web.actions.api.where.Messages;
+import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.services.AlarmService;
 import org.onebusaway.exceptions.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
-
-public class AlarmCallbackAction extends ApiActionSupport {
+@RestController
+@RequestMapping("/alarm-callback/{id}")
+public class AlarmCallbackController extends ApiActionSupport {
 
   private static final long serialVersionUID = 1L;
 
   private static final int V2 = 2;
 
+  @Autowired
   private AlarmService _alarmService;
 
-  private String _id;
-
-  @Autowired
-  public void setAlarmService(AlarmService alarmService) {
-    _alarmService = alarmService;
-  }
-
-  public AlarmCallbackAction() {
+  public AlarmCallbackController() {
     super(V2);
   }
 
-  @RequiredStringValidator(message = Messages.MISSING_REQUIRED_FIELD)
-  public void setId(String id) {
-    _id = id;
-  }
-
-  public String getId() {
-    return _id;
-  }
-
-  public DefaultHttpHeaders show() throws ServiceException {
+  @RequestMapping
+  public ResponseBean show(@PathVariable("id") String id) throws ServiceException {
 
     if (hasErrors())
-      return setValidationErrorsResponse();
+      return getValidationErrorsResponseBean();
 
-    _alarmService.fireAlarm(_id);
+    _alarmService.fireAlarm(id);
 
-    return setOkResponse(null);
+    return getOkResponseBean(null);
   }
 }
