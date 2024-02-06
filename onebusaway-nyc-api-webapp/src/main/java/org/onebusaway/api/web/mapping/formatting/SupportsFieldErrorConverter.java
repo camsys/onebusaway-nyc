@@ -1,8 +1,6 @@
 package org.onebusaway.api.web.mapping.formatting;
 
-import com.opensymphony.xwork2.conversion.TypeConversionException;
 import org.onebusaway.api.web.actions.api.ValidationErrorBean;
-
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ParamConverter;
@@ -21,7 +19,7 @@ public abstract class SupportsFieldErrorConverter <T> implements ParamConverter<
         try {
             return convertFromString(value);
         }
-        catch (ClassCastException | TypeConversionException exception){
+        catch (ClassCastException exception){
             // yes this is weird, it's to make things backwards compatable w/ Struts, sry!
             LinkedHashMap<String, List<String>> fieldErrors = new LinkedHashMap<>();
             List<String> errorMessages = new ArrayList<>();

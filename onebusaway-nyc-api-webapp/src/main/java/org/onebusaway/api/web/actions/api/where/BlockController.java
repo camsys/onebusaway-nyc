@@ -69,9 +69,6 @@ public class BlockController extends ApiActionSupport {
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     BlockBean block = _service.getBlockForId(id);
 
     if (block == null)

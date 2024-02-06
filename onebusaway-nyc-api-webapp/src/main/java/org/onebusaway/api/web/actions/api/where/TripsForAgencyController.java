@@ -63,9 +63,6 @@ public class TripsForAgencyController extends ApiActionSupport {
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     TripsForAgencyQueryBean query = new TripsForAgencyQueryBean();
     query.setAgencyId(id);
     query.setTime(time);

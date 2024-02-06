@@ -38,6 +38,11 @@ public class FieldErrorSupport {
     return this;
   }
 
+  public FieldErrorSupport addError(String s, String e){
+    errorOutput.put(s,List.of(e));
+    return this;
+  }
+
   public FieldErrorSupport hasFieldError(Object o, String s){
     if (o==null) errorOutput.put(s,List.of(FieldErrorSupport.MISSING_REQUIRED_FIELD));
     return this;

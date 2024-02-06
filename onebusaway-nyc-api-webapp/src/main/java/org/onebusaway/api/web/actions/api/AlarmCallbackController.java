@@ -41,9 +41,6 @@ public class AlarmCallbackController extends ApiActionSupport {
   @RequestMapping
   public ResponseBean show(@PathVariable("id") String id) throws ServiceException {
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     _alarmService.fireAlarm(id);
 
     return getOkResponseBean(null);

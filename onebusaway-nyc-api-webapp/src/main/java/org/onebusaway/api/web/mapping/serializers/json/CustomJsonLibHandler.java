@@ -1,8 +1,6 @@
 package org.onebusaway.api.web.mapping.serializers.json;
 
 import com.fasterxml.jackson.databind.*;
-import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.inject.Inject;
 import org.onebusaway.api.web.mapping.serializers.CustomUniversalHandler;
 
 
@@ -67,10 +65,10 @@ public class CustomJsonLibHandler extends CustomUniversalHandler {
 
 
 
-        @Inject("struts.i18n.encoding")
-        public void setDefaultEncoding(String val) {
-                this.defaultEncoding = val;
-        }
+//        @Inject("struts.i18n.encoding")
+//        public void setDefaultEncoding(String val) {
+//                this.defaultEncoding = val;
+//        }
 
 
         @Override
@@ -104,12 +102,12 @@ public class CustomJsonLibHandler extends CustomUniversalHandler {
                 return "json";
         }
 
-        public String fromObject(ActionInvocation invocation, Object obj, String resultCode, Writer stream) throws IOException {
+        public String fromObject(Object obj, String resultCode, Writer stream) throws IOException {
                 String callback = getCallback();
-                return fromObject(invocation, obj, resultCode, stream, callback);
+                return fromObject(obj, resultCode, stream, callback);
         }
 
-        public String fromObject(ActionInvocation invocation, Object obj, String resultCode, Writer stream, String callback) throws IOException {
+        public String fromObject(Object obj, String resultCode, Writer stream, String callback) throws IOException {
                 return fromObject(obj,stream,callback);
         }
 }

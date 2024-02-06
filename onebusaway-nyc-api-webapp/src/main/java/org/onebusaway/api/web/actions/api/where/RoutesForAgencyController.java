@@ -51,9 +51,6 @@ public class RoutesForAgencyController extends ApiActionSupport {
   @GetMapping
   public ResponseBean show(@PathVariable("agencyId") String id) {
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 

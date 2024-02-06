@@ -58,8 +58,6 @@ public class TripForVehicleController extends ApiActionSupport {
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
     Date time = new Date(timeLong);
     TripForVehicleQueryBean query = new TripForVehicleQueryBean();
     query.setVehicleId(id);

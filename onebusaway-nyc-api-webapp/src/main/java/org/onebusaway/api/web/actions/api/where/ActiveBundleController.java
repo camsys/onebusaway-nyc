@@ -42,9 +42,6 @@ public class ActiveBundleController extends ApiActionSupport {
     @RequestMapping("/where/active-bundle")
     public ResponseBean index() {
 
-        if (hasErrors())
-            return getValidationErrorsResponseBean();
-
         String activeBundleId = _service.getActiveBundleId();
         ActiveBundleBeanV1 activeBundleBean = new ActiveBundleBeanV1(activeBundleId);
 

@@ -49,9 +49,6 @@ public class ShapeController extends ApiActionSupport {
   @GetMapping
   public ResponseBean show(@PathVariable("shapeId") String id) {
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     EncodedPolylineBean shape = _service.getShapeForId(id);
 
     if (shape == null)

@@ -63,9 +63,6 @@ public class TripsForRouteController extends ApiActionSupport {
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
 
     TripsForRouteQueryBean query = new TripsForRouteQueryBean();
     query.setRouteId(id);

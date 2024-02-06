@@ -9,7 +9,7 @@
                            http://www.springframework.org/schema/context
                            http://www.springframework.org/schema/context/spring-context.xsd">
 
-
+    <context:property-placeholder location="classpath:application.properties"/>
     <context:component-scan base-package="org.onebusaway.api.web" />
 
     
@@ -32,7 +32,7 @@
     <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
         <property name="formatters">
             <set>
-                <bean class="org.onebusaway.api.web.mapping.formatting.NycDateFormatter" />
+                <bean class="org.onebusaway.api.web.mapping.formatting.NycDateConverterWrapper" />
                 <bean class="org.onebusaway.api.web.mapping.formatting.NycDateTimeFormatter" />
             </set>
         </property>
@@ -61,3 +61,4 @@
 
 
 </beans>
+

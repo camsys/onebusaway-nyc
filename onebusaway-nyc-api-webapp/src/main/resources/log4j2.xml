@@ -45,8 +45,10 @@
 			<AppenderRef ref="${log4j.appender}"/>
 		</Logger>
 		<Logger name="org.springframework.web"
-				level="trace">/>
+				level="info">/>
 		</Logger>
+		<Logger name="org.springframework.http.converter"
+				level="info"/>
 		<Root level="info">
 			<AppenderRef ref="${log4j.appender}"/>
 		</Root>

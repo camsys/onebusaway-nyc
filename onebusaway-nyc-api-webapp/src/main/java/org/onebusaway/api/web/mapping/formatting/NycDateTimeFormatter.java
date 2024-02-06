@@ -1,6 +1,5 @@
 package org.onebusaway.api.web.mapping.formatting;
 
-import com.opensymphony.xwork2.conversion.TypeConversionException;
 import org.joda.time.DateTime;
 import org.onebusaway.presentation.impl.conversion.DateTimeConverter;
 import org.slf4j.Logger;
@@ -31,7 +30,7 @@ public class NycDateTimeFormatter implements Formatter<DateTime> {
             return null;
         }
 
-        Date date;
+        Date date = null;
         try{
         if (value.matches("^(\\d+)$")) {
             long v = Long.parseLong(value);
@@ -40,12 +39,11 @@ public class NycDateTimeFormatter implements Formatter<DateTime> {
         date = _format.parse(value);
         } catch (ParseException e) {
             e.printStackTrace();
-            throw new TypeConversionException(e);
         }
-    if(date==null){
-        return null;
-    }
-    return new DateTime(date);
+        if(date==null){
+            return null;
+        }
+        return new DateTime(date);
     }
 
     public String toString(DateTime value) {
@@ -53,7 +51,7 @@ public class NycDateTimeFormatter implements Formatter<DateTime> {
     }
 
     @Override
-    public DateTime parse(String text, Locale locale) throws TypeConversionException {
+    public DateTime parse(String text, Locale locale){
         return convertFromString(text);
     }
 
@@ -63,7 +61,7 @@ public class NycDateTimeFormatter implements Formatter<DateTime> {
     }
 
 
-    public long toLong(String text, Locale locale) throws TypeConversionException{
+    public long toLong(String text, Locale locale){
         return parse(text,locale).getMillis();
     }
 

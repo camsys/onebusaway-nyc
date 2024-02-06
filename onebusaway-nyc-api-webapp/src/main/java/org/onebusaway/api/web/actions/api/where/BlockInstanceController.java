@@ -16,8 +16,6 @@
 package org.onebusaway.api.web.actions.api.where;
 
 
-
-import com.opensymphony.xwork2.conversion.TypeConversionException;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
@@ -29,9 +27,6 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,7 +63,7 @@ public class BlockInstanceController extends ApiActionSupport {
     Long serviceDate = null;
     try {
       serviceDate = _formatter.stringToLong(serviceDateString);
-    } catch (TypeConversionException e){
+    } catch (RuntimeException e){
       FieldErrorSupport fieldErrors = new FieldErrorSupport()
               .invalidValue("ServiceDate");
       if (fieldErrors.hasErrors())

@@ -51,9 +51,6 @@ public class StopsForRouteController extends ApiActionSupport {
   public ResponseBean show(@PathVariable("routeId") String id,
           @RequestParam(name ="IncludePolylines", required = false, defaultValue = "true") boolean includePolylines) throws ServiceException {
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     StopsForRouteBean result = _service.getStopsForRoute(id);
 
     if (result == null)

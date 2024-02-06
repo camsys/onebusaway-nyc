@@ -47,9 +47,6 @@ public class SituationController extends ApiActionSupport {
   @GetMapping
   public ResponseBean show(@PathVariable("id") String id) throws ServiceException {
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     ServiceAlertBean situation = _service.getServiceAlertForId(id);
 
     if (situation == null)

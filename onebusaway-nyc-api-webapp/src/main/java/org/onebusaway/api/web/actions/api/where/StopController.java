@@ -49,9 +49,6 @@ public class StopController extends ApiActionSupport {
   @GetMapping
   public ResponseBean show(@PathVariable("stopId") String id) throws ServiceException {
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     StopBean stop = _service.getStop(id);
 
     if (stop == null)

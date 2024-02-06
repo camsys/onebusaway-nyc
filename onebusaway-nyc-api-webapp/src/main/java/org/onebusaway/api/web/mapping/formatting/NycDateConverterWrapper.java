@@ -1,6 +1,5 @@
 package org.onebusaway.api.web.mapping.formatting;
 
-import com.opensymphony.xwork2.conversion.TypeConversionException;
 import org.onebusaway.presentation.impl.conversion.DateConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,7 @@ public class NycDateConverterWrapper implements Formatter<Date> {
         return toString(object);
     }
 
-    public Long stringToLong(String value) throws TypeConversionException {
+    public Long stringToLong(String value) {
         if(value==null){
             return truncateToMidnight(Instant.now()).toEpochMilli();
         }

@@ -68,8 +68,6 @@ public class TripsForLocationResponse extends ApiActionSupport {
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
 
     if(searchBoundsFactory.getMaxSearchRadius()==0){
       searchBoundsFactory.setMaxSearchRadius(MAX_BOUNDS_RADIUS);

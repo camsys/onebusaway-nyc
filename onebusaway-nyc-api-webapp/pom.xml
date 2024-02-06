@@ -56,29 +56,7 @@
             <artifactId>hessian</artifactId>
         </dependency>
 
-        <!-- Struts 2 -->
-        <dependency>
-            <groupId>org.apache.struts</groupId>
-            <artifactId>struts2-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.struts</groupId>
-            <artifactId>struts2-spring-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.struts</groupId>
-            <artifactId>struts2-convention-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.struts</groupId>
-            <artifactId>struts2-rest-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.struts</groupId>
-            <artifactId>struts2-junit-plugin</artifactId>
-            <version>${struts.version}</version>
-            <scope>test</scope>
-        </dependency>
+
 
 
 
@@ -177,7 +155,7 @@
             <properties>
                 <tds.path>http://app.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
                 <vtms.path>http://app.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-                <config.path>http://app.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>                
+                <config.path>http://app.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <dummy.permissions />
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>

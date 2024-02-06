@@ -59,9 +59,6 @@ public class RouteController extends ApiActionSupport {
   @GetMapping
   public ResponseBean show(@PathVariable("routeId") String id) throws ServiceException {
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     RouteBean route = _service.getRouteForId(id);
 
     if (route == null)

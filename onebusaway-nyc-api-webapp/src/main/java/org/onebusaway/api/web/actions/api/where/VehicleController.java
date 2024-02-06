@@ -51,8 +51,6 @@ public class VehicleController extends ApiActionSupport {
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
 
     time = longToTime(time);
 

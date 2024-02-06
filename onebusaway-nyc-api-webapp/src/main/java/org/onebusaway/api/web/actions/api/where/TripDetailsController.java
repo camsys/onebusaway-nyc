@@ -59,9 +59,6 @@ public class TripDetailsController extends ApiActionSupport {
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     if(time==null){
       time = new Date();
     }

@@ -72,12 +72,13 @@ public class StopsForLocationController extends ApiActionSupport {
     if(maxCountArg!=-1) _maxCount.setMaxCount(maxCountArg.intValue());
     int maxCount = _maxCount.getMaxCount();
 
+    FieldErrorSupport errorSupport = new FieldErrorSupport();
     if (maxCount <= 0)
-      addFieldError("maxCount", "must be greater than zero");
+      errorSupport.addError("maxCount", "must be greater than zero");
 //    todo: add field errors for Lat,Lon,LatSpan,LonSpan,Radius
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
+    if (errorSupport.hasErrors())
+      return getValidationErrorsResponseBean(errorSupport.getErrors());
 
     CoordinateBounds bounds = getSearchBounds(radius, lat, lon, latSpan, lonSpan, query);
 

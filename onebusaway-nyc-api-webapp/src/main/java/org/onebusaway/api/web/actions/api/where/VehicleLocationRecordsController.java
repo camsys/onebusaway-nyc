@@ -55,9 +55,6 @@ public class VehicleLocationRecordsController extends ApiActionSupport {
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     BeanFactoryV2 factory = getBeanFactoryV2();
 
     try {

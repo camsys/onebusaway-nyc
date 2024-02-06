@@ -60,9 +60,6 @@ public class AgencyController extends ApiActionSupport {
   @GetMapping
   public ResponseBean show(@PathVariable("agencyId") String id) throws ServiceException {
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     AgencyBean agency = _service.getAgency(id);
 
     if (agency == null)

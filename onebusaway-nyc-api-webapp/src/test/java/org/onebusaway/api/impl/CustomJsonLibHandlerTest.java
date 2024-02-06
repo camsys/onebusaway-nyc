@@ -38,7 +38,7 @@ public class CustomJsonLibHandlerTest {
     EntryWithReferencesBean<ArrivalAndDepartureV2Bean> response = new HandlerTestHelper().createTestObject();
     CustomJsonLibHandler jackson = new CustomJsonLibHandler();
     Writer writer = new StringWriter();
-    jackson.fromObject(null,response, "arg1", writer);
+    jackson.fromObject(response, "arg1", writer);
     writer.close();
     assertEquals(expected, writer.toString());
 
@@ -50,7 +50,7 @@ public class CustomJsonLibHandlerTest {
     CustomJsonLibHandler jackson = new CustomJsonLibHandler();
 
     Writer writer = new StringWriter();
-    jackson.fromObject(null,response, "arg1", writer, callback);
+    jackson.fromObject(response, "arg1", writer, callback);
     writer.close();
 
     String expectedWithCallback = callback + "(" + expected + ")";

@@ -102,12 +102,12 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport{
   }
 
 
-  protected ResponseBean getValidationErrorsResponseBean() {
-    ValidationErrorBean bean = new ValidationErrorBean(new ArrayList<String>(
-            getActionErrors()), getFieldErrors());
-    return new ResponseBean(getReturnVersion(),
-            ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean);
-  }
+//  protected ResponseBean getValidationErrorsResponseBean() {
+//    ValidationErrorBean bean = new ValidationErrorBean(new ArrayList<String>(
+//            getActionErrors()), getFieldErrors());
+//    return new ResponseBean(getReturnVersion(),
+//            ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean);
+//  }
   protected ResponseBean getValidationErrorsResponseBean(Map<String,List<String>> fieldErrors) {
     ValidationErrorBean bean = new ValidationErrorBean(null, fieldErrors);
     return new ResponseBean(getReturnVersion(),

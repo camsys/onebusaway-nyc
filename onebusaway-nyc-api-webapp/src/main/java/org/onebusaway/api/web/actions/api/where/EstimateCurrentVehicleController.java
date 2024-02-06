@@ -76,11 +76,10 @@ public class EstimateCurrentVehicleController extends ApiActionSupport {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(data,"Data");
+
+    fillInQuery(query,data, fieldErrors);
     if (fieldErrors.hasErrors())
       return getValidationErrorsResponseBean(fieldErrors.getErrors());
-
-    fillInQuery(query,data);
-
 //    if (hasErrors())
 //      return getValidationErrorsResponseBean();
 
@@ -90,7 +89,7 @@ public class EstimateCurrentVehicleController extends ApiActionSupport {
     return getOkResponseBean(factory.getCurrentVehicleEstimates(estimates));
   }
 
-  private void fillInQuery(CurrentVehicleEstimateQueryBean _query,String _data) {
+  private void fillInQuery(CurrentVehicleEstimateQueryBean _query,String _data, FieldErrorSupport fieldErrors) {
 
     List<CurrentVehicleEstimateQueryBean.Record> records = new ArrayList<CurrentVehicleEstimateQueryBean.Record>();
     
@@ -101,7 +100,7 @@ public class EstimateCurrentVehicleController extends ApiActionSupport {
       String[] tokens = record.split(",");
 
       if (tokens.length != 4) {
-        addFieldError("data", FieldErrorSupport.INVALID_FIELD_VALUE);
+        fieldErrors.addError("data", FieldErrorSupport.INVALID_FIELD_VALUE);
         return;
       }
 
@@ -120,7 +119,7 @@ public class EstimateCurrentVehicleController extends ApiActionSupport {
         max.add(t, r);
 
       } catch (NumberFormatException ex) {
-        addFieldError("data", FieldErrorSupport.INVALID_FIELD_VALUE);
+        fieldErrors.addError("data", FieldErrorSupport.INVALID_FIELD_VALUE);
         return;
       }
     }
@@ -128,7 +127,7 @@ public class EstimateCurrentVehicleController extends ApiActionSupport {
     _query.setRecords(records);
 
     if (records.isEmpty()) {
-      addFieldError("data", FieldErrorSupport.INVALID_FIELD_VALUE);
+      fieldErrors.addError("data", FieldErrorSupport.INVALID_FIELD_VALUE);
       return;
     }
     

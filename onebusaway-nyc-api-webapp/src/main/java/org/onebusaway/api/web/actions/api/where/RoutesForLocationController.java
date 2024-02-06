@@ -65,14 +65,15 @@ public class RoutesForLocationController extends ApiActionSupport {
                              @RequestParam(name ="Query", required = false) String query,
                              @RequestParam(name ="MaxCount", required = false) Long maxCount) throws IOException, ServiceException {
 
+    FieldErrorSupport errorSupport = new FieldErrorSupport();
     if(maxCount==null){
-      addFieldError("maxCount", "is a required field");
+      errorSupport.addError("maxCount", "is a required field");
     }
     else if (maxCount <= 0)
-      addFieldError("maxCount", "must be greater than zero");
+      errorSupport.addError("maxCount", "must be greater than zero");
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
+    if (errorSupport.hasErrors())
+      return getValidationErrorsResponseBean(errorSupport.getErrors());
 
     MaxCountSupport _maxCount = new MaxCountSupport(10, 50);
     _maxCount.setMaxCount(maxCount.intValue());

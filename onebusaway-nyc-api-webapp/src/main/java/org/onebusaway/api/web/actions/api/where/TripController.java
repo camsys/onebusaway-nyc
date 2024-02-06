@@ -45,13 +45,10 @@ public class TripController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean show(@PathVariable("tripId")String id) throws ServiceException {
+  public ResponseBean show(@PathVariable("tripId") String id) throws ServiceException {
 
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
-
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
 
     TripBean trip = _service.getTrip(id);
 

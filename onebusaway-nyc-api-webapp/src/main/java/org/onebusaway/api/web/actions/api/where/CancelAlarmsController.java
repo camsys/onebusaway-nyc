@@ -50,9 +50,6 @@ public class CancelAlarmsController extends ApiActionSupport {
   @GetMapping
   public ResponseBean index(@RequestParam(name ="Ids", required = false) List<String> ids) throws ServiceException {
 
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
-
     if (ids != null) {
       for (String id : ids) {
         _service.cancelAlarmForArrivalAndDepartureAtStop(id);

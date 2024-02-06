@@ -45,12 +45,10 @@ public class VehicleLocationRecordForVehicleController extends ApiActionSupport 
   @GetMapping
   public ResponseBean show(@RequestParam(value = "Id", required = false) String id,
                            @RequestParam(name ="Time", required = false, defaultValue = "-1") Long time) throws IOException, ServiceException {
+
     time = longToTime(time);
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
-
-    if (hasErrors())
-      return getValidationErrorsResponseBean();
 
     BeanFactoryV2 factory = getBeanFactoryV2();
 
