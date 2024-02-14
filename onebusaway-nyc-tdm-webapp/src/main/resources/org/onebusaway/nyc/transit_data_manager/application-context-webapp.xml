@@ -66,6 +66,8 @@
 		<constructor-arg type="java.lang.String" value="${tdm.host}" />
 		<constructor-arg type="java.lang.Integer" value="${tdm.port}" />
 		<constructor-arg type="java.lang.String" value="${tdm.url}" />
+        <constructor-arg type="java.lang.Integer" value="5000" />
+        <constructor-arg type="java.lang.Integer" value="60000" />
 	</bean>
 	
 	<bean id="loggingService" class="org.onebusaway.nyc.util.logging.impl.LoggingServiceImpl" />
