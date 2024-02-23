@@ -21,10 +21,10 @@ public class CookieData {
             return null;
         }
 
-        public ObaCookieValue toObj(String jsonString, Class<? extends ObaCookieValue> targetClass){
+        public CookieData toObj(String jsonString, Class<? extends CookieData> targetClass){
             ObjectMapper objectMapper = new ObjectMapper();
             try {
-                ObaCookieValue user = objectMapper.readValue(removeForbiddenChars(jsonString), targetClass);
+                CookieData user = objectMapper.readValue(removeForbiddenChars(jsonString), targetClass);
                 return user;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -68,5 +68,4 @@ public class CookieData {
         }
     }
 
-    class ObaCookieValue{}
 }

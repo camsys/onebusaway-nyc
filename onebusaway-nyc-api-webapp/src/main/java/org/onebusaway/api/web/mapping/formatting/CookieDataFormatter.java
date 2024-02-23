@@ -28,7 +28,7 @@ public class CookieDataFormatter {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String jsonString = objectMapper.writeValueAsString(value);
-            return jsonString;
+            return applyForbiddenChars(jsonString);
         } catch (Exception e) {
             e.printStackTrace();
         }

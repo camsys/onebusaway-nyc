@@ -55,6 +55,7 @@ public class FavoritesController {
         }
         Cookie cookie = new Cookie(cookieId, favoritesCookieValue.toString());
         cookie.setPath("/");
+        cookie.setHttpOnly(true);
         response.addCookie(cookie);
         return new ResponseBean(V2,ResponseCodes.RESPONSE_OK,
                 "OK", null);
