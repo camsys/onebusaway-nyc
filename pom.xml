@@ -41,6 +41,7 @@
         <onebusaway.siri_2.version>1.0.3</onebusaway.siri_2.version>
         <protobuf.version>3.17.3</protobuf.version>
         <spring.version>5.2.20.RELEASE</spring.version>
+        <spring.security.version>5.2.1.RELEASE</spring.security.version>
         <struts.version>2.5.30</struts.version>
         <xwiki.integration.version>1.0.1</xwiki.integration.version>
         <xwiki.version>2.3.1</xwiki.version>
@@ -397,6 +398,14 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                </configuration>
+            </plugin>
+
         </plugins>
         <extensions>
             <extension>
@@ -521,7 +530,16 @@
                 <artifactId>spring-messaging</artifactId>
                 <version>${spring.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>${spring.security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-config</artifactId>
+                <version>${spring.security.version}</version>
+            </dependency>
       <!-- struts dependencies -->
             <dependency>
                 <groupId>org.apache.struts</groupId>

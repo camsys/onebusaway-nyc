@@ -23,18 +23,23 @@ import org.onebusaway.users.services.ApiKeyPermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 
+@Component
 // todo: struts to spring: merge this and duplicate in Ops-API, probably should go to nyc-api-lib and then both should pull from it
 // todo: struts to spring: also, should do the same thing with the usagemonitor
-public class ApiKeyInterceptor implements Filter {
+public class ApiKeyInterceptor extends OncePerRequestFilter {
 
   private static Logger _log = LoggerFactory.getLogger(ApiKeyInterceptor.class);
 
@@ -42,6 +47,7 @@ public class ApiKeyInterceptor implements Filter {
 
 
   @Autowired
+  @Qualifier("apiKeyPermissionService")
   private ApiKeyPermissionService _keyService;
 
   @Autowired
@@ -51,8 +57,7 @@ public class ApiKeyInterceptor implements Filter {
   private ApiKeyThrottledService _throttledKeyService;
 
 
-  @Override
-  public void init(FilterConfig filterConfig) {
+  public void setup(FilterConfig filterConfig) {
     ApplicationContext ctx = WebApplicationContextUtils
             .getRequiredWebApplicationContext(filterConfig.getServletContext());
     _keyUsageMonitor = ctx.getBean(org.onebusaway.nyc.api.lib.impl.ApiKeyUsageMonitorImpl.class);
@@ -63,7 +68,7 @@ public class ApiKeyInterceptor implements Filter {
 
 
   @Override
-  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
     HttpServletRequest req = (HttpServletRequest) request;
 
@@ -96,7 +101,7 @@ public class ApiKeyInterceptor implements Filter {
 
     _log.debug("Starting a transaction for req : {}", req.getRequestURI());
 
-    chain.doFilter(request, response);
+    filterChain.doFilter(request, response);
     _log.debug("Committing a transaction for req : {}",req.getRequestURI());
   }
 

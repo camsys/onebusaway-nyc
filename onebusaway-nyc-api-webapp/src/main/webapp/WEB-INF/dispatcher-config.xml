@@ -4,6 +4,7 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:task="http://www.springframework.org/schema/task"
        xmlns:websocket="http://www.springframework.org/schema/websocket"
+       xmlns:security="http://www.springframework.org/schema/security"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/mvc
@@ -13,11 +14,18 @@
                            http://www.springframework.org/schema/task
                            http://www.springframework.org/schema/task/spring-task.xsd
                            http://www.springframework.org/schema/websocket
-                           http://www.springframework.org/schema/websocket/spring-websocket.xsd">
+                           http://www.springframework.org/schema/websocket/spring-websocket.xsd
+		                   http://www.springframework.org/schema/security
+		                   http://www.springframework.org/schema/security/spring-security.xsd">
 
     <context:property-placeholder location="classpath:application.properties"/>
     <context:component-scan base-package="org.onebusaway.api.web" />
     <task:annotation-driven mode="aspectj"/>
+<!--    <mvc:annotation-driven>-->
+<!--        <mvc:argument-resolvers>-->
+<!--            <bean class="org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver" />-->
+<!--        </mvc:argument-resolvers>-->
+<!--    </mvc:annotation-driven>-->
 
 <!--    <bean id="demoWebSocketHandler" class="org.onebusaway.api.web.interceptors.BaseSocketHandler">-->
 <!--        <property name="keyIdentifier" value="topic" />-->
