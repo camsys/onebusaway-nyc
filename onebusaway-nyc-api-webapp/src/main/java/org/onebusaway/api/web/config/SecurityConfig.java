@@ -42,7 +42,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .authorizeRequests((requests) -> requests
                 .antMatchers("/*")
 //                .requestMatchers(httpServletRequest -> true)
-                .permitAll())
+                .denyAll())
                 .addFilterBefore(apiKeyInterceptor, UsernamePasswordAuthenticationFilter.class);
     }
 
