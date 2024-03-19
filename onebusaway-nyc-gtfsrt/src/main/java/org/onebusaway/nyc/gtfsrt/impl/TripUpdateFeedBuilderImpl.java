@@ -17,10 +17,12 @@ package org.onebusaway.nyc.gtfsrt.impl;
 
 import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.*;
+import com.google.transit.realtime.GtfsRealtimeOneBusAway;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -40,7 +42,7 @@ import java.util.List;
 import static org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary.*;
 
 @Component
-public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
+public class  TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
 
     private static final Logger _log = LoggerFactory.getLogger(TripUpdateFeedBuilderImpl.class);
 
@@ -83,11 +85,19 @@ public class TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
 
         tripUpdate.setTrip(makeTripDescriptor(trip, vehicle));
         tripUpdate.setVehicle(makeVehicleDescriptor(vehicle));
-
         tripUpdate.setTimestamp(vehicle.getLastUpdateTime()/1000);
 
         double delay = useEffectiveScheduleTime() ? getEffectiveScheduleTime(trip, vehicle) : vehicle.getTripStatus().getScheduleDeviation();
         tripUpdate.setDelay((int) delay);
+
+        if (EVehiclePhase.SPOOKING.equals(EVehiclePhase.valueOf(vehicle.getPhase().toUpperCase()))) {
+            GtfsRealtimeOneBusAway.OneBusAwayTripUpdate.Builder obaTripUpdate =
+                    GtfsRealtimeOneBusAway.OneBusAwayTripUpdate.newBuilder();
+            obaTripUpdate.setIsEstimatedRealtime(true);
+            tripUpdate.setExtension(GtfsRealtimeOneBusAway.obaTripUpdate, obaTripUpdate.build());
+            // we don't make predictions if its SPOOKING
+            return tripUpdate;
+        }
         for (TimepointPredictionRecord tpr : records) {
             tripUpdate.addStopTimeUpdate(makeStopTimeUpdate(tpr));
         }

@@ -22,6 +22,7 @@ import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import org.onebusaway.nyc.gtfsrt.service.TripUpdateFeedBuilder;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
@@ -102,36 +103,24 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         List<FeedEntity.Builder> entities = new ArrayList<FeedEntity.Builder>();
 
         for (VehicleStatusBean vehicle : vehicles) {
+            boolean isSpookingVehicle = vehicle != null
+                    && vehicle.getPhase() != null
+                    && vehicle.getPhase().equalsIgnoreCase(EVehiclePhase.SPOOKING.toLabel());
 
-            int tripSequence = vehicle.getTripStatus().getBlockTripSequence();
-            BlockInstanceBean block = getBlock(vehicle);
-            List<BlockTripBean> trips = block.getBlockConfiguration().getTrips();
-
-            for (int i = tripSequence; i < trips.size(); i++) {
-                TripBean trip = trips.get(i).getTrip();
-
-                if (cancelledTripIds.contains(trip.getId())) {
-                    // CAPI contradicts this data, drop it from feed
-                    _log.warn("suppressing trip " + trip.getId() + " as its in CAPI");
-                } else {
-
-                    List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), trip.getId());
-                    if (tprs == null || tprs.isEmpty()) {
-                        _log.debug("no tprs for time=" + new Date(time));
-                        break;
-                    }
-
-                    GtfsRealtime.TripUpdate.Builder tu = _feedBuilder.makeTripUpdate(trip, vehicle, tprs);
-
-                    FeedEntity.Builder entity = FeedEntity.newBuilder();
-                    entity.setTripUpdate(tu);
-                    entity.setId(tu.getTrip().getTripId());
-                    entities.add(entity);
-                }
+            if(isSpookingVehicle){
+                addSpookingEntity(entities, vehicle);
+            } else{
+                addPredictedEntities(entities, vehicle, cancelledTripIds, time);
             }
-
         }
 
+        addCanceledTripEntities(entities, allCancelledTrips);
+
+        _log.debug("returning " + entities.size() + " entities");
+        return entities;
+    }
+
+    private void addCanceledTripEntities(List<FeedEntity.Builder> entities, List<CancelledTripBean> allCancelledTrips) {
         for (CancelledTripBean bean : allCancelledTrips) {
             // we have a cancelled trip, ignore any vehicle associated with it
             // and send schedule relationship CANCELED
@@ -146,9 +135,53 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
                 _log.warn("no trip for id " + bean.getTrip());
             }
         }
+    }
 
-        _log.debug("returning " + entities.size() + " entities");
-        return entities;
+    private void addPredictedEntities(List<FeedEntity.Builder> entities, VehicleStatusBean vehicle, Set<String> cancelledTripIds, long time) {
+        int tripSequence = vehicle.getTripStatus().getBlockTripSequence();
+        BlockInstanceBean block = getBlock(vehicle);
+        List<BlockTripBean> trips = block.getBlockConfiguration().getTrips();
+
+        for (int i = tripSequence; i < trips.size(); i++) {
+            TripBean trip = trips.get(i).getTrip();
+
+            if (cancelledTripIds.contains(trip.getId())) {
+                // CAPI contradicts this data, drop it from feed
+                _log.warn("suppressing trip " + trip.getId() + " as its in CAPI");
+            } else {
+
+                List<TimepointPredictionRecord> tprs = _transitDataService.getPredictionRecordsForVehicleAndTrip(vehicle.getVehicleId(), trip.getId());
+
+                // If no time point record found then its likely that all future trips won't have time point records
+                // therefore we break the loop here
+                if ((tprs == null || tprs.isEmpty())){
+                    _log.debug("no tprs for time=" + new Date(time));
+                    break;
+                }
+
+                GtfsRealtime.TripUpdate.Builder tu = _feedBuilder.makeTripUpdate(trip, vehicle, tprs);
+
+                FeedEntity.Builder entity = FeedEntity.newBuilder();
+                entity.setTripUpdate(tu);
+                entity.setId(tu.getTrip().getTripId());
+                entities.add(entity);
+            }
+        }
+    }
+
+    private void addSpookingEntity(List<FeedEntity.Builder> entities, VehicleStatusBean vehicle) {
+        boolean hasActiveTrip = vehicle != null
+                && vehicle.getTripStatus() != null
+                && vehicle.getTripStatus().getActiveTrip() != null;
+
+        if(hasActiveTrip){
+            GtfsRealtime.TripUpdate.Builder tu = _feedBuilder.makeTripUpdate(vehicle.getTripStatus().getActiveTrip(), vehicle, Collections.emptyList());
+
+            FeedEntity.Builder entity = FeedEntity.newBuilder();
+            entity.setTripUpdate(tu);
+            entity.setId(tu.getTrip().getTripId());
+            entities.add(entity);
+        }
     }
 
     private List<CancelledTripBean> getAllCanceledTrips() {

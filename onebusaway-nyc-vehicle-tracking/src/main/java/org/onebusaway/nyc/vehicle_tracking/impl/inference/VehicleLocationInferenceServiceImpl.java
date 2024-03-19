@@ -110,7 +110,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
 
-  private static final long MIN_RECORD_INTERVAL = 3 * 1000; // 3 seconds
+  private static final long MIN_RECORD_INTERVAL = 5 * 1000; // 5 seconds
 
   @Autowired
   private ObservationCache _observationCache;
@@ -935,7 +935,13 @@ public class VehicleLocationInferenceServiceImpl implements
       boolean isValid = true;
       Long mapTimeReceived = _timeReceivedByVehicleId.get(vid);
       if (mapTimeReceived != null) {
-        if (Math.abs(timeReceived - mapTimeReceived) <= MIN_RECORD_INTERVAL) {
+        long timeDiff = timeReceived - mapTimeReceived;
+        if(timeDiff < 0){
+          _log.warn("New record has a time {}msec in the past" +
+                  ",dropping inference instance for vehicleId {}",timeDiff, vid);
+          isValid = false;
+        }
+        else if (Math.abs(timeDiff) <= MIN_RECORD_INTERVAL) {
           _log.warn("Minimum record interval of " + MIN_RECORD_INTERVAL / 1000
               + " sec reached, dropping inference instance for vehicleId " + vid);
           isValid =  false;

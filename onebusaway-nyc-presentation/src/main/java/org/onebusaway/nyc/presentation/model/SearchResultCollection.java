@@ -110,4 +110,11 @@ public class SearchResultCollection implements Serializable {
   public void setQueryLon(Double queryLon) {
     this._queryLon = queryLon;
   }
+
+  public SearchResult getFirstSuggestion(){
+    if(_suggestions.size()<1){
+      return null;
+    }
+    return _suggestions.get(0);
+  }
 }

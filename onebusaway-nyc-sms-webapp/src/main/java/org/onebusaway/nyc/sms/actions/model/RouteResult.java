@@ -32,6 +32,8 @@ public class RouteResult implements SearchResult, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	private int type;
+
 	private RouteBean route;
 
 	private List<RouteDirection> directions;
@@ -39,6 +41,12 @@ public class RouteResult implements SearchResult, Serializable {
 	public RouteResult(RouteBean route, List<RouteDirection> directions) {
 		this.route = route;
 		this.directions = directions;
+	}
+
+	public RouteResult(RouteBean route, List<RouteDirection> directions, int type) {
+		this.route = route;
+		this.directions = directions;
+		this.type = type;
 	}
 
 	public String getShortName() {

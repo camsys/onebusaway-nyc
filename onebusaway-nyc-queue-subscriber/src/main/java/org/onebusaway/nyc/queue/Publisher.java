@@ -16,16 +16,11 @@
 
 package org.onebusaway.nyc.queue;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
@@ -124,8 +119,9 @@ public class Publisher implements IPublisher {
 
 		try{
 			return RmcUtil.replaceInvalidRmcDateTime(prefix, timeReceived);
-		}catch(Exception e){
-			_log.warn("unable to replace invalid rmc date", e);
+		}catch(Throwable t){
+			_log.warn("unable to replace invalid rmc date", t);
+			t.printStackTrace();
 			return prefix.toString();
 		}
 

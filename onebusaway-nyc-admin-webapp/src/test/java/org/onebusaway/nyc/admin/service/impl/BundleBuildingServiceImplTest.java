@@ -282,7 +282,12 @@ public class BundleBuildingServiceImplTest {
   @Ignore
   @Test
   public void configureMeTest(){
-    testingGtfsLocally("2020-01-19", "2020-05-02","GTFS_MTABC_tmp.zip","STIF_MTABC_04202020_ECCPFRJKSC-v1.zip");
+    // update values as needed for manual testing
+    String startDate = "2020-01-19";
+    String endDate = "2020-05-03";
+    String gtfsFile = "GTFS_MTABC_tmp.zip";
+    String stifFile = "STIF_MTABC_04202020_ECCPFRJKSC-v1.zip";
+    testingGtfsLocally(startDate,endDate,gtfsFile,stifFile);
   }
 
   public void testingGtfsLocally(String startDate, String endDate, String gtfsFile, String stifFile){

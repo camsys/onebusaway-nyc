@@ -433,8 +433,10 @@ OBA.Sidebar = function() {
 	}
 
 	// show multiple route choices to user
-	function showRoutePickerList(routeResults) {	
-		suggestions.find("h2").text("Did you mean?");
+	function showRoutePickerList(routeResults, title) {
+		suggestions.find("h2").text(title);
+
+		var shuttles = true;
 
 		var resultsList = suggestions.find("ul");
 
@@ -474,7 +476,14 @@ OBA.Sidebar = function() {
 					routeMap.removeHoverPolyline();
 				});
 			}
+			if(route.type!=711){
+				shuttles=false;
+			}
 		});
+
+		if(shuttles==true){
+			suggestions.find("h2").text("Shuttles:");
+		}
 		
 		suggestions.show();
 	}
@@ -563,12 +572,7 @@ OBA.Sidebar = function() {
 					case "GeocodeResult":
 						// result is a region
 						if(matches[0].isRegion === true) {
-							if(matches[0].nearbyRoutes.length === 0) {
-								showNoResults("No stops nearby.");
-							} else {
-								showRoutePickerList(matches[0].nearbyRoutes);								
-							}
-
+							showRoutePickerList(matches[0].nearbyRoutes,"Did you mean?");
 							var latLngBounds = new google.maps.LatLngBounds(
 									new google.maps.LatLng(matches[0].bounds.minLat, matches[0].bounds.minLon), 
 									new google.maps.LatLng(matches[0].bounds.maxLat, matches[0].bounds.maxLon));
@@ -596,7 +600,11 @@ OBA.Sidebar = function() {
 						break;
 				
 					case "RouteResult":
-						addRoutesToLegend(matches, "Routes:", null, null);
+						let title = "Routes:"
+						if(matches[0].type==711){
+							title = "Shuttle:"
+						}
+						addRoutesToLegend(matches, title, null, null);
 
 						routeMap.panToRoute(matches[0].id);
 						(wizard && wizard.enabled()) ? results.triggerHandler('route_result') : null;
@@ -627,7 +635,12 @@ OBA.Sidebar = function() {
 
 					// a route query with no direct matches
 					case "RouteResult":
-						showRoutePickerList(suggestions);								
+						let title = "Did you mean?";
+						//if the suggestions are all shuttles
+						if(suggestions[0].type==711){
+							title= "Shuttles:"
+						}
+						showRoutePickerList(suggestions,title);
 						(wizard && wizard.enabled()) ? results.triggerHandler('route_result') : null;
 						break;
 				}
