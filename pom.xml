@@ -372,6 +372,7 @@
                         <exclude>**/*.mp3</exclude>
                         <exclude>**/*.wav</exclude>
                         <exclude>bin/**</exclude>
+                        <exclude>src/main/resources/**</exclude>
                         <exclude>src/test/resources/**</exclude>
                         <exclude>**/git.properties</exclude>
                         <exclude>**/src/test/resources/**</exclude>

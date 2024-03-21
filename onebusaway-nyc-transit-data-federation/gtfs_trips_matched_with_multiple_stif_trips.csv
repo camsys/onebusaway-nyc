@@ -1,0 +1,66 @@
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+MTABC_5888917-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,16:35:00 or 99500,17:30:00 or 105000,402678,QM2-016 from 402678 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,164
+MTABC_5889004-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,18:00:00 or 108000,19:05:00 or 114500,552984,QM2-016 from 552984 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,2591
+MTABC_5888955-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,19:40:00 or 118000,20:40:00 or 124000,450392,QM2-016 from 450392 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,1236
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+MTABC_5888917-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,16:35:00 or 99500,17:30:00 or 105000,402678,QM2-016 from 402678 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,164
+MTABC_5889004-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,18:00:00 or 108000,19:05:00 or 114500,552984,QM2-016 from 552984 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,2591
+MTABC_5888955-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,19:40:00 or 118000,20:40:00 or 124000,450392,QM2-016 from 450392 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,1236
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+MTABC_5888917-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,16:35:00 or 99500,17:30:00 or 105000,402678,QM2-016 from 402678 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,164
+MTABC_5889004-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,18:00:00 or 108000,19:05:00 or 114500,552984,QM2-016 from 552984 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,2591
+MTABC_5888955-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,19:40:00 or 118000,20:40:00 or 124000,450392,QM2-016 from 450392 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,1236
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+MTABC_5888917-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,16:35:00 or 99500,17:30:00 or 105000,402678,QM2-016 from 402678 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,164
+MTABC_5889004-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,18:00:00 or 108000,19:05:00 or 114500,552984,QM2-016 from 552984 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,2591
+MTABC_5888955-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,19:40:00 or 118000,20:40:00 or 124000,450392,QM2-016 from 450392 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,1236
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+MTABC_5888917-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,16:35:00 or 99500,17:30:00 or 105000,402678,QM2-016 from 402678 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,164
+MTABC_5889004-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,18:00:00 or 108000,19:05:00 or 114500,552984,QM2-016 from 552984 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,2591
+MTABC_5888955-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,19:40:00 or 118000,20:40:00 or 124000,450392,QM2-016 from 450392 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,1236
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
+MTABC_5888917-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,16:35:00 or 99500,17:30:00 or 105000,402678,QM2-016 from 402678 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,164
+MTABC_5889004-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,18:00:00 or 108000,19:05:00 or 114500,552984,QM2-016 from 552984 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,2591
+MTABC_5888955-CPPB4-CP_B4-Weekday-50-SDon,"TripIdentifier(QM2,19:40:00 or 118000,20:40:00 or 124000,450392,QM2-016 from 450392 block 1141761)",/home/lenny/camsys/projects/onebusaway-nyc/onebusaway-nyc-transit-data-federation/target/test-classes/org/onebusaway/nyc/transit_data_federation/bundle/tasks/stif/stifImport/mtabc_b4_stif/stif.Q_QM2___.713229.wkd.open.gz,1236
+GTFS_Trip_Id, extra_stif_trip,stif_filename,stif_trip_record_line_num
