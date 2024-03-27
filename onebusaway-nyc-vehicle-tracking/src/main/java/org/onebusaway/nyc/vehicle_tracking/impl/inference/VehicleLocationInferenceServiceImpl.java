@@ -937,7 +937,7 @@ public class VehicleLocationInferenceServiceImpl implements
       if (mapTimeReceived != null) {
         long timeDiff = timeReceived - mapTimeReceived;
         if(timeDiff < 0){
-          _log.warn("New record has a time {}msec in the past" +
+          _log.warn("New record has a time {}msec before current record" +
                   ",dropping inference instance for vehicleId {}",timeDiff, vid);
           isValid = false;
         }
@@ -945,6 +945,12 @@ public class VehicleLocationInferenceServiceImpl implements
           _log.warn("Minimum record interval of " + MIN_RECORD_INTERVAL / 1000
               + " sec reached, dropping inference instance for vehicleId " + vid);
           isValid =  false;
+        }
+        long timeSinceReciept = System.currentTimeMillis() - timeReceived;
+        if (timeSinceReciept<0){
+          _log.warn("New record has a time {}msec in the future" +
+                  ",dropping inference instance for vehicleId {}",-timeDiff, vid);
+          isValid = false;
         }
       }
       if(isValid)
