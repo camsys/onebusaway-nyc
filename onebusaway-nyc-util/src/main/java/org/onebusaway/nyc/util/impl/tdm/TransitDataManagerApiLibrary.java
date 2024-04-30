@@ -41,25 +41,42 @@ public class TransitDataManagerApiLibrary {
 
   private String _apiEndpointPath = "/api/";
 
+
   /**
     * Constructor injection necessary due to the usage of RestApiLibrary.
     */
   public TransitDataManagerApiLibrary(String hostname, Integer port, String path) {
-      _tdmHostname = hostname;
-      if (port != null) {
-        _tdmPort = port;
+    setupRestApiLibrary(hostname, port, path, null, null);
+  }
+
+  public TransitDataManagerApiLibrary(String hostname, Integer port, String path, Integer connectionTimeout, Integer readTimeout) {
+    setupRestApiLibrary(hostname, port, path, connectionTimeout, readTimeout);
+  }
+
+  private void setupRestApiLibrary(String hostname, Integer port, String path, Integer connectionTimeout, Integer readTimeout) {
+    _tdmHostname = hostname;
+    if (port != null) {
+      _tdmPort = port;
+    }
+
+    if (path != null) {
+      _apiEndpointPath = path;
+    }
+
+    _log.info("TDM hostname = " + _tdmHostname);
+
+    if (!StringUtils.isBlank(_tdmHostname)) {
+      _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);
+      if(connectionTimeout != null) {
+        _restApiLibrary.setConnectionTimeout(connectionTimeout);
       }
-
-      if (path != null) {
-        _apiEndpointPath = path;
+      if(readTimeout != null){
+        _restApiLibrary.setConnectionTimeout(readTimeout);
       }
-
-      _log.info("TDM hostname = " + _tdmHostname);
-
-      if (!StringUtils.isBlank(_tdmHostname))
-        _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);
-      else
-        _log.warn("No TDM URL given!");
+    }
+    else {
+      _log.warn("No TDM URL given!");
+    }
   }
 
   private RestApiLibrary _restApiLibrary;

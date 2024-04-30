@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc</artifactId>
-    <version>2.38.3</version>
+    <version>2.39.0</version>
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-queue-subscriber</artifactId>
@@ -101,6 +101,7 @@
                   <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
                 </manifest>
               </archive>
+              <classifier>jar-with-dependencies</classifier>
             </configuration>
             <executions>
               <execution>
