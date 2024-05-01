@@ -20,12 +20,15 @@ import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
 
 import com.eaio.uuid.UUID;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Encapsulate ZeroMQ queue operations. ZeroMQ prefers to be on its own thread
@@ -40,6 +43,9 @@ public class Publisher implements IPublisher {
 	private ZMQ.Context context;
 	private ZMQ.Socket envelopeSocket;
 	private String topic;
+	private String protocol;
+	private String host;
+	private int port;
 
 	public Publisher(String topic) {
 		this.topic = topic;
@@ -47,7 +53,8 @@ public class Publisher implements IPublisher {
 
 	/**
 	 * Bind ZeroMQ to the given host and port using the specified protocol.
-	 *
+	 ** @param topic
+	 *            zeromq topic
 	 * @param protocol
 	 *            "tcp" for example
 	 * @param host
@@ -55,7 +62,34 @@ public class Publisher implements IPublisher {
 	 * @param port
 	 *            port to bind to. Below 1024 requires elevated privs.
 	 */
-	public synchronized void open(String protocol, String host, int port) {
+	public Publisher(String topic, String protocol, String host, Integer port) {
+		this.topic = topic;
+		this.protocol = protocol;
+		this.host = host;
+		this.port = port;
+	}
+
+	public Publisher(){}
+
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	@PostConstruct
+	@Override
+	public synchronized void init() {
 		context = ZMQ.context(1);
 		// new envelope protocol
 		envelopeSocket = context.socket(ZMQ.PUB);
@@ -74,16 +108,25 @@ public class Publisher implements IPublisher {
 	/**
 	 * Ask ZeroMQ to close politely.
 	 */
+	@Override
 	public synchronized void close() {
 		_log.warn("shutting down...");
-		executorService.shutdownNow();
 		try {
+			if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+				executorService.shutdownNow();
+			}
 			Thread.sleep(1 * 1000);
 		} catch (InterruptedException ie) {
-
+			executorService.shutdownNow();
 		}
 		envelopeSocket.close();
 		context.term();
+	}
+
+	@Override
+	public synchronized void reset(){
+		close();
+		init();
 	}
 
 	/**
@@ -93,6 +136,7 @@ public class Publisher implements IPublisher {
 	 * @param message
 	 *            the content of the message
 	 */
+	@Override
 	public void send(byte[] message) {
 		try {
 			outputBuffer.put(wrap(message));
@@ -101,6 +145,7 @@ public class Publisher implements IPublisher {
 		}
 	}
 
+	
 	String wrap(byte[] message) {
 		if (message == null || message.length == 0)
 			return null;
@@ -110,7 +155,7 @@ public class Publisher implements IPublisher {
 		if (realtime.length() < 2)
 			return null;
 
-		StringBuffer prefix = new StringBuffer();
+		StringBuilder prefix = new StringBuilder();
 		
 		prefix.append("{\"RealtimeEnvelope\": {\"UUID\":\"")
 				.append(generateUUID()).append("\",\"timeReceived\": ")
@@ -126,6 +171,42 @@ public class Publisher implements IPublisher {
 		}
 
 	}
+
+	@Override
+	public void send(String message) {
+		try {
+			outputBuffer.put(wrap(message));
+		} catch (InterruptedException ie) {
+			_log.error(ie.toString());
+		}
+	}
+
+	String wrap(String realtime) {
+		if (realtime == null || realtime.length() == 0)
+			return null;
+		long timeReceived = getTimeReceived();
+
+		// we remove wrapping below, so check for min length acceptable
+		if (realtime.length() < 2)
+			return null;
+
+		StringBuilder prefix = new StringBuilder();
+
+		prefix.append("{\"RealtimeEnvelope\": {\"UUID\":\"")
+				.append(generateUUID()).append("\",\"timeReceived\": ")
+				.append(timeReceived).append(",")
+				.append(removeLastBracket(realtime)).append("}}");
+
+		try{
+			return RmcUtil.replaceInvalidRmcDateTime(prefix, timeReceived);
+		}catch(Throwable t){
+			_log.warn("unable to replace invalid rmc date", t);
+			t.printStackTrace();
+			return prefix.toString();
+		}
+
+	}
+
 
 	String removeLastBracket(String s) {
 		String trimmed = s.trim();
@@ -146,11 +227,12 @@ public class Publisher implements IPublisher {
 		Date markTimestamp = new Date();
 		private ZMQ.Socket zmqSocket = null;
 		private byte[] topicName = null;
-		//private String topic;
+
+		private String topic;
 
 		public SendThread(ZMQ.Socket socket, String topicName) {
 			zmqSocket = socket;
-			//topic = topicName;
+			this.topic = topicName;
 			this.topicName = topicName.getBytes();
 		}
 
