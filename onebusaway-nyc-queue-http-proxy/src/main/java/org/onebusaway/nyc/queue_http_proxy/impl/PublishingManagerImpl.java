@@ -16,7 +16,6 @@
 
 package org.onebusaway.nyc.queue_http_proxy.impl;
 
-import com.google.common.cache.*;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.queue.IPublisher;
 import org.slf4j.Logger;
@@ -42,6 +41,8 @@ public class PublishingManagerImpl implements PublishingManager{
 
     private Map<String, Date> lastKnownVehicleRecords = new ConcurrentHashMap<>(10000);
 
+    private String highFrequencyVehiclesList;
+
     private Set<String> highFrequencyVehicles;
 
     @Autowired
@@ -57,8 +58,6 @@ public class PublishingManagerImpl implements PublishingManager{
 
     protected DNSResolver _resolver = null;
 
-    private Cache<String, String> cache;
-
 
     public PublishingManagerImpl() {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SXXX");
@@ -67,7 +66,10 @@ public class PublishingManagerImpl implements PublishingManager{
 
     @PostConstruct
     public void setup(){
+        String[] vehiclesList = highFrequencyVehiclesList.split("\\s*,\\s*");
+        highFrequencyVehicles = new HashSet<>(Arrays.asList(vehiclesList));
         startDNSCheckThread();
+
     }
 
     public synchronized Date parseDate(String date) throws ParseException {
@@ -82,13 +84,16 @@ public class PublishingManagerImpl implements PublishingManager{
         this.highFrequencyVehicles = highFrequencyVehicles;
     }
 
+    public void setHighFrequencyVehiclesList(String highFrequencyVehiclesList) {
+        this.highFrequencyVehiclesList = highFrequencyVehiclesList;
+    }
 
     @Override
     public void send(JsonNode message) throws ExecutionException, ParseException {
         JsonNode ccLocationReport = message.get("CcLocationReport");
         String vehicleId = getVehicleId(ccLocationReport);
 
-        if(highFrequencyVehicles.contains(vehicleId)){
+        if(highFrequencyVehicles.contains(vehicleId) || highFrequencyVehicles.contains("*")){
             Date vehicleTimestamp = getVehicleTimestamp(ccLocationReport);
             processMessage(vehicleId, vehicleTimestamp, message.toString());
         } else {
@@ -123,7 +128,7 @@ public class PublishingManagerImpl implements PublishingManager{
         vehicleTimestamp = getFixedVehicleTimestamp(vehicleTimestamp);
 
         if(shouldProcessVehicle(vehicleId, vehicleTimestamp)){
-            _log.info("Adding {} with timestamp {} to the cache", vehicleId, vehicleTimestamp);
+            _log.debug("Adding {} with timestamp {} to the cache", vehicleId, vehicleTimestamp);
             lastKnownVehicleRecords.put(vehicleId, vehicleTimestamp);
             publisher.send(message);
         }
@@ -161,8 +166,8 @@ public class PublishingManagerImpl implements PublishingManager{
 
         if (_taskScheduler != null) {
             DNSCheckThread dnsCheckThread = new DNSCheckThread();
-            // ever 10 seconds
-            _taskScheduler.scheduleWithFixedDelay(dnsCheckThread, 10 * 1000);
+            // Check every 20 seconds
+            _taskScheduler.scheduleWithFixedDelay(dnsCheckThread, TimeUnit.SECONDS.toMillis(20));
         }
     }
 

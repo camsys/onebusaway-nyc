@@ -28,24 +28,20 @@ limitations under the License.
 
 
     <bean id="publisher" class="org.onebusaway.nyc.queue.Publisher">
-        <constructor-arg type="java.lang.String" value="bhs_queue"/>
-        <constructor-arg type="java.lang.String" value="tcp"/>
-        <constructor-arg type="java.lang.String" value="*"/>
-        <constructor-arg type="java.lang.Integer" value="5563" />
+        <property name="topic" value="bhs_queue" />
+        <property name="protocol" value="tcp" />
+        <property name="host" value="*" />
+        <property name="port" value="5563" />
     </bean>
 
     <bean id="high_freq_publisher" class="org.onebusaway.nyc.queue.Publisher">
-        <constructor-arg type="java.lang.String" value="bhs_high_freq_queue"/>
-        <constructor-arg type="java.lang.String" value="tcp"/>
-        <constructor-arg type="java.lang.String" value="*"/>
-        <constructor-arg type="java.lang.Integer" value="5577" />
+        <property name="topic" value="bhs_high_freq_queue" />
+        <property name="protocol" value="tcp" />
+        <property name="host" value="*" />
+        <property name="port" value="5577" />
     </bean>
 
     <bean id="publishing_manager" class="org.onebusaway.nyc.queue_http_proxy.impl.PublishingManagerImpl">
-        <property name="highFrequencyVehicles">
-            <set>
-                <value>100000</value>
-            </set>
-        </property>
+        <property name="highFrequencyVehiclesList" value="" />
     </bean>
 </beans>
