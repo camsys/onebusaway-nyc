@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.queue;
+package org.onebusaway.nyc.queue_http_proxy.impl;
 
-/**
- * Represents an interface to simply message queue publishing operations. This
- * is not attempting to be JMS. This is merely hiding the details of ZeroMQ for
- * easier testing.
- */
-public interface IPublisher {
+import com.fasterxml.jackson.databind.JsonNode;
 
-	void init();
+import java.text.ParseException;
+import java.util.concurrent.ExecutionException;
 
-	void close();
+public interface PublishingManager {
 
-	void reset();
-
-	void send(byte[] message);
-
-	void send(String message);
+    void send(JsonNode message) throws ExecutionException, ParseException;
 }
