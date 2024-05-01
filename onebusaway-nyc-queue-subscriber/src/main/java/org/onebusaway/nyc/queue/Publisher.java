@@ -69,6 +69,23 @@ public class Publisher implements IPublisher {
 		this.port = port;
 	}
 
+	public Publisher(){}
+
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
 
 	@PostConstruct
 	@Override
