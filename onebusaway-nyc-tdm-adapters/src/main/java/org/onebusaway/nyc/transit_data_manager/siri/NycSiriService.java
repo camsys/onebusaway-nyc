@@ -232,6 +232,14 @@ public abstract class NycSiriService {
       getServiceAlertsPersister().saveOrUpdateServiceAlerts(agencyId, agencyIdToServiceAlerts.get(agencyId));
     }
 
+    // clean up any orphan records
+    try {
+      getServiceAlertsPersister().deleteOrphans();
+    } catch (Throwable t) {
+      // log this but do not faile
+      _log.warn("exception cleaning up: {}", t, t);
+    }
+
   }
 
   public void handleServiceRequests(ServiceRequest serviceRequest, Siri responseSiri) {

@@ -65,5 +65,10 @@ public class ServiceAlertsPersisterImpl implements ServiceAlertsPersister {
     _service.removeServiceAlert(AgencyAndIdLibrary.convertFromString(serviceAlertId));
   }
 
+  @Override
+  public void deleteOrphans() {
+    _service.deleteOrphans();
+  }
+
 
 }
