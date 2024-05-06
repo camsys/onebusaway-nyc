@@ -50,7 +50,7 @@ public class BhsListenerController implements Serializable {
         this.enableExceptions = enableExceptions;
     }
 
-    @PostMapping("/")
+    @PostMapping("/submit")
     @ResponseBody
     public ResponseEntity<String> doPost(@RequestBody JsonNode requestBody) throws ServletException {
         try {
