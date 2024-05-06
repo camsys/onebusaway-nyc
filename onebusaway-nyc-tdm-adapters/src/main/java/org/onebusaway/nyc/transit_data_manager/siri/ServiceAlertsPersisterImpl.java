@@ -66,8 +66,8 @@ public class ServiceAlertsPersisterImpl implements ServiceAlertsPersister {
   }
 
   @Override
-  public void deleteOrphans() {
-    _service.deleteOrphans();
+  public boolean deleteOrphans() {
+    return _service.deleteOrphans();
   }
 
 

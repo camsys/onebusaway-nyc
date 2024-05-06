@@ -233,12 +233,7 @@ public abstract class NycSiriService {
     }
 
     // clean up any orphan records
-    try {
-      getServiceAlertsPersister().deleteOrphans();
-    } catch (Throwable t) {
-      // log this but do not faile
-      _log.warn("exception cleaning up: {}", t, t);
-    }
+    getServiceAlertsPersister().deleteOrphans();
 
   }
 

@@ -26,5 +26,5 @@ public interface ServiceAlertsPersister {
 
   void deleteServiceAlertById(String serviceAlertId);
 
-  void deleteOrphans();
+  boolean deleteOrphans();
 }
