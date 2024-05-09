@@ -112,6 +112,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private static final long MIN_RECORD_INTERVAL = 5 * 1000; // 5 seconds
 
+  private static final long MAX_FUTURE_HRS = 16; // 10 minutes
+
   @Autowired
   private ObservationCache _observationCache;
 
@@ -943,13 +945,14 @@ public class VehicleLocationInferenceServiceImpl implements
         }
         else if (Math.abs(timeDiff) <= MIN_RECORD_INTERVAL) {
           _log.warn("Minimum record interval of " + MIN_RECORD_INTERVAL / 1000
-              + " sec reached, dropping inference instance for vehicleId " + vid);
+                  + " sec reached, dropping inference instance for vehicleId " + vid);
           isValid =  false;
         }
         long timeSinceReciept = System.currentTimeMillis() - timeReceived;
-        if (timeSinceReciept<0){
+        if (timeSinceReciept<1000*60*60*MAX_FUTURE_HRS){
           _log.warn("New record has a time {}msec in the future" +
-                  ",dropping inference instance for vehicleId {}",-timeDiff, vid);
+                  ", max time in future allowed is {}hrs"+
+                  ", dropping inference instance for vehicleId {}",-timeDiff,MAX_FUTURE_HRS, vid);
           isValid = false;
         }
       }
