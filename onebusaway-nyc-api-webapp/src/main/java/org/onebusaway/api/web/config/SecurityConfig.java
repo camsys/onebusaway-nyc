@@ -1,6 +1,7 @@
 package org.onebusaway.api.web.config;
 
 import org.onebusaway.api.web.interceptors.ApiKeyInterceptor;
+import org.onebusaway.api.web.interceptors.ExceptionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -22,6 +24,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     ApiKeyInterceptor apiKeyInterceptor;
+
+    @Autowired
+    ExceptionInterceptor exceptionInterceptor;
 
 //    @Bean
 //    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -43,7 +48,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/*")
 //                .requestMatchers(httpServletRequest -> true)
                 .denyAll())
-                .addFilterBefore(apiKeyInterceptor, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(apiKeyInterceptor, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(exceptionInterceptor, UsernamePasswordAuthenticationFilter.class);
     }
 
 

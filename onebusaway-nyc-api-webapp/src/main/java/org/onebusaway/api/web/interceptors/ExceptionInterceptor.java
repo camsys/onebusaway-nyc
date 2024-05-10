@@ -24,20 +24,17 @@ import org.onebusaway.exceptions.NoSuchTripServiceException;
 import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import javax.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-public class ExceptionInterceptor extends HandlerInterceptorAdapter {
+public class ExceptionInterceptor extends OncePerRequestFilter {
 
   private static Logger _log = LoggerFactory.getLogger(ExceptionInterceptor.class);
 
@@ -47,90 +44,61 @@ public class ExceptionInterceptor extends HandlerInterceptorAdapter {
 
 
 
-  protected ResponseBean getExceptionAsResponseBean(String url, Exception ex) {
-    if (ex instanceof NoSuchStopServiceException
-            || ex instanceof NoSuchTripServiceException
-            || ex instanceof NoSuchRouteServiceException) {
-      return new ResponseBean(V1, ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND,
-              ex.getMessage(), null);
+
+
+  private String getActionAsUrl(HttpServletRequest request) {
+    String uri = request.getRequestURI();
+    String queryString = request.getQueryString();
+    StringBuilder b = new StringBuilder();
+    b.append(uri);
+
+    if(queryString!=null) {
+      String argToRemove = "app_uid";
+      int startPointer = queryString.indexOf(argToRemove);
+      if (startPointer == -1) {
+        b.append(queryString);
+      } else {
+        b.append("?");
+        int endPointer = queryString.indexOf("&", startPointer);
+        b.append(queryString.substring(0,startPointer));
+        if (endPointer != -1) {
+          b.append(queryString.substring(endPointer));
+        }
+      }
     }
-    else if( ex instanceof OutOfServiceAreaServiceException) {
+    return b.toString();
+  }
+
+  protected ResponseBean getExceptionAsResponseBean(String url, Exception ex) {
+    Throwable throwable = ex.getCause();
+    if (throwable instanceof NoSuchStopServiceException
+            || throwable instanceof NoSuchTripServiceException
+            || throwable instanceof NoSuchRouteServiceException) {
+      return new ResponseBean(V1, ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND,
+              throwable.getMessage(), null);
+    }
+    else if( throwable instanceof OutOfServiceAreaServiceException) {
       return new ResponseBean(V1, ResponseCodes.RESPONSE_OUT_OF_SERVICE_AREA,
-              ex.getMessage(), null);
+              throwable.getMessage(), null);
     }
     else {
       _log.warn("exception for action: url=" + url, ex);
       return new ResponseBean(V1, ResponseCodes.RESPONSE_SERVICE_EXCEPTION,
-              ex.getMessage(), null);
+              throwable.getMessage(), null);
     }
   }
-//
-//  private String getActionAsUrl(ActionInvocation invocation) {
-//
-//    ActionProxy proxy = invocation.getProxy();
-//    ActionContext context = invocation.getInvocationContext();
-//
-//    StringBuilder b = new StringBuilder();
-//    b.append(proxy.getNamespace());
-//    b.append("/");
-//    b.append(proxy.getActionName());
-//    b.append("!");
-//    b.append(proxy.getMethod());
-//
-//    HttpParameters params = context.getParameters();
-//
-//    if (!params.isEmpty()) {
-//      b.append("?");
-//      boolean seenFirst = false;
-//      for (Map.Entry<String, Parameter> entry : params.entrySet()) {
-//
-//        // Prune out any identifying information
-//        if ("app_uid".equals(entry.getKey()))
-//          continue;
-//
-//        if(entry.getValue() == null){
-//          continue;
-//        }
-//        Object value = entry.getValue().getObject();
-//        String[] values = (value instanceof String[]) ? (String[]) value
-//            : new String[] {value.toString()};
-//        for (String v : values) {
-//          if (seenFirst)
-//            b.append("&");
-//          else
-//            seenFirst = true;
-//          b.append(entry.getKey());
-//          b.append("=");
-//          b.append(v);
-//        }
-//      }
-//    }
-//
-//    return b.toString();
-//  }
 
 
   @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-    return true;
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    try {
+      filterChain.doFilter(request, response);
+    } catch (Exception e) {
+
+      ResponseBean responseBean = getExceptionAsResponseBean(getActionAsUrl(request), e);
+      response.setStatus(responseBean.getCode());
+      response.setContentType("text/html;charset=utf-8");
+      response.getWriter().write(responseBean.getText());
+    }
   }
-
-  @Override
-  public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
-                  @Nullable ModelAndView modelAndView) throws IOException, ServletException {
-    int i = 11;
-
-//      ResponseBean responseBean = getExceptionAsResponseBean(request.getLocalAddr(), ex);
-//      ((HttpServletResponse) response).setStatus(responseBean.getCode());
-////      ((HttpServletResponse) response).sendError(responseBean.getCode(), responseBean.getText());
-//      return;
-//    }
-//    if(((HttpServletResponse) response).getStatus()!=200){
-//      ((HttpServletResponse) response).setStatus(404);
-//      ((HttpServletResponse) response).sendError(404, null);
-//    }
-
-  }
-
-
 }
