@@ -15,44 +15,42 @@
  */
 package org.onebusaway.api.web.actions.api.where;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FieldErrorSupport {
   public static final String MISSING_REQUIRED_FIELD = "missingRequiredField";
   
   public static final String INVALID_FIELD_VALUE = "invalidFieldValue";
 
-  Map<String, List<String>> errorOutput;
+  LinkedHashMap<String, List<String>> errorOutput;
   int numDefault;
 
   public FieldErrorSupport() {
-    errorOutput = new HashMap<>();
+    errorOutput = new LinkedHashMap<>();
     //tie this to the appropriate setter
     numDefault = -1;
   }
 
   public FieldErrorSupport invalidValue(String s){
-    errorOutput.put(s,List.of(FieldErrorSupport.INVALID_FIELD_VALUE));
+    errorOutput.put(s,arrayListOf(FieldErrorSupport.INVALID_FIELD_VALUE));
     return this;
   }
 
   public FieldErrorSupport addError(String s, String e){
-    errorOutput.put(s,List.of(e));
+    errorOutput.put(s,arrayListOf(e));
     return this;
   }
 
   public FieldErrorSupport hasFieldError(Object o, String s){
-    if (o==null) errorOutput.put(s,List.of(FieldErrorSupport.MISSING_REQUIRED_FIELD));
+    if (o==null) errorOutput.put(s,arrayListOf(FieldErrorSupport.MISSING_REQUIRED_FIELD));
     return this;
   }
   public FieldErrorSupport hasFieldError(int i, String s) {
-    if (i == numDefault) errorOutput.put(s, List.of(FieldErrorSupport.MISSING_REQUIRED_FIELD));
+    if (i == numDefault) errorOutput.put(s, arrayListOf(FieldErrorSupport.MISSING_REQUIRED_FIELD));
     return this;
   }
   public FieldErrorSupport hasFieldError(long i, String s){
-    if (i==numDefault) errorOutput.put(s,List.of(FieldErrorSupport.MISSING_REQUIRED_FIELD));
+    if (i==numDefault) errorOutput.put(s,arrayListOf(FieldErrorSupport.MISSING_REQUIRED_FIELD));
     return this;
   }
 
@@ -62,5 +60,11 @@ public class FieldErrorSupport {
 
   public boolean hasErrors(){
     return errorOutput.size()!=0;
+  }
+
+  private List arrayListOf(String s){
+    List out = new ArrayList<>();
+    out.add(s);
+    return out;
   }
 }
