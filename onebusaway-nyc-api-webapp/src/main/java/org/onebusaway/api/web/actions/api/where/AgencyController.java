@@ -22,6 +22,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,7 +59,7 @@ public class AgencyController extends ApiActionSupport {
 
 
   @GetMapping
-  public ResponseBean show(@PathVariable("agencyId") String id) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) throws ServiceException {
 
     AgencyBean agency = _service.getAgency(id);
 

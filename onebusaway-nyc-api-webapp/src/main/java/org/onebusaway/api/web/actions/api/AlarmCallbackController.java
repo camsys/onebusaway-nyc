@@ -19,6 +19,7 @@ import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.services.AlarmService;
 import org.onebusaway.exceptions.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,7 +40,7 @@ public class AlarmCallbackController extends ApiActionSupport {
   }
 
   @RequestMapping
-  public ResponseBean show(@PathVariable("id") String id) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("id") String id) throws ServiceException {
 
     _alarmService.fireAlarm(id);
 

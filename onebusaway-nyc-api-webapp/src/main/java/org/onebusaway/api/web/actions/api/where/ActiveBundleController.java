@@ -21,6 +21,7 @@ import org.onebusaway.api.model.where.ActiveBundleBeanV1;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,7 +41,7 @@ public class ActiveBundleController extends ApiActionSupport {
     }
 
     @RequestMapping("/where/active-bundle")
-    public ResponseBean index() {
+    public ResponseEntity<ResponseBean> index() {
 
         String activeBundleId = _service.getActiveBundleId();
         ActiveBundleBeanV1 activeBundleBean = new ActiveBundleBeanV1(activeBundleId);

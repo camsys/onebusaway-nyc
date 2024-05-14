@@ -25,6 +25,7 @@ import org.onebusaway.transit_data.model.problems.EProblemReportStatus;
 import org.onebusaway.transit_data.model.problems.TripProblemReportBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,7 +43,7 @@ public class ReportProblemWithTripController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean create(TripProblemReportBean model) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> create(TripProblemReportBean model) throws IOException, ServiceException {
 
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()

@@ -22,6 +22,7 @@ import org.onebusaway.api.services.AlarmService;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -59,7 +60,7 @@ public class CancelAlarmController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean show(@RequestParam(name ="Id", required = false) String id) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@RequestParam(name ="Id", required = false) String id) throws ServiceException {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(id,"Id");

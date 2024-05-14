@@ -24,6 +24,7 @@ import org.onebusaway.transit_data.model.StopScheduleBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 
@@ -43,8 +44,8 @@ public class ScheduleForStopController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean show(@PathVariable("stopId") String id,
-                           @RequestParam(name ="Date", required = false) Long time) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String id,
+                                           @RequestParam(name ="Date", required = false) Long time) throws ServiceException {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(time,"Date");

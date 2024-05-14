@@ -8,6 +8,7 @@ import org.onebusaway.transit_data.model.problems.TripProblemReportQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,7 +36,7 @@ public class ReportedProblemViewerControllers extends ApiActionSupport {
     private boolean enabled;
 
     @GetMapping("reported-problems-with-stop-viewer/{id}")
-    public ResponseBean viewReportedStopProblems(@PathVariable("id") String id) throws IOException, ServiceException {
+    public ResponseEntity<ResponseBean> viewReportedStopProblems(@PathVariable("id") String id) throws IOException, ServiceException {
         if(enabled==false){
             return null;
         }
@@ -48,7 +49,7 @@ public class ReportedProblemViewerControllers extends ApiActionSupport {
     }
 
     @GetMapping("reported-problems-with-trip-viewer/{tripId}")
-    public ResponseBean viewReportedTripProblems(TripProblemReportQueryBean bean) throws IOException, ServiceException {
+    public ResponseEntity<ResponseBean> viewReportedTripProblems(TripProblemReportQueryBean bean) throws IOException, ServiceException {
         if(enabled==false){
             return null;
         }

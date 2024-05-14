@@ -17,6 +17,7 @@ package org.onebusaway.api.web.actions.api.where;
 
 import java.util.Date;
 
+import org.onebusaway.api.ResponseCodes;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
@@ -27,8 +28,11 @@ import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/where/trip-details/{tripId}")
@@ -46,27 +50,25 @@ public class TripDetailsController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean show(@PathVariable("tripId") String id,
-                           @RequestParam(name ="ServiceDate", required=false) Date date,
-                           @RequestParam(name ="Time", required = false, defaultValue = "") Date time,
-                           @RequestParam(name ="VehicleId", required = false, defaultValue = "") String vehicleId,
-                           @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
-                           @RequestParam(name ="IncludeSchedule", required = false, defaultValue = "true") boolean includeSchedule,
-                           @RequestParam(name ="IncludeStatus", required = false, defaultValue = "true") boolean includeStatus
+  public ResponseEntity<ResponseBean> show(@PathVariable("tripId") String id,
+                                           @RequestParam(name ="ServiceDate", required=false) Date date,
+                                           @RequestParam(name ="Time", required = false, defaultValue = "") Long time,
+                                           @RequestParam(name ="VehicleId", required = false, defaultValue = "") String vehicleId,
+                                           @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
+                                           @RequestParam(name ="IncludeSchedule", required = false, defaultValue = "true") boolean includeSchedule,
+                                           @RequestParam(name ="IncludeStatus", required = false, defaultValue = "true") boolean includeStatus
                            ) throws ServiceException {
 
 //todo:confirm date is handled appropriately if no value is given
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
 
-    if(time==null){
-      time = new Date();
-    }
+    time = longToTime(time);
     TripDetailsQueryBean query = new TripDetailsQueryBean();
     query.setTripId(id);
     if( date != null)
       query.setServiceDate(date.getTime());
-      query.setTime(time.getTime());
+      query.setTime(time);
       query.setVehicleId(vehicleId);
     
       TripDetailsInclusionBean inclusion = query.getInclusion();
@@ -77,7 +79,8 @@ public class TripDetailsController extends ApiActionSupport {
       TripDetailsBean tripDetails = _service.getSingleTripDetails(query);
 
     if (tripDetails == null)
-      return getResourceNotFoundResponseBean();
+      return(getResourceNotFoundResponseBean());
+//      throw new ResponseStatusException(HttpStatus.valueOf(ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND),getResourceNotFoundResponseBean().getText());
 
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     EntryWithReferencesBean<TripDetailsV2Bean> response = factory.getResponse(tripDetails);

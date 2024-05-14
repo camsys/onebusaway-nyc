@@ -20,6 +20,7 @@ import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.TimeBean;
 import org.onebusaway.utility.DateLibrary;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,7 +39,7 @@ public class CurrentTimeController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean index() {
+  public ResponseEntity<ResponseBean> index() {
     
     if( ! isVersion(V1))
       return getUnknownVersionResponseBean();

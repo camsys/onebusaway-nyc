@@ -26,6 +26,7 @@ import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 
@@ -45,8 +46,8 @@ public class VehicleController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean show(@PathVariable("vehicleId") String id,
-                           @RequestParam(name ="Time", required = false) Long time) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("vehicleId") String id,
+                                           @RequestParam(name ="Time", required = false) Long time) throws IOException, ServiceException {
 
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();

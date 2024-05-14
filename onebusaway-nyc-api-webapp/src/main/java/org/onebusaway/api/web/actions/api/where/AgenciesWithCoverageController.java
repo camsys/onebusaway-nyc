@@ -27,6 +27,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -59,7 +60,7 @@ public class AgenciesWithCoverageController extends ApiActionSupport {
 
 
   @GetMapping
-  public ResponseBean index() throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> index() throws IOException, ServiceException {
 
     List<AgencyWithCoverageBean> beans = _service.getAgenciesWithCoverage();
 

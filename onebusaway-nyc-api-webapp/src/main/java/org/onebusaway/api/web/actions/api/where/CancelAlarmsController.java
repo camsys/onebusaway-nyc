@@ -23,6 +23,7 @@ import org.onebusaway.api.services.AlarmService;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,7 +49,7 @@ public class CancelAlarmsController extends ApiActionSupport {
 
 
   @GetMapping
-  public ResponseBean index(@RequestParam(name ="Ids", required = false) List<String> ids) throws ServiceException {
+  public ResponseEntity<ResponseBean> index(@RequestParam(name ="Ids", required = false) List<String> ids) throws ServiceException {
 
     if (ids != null) {
       for (String id : ids) {

@@ -26,6 +26,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,8 +55,8 @@ public class BlockInstanceController extends ApiActionSupport {
 
 
   @GetMapping
-  public ResponseBean show(@PathVariable("blockId") String id,
-                           @RequestParam(name ="ServiceDate", required = false) String serviceDateString
+  public ResponseEntity<ResponseBean> show(@PathVariable("blockId") String id,
+                                           @RequestParam(name ="ServiceDate", required = false) String serviceDateString
                            ) throws ServiceException {
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
@@ -75,8 +76,6 @@ public class BlockInstanceController extends ApiActionSupport {
     BlockInstanceBean blockInstance = _service.getBlockInstance(id,
         serviceDate);
 
-//        todo: this is the same result that once would have been returned, but seems inconsistent.
-//    404 responses should be when the user requests an api that doesn't exist :<
     if (blockInstance == null)
       return getResourceNotFoundResponseBean();
 

@@ -22,6 +22,8 @@ import org.onebusaway.api.impl.MaxCountSupport;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 
 public class ApiActionSupport extends OneBusAwayApiActionSupport{
@@ -96,9 +98,9 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport{
    * Response Bean Generation Methods
    ****************************************************************************/
 
-  protected ResponseBean getOkResponseBean(Object data) {
-    return new ResponseBean(getReturnVersion(), ResponseCodes.RESPONSE_OK,
-            "OK", data);
+  protected ResponseEntity<ResponseBean> getOkResponseBean(Object data) {
+    return new ResponseEntity<>(new ResponseBean(getReturnVersion(), ResponseCodes.RESPONSE_OK,
+            "OK", data),HttpStatus.valueOf(ResponseCodes.RESPONSE_OK));
   }
 
 
@@ -108,26 +110,30 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport{
 //    return new ResponseBean(getReturnVersion(),
 //            ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean);
 //  }
-  protected ResponseBean getValidationErrorsResponseBean(Map<String,List<String>> fieldErrors) {
+  protected ResponseEntity<ResponseBean> getValidationErrorsResponseBean(Map<String,List<String>> fieldErrors) {
     ValidationErrorBean bean = new ValidationErrorBean(null, fieldErrors);
-    return new ResponseBean(getReturnVersion(),
-            ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean);
+    return new ResponseEntity<>(new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean),
+            HttpStatus.valueOf(ResponseCodes.RESPONSE_INVALID_ARGUMENT));
   }
 
-  protected ResponseBean getResourceNotFoundResponseBean() {
-    return new ResponseBean(getReturnVersion(),
-            ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null);
+  protected ResponseEntity<ResponseBean> getResourceNotFoundResponseBean() {
+    return new ResponseEntity<>(new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null),
+            HttpStatus.valueOf(ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND));
   }
 
-  protected ResponseBean getExceptionResponse() {
-    return new ResponseBean(getReturnVersion(),
-            ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "internal error", null);
+  protected ResponseEntity<ResponseBean> getExceptionResponse() {
+    return new ResponseEntity<>(new ResponseBean(getReturnVersion(),
+            ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "internal error", null),
+            HttpStatus.valueOf(ResponseCodes.RESPONSE_SERVICE_EXCEPTION));
   }
 
-  protected ResponseBean getUnknownVersionResponseBean() {
-    return new ResponseBean(getReturnVersion(),
+  protected ResponseEntity<ResponseBean> getUnknownVersionResponseBean() {
+    return new ResponseEntity<>(new ResponseBean(getReturnVersion(),
             ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "unknown version: "
-            + _version, null);
+            + _version, null),
+            HttpStatus.valueOf(ResponseCodes.RESPONSE_SERVICE_EXCEPTION));
   }
 
   protected int getReturnVersion() {
@@ -143,13 +149,13 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport{
     return time;
   }
 
-  public static long longToDate(long time){
-    if(time==-1){
-      time = new Date().getTime();
+  public static long longToDate(long date){
+    if(date==-1){
+      date = new Date().getTime();
     } else{
-      time = new Date(time).getTime();
+      date = new Date(date).getTime();
     }
-    return time;
+    return date;
   }
 
   public static MaxCountSupport createMaxCountFromArg(Long maxCount){

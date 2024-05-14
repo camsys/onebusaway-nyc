@@ -30,6 +30,7 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 
@@ -49,12 +50,12 @@ public class TripsForAgencyController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean show(@PathVariable("agencyId") String id,
-                           @RequestParam(name ="Time",required = false) Long time,
-                           @RequestParam(name ="MaxCount",required = false, defaultValue = "-1") Long maxCount,
-                           @RequestParam(name ="IncludeTrip",required = false) boolean includeTrip,
-                           @RequestParam(name ="IncludeStatus",required = false, defaultValue = "false") boolean includeStatus,
-                           @RequestParam(name ="IncludeSchedule",required = false, defaultValue = "false")boolean includeSchedule) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id,
+                                           @RequestParam(name ="Time",required = false) Long time,
+                                           @RequestParam(name ="MaxCount",required = false, defaultValue = "-1") Long maxCount,
+                                           @RequestParam(name ="IncludeTrip",required = false) boolean includeTrip,
+                                           @RequestParam(name ="IncludeStatus",required = false, defaultValue = "false") boolean includeStatus,
+                                           @RequestParam(name ="IncludeSchedule",required = false, defaultValue = "false")boolean includeSchedule) throws IOException, ServiceException {
 
     MaxCountSupport _maxCount = createMaxCountFromArg(maxCount);
 

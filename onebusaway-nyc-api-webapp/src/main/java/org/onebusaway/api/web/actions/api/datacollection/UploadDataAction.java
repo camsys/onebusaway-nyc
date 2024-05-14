@@ -20,9 +20,8 @@ import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.services.DataCollectionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -48,8 +47,8 @@ public class UploadDataAction extends ApiActionSupport {
   private DataCollectionService _data;
 
 //  @RequestMapping
-  public ResponseBean update(@RequestParam(name ="Id", required = false) String id,
-                             @RequestParam(name ="File", required = false) File file) throws IOException {
+  public ResponseEntity<ResponseBean> update(@RequestParam(name ="Id", required = false) String id,
+                                             @RequestParam(name ="File", required = false) File file) throws IOException {
 
     File dataDirectory = _data.getDataDirectory();
     File target = new File(dataDirectory, id);

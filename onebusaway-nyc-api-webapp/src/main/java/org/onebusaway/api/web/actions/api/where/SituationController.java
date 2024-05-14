@@ -21,6 +21,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,7 +46,7 @@ public class SituationController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean show(@PathVariable("id") String id) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("id") String id) throws ServiceException {
 
     ServiceAlertBean situation = _service.getServiceAlertForId(id);
 

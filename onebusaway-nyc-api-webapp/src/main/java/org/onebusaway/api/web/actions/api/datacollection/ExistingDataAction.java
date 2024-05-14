@@ -18,8 +18,8 @@ import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.services.DataCollectionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class ExistingDataAction extends ApiActionSupport {
   private static final long serialVersionUID = 1L;
 
 //  @RequestMapping
-  public ResponseBean index() {
+  public ResponseEntity<ResponseBean> index() {
     List<String> values = new ArrayList<String>();
     File dataDirectory = _data.getDataDirectory();
     File[] files = dataDirectory.listFiles();

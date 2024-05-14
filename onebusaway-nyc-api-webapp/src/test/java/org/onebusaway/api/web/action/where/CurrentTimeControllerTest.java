@@ -38,7 +38,7 @@ public class CurrentTimeControllerTest {
 
     long t = System.currentTimeMillis();
 
-    ResponseBean response = action.index();
+    ResponseBean response = action.index().getBody();
     Assert.assertEquals(200, response.getCode());
     Assert.assertEquals(1, response.getVersion());
 

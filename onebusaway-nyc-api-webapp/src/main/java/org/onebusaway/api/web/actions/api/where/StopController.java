@@ -22,6 +22,7 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,7 +48,7 @@ public class StopController extends ApiActionSupport {
 
 
   @GetMapping
-  public ResponseBean show(@PathVariable("stopId") String id) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String id) throws ServiceException {
 
     StopBean stop = _service.getStop(id);
 

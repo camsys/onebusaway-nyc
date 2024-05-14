@@ -26,6 +26,7 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,7 +51,7 @@ public class VehicleLocationRecordsController extends ApiActionSupport {
 
 
   @GetMapping
-  public ResponseBean index(VehicleLocationRecordQueryBean query) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> index(VehicleLocationRecordQueryBean query) throws IOException, ServiceException {
 
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();

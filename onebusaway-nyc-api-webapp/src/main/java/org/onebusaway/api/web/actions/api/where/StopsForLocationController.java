@@ -31,6 +31,7 @@ import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,13 +62,13 @@ public class StopsForLocationController extends ApiActionSupport {
 
 
   @GetMapping
-  public ResponseBean index( @RequestParam(name ="Lat", required = false)Double lat,
-                             @RequestParam(name ="Lon", required = false) Double lon,
-                             @RequestParam(name ="LatSpan", required = false) Double latSpan,
-                             @RequestParam(name ="LonSpan", required = false) Double lonSpan,
-                             @RequestParam(name ="Radius", required = false) Double radius,
-                             @RequestParam(name ="Query", required = false) String query,
-                             @RequestParam(name ="MaxCount", required = false) Long maxCountArg) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> index(@RequestParam(name ="Lat", required = false)Double lat,
+                                            @RequestParam(name ="Lon", required = false) Double lon,
+                                            @RequestParam(name ="LatSpan", required = false) Double latSpan,
+                                            @RequestParam(name ="LonSpan", required = false) Double lonSpan,
+                                            @RequestParam(name ="Radius", required = false) Double radius,
+                                            @RequestParam(name ="Query", required = false) String query,
+                                            @RequestParam(name ="MaxCount", required = false) Long maxCountArg) throws IOException, ServiceException {
     MaxCountSupport _maxCount = new MaxCountSupport(100, 250);
     if(maxCountArg!=-1) _maxCount.setMaxCount(maxCountArg.intValue());
     int maxCount = _maxCount.getMaxCount();
@@ -99,7 +100,7 @@ public class StopsForLocationController extends ApiActionSupport {
     }
   }
 
-  private ResponseBean transformResult(StopsBean result) {
+  private ResponseEntity<ResponseBean> transformResult(StopsBean result) {
     BeanFactoryV2 factory = getBeanFactoryV2(_service);
     factory.filterNonRevenueStops(result);
     if (isVersion(V1)) {
@@ -111,7 +112,7 @@ public class StopsForLocationController extends ApiActionSupport {
     }
   }
 
-  private ResponseBean transformOutOfRangeResult() {
+  private ResponseEntity<ResponseBean> transformOutOfRangeResult() {
     if (isVersion(V1)) {
       return getOkResponseBean(new StopsBean());
     } else if (isVersion(V2)) {

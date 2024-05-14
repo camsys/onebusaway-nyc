@@ -31,6 +31,7 @@ import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateQueryBea
 import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateQueryBean.Record;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -68,8 +69,8 @@ public class EstimateCurrentVehicleController extends ApiActionSupport {
  *         the request is invalid.
 **/
   @GetMapping
-  public ResponseBean index(@RequestParam(name ="Data", required = false) String data,
-                            CurrentVehicleEstimateQueryBean query) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> index(@RequestParam(name ="Data", required = false) String data,
+                                            CurrentVehicleEstimateQueryBean query) throws IOException, ServiceException {
 
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();

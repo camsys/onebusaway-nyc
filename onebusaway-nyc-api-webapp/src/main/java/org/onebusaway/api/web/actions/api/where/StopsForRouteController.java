@@ -23,8 +23,7 @@ import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
-
-
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 
@@ -48,8 +47,8 @@ public class StopsForRouteController extends ApiActionSupport {
 
 
   @GetMapping
-  public ResponseBean show(@PathVariable("routeId") String id,
-          @RequestParam(name ="IncludePolylines", required = false, defaultValue = "true") boolean includePolylines) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("routeId") String id,
+                                           @RequestParam(name ="IncludePolylines", required = false, defaultValue = "true") boolean includePolylines) throws ServiceException {
 
     StopsForRouteBean result = _service.getStopsForRoute(id);
 

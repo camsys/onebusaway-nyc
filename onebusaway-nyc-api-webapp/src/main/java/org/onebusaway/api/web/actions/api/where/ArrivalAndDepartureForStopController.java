@@ -24,6 +24,7 @@ import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureForStopQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,8 +48,8 @@ public class ArrivalAndDepartureForStopController extends ApiActionSupport {
 
 
   @GetMapping
-  public ResponseBean show(@PathVariable("stopId") String stopId,
-                           ArrivalAndDepartureForStopQueryBean _query) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String stopId,
+                                           ArrivalAndDepartureForStopQueryBean _query) throws ServiceException {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(stopId,"stopId").hasFieldError(_query.getTripId(),"tripId")

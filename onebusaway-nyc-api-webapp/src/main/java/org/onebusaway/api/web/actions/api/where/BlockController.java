@@ -24,8 +24,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -64,7 +63,7 @@ public class BlockController extends ApiActionSupport {
 //  }
 
   @GetMapping
-  public ResponseBean show(@PathVariable("blockId") String id) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("blockId") String id) throws ServiceException {
 
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();

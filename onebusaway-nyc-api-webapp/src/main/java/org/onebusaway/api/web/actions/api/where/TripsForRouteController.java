@@ -30,6 +30,7 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 
@@ -50,12 +51,12 @@ public class TripsForRouteController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean show(@PathVariable("routeId") String id,
-          @RequestParam(name ="Time", required = false) Long time,
-          @RequestParam(name ="MaxCount", required = false, defaultValue = "-1") Long maxCountArg,
-          @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
-          @RequestParam(name ="IncludeStatus", required = false, defaultValue = "false") boolean includeStatus,
-          @RequestParam(name ="IncludeSchedule", required = false, defaultValue = "false") boolean includeSchedule) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("routeId") String id,
+                                           @RequestParam(name ="Time", required = false) Long time,
+                                           @RequestParam(name ="MaxCount", required = false, defaultValue = "-1") Long maxCountArg,
+                                           @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
+                                           @RequestParam(name ="IncludeStatus", required = false, defaultValue = "false") boolean includeStatus,
+                                           @RequestParam(name ="IncludeSchedule", required = false, defaultValue = "false") boolean includeSchedule) throws IOException, ServiceException {
 //   todo: may have a DateTime conversion error which is visible here, review w/ comb
     time = longToTime(time);
     MaxCountSupport maxCount = createMaxCountFromArg(maxCountArg);

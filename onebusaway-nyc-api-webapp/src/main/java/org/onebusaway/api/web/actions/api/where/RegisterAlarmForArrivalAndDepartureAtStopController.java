@@ -25,6 +25,7 @@ import org.onebusaway.transit_data.model.ArrivalAndDepartureForStopQueryBean;
 import org.onebusaway.transit_data.model.RegisterAlarmQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -82,10 +83,10 @@ public class RegisterAlarmForArrivalAndDepartureAtStopController extends
 //  }
 
   @GetMapping
-  public ResponseBean show(@PathVariable("stopId") String id,
-                           ArrivalAndDepartureForStopQueryBean query,
-                           RegisterAlarmQueryBean alarm,
-                           @RequestParam(name ="Data", required = false) String data) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String id,
+                                           ArrivalAndDepartureForStopQueryBean query,
+                                           RegisterAlarmQueryBean alarm,
+                                           @RequestParam(name ="Data", required = false) String data) throws ServiceException {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(query.getTripId(),"tripId");

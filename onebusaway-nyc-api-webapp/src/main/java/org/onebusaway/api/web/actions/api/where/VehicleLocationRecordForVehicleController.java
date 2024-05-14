@@ -22,6 +22,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 
@@ -43,8 +44,8 @@ public class VehicleLocationRecordForVehicleController extends ApiActionSupport 
   }
 
   @GetMapping
-  public ResponseBean show(@RequestParam(value = "Id", required = false) String id,
-                           @RequestParam(name ="Time", required = false, defaultValue = "-1") Long time) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> show(@RequestParam(value = "Id", required = false) String id,
+                                           @RequestParam(name ="Time", required = false, defaultValue = "-1") Long time) throws IOException, ServiceException {
 
     time = longToTime(time);
     if (!isVersion(V2))

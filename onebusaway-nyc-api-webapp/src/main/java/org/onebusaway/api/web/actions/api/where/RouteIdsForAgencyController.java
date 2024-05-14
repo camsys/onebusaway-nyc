@@ -21,6 +21,7 @@ import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,7 +45,7 @@ public class RouteIdsForAgencyController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean show(@PathVariable("agencyId") String id) {
+  public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) {
 
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();

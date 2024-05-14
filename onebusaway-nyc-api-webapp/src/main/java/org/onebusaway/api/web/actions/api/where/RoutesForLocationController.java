@@ -30,6 +30,7 @@ import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,13 +58,13 @@ public class RoutesForLocationController extends ApiActionSupport {
   }
 
   @GetMapping
-  public ResponseBean index( @RequestParam(name ="Lat", required = false)Double lat,
-                             @RequestParam(name ="Lon", required = false) Double lon,
-                             @RequestParam(name ="LatSpan", required = false) Double latSpan,
-                             @RequestParam(name ="LonSpan", required = false) Double lonSpan,
-                             @RequestParam(name ="Radius", required = false) Double radius,
-                             @RequestParam(name ="Query", required = false) String query,
-                             @RequestParam(name ="MaxCount", required = false) Long maxCount) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> index(@RequestParam(name ="Lat", required = false)Double lat,
+                                            @RequestParam(name ="Lon", required = false) Double lon,
+                                            @RequestParam(name ="LatSpan", required = false) Double latSpan,
+                                            @RequestParam(name ="LonSpan", required = false) Double lonSpan,
+                                            @RequestParam(name ="Radius", required = false) Double radius,
+                                            @RequestParam(name ="Query", required = false) String query,
+                                            @RequestParam(name ="MaxCount", required = false) Long maxCount) throws IOException, ServiceException {
 
     FieldErrorSupport errorSupport = new FieldErrorSupport();
     if(maxCount==null){
@@ -97,7 +98,7 @@ public class RoutesForLocationController extends ApiActionSupport {
     }
   }
 
-  private ResponseBean transformResult(RoutesBean result) {
+  private ResponseEntity<ResponseBean> transformResult(RoutesBean result) {
     if (isVersion(V1)) {
       return getOkResponseBean(result);
     } else if (isVersion(V2)) {
@@ -108,7 +109,7 @@ public class RoutesForLocationController extends ApiActionSupport {
     }
   }
 
-  private ResponseBean transformOutOfRangeResult() {
+  private ResponseEntity<ResponseBean> transformOutOfRangeResult() {
     if (isVersion(V1)) {
       return getOkResponseBean(new RoutesBean());
     } else if (isVersion(V2)) {

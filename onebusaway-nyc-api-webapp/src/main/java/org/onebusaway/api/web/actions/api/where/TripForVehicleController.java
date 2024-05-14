@@ -27,6 +27,7 @@ import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 
@@ -49,11 +50,11 @@ public class TripForVehicleController extends ApiActionSupport {
 
 
   @GetMapping
-  public ResponseBean show(@PathVariable("vehicleId") String id,
-                           @RequestParam(name ="Time", required = false, defaultValue = "") Long timeLong,
-                           @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
-                           @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeSchedule,
-                           @RequestParam(name ="IncludeStatus", required = false, defaultValue = "false")boolean includeStatus) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@PathVariable("vehicleId") String id,
+                                           @RequestParam(name ="Time", required = false, defaultValue = "") Long timeLong,
+                                           @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
+                                           @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeSchedule,
+                                           @RequestParam(name ="IncludeStatus", required = false, defaultValue = "false")boolean includeStatus) throws ServiceException {
 // todo: time should be handled like a new date
     if (!isVersion(V2))
       return getUnknownVersionResponseBean();
