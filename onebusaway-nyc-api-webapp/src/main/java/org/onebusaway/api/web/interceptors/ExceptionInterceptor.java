@@ -98,7 +98,9 @@ public class ExceptionInterceptor extends OncePerRequestFilter {
       ResponseBean responseBean = getExceptionAsResponseBean(getActionAsUrl(request), e);
       response.setStatus(responseBean.getCode());
       response.setContentType("text/html;charset=utf-8");
-      response.getWriter().write(responseBean.getText());
+      String out = responseBean.getText();
+      out = out == null? "Internal Server Error" : out;
+      response.getWriter().write(out);
     }
   }
 }
