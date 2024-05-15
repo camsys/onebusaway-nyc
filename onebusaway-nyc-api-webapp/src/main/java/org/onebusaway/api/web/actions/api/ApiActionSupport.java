@@ -124,8 +124,12 @@ public class ApiActionSupport extends OneBusAwayApiActionSupport{
   }
 
   protected ResponseEntity<ResponseBean> getExceptionResponse() {
+    return getExceptionResponse("internal error");
+  }
+
+  protected ResponseEntity<ResponseBean> getExceptionResponse(String s) {
     return new ResponseEntity<>(new ResponseBean(getReturnVersion(),
-            ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "internal error", null),
+            ResponseCodes.RESPONSE_SERVICE_EXCEPTION, s, null),
             HttpStatus.valueOf(ResponseCodes.RESPONSE_SERVICE_EXCEPTION));
   }
 

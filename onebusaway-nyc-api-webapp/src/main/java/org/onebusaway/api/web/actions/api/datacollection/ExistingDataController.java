@@ -19,28 +19,31 @@ import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.services.DataCollectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-//@RestController
-//@RequestMapping("/datacollection/existing-data")
-public class ExistingDataAction extends ApiActionSupport {
+@RestController
+@RequestMapping("/datacollection")
+public class ExistingDataController extends ApiActionSupport {
   
   private static final int V1 = 1;
 
   @Autowired
   private DataCollectionService _data;
   
-  public ExistingDataAction() {
+  public ExistingDataController() {
     super(V1);
   }
 
   private static final long serialVersionUID = 1L;
 
-//  @RequestMapping
+  @GetMapping("/existing-data")
   public ResponseEntity<ResponseBean> index() {
     List<String> values = new ArrayList<String>();
     File dataDirectory = _data.getDataDirectory();

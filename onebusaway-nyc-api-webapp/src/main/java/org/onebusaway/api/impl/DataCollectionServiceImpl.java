@@ -16,19 +16,22 @@
 package org.onebusaway.api.impl;
 
 import org.onebusaway.api.services.DataCollectionService;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 
 class DataCollectionServiceImpl implements DataCollectionService {
 
-  private File _dataDirectory;
+
+  private File dataDirectory;
 
   public void setDataDirectory(File dataDirectory) {
-    _dataDirectory = dataDirectory;
-    _dataDirectory.mkdirs();
+    this.dataDirectory = dataDirectory;
+    this.dataDirectory.mkdirs();
   }
 
   public File getDataDirectory() {
-    return _dataDirectory;
+    return dataDirectory;
   }
 }

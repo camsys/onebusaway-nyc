@@ -87,6 +87,13 @@
 <!--        </mvc:argument-resolvers>-->
 <!--    </mvc:annotation-driven>-->
 
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="2097152" /> <!-- 2MB -->
+    </bean>
+
+    <bean class="org.onebusaway.api.impl.DataCollectionServiceImpl">
+            <property name="dataDirectory" value="/tmp/obanyc/app" />
+    </bean>
 
 </beans>
 
