@@ -28,7 +28,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -50,7 +49,6 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.vtw.DummyVehiclePulloutService;
@@ -86,7 +84,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TransitGrap
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -94,8 +91,6 @@ import tcip_3_0_5_local.NMEA;
 import tcip_final_3_0_5_1.CcLocationReport;
 import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
 
-import com.amazonaws.services.cloudwatch.model.StandardUnit;
-import org.apache.commons.lang.StringUtils;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
@@ -111,8 +106,6 @@ public class VehicleLocationInferenceServiceImpl implements
   private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
 
   private static final long MIN_RECORD_INTERVAL = 5 * 1000; // 5 seconds
-
-  private static final long MAX_FUTURE_HRS = 16; // 10 minutes
 
   @Autowired
   private ObservationCache _observationCache;
@@ -169,6 +162,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private int ageLimit = 300;
 
+  private long _maxFutureHours = 16;
+
   private boolean refreshCheck;
 
   public VehicleLocationInferenceServiceImpl() {
@@ -178,6 +173,10 @@ public class VehicleLocationInferenceServiceImpl implements
 
   public void setNumberOfProcessingThreads(int numberOfProcessingThreads) {
     _numberOfProcessingThreads = numberOfProcessingThreads;
+  }
+
+  public void setMaxFutureHrs(long maxFutureHrs){
+    _maxFutureHours = maxFutureHrs;
   }
 
   /**
@@ -949,10 +948,10 @@ public class VehicleLocationInferenceServiceImpl implements
           isValid =  false;
         }
         long timeSinceReciept = System.currentTimeMillis() - timeReceived;
-        if (timeSinceReciept<1000*60*60*MAX_FUTURE_HRS){
+        if (-timeSinceReciept<1000*60*60* _maxFutureHours){
           _log.warn("New record has a time {}msec in the future" +
                   ", max time in future allowed is {}hrs"+
-                  ", dropping inference instance for vehicleId {}",-timeDiff,MAX_FUTURE_HRS, vid);
+                  ", dropping inference instance for vehicleId {}",-timeSinceReciept, _maxFutureHours, vid);
           isValid = false;
         }
       }
