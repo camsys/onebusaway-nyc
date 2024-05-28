@@ -28,12 +28,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -164,6 +159,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private long _maxFutureHours = 16;
 
+  private static long _maxFutureReceivedDiffMillis = -1 * 16 * 60 * 60 * 1000;
+
   private boolean refreshCheck;
 
   public VehicleLocationInferenceServiceImpl() {
@@ -192,6 +189,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @PostConstruct
   public void start() {
+    _maxFutureReceivedDiffMillis = -1 * TimeUnit.HOURS.toMillis(_maxFutureHours);
     if (_numberOfProcessingThreads <= 0)
       throw new IllegalArgumentException(
           "numberOfProcessingThreads must be positive");
@@ -947,11 +945,16 @@ public class VehicleLocationInferenceServiceImpl implements
                   + " sec reached, dropping inference instance for vehicleId " + vid);
           isValid =  false;
         }
-        long timeSinceReciept = System.currentTimeMillis() - timeReceived;
-        if (-timeSinceReciept<1000*60*60* _maxFutureHours){
+
+        // Negative time means the timeSinceReceipt is in the future
+        // Positive time means timeSinceReceipt is in the past
+        long timeSinceReceipt = System.currentTimeMillis() - timeReceived;
+
+
+        if (timeSinceReceipt < _maxFutureReceivedDiffMillis){
           _log.warn("New record has a time {}msec in the future" +
                   ", max time in future allowed is {}hrs"+
-                  ", dropping inference instance for vehicleId {}",-timeSinceReciept, _maxFutureHours, vid);
+                  ", dropping inference instance for vehicleId {}", Math.abs(timeSinceReceipt), _maxFutureHours, vid);
           isValid = false;
         }
       }
