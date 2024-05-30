@@ -98,6 +98,7 @@ public class PublishingManagerImpl implements PublishingManager{
             processMessage(vehicleId, vehicleTimestamp, message.toString());
         } else {
             publisher.send(message.toString());
+            highFreqPublisher.send(message.toString());
         }
     }
 
