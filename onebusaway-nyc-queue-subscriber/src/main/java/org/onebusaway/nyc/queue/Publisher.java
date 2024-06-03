@@ -255,14 +255,11 @@ public class Publisher implements IPublisher {
 				}
 
 				if (processedCount > 1000) {
-					_log.warn("HTTP Proxy output queue: processed 1000 messages in "
-							+ (new Date().getTime() - markTimestamp.getTime())
-							/ 1000
-							+ " seconds; current queue length is "
-							+ outputBuffer.size());
-
+					long timeDiff = TimeUnit.MILLISECONDS.toSeconds (System.currentTimeMillis() - markTimestamp.getTime());
+					_log.info("HTTP Proxy output queue {}: processed 1000 messages in {} seconds; current queue length is {}",
+								this.topic, timeDiff, outputBuffer.size());
 					if(error) {
-						_log.info("Send error condition occured " +errorCount + " times" );
+						_log.warn("Send error condition occured " +errorCount + " times" );
 						errorCount = 0;
 					}
 					markTimestamp = new Date();
