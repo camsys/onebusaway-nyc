@@ -233,7 +233,8 @@ public abstract class NycSiriService {
     }
 
     // clean up any orphan records
-    getServiceAlertsPersister().deleteOrphans();
+    if (getServiceAlertsPersister() != null) // protect existing unit tests
+      getServiceAlertsPersister().deleteOrphans();
 
   }
 
