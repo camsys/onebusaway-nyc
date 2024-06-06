@@ -45,6 +45,7 @@ public class ApcIntegrationServiceImplTest {
         String url = "http://example.com/feed"; // we mock out the results, this isn't used
         Map<AgencyAndId, VehicleOccupancyRecord> map = new HashMap<AgencyAndId, VehicleOccupancyRecord>();
         ApcIntegrationServiceImpl impl = new ApcIntegrationServiceImpl();
+        ApcLoadLevelCalculator calculator = new ApcLoadLevelCalculator();
         final HttpClient httpClient = Mockito.mock(HttpClient.class);
         HttpResponse response = Mockito.mock(HttpResponse.class);
         HttpEntity entity = Mockito.mock(HttpEntity.class);
@@ -54,6 +55,7 @@ public class ApcIntegrationServiceImplTest {
         ConfigurationService service = Mockito.mock(ConfigurationService.class);
         ApcIntegrationServiceImpl.RawCountWebServicePollerThread thread
                 = new ApcIntegrationServiceImpl.RawCountWebServicePollerThread(null, null, service,null,
+                calculator,
                 map,
                 url) {
             @Override
