@@ -26,8 +26,11 @@ import org.springframework.stereotype.Component;
  */
 public class ApcLoadLevelCalculator {
 
-  private static final float DEFAULT_X_FACTOR = 0.25f;
+  // threshold between MANY_SEATS AVAILABLE and FEW_SEATS_AVAILABLE
+  private static final float DEFAULT_X_FACTOR = 0.50f;
+  // threshold for STANDING_ROOM_ONLY
   private static final float DEFAULT_Y_FACTOR = 0.75f;
+  // threshold for FULL
   private static final float DEFAULT_Z_FACTOR = 1.0f;
 
   private boolean useLoadFactor = false;
