@@ -47,27 +47,18 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   
   private String _q = null;
 
-  private boolean _includeStops = false;
-
   public void setQ(String query) {
     if(query != null) {
       _q = query.trim();
     }
   }
 
-  public void setDetailed(boolean includeStops){
-    _includeStops =includeStops;
-  }
-
   @Override
   public String execute() {    
     if(_q == null || _q.isEmpty())
       return SUCCESS;
-
-    SearchResultFactoryImpl searchResultFactory = _includeStops?
-            new SearchResultFactoryV2Impl(_searchService, _nycTransitDataService, _realtimeService):
-            new SearchResultFactoryImpl(_searchService, _nycTransitDataService, _realtimeService);
-    _results = _searchService.getSearchResults(_q, searchResultFactory);
+    
+    _results = _searchService.getSearchResults(_q, new SearchResultFactoryImpl(_searchService, _nycTransitDataService, _realtimeService));
 
     return SUCCESS;
   }   
