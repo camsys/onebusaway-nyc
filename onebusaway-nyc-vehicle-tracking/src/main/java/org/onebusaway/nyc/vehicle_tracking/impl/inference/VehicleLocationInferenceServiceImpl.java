@@ -28,13 +28,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -50,7 +44,6 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.vtw.DummyVehiclePulloutService;
@@ -86,7 +79,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TransitGrap
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -94,8 +86,6 @@ import tcip_3_0_5_local.NMEA;
 import tcip_final_3_0_5_1.CcLocationReport;
 import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
 
-import com.amazonaws.services.cloudwatch.model.StandardUnit;
-import org.apache.commons.lang.StringUtils;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
@@ -167,6 +157,10 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private int ageLimit = 300;
 
+  private long _maxFutureHours = 16;
+
+  private static long _maxFutureReceivedDiffMillis = -1 * 16 * 60 * 60 * 1000;
+
   private boolean refreshCheck;
 
   public VehicleLocationInferenceServiceImpl() {
@@ -176,6 +170,10 @@ public class VehicleLocationInferenceServiceImpl implements
 
   public void setNumberOfProcessingThreads(int numberOfProcessingThreads) {
     _numberOfProcessingThreads = numberOfProcessingThreads;
+  }
+
+  public void setMaxFutureHrs(long maxFutureHrs){
+    _maxFutureHours = maxFutureHrs;
   }
 
   /**
@@ -191,6 +189,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @PostConstruct
   public void start() {
+    _maxFutureReceivedDiffMillis = -1 * TimeUnit.HOURS.toMillis(_maxFutureHours);
     if (_numberOfProcessingThreads <= 0)
       throw new IllegalArgumentException(
           "numberOfProcessingThreads must be positive");
@@ -937,14 +936,26 @@ public class VehicleLocationInferenceServiceImpl implements
       if (mapTimeReceived != null) {
         long timeDiff = timeReceived - mapTimeReceived;
         if(timeDiff < 0){
-          _log.warn("New record has a time {}msec in the past" +
+          _log.warn("New record has a time {}msec before current record" +
                   ",dropping inference instance for vehicleId {}",timeDiff, vid);
           isValid = false;
         }
         else if (Math.abs(timeDiff) <= MIN_RECORD_INTERVAL) {
           _log.warn("Minimum record interval of " + MIN_RECORD_INTERVAL / 1000
-              + " sec reached, dropping inference instance for vehicleId " + vid);
+                  + " sec reached, dropping inference instance for vehicleId " + vid);
           isValid =  false;
+        }
+
+        // Negative time means the timeSinceReceipt is in the future
+        // Positive time means timeSinceReceipt is in the past
+        long timeSinceReceipt = System.currentTimeMillis() - timeReceived;
+
+
+        if (timeSinceReceipt < _maxFutureReceivedDiffMillis){
+          _log.warn("New record has a time {}msec in the future" +
+                  ", max time in future allowed is {}hrs"+
+                  ", dropping inference instance for vehicleId {}", Math.abs(timeSinceReceipt), _maxFutureHours, vid);
+          isValid = false;
         }
       }
       if(isValid)

@@ -31,15 +31,16 @@ public class RmcUtil {
     private static final int THIRTY_SEC_MILLIS = 30*1000;
     private static Logger _log = LoggerFactory.getLogger(RmcUtil.class);
 
-    public static String replaceInvalidRmcDateTime(StringBuffer realtime, long timeReceived) throws ParseException {
+    public static String replaceInvalidRmcDateTime(StringBuilder realtime, long timeReceived) throws ParseException {
 
-        StringBuffer realtimeLocal = new StringBuffer(realtime);
+        StringBuilder realtimeLocal = new StringBuilder(realtime);
         String[] rmcData = getRmcData(realtimeLocal);
-        String timeReported = getTimeReported(realtimeLocal);
+
         if(rmcData != null) {
             // Fix RMC Date (1024 Weeks)
             Date rmcDateTime = getRmcDateTime(rmcData);
             if (!isRmcDateValid(rmcDateTime, timeReceived)) {
+                String timeReported = getTimeReported(realtimeLocal);
                 Date timeReceivedDate = new Date(timeReceived);
                 replaceRmcDate(rmcData, timeReceivedDate);
 
@@ -64,7 +65,7 @@ public class RmcUtil {
     }
 
 
-    static String [] getRmcData(StringBuffer realtime){
+    static String [] getRmcData(StringBuilder realtime){
         int rmcIndex = realtime.lastIndexOf("$GPRMC");
         int endRmcIndex = realtime.indexOf("\"",rmcIndex);
         if(rmcIndex != -1 && endRmcIndex != -1){
@@ -109,7 +110,7 @@ public class RmcUtil {
         return (timeReceivedTime - rmcTime <= (THIRTY_SEC_MILLIS));
     }
 
-    static void replaceRmcData(StringBuffer realtime, String rmcDataString){
+    static void replaceRmcData(StringBuilder realtime, String rmcDataString){
         int rmcIndex = realtime.lastIndexOf("$GPRMC");
         int endRmcIndex = realtime.indexOf("\"",rmcIndex);
         realtime.replace(rmcIndex, endRmcIndex, rmcDataString);
@@ -135,7 +136,7 @@ public class RmcUtil {
         rmcData[1] = sdf.format(timeReceived);
     }
 
-    static String getTimeReported(StringBuffer realtime) {
+    static String getTimeReported(StringBuilder realtime) {
         String timeReportedText = "\"time-reported\":\"";
         int timeReportedIndex = realtime.lastIndexOf(timeReportedText);
         int endTimeReportedIndex = realtime.indexOf(",", timeReportedIndex);
@@ -166,7 +167,7 @@ public class RmcUtil {
         return true;
     }
 
-    static void replaceTimeReported(StringBuffer realtime, Date rmcDate) {
+    static void replaceTimeReported(StringBuilder realtime, Date rmcDate) {
         String timeReportedText = "\"time-reported\":\"";
         int timeReportedIndex = realtime.lastIndexOf(timeReportedText) + timeReportedText.length();
         int endTimeReportedIndex = realtime.indexOf(",", timeReportedIndex) - 1;
