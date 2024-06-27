@@ -30,6 +30,7 @@ import javax.imageio.ImageIO;
  * @author sclark
  * 
  */
+@Deprecated
 public class GoogleChartBarcodeGenerator extends QrCodeGenerator {
 
   public GoogleChartBarcodeGenerator() {

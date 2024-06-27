@@ -90,6 +90,9 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
 
+    @Autowired
+    private ApcLoadLevelCalculator _calculator;
+
     @PostConstruct
     public void setup() {
         super.setup();
@@ -101,6 +104,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
         RawCountWebServicePollerThread thread = new RawCountWebServicePollerThread(_tds,
                 _blockLocationService, _configurationService, _listener,
+                _calculator,
                 _vehicleToQueueOccupancyCache, getRawCountUrl());
         _taskScheduler.scheduleWithFixedDelay(thread, 30 * 1000);
     }
@@ -119,7 +123,6 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
     private VehicleOccupancyRecord toVehicleOccupancyRecord(NycVehicleLoadBean message) {
         VehicleOccupancyRecord vor = new VehicleOccupancyRecord();
-        vor.setOccupancyStatus(message.getLoad());
         vor.setRawCount(message.getEstimatedCount());
         vor.setCapacity(message.getEstCapacity());
         vor.setTimestamp(new Date(message.getRecordTimestamp()*1000));
@@ -127,6 +130,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
         vor.setRouteId(message.getRoute());
         vor.setDirectionId(message.getDirection());
         vor.setLoadDescription(message.getLoadDesc());
+        vor.setOccupancyStatus(_calculator.toOccupancyStatus(message));
         return vor;
     }
 
@@ -135,6 +139,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
         private BlockLocationService blockLocationService;
         private ConfigurationService configService;
         private VehicleOccupancyListener listener;
+        private ApcLoadLevelCalculator calculator;
         private Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache;
         private String url;
         private long maxEarlyMessageMillis = 0;
@@ -148,12 +153,14 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
                                               BlockLocationService blockLocationService,
                                               ConfigurationService cs,
                                               VehicleOccupancyListener listener,
+                                              ApcLoadLevelCalculator calculator,
                                               Map<AgencyAndId, VehicleOccupancyRecord> vehicleToQueueOccupancyCache,
                                               String url) {
             this.tds = tds;
             this.blockLocationService = blockLocationService;
             this.configService = cs;
             this.listener = listener;
+            this.calculator = calculator;
             this.vehicleToQueueOccupancyCache = vehicleToQueueOccupancyCache;
             this.url = url;
         }
@@ -305,6 +312,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
             vor.setTimestamp(new Date(data.getTimestamp()));
             vor.setCapacity(data.getEstCapacityAsInt());
             vor.setRawCount(data.getEstLoadAsInt());
+            vor.setOccupancyStatus(calculator.toOccupancyStatus(data));
             return vor;
         }
 

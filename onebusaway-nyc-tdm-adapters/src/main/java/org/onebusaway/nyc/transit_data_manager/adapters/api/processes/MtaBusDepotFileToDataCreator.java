@@ -49,7 +49,7 @@ public class MtaBusDepotFileToDataCreator {
     setInputFile(mtaBusDepotFile);
   }
   
-  public VehicleDepotData generateDataObject() throws IOException {
+  public VehicleDepotData generateVehicleDepotData() throws IOException {
     List<MtaBusDepotAssignment> assignments = loadDepotAssignments();
 
     // With Bus Depot Assignments we need to group MtaBusDepotAssignment s by

@@ -28,55 +28,46 @@ import org.springframework.beans.factory.annotation.Qualifier;
 @ParentPackage("json-default")
 //@Result(type="json")
 @Result(type="json", params={"callbackParameter", "callback"})
-public class SearchAction extends OneBusAwayNYCActionSupport {
+public class SearchV2Action extends OneBusAwayNYCActionSupport {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  @Autowired
-  @Qualifier("NycSearchService")
-  private SearchService _searchService;
+    @Autowired
+    @Qualifier("NycSearchService")
+    private SearchService _searchService;
 
-  @Autowired
-  private NycTransitDataService _nycTransitDataService;
+    @Autowired
+    private NycTransitDataService _nycTransitDataService;
 
-  @Autowired
-  @Qualifier("NycRealtimeService")
-  private RealtimeService _realtimeService;
+    @Autowired
+    @Qualifier("NycRealtimeService")
+    private RealtimeService _realtimeService;
 
-  private SearchResultCollection _results = null;
-  
-  private String _q = null;
+    private SearchResultCollection _results = null;
 
-  private boolean _includeStops = false;
+    private String _q = null;
 
-  public void setQ(String query) {
-    if(query != null) {
-      _q = query.trim();
+    public void setQ(String query) {
+        if(query != null) {
+            _q = query.trim();
+        }
     }
-  }
 
-  public void setDetailed(boolean includeStops){
-    _includeStops =includeStops;
-  }
+    @Override
+    public String execute() {
+        if(_q == null || _q.isEmpty())
+            return SUCCESS;
 
-  @Override
-  public String execute() {    
-    if(_q == null || _q.isEmpty())
-      return SUCCESS;
+        _results = _searchService.getSearchResults(_q, new SearchResultFactoryV2Impl(_searchService, _nycTransitDataService, _realtimeService));
 
-    SearchResultFactoryImpl searchResultFactory = _includeStops?
-            new SearchResultFactoryV2Impl(_searchService, _nycTransitDataService, _realtimeService):
-            new SearchResultFactoryImpl(_searchService, _nycTransitDataService, _realtimeService);
-    _results = _searchService.getSearchResults(_q, searchResultFactory);
+        return SUCCESS;
+    }
 
-    return SUCCESS;
-  }   
-  
-  /** 
-   * VIEW METHODS
-   */
-  public SearchResultCollection getSearchResults() {
-    return _results;
-  }
+    /**
+     * VIEW METHODS
+     */
+    public SearchResultCollection getSearchResults() {
+        return _results;
+    }
 
 }

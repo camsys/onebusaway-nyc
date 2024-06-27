@@ -232,6 +232,10 @@ public abstract class NycSiriService {
       getServiceAlertsPersister().saveOrUpdateServiceAlerts(agencyId, agencyIdToServiceAlerts.get(agencyId));
     }
 
+    // clean up any orphan records
+    if (getServiceAlertsPersister() != null) // protect existing unit tests
+      getServiceAlertsPersister().deleteOrphans();
+
   }
 
   public void handleServiceRequests(ServiceRequest serviceRequest, Siri responseSiri) {
