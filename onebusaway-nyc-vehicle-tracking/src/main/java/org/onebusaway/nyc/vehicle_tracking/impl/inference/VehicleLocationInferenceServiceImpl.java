@@ -100,7 +100,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
 
-  private static final long MIN_RECORD_INTERVAL = 5 * 1000; // 5 seconds
+  private static final long MIN_RECORD_INTERVAL_MILLIS = 3 * 1000;
 
   @Autowired
   private ObservationCache _observationCache;
@@ -940,9 +940,9 @@ public class VehicleLocationInferenceServiceImpl implements
                   ",dropping inference instance for vehicleId {}",timeDiff, vid);
           isValid = false;
         }
-        else if (Math.abs(timeDiff) <= MIN_RECORD_INTERVAL) {
-          _log.warn("Minimum record interval of " + MIN_RECORD_INTERVAL / 1000
-                  + " sec reached, dropping inference instance for vehicleId " + vid);
+        else if (Math.abs(timeDiff) <= MIN_RECORD_INTERVAL_MILLIS) {
+          _log.warn("Minimum record interval of {} sec reached, dropping inference instance for vehicleId {}",
+                  TimeUnit.MILLISECONDS.toSeconds(MIN_RECORD_INTERVAL_MILLIS), vid);
           isValid =  false;
         }
 
