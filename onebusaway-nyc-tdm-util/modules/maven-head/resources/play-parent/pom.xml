@@ -79,7 +79,7 @@
 			<dependency>
 				<groupId>commons-collections</groupId>
 				<artifactId>commons-collections</artifactId>
-				<version>3.1</version>
+				<version>3.2.2</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -278,7 +278,7 @@
 			<dependency>
 				<groupId>org.jboss.netty</groupId>
 				<artifactId>netty</artifactId>
-				<version>3.2.2.Final</version>
+				<version>4.1.44</version>
 				<scope>provided</scope>
 			</dependency>
 			<!-- This lib must be added to your repository -->
