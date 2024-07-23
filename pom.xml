@@ -29,7 +29,7 @@
         <jetty.version>6.1.26</jetty.version>
         <jts-core.version>1.16.1</jts-core.version>
         <log4j.version>2.17.1</log4j.version>
-        <mysql.connector.version>5.1.48</mysql.connector.version>
+        <mysql.connector.version>8.2.0</mysql.connector.version>
         <nyc_site_id>build.staging.obanyc.com</nyc_site_id>
         <nyc_site_deployment_base>scp://${nyc_site_id}/var/www/sites/developer/modules</nyc_site_deployment_base>
         <nyc_site_url>${site_deployment_base}/${project.name}/${project.version}</nyc_site_url>
@@ -690,8 +690,8 @@
             </dependency>
 
             <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
                 <version>${mysql.connector.version}</version>
             </dependency>
 

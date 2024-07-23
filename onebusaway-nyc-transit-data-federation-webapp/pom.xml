@@ -64,8 +64,8 @@
         </dependency>
 	<!-- for amazon deployment -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
         </dependency>
         <dependency>
           <groupId>org.onebusaway</groupId>
@@ -113,7 +113,7 @@
             <id>local-single-port</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
-                <bundle.location>/var/lib/obanyc/oba-tds-bundle</bundle.location>
+                <bundle.location>/tmp</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
 <!--
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
