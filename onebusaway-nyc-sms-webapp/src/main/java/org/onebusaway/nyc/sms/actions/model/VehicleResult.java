@@ -63,7 +63,7 @@ public class VehicleResult implements Serializable {
     if (vor != null) {
       switch (occupancyConfig) {
         case OCCUPANCY:
-          occupancyStr = ", " + getPresentableOccupancy(vor.getOccupancyStatus());
+          occupancyStr = getPresentableOccupancy(vor.getOccupancyStatus());
           break;
         case LOAD_FACTOR:
         case LOAD_FACTOR_PASSENGER_COUNT:
@@ -105,14 +105,17 @@ public class VehicleResult implements Serializable {
   }
 
   private String getPresentableOccupancy(OccupancyStatus occupancyStatus) {
-    if (occupancyStatus == null) return null;
-    String loadOccupancy = occupancyStatus.name();
-    if(loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE"))
-      loadOccupancy = "seats available";
-    else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE"))
-      loadOccupancy = "almost full";
-    else if (loadOccupancy.equals("FULL"))
-      loadOccupancy = "full";
+    String loadOccupancy = "";
+    if (occupancyStatus != null) {
+      if (loadOccupancy.equals("MANY_SEATS_AVAILABLE") || loadOccupancy.equals("FEW_SEATS_AVAILABLE"))
+        loadOccupancy = ", seats available";
+      else if (loadOccupancy.equals("STANDING_ROOM_ONLY"))
+        loadOccupancy = ", limited seating";
+      else if (loadOccupancy.equals("CRUSHED_STANDING_ROOM_ONLY") || loadOccupancy.equals("FULL"))
+        loadOccupancy = ", standing only";
+    }
+
     return loadOccupancy;
   }
+
 }
