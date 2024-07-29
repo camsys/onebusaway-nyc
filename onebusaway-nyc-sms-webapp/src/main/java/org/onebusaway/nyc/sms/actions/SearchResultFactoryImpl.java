@@ -225,7 +225,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 			if(map == null) {
 				map = new HashMap<Double,VehicleResult>();
 			}
-
+			
 			if(timePrediction != null) {
 				map.put(distanceExtension.getDistanceFromCall(), new VehicleResult(timePrediction, vehicleId, vor, getOccupancyConfig(),isStroller));
 			} else {
@@ -256,44 +256,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 		}
 
 	}
-
-
-	private String getPresentableOccupancy(
-			MonitoredVehicleJourneyStructure journey, long updateTime,
-			boolean isStopContext) {
-
-		// only show load in stop-level contexts
-		if(!isStopContext) {
-			return "";
-		}
-
-		// if data is old, no occupancy
-		int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
-		long age = (System.currentTimeMillis() - updateTime) / 1000;
-
-		if (age > staleTimeout) {
-			return "";
-		}
-
-		if(journey.getOccupancy() != null) {
-			String loadOccupancy = journey.getOccupancy().toString();
-			loadOccupancy = loadOccupancy.toUpperCase();
-			//TODO: Modify output load text here
-			if(loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE"))
-				loadOccupancy = "seats available";
-			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE") || loadOccupancy.equals("STANDING_AVAILABLE"))
-				loadOccupancy = "almost full";
-			else if (loadOccupancy.equals("FULL"))
-				loadOccupancy = "full";
-			
-			return loadOccupancy;
-		}else
-			return "";
-
-	}
 	
 	private String getPresentableTime(
-			MonitoredVehicleJourneyStructure journey, long updateTime,
+			MonitoredVehicleJourneyStructure journey,
+			long updateTime,
 			boolean isStopContext) {
 		String presentableTime = null;
 		NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
@@ -344,8 +310,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
 		String message = "";    
 		String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mile", "miles", "");
-		String loadOccupancy = getPresentableOccupancy(journey, updateTime, isStopContext);
-		
+
 		NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
 
 		// wrapped label only appears in stop results
@@ -382,7 +347,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 		if(message.length() > 0)
 			return distance + "(" + message + ")";
 		else
-			return distance + " "+loadOccupancy;
+			return distance;
 	}
 
 
