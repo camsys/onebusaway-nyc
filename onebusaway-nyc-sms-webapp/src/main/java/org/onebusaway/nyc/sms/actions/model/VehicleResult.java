@@ -107,11 +107,12 @@ public class VehicleResult implements Serializable {
   private String getPresentableOccupancy(OccupancyStatus occupancyStatus) {
     String loadOccupancy = "";
     if (occupancyStatus != null) {
-      if (loadOccupancy.equals("MANY_SEATS_AVAILABLE") || loadOccupancy.equals("FEW_SEATS_AVAILABLE"))
+      String occupancyStatusName = occupancyStatus.name();
+      if (occupancyStatusName.equals("MANY_SEATS_AVAILABLE") || occupancyStatusName.equals("FEW_SEATS_AVAILABLE"))
         loadOccupancy = ", seats available";
-      else if (loadOccupancy.equals("STANDING_ROOM_ONLY"))
+      else if (occupancyStatusName.equals("STANDING_ROOM_ONLY"))
         loadOccupancy = ", limited seating";
-      else if (loadOccupancy.equals("CRUSHED_STANDING_ROOM_ONLY") || loadOccupancy.equals("FULL"))
+      else if (occupancyStatusName.equals("CRUSHED_STANDING_ROOM_ONLY") || occupancyStatusName.equals("FULL"))
         loadOccupancy = ", standing only";
     }
 
