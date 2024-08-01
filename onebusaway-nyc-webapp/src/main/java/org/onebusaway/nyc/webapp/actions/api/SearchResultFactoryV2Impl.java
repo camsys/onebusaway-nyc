@@ -16,20 +16,20 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
+import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.webapp.actions.api.model.GeocodeResult;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteDirection;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteResult;
 import org.onebusaway.nyc.webapp.actions.api.model.StopOnRoute;
 import org.onebusaway.transit_data.model.*;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
 
@@ -102,5 +102,22 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
         }
 
         return new RouteResult(routeBean, directions);
+    }
+
+
+    @Override
+    public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeBean) {
+        SearchResultCollection searchResultCollection;
+
+        if(geocodeResult.isRegion()) {
+            searchResultCollection = _searchService.findRoutesStoppingWithinRegion(
+                    geocodeResult.getBounds(), this);
+        } else {
+            searchResultCollection = _searchService.findStopsNearPoint(geocodeResult.getLatitude(),
+                    geocodeResult.getLongitude(), this, routeBean);
+        }
+
+        SearchResult result =  new GeocodeResult(geocodeResult,searchResultCollection.getMatches());
+        return result;
     }
 }
