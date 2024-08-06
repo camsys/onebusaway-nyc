@@ -107,6 +107,18 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
 
     @Override
     public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeBean) {
+
+        // get routes data
+        List<SearchResult> nearbySearchResults = null;
+
+        if(geocodeResult.isRegion()) {
+            nearbySearchResults = _searchService.findRoutesStoppingWithinRegion(geocodeResult.getBounds(), this).getMatches();
+        } else {
+            nearbySearchResults = _searchService.findRoutesStoppingNearPoint(geocodeResult.getLatitude(),
+                    geocodeResult.getLongitude(), this).getMatches();
+        }
+
+        // get stops data
         SearchResultCollection searchResultCollection;
 
         if(geocodeResult.isRegion()) {
@@ -117,7 +129,11 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
                     geocodeResult.getLongitude(), this, routeBean);
         }
 
-        SearchResult result =  new GeocodeResult(geocodeResult,searchResultCollection.getMatches());
+
+        //merge results
+        nearbySearchResults.addAll(searchResultCollection.getMatches());
+
+        SearchResult result =  new GeocodeResult(geocodeResult,nearbySearchResults);
         return result;
     }
 }
