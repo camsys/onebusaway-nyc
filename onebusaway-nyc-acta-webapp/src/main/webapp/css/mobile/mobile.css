@@ -158,6 +158,11 @@ strong {
 	padding-bottom: 1.0em;
 }
 
+#mobile-survey {
+	padding-top: 1.0em;
+	padding-bottom: 1.0em;
+}
+
 /* search panel */
 #searchPanel form {
 	position: relative;

@@ -16,20 +16,17 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
+import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.webapp.actions.api.model.RouteDirection;
-import org.onebusaway.nyc.webapp.actions.api.model.RouteResult;
-import org.onebusaway.nyc.webapp.actions.api.model.StopOnRoute;
+import org.onebusaway.nyc.webapp.actions.api.model.*;
 import org.onebusaway.transit_data.model.*;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
 
@@ -102,5 +99,111 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
         }
 
         return new RouteResult(routeBean, directions);
+    }
+
+
+    @Override
+    public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
+        List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
+        Map<String, StopBean> stopIdToStopBeanMap = new HashMap<String, StopBean>();
+
+
+        for(RouteBean routeBean : stopBean.getRoutes()) {
+            StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
+            for(StopBean stopBeanForRoute : stopsForRoute.getStops()) {
+                stopIdToStopBeanMap.put(stopBeanForRoute.getId(), stopBeanForRoute);
+            }
+
+            List<RouteDirection> directions = new ArrayList<RouteDirection>();
+            List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
+            for (StopGroupingBean stopGroupingBean : stopGroupings) {
+                for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
+                    NameBean name = stopGroupBean.getName();
+                    String type = name.getType();
+
+                    if (!type.equals("destination"))
+                        continue;
+
+                    List<String> polylines = new ArrayList<String>();
+                    for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
+                        polylines.add(polyline.getPoints());
+                    }
+
+                    Boolean hasUpcomingScheduledService = null;
+
+                    // Only set hasUpcomingScheduledService if the current stopGroupBean (direction) contains the current stop.
+                    // In other words, only if the stop in question is served in the current direction.
+                    // We do this to prevent checking if there is service in a direction that does not even serve this stop.
+                    if (stopGroupBean.getStopIds().contains(stopBean.getId())) {
+                        hasUpcomingScheduledService =
+                                _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(),
+                                        routeBean.getId(), stopGroupBean.getId());
+
+                        // if there are buses on route, always have "scheduled service"
+                        Boolean routeHasVehiclesInService =
+                                _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId(), System.currentTimeMillis());
+
+                        if(routeHasVehiclesInService) {
+                            hasUpcomingScheduledService = true;
+                        }
+                    }
+
+
+
+
+                    List<StopOnRoute> _stops = new ArrayList<StopOnRoute>();
+                    if(!stopGroupBean.getStopIds().isEmpty()) {
+                        for(String stopId : stopGroupBean.getStopIds()) {
+                            String agencyId = AgencyAndIdLibrary.convertFromString(routeBean.getId()).getAgencyId();
+                            if (_nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId,
+                                    stopsForRoute.getRoute().getId(), stopGroupBean.getId())) {
+                                _stops.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId)));
+                            }
+                        }
+                    }
+
+                    directions.add(new RouteDirection(stopGroupBean, polylines, _stops, hasUpcomingScheduledService));
+                }
+            }
+
+            RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions);
+            routesAtStop.add(routeAtStop);
+        }
+
+        return new StopResult(stopBean, routesAtStop);
+    }
+
+
+
+    @Override
+    public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeBean) {
+
+        // get routes data
+        List<SearchResult> nearbySearchResults = null;
+
+        if(geocodeResult.isRegion()) {
+            nearbySearchResults = _searchService.findRoutesStoppingWithinRegion(geocodeResult.getBounds(), this).getMatches();
+        } else {
+            nearbySearchResults = _searchService.findRoutesStoppingNearPoint(geocodeResult.getLatitude(),
+                    geocodeResult.getLongitude(), this).getMatches();
+        }
+
+        // get stops data
+        SearchResultCollection searchResultCollection;
+
+        if(geocodeResult.isRegion()) {
+            searchResultCollection = _searchService.findRoutesStoppingWithinRegion(
+                    geocodeResult.getBounds(), this);
+        } else {
+            searchResultCollection = _searchService.findStopsNearPoint(geocodeResult.getLatitude(),
+                    geocodeResult.getLongitude(), this, routeBean);
+        }
+
+
+        //merge results
+        nearbySearchResults.addAll(searchResultCollection.getMatches());
+
+        SearchResult result =  new GeocodeResult(geocodeResult,nearbySearchResults);
+        return result;
     }
 }
