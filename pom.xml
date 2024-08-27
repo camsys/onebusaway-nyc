@@ -19,7 +19,7 @@
         <gitDescribe>99999</gitDescribe>
         <gtfs-api-version>1.2.30</gtfs-api-version><!-- please keep this in sync with app-mods gtfs-api-version -->
         <hessian.version>4.0.38</hessian.version>
-        <hsqldb.version>2.6.0</hsqldb.version>
+        <hsqldb.version>2.7.1</hsqldb.version>
         <jackson.version>2.12.0</jackson.version>
         <jakarta.xml.version>2.3.3</jakarta.xml.version>
         <jaxb-impl.version>2.3.3</jaxb-impl.version>
