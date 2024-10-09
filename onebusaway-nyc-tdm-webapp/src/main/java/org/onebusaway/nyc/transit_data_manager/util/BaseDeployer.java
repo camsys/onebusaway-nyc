@@ -42,6 +42,7 @@ import javax.servlet.ServletContext;
 
 /**
  * Base class for impelmentation classes that deploy from S3.
+ * todo: Consider refactoring to use S3 utility
  *
  */
 public class BaseDeployer implements ServletContextAware {
