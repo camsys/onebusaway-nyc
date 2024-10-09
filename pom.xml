@@ -14,7 +14,7 @@
     <properties>
         <asm-version>8.0.1</asm-version>
         <aws.version>1.3.9</aws.version>
-        <commons-beanutils.version>1.9.2</commons-beanutils.version>
+        <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <geotools.version>23.0</geotools.version>
         <gitDescribe>99999</gitDescribe>
         <gtfs-api-version>1.2.30</gtfs-api-version><!-- please keep this in sync with app-mods gtfs-api-version -->
