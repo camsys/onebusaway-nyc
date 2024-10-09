@@ -44,6 +44,7 @@ import javax.servlet.ServletContext;
 
 /**
  * Implements File operations over Amazon S3.
+ * todo: Consider refactoring to use S3 utility
  * 
  */
 public class FileServiceImpl implements FileService, ServletContextAware {
